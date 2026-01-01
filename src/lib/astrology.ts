@@ -1,90 +1,55 @@
-import { UserData } from "@/hooks/useUserData";
+import * as Astronomy from 'astronomy-engine';
+import { UserData } from '@/hooks/useUserData';
 
-// Detailed Moon ephemeris with exact times and degrees for January 2026
-export interface MoonEphemerisEntry {
-  sign: string;
-  name: string;
-  degree: number;
-  nextChange: string;
-  vocStart?: string;
-  fullMoon?: string;
-  fullMoonDegree?: string;
-  newMoon?: string;
-  newMoonDegree?: string;
-}
-
-const MOON_EPHEMERIS: Record<string, MoonEphemerisEntry> = {
-  '2026-01-01': { sign: '♊', name: 'Gemini', degree: 6, nextChange: '2026-01-02T13:09:00Z' },
-  '2026-01-02': { sign: '♊', name: 'Gemini', degree: 21, nextChange: '2026-01-02T13:09:00Z', vocStart: '2026-01-02T07:23:00Z' },
-  '2026-01-03': { sign: '♋', name: 'Cancer', degree: 6, nextChange: '2026-01-04T13:43:00Z', fullMoon: '2026-01-03T10:03:00Z', fullMoonDegree: "13°02' ♋" },
-  '2026-01-04': { sign: '♋', name: 'Cancer', degree: 21, nextChange: '2026-01-04T13:43:00Z', vocStart: '2026-01-04T11:46:00Z' },
-  '2026-01-05': { sign: '♌', name: 'Leo', degree: 6, nextChange: '2026-01-06T16:56:00Z' },
-  '2026-01-06': { sign: '♌', name: 'Leo', degree: 21, nextChange: '2026-01-06T16:56:00Z', vocStart: '2026-01-06T08:33:00Z' },
-  '2026-01-07': { sign: '♍', name: 'Virgo', degree: 6, nextChange: '2026-01-09T00:05:00Z' },
-  '2026-01-08': { sign: '♍', name: 'Virgo', degree: 21, nextChange: '2026-01-09T00:05:00Z', vocStart: '2026-01-08T22:33:00Z' },
-  '2026-01-09': { sign: '♎', name: 'Libra', degree: 6, nextChange: '2026-01-11T10:55:00Z' },
-  '2026-01-10': { sign: '♎', name: 'Libra', degree: 21, nextChange: '2026-01-11T10:55:00Z', vocStart: '2026-01-11T08:48:00Z' },
-  '2026-01-11': { sign: '♏', name: 'Scorpio', degree: 6, nextChange: '2026-01-13T23:33:00Z' },
-  '2026-01-12': { sign: '♏', name: 'Scorpio', degree: 21, nextChange: '2026-01-13T23:33:00Z' },
-  '2026-01-13': { sign: '♏', name: 'Scorpio', degree: 27, nextChange: '2026-01-13T23:33:00Z', vocStart: '2026-01-13T21:26:00Z' },
-  '2026-01-14': { sign: '♐', name: 'Sagittarius', degree: 6, nextChange: '2026-01-16T11:47:00Z' },
-  '2026-01-15': { sign: '♐', name: 'Sagittarius', degree: 21, nextChange: '2026-01-16T11:47:00Z' },
-  '2026-01-16': { sign: '♐', name: 'Sagittarius', degree: 27, nextChange: '2026-01-16T11:47:00Z', vocStart: '2026-01-16T09:37:00Z' },
-  '2026-01-17': { sign: '♑', name: 'Capricorn', degree: 6, nextChange: '2026-01-18T22:18:00Z' },
-  '2026-01-18': { sign: '♑', name: 'Capricorn', degree: 21, nextChange: '2026-01-18T22:18:00Z', vocStart: '2026-01-18T21:24:00Z', newMoon: '2026-01-18T16:52:00Z', newMoonDegree: "28°43' ♑" },
-  '2026-01-19': { sign: '♒', name: 'Aquarius', degree: 6, nextChange: '2026-01-21T06:49:00Z' },
-  '2026-01-20': { sign: '♒', name: 'Aquarius', degree: 21, nextChange: '2026-01-21T06:49:00Z' },
-  '2026-01-21': { sign: '♒', name: 'Aquarius', degree: 27, nextChange: '2026-01-21T06:49:00Z', vocStart: '2026-01-21T05:32:00Z' },
-  '2026-01-22': { sign: '♓', name: 'Pisces', degree: 6, nextChange: '2026-01-23T13:25:00Z' },
-  '2026-01-23': { sign: '♓', name: 'Pisces', degree: 21, nextChange: '2026-01-23T13:25:00Z', vocStart: '2026-01-23T13:19:00Z' },
-  '2026-01-24': { sign: '♈', name: 'Aries', degree: 6, nextChange: '2026-01-25T18:05:00Z' },
-  '2026-01-25': { sign: '♈', name: 'Aries', degree: 21, nextChange: '2026-01-25T18:05:00Z', vocStart: '2026-01-24T21:37:00Z' },
-  '2026-01-26': { sign: '♉', name: 'Taurus', degree: 6, nextChange: '2026-01-27T20:55:00Z' },
-  '2026-01-27': { sign: '♉', name: 'Taurus', degree: 21, nextChange: '2026-01-27T20:55:00Z', vocStart: '2026-01-27T18:10:00Z' },
-  '2026-01-28': { sign: '♊', name: 'Gemini', degree: 6, nextChange: '2026-01-29T22:31:00Z' },
-  '2026-01-29': { sign: '♊', name: 'Gemini', degree: 21, nextChange: '2026-01-29T22:31:00Z', vocStart: '2026-01-29T21:39:00Z' },
-  '2026-01-30': { sign: '♋', name: 'Cancer', degree: 6, nextChange: '2026-02-01T00:09:00Z' },
-  '2026-01-31': { sign: '♋', name: 'Cancer', degree: 21, nextChange: '2026-02-01T00:09:00Z' },
-};
-
-// Mercury retrograde periods in 2026
-const MERCURY_RETROGRADE_2026 = [
-  { start: new Date(2026, 2, 15), end: new Date(2026, 3, 7) },
-  { start: new Date(2026, 6, 18), end: new Date(2026, 7, 11) },
-  { start: new Date(2026, 10, 9), end: new Date(2026, 11, 1) },
+// Zodiac signs mapping
+const ZODIAC_SIGNS = [
+  { name: 'Aries', symbol: '♈' },
+  { name: 'Taurus', symbol: '♉' },
+  { name: 'Gemini', symbol: '♊' },
+  { name: 'Cancer', symbol: '♋' },
+  { name: 'Leo', symbol: '♌' },
+  { name: 'Virgo', symbol: '♍' },
+  { name: 'Libra', symbol: '♎' },
+  { name: 'Scorpio', symbol: '♏' },
+  { name: 'Sagittarius', symbol: '♐' },
+  { name: 'Capricorn', symbol: '♑' },
+  { name: 'Aquarius', symbol: '♒' },
+  { name: 'Pisces', symbol: '♓' },
 ];
 
-export interface MoonData {
+export interface ZodiacPosition {
+  sign: string;
+  signName: string;
+  degree: number;
+  fullDegree: string;
+}
+
+export interface PlanetaryPositions {
+  moon: ZodiacPosition;
+  sun: ZodiacPosition;
+  mercury: ZodiacPosition;
+  venus: ZodiacPosition;
+  mars: ZodiacPosition;
+  jupiter: ZodiacPosition;
+  saturn: ZodiacPosition;
+  uranus: ZodiacPosition;
+  neptune: ZodiacPosition;
+  pluto: ZodiacPosition;
+}
+
+export interface MoonPhase {
   phaseIcon: string;
   phaseName: string;
   isBalsamic: boolean;
-  sign: string;
-  name: string;
-  degree: number;
-  fullDegree: string;
-  nextChange?: string;
-  vocStart?: string;
-  fullMoon?: string;
-  fullMoonDegree?: string;
-  newMoon?: string;
-  newMoonDegree?: string;
-}
-
-export interface MercuryStatus {
-  isRetrograde: boolean;
-  isFavorable: boolean;
-}
-
-export interface VenusData {
-  venusSign: string;
-  venusDegree: number;
-  hasVenusAspect: boolean;
+  phase: number;
+  illumination: number;
 }
 
 export interface Transit {
   type: string;
   desc: string;
   icon: string;
+  orb?: string;
 }
 
 export interface PersonalTransits {
@@ -92,7 +57,14 @@ export interface PersonalTransits {
   transits: Transit[];
 }
 
-export type EnergyLevel = 'void' | 'rest' | 'high' | 'caution' | 'moderate';
+export interface Ingress {
+  planet: string;
+  sign: string;
+  icon: string;
+  desc: string;
+}
+
+export type EnergyLevel = 'rest' | 'high' | 'caution' | 'moderate';
 
 export interface EnergyRating {
   level: EnergyLevel;
@@ -101,144 +73,249 @@ export interface EnergyRating {
 
 export interface DayData {
   date: Date;
-  moonData: MoonData;
-  mercuryStatus: MercuryStatus;
-  venusData: VenusData;
+  planets: PlanetaryPositions;
+  moonPhase: MoonPhase;
+  mercuryRetro: boolean;
   personalTransits: PersonalTransits;
-  vocData?: string;
+  majorIngresses: Ingress[];
   energy: EnergyRating;
 }
 
-export const getMoonData = (date: Date): MoonData => {
-  const dateKey = date.toISOString().split('T')[0];
-  const ephemerisData = MOON_EPHEMERIS[dateKey] || { sign: '♊', name: 'Gemini', degree: 0, nextChange: '' };
+// Convert ecliptic longitude to zodiac sign and degree
+export const longitudeToZodiac = (longitude: number): ZodiacPosition => {
+  const normalizedLon = ((longitude % 360) + 360) % 360;
+  const signIndex = Math.floor(normalizedLon / 30);
+  const degree = Math.floor(normalizedLon % 30);
 
-  // Moon phase calculation
-  const lunationCycle = 29.530588853;
-  const knownNewMoon = new Date(2000, 0, 6, 18, 14);
-  const diff = (date.getTime() - knownNewMoon.getTime()) / (1000 * 60 * 60 * 24);
-  const phase = ((diff % lunationCycle) / lunationCycle);
-  const normalizedPhase = phase < 0 ? phase + 1 : phase;
+  return {
+    sign: ZODIAC_SIGNS[signIndex].symbol,
+    signName: ZODIAC_SIGNS[signIndex].name,
+    degree,
+    fullDegree: `${degree}° ${ZODIAC_SIGNS[signIndex].symbol}`,
+  };
+};
+
+// Get all planetary positions for a date
+export const getPlanetaryPositions = (date: Date): PlanetaryPositions => {
+  const getPosition = (body: Astronomy.Body): ZodiacPosition => {
+    try {
+      if (body === Astronomy.Body.Moon) {
+        const moon = Astronomy.GeoMoon(date);
+        const ecliptic = Astronomy.Ecliptic(moon);
+        return longitudeToZodiac(ecliptic.elon);
+      }
+      const vector = Astronomy.GeoVector(body, date, false);
+      const ecliptic = Astronomy.Ecliptic(vector);
+      return longitudeToZodiac(ecliptic.elon);
+    } catch {
+      return { sign: '♈', signName: 'Aries', degree: 0, fullDegree: '0° ♈' };
+    }
+  };
+
+  return {
+    moon: getPosition(Astronomy.Body.Moon),
+    sun: getPosition(Astronomy.Body.Sun),
+    mercury: getPosition(Astronomy.Body.Mercury),
+    venus: getPosition(Astronomy.Body.Venus),
+    mars: getPosition(Astronomy.Body.Mars),
+    jupiter: getPosition(Astronomy.Body.Jupiter),
+    saturn: getPosition(Astronomy.Body.Saturn),
+    uranus: getPosition(Astronomy.Body.Uranus),
+    neptune: getPosition(Astronomy.Body.Neptune),
+    pluto: getPosition(Astronomy.Body.Pluto),
+  };
+};
+
+// Check if Mercury is retrograde
+export const isMercuryRetrograde = (date: Date): boolean => {
+  try {
+    const yesterday = new Date(date);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const todayMercury = Astronomy.GeoVector(Astronomy.Body.Mercury, date, false);
+    const yesterdayMercury = Astronomy.GeoVector(Astronomy.Body.Mercury, yesterday, false);
+
+    const todayEcliptic = Astronomy.Ecliptic(todayMercury);
+    const yesterdayEcliptic = Astronomy.Ecliptic(yesterdayMercury);
+
+    // If longitude is decreasing, Mercury is retrograde
+    return todayEcliptic.elon < yesterdayEcliptic.elon;
+  } catch {
+    return false;
+  }
+};
+
+// Get moon phase using astronomy-engine
+export const getMoonPhase = (date: Date): MoonPhase => {
+  const phase = Astronomy.MoonPhase(date);
+  const illumination = Astronomy.Illumination(Astronomy.Body.Moon, date);
 
   let phaseIcon: string;
   let phaseName: string;
 
-  if (normalizedPhase < 0.0625 || normalizedPhase >= 0.9375) {
+  if (phase < 22.5 || phase >= 337.5) {
     phaseIcon = '🌑'; phaseName = 'New Moon';
-  } else if (normalizedPhase < 0.1875) {
+  } else if (phase < 67.5) {
     phaseIcon = '🌒'; phaseName = 'Waxing Crescent';
-  } else if (normalizedPhase < 0.3125) {
+  } else if (phase < 112.5) {
     phaseIcon = '🌓'; phaseName = 'First Quarter';
-  } else if (normalizedPhase < 0.4375) {
+  } else if (phase < 157.5) {
     phaseIcon = '🌔'; phaseName = 'Waxing Gibbous';
-  } else if (normalizedPhase < 0.5625) {
+  } else if (phase < 202.5) {
     phaseIcon = '🌕'; phaseName = 'Full Moon';
-  } else if (normalizedPhase < 0.6875) {
+  } else if (phase < 247.5) {
     phaseIcon = '🌖'; phaseName = 'Waning Gibbous';
-  } else if (normalizedPhase < 0.8125) {
+  } else if (phase < 292.5) {
     phaseIcon = '🌗'; phaseName = 'Last Quarter';
   } else {
     phaseIcon = '🌘'; phaseName = 'Waning Crescent';
   }
 
-  const isBalsamic = normalizedPhase >= 0.875 || normalizedPhase < 0.0625;
+  const isBalsamic = phase >= 315 || phase < 45;
 
   return {
     phaseIcon,
     phaseName,
     isBalsamic,
-    sign: ephemerisData.sign,
-    name: ephemerisData.name,
-    degree: ephemerisData.degree,
-    fullDegree: `${ephemerisData.degree}° ${ephemerisData.sign}`,
-    nextChange: ephemerisData.nextChange,
-    vocStart: ephemerisData.vocStart,
-    fullMoon: ephemerisData.fullMoon,
-    fullMoonDegree: ephemerisData.fullMoonDegree,
-    newMoon: ephemerisData.newMoon,
-    newMoonDegree: ephemerisData.newMoonDegree,
+    phase,
+    illumination: illumination.phase_fraction,
   };
 };
 
-export const getMercuryStatus = (date: Date): MercuryStatus => {
-  const isRetrograde = MERCURY_RETROGRADE_2026.some(
-    period => date >= period.start && date <= period.end
-  );
+// Calculate aspects between two positions
+const calculateAspect = (lon1: number, lon2: number) => {
+  const diff = Math.abs(((lon2 - lon1 + 180) % 360) - 180);
 
-  return {
-    isRetrograde,
-    isFavorable: !isRetrograde,
+  if (diff < 8) return { type: 'conjunction', symbol: '☌', orb: diff };
+  if (Math.abs(diff - 60) < 6) return { type: 'sextile', symbol: '⚹', orb: Math.abs(diff - 60) };
+  if (Math.abs(diff - 90) < 8) return { type: 'square', symbol: '□', orb: Math.abs(diff - 90) };
+  if (Math.abs(diff - 120) < 8) return { type: 'trine', symbol: '△', orb: Math.abs(diff - 120) };
+  if (Math.abs(diff - 180) < 8) return { type: 'opposition', symbol: '☍', orb: Math.abs(diff - 180) };
+
+  return null;
+};
+
+const getSignIndex = (signName: string): number => {
+  return ZODIAC_SIGNS.findIndex(s => s.name === signName);
+};
+
+const getMoonAspectDescription = (type: string): string => {
+  const descriptions: Record<string, string> = {
+    conjunction: 'Deep emotional connection to your core self',
+    sextile: 'Harmonious flow of emotions',
+    square: 'Tension between feelings and balance',
+    trine: 'Easy emotional expression',
+    opposition: 'Emotional awareness through relationships',
   };
+  return descriptions[type] || '';
 };
 
-export const getVenusTransits = (date: Date, userData: UserData | null): VenusData => {
-  // Venus transits for January 2026 (Venus in Capricorn)
-  const venusSign = '♑';
-  const venusDegree = 9 + Math.floor((date.getTime() - new Date(2026, 0, 1).getTime()) / (1000 * 60 * 60 * 24));
-
-  // Check if Venus aspects user's Libra placements (if user data exists)
-  let hasVenusAspect = false;
-  if (userData?.birthDate) {
-    // Simplified: Venus in Capricorn squares Libra placements
-    if (venusDegree >= 27 && venusDegree <= 29) {
-      hasVenusAspect = true;
-    }
-  }
-
-  return { venusSign, venusDegree, hasVenusAspect };
+const getVenusAspectDescription = (type: string): string => {
+  const descriptions: Record<string, string> = {
+    conjunction: 'Love and beauty amplified',
+    sextile: 'Harmonious connections',
+    square: 'Relationship tensions to resolve',
+    trine: 'Grace and ease in relationships',
+    opposition: 'Balancing self and others in love',
+  };
+  return descriptions[type] || '';
 };
 
-export const getPersonalTransits = (moonData: MoonData, userData: UserData | null): PersonalTransits => {
+// Get personal transits to natal chart
+export const getPersonalTransits = (planets: PlanetaryPositions, userData: UserData | null): PersonalTransits => {
   if (!userData?.birthDate) return { hasTransits: false, transits: [] };
 
   const transits: Transit[] = [];
 
-  // Check if Moon transits Libra (important for triple Libra)
-  if (moonData.name === 'Libra') {
+  // Simplified: Assuming Libra at 28° (user's Sun degree)
+  const natalLibraDegree = 28 + 180; // 208° (28° Libra in ecliptic longitude)
+
+  // Check Moon transits
+  const moonLon = planets.moon.degree + getSignIndex(planets.moon.signName) * 30;
+  const moonAspect = calculateAspect(natalLibraDegree, moonLon);
+
+  if (moonAspect) {
     transits.push({
-      type: 'Moon conjunct Sun/Moon/Rising',
-      desc: 'Emotional peak - excellent for self-care',
+      type: `Moon ${moonAspect.type} natal Libra`,
+      desc: getMoonAspectDescription(moonAspect.type),
       icon: '☽',
+      orb: moonAspect.orb.toFixed(1),
     });
   }
 
-  // Check for Moon square/opposition to Libra
-  if (['Capricorn', 'Cancer'].includes(moonData.name)) {
-    transits.push({
-      type: 'Moon square Libra placements',
-      desc: 'Tension between emotions and balance',
-      icon: '□',
-    });
-  }
+  // Check Venus transits
+  const venusLon = planets.venus.degree + getSignIndex(planets.venus.signName) * 30;
+  const venusAspect = calculateAspect(natalLibraDegree, venusLon);
 
-  if (moonData.name === 'Aries') {
+  if (venusAspect) {
     transits.push({
-      type: 'Moon opposite Libra placements',
-      desc: 'Relationship dynamics highlighted',
-      icon: '☍',
+      type: `Venus ${venusAspect.type} natal Libra`,
+      desc: getVenusAspectDescription(venusAspect.type),
+      icon: '♀',
+      orb: venusAspect.orb.toFixed(1),
     });
   }
 
   return { hasTransits: transits.length > 0, transits };
 };
 
-export const getEnergyRating = (moonData: MoonData, mercuryStatus: MercuryStatus, vocData?: string): EnergyRating => {
-  if (vocData) return { level: 'void', label: 'Void of Course' };
-  if (moonData.isBalsamic) return { level: 'rest', label: 'Rest/Balsamic' };
-  if (mercuryStatus.isFavorable && moonData.phaseName.includes('Waxing')) {
+// Check for major ingresses
+export const checkMajorIngresses = (planets: PlanetaryPositions): Ingress[] => {
+  const ingresses: Ingress[] = [];
+
+  if (planets.saturn.signName === 'Aries') {
+    ingresses.push({
+      planet: 'Saturn',
+      sign: 'Aries',
+      icon: '♄',
+      desc: 'Major 2.5 year cycle begins',
+    });
+  }
+
+  if (planets.neptune.signName === 'Aries') {
+    ingresses.push({
+      planet: 'Neptune',
+      sign: 'Aries',
+      icon: '♆',
+      desc: 'Generational shift for 14 years',
+    });
+  }
+
+  return ingresses;
+};
+
+// Get energy rating
+export const getEnergyRating = (moonPhase: MoonPhase, mercuryRetro: boolean): EnergyRating => {
+  if (moonPhase.isBalsamic) {
+    return { level: 'rest', label: 'Rest/Balsamic' };
+  }
+  if (mercuryRetro) {
+    return { level: 'caution', label: 'Mercury Rx' };
+  }
+  if (moonPhase.phaseName.includes('Waxing') && !mercuryRetro) {
     return { level: 'high', label: 'Productive' };
   }
-  if (mercuryStatus.isRetrograde) return { level: 'caution', label: 'Mercury Rx' };
   return { level: 'moderate', label: 'Moderate' };
 };
 
-export const formatTime = (isoString: string | undefined, timezone = 'America/New_York'): string => {
-  if (!isoString) return 'N/A';
-  const date = new Date(isoString);
-  return date.toLocaleTimeString('en-US', {
-    timeZone: timezone,
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  });
+// Export to iCal format
+export const generateICalExport = (year: number, month: number, daysInMonth: number): string => {
+  let ical = 'BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Astro Calendar//EN\n';
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(year, month, day);
+    const planets = getPlanetaryPositions(date);
+    const moonPhase = getMoonPhase(date);
+
+    const dateStr = date.toISOString().split('T')[0].replace(/-/g, '');
+
+    ical += `BEGIN:VEVENT\n`;
+    ical += `DTSTART:${dateStr}\n`;
+    ical += `SUMMARY:☽ ${planets.moon.signName} ${planets.moon.degree}° - ${moonPhase.phaseName}\n`;
+    ical += `DESCRIPTION:Moon: ${planets.moon.fullDegree}\\nPhase: ${moonPhase.phaseName}\\nIllumination: ${(moonPhase.illumination * 100).toFixed(0)}%\n`;
+    ical += `END:VEVENT\n`;
+  }
+
+  ical += 'END:VCALENDAR';
+  return ical;
 };

@@ -1,4 +1,4 @@
-import { getMoonData, getMercuryStatus, getVenusTransits, getPersonalTransits, getEnergyRating, type EnergyLevel, type DayData } from "@/lib/astrology";
+import { getPlanetaryPositions, getMoonPhase, isMercuryRetrograde, getPersonalTransits, checkMajorIngresses, getEnergyRating, type EnergyLevel, type DayData } from "@/lib/astrology";
 import { cn } from "@/lib/utils";
 import { UserData } from "@/hooks/useUserData";
 
@@ -11,7 +11,6 @@ interface CalendarDayProps {
 }
 
 const energyStyles: Record<EnergyLevel, string> = {
-  void: "bg-energy-void",
   rest: "bg-energy-rest",
   high: "bg-energy-high",
   caution: "bg-energy-caution",
@@ -19,20 +18,20 @@ const energyStyles: Record<EnergyLevel, string> = {
 };
 
 export const CalendarDay = ({ date, day, isToday, userData, onDayClick }: CalendarDayProps) => {
-  const moonData = getMoonData(date);
-  const mercuryStatus = getMercuryStatus(date);
-  const venusData = getVenusTransits(date, userData);
-  const personalTransits = getPersonalTransits(moonData, userData);
-  const vocData = moonData.vocStart;
-  const energy = getEnergyRating(moonData, mercuryStatus, vocData);
+  const planets = getPlanetaryPositions(date);
+  const moonPhase = getMoonPhase(date);
+  const mercuryRetro = isMercuryRetrograde(date);
+  const personalTransits = getPersonalTransits(planets, userData);
+  const majorIngresses = checkMajorIngresses(planets);
+  const energy = getEnergyRating(moonPhase, mercuryRetro);
 
   const dayData: DayData = {
     date,
-    moonData,
-    mercuryStatus,
-    venusData,
+    planets,
+    moonPhase,
+    mercuryRetro,
     personalTransits,
-    vocData,
+    majorIngresses,
     energy,
   };
 
@@ -55,34 +54,34 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick }: Calend
       <div className="mt-2 flex items-center gap-2">
         <span
           className="text-lg opacity-70 md:text-xl"
-          title={moonData.phaseName}
+          title={moonPhase.phaseName}
         >
-          {moonData.phaseIcon}
+          {moonPhase.phaseIcon}
         </span>
         <span
           className="text-sm text-muted-foreground md:text-base"
-          title={`${moonData.name} ${moonData.degree}°`}
+          title={`${planets.moon.signName} ${planets.moon.degree}°`}
         >
-          {moonData.sign}
+          {planets.moon.sign}
         </span>
       </div>
 
       {/* Day indicators */}
       <div className="mt-auto flex flex-wrap gap-1.5 text-xs">
-        {moonData.isBalsamic && (
+        {moonPhase.isBalsamic && (
           <span className="opacity-80" title="Balsamic Moon">🌙</span>
         )}
-        {vocData && (
-          <span className="opacity-80 font-medium" title="Void of Course">V/C</span>
+        {mercuryRetro && (
+          <span className="opacity-80" title="Mercury Retrograde">☿℞</span>
         )}
-        {mercuryStatus.isFavorable && !moonData.isBalsamic && !vocData && (
-          <span className="opacity-80" title="Mercury Favorable">☿</span>
-        )}
-        {venusData.hasVenusAspect && (
-          <span className="opacity-80" title="Venus Transit">♀</span>
+        {!mercuryRetro && !moonPhase.isBalsamic && (
+          <span className="opacity-80" title="Mercury Direct">☿</span>
         )}
         {personalTransits.hasTransits && (
           <span className="opacity-80" title="Personal Transit">✦</span>
+        )}
+        {majorIngresses.length > 0 && (
+          <span className="opacity-80" title="Major Ingress">⚡</span>
         )}
       </div>
     </div>
