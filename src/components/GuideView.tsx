@@ -1,11 +1,19 @@
 import { useState } from "react";
 
-type GuideSection = "overview" | "symbols" | "moonphases" | "retrogrades" | "aspects";
+type GuideSection = "overview" | "colors" | "symbols" | "moonphases" | "retrogrades" | "aspects";
 
 const SymbolCard = ({ icon, name, desc }: { icon: string; name: string; desc: string }) => (
   <div className="rounded-sm border border-border bg-secondary p-4">
     <span className="mb-2 block text-3xl">{icon}</span>
     <div className="mb-1 font-medium text-foreground">{name}</div>
+    <div className="text-xs leading-relaxed text-muted-foreground">{desc}</div>
+  </div>
+);
+
+const ColorCard = ({ color, planet, symbol, desc }: { color: string; planet: string; symbol: string; desc: string }) => (
+  <div className="rounded-sm border border-border bg-secondary p-4">
+    <div className="mb-3 h-10 w-full rounded-sm" style={{ backgroundColor: color }} />
+    <div className="mb-1 font-medium text-foreground">{symbol} {planet}</div>
     <div className="text-xs leading-relaxed text-muted-foreground">{desc}</div>
   </div>
 );
@@ -34,23 +42,53 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
           <li><strong>Month:</strong> Traditional calendar grid with daily cosmic data</li>
           <li><strong>Week:</strong> Detailed daily view with space for intentions and notes</li>
           <li><strong>Year:</strong> Quick reference for all 12 months</li>
+          <li><strong>Phases:</strong> Visual moon phase chart for the entire year</li>
           <li><strong>Tables:</strong> Annual reference for full/new moons, retrogrades</li>
           <li><strong>Guide:</strong> This reference section</li>
         </ul>
         
         <h3>Color Coding</h3>
-        <p>Each day is color-coded to show the energy level:</p>
-        <ul>
-          <li><strong>Lavender:</strong> Balsamic Moon - Time to rest and release</li>
-          <li><strong>Green:</strong> Productive energy - Good for new projects and growth</li>
-          <li><strong>Beige:</strong> Mercury Retrograde - Review and revise, avoid new contracts</li>
-          <li><strong>Cream:</strong> Moderate energy - Balanced day</li>
-        </ul>
+        <p>Each day is color-coded based on which planets are most active through aspects. See the Colors section for full details.</p>
         
         <h3>Getting Started</h3>
         <p>
           Click the User icon to enter your birth information. This allows the calendar 
           to show you personalized transits and aspects to your natal chart.
+        </p>
+      </>
+    ),
+  },
+  colors: {
+    title: "Planetary Color Guide",
+    content: (
+      <>
+        <p>
+          Each day in your calendar is color-coded based on which planets are most active through aspects. 
+          When multiple planets are active, the day shows a gradient split between two colors.
+        </p>
+        
+        <h3>Planetary Colors & Meanings</h3>
+        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ColorCard color="#C74E4E" planet="Mars" symbol="♂" desc="Action, energy, drive, courage, assertiveness. Days to take bold action." />
+          <ColorCard color="#E8D5CC" planet="Venus" symbol="♀" desc="Love, beauty, values, relationships, harmony. Days for connection and aesthetics." />
+          <ColorCard color="#F4D03F" planet="Sun" symbol="☉" desc="Core self, vitality, life force, confidence. Days to shine and express yourself." />
+          <ColorCard color="#7FA3C7" planet="Moon" symbol="☽" desc="Emotions, intuition, rhythms, nurturing. Days to honor your feelings." />
+          <ColorCard color="#E8A558" planet="Mercury" symbol="☿" desc="Communication, thinking, learning, connections. Days for mental work and messaging." />
+          <ColorCard color="#9B7EBD" planet="Jupiter" symbol="♃" desc="Growth, expansion, wisdom, luck, optimism. Days to expand your horizons." />
+          <ColorCard color="#8B7355" planet="Saturn" symbol="♄" desc="Structure, discipline, responsibility, limits. Days for serious work and commitments." />
+          <ColorCard color="#D4C5E8" planet="Balsamic Moon" symbol="🌘" desc="Sacred rest phase (315°-337.5°). Only 2-3 days per month. Deep spiritual retreat before new beginnings." />
+        </div>
+        
+        <h3>Split Colors (Gradient Days)</h3>
+        <p>
+          When a day has aspects from two different planets, it displays as a split gradient:
+        </p>
+        <ul>
+          <li><strong>Top half:</strong> First active planet (morning aspects)</li>
+          <li><strong>Bottom half:</strong> Second active planet (afternoon/evening aspects)</li>
+        </ul>
+        <p>
+          Example: Mars square Moon in morning (red top) + Venus trine Sun in afternoon (rose bottom) = Red-to-Rose gradient day
         </p>
       </>
     ),
@@ -298,6 +336,7 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
 
 const NAV_ITEMS: { key: GuideSection; label: string }[] = [
   { key: "overview", label: "Overview" },
+  { key: "colors", label: "Colors" },
   { key: "symbols", label: "Symbols" },
   { key: "moonphases", label: "Moon Phases" },
   { key: "retrogrades", label: "Retrogrades" },
