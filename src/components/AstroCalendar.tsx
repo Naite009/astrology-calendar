@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, User } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download } from "lucide-react";
 import { CalendarDay } from "./CalendarDay";
 import { UserForm } from "./UserForm";
 import { DayDetail } from "./DayDetail";
 import { useUserData } from "@/hooks/useUserData";
-import { DayData } from "@/lib/astrology";
+import { DayData, generateICalExport } from "@/lib/astrology";
 
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -33,6 +33,19 @@ export const AstroCalendar = () => {
     });
   };
 
+  const exportToCalendar = () => {
+    const { daysInMonth } = getDaysInMonth(currentDate);
+    const ical = generateICalExport(currentDate.getFullYear(), currentDate.getMonth(), daysInMonth);
+
+    const blob = new Blob([ical], { type: 'text/calendar' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `astro-calendar-${monthName.replace(' ', '-')}.ics`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const { daysInMonth, startingDayOfWeek } = getDaysInMonth(currentDate);
   const monthName = currentDate.toLocaleString("default", {
     month: "long",
@@ -54,6 +67,14 @@ export const AstroCalendar = () => {
               </span>
             )}
             <nav className="flex gap-3">
+              <button
+                onClick={exportToCalendar}
+                className="flex h-10 w-10 items-center justify-center border border-border bg-transparent text-muted-foreground transition-all duration-200 hover:border-primary hover:bg-secondary"
+                aria-label="Export to Calendar"
+                title="Export to Calendar"
+              >
+                <Download size={20} />
+              </button>
               <button
                 onClick={() => setShowUserForm(!showUserForm)}
                 className={`flex h-10 w-10 items-center justify-center border transition-all duration-200 ${
@@ -128,13 +149,13 @@ export const AstroCalendar = () => {
           <span className="opacity-50">·</span>
           <span className="opacity-70">🌕 Full</span>
           <span className="opacity-50">·</span>
-          <span className="opacity-70">V/C Void</span>
+          <span className="opacity-70">☿ Direct</span>
           <span className="opacity-50">·</span>
-          <span className="opacity-70">☿ Favorable</span>
+          <span className="opacity-70">☿℞ Retrograde</span>
           <span className="opacity-50">·</span>
-          <span className="opacity-70">🌙 Balsamic</span>
+          <span className="opacity-70">✦ Transit</span>
           <span className="opacity-50">·</span>
-          <span className="opacity-70">✦ Personal</span>
+          <span className="opacity-70">⚡ Ingress</span>
         </footer>
       </div>
 
