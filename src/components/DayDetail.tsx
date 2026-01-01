@@ -1,6 +1,46 @@
 import { X } from 'lucide-react';
-import { DayData, getPlanetSymbol } from '@/lib/astrology';
+import { DayData, getPlanetSymbol, MoonPhase } from '@/lib/astrology';
 import { UserData } from '@/hooks/useUserData';
+
+// Sign-specific energies for daily guidance
+const SIGN_ENERGIES: Record<string, { action: string; focus: string; avoid: string }> = {
+  Aries: { action: "initiate boldly", focus: "courage and independence", avoid: "impulsiveness" },
+  Taurus: { action: "build steadily", focus: "sensuality and security", avoid: "stubbornness" },
+  Gemini: { action: "communicate freely", focus: "learning and connections", avoid: "scattered energy" },
+  Cancer: { action: "nurture deeply", focus: "emotions and home", avoid: "over-sensitivity" },
+  Leo: { action: "create joyfully", focus: "self-expression and confidence", avoid: "ego battles" },
+  Virgo: { action: "organize wisely", focus: "health and service", avoid: "perfectionism" },
+  Libra: { action: "harmonize gracefully", focus: "relationships and beauty", avoid: "indecision" },
+  Scorpio: { action: "transform powerfully", focus: "depth and intimacy", avoid: "manipulation" },
+  Sagittarius: { action: "explore freely", focus: "philosophy and adventure", avoid: "over-extension" },
+  Capricorn: { action: "structure deliberately", focus: "ambition and discipline", avoid: "rigidity" },
+  Aquarius: { action: "innovate uniquely", focus: "community and ideals", avoid: "detachment" },
+  Pisces: { action: "flow intuitively", focus: "spirituality and compassion", avoid: "escapism" },
+};
+
+const getDailyGuidance = (moonPhase: MoonPhase, mercuryRetro: boolean, moonSign: string): string => {
+  const signData = SIGN_ENERGIES[moonSign] || SIGN_ENERGIES.Aries;
+
+  if (mercuryRetro) {
+    return `Mercury Retrograde in ${moonSign} - Review and revise communications. Back up data. Reconnect with old contacts. Avoid new contracts. Practice patience with technology and travel.`;
+  }
+  if (moonPhase.isBalsamic) {
+    return `Balsamic Moon in ${moonSign} - The final surrender before rebirth. This is sacred rest time. Release attachments. Meditate and dream. Trust the void. ${signData.focus} dissolves into the cosmic flow. Avoid starting anything new.`;
+  }
+  if (moonPhase.phaseName === "New Moon") {
+    return `New Moon in ${moonSign} - Plant seeds of intention. Set powerful goals aligned with ${signData.focus}. ${signData.action} with fresh vision. Channel this initiating energy wisely. Avoid: ${signData.avoid}.`;
+  }
+  if (moonPhase.phaseName === "Full Moon") {
+    return `Full Moon in ${moonSign} - Maximum illumination! Celebrate what you've manifested around ${signData.focus}. Release what no longer serves. Emotions peak. ${signData.action} with full awareness. Harvest your efforts.`;
+  }
+  if (moonPhase.phaseName.includes("Waxing")) {
+    return `${moonPhase.phaseName} in ${moonSign} - Energy is building. ${signData.action} with awareness of ${signData.focus}. Avoid ${signData.avoid}.`;
+  }
+  if (moonPhase.phaseName.includes("Waning")) {
+    return `${moonPhase.phaseName} in ${moonSign} - Time for release and integration. Reflect on ${signData.focus}. ${signData.action} mindfully.`;
+  }
+  return `Moon in ${moonSign} - ${signData.action} with awareness of ${signData.focus}. Avoid ${signData.avoid}.`;
+};
 
 interface DayDetailProps {
   dayData: DayData;
@@ -133,10 +173,7 @@ export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
         <div>
           <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground mb-3">Daily Guidance</h3>
           <p className="text-sm leading-relaxed text-foreground">
-            {moonPhase.isBalsamic && "Balsamic Moon - Focus on rest, release, and spiritual preparation for new cycles."}
-            {mercuryRetro && !moonPhase.isBalsamic && "Mercury Retrograde - Review, revise, reconnect. Avoid signing contracts or starting major projects."}
-            {!mercuryRetro && !moonPhase.isBalsamic && moonPhase.phaseName.includes('Waxing') && "Excellent time for growth and new initiatives. Energy is building."}
-            {!mercuryRetro && !moonPhase.isBalsamic && !moonPhase.phaseName.includes('Waxing') && "Moderate energy day. Focus on completion and reflection."}
+            {getDailyGuidance(moonPhase, mercuryRetro, planets.moon.signName)}
           </p>
         </div>
       </div>
