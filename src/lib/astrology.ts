@@ -71,6 +71,26 @@ export interface EnergyRating {
   label: string;
 }
 
+export interface Aspect {
+  planet1: string;
+  planet2: string;
+  type: string;
+  symbol: string;
+  orb: string;
+}
+
+export interface VoidOfCourse {
+  isVOC: boolean;
+  start?: Date;
+  end?: Date;
+}
+
+export interface DayColors {
+  primary: string;
+  secondary: string | null;
+  label: string;
+}
+
 export interface DayData {
   date: Date;
   planets: PlanetaryPositions;
@@ -79,6 +99,9 @@ export interface DayData {
   personalTransits: PersonalTransits;
   majorIngresses: Ingress[];
   energy: EnergyRating;
+  aspects: Aspect[];
+  voc: VoidOfCourse;
+  dayColors: DayColors;
 }
 
 // Convert ecliptic longitude to zodiac sign and degree
@@ -296,6 +319,158 @@ export const getEnergyRating = (moonPhase: MoonPhase, mercuryRetro: boolean): En
     return { level: 'high', label: 'Productive' };
   }
   return { level: 'moderate', label: 'Moderate' };
+};
+
+// Calculate daily aspects between planets
+export const calculateDailyAspects = (planets: PlanetaryPositions): Aspect[] => {
+  const aspects: Aspect[] = [];
+  const aspectTypes = [
+    { angle: 0, name: 'conjunction', symbol: '☌', orb: 8 },
+    { angle: 60, name: 'sextile', symbol: '⚹', orb: 6 },
+    { angle: 90, name: 'square', symbol: '□', orb: 8 },
+    { angle: 120, name: 'trine', symbol: '△', orb: 8 },
+    { angle: 180, name: 'opposition', symbol: '☍', orb: 8 },
+  ];
+
+  const planetList: (keyof PlanetaryPositions)[] = ['moon', 'sun', 'mercury', 'venus', 'mars'];
+
+  const getLongitude = (position: ZodiacPosition) => {
+    const signIndex = getSignIndex(position.signName);
+    return signIndex * 30 + position.degree;
+  };
+
+  for (let i = 0; i < planetList.length; i++) {
+    for (let j = i + 1; j < planetList.length; j++) {
+      const p1 = planetList[i];
+      const p2 = planetList[j];
+      const lon1 = getLongitude(planets[p1]);
+      const lon2 = getLongitude(planets[p2]);
+
+      const diff = Math.abs(((lon2 - lon1 + 180) % 360) - 180);
+
+      for (const aspectType of aspectTypes) {
+        const orb = Math.abs(diff - aspectType.angle);
+        if (orb < aspectType.orb) {
+          aspects.push({
+            planet1: p1,
+            planet2: p2,
+            type: aspectType.name,
+            symbol: aspectType.symbol,
+            orb: orb.toFixed(1),
+          });
+        }
+      }
+    }
+  }
+
+  return aspects;
+};
+
+// Get void of course moon (simplified)
+export const getVoidOfCourseMoon = (moonPhase: MoonPhase): VoidOfCourse => {
+  // Simplified VOC calculation
+  const isVOC = moonPhase.phase >= 25 && moonPhase.phase < 35;
+
+  if (isVOC) {
+    const now = new Date();
+    const vocStart = new Date(now);
+    vocStart.setHours(Math.floor(moonPhase.phase % 24), 0, 0);
+    const vocEnd = new Date(now);
+    vocEnd.setHours(Math.floor(moonPhase.phase % 24) + 2, 0, 0);
+
+    return { isVOC: true, start: vocStart, end: vocEnd };
+  }
+
+  return { isVOC: false };
+};
+
+// Planet colors for day coloring
+const PLANET_COLORS: Record<string, string> = {
+  mars: '#C74E4E',
+  venus: '#E8D5CC',
+  sun: '#F4D03F',
+  moon: '#7FA3C7',
+  mercury: '#E8A558',
+  jupiter: '#9B7EBD',
+  saturn: '#8B7355',
+  uranus: '#5DADE2',
+  neptune: '#A9CCE3',
+  pluto: '#5D6D7E',
+};
+
+// Get day colors based on planetary activity
+export const getDayColors = (aspects: Aspect[], moonPhase: MoonPhase): DayColors => {
+  const activePlanets = new Set<string>();
+
+  aspects.forEach((asp) => {
+    activePlanets.add(asp.planet1);
+    activePlanets.add(asp.planet2);
+  });
+
+  if (moonPhase.isBalsamic) {
+    return { primary: '#D4C5E8', secondary: null, label: 'Balsamic Rest' };
+  }
+
+  const colors = Array.from(activePlanets)
+    .map((p) => PLANET_COLORS[p])
+    .filter(Boolean);
+
+  if (colors.length === 0) {
+    return { primary: PLANET_COLORS.moon, secondary: null, label: 'Moon Focus' };
+  } else if (colors.length === 1) {
+    return { primary: colors[0], secondary: null, label: 'Single Planet' };
+  } else {
+    return { primary: colors[0], secondary: colors[1], label: 'Multiple Aspects' };
+  }
+};
+
+// Get planet symbol
+export const getPlanetSymbol = (planetName: string): string => {
+  const symbols: Record<string, string> = {
+    moon: '☽',
+    sun: '☉',
+    mercury: '☿',
+    venus: '♀',
+    mars: '♂',
+    jupiter: '♃',
+    saturn: '♄',
+    uranus: '♅',
+    neptune: '♆',
+    pluto: '♇',
+  };
+  return symbols[planetName] || planetName;
+};
+
+// Detect planetary ingresses (sign changes)
+export const detectPlanetaryIngresses = (date: Date, planets: PlanetaryPositions): Ingress[] => {
+  const ingresses: Ingress[] = [];
+
+  try {
+    const yesterday = new Date(date);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayPlanets = getPlanetaryPositions(yesterday);
+
+    const planetsToCheck: (keyof PlanetaryPositions)[] = ['mercury', 'venus', 'mars', 'jupiter', 'saturn'];
+
+    planetsToCheck.forEach((planetName) => {
+      const todaySign = planets[planetName].signName;
+      const yesterdaySign = yesterdayPlanets[planetName].signName;
+
+      if (todaySign !== yesterdaySign) {
+        const isMajor = planetName === 'jupiter' || planetName === 'saturn';
+        ingresses.push({
+          planet: planetName.charAt(0).toUpperCase() + planetName.slice(1),
+          sign: todaySign,
+          icon: getPlanetSymbol(planetName),
+          desc: isMajor ? 'Major shift - effects last months' : 'Personal planet shift - effects last weeks',
+        });
+      }
+    });
+  } catch (error) {
+    console.error('Error detecting ingresses:', error);
+  }
+
+  return ingresses;
 };
 
 // Export to iCal format

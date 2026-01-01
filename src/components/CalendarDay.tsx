@@ -1,4 +1,17 @@
-import { getPlanetaryPositions, getMoonPhase, isMercuryRetrograde, getPersonalTransits, checkMajorIngresses, getEnergyRating, type EnergyLevel, type DayData } from "@/lib/astrology";
+import { 
+  getPlanetaryPositions, 
+  getMoonPhase, 
+  isMercuryRetrograde, 
+  getPersonalTransits, 
+  checkMajorIngresses, 
+  getEnergyRating, 
+  calculateDailyAspects,
+  getVoidOfCourseMoon,
+  getDayColors,
+  detectPlanetaryIngresses,
+  getPlanetSymbol,
+  type DayData 
+} from "@/lib/astrology";
 import { cn } from "@/lib/utils";
 import { UserData } from "@/hooks/useUserData";
 
@@ -10,20 +23,18 @@ interface CalendarDayProps {
   onDayClick: (dayData: DayData) => void;
 }
 
-const energyStyles: Record<EnergyLevel, string> = {
-  rest: "bg-energy-rest",
-  high: "bg-energy-high",
-  caution: "bg-energy-caution",
-  moderate: "bg-background",
-};
-
 export const CalendarDay = ({ date, day, isToday, userData, onDayClick }: CalendarDayProps) => {
   const planets = getPlanetaryPositions(date);
   const moonPhase = getMoonPhase(date);
   const mercuryRetro = isMercuryRetrograde(date);
   const personalTransits = getPersonalTransits(planets, userData);
   const majorIngresses = checkMajorIngresses(planets);
+  const detectedIngresses = detectPlanetaryIngresses(date, planets);
+  const allIngresses = [...majorIngresses, ...detectedIngresses];
   const energy = getEnergyRating(moonPhase, mercuryRetro);
+  const aspects = calculateDailyAspects(planets);
+  const voc = getVoidOfCourseMoon(moonPhase);
+  const dayColors = getDayColors(aspects, moonPhase);
 
   const dayData: DayData = {
     date,
@@ -31,59 +42,88 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick }: Calend
     moonPhase,
     mercuryRetro,
     personalTransits,
-    majorIngresses,
+    majorIngresses: allIngresses,
     energy,
+    aspects,
+    voc,
+    dayColors,
   };
+
+  // Build background style based on day colors
+  const bgStyle = dayColors.secondary
+    ? { background: `linear-gradient(to bottom, ${dayColors.primary} 50%, ${dayColors.secondary} 50%)` }
+    : { backgroundColor: dayColors.primary };
 
   return (
     <div
       onClick={() => onDayClick(dayData)}
+      style={bgStyle}
       className={cn(
-        "group relative flex min-h-24 cursor-pointer flex-col p-3 transition-all duration-200 md:min-h-36 md:p-4",
+        "group relative flex min-h-32 cursor-pointer flex-col p-3 transition-all duration-200 md:min-h-44 md:p-4",
         "hover:opacity-90 hover:shadow-[inset_0_0_0_1px_hsl(var(--border))]",
-        energyStyles[energy.level],
         isToday && "shadow-[inset_0_0_0_2px_hsl(var(--primary))]"
       )}
     >
-      {/* Day number */}
-      <span className="font-serif text-xl font-light text-foreground md:text-2xl">
-        {day}
-      </span>
-
-      {/* Moon info */}
-      <div className="mt-2 flex items-center gap-2">
-        <span
-          className="text-lg opacity-70 md:text-xl"
-          title={moonPhase.phaseName}
-        >
+      {/* Header: Day number + Moon phase */}
+      <div className="flex items-start justify-between border-b border-foreground/10 pb-2 mb-2">
+        <span className="font-serif text-xl font-light text-foreground md:text-2xl">
+          {day}
+        </span>
+        <span className="text-lg opacity-70" title={moonPhase.phaseName}>
           {moonPhase.phaseIcon}
         </span>
-        <span
-          className="text-sm text-muted-foreground md:text-base"
-          title={`${planets.moon.signName} ${planets.moon.degree}°`}
-        >
-          {planets.moon.sign}
-        </span>
       </div>
 
-      {/* Day indicators */}
-      <div className="mt-auto flex flex-wrap gap-1.5 text-xs">
-        {moonPhase.isBalsamic && (
-          <span className="opacity-80" title="Balsamic Moon">🌙</span>
-        )}
-        {mercuryRetro && (
-          <span className="opacity-80" title="Mercury Retrograde">☿℞</span>
-        )}
-        {!mercuryRetro && !moonPhase.isBalsamic && (
-          <span className="opacity-80" title="Mercury Direct">☿</span>
-        )}
-        {personalTransits.hasTransits && (
-          <span className="opacity-80" title="Personal Transit">✦</span>
-        )}
-        {majorIngresses.length > 0 && (
-          <span className="opacity-80" title="Major Ingress">⚡</span>
-        )}
+      {/* Planet positions */}
+      <div className="flex flex-col gap-0.5 text-[11px] text-foreground/70 leading-tight">
+        <div className="flex items-center gap-1">
+          <span>☽</span>
+          <span>{planets.moon.fullDegree}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <span>☉</span>
+          <span>{planets.sun.fullDegree}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <span>☿</span>
+          <span>{planets.mercury.fullDegree}</span>
+          {mercuryRetro && <span className="text-amber-600">℞</span>}
+        </div>
+        <div className="flex items-center gap-1">
+          <span>♀</span>
+          <span>{planets.venus.fullDegree}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <span>♂</span>
+          <span>{planets.mars.fullDegree}</span>
+        </div>
       </div>
+
+      {/* Aspects */}
+      {aspects.length > 0 && (
+        <div className="mt-auto pt-2 text-[10px] text-primary">
+          {aspects.slice(0, 2).map((asp, i) => (
+            <div key={i}>
+              {getPlanetSymbol(asp.planet1)} {asp.symbol} {getPlanetSymbol(asp.planet2)}
+            </div>
+          ))}
+          {aspects.length > 2 && <div className="text-muted-foreground">+{aspects.length - 2} more</div>}
+        </div>
+      )}
+
+      {/* VOC indicator */}
+      {voc.isVOC && (
+        <div className="text-[10px] text-amber-600 mt-1">V/C</div>
+      )}
+
+      {/* Ingress indicator */}
+      {allIngresses.length > 0 && (
+        <div className="text-[10px] text-primary font-medium mt-1">
+          {allIngresses.slice(0, 1).map((ing, i) => (
+            <div key={i}>{ing.icon} → {ing.sign}</div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

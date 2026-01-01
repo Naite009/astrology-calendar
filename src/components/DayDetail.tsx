@@ -1,5 +1,5 @@
 import { X } from 'lucide-react';
-import { DayData } from '@/lib/astrology';
+import { DayData, getPlanetSymbol } from '@/lib/astrology';
 import { UserData } from '@/hooks/useUserData';
 
 interface DayDetailProps {
@@ -9,12 +9,12 @@ interface DayDetailProps {
 }
 
 export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
-  const { date, planets, moonPhase, mercuryRetro, personalTransits, majorIngresses } = dayData;
+  const { date, planets, moonPhase, mercuryRetro, personalTransits, majorIngresses, aspects, voc } = dayData;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/80 p-5" onClick={onClose}>
       <div
-        className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-sm bg-background p-8 shadow-xl md:p-12"
+        className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-sm bg-background p-8 shadow-xl md:p-12"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -25,8 +25,26 @@ export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
         </button>
 
         <h2 className="font-serif text-2xl font-light text-foreground md:text-3xl mb-6">
-          {date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+          {date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
         </h2>
+
+        {/* Major Ingresses Section - Highlighted */}
+        {majorIngresses.length > 0 && (
+          <div className="mb-6 pb-6 border-b border-border bg-amber-50 dark:bg-amber-950/20 p-4 rounded-sm">
+            <h3 className="text-[11px] uppercase tracking-widest text-primary mb-3">⭐ Planetary Ingresses Today</h3>
+            <ul className="space-y-2">
+              {majorIngresses.map((ingress, i) => (
+                <li key={i}>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{ingress.icon}</span>
+                    <span className="font-medium text-foreground">{ingress.planet} enters {ingress.sign}</span>
+                  </div>
+                  <p className="mt-1 text-sm text-muted-foreground">{ingress.desc}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Planetary Positions Section */}
         <div className="mb-6 pb-6 border-b border-border">
@@ -53,6 +71,43 @@ export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
           </p>
         </div>
 
+        {/* Daily Aspects Section */}
+        {aspects && aspects.length > 0 && (
+          <div className="mb-6 pb-6 border-b border-border">
+            <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground mb-4">
+              Daily Aspects ({aspects.length})
+            </h3>
+            <div className="grid gap-2">
+              {aspects.map((asp, i) => (
+                <div key={i} className="rounded-sm bg-secondary p-3">
+                  <div className="flex items-center gap-2 font-medium text-foreground">
+                    <span>{getPlanetSymbol(asp.planet1)}</span>
+                    <span className="text-primary">{asp.symbol}</span>
+                    <span>{getPlanetSymbol(asp.planet2)}</span>
+                    <span className="text-sm capitalize">{asp.type}</span>
+                    <span className="text-[11px] text-muted-foreground ml-auto">(orb: {asp.orb}°)</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Void of Course Moon Section */}
+        {voc && voc.isVOC && (
+          <div className="mb-6 pb-6 border-b border-border">
+            <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground mb-3">Void of Course Moon</h3>
+            {voc.start && voc.end && (
+              <p className="text-sm text-foreground">
+                {voc.start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} - {voc.end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+              </p>
+            )}
+            <p className="text-sm text-muted-foreground mt-2">
+              Avoid starting new projects during this time.
+            </p>
+          </div>
+        )}
+
         {/* Personal Transits Section */}
         {personalTransits.hasTransits && (
           <div className="mb-6 pb-6 border-b border-border">
@@ -68,24 +123,6 @@ export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
                     )}
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">{transit.desc}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Major Ingresses Section */}
-        {majorIngresses.length > 0 && (
-          <div className="mb-6 pb-6 border-b border-border">
-            <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground mb-3">⚡ Major Planetary Ingresses</h3>
-            <ul className="space-y-2">
-              {majorIngresses.map((ingress, i) => (
-                <li key={i} className="rounded-sm bg-secondary p-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">{ingress.icon}</span>
-                    <span className="font-medium text-foreground">{ingress.planet} in {ingress.sign}</span>
-                  </div>
-                  <p className="mt-1 text-sm text-muted-foreground">{ingress.desc}</p>
                 </li>
               ))}
             </ul>
