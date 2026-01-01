@@ -53,6 +53,11 @@
     --calendar-today: 40 15% 91%;
     --calendar-empty: 40 18% 95%;
 
+    /* Energy level tokens */
+    --energy-rest: 270 35% 90%;
+    --energy-high: 150 45% 88%;
+    --energy-caution: 40 75% 85%;
+
     --sidebar-background: 40 18% 97%;
     --sidebar-foreground: 0 0% 30%;
     --sidebar-primary: 0 0% 10%;
@@ -96,6 +101,10 @@
     --calendar-hover: 0 0% 14%;
     --calendar-today: 0 0% 16%;
     --calendar-empty: 0 0% 12%;
+
+    --energy-rest: 270 25% 20%;
+    --energy-high: 150 30% 18%;
+    --energy-caution: 40 50% 20%;
     
     --sidebar-background: 0 0% 10%;
     --sidebar-foreground: 40 10% 90%;
