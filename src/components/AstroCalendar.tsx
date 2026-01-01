@@ -1,14 +1,16 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen } from "lucide-react";
 import { MonthView } from "./MonthView";
+import { WeekView } from "./WeekView";
 import { YearView } from "./YearView";
 import { AnnualTables } from "./AnnualTables";
 import { UserForm } from "./UserForm";
 import { DayDetail } from "./DayDetail";
 import { useUserData } from "@/hooks/useUserData";
+import { useNotes } from "@/hooks/useNotes";
 import { DayData, generateICalExport } from "@/lib/astrology";
 
-type ViewMode = "month" | "year" | "annual-tables";
+type ViewMode = "month" | "week" | "year" | "annual-tables";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 0, 1)); // January 2026
@@ -16,12 +18,22 @@ export const AstroCalendar = () => {
   const [selectedDay, setSelectedDay] = useState<DayData | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("month");
   const { userData, saveUserData } = useUserData();
+  const { weekNotes, dayNotes, saveWeekNotes, saveDayNotes } = useNotes();
 
-  const navigateMonth = (direction: number) => {
+  const getWeekStart = (date: Date): Date => {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day;
+    return new Date(d.setDate(diff));
+  };
+
+  const navigate = (direction: number) => {
     setCurrentDate((prev) => {
       const newDate = new Date(prev);
       if (viewMode === "year" || viewMode === "annual-tables") {
         newDate.setFullYear(prev.getFullYear() + direction);
+      } else if (viewMode === "week") {
+        newDate.setDate(prev.getDate() + direction * 7);
       } else {
         newDate.setMonth(prev.getMonth() + direction);
       }
@@ -54,6 +66,10 @@ export const AstroCalendar = () => {
     if (viewMode === "year") {
       return `${currentDate.getFullYear()}`;
     }
+    if (viewMode === "week") {
+      const weekStart = getWeekStart(currentDate);
+      return `Week of ${weekStart.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`;
+    }
     return currentDate.toLocaleString("default", { month: "long", year: "numeric" });
   };
 
@@ -78,6 +94,17 @@ export const AstroCalendar = () => {
               >
                 <Calendar size={14} />
                 Month
+              </button>
+              <button
+                onClick={() => setViewMode("week")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "week"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <BookOpen size={14} />
+                Week
               </button>
               <button
                 onClick={() => setViewMode("year")}
@@ -131,14 +158,14 @@ export const AstroCalendar = () => {
                 <User size={20} />
               </button>
               <button
-                onClick={() => navigateMonth(-1)}
+                onClick={() => navigate(-1)}
                 className="flex h-10 w-10 items-center justify-center border border-border bg-transparent text-muted-foreground transition-all duration-200 hover:border-primary hover:bg-secondary"
                 aria-label="Previous"
               >
                 <ChevronLeft size={20} />
               </button>
               <button
-                onClick={() => navigateMonth(1)}
+                onClick={() => navigate(1)}
                 className="flex h-10 w-10 items-center justify-center border border-border bg-transparent text-muted-foreground transition-all duration-200 hover:border-primary hover:bg-secondary"
                 aria-label="Next"
               >
@@ -154,6 +181,16 @@ export const AstroCalendar = () => {
             currentDate={currentDate}
             userData={userData}
             onDayClick={setSelectedDay}
+          />
+        )}
+
+        {viewMode === "week" && (
+          <WeekView
+            currentDate={currentDate}
+            weekNotes={weekNotes}
+            dayNotes={dayNotes}
+            saveWeekNotes={saveWeekNotes}
+            saveDayNotes={saveDayNotes}
           />
         )}
 
