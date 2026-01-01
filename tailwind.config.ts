@@ -58,6 +58,7 @@ export default {
           empty: "hsl(var(--calendar-empty))",
         },
         energy: {
+          void: "hsl(var(--energy-void))",
           rest: "hsl(var(--energy-rest))",
           high: "hsl(var(--energy-high))",
           caution: "hsl(var(--energy-caution))",

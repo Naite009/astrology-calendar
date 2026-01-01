@@ -2,13 +2,16 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight, User } from "lucide-react";
 import { CalendarDay } from "./CalendarDay";
 import { UserForm } from "./UserForm";
+import { DayDetail } from "./DayDetail";
 import { useUserData } from "@/hooks/useUserData";
+import { DayData } from "@/lib/astrology";
 
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 0, 1)); // January 2026
   const [showUserForm, setShowUserForm] = useState(false);
+  const [selectedDay, setSelectedDay] = useState<DayData | null>(null);
   const { userData, saveUserData } = useUserData();
 
   const getDaysInMonth = (date: Date) => {
@@ -112,6 +115,8 @@ export const AstroCalendar = () => {
                 date={date}
                 day={day}
                 isToday={isToday}
+                userData={userData}
+                onDayClick={setSelectedDay}
               />
             );
           })}
@@ -123,11 +128,13 @@ export const AstroCalendar = () => {
           <span className="opacity-50">·</span>
           <span className="opacity-70">🌕 Full</span>
           <span className="opacity-50">·</span>
+          <span className="opacity-70">V/C Void</span>
+          <span className="opacity-50">·</span>
           <span className="opacity-70">☿ Favorable</span>
           <span className="opacity-50">·</span>
-          <span className="opacity-70">℞ Retrograde</span>
-          <span className="opacity-50">·</span>
           <span className="opacity-70">🌙 Balsamic</span>
+          <span className="opacity-50">·</span>
+          <span className="opacity-70">✦ Personal</span>
         </footer>
       </div>
 
@@ -137,6 +144,15 @@ export const AstroCalendar = () => {
           initialData={userData}
           onSave={saveUserData}
           onClose={() => setShowUserForm(false)}
+        />
+      )}
+
+      {/* Day Detail Modal */}
+      {selectedDay && (
+        <DayDetail
+          dayData={selectedDay}
+          userData={userData}
+          onClose={() => setSelectedDay(null)}
         />
       )}
     </div>
