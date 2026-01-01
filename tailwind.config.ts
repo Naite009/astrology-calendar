@@ -57,6 +57,11 @@ export default {
           today: "hsl(var(--calendar-today))",
           empty: "hsl(var(--calendar-empty))",
         },
+        energy: {
+          rest: "hsl(var(--energy-rest))",
+          high: "hsl(var(--energy-high))",
+          caution: "hsl(var(--energy-caution))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

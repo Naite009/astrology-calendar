@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, User } from "lucide-react";
 import { CalendarDay } from "./CalendarDay";
+import { UserForm } from "./UserForm";
+import { useUserData } from "@/hooks/useUserData";
 
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 0, 1)); // January 2026
+  const [showUserForm, setShowUserForm] = useState(false);
+  const { userData, saveUserData } = useUserData();
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
@@ -40,22 +44,40 @@ export const AstroCalendar = () => {
           <h1 className="font-serif text-3xl font-light tracking-wide text-foreground md:text-5xl">
             {monthName}
           </h1>
-          <nav className="flex gap-3">
-            <button
-              onClick={() => navigateMonth(-1)}
-              className="flex h-10 w-10 items-center justify-center border border-border bg-transparent text-muted-foreground transition-all duration-200 hover:border-primary hover:bg-secondary"
-              aria-label="Previous month"
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <button
-              onClick={() => navigateMonth(1)}
-              className="flex h-10 w-10 items-center justify-center border border-border bg-transparent text-muted-foreground transition-all duration-200 hover:border-primary hover:bg-secondary"
-              aria-label="Next month"
-            >
-              <ChevronRight size={20} />
-            </button>
-          </nav>
+          <div className="flex items-center gap-4">
+            {userData && (
+              <span className="hidden text-[11px] uppercase tracking-widest text-muted-foreground md:block">
+                {userData.name} | {userData.timezone.split('/')[1]?.replace('_', ' ')}
+              </span>
+            )}
+            <nav className="flex gap-3">
+              <button
+                onClick={() => setShowUserForm(!showUserForm)}
+                className={`flex h-10 w-10 items-center justify-center border transition-all duration-200 ${
+                  showUserForm
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-transparent text-muted-foreground hover:border-primary hover:bg-secondary"
+                }`}
+                aria-label="User Settings"
+              >
+                <User size={20} />
+              </button>
+              <button
+                onClick={() => navigateMonth(-1)}
+                className="flex h-10 w-10 items-center justify-center border border-border bg-transparent text-muted-foreground transition-all duration-200 hover:border-primary hover:bg-secondary"
+                aria-label="Previous month"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <button
+                onClick={() => navigateMonth(1)}
+                className="flex h-10 w-10 items-center justify-center border border-border bg-transparent text-muted-foreground transition-all duration-200 hover:border-primary hover:bg-secondary"
+                aria-label="Next month"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </nav>
+          </div>
         </header>
 
         {/* Weekday Headers */}
@@ -95,17 +117,28 @@ export const AstroCalendar = () => {
           })}
         </div>
 
-        {/* Footer */}
-        <footer className="mt-10 flex items-center justify-center gap-2 text-xs text-muted-foreground md:mt-12">
+        {/* Footer Legend */}
+        <footer className="mt-10 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-muted-foreground md:mt-12">
           <span className="opacity-70">🌑 New</span>
-          <span className="opacity-50">·</span>
-          <span className="opacity-70">🌓 First Quarter</span>
           <span className="opacity-50">·</span>
           <span className="opacity-70">🌕 Full</span>
           <span className="opacity-50">·</span>
-          <span className="opacity-70">🌗 Last Quarter</span>
+          <span className="opacity-70">☿ Favorable</span>
+          <span className="opacity-50">·</span>
+          <span className="opacity-70">℞ Retrograde</span>
+          <span className="opacity-50">·</span>
+          <span className="opacity-70">🌙 Balsamic</span>
         </footer>
       </div>
+
+      {/* User Form Modal */}
+      {showUserForm && (
+        <UserForm
+          initialData={userData}
+          onSave={saveUserData}
+          onClose={() => setShowUserForm(false)}
+        />
+      )}
     </div>
   );
 };
