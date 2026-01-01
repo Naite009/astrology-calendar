@@ -384,18 +384,24 @@ export const getVoidOfCourseMoon = (moonPhase: MoonPhase): VoidOfCourse => {
   return { isVOC: false };
 };
 
-// Planet colors for day coloring
-const PLANET_COLORS: Record<string, string> = {
-  mars: '#C74E4E',
-  venus: '#E8D5CC',
-  sun: '#F4D03F',
-  moon: '#7FA3C7',
-  mercury: '#E8A558',
-  jupiter: '#9B7EBD',
-  saturn: '#8B7355',
-  uranus: '#5DADE2',
-  neptune: '#A9CCE3',
-  pluto: '#5D6D7E',
+// Planet colors for day coloring with meanings
+export interface PlanetColorInfo {
+  color: string;
+  name: string;
+  meaning: string;
+}
+
+export const PLANET_COLORS: Record<string, PlanetColorInfo> = {
+  mars: { color: '#C74E4E', name: 'Mars', meaning: 'Action, energy, drive, courage, assertiveness' },
+  venus: { color: '#E8D5CC', name: 'Venus', meaning: 'Love, beauty, values, relationships, harmony' },
+  sun: { color: '#F4D03F', name: 'Sun', meaning: 'Core self, vitality, life force, confidence' },
+  moon: { color: '#7FA3C7', name: 'Moon', meaning: 'Emotions, intuition, rhythms, nurturing' },
+  mercury: { color: '#E8A558', name: 'Mercury', meaning: 'Communication, thinking, learning, connections' },
+  jupiter: { color: '#9B7EBD', name: 'Jupiter', meaning: 'Growth, expansion, wisdom, luck, optimism' },
+  saturn: { color: '#8B7355', name: 'Saturn', meaning: 'Structure, discipline, responsibility, limits' },
+  uranus: { color: '#5DADE2', name: 'Uranus', meaning: 'Change, innovation, revolution, freedom' },
+  neptune: { color: '#A9CCE3', name: 'Neptune', meaning: 'Dreams, intuition, spirituality, imagination' },
+  pluto: { color: '#5D6D7E', name: 'Pluto', meaning: 'Transformation, power, rebirth, depth' },
 };
 
 // Get day colors based on planetary activity
@@ -412,16 +418,121 @@ export const getDayColors = (aspects: Aspect[], moonPhase: MoonPhase): DayColors
   }
 
   const colors = Array.from(activePlanets)
-    .map((p) => PLANET_COLORS[p])
+    .map((p) => PLANET_COLORS[p]?.color)
     .filter(Boolean);
 
   if (colors.length === 0) {
-    return { primary: PLANET_COLORS.moon, secondary: null, label: 'Moon Focus' };
+    return { primary: PLANET_COLORS.moon.color, secondary: null, label: 'Moon Focus' };
   } else if (colors.length === 1) {
     return { primary: colors[0], secondary: null, label: 'Single Planet' };
   } else {
     return { primary: colors[0], secondary: colors[1], label: 'Multiple Aspects' };
   }
+};
+
+// Color explanation for day detail
+export interface ColorExplanation {
+  primary: {
+    color: string;
+    planet: string;
+    meaning: string;
+    reason: string;
+    position?: string;
+    aspects?: Aspect[];
+  };
+  secondary: {
+    color: string;
+    planet: string;
+    meaning: string;
+    reason: string;
+    position?: string;
+    aspects?: Aspect[];
+  } | null;
+}
+
+export const getColorExplanation = (aspects: Aspect[], moonPhase: MoonPhase): ColorExplanation => {
+  if (moonPhase.isBalsamic) {
+    return {
+      primary: {
+        color: '#D4C5E8',
+        planet: 'Balsamic Moon',
+        meaning: 'Sacred rest phase before renewal',
+        reason: 'Moon is in balsamic phase (315°-337.5°). This is a time for deep rest, meditation, and spiritual retreat before the next lunar cycle.',
+      },
+      secondary: null,
+    };
+  }
+
+  const activePlanets = new Set<string>();
+  const aspectsByPlanet: Record<string, Aspect[]> = {};
+
+  aspects.forEach((asp) => {
+    activePlanets.add(asp.planet1);
+    activePlanets.add(asp.planet2);
+
+    if (!aspectsByPlanet[asp.planet1]) aspectsByPlanet[asp.planet1] = [];
+    if (!aspectsByPlanet[asp.planet2]) aspectsByPlanet[asp.planet2] = [];
+
+    aspectsByPlanet[asp.planet1].push(asp);
+    aspectsByPlanet[asp.planet2].push(asp);
+  });
+
+  const planetList = Array.from(activePlanets);
+
+  if (planetList.length === 0) {
+    return {
+      primary: {
+        color: PLANET_COLORS.moon.color,
+        planet: PLANET_COLORS.moon.name,
+        meaning: PLANET_COLORS.moon.meaning,
+        reason: 'No major aspects today. Moon provides baseline emotional energy.',
+      },
+      secondary: null,
+    };
+  }
+
+  if (planetList.length === 1) {
+    const planet = planetList[0];
+    const planetInfo = PLANET_COLORS[planet];
+    return {
+      primary: {
+        color: planetInfo.color,
+        planet: planetInfo.name,
+        meaning: planetInfo.meaning,
+        reason: `${planetInfo.name} is the most active planet today with ${aspectsByPlanet[planet]?.length || 0} aspect(s).`,
+        aspects: aspectsByPlanet[planet],
+      },
+      secondary: null,
+    };
+  }
+
+  // Two or more planets - split by time
+  const planet1 = planetList[0];
+  const planet2 = planetList[1];
+  const info1 = PLANET_COLORS[planet1];
+  const info2 = PLANET_COLORS[planet2];
+
+  const aspects1 = aspectsByPlanet[planet1] || [];
+  const aspects2 = aspectsByPlanet[planet2] || [];
+
+  return {
+    primary: {
+      color: info1.color,
+      planet: info1.name,
+      meaning: info1.meaning,
+      reason: `${info1.name} aspects are active with ${aspects1.length} aspect(s).`,
+      position: 'Top (Morning/Afternoon)',
+      aspects: aspects1,
+    },
+    secondary: {
+      color: info2.color,
+      planet: info2.name,
+      meaning: info2.meaning,
+      reason: `${info2.name} aspects are active with ${aspects2.length} aspect(s).`,
+      position: 'Bottom (Afternoon/Evening)',
+      aspects: aspects2,
+    },
+  };
 };
 
 // Get planet symbol

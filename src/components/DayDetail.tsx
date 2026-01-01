@@ -1,5 +1,5 @@
 import { X } from 'lucide-react';
-import { DayData, getPlanetSymbol, MoonPhase } from '@/lib/astrology';
+import { DayData, getPlanetSymbol, MoonPhase, getColorExplanation, ColorExplanation } from '@/lib/astrology';
 import { UserData } from '@/hooks/useUserData';
 
 // Sign-specific energies for daily guidance
@@ -50,6 +50,7 @@ interface DayDetailProps {
 
 export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
   const { date, planets, moonPhase, mercuryRetro, personalTransits, majorIngresses, aspects, voc } = dayData;
+  const colorExplanation = getColorExplanation(aspects || [], moonPhase);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/80 p-5" onClick={onClose}>
@@ -67,6 +68,9 @@ export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
         <h2 className="font-serif text-2xl font-light text-foreground md:text-3xl mb-6">
           {date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
         </h2>
+
+        {/* Why These Colors Section */}
+        <ColorExplanationSection colorExplanation={colorExplanation} aspects={aspects} />
 
         {/* Major Ingresses Section - Highlighted */}
         {majorIngresses.length > 0 && (
@@ -188,5 +192,93 @@ const PlanetItem = ({ symbol, name, position }: { symbol: string; name: string; 
       <span className="text-sm text-muted-foreground">{name}</span>
     </div>
     <span className="text-sm font-medium text-foreground">{position}</span>
+  </div>
+);
+
+interface ColorExplanationSectionProps {
+  colorExplanation: ColorExplanation;
+  aspects: DayData['aspects'];
+}
+
+const ColorExplanationSection = ({ colorExplanation, aspects }: ColorExplanationSectionProps) => (
+  <div className="mb-6 pb-6 border-b border-border bg-amber-50 dark:bg-amber-950/20 p-5 rounded-sm">
+    <h3 className="text-[11px] uppercase tracking-widest text-primary mb-4 font-semibold">
+      🎨 Why These Colors?
+    </h3>
+    
+    <div className="space-y-4">
+      {/* Primary Color */}
+      <div className="flex gap-4 items-start">
+        <div 
+          className="w-14 h-14 rounded-sm border-2 border-primary/30 flex-shrink-0" 
+          style={{ backgroundColor: colorExplanation.primary.color }}
+        />
+        <div className="flex-1">
+          <div className="font-medium text-foreground mb-1">
+            {colorExplanation.primary.planet}
+          </div>
+          <div className="text-xs text-muted-foreground mb-1">
+            {colorExplanation.primary.meaning}
+          </div>
+          {colorExplanation.primary.position && (
+            <div className="text-[11px] text-primary font-medium mb-1">
+              Position: {colorExplanation.primary.position}
+            </div>
+          )}
+          <div className="text-sm text-foreground">
+            {colorExplanation.primary.reason}
+          </div>
+          {colorExplanation.primary.aspects && colorExplanation.primary.aspects.length > 0 && (
+            <div className="text-xs text-muted-foreground mt-2">
+              Aspects: {colorExplanation.primary.aspects.map((a, i) => (
+                <span key={i}>
+                  {getPlanetSymbol(a.planet1)} {a.symbol} {getPlanetSymbol(a.planet2)}
+                  {i < (colorExplanation.primary.aspects?.length ?? 0) - 1 ? ', ' : ''}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Secondary Color */}
+      {colorExplanation.secondary && (
+        <>
+          <div className="text-center text-muted-foreground text-xs">+</div>
+          <div className="flex gap-4 items-start">
+            <div 
+              className="w-14 h-14 rounded-sm border-2 border-primary/30 flex-shrink-0" 
+              style={{ backgroundColor: colorExplanation.secondary.color }}
+            />
+            <div className="flex-1">
+              <div className="font-medium text-foreground mb-1">
+                {colorExplanation.secondary.planet}
+              </div>
+              <div className="text-xs text-muted-foreground mb-1">
+                {colorExplanation.secondary.meaning}
+              </div>
+              {colorExplanation.secondary.position && (
+                <div className="text-[11px] text-primary font-medium mb-1">
+                  Position: {colorExplanation.secondary.position}
+                </div>
+              )}
+              <div className="text-sm text-foreground">
+                {colorExplanation.secondary.reason}
+              </div>
+              {colorExplanation.secondary.aspects && colorExplanation.secondary.aspects.length > 0 && (
+                <div className="text-xs text-muted-foreground mt-2">
+                  Aspects: {colorExplanation.secondary.aspects.map((a, i) => (
+                    <span key={i}>
+                      {getPlanetSymbol(a.planet1)} {a.symbol} {getPlanetSymbol(a.planet2)}
+                      {i < (colorExplanation.secondary?.aspects?.length ?? 0) - 1 ? ', ' : ''}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
   </div>
 );
