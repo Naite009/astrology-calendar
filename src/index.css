@@ -132,3 +132,19 @@
     @apply bg-background text-foreground font-sans antialiased;
   }
 }
+
+/* Print styles for calendar */
+@media print {
+  .print\\:hidden {
+    display: none !important;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .calendar-day {
+    page-break-inside: avoid;
+  }
+}

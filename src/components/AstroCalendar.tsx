@@ -1,17 +1,18 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer } from "lucide-react";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
 import { YearView } from "./YearView";
 import { AnnualTables } from "./AnnualTables";
 import { GuideView } from "./GuideView";
+import { MoonPhasesView } from "./MoonPhasesView";
 import { UserForm } from "./UserForm";
 import { DayDetail } from "./DayDetail";
 import { useUserData } from "@/hooks/useUserData";
 import { useNotes } from "@/hooks/useNotes";
 import { DayData, generateICalExport } from "@/lib/astrology";
 
-type ViewMode = "month" | "week" | "year" | "annual-tables" | "guide";
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 0, 1)); // January 2026
@@ -31,7 +32,7 @@ export const AstroCalendar = () => {
   const navigate = (direction: number) => {
     setCurrentDate((prev) => {
       const newDate = new Date(prev);
-      if (viewMode === "year" || viewMode === "annual-tables") {
+      if (viewMode === "year" || viewMode === "annual-tables" || viewMode === "moon-phases") {
         newDate.setFullYear(prev.getFullYear() + direction);
       } else if (viewMode === "week") {
         newDate.setDate(prev.getDate() + direction * 7);
@@ -40,6 +41,10 @@ export const AstroCalendar = () => {
       }
       return newDate;
     });
+  };
+
+  const printCalendar = () => {
+    window.print();
   };
 
   const getDaysInMonth = (date: Date) => {
@@ -63,6 +68,9 @@ export const AstroCalendar = () => {
   const getTitle = () => {
     if (viewMode === "guide") {
       return "Reference Guide";
+    }
+    if (viewMode === "moon-phases") {
+      return `${currentDate.getFullYear()} Moon Phases`;
     }
     if (viewMode === "annual-tables") {
       return `${currentDate.getFullYear()} Annual Tables`;
@@ -121,6 +129,17 @@ export const AstroCalendar = () => {
                 Year
               </button>
               <button
+                onClick={() => setViewMode("moon-phases")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "moon-phases"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Moon size={14} />
+                Phases
+              </button>
+              <button
                 onClick={() => setViewMode("annual-tables")}
                 className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
                   viewMode === "annual-tables"
@@ -128,7 +147,6 @@ export const AstroCalendar = () => {
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Moon size={14} />
                 Tables
               </button>
               <button
@@ -150,7 +168,15 @@ export const AstroCalendar = () => {
               </span>
             )}
 
-            <nav className="flex gap-3">
+            <nav className="print:hidden flex gap-3">
+              <button
+                onClick={printCalendar}
+                className="flex h-10 w-10 items-center justify-center border border-border bg-transparent text-muted-foreground transition-all duration-200 hover:border-primary hover:bg-secondary"
+                aria-label="Print"
+                title="Print"
+              >
+                <Printer size={20} />
+              </button>
               {viewMode === "month" && (
                 <button
                   onClick={exportToCalendar}
@@ -210,6 +236,8 @@ export const AstroCalendar = () => {
         )}
 
         {viewMode === "year" && <YearView year={currentDate.getFullYear()} />}
+
+        {viewMode === "moon-phases" && <MoonPhasesView year={currentDate.getFullYear()} />}
 
         {viewMode === "annual-tables" && <AnnualTables year={currentDate.getFullYear()} />}
 
