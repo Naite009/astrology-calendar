@@ -1,16 +1,17 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book } from "lucide-react";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
 import { YearView } from "./YearView";
 import { AnnualTables } from "./AnnualTables";
+import { GuideView } from "./GuideView";
 import { UserForm } from "./UserForm";
 import { DayDetail } from "./DayDetail";
 import { useUserData } from "@/hooks/useUserData";
 import { useNotes } from "@/hooks/useNotes";
 import { DayData, generateICalExport } from "@/lib/astrology";
 
-type ViewMode = "month" | "week" | "year" | "annual-tables";
+type ViewMode = "month" | "week" | "year" | "annual-tables" | "guide";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 0, 1)); // January 2026
@@ -60,6 +61,9 @@ export const AstroCalendar = () => {
   };
 
   const getTitle = () => {
+    if (viewMode === "guide") {
+      return "Reference Guide";
+    }
     if (viewMode === "annual-tables") {
       return `${currentDate.getFullYear()} Annual Tables`;
     }
@@ -126,6 +130,17 @@ export const AstroCalendar = () => {
               >
                 <Moon size={14} />
                 Tables
+              </button>
+              <button
+                onClick={() => setViewMode("guide")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "guide"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Book size={14} />
+                Guide
               </button>
             </div>
 
@@ -197,6 +212,8 @@ export const AstroCalendar = () => {
         {viewMode === "year" && <YearView year={currentDate.getFullYear()} />}
 
         {viewMode === "annual-tables" && <AnnualTables year={currentDate.getFullYear()} />}
+
+        {viewMode === "guide" && <GuideView />}
       </div>
 
       {/* User Form Modal */}
