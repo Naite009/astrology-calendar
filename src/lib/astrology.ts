@@ -612,18 +612,9 @@ export const determineApplying = (
   const speed1 = DAILY_MOTION[planet1] || 0;
   const speed2 = DAILY_MOTION[planet2] || 0;
 
-  // Get the faster and slower planet
-  const fasterData = speed1 > speed2 ? planet1Data : planet2Data;
-  const slowerData = speed1 > speed2 ? planet2Data : planet1Data;
-
   // Get longitudes
-  const fasterLon = getSignIndex(fasterData.signName) * 30 + fasterData.degree;
-  const slowerLon = getSignIndex(slowerData.signName) * 30 + slowerData.degree;
-
-  // Calculate angular separation
-  let separation = fasterLon - slowerLon;
-  if (separation > 180) separation -= 360;
-  if (separation < -180) separation += 360;
+  const lon1 = getSignIndex(planet1Data.signName) * 30 + planet1Data.degree;
+  const lon2 = getSignIndex(planet2Data.signName) * 30 + planet2Data.degree;
 
   // Get target angle for aspect type
   const aspectAngles: Record<string, number> = {
@@ -633,11 +624,25 @@ export const determineApplying = (
     trine: 120,
     opposition: 180,
   };
-
   const targetAngle = aspectAngles[aspectType] || 0;
 
-  // Simplified: if faster planet hasn't reached target angle yet, it's applying
-  return Math.abs(separation) < targetAngle;
+  // Calculate current angular separation (normalized to 0-180)
+  let separation = lon1 - lon2;
+  if (separation > 180) separation -= 360;
+  if (separation < -180) separation += 360;
+  const currentOrb = Math.abs(Math.abs(separation) - targetAngle);
+
+  // Calculate what the separation will be tomorrow based on speeds
+  // Faster planet closes the gap if it's behind, or increases it if ahead
+  const tomorrowLon1 = lon1 + speed1;
+  const tomorrowLon2 = lon2 + speed2;
+  let tomorrowSeparation = tomorrowLon1 - tomorrowLon2;
+  if (tomorrowSeparation > 180) tomorrowSeparation -= 360;
+  if (tomorrowSeparation < -180) tomorrowSeparation += 360;
+  const tomorrowOrb = Math.abs(Math.abs(tomorrowSeparation) - targetAngle);
+
+  // If orb is getting smaller, aspect is applying; if getting larger, separating
+  return tomorrowOrb < currentOrb;
 };
 
 // Ingress interpretations for Mercury, Venus, and Mars entering each sign
