@@ -1,5 +1,4 @@
 // Astrology-inspired color palettes for signs, elements, and planets
-
 export const ELEMENT_PALETTES: Record<string, string[]> = {
   Fire: ["#B23A2F", "#E76F51", "#F4A261", "#FCECC4", "#7A1E2C", "#F2C14E"],
   Earth: ["#2F5D50", "#6B705C", "#A5A58D", "#B7B7A4", "#3E3A2D", "#D6C7B8"],
@@ -136,14 +135,45 @@ export function getCollectivePalette(
   return { palette, dominantSigns, reasoning };
 }
 
+// Transit explanation helper
+const PLANET_KEYWORDS: Record<string, string> = {
+  Sun: 'identity/vitality',
+  Moon: 'emotions/instincts',
+  Mercury: 'communication/thinking',
+  Venus: 'love/beauty',
+  Mars: 'action/energy',
+  Jupiter: 'expansion/luck',
+  Saturn: 'discipline/structure',
+  Uranus: 'change/innovation',
+  Neptune: 'dreams/intuition',
+  Pluto: 'transformation/power',
+  Ascendant: 'self-image/appearance',
+  NorthNode: 'life path/destiny',
+  Pallas: 'wisdom/strategy',
+  Juno: 'partnership/commitment',
+  Ceres: 'nurturing/self-care',
+  Vesta: 'focus/devotion',
+  Chiron: 'healing/wounds',
+  Lilith: 'shadow/authenticity',
+};
+
+export interface TransitDetail {
+  transitPlanet: string;
+  natalPlanet: string;
+  transitSign: string;
+  explanation: string;
+  colorInfluence: string;
+}
+
 // Get personal palette based on natal chart + transits
 export function getPersonalPalette(
   natalPositions: Array<{ name: string; sign: string }>,
   transitPositions: Array<{ name: string; sign: string }>,
-  preferences: { moreNeutral?: boolean; moreBold?: boolean } = {}
+  preferences: { moreNeutral?: boolean; moreBold?: boolean; altPalette?: number } = {}
 ): {
   palette: string[];
   topTransits: string[];
+  transitDetails: TransitDetail[];
   reasoning: string;
 } {
   // Get natal Sun/Moon/Asc signs
@@ -164,12 +194,24 @@ export function getPersonalPalette(
 
   // Find transits hitting natal planets
   const topTransits: string[] = [];
+  const transitDetails: TransitDetail[] = [];
   const transitAccents: string[] = [];
 
   for (const transit of transitPositions) {
     const natalHit = natalPositions.find((n) => n.sign === transit.sign && n.name !== transit.name);
     if (natalHit) {
-      topTransits.push(`${transit.name} → ${natalHit.name}`);
+      const transitKeyword = PLANET_KEYWORDS[transit.name] || transit.name;
+      const natalKeyword = PLANET_KEYWORDS[natalHit.name] || natalHit.name;
+      
+      topTransits.push(`${transit.name} activates your ${natalHit.name}`);
+      transitDetails.push({
+        transitPlanet: transit.name,
+        natalPlanet: natalHit.name,
+        transitSign: transit.sign,
+        explanation: `Today's ${transit.name} (${transitKeyword}) is passing through ${transit.sign}, the same sign as your natal ${natalHit.name} (${natalKeyword}). This energizes themes of ${natalKeyword.split('/')[0]} in your life.`,
+        colorInfluence: `Adding ${transit.name} accent colors to your palette.`
+      });
+      
       const accent = PLANET_ACCENTS[transit.name];
       if (accent) transitAccents.push(accent[0]);
     }
@@ -177,6 +219,26 @@ export function getPersonalPalette(
 
   // Add transit accents
   let palette = [...basePalette, ...transitAccents.slice(0, 2)];
+
+  // Alt palette variations
+  if (preferences.altPalette && preferences.altPalette > 0) {
+    const altIndex = preferences.altPalette % 3;
+    if (altIndex === 1) {
+      // Use element palette instead
+      const sunElement = natalSun ? SIGN_ELEMENTS[natalSun.sign] : 'Earth';
+      const elementPalette = ELEMENT_PALETTES[sunElement] || ELEMENT_PALETTES.Earth;
+      palette = [...elementPalette.slice(0, 4), ...transitAccents.slice(0, 2)];
+    } else if (altIndex === 2) {
+      // Use planet accents more prominently
+      const moonAccents = PLANET_ACCENTS.Moon || [];
+      const venusAccents = PLANET_ACCENTS.Venus || [];
+      palette = [
+        ...moonAccents,
+        ...venusAccents,
+        ...transitAccents.slice(0, 2),
+      ].slice(0, 6);
+    }
+  }
 
   // Preference adjustments
   if (preferences.moreNeutral) {
@@ -199,7 +261,7 @@ export function getPersonalPalette(
       ? `Based on your natal Sun in ${natalSun?.sign || "?"}, Moon in ${natalMoon?.sign || "?"}, with today's transits activating your chart.`
       : `Based on your natal Sun in ${natalSun?.sign || "?"} and Moon in ${natalMoon?.sign || "?"}. No major transits today.`;
 
-  return { palette, topTransits: topTransits.slice(0, 3), reasoning };
+  return { palette, topTransits: topTransits.slice(0, 3), transitDetails: transitDetails.slice(0, 3), reasoning };
 }
 
 // Simple desaturate (hex)
