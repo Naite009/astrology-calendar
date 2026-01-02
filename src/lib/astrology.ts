@@ -311,28 +311,31 @@ const MOON_NAMES: Record<number, string> = {
   11: 'Cold Moon',
 };
 
-// Get exact lunar phase time if New Moon, Full Moon, First Quarter, or Last Quarter occurs on (or very near) this calendar day.
-// IMPORTANT: The calendar is displayed in Eastern Time, so we anchor the search around noon ET
-// and accept events within a tight window. This prevents UTC-boundary issues that can mis-label
-// the lunar event sign (e.g. a Full Moon that happens late evening ET but next-day UTC).
+// Get exact lunar phase time if New Moon, Full Moon, First Quarter, or Last Quarter occurs on this calendar day (Eastern Time).
+// We search for the nearest event around the day, but ONLY return it if the event's ET date matches
+// the day being rendered. This prevents the common 3-day "spill" where Full/New Moons get shown on
+// adjacent days due to UTC boundary differences.
 export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
   try {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const day = date.getDate();
+    const etDayKey = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/New_York',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(date); // YYYY-MM-DD
 
-    // Anchor = 12:00 ET on the calendar day.
-    // In January this is typically 17:00 UTC (EST). Using UTC here is fine because we only use
-    // it as a stable anchor point for a +/- window search.
-    const anchorNoonETasUTC = new Date(Date.UTC(year, month, day, 17, 0, 0));
-    const windowMs = 36 * 60 * 60 * 1000; // +/- 36 hours around noon ET
+    // Start searching a bit before the day to ensure we catch events that occur early ET.
+    const searchStart = new Date(date);
+    searchStart.setDate(searchStart.getDate() - 2);
 
-    const searchStart = new Date(anchorNoonETasUTC.getTime() - windowMs);
+    const getETKey = (d: Date) =>
+      new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'America/New_York',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }).format(d);
 
-    const isInWindow = (eventDate: Date) =>
-      Math.abs(eventDate.getTime() - anchorNoonETasUTC.getTime()) <= windowMs;
-
-    // Helper: build an ExactLunarPhase payload from an event time.
     const buildPhase = (
       type: ExactLunarPhase['type'],
       eventDate: Date,
@@ -363,8 +366,8 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
 
         base.isSupermoon = distance < 361000;
         if (base.isSupermoon) {
-          const prevFullMoon = Astronomy.SearchMoonPhase(180, new Date(eventDate.getTime() - 31 * 24 * 60 * 60 * 1000), 40);
-          const nextFullMoon = Astronomy.SearchMoonPhase(180, new Date(eventDate.getTime() + 1 * 24 * 60 * 60 * 1000), 40);
+          const prevFullMoon = Astronomy.SearchMoonPhase(180, new Date(eventDate.getTime() - 31 * 24 * 60 * 60 * 1000), 80);
+          const nextFullMoon = Astronomy.SearchMoonPhase(180, new Date(eventDate.getTime() + 1 * 24 * 60 * 60 * 1000), 80);
 
           const prevDistance = prevFullMoon ? Astronomy.GeoMoon(prevFullMoon.date).Length() * 149597870.7 : 999999;
           const nextDistance = nextFullMoon ? Astronomy.GeoMoon(nextFullMoon.date).Length() * 149597870.7 : 999999;
@@ -389,27 +392,18 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
       return base;
     };
 
-    // NOTE: SearchMoonPhase returns the first match AFTER the start time.
-    // We search from just before the window and accept it if it's within the window.
+    const candidates: Array<{ type: ExactLunarPhase['type']; angle: number; emoji: string }> = [
+      { type: 'New Moon', angle: 0, emoji: '🌑' },
+      { type: 'Full Moon', angle: 180, emoji: '🌕' },
+      { type: 'First Quarter', angle: 90, emoji: '🌓' },
+      { type: 'Last Quarter', angle: 270, emoji: '🌗' },
+    ];
 
-    const newMoon = Astronomy.SearchMoonPhase(0, searchStart, 80);
-    if (newMoon && isInWindow(newMoon.date)) {
-      return buildPhase('New Moon', newMoon.date, '🌑');
-    }
-
-    const fullMoon = Astronomy.SearchMoonPhase(180, searchStart, 80);
-    if (fullMoon && isInWindow(fullMoon.date)) {
-      return buildPhase('Full Moon', fullMoon.date, '🌕');
-    }
-
-    const firstQuarter = Astronomy.SearchMoonPhase(90, searchStart, 80);
-    if (firstQuarter && isInWindow(firstQuarter.date)) {
-      return buildPhase('First Quarter', firstQuarter.date, '🌓');
-    }
-
-    const lastQuarter = Astronomy.SearchMoonPhase(270, searchStart, 80);
-    if (lastQuarter && isInWindow(lastQuarter.date)) {
-      return buildPhase('Last Quarter', lastQuarter.date, '🌗');
+    for (const c of candidates) {
+      const evt = Astronomy.SearchMoonPhase(c.angle, searchStart, 120);
+      if (!evt) continue;
+      if (getETKey(evt.date) !== etDayKey) continue;
+      return buildPhase(c.type, evt.date, c.emoji);
     }
   } catch (error) {
     console.error('Error finding exact lunar phase:', error);
@@ -418,7 +412,7 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
   return null;
 };
 
-// Calculate aspects between two positions
+// Calculate aspects between two longitudes (degrees)
 const calculateAspect = (lon1: number, lon2: number) => {
   const diff = Math.abs(((lon2 - lon1 + 180) % 360) - 180);
 
