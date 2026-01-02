@@ -1,5 +1,6 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import * as Astronomy from "astronomy-engine";
+import { Download } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -8,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useDownloadImage } from "@/hooks/useDownloadImage";
 
 interface AnnualTablesViewProps {
   year: number;
@@ -133,6 +135,12 @@ const findMoonSignEntry = (eventTime: Date, targetSign: string): Date | undefine
 };
 
 export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
+  const { downloadAsImage } = useDownloadImage();
+  const fullMoonsRef = useRef<HTMLDivElement>(null);
+  const newMoonsRef = useRef<HTMLDivElement>(null);
+  const quarterMoonsRef = useRef<HTMLDivElement>(null);
+  const retrogradesRef = useRef<HTMLDivElement>(null);
+
   // Calculate EXACT lunar events (not approximate days)
   const lunarEvents = useMemo(() => {
     const events: ExactLunarEvent[] = [];
@@ -440,10 +448,19 @@ export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
       </section>
 
       {/* Full Moons Table */}
-      <section className="rounded-sm border border-border bg-background p-6">
-        <h2 className="mb-6 border-b border-border pb-4 font-serif text-2xl font-light text-foreground">
-          🌕 Full Moons {year}
-        </h2>
+      <section ref={fullMoonsRef} className="rounded-sm border border-border bg-background p-6">
+        <div className="mb-6 flex items-center justify-between border-b border-border pb-4">
+          <h2 className="font-serif text-2xl font-light text-foreground">
+            🌕 Full Moons {year}
+          </h2>
+          <button
+            onClick={() => downloadAsImage(fullMoonsRef.current, `full-moons-${year}`)}
+            className="flex items-center gap-2 rounded-sm border border-border px-3 py-1.5 text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          >
+            <Download size={14} />
+            Download Image
+          </button>
+        </div>
         <p className="mb-4 text-sm text-muted-foreground">
           Exact times shown in Eastern Time (EST/EDT). Full Moon = Sun opposite Moon.
         </p>
@@ -523,10 +540,19 @@ export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
       </section>
 
       {/* New Moons Table */}
-      <section className="rounded-sm border border-border bg-background p-6">
-        <h2 className="mb-6 border-b border-border pb-4 font-serif text-2xl font-light text-foreground">
-          🌑 New Moons {year}
-        </h2>
+      <section ref={newMoonsRef} className="rounded-sm border border-border bg-background p-6">
+        <div className="mb-6 flex items-center justify-between border-b border-border pb-4">
+          <h2 className="font-serif text-2xl font-light text-foreground">
+            🌑 New Moons {year}
+          </h2>
+          <button
+            onClick={() => downloadAsImage(newMoonsRef.current, `new-moons-${year}`)}
+            className="flex items-center gap-2 rounded-sm border border-border px-3 py-1.5 text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          >
+            <Download size={14} />
+            Download Image
+          </button>
+        </div>
         <p className="mb-4 text-sm text-muted-foreground">
           Exact times shown in Eastern Time (EST/EDT). New Moon = Sun conjunct Moon.
         </p>
@@ -587,10 +613,19 @@ export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
       </section>
 
       {/* Quarter Moons Table */}
-      <section className="rounded-sm border border-border bg-background p-6">
-        <h2 className="mb-6 border-b border-border pb-4 font-serif text-2xl font-light text-foreground">
-          🌓 Quarter Moons {year}
-        </h2>
+      <section ref={quarterMoonsRef} className="rounded-sm border border-border bg-background p-6">
+        <div className="mb-6 flex items-center justify-between border-b border-border pb-4">
+          <h2 className="font-serif text-2xl font-light text-foreground">
+            🌓 Quarter Moons {year}
+          </h2>
+          <button
+            onClick={() => downloadAsImage(quarterMoonsRef.current, `quarter-moons-${year}`)}
+            className="flex items-center gap-2 rounded-sm border border-border px-3 py-1.5 text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          >
+            <Download size={14} />
+            Download Image
+          </button>
+        </div>
         <p className="mb-4 text-sm text-muted-foreground">
           First Quarter (🌓) = waxing half moon, time for action. Last Quarter (🌗) = waning half moon, time for release.
         </p>
@@ -655,10 +690,19 @@ export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
       </section>
 
       {/* Mercury Retrograde */}
-      <section className="rounded-sm border border-border bg-background p-6">
-        <h2 className="mb-6 border-b border-border pb-4 font-serif text-2xl font-light text-foreground">
-          ☿ Mercury Retrograde {year}
-        </h2>
+      <section ref={retrogradesRef} className="rounded-sm border border-border bg-background p-6">
+        <div className="mb-6 flex items-center justify-between border-b border-border pb-4">
+          <h2 className="font-serif text-2xl font-light text-foreground">
+            ☿ Mercury Retrograde {year}
+          </h2>
+          <button
+            onClick={() => downloadAsImage(retrogradesRef.current, `mercury-retrograde-${year}`)}
+            className="flex items-center gap-2 rounded-sm border border-border px-3 py-1.5 text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          >
+            <Download size={14} />
+            Download Image
+          </button>
+        </div>
         <p className="mb-4 text-sm text-muted-foreground">
           Mercury appears to move backward during these periods. Review, revise, reconnect—avoid
           major contracts or purchases.
