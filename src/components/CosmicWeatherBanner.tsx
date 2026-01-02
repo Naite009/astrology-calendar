@@ -25,6 +25,12 @@ interface ExactLunarPhase {
   supermoonSequence?: string;
 }
 
+interface PlanetPositionForAI {
+  name: string;
+  sign: string;
+  degree: number;
+}
+
 interface CosmicWeatherBannerProps {
   date: Date;
   moonPhase: MoonPhase;
@@ -35,6 +41,7 @@ interface CosmicWeatherBannerProps {
   nodeAspects: NodeAspect[];
   mercuryRetro: boolean;
   aspects: Aspect[];
+  planetPositions: PlanetPositionForAI[];
 }
 
 export const CosmicWeatherBanner = ({ 
@@ -46,7 +53,8 @@ export const CosmicWeatherBanner = ({
   rareAspects, 
   nodeAspects,
   mercuryRetro,
-  aspects
+  aspects,
+  planetPositions
 }: CosmicWeatherBannerProps) => {
   const [aiInsights, setAiInsights] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -81,6 +89,7 @@ export const CosmicWeatherBanner = ({
           nodeAspects,
           mercuryRetro,
           aspects,
+          planetPositions,
         }
       });
 

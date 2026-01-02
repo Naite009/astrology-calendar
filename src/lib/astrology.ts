@@ -312,23 +312,52 @@ const MOON_NAMES: Record<number, string> = {
 };
 
 // Get exact lunar phase time if New Moon, Full Moon, First Quarter, or Last Quarter occurs on this day
+// Uses Eastern timezone boundaries for day detection
 export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
   try {
-    const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(date);
-    endOfDay.setHours(23, 59, 59, 999);
+    // Create day boundaries in Eastern timezone
+    // Format the date as YYYY-MM-DD to get the calendar date being viewed
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDate();
+    
+    // Create start/end of day in Eastern timezone
+    // We need to find what UTC times correspond to midnight-midnight Eastern
+    const startOfDayET = new Date(Date.UTC(year, month, day, 5, 0, 0)); // 00:00 ET = 05:00 UTC (EST)
+    const endOfDayET = new Date(Date.UTC(year, month, day + 1, 4, 59, 59, 999)); // 23:59 ET = next day 04:59 UTC
+    
+    // Adjust for DST - check if the date is in DST
+    const testDate = new Date(year, month, day, 12, 0, 0);
+    const isDST = testDate.toLocaleString('en-US', { timeZone: 'America/New_York', hour: 'numeric', hour12: false }) !== 
+                  new Date(testDate.getTime()).toLocaleString('en-US', { timeZone: 'America/New_York', hour: 'numeric', hour12: false });
+    
+    // For simplicity, use a wider search window to catch events that might be on this day in ET
+    const searchStart = new Date(Date.UTC(year, month, day - 1, 0, 0, 0));
+    const searchEnd = new Date(Date.UTC(year, month, day + 2, 0, 0, 0));
+
+    // Helper to check if a date falls on the given calendar day in Eastern timezone
+    const isOnCalendarDay = (eventDate: Date): boolean => {
+      const etString = eventDate.toLocaleDateString('en-US', { 
+        timeZone: 'America/New_York',
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric'
+      });
+      const parts = etString.split('/');
+      const eventMonth = parseInt(parts[0], 10) - 1;
+      const eventDay = parseInt(parts[1], 10);
+      const eventYear = parseInt(parts[2], 10);
+      return eventYear === year && eventMonth === month && eventDay === day;
+    };
 
     // Search for New Moon (phase 0)
-    const newMoon = Astronomy.SearchMoonPhase(0, startOfDay, 1);
-    if (newMoon && newMoon.date >= startOfDay && newMoon.date <= endOfDay) {
+    const newMoon = Astronomy.SearchMoonPhase(0, searchStart, 4);
+    if (newMoon && isOnCalendarDay(newMoon.date)) {
       const moonPos = Astronomy.GeoMoon(newMoon.date);
       const ecliptic = Astronomy.Ecliptic(moonPos);
       const zodiac = longitudeToZodiac(ecliptic.elon);
-      const distance = moonPos.Length() * 149597870.7; // Convert AU to km
+      const distance = moonPos.Length() * 149597870.7;
       const isSupermoon = distance < 361000;
-      // Keep the exact event time as returned (UTC internally).
-      // We'll format it for America/New_York at render time to handle DST correctly.
 
       return {
         type: 'New Moon',
@@ -343,12 +372,12 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
     }
 
     // Search for Full Moon (phase 180)
-    const fullMoon = Astronomy.SearchMoonPhase(180, startOfDay, 1);
-    if (fullMoon && fullMoon.date >= startOfDay && fullMoon.date <= endOfDay) {
+    const fullMoon = Astronomy.SearchMoonPhase(180, searchStart, 4);
+    if (fullMoon && isOnCalendarDay(fullMoon.date)) {
       const moonPos = Astronomy.GeoMoon(fullMoon.date);
       const ecliptic = Astronomy.Ecliptic(moonPos);
       const zodiac = longitudeToZodiac(ecliptic.elon);
-      const distance = moonPos.Length() * 149597870.7; // Convert AU to km
+      const distance = moonPos.Length() * 149597870.7;
       const isSupermoon = distance < 361000;
       
       // Get Sun position at same moment to show opposition
@@ -359,8 +388,8 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
       // Check supermoon sequence
       let supermoonSequence = '';
       if (isSupermoon) {
-        const prevFullMoon = Astronomy.SearchMoonPhase(180, new Date(startOfDay.getTime() - 31 * 24 * 60 * 60 * 1000), 1);
-        const nextFullMoon = Astronomy.SearchMoonPhase(180, new Date(startOfDay.getTime() + 31 * 24 * 60 * 60 * 1000), 1);
+        const prevFullMoon = Astronomy.SearchMoonPhase(180, new Date(searchStart.getTime() - 31 * 24 * 60 * 60 * 1000), 4);
+        const nextFullMoon = Astronomy.SearchMoonPhase(180, new Date(fullMoon.date.getTime() + 1 * 24 * 60 * 60 * 1000), 4);
         
         const prevDistance = prevFullMoon ? Astronomy.GeoMoon(prevFullMoon.date).Length() * 149597870.7 : 999999;
         const nextDistance = nextFullMoon ? Astronomy.GeoMoon(nextFullMoon.date).Length() * 149597870.7 : 999999;
@@ -376,8 +405,6 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
           supermoonSequence = 'Part of supermoon sequence';
         }
       }
-      // Keep the exact event time as returned (UTC internally).
-      // We'll format it for America/New_York at render time to handle DST correctly.
 
       return {
         type: 'Full Moon',
@@ -395,8 +422,8 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
     }
 
     // Search for First Quarter (phase 90)
-    const firstQuarter = Astronomy.SearchMoonPhase(90, startOfDay, 1);
-    if (firstQuarter && firstQuarter.date >= startOfDay && firstQuarter.date <= endOfDay) {
+    const firstQuarter = Astronomy.SearchMoonPhase(90, searchStart, 4);
+    if (firstQuarter && isOnCalendarDay(firstQuarter.date)) {
       const moonPos = Astronomy.GeoMoon(firstQuarter.date);
       const ecliptic = Astronomy.Ecliptic(moonPos);
       const zodiac = longitudeToZodiac(ecliptic.elon);
@@ -415,8 +442,8 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
     }
 
     // Search for Last Quarter (phase 270)
-    const lastQuarter = Astronomy.SearchMoonPhase(270, startOfDay, 1);
-    if (lastQuarter && lastQuarter.date >= startOfDay && lastQuarter.date <= endOfDay) {
+    const lastQuarter = Astronomy.SearchMoonPhase(270, searchStart, 4);
+    if (lastQuarter && isOnCalendarDay(lastQuarter.date)) {
       const moonPos = Astronomy.GeoMoon(lastQuarter.date);
       const ecliptic = Astronomy.Ecliptic(moonPos);
       const zodiac = longitudeToZodiac(ecliptic.elon);
