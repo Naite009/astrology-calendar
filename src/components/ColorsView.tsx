@@ -8,6 +8,7 @@ import {
   getColorName,
   SIGN_PALETTES,
   SIGN_ELEMENTS,
+  TransitDetail,
 } from "@/lib/colorPalettes";
 import { NatalChart } from "@/hooks/useNatalChart";
 import {
@@ -35,6 +36,7 @@ export const ColorsView = ({ userNatalChart, onOpenNatalForm }: ColorsViewProps)
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [altPaletteIndex, setAltPaletteIndex] = useState(0);
+  const [personalAltIndex, setPersonalAltIndex] = useState(0);
   const [moreNeutral, setMoreNeutral] = useState(false);
   const [moreBold, setMoreBold] = useState(false);
 
@@ -87,8 +89,8 @@ export const ColorsView = ({ userNatalChart, onOpenNatalForm }: ColorsViewProps)
       .filter(([_, v]) => v)
       .map(([name, v]) => ({ name, sign: v!.sign }));
 
-    return getPersonalPalette(natalPositions, positions, { moreNeutral, moreBold });
-  }, [userNatalChart, positions, moreNeutral, moreBold]);
+    return getPersonalPalette(natalPositions, positions, { moreNeutral, moreBold, altPalette: personalAltIndex });
+  }, [userNatalChart, positions, moreNeutral, moreBold, personalAltIndex]);
 
   const copyToClipboard = (hex: string, index: number) => {
     navigator.clipboard.writeText(hex);
@@ -368,6 +370,13 @@ export const ColorsView = ({ userNatalChart, onOpenNatalForm }: ColorsViewProps)
                 Copy HEX
               </button>
               <button
+                onClick={() => setPersonalAltIndex((prev) => (prev + 1) % 3)}
+                className="flex items-center gap-2 px-3 py-2 text-xs border border-border rounded-md hover:bg-secondary transition-colors"
+              >
+                <Shuffle className="h-3.5 w-3.5" />
+                Alt Palette
+              </button>
+              <button
                 onClick={() => {
                   setMoreNeutral(!moreNeutral);
                   setMoreBold(false);
@@ -395,20 +404,41 @@ export const ColorsView = ({ userNatalChart, onOpenNatalForm }: ColorsViewProps)
               </button>
             </div>
 
-            {/* Transit Details */}
-            {personal.topTransits.length > 0 && (
+            {/* Transit Details - with full explanations */}
+            {personal.transitDetails && personal.transitDetails.length > 0 && (
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="transits">
-                  <AccordionTrigger className="text-sm">Transit Details</AccordionTrigger>
+                  <AccordionTrigger className="text-sm">What These Transits Mean</AccordionTrigger>
                   <AccordionContent>
-                    <ul className="space-y-2 text-sm text-muted-foreground">
-                      {personal.topTransits.map((t, i) => (
-                        <li key={i} className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-primary" />
-                          {t}
-                        </li>
+                    <div className="space-y-4">
+                      {personal.transitDetails.map((detail, i) => (
+                        <div key={i} className="p-3 rounded-md bg-secondary/50 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{
+                              detail.transitPlanet === 'Sun' ? '☉' :
+                              detail.transitPlanet === 'Moon' ? '☽' :
+                              detail.transitPlanet === 'Mercury' ? '☿' :
+                              detail.transitPlanet === 'Venus' ? '♀' :
+                              detail.transitPlanet === 'Mars' ? '♂' :
+                              detail.transitPlanet === 'Jupiter' ? '♃' :
+                              detail.transitPlanet === 'Saturn' ? '♄' : '★'
+                            }</span>
+                            <span className="font-medium text-foreground">
+                              {detail.transitPlanet} activates your {detail.natalPlanet}
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {detail.explanation}
+                          </p>
+                          <p className="text-xs text-primary italic">
+                            {detail.colorInfluence}
+                          </p>
+                        </div>
                       ))}
-                    </ul>
+                      <p className="text-xs text-muted-foreground italic pt-2">
+                        A transit "activates" your natal planet when the transiting planet moves through the same zodiac sign as your birth placement, bringing those themes to the forefront.
+                      </p>
+                    </div>
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
