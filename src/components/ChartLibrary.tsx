@@ -1,14 +1,50 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { X, Plus, Users, RefreshCw, Check } from 'lucide-react';
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
-import { getPlanetSymbol, calculateNatalChart } from '@/lib/astrology';
+import { getPlanetSymbol, calculateNatalChart, detectTimezoneFromLocation } from '@/lib/astrology';
 
 const ZODIAC_SIGNS = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
   'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
 ];
 
-const PLANETS = ['Sun', 'Moon', 'Ascendant', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'NorthNode'] as const;
+// Core planets plus points and asteroids
+const PLANETS = [
+  'Sun', 'Moon', 'Ascendant', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 
+  'Uranus', 'Neptune', 'Pluto', 'NorthNode', 'Chiron', 'Lilith', 
+  'Ceres', 'Pallas', 'Juno', 'Vesta'
+] as const;
+
+const PLANET_LABELS: Record<string, string> = {
+  NorthNode: 'North Node',
+  Lilith: 'Black ☽ Lilith',
+  Ceres: 'Ceres',
+  Pallas: 'Pallas',
+  Juno: 'Juno',
+  Vesta: 'Vesta',
+  Chiron: 'Chiron',
+};
+
+const PLANET_SYMBOLS: Record<string, string> = {
+  Sun: '☉',
+  Moon: '☽',
+  Mercury: '☿',
+  Venus: '♀',
+  Mars: '♂',
+  Jupiter: '♃',
+  Saturn: '♄',
+  Uranus: '♅',
+  Neptune: '♆',
+  Pluto: '♇',
+  Ascendant: 'ASC',
+  NorthNode: '☊',
+  Chiron: '⚷',
+  Lilith: '⚸',
+  Ceres: '⚳',
+  Pallas: '⚴',
+  Juno: '⚵',
+  Vesta: '⚶',
+};
 
 const TIMEZONE_OPTIONS = [
   { value: 0, label: 'UTC (0:00)' },
@@ -43,6 +79,7 @@ interface ChartFormData {
   birthTime: string;
   birthLocation: string;
   timezoneOffset: number;
+  detectedTimezone?: string;
   planets: Record<string, NatalPlanetPosition>;
 }
 
@@ -172,10 +209,27 @@ export const ChartLibrary = ({
   const calculateFromBirthData = () => {
     if (!formData.birthDate) return;
     
+    // Auto-detect timezone based on location and date
+    let detectedTz: string | undefined;
+    if (formData.birthLocation && formData.birthDate) {
+      const [year, month, day] = formData.birthDate.split('-').map(Number);
+      const tempDate = new Date(year, month - 1, day);
+      const detected = detectTimezoneFromLocation(formData.birthLocation, tempDate);
+      if (detected) {
+        detectedTz = detected.abbrev;
+        setFormData(prev => ({ 
+          ...prev, 
+          timezoneOffset: detected.offset,
+          detectedTimezone: detected.abbrev
+        }));
+      }
+    }
+    
     const calculatedPositions = calculateNatalChart(
       formData.birthDate, 
       formData.birthTime || '12:00',
-      formData.timezoneOffset
+      formData.timezoneOffset,
+      formData.birthLocation
     );
     
     setFormData(prev => ({
@@ -184,6 +238,7 @@ export const ChartLibrary = ({
         ...prev.planets,
         ...calculatedPositions,
       },
+      ...(detectedTz ? { detectedTimezone: detectedTz } : {}),
     }));
   };
 
@@ -359,23 +414,30 @@ export const ChartLibrary = ({
               <div className="border-t border-border pt-5">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground">Planet Positions</h3>
-                  <button
-                    onClick={calculateFromBirthData}
-                    disabled={!formData.birthDate}
-                    className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <RefreshCw size={12} />
-                    Calculate from birth data
-                  </button>
+                  <div className="flex items-center gap-4">
+                    {formData.detectedTimezone && (
+                      <span className="text-[10px] text-green-600 bg-green-100 px-2 py-1 rounded">
+                        Auto-detected: {formData.detectedTimezone}
+                      </span>
+                    )}
+                    <button
+                      onClick={calculateFromBirthData}
+                      disabled={!formData.birthDate}
+                      className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <RefreshCw size={12} />
+                      Calculate from birth data
+                    </button>
+                  </div>
                 </div>
                 <p className="text-[10px] text-muted-foreground italic mb-4">
-                  Click "Calculate" to auto-fill positions, then adjust if needed. Ascendant requires exact birth location.
+                  Click "Calculate" to auto-fill positions (timezone auto-detected from US cities). ℞ indicates retrograde. Ascendant requires exact location.
                 </p>
-                <div className="space-y-3">
+                <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
                   {PLANETS.map(planet => (
-                    <div key={planet} className="grid grid-cols-[40px_100px_1fr_80px_80px_80px] gap-2 items-center">
-                      <span className="text-lg">{getPlanetSymbol(planet.toLowerCase())}</span>
-                      <span className="text-sm text-foreground">{planet}</span>
+                    <div key={planet} className="grid grid-cols-[40px_110px_1fr_70px_70px_70px_30px] gap-2 items-center">
+                      <span className="text-lg">{PLANET_SYMBOLS[planet] || getPlanetSymbol(planet.toLowerCase())}</span>
+                      <span className="text-sm text-foreground">{PLANET_LABELS[planet] || planet}</span>
                       <select
                         value={formData.planets[planet]?.sign || ''}
                         onChange={e => updatePlanet(planet, 'sign', e.target.value)}
@@ -394,9 +456,9 @@ export const ChartLibrary = ({
                           placeholder="0"
                           value={formData.planets[planet]?.degree ?? ''}
                           onChange={e => updatePlanet(planet, 'degree', e.target.value)}
-                          className="w-full border border-border bg-background px-2 py-1.5 pr-6 text-sm text-center focus:border-primary focus:outline-none"
+                          className="w-full border border-border bg-background px-2 py-1.5 pr-5 text-sm text-center focus:border-primary focus:outline-none"
                         />
-                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">°</span>
+                        <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">°</span>
                       </div>
                       <div className="relative">
                         <input
@@ -406,9 +468,9 @@ export const ChartLibrary = ({
                           placeholder="0"
                           value={formData.planets[planet]?.minutes ?? ''}
                           onChange={e => updatePlanet(planet, 'minutes', e.target.value)}
-                          className="w-full border border-border bg-background px-2 py-1.5 pr-6 text-sm text-center focus:border-primary focus:outline-none"
+                          className="w-full border border-border bg-background px-2 py-1.5 pr-5 text-sm text-center focus:border-primary focus:outline-none"
                         />
-                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">′</span>
+                        <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">′</span>
                       </div>
                       <div className="relative">
                         <input
@@ -418,10 +480,13 @@ export const ChartLibrary = ({
                           placeholder="0"
                           value={formData.planets[planet]?.seconds ?? ''}
                           onChange={e => updatePlanet(planet, 'seconds', e.target.value)}
-                          className="w-full border border-border bg-background px-2 py-1.5 pr-6 text-sm text-center focus:border-primary focus:outline-none"
+                          className="w-full border border-border bg-background px-2 py-1.5 pr-5 text-sm text-center focus:border-primary focus:outline-none"
                         />
-                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">″</span>
+                        <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">″</span>
                       </div>
+                      <span className="text-sm text-amber-600 font-medium">
+                        {formData.planets[planet]?.isRetrograde ? '℞' : ''}
+                      </span>
                     </div>
                   ))}
                 </div>
