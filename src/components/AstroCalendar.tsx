@@ -322,6 +322,7 @@ export const AstroCalendar = () => {
         {viewMode === "colors" && (
           <ColorsView
             userNatalChart={userNatalChart}
+            savedCharts={savedCharts}
             onOpenNatalForm={() => setViewMode("charts")}
           />
         )}

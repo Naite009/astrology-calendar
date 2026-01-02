@@ -161,14 +161,51 @@ export interface TransitDetail {
   transitPlanet: string;
   natalPlanet: string;
   transitSign: string;
+  transitDegree: number;
+  natalSign: string;
+  natalDegree: number;
+  aspectType: string;
+  aspectSymbol: string;
+  orb: string;
   explanation: string;
   colorInfluence: string;
 }
 
-// Get personal palette based on natal chart + transits
+const ZODIAC_SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+
+// Convert sign + degree to absolute longitude (0-360)
+const toAbsoluteLongitude = (sign: string, degree: number, minutes: number = 0): number => {
+  const signIndex = ZODIAC_SIGNS.indexOf(sign);
+  if (signIndex === -1) return 0;
+  return signIndex * 30 + degree + (minutes / 60);
+};
+
+// Calculate aspect between two positions
+const calculateAspect = (lon1: number, lon2: number): { type: string; symbol: string; orb: number } | null => {
+  let diff = Math.abs(lon1 - lon2);
+  if (diff > 180) diff = 360 - diff;
+  
+  const aspects = [
+    { angle: 0, type: 'conjunction', symbol: '☌', orb: 8 },
+    { angle: 60, type: 'sextile', symbol: '⚹', orb: 6 },
+    { angle: 90, type: 'square', symbol: '□', orb: 8 },
+    { angle: 120, type: 'trine', symbol: '△', orb: 8 },
+    { angle: 180, type: 'opposition', symbol: '☍', orb: 8 },
+  ];
+  
+  for (const aspect of aspects) {
+    const orbDiff = Math.abs(diff - aspect.angle);
+    if (orbDiff <= aspect.orb) {
+      return { type: aspect.type, symbol: aspect.symbol, orb: orbDiff };
+    }
+  }
+  return null;
+};
+
+// Get personal palette based on natal chart + transits with actual aspect calculations
 export function getPersonalPalette(
-  natalPositions: Array<{ name: string; sign: string }>,
-  transitPositions: Array<{ name: string; sign: string }>,
+  natalPositions: Array<{ name: string; sign: string; degree?: number; minutes?: number }>,
+  transitPositions: Array<{ name: string; sign: string; degree?: number }>,
   preferences: { moreNeutral?: boolean; moreBold?: boolean; altPalette?: number } = {}
 ): {
   palette: string[];
@@ -192,30 +229,54 @@ export function getPersonalPalette(
     ...ascPalette.slice(0, 2),
   ].slice(0, 4);
 
-  // Find transits hitting natal planets
+  // Find transits making actual aspects to natal planets
   const topTransits: string[] = [];
   const transitDetails: TransitDetail[] = [];
   const transitAccents: string[] = [];
 
+  // Check each transit planet against each natal planet
   for (const transit of transitPositions) {
-    const natalHit = natalPositions.find((n) => n.sign === transit.sign && n.name !== transit.name);
-    if (natalHit) {
-      const transitKeyword = PLANET_KEYWORDS[transit.name] || transit.name;
-      const natalKeyword = PLANET_KEYWORDS[natalHit.name] || natalHit.name;
+    if (transit.degree === undefined) continue;
+    const transitLon = toAbsoluteLongitude(transit.sign, transit.degree);
+    
+    for (const natal of natalPositions) {
+      if (natal.degree === undefined || natal.name === transit.name) continue;
+      const natalLon = toAbsoluteLongitude(natal.sign, natal.degree, natal.minutes);
       
-      topTransits.push(`${transit.name} activates your ${natalHit.name}`);
-      transitDetails.push({
-        transitPlanet: transit.name,
-        natalPlanet: natalHit.name,
-        transitSign: transit.sign,
-        explanation: `Today's ${transit.name} (${transitKeyword}) is passing through ${transit.sign}, the same sign as your natal ${natalHit.name} (${natalKeyword}). This energizes themes of ${natalKeyword.split('/')[0]} in your life.`,
-        colorInfluence: `Adding ${transit.name} accent colors to your palette.`
-      });
-      
-      const accent = PLANET_ACCENTS[transit.name];
-      if (accent) transitAccents.push(accent[0]);
+      const aspect = calculateAspect(transitLon, natalLon);
+      if (aspect) {
+        const transitKeyword = PLANET_KEYWORDS[transit.name] || transit.name;
+        const natalKeyword = PLANET_KEYWORDS[natal.name] || natal.name;
+        
+        const aspectDesc = aspect.type === 'conjunction' ? 'joining with' :
+                          aspect.type === 'trine' ? 'flowing harmoniously to' :
+                          aspect.type === 'sextile' ? 'supporting' :
+                          aspect.type === 'square' ? 'challenging' :
+                          aspect.type === 'opposition' ? 'opposing' : 'aspecting';
+        
+        topTransits.push(`${transit.name} ${aspect.symbol} your ${natal.name} (${aspect.orb.toFixed(1)}° orb)`);
+        transitDetails.push({
+          transitPlanet: transit.name,
+          natalPlanet: natal.name,
+          transitSign: transit.sign,
+          transitDegree: transit.degree,
+          natalSign: natal.sign,
+          natalDegree: natal.degree,
+          aspectType: aspect.type,
+          aspectSymbol: aspect.symbol,
+          orb: aspect.orb.toFixed(1),
+          explanation: `Today's ${transit.name} at ${transit.degree}° ${transit.sign} (${transitKeyword}) is ${aspectDesc} your natal ${natal.name} at ${natal.degree}° ${natal.sign} (${natalKeyword}). This ${aspect.type} creates a ${aspect.orb.toFixed(1)}° orb aspect that energizes themes of ${natalKeyword.split('/')[0]} in your life.`,
+          colorInfluence: `Adding ${transit.name} accent colors to your palette.`
+        });
+        
+        const accent = PLANET_ACCENTS[transit.name];
+        if (accent) transitAccents.push(accent[0]);
+      }
     }
   }
+
+  // Sort by tightest orb (most exact aspects first)
+  transitDetails.sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb));
 
   // Add transit accents
   let palette = [...basePalette, ...transitAccents.slice(0, 2)];
@@ -257,11 +318,11 @@ export function getPersonalPalette(
   }
 
   const reasoning =
-    topTransits.length > 0
-      ? `Based on your natal Sun in ${natalSun?.sign || "?"}, Moon in ${natalMoon?.sign || "?"}, with today's transits activating your chart.`
-      : `Based on your natal Sun in ${natalSun?.sign || "?"} and Moon in ${natalMoon?.sign || "?"}. No major transits today.`;
+    transitDetails.length > 0
+      ? `Based on your natal Sun in ${natalSun?.sign || "?"}, Moon in ${natalMoon?.sign || "?"}, with ${transitDetails.length} active aspect${transitDetails.length > 1 ? 's' : ''} today.`
+      : `Based on your natal Sun in ${natalSun?.sign || "?"} and Moon in ${natalMoon?.sign || "?"}. No major aspects today.`;
 
-  return { palette, topTransits: topTransits.slice(0, 3), transitDetails: transitDetails.slice(0, 3), reasoning };
+  return { palette, topTransits: topTransits.slice(0, 4), transitDetails: transitDetails.slice(0, 5), reasoning };
 }
 
 // Simple desaturate (hex)
