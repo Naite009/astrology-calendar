@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock } from "lucide-react";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
 import { YearView } from "./YearView";
@@ -8,11 +8,14 @@ import { GuideView } from "./GuideView";
 import { MoonPhasesView } from "./MoonPhasesView";
 import { UserForm } from "./UserForm";
 import { DayDetail } from "./DayDetail";
+import { ChartLibrary } from "./ChartLibrary";
+import { BestTimesView } from "./BestTimesView";
 import { useUserData } from "@/hooks/useUserData";
 import { useNotes } from "@/hooks/useNotes";
+import { useNatalChart } from "@/hooks/useNatalChart";
 import { DayData, generateICalExport } from "@/lib/astrology";
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide";
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "best-times";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 0, 1)); // January 2026
@@ -21,6 +24,16 @@ export const AstroCalendar = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("month");
   const { userData, saveUserData } = useUserData();
   const { weekNotes, dayNotes, saveWeekNotes, saveDayNotes } = useNotes();
+  const {
+    userNatalChart,
+    savedCharts,
+    selectedChartForTiming,
+    saveUserNatalChart,
+    addChart,
+    updateChart,
+    deleteChart,
+    selectChartForTiming,
+  } = useNatalChart();
 
   const getWeekStart = (date: Date): Date => {
     const d = new Date(date);
@@ -68,6 +81,12 @@ export const AstroCalendar = () => {
   const getTitle = () => {
     if (viewMode === "guide") {
       return "Reference Guide";
+    }
+    if (viewMode === "charts") {
+      return "Chart Library";
+    }
+    if (viewMode === "best-times") {
+      return "Best Times";
     }
     if (viewMode === "moon-phases") {
       return `${currentDate.getFullYear()} Moon Phases`;
@@ -160,6 +179,28 @@ export const AstroCalendar = () => {
                 <Book size={14} />
                 Guide
               </button>
+              <button
+                onClick={() => setViewMode("charts")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "charts"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Users size={14} />
+                Charts
+              </button>
+              <button
+                onClick={() => setViewMode("best-times")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "best-times"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Clock size={14} />
+                Best Times
+              </button>
             </div>
 
             {userData && (
@@ -242,6 +283,26 @@ export const AstroCalendar = () => {
         {viewMode === "annual-tables" && <AnnualTables year={currentDate.getFullYear()} />}
 
         {viewMode === "guide" && <GuideView />}
+
+        {viewMode === "charts" && (
+          <ChartLibrary
+            userNatalChart={userNatalChart}
+            savedCharts={savedCharts}
+            onSaveUserChart={saveUserNatalChart}
+            onAddChart={addChart}
+            onUpdateChart={updateChart}
+            onDeleteChart={deleteChart}
+          />
+        )}
+
+        {viewMode === "best-times" && (
+          <BestTimesView
+            userNatalChart={userNatalChart}
+            savedCharts={savedCharts}
+            selectedChartForTiming={selectedChartForTiming}
+            setSelectedChartForTiming={selectChartForTiming}
+          />
+        )}
       </div>
 
       {/* User Form Modal */}
