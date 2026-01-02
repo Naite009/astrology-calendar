@@ -98,11 +98,14 @@ export interface ExactLunarPhase {
   type: 'New Moon' | 'Full Moon' | 'First Quarter' | 'Last Quarter';
   time: Date;
   position: string;
+  sign: string; // Moon's zodiac sign at exact moment
   emoji: string;
   name: string | null; // Traditional moon name (Wolf Moon, Snow Moon, etc.)
   isSupermoon: boolean;
   distance: number; // km
   supermoonSequence?: string;
+  sunPosition?: string; // Sun's position (for Full Moon opposition display)
+  sunSign?: string; // Sun's sign (for Full Moon opposition display)
 }
 
 export interface DayData {
@@ -259,6 +262,7 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
         type: 'New Moon',
         time: newMoon.date,
         position: zodiac.fullDegree,
+        sign: zodiac.signName,
         emoji: '🌑',
         name: MOON_NAMES[date.getMonth()],
         isSupermoon,
@@ -274,6 +278,11 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
       const zodiac = longitudeToZodiac(ecliptic.elon);
       const distance = moonPos.Length() * 149597870.7; // Convert AU to km
       const isSupermoon = distance < 361000;
+      
+      // Get Sun position at same moment to show opposition
+      const sunPos = Astronomy.GeoVector(Astronomy.Body.Sun, fullMoon.date, false);
+      const sunEcliptic = Astronomy.Ecliptic(sunPos);
+      const sunZodiac = longitudeToZodiac(sunEcliptic.elon);
       
       // Check supermoon sequence
       let supermoonSequence = '';
@@ -302,6 +311,9 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
         type: 'Full Moon',
         time: fullMoon.date,
         position: zodiac.fullDegree,
+        sign: zodiac.signName,
+        sunPosition: sunZodiac.fullDegree,
+        sunSign: sunZodiac.signName,
         emoji: '🌕',
         name: MOON_NAMES[date.getMonth()],
         isSupermoon,
@@ -322,6 +334,7 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
         type: 'First Quarter',
         time: firstQuarter.date,
         position: zodiac.fullDegree,
+        sign: zodiac.signName,
         emoji: '🌓',
         name: null,
         isSupermoon: false,
@@ -341,6 +354,7 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
         type: 'Last Quarter',
         time: lastQuarter.date,
         position: zodiac.fullDegree,
+        sign: zodiac.signName,
         emoji: '🌗',
         name: null,
         isSupermoon: false,
