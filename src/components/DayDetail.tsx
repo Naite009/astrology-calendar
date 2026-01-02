@@ -49,7 +49,7 @@ interface DayDetailProps {
 }
 
 export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
-  const { date, planets, moonPhase, mercuryRetro, personalTransits, majorIngresses, aspects, voc } = dayData;
+  const { date, planets, moonPhase, mercuryRetro, personalTransits, majorIngresses, aspects, voc, exactLunarPhase } = dayData;
   const colorExplanation = getColorExplanation(aspects || [], moonPhase);
 
   return (
@@ -68,6 +68,23 @@ export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
         <h2 className="font-serif text-2xl font-light text-foreground md:text-3xl mb-6">
           {date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
         </h2>
+
+        {/* Exact Lunar Phase Time - Highlighted */}
+        {exactLunarPhase && (
+          <div className="mb-6 p-4 rounded-sm bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700">
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">{exactLunarPhase.emoji}</span>
+              <div>
+                <div className="font-serif text-lg font-medium text-foreground">
+                  {exactLunarPhase.type} at {exactLunarPhase.time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} EST
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Position: {exactLunarPhase.position}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Why These Colors Section */}
         <ColorExplanationSection colorExplanation={colorExplanation} aspects={aspects} />

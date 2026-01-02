@@ -91,6 +91,13 @@ export interface DayColors {
   label: string;
 }
 
+export interface ExactLunarPhase {
+  type: 'New Moon' | 'Full Moon' | 'First Quarter' | 'Last Quarter';
+  time: Date;
+  position: string;
+  emoji: string;
+}
+
 export interface DayData {
   date: Date;
   planets: PlanetaryPositions;
@@ -98,6 +105,7 @@ export interface DayData {
   mercuryRetro: boolean;
   personalTransits: PersonalTransits;
   majorIngresses: Ingress[];
+  exactLunarPhase?: ExactLunarPhase | null;
   energy: EnergyRating;
   aspects: Aspect[];
   voc: VoidOfCourse;
@@ -204,6 +212,91 @@ export const getMoonPhase = (date: Date): MoonPhase => {
     illumination: illumination.phase_fraction,
   };
 };
+
+// Get exact lunar phase time if New Moon, Full Moon, First Quarter, or Last Quarter occurs on this day
+export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
+  try {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    // Search for New Moon (phase 0)
+    const newMoon = Astronomy.SearchMoonPhase(0, startOfDay, 1);
+    if (newMoon && newMoon.date >= startOfDay && newMoon.date <= endOfDay) {
+      const moonPos = Astronomy.GeoMoon(newMoon.date);
+      const ecliptic = Astronomy.Ecliptic(moonPos);
+      const zodiac = longitudeToZodiac(ecliptic.elon);
+      
+      // Convert to EST (UTC-5)
+      const estTime = new Date(newMoon.date.getTime() - (5 * 60 * 60 * 1000));
+      
+      return {
+        type: 'New Moon',
+        time: estTime,
+        position: zodiac.fullDegree,
+        emoji: '🌑'
+      };
+    }
+
+    // Search for Full Moon (phase 180)
+    const fullMoon = Astronomy.SearchMoonPhase(180, startOfDay, 1);
+    if (fullMoon && fullMoon.date >= startOfDay && fullMoon.date <= endOfDay) {
+      const moonPos = Astronomy.GeoMoon(fullMoon.date);
+      const ecliptic = Astronomy.Ecliptic(moonPos);
+      const zodiac = longitudeToZodiac(ecliptic.elon);
+      
+      // Convert to EST (UTC-5)
+      const estTime = new Date(fullMoon.date.getTime() - (5 * 60 * 60 * 1000));
+      
+      return {
+        type: 'Full Moon',
+        time: estTime,
+        position: zodiac.fullDegree,
+        emoji: '🌕'
+      };
+    }
+
+    // Search for First Quarter (phase 90)
+    const firstQuarter = Astronomy.SearchMoonPhase(90, startOfDay, 1);
+    if (firstQuarter && firstQuarter.date >= startOfDay && firstQuarter.date <= endOfDay) {
+      const moonPos = Astronomy.GeoMoon(firstQuarter.date);
+      const ecliptic = Astronomy.Ecliptic(moonPos);
+      const zodiac = longitudeToZodiac(ecliptic.elon);
+      
+      const estTime = new Date(firstQuarter.date.getTime() - (5 * 60 * 60 * 1000));
+      
+      return {
+        type: 'First Quarter',
+        time: estTime,
+        position: zodiac.fullDegree,
+        emoji: '🌓'
+      };
+    }
+
+    // Search for Last Quarter (phase 270)
+    const lastQuarter = Astronomy.SearchMoonPhase(270, startOfDay, 1);
+    if (lastQuarter && lastQuarter.date >= startOfDay && lastQuarter.date <= endOfDay) {
+      const moonPos = Astronomy.GeoMoon(lastQuarter.date);
+      const ecliptic = Astronomy.Ecliptic(moonPos);
+      const zodiac = longitudeToZodiac(ecliptic.elon);
+      
+      const estTime = new Date(lastQuarter.date.getTime() - (5 * 60 * 60 * 1000));
+      
+      return {
+        type: 'Last Quarter',
+        time: estTime,
+        position: zodiac.fullDegree,
+        emoji: '🌗'
+      };
+    }
+
+  } catch (error) {
+    console.error('Error finding exact lunar phase:', error);
+  }
+  
+  return null;
+}
 
 // Calculate aspects between two positions
 const calculateAspect = (lon1: number, lon2: number) => {
