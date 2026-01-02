@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-type GuideSection = "overview" | "colors" | "symbols" | "moonphases" | "retrogrades" | "aspects" | "dignities";
+type GuideSection = "overview" | "colors" | "symbols" | "moonphases" | "retrogrades" | "aspects" | "dignities" | "fixedstars" | "divinefeminine";
 
 const SymbolCard = ({ icon, name, desc }: { icon: string; name: string; desc: string }) => (
   <div className="rounded-sm border border-border bg-secondary p-4">
@@ -481,6 +481,260 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
       </>
     ),
   },
+  fixedstars: {
+    title: "Fixed Stars",
+    content: (
+      <>
+        <p>
+          Fixed stars are distant suns that move so slowly through the zodiac (about 1° per 72 years) 
+          that they appear "fixed" in the sky. When planets conjunct these powerful points, 
+          their energy is activated.
+        </p>
+        
+        <h3>The Royal Stars (Guardians of the Sky)</h3>
+        <p>Four stars marking the four corners of the heavens in ancient Persian astrology:</p>
+        
+        <div className="mt-4 grid gap-4">
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">⭐</span>
+              <span className="font-semibold text-foreground">Aldebaran (9° Gemini)</span>
+              <span className="text-xs text-muted-foreground">Guardian of the East</span>
+            </div>
+            <div className="text-sm text-muted-foreground leading-relaxed">
+              The Bull's Eye. Integrity, honor, eloquence. "Success through integrity." Military honors, courage, passion for truth.
+            </div>
+          </div>
+          
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">⭐</span>
+              <span className="font-semibold text-foreground">Regulus (29° Leo)</span>
+              <span className="text-xs text-muted-foreground">Guardian of the North</span>
+            </div>
+            <div className="text-sm text-muted-foreground leading-relaxed">
+              Heart of the Lion. Royal power, leadership, fame, success. "Success if revenge is avoided." Military honors, nobility, positions of power.
+            </div>
+          </div>
+          
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">⭐</span>
+              <span className="font-semibold text-foreground">Antares (9° Sagittarius)</span>
+              <span className="text-xs text-muted-foreground">Guardian of the West</span>
+            </div>
+            <div className="text-sm text-muted-foreground leading-relaxed">
+              Rival of Mars. Warrior spirit, obsession, intensity. Success through persistence. Heart of the Scorpion. Passionate and powerful.
+            </div>
+          </div>
+          
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">⭐</span>
+              <span className="font-semibold text-foreground">Fomalhaut (3° Pisces)</span>
+              <span className="text-xs text-muted-foreground">Guardian of the South</span>
+            </div>
+            <div className="text-sm text-muted-foreground leading-relaxed">
+              The Mouth of the Fish. Idealism, mysticism, fame. The "fallen angel" star—potential for both rise and fall. Charisma, magic, spiritual power.
+            </div>
+          </div>
+        </div>
+        
+        <h3>Other Major Fixed Stars</h3>
+        <div className="mt-4 grid gap-4">
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">⭐</span>
+              <span className="font-semibold text-foreground">Sirius (14° Cancer)</span>
+              <span className="text-xs text-amber-600 dark:text-amber-400">Brightest Star</span>
+            </div>
+            <div className="text-sm text-muted-foreground leading-relaxed">
+              The Dog Star. Spiritual wisdom, success, fame. Ancient Egyptian sacred star marking the New Year. Divine downloads, kundalini awakening, connection to higher consciousness.
+            </div>
+          </div>
+          
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">⭐</span>
+              <span className="font-semibold text-foreground">Algol (26° Taurus)</span>
+              <span className="text-xs text-red-600 dark:text-red-400">Most Infamous</span>
+            </div>
+            <div className="text-sm text-muted-foreground leading-relaxed">
+              Medusa's Head. Transformation through facing shadow. Feminine rage transmuted to power. Losing one's head, then reclaiming it. Passion, intensity.
+            </div>
+          </div>
+          
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">⭐</span>
+              <span className="font-semibold text-foreground">Spica (23° Libra)</span>
+              <span className="text-xs text-green-600 dark:text-green-400">Most Benefic</span>
+            </div>
+            <div className="text-sm text-muted-foreground leading-relaxed">
+              The Wheat Sheaf. Gifts, talents, protection. Venus-Jupiter nature. Artistic success, harvest of efforts. Spiritual gifts, mystical knowledge. The priestess star.
+            </div>
+          </div>
+          
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">⭐</span>
+              <span className="font-semibold text-foreground">Alcyone (0° Gemini)</span>
+              <span className="text-xs text-purple-600 dark:text-purple-400">Pleiades</span>
+            </div>
+            <div className="text-sm text-muted-foreground leading-relaxed">
+              Central star of the Seven Sisters. Vision, mysticism, grief. Something to cry about. Ambition, mourning. Connection to ancient star wisdom.
+            </div>
+          </div>
+        </div>
+        
+        <h3>How Fixed Stars Work</h3>
+        <div className="mt-4 p-4 rounded-sm bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-700">
+          <ul className="space-y-2">
+            <li><strong>Orb:</strong> Fixed stars use tight orbs (1-2°). A planet must be very close to activate the star.</li>
+            <li><strong>Conjunction only:</strong> Traditionally, only conjunctions matter for fixed stars.</li>
+            <li><strong>Your calendar shows:</strong> When planets transit near major fixed stars, activating their energy.</li>
+            <li><strong>Natal chart:</strong> Check if you have natal planets conjunct fixed stars for lifelong themes.</li>
+          </ul>
+        </div>
+      </>
+    ),
+  },
+  divinefeminine: {
+    title: "Divine Feminine Bodies",
+    content: (
+      <>
+        <p>
+          Beyond the traditional planets, astrologers work with additional celestial bodies that 
+          represent different facets of the feminine divine, healing, and destiny.
+        </p>
+        
+        <h3>☊☋ Lunar Nodes (North & South)</h3>
+        <div className="mt-4 mb-6 grid gap-4 sm:grid-cols-2">
+          <div className="rounded-sm border border-border bg-green-50 dark:bg-green-900/30 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">☊</span>
+              <span className="font-semibold text-foreground">North Node</span>
+            </div>
+            <div className="text-sm text-muted-foreground leading-relaxed">
+              Your destiny point. Where you're headed in this lifetime. Growth, evolution, future direction. 
+              Feels uncomfortable but rewarding. Life purpose and soul growth.
+            </div>
+          </div>
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">☋</span>
+              <span className="font-semibold text-foreground">South Node</span>
+            </div>
+            <div className="text-sm text-muted-foreground leading-relaxed">
+              Past life skills and comfort zone. What you've already mastered. Can become a crutch. 
+              Release attachment here to grow toward North Node.
+            </div>
+          </div>
+        </div>
+        
+        <h3>⚷ Chiron — The Wounded Healer</h3>
+        <p>
+          A comet between Saturn and Uranus, Chiron represents our deepest wound and our greatest 
+          healing gift. Where Chiron falls in your chart shows where you've been wounded—and where 
+          you can heal others once you've done your own healing work.
+        </p>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="bg-primary text-primary-foreground">
+                <th className="p-3 text-left font-semibold">Chiron in Sign</th>
+                <th className="p-3 text-left font-semibold">The Wound & The Healing</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="bg-background border-b border-border">
+                <td className="p-3 font-medium">♈ Aries</td>
+                <td className="p-3 text-muted-foreground">Wound: Identity, self-assertion. Healing: Courage to be yourself.</td>
+              </tr>
+              <tr className="bg-secondary border-b border-border">
+                <td className="p-3 font-medium">♉ Taurus</td>
+                <td className="p-3 text-muted-foreground">Wound: Self-worth, security. Healing: Grounding, valuing yourself.</td>
+              </tr>
+              <tr className="bg-background border-b border-border">
+                <td className="p-3 font-medium">♊ Gemini</td>
+                <td className="p-3 text-muted-foreground">Wound: Communication, learning. Healing: Finding your voice.</td>
+              </tr>
+              <tr className="bg-secondary border-b border-border">
+                <td className="p-3 font-medium">♋ Cancer</td>
+                <td className="p-3 text-muted-foreground">Wound: Family, belonging. Healing: Nurturing self and others.</td>
+              </tr>
+              <tr className="bg-background border-b border-border">
+                <td className="p-3 font-medium">♌ Leo</td>
+                <td className="p-3 text-muted-foreground">Wound: Self-expression, recognition. Healing: Authentic creativity.</td>
+              </tr>
+              <tr className="bg-secondary border-b border-border">
+                <td className="p-3 font-medium">♍ Virgo</td>
+                <td className="p-3 text-muted-foreground">Wound: Perfectionism, health. Healing: Accepting imperfection.</td>
+              </tr>
+              <tr className="bg-background border-b border-border">
+                <td className="p-3 font-medium">♎ Libra</td>
+                <td className="p-3 text-muted-foreground">Wound: Relationships, fairness. Healing: Healthy boundaries.</td>
+              </tr>
+              <tr className="bg-secondary border-b border-border">
+                <td className="p-3 font-medium">♏ Scorpio</td>
+                <td className="p-3 text-muted-foreground">Wound: Trust, intimacy. Healing: Deep emotional healing.</td>
+              </tr>
+              <tr className="bg-background border-b border-border">
+                <td className="p-3 font-medium">♐ Sagittarius</td>
+                <td className="p-3 text-muted-foreground">Wound: Meaning, truth. Healing: Faith, philosophical understanding.</td>
+              </tr>
+              <tr className="bg-secondary border-b border-border">
+                <td className="p-3 font-medium">♑ Capricorn</td>
+                <td className="p-3 text-muted-foreground">Wound: Authority, achievement. Healing: Building from wounds.</td>
+              </tr>
+              <tr className="bg-background border-b border-border">
+                <td className="p-3 font-medium">♒ Aquarius</td>
+                <td className="p-3 text-muted-foreground">Wound: Belonging, uniqueness. Healing: Embracing difference.</td>
+              </tr>
+              <tr className="bg-secondary">
+                <td className="p-3 font-medium">♓ Pisces</td>
+                <td className="p-3 text-muted-foreground">Wound: Boundaries, escapism. Healing: Compassion, mystical connection.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <h3>⚸ Black Moon Lilith — The Wild Feminine</h3>
+        <p>
+          Black Moon Lilith is not a planet but a mathematical point—the lunar apogee (Moon's 
+          farthest point from Earth). She represents the wild, untamed feminine, sexuality, 
+          and the parts of ourselves we've been taught to suppress.
+        </p>
+        <div className="mt-4 p-4 rounded-sm bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-700">
+          <div className="font-semibold text-foreground mb-2">Lilith Themes by Sign</div>
+          <div className="grid gap-2 text-sm">
+            <div><strong>♈ Aries:</strong> Wild independence. Power through fierce autonomy.</div>
+            <div><strong>♉ Taurus:</strong> Sensual sovereignty. Body as temple.</div>
+            <div><strong>♊ Gemini:</strong> Voice as weapon. Speaking dangerous truths.</div>
+            <div><strong>♋ Cancer:</strong> Primal mother. Raw emotional intensity.</div>
+            <div><strong>♌ Leo:</strong> Creative fury. Shameless self-expression.</div>
+            <div><strong>♍ Virgo:</strong> Perfect imperfection. Sacred service.</div>
+            <div><strong>♎ Libra:</strong> Relationship rebel. Authentic partnership.</div>
+            <div><strong>♏ Scorpio:</strong> Sexual power. Transformative intensity.</div>
+            <div><strong>♐ Sagittarius:</strong> Wild freedom. Untamed spirit.</div>
+            <div><strong>♑ Capricorn:</strong> Authority defiance. Building your empire.</div>
+            <div><strong>♒ Aquarius:</strong> Radical uniqueness. Revolutionary change.</div>
+            <div><strong>♓ Pisces:</strong> Mystic wild. Spiritual rebellion.</div>
+          </div>
+        </div>
+        
+        <h3>Working with Divine Feminine Energy</h3>
+        <div className="mt-4 p-4 rounded-sm bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-700">
+          <ul className="space-y-2">
+            <li><strong>North Node transits:</strong> Major life direction themes activated. Pay attention to destiny opportunities.</li>
+            <li><strong>Chiron transits:</strong> Healing crises and opportunities. Old wounds resurface for healing.</li>
+            <li><strong>Lilith transits:</strong> Reclaiming suppressed parts of self. Rage, sexuality, power emerging.</li>
+            <li><strong>Stelliums:</strong> When 3+ planets gather in one sign, that sign's themes dominate.</li>
+          </ul>
+        </div>
+      </>
+    ),
+  },
 };
 
 const NAV_ITEMS: { key: GuideSection; label: string }[] = [
@@ -491,6 +745,8 @@ const NAV_ITEMS: { key: GuideSection; label: string }[] = [
   { key: "retrogrades", label: "Retrogrades" },
   { key: "aspects", label: "Aspects" },
   { key: "dignities", label: "Dignities" },
+  { key: "fixedstars", label: "Fixed Stars" },
+  { key: "divinefeminine", label: "Divine Feminine" },
 ];
 
 export const GuideView = () => {
