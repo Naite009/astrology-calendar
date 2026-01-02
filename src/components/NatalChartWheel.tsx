@@ -43,13 +43,20 @@ const toAbsoluteLongitude = (sign: string, degree: number, minutes: number = 0):
 };
 
 // Convert longitude to SVG angle (with Ascendant at 9 o'clock)
+const normalizeAngle = (deg: number) => ((deg % 360) + 360) % 360;
+
 const longitudeToAngle = (longitude: number, ascendantLongitude: number): number => {
+  // We work in SVG-angle space where:
+  // 0° = 3 o'clock, 90° = 6 o'clock, 180° = 9 o'clock, 270° = 12 o'clock.
+  // Zodiac longitudes increase counter-clockwise, so we subtract them.
+
   // Ascendant should be at 180° (9 o'clock position)
   const relative = longitude - ascendantLongitude;
-  const normalized = ((relative % 360) + 360) % 360;
-  // In SVG, 0° is at 3 o'clock, goes clockwise
-  // We want Ascendant at 9 o'clock (180°) and counter-clockwise zodiac
-  return 180 - normalized;
+  const normalized = normalizeAngle(relative);
+
+  // In SVG, increasing angles move clockwise (because +Y points down).
+  // So to render zodiac counter-clockwise, we flip the direction.
+  return normalizeAngle(180 - normalized);
 };
 
 // Get coordinates on circle
@@ -217,16 +224,16 @@ export const NatalChartWheel = ({
     const sorted = [...planets].sort((a, b) => a.longitude - b.longitude);
     
     sorted.forEach(planet => {
-      let displayAngle = longitudeToAngle(planet.longitude, ascendantLongitude);
-      
+      let displayAngle = normalizeAngle(longitudeToAngle(planet.longitude, ascendantLongitude));
+
       // Check for overlaps and adjust
       for (const placed of positioned) {
         const diff = Math.abs(displayAngle - placed.displayAngle);
         if (diff < minGap || (360 - diff) < minGap) {
-          displayAngle += minGap;
+          displayAngle = normalizeAngle(displayAngle + minGap);
         }
       }
-      
+
       positioned.push({
         ...planet,
         displayAngle,
@@ -253,26 +260,38 @@ export const NatalChartWheel = ({
         
         {/* Zodiac ring background segments */}
         {ZODIAC_SIGNS.map((sign, i) => {
-          const startAngle = longitudeToAngle(i * 30, ascendantLongitude);
-          const endAngle = longitudeToAngle((i + 1) * 30, ascendantLongitude);
-          
+          // Draw each 30° slice in the *clockwise* direction so SVG arc flags stay simple,
+          // while the zodiac itself is still oriented correctly by longitudeToAngle().
+          const startAngle = longitudeToAngle((i + 1) * 30, ascendantLongitude);
+          const endAngle = longitudeToAngle(i * 30, ascendantLongitude);
+
           const start1 = getPointOnCircle(cx, cy, zodiacOuterRadius, startAngle);
           const end1 = getPointOnCircle(cx, cy, zodiacOuterRadius, endAngle);
           const start2 = getPointOnCircle(cx, cy, zodiacInnerRadius, startAngle);
           const end2 = getPointOnCircle(cx, cy, zodiacInnerRadius, endAngle);
-          
+
           // Determine fill based on element
-          const fillOpacity = sign.element === 'fire' ? '0.15' : 
-                              sign.element === 'earth' ? '0.1' : 
-                              sign.element === 'air' ? '0.05' : '0.12';
-          const fillHue = sign.element === 'fire' ? '15' : 
-                          sign.element === 'earth' ? '90' : 
-                          sign.element === 'air' ? '200' : '240';
-          
+          const fillOpacity =
+            sign.element === 'fire'
+              ? '0.15'
+              : sign.element === 'earth'
+                ? '0.1'
+                : sign.element === 'air'
+                  ? '0.05'
+                  : '0.12';
+          const fillHue =
+            sign.element === 'fire'
+              ? '15'
+              : sign.element === 'earth'
+                ? '90'
+                : sign.element === 'air'
+                  ? '200'
+                  : '240';
+
           return (
             <g key={sign.name}>
               <path
-                d={`M ${start1.x} ${start1.y} A ${zodiacOuterRadius} ${zodiacOuterRadius} 0 0 0 ${end1.x} ${end1.y} L ${end2.x} ${end2.y} A ${zodiacInnerRadius} ${zodiacInnerRadius} 0 0 1 ${start2.x} ${start2.y} Z`}
+                d={`M ${start1.x} ${start1.y} A ${zodiacOuterRadius} ${zodiacOuterRadius} 0 0 1 ${end1.x} ${end1.y} L ${end2.x} ${end2.y} A ${zodiacInnerRadius} ${zodiacInnerRadius} 0 0 0 ${start2.x} ${start2.y} Z`}
                 fill={`hsla(${fillHue}, 60%, 50%, ${fillOpacity})`}
                 stroke="hsl(var(--border))"
                 strokeWidth="0.5"
@@ -285,7 +304,7 @@ export const NatalChartWheel = ({
         {ZODIAC_SIGNS.map((sign, i) => {
           const midAngle = longitudeToAngle(i * 30 + 15, ascendantLongitude);
           const pos = getPointOnCircle(cx, cy, (zodiacOuterRadius + zodiacInnerRadius) / 2, midAngle);
-          
+
           return (
             <text
               key={`sign-${sign.name}`}
