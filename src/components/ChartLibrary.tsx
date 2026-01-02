@@ -8,7 +8,25 @@ const ZODIAC_SIGNS = [
   'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
 ];
 
-const PLANETS = ['Sun', 'Moon', 'Ascendant', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'] as const;
+const PLANETS = ['Sun', 'Moon', 'Ascendant', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'NorthNode'] as const;
+
+const TIMEZONE_OPTIONS = [
+  { value: 0, label: 'UTC (0:00)' },
+  { value: -5, label: 'EST (UTC-5)' },
+  { value: -4, label: 'EDT (UTC-4)' },
+  { value: -6, label: 'CST (UTC-6)' },
+  { value: -5, label: 'CDT (UTC-5)' },
+  { value: -7, label: 'MST (UTC-7)' },
+  { value: -6, label: 'MDT (UTC-6)' },
+  { value: -8, label: 'PST (UTC-8)' },
+  { value: -7, label: 'PDT (UTC-7)' },
+  { value: 1, label: 'CET (UTC+1)' },
+  { value: 2, label: 'CEST (UTC+2)' },
+  { value: 5.5, label: 'IST (UTC+5:30)' },
+  { value: 8, label: 'CST China (UTC+8)' },
+  { value: 9, label: 'JST (UTC+9)' },
+  { value: 10, label: 'AEST (UTC+10)' },
+];
 
 interface ChartLibraryProps {
   userNatalChart: NatalChart | null;
@@ -24,6 +42,7 @@ interface ChartFormData {
   birthDate: string;
   birthTime: string;
   birthLocation: string;
+  timezoneOffset: number;
   planets: Record<string, NatalPlanetPosition>;
 }
 
@@ -49,6 +68,7 @@ export const ChartLibrary = ({
     birthDate: '',
     birthTime: '',
     birthLocation: '',
+    timezoneOffset: -5, // Default to EST
     planets: emptyPlanets(),
   });
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
@@ -110,6 +130,7 @@ export const ChartLibrary = ({
         birthDate: '',
         birthTime: '',
         birthLocation: '',
+        timezoneOffset: -5,
         planets: emptyPlanets(),
       });
     } else if (chart === 'user' && userNatalChart) {
@@ -118,6 +139,7 @@ export const ChartLibrary = ({
         birthDate: userNatalChart.birthDate,
         birthTime: userNatalChart.birthTime,
         birthLocation: userNatalChart.birthLocation,
+        timezoneOffset: userNatalChart.timezoneOffset ?? -5,
         planets: userNatalChart.planets as Record<string, NatalPlanetPosition>,
       });
     } else if (typeof chart === 'object') {
@@ -126,6 +148,7 @@ export const ChartLibrary = ({
         birthDate: chart.birthDate,
         birthTime: chart.birthTime,
         birthLocation: chart.birthLocation,
+        timezoneOffset: chart.timezoneOffset ?? -5,
         planets: chart.planets as Record<string, NatalPlanetPosition>,
       });
     }
@@ -149,7 +172,11 @@ export const ChartLibrary = ({
   const calculateFromBirthData = () => {
     if (!formData.birthDate) return;
     
-    const calculatedPositions = calculateNatalChart(formData.birthDate, formData.birthTime || '12:00');
+    const calculatedPositions = calculateNatalChart(
+      formData.birthDate, 
+      formData.birthTime || '12:00',
+      formData.timezoneOffset
+    );
     
     setFormData(prev => ({
       ...prev,
@@ -306,12 +333,24 @@ export const ChartLibrary = ({
                   />
                 </div>
                 <div className="space-y-2">
+                  <label className="block text-[11px] uppercase tracking-widest text-muted-foreground">Timezone at Birth</label>
+                  <select
+                    value={formData.timezoneOffset}
+                    onChange={e => setFormData({ ...formData, timezoneOffset: Number(e.target.value) })}
+                    className="w-full border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                  >
+                    {TIMEZONE_OPTIONS.map((tz, i) => (
+                      <option key={`${tz.value}-${i}`} value={tz.value}>{tz.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2 col-span-2">
                   <label className="block text-[11px] uppercase tracking-widest text-muted-foreground">Birth Location</label>
                   <input
                     type="text"
                     value={formData.birthLocation}
                     onChange={e => setFormData({ ...formData, birthLocation: e.target.value })}
-                    placeholder="City, Country"
+                    placeholder="City, Country (for reference)"
                     className="w-full border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
                   />
                 </div>

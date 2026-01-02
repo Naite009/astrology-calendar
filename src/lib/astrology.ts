@@ -149,12 +149,16 @@ export const longitudeToZodiac = (longitude: number): ZodiacPosition => {
   };
 };
 
-// Calculate North and South Node positions (Mean Node)
+// Calculate North and South Node positions (Mean Node - more accurate formula)
 export const getNodePositions = (date: Date): { north: ExtendedZodiacPosition; south: ExtendedZodiacPosition } => {
-  const d = (date.getTime() - new Date('2000-01-01T12:00:00Z').getTime()) / (1000 * 60 * 60 * 24);
-  const meanNode = 125.04452 - 0.0529921 * d; // degrees
+  // Julian centuries from J2000.0
+  const jd = date.getTime() / 86400000 + 2440587.5;
+  const T = (jd - 2451545.0) / 36525;
   
-  const normalizedNode = ((meanNode % 360) + 360) % 360;
+  // Mean longitude of ascending node (more accurate formula from Meeus)
+  const omega = 125.04452 - 1934.136261 * T + 0.0020708 * T * T + T * T * T / 450000;
+  
+  const normalizedNode = ((omega % 360) + 360) % 360;
   const northNode = longitudeToZodiac(normalizedNode);
   
   const southNodeLon = (normalizedNode + 180) % 360;
@@ -164,6 +168,15 @@ export const getNodePositions = (date: Date): { north: ExtendedZodiacPosition; s
     north: { ...northNode, longitude: normalizedNode, planetSymbol: '☊', name: 'North Node' },
     south: { ...southNode, longitude: southNodeLon, planetSymbol: '☋', name: 'South Node' }
   };
+};
+
+// Get detailed North Node position for natal chart
+export const getDetailedNodePosition = (date: Date): { sign: string; degree: number; minutes: number; seconds: number } => {
+  const jd = date.getTime() / 86400000 + 2440587.5;
+  const T = (jd - 2451545.0) / 36525;
+  const omega = 125.04452 - 1934.136261 * T + 0.0020708 * T * T + T * T * T / 450000;
+  const normalizedNode = ((omega % 360) + 360) % 360;
+  return getDetailedPosition(normalizedNode);
 };
 
 // Calculate Chiron position (approximation - for accurate positions would need Swiss Ephemeris)
@@ -218,14 +231,21 @@ export const getDetailedPosition = (longitude: number): { sign: string; degree: 
   };
 };
 
-// Calculate natal chart positions from birth date/time
-export const calculateNatalChart = (birthDate: string, birthTime: string): Record<string, { sign: string; degree: number; minutes: number; seconds: number }> => {
+// Calculate natal chart positions from birth date/time with timezone offset
+export const calculateNatalChart = (
+  birthDate: string, 
+  birthTime: string,
+  timezoneOffsetHours: number = 0 // e.g., -5 for EST, -8 for PST
+): Record<string, { sign: string; degree: number; minutes: number; seconds: number }> => {
   // Parse date and time
   const [year, month, day] = birthDate.split('-').map(Number);
   const [hours, minutes] = birthTime ? birthTime.split(':').map(Number) : [12, 0];
   
-  // Create date object (treating as UTC for simplicity - location-based adjustment would need proper geocoding)
-  const date = new Date(Date.UTC(year, month - 1, day, hours, minutes, 0));
+  // Convert local time to UTC by subtracting the timezone offset
+  // If someone was born at 10:00 AM in EST (-5), that's 15:00 UTC
+  const utcHours = hours - timezoneOffsetHours;
+  
+  const date = new Date(Date.UTC(year, month - 1, day, utcHours, minutes, 0));
   
   const getPosition = (body: Astronomy.Body): { sign: string; degree: number; minutes: number; seconds: number } => {
     try {
@@ -242,7 +262,7 @@ export const calculateNatalChart = (birthDate: string, birthTime: string): Recor
     }
   };
 
-  const nodes = getNodePositions(date);
+  const northNode = getDetailedNodePosition(date);
   
   return {
     Sun: getPosition(Astronomy.Body.Sun),
@@ -255,7 +275,8 @@ export const calculateNatalChart = (birthDate: string, birthTime: string): Recor
     Uranus: getPosition(Astronomy.Body.Uranus),
     Neptune: getPosition(Astronomy.Body.Neptune),
     Pluto: getPosition(Astronomy.Body.Pluto),
-    Ascendant: { sign: 'Aries', degree: 0, minutes: 0, seconds: 0 }, // Would need location for accurate calculation
+    NorthNode: northNode,
+    Ascendant: { sign: '', degree: 0, minutes: 0, seconds: 0 }, // Requires exact lat/long - user should enter manually
   };
 };
 
@@ -932,6 +953,7 @@ export const getPlanetSymbol = (planetName: string): string => {
     neptune: '♆',
     pluto: '♇',
     ascendant: 'ASC',
+    northnode: '☊',
   };
   return symbols[planetName] || planetName;
 };

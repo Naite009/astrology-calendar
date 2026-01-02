@@ -13,6 +13,7 @@ export interface NatalChart {
   birthDate: string;
   birthTime: string;
   birthLocation: string;
+  timezoneOffset?: number; // hours offset from UTC (e.g., -5 for EST)
   planets: {
     Sun?: NatalPlanetPosition;
     Moon?: NatalPlanetPosition;
@@ -25,6 +26,7 @@ export interface NatalChart {
     Uranus?: NatalPlanetPosition;
     Neptune?: NatalPlanetPosition;
     Pluto?: NatalPlanetPosition;
+    NorthNode?: NatalPlanetPosition;
   };
 }
 
