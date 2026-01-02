@@ -122,7 +122,7 @@ export const calculateBestTimes = (
     const transitPlanets = getPlanetaryPositions(currentDate);
     const moonPhase = getMoonPhase(currentDate);
 
-    // Check transits to natal planets
+    // For personalized charts: Check transits to natal planets
     if (natalChart && natalChart.planets) {
       rules.natalPlanetsToCheck.forEach(natalPlanetName => {
         const natalPos = natalChart.planets[natalPlanetName as keyof typeof natalChart.planets];
@@ -142,9 +142,78 @@ export const calculateBestTimes = (
           }
         });
       });
+    } else {
+      // COLLECTIVE ASTROLOGY: Use current planetary transits and aspects between them
+      
+      // Check if Venus is in a favorable sign for love/beauty
+      if ((category === 'love' || category === 'beauty') && rules.favorableSigns.includes(transitPlanets.venus.signName)) {
+        score += 20;
+        reasons.push(`Venus in ${transitPlanets.venus.signName}`);
+      }
+      
+      // Check if Jupiter is in a favorable sign for finance/travel
+      if ((category === 'finance' || category === 'travel') && rules.favorableSigns.includes(transitPlanets.jupiter.signName)) {
+        score += 20;
+        reasons.push(`Jupiter in ${transitPlanets.jupiter.signName}`);
+      }
+      
+      // Check if Mars is in a favorable sign for health/career
+      if ((category === 'health' || category === 'career') && rules.favorableSigns.includes(transitPlanets.mars.signName)) {
+        score += 20;
+        reasons.push(`Mars in ${transitPlanets.mars.signName}`);
+      }
+      
+      // Check Sun position for career
+      if (category === 'career' && rules.favorableSigns.includes(transitPlanets.sun.signName)) {
+        score += 15;
+        reasons.push(`Sun in ${transitPlanets.sun.signName}`);
+      }
+      
+      // Check aspects between transiting planets (collective energy)
+      const venusLon = ZODIAC_SIGNS.indexOf(transitPlanets.venus.signName) * 30 + transitPlanets.venus.degree;
+      const jupiterLon = ZODIAC_SIGNS.indexOf(transitPlanets.jupiter.signName) * 30 + transitPlanets.jupiter.degree;
+      const marsLon = ZODIAC_SIGNS.indexOf(transitPlanets.mars.signName) * 30 + transitPlanets.mars.degree;
+      const sunLon = ZODIAC_SIGNS.indexOf(transitPlanets.sun.signName) * 30 + transitPlanets.sun.degree;
+      const moonLon = ZODIAC_SIGNS.indexOf(transitPlanets.moon.signName) * 30 + transitPlanets.moon.degree;
+      
+      // Venus-Jupiter aspects (great for love, finance, beauty)
+      const vjDiff = Math.abs(((venusLon - jupiterLon + 180) % 360) - 180);
+      if (vjDiff < 8 || Math.abs(vjDiff - 120) < 8 || Math.abs(vjDiff - 60) < 6) {
+        if (category === 'love' || category === 'finance' || category === 'beauty') {
+          score += 25;
+          reasons.push('Venus-Jupiter harmony');
+        }
+      }
+      
+      // Moon-Venus aspects (love, beauty)
+      const mvDiff = Math.abs(((moonLon - venusLon + 180) % 360) - 180);
+      if (mvDiff < 8 || Math.abs(mvDiff - 120) < 8 || Math.abs(mvDiff - 60) < 6) {
+        if (category === 'love' || category === 'beauty') {
+          score += 20;
+          reasons.push('Moon-Venus harmony');
+        }
+      }
+      
+      // Sun-Mars aspects (health, career)
+      const smDiff = Math.abs(((sunLon - marsLon + 180) % 360) - 180);
+      if (Math.abs(smDiff - 120) < 8 || Math.abs(smDiff - 60) < 6) {
+        if (category === 'health' || category === 'career') {
+          score += 20;
+          reasons.push('Sun-Mars energy boost');
+        }
+      }
+      
+      // Sun-Jupiter aspects (career, travel, finance)
+      const sjDiff = Math.abs(((sunLon - jupiterLon + 180) % 360) - 180);
+      if (sjDiff < 8 || Math.abs(sjDiff - 120) < 8 || Math.abs(sjDiff - 60) < 6) {
+        if (category === 'career' || category === 'travel' || category === 'finance') {
+          score += 25;
+          reasons.push('Sun-Jupiter expansion');
+        }
+      }
     }
 
-    // Check moon sign
+    // Check moon sign (applies to both personal and collective)
     const moonSign = transitPlanets.moon.signName;
     if (rules.favorableSigns.includes(moonSign)) {
       score += 15;
