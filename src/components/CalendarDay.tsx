@@ -10,6 +10,7 @@ import {
   getDayColors,
   detectPlanetaryIngresses,
   getPlanetSymbol,
+  getExactLunarPhase,
   type DayData 
 } from "@/lib/astrology";
 import { cn } from "@/lib/utils";
@@ -35,6 +36,7 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick }: Calend
   const aspects = calculateDailyAspects(planets);
   const voc = getVoidOfCourseMoon(moonPhase);
   const dayColors = getDayColors(aspects, moonPhase);
+  const exactLunarPhase = getExactLunarPhase(date);
 
   const dayData: DayData = {
     date,
@@ -47,6 +49,7 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick }: Calend
     aspects,
     voc,
     dayColors,
+    exactLunarPhase,
   };
 
   // Build background style based on day colors
@@ -98,6 +101,14 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick }: Calend
           <span>{planets.mars.fullDegree}</span>
         </div>
       </div>
+
+      {/* Exact Lunar Phase Time */}
+      {exactLunarPhase && (
+        <div className="text-[10px] text-primary font-semibold mt-2 bg-amber-50 dark:bg-amber-900/20 p-1.5 rounded-sm">
+          {exactLunarPhase.emoji} {exactLunarPhase.type}<br/>
+          {exactLunarPhase.time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} EST
+        </div>
+      )}
 
       {/* Aspects */}
       {aspects.length > 0 && (
