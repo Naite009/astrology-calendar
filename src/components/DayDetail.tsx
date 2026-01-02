@@ -191,9 +191,14 @@ export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
 
         {/* Cosmic Weather Section - Gradient Banner */}
         <CosmicWeatherBanner 
+          date={date}
+          moonPhase={moonPhase}
+          moonSign={planets.moon.signName}
           stelliums={stelliums} 
           rareAspects={rareAspects} 
-          nodeAspects={nodeAspects} 
+          nodeAspects={nodeAspects}
+          mercuryRetro={mercuryRetro}
+          aspects={aspects || []}
         />
 
         {/* Fixed Star Conjunctions */}
