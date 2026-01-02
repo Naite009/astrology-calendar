@@ -1145,6 +1145,26 @@ export interface Stellium {
   count: number;
 }
 
+// Stellium interpretations by sign
+export const STELLIUM_MEANINGS: Record<string, string> = {
+  Aries: 'Your willpower, identity, and values converge on courage and independence. This is a time of bold new beginnings. Initiative and self-assertion intensify.',
+  Taurus: 'Stability, sensuality, and material focus converge. Build lasting value. Ground your energy. Pleasure and security matter.',
+  Gemini: 'Communication, curiosity, and connection multiply. Information flows freely. Learn, teach, network. Mental energy peaks.',
+  Cancer: 'Emotions, nurturing, and home life intensify. Family matters. Feelings run deep. Create emotional safety.',
+  Leo: 'Creativity, self-expression, and leadership shine. Performance energy. Confidence soars. Share your gifts boldly.',
+  Virgo: 'Analysis, service, and improvement focus intensifies. Perfect your craft. Health and daily routines matter. Organize life.',
+  Libra: 'Relationships, balance, and harmony dominate. Partnership focus. Diplomatic energy. Beauty and justice matter.',
+  Scorpio: 'Transformation, depth, and power converge. Intense emotional work. Shadow integration. Profound change possible.',
+  Sagittarius: 'Expansion, truth, and adventure align. Philosophy matters. Travel beckons. Meaning and freedom call.',
+  Capricorn: 'Your willpower, identity, and values converge on achievement and structure. This is a time of serious ambition and long-term planning. Professional focus intensifies.',
+  Aquarius: 'Innovation, community, and future vision merge. Collective consciousness shifts. Revolutionary ideas and humanitarian impulses surge.',
+  Pisces: 'Spirituality, compassion, and dissolution blend. Boundaries soften. Dreams intensify. Creative and mystical energy flows.',
+};
+
+export const getStelliumMeaning = (sign: string): string => {
+  return STELLIUM_MEANINGS[sign] || `Concentrated energy in ${sign}. This sign's themes dominate your focus.`;
+};
+
 export const detectStelliums = (planets: PlanetaryPositions): Stellium[] => {
   const signGroups: Record<string, { name: string; symbol: string; degree: number }[]> = {};
   

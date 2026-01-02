@@ -13,12 +13,9 @@ import {
   detectNodeAspects,
   CHIRON_MEANINGS,
   LILITH_MEANINGS,
-  FixedStarConjunction,
-  Stellium,
-  RareAspect,
-  NodeAspect,
 } from '@/lib/astrology';
 import { UserData } from '@/hooks/useUserData';
+import { CosmicWeatherBanner } from './CosmicWeatherBanner';
 
 // Sign-specific energies for daily guidance
 const SIGN_ENERGIES: Record<string, { action: string; focus: string; avoid: string }> = {
@@ -192,61 +189,12 @@ export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
           </div>
         )}
 
-        {/* Cosmic Weather Section */}
-        {(stelliums.length > 0 || nodeAspects.length > 0 || rareAspects.length > 0) && (
-          <div className="mb-6 p-4 rounded-sm bg-amber-50 dark:bg-amber-900/30 border-2 border-amber-200 dark:border-amber-700">
-            <h3 className="text-sm font-semibold text-foreground mb-4">🌟 Cosmic Weather Report</h3>
-            
-            {/* Stellium Alert */}
-            {stelliums.length > 0 && (
-              <div className="mb-4">
-                <div className="text-xs uppercase tracking-widest text-amber-700 dark:text-amber-400 font-semibold mb-2">⚡ Stellium Alert</div>
-                {stelliums.map((s, i) => (
-                  <div key={i} className="bg-background/80 p-3 rounded-sm mb-2">
-                    <div className="font-medium text-foreground">{s.count} Planets in {s.sign}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {s.planets.map(p => `${p.symbol} ${p.name}`).join(', ')}
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-1 italic">
-                      Concentrated energy in {s.sign}. This sign's themes dominate today.
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Destiny Aspects (Node Aspects) */}
-            {nodeAspects.length > 0 && (
-              <div className="mb-4">
-                <div className="text-xs uppercase tracking-widest text-green-700 dark:text-green-400 font-semibold mb-2">☊ Destiny Aspects</div>
-                {nodeAspects.map((a, i) => (
-                  <div key={i} className="bg-green-50 dark:bg-green-900/30 p-3 rounded-sm mb-2">
-                    <div className="font-medium text-foreground">
-                      {getPlanetSymbol(a.planet.toLowerCase())} {a.planet} {a.symbol} {a.node === 'North' ? '☊' : '☋'} {a.node} Node
-                    </div>
-                    <div className="text-sm text-green-700 dark:text-green-400 mt-1">{a.meaning}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Rare Aspects */}
-            {rareAspects.length > 0 && (
-              <div>
-                <div className="text-xs uppercase tracking-widest text-purple-700 dark:text-purple-400 font-semibold mb-2">🔮 Rare Aspects</div>
-                {rareAspects.map((a, i) => (
-                  <div key={i} className="bg-purple-50 dark:bg-purple-900/30 p-3 rounded-sm mb-2">
-                    <div className="font-medium text-foreground">
-                      {getPlanetSymbol(a.planet1.toLowerCase())} {a.symbol} {getPlanetSymbol(a.planet2.toLowerCase())} — {a.type} ({a.angle}°)
-                    </div>
-                    <div className="text-xs text-muted-foreground">Orb: {a.orb}°</div>
-                    <div className="text-sm text-purple-700 dark:text-purple-400 mt-1">{a.meaning}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+        {/* Cosmic Weather Section - Gradient Banner */}
+        <CosmicWeatherBanner 
+          stelliums={stelliums} 
+          rareAspects={rareAspects} 
+          nodeAspects={nodeAspects} 
+        />
 
         {/* Fixed Star Conjunctions */}
         {fixedStarHits.length > 0 && (
