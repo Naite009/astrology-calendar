@@ -105,8 +105,12 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick }: Calend
       {/* Exact Lunar Phase Time */}
       {exactLunarPhase && (
         <div className="text-[10px] text-primary font-semibold mt-2 bg-amber-50 dark:bg-amber-900/20 p-1.5 rounded-sm">
-          {exactLunarPhase.emoji} {exactLunarPhase.type}<br/>
-          {exactLunarPhase.time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} EST
+          {exactLunarPhase.isSupermoon && <span className="text-amber-600">✦ SUPERMOON</span>}
+          {exactLunarPhase.name && (
+            <div className="font-medium">{exactLunarPhase.name}</div>
+          )}
+          <div>{exactLunarPhase.emoji} {exactLunarPhase.type}</div>
+          <div>{exactLunarPhase.time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} EST</div>
         </div>
       )}
 

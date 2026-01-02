@@ -96,6 +96,10 @@ export interface ExactLunarPhase {
   time: Date;
   position: string;
   emoji: string;
+  name: string | null; // Traditional moon name (Wolf Moon, Snow Moon, etc.)
+  isSupermoon: boolean;
+  distance: number; // km
+  supermoonSequence?: string;
 }
 
 export interface DayData {
@@ -213,6 +217,22 @@ export const getMoonPhase = (date: Date): MoonPhase => {
   };
 };
 
+// Traditional moon names by month
+const MOON_NAMES: Record<number, string> = {
+  0: 'Wolf Moon',
+  1: 'Snow Moon',
+  2: 'Worm Moon',
+  3: 'Pink Moon',
+  4: 'Flower Moon',
+  5: 'Strawberry Moon',
+  6: 'Buck Moon',
+  7: 'Sturgeon Moon',
+  8: 'Harvest Moon',
+  9: "Hunter's Moon",
+  10: 'Beaver Moon',
+  11: 'Cold Moon',
+};
+
 // Get exact lunar phase time if New Moon, Full Moon, First Quarter, or Last Quarter occurs on this day
 export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
   try {
@@ -227,6 +247,8 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
       const moonPos = Astronomy.GeoMoon(newMoon.date);
       const ecliptic = Astronomy.Ecliptic(moonPos);
       const zodiac = longitudeToZodiac(ecliptic.elon);
+      const distance = moonPos.Length() * 149597870.7; // Convert AU to km
+      const isSupermoon = distance < 361000;
       
       // Convert to EST (UTC-5)
       const estTime = new Date(newMoon.date.getTime() - (5 * 60 * 60 * 1000));
@@ -235,7 +257,10 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
         type: 'New Moon',
         time: estTime,
         position: zodiac.fullDegree,
-        emoji: '🌑'
+        emoji: '🌑',
+        name: MOON_NAMES[date.getMonth()],
+        isSupermoon,
+        distance: Math.round(distance),
       };
     }
 
@@ -245,6 +270,29 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
       const moonPos = Astronomy.GeoMoon(fullMoon.date);
       const ecliptic = Astronomy.Ecliptic(moonPos);
       const zodiac = longitudeToZodiac(ecliptic.elon);
+      const distance = moonPos.Length() * 149597870.7; // Convert AU to km
+      const isSupermoon = distance < 361000;
+      
+      // Check supermoon sequence
+      let supermoonSequence = '';
+      if (isSupermoon) {
+        const prevFullMoon = Astronomy.SearchMoonPhase(180, new Date(startOfDay.getTime() - 31 * 24 * 60 * 60 * 1000), 1);
+        const nextFullMoon = Astronomy.SearchMoonPhase(180, new Date(startOfDay.getTime() + 31 * 24 * 60 * 60 * 1000), 1);
+        
+        const prevDistance = prevFullMoon ? Astronomy.GeoMoon(prevFullMoon.date).Length() * 149597870.7 : 999999;
+        const nextDistance = nextFullMoon ? Astronomy.GeoMoon(nextFullMoon.date).Length() * 149597870.7 : 999999;
+        
+        const prevIsSuper = prevDistance < 361000;
+        const nextIsSuper = nextDistance < 361000;
+        
+        if (prevIsSuper && !nextIsSuper) {
+          supermoonSequence = 'Last of consecutive supermoons';
+        } else if (!prevIsSuper && nextIsSuper) {
+          supermoonSequence = 'First of consecutive supermoons';
+        } else if (prevIsSuper && nextIsSuper) {
+          supermoonSequence = 'Part of supermoon sequence';
+        }
+      }
       
       // Convert to EST (UTC-5)
       const estTime = new Date(fullMoon.date.getTime() - (5 * 60 * 60 * 1000));
@@ -253,7 +301,11 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
         type: 'Full Moon',
         time: estTime,
         position: zodiac.fullDegree,
-        emoji: '🌕'
+        emoji: '🌕',
+        name: MOON_NAMES[date.getMonth()],
+        isSupermoon,
+        distance: Math.round(distance),
+        supermoonSequence,
       };
     }
 
@@ -263,6 +315,7 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
       const moonPos = Astronomy.GeoMoon(firstQuarter.date);
       const ecliptic = Astronomy.Ecliptic(moonPos);
       const zodiac = longitudeToZodiac(ecliptic.elon);
+      const distance = moonPos.Length() * 149597870.7;
       
       const estTime = new Date(firstQuarter.date.getTime() - (5 * 60 * 60 * 1000));
       
@@ -270,7 +323,10 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
         type: 'First Quarter',
         time: estTime,
         position: zodiac.fullDegree,
-        emoji: '🌓'
+        emoji: '🌓',
+        name: null,
+        isSupermoon: false,
+        distance: Math.round(distance),
       };
     }
 
@@ -280,6 +336,7 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
       const moonPos = Astronomy.GeoMoon(lastQuarter.date);
       const ecliptic = Astronomy.Ecliptic(moonPos);
       const zodiac = longitudeToZodiac(ecliptic.elon);
+      const distance = moonPos.Length() * 149597870.7;
       
       const estTime = new Date(lastQuarter.date.getTime() - (5 * 60 * 60 * 1000));
       
@@ -287,7 +344,10 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
         type: 'Last Quarter',
         time: estTime,
         position: zodiac.fullDegree,
-        emoji: '🌗'
+        emoji: '🌗',
+        name: null,
+        isSupermoon: false,
+        distance: Math.round(distance),
       };
     }
 

@@ -73,13 +73,29 @@ export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
         {exactLunarPhase && (
           <div className="mb-6 p-4 rounded-sm bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700">
             <div className="flex items-center gap-3">
-              <span className="text-3xl">{exactLunarPhase.emoji}</span>
+              <span className="text-4xl">{exactLunarPhase.emoji}</span>
               <div>
+                {exactLunarPhase.isSupermoon && (
+                  <div className="text-amber-600 text-sm font-bold mb-1">
+                    ✦ SUPERMOON
+                    {exactLunarPhase.supermoonSequence && (
+                      <span className="font-normal ml-2">({exactLunarPhase.supermoonSequence})</span>
+                    )}
+                  </div>
+                )}
+                {exactLunarPhase.name && (
+                  <div className="font-serif text-xl font-medium text-foreground">
+                    {exactLunarPhase.name}
+                  </div>
+                )}
                 <div className="font-serif text-lg font-medium text-foreground">
                   {exactLunarPhase.type} at {exactLunarPhase.time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} EST
                 </div>
                 <div className="text-sm text-muted-foreground">
                   Position: {exactLunarPhase.position}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Distance: {exactLunarPhase.distance.toLocaleString()} km
                 </div>
               </div>
             </div>
