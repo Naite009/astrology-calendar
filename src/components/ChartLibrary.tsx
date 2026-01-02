@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { X, Plus, Users } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { X, Plus, Users, RefreshCw, Check } from 'lucide-react';
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
-import { getPlanetSymbol } from '@/lib/astrology';
+import { getPlanetSymbol, calculateNatalChart } from '@/lib/astrology';
 
 const ZODIAC_SIGNS = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
@@ -51,8 +51,59 @@ export const ChartLibrary = ({
     birthLocation: '',
     planets: emptyPlanets(),
   });
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isNewChartRef = useRef(false);
+
+  // Auto-save with debounce
+  const triggerAutoSave = useCallback(() => {
+    if (!editingChart) return;
+    
+    // Don't auto-save new charts until they have a name
+    if (editingChart === 'new' && !formData.name.trim()) return;
+    
+    setSaveStatus('saving');
+    
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    
+    saveTimeoutRef.current = setTimeout(() => {
+      if (editingChart === 'user') {
+        onSaveUserChart({
+          id: 'user',
+          ...formData,
+        });
+      } else if (editingChart === 'new' && formData.name.trim()) {
+        const newChart = onAddChart({
+          id: '',
+          ...formData,
+        });
+        isNewChartRef.current = false;
+        setEditingChart(newChart);
+      } else if (typeof editingChart === 'object') {
+        onUpdateChart(editingChart.id, formData);
+      }
+      
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 1500);
+    }, 800);
+  }, [editingChart, formData, onSaveUserChart, onAddChart, onUpdateChart]);
+
+  // Trigger auto-save when form data changes
+  useEffect(() => {
+    if (editingChart) {
+      triggerAutoSave();
+    }
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [formData, triggerAutoSave]);
 
   const openEditForm = (chart: 'new' | 'user' | NatalChart) => {
+    isNewChartRef.current = chart === 'new';
     if (chart === 'new') {
       setFormData({
         name: '',
@@ -79,6 +130,7 @@ export const ChartLibrary = ({
       });
     }
     setEditingChart(chart);
+    setSaveStatus('idle');
   };
 
   const updatePlanet = (planet: string, field: keyof NatalPlanetPosition, value: string | number) => {
@@ -88,26 +140,40 @@ export const ChartLibrary = ({
         ...prev.planets,
         [planet]: {
           ...prev.planets[planet],
-          [field]: field === 'sign' ? value : Number(value) || 0,
+          [field]: field === 'sign' ? value : Number(value),
         },
       },
     }));
   };
 
-  const handleSave = () => {
-    if (editingChart === 'user') {
-      onSaveUserChart({
-        id: 'user',
-        ...formData,
-      });
-    } else if (editingChart === 'new') {
-      onAddChart({
-        id: '',
-        ...formData,
-      });
+  const calculateFromBirthData = () => {
+    if (!formData.birthDate) return;
+    
+    const calculatedPositions = calculateNatalChart(formData.birthDate, formData.birthTime || '12:00');
+    
+    setFormData(prev => ({
+      ...prev,
+      planets: {
+        ...prev.planets,
+        ...calculatedPositions,
+      },
+    }));
+  };
+
+  const handleClose = () => {
+    // Save immediately on close if there are unsaved changes
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    
+    if (editingChart === 'user' && formData.name.trim()) {
+      onSaveUserChart({ id: 'user', ...formData });
+    } else if (editingChart === 'new' && formData.name.trim()) {
+      onAddChart({ id: '', ...formData });
     } else if (typeof editingChart === 'object') {
       onUpdateChart(editingChart.id, formData);
     }
+    
     setEditingChart(null);
   };
 
@@ -186,16 +252,26 @@ export const ChartLibrary = ({
 
       {/* Edit Form Modal */}
       {editingChart && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/80 p-5" onClick={() => setEditingChart(null)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/80 p-5" onClick={handleClose}>
           <div
             className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-sm bg-background p-8 shadow-xl"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="font-serif text-2xl font-light text-foreground">
-                {editingChart === 'new' ? 'Add New Chart' : editingChart === 'user' ? 'Your Natal Chart' : 'Edit Chart'}
-              </h2>
-              <button onClick={() => setEditingChart(null)} className="text-muted-foreground hover:text-foreground">
+              <div className="flex items-center gap-3">
+                <h2 className="font-serif text-2xl font-light text-foreground">
+                  {editingChart === 'new' ? 'Add New Chart' : editingChart === 'user' ? 'Your Natal Chart' : 'Edit Chart'}
+                </h2>
+                {saveStatus === 'saving' && (
+                  <span className="text-[10px] text-muted-foreground animate-pulse">Saving...</span>
+                )}
+                {saveStatus === 'saved' && (
+                  <span className="flex items-center gap-1 text-[10px] text-green-600">
+                    <Check size={12} /> Saved
+                  </span>
+                )}
+              </div>
+              <button onClick={handleClose} className="text-muted-foreground hover:text-foreground">
                 <X size={24} />
               </button>
             </div>
@@ -244,8 +320,18 @@ export const ChartLibrary = ({
               <div className="border-t border-border pt-5">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground">Planet Positions</h3>
-                  <p className="text-[10px] text-muted-foreground italic">Birth info saved for future auto-calculation</p>
+                  <button
+                    onClick={calculateFromBirthData}
+                    disabled={!formData.birthDate}
+                    className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <RefreshCw size={12} />
+                    Calculate from birth data
+                  </button>
                 </div>
+                <p className="text-[10px] text-muted-foreground italic mb-4">
+                  Click "Calculate" to auto-fill positions, then adjust if needed. Ascendant requires exact birth location.
+                </p>
                 <div className="space-y-3">
                   {PLANETS.map(planet => (
                     <div key={planet} className="grid grid-cols-[40px_100px_1fr_80px_80px_80px] gap-2 items-center">
@@ -302,18 +388,12 @@ export const ChartLibrary = ({
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-4 border-t border-border">
+              <div className="flex justify-end pt-4 border-t border-border">
                 <button
-                  onClick={() => setEditingChart(null)}
-                  className="border border-border bg-transparent px-5 py-2 text-[11px] uppercase tracking-widest text-muted-foreground transition-colors hover:bg-secondary"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSave}
+                  onClick={handleClose}
                   className="border border-primary bg-primary px-5 py-2 text-[11px] uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary/90"
                 >
-                  Save Chart
+                  Done
                 </button>
               </div>
             </div>

@@ -200,6 +200,65 @@ export const getBlackMoonLilith = (date: Date): ExtendedZodiacPosition => {
   };
 };
 
+// Get detailed position with degrees, minutes, seconds
+export const getDetailedPosition = (longitude: number): { sign: string; degree: number; minutes: number; seconds: number } => {
+  const normalizedLon = ((longitude % 360) + 360) % 360;
+  const signIndex = Math.floor(normalizedLon / 30);
+  const degreeFloat = normalizedLon % 30;
+  const degree = Math.floor(degreeFloat);
+  const minuteFloat = (degreeFloat - degree) * 60;
+  const minutes = Math.floor(minuteFloat);
+  const seconds = Math.round((minuteFloat - minutes) * 60);
+  
+  return {
+    sign: ZODIAC_SIGNS[signIndex].name,
+    degree,
+    minutes,
+    seconds,
+  };
+};
+
+// Calculate natal chart positions from birth date/time
+export const calculateNatalChart = (birthDate: string, birthTime: string): Record<string, { sign: string; degree: number; minutes: number; seconds: number }> => {
+  // Parse date and time
+  const [year, month, day] = birthDate.split('-').map(Number);
+  const [hours, minutes] = birthTime ? birthTime.split(':').map(Number) : [12, 0];
+  
+  // Create date object (treating as UTC for simplicity - location-based adjustment would need proper geocoding)
+  const date = new Date(Date.UTC(year, month - 1, day, hours, minutes, 0));
+  
+  const getPosition = (body: Astronomy.Body): { sign: string; degree: number; minutes: number; seconds: number } => {
+    try {
+      if (body === Astronomy.Body.Moon) {
+        const moon = Astronomy.GeoMoon(date);
+        const ecliptic = Astronomy.Ecliptic(moon);
+        return getDetailedPosition(ecliptic.elon);
+      }
+      const vector = Astronomy.GeoVector(body, date, false);
+      const ecliptic = Astronomy.Ecliptic(vector);
+      return getDetailedPosition(ecliptic.elon);
+    } catch {
+      return { sign: 'Aries', degree: 0, minutes: 0, seconds: 0 };
+    }
+  };
+
+  const nodes = getNodePositions(date);
+  
+  return {
+    Sun: getPosition(Astronomy.Body.Sun),
+    Moon: getPosition(Astronomy.Body.Moon),
+    Mercury: getPosition(Astronomy.Body.Mercury),
+    Venus: getPosition(Astronomy.Body.Venus),
+    Mars: getPosition(Astronomy.Body.Mars),
+    Jupiter: getPosition(Astronomy.Body.Jupiter),
+    Saturn: getPosition(Astronomy.Body.Saturn),
+    Uranus: getPosition(Astronomy.Body.Uranus),
+    Neptune: getPosition(Astronomy.Body.Neptune),
+    Pluto: getPosition(Astronomy.Body.Pluto),
+    Ascendant: { sign: 'Aries', degree: 0, minutes: 0, seconds: 0 }, // Would need location for accurate calculation
+  };
+};
+
 // Get all planetary positions for a date
 export const getPlanetaryPositions = (date: Date): PlanetaryPositions => {
   const getPosition = (body: Astronomy.Body): ZodiacPosition => {
