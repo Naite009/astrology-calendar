@@ -5,6 +5,7 @@ export interface NatalPlanetPosition {
   degree: number;
   minutes: number;
   seconds: number;
+  isRetrograde?: boolean;
 }
 
 export interface NatalChart {
@@ -27,6 +28,12 @@ export interface NatalChart {
     Neptune?: NatalPlanetPosition;
     Pluto?: NatalPlanetPosition;
     NorthNode?: NatalPlanetPosition;
+    Chiron?: NatalPlanetPosition;
+    Lilith?: NatalPlanetPosition;
+    Ceres?: NatalPlanetPosition;
+    Pallas?: NatalPlanetPosition;
+    Juno?: NatalPlanetPosition;
+    Vesta?: NatalPlanetPosition;
   };
 }
 

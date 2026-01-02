@@ -214,14 +214,25 @@ export const getBlackMoonLilith = (date: Date): ExtendedZodiacPosition => {
 };
 
 // Get detailed position with degrees, minutes, seconds
-export const getDetailedPosition = (longitude: number): { sign: string; degree: number; minutes: number; seconds: number } => {
+export const getDetailedPosition = (longitude: number): { sign: string; degree: number; minutes: number; seconds: number; isRetrograde?: boolean } => {
   const normalizedLon = ((longitude % 360) + 360) % 360;
   const signIndex = Math.floor(normalizedLon / 30);
   const degreeFloat = normalizedLon % 30;
-  const degree = Math.floor(degreeFloat);
+  let degree = Math.floor(degreeFloat);
   const minuteFloat = (degreeFloat - degree) * 60;
-  const minutes = Math.floor(minuteFloat);
-  const seconds = Math.round((minuteFloat - minutes) * 60);
+  let minutes = Math.floor(minuteFloat);
+  let seconds = Math.round((minuteFloat - minutes) * 60);
+  
+  // Handle seconds rollover (60 seconds = 1 minute)
+  if (seconds >= 60) {
+    seconds = 0;
+    minutes += 1;
+  }
+  // Handle minutes rollover (60 minutes = 1 degree)
+  if (minutes >= 60) {
+    minutes = 0;
+    degree += 1;
+  }
   
   return {
     sign: ZODIAC_SIGNS[signIndex].name,
@@ -231,38 +242,288 @@ export const getDetailedPosition = (longitude: number): { sign: string; degree: 
   };
 };
 
+// Check if a planet is retrograde at a given date
+export const isPlanetRetrograde = (body: Astronomy.Body, date: Date): boolean => {
+  try {
+    const yesterday = new Date(date);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    const todayVector = Astronomy.GeoVector(body, date, false);
+    const yesterdayVector = Astronomy.GeoVector(body, yesterday, false);
+    
+    const todayEcliptic = Astronomy.Ecliptic(todayVector);
+    const yesterdayEcliptic = Astronomy.Ecliptic(yesterdayVector);
+    
+    // Handle wrap-around at 0/360
+    let diff = todayEcliptic.elon - yesterdayEcliptic.elon;
+    if (diff > 180) diff -= 360;
+    if (diff < -180) diff += 360;
+    
+    return diff < 0;
+  } catch {
+    return false;
+  }
+};
+
+// Calculate Chiron detailed position for natal chart
+export const getDetailedChironPosition = (date: Date): { sign: string; degree: number; minutes: number; seconds: number; isRetrograde: boolean } => {
+  const d = (date.getTime() - new Date('2000-01-01T12:00:00Z').getTime()) / (1000 * 60 * 60 * 24);
+  const meanMotion = 360 / (50.7 * 365.25);
+  const longitude = (72 + d * meanMotion) % 360;
+  const normalizedLon = ((longitude % 360) + 360) % 360;
+  
+  // Chiron retrogrades for about 5 months each year
+  // Approximate check based on time of year
+  const dayOfYear = Math.floor((date.getTime() - new Date(date.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+  const isRetrograde = dayOfYear >= 150 && dayOfYear <= 300; // Roughly June-October
+  
+  return { ...getDetailedPosition(normalizedLon), isRetrograde };
+};
+
+// Calculate Black Moon Lilith detailed position for natal chart
+export const getDetailedLilithPosition = (date: Date): { sign: string; degree: number; minutes: number; seconds: number } => {
+  const d = (date.getTime() - new Date('2000-01-01T12:00:00Z').getTime()) / (1000 * 60 * 60 * 24);
+  const meanMotion = 360 / (8.85 * 365.25);
+  const longitude = (121 + d * meanMotion) % 360;
+  const normalizedLon = ((longitude % 360) + 360) % 360;
+  return getDetailedPosition(normalizedLon);
+};
+
+// Calculate asteroid Ceres position (approximation)
+export const getDetailedCeresPosition = (date: Date): { sign: string; degree: number; minutes: number; seconds: number; isRetrograde: boolean } => {
+  // Ceres has ~4.6 year orbital period
+  // J2000 epoch: Ceres at approximately 194° (14° Libra)
+  const d = (date.getTime() - new Date('2000-01-01T12:00:00Z').getTime()) / (1000 * 60 * 60 * 24);
+  const meanMotion = 360 / (4.6 * 365.25);
+  const longitude = (194 + d * meanMotion) % 360;
+  const normalizedLon = ((longitude % 360) + 360) % 360;
+  
+  // Approximate retrograde (about 3-4 months per year)
+  const dayOfYear = Math.floor((date.getTime() - new Date(date.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+  const isRetrograde = (dayOfYear >= 30 && dayOfYear <= 120);
+  
+  return { ...getDetailedPosition(normalizedLon), isRetrograde };
+};
+
+// Calculate asteroid Pallas position (approximation)
+export const getDetailedPallasPosition = (date: Date): { sign: string; degree: number; minutes: number; seconds: number; isRetrograde: boolean } => {
+  // Pallas has ~4.62 year orbital period
+  // J2000 epoch: Pallas at approximately 302° (2° Aquarius)
+  const d = (date.getTime() - new Date('2000-01-01T12:00:00Z').getTime()) / (1000 * 60 * 60 * 24);
+  const meanMotion = 360 / (4.62 * 365.25);
+  const longitude = (302 + d * meanMotion) % 360;
+  const normalizedLon = ((longitude % 360) + 360) % 360;
+  
+  const dayOfYear = Math.floor((date.getTime() - new Date(date.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+  const isRetrograde = (dayOfYear >= 180 && dayOfYear <= 280);
+  
+  return { ...getDetailedPosition(normalizedLon), isRetrograde };
+};
+
+// Calculate asteroid Juno position (approximation)
+export const getDetailedJunoPosition = (date: Date): { sign: string; degree: number; minutes: number; seconds: number; isRetrograde: boolean } => {
+  // Juno has ~4.36 year orbital period
+  // J2000 epoch: Juno at approximately 230° (20° Scorpio)
+  const d = (date.getTime() - new Date('2000-01-01T12:00:00Z').getTime()) / (1000 * 60 * 60 * 24);
+  const meanMotion = 360 / (4.36 * 365.25);
+  const longitude = (230 + d * meanMotion) % 360;
+  const normalizedLon = ((longitude % 360) + 360) % 360;
+  
+  const dayOfYear = Math.floor((date.getTime() - new Date(date.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+  const isRetrograde = (dayOfYear >= 100 && dayOfYear <= 200);
+  
+  return { ...getDetailedPosition(normalizedLon), isRetrograde };
+};
+
+// Calculate asteroid Vesta position (approximation)
+export const getDetailedVestaPosition = (date: Date): { sign: string; degree: number; minutes: number; seconds: number; isRetrograde: boolean } => {
+  // Vesta has ~3.63 year orbital period
+  // J2000 epoch: Vesta at approximately 180° (0° Libra)
+  const d = (date.getTime() - new Date('2000-01-01T12:00:00Z').getTime()) / (1000 * 60 * 60 * 24);
+  const meanMotion = 360 / (3.63 * 365.25);
+  const longitude = (180 + d * meanMotion) % 360;
+  const normalizedLon = ((longitude % 360) + 360) % 360;
+  
+  const dayOfYear = Math.floor((date.getTime() - new Date(date.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+  const isRetrograde = (dayOfYear >= 250 && dayOfYear <= 350);
+  
+  return { ...getDetailedPosition(normalizedLon), isRetrograde };
+};
+
+// US timezone regions for auto-detection
+const US_TIMEZONE_REGIONS: Record<string, { standard: number; daylight: number; abbrevStandard: string; abbrevDaylight: string }> = {
+  // Eastern
+  'new york': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
+  'boston': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
+  'philadelphia': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
+  'miami': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
+  'atlanta': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
+  'washington': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
+  'detroit': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
+  'cleveland': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
+  'pittsburgh': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
+  'charlotte': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
+  'orlando': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
+  'raleigh': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
+  // Central
+  'chicago': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
+  'houston': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
+  'dallas': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
+  'san antonio': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
+  'austin': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
+  'minneapolis': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
+  'milwaukee': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
+  'kansas city': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
+  'st louis': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
+  'new orleans': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
+  'nashville': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
+  'memphis': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
+  'oklahoma city': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
+  // Mountain
+  'denver': { standard: -7, daylight: -6, abbrevStandard: 'MST', abbrevDaylight: 'MDT' },
+  'phoenix': { standard: -7, daylight: -7, abbrevStandard: 'MST', abbrevDaylight: 'MST' }, // Arizona doesn't observe DST
+  'albuquerque': { standard: -7, daylight: -6, abbrevStandard: 'MST', abbrevDaylight: 'MDT' },
+  'salt lake city': { standard: -7, daylight: -6, abbrevStandard: 'MST', abbrevDaylight: 'MDT' },
+  'tucson': { standard: -7, daylight: -7, abbrevStandard: 'MST', abbrevDaylight: 'MST' }, // Arizona
+  'las vegas': { standard: -8, daylight: -7, abbrevStandard: 'PST', abbrevDaylight: 'PDT' },
+  'el paso': { standard: -7, daylight: -6, abbrevStandard: 'MST', abbrevDaylight: 'MDT' },
+  'boise': { standard: -7, daylight: -6, abbrevStandard: 'MST', abbrevDaylight: 'MDT' },
+  // Pacific
+  'los angeles': { standard: -8, daylight: -7, abbrevStandard: 'PST', abbrevDaylight: 'PDT' },
+  'san francisco': { standard: -8, daylight: -7, abbrevStandard: 'PST', abbrevDaylight: 'PDT' },
+  'san diego': { standard: -8, daylight: -7, abbrevStandard: 'PST', abbrevDaylight: 'PDT' },
+  'seattle': { standard: -8, daylight: -7, abbrevStandard: 'PST', abbrevDaylight: 'PDT' },
+  'portland': { standard: -8, daylight: -7, abbrevStandard: 'PST', abbrevDaylight: 'PDT' },
+  'sacramento': { standard: -8, daylight: -7, abbrevStandard: 'PST', abbrevDaylight: 'PDT' },
+  'san jose': { standard: -8, daylight: -7, abbrevStandard: 'PST', abbrevDaylight: 'PDT' },
+  'fresno': { standard: -8, daylight: -7, abbrevStandard: 'PST', abbrevDaylight: 'PDT' },
+  // Alaska
+  'anchorage': { standard: -9, daylight: -8, abbrevStandard: 'AKST', abbrevDaylight: 'AKDT' },
+  // Hawaii
+  'honolulu': { standard: -10, daylight: -10, abbrevStandard: 'HST', abbrevDaylight: 'HST' }, // Hawaii doesn't observe DST
+};
+
+// Check if a date falls within US Daylight Saving Time
+// US DST: 2nd Sunday of March to 1st Sunday of November (since 2007)
+// Before 2007: 1st Sunday of April to last Sunday of October
+export const isUSDaylightSavingTime = (date: Date): boolean => {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const day = date.getDate();
+  
+  if (year >= 2007) {
+    // Current rules: 2nd Sunday of March to 1st Sunday of November
+    const marchSecondSunday = getNthSundayOfMonth(year, 2, 2); // March, 2nd Sunday
+    const novemberFirstSunday = getNthSundayOfMonth(year, 10, 1); // November, 1st Sunday
+    
+    const dateNum = month * 100 + day;
+    const dstStart = 2 * 100 + marchSecondSunday;
+    const dstEnd = 10 * 100 + novemberFirstSunday;
+    
+    return dateNum >= dstStart && dateNum < dstEnd;
+  } else {
+    // Old rules: 1st Sunday of April to last Sunday of October
+    const aprilFirstSunday = getNthSundayOfMonth(year, 3, 1); // April, 1st Sunday
+    const octoberLastSunday = getLastSundayOfMonth(year, 9); // October, last Sunday
+    
+    const dateNum = month * 100 + day;
+    const dstStart = 3 * 100 + aprilFirstSunday;
+    const dstEnd = 9 * 100 + octoberLastSunday;
+    
+    return dateNum >= dstStart && dateNum < dstEnd;
+  }
+};
+
+const getNthSundayOfMonth = (year: number, month: number, n: number): number => {
+  const firstDay = new Date(year, month, 1);
+  const firstSunday = 1 + (7 - firstDay.getDay()) % 7;
+  return firstSunday + (n - 1) * 7;
+};
+
+const getLastSundayOfMonth = (year: number, month: number): number => {
+  const lastDay = new Date(year, month + 1, 0);
+  const daysToSubtract = lastDay.getDay();
+  return lastDay.getDate() - daysToSubtract;
+};
+
+// Auto-detect timezone offset from location and date
+export const detectTimezoneFromLocation = (location: string, date: Date): { offset: number; abbrev: string } | null => {
+  const lowerLocation = location.toLowerCase();
+  
+  for (const [city, tz] of Object.entries(US_TIMEZONE_REGIONS)) {
+    if (lowerLocation.includes(city)) {
+      const isDST = isUSDaylightSavingTime(date);
+      return {
+        offset: isDST ? tz.daylight : tz.standard,
+        abbrev: isDST ? tz.abbrevDaylight : tz.abbrevStandard,
+      };
+    }
+  }
+  
+  return null;
+};
+
 // Calculate natal chart positions from birth date/time with timezone offset
 export const calculateNatalChart = (
   birthDate: string, 
   birthTime: string,
-  timezoneOffsetHours: number = 0 // e.g., -5 for EST, -8 for PST
-): Record<string, { sign: string; degree: number; minutes: number; seconds: number }> => {
+  timezoneOffsetHours: number = 0, // e.g., -5 for EST, -8 for PST
+  birthLocation: string = '' // Optional location for auto-detect
+): Record<string, { sign: string; degree: number; minutes: number; seconds: number; isRetrograde?: boolean }> => {
   // Parse date and time
   const [year, month, day] = birthDate.split('-').map(Number);
   const [hours, minutes] = birthTime ? birthTime.split(':').map(Number) : [12, 0];
   
+  // Try to auto-detect timezone if location provided
+  let finalOffset = timezoneOffsetHours;
+  if (birthLocation) {
+    const tempDate = new Date(year, month - 1, day);
+    const detected = detectTimezoneFromLocation(birthLocation, tempDate);
+    if (detected) {
+      finalOffset = detected.offset;
+    }
+  }
+  
   // Convert local time to UTC by subtracting the timezone offset
   // If someone was born at 10:00 AM in EST (-5), that's 15:00 UTC
-  const utcHours = hours - timezoneOffsetHours;
+  const utcHours = hours - finalOffset;
   
   const date = new Date(Date.UTC(year, month - 1, day, utcHours, minutes, 0));
   
-  const getPosition = (body: Astronomy.Body): { sign: string; degree: number; minutes: number; seconds: number } => {
+  const getPosition = (body: Astronomy.Body): { sign: string; degree: number; minutes: number; seconds: number; isRetrograde?: boolean } => {
     try {
+      let longitude: number;
       if (body === Astronomy.Body.Moon) {
         const moon = Astronomy.GeoMoon(date);
         const ecliptic = Astronomy.Ecliptic(moon);
-        return getDetailedPosition(ecliptic.elon);
+        longitude = ecliptic.elon;
+      } else {
+        const vector = Astronomy.GeoVector(body, date, false);
+        const ecliptic = Astronomy.Ecliptic(vector);
+        longitude = ecliptic.elon;
       }
-      const vector = Astronomy.GeoVector(body, date, false);
-      const ecliptic = Astronomy.Ecliptic(vector);
-      return getDetailedPosition(ecliptic.elon);
+      
+      const position = getDetailedPosition(longitude);
+      
+      // Check retrograde for applicable planets (not Sun or Moon)
+      if (body !== Astronomy.Body.Sun && body !== Astronomy.Body.Moon) {
+        const isRetro = isPlanetRetrograde(body, date);
+        return { ...position, isRetrograde: isRetro };
+      }
+      
+      return position;
     } catch {
       return { sign: 'Aries', degree: 0, minutes: 0, seconds: 0 };
     }
   };
 
   const northNode = getDetailedNodePosition(date);
+  const chiron = getDetailedChironPosition(date);
+  const lilith = getDetailedLilithPosition(date);
+  const ceres = getDetailedCeresPosition(date);
+  const pallas = getDetailedPallasPosition(date);
+  const juno = getDetailedJunoPosition(date);
+  const vesta = getDetailedVestaPosition(date);
   
   return {
     Sun: getPosition(Astronomy.Body.Sun),
@@ -276,6 +537,12 @@ export const calculateNatalChart = (
     Neptune: getPosition(Astronomy.Body.Neptune),
     Pluto: getPosition(Astronomy.Body.Pluto),
     NorthNode: northNode,
+    Chiron: chiron,
+    Lilith: lilith,
+    Ceres: ceres,
+    Pallas: pallas,
+    Juno: juno,
+    Vesta: vesta,
     Ascendant: { sign: '', degree: 0, minutes: 0, seconds: 0 }, // Requires exact lat/long - user should enter manually
   };
 };
