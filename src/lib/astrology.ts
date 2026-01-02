@@ -926,6 +926,7 @@ export const getPlanetSymbol = (planetName: string): string => {
     uranus: '♅',
     neptune: '♆',
     pluto: '♇',
+    ascendant: 'ASC',
   };
   return symbols[planetName] || planetName;
 };
