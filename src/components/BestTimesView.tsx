@@ -58,15 +58,15 @@ export const BestTimesView = ({
           onChange={e => setSelectedChartForTiming(e.target.value)}
           className="w-full md:w-auto border border-border bg-background px-4 py-2 text-sm focus:border-primary focus:outline-none"
         >
-          <option value="user">Your Chart</option>
-          <option value="general">General (No Personal Chart)</option>
+          <option value="general">Collective Astrology</option>
+          {userNatalChart && <option value="user">Your Chart ({userNatalChart.name})</option>}
           {savedCharts.map(chart => (
             <option key={chart.id} value={chart.id}>{chart.name}</option>
           ))}
         </select>
-        {selectedChartForTiming === 'user' && !userNatalChart && (
-          <p className="text-xs text-amber-600 mt-2">
-            ⚠️ Add your natal chart in the Charts view for personalized timing
+        {selectedChartForTiming === 'general' && (
+          <p className="text-xs text-muted-foreground mt-2">
+            ✨ Using current planetary transits and aspects. Add a natal chart in the <strong>Charts</strong> tab for personalized timing.
           </p>
         )}
       </div>
@@ -161,7 +161,14 @@ export const BestTimesView = ({
           <strong>How it works:</strong> Best times are calculated based on:
         </p>
         <ul className="list-disc list-inside space-y-1">
-          <li>Favorable transiting planet aspects to your natal chart</li>
+          {selectedChartForTiming === 'general' ? (
+            <>
+              <li>Aspects between transiting planets (Venus-Jupiter, Sun-Mars, etc.)</li>
+              <li>Planet positions in favorable signs for each category</li>
+            </>
+          ) : (
+            <li>Favorable transiting planet aspects to your natal chart</li>
+          )}
           <li>Moon sign compatibility with the activity</li>
           <li>Moon phase (waxing = building, waning = releasing)</li>
           <li>Avoiding void-of-course Moon periods</li>
