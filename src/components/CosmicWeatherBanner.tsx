@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Loader2 } from 'lucide-react';
 import { 
   getPlanetSymbol, 
@@ -12,10 +12,24 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+interface ExactLunarPhase {
+  type: 'New Moon' | 'Full Moon' | 'First Quarter' | 'Last Quarter';
+  sign: string;
+  time: Date;
+  position: string;
+  sunPosition?: string;
+  emoji: string;
+  name?: string;
+  distance: number;
+  isSupermoon?: boolean;
+  supermoonSequence?: string;
+}
+
 interface CosmicWeatherBannerProps {
   date: Date;
   moonPhase: MoonPhase;
   moonSign: string;
+  exactLunarPhase?: ExactLunarPhase | null;
   stelliums: Stellium[];
   rareAspects: RareAspect[];
   nodeAspects: NodeAspect[];
@@ -27,6 +41,7 @@ export const CosmicWeatherBanner = ({
   date,
   moonPhase,
   moonSign,
+  exactLunarPhase,
   stelliums, 
   rareAspects, 
   nodeAspects,
@@ -35,16 +50,32 @@ export const CosmicWeatherBanner = ({
 }: CosmicWeatherBannerProps) => {
   const [aiInsights, setAiInsights] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [hasLoaded, setHasLoaded] = useState(false);
+  const hasFetched = useRef(false);
+
+  // Determine the correct moon sign to use:
+  // - For exact Full/New Moon, use the exactLunarPhase.sign
+  // - Otherwise use the current transiting moon sign
+  const effectiveMoonSign = exactLunarPhase?.sign || moonSign;
+  const isExactPhase = exactLunarPhase && (exactLunarPhase.type === 'Full Moon' || exactLunarPhase.type === 'New Moon');
 
   const fetchInsights = async () => {
+    if (loading || hasFetched.current) return;
+    
     setLoading(true);
+    hasFetched.current = true;
+    
     try {
       const { data, error } = await supabase.functions.invoke('cosmic-weather', {
         body: {
           date: date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
-          moonPhase: moonPhase.phaseName,
-          moonSign,
+          moonPhase: isExactPhase ? exactLunarPhase.type : moonPhase.phaseName,
+          moonSign: effectiveMoonSign,
+          exactLunarPhase: isExactPhase ? {
+            type: exactLunarPhase.type,
+            sign: exactLunarPhase.sign,
+            name: exactLunarPhase.name,
+            isSupermoon: exactLunarPhase.isSupermoon,
+          } : null,
           stelliums,
           rareAspects,
           nodeAspects,
@@ -56,18 +87,24 @@ export const CosmicWeatherBanner = ({
       if (error) {
         console.error('Cosmic weather error:', error);
         toast.error('Could not load cosmic insights');
+        hasFetched.current = false;
         return;
       }
 
       setAiInsights(data.insight);
-      setHasLoaded(true);
     } catch (err) {
       console.error('Failed to fetch insights:', err);
       toast.error('Failed to connect to cosmic wisdom');
+      hasFetched.current = false;
     } finally {
       setLoading(false);
     }
   };
+
+  // Auto-fetch insights when component mounts
+  useEffect(() => {
+    fetchInsights();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Simple markdown to HTML conversion for the insights
   const formatInsights = (text: string) => {
@@ -95,20 +132,6 @@ export const CosmicWeatherBanner = ({
           ✨ AI Astrologer Synthesis
         </h3>
         
-        {!hasLoaded && !loading && (
-          <div className="text-center py-4">
-            <p className="text-sm opacity-80 mb-3">
-              Get personalized cosmic insights synthesized from master astrologer wisdom
-            </p>
-            <button
-              onClick={fetchInsights}
-              className="px-6 py-2 bg-yellow-400 hover:bg-yellow-300 text-purple-900 rounded font-semibold text-sm transition-colors"
-            >
-              🔮 Generate Cosmic Insights
-            </button>
-          </div>
-        )}
-
         {loading && (
           <div className="flex items-center justify-center gap-2 py-6">
             <Loader2 className="h-5 w-5 animate-spin" />
@@ -121,6 +144,12 @@ export const CosmicWeatherBanner = ({
             className="text-sm leading-relaxed prose prose-invert max-w-none"
             dangerouslySetInnerHTML={{ __html: formatInsights(aiInsights) }}
           />
+        )}
+
+        {!loading && !aiInsights && (
+          <div className="text-center py-4">
+            <p className="text-sm opacity-80">Unable to load insights. Please try again later.</p>
+          </div>
         )}
 
         <div className="text-xs mt-4 pt-3 border-t border-white/20 opacity-60 italic">

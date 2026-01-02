@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { date, moonPhase, moonSign, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects } = await req.json();
+    const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -35,9 +35,23 @@ serve(async (req) => {
       ? `Major Aspects: ${aspects.slice(0, 5).map((a: any) => `${a.planet1} ${a.symbol} ${a.planet2}`).join('; ')}`
       : '';
 
+    // Build exact lunar phase information if present
+    let exactPhaseText = '';
+    if (exactLunarPhase) {
+      exactPhaseText = `IMPORTANT - Exact Lunar Event: ${exactLunarPhase.type} in ${exactLunarPhase.sign}`;
+      if (exactLunarPhase.name) {
+        exactPhaseText += ` (${exactLunarPhase.name})`;
+      }
+      if (exactLunarPhase.isSupermoon) {
+        exactPhaseText += ' - This is a SUPERMOON!';
+      }
+    }
+
     const systemPrompt = `You are a wise, compassionate astrologer synthesizing cosmic insights. Your role is to provide clear, actionable guidance based on astrological transits. 
 
 Style: Write like a blend of Jessica Davidson, Chani Nicholas, and Cafe Astrology - poetic yet practical, spiritually grounded but accessible. Avoid overly technical jargon.
+
+CRITICAL: Pay close attention to the exact lunar phase sign provided. The Moon sign for Full Moon or New Moon events is specified separately and MUST be used correctly. Do not confuse the transiting moon sign with the exact lunar event sign.
 
 Format your response with these sections (use markdown headers):
 ## Today's Cosmic Theme
@@ -56,11 +70,14 @@ Format your response with these sections (use markdown headers):
 
 Current transits:
 - Moon Phase: ${moonPhase} in ${moonSign}
+${exactPhaseText ? `- ${exactPhaseText}` : ''}
 - Mercury Retrograde: ${mercuryRetro ? 'Yes' : 'No'}
 ${stelliumText}
 ${rareAspectText}
 ${nodeAspectText}
 ${aspectsText}
+
+${exactPhaseText ? `IMPORTANT: This is an exact ${exactLunarPhase.type} day. The ${exactLunarPhase.type} is occurring in ${exactLunarPhase.sign}. Make sure to reference the ${exactLunarPhase.type} in ${exactLunarPhase.sign} correctly in your reading.` : ''}
 
 Provide a synthesized cosmic weather reading that helps someone understand and work with today's energy.`;
 

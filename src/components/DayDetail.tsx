@@ -211,6 +211,7 @@ export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
           date={date}
           moonPhase={moonPhase}
           moonSign={planets.moon.signName}
+          exactLunarPhase={exactLunarPhase}
           stelliums={stelliums} 
           rareAspects={rareAspects} 
           nodeAspects={nodeAspects}
