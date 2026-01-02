@@ -53,8 +53,18 @@ const longitudeToAngle = (longitude: number, ascendantLongitude: number): number
 };
 
 // Get coordinates on circle
-const getPointOnCircle = (cx: number, cy: number, radius: number, angleDeg: number): { x: number; y: number } => {
-  const angleRad = (angleDeg - 90) * Math.PI / 180; // SVG starts at top
+// angleDeg is in SVG-space degrees:
+// - 0° = 3 o'clock
+// - 90° = 6 o'clock
+// - 180° = 9 o'clock
+// - 270° = 12 o'clock
+const getPointOnCircle = (
+  cx: number,
+  cy: number,
+  radius: number,
+  angleDeg: number
+): { x: number; y: number } => {
+  const angleRad = (angleDeg * Math.PI) / 180;
   return {
     x: cx + radius * Math.cos(angleRad),
     y: cy + radius * Math.sin(angleRad),
