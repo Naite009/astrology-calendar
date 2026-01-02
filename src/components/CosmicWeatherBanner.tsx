@@ -61,16 +61,16 @@ export const CosmicWeatherBanner = ({
   const hasFetched = useRef(false);
 
   // Determine the correct moon sign to use:
-  // - For exact Full/New Moon, use the exactLunarPhase.sign
+  // - For an exact lunar event, use exactLunarPhase.sign
   // - Otherwise use the current transiting moon sign
-  const effectiveMoonSign = exactLunarPhase?.sign || moonSign;
-  const isExactPhase = !!exactLunarPhase;
+  const isExactPhase = exactLunarPhase != null;
+  const effectiveMoonSign = isExactPhase ? exactLunarPhase.sign : moonSign;
 
   // Avoid labeling adjacent days as "Full Moon"/"New Moon".
   // If we do NOT have an exact lunar event for today, downshift the broad phase bucket
   // into a more truthful waxing/waning label.
   const phaseForAI = (() => {
-    if (isExactPhase) return exactLunarPhase.type;
+    if (exactLunarPhase) return exactLunarPhase.type;
 
     if (moonPhase.phaseName === 'New Moon') {
       return moonPhase.phase < 180 ? 'Waxing Crescent' : 'Waning Crescent';
