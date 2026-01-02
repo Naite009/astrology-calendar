@@ -73,7 +73,10 @@ export interface Ingress {
   icon: string;
   desc: string;
   entryDate?: Date;
+  entryTime?: string;
   exitDate?: Date;
+  exitTime?: string;
+  nextSign?: string;
   durationDays?: number;
 }
 
@@ -897,7 +900,7 @@ export const getPlanetSymbol = (planetName: string): string => {
   return symbols[planetName] || planetName;
 };
 
-// Detect planetary ingresses (sign changes)
+// Detect planetary ingresses (sign changes) with exact times
 export const detectPlanetaryIngresses = (date: Date, planets: PlanetaryPositions): Ingress[] => {
   const ingresses: Ingress[] = [];
 
@@ -915,8 +918,30 @@ export const detectPlanetaryIngresses = (date: Date, planets: PlanetaryPositions
       if (todaySign !== yesterdaySign) {
         const isMajor = planetName === 'jupiter' || planetName === 'saturn';
         
+        // Find exact entry time using binary search
+        let entryTime: Date | undefined;
+        let searchStart = new Date(yesterday);
+        searchStart.setHours(0, 0, 0, 0);
+        let searchEnd = new Date(date);
+        searchEnd.setHours(23, 59, 59, 999);
+        
+        // Binary search for exact ingress time (1-minute precision)
+        while (searchEnd.getTime() - searchStart.getTime() > 60000) {
+          const mid = new Date((searchStart.getTime() + searchEnd.getTime()) / 2);
+          const midPos = getPlanetaryPositions(mid);
+          
+          if (midPos[planetName].signName === todaySign) {
+            searchEnd = mid;
+          } else {
+            searchStart = mid;
+          }
+        }
+        entryTime = searchEnd;
+        
         // Find when planet exits this sign (enters next sign)
         let exitDate: Date | undefined;
+        let exitTime: Date | undefined;
+        let nextSign: string | undefined;
         let durationDays = 0;
         
         // Search forward up to 365 days for sign change
@@ -927,41 +952,62 @@ export const detectPlanetaryIngresses = (date: Date, planets: PlanetaryPositions
           
           if (futurePos[planetName].signName !== todaySign) {
             exitDate = futureDate;
+            nextSign = futurePos[planetName].signName;
             durationDays = d;
+            
+            // Binary search for exact exit time
+            let exitSearchStart = new Date(futureDate);
+            exitSearchStart.setDate(exitSearchStart.getDate() - 1);
+            exitSearchStart.setHours(0, 0, 0, 0);
+            let exitSearchEnd = new Date(futureDate);
+            exitSearchEnd.setHours(23, 59, 59, 999);
+            
+            while (exitSearchEnd.getTime() - exitSearchStart.getTime() > 60000) {
+              const mid = new Date((exitSearchStart.getTime() + exitSearchEnd.getTime()) / 2);
+              const midPos = getPlanetaryPositions(mid);
+              
+              if (midPos[planetName].signName === todaySign) {
+                exitSearchStart = mid;
+              } else {
+                exitSearchEnd = mid;
+              }
+            }
+            exitTime = exitSearchEnd;
             break;
           }
         }
         
-        // Format the description with exact dates and duration
-        const entryDateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        const exitDateStr = exitDate 
-          ? exitDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-          : 'unknown';
+        // Format times in Eastern timezone
+        const entryTimeStr = entryTime?.toLocaleString('en-US', {
+          timeZone: 'America/New_York',
+          month: 'short',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+        }) + ' ET';
         
-        let durationStr = '';
-        if (durationDays > 0) {
-          if (durationDays >= 30) {
-            const months = (durationDays / 30).toFixed(1);
-            durationStr = `${months} months`;
-          } else if (durationDays >= 7) {
-            const weeks = (durationDays / 7).toFixed(1);
-            durationStr = `${weeks} weeks`;
-          } else {
-            durationStr = `${durationDays} days`;
-          }
-        }
+        const exitTimeStr = exitTime?.toLocaleString('en-US', {
+          timeZone: 'America/New_York',
+          month: 'short',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+        }) + ' ET';
         
-        const desc = exitDate 
-          ? `${entryDateStr} – ${exitDateStr} (${durationStr})`
-          : isMajor ? 'Major shift - effects last months' : 'Personal planet shift';
+        const desc = `Enters ${todaySign}: ${entryTimeStr}`;
         
         ingresses.push({
           planet: planetName.charAt(0).toUpperCase() + planetName.slice(1),
           sign: todaySign,
           icon: getPlanetSymbol(planetName),
           desc,
-          entryDate: date,
-          exitDate,
+          entryDate: entryTime,
+          entryTime: entryTimeStr,
+          exitDate: exitTime,
+          exitTime: exitTimeStr,
+          nextSign,
           durationDays,
         });
       }
