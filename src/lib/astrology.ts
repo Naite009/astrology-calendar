@@ -485,6 +485,118 @@ export const getEnergyRating = (moonPhase: MoonPhase, mercuryRetro: boolean): En
   return { level: 'moderate', label: 'Moderate' };
 };
 
+// Daily motion for planets (average degrees per day)
+const DAILY_MOTION: Record<string, number> = {
+  moon: 13.2,
+  mercury: 1.0,
+  venus: 1.0,
+  sun: 1.0,
+  mars: 0.5,
+  jupiter: 0.08,
+  saturn: 0.03,
+  uranus: 0.01,
+  neptune: 0.006,
+  pluto: 0.004,
+};
+
+// Determine if aspect is applying (building toward exact) or separating (moving away from exact)
+export const determineApplying = (
+  planet1: string,
+  planet2: string,
+  planet1Data: ZodiacPosition,
+  planet2Data: ZodiacPosition,
+  aspectType: string
+): boolean => {
+  const speed1 = DAILY_MOTION[planet1] || 0;
+  const speed2 = DAILY_MOTION[planet2] || 0;
+
+  // Get the faster and slower planet
+  const fasterData = speed1 > speed2 ? planet1Data : planet2Data;
+  const slowerData = speed1 > speed2 ? planet2Data : planet1Data;
+
+  // Get longitudes
+  const fasterLon = getSignIndex(fasterData.signName) * 30 + fasterData.degree;
+  const slowerLon = getSignIndex(slowerData.signName) * 30 + slowerData.degree;
+
+  // Calculate angular separation
+  let separation = fasterLon - slowerLon;
+  if (separation > 180) separation -= 360;
+  if (separation < -180) separation += 360;
+
+  // Get target angle for aspect type
+  const aspectAngles: Record<string, number> = {
+    conjunction: 0,
+    sextile: 60,
+    square: 90,
+    trine: 120,
+    opposition: 180,
+  };
+
+  const targetAngle = aspectAngles[aspectType] || 0;
+
+  // Simplified: if faster planet hasn't reached target angle yet, it's applying
+  return Math.abs(separation) < targetAngle;
+};
+
+// Ingress interpretations for Mercury, Venus, and Mars entering each sign
+const INGRESS_INTERPRETATIONS: Record<string, Record<string, string>> = {
+  mercury: {
+    Capricorn: "Thinking becomes practical and goal-oriented. Communication takes on a serious, professional tone. Excellent for strategic planning, career discussions, and long-term goal setting. Mental discipline peaks.",
+    Aquarius: "Mercury exalted - innovative thinking and original ideas flourish. Communication becomes unconventional and forward-thinking. Perfect for technology, group discussions, and humanitarian causes.",
+    Pisces: "Mercury in detriment - thoughts become dreamy, intuitive, and artistic. Communication may be less precise but more imaginative. Great for poetry, music, and spiritual reflection. Pay extra attention to details.",
+    Aries: "Quick, decisive thinking returns. Communication becomes direct and competitive. Great for debates, negotiations, and pioneering ideas. Watch for impulsive words.",
+    Taurus: "Thoughts slow down and become more practical. Communication focuses on values and material matters. Excellent for financial planning and sensory experiences. Stubborn opinions may surface.",
+    Gemini: "Mercury returns home - mental agility and curiosity peak. Communication flows easily with wit and versatility. Perfect for learning, networking, and multitasking. Watch for scattered focus.",
+    Cancer: "Thoughts turn emotional and intuitive. Communication becomes nurturing but may be indirect. Excellent for family discussions, therapy, and expressing feelings. Memory sharpens, especially for emotional experiences.",
+    Leo: "Mental expression becomes confident, dramatic, and creative. Communication demands attention and respect. Perfect for presentations, performances, and leadership announcements. Pride may affect objectivity.",
+    Virgo: "Mercury returns home - analytical skills peak. Thinking becomes precise, critical, and service-oriented. Perfect for editing, health planning, and detailed work. Communication focuses on improvement and efficiency.",
+    Libra: "Thoughts seek balance and harmony. Communication becomes diplomatic, fair, and relationship-focused. Excellent for negotiations, mediation, and partnership discussions. Decision-making may slow down weighing options.",
+    Scorpio: "Mental energy intensifies - thoughts probe beneath surfaces. Communication becomes penetrating, strategic, and transformative. Perfect for research, psychology, and deep conversations. Secrets may be revealed or kept.",
+    Sagittarius: "Thinking expands with optimism and philosophical bent. Communication becomes enthusiastic, honest, and truth-seeking. Perfect for teaching, travel planning, and big-picture discussions. May overcommit or exaggerate.",
+  },
+  venus: {
+    Capricorn: "Love becomes serious, committed, and long-term focused. Affection expressed through acts of service and responsibility. Attraction to maturity, success, and stability. Good for defining relationships and business partnerships.",
+    Aquarius: "Love energy shifts to friendship and intellectual connection. Attraction to uniqueness and independence. Relationships need freedom and mental stimulation. Great for unconventional partnerships and group social activities.",
+    Pisces: "Venus exalted - love becomes deeply romantic, compassionate, and spiritual. Boundaries dissolve in relationships. Heightened artistic sensitivity and desire for soulmate connection. Watch for idealization or martyrdom.",
+    Aries: "Passion ignites - love becomes bold, direct, and spontaneous. Attraction to confidence and initiative. Pursuit energy increases. Great for new relationships but may rush commitment. Independence remains important.",
+    Taurus: "Venus returns home - sensuality and stability peak. Love expressed through physical affection, gifts, and building security. Slow but enduring attraction. Perfect for deepening commitments and enjoying pleasures.",
+    Gemini: "Love becomes playful, communicative, and intellectually stimulating. Attraction to wit and variety. Social calendar fills up. Multiple interests or flirtations possible. Connection through conversation.",
+    Cancer: "Affection becomes nurturing, protective, and family-oriented. Emotional security in relationships prioritized. Home becomes romantic sanctuary. Intuitive understanding of partner's needs. May become clingy.",
+    Leo: "Love becomes grand, generous, and attention-seeking. Romance takes center stage with dramatic gestures. Loyalty and admiration important. Creative dates and public displays of affection increase. Pride in relationships.",
+    Virgo: "Love expressed through helpful acts and thoughtful details. Attraction to health-consciousness and reliability. Perfectionist standards may increase. Analysis of relationships begins. Service becomes love language.",
+    Libra: "Venus returns home - charm, grace, and partnership focus peak. Balance and harmony in relationships essential. Diplomacy in love. Perfect for commitments, weddings, and resolving conflicts. Indecision possible.",
+    Scorpio: "Love intensifies with passion, depth, and transformation. Emotional and physical intimacy deepen. Jealousy or possessiveness may surface. Powerful magnetic attraction. Secrets and vulnerability in relationships.",
+    Sagittarius: "Love becomes adventurous, optimistic, and freedom-loving. Attraction to honesty and shared philosophies. Relationships expand horizons. Great for travel with partners and exploring new experiences together.",
+  },
+  mars: {
+    Capricorn: "Mars exalted - drive becomes strategic, disciplined, and achievement-oriented. Energy channeled into long-term goals and career advancement. Excellent for sustained effort and climbing ambitions. Authority and control increase.",
+    Aquarius: "Action energy shifts to innovation and group causes. Drive directed toward progress and reform. Fighting for ideals and humanitarian goals. Energy works best in collaborative, unconventional approaches.",
+    Pisces: "Energy becomes diffused and spiritually directed. Action motivated by compassion and artistic vision. Passive-aggressive tendencies increase. Excellent for creative pursuits and healing work. Boundaries around energy important.",
+    Aries: "Mars returns home - physical energy and courage peak. Initiative, independence, and competitive drive surge. Perfect for starting new projects and athletic pursuits. Impulsiveness and anger flash quickly.",
+    Taurus: "Action becomes steady, persistent, and focused on material security. Energy applied to building lasting value. Stubbornness increases. Excellent for physical work and sensual pleasures. Slow to anger but powerful when provoked.",
+    Gemini: "Mental energy and restlessness increase. Drive directed toward communication, learning, and variety. Multi-tasking peaks. Scattered efforts possible. Great for debates, negotiations, and quick decisive action.",
+    Cancer: "Action motivated by emotional security and family protection. Energy channeled into home and nurturing. Passive-aggressive tendencies increase. Excellent for domestic projects and defending loved ones.",
+    Leo: "Energy becomes dramatic, confident, and creative. Drive for recognition and self-expression intensifies. Leadership abilities surge. Excellent for performance and courageous acts. Pride fuels action.",
+    Virgo: "Energy directed toward service, health, and detailed work. Drive for perfection and improvement increases. Excellent for analytical work and health routines. Critical tendencies may spike.",
+    Libra: "Mars in detriment - energy seeks partnership and harmony. Action becomes diplomatic but indecisive. Drive channeled into relationships and justice. Passive-aggressive tendencies increase. Good for collaborative action.",
+    Scorpio: "Mars traditional ruler - intensity and strategic power peak. Energy becomes magnetic, transformative, and relentless. Excellent for research, crisis management, and deep transformative work. Control and privacy important.",
+    Sagittarius: "Energy expands with enthusiasm and idealism. Action directed toward truth, adventure, and meaning. Drive for freedom and expansion. Excellent for travel, education, and philosophical pursuits. Over-extension possible.",
+  },
+};
+
+// Get interpretation for a planet entering a sign
+export const getIngressInterpretation = (planet: string, sign: string): string => {
+  const planetLower = planet.toLowerCase();
+  const interpretation = INGRESS_INTERPRETATIONS[planetLower]?.[sign];
+  
+  if (interpretation) {
+    return interpretation;
+  }
+  
+  // Default for planets not in the table (outer planets, etc.)
+  return `${planet} enters ${sign} - a shift in how this planet's energy expresses itself.`;
+};
+
 // Calculate daily aspects between planets
 export const calculateDailyAspects = (planets: PlanetaryPositions): Aspect[] => {
   const aspects: Aspect[] = [];

@@ -1,5 +1,5 @@
 import { X } from 'lucide-react';
-import { DayData, getPlanetSymbol, MoonPhase, getColorExplanation, ColorExplanation } from '@/lib/astrology';
+import { DayData, getPlanetSymbol, MoonPhase, getColorExplanation, ColorExplanation, determineApplying, getIngressInterpretation } from '@/lib/astrology';
 import { UserData } from '@/hooks/useUserData';
 
 // Sign-specific energies for daily guidance
@@ -58,6 +58,15 @@ const getDailyGuidance = (
     return `${phaseForGuidance} in ${moonSign} - Time for release and integration. Reflect on ${signData.focus}. ${signData.action} mindfully.`;
   }
   return `Moon in ${moonSign} - ${signData.action} with awareness of ${signData.focus}. Avoid ${signData.avoid}.`;
+};
+
+// Get planet symbol for ingress display
+const getIngressSymbol = (planet: string): string => {
+  const symbols: Record<string, string> = {
+    Mercury: '☿', Venus: '♀', Mars: '♂', Jupiter: '♃', Saturn: '♄',
+    Uranus: '♅', Neptune: '♆', Pluto: '♇', Sun: '☉', Moon: '☽',
+  };
+  return symbols[planet] || planet;
 };
 
 interface DayDetailProps {
@@ -134,21 +143,28 @@ export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
         {/* Why These Colors Section */}
         <ColorExplanationSection colorExplanation={colorExplanation} aspects={aspects} />
 
-        {/* Major Ingresses Section - Highlighted */}
+        {/* Major Ingresses Section - Highlighted with Interpretations */}
         {majorIngresses.length > 0 && (
-          <div className="mb-6 pb-6 border-b border-border bg-amber-50 dark:bg-amber-950/20 p-4 rounded-sm">
-            <h3 className="text-[11px] uppercase tracking-widest text-primary mb-3">⭐ Planetary Ingresses Today</h3>
-            <ul className="space-y-2">
+          <div className="mb-6 pb-6 border-b border-border bg-amber-50 dark:bg-amber-950/20 p-4 rounded-sm border-2 border-amber-200 dark:border-amber-700">
+            <h3 className="text-[11px] uppercase tracking-widest text-primary mb-4 font-semibold">⭐ Planetary Ingresses Today</h3>
+            <div className="space-y-4">
               {majorIngresses.map((ingress, i) => (
-                <li key={i}>
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">{ingress.icon}</span>
-                    <span className="font-medium text-foreground">{ingress.planet} enters {ingress.sign}</span>
+                <div key={i} className={majorIngresses.length > 1 && i < majorIngresses.length - 1 ? "pb-4 border-b border-border/50" : ""}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xl">{getIngressSymbol(ingress.planet)}</span>
+                    <span className="font-semibold text-foreground text-lg">{ingress.planet} enters {ingress.sign}</span>
                   </div>
-                  <p className="mt-1 text-sm text-muted-foreground">{ingress.desc}</p>
-                </li>
+                  <p className="text-sm text-foreground leading-relaxed">
+                    {getIngressInterpretation(ingress.planet, ingress.sign)}
+                  </p>
+                  {ingress.durationDays && (
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Duration: ~{ingress.durationDays} days in {ingress.sign}
+                    </p>
+                  )}
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
         )}
 
@@ -177,24 +193,45 @@ export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
           </p>
         </div>
 
-        {/* Daily Aspects Section */}
+        {/* Daily Aspects Section with Applying/Separating */}
         {aspects && aspects.length > 0 && (
           <div className="mb-6 pb-6 border-b border-border">
             <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground mb-4">
               Daily Aspects ({aspects.length})
             </h3>
-            <div className="grid gap-2">
-              {aspects.map((asp, i) => (
-                <div key={i} className="rounded-sm bg-secondary p-3">
-                  <div className="flex items-center gap-2 font-medium text-foreground">
-                    <span>{getPlanetSymbol(asp.planet1)}</span>
-                    <span className="text-primary">{asp.symbol}</span>
-                    <span>{getPlanetSymbol(asp.planet2)}</span>
-                    <span className="text-sm capitalize">{asp.type}</span>
-                    <span className="text-[11px] text-muted-foreground ml-auto">(orb: {asp.orb}°)</span>
+            <div className="grid gap-3">
+              {aspects.map((asp, i) => {
+                const planet1Data = planets[asp.planet1 as keyof typeof planets];
+                const planet2Data = planets[asp.planet2 as keyof typeof planets];
+                const isApplying = determineApplying(asp.planet1, asp.planet2, planet1Data, planet2Data, asp.type);
+                
+                return (
+                  <div key={i} className="rounded-sm bg-secondary p-3 border border-border">
+                    <div className="flex items-center gap-2 font-semibold text-foreground mb-2">
+                      <span className="text-lg">{getPlanetSymbol(asp.planet1)}</span>
+                      <span className="text-primary text-lg">{asp.symbol}</span>
+                      <span className="text-lg">{getPlanetSymbol(asp.planet2)}</span>
+                      <span className="text-sm capitalize">{asp.type}</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground font-mono mb-2">
+                      {getPlanetSymbol(asp.planet1)} {planet1Data.degree}° {planet1Data.sign} {asp.symbol} {getPlanetSymbol(asp.planet2)} {planet2Data.degree}° {planet2Data.sign}
+                    </div>
+                    <div className="flex items-center gap-3 text-xs">
+                      <span className="text-muted-foreground">Orb: {asp.orb}°</span>
+                      <span className="text-muted-foreground">•</span>
+                      <span className={isApplying ? "text-green-600 dark:text-green-400 font-medium" : "text-red-600 dark:text-red-400 font-medium"}>
+                        {isApplying ? "→ Applying" : "← Separating"}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-muted-foreground mt-1 italic">
+                      {isApplying
+                        ? `${asp.planet1.charAt(0).toUpperCase() + asp.planet1.slice(1)} moving toward exact aspect with ${asp.planet2.charAt(0).toUpperCase() + asp.planet2.slice(1)}`
+                        : `${asp.planet1.charAt(0).toUpperCase() + asp.planet1.slice(1)} moving away from exact aspect with ${asp.planet2.charAt(0).toUpperCase() + asp.planet2.slice(1)}`
+                      }
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
