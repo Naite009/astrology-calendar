@@ -68,24 +68,21 @@ ${planetPositions.map((p: any) => `- ${p.name}: ${p.degree}° ${p.sign}`).join('
 CRITICAL RULES:
 1. ONLY use the planetary positions provided in the data. These are calculated using astronomy-engine and are accurate.
 2. The Moon's current sign is specified in the data - USE IT EXACTLY. Do not guess or assume.
-3. If there's an exact lunar phase (Full Moon/New Moon), the sign is explicitly provided - use that exact sign.
-4. Pay attention to planetary conjunctions - when planets share the same sign, especially Moon conjunct Jupiter, this is significant.
+3. NEVER call something a "Full Moon" or "New Moon" unless an EXACT lunar event object is provided (exactLunarPhase != null).
+4. If exactLunarPhase is provided, use its sign as the event sign (do not substitute the transiting Moon sign).
 5. Reference the ACTUAL positions when describing the cosmic weather.
 
-Style: Write like a blend of Jessica Davidson, Chani Nicholas, and Cafe Astrology - poetic yet practical, spiritually grounded but accessible. Avoid overly technical jargon.
+Style: Poetic but practical, spiritually grounded but accessible. Avoid overly technical jargon.
 
 Format your response with these sections (use markdown headers):
 ## Today's Cosmic Theme
-(A 1-2 sentence poetic summary of the day's energy)
 
 ## Key Energies
-(2-3 bullet points on the main influences - reference actual planet signs)
 
 ## Guidance
-(2-3 sentences of practical advice for working with today's energy)
 
-## Shadow Watch
-(1 brief sentence on what to be mindful of)`;
+## Shadow Watch`;
+
 
     const userPrompt = `Generate cosmic weather insights for ${date}.
 

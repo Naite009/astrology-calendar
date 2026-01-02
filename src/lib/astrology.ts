@@ -313,20 +313,20 @@ const MOON_NAMES: Record<number, string> = {
 
 // Get exact lunar phase time if New Moon, Full Moon, First Quarter, or Last Quarter occurs on this calendar day (Eastern Time).
 // We search for the nearest event around the day, but ONLY return it if the event's ET date matches
-// the day being rendered. This prevents the common 3-day "spill" where Full/New Moons get shown on
-// adjacent days due to UTC boundary differences.
+// the day being rendered. IMPORTANT: We treat the incoming `date` as a calendar-day identifier
+// (year/month/day), not as an instant in the user's local timezone.
 export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
   try {
-    const etDayKey = new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'America/New_York',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    }).format(date); // YYYY-MM-DD
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDate();
+
+    // Calendar day key (YYYY-MM-DD) for the day the user clicked in the calendar UI.
+    const etDayKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
     // Start searching a bit before the day to ensure we catch events that occur early ET.
-    const searchStart = new Date(date);
-    searchStart.setDate(searchStart.getDate() - 2);
+    // Use a stable midday UTC anchor derived from the calendar day to avoid user-timezone skew.
+    const searchStart = new Date(Date.UTC(year, month, day - 2, 12, 0, 0));
 
     const getETKey = (d: Date) =>
       new Intl.DateTimeFormat('en-CA', {

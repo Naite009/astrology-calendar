@@ -64,7 +64,22 @@ export const CosmicWeatherBanner = ({
   // - For exact Full/New Moon, use the exactLunarPhase.sign
   // - Otherwise use the current transiting moon sign
   const effectiveMoonSign = exactLunarPhase?.sign || moonSign;
-  const isExactPhase = exactLunarPhase && (exactLunarPhase.type === 'Full Moon' || exactLunarPhase.type === 'New Moon');
+  const isExactPhase = !!exactLunarPhase;
+
+  // Avoid labeling adjacent days as "Full Moon"/"New Moon".
+  // If we do NOT have an exact lunar event for today, downshift the broad phase bucket
+  // into a more truthful waxing/waning label.
+  const phaseForAI = (() => {
+    if (isExactPhase) return exactLunarPhase.type;
+
+    if (moonPhase.phaseName === 'New Moon') {
+      return moonPhase.phase < 180 ? 'Waxing Crescent' : 'Waning Crescent';
+    }
+    if (moonPhase.phaseName === 'Full Moon') {
+      return moonPhase.phase < 180 ? 'Waxing Gibbous' : 'Waning Gibbous';
+    }
+    return moonPhase.phaseName;
+  })();
 
   const fetchInsights = async () => {
     if (loading || hasFetched.current) return;
@@ -76,7 +91,7 @@ export const CosmicWeatherBanner = ({
       const { data, error } = await supabase.functions.invoke('cosmic-weather', {
         body: {
           date: date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
-          moonPhase: isExactPhase ? exactLunarPhase.type : moonPhase.phaseName,
+          moonPhase: phaseForAI,
           moonSign: effectiveMoonSign,
           exactLunarPhase: isExactPhase ? {
             type: exactLunarPhase.type,
