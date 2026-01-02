@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette } from "lucide-react";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
 import { YearView } from "./YearView";
@@ -10,12 +10,13 @@ import { UserForm } from "./UserForm";
 import { DayDetail } from "./DayDetail";
 import { ChartLibrary } from "./ChartLibrary";
 import { BestTimesView } from "./BestTimesView";
+import { ColorsView } from "./ColorsView";
 import { useUserData } from "@/hooks/useUserData";
 import { useNotes } from "@/hooks/useNotes";
 import { useNatalChart } from "@/hooks/useNatalChart";
 import { DayData, generateICalExport } from "@/lib/astrology";
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "best-times";
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "best-times" | "colors";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 0, 1)); // January 2026
@@ -87,6 +88,9 @@ export const AstroCalendar = () => {
     }
     if (viewMode === "best-times") {
       return "Best Times";
+    }
+    if (viewMode === "colors") {
+      return "Astro Colors";
     }
     if (viewMode === "moon-phases") {
       return `${currentDate.getFullYear()} Moon Phases`;
@@ -201,6 +205,17 @@ export const AstroCalendar = () => {
                 <Clock size={14} />
                 Best Times
               </button>
+              <button
+                onClick={() => setViewMode("colors")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "colors"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Palette size={14} />
+                Colors
+              </button>
             </div>
 
             {userData && (
@@ -301,6 +316,13 @@ export const AstroCalendar = () => {
             savedCharts={savedCharts}
             selectedChartForTiming={selectedChartForTiming}
             setSelectedChartForTiming={selectChartForTiming}
+          />
+        )}
+
+        {viewMode === "colors" && (
+          <ColorsView
+            userNatalChart={userNatalChart}
+            onOpenNatalForm={() => setViewMode("charts")}
           />
         )}
       </div>
