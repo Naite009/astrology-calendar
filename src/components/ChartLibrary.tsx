@@ -242,10 +242,13 @@ export const ChartLibrary = ({
               </div>
 
               <div className="border-t border-border pt-5">
-                <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground mb-4">Planet Positions</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground">Planet Positions</h3>
+                  <p className="text-[10px] text-muted-foreground italic">Birth info saved for future auto-calculation</p>
+                </div>
                 <div className="space-y-3">
                   {PLANETS.map(planet => (
-                    <div key={planet} className="grid grid-cols-[40px_100px_1fr_60px_60px_60px] gap-2 items-center">
+                    <div key={planet} className="grid grid-cols-[40px_100px_1fr_80px_80px_80px] gap-2 items-center">
                       <span className="text-lg">{getPlanetSymbol(planet.toLowerCase())}</span>
                       <span className="text-sm text-foreground">{planet}</span>
                       <select
@@ -258,33 +261,42 @@ export const ChartLibrary = ({
                           <option key={sign} value={sign}>{sign}</option>
                         ))}
                       </select>
-                      <input
-                        type="number"
-                        min="0"
-                        max="29"
-                        placeholder="Deg"
-                        value={formData.planets[planet]?.degree || ''}
-                        onChange={e => updatePlanet(planet, 'degree', e.target.value)}
-                        className="border border-border bg-background px-2 py-1.5 text-sm text-center focus:border-primary focus:outline-none"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="59"
-                        placeholder="Min"
-                        value={formData.planets[planet]?.minutes || ''}
-                        onChange={e => updatePlanet(planet, 'minutes', e.target.value)}
-                        className="border border-border bg-background px-2 py-1.5 text-sm text-center focus:border-primary focus:outline-none"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="59"
-                        placeholder="Sec"
-                        value={formData.planets[planet]?.seconds || ''}
-                        onChange={e => updatePlanet(planet, 'seconds', e.target.value)}
-                        className="border border-border bg-background px-2 py-1.5 text-sm text-center focus:border-primary focus:outline-none"
-                      />
+                      <div className="relative">
+                        <input
+                          type="number"
+                          min="0"
+                          max="29"
+                          placeholder="0"
+                          value={formData.planets[planet]?.degree ?? ''}
+                          onChange={e => updatePlanet(planet, 'degree', e.target.value)}
+                          className="w-full border border-border bg-background px-2 py-1.5 pr-6 text-sm text-center focus:border-primary focus:outline-none"
+                        />
+                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">°</span>
+                      </div>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          min="0"
+                          max="59"
+                          placeholder="0"
+                          value={formData.planets[planet]?.minutes ?? ''}
+                          onChange={e => updatePlanet(planet, 'minutes', e.target.value)}
+                          className="w-full border border-border bg-background px-2 py-1.5 pr-6 text-sm text-center focus:border-primary focus:outline-none"
+                        />
+                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">′</span>
+                      </div>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          min="0"
+                          max="59"
+                          placeholder="0"
+                          value={formData.planets[planet]?.seconds ?? ''}
+                          onChange={e => updatePlanet(planet, 'seconds', e.target.value)}
+                          className="w-full border border-border bg-background px-2 py-1.5 pr-6 text-sm text-center focus:border-primary focus:outline-none"
+                        />
+                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">″</span>
+                      </div>
                     </div>
                   ))}
                 </div>
