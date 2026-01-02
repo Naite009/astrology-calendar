@@ -217,6 +217,18 @@ export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
           nodeAspects={nodeAspects}
           mercuryRetro={mercuryRetro}
           aspects={aspects || []}
+          planetPositions={[
+            { name: 'Moon', sign: planets.moon.signName, degree: planets.moon.degree },
+            { name: 'Sun', sign: planets.sun.signName, degree: planets.sun.degree },
+            { name: 'Mercury', sign: planets.mercury.signName, degree: planets.mercury.degree },
+            { name: 'Venus', sign: planets.venus.signName, degree: planets.venus.degree },
+            { name: 'Mars', sign: planets.mars.signName, degree: planets.mars.degree },
+            { name: 'Jupiter', sign: planets.jupiter.signName, degree: planets.jupiter.degree },
+            { name: 'Saturn', sign: planets.saturn.signName, degree: planets.saturn.degree },
+            { name: 'Uranus', sign: planets.uranus.signName, degree: planets.uranus.degree },
+            { name: 'Neptune', sign: planets.neptune.signName, degree: planets.neptune.degree },
+            { name: 'Pluto', sign: planets.pluto.signName, degree: planets.pluto.degree },
+          ]}
         />
 
         {/* Fixed Star Conjunctions */}
