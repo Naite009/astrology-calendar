@@ -24,6 +24,12 @@ export interface ZodiacPosition {
   fullDegree: string;
 }
 
+export interface ExtendedZodiacPosition extends ZodiacPosition {
+  longitude: number;
+  planetSymbol?: string;
+  name?: string;
+}
+
 export interface PlanetaryPositions {
   moon: ZodiacPosition;
   sun: ZodiacPosition;
@@ -35,6 +41,10 @@ export interface PlanetaryPositions {
   uranus: ZodiacPosition;
   neptune: ZodiacPosition;
   pluto: ZodiacPosition;
+  northNode?: ExtendedZodiacPosition;
+  southNode?: ExtendedZodiacPosition;
+  chiron?: ExtendedZodiacPosition;
+  lilith?: ExtendedZodiacPosition;
 }
 
 export interface MoonPhase {
@@ -136,6 +146,57 @@ export const longitudeToZodiac = (longitude: number): ZodiacPosition => {
   };
 };
 
+// Calculate North and South Node positions (Mean Node)
+export const getNodePositions = (date: Date): { north: ExtendedZodiacPosition; south: ExtendedZodiacPosition } => {
+  const d = (date.getTime() - new Date('2000-01-01T12:00:00Z').getTime()) / (1000 * 60 * 60 * 24);
+  const meanNode = 125.04452 - 0.0529921 * d; // degrees
+  
+  const normalizedNode = ((meanNode % 360) + 360) % 360;
+  const northNode = longitudeToZodiac(normalizedNode);
+  
+  const southNodeLon = (normalizedNode + 180) % 360;
+  const southNode = longitudeToZodiac(southNodeLon);
+  
+  return {
+    north: { ...northNode, longitude: normalizedNode, planetSymbol: '☊', name: 'North Node' },
+    south: { ...southNode, longitude: southNodeLon, planetSymbol: '☋', name: 'South Node' }
+  };
+};
+
+// Calculate Chiron position (approximation - for accurate positions would need Swiss Ephemeris)
+export const getChironPosition = (date: Date): ExtendedZodiacPosition => {
+  // Chiron has ~50.7 year orbital period
+  // J2000 epoch: Chiron at approximately 72° (12° Gemini)
+  const d = (date.getTime() - new Date('2000-01-01T12:00:00Z').getTime()) / (1000 * 60 * 60 * 24);
+  const meanMotion = 360 / (50.7 * 365.25); // degrees per day
+  const longitude = (72 + d * meanMotion) % 360;
+  const normalizedLon = ((longitude % 360) + 360) % 360;
+  
+  return {
+    ...longitudeToZodiac(normalizedLon),
+    longitude: normalizedLon,
+    planetSymbol: '⚷',
+    name: 'Chiron'
+  };
+};
+
+// Calculate Black Moon Lilith position (Mean Lilith approximation)
+export const getBlackMoonLilith = (date: Date): ExtendedZodiacPosition => {
+  // Lilith has ~8.85 year cycle
+  // J2000 epoch: Mean Lilith at approximately 121° (1° Leo)
+  const d = (date.getTime() - new Date('2000-01-01T12:00:00Z').getTime()) / (1000 * 60 * 60 * 24);
+  const meanMotion = 360 / (8.85 * 365.25); // degrees per day
+  const longitude = (121 + d * meanMotion) % 360;
+  const normalizedLon = ((longitude % 360) + 360) % 360;
+  
+  return {
+    ...longitudeToZodiac(normalizedLon),
+    longitude: normalizedLon,
+    planetSymbol: '⚸',
+    name: 'Black Moon Lilith'
+  };
+};
+
 // Get all planetary positions for a date
 export const getPlanetaryPositions = (date: Date): PlanetaryPositions => {
   const getPosition = (body: Astronomy.Body): ZodiacPosition => {
@@ -153,6 +214,10 @@ export const getPlanetaryPositions = (date: Date): PlanetaryPositions => {
     }
   };
 
+  const nodes = getNodePositions(date);
+  const chiron = getChironPosition(date);
+  const lilith = getBlackMoonLilith(date);
+
   return {
     moon: getPosition(Astronomy.Body.Moon),
     sun: getPosition(Astronomy.Body.Sun),
@@ -164,6 +229,10 @@ export const getPlanetaryPositions = (date: Date): PlanetaryPositions => {
     uranus: getPosition(Astronomy.Body.Uranus),
     neptune: getPosition(Astronomy.Body.Neptune),
     pluto: getPosition(Astronomy.Body.Pluto),
+    northNode: nodes.north,
+    southNode: nodes.south,
+    chiron,
+    lilith,
   };
 };
 
@@ -925,3 +994,359 @@ export const generateICalExport = (year: number, month: number, daysInMonth: num
   ical += 'END:VCALENDAR';
   return ical;
 };
+
+// =========================================
+// DIVINE FEMININE ASTROLOGY - PHASE 1
+// =========================================
+
+// Fixed Stars Database with their ecliptic positions
+export const FIXED_STARS: Record<string, { name: string; longitude: number; orb: number; magnitude: number; meaning: string }> = {
+  sirius: {
+    name: 'Sirius',
+    longitude: 104.0, // 14° Cancer
+    orb: 2.0,
+    magnitude: -1.46,
+    meaning: "The Dog Star. Spiritual wisdom, success, fame. Ancient Egyptian sacred star. Divine downloads, kundalini awakening, connection to higher consciousness."
+  },
+  regulus: {
+    name: 'Regulus',
+    longitude: 149.0, // 29° Leo
+    orb: 2.0,
+    magnitude: 1.35,
+    meaning: "Heart of the Lion. Royal power, leadership, fame, success. 'Success if revenge is avoided.' Military honors, nobility. Guardian of the North."
+  },
+  algol: {
+    name: 'Algol',
+    longitude: 56.0, // 26° Taurus
+    orb: 2.0,
+    magnitude: 2.1,
+    meaning: "Medusa's Head. Transformation through facing shadow. Feminine rage transmuted to power. Passion, intensity, the demon lover."
+  },
+  spica: {
+    name: 'Spica',
+    longitude: 203.8, // 23° Libra
+    orb: 2.0,
+    magnitude: 0.97,
+    meaning: "The Wheat Sheaf. Gifts, talents, protection. Venus-Jupiter nature. Artistic success, harvest of efforts. The priestess star."
+  },
+  antares: {
+    name: 'Antares',
+    longitude: 249.0, // 9° Sagittarius
+    orb: 2.0,
+    magnitude: 1.09,
+    meaning: "Rival of Mars. Warrior spirit, obsession, intensity. Success through persistence. Heart of the Scorpion. Guardian of the West."
+  },
+  aldebaran: {
+    name: 'Aldebaran',
+    longitude: 69.5, // 9° Gemini
+    orb: 2.0,
+    magnitude: 0.85,
+    meaning: "The Bull's Eye. Integrity, honor, eloquence. 'Success through integrity.' Military honors, courage. Guardian of the East."
+  },
+  fomalhaut: {
+    name: 'Fomalhaut',
+    longitude: 333.0, // 3° Pisces
+    orb: 2.0,
+    magnitude: 1.16,
+    meaning: "The Mouth of the Fish. Idealism, mysticism, fame. Rise and fall. Charisma, magic, spiritual power. Guardian of the South."
+  },
+  alcyone: {
+    name: 'Alcyone',
+    longitude: 60.0, // 0° Gemini
+    orb: 1.5,
+    magnitude: 2.86,
+    meaning: "Central star of Pleiades (Seven Sisters). Vision, mysticism, grief. Something to cry about. Ambition, mourning. Mystical sight."
+  }
+};
+
+// Check if planet is conjunct a fixed star
+export interface FixedStarConjunction {
+  star: string;
+  planet: string;
+  orb: string;
+  meaning: string;
+}
+
+export const getFixedStarConjunctions = (planets: PlanetaryPositions): FixedStarConjunction[] => {
+  const conjunctions: FixedStarConjunction[] = [];
+  
+  const getLongitude = (position: ZodiacPosition): number => {
+    const signIndex = ZODIAC_SIGNS.findIndex(s => s.name === position.signName);
+    return signIndex * 30 + position.degree;
+  };
+
+  const planetEntries: [string, ZodiacPosition][] = [
+    ['Moon', planets.moon],
+    ['Sun', planets.sun],
+    ['Mercury', planets.mercury],
+    ['Venus', planets.venus],
+    ['Mars', planets.mars],
+    ['Jupiter', planets.jupiter],
+    ['Saturn', planets.saturn],
+  ];
+
+  planetEntries.forEach(([planetName, position]) => {
+    const planetLon = getLongitude(position);
+    
+    Object.values(FIXED_STARS).forEach((star) => {
+      const orb = Math.abs(planetLon - star.longitude);
+      const normalizedOrb = orb > 180 ? 360 - orb : orb;
+      
+      if (normalizedOrb <= star.orb) {
+        conjunctions.push({
+          star: star.name,
+          planet: planetName,
+          orb: normalizedOrb.toFixed(2),
+          meaning: star.meaning
+        });
+      }
+    });
+  });
+  
+  return conjunctions;
+};
+
+// Chiron interpretations by sign
+export const CHIRON_MEANINGS: Record<string, string> = {
+  Aries: "Wound: Identity, self-assertion, independence. Healing: Courage to be yourself, warrior spirit, pioneering new paths.",
+  Taurus: "Wound: Self-worth, material security, body image. Healing: Grounding, sensuality, valuing yourself.",
+  Gemini: "Wound: Communication, learning, siblings. Healing: Voice, curiosity, connecting.",
+  Cancer: "Wound: Emotions, family, belonging. Healing: Nurturing self and others, emotional safety.",
+  Leo: "Wound: Self-expression, creativity, recognition. Healing: Authentic creativity, inner child joy.",
+  Virgo: "Wound: Perfection, service, health. Healing: Accepting imperfection, holistic wellness.",
+  Libra: "Wound: Relationships, balance, fairness. Healing: Healthy boundaries, partnership equality.",
+  Scorpio: "Wound: Trust, intimacy, transformation. Healing: Deep emotional healing, empowerment.",
+  Sagittarius: "Wound: Meaning, truth, freedom. Healing: Faith, philosophical understanding, adventure.",
+  Capricorn: "Wound: Authority, achievement, structure. Healing: Building from wounds, mature success.",
+  Aquarius: "Wound: Belonging, uniqueness, community. Healing: Embracing difference, humanitarian work.",
+  Pisces: "Wound: Boundaries, escapism, spirituality. Healing: Compassion, mystical connection, service."
+};
+
+// Lilith interpretations by sign
+export const LILITH_MEANINGS: Record<string, string> = {
+  Aries: "Wild independence. Rage at being told who to be. Power: Fierce autonomy.",
+  Taurus: "Sensual sovereignty. Rage at being owned. Power: Body as temple.",
+  Gemini: "Voice as weapon. Rage at being silenced. Power: Speaking dangerous truths.",
+  Cancer: "Primal mother. Rage at nurturing demands. Power: Emotional intensity.",
+  Leo: "Creative fury. Rage at being unseen. Power: Shameless self-expression.",
+  Virgo: "Perfect imperfection. Rage at criticism. Power: Sacred service.",
+  Libra: "Relationship rebel. Rage at people-pleasing. Power: Authentic partnership.",
+  Scorpio: "Sexual power. Rage at control. Power: Transformative intensity.",
+  Sagittarius: "Wild freedom. Rage at cages. Power: Untamed spirit.",
+  Capricorn: "Authority defiance. Rage at rules. Power: Building your empire.",
+  Aquarius: "Radical uniqueness. Rage at conformity. Power: Revolutionary change.",
+  Pisces: "Mystic wild. Rage at reality. Power: Spiritual rebellion."
+};
+
+// Stellium detection (3+ planets in same sign)
+export interface Stellium {
+  sign: string;
+  planets: { name: string; symbol: string; degree: number }[];
+  count: number;
+}
+
+export const detectStelliums = (planets: PlanetaryPositions): Stellium[] => {
+  const signGroups: Record<string, { name: string; symbol: string; degree: number }[]> = {};
+  
+  const planetEntries: [string, ZodiacPosition, string][] = [
+    ['Moon', planets.moon, '☽'],
+    ['Sun', planets.sun, '☉'],
+    ['Mercury', planets.mercury, '☿'],
+    ['Venus', planets.venus, '♀'],
+    ['Mars', planets.mars, '♂'],
+    ['Jupiter', planets.jupiter, '♃'],
+    ['Saturn', planets.saturn, '♄'],
+  ];
+
+  planetEntries.forEach(([name, position, symbol]) => {
+    if (!signGroups[position.signName]) {
+      signGroups[position.signName] = [];
+    }
+    signGroups[position.signName].push({ name, symbol, degree: position.degree });
+  });
+
+  return Object.entries(signGroups)
+    .filter(([, planetList]) => planetList.length >= 3)
+    .map(([sign, planetList]) => ({
+      sign,
+      planets: planetList.sort((a, b) => a.degree - b.degree),
+      count: planetList.length
+    }));
+};
+
+// Rare aspect detection (quincunx, sesquiquadrate, quintile, bi-quintile)
+export interface RareAspect {
+  planet1: string;
+  planet2: string;
+  type: string;
+  symbol: string;
+  angle: number;
+  orb: string;
+  meaning: string;
+}
+
+export const detectRareAspects = (planets: PlanetaryPositions): RareAspect[] => {
+  const rareAspects: RareAspect[] = [];
+  
+  const getLongitude = (position: ZodiacPosition): number => {
+    const signIndex = ZODIAC_SIGNS.findIndex(s => s.name === position.signName);
+    return signIndex * 30 + position.degree;
+  };
+
+  const planetList: [string, ZodiacPosition][] = [
+    ['Moon', planets.moon],
+    ['Sun', planets.sun],
+    ['Mercury', planets.mercury],
+    ['Venus', planets.venus],
+    ['Mars', planets.mars],
+    ['Jupiter', planets.jupiter],
+    ['Saturn', planets.saturn],
+  ];
+
+  for (let i = 0; i < planetList.length; i++) {
+    for (let j = i + 1; j < planetList.length; j++) {
+      const [p1Name, p1Pos] = planetList[i];
+      const [p2Name, p2Pos] = planetList[j];
+      const lon1 = getLongitude(p1Pos);
+      const lon2 = getLongitude(p2Pos);
+      
+      const diff = Math.abs(((lon2 - lon1 + 180) % 360) - 180);
+
+      // Sesquiquadrate (135°)
+      if (Math.abs(diff - 135) < 3) {
+        rareAspects.push({
+          planet1: p1Name,
+          planet2: p2Name,
+          type: 'sesquiquadrate',
+          symbol: '⚼',
+          angle: 135,
+          orb: Math.abs(diff - 135).toFixed(1),
+          meaning: 'Friction and adjustment needed. Creative tension requiring action.'
+        });
+      }
+      
+      // Quincunx/Inconjunct (150°)
+      if (Math.abs(diff - 150) < 3) {
+        rareAspects.push({
+          planet1: p1Name,
+          planet2: p2Name,
+          type: 'quincunx',
+          symbol: '⚻',
+          angle: 150,
+          orb: Math.abs(diff - 150).toFixed(1),
+          meaning: 'Requires pivoting and adjustment. Incompatible energies seeking integration.'
+        });
+      }
+      
+      // Quintile (72°)
+      if (Math.abs(diff - 72) < 2) {
+        rareAspects.push({
+          planet1: p1Name,
+          planet2: p2Name,
+          type: 'quintile',
+          symbol: 'Q',
+          angle: 72,
+          orb: Math.abs(diff - 72).toFixed(1),
+          meaning: 'Creative talent and gifts. Artistic expression.'
+        });
+      }
+      
+      // Bi-quintile (144°)
+      if (Math.abs(diff - 144) < 2) {
+        rareAspects.push({
+          planet1: p1Name,
+          planet2: p2Name,
+          type: 'bi-quintile',
+          symbol: 'bQ',
+          angle: 144,
+          orb: Math.abs(diff - 144).toFixed(1),
+          meaning: 'Creative mastery. Exceptional talent ready to manifest.'
+        });
+      }
+    }
+  }
+
+  return rareAspects;
+};
+
+// Node aspect detection
+export interface NodeAspect {
+  planet: string;
+  node: 'North' | 'South';
+  type: string;
+  symbol: string;
+  meaning: string;
+}
+
+export const detectNodeAspects = (planets: PlanetaryPositions): NodeAspect[] => {
+  const nodeAspects: NodeAspect[] = [];
+  
+  if (!planets.northNode) return nodeAspects;
+  
+  const getLongitude = (position: ZodiacPosition): number => {
+    const signIndex = ZODIAC_SIGNS.findIndex(s => s.name === position.signName);
+    return signIndex * 30 + position.degree;
+  };
+
+  const planetList: [string, ZodiacPosition][] = [
+    ['Moon', planets.moon],
+    ['Sun', planets.sun],
+    ['Mercury', planets.mercury],
+    ['Venus', planets.venus],
+    ['Mars', planets.mars],
+    ['Jupiter', planets.jupiter],
+    ['Saturn', planets.saturn],
+  ];
+
+  const northLon = planets.northNode.longitude;
+
+  planetList.forEach(([planetName, position]) => {
+    const planetLon = getLongitude(position);
+    const diff = Math.abs(((planetLon - northLon + 180) % 360) - 180);
+
+    // Conjunction to North Node
+    if (diff < 8) {
+      nodeAspects.push({
+        planet: planetName,
+        node: 'North',
+        type: 'conjunction',
+        symbol: '☌',
+        meaning: 'Destined action. This planet supports your life purpose and future direction.'
+      });
+    }
+    // Sextile to North Node (60°)
+    else if (Math.abs(diff - 60) < 6) {
+      nodeAspects.push({
+        planet: planetName,
+        node: 'North',
+        type: 'sextile',
+        symbol: '⚹',
+        meaning: 'Opportunities aligned with destiny. Easy support for growth.'
+      });
+    }
+    // Trine to North Node (120°)
+    else if (Math.abs(diff - 120) < 8) {
+      nodeAspects.push({
+        planet: planetName,
+        node: 'North',
+        type: 'trine',
+        symbol: '△',
+        meaning: 'Flowing toward your purpose with ease and grace.'
+      });
+    }
+    // Opposition (conjunct South Node)
+    else if (Math.abs(diff - 180) < 8) {
+      nodeAspects.push({
+        planet: planetName,
+        node: 'South',
+        type: 'conjunction',
+        symbol: '☌',
+        meaning: 'Past-life activation. Familiar territory but may need to release attachment.'
+      });
+    }
+  });
+
+  return nodeAspects;
+};
+
+// Note: ZODIAC_SIGNS already defined at top of file

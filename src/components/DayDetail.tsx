@@ -1,5 +1,23 @@
 import { X } from 'lucide-react';
-import { DayData, getPlanetSymbol, MoonPhase, getColorExplanation, ColorExplanation, determineApplying, getIngressInterpretation } from '@/lib/astrology';
+import { 
+  DayData, 
+  getPlanetSymbol, 
+  MoonPhase, 
+  getColorExplanation, 
+  ColorExplanation, 
+  determineApplying, 
+  getIngressInterpretation,
+  getFixedStarConjunctions,
+  detectStelliums,
+  detectRareAspects,
+  detectNodeAspects,
+  CHIRON_MEANINGS,
+  LILITH_MEANINGS,
+  FixedStarConjunction,
+  Stellium,
+  RareAspect,
+  NodeAspect,
+} from '@/lib/astrology';
 import { UserData } from '@/hooks/useUserData';
 
 // Sign-specific energies for daily guidance
@@ -78,6 +96,12 @@ interface DayDetailProps {
 export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
   const { date, planets, moonPhase, mercuryRetro, personalTransits, majorIngresses, aspects, voc, exactLunarPhase } = dayData;
   const colorExplanation = getColorExplanation(aspects || [], moonPhase);
+  
+  // Divine Feminine features
+  const fixedStarHits = getFixedStarConjunctions(planets);
+  const stelliums = detectStelliums(planets);
+  const rareAspects = detectRareAspects(planets);
+  const nodeAspects = detectNodeAspects(planets);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/80 p-5" onClick={onClose}>
@@ -164,6 +188,125 @@ export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
                   )}
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Cosmic Weather Section */}
+        {(stelliums.length > 0 || nodeAspects.length > 0 || rareAspects.length > 0) && (
+          <div className="mb-6 p-4 rounded-sm bg-amber-50 dark:bg-amber-900/30 border-2 border-amber-200 dark:border-amber-700">
+            <h3 className="text-sm font-semibold text-foreground mb-4">🌟 Cosmic Weather Report</h3>
+            
+            {/* Stellium Alert */}
+            {stelliums.length > 0 && (
+              <div className="mb-4">
+                <div className="text-xs uppercase tracking-widest text-amber-700 dark:text-amber-400 font-semibold mb-2">⚡ Stellium Alert</div>
+                {stelliums.map((s, i) => (
+                  <div key={i} className="bg-background/80 p-3 rounded-sm mb-2">
+                    <div className="font-medium text-foreground">{s.count} Planets in {s.sign}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {s.planets.map(p => `${p.symbol} ${p.name}`).join(', ')}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1 italic">
+                      Concentrated energy in {s.sign}. This sign's themes dominate today.
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Destiny Aspects (Node Aspects) */}
+            {nodeAspects.length > 0 && (
+              <div className="mb-4">
+                <div className="text-xs uppercase tracking-widest text-green-700 dark:text-green-400 font-semibold mb-2">☊ Destiny Aspects</div>
+                {nodeAspects.map((a, i) => (
+                  <div key={i} className="bg-green-50 dark:bg-green-900/30 p-3 rounded-sm mb-2">
+                    <div className="font-medium text-foreground">
+                      {getPlanetSymbol(a.planet.toLowerCase())} {a.planet} {a.symbol} {a.node === 'North' ? '☊' : '☋'} {a.node} Node
+                    </div>
+                    <div className="text-sm text-green-700 dark:text-green-400 mt-1">{a.meaning}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Rare Aspects */}
+            {rareAspects.length > 0 && (
+              <div>
+                <div className="text-xs uppercase tracking-widest text-purple-700 dark:text-purple-400 font-semibold mb-2">🔮 Rare Aspects</div>
+                {rareAspects.map((a, i) => (
+                  <div key={i} className="bg-purple-50 dark:bg-purple-900/30 p-3 rounded-sm mb-2">
+                    <div className="font-medium text-foreground">
+                      {getPlanetSymbol(a.planet1.toLowerCase())} {a.symbol} {getPlanetSymbol(a.planet2.toLowerCase())} — {a.type} ({a.angle}°)
+                    </div>
+                    <div className="text-xs text-muted-foreground">Orb: {a.orb}°</div>
+                    <div className="text-sm text-purple-700 dark:text-purple-400 mt-1">{a.meaning}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Fixed Star Conjunctions */}
+        {fixedStarHits.length > 0 && (
+          <div className="mb-6 p-4 rounded-sm bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700">
+            <h3 className="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-3">⭐ Fixed Star Conjunctions</h3>
+            {fixedStarHits.map((hit, i) => (
+              <div key={i} className="mb-3 pb-3 border-b border-blue-200 dark:border-blue-700 last:border-0 last:mb-0 last:pb-0">
+                <div className="font-medium text-foreground">
+                  {getPlanetSymbol(hit.planet.toLowerCase())} {hit.planet} ☌ {hit.star}
+                  <span className="text-xs text-muted-foreground ml-2">(orb {hit.orb}°)</span>
+                </div>
+                <div className="text-sm text-blue-700 dark:text-blue-300 mt-1 leading-relaxed">{hit.meaning}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Divine Feminine Bodies Section */}
+        {(planets.northNode || planets.chiron || planets.lilith) && (
+          <div className="mb-6 pb-6 border-b border-border">
+            <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground mb-4">Divine Feminine Bodies</h3>
+            <div className="space-y-4">
+              {/* Lunar Nodes */}
+              {planets.northNode && planets.southNode && (
+                <div className="bg-secondary p-4 rounded-sm">
+                  <div className="text-xs uppercase tracking-widest text-primary font-semibold mb-2">☊☋ Lunar Nodes — Destiny Path</div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-sm font-medium text-foreground">☊ North Node: {planets.northNode.fullDegree}</div>
+                      <div className="text-xs text-muted-foreground mt-1">Your destiny, where you're headed, life purpose</div>
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-foreground">☋ South Node: {planets.southNode.fullDegree}</div>
+                      <div className="text-xs text-muted-foreground mt-1">Past life skills, comfort zone, what to release</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Chiron */}
+              {planets.chiron && (
+                <div className="bg-secondary p-4 rounded-sm">
+                  <div className="text-xs uppercase tracking-widest text-primary font-semibold mb-2">⚷ Chiron — The Wounded Healer</div>
+                  <div className="text-sm font-medium text-foreground mb-2">{planets.chiron.fullDegree}</div>
+                  <div className="text-sm text-muted-foreground leading-relaxed">
+                    {CHIRON_MEANINGS[planets.chiron.signName] || 'Healing journey through this sign\'s themes.'}
+                  </div>
+                </div>
+              )}
+
+              {/* Lilith */}
+              {planets.lilith && (
+                <div className="bg-secondary p-4 rounded-sm">
+                  <div className="text-xs uppercase tracking-widest text-primary font-semibold mb-2">⚸ Black Moon Lilith — Wild Feminine</div>
+                  <div className="text-sm font-medium text-foreground mb-2">{planets.lilith.fullDegree}</div>
+                  <div className="text-sm text-muted-foreground leading-relaxed">
+                    {LILITH_MEANINGS[planets.lilith.signName] || 'Reclaiming power through this sign\'s expression.'}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
