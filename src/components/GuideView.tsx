@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-type GuideSection = "overview" | "colors" | "symbols" | "moonphases" | "retrogrades" | "aspects";
+type GuideSection = "overview" | "colors" | "symbols" | "moonphases" | "retrogrades" | "aspects" | "dignities";
 
 const SymbolCard = ({ icon, name, desc }: { icon: string; name: string; desc: string }) => (
   <div className="rounded-sm border border-border bg-secondary p-4">
@@ -332,6 +332,155 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
       </>
     ),
   },
+  dignities: {
+    title: "Planetary Dignities",
+    content: (
+      <>
+        <p>
+          Planetary dignities describe how well a planet functions in each zodiac sign. 
+          When a planet is in a sign where it's strong (domicile or exaltation), its positive qualities shine. 
+          When weak (detriment or fall), the planet struggles to express itself naturally.
+        </p>
+        
+        <h3>Understanding Dignities</h3>
+        <div className="mt-4 mb-6 grid gap-3 text-sm">
+          <div className="flex items-start gap-3 p-3 rounded-sm bg-secondary">
+            <span className="text-green-600 dark:text-green-400 font-bold">🏠</span>
+            <div>
+              <strong className="text-green-600 dark:text-green-400">Domicile (Rulership):</strong>
+              <span className="text-muted-foreground ml-2">Planet is "at home" - functions naturally and powerfully</span>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 p-3 rounded-sm bg-secondary">
+            <span className="text-blue-600 dark:text-blue-400 font-bold">⭐</span>
+            <div>
+              <strong className="text-blue-600 dark:text-blue-400">Exaltation:</strong>
+              <span className="text-muted-foreground ml-2">Planet is honored guest - expresses highest potential</span>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 p-3 rounded-sm bg-secondary">
+            <span className="text-red-600 dark:text-red-400 font-bold">🚫</span>
+            <div>
+              <strong className="text-red-600 dark:text-red-400">Detriment:</strong>
+              <span className="text-muted-foreground ml-2">Planet is in opposite sign of domicile - uncomfortable, struggles</span>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 p-3 rounded-sm bg-secondary">
+            <span className="text-orange-600 dark:text-orange-400 font-bold">⚠️</span>
+            <div>
+              <strong className="text-orange-600 dark:text-orange-400">Fall:</strong>
+              <span className="text-muted-foreground ml-2">Planet is in opposite sign of exaltation - weakest expression</span>
+            </div>
+          </div>
+        </div>
+
+        <h3>Complete Dignities Table</h3>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="bg-primary text-primary-foreground">
+                <th className="p-3 text-left font-semibold">Planet</th>
+                <th className="p-3 text-left font-semibold">🏠 Domicile</th>
+                <th className="p-3 text-left font-semibold">⭐ Exaltation</th>
+                <th className="p-3 text-left font-semibold">🚫 Detriment</th>
+                <th className="p-3 text-left font-semibold">⚠️ Fall</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="bg-background border-b border-border">
+                <td className="p-3 font-medium">☉ Sun</td>
+                <td className="p-3 text-green-600 dark:text-green-400">♌ Leo</td>
+                <td className="p-3 text-blue-600 dark:text-blue-400">♈ Aries (19°)</td>
+                <td className="p-3 text-red-600 dark:text-red-400">♒ Aquarius</td>
+                <td className="p-3 text-orange-600 dark:text-orange-400">♎ Libra (19°)</td>
+              </tr>
+              <tr className="bg-secondary border-b border-border">
+                <td className="p-3 font-medium">☽ Moon</td>
+                <td className="p-3 text-green-600 dark:text-green-400">♋ Cancer</td>
+                <td className="p-3 text-blue-600 dark:text-blue-400">♉ Taurus (3°)</td>
+                <td className="p-3 text-red-600 dark:text-red-400">♑ Capricorn</td>
+                <td className="p-3 text-orange-600 dark:text-orange-400">♏ Scorpio (3°)</td>
+              </tr>
+              <tr className="bg-background border-b border-border">
+                <td className="p-3 font-medium">☿ Mercury</td>
+                <td className="p-3 text-green-600 dark:text-green-400">♊ Gemini, ♍ Virgo</td>
+                <td className="p-3 text-blue-600 dark:text-blue-400">♒ Aquarius (15°)</td>
+                <td className="p-3 text-red-600 dark:text-red-400">♐ Sagittarius, ♓ Pisces</td>
+                <td className="p-3 text-orange-600 dark:text-orange-400">♌ Leo (15°)</td>
+              </tr>
+              <tr className="bg-secondary border-b border-border">
+                <td className="p-3 font-medium">♀ Venus</td>
+                <td className="p-3 text-green-600 dark:text-green-400">♉ Taurus, ♎ Libra</td>
+                <td className="p-3 text-blue-600 dark:text-blue-400">♓ Pisces (27°)</td>
+                <td className="p-3 text-red-600 dark:text-red-400">♏ Scorpio, ♈ Aries</td>
+                <td className="p-3 text-orange-600 dark:text-orange-400">♍ Virgo (27°)</td>
+              </tr>
+              <tr className="bg-background border-b border-border">
+                <td className="p-3 font-medium">♂ Mars</td>
+                <td className="p-3 text-green-600 dark:text-green-400">♈ Aries, ♏ Scorpio</td>
+                <td className="p-3 text-blue-600 dark:text-blue-400">♑ Capricorn (28°)</td>
+                <td className="p-3 text-red-600 dark:text-red-400">♎ Libra, ♉ Taurus</td>
+                <td className="p-3 text-orange-600 dark:text-orange-400">♋ Cancer (28°)</td>
+              </tr>
+              <tr className="bg-secondary border-b border-border">
+                <td className="p-3 font-medium">♃ Jupiter</td>
+                <td className="p-3 text-green-600 dark:text-green-400">♐ Sagittarius, ♓ Pisces</td>
+                <td className="p-3 text-blue-600 dark:text-blue-400">♋ Cancer (15°)</td>
+                <td className="p-3 text-red-600 dark:text-red-400">♊ Gemini, ♍ Virgo</td>
+                <td className="p-3 text-orange-600 dark:text-orange-400">♑ Capricorn (15°)</td>
+              </tr>
+              <tr className="bg-background border-b border-border">
+                <td className="p-3 font-medium">♄ Saturn</td>
+                <td className="p-3 text-green-600 dark:text-green-400">♑ Capricorn, ♒ Aquarius</td>
+                <td className="p-3 text-blue-600 dark:text-blue-400">♎ Libra (21°)</td>
+                <td className="p-3 text-red-600 dark:text-red-400">♋ Cancer, ♌ Leo</td>
+                <td className="p-3 text-orange-600 dark:text-orange-400">♈ Aries (21°)</td>
+              </tr>
+              <tr className="bg-secondary border-b border-border">
+                <td className="p-3 font-medium">♅ Uranus</td>
+                <td className="p-3 text-green-600 dark:text-green-400">♒ Aquarius</td>
+                <td className="p-3 text-blue-600 dark:text-blue-400">♏ Scorpio</td>
+                <td className="p-3 text-red-600 dark:text-red-400">♌ Leo</td>
+                <td className="p-3 text-orange-600 dark:text-orange-400">♉ Taurus</td>
+              </tr>
+              <tr className="bg-background border-b border-border">
+                <td className="p-3 font-medium">♆ Neptune</td>
+                <td className="p-3 text-green-600 dark:text-green-400">♓ Pisces</td>
+                <td className="p-3 text-blue-600 dark:text-blue-400">♋ Cancer (9°) or ♌ Leo</td>
+                <td className="p-3 text-red-600 dark:text-red-400">♍ Virgo</td>
+                <td className="p-3 text-orange-600 dark:text-orange-400">♑ Capricorn or ♒ Aquarius</td>
+              </tr>
+              <tr className="bg-secondary">
+                <td className="p-3 font-medium">♇ Pluto</td>
+                <td className="p-3 text-green-600 dark:text-green-400">♏ Scorpio</td>
+                <td className="p-3 text-blue-600 dark:text-blue-400">♈ Aries or ♌ Leo</td>
+                <td className="p-3 text-red-600 dark:text-red-400">♉ Taurus</td>
+                <td className="p-3 text-orange-600 dark:text-orange-400">♎ Libra</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>How to Use This Information</h3>
+        <div className="mt-4 p-4 rounded-sm bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-700">
+          <ul className="space-y-2">
+            <li>
+              <strong>Strong planets work better:</strong> When you see "♂ Mars enters ♑ Capricorn" (exaltation), expect Mars energy to be particularly effective and well-directed.
+            </li>
+            <li>
+              <strong>Weak planets need extra care:</strong> When Mars is in Cancer (fall), channel aggressive energy more carefully - it is less reliable.
+            </li>
+            <li>
+              <strong>Personal planets matter most:</strong> Sun, Moon, Mercury, Venus, Mars dignities affect daily life more noticeably than outer planets.
+            </li>
+            <li>
+              <strong>Check your natal chart:</strong> If a planet transits its dignity in your natal chart, that planet themes become especially important for you.
+            </li>
+          </ul>
+        </div>
+      </>
+    ),
+  },
 };
 
 const NAV_ITEMS: { key: GuideSection; label: string }[] = [
@@ -341,6 +490,7 @@ const NAV_ITEMS: { key: GuideSection; label: string }[] = [
   { key: "moonphases", label: "Moon Phases" },
   { key: "retrogrades", label: "Retrogrades" },
   { key: "aspects", label: "Aspects" },
+  { key: "dignities", label: "Dignities" },
 ];
 
 export const GuideView = () => {
