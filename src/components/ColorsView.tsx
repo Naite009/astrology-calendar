@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
-import { Copy, Check, Shuffle, Palette } from "lucide-react";
+import { Copy, Check, Shuffle, Palette, ChevronLeft, ChevronRight, CalendarIcon } from "lucide-react";
+import { format, addDays, subDays } from "date-fns";
 import { getPlanetaryPositions } from "@/lib/astrology";
 import {
   getCollectivePalette,
@@ -15,7 +16,15 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface ColorsViewProps {
   userNatalChart: NatalChart | null;
@@ -23,15 +32,19 @@ interface ColorsViewProps {
 }
 
 export const ColorsView = ({ userNatalChart, onOpenNatalForm }: ColorsViewProps) => {
-  const today = new Date();
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [altPaletteIndex, setAltPaletteIndex] = useState(0);
   const [moreNeutral, setMoreNeutral] = useState(false);
   const [moreBold, setMoreBold] = useState(false);
 
-  // Get today's planetary positions
+  const goToPrevDay = () => setSelectedDate((d) => subDays(d, 1));
+  const goToNextDay = () => setSelectedDate((d) => addDays(d, 1));
+  const goToToday = () => setSelectedDate(new Date());
+
+  // Get planetary positions for selected date
   const positions = useMemo(() => {
-    const planets = getPlanetaryPositions(today);
+    const planets = getPlanetaryPositions(selectedDate);
     return [
       { name: "Sun", sign: planets.sun.signName },
       { name: "Moon", sign: planets.moon.signName },
@@ -44,9 +57,12 @@ export const ColorsView = ({ userNatalChart, onOpenNatalForm }: ColorsViewProps)
       { name: "Neptune", sign: planets.neptune.signName },
       { name: "Pluto", sign: planets.pluto.signName },
     ];
-  }, []);
+  }, [selectedDate]);
 
   const moonSign = positions.find((p) => p.name === "Moon")?.sign || "Cancer";
+  const mercurySign = positions.find((p) => p.name === "Mercury")?.sign || "Gemini";
+  const marsSign = positions.find((p) => p.name === "Mars")?.sign || "Aries";
+  const venusSign = positions.find((p) => p.name === "Venus")?.sign || "Libra";
 
   // Collective palette
   const collective = useMemo(
@@ -90,12 +106,9 @@ export const ColorsView = ({ userNatalChart, onOpenNatalForm }: ColorsViewProps)
     setAltPaletteIndex((prev) => (prev + 1) % Object.keys(SIGN_PALETTES).length);
   };
 
-  const dateStr = today.toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
+  const isToday = format(selectedDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
+
+  const dateStr = format(selectedDate, "EEEE, MMMM d, yyyy");
 
   return (
     <div className="space-y-8">
@@ -115,14 +128,69 @@ export const ColorsView = ({ userNatalChart, onOpenNatalForm }: ColorsViewProps)
 
       {/* Collective Palette */}
       <section className="rounded-lg border border-border bg-card p-6">
-        <h3 className="font-serif text-lg font-light mb-1">Collective Colors Today</h3>
+        <h3 className="font-serif text-lg font-light mb-1">
+          Collective Colors {isToday ? "Today" : ""}
+        </h3>
         <p className="text-xs text-muted-foreground mb-4">
           Based on sign emphasis + key planetary accents
         </p>
 
         <div className="space-y-4">
-          {/* Date */}
-          <div className="text-sm text-foreground">{dateStr}</div>
+          {/* Date Navigation */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={goToPrevDay}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "justify-start text-left font-normal min-w-[200px]",
+                    !selectedDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dateStr}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(date) => date && setSelectedDate(date)}
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={goToNextDay}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+
+            {!isToday && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={goToToday}
+                className="text-xs"
+              >
+                Today
+              </Button>
+            )}
+          </div>
 
           {/* Dominant Signs */}
           <div className="flex flex-wrap gap-2">
@@ -212,8 +280,9 @@ export const ColorsView = ({ userNatalChart, onOpenNatalForm }: ColorsViewProps)
                   <div>
                     <strong className="text-foreground">Planet Accents</strong>
                     <p>
-                      Mars and Venus add decisive/beauty tones respectively. Look for reds (Mars) and
-                      greens/pinks (Venus) in the palette.
+                      ☿ Mercury in {mercurySign} adds intellectual/communication tones (blues/yellows).
+                      ♂ Mars in {marsSign} adds decisive energy (reds/oranges).
+                      ♀ Venus in {venusSign} adds beauty/harmony (greens/pinks).
                     </p>
                   </div>
                   <div>
