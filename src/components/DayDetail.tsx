@@ -89,7 +89,7 @@ export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
                   </div>
                 )}
                 <div className="font-serif text-lg font-medium text-foreground">
-                  {exactLunarPhase.type} at{' '}
+                  {exactLunarPhase.type} in {exactLunarPhase.sign} at{' '}
                   {exactLunarPhase.time.toLocaleTimeString('en-US', {
                     timeZone: 'America/New_York',
                     hour: 'numeric',
@@ -98,8 +98,13 @@ export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
                   ET
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Position: {exactLunarPhase.position}
+                  Moon: {exactLunarPhase.position}
                 </div>
+                {exactLunarPhase.sunPosition && (
+                  <div className="text-sm text-muted-foreground">
+                    Sun: {exactLunarPhase.sunPosition} (opposite)
+                  </div>
+                )}
                 <div className="text-xs text-muted-foreground">
                   Distance: {exactLunarPhase.distance.toLocaleString()} km
                 </div>
