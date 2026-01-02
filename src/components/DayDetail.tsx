@@ -18,11 +18,25 @@ const SIGN_ENERGIES: Record<string, { action: string; focus: string; avoid: stri
   Pisces: { action: "flow intuitively", focus: "spirituality and compassion", avoid: "escapism" },
 };
 
-const getDailyGuidance = (moonPhase: MoonPhase, mercuryRetro: boolean, moonSign: string, exactPhaseSign?: string): string => {
-  // Use the exact phase sign for New/Full Moon, otherwise use general moon sign
-  const phaseSign = (moonPhase.phaseName === "New Moon" || moonPhase.phaseName === "Full Moon") && exactPhaseSign 
-    ? exactPhaseSign 
-    : moonSign;
+const getDailyGuidance = (
+  moonPhase: MoonPhase,
+  mercuryRetro: boolean,
+  moonSign: string,
+  exactPhaseSign?: string,
+  exactPhaseType?: 'New Moon' | 'Full Moon' | 'First Quarter' | 'Last Quarter'
+): string => {
+  const isExactNewMoon = exactPhaseType === 'New Moon';
+  const isExactFullMoon = exactPhaseType === 'Full Moon';
+
+  // If we're near a Full/New Moon, the broad phase bucket can still say "Full Moon" / "New Moon"
+  // on adjacent days. For guidance, only treat it as New/Full on the exact-timing day.
+  const phaseForGuidance = (() => {
+    if (moonPhase.phaseName === 'New Moon' && !isExactNewMoon) return moonPhase.phase < 180 ? 'Waxing Crescent' : 'Waning Crescent';
+    if (moonPhase.phaseName === 'Full Moon' && !isExactFullMoon) return moonPhase.phase < 180 ? 'Waxing Gibbous' : 'Waning Gibbous';
+    return moonPhase.phaseName;
+  })();
+
+  const phaseSign = (isExactNewMoon || isExactFullMoon) && exactPhaseSign ? exactPhaseSign : moonSign;
   const signData = SIGN_ENERGIES[phaseSign] || SIGN_ENERGIES.Aries;
 
   if (mercuryRetro) {
@@ -31,17 +45,17 @@ const getDailyGuidance = (moonPhase: MoonPhase, mercuryRetro: boolean, moonSign:
   if (moonPhase.isBalsamic) {
     return `Balsamic Moon in ${moonSign} - The final surrender before rebirth. This is sacred rest time. Release attachments. Meditate and dream. Trust the void. ${signData.focus} dissolves into the cosmic flow. Avoid starting anything new.`;
   }
-  if (moonPhase.phaseName === "New Moon") {
+  if (isExactNewMoon) {
     return `New Moon in ${phaseSign} - Plant seeds of intention. Set powerful goals aligned with ${signData.focus}. ${signData.action} with fresh vision. Channel this initiating energy wisely. Avoid: ${signData.avoid}.`;
   }
-  if (moonPhase.phaseName === "Full Moon") {
+  if (isExactFullMoon) {
     return `Full Moon in ${phaseSign} - Maximum illumination! Celebrate what you've manifested around ${signData.focus}. Release what no longer serves. Emotions peak. ${signData.action} with full awareness. Harvest your efforts.`;
   }
-  if (moonPhase.phaseName.includes("Waxing")) {
-    return `${moonPhase.phaseName} in ${moonSign} - Energy is building. ${signData.action} with awareness of ${signData.focus}. Avoid ${signData.avoid}.`;
+  if (phaseForGuidance.includes('Waxing')) {
+    return `${phaseForGuidance} in ${moonSign} - Energy is building. ${signData.action} with awareness of ${signData.focus}. Avoid ${signData.avoid}.`;
   }
-  if (moonPhase.phaseName.includes("Waning")) {
-    return `${moonPhase.phaseName} in ${moonSign} - Time for release and integration. Reflect on ${signData.focus}. ${signData.action} mindfully.`;
+  if (phaseForGuidance.includes('Waning')) {
+    return `${phaseForGuidance} in ${moonSign} - Time for release and integration. Reflect on ${signData.focus}. ${signData.action} mindfully.`;
   }
   return `Moon in ${moonSign} - ${signData.action} with awareness of ${signData.focus}. Avoid ${signData.avoid}.`;
 };
@@ -225,7 +239,13 @@ export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
         <div>
           <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground mb-3">Daily Guidance</h3>
           <p className="text-sm leading-relaxed text-foreground">
-            {getDailyGuidance(moonPhase, mercuryRetro, planets.moon.signName, exactLunarPhase?.sign)}
+            {getDailyGuidance(
+              moonPhase,
+              mercuryRetro,
+              planets.moon.signName,
+              exactLunarPhase?.sign,
+              exactLunarPhase?.type
+            )}
           </p>
         </div>
       </div>
