@@ -14,7 +14,7 @@ interface AnnualTablesViewProps {
 }
 
 interface ExactLunarEvent {
-  type: "New Moon" | "Full Moon";
+  type: "New Moon" | "Full Moon" | "First Quarter" | "Last Quarter";
   time: Date;
   moonSign: string;
   moonDegree: string;
@@ -26,6 +26,15 @@ interface ExactLunarEvent {
   isSupermoon: boolean;
   distance: number;
   supermoonSequence?: string;
+  signEntryDate?: Date;
+}
+
+interface QuarterMoonEvent {
+  type: "First Quarter" | "Last Quarter";
+  time: Date;
+  moonSign: string;
+  moonDegree: string;
+  moonMinutes: string;
   signEntryDate?: Date;
 }
 
@@ -226,6 +235,78 @@ export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
 
     return events;
   }, [year]);
+
+  // Calculate Quarter Moon events
+  const quarterMoons = useMemo(() => {
+    const quarters: QuarterMoonEvent[] = [];
+    let searchStart = new Date(year, 0, 1);
+    const yearEnd = new Date(year, 11, 31, 23, 59, 59);
+
+    // Find all First Quarter moons (phase 90)
+    while (searchStart < yearEnd) {
+      try {
+        const firstQuarter = Astronomy.SearchMoonPhase(90, searchStart, 40);
+        if (firstQuarter && firstQuarter.date.getFullYear() === year) {
+          const moonPos = Astronomy.GeoMoon(firstQuarter.date);
+          const ecliptic = Astronomy.Ecliptic(moonPos);
+          const moonZodiac = longitudeToZodiac(ecliptic.elon);
+          const signEntryDate = findMoonSignEntry(firstQuarter.date, moonZodiac.sign);
+
+          quarters.push({
+            type: "First Quarter",
+            time: firstQuarter.date,
+            moonSign: moonZodiac.sign,
+            moonDegree: moonZodiac.degree.toString().padStart(2, "0"),
+            moonMinutes: moonZodiac.minutes.toString().padStart(2, "0"),
+            signEntryDate,
+          });
+
+          searchStart = new Date(firstQuarter.date.getTime() + 20 * 24 * 60 * 60 * 1000);
+        } else {
+          break;
+        }
+      } catch {
+        break;
+      }
+    }
+
+    // Find all Last Quarter moons (phase 270)
+    searchStart = new Date(year, 0, 1);
+    while (searchStart < yearEnd) {
+      try {
+        const lastQuarter = Astronomy.SearchMoonPhase(270, searchStart, 40);
+        if (lastQuarter && lastQuarter.date.getFullYear() === year) {
+          const moonPos = Astronomy.GeoMoon(lastQuarter.date);
+          const ecliptic = Astronomy.Ecliptic(moonPos);
+          const moonZodiac = longitudeToZodiac(ecliptic.elon);
+          const signEntryDate = findMoonSignEntry(lastQuarter.date, moonZodiac.sign);
+
+          quarters.push({
+            type: "Last Quarter",
+            time: lastQuarter.date,
+            moonSign: moonZodiac.sign,
+            moonDegree: moonZodiac.degree.toString().padStart(2, "0"),
+            moonMinutes: moonZodiac.minutes.toString().padStart(2, "0"),
+            signEntryDate,
+          });
+
+          searchStart = new Date(lastQuarter.date.getTime() + 20 * 24 * 60 * 60 * 1000);
+        } else {
+          break;
+        }
+      } catch {
+        break;
+      }
+    }
+
+    // Sort by date
+    quarters.sort((a, b) => a.time.getTime() - b.time.getTime());
+
+    return quarters;
+  }, [year]);
+
+  const firstQuarters = quarterMoons.filter((q) => q.type === "First Quarter");
+  const lastQuarters = quarterMoons.filter((q) => q.type === "Last Quarter");
 
   // Calculate Mercury Retrograde periods
   const retrogradePeriods = useMemo(() => {
@@ -496,6 +577,74 @@ export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
                   <TableCell>
                     <span className="text-xs text-muted-foreground">
                       Best for: New beginnings, setting intentions
+                    </span>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </section>
+
+      {/* Quarter Moons Table */}
+      <section className="rounded-sm border border-border bg-background p-6">
+        <h2 className="mb-6 border-b border-border pb-4 font-serif text-2xl font-light text-foreground">
+          🌓 Quarter Moons {year}
+        </h2>
+        <p className="mb-4 text-sm text-muted-foreground">
+          First Quarter (🌓) = waxing half moon, time for action. Last Quarter (🌗) = waning half moon, time for release.
+        </p>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-[11px] uppercase tracking-widest">Date</TableHead>
+                <TableHead className="text-[11px] uppercase tracking-widest">Time</TableHead>
+                <TableHead className="text-[11px] uppercase tracking-widest">Phase</TableHead>
+                <TableHead className="text-[11px] uppercase tracking-widest">Position</TableHead>
+                <TableHead className="text-[11px] uppercase tracking-widest">Moon Entered Sign</TableHead>
+                <TableHead className="text-[11px] uppercase tracking-widest">Meaning</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {quarterMoons.map((event, idx) => (
+                <TableRow key={idx}>
+                  <TableCell className="font-medium">
+                    {event.time.toLocaleDateString("en-US", {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                      timeZone: "America/New_York",
+                    })}
+                  </TableCell>
+                  <TableCell>
+                    {formatTimeEST(event.time)} {getTimezoneAbbr(event.time)}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {event.type === "First Quarter" ? "🌓" : "🌗"} {event.type}
+                  </TableCell>
+                  <TableCell>
+                    <span className="font-mono">
+                      {event.moonDegree}°{event.moonMinutes}′
+                    </span>{" "}
+                    {event.moonSign}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {event.signEntryDate
+                      ? event.signEntryDate.toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                          timeZone: "America/New_York",
+                        })
+                      : "—"}
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-xs text-muted-foreground">
+                      {event.type === "First Quarter"
+                        ? "Take action, overcome obstacles, push forward"
+                        : "Release, let go, forgive, clear space"}
                     </span>
                   </TableCell>
                 </TableRow>
