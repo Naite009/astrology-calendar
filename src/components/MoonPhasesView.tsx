@@ -1,5 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
+import { Download } from "lucide-react";
 import { getMoonPhase } from "@/lib/astrology";
+import { useDownloadImage } from "@/hooks/useDownloadImage";
 
 interface MoonPhasesViewProps {
   year: number;
@@ -7,6 +9,8 @@ interface MoonPhasesViewProps {
 
 export const MoonPhasesView = ({ year }: MoonPhasesViewProps) => {
   const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { downloadAsImage } = useDownloadImage();
 
   const moonData = useMemo(() => {
     const data: { [key: string]: { emoji: string; name: string; isFull: boolean; isNew: boolean } } = {};
@@ -34,10 +38,19 @@ export const MoonPhasesView = ({ year }: MoonPhasesViewProps) => {
   };
 
   return (
-    <div className="rounded bg-[#2C2C2C] p-6 md:p-10">
-      <h2 className="mb-8 text-center font-serif text-2xl font-light uppercase tracking-widest text-[#FDFBF7] md:text-3xl">
-        {year} Moon Phases
-      </h2>
+    <div ref={containerRef} className="rounded bg-[#2C2C2C] p-6 md:p-10">
+      <div className="mb-8 flex flex-col items-center justify-center gap-4 sm:flex-row sm:justify-between">
+        <h2 className="text-center font-serif text-2xl font-light uppercase tracking-widest text-[#FDFBF7] md:text-3xl">
+          {year} Moon Phases
+        </h2>
+        <button
+          onClick={() => downloadAsImage(containerRef.current, `moon-phases-${year}`)}
+          className="flex items-center gap-2 rounded-sm border border-[#D4A574]/50 px-3 py-1.5 text-[10px] uppercase tracking-widest text-[#D4A574] transition-colors hover:bg-[#D4A574]/10"
+        >
+          <Download size={14} />
+          Download Image
+        </button>
+      </div>
       
       <div className="overflow-x-auto">
         <div className="min-w-[900px]">
