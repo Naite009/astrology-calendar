@@ -62,6 +62,9 @@ export interface Ingress {
   sign: string;
   icon: string;
   desc: string;
+  entryDate?: Date;
+  exitDate?: Date;
+  durationDays?: number;
 }
 
 export type EnergyLevel = 'rest' | 'high' | 'caution' | 'moderate';
@@ -716,11 +719,55 @@ export const detectPlanetaryIngresses = (date: Date, planets: PlanetaryPositions
 
       if (todaySign !== yesterdaySign) {
         const isMajor = planetName === 'jupiter' || planetName === 'saturn';
+        
+        // Find when planet exits this sign (enters next sign)
+        let exitDate: Date | undefined;
+        let durationDays = 0;
+        
+        // Search forward up to 365 days for sign change
+        for (let d = 1; d <= 365; d++) {
+          const futureDate = new Date(date);
+          futureDate.setDate(futureDate.getDate() + d);
+          const futurePos = getPlanetaryPositions(futureDate);
+          
+          if (futurePos[planetName].signName !== todaySign) {
+            exitDate = futureDate;
+            durationDays = d;
+            break;
+          }
+        }
+        
+        // Format the description with exact dates and duration
+        const entryDateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const exitDateStr = exitDate 
+          ? exitDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+          : 'unknown';
+        
+        let durationStr = '';
+        if (durationDays > 0) {
+          if (durationDays >= 30) {
+            const months = (durationDays / 30).toFixed(1);
+            durationStr = `${months} months`;
+          } else if (durationDays >= 7) {
+            const weeks = (durationDays / 7).toFixed(1);
+            durationStr = `${weeks} weeks`;
+          } else {
+            durationStr = `${durationDays} days`;
+          }
+        }
+        
+        const desc = exitDate 
+          ? `${entryDateStr} – ${exitDateStr} (${durationStr})`
+          : isMajor ? 'Major shift - effects last months' : 'Personal planet shift';
+        
         ingresses.push({
           planet: planetName.charAt(0).toUpperCase() + planetName.slice(1),
           sign: todaySign,
           icon: getPlanetSymbol(planetName),
-          desc: isMajor ? 'Major shift - effects last months' : 'Personal planet shift - effects last weeks',
+          desc,
+          entryDate: date,
+          exitDate,
+          durationDays,
         });
       }
     });
