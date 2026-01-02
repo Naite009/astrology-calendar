@@ -175,14 +175,31 @@ export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
                     <span className="text-xl">{getIngressSymbol(ingress.planet)}</span>
                     <span className="font-semibold text-foreground text-lg">{ingress.planet} enters {ingress.sign}</span>
                   </div>
+                  
+                  {/* Entry/Exit Times */}
+                  <div className="bg-background/60 dark:bg-background/30 p-3 rounded-sm mb-3 space-y-2">
+                    {ingress.entryTime && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-green-600 dark:text-green-400 font-medium">→ Enters {ingress.sign}:</span>
+                        <span className="text-foreground font-semibold">{ingress.entryTime}</span>
+                      </div>
+                    )}
+                    {ingress.exitTime && ingress.nextSign && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-red-600 dark:text-red-400 font-medium">← Exits to {ingress.nextSign}:</span>
+                        <span className="text-foreground font-semibold">{ingress.exitTime}</span>
+                      </div>
+                    )}
+                    {ingress.durationDays && (
+                      <div className="text-xs text-muted-foreground pt-1 border-t border-border/50">
+                        Duration in {ingress.sign}: ~{ingress.durationDays} days
+                      </div>
+                    )}
+                  </div>
+                  
                   <p className="text-sm text-foreground leading-relaxed">
                     {getIngressInterpretation(ingress.planet, ingress.sign)}
                   </p>
-                  {ingress.durationDays && (
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      Duration: ~{ingress.durationDays} days in {ingress.sign}
-                    </p>
-                  )}
                 </div>
               ))}
             </div>
