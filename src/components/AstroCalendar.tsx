@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit } from "lucide-react";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
 import { YearView } from "./YearView";
@@ -11,12 +11,13 @@ import { DayDetail } from "./DayDetail";
 import { ChartLibrary } from "./ChartLibrary";
 import { BestTimesView } from "./BestTimesView";
 import { ColorsView } from "./ColorsView";
+import { PatternsView } from "./PatternsView";
 import { useUserData } from "@/hooks/useUserData";
 import { useNotes } from "@/hooks/useNotes";
 import { useNatalChart } from "@/hooks/useNatalChart";
 import { DayData, generateICalExport } from "@/lib/astrology";
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "best-times" | "colors";
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "best-times" | "colors" | "patterns";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 0, 1)); // January 2026
@@ -46,7 +47,7 @@ export const AstroCalendar = () => {
   const navigate = (direction: number) => {
     setCurrentDate((prev) => {
       const newDate = new Date(prev);
-      if (viewMode === "year" || viewMode === "annual-tables" || viewMode === "moon-phases") {
+      if (viewMode === "year" || viewMode === "annual-tables" || viewMode === "moon-phases" || viewMode === "patterns") {
         newDate.setFullYear(prev.getFullYear() + direction);
       } else if (viewMode === "week") {
         newDate.setDate(prev.getDate() + direction * 7);
@@ -91,6 +92,9 @@ export const AstroCalendar = () => {
     }
     if (viewMode === "colors") {
       return "Astro Colors";
+    }
+    if (viewMode === "patterns") {
+      return "Patterns & Cycles";
     }
     if (viewMode === "moon-phases") {
       return `${currentDate.getFullYear()} Moon Phases`;
@@ -216,6 +220,17 @@ export const AstroCalendar = () => {
                 <Palette size={14} />
                 Colors
               </button>
+              <button
+                onClick={() => setViewMode("patterns")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "patterns"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Orbit size={14} />
+                Patterns
+              </button>
             </div>
 
             {userData && (
@@ -325,6 +340,10 @@ export const AstroCalendar = () => {
             savedCharts={savedCharts}
             onOpenNatalForm={() => setViewMode("charts")}
           />
+        )}
+
+        {viewMode === "patterns" && (
+          <PatternsView year={currentDate.getFullYear()} />
         )}
       </div>
 

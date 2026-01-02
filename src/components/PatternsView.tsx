@@ -1,0 +1,504 @@
+import { useState, useMemo } from 'react';
+import { Orbit, History, TrendingUp, AlertTriangle, Star, RefreshCw } from 'lucide-react';
+import { 
+  getPlanetaryPositions, 
+  detectStelliums, 
+  detectRareAspects, 
+  detectNodeAspects,
+  isMercuryRetrograde,
+  getPlanetSymbol,
+  Stellium,
+  RareAspect,
+  NodeAspect,
+} from '@/lib/astrology';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+
+interface PatternsViewProps {
+  year: number;
+}
+
+// Mercury retrograde data for 2024-2030
+const MERCURY_RETROGRADES: Record<number, { start: string; end: string; sign: string; degrees: string }[]> = {
+  2024: [
+    { start: 'Dec 13', end: 'Jan 1', sign: 'Sagittarius → Capricorn', degrees: '22°-8°' },
+    { start: 'Apr 1', end: 'Apr 25', sign: 'Aries', degrees: '27°-16°' },
+    { start: 'Aug 5', end: 'Aug 28', sign: 'Virgo → Leo', degrees: '4°-21°' },
+    { start: 'Nov 26', end: 'Dec 15', sign: 'Sagittarius', degrees: '22°-6°' },
+  ],
+  2025: [
+    { start: 'Mar 15', end: 'Apr 7', sign: 'Aries → Pisces', degrees: '9°-26°' },
+    { start: 'Jul 18', end: 'Aug 11', sign: 'Leo', degrees: '15°-4°' },
+    { start: 'Nov 9', end: 'Nov 29', sign: 'Sagittarius', degrees: '6°-20°' },
+  ],
+  2026: [
+    { start: 'Feb 26', end: 'Mar 20', sign: 'Pisces → Aquarius', degrees: '21°-9°' },
+    { start: 'Jun 29', end: 'Jul 23', sign: 'Cancer', degrees: '26°-16°' },
+    { start: 'Oct 24', end: 'Nov 13', sign: 'Scorpio', degrees: '19°-3°' },
+  ],
+  2027: [
+    { start: 'Feb 9', end: 'Mar 3', sign: 'Pisces', degrees: '5°-19°' },
+    { start: 'Jun 10', end: 'Jul 4', sign: 'Cancer → Gemini', degrees: '8°-26°' },
+    { start: 'Oct 7', end: 'Oct 28', sign: 'Scorpio → Libra', degrees: '3°-18°' },
+  ],
+  2028: [
+    { start: 'Jan 24', end: 'Feb 14', sign: 'Aquarius', degrees: '18°-3°' },
+    { start: 'May 21', end: 'Jun 13', sign: 'Gemini', degrees: '19°-7°' },
+    { start: 'Sep 19', end: 'Oct 11', sign: 'Libra', degrees: '16°-2°' },
+  ],
+  2029: [
+    { start: 'Jan 7', end: 'Jan 27', sign: 'Aquarius → Capricorn', degrees: '2°-16°' },
+    { start: 'May 1', end: 'May 25', sign: 'Taurus', degrees: '29°-18°' },
+    { start: 'Sep 2', end: 'Sep 24', sign: 'Virgo', degrees: '29°-15°' },
+    { start: 'Dec 22', end: 'Jan 10', sign: 'Capricorn', degrees: '16°-1°' },
+  ],
+  2030: [
+    { start: 'Apr 13', end: 'May 7', sign: 'Taurus → Aries', degrees: '11°-28°' },
+    { start: 'Aug 15', end: 'Sep 7', sign: 'Virgo', degrees: '12°-28°' },
+    { start: 'Dec 6', end: 'Dec 25', sign: 'Capricorn → Sagittarius', degrees: '0°-14°' },
+  ],
+};
+
+// Historical major conjunctions
+const HISTORICAL_CONJUNCTIONS = [
+  {
+    planets: 'Saturn ☌ Neptune',
+    cycle: '~36 years',
+    last: { year: 1989, sign: 'Capricorn', degrees: '10°', event: 'Fall of Berlin Wall, end of Cold War' },
+    next: { year: 2026, sign: 'Aries', degrees: '0°', exact: 'Feb 20, 2026' },
+    meaning: 'Dissolution of old structures, spiritual awakening in collective consciousness. Reality meets dreams.',
+    history: [
+      { year: 1989, event: 'Fall of Berlin Wall', degrees: '10° Capricorn' },
+      { year: 1953, event: 'End of Korean War, Stalin dies', degrees: '22° Libra' },
+      { year: 1917, event: 'Russian Revolution', degrees: '3° Leo' },
+      { year: 1882, event: 'Birth of modern psychology', degrees: '16° Taurus' },
+    ],
+  },
+  {
+    planets: 'Jupiter ☌ Saturn',
+    cycle: '~20 years',
+    last: { year: 2020, sign: 'Aquarius', degrees: '0°', event: 'COVID pandemic, new era begins' },
+    next: { year: 2040, sign: 'Libra', degrees: '17°', exact: 'Oct 31, 2040' },
+    meaning: 'Major social/economic shifts. The "Great Mutation" marking generational changes in society.',
+    history: [
+      { year: 2020, event: 'COVID pandemic begins', degrees: '0° Aquarius' },
+      { year: 2000, event: 'Y2K, tech boom peaks', degrees: '22° Taurus' },
+      { year: 1980, event: 'Reagan era begins, neoliberalism', degrees: '9° Libra' },
+      { year: 1961, event: 'JFK presidency, Space Race', degrees: '25° Capricorn' },
+    ],
+  },
+  {
+    planets: 'Uranus ☌ Pluto',
+    cycle: '~127 years',
+    last: { year: 1966, sign: 'Virgo', degrees: '16°', event: 'Counterculture revolution, civil rights' },
+    next: { year: 2104, sign: 'Taurus', degrees: '2°', exact: '~2104' },
+    meaning: 'Massive revolutionary transformation. Complete paradigm shifts in technology and power structures.',
+    history: [
+      { year: 1966, event: 'Counterculture, civil rights movement', degrees: '16° Virgo' },
+      { year: 1850, event: 'Industrial Revolution peak', degrees: '29° Aries' },
+      { year: 1710, event: 'Enlightenment begins', degrees: '28° Leo' },
+    ],
+  },
+  {
+    planets: 'Neptune ☌ Pluto',
+    cycle: '~492 years',
+    last: { year: 1891, sign: 'Gemini', degrees: '8°', event: 'Birth of modern era, electricity age' },
+    next: { year: 2385, sign: 'Gemini', degrees: '~0°', exact: '~2385' },
+    meaning: 'Civilization-defining shifts. Complete transformation of spiritual understanding and collective unconscious.',
+    history: [
+      { year: 1891, event: 'Birth of modern technology era', degrees: '8° Gemini' },
+      { year: 1399, event: 'Renaissance begins', degrees: '3° Gemini' },
+    ],
+  },
+  {
+    planets: 'Saturn ☌ Uranus',
+    cycle: '~45 years',
+    last: { year: 1988, sign: 'Sagittarius', degrees: '29°', event: 'End of Cold War era begins' },
+    next: { year: 2032, sign: 'Gemini', degrees: '28°', exact: 'Jun 28, 2032' },
+    meaning: 'Tension between old and new. Revolutionary restructuring of established systems.',
+    history: [
+      { year: 1988, event: 'End of Cold War begins', degrees: '29° Sagittarius' },
+      { year: 1942, event: 'World War II turning point', degrees: '29° Taurus' },
+      { year: 1897, event: 'Second Industrial Revolution', degrees: '27° Scorpio' },
+    ],
+  },
+  {
+    planets: 'Saturn ☌ Pluto',
+    cycle: '~33-38 years',
+    last: { year: 2020, sign: 'Capricorn', degrees: '22°', event: 'COVID pandemic, global restructuring' },
+    next: { year: 2053, sign: 'Pisces', degrees: '15°', exact: '~2053' },
+    meaning: 'Destruction and rebuilding of power structures. Karmic reckoning with authority.',
+    history: [
+      { year: 2020, event: 'COVID pandemic, global shutdown', degrees: '22° Capricorn' },
+      { year: 1982, event: 'Global recession, AIDS epidemic', degrees: '27° Libra' },
+      { year: 1947, event: 'Cold War begins, atomic age', degrees: '13° Leo' },
+      { year: 1914, event: 'World War I begins', degrees: '2° Cancer' },
+    ],
+  },
+];
+
+// Get current pattern analysis
+const getCurrentPatterns = (date: Date) => {
+  const planets = getPlanetaryPositions(date);
+  const stelliums = detectStelliums(planets);
+  const rareAspects = detectRareAspects(planets);
+  const nodeAspects = detectNodeAspects(planets);
+  const mercuryRx = isMercuryRetrograde(date);
+  
+  return { planets, stelliums, rareAspects, nodeAspects, mercuryRx };
+};
+
+// Retrograde tracker component
+const RetrogradePatternTracker = ({ year }: { year: number }) => {
+  const retrogrades = MERCURY_RETROGRADES[year] || [];
+  const pastYears = [year - 3, year - 2, year - 1].filter(y => MERCURY_RETROGRADES[y]);
+  const futureYears = [year + 1, year + 2, year + 3].filter(y => MERCURY_RETROGRADES[y]);
+
+  // Analyze sign patterns
+  const signCounts: Record<string, number> = {};
+  Object.values(MERCURY_RETROGRADES).flat().forEach(rx => {
+    const mainSign = rx.sign.split(' → ')[0];
+    signCounts[mainSign] = (signCounts[mainSign] || 0) + 1;
+  });
+
+  const topSigns = Object.entries(signCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-3 mb-4">
+        <RefreshCw className="text-primary" size={24} />
+        <h3 className="font-serif text-xl">Mercury Retrograde Pattern Tracker</h3>
+      </div>
+
+      {/* Current Year */}
+      <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-sm border border-amber-200 dark:border-amber-700">
+        <h4 className="font-semibold text-foreground mb-3">{year} Mercury Retrogrades</h4>
+        <div className="grid gap-3 md:grid-cols-3">
+          {retrogrades.map((rx, i) => (
+            <div key={i} className="bg-background p-3 rounded-sm border border-border">
+              <div className="font-medium text-foreground">☿℞ #{i + 1}</div>
+              <div className="text-sm text-muted-foreground">{rx.start} – {rx.end}</div>
+              <div className="text-sm text-primary font-medium">{rx.sign}</div>
+              <div className="text-xs text-muted-foreground">{rx.degrees}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Pattern History */}
+      <Accordion type="single" collapsible>
+        <AccordionItem value="history">
+          <AccordionTrigger className="text-sm font-medium">
+            Past Retrogrades ({pastYears.join(', ')})
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-4">
+              {pastYears.map(y => (
+                <div key={y}>
+                  <div className="font-medium text-foreground mb-2">{y}</div>
+                  <div className="grid gap-2 md:grid-cols-4">
+                    {(MERCURY_RETROGRADES[y] || []).map((rx, i) => (
+                      <div key={i} className="text-sm p-2 bg-secondary rounded-sm">
+                        <div className="text-muted-foreground">{rx.start} – {rx.end}</div>
+                        <div className="text-primary">{rx.sign}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="future">
+          <AccordionTrigger className="text-sm font-medium">
+            Future Retrogrades ({futureYears.join(', ')})
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-4">
+              {futureYears.map(y => (
+                <div key={y}>
+                  <div className="font-medium text-foreground mb-2">{y}</div>
+                  <div className="grid gap-2 md:grid-cols-4">
+                    {(MERCURY_RETROGRADES[y] || []).map((rx, i) => (
+                      <div key={i} className="text-sm p-2 bg-secondary rounded-sm">
+                        <div className="text-muted-foreground">{rx.start} – {rx.end}</div>
+                        <div className="text-primary">{rx.sign}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="patterns">
+          <AccordionTrigger className="text-sm font-medium">
+            Sign Pattern Analysis
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Mercury retrogrades cycle through the elements roughly every 7 years. Current pattern emphasis:
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {topSigns.map(([sign, count]) => (
+                  <span key={sign} className="px-3 py-1 rounded-full text-sm bg-secondary text-foreground">
+                    {sign}: {count}x
+                  </span>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground italic">
+                Mercury tends to retrograde in the same element (Fire, Earth, Air, Water) for about a year before shifting.
+              </p>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+    </div>
+  );
+};
+
+// Historical conjunction finder component
+const HistoricalConjunctionFinder = ({ year }: { year: number }) => {
+  // Check if any conjunctions are happening this year or soon
+  const upcomingConjunctions = HISTORICAL_CONJUNCTIONS.filter(c => {
+    const nextYear = parseInt(c.next.year.toString());
+    return nextYear >= year && nextYear <= year + 10;
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-3 mb-4">
+        <History className="text-primary" size={24} />
+        <h3 className="font-serif text-xl">Historical Conjunction Cycles</h3>
+      </div>
+
+      {/* Upcoming Soon */}
+      {upcomingConjunctions.length > 0 && (
+        <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-sm border border-purple-200 dark:border-purple-700">
+          <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+            <Star size={18} className="text-purple-600" />
+            Upcoming Major Conjunctions
+          </h4>
+          <div className="space-y-3">
+            {upcomingConjunctions.map((c, i) => (
+              <div key={i} className="bg-background p-3 rounded-sm border border-border">
+                <div className="font-medium text-foreground">{c.planets}</div>
+                <div className="text-sm text-primary">{c.next.exact} in {c.next.sign}</div>
+                <div className="text-xs text-muted-foreground mt-1">{c.meaning}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* All Major Cycles */}
+      <Accordion type="single" collapsible>
+        {HISTORICAL_CONJUNCTIONS.map((conjunction, i) => (
+          <AccordionItem key={i} value={`conjunction-${i}`}>
+            <AccordionTrigger className="text-sm font-medium">
+              {conjunction.planets} <span className="text-muted-foreground ml-2">({conjunction.cycle})</span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-4">
+                {/* Meaning */}
+                <div className="p-3 bg-secondary rounded-sm">
+                  <div className="text-sm text-foreground leading-relaxed">{conjunction.meaning}</div>
+                </div>
+
+                {/* Last & Next */}
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-sm border border-red-200 dark:border-red-700">
+                    <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Last Occurred</div>
+                    <div className="font-medium text-foreground">{conjunction.last.year} in {conjunction.last.sign}</div>
+                    <div className="text-sm text-muted-foreground">{conjunction.last.event}</div>
+                  </div>
+                  <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-sm border border-green-200 dark:border-green-700">
+                    <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Next Occurrence</div>
+                    <div className="font-medium text-foreground">{conjunction.next.exact}</div>
+                    <div className="text-sm text-muted-foreground">{conjunction.next.sign} at {conjunction.next.degrees}</div>
+                  </div>
+                </div>
+
+                {/* Historical Events */}
+                <div>
+                  <div className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Historical Events</div>
+                  <div className="space-y-2">
+                    {conjunction.history.map((h, j) => (
+                      <div key={j} className="flex items-start gap-3 text-sm">
+                        <span className="font-medium text-primary min-w-[50px]">{h.year}</span>
+                        <span className="text-muted-foreground">{h.event}</span>
+                        <span className="text-xs text-muted-foreground ml-auto">{h.degrees}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </div>
+  );
+};
+
+// Current patterns component
+const CurrentPatternsPanel = ({ date }: { date: Date }) => {
+  const patterns = useMemo(() => getCurrentPatterns(date), [date]);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-3 mb-4">
+        <TrendingUp className="text-primary" size={24} />
+        <h3 className="font-serif text-xl">Current Patterns — {date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</h3>
+      </div>
+
+      {/* Mercury Retrograde Status */}
+      <div className={`p-4 rounded-sm border ${patterns.mercuryRx ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700' : 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700'}`}>
+        <div className="flex items-center gap-2">
+          <span className="text-xl">☿</span>
+          <span className="font-medium text-foreground">
+            Mercury {patterns.mercuryRx ? '℞ Retrograde' : 'Direct'}
+          </span>
+        </div>
+        <p className="text-sm text-muted-foreground mt-1">
+          {patterns.mercuryRx 
+            ? 'Review, revise, reconnect. Avoid signing contracts or starting new projects.'
+            : 'Communication and travel flow smoothly. Good for new initiatives.'}
+        </p>
+      </div>
+
+      {/* Stelliums */}
+      {patterns.stelliums.length > 0 && (
+        <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-sm border border-amber-200 dark:border-amber-700">
+          <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+            <AlertTriangle size={18} className="text-amber-600" />
+            Active Stelliums
+          </h4>
+          <div className="space-y-3">
+            {patterns.stelliums.map((stellium: Stellium, i: number) => (
+              <div key={i}>
+                <div className="font-medium text-foreground">
+                  {stellium.count} planets in {stellium.sign}
+                </div>
+                <div className="flex gap-2 mt-1">
+                  {stellium.planets.map((p, j) => (
+                    <span key={j} className="text-lg" title={p.name}>
+                      {p.symbol}
+                    </span>
+                  ))}
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Concentrated energy in {stellium.sign} themes. Major focus area.
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Rare Aspects */}
+      {patterns.rareAspects.length > 0 && (
+        <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-sm border border-purple-200 dark:border-purple-700">
+          <h4 className="font-semibold text-foreground mb-3">Rare Aspects Active</h4>
+          <div className="space-y-2">
+            {patterns.rareAspects.map((aspect: RareAspect, i: number) => (
+              <div key={i} className="flex items-center gap-3 p-2 bg-background rounded-sm">
+                <span className="text-lg">{getPlanetSymbol(aspect.planet1.toLowerCase())}</span>
+                <span className="text-primary font-medium">{aspect.symbol}</span>
+                <span className="text-lg">{getPlanetSymbol(aspect.planet2.toLowerCase())}</span>
+                <span className="text-sm text-muted-foreground ml-auto">
+                  {aspect.type} ({aspect.orb}° orb)
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Node Aspects */}
+      {patterns.nodeAspects.length > 0 && (
+        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-sm border border-blue-200 dark:border-blue-700">
+          <h4 className="font-semibold text-foreground mb-3">☊☋ Nodal Activations</h4>
+          <div className="space-y-2">
+            {patterns.nodeAspects.map((aspect: NodeAspect, i: number) => (
+              <div key={i} className="p-2 bg-background rounded-sm">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{getPlanetSymbol(aspect.planet.toLowerCase())}</span>
+                  <span className="text-primary">{aspect.symbol}</span>
+                  <span className="font-medium text-foreground">
+                    {aspect.node} Node
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">{aspect.meaning}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* No special patterns */}
+      {patterns.stelliums.length === 0 && patterns.rareAspects.length === 0 && patterns.nodeAspects.length === 0 && (
+        <div className="p-4 bg-secondary rounded-sm text-center">
+          <p className="text-sm text-muted-foreground">
+            No major stelliums or rare aspects active today. Check the standard aspects in the day view.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export const PatternsView = ({ year }: PatternsViewProps) => {
+  const [selectedDate] = useState(new Date());
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-12">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <Orbit className="text-primary" size={28} />
+        <h2 className="font-serif text-2xl font-light text-foreground">Astrological Patterns & Cycles</h2>
+      </div>
+
+      <p className="text-muted-foreground">
+        Track retrograde patterns, major planetary conjunctions, and current cosmic configurations.
+      </p>
+
+      {/* Current Patterns */}
+      <section className="rounded-lg border border-border bg-card p-6">
+        <CurrentPatternsPanel date={selectedDate} />
+      </section>
+
+      {/* Retrograde Tracker */}
+      <section className="rounded-lg border border-border bg-card p-6">
+        <RetrogradePatternTracker year={year} />
+      </section>
+
+      {/* Historical Conjunctions */}
+      <section className="rounded-lg border border-border bg-card p-6">
+        <HistoricalConjunctionFinder year={year} />
+      </section>
+
+      {/* Info Footer */}
+      <div className="p-4 rounded-sm bg-secondary text-sm text-muted-foreground">
+        <p className="mb-2">
+          <strong>About These Patterns:</strong>
+        </p>
+        <ul className="list-disc list-inside space-y-1">
+          <li><strong>Stelliums</strong>: 3+ planets in the same sign amplify that sign's energy</li>
+          <li><strong>Rare Aspects</strong>: Quincunx (150°), Quintile (72°), Sesquiquadrate (135°) reveal subtle dynamics</li>
+          <li><strong>Retrograde Patterns</strong>: Mercury retrogrades cycle through elements roughly every 7 years</li>
+          <li><strong>Major Conjunctions</strong>: Outer planet conjunctions mark generational shifts</li>
+        </ul>
+      </div>
+    </div>
+  );
+};
