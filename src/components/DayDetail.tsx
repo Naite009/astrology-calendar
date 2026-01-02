@@ -89,7 +89,13 @@ export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
                   </div>
                 )}
                 <div className="font-serif text-lg font-medium text-foreground">
-                  {exactLunarPhase.type} at {exactLunarPhase.time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} EST
+                  {exactLunarPhase.type} at{' '}
+                  {exactLunarPhase.time.toLocaleTimeString('en-US', {
+                    timeZone: 'America/New_York',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                  })}{' '}
+                  ET
                 </div>
                 <div className="text-sm text-muted-foreground">
                   Position: {exactLunarPhase.position}

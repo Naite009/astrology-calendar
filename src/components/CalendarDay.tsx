@@ -110,7 +110,14 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick }: Calend
             <div className="font-medium">{exactLunarPhase.name}</div>
           )}
           <div>{exactLunarPhase.emoji} {exactLunarPhase.type}</div>
-          <div>{exactLunarPhase.time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} EST</div>
+          <div>
+            {exactLunarPhase.time.toLocaleTimeString('en-US', {
+              timeZone: 'America/New_York',
+              hour: 'numeric',
+              minute: '2-digit',
+            })}{' '}
+            ET
+          </div>
         </div>
       )}
 

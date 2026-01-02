@@ -249,13 +249,12 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
       const zodiac = longitudeToZodiac(ecliptic.elon);
       const distance = moonPos.Length() * 149597870.7; // Convert AU to km
       const isSupermoon = distance < 361000;
-      
-      // Convert to EST (UTC-5)
-      const estTime = new Date(newMoon.date.getTime() - (5 * 60 * 60 * 1000));
-      
+      // Keep the exact event time as returned (UTC internally).
+      // We'll format it for America/New_York at render time to handle DST correctly.
+
       return {
         type: 'New Moon',
-        time: estTime,
+        time: newMoon.date,
         position: zodiac.fullDegree,
         emoji: '🌑',
         name: MOON_NAMES[date.getMonth()],
@@ -293,13 +292,12 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
           supermoonSequence = 'Part of supermoon sequence';
         }
       }
-      
-      // Convert to EST (UTC-5)
-      const estTime = new Date(fullMoon.date.getTime() - (5 * 60 * 60 * 1000));
-      
+      // Keep the exact event time as returned (UTC internally).
+      // We'll format it for America/New_York at render time to handle DST correctly.
+
       return {
         type: 'Full Moon',
-        time: estTime,
+        time: fullMoon.date,
         position: zodiac.fullDegree,
         emoji: '🌕',
         name: MOON_NAMES[date.getMonth()],
@@ -317,11 +315,9 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
       const zodiac = longitudeToZodiac(ecliptic.elon);
       const distance = moonPos.Length() * 149597870.7;
       
-      const estTime = new Date(firstQuarter.date.getTime() - (5 * 60 * 60 * 1000));
-      
       return {
         type: 'First Quarter',
-        time: estTime,
+        time: firstQuarter.date,
         position: zodiac.fullDegree,
         emoji: '🌓',
         name: null,
@@ -338,11 +334,9 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
       const zodiac = longitudeToZodiac(ecliptic.elon);
       const distance = moonPos.Length() * 149597870.7;
       
-      const estTime = new Date(lastQuarter.date.getTime() - (5 * 60 * 60 * 1000));
-      
       return {
         type: 'Last Quarter',
-        time: estTime,
+        time: lastQuarter.date,
         position: zodiac.fullDegree,
         emoji: '🌗',
         name: null,
