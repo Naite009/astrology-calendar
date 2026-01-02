@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Clock, Sparkles, Info } from 'lucide-react';
-import { NatalChart } from '@/hooks/useNatalChart';
-import { calculateBestTimes, BestTimesCategory, BestTimeResult, CATEGORY_INFO } from '@/lib/bestTimes';
+import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
+import { calculateBestTimes, BestTimesCategory, BestTimeResult, CATEGORY_INFO, getTransitPositions } from '@/lib/bestTimes';
 
 interface BestTimesViewProps {
   userNatalChart: NatalChart | null;
@@ -10,128 +10,222 @@ interface BestTimesViewProps {
   setSelectedChartForTiming: (id: string) => void;
 }
 
-// Simple aspect wheel visualization
-const AspectWheel = ({ aspects }: { aspects: { planet1: string; planet2: string; type: string; symbol: string; angle: number }[] }) => {
-  const PLANET_SYMBOLS: Record<string, string> = {
-    Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀', Mars: '♂',
-    Jupiter: '♃', Saturn: '♄', Uranus: '♅', Neptune: '♆', Pluto: '♇'
+const PLANET_SYMBOLS: Record<string, string> = {
+  Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀', Mars: '♂',
+  Jupiter: '♃', Saturn: '♄', Uranus: '♅', Neptune: '♆', Pluto: '♇'
+};
+
+const ZODIAC_SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+const ZODIAC_SYMBOLS = ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓'];
+
+// Convert sign + degree to absolute longitude (0-360)
+const toAbsoluteLongitude = (sign: string, degree: number, minutes: number = 0): number => {
+  const signIndex = ZODIAC_SIGNS.indexOf(sign);
+  if (signIndex === -1) return 0;
+  return signIndex * 30 + degree + (minutes / 60);
+};
+
+// Convert longitude to SVG position on the wheel
+// Traditional astrology: Aries 0° is at the left (9 o'clock), signs go counter-clockwise
+const longitudeToPosition = (longitude: number, radius: number, centerX: number, centerY: number): { x: number; y: number } => {
+  // In traditional astrology wheel: 0° Aries is at left (9 o'clock = 180° in SVG coords)
+  // Signs progress counter-clockwise, so we negate the angle
+  const svgAngle = (180 - longitude) * (Math.PI / 180);
+  return {
+    x: centerX + radius * Math.cos(svgAngle),
+    y: centerY - radius * Math.sin(svgAngle)
   };
+};
 
-  const ZODIAC_SYMBOLS = ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓'];
+interface TransitPosition {
+  name: string;
+  longitude: number;
+  sign: string;
+  degree: number;
+}
 
-  // Position planets around the wheel based on a simplified layout
-  const planetPositions: Record<string, { angle: number; x: number; y: number }> = {};
-  const planets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
-  const radius = 85;
-  const centerX = 120;
-  const centerY = 120;
+interface AspectWheelProps {
+  aspects: { planet1: string; planet2: string; type: string; symbol: string; angle: number }[];
+  transitPositions: TransitPosition[];
+  natalChart: NatalChart | null;
+}
 
-  planets.forEach((planet, i) => {
-    const angle = (i * (360 / planets.length) - 90) * (Math.PI / 180);
-    planetPositions[planet] = {
-      angle: i * (360 / planets.length),
-      x: centerX + radius * Math.cos(angle),
-      y: centerY + radius * Math.sin(angle)
-    };
-  });
+// Proper astrological wheel visualization
+const AspectWheel = ({ aspects, transitPositions, natalChart }: AspectWheelProps) => {
+  const centerX = 150;
+  const centerY = 150;
+  const outerRadius = 140;
+  const signRadius = 125;
+  const transitRadius = 95;
+  const natalRadius = 65;
+  const innerRadius = 40;
 
   const getAspectColor = (type: string) => {
     switch (type) {
-      case 'conjunction': return '#22c55e';
-      case 'trine': return '#3b82f6';
-      case 'sextile': return '#8b5cf6';
-      case 'square': return '#ef4444';
-      case 'opposition': return '#f97316';
-      default: return '#6b7280';
+      case 'conjunction': return 'hsl(142, 76%, 36%)'; // green
+      case 'trine': return 'hsl(217, 91%, 60%)'; // blue
+      case 'sextile': return 'hsl(263, 70%, 50%)'; // purple
+      case 'square': return 'hsl(0, 84%, 60%)'; // red
+      case 'opposition': return 'hsl(25, 95%, 53%)'; // orange
+      default: return 'hsl(220, 9%, 46%)';
     }
   };
 
+  // Build natal positions from chart
+  const natalPositions: TransitPosition[] = [];
+  if (natalChart?.planets) {
+    const planetKeys = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'] as const;
+    planetKeys.forEach(key => {
+      const pos = natalChart.planets[key];
+      if (pos && pos.sign) {
+        natalPositions.push({
+          name: key,
+          longitude: toAbsoluteLongitude(pos.sign, pos.degree, pos.minutes),
+          sign: pos.sign,
+          degree: pos.degree
+        });
+      }
+    });
+  }
+
+  // Find transit position for aspect lines
+  const getTransitPos = (name: string) => transitPositions.find(p => p.name === name);
+
   return (
     <div className="relative">
-      <svg width="240" height="240" className="mx-auto">
-        {/* Zodiac wheel background */}
-        <circle cx={centerX} cy={centerY} r="110" fill="none" stroke="currentColor" strokeOpacity="0.1" strokeWidth="20" />
-        <circle cx={centerX} cy={centerY} r="100" fill="none" stroke="currentColor" strokeOpacity="0.2" strokeWidth="1" />
-        <circle cx={centerX} cy={centerY} r="70" fill="none" stroke="currentColor" strokeOpacity="0.1" strokeWidth="1" />
+      <svg width="300" height="300" viewBox="0 0 300 300" className="mx-auto">
+        {/* Outer circle */}
+        <circle cx={centerX} cy={centerY} r={outerRadius} fill="none" className="stroke-border" strokeWidth="1" />
         
-        {/* Zodiac sign markers */}
-        {ZODIAC_SYMBOLS.map((sign, i) => {
-          const angle = (i * 30 - 90) * (Math.PI / 180);
-          const x = centerX + 105 * Math.cos(angle);
-          const y = centerY + 105 * Math.sin(angle);
+        {/* Sign segments background */}
+        <circle cx={centerX} cy={centerY} r={signRadius} fill="none" className="stroke-border/50" strokeWidth="30" />
+        
+        {/* Sign division lines */}
+        {Array.from({ length: 12 }).map((_, i) => {
+          const startAngle = (180 - i * 30) * (Math.PI / 180);
+          const x1 = centerX + (signRadius - 15) * Math.cos(startAngle);
+          const y1 = centerY - (signRadius - 15) * Math.sin(startAngle);
+          const x2 = centerX + outerRadius * Math.cos(startAngle);
+          const y2 = centerY - outerRadius * Math.sin(startAngle);
           return (
-            <text key={i} x={x} y={y} textAnchor="middle" dominantBaseline="middle" 
-                  className="fill-muted-foreground text-[8px]">
-              {sign}
+            <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} className="stroke-border/30" strokeWidth="1" />
+          );
+        })}
+
+        {/* Zodiac symbols - positioned in center of each 30° segment */}
+        {ZODIAC_SYMBOLS.map((symbol, i) => {
+          // Center of each sign segment (15° into the sign)
+          const signCenterLon = i * 30 + 15;
+          const pos = longitudeToPosition(signCenterLon, signRadius, centerX, centerY);
+          return (
+            <text key={i} x={pos.x} y={pos.y} textAnchor="middle" dominantBaseline="middle" 
+                  className="fill-muted-foreground text-xs font-medium">
+              {symbol}
             </text>
           );
         })}
 
-        {/* Aspect lines */}
+        {/* Inner circles */}
+        <circle cx={centerX} cy={centerY} r={transitRadius + 15} fill="none" className="stroke-border/20" strokeWidth="1" />
+        <circle cx={centerX} cy={centerY} r={natalRadius + 15} fill="none" className="stroke-border/20" strokeWidth="1" />
+        <circle cx={centerX} cy={centerY} r={innerRadius} fill="none" className="stroke-border/10" strokeWidth="1" />
+
+        {/* Aspect lines between transit planets */}
         {aspects.map((aspect, i) => {
-          const p1 = planetPositions[aspect.planet1];
-          const p2 = planetPositions[aspect.planet2];
+          const p1 = getTransitPos(aspect.planet1);
+          const p2 = getTransitPos(aspect.planet2);
           if (!p1 || !p2) return null;
+          
+          const pos1 = longitudeToPosition(p1.longitude, transitRadius - 10, centerX, centerY);
+          const pos2 = longitudeToPosition(p2.longitude, transitRadius - 10, centerX, centerY);
           
           return (
             <line
               key={i}
-              x1={p1.x}
-              y1={p1.y}
-              x2={p2.x}
-              y2={p2.y}
+              x1={pos1.x}
+              y1={pos1.y}
+              x2={pos2.x}
+              y2={pos2.y}
               stroke={getAspectColor(aspect.type)}
-              strokeWidth="2"
-              strokeOpacity="0.7"
-              strokeDasharray={aspect.type === 'square' || aspect.type === 'opposition' ? '4,4' : 'none'}
+              strokeWidth="1.5"
+              strokeOpacity="0.6"
+              strokeDasharray={aspect.type === 'square' || aspect.type === 'opposition' ? '3,3' : 'none'}
             />
           );
         })}
 
-        {/* Planet positions */}
-        {planets.map((planet) => {
-          const pos = planetPositions[planet];
+        {/* Transit planets (outer ring) */}
+        {transitPositions.map((planet) => {
+          const pos = longitudeToPosition(planet.longitude, transitRadius, centerX, centerY);
           return (
-            <g key={planet}>
-              <circle cx={pos.x} cy={pos.y} r="16" className="fill-background stroke-border" strokeWidth="1" />
+            <g key={`transit-${planet.name}`}>
+              <circle cx={pos.x} cy={pos.y} r="12" className="fill-primary/20 stroke-primary" strokeWidth="1" />
               <text x={pos.x} y={pos.y} textAnchor="middle" dominantBaseline="middle" 
-                    className="fill-foreground text-sm font-medium">
-                {PLANET_SYMBOLS[planet]}
+                    className="fill-primary text-xs font-bold">
+                {PLANET_SYMBOLS[planet.name]}
               </text>
             </g>
           );
         })}
 
-        {/* Aspect symbol in center */}
-        {aspects.length > 0 && (
-          <text x={centerX} y={centerY} textAnchor="middle" dominantBaseline="middle" 
-                className="fill-primary text-2xl font-bold">
-            {aspects[0]?.symbol || ''}
-          </text>
-        )}
+        {/* Natal planets (inner ring) - only if natal chart exists */}
+        {natalPositions.map((planet) => {
+          const pos = longitudeToPosition(planet.longitude, natalRadius, centerX, centerY);
+          return (
+            <g key={`natal-${planet.name}`}>
+              <circle cx={pos.x} cy={pos.y} r="10" className="fill-secondary stroke-foreground/50" strokeWidth="1" />
+              <text x={pos.x} y={pos.y} textAnchor="middle" dominantBaseline="middle" 
+                    className="fill-foreground text-[10px]">
+                {PLANET_SYMBOLS[planet.name]}
+              </text>
+            </g>
+          );
+        })}
+
+        {/* Center label */}
+        <text x={centerX} y={centerY - 8} textAnchor="middle" className="fill-muted-foreground text-[8px] uppercase tracking-wider">
+          {natalChart ? 'Transit' : 'Today'}
+        </text>
+        <text x={centerX} y={centerY + 8} textAnchor="middle" className="fill-muted-foreground text-[8px] uppercase tracking-wider">
+          {natalChart ? '+ Natal' : ''}
+        </text>
       </svg>
 
-      {/* Aspect legend */}
-      <div className="mt-4 flex flex-wrap justify-center gap-3 text-[10px]">
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-0.5 bg-green-500"></div>
-          <span className="text-muted-foreground">☌ Conjunction</span>
+      {/* Legend */}
+      <div className="mt-4 space-y-2 text-[10px]">
+        <div className="flex justify-center gap-4">
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-3 rounded-full bg-primary/20 border border-primary"></div>
+            <span className="text-muted-foreground">Transit (current)</span>
+          </div>
+          {natalChart && (
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded-full bg-secondary border border-foreground/50"></div>
+              <span className="text-muted-foreground">Natal (birth)</span>
+            </div>
+          )}
         </div>
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-0.5 bg-blue-500"></div>
-          <span className="text-muted-foreground">△ Trine</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-0.5 bg-purple-500"></div>
-          <span className="text-muted-foreground">⚹ Sextile</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-0.5 bg-red-500 border-dashed"></div>
-          <span className="text-muted-foreground">□ Square</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-0.5 bg-orange-500 border-dashed"></div>
-          <span className="text-muted-foreground">☍ Opposition</span>
+        <div className="flex flex-wrap justify-center gap-3">
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-0.5" style={{ backgroundColor: getAspectColor('conjunction') }}></div>
+            <span className="text-muted-foreground">☌ Conjunction</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-0.5" style={{ backgroundColor: getAspectColor('trine') }}></div>
+            <span className="text-muted-foreground">△ Trine</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-0.5" style={{ backgroundColor: getAspectColor('sextile') }}></div>
+            <span className="text-muted-foreground">⚹ Sextile</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-0.5 border-t border-dashed" style={{ borderColor: getAspectColor('square') }}></div>
+            <span className="text-muted-foreground">□ Square</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-0.5 border-t border-dashed" style={{ borderColor: getAspectColor('opposition') }}></div>
+            <span className="text-muted-foreground">☍ Opposition</span>
+          </div>
         </div>
       </div>
     </div>
@@ -187,12 +281,23 @@ export const BestTimesView = ({
   const [isCalculating, setIsCalculating] = useState(false);
   const [selectedTime, setSelectedTime] = useState<BestTimeResult | null>(null);
   const [currentAspects, setCurrentAspects] = useState<{ planet1: string; planet2: string; type: string; symbol: string; angle: number; description: string }[]>([]);
+  const [transitPositions, setTransitPositions] = useState<{ name: string; longitude: number; sign: string; degree: number }[]>([]);
 
-  // Import getCurrentAspects dynamically
+  // Get the active chart for display
+  const activeChart = selectedChartForTiming === 'user'
+    ? userNatalChart
+    : selectedChartForTiming === 'general'
+    ? null
+    : savedCharts.find(c => c.id === selectedChartForTiming) || null;
+
+  // Import getCurrentAspects and getTransitPositions dynamically
   useEffect(() => {
-    import('@/lib/bestTimes').then(({ getCurrentAspects }) => {
-      const aspects = getCurrentAspects(selectedTime?.date || new Date());
+    import('@/lib/bestTimes').then(({ getCurrentAspects, getTransitPositions }) => {
+      const date = selectedTime?.date || new Date();
+      const aspects = getCurrentAspects(date);
+      const positions = getTransitPositions(date);
       setCurrentAspects(aspects);
+      setTransitPositions(positions);
     });
   }, [selectedTime]);
 
@@ -295,7 +400,7 @@ export const BestTimesView = ({
               <h4 className="text-[11px] uppercase tracking-widest text-muted-foreground mb-4">
                 Current Planetary Aspects
               </h4>
-              <AspectWheel aspects={currentAspects} />
+              <AspectWheel aspects={currentAspects} transitPositions={transitPositions} natalChart={activeChart} />
             </div>
             
             {/* Aspect Explanations */}

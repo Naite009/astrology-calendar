@@ -102,6 +102,28 @@ const calculateAspectBetween = (planet1: NatalPlanetPosition, planet2Lon: number
   return null;
 };
 
+// Get transit planetary positions with actual longitudes for the wheel
+export interface TransitPosition {
+  name: string;
+  longitude: number;
+  sign: string;
+  degree: number;
+}
+
+export const getTransitPositions = (date: Date): TransitPosition[] => {
+  const planets = getPlanetaryPositions(date);
+  
+  return [
+    { name: 'Sun', longitude: ZODIAC_SIGNS.indexOf(planets.sun.signName) * 30 + planets.sun.degree, sign: planets.sun.signName, degree: planets.sun.degree },
+    { name: 'Moon', longitude: ZODIAC_SIGNS.indexOf(planets.moon.signName) * 30 + planets.moon.degree, sign: planets.moon.signName, degree: planets.moon.degree },
+    { name: 'Mercury', longitude: ZODIAC_SIGNS.indexOf(planets.mercury.signName) * 30 + planets.mercury.degree, sign: planets.mercury.signName, degree: planets.mercury.degree },
+    { name: 'Venus', longitude: ZODIAC_SIGNS.indexOf(planets.venus.signName) * 30 + planets.venus.degree, sign: planets.venus.signName, degree: planets.venus.degree },
+    { name: 'Mars', longitude: ZODIAC_SIGNS.indexOf(planets.mars.signName) * 30 + planets.mars.degree, sign: planets.mars.signName, degree: planets.mars.degree },
+    { name: 'Jupiter', longitude: ZODIAC_SIGNS.indexOf(planets.jupiter.signName) * 30 + planets.jupiter.degree, sign: planets.jupiter.signName, degree: planets.jupiter.degree },
+    { name: 'Saturn', longitude: ZODIAC_SIGNS.indexOf(planets.saturn.signName) * 30 + planets.saturn.degree, sign: planets.saturn.signName, degree: planets.saturn.degree },
+  ];
+};
+
 // Get current aspects for visualization
 export const getCurrentAspects = (date: Date): { planet1: string; planet2: string; type: string; symbol: string; angle: number; description: string }[] => {
   const planets = getPlanetaryPositions(date);
