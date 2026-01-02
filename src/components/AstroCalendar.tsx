@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Bo
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
 import { YearView } from "./YearView";
-import { AnnualTables } from "./AnnualTables";
+import { AnnualTablesView } from "./AnnualTablesView";
 import { GuideView } from "./GuideView";
 import { MoonPhasesView } from "./MoonPhasesView";
 import { UserForm } from "./UserForm";
@@ -280,7 +280,7 @@ export const AstroCalendar = () => {
 
         {viewMode === "moon-phases" && <MoonPhasesView year={currentDate.getFullYear()} />}
 
-        {viewMode === "annual-tables" && <AnnualTables year={currentDate.getFullYear()} />}
+        {viewMode === "annual-tables" && <AnnualTablesView year={currentDate.getFullYear()} />}
 
         {viewMode === "guide" && <GuideView />}
 
