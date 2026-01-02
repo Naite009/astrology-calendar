@@ -162,7 +162,7 @@ export const CosmicWeatherBanner = ({
         )}
 
         <div className="text-xs mt-4 pt-3 border-t border-white/20 opacity-60 italic">
-          Insights synthesized from astrological traditions including Jessica Davidson, Cafe Astrology, Chani Nicholas, and classical sources.
+          Generated from the chart data shown above (planet signs, degrees, and aspects).
         </div>
       </div>
 
