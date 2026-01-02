@@ -127,24 +127,28 @@ export const NatalChartWheel = ({
 
   // Get natal planet positions with longitudes
   const natalPlanets = useMemo(() => {
-    const planets: { name: string; symbol: string; longitude: number; isRetrograde?: boolean }[] = [];
-    
+    const planets: { name: string; symbol: string; longitude: number; svgAngle: number; storedSign: string; storedDegree: number; isRetrograde?: boolean }[] = [];
+
     const planetOrder = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Chiron', 'NorthNode', 'Lilith'];
-    
+
     planetOrder.forEach(name => {
       const pos = chart.planets[name as keyof typeof chart.planets];
       if (pos?.sign) {
+        const longitude = toAbsoluteLongitude(pos.sign, pos.degree, pos.minutes);
         planets.push({
           name,
           symbol: PLANET_SYMBOLS[name] || name[0],
-          longitude: toAbsoluteLongitude(pos.sign, pos.degree, pos.minutes),
+          longitude,
+          svgAngle: longitudeToAngle(longitude, ascendantLongitude),
+          storedSign: pos.sign,
+          storedDegree: pos.degree,
           isRetrograde: pos.isRetrograde,
         });
       }
     });
-    
+
     return planets;
-  }, [chart.planets]);
+  }, [chart.planets, ascendantLongitude]);
 
   // Get transit positions from astronomy-engine
   const transitPlanets = useMemo(() => {
@@ -217,12 +221,15 @@ export const NatalChartWheel = ({
   }, [natalPlanets]);
 
   // Spread out overlapping planets
-  const spreadPlanets = (planets: typeof natalPlanets, radius: number) => {
+  const spreadPlanets = <T extends { name: string; symbol: string; longitude: number }>(
+    planets: T[],
+    _radius: number
+  ) => {
     const minGap = 15; // minimum degrees between planets for display
-    const positioned: { name: string; symbol: string; longitude: number; displayAngle: number; isRetrograde?: boolean }[] = [];
-    
+    const positioned: (T & { displayAngle: number })[] = [];
+
     const sorted = [...planets].sort((a, b) => a.longitude - b.longitude);
-    
+
     sorted.forEach(planet => {
       let displayAngle = normalizeAngle(longitudeToAngle(planet.longitude, ascendantLongitude));
 
@@ -239,12 +246,12 @@ export const NatalChartWheel = ({
         displayAngle,
       });
     });
-    
+
     return positioned;
   };
 
   const positionedNatalPlanets = spreadPlanets(natalPlanets, planetRadius);
-  const positionedTransitPlanets = spreadPlanets(transitPlanets as typeof natalPlanets, transitRadius);
+  const positionedTransitPlanets = spreadPlanets(transitPlanets, transitRadius);
 
   return (
     <div className="relative">
@@ -471,6 +478,25 @@ export const NatalChartWheel = ({
           );
         })}
       </svg>
+
+      {/* Debug Panel - shows computed angles */}
+      <details className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-sm border border-amber-200 dark:border-amber-800">
+        <summary className="text-[10px] uppercase tracking-widest text-amber-700 dark:text-amber-400 cursor-pointer">
+          Debug: Computed Angles (ASC longitude: {ascendantLongitude.toFixed(1)}°)
+        </summary>
+        <div className="mt-2 grid grid-cols-1 gap-1 text-xs font-mono">
+          {natalPlanets.map(p => (
+            <div key={p.name} className="flex justify-between text-amber-800 dark:text-amber-300">
+              <span>{p.symbol} {p.name}</span>
+              <span>
+                stored: {p.storedDegree}° {p.storedSign} → 
+                long: {p.longitude.toFixed(1)}° → 
+                svg: {p.svgAngle.toFixed(1)}°
+              </span>
+            </div>
+          ))}
+        </div>
+      </details>
 
       {/* Natal Planets Table */}
       <div className="mt-4 p-3 bg-secondary rounded-sm">
