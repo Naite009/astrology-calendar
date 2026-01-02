@@ -129,39 +129,43 @@ export const NatalChartWheel = ({
     return planets;
   }, [chart.planets]);
 
-  // Get transit positions
+  // Get transit positions from astronomy-engine
   const transitPlanets = useMemo(() => {
     if (!showTransits) return [];
     
     const positions = getPlanetaryPositions(transitDate);
-    const planets: { name: string; symbol: string; longitude: number }[] = [];
+    const planets: { name: string; symbol: string; longitude: number; signName: string; degree: number }[] = [];
     
-    const transitOrder = ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
+    // Map to get proper planet data
+    const planetMap: { key: keyof typeof positions; name: string; symbol: string }[] = [
+      { key: 'sun', name: 'Sun', symbol: '☉' },
+      { key: 'moon', name: 'Moon', symbol: '☽' },
+      { key: 'mercury', name: 'Mercury', symbol: '☿' },
+      { key: 'venus', name: 'Venus', symbol: '♀' },
+      { key: 'mars', name: 'Mars', symbol: '♂' },
+      { key: 'jupiter', name: 'Jupiter', symbol: '♃' },
+      { key: 'saturn', name: 'Saturn', symbol: '♄' },
+      { key: 'uranus', name: 'Uranus', symbol: '♅' },
+      { key: 'neptune', name: 'Neptune', symbol: '♆' },
+      { key: 'pluto', name: 'Pluto', symbol: '♇' },
+    ];
     
-    transitOrder.forEach(name => {
-      const pos = positions[name as keyof typeof positions];
+    planetMap.forEach(({ key, name, symbol }) => {
+      const pos = positions[key];
       if (pos) {
-        const longitude = pos.degree + (ZODIAC_SIGNS.findIndex(s => s.name === pos.signName) * 30);
+        const signIndex = ZODIAC_SIGNS.findIndex(s => s.name === pos.signName);
+        const longitude = signIndex * 30 + pos.degree;
         planets.push({
-          name: name.charAt(0).toUpperCase() + name.slice(1),
-          symbol: PLANET_SYMBOLS[name.charAt(0).toUpperCase() + name.slice(1)] || name[0].toUpperCase(),
-          longitude: longitude + (ZODIAC_SIGNS.findIndex(s => s.name === pos.signName) * 30) / 30,
+          name,
+          symbol,
+          longitude,
+          signName: pos.signName,
+          degree: pos.degree,
         });
       }
     });
     
-    // Recalculate properly
-    return transitOrder.map(name => {
-      const pos = positions[name as keyof typeof positions];
-      if (!pos) return null;
-      const signIndex = ZODIAC_SIGNS.findIndex(s => s.name === pos.signName);
-      const longitude = signIndex * 30 + pos.degree;
-      return {
-        name: name.charAt(0).toUpperCase() + name.slice(1),
-        symbol: PLANET_SYMBOLS[name.charAt(0).toUpperCase() + name.slice(1)] || name[0].toUpperCase(),
-        longitude,
-      };
-    }).filter(Boolean) as { name: string; symbol: string; longitude: number }[];
+    return planets;
   }, [showTransits, transitDate]);
 
   // Calculate aspects between natal planets
@@ -439,14 +443,52 @@ export const NatalChartWheel = ({
         })}
       </svg>
 
+      {/* Natal Planets Table */}
+      <div className="mt-4 p-3 bg-secondary rounded-sm">
+        <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Your Natal Planets</div>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+          {Object.entries(chart.planets).map(([name, pos]) => {
+            if (!pos?.sign) return null;
+            return (
+              <div key={name} className="flex justify-between">
+                <span className="text-foreground font-medium">{PLANET_SYMBOLS[name] || name}</span>
+                <span className="text-muted-foreground">
+                  {pos.degree}°{pos.minutes ? pos.minutes.toString().padStart(2, '0') : '00'}′ {pos.sign}
+                  {pos.isRetrograde && <span className="text-amber-600 ml-1">℞</span>}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Transit Planets Table */}
+      {showTransits && transitPlanets.length > 0 && (
+        <div className="mt-2 p-3 bg-primary/10 rounded-sm">
+          <div className="text-[10px] uppercase tracking-widest text-primary mb-2">
+            Current Transits — {transitDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          </div>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+            {transitPlanets.map(p => (
+              <div key={p.name} className="flex justify-between">
+                <span className="text-primary font-medium">{p.symbol} {p.name}</span>
+                <span className="text-muted-foreground">
+                  {p.degree}° {p.signName}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Legend */}
-      <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+      <div className="mt-4 grid grid-cols-3 gap-2 text-xs">
         <div className="flex items-center gap-2">
           <span className="w-4 h-0.5 bg-foreground"></span>
           <span className="text-muted-foreground">☌ Conjunction</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-4 h-0.5 bg-red-500" style={{ background: 'hsl(0, 70%, 50%)' }}></span>
+          <span className="w-4 h-0.5" style={{ background: 'hsl(0, 70%, 50%)' }}></span>
           <span className="text-muted-foreground">☍ Opposition</span>
         </div>
         <div className="flex items-center gap-2">
@@ -461,12 +503,6 @@ export const NatalChartWheel = ({
           <span className="w-4 h-0.5" style={{ background: 'hsl(210, 70%, 50%)' }}></span>
           <span className="text-muted-foreground">⚹ Sextile</span>
         </div>
-        {showTransits && (
-          <div className="flex items-center gap-2">
-            <span className="w-4 h-4 rounded-full bg-primary/20"></span>
-            <span className="text-muted-foreground">Current Transits</span>
-          </div>
-        )}
       </div>
 
       {/* Birth info */}
