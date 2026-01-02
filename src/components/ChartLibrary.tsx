@@ -431,7 +431,7 @@ export const ChartLibrary = ({
                   </div>
                 </div>
                 <p className="text-[10px] text-muted-foreground italic mb-4">
-                  Click "Calculate" to auto-fill positions (timezone auto-detected from US cities). ℞ indicates retrograde. Ascendant requires exact location.
+                  Click "Calculate" to auto-fill positions including Ascendant (requires recognized city). ℞ indicates retrograde.
                 </p>
                 <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
                   {PLANETS.map(planet => (

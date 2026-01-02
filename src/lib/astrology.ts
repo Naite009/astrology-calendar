@@ -350,6 +350,152 @@ export const getDetailedVestaPosition = (date: Date): { sign: string; degree: nu
   return { ...getDetailedPosition(normalizedLon), isRetrograde };
 };
 
+// City coordinates database for Ascendant calculation
+export const CITY_COORDINATES: Record<string, { lat: number; lon: number }> = {
+  // US Cities - Eastern
+  'new york': { lat: 40.7128, lon: -74.0060 },
+  'boston': { lat: 42.3601, lon: -71.0589 },
+  'philadelphia': { lat: 39.9526, lon: -75.1652 },
+  'miami': { lat: 25.7617, lon: -80.1918 },
+  'atlanta': { lat: 33.7490, lon: -84.3880 },
+  'washington': { lat: 38.9072, lon: -77.0369 },
+  'detroit': { lat: 42.3314, lon: -83.0458 },
+  'cleveland': { lat: 41.4993, lon: -81.6944 },
+  'pittsburgh': { lat: 40.4406, lon: -79.9959 },
+  'charlotte': { lat: 35.2271, lon: -80.8431 },
+  'orlando': { lat: 28.5383, lon: -81.3792 },
+  'raleigh': { lat: 35.7796, lon: -78.6382 },
+  'baltimore': { lat: 39.2904, lon: -76.6122 },
+  'tampa': { lat: 27.9506, lon: -82.4572 },
+  'jacksonville': { lat: 30.3322, lon: -81.6557 },
+  // US Cities - Central
+  'chicago': { lat: 41.8781, lon: -87.6298 },
+  'houston': { lat: 29.7604, lon: -95.3698 },
+  'dallas': { lat: 32.7767, lon: -96.7970 },
+  'san antonio': { lat: 29.4241, lon: -98.4936 },
+  'austin': { lat: 30.2672, lon: -97.7431 },
+  'minneapolis': { lat: 44.9778, lon: -93.2650 },
+  'milwaukee': { lat: 43.0389, lon: -87.9065 },
+  'kansas city': { lat: 39.0997, lon: -94.5786 },
+  'st louis': { lat: 38.6270, lon: -90.1994 },
+  'new orleans': { lat: 29.9511, lon: -90.0715 },
+  'nashville': { lat: 36.1627, lon: -86.7816 },
+  'memphis': { lat: 35.1495, lon: -90.0490 },
+  'oklahoma city': { lat: 35.4676, lon: -97.5164 },
+  // US Cities - Mountain
+  'denver': { lat: 39.7392, lon: -104.9903 },
+  'phoenix': { lat: 33.4484, lon: -112.0740 },
+  'albuquerque': { lat: 35.0844, lon: -106.6504 },
+  'salt lake city': { lat: 40.7608, lon: -111.8910 },
+  'tucson': { lat: 32.2226, lon: -110.9747 },
+  'las vegas': { lat: 36.1699, lon: -115.1398 },
+  'el paso': { lat: 31.7619, lon: -106.4850 },
+  'boise': { lat: 43.6150, lon: -116.2023 },
+  // US Cities - Pacific
+  'los angeles': { lat: 34.0522, lon: -118.2437 },
+  'san francisco': { lat: 37.7749, lon: -122.4194 },
+  'san diego': { lat: 32.7157, lon: -117.1611 },
+  'seattle': { lat: 47.6062, lon: -122.3321 },
+  'portland': { lat: 45.5152, lon: -122.6784 },
+  'sacramento': { lat: 38.5816, lon: -121.4944 },
+  'san jose': { lat: 37.3382, lon: -121.8863 },
+  'fresno': { lat: 36.7378, lon: -119.7871 },
+  // Alaska & Hawaii
+  'anchorage': { lat: 61.2181, lon: -149.9003 },
+  'honolulu': { lat: 21.3069, lon: -157.8583 },
+  // International Cities
+  'london': { lat: 51.5074, lon: -0.1278 },
+  'paris': { lat: 48.8566, lon: 2.3522 },
+  'berlin': { lat: 52.5200, lon: 13.4050 },
+  'rome': { lat: 41.9028, lon: 12.4964 },
+  'madrid': { lat: 40.4168, lon: -3.7038 },
+  'amsterdam': { lat: 52.3676, lon: 4.9041 },
+  'brussels': { lat: 50.8503, lon: 4.3517 },
+  'vienna': { lat: 48.2082, lon: 16.3738 },
+  'zurich': { lat: 47.3769, lon: 8.5417 },
+  'stockholm': { lat: 59.3293, lon: 18.0686 },
+  'oslo': { lat: 59.9139, lon: 10.7522 },
+  'copenhagen': { lat: 55.6761, lon: 12.5683 },
+  'dublin': { lat: 53.3498, lon: -6.2603 },
+  'lisbon': { lat: 38.7223, lon: -9.1393 },
+  'moscow': { lat: 55.7558, lon: 37.6173 },
+  'tokyo': { lat: 35.6762, lon: 139.6503 },
+  'beijing': { lat: 39.9042, lon: 116.4074 },
+  'shanghai': { lat: 31.2304, lon: 121.4737 },
+  'hong kong': { lat: 22.3193, lon: 114.1694 },
+  'singapore': { lat: 1.3521, lon: 103.8198 },
+  'sydney': { lat: -33.8688, lon: 151.2093 },
+  'melbourne': { lat: -37.8136, lon: 144.9631 },
+  'toronto': { lat: 43.6532, lon: -79.3832 },
+  'vancouver': { lat: 49.2827, lon: -123.1207 },
+  'montreal': { lat: 45.5017, lon: -73.5673 },
+  'mexico city': { lat: 19.4326, lon: -99.1332 },
+  'sao paulo': { lat: -23.5505, lon: -46.6333 },
+  'buenos aires': { lat: -34.6037, lon: -58.3816 },
+  'mumbai': { lat: 19.0760, lon: 72.8777 },
+  'delhi': { lat: 28.7041, lon: 77.1025 },
+  'cairo': { lat: 30.0444, lon: 31.2357 },
+  'johannesburg': { lat: -26.2041, lon: 28.0473 },
+  'dubai': { lat: 25.2048, lon: 55.2708 },
+  'tel aviv': { lat: 32.0853, lon: 34.7818 },
+};
+
+// Get coordinates from location string
+export const getCoordinatesFromLocation = (location: string): { lat: number; lon: number } | null => {
+  const lowerLocation = location.toLowerCase();
+  
+  for (const [city, coords] of Object.entries(CITY_COORDINATES)) {
+    if (lowerLocation.includes(city)) {
+      return coords;
+    }
+  }
+  
+  return null;
+};
+
+// Calculate Ascendant using sidereal time
+export const calculateAscendant = (
+  date: Date,
+  latitude: number,
+  longitude: number
+): { sign: string; degree: number; minutes: number; seconds: number } => {
+  // Get Greenwich Sidereal Time
+  const gst = Astronomy.SiderealTime(date);
+  
+  // Convert GST to Local Sidereal Time (add longitude in hours)
+  const localLST = (gst + longitude / 15 + 24) % 24;
+  
+  // Convert to degrees (RAMC - Right Ascension of Medium Coeli)
+  const ramcDeg = localLST * 15;
+  
+  // Calculate obliquity of ecliptic (approximately 23.4°)
+  const obliquity = 23.4392911; // degrees for J2000
+  const obliqRad = obliquity * Math.PI / 180;
+  const latRad = latitude * Math.PI / 180;
+  
+  // Calculate Ascendant longitude
+  // Formula: tan(ASC) = cos(RAMC) / -(sin(ε) * tan(φ) + cos(ε) * sin(RAMC))
+  const ramcRad = ramcDeg * Math.PI / 180;
+  
+  const y = Math.cos(ramcRad);
+  const x = -(Math.sin(obliqRad) * Math.tan(latRad) + Math.cos(obliqRad) * Math.sin(ramcRad));
+  
+  let ascLon = Math.atan2(y, x) * 180 / Math.PI;
+  
+  // Adjust quadrant based on RAMC
+  if (ramcDeg >= 0 && ramcDeg < 180) {
+    ascLon = ascLon + 180;
+  }
+  if (ramcDeg >= 180 && ramcDeg < 360) {
+    ascLon = ascLon + 360;
+  }
+  
+  // Normalize to 0-360
+  ascLon = ((ascLon % 360) + 360) % 360;
+  
+  return getDetailedPosition(ascLon);
+};
+
 // US timezone regions for auto-detection
 const US_TIMEZONE_REGIONS: Record<string, { standard: number; daylight: number; abbrevStandard: string; abbrevDaylight: string }> = {
   // Eastern
@@ -476,12 +622,16 @@ export const calculateNatalChart = (
   
   // Try to auto-detect timezone if location provided
   let finalOffset = timezoneOffsetHours;
+  let coordinates: { lat: number; lon: number } | null = null;
+  
   if (birthLocation) {
     const tempDate = new Date(year, month - 1, day);
     const detected = detectTimezoneFromLocation(birthLocation, tempDate);
     if (detected) {
       finalOffset = detected.offset;
     }
+    // Get coordinates for Ascendant calculation
+    coordinates = getCoordinatesFromLocation(birthLocation);
   }
   
   // Convert local time to UTC by subtracting the timezone offset
@@ -525,6 +675,16 @@ export const calculateNatalChart = (
   const juno = getDetailedJunoPosition(date);
   const vesta = getDetailedVestaPosition(date);
   
+  // Calculate Ascendant if we have coordinates
+  let ascendant: { sign: string; degree: number; minutes: number; seconds: number } = { sign: '', degree: 0, minutes: 0, seconds: 0 };
+  if (coordinates) {
+    try {
+      ascendant = calculateAscendant(date, coordinates.lat, coordinates.lon);
+    } catch {
+      // If calculation fails, leave empty for manual entry
+    }
+  }
+  
   return {
     Sun: getPosition(Astronomy.Body.Sun),
     Moon: getPosition(Astronomy.Body.Moon),
@@ -543,7 +703,7 @@ export const calculateNatalChart = (
     Pallas: pallas,
     Juno: juno,
     Vesta: vesta,
-    Ascendant: { sign: '', degree: 0, minutes: 0, seconds: 0 }, // Requires exact lat/long - user should enter manually
+    Ascendant: ascendant,
   };
 };
 
