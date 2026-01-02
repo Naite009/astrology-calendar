@@ -102,6 +102,58 @@ const calculateAspectBetween = (planet1: NatalPlanetPosition, planet2Lon: number
   return null;
 };
 
+// Get current aspects for visualization
+export const getCurrentAspects = (date: Date): { planet1: string; planet2: string; type: string; symbol: string; angle: number; description: string }[] => {
+  const planets = getPlanetaryPositions(date);
+  const aspects: { planet1: string; planet2: string; type: string; symbol: string; angle: number; description: string }[] = [];
+  
+  const planetList = [
+    { name: 'Sun', pos: planets.sun },
+    { name: 'Moon', pos: planets.moon },
+    { name: 'Mercury', pos: planets.mercury },
+    { name: 'Venus', pos: planets.venus },
+    { name: 'Mars', pos: planets.mars },
+    { name: 'Jupiter', pos: planets.jupiter },
+    { name: 'Saturn', pos: planets.saturn },
+  ];
+
+  const aspectDefs = [
+    { angle: 0, type: 'conjunction', symbol: '☌', orb: 8, desc: 'Planets merge energy - intensified power' },
+    { angle: 60, type: 'sextile', symbol: '⚹', orb: 6, desc: 'Harmonious opportunity - easy flow' },
+    { angle: 90, type: 'square', symbol: '□', orb: 8, desc: 'Tension & challenge - drives action' },
+    { angle: 120, type: 'trine', symbol: '△', orb: 8, desc: 'Natural harmony - gifts & talents' },
+    { angle: 180, type: 'opposition', symbol: '☍', orb: 8, desc: 'Polarity & awareness - balance needed' },
+  ];
+
+  for (let i = 0; i < planetList.length; i++) {
+    for (let j = i + 1; j < planetList.length; j++) {
+      const p1 = planetList[i];
+      const p2 = planetList[j];
+      
+      const lon1 = ZODIAC_SIGNS.indexOf(p1.pos.signName) * 30 + p1.pos.degree;
+      const lon2 = ZODIAC_SIGNS.indexOf(p2.pos.signName) * 30 + p2.pos.degree;
+      const diff = Math.abs(((lon2 - lon1 + 180) % 360) - 180);
+
+      for (const aspectDef of aspectDefs) {
+        const orbDiff = Math.abs(diff - aspectDef.angle);
+        if (orbDiff < aspectDef.orb) {
+          aspects.push({
+            planet1: p1.name,
+            planet2: p2.name,
+            type: aspectDef.type,
+            symbol: aspectDef.symbol,
+            angle: aspectDef.angle,
+            description: aspectDef.desc
+          });
+          break;
+        }
+      }
+    }
+  }
+
+  return aspects;
+};
+
 export const calculateBestTimes = (
   category: BestTimesCategory,
   natalChart: NatalChart | null,
@@ -110,7 +162,7 @@ export const calculateBestTimes = (
 ): BestTimeResult[] => {
   const bestTimes: BestTimeResult[] = [];
   const rules = CATEGORY_RULES[category];
-
+  
   // Sample every 4 hours instead of every hour for performance
   const hoursStep = 4;
   const currentDate = new Date(startDate);
