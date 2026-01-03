@@ -301,14 +301,35 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
   const nodeAspects = detectNodeAspects(planets);
 
   // Calculate personal transit aspects if chart is active
-  // Sort same as calendar (outer planets first, tighter orbs) and filter to 5° orb
+  // Use same categorization as calendar for consistent ordering
+  const OUTER_PLANETS = ['Saturn', 'Jupiter', 'Neptune', 'Pluto', 'Uranus'];
+  const PERSONAL_POINTS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Ascendant', 'IC', 'MC', 'Descendant'];
+  
   const rawTransitAspects: TransitAspect[] = activeChart
     ? calculateTransitAspects(date, planets, activeChart)
     : [];
   
   // Sort and filter to ≤5° orb for Day Detail
-  const transitAspects = getTopTransitAspects(rawTransitAspects, rawTransitAspects.length)
+  const allTransits = getTopTransitAspects(rawTransitAspects, rawTransitAspects.length)
     .filter(asp => parseFloat(String(asp.orb)) <= 5);
+  
+  // Categorize same as calendar: Key Transits (outer→personal) first, then others
+  const keyTransits: TransitAspect[] = [];
+  const otherTransits: TransitAspect[] = [];
+  
+  for (const t of allTransits) {
+    const isOuterTransit = OUTER_PLANETS.includes(t.transitPlanet);
+    const isToPersonal = PERSONAL_POINTS.includes(t.natalPlanet);
+    
+    if (isOuterTransit && isToPersonal) {
+      keyTransits.push(t);
+    } else {
+      otherTransits.push(t);
+    }
+  }
+  
+  // Final order: Key transits first, then all others (same as calendar)
+  const transitAspects = [...keyTransits, ...otherTransits];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/80 p-5" onClick={onClose}>
