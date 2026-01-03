@@ -167,10 +167,11 @@ const DetailedTransitCard = ({ aspect }: { aspect: TransitAspect }) => {
             <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
               What's Happening
             </h4>
-            <div className="space-y-1 text-sm">
+            <div className="space-y-2 text-sm">
               <div className="text-foreground">{detailed.transitEssence}</div>
               <div className="text-foreground">{detailed.natalEssence}</div>
-              <div className="text-primary font-medium mt-2">{detailed.aspectMeaning}</div>
+              <div className="text-primary font-medium mt-2">{detailed.aspectEnergy}</div>
+              <div className="text-muted-foreground italic">{detailed.aspectDescription}</div>
             </div>
           </div>
           
@@ -182,27 +183,33 @@ const DetailedTransitCard = ({ aspect }: { aspect: TransitAspect }) => {
             <div className="space-y-1 text-sm">
               <div className="text-foreground">{detailed.transitSignInfo}</div>
               <div className="text-foreground">{detailed.natalSignInfo}</div>
-              {detailed.elementCompatibility && (
-                <div className="text-muted-foreground italic mt-1">{detailed.elementCompatibility}</div>
+              {detailed.signCombination && (
+                <div className="text-muted-foreground italic mt-2">{detailed.signCombination}</div>
               )}
             </div>
           </div>
           
           {/* The Houses */}
-          {(detailed.transitHouseInfo || detailed.natalHouseInfo) && (
+          {(detailed.transitHouseFull || detailed.natalHouseFull) && (
             <div>
               <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
-                The Houses
+                The Houses — Where This Happens
               </h4>
-              <div className="space-y-1 text-sm">
-                {detailed.transitHouseInfo && (
-                  <div className="text-foreground">Transit in {detailed.transitHouseInfo}</div>
+              <div className="space-y-2 text-sm">
+                {detailed.transitHouseFull && (
+                  <div>
+                    <span className="font-medium text-foreground">{detailed.transitHouseShort}:</span>
+                    <span className="text-muted-foreground ml-1">{detailed.transitHouseFull}</span>
+                  </div>
                 )}
-                {detailed.natalHouseInfo && (
-                  <div className="text-foreground">Natal in {detailed.natalHouseInfo}</div>
+                {detailed.natalHouseFull && (
+                  <div>
+                    <span className="font-medium text-foreground">{detailed.natalHouseShort}:</span>
+                    <span className="text-muted-foreground ml-1">{detailed.natalHouseFull}</span>
+                  </div>
                 )}
                 {detailed.houseConnection && (
-                  <div className="text-primary/80 mt-1">{detailed.houseConnection}</div>
+                  <div className="text-primary/80 mt-2 p-2 bg-primary/5 rounded-sm">{detailed.houseConnection}</div>
                 )}
               </div>
             </div>
@@ -211,16 +218,72 @@ const DetailedTransitCard = ({ aspect }: { aspect: TransitAspect }) => {
           {/* Practical Guidance */}
           <div>
             <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
-              What To Do Today
+              Practical Guidance
             </h4>
-            <ul className="space-y-1">
-              {detailed.practicalAdvice.map((advice, i) => (
-                <li key={i} className="text-sm text-foreground flex items-start gap-2">
-                  <span className="text-primary">✓</span>
-                  {advice}
-                </li>
-              ))}
-            </ul>
+            
+            {/* Gifts/Challenges/Power */}
+            {detailed.guidance.gifts && (
+              <div className="mb-3">
+                <div className="text-xs font-semibold text-green-600 mb-1">TODAY'S GIFTS:</div>
+                <ul className="space-y-0.5">
+                  {detailed.guidance.gifts.map((g, i) => (
+                    <li key={i} className="text-sm text-foreground flex items-start gap-2">
+                      <span className="text-green-600">•</span>{g}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            {detailed.guidance.challenges && (
+              <div className="mb-3">
+                <div className="text-xs font-semibold text-amber-600 mb-1">TODAY'S CHALLENGE:</div>
+                <ul className="space-y-0.5">
+                  {detailed.guidance.challenges.map((c, i) => (
+                    <li key={i} className="text-sm text-foreground flex items-start gap-2">
+                      <span className="text-amber-600">•</span>{c}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            {detailed.guidance.power && (
+              <div className="mb-3">
+                <div className="text-xs font-semibold text-purple-600 mb-1">TODAY'S POWER:</div>
+                <ul className="space-y-0.5">
+                  {detailed.guidance.power.map((p, i) => (
+                    <li key={i} className="text-sm text-foreground flex items-start gap-2">
+                      <span className="text-purple-600">•</span>{p}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            {/* What To Do */}
+            <div className="mb-3">
+              <div className="text-xs font-semibold text-foreground mb-1">WHAT TO DO:</div>
+              <ul className="space-y-0.5">
+                {detailed.guidance.todo.map((t, i) => (
+                  <li key={i} className="text-sm text-foreground flex items-start gap-2">
+                    <span className="text-primary">✓</span>{t}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            {/* Avoid */}
+            <div>
+              <div className="text-xs font-semibold text-foreground mb-1">AVOID:</div>
+              <ul className="space-y-0.5">
+                {detailed.guidance.avoid.map((a, i) => (
+                  <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
+                    <span className="text-destructive">✗</span>{a}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
           
           {/* Journal Prompt */}
