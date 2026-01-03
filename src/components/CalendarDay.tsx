@@ -8,6 +8,7 @@ import {
   calculateDailyAspects,
   getVoidOfCourseMoon,
   getDayColors,
+  getDayType,
   detectPlanetaryIngresses,
   getPlanetSymbol,
   getExactLunarPhase,
@@ -39,6 +40,7 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
   const aspects = calculateDailyAspects(planets);
   const voc = getVoidOfCourseMoon(moonPhase);
   const dayColors = getDayColors(aspects, moonPhase);
+  const dayType = getDayType(aspects, moonPhase);
   const exactLunarPhase = getExactLunarPhase(date);
 
   // Calculate transit-to-natal aspects if chart is selected
@@ -76,11 +78,16 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
         isToday && "shadow-[inset_0_0_0_2px_hsl(var(--primary))]"
       )}
     >
-      {/* Header: Day number + Moon phase */}
+      {/* Header: Day number + Day Type + Moon phase */}
       <div className="flex items-start justify-between border-b border-foreground/10 pb-2 mb-2">
-        <span className="font-serif text-xl font-light text-foreground md:text-2xl">
-          {day}
-        </span>
+        <div className="flex flex-col">
+          <span className="font-serif text-xl font-light text-foreground md:text-2xl">
+            {day}
+          </span>
+          <span className="text-[10px] font-medium text-foreground/80 mt-0.5" title={dayType.description}>
+            {dayType.label}
+          </span>
+        </div>
         <span className="text-lg opacity-70" title={moonPhase.phaseName}>
           {moonPhase.phaseIcon}
         </span>
@@ -111,9 +118,10 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
         </div>
       </div>
 
-      {/* Personal Transit Aspects (if chart selected) */}
+      {/* Personal Transit Aspects to YOUR natal chart (only if chart selected) */}
       {activeChart && topTransits.length > 0 && (
-        <div className="mt-2 space-y-0.5">
+        <div className="mt-2 space-y-0.5 border-t border-foreground/10 pt-2">
+          <div className="text-[9px] text-muted-foreground uppercase tracking-wide mb-1">Your Transits</div>
           {topTransits.map((asp, i) => (
             <div 
               key={i} 
@@ -126,7 +134,7 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
                 borderLeft: `2px solid ${asp.color}`,
                 paddingLeft: '4px'
               }}
-              title={`${asp.transitPlanet} ${asp.aspect} natal ${asp.natalPlanet} (${asp.orb}°)${asp.transitHouse ? ` in ${asp.transitHouse}H` : ''}${asp.isExact ? ' — EXACT' : ''}`}
+              title={`Transit ${asp.transitPlanet} ${asp.aspect} your natal ${asp.natalPlanet} (${asp.orb}° orb)${asp.transitHouse ? ` — transiting your ${asp.transitHouse}${getHouseLabel(asp.transitHouse)} house` : ''}${asp.isExact ? ' — EXACT TODAY' : ''}`}
             >
               <span className="text-sm">{getTransitPlanetSymbol(asp.transitPlanet)}</span>
               <span className="text-sm">{asp.symbol}</span>
