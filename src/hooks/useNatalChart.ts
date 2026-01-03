@@ -63,6 +63,11 @@ export const useNatalChart = () => {
   });
 
   const saveUserNatalChart = (chart: NatalChart) => {
+    // Prevent saving empty/invalid chart data
+    if (!chart || !chart.name || chart.name.trim() === '') {
+      console.warn('Attempted to save invalid chart data, ignoring');
+      return;
+    }
     localStorage.setItem('userNatalChart', JSON.stringify(chart));
     setUserNatalChart(chart);
   };

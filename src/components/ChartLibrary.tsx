@@ -114,13 +114,19 @@ export const ChartLibrary = ({
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isNewChartRef = useRef(false);
+  // Track if form has been explicitly opened to prevent auto-save on mount
+  const hasFormOpenedRef = useRef(false);
 
   // Auto-save with debounce
   const triggerAutoSave = useCallback(() => {
-    if (!editingChart) return;
+    // Only auto-save if the form has been explicitly opened by user action
+    if (!editingChart || !hasFormOpenedRef.current) return;
     
     // Don't auto-save new charts until they have a name
     if (editingChart === 'new' && !formData.name.trim()) return;
+    
+    // Don't auto-save user chart with empty name (prevents overwriting existing data)
+    if (editingChart === 'user' && !formData.name.trim()) return;
     
     setSaveStatus('saving');
     
@@ -163,6 +169,8 @@ export const ChartLibrary = ({
   }, [formData, triggerAutoSave]);
 
   const openEditForm = (chart: 'new' | 'user' | NatalChart) => {
+    // Mark that the form has been explicitly opened by user action
+    hasFormOpenedRef.current = true;
     isNewChartRef.current = chart === 'new';
     if (chart === 'new') {
       setFormData({
@@ -251,14 +259,19 @@ export const ChartLibrary = ({
       clearTimeout(saveTimeoutRef.current);
     }
     
-    if (editingChart === 'user' && formData.name.trim()) {
-      onSaveUserChart({ id: 'user', ...formData });
-    } else if (editingChart === 'new' && formData.name.trim()) {
-      onAddChart({ id: '', ...formData });
-    } else if (typeof editingChart === 'object') {
-      onUpdateChart(editingChart.id, formData);
+    // Only save if form was opened and has valid data
+    if (hasFormOpenedRef.current) {
+      if (editingChart === 'user' && formData.name.trim()) {
+        onSaveUserChart({ id: 'user', ...formData });
+      } else if (editingChart === 'new' && formData.name.trim()) {
+        onAddChart({ id: '', ...formData });
+      } else if (typeof editingChart === 'object') {
+        onUpdateChart(editingChart.id, formData);
+      }
     }
     
+    // Reset the form opened flag
+    hasFormOpenedRef.current = false;
     setEditingChart(null);
   };
 
