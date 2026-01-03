@@ -134,13 +134,17 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
                 borderLeft: `2px solid ${asp.color}`,
                 paddingLeft: '4px'
               }}
-              title={`Transit ${asp.transitPlanet} ${asp.aspect} your natal ${asp.natalPlanet} (${asp.orb}° orb)${asp.transitHouse ? ` — transiting your ${asp.transitHouse}${getHouseLabel(asp.transitHouse)} house` : ''}${asp.isExact ? ' — EXACT TODAY' : ''}`}
+              title={`Transit ${asp.transitPlanet} (${asp.transitDegree}° ${asp.transitSign}${asp.transitHouse ? `, ${asp.transitHouse}H` : ''}) ${asp.aspect} your natal ${asp.natalPlanet} (${asp.natalDegree}° ${asp.natalSign}${asp.natalHouse ? `, ${asp.natalHouse}H` : ''}) — orb ${asp.orb}°${asp.isExact ? ' — EXACT TODAY' : ''}`}
             >
+              <span className="text-[10px] text-muted-foreground">tr</span>
               <span className="text-sm">{getTransitPlanetSymbol(asp.transitPlanet)}</span>
               <span className="text-sm">{asp.symbol}</span>
+              <span className="text-[10px] text-muted-foreground">n</span>
               <span className="text-sm">{getTransitPlanetSymbol(asp.natalPlanet)}</span>
-              {asp.transitHouse && (
-                <span className="text-muted-foreground text-[10px] ml-0.5">{asp.transitHouse}H</span>
+              {(asp.transitHouse || asp.natalHouse) && (
+                <span className="text-muted-foreground text-[9px] ml-0.5">
+                  {asp.transitHouse && `${asp.transitHouse}→`}{asp.natalHouse && `${asp.natalHouse}H`}
+                </span>
               )}
             </div>
           ))}
