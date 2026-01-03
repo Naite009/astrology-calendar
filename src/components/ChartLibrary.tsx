@@ -749,7 +749,10 @@ export const ChartLibrary = ({
               <div className="text-sm text-foreground mb-3 space-y-0.5">
                 <p>☉ {userNatalChart.planets.Sun?.degree}° {userNatalChart.planets.Sun?.sign}</p>
                 <p>☽ {userNatalChart.planets.Moon?.degree}° {userNatalChart.planets.Moon?.sign}</p>
-                <p>ASC {userNatalChart.planets.Ascendant?.degree}° {userNatalChart.planets.Ascendant?.sign}</p>
+                <p>
+                  ASC {(userNatalChart.houseCusps?.house1?.degree ?? userNatalChart.planets.Ascendant?.degree)}°{' '}
+                  {(userNatalChart.houseCusps?.house1?.sign ?? userNatalChart.planets.Ascendant?.sign)}
+                </p>
               </div>
               <div className="flex gap-3">
                 <button
