@@ -413,7 +413,7 @@ export const ChartLibrary = ({
                   className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-primary hover:underline"
                 >
                   <Eye size={14} />
-                  View Wheel
+                  View
                 </button>
                 <button
                   onClick={() => openEditForm('user')}
