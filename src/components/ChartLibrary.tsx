@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { X, Plus, Users, RefreshCw, Check, Eye, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, Plus, Users, RefreshCw, Check, Eye, ChevronDown, ChevronUp, ClipboardPaste } from 'lucide-react';
 import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChart';
 import { getPlanetSymbol, calculateNatalChart, detectTimezoneFromLocation, calculatePlacidusHouseCusps } from '@/lib/astrology';
 import { getCoordinatesFromLocation } from '@/lib/placidusHouses';
@@ -10,13 +10,14 @@ const ZODIAC_SIGNS = [
   'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
 ];
 
-// Core planets plus points and asteroids
-const PLANETS = [
-  'Sun', 'Moon', 'Ascendant', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 
-  'Uranus', 'Neptune', 'Pluto', 'NorthNode', 'SouthNode', 'Chiron', 'Lilith', 
-  'Ceres', 'Pallas', 'Juno', 'Vesta', 'PartOfFortune', 'Vertex',
-  'Eris', 'Sedna', 'Makemake', 'Haumea', 'Quaoar', 'Orcus', 'Ixion', 'Varuna'
-] as const;
+// Grouped planets for organized display
+const CORE_PLANETS = ['Sun', 'Moon', 'Ascendant', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'] as const;
+const POINTS = ['NorthNode', 'SouthNode', 'Chiron', 'Lilith', 'PartOfFortune', 'Vertex'] as const;
+const ASTEROIDS = ['Ceres', 'Pallas', 'Juno', 'Vesta'] as const;
+const TNOS = ['Eris', 'Sedna', 'Makemake', 'Haumea', 'Quaoar', 'Orcus', 'Ixion', 'Varuna'] as const;
+
+// All planets combined for data structure
+const PLANETS = [...CORE_PLANETS, ...POINTS, ...ASTEROIDS, ...TNOS] as const;
 
 const PLANET_LABELS: Record<string, string> = {
   NorthNode: 'North Node',
@@ -88,6 +89,113 @@ const TIMEZONE_OPTIONS = [
   { value: 9, label: 'JST (UTC+9)' },
   { value: 10, label: 'AEST (UTC+10)' },
 ];
+
+// Planet name aliases for parsing astro.com data
+const PLANET_ALIASES: Record<string, string> = {
+  'sun': 'Sun', 'moon': 'Moon', 'asc': 'Ascendant', 'ascendant': 'Ascendant', 'ac': 'Ascendant',
+  'mercury': 'Mercury', 'venus': 'Venus', 'mars': 'Mars', 'jupiter': 'Jupiter', 'saturn': 'Saturn',
+  'uranus': 'Uranus', 'neptune': 'Neptune', 'pluto': 'Pluto',
+  'north node': 'NorthNode', 'northnode': 'NorthNode', 'nn': 'NorthNode', 'true node': 'NorthNode', 'mean node': 'NorthNode',
+  'south node': 'SouthNode', 'southnode': 'SouthNode', 'sn': 'SouthNode',
+  'chiron': 'Chiron', 'lilith': 'Lilith', 'black moon lilith': 'Lilith', 'mean lilith': 'Lilith',
+  'ceres': 'Ceres', 'pallas': 'Pallas', 'juno': 'Juno', 'vesta': 'Vesta',
+  'part of fortune': 'PartOfFortune', 'pof': 'PartOfFortune', 'fortune': 'PartOfFortune', 'fortuna': 'PartOfFortune',
+  'vertex': 'Vertex', 'vx': 'Vertex',
+  'eris': 'Eris', 'sedna': 'Sedna', 'makemake': 'Makemake', 'haumea': 'Haumea',
+  'quaoar': 'Quaoar', 'orcus': 'Orcus', 'ixion': 'Ixion', 'varuna': 'Varuna',
+  'mc': 'MC', 'midheaven': 'MC', 'ic': 'IC', 'dc': 'Descendant', 'dsc': 'Descendant', 'descendant': 'Descendant',
+};
+
+const SIGN_ALIASES: Record<string, string> = {
+  'ari': 'Aries', 'aries': 'Aries', 'ar': 'Aries',
+  'tau': 'Taurus', 'taurus': 'Taurus', 'ta': 'Taurus',
+  'gem': 'Gemini', 'gemini': 'Gemini', 'ge': 'Gemini',
+  'can': 'Cancer', 'cancer': 'Cancer', 'cn': 'Cancer',
+  'leo': 'Leo', 'le': 'Leo',
+  'vir': 'Virgo', 'virgo': 'Virgo', 'vi': 'Virgo',
+  'lib': 'Libra', 'libra': 'Libra', 'li': 'Libra',
+  'sco': 'Scorpio', 'scorpio': 'Scorpio', 'sc': 'Scorpio',
+  'sag': 'Sagittarius', 'sagittarius': 'Sagittarius', 'sg': 'Sagittarius',
+  'cap': 'Capricorn', 'capricorn': 'Capricorn', 'cp': 'Capricorn',
+  'aqu': 'Aquarius', 'aquarius': 'Aquarius', 'aq': 'Aquarius',
+  'pis': 'Pisces', 'pisces': 'Pisces', 'pi': 'Pisces',
+};
+
+// Parse astro.com text format
+const parseAstroComData = (text: string): Partial<Record<string, NatalPlanetPosition>> => {
+  const results: Partial<Record<string, NatalPlanetPosition>> = {};
+  
+  // Normalize text
+  const normalized = text.toLowerCase().replace(/\s+/g, ' ');
+  
+  // Common patterns:
+  // "Sun 15°23' Aries" or "Sun 15 23 Aries" or "Sun in Aries 15°23'"
+  // "Sun Ari 15°23'" or "☉ 15°23' Ari"
+  // Also handle retrograde markers: (R) or ℞ or R
+  
+  const lines = text.split(/[\n,;]+/).map(l => l.trim()).filter(Boolean);
+  
+  for (const line of lines) {
+    const lowerLine = line.toLowerCase();
+    
+    // Find which planet this line is about
+    let foundPlanet: string | null = null;
+    for (const [alias, planet] of Object.entries(PLANET_ALIASES)) {
+      if (lowerLine.includes(alias)) {
+        foundPlanet = planet;
+        break;
+      }
+    }
+    if (!foundPlanet) continue;
+    
+    // Find the sign
+    let foundSign: string | null = null;
+    for (const [alias, sign] of Object.entries(SIGN_ALIASES)) {
+      // Use word boundary to avoid partial matches
+      const regex = new RegExp(`\\b${alias}\\b`, 'i');
+      if (regex.test(lowerLine)) {
+        foundSign = sign;
+        break;
+      }
+    }
+    if (!foundSign) continue;
+    
+    // Extract degrees and minutes
+    // Patterns: "15°23'" or "15° 23'" or "15 23" (when near a sign)
+    const degreePatterns = [
+      /(\d{1,2})°\s*(\d{1,2})?['′]?/,           // 15°23' or 15°
+      /(\d{1,2})\s*°\s*(\d{1,2})\s*['′]/,       // 15 ° 23 '
+      /\b(\d{1,2})\s+(\d{1,2})\b/,              // 15 23 (simple space separated)
+    ];
+    
+    let degree = 0;
+    let minutes = 0;
+    
+    for (const pattern of degreePatterns) {
+      const match = line.match(pattern);
+      if (match) {
+        degree = parseInt(match[1], 10);
+        minutes = match[2] ? parseInt(match[2], 10) : 0;
+        if (degree >= 0 && degree < 30) break; // Valid degree
+      }
+    }
+    
+    // Check for retrograde
+    const isRetrograde = /\(r\)|℞|\br\b/i.test(line);
+    
+    if (foundPlanet && foundSign && degree >= 0 && degree < 30) {
+      results[foundPlanet] = {
+        sign: foundSign,
+        degree,
+        minutes,
+        seconds: 0,
+        isRetrograde,
+      };
+    }
+  }
+  
+  return results;
+};
 
 const HOUSE_LABELS = [
   { num: 1, label: '1st House (ASC)', description: 'Self, Identity' },
@@ -165,6 +273,12 @@ export const ChartLibrary = ({
     interceptedSigns: [],
   });
   const [showHousesSection, setShowHousesSection] = useState(false);
+  const [showPointsSection, setShowPointsSection] = useState(false);
+  const [showAsteroidsSection, setShowAsteroidsSection] = useState(false);
+  const [showTNOsSection, setShowTNOsSection] = useState(false);
+  const [showImportSection, setShowImportSection] = useState(false);
+  const [importText, setImportText] = useState('');
+  const [importResult, setImportResult] = useState<{ success: number; total: number } | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isNewChartRef = useRef(false);
@@ -397,7 +511,93 @@ export const ChartLibrary = ({
     // Reset the form opened flag
     hasFormOpenedRef.current = false;
     setEditingChart(null);
+    setImportText('');
+    setImportResult(null);
+    setShowImportSection(false);
   };
+
+  const handleImportPaste = () => {
+    if (!importText.trim()) return;
+    
+    const parsed = parseAstroComData(importText);
+    const parsedCount = Object.keys(parsed).length;
+    
+    if (parsedCount > 0) {
+      setFormData(prev => ({
+        ...prev,
+        planets: {
+          ...prev.planets,
+          ...parsed,
+        },
+      }));
+      setImportResult({ success: parsedCount, total: parsedCount });
+    } else {
+      setImportResult({ success: 0, total: 0 });
+    }
+  };
+
+  // Render a planet row
+  const renderPlanetRow = (planet: string) => (
+    <div key={planet} className="grid grid-cols-[40px_110px_1fr_70px_70px_70px_90px] gap-2 items-center">
+      <span className="text-lg">{PLANET_SYMBOLS[planet] || getPlanetSymbol(planet.toLowerCase())}</span>
+      <span className="text-sm text-foreground">{PLANET_LABELS[planet] || planet}</span>
+      <select
+        value={formData.planets[planet]?.sign || ''}
+        onChange={e => updatePlanet(planet, 'sign', e.target.value)}
+        className="border border-border bg-background px-2 py-1.5 text-sm focus:border-primary focus:outline-none"
+      >
+        <option value="">Select Sign</option>
+        {ZODIAC_SIGNS.map(sign => (
+          <option key={sign} value={sign}>{sign}</option>
+        ))}
+      </select>
+      <div className="relative">
+        <input
+          type="number"
+          min="0"
+          max="29"
+          placeholder="0"
+          value={formData.planets[planet]?.degree ?? ''}
+          onChange={e => updatePlanet(planet, 'degree', e.target.value)}
+          className="w-full border border-border bg-background px-2 py-1.5 pr-5 text-sm text-center focus:border-primary focus:outline-none"
+        />
+        <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">°</span>
+      </div>
+      <div className="relative">
+        <input
+          type="number"
+          min="0"
+          max="59"
+          placeholder="0"
+          value={formData.planets[planet]?.minutes ?? ''}
+          onChange={e => updatePlanet(planet, 'minutes', e.target.value)}
+          className="w-full border border-border bg-background px-2 py-1.5 pr-5 text-sm text-center focus:border-primary focus:outline-none"
+        />
+        <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">′</span>
+      </div>
+      <div className="relative">
+        <input
+          type="number"
+          min="0"
+          max="59"
+          placeholder="0"
+          value={formData.planets[planet]?.seconds ?? ''}
+          onChange={e => updatePlanet(planet, 'seconds', e.target.value)}
+          className="w-full border border-border bg-background px-2 py-1.5 pr-5 text-sm text-center focus:border-primary focus:outline-none"
+        />
+        <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">″</span>
+      </div>
+      <label className="flex items-center justify-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={Boolean(formData.planets[planet]?.isRetrograde)}
+          onChange={(e) => updatePlanet(planet, 'isRetrograde', e.target.checked)}
+          className="rounded border-border"
+        />
+        ℞
+      </label>
+    </div>
+  );
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -565,100 +765,169 @@ export const ChartLibrary = ({
                 </div>
               </div>
 
+              {/* Astro.com Import Section */}
               <div className="border-t border-border pt-5">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground">Planet Positions</h3>
-                    <div className="flex items-center gap-4">
-                      <label className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={preserveManualChiron}
-                          onChange={(e) => setPreserveManualChiron(e.target.checked)}
-                          className="rounded border-border"
-                        />
-                        Keep my Chiron
-                      </label>
-                      {formData.detectedTimezone && (
-                        <span className="text-[10px] text-green-600 bg-green-100 px-2 py-1 rounded">
-                          Auto-detected: {formData.detectedTimezone}
+                <button
+                  type="button"
+                  onClick={() => setShowImportSection(!showImportSection)}
+                  className="flex items-center gap-2 w-full text-left"
+                >
+                  <ClipboardPaste size={16} className="text-primary" />
+                  <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                    Import from Astro.com
+                  </h3>
+                  {showImportSection ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground" />}
+                </button>
+                
+                {showImportSection && (
+                  <div className="mt-4 space-y-3">
+                    <p className="text-[10px] text-muted-foreground italic">
+                      Paste planet positions from astro.com (e.g., "Sun 15°23' Aries, Moon 8°12' Cancer..."). 
+                      Supports various formats including sign abbreviations and retrograde markers (R or ℞).
+                    </p>
+                    <textarea
+                      value={importText}
+                      onChange={e => {
+                        setImportText(e.target.value);
+                        setImportResult(null);
+                      }}
+                      placeholder="Sun 15°23' Aries&#10;Moon 8°12' Cancer&#10;Mercury 22°45' Pisces (R)&#10;Venus 3°18' Taurus&#10;..."
+                      className="w-full h-32 border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none resize-none font-mono"
+                    />
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={handleImportPaste}
+                        disabled={!importText.trim()}
+                        className="flex items-center gap-2 border border-primary bg-primary/10 px-4 py-2 text-[10px] uppercase tracking-widest text-primary transition-colors hover:bg-primary/20 disabled:opacity-50"
+                      >
+                        <ClipboardPaste size={14} />
+                        Parse & Import
+                      </button>
+                      {importResult && (
+                        <span className={`text-[10px] ${importResult.success > 0 ? 'text-green-600' : 'text-destructive'}`}>
+                          {importResult.success > 0 
+                            ? `✓ Imported ${importResult.success} position${importResult.success > 1 ? 's' : ''}`
+                            : 'No positions found - check format'}
                         </span>
                       )}
-                      <button
-                        onClick={calculateFromBirthData}
-                        disabled={!formData.birthDate}
-                        className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <RefreshCw size={12} />
-                        Calculate from birth data
-                      </button>
                     </div>
                   </div>
-                <p className="text-[10px] text-muted-foreground italic mb-4">
-                  Click "Calculate" to auto-fill positions including Ascendant (requires recognized city). ℞ indicates retrograde.
-                </p>
-                <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-                  {PLANETS.map(planet => (
-                    <div key={planet} className="grid grid-cols-[40px_110px_1fr_70px_70px_70px_90px] gap-2 items-center">
-                      <span className="text-lg">{PLANET_SYMBOLS[planet] || getPlanetSymbol(planet.toLowerCase())}</span>
-                      <span className="text-sm text-foreground">{PLANET_LABELS[planet] || planet}</span>
-                      <select
-                        value={formData.planets[planet]?.sign || ''}
-                        onChange={e => updatePlanet(planet, 'sign', e.target.value)}
-                        className="border border-border bg-background px-2 py-1.5 text-sm focus:border-primary focus:outline-none"
-                      >
-                        <option value="">Select Sign</option>
-                        {ZODIAC_SIGNS.map(sign => (
-                          <option key={sign} value={sign}>{sign}</option>
-                        ))}
-                      </select>
-                      <div className="relative">
-                        <input
-                          type="number"
-                          min="0"
-                          max="29"
-                          placeholder="0"
-                          value={formData.planets[planet]?.degree ?? ''}
-                          onChange={e => updatePlanet(planet, 'degree', e.target.value)}
-                          className="w-full border border-border bg-background px-2 py-1.5 pr-5 text-sm text-center focus:border-primary focus:outline-none"
-                        />
-                        <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">°</span>
-                      </div>
-                      <div className="relative">
-                        <input
-                          type="number"
-                          min="0"
-                          max="59"
-                          placeholder="0"
-                          value={formData.planets[planet]?.minutes ?? ''}
-                          onChange={e => updatePlanet(planet, 'minutes', e.target.value)}
-                          className="w-full border border-border bg-background px-2 py-1.5 pr-5 text-sm text-center focus:border-primary focus:outline-none"
-                        />
-                        <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">′</span>
-                      </div>
-                      <div className="relative">
-                        <input
-                          type="number"
-                          min="0"
-                          max="59"
-                          placeholder="0"
-                          value={formData.planets[planet]?.seconds ?? ''}
-                          onChange={e => updatePlanet(planet, 'seconds', e.target.value)}
-                          className="w-full border border-border bg-background px-2 py-1.5 pr-5 text-sm text-center focus:border-primary focus:outline-none"
-                        />
-                        <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">″</span>
-                      </div>
-                      <label className="flex items-center justify-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground cursor-pointer select-none">
-                        <input
-                          type="checkbox"
-                          checked={Boolean(formData.planets[planet]?.isRetrograde)}
-                          onChange={(e) => updatePlanet(planet, 'isRetrograde', e.target.checked)}
-                          className="rounded border-border"
-                        />
-                        ℞
-                      </label>
-                    </div>
-                  ))}
+                )}
+              </div>
+
+              {/* Planet Positions - Core Planets (always visible) */}
+              <div className="border-t border-border pt-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground">Core Planets</h3>
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={preserveManualChiron}
+                        onChange={(e) => setPreserveManualChiron(e.target.checked)}
+                        className="rounded border-border"
+                      />
+                      Keep my Chiron
+                    </label>
+                    {formData.detectedTimezone && (
+                      <span className="text-[10px] text-green-600 bg-green-100 px-2 py-1 rounded">
+                        Auto-detected: {formData.detectedTimezone}
+                      </span>
+                    )}
+                    <button
+                      onClick={calculateFromBirthData}
+                      disabled={!formData.birthDate}
+                      className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <RefreshCw size={12} />
+                      Calculate from birth data
+                    </button>
+                  </div>
                 </div>
+                <p className="text-[10px] text-muted-foreground italic mb-4">
+                  Click "Calculate" to auto-fill main planets including Ascendant (requires recognized city). ℞ indicates retrograde.
+                </p>
+                <div className="space-y-3">
+                  {CORE_PLANETS.map(planet => renderPlanetRow(planet))}
+                </div>
+              </div>
+
+              {/* Points Section (Collapsible) */}
+              <div className="border-t border-border pt-5">
+                <button
+                  type="button"
+                  onClick={() => setShowPointsSection(!showPointsSection)}
+                  className="flex items-center gap-2 w-full text-left"
+                >
+                  <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                    Points & Nodes
+                  </h3>
+                  <span className="text-[10px] text-muted-foreground">
+                    ({POINTS.filter(p => formData.planets[p]?.sign).length}/{POINTS.length} filled)
+                  </span>
+                  {showPointsSection ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground" />}
+                </button>
+                
+                {showPointsSection && (
+                  <div className="mt-4 space-y-3">
+                    <p className="text-[10px] text-muted-foreground italic mb-2">
+                      North/South Node, Chiron, Lilith, Part of Fortune, Vertex
+                    </p>
+                    {POINTS.map(planet => renderPlanetRow(planet))}
+                  </div>
+                )}
+              </div>
+
+              {/* Asteroids Section (Collapsible) */}
+              <div className="border-t border-border pt-5">
+                <button
+                  type="button"
+                  onClick={() => setShowAsteroidsSection(!showAsteroidsSection)}
+                  className="flex items-center gap-2 w-full text-left"
+                >
+                  <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                    Asteroids
+                  </h3>
+                  <span className="text-[10px] text-muted-foreground">
+                    ({ASTEROIDS.filter(p => formData.planets[p]?.sign).length}/{ASTEROIDS.length} filled)
+                  </span>
+                  {showAsteroidsSection ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground" />}
+                </button>
+                
+                {showAsteroidsSection && (
+                  <div className="mt-4 space-y-3">
+                    <p className="text-[10px] text-muted-foreground italic mb-2">
+                      Ceres, Pallas, Juno, Vesta (enter from astro.com)
+                    </p>
+                    {ASTEROIDS.map(planet => renderPlanetRow(planet))}
+                  </div>
+                )}
+              </div>
+
+              {/* TNOs Section (Collapsible) */}
+              <div className="border-t border-border pt-5">
+                <button
+                  type="button"
+                  onClick={() => setShowTNOsSection(!showTNOsSection)}
+                  className="flex items-center gap-2 w-full text-left"
+                >
+                  <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                    Trans-Neptunian Objects
+                  </h3>
+                  <span className="text-[10px] text-muted-foreground">
+                    ({TNOS.filter(p => formData.planets[p]?.sign).length}/{TNOS.length} filled)
+                  </span>
+                  {showTNOsSection ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground" />}
+                </button>
+                
+                {showTNOsSection && (
+                  <div className="mt-4 space-y-3">
+                    <p className="text-[10px] text-muted-foreground italic mb-2">
+                      Eris, Sedna, Makemake, Haumea, Quaoar, Orcus, Ixion, Varuna (enter from astro.com)
+                    </p>
+                    {TNOS.map(planet => renderPlanetRow(planet))}
+                  </div>
+                )}
               </div>
 
               {/* Houses Section */}
