@@ -100,18 +100,8 @@ interface DayDetailProps {
 const DetailedTransitCard = ({ aspect }: { aspect: TransitAspect }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   
-  const detailed = getDetailedInterpretation(
-    aspect.transitPlanet,
-    aspect.transitSign,
-    aspect.transitDegree,
-    aspect.transitHouse,
-    aspect.natalPlanet,
-    aspect.natalSign,
-    aspect.natalDegree,
-    aspect.natalHouse,
-    aspect.aspect,
-    aspect.orb
-  );
+  // Use the pre-calculated detailed interpretation from the aspect
+  const detailed = aspect.detailedInterpretation;
   
   return (
     <div className={`rounded-sm bg-background border ${aspect.isExact ? 'border-primary shadow-md' : 'border-border'}`}>
