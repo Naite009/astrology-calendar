@@ -19,7 +19,7 @@ import {
 import { UserData } from '@/hooks/useUserData';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { CosmicWeatherBanner } from './CosmicWeatherBanner';
-import { calculateTransitAspects, getTransitPlanetSymbol, TransitAspect, hasHouseData, getHouseLabel, HOUSE_MEANINGS } from '@/lib/transitAspects';
+import { calculateTransitAspects, getTransitPlanetSymbol, TransitAspect, hasHouseData, getHouseLabel, HOUSE_MEANINGS, getTopTransitAspects } from '@/lib/transitAspects';
 import { getDetailedInterpretation, DetailedInterpretation } from '@/lib/detailedInterpretations';
 import { ComprehensiveTransitAnalysis } from './ComprehensiveTransitAnalysis';
 
@@ -301,9 +301,14 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
   const nodeAspects = detectNodeAspects(planets);
 
   // Calculate personal transit aspects if chart is active
-  const transitAspects: TransitAspect[] = activeChart
+  // Sort same as calendar (outer planets first, tighter orbs) and filter to 5° orb
+  const rawTransitAspects: TransitAspect[] = activeChart
     ? calculateTransitAspects(date, planets, activeChart)
     : [];
+  
+  // Sort and filter to ≤5° orb for Day Detail
+  const transitAspects = getTopTransitAspects(rawTransitAspects, rawTransitAspects.length)
+    .filter(asp => parseFloat(String(asp.orb)) <= 5);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/80 p-5" onClick={onClose}>
@@ -330,11 +335,12 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
                 ✨ Your Personal Transits — {activeChart.name}
               </h3>
               <span className="text-[10px] bg-primary/20 text-primary px-2 py-1 rounded-sm">
-                {transitAspects.length} aspect{transitAspects.length !== 1 ? 's' : ''} active
+                {transitAspects.length} aspect{transitAspects.length !== 1 ? 's' : ''} within 5°
               </span>
             </div>
             <div className="space-y-6">
-              {transitAspects.slice(0, 5).map((asp, i) => (
+              {/* Show ALL transits within 5° in sorted order (matching calendar) */}
+              {transitAspects.map((asp, i) => (
                 <ComprehensiveTransitAnalysis 
                   key={i} 
                   aspect={asp} 
@@ -342,11 +348,6 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
                   currentDate={date}
                 />
               ))}
-              {transitAspects.length > 5 && (
-                <div className="text-center text-sm text-muted-foreground p-4 bg-secondary rounded-sm">
-                  +{transitAspects.length - 5} more aspects (showing top 5 by orb)
-                </div>
-              )}
             </div>
           </div>
         )}
