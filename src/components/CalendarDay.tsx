@@ -9,6 +9,7 @@ import {
   getVoidOfCourseMoon,
   getDayColors,
   getDayType,
+  getPersonalDayType,
   detectPlanetaryIngresses,
   getPlanetSymbol,
   getExactLunarPhase,
@@ -40,7 +41,7 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
   const aspects = calculateDailyAspects(planets);
   const voc = getVoidOfCourseMoon(moonPhase);
   const dayColors = getDayColors(aspects, moonPhase);
-  const dayType = getDayType(aspects, moonPhase);
+  const collectiveDayType = getDayType(aspects, moonPhase);
   const exactLunarPhase = getExactLunarPhase(date);
 
   // Calculate transit-to-natal aspects if chart is selected
@@ -48,6 +49,11 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
     ? calculateTransitAspects(date, planets, activeChart)
     : [];
   const topTransits = getTopTransitAspects(transitAspects, 3);
+  
+  // Get personal day type based on transits to YOUR chart
+  const personalDayType = activeChart 
+    ? getPersonalDayType(transitAspects)
+    : null;
 
   const dayData: DayData = {
     date,
@@ -84,9 +90,31 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
           <span className="font-serif text-xl font-light text-foreground md:text-2xl">
             {day}
           </span>
-          <span className="text-[10px] font-medium text-foreground/80 mt-0.5" title={dayType.description}>
-            {dayType.label}
-          </span>
+          {/* Show personal day type if chart selected, otherwise collective */}
+          {personalDayType ? (
+            <div className="flex flex-col gap-0.5">
+              <span 
+                className={cn(
+                  "text-[10px] font-medium mt-0.5",
+                  personalDayType.isLucky && "text-emerald-600",
+                  personalDayType.isChallenging && "text-amber-600",
+                  !personalDayType.isLucky && !personalDayType.isChallenging && "text-foreground/80"
+                )}
+                title={`${personalDayType.description}${personalDayType.reason ? ` — ${personalDayType.reason}` : ''}\nLuck score: ${personalDayType.luckyScore}/10`}
+              >
+                {personalDayType.isLucky && '🍀 '}
+                {personalDayType.isChallenging && '⚠️ '}
+                {personalDayType.label}
+              </span>
+              <span className="text-[8px] text-muted-foreground" title={collectiveDayType.description}>
+                (sky: {collectiveDayType.label})
+              </span>
+            </div>
+          ) : (
+            <span className="text-[10px] font-medium text-foreground/80 mt-0.5" title={collectiveDayType.description}>
+              {collectiveDayType.label}
+            </span>
+          )}
         </div>
         <span className="text-lg opacity-70" title={moonPhase.phaseName}>
           {moonPhase.phaseIcon}

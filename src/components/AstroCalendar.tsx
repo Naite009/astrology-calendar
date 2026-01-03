@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle } from "lucide-react";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
 import { YearView } from "./YearView";
@@ -12,6 +12,7 @@ import { ChartLibrary } from "./ChartLibrary";
 import { BestTimesView } from "./BestTimesView";
 import { ColorsView } from "./ColorsView";
 import { PatternsView } from "./PatternsView";
+import { DayTypeLegend } from "./DayTypeLegend";
 import { useUserData } from "@/hooks/useUserData";
 import { useNotes } from "@/hooks/useNotes";
 import { useNatalChart, NatalChart } from "@/hooks/useNatalChart";
@@ -24,6 +25,7 @@ export const AstroCalendar = () => {
   const [showUserForm, setShowUserForm] = useState(false);
   const [selectedDay, setSelectedDay] = useState<DayData | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("month");
+  const [showLegend, setShowLegend] = useState(false);
   const { userData, saveUserData } = useUserData();
   const { weekNotes, dayNotes, saveWeekNotes, saveDayNotes } = useNotes();
   const {
@@ -279,6 +281,14 @@ export const AstroCalendar = () => {
 
             <nav className="print:hidden flex gap-3">
               <button
+                onClick={() => setShowLegend(true)}
+                className="flex h-10 w-10 items-center justify-center border border-border bg-transparent text-muted-foreground transition-all duration-200 hover:border-primary hover:bg-secondary"
+                aria-label="Day Type Legend"
+                title="Day Type & Luck Guide"
+              >
+                <HelpCircle size={20} />
+              </button>
+              <button
                 onClick={printCalendar}
                 className="flex h-10 w-10 items-center justify-center border border-border bg-transparent text-muted-foreground transition-all duration-200 hover:border-primary hover:bg-secondary"
                 aria-label="Print"
@@ -405,6 +415,9 @@ export const AstroCalendar = () => {
           activeChart={activeChart}
         />
       )}
+
+      {/* Day Type Legend */}
+      <DayTypeLegend isOpen={showLegend} onClose={() => setShowLegend(false)} />
     </div>
   );
 };

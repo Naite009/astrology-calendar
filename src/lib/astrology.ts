@@ -1224,7 +1224,7 @@ export interface DayType {
   description: string;
 }
 
-const DAY_TYPE_MAP: Record<string, DayType> = {
+export const DAY_TYPE_MAP: Record<string, DayType> = {
   mercury: { label: 'Mental Day', emoji: '🧠', description: 'Communication, thinking, learning' },
   venus: { label: 'Heart Day', emoji: '💗', description: 'Love, beauty, connection' },
   mars: { label: 'Action Day', emoji: '⚡', description: 'Energy, drive, initiative' },
@@ -1236,6 +1236,23 @@ const DAY_TYPE_MAP: Record<string, DayType> = {
   neptune: { label: 'Dream Day', emoji: '🌊', description: 'Imagination, spirituality' },
   pluto: { label: 'Transform Day', emoji: '🔥', description: 'Deep change, power' },
 };
+
+// Lucky day indicators based on beneficial aspects
+export const LUCKY_ASPECTS = ['trine', 'sextile', 'conjunction'];
+export const CHALLENGING_ASPECTS = ['square', 'opposition'];
+
+// Day quality ratings
+export interface DayQuality {
+  isLucky: boolean;
+  isChallenging: boolean;
+  luckyScore: number; // 0-10
+  dominantPlanet: string;
+  dominantAspectType: 'harmonious' | 'challenging' | 'mixed';
+}
+
+// Benefic planets that bring luck
+const BENEFIC_PLANETS = ['venus', 'jupiter'];
+const MALEFIC_PLANETS = ['mars', 'saturn', 'pluto'];
 
 export const getDayType = (aspects: Aspect[], moonPhase: MoonPhase): DayType => {
   // Count planet occurrences in aspects
@@ -1273,6 +1290,110 @@ export const getDayType = (aspects: Aspect[], moonPhase: MoonPhase): DayType => 
   }
 
   return DAY_TYPE_MAP[dominant] || DAY_TYPE_MAP.moon;
+};
+
+// Get personal day type based on transit aspects to YOUR natal chart
+export interface PersonalDayType extends DayType {
+  luckyScore: number; // 0-10
+  isLucky: boolean;
+  isChallenging: boolean;
+  topTransitPlanet?: string;
+  reason?: string;
+}
+
+export const getPersonalDayType = (transitAspects: Array<{
+  transitPlanet: string;
+  natalPlanet: string;
+  aspect: string;
+  orb: string;
+}>): PersonalDayType => {
+  if (!transitAspects || transitAspects.length === 0) {
+    return { 
+      label: 'Neutral Day', 
+      emoji: '○', 
+      description: 'No major transits to your chart today',
+      luckyScore: 5,
+      isLucky: false,
+      isChallenging: false
+    };
+  }
+
+  // Count which planets are activating your chart
+  const planetCounts: Record<string, number> = {};
+  let luckyPoints = 0;
+  let challengingPoints = 0;
+
+  transitAspects.forEach((asp) => {
+    const transitPlanet = asp.transitPlanet.toLowerCase();
+    const natalPlanet = asp.natalPlanet.toLowerCase();
+    const aspectName = asp.aspect.toLowerCase();
+    
+    // Count transiting planet activity on YOUR chart
+    planetCounts[transitPlanet] = (planetCounts[transitPlanet] || 0) + 1;
+    
+    // Calculate luck score based on aspect type
+    const isHarmonious = ['trine', 'sextile'].includes(aspectName);
+    const isChallenging = ['square', 'opposition'].includes(aspectName);
+    const isConjunction = aspectName === 'conjunction';
+    
+    // Benefic planets (Venus, Jupiter) in harmonious aspects = very lucky
+    if (BENEFIC_PLANETS.includes(transitPlanet)) {
+      if (isHarmonious) luckyPoints += 3;
+      else if (isConjunction) luckyPoints += 2;
+      else if (isChallenging) luckyPoints += 1; // Even challenges from benefics can bring gifts
+    }
+    
+    // Malefic planets (Mars, Saturn, Pluto) in challenging aspects = difficult
+    if (MALEFIC_PLANETS.includes(transitPlanet)) {
+      if (isChallenging) challengingPoints += 2;
+      else if (isConjunction) challengingPoints += 1;
+    }
+    
+    // Sun trines/sextiles = vitality boost
+    if (transitPlanet === 'sun' && isHarmonious) luckyPoints += 2;
+    
+    // Moon trines to benefics = emotional support
+    if (transitPlanet === 'moon' && isHarmonious) luckyPoints += 1;
+    
+    // Harmonious aspects to natal Jupiter/Venus = luck amplified
+    if (BENEFIC_PLANETS.includes(natalPlanet) && isHarmonious) luckyPoints += 2;
+  });
+
+  // Find dominant transiting planet
+  let dominant = 'moon';
+  let maxCount = 0;
+  for (const [planet, count] of Object.entries(planetCounts)) {
+    if (count > maxCount) {
+      maxCount = count;
+      dominant = planet;
+    }
+  }
+
+  // Calculate final luck score (0-10)
+  const rawScore = 5 + luckyPoints - challengingPoints;
+  const luckyScore = Math.max(0, Math.min(10, rawScore));
+  const isLucky = luckyScore >= 7;
+  const isChallenging = luckyScore <= 3;
+
+  const baseType = DAY_TYPE_MAP[dominant] || DAY_TYPE_MAP.moon;
+  
+  // Build reason string
+  let reason = '';
+  if (isLucky) {
+    reason = 'Harmonious aspects from benefic planets today';
+  } else if (isChallenging) {
+    reason = 'Challenging aspects may require patience';
+  }
+
+  return {
+    ...baseType,
+    label: `Your ${baseType.label}`,
+    luckyScore,
+    isLucky,
+    isChallenging,
+    topTransitPlanet: dominant,
+    reason
+  };
 };
 
 // Color explanation for day detail
