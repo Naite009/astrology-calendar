@@ -1,6 +1,7 @@
 import * as Astronomy from 'astronomy-engine';
 import { UserData } from '@/hooks/useUserData';
-
+import { getAccurateAsteroidPosition } from './asteroidEphemeris';
+import { calculatePlacidusHouses, getCoordinatesFromLocation as getExtendedCoordinates, PlacidusHouses } from './placidusHouses';
 // Zodiac signs mapping
 const ZODIAC_SIGNS = [
   { name: 'Aries', symbol: '♈' },
@@ -265,145 +266,44 @@ export const isPlanetRetrograde = (body: Astronomy.Body, date: Date): boolean =>
   }
 };
 
-// Calculate Chiron detailed position for natal chart
-// Chiron entered Aries on April 17, 2018 and will be in Aries until 2027
-// Using accurate ephemeris-based approximation
+// Calculate Chiron detailed position for natal chart - NOW USES ACCURATE LOOKUP TABLES
 export const getDetailedChironPosition = (date: Date): { sign: string; degree: number; minutes: number; seconds: number; isRetrograde: boolean } => {
-  // Chiron orbit is ~50.7 years, but we use a more accurate calculation based on known positions
-  // Key reference points:
-  // April 17, 2018: Chiron enters Aries (0° Aries)
-  // June 19, 2026: Chiron enters Taurus (0° Taurus)
-  
-  const chironAries = new Date('2018-04-17T00:00:00Z');
-  const chironTaurus = new Date('2026-06-19T00:00:00Z');
-  
-  // For dates within the Aries period (2018-2026)
-  if (date >= chironAries && date < chironTaurus) {
-    const totalDays = (chironTaurus.getTime() - chironAries.getTime()) / (1000 * 60 * 60 * 24);
-    const daysSinceEntry = (date.getTime() - chironAries.getTime()) / (1000 * 60 * 60 * 24);
-    
-    // Chiron moves about 30° through Aries in this period (accounting for retrogrades)
-    // Average forward progress is roughly 30° / totalDays
-    const progressDegrees = (daysSinceEntry / totalDays) * 30;
-    const longitude = Math.min(29.99, Math.max(0, progressDegrees)); // Clamp to Aries
-    
-    // Chiron retrogrades roughly July-December each year
-    const month = date.getMonth();
-    const isRetrograde = month >= 6 && month <= 11;
-    
-    return { ...getDetailedPosition(longitude), isRetrograde };
-  }
-  
-  // For dates before Aries (Pisces period 2010-2018)
-  if (date < chironAries) {
-    const chironPisces = new Date('2010-04-20T00:00:00Z');
-    if (date >= chironPisces) {
-      const totalDays = (chironAries.getTime() - chironPisces.getTime()) / (1000 * 60 * 60 * 24);
-      const daysSinceEntry = (date.getTime() - chironPisces.getTime()) / (1000 * 60 * 60 * 24);
-      const progressDegrees = (daysSinceEntry / totalDays) * 30;
-      const longitude = 330 + Math.min(29.99, Math.max(0, progressDegrees)); // Pisces = 330-360°
-      
-      const month = date.getMonth();
-      const isRetrograde = month >= 6 && month <= 11;
-      
-      return { ...getDetailedPosition(longitude), isRetrograde };
-    }
-  }
-  
-  // For dates after Taurus entry (2026+)
-  if (date >= chironTaurus) {
-    const chironGemini = new Date('2033-06-01T00:00:00Z'); // Approximate Gemini entry
-    const totalDays = (chironGemini.getTime() - chironTaurus.getTime()) / (1000 * 60 * 60 * 24);
-    const daysSinceEntry = (date.getTime() - chironTaurus.getTime()) / (1000 * 60 * 60 * 24);
-    const progressDegrees = (daysSinceEntry / totalDays) * 30;
-    const longitude = 30 + Math.min(29.99, Math.max(0, progressDegrees)); // Taurus = 30-60°
-    
-    const month = date.getMonth();
-    const isRetrograde = month >= 6 && month <= 11;
-    
-    return { ...getDetailedPosition(longitude), isRetrograde };
-  }
-  
-  // Fallback for very old dates - use mean motion calculation
-  const d = (date.getTime() - new Date('2000-01-01T12:00:00Z').getTime()) / (1000 * 60 * 60 * 24);
-  const meanMotion = 360 / (50.7 * 365.25);
-  const longitude = (72 + d * meanMotion) % 360;
-  const normalizedLon = ((longitude % 360) + 360) % 360;
-  
-  const dayOfYear = Math.floor((date.getTime() - new Date(date.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
-  const isRetrograde = dayOfYear >= 150 && dayOfYear <= 300;
-  
-  return { ...getDetailedPosition(normalizedLon), isRetrograde };
+  return getAccurateAsteroidPosition('chiron', date);
 };
 
-// Calculate Black Moon Lilith detailed position for natal chart
-export const getDetailedLilithPosition = (date: Date): { sign: string; degree: number; minutes: number; seconds: number } => {
-  const d = (date.getTime() - new Date('2000-01-01T12:00:00Z').getTime()) / (1000 * 60 * 60 * 24);
-  const meanMotion = 360 / (8.85 * 365.25);
-  const longitude = (121 + d * meanMotion) % 360;
-  const normalizedLon = ((longitude % 360) + 360) % 360;
-  return getDetailedPosition(normalizedLon);
+// Calculate Black Moon Lilith detailed position for natal chart - NOW USES ACCURATE LOOKUP TABLES
+export const getDetailedLilithPosition = (date: Date): { sign: string; degree: number; minutes: number; seconds: number; isRetrograde?: boolean } => {
+  const result = getAccurateAsteroidPosition('lilith', date);
+  return { sign: result.sign, degree: result.degree, minutes: result.minutes, seconds: result.seconds };
 };
 
-// Calculate asteroid Ceres position (approximation)
+// Calculate asteroid Ceres position - NOW USES ACCURATE LOOKUP TABLES
 export const getDetailedCeresPosition = (date: Date): { sign: string; degree: number; minutes: number; seconds: number; isRetrograde: boolean } => {
-  // Ceres has ~4.6 year orbital period
-  // J2000 epoch: Ceres at approximately 194° (14° Libra)
-  const d = (date.getTime() - new Date('2000-01-01T12:00:00Z').getTime()) / (1000 * 60 * 60 * 24);
-  const meanMotion = 360 / (4.6 * 365.25);
-  const longitude = (194 + d * meanMotion) % 360;
-  const normalizedLon = ((longitude % 360) + 360) % 360;
-  
-  // Approximate retrograde (about 3-4 months per year)
-  const dayOfYear = Math.floor((date.getTime() - new Date(date.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
-  const isRetrograde = (dayOfYear >= 30 && dayOfYear <= 120);
-  
-  return { ...getDetailedPosition(normalizedLon), isRetrograde };
+  return getAccurateAsteroidPosition('ceres', date);
 };
 
-// Calculate asteroid Pallas position (approximation)
+// Calculate asteroid Pallas position - NOW USES ACCURATE LOOKUP TABLES
 export const getDetailedPallasPosition = (date: Date): { sign: string; degree: number; minutes: number; seconds: number; isRetrograde: boolean } => {
-  // Pallas has ~4.62 year orbital period
-  // J2000 epoch: Pallas at approximately 302° (2° Aquarius)
-  const d = (date.getTime() - new Date('2000-01-01T12:00:00Z').getTime()) / (1000 * 60 * 60 * 24);
-  const meanMotion = 360 / (4.62 * 365.25);
-  const longitude = (302 + d * meanMotion) % 360;
-  const normalizedLon = ((longitude % 360) + 360) % 360;
-  
-  const dayOfYear = Math.floor((date.getTime() - new Date(date.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
-  const isRetrograde = (dayOfYear >= 180 && dayOfYear <= 280);
-  
-  return { ...getDetailedPosition(normalizedLon), isRetrograde };
+  return getAccurateAsteroidPosition('pallas', date);
 };
 
-// Calculate asteroid Juno position (approximation)
+// Calculate asteroid Juno position - NOW USES ACCURATE LOOKUP TABLES
 export const getDetailedJunoPosition = (date: Date): { sign: string; degree: number; minutes: number; seconds: number; isRetrograde: boolean } => {
-  // Juno has ~4.36 year orbital period
-  // J2000 epoch: Juno at approximately 230° (20° Scorpio)
-  const d = (date.getTime() - new Date('2000-01-01T12:00:00Z').getTime()) / (1000 * 60 * 60 * 24);
-  const meanMotion = 360 / (4.36 * 365.25);
-  const longitude = (230 + d * meanMotion) % 360;
-  const normalizedLon = ((longitude % 360) + 360) % 360;
-  
-  const dayOfYear = Math.floor((date.getTime() - new Date(date.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
-  const isRetrograde = (dayOfYear >= 100 && dayOfYear <= 200);
-  
-  return { ...getDetailedPosition(normalizedLon), isRetrograde };
+  return getAccurateAsteroidPosition('juno', date);
 };
 
-// Calculate asteroid Vesta position (approximation)
+// Calculate asteroid Vesta position - NOW USES ACCURATE LOOKUP TABLES
 export const getDetailedVestaPosition = (date: Date): { sign: string; degree: number; minutes: number; seconds: number; isRetrograde: boolean } => {
-  // Vesta has ~3.63 year orbital period
-  // J2000 epoch: Vesta at approximately 180° (0° Libra)
-  const d = (date.getTime() - new Date('2000-01-01T12:00:00Z').getTime()) / (1000 * 60 * 60 * 24);
-  const meanMotion = 360 / (3.63 * 365.25);
-  const longitude = (180 + d * meanMotion) % 360;
-  const normalizedLon = ((longitude % 360) + 360) % 360;
-  
-  const dayOfYear = Math.floor((date.getTime() - new Date(date.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
-  const isRetrograde = (dayOfYear >= 250 && dayOfYear <= 350);
-  
-  return { ...getDetailedPosition(normalizedLon), isRetrograde };
+  return getAccurateAsteroidPosition('vesta', date);
+};
+
+// Calculate Placidus houses for a given date, latitude, and longitude
+export const calculatePlacidusHouseCusps = (
+  date: Date,
+  latitude: number,
+  longitude: number
+): PlacidusHouses => {
+  return calculatePlacidusHouses(date, latitude, longitude);
 };
 
 // City coordinates database for Ascendant calculation

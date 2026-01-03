@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { X, Plus, Users, RefreshCw, Check, Eye, ChevronDown, ChevronUp } from 'lucide-react';
 import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChart';
-import { getPlanetSymbol, calculateNatalChart, detectTimezoneFromLocation } from '@/lib/astrology';
+import { getPlanetSymbol, calculateNatalChart, detectTimezoneFromLocation, calculatePlacidusHouseCusps } from '@/lib/astrology';
+import { getCoordinatesFromLocation } from '@/lib/placidusHouses';
 import { NatalChartNarrative } from './NatalChartNarrative';
 
 const ZODIAC_SIGNS = [
@@ -279,24 +280,53 @@ export const ChartLibrary = ({
       formData.birthLocation
     );
 
-    const autoHouseCuspsFromAscendant = (asc: { sign: string; degree: number; minutes: number } | undefined) => {
-      if (!asc?.sign) return null;
-      const signIndex = ZODIAC_SIGNS.indexOf(asc.sign);
-      if (signIndex === -1) return null;
+    // Try to calculate Placidus houses if we have coordinates
+    const coords = getCoordinatesFromLocation(formData.birthLocation);
+    
+    const calculateHouseCusps = (): Record<string, HouseCusp> | null => {
+      if (!coords) {
+        // Fallback to Equal Houses from Ascendant if no coordinates found
+        const asc = calculatedPositions.Ascendant;
+        if (!asc?.sign) return null;
+        const signIndex = ZODIAC_SIGNS.indexOf(asc.sign);
+        if (signIndex === -1) return null;
 
-      const ascLon = signIndex * 30 + asc.degree + (asc.minutes || 0) / 60;
-      const cusps: Record<string, HouseCusp> = {};
+        const ascLon = signIndex * 30 + asc.degree + (asc.minutes || 0) / 60;
+        const cusps: Record<string, HouseCusp> = {};
 
-      for (let i = 1; i <= 12; i++) {
-        const lon = (ascLon + (i - 1) * 30) % 360;
-        const si = Math.floor(lon / 30);
-        const degFloat = lon % 30;
-        const deg = Math.floor(degFloat);
-        const min = Math.round((degFloat - deg) * 60);
-        cusps[`house${i}`] = { sign: ZODIAC_SIGNS[si], degree: deg, minutes: min === 60 ? 59 : min };
+        for (let i = 1; i <= 12; i++) {
+          const lon = (ascLon + (i - 1) * 30) % 360;
+          const si = Math.floor(lon / 30);
+          const degFloat = lon % 30;
+          const deg = Math.floor(degFloat);
+          const min = Math.round((degFloat - deg) * 60);
+          cusps[`house${i}`] = { sign: ZODIAC_SIGNS[si], degree: deg, minutes: min === 60 ? 59 : min };
+        }
+        return cusps;
       }
-
-      return cusps;
+      
+      // Use Placidus house calculation with coordinates
+      const [year, month, day] = formData.birthDate.split('-').map(Number);
+      const [hours, minutes] = (formData.birthTime || '12:00').split(':').map(Number);
+      const utcHours = hours - formData.timezoneOffset;
+      const birthDateTime = new Date(Date.UTC(year, month - 1, day, utcHours, minutes, 0));
+      
+      const placidusHouses = calculatePlacidusHouseCusps(birthDateTime, coords.lat, coords.lon);
+      
+      return {
+        house1: placidusHouses.house1,
+        house2: placidusHouses.house2,
+        house3: placidusHouses.house3,
+        house4: placidusHouses.house4,
+        house5: placidusHouses.house5,
+        house6: placidusHouses.house6,
+        house7: placidusHouses.house7,
+        house8: placidusHouses.house8,
+        house9: placidusHouses.house9,
+        house10: placidusHouses.house10,
+        house11: placidusHouses.house11,
+        house12: placidusHouses.house12,
+      };
     };
     
     setFormData(prev => {
@@ -311,9 +341,9 @@ export const ChartLibrary = ({
         mergedPlanets.Chiron = prev.planets.Chiron;
       }
 
-      // If user hasn't entered house cusps yet, auto-fill a reasonable baseline (Equal Houses from Ascendant).
+      // If user hasn't entered house cusps yet, auto-fill using Placidus (or Equal Houses as fallback).
       const shouldAutoFillHouses = !prev.houseCusps?.house1?.sign;
-      const autoCusps = shouldAutoFillHouses ? autoHouseCuspsFromAscendant(calculatedPositions.Ascendant) : null;
+      const autoCusps = shouldAutoFillHouses ? calculateHouseCusps() : null;
 
       return {
         ...prev,
