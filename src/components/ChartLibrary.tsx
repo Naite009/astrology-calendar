@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { X, Plus, Users, RefreshCw, Check, Eye, ChevronDown, ChevronUp } from 'lucide-react';
 import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChart';
 import { getPlanetSymbol, calculateNatalChart, detectTimezoneFromLocation } from '@/lib/astrology';
-import { NatalChartWheel } from './NatalChartWheel';
+import { NatalChartNarrative } from './NatalChartNarrative';
 
 const ZODIAC_SIGNS = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
@@ -704,51 +704,26 @@ export const ChartLibrary = ({
         </div>
       )}
 
-      {/* Chart Wheel Viewer Modal */}
+      {/* Chart Narrative Viewer Modal */}
       {viewingChart && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/80 p-5" onClick={() => setViewingChart(null)}>
           <div
-            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-sm bg-background p-8 shadow-xl"
+            className="w-full max-w-3xl max-h-[90vh] overflow-hidden rounded-sm bg-background shadow-xl"
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between p-6 pb-0">
               <h2 className="font-serif text-2xl font-light text-foreground">
-                Natal Chart Wheel
+                Natal Chart Analysis
               </h2>
               <button onClick={() => setViewingChart(null)} className="text-muted-foreground hover:text-foreground">
                 <X size={24} />
               </button>
             </div>
 
-            <NatalChartWheel 
-              chart={viewingChart} 
-              showTransits={showTransits}
-              transitDate={new Date()}
-              size={450}
+            <NatalChartNarrative 
+              natalChart={viewingChart} 
+              currentDate={new Date()}
             />
-
-            <div className="mt-6 flex items-center justify-center gap-4">
-              <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={showTransits}
-                  onChange={(e) => setShowTransits(e.target.checked)}
-                  className="rounded border-border"
-                />
-                Show Current Transits
-              </label>
-            </div>
-
-            <div className="mt-6 p-4 bg-secondary rounded-sm">
-              <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground mb-3">Reading Your Chart</h3>
-              <ul className="text-sm text-muted-foreground space-y-2">
-                <li><strong>Ascendant (ASC):</strong> At 9 o'clock position — your rising sign</li>
-                <li><strong>Inner Ring:</strong> Natal planets (your birth chart)</li>
-                {showTransits && <li><strong>Highlighted Planets:</strong> Current transiting planets</li>}
-                <li><strong>Lines:</strong> Aspects (angles) between planets showing relationships</li>
-                <li><strong>Houses:</strong> Numbered 1-12, equal house system from Ascendant</li>
-              </ul>
-            </div>
           </div>
         </div>
       )}
