@@ -37,27 +37,30 @@ export interface NatalChart {
   };
 }
 
+// Helper to safely parse JSON from localStorage
+const safeParseJSON = <T,>(key: string, fallback: T): T => {
+  try {
+    const item = localStorage.getItem(key);
+    if (item) {
+      return JSON.parse(item) as T;
+    }
+  } catch (e) {
+    console.error(`Failed to parse ${key} from localStorage:`, e);
+  }
+  return fallback;
+};
+
 export const useNatalChart = () => {
-  const [userNatalChart, setUserNatalChart] = useState<NatalChart | null>(null);
-  const [savedCharts, setSavedCharts] = useState<NatalChart[]>([]);
-  const [selectedChartForTiming, setSelectedChartForTiming] = useState<string>('user');
-
-  useEffect(() => {
-    const savedUserChart = localStorage.getItem('userNatalChart');
-    if (savedUserChart) {
-      setUserNatalChart(JSON.parse(savedUserChart));
-    }
-
-    const savedChartsData = localStorage.getItem('savedCharts');
-    if (savedChartsData) {
-      setSavedCharts(JSON.parse(savedChartsData));
-    }
-
-    const savedSelection = localStorage.getItem('selectedChartForTiming');
-    if (savedSelection) {
-      setSelectedChartForTiming(savedSelection);
-    }
-  }, []);
+  // Initialize state directly from localStorage to avoid flash of empty state
+  const [userNatalChart, setUserNatalChart] = useState<NatalChart | null>(() => {
+    return safeParseJSON<NatalChart | null>('userNatalChart', null);
+  });
+  const [savedCharts, setSavedCharts] = useState<NatalChart[]>(() => {
+    return safeParseJSON<NatalChart[]>('savedCharts', []);
+  });
+  const [selectedChartForTiming, setSelectedChartForTiming] = useState<string>(() => {
+    return localStorage.getItem('selectedChartForTiming') || 'user';
+  });
 
   const saveUserNatalChart = (chart: NatalChart) => {
     localStorage.setItem('userNatalChart', JSON.stringify(chart));
