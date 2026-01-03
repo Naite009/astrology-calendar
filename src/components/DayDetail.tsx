@@ -18,7 +18,7 @@ import {
 import { UserData } from '@/hooks/useUserData';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { CosmicWeatherBanner } from './CosmicWeatherBanner';
-import { calculateTransitAspects, getTransitPlanetSymbol, TransitAspect } from '@/lib/transitAspects';
+import { calculateTransitAspects, getTransitPlanetSymbol, TransitAspect, hasHouseData, getHouseLabel, HOUSE_MEANINGS } from '@/lib/transitAspects';
 
 // Sign-specific energies for daily guidance
 const SIGN_ENERGIES: Record<string, { action: string; focus: string; avoid: string }> = {
@@ -160,6 +160,17 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
                         EXACT!
                       </span>
                     )}
+                    {/* House badges */}
+                    {asp.transitHouse && (
+                      <span className="text-[10px] bg-secondary text-muted-foreground px-1.5 py-0.5 rounded-sm" title={HOUSE_MEANINGS[asp.transitHouse]?.keywords}>
+                        T→{asp.transitHouse}H
+                      </span>
+                    )}
+                    {asp.natalHouse && (
+                      <span className="text-[10px] bg-secondary text-muted-foreground px-1.5 py-0.5 rounded-sm" title={HOUSE_MEANINGS[asp.natalHouse]?.keywords}>
+                        N→{asp.natalHouse}H
+                      </span>
+                    )}
                     <span className="text-xs text-muted-foreground ml-auto">
                       Orb: {asp.orb}°
                     </span>
@@ -167,9 +178,15 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
                   <div className="text-xs text-muted-foreground font-mono mb-2">
                     Transit {asp.transitPlanet} {asp.transitDegree}° {asp.transitSign} {asp.symbol} Natal {asp.natalPlanet} {asp.natalDegree}° {asp.natalSign}
                   </div>
-                  <div className="text-sm text-foreground leading-relaxed">
+                  <div className="text-sm text-foreground leading-relaxed mb-2">
                     {asp.interpretation}
                   </div>
+                  {/* House overlay interpretation */}
+                  {asp.houseOverlay && (
+                    <div className="text-xs text-primary/80 bg-primary/5 p-2 rounded-sm border-l-2 border-primary/30 mt-2">
+                      <span className="font-semibold">House Context:</span> {asp.houseOverlay}
+                    </div>
+                  )}
                 </div>
               ))}
               {transitAspects.length > 8 && (

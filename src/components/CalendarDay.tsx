@@ -16,7 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { UserData } from "@/hooks/useUserData";
 import { NatalChart } from "@/hooks/useNatalChart";
-import { calculateTransitAspects, getTopTransitAspects, getTransitPlanetSymbol } from "@/lib/transitAspects";
+import { calculateTransitAspects, getTopTransitAspects, getTransitPlanetSymbol, getHouseLabel } from "@/lib/transitAspects";
 
 interface CalendarDayProps {
   date: Date;
@@ -123,12 +123,15 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
                 borderLeft: `2px solid ${asp.color}`,
                 paddingLeft: '4px'
               }}
-              title={`${asp.transitPlanet} ${asp.aspect} natal ${asp.natalPlanet} (${asp.orb}°)`}
+              title={`${asp.transitPlanet} ${asp.aspect} natal ${asp.natalPlanet} (${asp.orb}°)${asp.transitHouse ? ` in ${asp.transitHouse}H` : ''}`}
             >
               <span>{getTransitPlanetSymbol(asp.transitPlanet)}</span>
               <span>{asp.symbol}</span>
               <span>{getTransitPlanetSymbol(asp.natalPlanet)}</span>
-              {asp.isExact && <span className="text-primary ml-1">!</span>}
+              {asp.transitHouse && (
+                <span className="text-muted-foreground text-[9px] ml-0.5">{asp.transitHouse}H</span>
+              )}
+              {asp.isExact && <span className="text-primary ml-0.5">!</span>}
             </div>
           ))}
         </div>

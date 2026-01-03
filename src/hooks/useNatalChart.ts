@@ -8,6 +8,13 @@ export interface NatalPlanetPosition {
   isRetrograde?: boolean;
 }
 
+// House cusp position (sign + degree)
+export interface HouseCusp {
+  sign: string;
+  degree: number;
+  minutes: number;
+}
+
 export interface NatalChart {
   id: string;
   name: string;
@@ -35,6 +42,23 @@ export interface NatalChart {
     Juno?: NatalPlanetPosition;
     Vesta?: NatalPlanetPosition;
   };
+  // 12 house cusps (manual entry from astro.com)
+  houseCusps?: {
+    house1?: HouseCusp;
+    house2?: HouseCusp;
+    house3?: HouseCusp;
+    house4?: HouseCusp;
+    house5?: HouseCusp;
+    house6?: HouseCusp;
+    house7?: HouseCusp;
+    house8?: HouseCusp;
+    house9?: HouseCusp;
+    house10?: HouseCusp;
+    house11?: HouseCusp;
+    house12?: HouseCusp;
+  };
+  // Signs that are intercepted (contained entirely within a house)
+  interceptedSigns?: string[];
 }
 
 // Helper to safely parse JSON from localStorage

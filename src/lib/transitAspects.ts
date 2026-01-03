@@ -1,6 +1,15 @@
 // Transit-to-Natal Aspect Calculation System
 import { PlanetaryPositions, getPlanetSymbol } from './astrology';
 import { NatalChart } from '@/hooks/useNatalChart';
+import { 
+  getTransitPlanetHouse, 
+  getNatalPlanetHouse, 
+  getHouseOverlay, 
+  getHouseLabel,
+  hasHouseData,
+  getTransitHouseInterpretation,
+  HOUSE_MEANINGS
+} from './houseCalculations';
 
 // Aspect definitions with orbs, symbols, and colors
 export const ASPECT_TYPES = [
@@ -16,17 +25,19 @@ export interface TransitAspect {
   transitSign: string;
   transitDegree: number;
   transitLongitude: number;
+  transitHouse: number | null;
   natalPlanet: string;
   natalSign: string;
   natalDegree: number;
   natalLongitude: number;
-  natalHouse?: number;
+  natalHouse: number | null;
   aspect: string;
   symbol: string;
   orb: string;
   color: string;
   meaning: string;
   interpretation: string;
+  houseOverlay: string;
   isExact: boolean;
 }
 
@@ -52,6 +63,9 @@ const PLANET_SYMBOLS: Record<string, string> = {
 export const getTransitPlanetSymbol = (planet: string): string => {
   return PLANET_SYMBOLS[planet] || planet.charAt(0);
 };
+
+// Re-export house utilities for convenience
+export { getHouseLabel, hasHouseData, HOUSE_MEANINGS };
 
 // Calculate transit-to-natal aspects
 export const calculateTransitAspects = (
@@ -95,30 +109,42 @@ export const calculateTransitAspects = (
         'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']
         .indexOf(transit.data.signName) * 30);
 
+    // Calculate which house the transit planet is in
+    const transitHouse = getTransitPlanetHouse(transit.data.signName, transit.data.degree, natalChart);
+
     natalPlanets.forEach(natal => {
       // Calculate angular difference
       let diff = Math.abs(transitLon - natal.longitude);
       if (diff > 180) diff = 360 - diff;
 
+      // Calculate which house the natal planet is in
+      const natalHouse = getNatalPlanetHouse(natal.name, natalChart);
+
       // Check for aspects
       ASPECT_TYPES.forEach(aspectType => {
         const angleDiff = Math.abs(diff - aspectType.angle);
         if (angleDiff <= aspectType.orb) {
+          // Generate house overlay interpretation
+          const houseOverlay = getHouseOverlay(transit.name, transitHouse, natal.name, natalHouse);
+          
           aspects.push({
             transitPlanet: transit.name,
             transitSign: transit.data!.signName,
             transitDegree: transit.data!.degree,
             transitLongitude: transitLon,
+            transitHouse,
             natalPlanet: natal.name,
             natalSign: natal.sign,
             natalDegree: natal.degree,
             natalLongitude: natal.longitude,
+            natalHouse,
             aspect: aspectType.name,
             symbol: aspectType.symbol,
             orb: angleDiff.toFixed(1),
             color: aspectType.color,
             meaning: aspectType.meaning,
             interpretation: getTransitInterpretation(transit.key, natal.name.toLowerCase(), aspectType.name),
+            houseOverlay,
             isExact: angleDiff < 1,
           });
         }

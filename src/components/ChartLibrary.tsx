@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { X, Plus, Users, RefreshCw, Check, Eye } from 'lucide-react';
-import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
+import { X, Plus, Users, RefreshCw, Check, Eye, ChevronDown, ChevronUp } from 'lucide-react';
+import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChart';
 import { getPlanetSymbol, calculateNatalChart, detectTimezoneFromLocation } from '@/lib/astrology';
 import { NatalChartWheel } from './NatalChartWheel';
 
@@ -65,6 +65,21 @@ const TIMEZONE_OPTIONS = [
   { value: 10, label: 'AEST (UTC+10)' },
 ];
 
+const HOUSE_LABELS = [
+  { num: 1, label: '1st House (ASC)', description: 'Self, Identity' },
+  { num: 2, label: '2nd House', description: 'Money, Values' },
+  { num: 3, label: '3rd House', description: 'Communication' },
+  { num: 4, label: '4th House (IC)', description: 'Home, Family' },
+  { num: 5, label: '5th House', description: 'Creativity, Romance' },
+  { num: 6, label: '6th House', description: 'Health, Work' },
+  { num: 7, label: '7th House (DSC)', description: 'Partnerships' },
+  { num: 8, label: '8th House', description: 'Transformation' },
+  { num: 9, label: '9th House', description: 'Philosophy, Travel' },
+  { num: 10, label: '10th House (MC)', description: 'Career, Public' },
+  { num: 11, label: '11th House', description: 'Friends, Groups' },
+  { num: 12, label: '12th House', description: 'Subconscious' },
+];
+
 interface ChartLibraryProps {
   userNatalChart: NatalChart | null;
   savedCharts: NatalChart[];
@@ -82,6 +97,8 @@ interface ChartFormData {
   timezoneOffset: number;
   detectedTimezone?: string;
   planets: Record<string, NatalPlanetPosition>;
+  houseCusps: Record<string, HouseCusp>;
+  interceptedSigns: string[];
 }
 
 const emptyPlanets = (): Record<string, NatalPlanetPosition> => {
@@ -90,6 +107,14 @@ const emptyPlanets = (): Record<string, NatalPlanetPosition> => {
     planets[p] = { sign: '', degree: 0, minutes: 0, seconds: 0 };
   });
   return planets;
+};
+
+const emptyHouseCusps = (): Record<string, HouseCusp> => {
+  const cusps: Record<string, HouseCusp> = {};
+  for (let i = 1; i <= 12; i++) {
+    cusps[`house${i}`] = { sign: '', degree: 0, minutes: 0 };
+  }
+  return cusps;
 };
 
 export const ChartLibrary = ({
@@ -112,7 +137,10 @@ export const ChartLibrary = ({
     birthLocation: '',
     timezoneOffset: -5, // Default to EST
     planets: emptyPlanets(),
+    houseCusps: emptyHouseCusps(),
+    interceptedSigns: [],
   });
+  const [showHousesSection, setShowHousesSection] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isNewChartRef = useRef(false);
@@ -182,6 +210,8 @@ export const ChartLibrary = ({
         birthLocation: '',
         timezoneOffset: -5,
         planets: emptyPlanets(),
+        houseCusps: emptyHouseCusps(),
+        interceptedSigns: [],
       });
     } else if (chart === 'user' && userNatalChart) {
       setFormData({
@@ -191,6 +221,8 @@ export const ChartLibrary = ({
         birthLocation: userNatalChart.birthLocation,
         timezoneOffset: userNatalChart.timezoneOffset ?? -5,
         planets: userNatalChart.planets as Record<string, NatalPlanetPosition>,
+        houseCusps: (userNatalChart.houseCusps as Record<string, HouseCusp>) || emptyHouseCusps(),
+        interceptedSigns: userNatalChart.interceptedSigns || [],
       });
     } else if (typeof chart === 'object') {
       setFormData({
@@ -200,6 +232,8 @@ export const ChartLibrary = ({
         birthLocation: chart.birthLocation,
         timezoneOffset: chart.timezoneOffset ?? -5,
         planets: chart.planets as Record<string, NatalPlanetPosition>,
+        houseCusps: (chart.houseCusps as Record<string, HouseCusp>) || emptyHouseCusps(),
+        interceptedSigns: chart.interceptedSigns || [],
       });
     }
     setEditingChart(chart);
@@ -543,6 +577,118 @@ export const ChartLibrary = ({
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* Houses Section */}
+              <div className="border-t border-border pt-5">
+                <button
+                  type="button"
+                  onClick={() => setShowHousesSection(!showHousesSection)}
+                  className="flex items-center gap-2 w-full text-left"
+                >
+                  <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                    House Cusps (Optional)
+                  </h3>
+                  {showHousesSection ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground" />}
+                </button>
+                <p className="text-[10px] text-muted-foreground italic mt-2">
+                  Enter house cusps from Astro.com for accurate house overlays in transit interpretations.
+                </p>
+                
+                {showHousesSection && (
+                  <div className="mt-4 space-y-3 max-h-[350px] overflow-y-auto pr-2">
+                    {HOUSE_LABELS.map(({ num, label, description }) => (
+                      <div key={num} className="grid grid-cols-[120px_1fr_70px_70px] gap-2 items-center">
+                        <div className="text-sm">
+                          <span className="text-foreground">{label}</span>
+                          <span className="text-[10px] text-muted-foreground block">{description}</span>
+                        </div>
+                        <select
+                          value={formData.houseCusps[`house${num}`]?.sign || ''}
+                          onChange={e => setFormData(prev => ({
+                            ...prev,
+                            houseCusps: {
+                              ...prev.houseCusps,
+                              [`house${num}`]: { ...prev.houseCusps[`house${num}`], sign: e.target.value }
+                            }
+                          }))}
+                          className="border border-border bg-background px-2 py-1.5 text-sm focus:border-primary focus:outline-none"
+                        >
+                          <option value="">Select Sign</option>
+                          {ZODIAC_SIGNS.map(sign => (
+                            <option key={sign} value={sign}>{sign}</option>
+                          ))}
+                        </select>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            min="0"
+                            max="29"
+                            placeholder="0"
+                            value={formData.houseCusps[`house${num}`]?.degree ?? ''}
+                            onChange={e => setFormData(prev => ({
+                              ...prev,
+                              houseCusps: {
+                                ...prev.houseCusps,
+                                [`house${num}`]: { ...prev.houseCusps[`house${num}`], degree: Number(e.target.value) }
+                              }
+                            }))}
+                            className="w-full border border-border bg-background px-2 py-1.5 pr-5 text-sm text-center focus:border-primary focus:outline-none"
+                          />
+                          <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">°</span>
+                        </div>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            min="0"
+                            max="59"
+                            placeholder="0"
+                            value={formData.houseCusps[`house${num}`]?.minutes ?? ''}
+                            onChange={e => setFormData(prev => ({
+                              ...prev,
+                              houseCusps: {
+                                ...prev.houseCusps,
+                                [`house${num}`]: { ...prev.houseCusps[`house${num}`], minutes: Number(e.target.value) }
+                              }
+                            }))}
+                            className="w-full border border-border bg-background px-2 py-1.5 pr-5 text-sm text-center focus:border-primary focus:outline-none"
+                          />
+                          <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">′</span>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {/* Intercepted Signs */}
+                    <div className="mt-4 pt-4 border-t border-border/50">
+                      <label className="block text-[11px] uppercase tracking-widest text-muted-foreground mb-2">
+                        Intercepted Signs
+                      </label>
+                      <p className="text-[10px] text-muted-foreground italic mb-2">
+                        Select any signs that are fully contained within a house (not on any cusp).
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {ZODIAC_SIGNS.map(sign => (
+                          <label key={sign} className="flex items-center gap-1.5 text-sm cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={formData.interceptedSigns.includes(sign)}
+                              onChange={e => {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  interceptedSigns: e.target.checked
+                                    ? [...prev.interceptedSigns, sign]
+                                    : prev.interceptedSigns.filter(s => s !== sign)
+                                }));
+                              }}
+                              className="rounded border-border"
+                            />
+                            {sign}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end pt-4 border-t border-border">
