@@ -35,12 +35,23 @@ export interface NatalChart {
     Neptune?: NatalPlanetPosition;
     Pluto?: NatalPlanetPosition;
     NorthNode?: NatalPlanetPosition;
+    SouthNode?: NatalPlanetPosition;
     Chiron?: NatalPlanetPosition;
     Lilith?: NatalPlanetPosition;
     Ceres?: NatalPlanetPosition;
     Pallas?: NatalPlanetPosition;
     Juno?: NatalPlanetPosition;
     Vesta?: NatalPlanetPosition;
+    PartOfFortune?: NatalPlanetPosition;
+    Vertex?: NatalPlanetPosition;
+    Eris?: NatalPlanetPosition;
+    Sedna?: NatalPlanetPosition;
+    Makemake?: NatalPlanetPosition;
+    Haumea?: NatalPlanetPosition;
+    Quaoar?: NatalPlanetPosition;
+    Orcus?: NatalPlanetPosition;
+    Ixion?: NatalPlanetPosition;
+    Varuna?: NatalPlanetPosition;
   };
   // 12 house cusps (manual entry from astro.com)
   houseCusps?: {

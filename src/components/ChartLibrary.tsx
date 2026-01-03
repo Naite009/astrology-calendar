@@ -13,18 +13,30 @@ const ZODIAC_SIGNS = [
 // Core planets plus points and asteroids
 const PLANETS = [
   'Sun', 'Moon', 'Ascendant', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 
-  'Uranus', 'Neptune', 'Pluto', 'NorthNode', 'Chiron', 'Lilith', 
-  'Ceres', 'Pallas', 'Juno', 'Vesta'
+  'Uranus', 'Neptune', 'Pluto', 'NorthNode', 'SouthNode', 'Chiron', 'Lilith', 
+  'Ceres', 'Pallas', 'Juno', 'Vesta', 'PartOfFortune', 'Vertex',
+  'Eris', 'Sedna', 'Makemake', 'Haumea', 'Quaoar', 'Orcus', 'Ixion', 'Varuna'
 ] as const;
 
 const PLANET_LABELS: Record<string, string> = {
   NorthNode: 'North Node',
+  SouthNode: 'South Node',
   Lilith: 'Black ☽ Lilith',
   Ceres: 'Ceres',
   Pallas: 'Pallas',
   Juno: 'Juno',
   Vesta: 'Vesta',
   Chiron: 'Chiron',
+  PartOfFortune: 'Part of Fortune',
+  Vertex: 'Vertex',
+  Eris: 'Eris',
+  Sedna: 'Sedna',
+  Makemake: 'Makemake',
+  Haumea: 'Haumea',
+  Quaoar: 'Quaoar',
+  Orcus: 'Orcus',
+  Ixion: 'Ixion',
+  Varuna: 'Varuna',
 };
 
 const PLANET_SYMBOLS: Record<string, string> = {
@@ -40,12 +52,23 @@ const PLANET_SYMBOLS: Record<string, string> = {
   Pluto: '♇',
   Ascendant: 'ASC',
   NorthNode: '☊',
+  SouthNode: '☋',
   Chiron: '⚷',
   Lilith: '⚸',
   Ceres: '⚳',
   Pallas: '⚴',
   Juno: '⚵',
   Vesta: '⚶',
+  PartOfFortune: '⊕',
+  Vertex: 'Vx',
+  Eris: '⯰',
+  Sedna: '⯲',
+  Makemake: '🜨',
+  Haumea: '🜵',
+  Quaoar: '🝾',
+  Orcus: '🝿',
+  Ixion: '⯳',
+  Varuna: '⯴',
 };
 
 const TIMEZONE_OPTIONS = [
