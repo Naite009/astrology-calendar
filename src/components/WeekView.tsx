@@ -6,6 +6,8 @@ import {
   getEnergyRating,
   EnergyLevel,
 } from "@/lib/astrology";
+import { NatalChart } from "@/hooks/useNatalChart";
+import { calculateTransitAspects, getTopTransitAspects, getPersonalizedJournalPrompt, getTransitPlanetSymbol, TransitAspect } from "@/lib/transitAspects";
 
 interface WeekViewProps {
   currentDate: Date;
@@ -13,6 +15,7 @@ interface WeekViewProps {
   dayNotes: Record<string, string>;
   saveWeekNotes: (weekKey: string, notes: string) => void;
   saveDayNotes: (dateKey: string, notes: string) => void;
+  activeChart?: NatalChart | null;
 }
 
 const ENERGY_COLORS: Record<EnergyLevel, string> = {
@@ -87,11 +90,11 @@ const getDailyGuidance = (
   }
 
   if (moonPhase.phaseName === "Full Moon") {
-    return `Full Moon in ${moonSign} - Maximum illumination! Celebrate what you've manifested around ${signData.focus}. Release what no longer serves. Emotions peak. ${signData.action} with full awareness. Harvest your efforts.`;
+    return `Full Moon in ${moonSign} - Maximum illumination! Celebrate what you have manifested around ${signData.focus}. Release what no longer serves. Emotions peak. ${signData.action} with full awareness. Harvest your efforts.`;
   }
 
   if (moonPhase.phaseName === "Waning Gibbous") {
-    return `Waning Gibbous in ${moonSign} - Share your wisdom. Give back what you've learned about ${signData.focus}. ${signData.action} with generosity. Gratitude amplifies your blessings. Teach and mentor.`;
+    return `Waning Gibbous in ${moonSign} - Share your wisdom. Give back what you have learned about ${signData.focus}. ${signData.action} with generosity. Gratitude amplifies your blessings. Teach and mentor.`;
   }
 
   if (moonPhase.phaseName === "Last Quarter") {
@@ -111,6 +114,7 @@ export const WeekView = ({
   dayNotes,
   saveWeekNotes,
   saveDayNotes,
+  activeChart,
 }: WeekViewProps) => {
   const weekStart = getWeekStart(currentDate);
   const weekDates = getWeekDates(weekStart);
@@ -123,6 +127,14 @@ export const WeekView = ({
         <h2 className="mb-4 font-serif text-2xl font-light text-foreground">
           Weekly Overview
         </h2>
+        {activeChart && (
+          <div className="mb-4 p-3 bg-primary/10 rounded-sm border border-primary/20">
+            <div className="text-[11px] uppercase tracking-widest text-primary mb-1">
+              Viewing Personal Transits for
+            </div>
+            <div className="font-medium text-foreground">{activeChart.name}</div>
+          </div>
+        )}
         <div>
           <h3 className="mb-3 text-[11px] uppercase tracking-widest text-muted-foreground">
             Intentions for This Week
@@ -146,6 +158,17 @@ export const WeekView = ({
           const guidance = getDailyGuidance(moonPhase, mercuryRetro, planets.moon.signName);
           const dateKey = date.toISOString().split("T")[0];
           const isToday = date.toDateString() === new Date().toDateString();
+
+          // Calculate personal transits if chart selected
+          const transitAspects: TransitAspect[] = activeChart
+            ? calculateTransitAspects(date, planets, activeChart)
+            : [];
+          const topTransits = getTopTransitAspects(transitAspects, 5);
+
+          // Get personalized journal prompt if chart active
+          const journalPrompt = activeChart && transitAspects.length > 0
+            ? getPersonalizedJournalPrompt(transitAspects, planets.moon.signName, moonPhase.phaseName)
+            : "How are you feeling today? What happened? What are you grateful for?";
 
           return (
             <div
@@ -183,6 +206,38 @@ export const WeekView = ({
                 </div>
               </div>
 
+              {/* Personal Transit Aspects */}
+              {activeChart && topTransits.length > 0 && (
+                <div className="mb-4 p-4 rounded-sm bg-primary/5 border border-primary/20">
+                  <h4 className="mb-3 text-[11px] uppercase tracking-widest text-primary font-semibold">
+                    Your Personal Transits
+                  </h4>
+                  <div className="space-y-2">
+                    {topTransits.map((asp, i) => (
+                      <div key={i} className="flex items-start gap-3">
+                        <div 
+                          className="flex items-center gap-1 text-sm font-medium shrink-0"
+                          style={{ color: asp.color }}
+                        >
+                          <span>{getTransitPlanetSymbol(asp.transitPlanet)}</span>
+                          <span>{asp.symbol}</span>
+                          <span>{getTransitPlanetSymbol(asp.natalPlanet)}</span>
+                          {asp.isExact && <span className="text-xs text-primary ml-1">EXACT!</span>}
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-xs text-muted-foreground">
+                            Transit {asp.transitPlanet} {asp.aspect} natal {asp.natalPlanet} ({asp.orb}°)
+                          </div>
+                          <div className="text-sm text-foreground mt-1">
+                            {asp.interpretation}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Day Content */}
               <div className="grid gap-6 md:grid-cols-[2fr_3fr]">
                 <div className="rounded-sm bg-secondary p-4">
@@ -201,7 +256,7 @@ export const WeekView = ({
                     Notes & Reflections
                   </h4>
                   <Textarea
-                    placeholder="How are you feeling today? What happened? What are you grateful for?"
+                    placeholder={journalPrompt}
                     value={dayNotes[dateKey] || ""}
                     onChange={(e) => saveDayNotes(dateKey, e.target.value)}
                     className="min-h-28 resize-y border-border bg-background font-sans text-sm focus:border-primary"

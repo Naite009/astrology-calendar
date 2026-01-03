@@ -1,6 +1,7 @@
 import { DayData } from "@/lib/astrology";
 import { CalendarDay } from "./CalendarDay";
 import { UserData } from "@/hooks/useUserData";
+import { NatalChart } from "@/hooks/useNatalChart";
 
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -8,9 +9,10 @@ interface MonthViewProps {
   currentDate: Date;
   userData: UserData | null;
   onDayClick: (dayData: DayData) => void;
+  activeChart?: NatalChart | null;
 }
 
-export const MonthView = ({ currentDate, userData, onDayClick }: MonthViewProps) => {
+export const MonthView = ({ currentDate, userData, onDayClick, activeChart }: MonthViewProps) => {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const firstDay = new Date(year, month, 1);
@@ -54,6 +56,7 @@ export const MonthView = ({ currentDate, userData, onDayClick }: MonthViewProps)
               isToday={isToday}
               userData={userData}
               onDayClick={onDayClick}
+              activeChart={activeChart}
             />
           );
         })}
@@ -72,6 +75,12 @@ export const MonthView = ({ currentDate, userData, onDayClick }: MonthViewProps)
         <span className="opacity-70">✦ Transit</span>
         <span className="opacity-50">·</span>
         <span className="opacity-70">⚡ Ingress</span>
+        {activeChart && (
+          <>
+            <span className="opacity-50">·</span>
+            <span className="opacity-70 text-primary">☌ Personal Transit</span>
+          </>
+        )}
       </footer>
     </>
   );

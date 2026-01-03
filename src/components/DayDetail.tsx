@@ -13,9 +13,12 @@ import {
   detectNodeAspects,
   CHIRON_MEANINGS,
   LILITH_MEANINGS,
+  getPlanetaryPositions,
 } from '@/lib/astrology';
 import { UserData } from '@/hooks/useUserData';
+import { NatalChart } from '@/hooks/useNatalChart';
 import { CosmicWeatherBanner } from './CosmicWeatherBanner';
+import { calculateTransitAspects, getTransitPlanetSymbol, TransitAspect } from '@/lib/transitAspects';
 
 // Sign-specific energies for daily guidance
 const SIGN_ENERGIES: Record<string, { action: string; focus: string; avoid: string }> = {
@@ -64,7 +67,7 @@ const getDailyGuidance = (
     return `New Moon in ${phaseSign} - Plant seeds of intention. Set powerful goals aligned with ${signData.focus}. ${signData.action} with fresh vision. Channel this initiating energy wisely. Avoid: ${signData.avoid}.`;
   }
   if (isExactFullMoon) {
-    return `Full Moon in ${phaseSign} - Maximum illumination! Celebrate what you've manifested around ${signData.focus}. Release what no longer serves. Emotions peak. ${signData.action} with full awareness. Harvest your efforts.`;
+    return `Full Moon in ${phaseSign} - Maximum illumination! Celebrate what you have manifested around ${signData.focus}. Release what no longer serves. Emotions peak. ${signData.action} with full awareness. Harvest your efforts.`;
   }
   if (phaseForGuidance.includes('Waxing')) {
     return `${phaseForGuidance} in ${moonSign} - Energy is building. ${signData.action} with awareness of ${signData.focus}. Avoid ${signData.avoid}.`;
@@ -88,9 +91,10 @@ interface DayDetailProps {
   dayData: DayData;
   userData: UserData | null;
   onClose: () => void;
+  activeChart?: NatalChart | null;
 }
 
-export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
+export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => {
   const { date, planets, moonPhase, mercuryRetro, personalTransits, majorIngresses, aspects, voc, exactLunarPhase } = dayData;
   const colorExplanation = getColorExplanation(aspects || [], moonPhase);
   
@@ -99,6 +103,11 @@ export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
   const stelliums = detectStelliums(planets);
   const rareAspects = detectRareAspects(planets);
   const nodeAspects = detectNodeAspects(planets);
+
+  // Calculate personal transit aspects if chart is active
+  const transitAspects: TransitAspect[] = activeChart
+    ? calculateTransitAspects(date, planets, activeChart)
+    : [];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/80 p-5" onClick={onClose}>
@@ -116,6 +125,61 @@ export const DayDetail = ({ dayData, onClose }: DayDetailProps) => {
         <h2 className="font-serif text-2xl font-light text-foreground md:text-3xl mb-6">
           {date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
         </h2>
+
+        {/* Personal Transit Aspects - Featured Section */}
+        {activeChart && transitAspects.length > 0 && (
+          <div className="mb-6 p-5 rounded-sm bg-gradient-to-br from-primary/10 to-primary/5 border-2 border-primary/30">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[11px] uppercase tracking-widest text-primary font-semibold">
+                ✨ Your Personal Transits — {activeChart.name}
+              </h3>
+              <span className="text-[10px] bg-primary/20 text-primary px-2 py-1 rounded-sm">
+                {transitAspects.length} aspect{transitAspects.length !== 1 ? 's' : ''} active
+              </span>
+            </div>
+            <div className="space-y-4">
+              {transitAspects.slice(0, 8).map((asp, i) => (
+                <div 
+                  key={i} 
+                  className={`p-4 rounded-sm bg-background border ${asp.isExact ? 'border-primary shadow-md' : 'border-border'}`}
+                >
+                  <div className="flex items-center gap-3 mb-2">
+                    <div 
+                      className="flex items-center gap-1.5 text-lg font-medium"
+                      style={{ color: asp.color }}
+                    >
+                      <span>{getTransitPlanetSymbol(asp.transitPlanet)}</span>
+                      <span className="text-xl">{asp.symbol}</span>
+                      <span>{getTransitPlanetSymbol(asp.natalPlanet)}</span>
+                    </div>
+                    <div className="text-sm font-medium text-foreground capitalize">
+                      {asp.aspect}
+                    </div>
+                    {asp.isExact && (
+                      <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-sm font-bold">
+                        EXACT!
+                      </span>
+                    )}
+                    <span className="text-xs text-muted-foreground ml-auto">
+                      Orb: {asp.orb}°
+                    </span>
+                  </div>
+                  <div className="text-xs text-muted-foreground font-mono mb-2">
+                    Transit {asp.transitPlanet} {asp.transitDegree}° {asp.transitSign} {asp.symbol} Natal {asp.natalPlanet} {asp.natalDegree}° {asp.natalSign}
+                  </div>
+                  <div className="text-sm text-foreground leading-relaxed">
+                    {asp.interpretation}
+                  </div>
+                </div>
+              ))}
+              {transitAspects.length > 8 && (
+                <div className="text-center text-sm text-muted-foreground">
+                  +{transitAspects.length - 8} more aspects
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Exact Lunar Phase Time - Highlighted */}
         {exactLunarPhase && (
