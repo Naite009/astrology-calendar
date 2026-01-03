@@ -104,7 +104,7 @@ interface ChartFormData {
 const emptyPlanets = (): Record<string, NatalPlanetPosition> => {
   const planets: Record<string, NatalPlanetPosition> = {};
   PLANETS.forEach(p => {
-    planets[p] = { sign: '', degree: 0, minutes: 0, seconds: 0 };
+    planets[p] = { sign: '', degree: 0, minutes: 0, seconds: 0, isRetrograde: false };
   });
   return planets;
 };
@@ -240,14 +240,14 @@ export const ChartLibrary = ({
     setSaveStatus('idle');
   };
 
-  const updatePlanet = (planet: string, field: keyof NatalPlanetPosition, value: string | number) => {
+  const updatePlanet = (planet: string, field: keyof NatalPlanetPosition, value: string | number | boolean) => {
     setFormData(prev => ({
       ...prev,
       planets: {
         ...prev.planets,
         [planet]: {
           ...prev.planets[planet],
-          [field]: field === 'sign' ? value : Number(value),
+          [field]: field === 'sign' ? value : field === 'isRetrograde' ? Boolean(value) : Number(value),
         },
       },
     }));
@@ -278,6 +278,26 @@ export const ChartLibrary = ({
       formData.timezoneOffset,
       formData.birthLocation
     );
+
+    const autoHouseCuspsFromAscendant = (asc: { sign: string; degree: number; minutes: number } | undefined) => {
+      if (!asc?.sign) return null;
+      const signIndex = ZODIAC_SIGNS.indexOf(asc.sign);
+      if (signIndex === -1) return null;
+
+      const ascLon = signIndex * 30 + asc.degree + (asc.minutes || 0) / 60;
+      const cusps: Record<string, HouseCusp> = {};
+
+      for (let i = 1; i <= 12; i++) {
+        const lon = (ascLon + (i - 1) * 30) % 360;
+        const si = Math.floor(lon / 30);
+        const degFloat = lon % 30;
+        const deg = Math.floor(degFloat);
+        const min = Math.round((degFloat - deg) * 60);
+        cusps[`house${i}`] = { sign: ZODIAC_SIGNS[si], degree: deg, minutes: min === 60 ? 59 : min };
+      }
+
+      return cusps;
+    };
     
     setFormData(prev => {
       const mergedPlanets = {
@@ -291,9 +311,14 @@ export const ChartLibrary = ({
         mergedPlanets.Chiron = prev.planets.Chiron;
       }
 
+      // If user hasn't entered house cusps yet, auto-fill a reasonable baseline (Equal Houses from Ascendant).
+      const shouldAutoFillHouses = !prev.houseCusps?.house1?.sign;
+      const autoCusps = shouldAutoFillHouses ? autoHouseCuspsFromAscendant(calculatedPositions.Ascendant) : null;
+
       return {
         ...prev,
         planets: mergedPlanets,
+        ...(autoCusps ? { houseCusps: { ...prev.houseCusps, ...autoCusps } } : {}),
         ...(detectedTz ? { detectedTimezone: detectedTz } : {}),
       };
     });
@@ -422,9 +447,7 @@ export const ChartLibrary = ({
                 <h2 className="font-serif text-2xl font-light text-foreground">
                   {editingChart === 'new' ? 'Add New Chart' : editingChart === 'user' ? 'Your Natal Chart' : 'Edit Chart'}
                 </h2>
-                {saveStatus === 'saving' && (
-                  <span className="text-[10px] text-muted-foreground animate-pulse">Saving...</span>
-                )}
+                {/* Save status intentionally non-distracting (no blinking "Saving" indicator) */}
                 {saveStatus === 'saved' && (
                   <span className="flex items-center gap-1 text-[10px] text-green-600">
                     <Check size={12} /> Saved
@@ -522,7 +545,7 @@ export const ChartLibrary = ({
                 </p>
                 <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
                   {PLANETS.map(planet => (
-                    <div key={planet} className="grid grid-cols-[40px_110px_1fr_70px_70px_70px_30px] gap-2 items-center">
+                    <div key={planet} className="grid grid-cols-[40px_110px_1fr_70px_70px_70px_90px] gap-2 items-center">
                       <span className="text-lg">{PLANET_SYMBOLS[planet] || getPlanetSymbol(planet.toLowerCase())}</span>
                       <span className="text-sm text-foreground">{PLANET_LABELS[planet] || planet}</span>
                       <select
@@ -571,9 +594,15 @@ export const ChartLibrary = ({
                         />
                         <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">″</span>
                       </div>
-                      <span className="text-sm text-amber-600 font-medium">
-                        {formData.planets[planet]?.isRetrograde ? '℞' : ''}
-                      </span>
+                      <label className="flex items-center justify-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(formData.planets[planet]?.isRetrograde)}
+                          onChange={(e) => updatePlanet(planet, 'isRetrograde', e.target.checked)}
+                          className="rounded border-border"
+                        />
+                        ℞
+                      </label>
                     </div>
                   ))}
                 </div>
@@ -591,9 +620,9 @@ export const ChartLibrary = ({
                   </h3>
                   {showHousesSection ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground" />}
                 </button>
-                <p className="text-[10px] text-muted-foreground italic mt-2">
-                  Enter house cusps from Astro.com for accurate house overlays in transit interpretations.
-                </p>
+                 <p className="text-[10px] text-muted-foreground italic mt-2">
+                   If blank, we auto-fill a baseline using Equal Houses from your Ascendant (then you can overwrite with Astro.com).
+                 </p>
                 
                 {showHousesSection && (
                   <div className="mt-4 space-y-3 max-h-[350px] overflow-y-auto pr-2">
