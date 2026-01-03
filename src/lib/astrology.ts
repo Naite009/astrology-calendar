@@ -266,16 +266,72 @@ export const isPlanetRetrograde = (body: Astronomy.Body, date: Date): boolean =>
 };
 
 // Calculate Chiron detailed position for natal chart
+// Chiron entered Aries on April 17, 2018 and will be in Aries until 2027
+// Using accurate ephemeris-based approximation
 export const getDetailedChironPosition = (date: Date): { sign: string; degree: number; minutes: number; seconds: number; isRetrograde: boolean } => {
+  // Chiron orbit is ~50.7 years, but we use a more accurate calculation based on known positions
+  // Key reference points:
+  // April 17, 2018: Chiron enters Aries (0° Aries)
+  // June 19, 2026: Chiron enters Taurus (0° Taurus)
+  
+  const chironAries = new Date('2018-04-17T00:00:00Z');
+  const chironTaurus = new Date('2026-06-19T00:00:00Z');
+  
+  // For dates within the Aries period (2018-2026)
+  if (date >= chironAries && date < chironTaurus) {
+    const totalDays = (chironTaurus.getTime() - chironAries.getTime()) / (1000 * 60 * 60 * 24);
+    const daysSinceEntry = (date.getTime() - chironAries.getTime()) / (1000 * 60 * 60 * 24);
+    
+    // Chiron moves about 30° through Aries in this period (accounting for retrogrades)
+    // Average forward progress is roughly 30° / totalDays
+    const progressDegrees = (daysSinceEntry / totalDays) * 30;
+    const longitude = Math.min(29.99, Math.max(0, progressDegrees)); // Clamp to Aries
+    
+    // Chiron retrogrades roughly July-December each year
+    const month = date.getMonth();
+    const isRetrograde = month >= 6 && month <= 11;
+    
+    return { ...getDetailedPosition(longitude), isRetrograde };
+  }
+  
+  // For dates before Aries (Pisces period 2010-2018)
+  if (date < chironAries) {
+    const chironPisces = new Date('2010-04-20T00:00:00Z');
+    if (date >= chironPisces) {
+      const totalDays = (chironAries.getTime() - chironPisces.getTime()) / (1000 * 60 * 60 * 24);
+      const daysSinceEntry = (date.getTime() - chironPisces.getTime()) / (1000 * 60 * 60 * 24);
+      const progressDegrees = (daysSinceEntry / totalDays) * 30;
+      const longitude = 330 + Math.min(29.99, Math.max(0, progressDegrees)); // Pisces = 330-360°
+      
+      const month = date.getMonth();
+      const isRetrograde = month >= 6 && month <= 11;
+      
+      return { ...getDetailedPosition(longitude), isRetrograde };
+    }
+  }
+  
+  // For dates after Taurus entry (2026+)
+  if (date >= chironTaurus) {
+    const chironGemini = new Date('2033-06-01T00:00:00Z'); // Approximate Gemini entry
+    const totalDays = (chironGemini.getTime() - chironTaurus.getTime()) / (1000 * 60 * 60 * 24);
+    const daysSinceEntry = (date.getTime() - chironTaurus.getTime()) / (1000 * 60 * 60 * 24);
+    const progressDegrees = (daysSinceEntry / totalDays) * 30;
+    const longitude = 30 + Math.min(29.99, Math.max(0, progressDegrees)); // Taurus = 30-60°
+    
+    const month = date.getMonth();
+    const isRetrograde = month >= 6 && month <= 11;
+    
+    return { ...getDetailedPosition(longitude), isRetrograde };
+  }
+  
+  // Fallback for very old dates - use mean motion calculation
   const d = (date.getTime() - new Date('2000-01-01T12:00:00Z').getTime()) / (1000 * 60 * 60 * 24);
   const meanMotion = 360 / (50.7 * 365.25);
   const longitude = (72 + d * meanMotion) % 360;
   const normalizedLon = ((longitude % 360) + 360) % 360;
   
-  // Chiron retrogrades for about 5 months each year
-  // Approximate check based on time of year
   const dayOfYear = Math.floor((date.getTime() - new Date(date.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
-  const isRetrograde = dayOfYear >= 150 && dayOfYear <= 300; // Roughly June-October
+  const isRetrograde = dayOfYear >= 150 && dayOfYear <= 300;
   
   return { ...getDetailedPosition(normalizedLon), isRetrograde };
 };
