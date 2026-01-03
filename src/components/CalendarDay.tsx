@@ -27,14 +27,18 @@ const OUTER_PLANETS = ['Saturn', 'Jupiter', 'Neptune', 'Pluto', 'Uranus'];
 // Personal points that matter most when aspected
 const PERSONAL_POINTS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Ascendant', 'IC', 'MC', 'Descendant'];
 
-// Filter transits into categories
-const categorizeTransits = (transits: TransitAspect[]) => {
+// Filter transits into categories with orb filtering
+const categorizeTransits = (transits: TransitAspect[], maxOrb: number = 5) => {
   const primary: TransitAspect[] = []; // Outer to personal
   const northNode: TransitAspect[] = [];
   const asteroids: TransitAspect[] = [];
   const other: TransitAspect[] = [];
 
   for (const t of transits) {
+    // Skip if orb is too wide (parse orb as number)
+    const orbNum = typeof t.orb === 'string' ? parseFloat(t.orb) : t.orb;
+    if (orbNum > maxOrb) continue;
+    
     const isOuterTransit = OUTER_PLANETS.includes(t.transitPlanet);
     const isToPersonal = PERSONAL_POINTS.includes(t.natalPlanet);
     
@@ -61,30 +65,23 @@ const categorizeTransits = (transits: TransitAspect[]) => {
   return { primary, northNode, asteroids, other };
 };
 
-// Reusable transit line component
+// Reusable transit line component - simplified monochrome design
 const TransitLine = ({ asp, compact = false }: { asp: TransitAspect; compact?: boolean }) => (
   <div 
     className={cn(
-      "text-xs font-medium flex items-center gap-1",
-      asp.isExact && "font-bold",
-      compact && "text-[10px]"
+      "flex items-center gap-1 text-foreground/80",
+      asp.isExact && "font-semibold text-foreground",
+      compact ? "text-[10px]" : "text-xs"
     )}
-    style={{ 
-      color: asp.color,
-      borderLeft: `2px solid ${asp.color}`,
-      paddingLeft: '4px'
-    }}
-    title={`Transit ${asp.transitPlanet} (${asp.transitDegree}° ${asp.transitSign}${asp.transitHouse ? `, ${asp.transitHouse}H` : ''}) ${asp.aspect} your natal ${asp.natalPlanet} (${asp.natalDegree}° ${asp.natalSign}${asp.natalHouse ? `, ${asp.natalHouse}H` : ''}) — orb ${asp.orb}°${asp.isExact ? ' — EXACT TODAY' : ''}`}
+    title={`Transit ${asp.transitPlanet} ${asp.aspect} natal ${asp.natalPlanet} — orb ${asp.orb}°${asp.isExact ? ' — EXACT' : ''}`}
   >
-    <span className={compact ? "text-[10px]" : "text-[10px]"} style={{ color: 'inherit', opacity: 0.7 }}>tr</span>
-    <span className={compact ? "text-xs" : "text-sm"}>{getTransitPlanetSymbol(asp.transitPlanet)}</span>
-    <span className={compact ? "text-xs" : "text-sm"}>{asp.symbol}</span>
-    <span className={compact ? "text-[10px]" : "text-[10px]"} style={{ color: 'inherit', opacity: 0.7 }}>n</span>
-    <span className={compact ? "text-xs" : "text-sm"}>{getTransitPlanetSymbol(asp.natalPlanet)}</span>
-    {(asp.transitHouse || asp.natalHouse) && (
-      <span className="text-muted-foreground text-[9px] ml-0.5">
-        {asp.transitHouse && `${asp.transitHouse}→`}{asp.natalHouse && `${asp.natalHouse}H`}
-      </span>
+    <span className="opacity-60">tr</span>
+    <span>{getTransitPlanetSymbol(asp.transitPlanet)}</span>
+    <span>{asp.symbol}</span>
+    <span className="opacity-60">n</span>
+    <span>{getTransitPlanetSymbol(asp.natalPlanet)}</span>
+    {asp.natalHouse && (
+      <span className="opacity-50 text-[9px]">{asp.natalHouse}H</span>
     )}
   </div>
 );
@@ -117,9 +114,9 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
   const transitAspects = activeChart 
     ? calculateTransitAspects(date, planets, activeChart)
     : [];
-  // Categorize transits for organized display
+  // Categorize transits - only show ≤2° orb on calendar, ≤5° in Day Detail
   const sortedTransits = getTopTransitAspects(transitAspects, transitAspects.length);
-  const { primary, northNode, asteroids, other } = categorizeTransits(sortedTransits);
+  const { primary, northNode, asteroids, other } = categorizeTransits(sortedTransits, 2);
   
   // State for collapsible sections
   const [showNorthNode, setShowNorthNode] = useState(false);
