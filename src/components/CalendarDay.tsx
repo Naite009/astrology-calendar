@@ -48,7 +48,8 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
   const transitAspects = activeChart 
     ? calculateTransitAspects(date, planets, activeChart)
     : [];
-  const topTransits = getTopTransitAspects(transitAspects, 3);
+  // Show ALL transits, sorted by significance (outer planets first, then tighter orbs)
+  const sortedTransits = getTopTransitAspects(transitAspects, transitAspects.length);
   
   // Get personal day type based on transits to YOUR chart
   const personalDayType = activeChart 
@@ -147,10 +148,12 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
       </div>
 
       {/* Personal Transit Aspects to YOUR natal chart (only if chart selected) */}
-      {activeChart && topTransits.length > 0 && (
+      {activeChart && sortedTransits.length > 0 && (
         <div className="mt-2 space-y-0.5 border-t border-foreground/10 pt-2">
-          <div className="text-[9px] text-muted-foreground uppercase tracking-wide mb-1">Your Transits</div>
-          {topTransits.map((asp, i) => (
+          <div className="text-[9px] text-muted-foreground uppercase tracking-wide mb-1">
+            Your Transits ({sortedTransits.length})
+          </div>
+          {sortedTransits.map((asp, i) => (
             <div 
               key={i} 
               className={cn(
