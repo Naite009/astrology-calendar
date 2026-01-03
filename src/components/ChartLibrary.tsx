@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { X, Plus, Users, RefreshCw, Check, Eye, ChevronDown, ChevronUp, ClipboardPaste } from 'lucide-react';
+import { X, Plus, Users, RefreshCw, Check, Eye, ChevronDown, ChevronUp, ClipboardPaste, Upload, Image, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChart';
 import { getPlanetSymbol, calculateNatalChart, detectTimezoneFromLocation, calculatePlacidusHouseCusps } from '@/lib/astrology';
 import { getCoordinatesFromLocation } from '@/lib/placidusHouses';
@@ -279,6 +280,10 @@ export const ChartLibrary = ({
   const [showImportSection, setShowImportSection] = useState(false);
   const [importText, setImportText] = useState('');
   const [importResult, setImportResult] = useState<{ success: number; total: number } | null>(null);
+  const [imageImportStatus, setImageImportStatus] = useState<'idle' | 'uploading' | 'parsing' | 'success' | 'error'>('idle');
+  const [imageImportError, setImageImportError] = useState<string | null>(null);
+  const [imageImportResult, setImageImportResult] = useState<{ planets: number; houses: number } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isNewChartRef = useRef(false);
@@ -536,6 +541,118 @@ export const ChartLibrary = ({
     }
   };
 
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Reset states
+    setImageImportStatus('uploading');
+    setImageImportError(null);
+    setImageImportResult(null);
+
+    try {
+      // Convert file to base64
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+      });
+      reader.readAsDataURL(file);
+      const imageBase64 = await base64Promise;
+
+      setImageImportStatus('parsing');
+
+      // Call the edge function
+      const { data, error } = await supabase.functions.invoke('parse-chart-image', {
+        body: { imageBase64 },
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Failed to parse image');
+      }
+
+      if (!data?.data) {
+        throw new Error('No chart data found in image. Try a clearer screenshot showing the planet positions table.');
+      }
+
+      const parsedData = data.data;
+      let planetsImported = 0;
+      let housesImported = 0;
+
+      // Import planets
+      if (parsedData.planets && typeof parsedData.planets === 'object') {
+        const validPlanets: Record<string, NatalPlanetPosition> = {};
+        
+        for (const [planet, position] of Object.entries(parsedData.planets)) {
+          const pos = position as any;
+          if (pos?.sign && ZODIAC_SIGNS.includes(pos.sign)) {
+            validPlanets[planet] = {
+              sign: pos.sign,
+              degree: Math.min(29, Math.max(0, parseInt(pos.degree) || 0)),
+              minutes: Math.min(59, Math.max(0, parseInt(pos.minutes) || 0)),
+              seconds: 0,
+              isRetrograde: Boolean(pos.isRetrograde),
+            };
+            planetsImported++;
+          }
+        }
+
+        if (planetsImported > 0) {
+          setFormData(prev => ({
+            ...prev,
+            planets: {
+              ...prev.planets,
+              ...validPlanets,
+            },
+          }));
+        }
+      }
+
+      // Import house cusps
+      if (parsedData.houseCusps && typeof parsedData.houseCusps === 'object') {
+        const validCusps: Record<string, HouseCusp> = {};
+        
+        for (const [house, cusp] of Object.entries(parsedData.houseCusps)) {
+          const c = cusp as any;
+          if (c?.sign && ZODIAC_SIGNS.includes(c.sign)) {
+            validCusps[house] = {
+              sign: c.sign,
+              degree: Math.min(29, Math.max(0, parseInt(c.degree) || 0)),
+              minutes: Math.min(59, Math.max(0, parseInt(c.minutes) || 0)),
+            };
+            housesImported++;
+          }
+        }
+
+        if (housesImported > 0) {
+          setFormData(prev => ({
+            ...prev,
+            houseCusps: {
+              ...prev.houseCusps,
+              ...validCusps,
+            },
+          }));
+        }
+      }
+
+      if (planetsImported === 0 && housesImported === 0) {
+        throw new Error('Could not extract any positions. Try a screenshot with a clear planet positions list.');
+      }
+
+      setImageImportResult({ planets: planetsImported, houses: housesImported });
+      setImageImportStatus('success');
+    } catch (err) {
+      console.error('Image import error:', err);
+      setImageImportError(err instanceof Error ? err.message : 'Failed to parse image');
+      setImageImportStatus('error');
+    }
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   // Render a planet row
   const renderPlanetRow = (planet: string) => (
     <div key={planet} className="grid grid-cols-[40px_110px_1fr_70px_70px_70px_90px] gap-2 items-center">
@@ -772,44 +889,116 @@ export const ChartLibrary = ({
                   onClick={() => setShowImportSection(!showImportSection)}
                   className="flex items-center gap-2 w-full text-left"
                 >
-                  <ClipboardPaste size={16} className="text-primary" />
+                  <Image size={16} className="text-primary" />
                   <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                    Import from Astro.com
+                    Import Chart Data
                   </h3>
                   {showImportSection ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground" />}
                 </button>
                 
                 {showImportSection && (
-                  <div className="mt-4 space-y-3">
-                    <p className="text-[10px] text-muted-foreground italic">
-                      Paste planet positions from astro.com (e.g., "Sun 15°23' Aries, Moon 8°12' Cancer..."). 
-                      Supports various formats including sign abbreviations and retrograde markers (R or ℞).
-                    </p>
-                    <textarea
-                      value={importText}
-                      onChange={e => {
-                        setImportText(e.target.value);
-                        setImportResult(null);
-                      }}
-                      placeholder="Sun 15°23' Aries&#10;Moon 8°12' Cancer&#10;Mercury 22°45' Pisces (R)&#10;Venus 3°18' Taurus&#10;..."
-                      className="w-full h-32 border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none resize-none font-mono"
-                    />
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={handleImportPaste}
-                        disabled={!importText.trim()}
-                        className="flex items-center gap-2 border border-primary bg-primary/10 px-4 py-2 text-[10px] uppercase tracking-widest text-primary transition-colors hover:bg-primary/20 disabled:opacity-50"
-                      >
-                        <ClipboardPaste size={14} />
-                        Parse & Import
-                      </button>
-                      {importResult && (
-                        <span className={`text-[10px] ${importResult.success > 0 ? 'text-green-600' : 'text-destructive'}`}>
-                          {importResult.success > 0 
-                            ? `✓ Imported ${importResult.success} position${importResult.success > 1 ? 's' : ''}`
-                            : 'No positions found - check format'}
+                  <div className="mt-4 space-y-5">
+                    {/* Image Upload */}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Upload size={14} className="text-primary" />
+                        <span className="text-[11px] uppercase tracking-widest text-foreground font-medium">
+                          Upload Screenshot
                         </span>
-                      )}
+                        <span className="text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded">Recommended</span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground italic">
+                        Upload a screenshot of your astro.com chart. AI will extract planet positions automatically.
+                      </p>
+                      
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        id="chart-image-upload"
+                      />
+                      
+                      <div className="flex items-center gap-3">
+                        <label
+                          htmlFor="chart-image-upload"
+                          className={`flex items-center gap-2 border border-primary bg-primary/10 px-4 py-2 text-[10px] uppercase tracking-widest text-primary transition-colors hover:bg-primary/20 cursor-pointer ${
+                            imageImportStatus === 'uploading' || imageImportStatus === 'parsing' ? 'opacity-50 pointer-events-none' : ''
+                          }`}
+                        >
+                          {imageImportStatus === 'uploading' || imageImportStatus === 'parsing' ? (
+                            <>
+                              <Loader2 size={14} className="animate-spin" />
+                              {imageImportStatus === 'uploading' ? 'Uploading...' : 'Analyzing...'}
+                            </>
+                          ) : (
+                            <>
+                              <Upload size={14} />
+                              Choose Image
+                            </>
+                          )}
+                        </label>
+                        
+                        {imageImportStatus === 'success' && imageImportResult && (
+                          <span className="text-[10px] text-green-600">
+                            ✓ Imported {imageImportResult.planets} planet{imageImportResult.planets !== 1 ? 's' : ''}
+                            {imageImportResult.houses > 0 && `, ${imageImportResult.houses} house cusp${imageImportResult.houses !== 1 ? 's' : ''}`}
+                          </span>
+                        )}
+                        
+                        {imageImportStatus === 'error' && imageImportError && (
+                          <span className="text-[10px] text-destructive">
+                            ✕ {imageImportError}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 border-t border-border" />
+                      <span className="text-[10px] text-muted-foreground uppercase">or paste text</span>
+                      <div className="flex-1 border-t border-border" />
+                    </div>
+
+                    {/* Text Paste */}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <ClipboardPaste size={14} className="text-muted-foreground" />
+                        <span className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                          Paste Text
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground italic">
+                        Paste planet positions (e.g., "Sun 15°23' Aries, Moon 8°12' Cancer...").
+                      </p>
+                      <textarea
+                        value={importText}
+                        onChange={e => {
+                          setImportText(e.target.value);
+                          setImportResult(null);
+                        }}
+                        placeholder="Sun 15°23' Aries&#10;Moon 8°12' Cancer&#10;Mercury 22°45' Pisces (R)&#10;..."
+                        className="w-full h-24 border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none resize-none font-mono"
+                      />
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={handleImportPaste}
+                          disabled={!importText.trim()}
+                          className="flex items-center gap-2 border border-border bg-background px-4 py-2 text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:bg-secondary disabled:opacity-50"
+                        >
+                          <ClipboardPaste size={14} />
+                          Parse & Import
+                        </button>
+                        {importResult && (
+                          <span className={`text-[10px] ${importResult.success > 0 ? 'text-green-600' : 'text-destructive'}`}>
+                            {importResult.success > 0 
+                              ? `✓ Imported ${importResult.success} position${importResult.success > 1 ? 's' : ''}`
+                              : 'No positions found - check format'}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}
