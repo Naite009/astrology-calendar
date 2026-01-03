@@ -1,4 +1,5 @@
-import { X } from 'lucide-react';
+import { useState } from 'react';
+import { X, ChevronDown, ChevronUp } from 'lucide-react';
 import { 
   DayData, 
   getPlanetSymbol, 
@@ -19,6 +20,7 @@ import { UserData } from '@/hooks/useUserData';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { CosmicWeatherBanner } from './CosmicWeatherBanner';
 import { calculateTransitAspects, getTransitPlanetSymbol, TransitAspect, hasHouseData, getHouseLabel, HOUSE_MEANINGS } from '@/lib/transitAspects';
+import { getDetailedInterpretation, DetailedInterpretation } from '@/lib/detailedInterpretations';
 
 // Sign-specific energies for daily guidance
 const SIGN_ENERGIES: Record<string, { action: string; focus: string; avoid: string }> = {
@@ -94,6 +96,146 @@ interface DayDetailProps {
   activeChart?: NatalChart | null;
 }
 
+// Detailed Transit Card Component with expandable sections
+const DetailedTransitCard = ({ aspect }: { aspect: TransitAspect }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  const detailed = getDetailedInterpretation(
+    aspect.transitPlanet,
+    aspect.transitSign,
+    aspect.transitDegree,
+    aspect.transitHouse,
+    aspect.natalPlanet,
+    aspect.natalSign,
+    aspect.natalDegree,
+    aspect.natalHouse,
+    aspect.aspect,
+    aspect.orb
+  );
+  
+  return (
+    <div className={`rounded-sm bg-background border ${aspect.isExact ? 'border-primary shadow-md' : 'border-border'}`}>
+      {/* Header - Always visible */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full p-4 text-left flex items-center gap-3"
+      >
+        <div 
+          className="flex items-center gap-1.5 text-lg font-medium"
+          style={{ color: aspect.color }}
+        >
+          <span>{getTransitPlanetSymbol(aspect.transitPlanet)}</span>
+          <span className="text-xl">{aspect.symbol}</span>
+          <span>{getTransitPlanetSymbol(aspect.natalPlanet)}</span>
+        </div>
+        <div className="text-sm font-medium text-foreground capitalize">
+          {aspect.aspect}
+        </div>
+        {aspect.isExact && (
+          <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-sm font-bold">
+            EXACT!
+          </span>
+        )}
+        {aspect.transitHouse && (
+          <span className="text-[10px] bg-secondary text-muted-foreground px-1.5 py-0.5 rounded-sm">
+            {aspect.transitHouse}H
+          </span>
+        )}
+        {aspect.natalHouse && (
+          <span className="text-[10px] bg-secondary text-muted-foreground px-1.5 py-0.5 rounded-sm">
+            →{aspect.natalHouse}H
+          </span>
+        )}
+        <span className="text-xs text-muted-foreground ml-auto flex items-center gap-2">
+          Orb: {aspect.orb}°
+          {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+        </span>
+      </button>
+      
+      {/* Quick interpretation - Always visible */}
+      <div className="px-4 pb-3 -mt-2">
+        <div className="text-sm text-foreground leading-relaxed">
+          {aspect.interpretation}
+        </div>
+      </div>
+      
+      {/* Expanded detailed content */}
+      {isExpanded && (
+        <div className="px-4 pb-4 space-y-4 border-t border-border pt-4">
+          {/* What's Happening */}
+          <div>
+            <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
+              What's Happening
+            </h4>
+            <div className="space-y-1 text-sm">
+              <div className="text-foreground">{detailed.transitEssence}</div>
+              <div className="text-foreground">{detailed.natalEssence}</div>
+              <div className="text-primary font-medium mt-2">{detailed.aspectMeaning}</div>
+            </div>
+          </div>
+          
+          {/* The Signs */}
+          <div>
+            <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
+              The Signs
+            </h4>
+            <div className="space-y-1 text-sm">
+              <div className="text-foreground">{detailed.transitSignInfo}</div>
+              <div className="text-foreground">{detailed.natalSignInfo}</div>
+              {detailed.elementCompatibility && (
+                <div className="text-muted-foreground italic mt-1">{detailed.elementCompatibility}</div>
+              )}
+            </div>
+          </div>
+          
+          {/* The Houses */}
+          {(detailed.transitHouseInfo || detailed.natalHouseInfo) && (
+            <div>
+              <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
+                The Houses
+              </h4>
+              <div className="space-y-1 text-sm">
+                {detailed.transitHouseInfo && (
+                  <div className="text-foreground">Transit in {detailed.transitHouseInfo}</div>
+                )}
+                {detailed.natalHouseInfo && (
+                  <div className="text-foreground">Natal in {detailed.natalHouseInfo}</div>
+                )}
+                {detailed.houseConnection && (
+                  <div className="text-primary/80 mt-1">{detailed.houseConnection}</div>
+                )}
+              </div>
+            </div>
+          )}
+          
+          {/* Practical Guidance */}
+          <div>
+            <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
+              What To Do Today
+            </h4>
+            <ul className="space-y-1">
+              {detailed.practicalAdvice.map((advice, i) => (
+                <li key={i} className="text-sm text-foreground flex items-start gap-2">
+                  <span className="text-primary">✓</span>
+                  {advice}
+                </li>
+              ))}
+            </ul>
+          </div>
+          
+          {/* Journal Prompt */}
+          <div className="bg-primary/5 p-3 rounded-sm border-l-2 border-primary">
+            <h4 className="text-[10px] uppercase tracking-widest text-primary mb-1">
+              Journal Prompt
+            </h4>
+            <p className="text-sm text-foreground italic">{detailed.journalPrompt}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => {
   const { date, planets, moonPhase, mercuryRetro, personalTransits, majorIngresses, aspects, voc, exactLunarPhase } = dayData;
   const colorExplanation = getColorExplanation(aspects || [], moonPhase);
@@ -126,7 +268,7 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
           {date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
         </h2>
 
-        {/* Personal Transit Aspects - Featured Section */}
+        {/* Personal Transit Aspects - Featured Section with Detailed Interpretations */}
         {activeChart && transitAspects.length > 0 && (
           <div className="mb-6 p-5 rounded-sm bg-gradient-to-br from-primary/10 to-primary/5 border-2 border-primary/30">
             <div className="flex items-center justify-between mb-4">
@@ -139,55 +281,7 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
             </div>
             <div className="space-y-4">
               {transitAspects.slice(0, 8).map((asp, i) => (
-                <div 
-                  key={i} 
-                  className={`p-4 rounded-sm bg-background border ${asp.isExact ? 'border-primary shadow-md' : 'border-border'}`}
-                >
-                  <div className="flex items-center gap-3 mb-2">
-                    <div 
-                      className="flex items-center gap-1.5 text-lg font-medium"
-                      style={{ color: asp.color }}
-                    >
-                      <span>{getTransitPlanetSymbol(asp.transitPlanet)}</span>
-                      <span className="text-xl">{asp.symbol}</span>
-                      <span>{getTransitPlanetSymbol(asp.natalPlanet)}</span>
-                    </div>
-                    <div className="text-sm font-medium text-foreground capitalize">
-                      {asp.aspect}
-                    </div>
-                    {asp.isExact && (
-                      <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-sm font-bold">
-                        EXACT!
-                      </span>
-                    )}
-                    {/* House badges */}
-                    {asp.transitHouse && (
-                      <span className="text-[10px] bg-secondary text-muted-foreground px-1.5 py-0.5 rounded-sm" title={HOUSE_MEANINGS[asp.transitHouse]?.keywords}>
-                        T→{asp.transitHouse}H
-                      </span>
-                    )}
-                    {asp.natalHouse && (
-                      <span className="text-[10px] bg-secondary text-muted-foreground px-1.5 py-0.5 rounded-sm" title={HOUSE_MEANINGS[asp.natalHouse]?.keywords}>
-                        N→{asp.natalHouse}H
-                      </span>
-                    )}
-                    <span className="text-xs text-muted-foreground ml-auto">
-                      Orb: {asp.orb}°
-                    </span>
-                  </div>
-                  <div className="text-xs text-muted-foreground font-mono mb-2">
-                    Transit {asp.transitPlanet} {asp.transitDegree}° {asp.transitSign} {asp.symbol} Natal {asp.natalPlanet} {asp.natalDegree}° {asp.natalSign}
-                  </div>
-                  <div className="text-sm text-foreground leading-relaxed mb-2">
-                    {asp.interpretation}
-                  </div>
-                  {/* House overlay interpretation */}
-                  {asp.houseOverlay && (
-                    <div className="text-xs text-primary/80 bg-primary/5 p-2 rounded-sm border-l-2 border-primary/30 mt-2">
-                      <span className="font-semibold">House Context:</span> {asp.houseOverlay}
-                    </div>
-                  )}
-                </div>
+                <DetailedTransitCard key={i} aspect={asp} />
               ))}
               {transitAspects.length > 8 && (
                 <div className="text-center text-sm text-muted-foreground">
