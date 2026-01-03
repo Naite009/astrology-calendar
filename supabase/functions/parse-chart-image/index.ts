@@ -37,10 +37,13 @@ For each planet you can identify, provide the data in this exact JSON format:
     "Moon": { "sign": "Cancer", "degree": 8, "minutes": 12, "isRetrograde": false },
     ...
   },
-  "houseCusps": {
-    "house1": { "sign": "Leo", "degree": 5, "minutes": 30 },
+  "astroComCusps": {
+    "AC": { "sign": "Leo", "degree": 5, "minutes": 30 },
     "house2": { "sign": "Virgo", "degree": 2, "minutes": 15 },
-    ...
+    "house3": { "sign": "Libra", "degree": 1, "minutes": 0 },
+    "MC": { "sign": "Aquarius", "degree": 5, "minutes": 30 },
+    "house11": { "sign": "Pisces", "degree": 2, "minutes": 15 },
+    "house12": { "sign": "Aries", "degree": 1, "minutes": 0 }
   }
 }
 
@@ -50,21 +53,10 @@ Signs: Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, C
 
 If a planet shows retrograde (R, ℞, or Rx), set isRetrograde to true.
 
-IMPORTANT - Astro.com House Cusp Format:
-Astro.com only shows 6 houses explicitly: AC (house 1), house 2, house 3, then MC (house 10), house 11, house 12.
-You MUST derive the other 6 houses using OPPOSITE SIGNS:
-- house4 = opposite sign of house10 (MC)
-- house5 = opposite sign of house11
-- house6 = opposite sign of house12
-- house7 = opposite sign of house1 (AC)
-- house8 = opposite sign of house2
-- house9 = opposite sign of house3
-
-Opposite sign pairs: Aries↔Libra, Taurus↔Scorpio, Gemini↔Sagittarius, Cancer↔Capricorn, Leo↔Aquarius, Virgo↔Pisces.
-
-For degrees of opposite houses, use the same degree/minutes as their opposite.
-
-Return ALL 12 house cusps (house1 through house12).
+IMPORTANT - Astro.com House Cusp Format (as printed at the bottom of the chart):
+- Astro.com prints: AC (this is House 1), House 2, House 3, then MC (this is House 4), House 11 (this is House 5), House 12 (this is House 6).
+- You must extract ONLY these 6 printed cusps into astroComCusps.
+- Do NOT try to output house4-house12 directly.
 
 Return ONLY the JSON object, no other text.`;
 
@@ -100,8 +92,26 @@ Return ONLY the JSON object, no other text.`;
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || "";
 
+    const oppositeSign = (sign: string): string | null => {
+      const map: Record<string, string> = {
+        Aries: "Libra",
+        Taurus: "Scorpio",
+        Gemini: "Sagittarius",
+        Cancer: "Capricorn",
+        Leo: "Aquarius",
+        Virgo: "Pisces",
+        Libra: "Aries",
+        Scorpio: "Taurus",
+        Sagittarius: "Gemini",
+        Capricorn: "Cancer",
+        Aquarius: "Leo",
+        Pisces: "Virgo",
+      };
+      return map[sign] ?? null;
+    };
+
     // Try to extract JSON from the response
-    let parsedData = null;
+    let parsedData: any = null;
     try {
       // Look for JSON in the response (might be wrapped in markdown code blocks)
       const jsonMatch = content.match(/\{[\s\S]*\}/);
@@ -112,11 +122,51 @@ Return ONLY the JSON object, no other text.`;
       console.error("Failed to parse AI response as JSON:", content);
     }
 
+    // Deterministically derive ALL 12 house cusps from Astro.com's printed 6-cusp format.
+    // Printed: AC=1, house2=2, house3=3, MC=4, house11=5, house12=6.
+    // Derived by opposites: 7↔1, 8↔2, 9↔3, 10↔4, 11↔5, 12↔6.
+    if (parsedData?.astroComCusps && typeof parsedData.astroComCusps === "object") {
+      const c = parsedData.astroComCusps;
+      const cusp1 = c.AC;
+      const cusp2 = c.house2;
+      const cusp3 = c.house3;
+      const cusp4 = c.MC;
+      const cusp5 = c.house11;
+      const cusp6 = c.house12;
+
+      const makeOpp = (src: any) => {
+        if (!src?.sign) return null;
+        const opp = oppositeSign(src.sign);
+        if (!opp) return null;
+        return { sign: opp, degree: src.degree, minutes: src.minutes };
+      };
+
+      const houseCusps: any = {
+        house1: cusp1,
+        house2: cusp2,
+        house3: cusp3,
+        house4: cusp4,
+        house5: cusp5,
+        house6: cusp6,
+        house7: makeOpp(cusp1),
+        house8: makeOpp(cusp2),
+        house9: makeOpp(cusp3),
+        house10: makeOpp(cusp4),
+        house11: makeOpp(cusp5),
+        house12: makeOpp(cusp6),
+      };
+
+      // Only attach if we at least have the 3 key printed cusps.
+      if (houseCusps.house1 && houseCusps.house2 && houseCusps.house3) {
+        parsedData.houseCusps = houseCusps;
+      }
+    }
+
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         data: parsedData,
-        raw: content 
+        raw: content,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
