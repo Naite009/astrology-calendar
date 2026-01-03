@@ -50,7 +50,21 @@ Signs: Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, C
 
 If a planet shows retrograde (R, ℞, or Rx), set isRetrograde to true.
 
-Extract house cusps if visible (house1 through house12).
+IMPORTANT - Astro.com House Cusp Format:
+Astro.com only shows 6 houses explicitly: AC (house 1), house 2, house 3, then MC (house 10), house 11, house 12.
+You MUST derive the other 6 houses using OPPOSITE SIGNS:
+- house4 = opposite sign of house10 (MC)
+- house5 = opposite sign of house11
+- house6 = opposite sign of house12
+- house7 = opposite sign of house1 (AC)
+- house8 = opposite sign of house2
+- house9 = opposite sign of house3
+
+Opposite sign pairs: Aries↔Libra, Taurus↔Scorpio, Gemini↔Sagittarius, Cancer↔Capricorn, Leo↔Aquarius, Virgo↔Pisces.
+
+For degrees of opposite houses, use the same degree/minutes as their opposite.
+
+Return ALL 12 house cusps (house1 through house12).
 
 Return ONLY the JSON object, no other text.`;
 
