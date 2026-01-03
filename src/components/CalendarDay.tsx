@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { 
   getPlanetaryPositions, 
   getMoonPhase, 
@@ -18,7 +19,75 @@ import {
 import { cn } from "@/lib/utils";
 import { UserData } from "@/hooks/useUserData";
 import { NatalChart } from "@/hooks/useNatalChart";
-import { calculateTransitAspects, getTopTransitAspects, getTransitPlanetSymbol, getHouseLabel } from "@/lib/transitAspects";
+import { calculateTransitAspects, getTopTransitAspects, getTransitPlanetSymbol, getHouseLabel, type TransitAspect } from "@/lib/transitAspects";
+import { ChevronDown, ChevronRight } from "lucide-react";
+
+// Outer planets that are most significant for transits
+const OUTER_PLANETS = ['Saturn', 'Jupiter', 'Neptune', 'Pluto', 'Uranus'];
+// Personal points that matter most when aspected
+const PERSONAL_POINTS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Ascendant', 'IC', 'MC', 'Descendant'];
+
+// Filter transits into categories
+const categorizeTransits = (transits: TransitAspect[]) => {
+  const primary: TransitAspect[] = []; // Outer to personal
+  const northNode: TransitAspect[] = [];
+  const asteroids: TransitAspect[] = [];
+  const other: TransitAspect[] = [];
+
+  for (const t of transits) {
+    const isOuterTransit = OUTER_PLANETS.includes(t.transitPlanet);
+    const isToPersonal = PERSONAL_POINTS.includes(t.natalPlanet);
+    
+    // Check for North Node
+    if (t.transitPlanet.includes('Node') || t.natalPlanet.includes('Node')) {
+      northNode.push(t);
+    }
+    // Check for asteroids (Ceres, Pallas, Juno, Vesta, Chiron, etc.)
+    else if (['Ceres', 'Pallas', 'Juno', 'Vesta', 'Chiron', 'Lilith'].some(a => 
+      t.transitPlanet.includes(a) || t.natalPlanet.includes(a)
+    )) {
+      asteroids.push(t);
+    }
+    // Primary: outer planets to personal points
+    else if (isOuterTransit && isToPersonal) {
+      primary.push(t);
+    }
+    // Everything else
+    else {
+      other.push(t);
+    }
+  }
+
+  return { primary, northNode, asteroids, other };
+};
+
+// Reusable transit line component
+const TransitLine = ({ asp, compact = false }: { asp: TransitAspect; compact?: boolean }) => (
+  <div 
+    className={cn(
+      "text-xs font-medium flex items-center gap-1",
+      asp.isExact && "font-bold",
+      compact && "text-[10px]"
+    )}
+    style={{ 
+      color: asp.color,
+      borderLeft: `2px solid ${asp.color}`,
+      paddingLeft: '4px'
+    }}
+    title={`Transit ${asp.transitPlanet} (${asp.transitDegree}° ${asp.transitSign}${asp.transitHouse ? `, ${asp.transitHouse}H` : ''}) ${asp.aspect} your natal ${asp.natalPlanet} (${asp.natalDegree}° ${asp.natalSign}${asp.natalHouse ? `, ${asp.natalHouse}H` : ''}) — orb ${asp.orb}°${asp.isExact ? ' — EXACT TODAY' : ''}`}
+  >
+    <span className={compact ? "text-[10px]" : "text-[10px]"} style={{ color: 'inherit', opacity: 0.7 }}>tr</span>
+    <span className={compact ? "text-xs" : "text-sm"}>{getTransitPlanetSymbol(asp.transitPlanet)}</span>
+    <span className={compact ? "text-xs" : "text-sm"}>{asp.symbol}</span>
+    <span className={compact ? "text-[10px]" : "text-[10px]"} style={{ color: 'inherit', opacity: 0.7 }}>n</span>
+    <span className={compact ? "text-xs" : "text-sm"}>{getTransitPlanetSymbol(asp.natalPlanet)}</span>
+    {(asp.transitHouse || asp.natalHouse) && (
+      <span className="text-muted-foreground text-[9px] ml-0.5">
+        {asp.transitHouse && `${asp.transitHouse}→`}{asp.natalHouse && `${asp.natalHouse}H`}
+      </span>
+    )}
+  </div>
+);
 
 interface CalendarDayProps {
   date: Date;
@@ -48,8 +117,14 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
   const transitAspects = activeChart 
     ? calculateTransitAspects(date, planets, activeChart)
     : [];
-  // Show ALL transits, sorted by significance (outer planets first, then tighter orbs)
+  // Categorize transits for organized display
   const sortedTransits = getTopTransitAspects(transitAspects, transitAspects.length);
+  const { primary, northNode, asteroids, other } = categorizeTransits(sortedTransits);
+  
+  // State for collapsible sections
+  const [showNorthNode, setShowNorthNode] = useState(false);
+  const [showAsteroids, setShowAsteroids] = useState(false);
+  const [showOther, setShowOther] = useState(false);
   
   // Get personal day type based on transits to YOUR chart
   const personalDayType = activeChart 
@@ -148,37 +223,74 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
       </div>
 
       {/* Personal Transit Aspects to YOUR natal chart (only if chart selected) */}
-      {activeChart && sortedTransits.length > 0 && (
+      {activeChart && primary.length > 0 && (
         <div className="mt-2 space-y-0.5 border-t border-foreground/10 pt-2">
           <div className="text-[9px] text-muted-foreground uppercase tracking-wide mb-1">
-            Your Transits ({sortedTransits.length})
+            Key Transits ({primary.length})
           </div>
-          {sortedTransits.map((asp, i) => (
-            <div 
-              key={i} 
-              className={cn(
-                "text-xs font-medium flex items-center gap-1",
-                asp.isExact && "font-bold"
-              )}
-              style={{ 
-                color: asp.color,
-                borderLeft: `2px solid ${asp.color}`,
-                paddingLeft: '4px'
-              }}
-              title={`Transit ${asp.transitPlanet} (${asp.transitDegree}° ${asp.transitSign}${asp.transitHouse ? `, ${asp.transitHouse}H` : ''}) ${asp.aspect} your natal ${asp.natalPlanet} (${asp.natalDegree}° ${asp.natalSign}${asp.natalHouse ? `, ${asp.natalHouse}H` : ''}) — orb ${asp.orb}°${asp.isExact ? ' — EXACT TODAY' : ''}`}
-            >
-              <span className="text-[10px] text-muted-foreground">tr</span>
-              <span className="text-sm">{getTransitPlanetSymbol(asp.transitPlanet)}</span>
-              <span className="text-sm">{asp.symbol}</span>
-              <span className="text-[10px] text-muted-foreground">n</span>
-              <span className="text-sm">{getTransitPlanetSymbol(asp.natalPlanet)}</span>
-              {(asp.transitHouse || asp.natalHouse) && (
-                <span className="text-muted-foreground text-[9px] ml-0.5">
-                  {asp.transitHouse && `${asp.transitHouse}→`}{asp.natalHouse && `${asp.natalHouse}H`}
-                </span>
-              )}
-            </div>
+          {primary.map((asp, i) => (
+            <TransitLine key={i} asp={asp} />
           ))}
+        </div>
+      )}
+
+      {/* North Node transits - collapsible */}
+      {activeChart && northNode.length > 0 && (
+        <div className="mt-1">
+          <button 
+            onClick={(e) => { e.stopPropagation(); setShowNorthNode(!showNorthNode); }}
+            className="flex items-center gap-1 text-[9px] text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {showNorthNode ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+            <span>☊ Node ({northNode.length})</span>
+          </button>
+          {showNorthNode && (
+            <div className="mt-0.5 ml-2 space-y-0.5">
+              {northNode.map((asp, i) => (
+                <TransitLine key={i} asp={asp} compact />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Asteroid transits - collapsible */}
+      {activeChart && asteroids.length > 0 && (
+        <div className="mt-1">
+          <button 
+            onClick={(e) => { e.stopPropagation(); setShowAsteroids(!showAsteroids); }}
+            className="flex items-center gap-1 text-[9px] text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {showAsteroids ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+            <span>⚳ Asteroids ({asteroids.length})</span>
+          </button>
+          {showAsteroids && (
+            <div className="mt-0.5 ml-2 space-y-0.5">
+              {asteroids.map((asp, i) => (
+                <TransitLine key={i} asp={asp} compact />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Other transits - collapsible */}
+      {activeChart && other.length > 0 && (
+        <div className="mt-1">
+          <button 
+            onClick={(e) => { e.stopPropagation(); setShowOther(!showOther); }}
+            className="flex items-center gap-1 text-[9px] text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {showOther ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+            <span>More ({other.length})</span>
+          </button>
+          {showOther && (
+            <div className="mt-0.5 ml-2 space-y-0.5">
+              {other.map((asp, i) => (
+                <TransitLine key={i} asp={asp} compact />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
