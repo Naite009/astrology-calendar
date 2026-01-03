@@ -21,6 +21,7 @@ import { NatalChart } from '@/hooks/useNatalChart';
 import { CosmicWeatherBanner } from './CosmicWeatherBanner';
 import { calculateTransitAspects, getTransitPlanetSymbol, TransitAspect, hasHouseData, getHouseLabel, HOUSE_MEANINGS } from '@/lib/transitAspects';
 import { getDetailedInterpretation, DetailedInterpretation } from '@/lib/detailedInterpretations';
+import { ComprehensiveTransitAnalysis } from './ComprehensiveTransitAnalysis';
 
 // Sign-specific energies for daily guidance
 const SIGN_ENERGIES: Record<string, { action: string; focus: string; avoid: string }> = {
@@ -321,10 +322,10 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
           {date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
         </h2>
 
-        {/* Personal Transit Aspects - Featured Section with Detailed Interpretations */}
+        {/* Personal Transit Aspects - Comprehensive Professional Analysis */}
         {activeChart && transitAspects.length > 0 && (
-          <div className="mb-6 p-5 rounded-sm bg-gradient-to-br from-primary/10 to-primary/5 border-2 border-primary/30">
-            <div className="flex items-center justify-between mb-4">
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-4 p-4 rounded-sm bg-gradient-to-br from-primary/10 to-primary/5 border-2 border-primary/30">
               <h3 className="text-[11px] uppercase tracking-widest text-primary font-semibold">
                 ✨ Your Personal Transits — {activeChart.name}
               </h3>
@@ -332,13 +333,18 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
                 {transitAspects.length} aspect{transitAspects.length !== 1 ? 's' : ''} active
               </span>
             </div>
-            <div className="space-y-4">
-              {transitAspects.slice(0, 8).map((asp, i) => (
-                <DetailedTransitCard key={i} aspect={asp} />
+            <div className="space-y-6">
+              {transitAspects.slice(0, 5).map((asp, i) => (
+                <ComprehensiveTransitAnalysis 
+                  key={i} 
+                  aspect={asp} 
+                  natalChart={activeChart}
+                  currentDate={date}
+                />
               ))}
-              {transitAspects.length > 8 && (
-                <div className="text-center text-sm text-muted-foreground">
-                  +{transitAspects.length - 8} more aspects
+              {transitAspects.length > 5 && (
+                <div className="text-center text-sm text-muted-foreground p-4 bg-secondary rounded-sm">
+                  +{transitAspects.length - 5} more aspects (showing top 5 by orb)
                 </div>
               )}
             </div>
