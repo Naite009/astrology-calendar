@@ -14,7 +14,7 @@ import { ColorsView } from "./ColorsView";
 import { PatternsView } from "./PatternsView";
 import { useUserData } from "@/hooks/useUserData";
 import { useNotes } from "@/hooks/useNotes";
-import { useNatalChart } from "@/hooks/useNatalChart";
+import { useNatalChart, NatalChart } from "@/hooks/useNatalChart";
 import { DayData, generateICalExport } from "@/lib/astrology";
 
 type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "best-times" | "colors" | "patterns";
@@ -36,6 +36,15 @@ export const AstroCalendar = () => {
     deleteChart,
     selectChartForTiming,
   } = useNatalChart();
+
+  // Get active chart for transit overlay
+  const getActiveChart = (): NatalChart | null => {
+    if (selectedChartForTiming === 'general') return null;
+    if (selectedChartForTiming === 'user') return userNatalChart;
+    return savedCharts.find(c => c.id === selectedChartForTiming) || null;
+  };
+
+  const activeChart = getActiveChart();
 
   const getWeekStart = (date: Date): Date => {
     const d = new Date(date);
@@ -117,9 +126,38 @@ export const AstroCalendar = () => {
       <div className="mx-auto max-w-7xl px-5 py-10 md:px-10 md:py-16">
         {/* Header */}
         <header className="mb-10 flex flex-wrap items-center justify-between gap-4 border-b border-border pb-6 md:mb-12">
-          <h1 className="font-serif text-3xl font-light tracking-wide text-foreground md:text-5xl">
-            {getTitle()}
-          </h1>
+          <div className="flex flex-wrap items-center gap-4">
+            <h1 className="font-serif text-3xl font-light tracking-wide text-foreground md:text-5xl">
+              {getTitle()}
+            </h1>
+            
+            {/* Chart Selector Dropdown */}
+            {(viewMode === "month" || viewMode === "week") && (
+              <div className="flex items-center gap-2">
+                <label className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                  View as:
+                </label>
+                <select
+                  value={selectedChartForTiming}
+                  onChange={(e) => selectChartForTiming(e.target.value)}
+                  className="border border-border bg-background px-3 py-2 text-sm rounded-sm focus:border-primary focus:outline-none"
+                >
+                  <option value="general">General Calendar</option>
+                  {userNatalChart && (
+                    <option value="user">{userNatalChart.name}&apos;s Chart</option>
+                  )}
+                  {savedCharts.map(chart => (
+                    <option key={chart.id} value={chart.id}>{chart.name}</option>
+                  ))}
+                </select>
+                {activeChart && (
+                  <span className="text-[10px] text-primary bg-primary/10 px-2 py-1 rounded-sm">
+                    Personal Transits Active
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
           <div className="flex flex-wrap items-center gap-4">
             {/* View Toggle */}
             <div className="flex gap-1 rounded-sm bg-secondary p-1">
@@ -293,6 +331,7 @@ export const AstroCalendar = () => {
             currentDate={currentDate}
             userData={userData}
             onDayClick={setSelectedDay}
+            activeChart={activeChart}
           />
         )}
 
@@ -303,6 +342,7 @@ export const AstroCalendar = () => {
             dayNotes={dayNotes}
             saveWeekNotes={saveWeekNotes}
             saveDayNotes={saveDayNotes}
+            activeChart={activeChart}
           />
         )}
 
@@ -362,6 +402,7 @@ export const AstroCalendar = () => {
           dayData={selectedDay}
           userData={userData}
           onClose={() => setSelectedDay(null)}
+          activeChart={activeChart}
         />
       )}
     </div>

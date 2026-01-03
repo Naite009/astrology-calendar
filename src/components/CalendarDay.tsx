@@ -15,6 +15,8 @@ import {
 } from "@/lib/astrology";
 import { cn } from "@/lib/utils";
 import { UserData } from "@/hooks/useUserData";
+import { NatalChart } from "@/hooks/useNatalChart";
+import { calculateTransitAspects, getTopTransitAspects, getTransitPlanetSymbol } from "@/lib/transitAspects";
 
 interface CalendarDayProps {
   date: Date;
@@ -22,9 +24,10 @@ interface CalendarDayProps {
   isToday: boolean;
   userData: UserData | null;
   onDayClick: (dayData: DayData) => void;
+  activeChart?: NatalChart | null;
 }
 
-export const CalendarDay = ({ date, day, isToday, userData, onDayClick }: CalendarDayProps) => {
+export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeChart }: CalendarDayProps) => {
   const planets = getPlanetaryPositions(date);
   const moonPhase = getMoonPhase(date);
   const mercuryRetro = isMercuryRetrograde(date);
@@ -37,6 +40,12 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick }: Calend
   const voc = getVoidOfCourseMoon(moonPhase);
   const dayColors = getDayColors(aspects, moonPhase);
   const exactLunarPhase = getExactLunarPhase(date);
+
+  // Calculate transit-to-natal aspects if chart is selected
+  const transitAspects = activeChart 
+    ? calculateTransitAspects(date, planets, activeChart)
+    : [];
+  const topTransits = getTopTransitAspects(transitAspects, 3);
 
   const dayData: DayData = {
     date,
@@ -102,6 +111,29 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick }: Calend
         </div>
       </div>
 
+      {/* Personal Transit Aspects (if chart selected) */}
+      {activeChart && topTransits.length > 0 && (
+        <div className="mt-2 space-y-0.5">
+          {topTransits.map((asp, i) => (
+            <div 
+              key={i} 
+              className="text-[10px] font-medium flex items-center gap-0.5"
+              style={{ 
+                color: asp.color,
+                borderLeft: `2px solid ${asp.color}`,
+                paddingLeft: '4px'
+              }}
+              title={`${asp.transitPlanet} ${asp.aspect} natal ${asp.natalPlanet} (${asp.orb}°)`}
+            >
+              <span>{getTransitPlanetSymbol(asp.transitPlanet)}</span>
+              <span>{asp.symbol}</span>
+              <span>{getTransitPlanetSymbol(asp.natalPlanet)}</span>
+              {asp.isExact && <span className="text-primary ml-1">!</span>}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Exact Lunar Phase Time */}
       {exactLunarPhase && (
         <div className="text-[10px] text-primary font-semibold mt-2 bg-amber-50 dark:bg-amber-900/20 p-1.5 rounded-sm">
@@ -122,7 +154,7 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick }: Calend
       )}
 
       {/* Aspects */}
-      {aspects.length > 0 && (
+      {aspects.length > 0 && !activeChart && (
         <div className="mt-auto pt-2 text-[10px] text-primary">
           {aspects.slice(0, 2).map((asp, i) => (
             <div key={i}>
