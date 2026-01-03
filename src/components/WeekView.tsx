@@ -7,7 +7,7 @@ import {
   EnergyLevel,
 } from "@/lib/astrology";
 import { NatalChart } from "@/hooks/useNatalChart";
-import { calculateTransitAspects, getTopTransitAspects, getPersonalizedJournalPrompt, getTransitPlanetSymbol, TransitAspect } from "@/lib/transitAspects";
+import { calculateTransitAspects, getTopTransitAspects, getPersonalizedJournalPrompt, getTransitPlanetSymbol, TransitAspect, HOUSE_MEANINGS } from "@/lib/transitAspects";
 
 interface WeekViewProps {
   currentDate: Date;
@@ -212,7 +212,7 @@ export const WeekView = ({
                   <h4 className="mb-3 text-[11px] uppercase tracking-widest text-primary font-semibold">
                     Your Personal Transits
                   </h4>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {topTransits.map((asp, i) => (
                       <div key={i} className="flex items-start gap-3">
                         <div 
@@ -225,12 +225,22 @@ export const WeekView = ({
                           {asp.isExact && <span className="text-xs text-primary ml-1">EXACT!</span>}
                         </div>
                         <div className="flex-1">
-                          <div className="text-xs text-muted-foreground">
-                            Transit {asp.transitPlanet} {asp.aspect} natal {asp.natalPlanet} ({asp.orb}°)
+                          <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
+                            <span>Transit {asp.transitPlanet} {asp.aspect} natal {asp.natalPlanet} ({asp.orb}°)</span>
+                            {asp.transitHouse && (
+                              <span className="bg-secondary px-1.5 py-0.5 rounded text-[10px]" title={HOUSE_MEANINGS[asp.transitHouse]?.keywords}>
+                                {asp.transitHouse}H
+                              </span>
+                            )}
                           </div>
                           <div className="text-sm text-foreground mt-1">
                             {asp.interpretation}
                           </div>
+                          {asp.houseOverlay && (
+                            <div className="text-xs text-primary/70 mt-1 pl-2 border-l-2 border-primary/30">
+                              {asp.houseOverlay}
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
