@@ -784,9 +784,14 @@ export const ChartLibrary = ({
         {savedCharts.map(chart => (
           <div key={chart.id} className="rounded-sm border border-border bg-secondary p-5">
             <h3 className="font-serif text-lg font-medium text-foreground mb-2">{chart.name}</h3>
-            <p className="text-sm text-foreground mb-3">
-              ☉ {chart.planets.Sun?.degree}° {chart.planets.Sun?.sign}
-            </p>
+            <div className="text-sm text-foreground mb-3 space-y-0.5">
+              <p>☉ {chart.planets.Sun?.degree}° {chart.planets.Sun?.sign}</p>
+              <p>☽ {chart.planets.Moon?.degree}° {chart.planets.Moon?.sign}</p>
+              <p>
+                ASC {(chart.houseCusps?.house1?.degree ?? chart.planets.Ascendant?.degree)}°{' '}
+                {(chart.houseCusps?.house1?.sign ?? chart.planets.Ascendant?.sign)}
+              </p>
+            </div>
             <div className="flex gap-3">
               <button
                 onClick={() => setViewingChart(chart)}
