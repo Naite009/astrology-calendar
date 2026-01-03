@@ -1,326 +1,583 @@
-// Detailed Transit Interpretation System
-// Rich, educational, actionable guidance for every transit aspect
+// ============================================================================
+// COMPLETE HOUSE SYSTEM & DETAILED INTERPRETATIONS
+// 5-layer interpretations with planet essences, signs, houses, guidance, prompts
+// ============================================================================
 
-export const PLANET_ESSENCES: Record<string, string> = {
-  Sun: "☉ SUN = Your core identity, vitality, life force. Who you are when most yourself.",
-  Moon: "☽ MOON = Your emotional nature, instincts, inner world. How you feel and nurture.",
-  Mercury: "☿ MERCURY = Your mind, communication, thinking. How you process information.",
-  Venus: "♀ VENUS = Your values, love, beauty. What you attract and appreciate.",
-  Mars: "♂ MARS = Your drive, desire, action. How you assert yourself.",
-  Jupiter: "♃ JUPITER = Your faith, growth, expansion. Where you find meaning.",
-  Saturn: "♄ SATURN = Your discipline, structure, lessons. Where you mature.",
-  Uranus: "♅ URANUS = Your individuality, freedom, awakening. Where you break rules.",
-  Neptune: "♆ NEPTUNE = Your spirituality, dreams. Where boundaries dissolve.",
-  Pluto: "♇ PLUTO = Your power, transformation. Where you die and are reborn.",
-  Chiron: "⚷ CHIRON = Your wound and healing gift. Where you teach what hurt you.",
-  Vesta: "⚶ VESTA = Your sacred focus, devotion. What you tend like a holy flame.",
-  Ceres: "⚳ CERES = Your nurturing, mothering. How you care for others.",
-  Pallas: "⚴ PALLAS = Your wisdom, strategy. Pattern recognition and justice.",
-  Juno: "⚵ JUNO = Your partnership needs. What you need in committed relationships.",
-  NorthNode: "☊ NORTH NODE = Your destiny, life purpose. Where you're meant to grow.",
-  Lilith: "⚸ LILITH = Your wild feminine, shadow. What you've rejected but must integrate.",
-  Ascendant: "ASC = How you meet the world. Your mask and first impression.",
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+const getOrdinal = (num: number): string => {
+  if (num === 1 || num === 21 || num === 31) return 'st';
+  if (num === 2 || num === 22) return 'nd';
+  if (num === 3 || num === 23) return 'rd';
+  return 'th';
 };
 
-export const ASPECT_MEANINGS: Record<string, { symbol: string; meaning: string; energy: string }> = {
+// ============================================================================
+// HOUSE MEANINGS DATABASE
+// ============================================================================
+
+export const HOUSE_MEANINGS = {
+  1: {
+    short: "Self & Identity",
+    full: "Self, identity, appearance, first impressions, how you meet the world, personal style",
+    keywords: "I AM, beginnings, body, personality, outlook"
+  },
+  2: {
+    short: "Money & Values",
+    full: "Money, possessions, values, self-worth, resources, what you own, earning capacity",
+    keywords: "I HAVE, security, material world, talents, priorities"
+  },
+  3: {
+    short: "Communication",
+    full: "Communication, siblings, short trips, learning, writing, daily interactions, neighbors",
+    keywords: "I THINK, mind, speech, curiosity, early education"
+  },
+  4: {
+    short: "Home & Family",
+    full: "Home, family, roots, emotional foundation, where you come from, private life (IC)",
+    keywords: "I FEEL, ancestry, nurturing, emotional security, endings"
+  },
+  5: {
+    short: "Creativity & Joy",
+    full: "Creativity, romance, children, play, self-expression, what brings joy, hobbies",
+    keywords: "I CREATE, pleasure, drama, risk, fun, heart"
+  },
+  6: {
+    short: "Work & Health",
+    full: "Work, health, daily routines, service, pets, self-improvement, duty, habits",
+    keywords: "I SERVE, wellness, analysis, efficiency, practical matters"
+  },
+  7: {
+    short: "Partnerships",
+    full: "Partnerships, marriage, contracts, others, what you attract, open enemies (DSC)",
+    keywords: "I RELATE, balance, cooperation, projection, legal bonds"
+  },
+  8: {
+    short: "Transformation",
+    full: "Shared resources, intimacy, transformation, death/rebirth, other people's money, psychology",
+    keywords: "I TRANSFORM, depth, power, sex, inheritance, crisis"
+  },
+  9: {
+    short: "Expansion",
+    full: "Higher learning, travel, philosophy, spirituality, expansion, meaning, publishing",
+    keywords: "I UNDERSTAND, wisdom, faith, adventure, worldview"
+  },
+  10: {
+    short: "Career & Status",
+    full: "Career, public life, reputation, authority, what you're known for, ambition (MC)",
+    keywords: "I ACHIEVE, status, vocation, legacy, contribution"
+  },
+  11: {
+    short: "Community",
+    full: "Community, friendships, groups, hopes, social networks, collective work, ideals",
+    keywords: "I UNITE, innovation, humanity, dreams, tribe"
+  },
+  12: {
+    short: "Spirituality",
+    full: "Spirituality, unconscious, hidden enemies, self-undoing, dreams, transcendence, karma",
+    keywords: "I SURRENDER, compassion, mysticism, solitude, sacrifice"
+  }
+};
+
+// ============================================================================
+// PLANET ESSENCES DATABASE
+// ============================================================================
+
+export const PLANET_ESSENCES: Record<string, { symbol: string; name: string; essence: string; represents: string }> = {
+  sun: {
+    symbol: '☉',
+    name: 'Sun',
+    essence: "Your core identity, vitality, and life force. Who you are when you're most yourself.",
+    represents: "ego, consciousness, father, authority, creativity, heart, purpose"
+  },
+  moon: {
+    symbol: '☽',
+    name: 'Moon',
+    essence: "Your emotional nature, instincts, and inner world. How you feel, nurture, and find comfort.",
+    represents: "emotions, mother, home, security, habits, unconscious, needs"
+  },
+  mercury: {
+    symbol: '☿',
+    name: 'Mercury',
+    essence: "Your mind, communication, and how you process information. Your thinking and speaking style.",
+    represents: "thinking, speaking, writing, learning, connection, siblings, commerce"
+  },
+  venus: {
+    symbol: '♀',
+    name: 'Venus',
+    essence: "Your values, love nature, and sense of beauty. What you attract and appreciate.",
+    represents: "love, beauty, money, values, pleasure, relationships, art, harmony"
+  },
+  mars: {
+    symbol: '♂',
+    name: 'Mars',
+    essence: "Your drive, desire, and will to act. How you assert yourself and take action.",
+    represents: "energy, anger, passion, courage, sex drive, ambition, war, assertion"
+  },
+  jupiter: {
+    symbol: '♃',
+    name: 'Jupiter',
+    essence: "Your faith, growth, and expansion. Where you find meaning, luck, and abundance.",
+    represents: "optimism, wisdom, expansion, luck, philosophy, excess, generosity"
+  },
+  saturn: {
+    symbol: '♄',
+    name: 'Saturn',
+    essence: "Your discipline, structure, and life lessons. Where you mature through challenge and time.",
+    represents: "responsibility, limits, time, mastery, father time, karma, authority"
+  },
+  uranus: {
+    symbol: '♅',
+    name: 'Uranus',
+    essence: "Your individuality and need for freedom. Where you break rules, rebel, and awaken.",
+    represents: "rebellion, change, innovation, awakening, electricity, genius, revolution"
+  },
+  neptune: {
+    symbol: '♆',
+    name: 'Neptune',
+    essence: "Your spirituality, dreams, and imagination. Where boundaries dissolve and you transcend.",
+    represents: "illusion, compassion, art, spirituality, confusion, unity, mysticism"
+  },
+  pluto: {
+    symbol: '♇',
+    name: 'Pluto',
+    essence: "Your power and transformation. Where you experience death, rebirth, and deep change.",
+    represents: "power, death/rebirth, obsession, depth, shadow, regeneration, control"
+  },
+  chiron: {
+    symbol: '⚷',
+    name: 'Chiron',
+    essence: "Your deepest wound and greatest healing gift. Where you teach others what hurt you most.",
+    represents: "wound, healer, mentor, bridge, pain into wisdom, sacred wound"
+  },
+  vesta: {
+    symbol: '⚶',
+    name: 'Vesta',
+    essence: "Your sacred focus and devotion. What you tend like a holy flame with ritual dedication.",
+    represents: "dedication, ritual, sacred work, focus, purity, service, commitment"
+  },
+  ceres: {
+    symbol: '⚳',
+    name: 'Ceres',
+    essence: "Your nurturing style and need to be nurtured. How you mother and care for others.",
+    represents: "mothering, nourishment, cycles, grief, unconditional love, sustenance"
+  },
+  pallas: {
+    symbol: '⚴',
+    name: 'Pallas',
+    essence: "Your wisdom, strategy, and pattern recognition. How you solve problems creatively.",
+    represents: "wisdom, strategy, justice, healing, creative intelligence, advocacy"
+  },
+  juno: {
+    symbol: '⚵',
+    name: 'Juno',
+    essence: "Your partnership needs and commitment style. What you need in intimate relationships.",
+    represents: "partnership, commitment, jealousy, power in relationships, loyalty"
+  },
+  northnode: {
+    symbol: '☊',
+    name: 'North Node',
+    essence: "Your destiny and life purpose. The direction your soul is meant to grow toward.",
+    represents: "dharma, growth direction, future, soul mission, uncomfortable growth"
+  },
+  lilith: {
+    symbol: '⚸',
+    name: 'Black Moon Lilith',
+    essence: "Your wild, untamed feminine power. Where you refuse to be tamed or controlled.",
+    represents: "raw sexuality, rage, independence, the shadow feminine, rebellion"
+  },
+  ascendant: {
+    symbol: 'ASC',
+    name: 'Ascendant',
+    essence: "How you meet the world. Your mask, first impression, and physical presence.",
+    represents: "appearance, persona, approach, dawn of self, immediate environment"
+  }
+};
+
+// ============================================================================
+// ASPECT MEANINGS DATABASE
+// ============================================================================
+
+export const ASPECT_MEANINGS: Record<string, { symbol: string; angle: number; meaning: string; description: string; keywords: string; energy: string }> = {
   conjunction: {
-    symbol: "☌",
-    meaning: "MERGING — These energies fuse into one. Intense focus, new beginnings.",
-    energy: "powerful"
+    symbol: '☌',
+    angle: 0,
+    meaning: "merging, blending, intensifying",
+    description: "These energies merge into one unified force. What happens when they become the same thing?",
+    keywords: "fusion, intensity, new beginning, potential, combination",
+    energy: "POWER - These planets act as one"
   },
   opposition: {
-    symbol: "☍",
-    meaning: "POLARITY — Tension between two poles. Balance needed. Awareness through contrast.",
-    energy: "challenging"
+    symbol: '☍',
+    angle: 180,
+    meaning: "polarity, balance, awareness",
+    description: "These energies pull in opposite directions creating awareness. Can you hold both truths?",
+    keywords: "awareness, balance, relationship, mirror, projection, integration",
+    energy: "TENSION - Find the balance between opposites"
   },
   trine: {
-    symbol: "△",
-    meaning: "HARMONY — Easy flow. Natural talent. These work together effortlessly.",
-    energy: "supportive"
+    symbol: '△',
+    angle: 120,
+    meaning: "harmony, ease, flow",
+    description: "These energies support each other naturally. Gifts flow without effort or friction.",
+    keywords: "talent, ease, natural, grace, luck, flowing support",
+    energy: "GRACE - Effortless harmony and natural gifts"
   },
   square: {
-    symbol: "□",
-    meaning: "TENSION — Friction that demands action. Growth through challenge.",
-    energy: "activating"
+    symbol: '□',
+    angle: 90,
+    meaning: "tension, challenge, growth",
+    description: "These energies create friction and discomfort. The tension pushes you to grow and act.",
+    keywords: "challenge, action, growth, dynamic, motivation, crisis",
+    energy: "FRICTION - Uncomfortable growth through challenge"
   },
   sextile: {
-    symbol: "⚹",
-    meaning: "OPPORTUNITY — Gentle support. Doors open if you take action.",
-    energy: "helpful"
-  },
-};
-
-export const SIGN_QUALITIES: Record<string, { element: string; mode: string; keywords: string; energy: string }> = {
-  Aries: { element: "Fire", mode: "Cardinal", keywords: "initiation, courage, independence", energy: "Start boldly. Take action." },
-  Taurus: { element: "Earth", mode: "Fixed", keywords: "stability, sensuality, security", energy: "Build steadily. Enjoy fully." },
-  Gemini: { element: "Air", mode: "Mutable", keywords: "communication, curiosity, connections", energy: "Learn freely. Talk openly." },
-  Cancer: { element: "Water", mode: "Cardinal", keywords: "nurturing, emotions, home", energy: "Feel deeply. Protect what matters." },
-  Leo: { element: "Fire", mode: "Fixed", keywords: "creativity, confidence, self-expression", energy: "Shine brightly. Create joyfully." },
-  Virgo: { element: "Earth", mode: "Mutable", keywords: "service, health, perfection", energy: "Organize wisely. Serve humbly." },
-  Libra: { element: "Air", mode: "Cardinal", keywords: "balance, beauty, relationships", energy: "Harmonize gracefully. Connect deeply." },
-  Scorpio: { element: "Water", mode: "Fixed", keywords: "transformation, intensity, power", energy: "Transform powerfully. Trust deeply." },
-  Sagittarius: { element: "Fire", mode: "Mutable", keywords: "expansion, philosophy, adventure", energy: "Explore freely. Seek meaning." },
-  Capricorn: { element: "Earth", mode: "Cardinal", keywords: "ambition, discipline, structure", energy: "Build deliberately. Achieve goals." },
-  Aquarius: { element: "Air", mode: "Fixed", keywords: "innovation, community, individuality", energy: "Innovate uniquely. Serve collective." },
-  Pisces: { element: "Water", mode: "Mutable", keywords: "spirituality, compassion, transcendence", energy: "Flow intuitively. Dream deeply." },
-};
-
-export const HOUSE_DETAILED: Record<number, { name: string; keywords: string; lifeArea: string; questions: string }> = {
-  1: { 
-    name: "1st House (Self)", 
-    keywords: "identity, appearance, new beginnings",
-    lifeArea: "how you present yourself, personal initiatives, your body",
-    questions: "How am I showing up? What new beginning is calling?"
-  },
-  2: { 
-    name: "2nd House (Resources)", 
-    keywords: "money, values, possessions, self-worth",
-    lifeArea: "finances, what you own, what you value most",
-    questions: "What do I truly value? How is my relationship with money?"
-  },
-  3: { 
-    name: "3rd House (Mind)", 
-    keywords: "communication, learning, siblings, local travel",
-    lifeArea: "daily conversations, writing, short trips, mental processes",
-    questions: "What message wants to be shared? What am I learning?"
-  },
-  4: { 
-    name: "4th House (Roots)", 
-    keywords: "home, family, emotional foundation, ancestry",
-    lifeArea: "your private life, parents, where you feel safe",
-    questions: "What does home mean to me? What needs healing in my roots?"
-  },
-  5: { 
-    name: "5th House (Joy)", 
-    keywords: "creativity, romance, children, self-expression",
-    lifeArea: "what brings you joy, creative projects, dating, play",
-    questions: "What wants to be created? Where is my joy?"
-  },
-  6: { 
-    name: "6th House (Service)", 
-    keywords: "health, daily work, routines, self-improvement",
-    lifeArea: "your job, health habits, how you serve others",
-    questions: "How can I serve better? What does my body need?"
-  },
-  7: { 
-    name: "7th House (Partnership)", 
-    keywords: "relationships, marriage, contracts, others",
-    lifeArea: "committed partnerships, what you attract in others",
-    questions: "What do I need from partnership? What am I projecting?"
-  },
-  8: { 
-    name: "8th House (Transformation)", 
-    keywords: "shared resources, intimacy, death/rebirth, the occult",
-    lifeArea: "other people's money, deep intimacy, psychological depths",
-    questions: "What must die so I can be reborn? What power am I reclaiming?"
-  },
-  9: { 
-    name: "9th House (Expansion)", 
-    keywords: "higher learning, travel, philosophy, publishing",
-    lifeArea: "beliefs, long journeys, teaching, spiritual seeking",
-    questions: "What do I believe? Where am I meant to expand?"
-  },
-  10: { 
-    name: "10th House (Legacy)", 
-    keywords: "career, public image, authority, achievement",
-    lifeArea: "your reputation, life's work, relationship with authority",
-    questions: "What is my calling? How do I want to be remembered?"
-  },
-  11: { 
-    name: "11th House (Community)", 
-    keywords: "friends, groups, hopes, collective causes",
-    lifeArea: "friendships, networks, dreams for the future, activism",
-    questions: "What is my vision for the future? Who are my people?"
-  },
-  12: { 
-    name: "12th House (Spirit)", 
-    keywords: "subconscious, solitude, spirituality, hidden matters",
-    lifeArea: "dreams, meditation, what's hidden, self-undoing patterns",
-    questions: "What am I avoiding? What wants to be surrendered?"
-  },
-};
-
-// Get element compatibility interpretation
-const getElementCompatibility = (sign1: string, sign2: string): string => {
-  const q1 = SIGN_QUALITIES[sign1];
-  const q2 = SIGN_QUALITIES[sign2];
-  if (!q1 || !q2) return "";
-  
-  if (q1.element === q2.element) {
-    return `Same element (${q1.element})! Natural understanding and flow.`;
+    symbol: '⚹',
+    angle: 60,
+    meaning: "opportunity, cooperation",
+    description: "These energies work well together if you activate them. Opportunity knocks - will you answer?",
+    keywords: "potential, opportunity, skill, ease, talent, possibility",
+    energy: "OPPORTUNITY - Potential waiting to be activated"
   }
+};
+
+// ============================================================================
+// SIGN EXPRESSION DATABASE
+// ============================================================================
+
+const SIGN_EXPRESSIONS: Record<string, string> = {
+  // SUN IN SIGNS
+  'Sun-Aries': "= Pioneering identity. You shine through courage, independence, and bold action.",
+  'Sun-Taurus': "= Grounded identity. You shine through stability, sensuality, and steady presence.",
+  'Sun-Gemini': "= Curious identity. You shine through communication, wit, and mental agility.",
+  'Sun-Cancer': "= Nurturing identity. You shine through emotional depth, care, and protection.",
+  'Sun-Leo': "= Creative identity. You shine through self-expression, drama, and generous heart.",
+  'Sun-Virgo': "= Analytical identity. You shine through service, precision, and improvement.",
+  'Sun-Libra': "= Harmonious identity. You shine through balance, beauty, and relationship.",
+  'Sun-Scorpio': "= Intense identity. You shine through depth, power, and transformation.",
+  'Sun-Sagittarius': "= Expansive identity. You shine through adventure, truth, and philosophy.",
+  'Sun-Capricorn': "= Ambitious identity. You shine through achievement, mastery, and responsibility.",
+  'Sun-Aquarius': "= Innovative identity. You shine through uniqueness, community, and revolution.",
+  'Sun-Pisces': "= Mystical identity. You shine through compassion, dreams, and transcendence.",
   
-  const compatible = {
-    Fire: "Air",
-    Air: "Fire",
-    Earth: "Water",
-    Water: "Earth"
+  // MOON IN SIGNS
+  'Moon-Aries': "= Impulsive emotions. You feel through instinct and need freedom to react.",
+  'Moon-Taurus': "= Stable emotions. You feel through body and need physical comfort.",
+  'Moon-Gemini': "= Curious emotions. You feel through words and need mental stimulation.",
+  'Moon-Cancer': "= Deep emotions. You feel through intuition and need emotional safety.",
+  'Moon-Leo': "= Dramatic emotions. You feel through heart and need to be seen.",
+  'Moon-Virgo': "= Analytical emotions. You feel through service and need order.",
+  'Moon-Libra': "= Harmonious emotions. You feel through others and need balance.",
+  'Moon-Scorpio': "= Intense emotions. You feel through depth and need transformation.",
+  'Moon-Sagittarius': "= Free emotions. You feel through philosophy and need adventure.",
+  'Moon-Capricorn': "= Disciplined emotions. You feel through structure and need control.",
+  'Moon-Aquarius': "= Detached emotions. You feel through ideals and need space.",
+  'Moon-Pisces': "= Mystical emotions. You feel through empathy and need transcendence.",
+  
+  // MERCURY IN SIGNS
+  'Mercury-Aries': "= Direct communication. You think fast and speak boldly.",
+  'Mercury-Taurus': "= Deliberate communication. You think slowly and speak with certainty.",
+  'Mercury-Gemini': "= Quick communication. You think rapidly and speak prolifically.",
+  'Mercury-Cancer': "= Emotional communication. You think with feeling and speak from the heart.",
+  'Mercury-Leo': "= Dramatic communication. You think creatively and speak with flair.",
+  'Mercury-Virgo': "= Precise communication. You think analytically and speak accurately.",
+  'Mercury-Libra': "= Diplomatic communication. You think fairly and speak harmoniously.",
+  'Mercury-Scorpio': "= Intense communication. You think deeply and speak powerfully.",
+  'Mercury-Sagittarius': "= Expansive communication. You think philosophically and speak freely.",
+  'Mercury-Capricorn': "= Structured communication. You think practically and speak authoritatively.",
+  'Mercury-Aquarius': "= Innovative communication. You think uniquely and speak unconventionally.",
+  'Mercury-Pisces': "= Intuitive communication. You think symbolically and speak poetically.",
+  
+  // VENUS IN SIGNS
+  'Venus-Aries': "= Passionate love. You value independence and are attracted to boldness.",
+  'Venus-Taurus': "= Sensual love. You value stability and are attracted to beauty.",
+  'Venus-Gemini': "= Playful love. You value variety and are attracted to wit.",
+  'Venus-Cancer': "= Nurturing love. You value security and are attracted to care.",
+  'Venus-Leo': "= Romantic love. You value admiration and are attracted to drama.",
+  'Venus-Virgo': "= Practical love. You value service and are attracted to competence.",
+  'Venus-Libra': "= Harmonious love. You value partnership and are attracted to grace.",
+  'Venus-Scorpio': "= Intense love. You value depth and are attracted to power.",
+  'Venus-Sagittarius': "= Free love. You value adventure and are attracted to wisdom.",
+  'Venus-Capricorn': "= Committed love. You value loyalty and are attracted to success.",
+  'Venus-Aquarius': "= Unconventional love. You value friendship and are attracted to uniqueness.",
+  'Venus-Pisces': "= Mystical love. You value compassion and are attracted to spirituality.",
+  
+  // MARS IN SIGNS
+  'Mars-Aries': "= Direct action. You assert yourself boldly and fight courageously.",
+  'Mars-Taurus': "= Steady action. You assert yourself slowly and fight stubbornly.",
+  'Mars-Gemini': "= Quick action. You assert yourself verbally and fight with words.",
+  'Mars-Cancer': "= Emotional action. You assert yourself defensively and fight for family.",
+  'Mars-Leo': "= Dramatic action. You assert yourself proudly and fight for recognition.",
+  'Mars-Virgo': "= Precise action. You assert yourself efficiently and fight for perfection.",
+  'Mars-Libra': "= Balanced action. You assert yourself diplomatically and fight for justice.",
+  'Mars-Scorpio': "= Intense action. You assert yourself powerfully and fight to win.",
+  'Mars-Sagittarius': "= Free action. You assert yourself freely and fight for truth.",
+  'Mars-Capricorn': "= Controlled action. You assert yourself strategically and fight for goals.",
+  'Mars-Aquarius': "= Revolutionary action. You assert yourself uniquely and fight for ideals.",
+  'Mars-Pisces': "= Intuitive action. You assert yourself gently and fight for compassion.",
+  
+  // VESTA IN SIGNS
+  'Vesta-Aries': "= Sacred independence. Your devotion is to courage and pioneering.",
+  'Vesta-Taurus': "= Sacred sensuality. Your devotion is to beauty and earthly pleasure.",
+  'Vesta-Gemini': "= Sacred communication. Your devotion is to learning and connection.",
+  'Vesta-Cancer': "= Sacred nurturing. Your devotion is to home and emotional care.",
+  'Vesta-Leo': "= Sacred creativity. Your devotion is to self-expression and joy.",
+  'Vesta-Virgo': "= Sacred service. Your devotion is to perfecting and healing work.",
+  'Vesta-Libra': "= Sacred partnership. Your devotion is to harmony and relationship.",
+  'Vesta-Scorpio': "= Sacred transformation. Your devotion is to depth and power.",
+  'Vesta-Sagittarius': "= Sacred wisdom. Your devotion is to truth and expansion.",
+  'Vesta-Capricorn': "= Sacred achievement. Your devotion is to mastery and responsibility.",
+  'Vesta-Aquarius': "= Sacred community. Your devotion is to collective work and innovation.",
+  'Vesta-Pisces': "= Sacred spirituality. Your devotion is to compassion and transcendence.",
+  
+  // CHIRON IN SIGNS
+  'Chiron-Aries': "= Identity wound. Your deepest pain is about courage, but you heal others' confidence.",
+  'Chiron-Taurus': "= Worth wound. Your deepest pain is about value, but you heal others' self-worth.",
+  'Chiron-Gemini': "= Communication wound. Your deepest pain is about voice, but you heal others' expression.",
+  'Chiron-Cancer': "= Emotion wound. Your deepest pain is about feeling, but you heal others' hearts.",
+  'Chiron-Leo': "= Expression wound. Your deepest pain is about visibility, but you heal others' creativity.",
+  'Chiron-Virgo': "= Perfection wound. Your deepest pain is about flaws, but you heal others' wholeness.",
+  'Chiron-Libra': "= Relationship wound. Your deepest pain is about partnership, but you heal others' connections.",
+  'Chiron-Scorpio': "= Power wound. Your deepest pain is about control, but you heal others' transformation.",
+  'Chiron-Sagittarius': "= Meaning wound. Your deepest pain is about faith, but you heal others' belief.",
+  'Chiron-Capricorn': "= Authority wound. Your deepest pain is about success, but you heal others' ambition.",
+  'Chiron-Aquarius': "= Belonging wound. Your deepest pain is about community, but you heal others' uniqueness.",
+  'Chiron-Pisces': "= Boundary wound. Your deepest pain is about dissolving, but you heal others' spirituality."
+};
+
+const getSignExpression = (planet: string, sign: string): string => {
+  const key = `${planet}-${sign}`;
+  return SIGN_EXPRESSIONS[key] || `expresses through ${sign}'s energy.`;
+};
+
+// ============================================================================
+// SIGN COMBINATION MEANINGS
+// ============================================================================
+
+const ELEMENTS: Record<string, string[]> = {
+  fire: ['Aries', 'Leo', 'Sagittarius'],
+  earth: ['Taurus', 'Virgo', 'Capricorn'],
+  air: ['Gemini', 'Libra', 'Aquarius'],
+  water: ['Cancer', 'Scorpio', 'Pisces']
+};
+
+const getElement = (sign: string): string | null => {
+  for (const [element, signs] of Object.entries(ELEMENTS)) {
+    if (signs.includes(sign)) return element;
+  }
+  return null;
+};
+
+const getSignCombination = (sign1: string, sign2: string): string => {
+  const el1 = getElement(sign1);
+  const el2 = getElement(sign2);
+  
+  if (!el1 || !el2) return "";
+  
+  const combos: Record<string, string> = {
+    'fire-fire': "🔥🔥 Two fire signs! Passion meets passion. Energy multiplies. Inspiration ignites inspiration.",
+    'fire-earth': "🔥🌍 Fire warms earth. Action meets manifestation. Dreams take physical form. Do it!",
+    'fire-air': "🔥💨 Fire and air fan each other's flames. Ideas inspire action. Communication fuels passion.",
+    'fire-water': "🔥💧 Fire and water create steam. Passion meets feeling. Intense emotional expression.",
+    'earth-earth': "🌍🌍 Two earth signs! Practical magic. Things get DONE. Material world mastery.",
+    'earth-air': "🌍💨 Earth grounds air. Ideas meet implementation. Theory becomes practice. Build it!",
+    'earth-water': "🌍💧 Earth and water make fertile soil. Feeling becomes form. Nurture into being.",
+    'air-air': "💨💨 Two air signs! Mental synergy. Ideas multiply. Communication flows. Talk it out!",
+    'air-water': "💨💧 Air and water create mist. Thoughts meet feelings. Emotional intelligence blooms.",
+    'water-water': "💧💧 Two water signs! Deep emotional resonance. Feel everything. Intuitive understanding."
   };
   
-  if (compatible[q1.element as keyof typeof compatible] === q2.element) {
-    return `${q1.element} and ${q2.element} support each other. Complementary energies.`;
-  }
-  
-  return `${q1.element} meets ${q2.element}. Different approaches create creative tension.`;
+  const key = el1 === el2 ? `${el1}-${el2}` : [el1, el2].sort().join('-');
+  return combos[key] || "";
 };
 
-// Get practical advice based on aspect and houses
-const getPracticalAdvice = (
+// ============================================================================
+// HOUSE-TO-HOUSE MEANINGS
+// ============================================================================
+
+const getHouseToHouseMeaning = (house1: number, house2: number, aspect: string): string => {
+  const meanings: Record<string, string> = {
+    '1-7': "Your identity (1st) relates to your partnerships (7th). Who you are shapes how you relate.",
+    '1-10': "Your identity (1st) relates to your career (10th). Who you are influences your public role.",
+    '2-8': "Your resources (2nd) relate to shared resources (8th). Your money meets others' money.",
+    '3-9': "Your communication (3rd) relates to your philosophy (9th). Daily thoughts expand into wisdom.",
+    '3-11': "Your communication (3rd) relates to your community (11th). Your words reach your people.",
+    '4-10': "Your home (4th) relates to your career (10th). Private life meets public life.",
+    '5-11': "Your creativity (5th) relates to your community (11th). Personal joy becomes collective gift.",
+    '6-12': "Your daily work (6th) relates to your spirituality (12th). Service becomes sacred practice.",
+    '1-5': "Your identity (1st) relates to your creativity (5th). Who you are fuels what you create.",
+    '2-6': "Your values (2nd) relate to your daily work (6th). What you value shapes how you serve.",
+    '4-8': "Your emotional foundation (4th) relates to transformation (8th). Deep roots allow deep change.",
+    '7-9': "Your partnerships (7th) relate to expansion (9th). Relationships broaden your worldview."
+  };
+  
+  const key = [house1, house2].sort((a, b) => a - b).join('-');
+  return meanings[key] || `The ${house1}${getOrdinal(house1)} and ${house2}${getOrdinal(house2)} houses ${aspect} each other in your life.`;
+};
+
+// ============================================================================
+// JOURNAL PROMPT FUNCTION
+// ============================================================================
+
+const getJournalPrompt = (transitPlanet: string, natalPlanet: string, transitHouse: number, natalHouse: number): string => {
+  const prompts: Record<string, string> = {
+    'sun-moon': "How do your identity and emotions interact today? Where do you feel most yourself?",
+    'moon-sun': "What emotional truths want to be seen today? How do feelings shape who you are?",
+    'mercury-sun': "What truth wants to be spoken? How does your mind serve your identity?",
+    'venus-sun': "What do you value about yourself today? Where is beauty meeting identity?",
+    'mars-moon': "What action do your emotions require? Where does feeling demand expression?",
+    'sun-chiron': "How is your wound teaching today? Where does pain become power?",
+    'moon-chiron': "What emotional wound wants healing? How can you mother your hurt?",
+    'mercury-pluto': "What deep truth surfaces? What power do your words hold today?",
+    'venus-venus': "What do you truly value? What brings you beauty and pleasure right now?",
+    'mars-mars': "What motivates you most? Where is your raw energy directed?",
+    'sun-vesta': "What sacred work calls your identity? How does devotion shape who you are?",
+    'moon-vesta': "What do you feel devoted to? Where do emotions meet sacred focus?"
+  };
+  
+  const key = `${transitPlanet.toLowerCase()}-${natalPlanet.toLowerCase()}`;
+  
+  if (prompts[key]) {
+    return prompts[key];
+  }
+  
+  const h1 = HOUSE_MEANINGS[transitHouse as keyof typeof HOUSE_MEANINGS];
+  const h2 = HOUSE_MEANINGS[natalHouse as keyof typeof HOUSE_MEANINGS];
+  
+  if (h1 && h2) {
+    return `How does your ${h1.short.toLowerCase()} relate to your ${h2.short.toLowerCase()} today? What wants to be integrated?`;
+  }
+  
+  return "How am I experiencing this energy today? What wants attention?";
+};
+
+// ============================================================================
+// PRACTICAL GUIDANCE FUNCTION
+// ============================================================================
+
+const getPracticalGuidance = (
   transitPlanet: string,
   natalPlanet: string,
   aspect: string,
-  transitHouse: number | null,
-  natalHouse: number | null
-): string[] => {
-  const advice: string[] = [];
+  transitHouse: number,
+  natalHouse: number
+): { gifts?: string[]; challenges?: string[]; power?: string[]; todo: string[]; avoid: string[] } => {
+  const isEasy = aspect === 'trine' || aspect === 'sextile';
+  const isHard = aspect === 'square' || aspect === 'opposition';
+  const isMerge = aspect === 'conjunction';
   
-  // Aspect-based advice
-  if (aspect === "conjunction") {
-    advice.push("Focus intensely on this area today");
-    advice.push("New beginnings are favored");
-  } else if (aspect === "trine") {
-    advice.push("Flow with this easy energy");
-    advice.push("Trust your natural talents");
-  } else if (aspect === "square") {
-    advice.push("Take action despite resistance");
-    advice.push("Growth comes through the friction");
-  } else if (aspect === "opposition") {
-    advice.push("Seek balance between extremes");
-    advice.push("Learn from what others mirror to you");
-  } else if (aspect === "sextile") {
-    advice.push("Take advantage of opportunities");
-    advice.push("Small actions lead to good results");
-  }
+  const h1 = HOUSE_MEANINGS[transitHouse as keyof typeof HOUSE_MEANINGS];
+  const h2 = HOUSE_MEANINGS[natalHouse as keyof typeof HOUSE_MEANINGS];
   
-  // House-based advice
-  if (transitHouse) {
-    const houseAdvice: Record<number, string> = {
-      1: "Focus on yourself and your personal goals",
-      2: "Attend to money matters and what you value",
-      3: "Communicate, write, or have important conversations",
-      4: "Spend time at home or with family",
-      5: "Create, play, or enjoy romance",
-      6: "Focus on health, work habits, and service",
-      7: "Engage with partners and important relationships",
-      8: "Go deep—transformation and intimacy work is favored",
-      9: "Learn, travel, or explore new philosophies",
-      10: "Take public action on career and reputation",
-      11: "Connect with community and friends",
-      12: "Rest, meditate, and process the unconscious",
+  const h1Short = h1?.short?.toLowerCase() || 'life areas';
+  const h2Short = h2?.short?.toLowerCase() || 'life areas';
+  
+  if (isEasy) {
+    return {
+      gifts: [
+        `Energy flows naturally between ${h1Short} and ${h2Short}`,
+        `Your ${transitPlanet.toLowerCase()} expression supports your ${natalPlanet.toLowerCase()} nature`,
+        "Opportunities arise without effort - stay open"
+      ],
+      todo: [
+        `Act in the ${h1Short} area with confidence`,
+        "Trust the natural flow - don't overthink",
+        `Share your gifts in the ${h2Short} area`
+      ],
+      avoid: [
+        "Taking this ease for granted",
+        "Staying passive when opportunity calls",
+        "Overthinking what flows naturally"
+      ]
     };
-    if (houseAdvice[transitHouse]) {
-      advice.push(houseAdvice[transitHouse]);
-    }
+  } else if (isHard) {
+    return {
+      challenges: [
+        `Tension between ${h1Short} and ${h2Short}`,
+        `Your ${transitPlanet.toLowerCase()} pushes your ${natalPlanet.toLowerCase()} to grow`,
+        "Discomfort is the catalyst for breakthrough"
+      ],
+      todo: [
+        "Face the friction head-on - don't avoid it",
+        "Use the energy to make needed changes",
+        "Find creative solutions to the tension"
+      ],
+      avoid: [
+        "Running from the discomfort",
+        "Blaming others for the challenge",
+        "Staying stuck in the frustration"
+      ]
+    };
+  } else if (isMerge) {
+    return {
+      power: [
+        `${transitPlanet} and ${natalPlanet} merge into one force`,
+        `Intensity in both ${h1Short} and ${h2Short}`,
+        "New beginning or powerful culmination"
+      ],
+      todo: [
+        "Harness this concentrated power wisely",
+        "Start something new or complete something major",
+        "Be conscious of the intensity"
+      ],
+      avoid: [
+        "Being overwhelmed by the power",
+        "Acting unconsciously with this energy",
+        "Ignoring the opportunity"
+      ]
+    };
   }
   
-  // Planet-specific advice
-  const planetAdvice: Record<string, string> = {
-    Moon: "Honor your emotional needs today",
-    Mercury: "Good for important communications and decisions",
-    Venus: "Enjoy beauty, love, and pleasure",
-    Mars: "Take bold action on what matters",
-    Jupiter: "Expand and say yes to opportunities",
-    Saturn: "Accept responsibility and build structure",
-    Uranus: "Expect the unexpected; embrace change",
-    Neptune: "Trust your intuition; create or dream",
-    Pluto: "Let go of what no longer serves you",
+  return {
+    todo: ["Stay aware of this energy", "Journal about what comes up"],
+    avoid: ["Ignoring the transit"]
   };
-  
-  if (planetAdvice[transitPlanet]) {
-    advice.push(planetAdvice[transitPlanet]);
-  }
-  
-  return advice.slice(0, 5); // Max 5 items
 };
 
-// Get personalized journal prompt
-const getDetailedJournalPrompt = (
-  transitPlanet: string,
-  natalPlanet: string,
-  aspect: string,
-  transitHouse: number | null,
-  natalHouse: number | null
-): string => {
-  const transitHouseInfo = transitHouse ? HOUSE_DETAILED[transitHouse] : null;
-  const natalHouseInfo = natalHouse ? HOUSE_DETAILED[natalHouse] : null;
-  
-  // Specific prompts for major transits
-  const specificPrompts: Record<string, string> = {
-    "Sun-Sun-conjunction": "Who am I becoming? What new identity is emerging?",
-    "Moon-Moon-conjunction": "What am I feeling most deeply right now?",
-    "Venus-Venus-conjunction": "What do I truly love and value today?",
-    "Mars-Mars-conjunction": "What brave action is calling me?",
-    "Saturn-Saturn-conjunction": "What structure am I building for my life?",
-    "Jupiter-Sun-conjunction": "Where am I ready to expand and grow?",
-    "Pluto-Sun-conjunction": "What old self must die for the new me to emerge?",
-  };
-  
-  const key = `${transitPlanet}-${natalPlanet}-${aspect}`;
-  if (specificPrompts[key]) {
-    return specificPrompts[key];
-  }
-  
-  // House-based prompts
-  if (transitHouseInfo && natalHouseInfo) {
-    return `How does ${transitHouseInfo.keywords.split(",")[0]} (${transitHouse}H) connect to ${natalHouseInfo.keywords.split(",")[0]} (${natalHouse}H) in my life today?`;
-  }
-  
-  if (transitHouseInfo) {
-    return transitHouseInfo.questions;
-  }
-  
-  // Generic prompts by natal planet
-  const natalPrompts: Record<string, string> = {
-    Sun: "How is this affecting my sense of self and identity?",
-    Moon: "What emotions are arising? What do I need to feel safe?",
-    Mercury: "What thoughts or messages are important today?",
-    Venus: "What is bringing me joy or beauty today?",
-    Mars: "What action am I called to take?",
-    Jupiter: "Where is growth and expansion happening?",
-    Saturn: "What responsibility or lesson is presenting itself?",
-    Chiron: "What healing is possible today?",
-    NorthNode: "How is this aligning me with my purpose?",
-  };
-  
-  return natalPrompts[natalPlanet] || "How am I experiencing this energy today?";
-};
+// ============================================================================
+// MAIN DETAILED INTERPRETATION INTERFACE
+// ============================================================================
 
-// Get house connection interpretation
-const getHouseConnection = (
-  transitHouse: number | null,
-  natalHouse: number | null,
-  aspect: string
-): string => {
-  if (!transitHouse || !natalHouse) return "";
-  
-  const th = HOUSE_DETAILED[transitHouse];
-  const nh = HOUSE_DETAILED[natalHouse];
-  if (!th || !nh) return "";
-  
-  const aspectVerb = aspect === "trine" || aspect === "sextile" 
-    ? "flows naturally to" 
-    : aspect === "square" || aspect === "opposition"
-    ? "creates tension with"
-    : "merges with";
-  
-  return `Energy from your ${th.keywords.split(",")[0]} (${transitHouse}H) ${aspectVerb} your ${nh.keywords.split(",")[0]} (${natalHouse}H).`;
-};
-
-// Main function to generate detailed interpretation
 export interface DetailedInterpretation {
   header: string;
+  exactText: string;
+  
+  // What's Happening section
   transitEssence: string;
   natalEssence: string;
-  aspectMeaning: string;
+  aspectEnergy: string;
+  aspectDescription: string;
+  
+  // Signs section
   transitSignInfo: string;
   natalSignInfo: string;
-  elementCompatibility: string;
-  transitHouseInfo: string;
-  natalHouseInfo: string;
+  signCombination: string;
+  
+  // Houses section
+  transitHouseShort: string;
+  transitHouseFull: string;
+  natalHouseShort: string;
+  natalHouseFull: string;
   houseConnection: string;
-  practicalAdvice: string[];
+  
+  // Practical section
+  guidance: {
+    gifts?: string[];
+    challenges?: string[];
+    power?: string[];
+    todo: string[];
+    avoid: string[];
+  };
+  
+  // Journal
   journalPrompt: string;
 }
+
+// ============================================================================
+// MAIN INTERPRETATION FUNCTION
+// ============================================================================
 
 export const getDetailedInterpretation = (
   transitPlanet: string,
@@ -334,44 +591,43 @@ export const getDetailedInterpretation = (
   aspect: string,
   orb: string
 ): DetailedInterpretation => {
-  const transitQ = SIGN_QUALITIES[transitSign];
-  const natalQ = SIGN_QUALITIES[natalSign];
+  const transit = PLANET_ESSENCES[transitPlanet.toLowerCase()];
+  const natal = PLANET_ESSENCES[natalPlanet.toLowerCase()];
   const aspectInfo = ASPECT_MEANINGS[aspect];
-  const transitH = transitHouse ? HOUSE_DETAILED[transitHouse] : null;
-  const natalH = natalHouse ? HOUSE_DETAILED[natalHouse] : null;
+  
+  const tH = transitHouse || 1;
+  const nH = natalHouse || 1;
+  const transitHouseInfo = HOUSE_MEANINGS[tH as keyof typeof HOUSE_MEANINGS];
+  const natalHouseInfo = HOUSE_MEANINGS[nH as keyof typeof HOUSE_MEANINGS];
+  
+  const orbNum = parseFloat(orb);
   
   return {
-    header: `Transit ${transitPlanet} (${transitDegree}° ${transitSign}${transitHouse ? `, ${transitHouse}H` : ""}) ${aspect}s Natal ${natalPlanet} (${natalDegree}° ${natalSign}${natalHouse ? `, ${natalHouse}H` : ""})`,
+    header: `Transit ${transit?.name || transitPlanet} (${transitDegree}° ${transitSign}${transitHouse ? `, ${transitHouse}H` : ""}) ${aspect}s Natal ${natal?.name || natalPlanet} (${natalDegree}° ${natalSign}${natalHouse ? `, ${natalHouse}H` : ""})`,
+    exactText: orbNum < 1 ? '⭐ EXACT - Maximum power!' : `Orb: ${orb}°`,
     
-    transitEssence: PLANET_ESSENCES[transitPlanet] || `${transitPlanet} energy is active.`,
-    natalEssence: PLANET_ESSENCES[natalPlanet] || `Your natal ${natalPlanet} is activated.`,
+    // What's Happening
+    transitEssence: transit ? `${transit.symbol} ${transit.name.toUpperCase()}: ${transit.essence}` : `${transitPlanet} energy is active.`,
+    natalEssence: natal ? `${natal.symbol} ${natal.name.toUpperCase()}: ${natal.essence}` : `Your ${natalPlanet} is activated.`,
+    aspectEnergy: aspectInfo?.energy || aspect,
+    aspectDescription: aspectInfo?.description || `${aspect} aspect`,
     
-    aspectMeaning: aspectInfo 
-      ? `${aspectInfo.symbol} ${aspect.toUpperCase()} — ${aspectInfo.meaning}`
-      : `${aspect} aspect`,
+    // Signs
+    transitSignInfo: `Transit ${transit?.name || transitPlanet} in ${transitSign.toUpperCase()} ${getSignExpression(transit?.name || transitPlanet, transitSign)}`,
+    natalSignInfo: `Natal ${natal?.name || natalPlanet} in ${natalSign.toUpperCase()} ${getSignExpression(natal?.name || natalPlanet, natalSign)}`,
+    signCombination: getSignCombination(transitSign, natalSign),
     
-    transitSignInfo: transitQ 
-      ? `${transitPlanet} in ${transitSign.toUpperCase()} (${transitQ.element}/${transitQ.mode}): ${transitQ.energy}`
-      : `${transitPlanet} in ${transitSign}`,
+    // Houses
+    transitHouseShort: transitHouseInfo?.short || `${tH}${getOrdinal(tH)} House`,
+    transitHouseFull: transitHouseInfo?.full || "",
+    natalHouseShort: natalHouseInfo?.short || `${nH}${getOrdinal(nH)} House`,
+    natalHouseFull: natalHouseInfo?.full || "",
+    houseConnection: getHouseToHouseMeaning(tH, nH, aspectInfo?.meaning || aspect),
     
-    natalSignInfo: natalQ
-      ? `${natalPlanet} in ${natalSign.toUpperCase()} (${natalQ.element}/${natalQ.mode}): ${natalQ.energy}`
-      : `${natalPlanet} in ${natalSign}`,
+    // Practical
+    guidance: getPracticalGuidance(transitPlanet, natalPlanet, aspect, tH, nH),
     
-    elementCompatibility: getElementCompatibility(transitSign, natalSign),
-    
-    transitHouseInfo: transitH
-      ? `${transitH.name}: ${transitH.lifeArea}`
-      : "",
-    
-    natalHouseInfo: natalH
-      ? `${natalH.name}: ${natalH.lifeArea}`
-      : "",
-    
-    houseConnection: getHouseConnection(transitHouse, natalHouse, aspect),
-    
-    practicalAdvice: getPracticalAdvice(transitPlanet, natalPlanet, aspect, transitHouse, natalHouse),
-    
-    journalPrompt: getDetailedJournalPrompt(transitPlanet, natalPlanet, aspect, transitHouse, natalHouse),
+    // Journal
+    journalPrompt: getJournalPrompt(transitPlanet, natalPlanet, tH, nH)
   };
 };
