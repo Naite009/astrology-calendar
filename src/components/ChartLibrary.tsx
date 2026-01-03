@@ -103,6 +103,8 @@ export const ChartLibrary = ({
   const [editingChart, setEditingChart] = useState<'new' | 'user' | NatalChart | null>(null);
   const [viewingChart, setViewingChart] = useState<NatalChart | null>(null);
   const [showTransits, setShowTransits] = useState(true);
+  // When true, the "Calculate from birth data" button will not overwrite a manually-entered Chiron.
+  const [preserveManualChiron, setPreserveManualChiron] = useState(true);
   const [formData, setFormData] = useState<ChartFormData>({
     name: '',
     birthDate: '',
@@ -243,14 +245,24 @@ export const ChartLibrary = ({
       formData.birthLocation
     );
     
-    setFormData(prev => ({
-      ...prev,
-      planets: {
+    setFormData(prev => {
+      const mergedPlanets = {
         ...prev.planets,
         ...calculatedPositions,
-      },
-      ...(detectedTz ? { detectedTimezone: detectedTz } : {}),
-    }));
+      };
+
+      // Chiron is not calculated from the same ephemeris as the main planets in this app,
+      // so if the user typed an astro.com-verified Chiron, keep it.
+      if (preserveManualChiron && prev.planets.Chiron?.sign) {
+        mergedPlanets.Chiron = prev.planets.Chiron;
+      }
+
+      return {
+        ...prev,
+        planets: mergedPlanets,
+        ...(detectedTz ? { detectedTimezone: detectedTz } : {}),
+      };
+    });
   };
 
   const handleClose = () => {
@@ -444,24 +456,33 @@ export const ChartLibrary = ({
               </div>
 
               <div className="border-t border-border pt-5">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground">Planet Positions</h3>
-                  <div className="flex items-center gap-4">
-                    {formData.detectedTimezone && (
-                      <span className="text-[10px] text-green-600 bg-green-100 px-2 py-1 rounded">
-                        Auto-detected: {formData.detectedTimezone}
-                      </span>
-                    )}
-                    <button
-                      onClick={calculateFromBirthData}
-                      disabled={!formData.birthDate}
-                      className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <RefreshCw size={12} />
-                      Calculate from birth data
-                    </button>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground">Planet Positions</h3>
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={preserveManualChiron}
+                          onChange={(e) => setPreserveManualChiron(e.target.checked)}
+                          className="rounded border-border"
+                        />
+                        Keep my Chiron
+                      </label>
+                      {formData.detectedTimezone && (
+                        <span className="text-[10px] text-green-600 bg-green-100 px-2 py-1 rounded">
+                          Auto-detected: {formData.detectedTimezone}
+                        </span>
+                      )}
+                      <button
+                        onClick={calculateFromBirthData}
+                        disabled={!formData.birthDate}
+                        className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <RefreshCw size={12} />
+                        Calculate from birth data
+                      </button>
+                    </div>
                   </div>
-                </div>
                 <p className="text-[10px] text-muted-foreground italic mb-4">
                   Click "Calculate" to auto-fill positions including Ascendant (requires recognized city). ℞ indicates retrograde.
                 </p>
