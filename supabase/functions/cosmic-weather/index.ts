@@ -54,37 +54,42 @@ ${planetPositions.map((p: any) => `- ${p.name}: ${p.degree}° ${p.sign}`).join('
     // Build exact lunar phase information if present
     let exactPhaseText = '';
     if (exactLunarPhase) {
-      exactPhaseText = `EXACT LUNAR EVENT TODAY: ${exactLunarPhase.type} in ${exactLunarPhase.sign}`;
+      exactPhaseText = `EXACT LUNAR EVENT (FIXED TIMESTAMP): ${exactLunarPhase.type} at ${exactLunarPhase.position} ${exactLunarPhase.sign} at ${exactLunarPhase.time}`;
       if (exactLunarPhase.name) {
         exactPhaseText += ` (${exactLunarPhase.name})`;
       }
       if (exactLunarPhase.isSupermoon) {
-        exactPhaseText += ' - This is a SUPERMOON!';
+        exactPhaseText += ' - SUPERMOON';
       }
+      exactPhaseText += `\nIMPORTANT: Use this EXACT degree (${exactLunarPhase.position}) when mentioning the ${exactLunarPhase.type}. This is a fixed astronomical event.`;
     }
 
-    const systemPrompt = `You are a wise, compassionate astrologer synthesizing cosmic insights based on VERIFIED astronomical data. Your role is to provide clear, actionable guidance based on the exact planetary positions provided.
+const systemPrompt = `You are a practical astrologer providing clear, actionable insights. No flowery language or "greetings, fellow traveler" - just useful info.
 
 CRITICAL RULES:
 1. ONLY use the planetary positions provided in the data. These are calculated using astronomy-engine and are accurate.
-2. The Moon's current sign is specified in the data - USE IT EXACTLY. Do not guess or assume.
-3. NEVER call something a "Full Moon" or "New Moon" unless an EXACT lunar event object is provided (exactLunarPhase != null).
-4. If exactLunarPhase is provided, use its sign as the event sign (do not substitute the transiting Moon sign).
-5. Reference the ACTUAL positions when describing the cosmic weather.
+2. Use EXACT degrees provided. If a lunar event says "13° Cancer at 5:02 AM", say exactly that.
+3. NEVER call something a "Full Moon" or "New Moon" unless exactLunarPhase is provided.
+4. If exactLunarPhase is provided, use the EXACT position and time given.
+5. Be direct and practical. No mystical fluff.
 
-Style: Poetic but practical, spiritually grounded but accessible. Avoid overly technical jargon.
+FORMAT - Keep it simple and scannable:
+## 3 Things for Today
+- [Bullet 1 - most important energy]
+- [Bullet 2 - what to do/avoid]
+- [Bullet 3 - practical tip]
 
-Format your response with these sections (use markdown headers):
-## Today's Cosmic Theme
+## Today's Sky
+[1-2 sentences max about the key placements using EXACT degrees]
 
-## Key Energies
+## Quick Guidance
+[2-3 practical sentences, no fluff]
 
-## Guidance
+## Watch For
+[1 sentence on potential challenges]`;
 
-## Shadow Watch`;
 
-
-    const userPrompt = `Generate cosmic weather insights for ${date}.
+    const userPrompt = `Generate cosmic weather for ${date}.
 
 ${planetText}
 
@@ -97,9 +102,7 @@ ${rareAspectText}
 ${nodeAspectText}
 ${aspectsText}
 
-REMEMBER: Use the EXACT planetary positions provided above. The Moon is in ${moonSign}. ${exactPhaseText ? `This is an exact ${exactLunarPhase.type} in ${exactLunarPhase.sign}.` : ''} ${moonJupiterConjunction ? moonJupiterConjunction : ''}
-
-Provide a synthesized cosmic weather reading that helps someone understand and work with today's energy.`;
+CRITICAL: Use EXACT degrees provided. If a Full Moon is at 13° Cancer, say "Full Moon at 13° Cancer" - not 9° or any other number. Be direct and practical. No mystical fluff or greetings.`;
 
     console.log("Sending prompt to AI:", userPrompt);
 

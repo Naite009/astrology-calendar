@@ -96,6 +96,12 @@ export const CosmicWeatherBanner = ({
           exactLunarPhase: isExactPhase ? {
             type: exactLunarPhase.type,
             sign: exactLunarPhase.sign,
+            position: exactLunarPhase.position,
+            time: exactLunarPhase.time.toLocaleTimeString('en-US', {
+              timeZone: 'America/New_York',
+              hour: 'numeric',
+              minute: '2-digit',
+            }) + ' ET',
             name: exactLunarPhase.name,
             isSupermoon: exactLunarPhase.isSupermoon,
           } : null,
@@ -139,6 +145,12 @@ export const CosmicWeatherBanner = ({
       .replace(/\n/g, '<br/>');
   };
 
+  const currentTime = new Date().toLocaleTimeString('en-US', {
+    timeZone: 'America/New_York',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+
   return (
     <div 
       className="mb-6 p-6 rounded-lg text-white"
@@ -146,9 +158,14 @@ export const CosmicWeatherBanner = ({
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
       }}
     >
-      <h2 className="text-xl font-semibold mb-5 flex items-center gap-2">
-        🌟 Cosmic Weather Report
-      </h2>
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="text-xl font-semibold flex items-center gap-2">
+          🌟 Cosmic Weather Report
+        </h2>
+        <span className="text-xs opacity-70">
+          Positions as of {currentTime} ET
+        </span>
+      </div>
 
       {/* AI Insights Section */}
       <div className="mb-5 p-4 rounded-lg bg-white/10 backdrop-blur">
