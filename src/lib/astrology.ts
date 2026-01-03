@@ -1217,6 +1217,64 @@ export const getDayColors = (aspects: Aspect[], moonPhase: MoonPhase): DayColors
   }
 };
 
+// Day type descriptions based on dominant planetary energy
+export interface DayType {
+  label: string;
+  emoji: string;
+  description: string;
+}
+
+const DAY_TYPE_MAP: Record<string, DayType> = {
+  mercury: { label: 'Mental Day', emoji: '🧠', description: 'Communication, thinking, learning' },
+  venus: { label: 'Heart Day', emoji: '💗', description: 'Love, beauty, connection' },
+  mars: { label: 'Action Day', emoji: '⚡', description: 'Energy, drive, initiative' },
+  sun: { label: 'Vitality Day', emoji: '✨', description: 'Self-expression, confidence' },
+  moon: { label: 'Emotional Day', emoji: '🌙', description: 'Intuition, feelings, nurturing' },
+  jupiter: { label: 'Expansion Day', emoji: '🌟', description: 'Growth, luck, opportunity' },
+  saturn: { label: 'Structure Day', emoji: '🏛️', description: 'Discipline, responsibility' },
+  uranus: { label: 'Change Day', emoji: '⚡', description: 'Innovation, breakthroughs' },
+  neptune: { label: 'Dream Day', emoji: '🌊', description: 'Imagination, spirituality' },
+  pluto: { label: 'Transform Day', emoji: '🔥', description: 'Deep change, power' },
+};
+
+export const getDayType = (aspects: Aspect[], moonPhase: MoonPhase): DayType => {
+  // Count planet occurrences in aspects
+  const planetCounts: Record<string, number> = {};
+  
+  aspects.forEach((asp) => {
+    planetCounts[asp.planet1] = (planetCounts[asp.planet1] || 0) + 1;
+    planetCounts[asp.planet2] = (planetCounts[asp.planet2] || 0) + 1;
+  });
+
+  // Balsamic moon = rest/dream day
+  if (moonPhase.isBalsamic) {
+    return { label: 'Rest Day', emoji: '🌘', description: 'Release, reflect, restore' };
+  }
+
+  // Full moon = emotional peak
+  if (moonPhase.phaseName === 'Full Moon') {
+    return { label: 'Peak Day', emoji: '🌕', description: 'Culmination, illumination' };
+  }
+
+  // New moon = intention day
+  if (moonPhase.phaseName === 'New Moon') {
+    return { label: 'Seed Day', emoji: '🌑', description: 'New beginnings, intentions' };
+  }
+
+  // Find the dominant planet
+  let dominant = 'moon';
+  let maxCount = 0;
+  
+  for (const [planet, count] of Object.entries(planetCounts)) {
+    if (count > maxCount) {
+      maxCount = count;
+      dominant = planet;
+    }
+  }
+
+  return DAY_TYPE_MAP[dominant] || DAY_TYPE_MAP.moon;
+};
+
 // Color explanation for day detail
 export interface ColorExplanation {
   primary: {
