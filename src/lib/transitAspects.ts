@@ -10,6 +10,7 @@ import {
   getTransitHouseInterpretation,
   HOUSE_MEANINGS
 } from './houseCalculations';
+import { getDetailedInterpretation, DetailedInterpretation } from './detailedInterpretations';
 
 // Aspect definitions with orbs, symbols, and colors
 export const ASPECT_TYPES = [
@@ -37,6 +38,7 @@ export interface TransitAspect {
   color: string;
   meaning: string;
   interpretation: string;
+  detailedInterpretation: DetailedInterpretation;
   houseOverlay: string;
   isExact: boolean;
 }
@@ -127,6 +129,20 @@ export const calculateTransitAspects = (
           // Generate house overlay interpretation
           const houseOverlay = getHouseOverlay(transit.name, transitHouse, natal.name, natalHouse);
           
+          // Generate detailed interpretation using the complete 5-layer system
+          const detailed = getDetailedInterpretation(
+            transit.name,
+            transit.data!.signName,
+            transit.data!.degree,
+            transitHouse,
+            natal.name,
+            natal.sign,
+            natal.degree,
+            natalHouse,
+            aspectType.name,
+            angleDiff.toFixed(1)
+          );
+          
           aspects.push({
             transitPlanet: transit.name,
             transitSign: transit.data!.signName,
@@ -143,7 +159,8 @@ export const calculateTransitAspects = (
             orb: angleDiff.toFixed(1),
             color: aspectType.color,
             meaning: aspectType.meaning,
-            interpretation: getTransitInterpretation(transit.key, natal.name.toLowerCase(), aspectType.name),
+            interpretation: detailed.header,
+            detailedInterpretation: detailed,
             houseOverlay,
             isExact: angleDiff < 1,
           });

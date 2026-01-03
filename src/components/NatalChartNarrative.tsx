@@ -281,27 +281,101 @@ const CurrentTransitsReport = ({
                   <strong>Your Natal {natalPlanetInfo?.name}:</strong> {natalPlanetInfo?.essence}
                 </div>
                 
-                {planetAspects.map((aspect, i) => (
-                  <div 
-                    key={i} 
-                    className="mb-4 last:mb-0 pl-4"
-                    style={{ borderLeft: `3px solid ${aspect.color}` }}
-                  >
+                {planetAspects.map((aspect, i) => {
+                  const detailed = aspect.detailedInterpretation;
+                  return (
                     <div 
-                      className="text-base font-semibold mb-1"
-                      style={{ color: aspect.color }}
+                      key={i} 
+                      className="mb-6 last:mb-0 p-4 bg-white/50 dark:bg-black/20 rounded-lg"
+                      style={{ borderLeft: `4px solid ${aspect.color}` }}
                     >
-                      {getSymbol(aspect.transitPlanet)} Transit {aspect.transitPlanet}
-                      {' '}{aspect.symbol}{' '}
-                      ({aspect.transitDegree}° {aspect.transitSign})
-                      {aspect.isExact && ' ⭐ EXACT!'}
+                      {/* Header */}
+                      <div 
+                        className="text-base font-semibold mb-2 flex items-center gap-2 flex-wrap"
+                        style={{ color: aspect.color }}
+                      >
+                        <span>{getSymbol(aspect.transitPlanet)}{aspect.symbol}{getSymbol(aspect.natalPlanet)}</span>
+                        <span>Transit {aspect.transitPlanet} ({aspect.transitDegree}° {aspect.transitSign}{aspect.transitHouse ? `, ${aspect.transitHouse}H` : ''})</span>
+                        <span className="text-foreground">{aspect.aspect}</span>
+                        <span>Natal {aspect.natalPlanet} ({aspect.natalDegree}° {aspect.natalSign}{aspect.natalHouse ? `, ${aspect.natalHouse}H` : ''})</span>
+                        {aspect.isExact && <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-sm font-bold">⭐ EXACT!</span>}
+                        <span className="text-xs text-muted-foreground">Orb: {aspect.orb}°</span>
+                      </div>
+                      
+                      {/* What's Happening */}
+                      <div className="mb-3">
+                        <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">What's Happening</div>
+                        <div className="text-sm text-foreground mb-1">{detailed.transitEssence}</div>
+                        <div className="text-sm text-foreground mb-1">{detailed.natalEssence}</div>
+                        <div className="text-sm text-primary font-medium">{detailed.aspectEnergy}</div>
+                        <div className="text-sm text-muted-foreground italic">{detailed.aspectDescription}</div>
+                      </div>
+                      
+                      {/* The Signs */}
+                      <div className="mb-3">
+                        <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">The Signs</div>
+                        <div className="text-sm text-foreground mb-1">{detailed.transitSignInfo}</div>
+                        <div className="text-sm text-foreground mb-1">{detailed.natalSignInfo}</div>
+                        {detailed.signCombination && (
+                          <div className="text-sm text-muted-foreground italic">{detailed.signCombination}</div>
+                        )}
+                      </div>
+                      
+                      {/* The Houses */}
+                      {(detailed.transitHouseFull || detailed.natalHouseFull) && (
+                        <div className="mb-3">
+                          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">The Houses</div>
+                          {detailed.transitHouseFull && (
+                            <div className="text-sm"><strong>{detailed.transitHouseShort}:</strong> {detailed.transitHouseFull}</div>
+                          )}
+                          {detailed.natalHouseFull && (
+                            <div className="text-sm"><strong>{detailed.natalHouseShort}:</strong> {detailed.natalHouseFull}</div>
+                          )}
+                          {detailed.houseConnection && (
+                            <div className="text-sm text-primary/80 mt-1 p-2 bg-primary/5 rounded">{detailed.houseConnection}</div>
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* Practical Guidance */}
+                      <div className="mb-3">
+                        <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Practical Guidance</div>
+                        {detailed.guidance.gifts && (
+                          <div className="mb-2">
+                            <div className="text-xs font-semibold text-green-600">TODAY'S GIFTS:</div>
+                            <ul className="text-sm">{detailed.guidance.gifts.map((g, j) => <li key={j}>• {g}</li>)}</ul>
+                          </div>
+                        )}
+                        {detailed.guidance.challenges && (
+                          <div className="mb-2">
+                            <div className="text-xs font-semibold text-amber-600">TODAY'S CHALLENGE:</div>
+                            <ul className="text-sm">{detailed.guidance.challenges.map((c, j) => <li key={j}>• {c}</li>)}</ul>
+                          </div>
+                        )}
+                        {detailed.guidance.power && (
+                          <div className="mb-2">
+                            <div className="text-xs font-semibold text-purple-600">TODAY'S POWER:</div>
+                            <ul className="text-sm">{detailed.guidance.power.map((p, j) => <li key={j}>• {p}</li>)}</ul>
+                          </div>
+                        )}
+                        <div className="mb-2">
+                          <div className="text-xs font-semibold">WHAT TO DO:</div>
+                          <ul className="text-sm">{detailed.guidance.todo.map((t, j) => <li key={j}>✓ {t}</li>)}</ul>
+                        </div>
+                        <div>
+                          <div className="text-xs font-semibold">AVOID:</div>
+                          <ul className="text-sm text-muted-foreground">{detailed.guidance.avoid.map((a, j) => <li key={j}>✗ {a}</li>)}</ul>
+                        </div>
+                      </div>
+                      
+                      {/* Journal Prompt */}
+                      <div className="bg-primary/5 p-3 rounded border-l-2 border-primary">
+                        <div className="text-[10px] uppercase tracking-widest text-primary mb-1">Journal Prompt</div>
+                        <div className="text-sm italic">{detailed.journalPrompt}</div>
+                      </div>
                     </div>
-                    
-                    <div className="text-sm leading-relaxed text-foreground">
-                      {aspect.interpretation}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             );
           })}
