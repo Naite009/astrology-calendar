@@ -736,17 +736,21 @@ export const ChartLibrary = ({
         {/* User's Personal Chart */}
         <div className="rounded-sm border-2 border-primary/30 bg-secondary p-5">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-serif text-lg font-medium text-foreground">Your Chart</h3>
+            <h3 className="font-serif text-lg font-medium text-foreground flex items-center gap-2">
+              {userNatalChart ? userNatalChart.name : 'Your Chart'}
+              <span className="text-primary">★</span>
+            </h3>
             <span className="text-[10px] uppercase tracking-widest text-primary bg-primary/10 px-2 py-1 rounded-sm">
               Primary
             </span>
           </div>
           {userNatalChart ? (
             <>
-              <p className="text-sm text-muted-foreground mb-2">{userNatalChart.name}</p>
-              <p className="text-sm text-foreground mb-3">
-                ☉ {userNatalChart.planets.Sun?.degree}° {userNatalChart.planets.Sun?.sign}
-              </p>
+              <div className="text-sm text-foreground mb-3 space-y-0.5">
+                <p>☉ {userNatalChart.planets.Sun?.degree}° {userNatalChart.planets.Sun?.sign}</p>
+                <p>☽ {userNatalChart.planets.Moon?.degree}° {userNatalChart.planets.Moon?.sign}</p>
+                <p>ASC {userNatalChart.planets.Ascendant?.degree}° {userNatalChart.planets.Ascendant?.sign}</p>
+              </div>
               <div className="flex gap-3">
                 <button
                   onClick={() => setViewingChart(userNatalChart)}
