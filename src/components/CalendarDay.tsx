@@ -87,26 +87,26 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
       </div>
 
       {/* Planet positions */}
-      <div className="flex flex-col gap-0.5 text-[11px] text-foreground/70 leading-tight">
-        <div className="flex items-center gap-1">
-          <span>☽</span>
+      <div className="flex flex-col gap-0.5 text-sm text-foreground/70 leading-tight">
+        <div className="flex items-center gap-1.5">
+          <span className="text-base">☽</span>
           <span>{planets.moon.fullDegree}</span>
         </div>
-        <div className="flex items-center gap-1">
-          <span>☉</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-base">☉</span>
           <span>{planets.sun.fullDegree}</span>
         </div>
-        <div className="flex items-center gap-1">
-          <span>☿</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-base">☿</span>
           <span>{planets.mercury.fullDegree}</span>
-          {mercuryRetro && <span className="text-amber-600">℞</span>}
+          {mercuryRetro && <span className="text-amber-600 text-base">℞</span>}
         </div>
-        <div className="flex items-center gap-1">
-          <span>♀</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-base">♀</span>
           <span>{planets.venus.fullDegree}</span>
         </div>
-        <div className="flex items-center gap-1">
-          <span>♂</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-base">♂</span>
           <span>{planets.mars.fullDegree}</span>
         </div>
       </div>
@@ -117,21 +117,23 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
           {topTransits.map((asp, i) => (
             <div 
               key={i} 
-              className="text-[10px] font-medium flex items-center gap-0.5"
+              className={cn(
+                "text-xs font-medium flex items-center gap-1",
+                asp.isExact && "font-bold"
+              )}
               style={{ 
                 color: asp.color,
                 borderLeft: `2px solid ${asp.color}`,
                 paddingLeft: '4px'
               }}
-              title={`${asp.transitPlanet} ${asp.aspect} natal ${asp.natalPlanet} (${asp.orb}°)${asp.transitHouse ? ` in ${asp.transitHouse}H` : ''}`}
+              title={`${asp.transitPlanet} ${asp.aspect} natal ${asp.natalPlanet} (${asp.orb}°)${asp.transitHouse ? ` in ${asp.transitHouse}H` : ''}${asp.isExact ? ' — EXACT' : ''}`}
             >
-              <span>{getTransitPlanetSymbol(asp.transitPlanet)}</span>
-              <span>{asp.symbol}</span>
-              <span>{getTransitPlanetSymbol(asp.natalPlanet)}</span>
+              <span className="text-sm">{getTransitPlanetSymbol(asp.transitPlanet)}</span>
+              <span className="text-sm">{asp.symbol}</span>
+              <span className="text-sm">{getTransitPlanetSymbol(asp.natalPlanet)}</span>
               {asp.transitHouse && (
-                <span className="text-muted-foreground text-[9px] ml-0.5">{asp.transitHouse}H</span>
+                <span className="text-muted-foreground text-[10px] ml-0.5">{asp.transitHouse}H</span>
               )}
-              {asp.isExact && <span className="text-primary ml-0.5">!</span>}
             </div>
           ))}
         </div>
@@ -158,10 +160,12 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
 
       {/* Aspects */}
       {aspects.length > 0 && !activeChart && (
-        <div className="mt-auto pt-2 text-[10px] text-primary">
+        <div className="mt-auto pt-2 text-xs text-primary">
           {aspects.slice(0, 2).map((asp, i) => (
-            <div key={i}>
-              {getPlanetSymbol(asp.planet1)} {asp.symbol} {getPlanetSymbol(asp.planet2)}
+            <div key={i} className="flex items-center gap-1">
+              <span className="text-sm">{getPlanetSymbol(asp.planet1)}</span>
+              <span className="text-sm">{asp.symbol}</span>
+              <span className="text-sm">{getPlanetSymbol(asp.planet2)}</span>
             </div>
           ))}
           {aspects.length > 2 && <div className="text-muted-foreground">+{aspects.length - 2} more</div>}
@@ -170,14 +174,18 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
 
       {/* VOC indicator */}
       {voc.isVOC && (
-        <div className="text-[10px] text-amber-600 mt-1">V/C</div>
+        <div className="text-xs text-amber-600 mt-1">V/C</div>
       )}
 
       {/* Ingress indicator */}
       {allIngresses.length > 0 && (
-        <div className="text-[10px] text-primary font-medium mt-1">
+        <div className="text-xs text-primary font-medium mt-1">
           {allIngresses.slice(0, 1).map((ing, i) => (
-            <div key={i}>{ing.icon} → {ing.sign}</div>
+            <div key={i} className="flex items-center gap-1">
+              <span className="text-sm">{ing.icon}</span>
+              <span>→</span>
+              <span>{ing.sign}</span>
+            </div>
           ))}
         </div>
       )}
