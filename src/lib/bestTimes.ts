@@ -1,5 +1,6 @@
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
 import { getPlanetaryPositions, isMercuryRetrograde, getVoidOfCourseMoon, getMoonPhase } from './astrology';
+import { isTimeVOC } from './voidOfCourseMoon';
 
 export type BestTimesCategory = 'love' | 'finance' | 'health' | 'beauty' | 'career' | 'travel';
 
@@ -294,10 +295,10 @@ export const calculateBestTimes = (
       reasons.push(`Moon in ${moonSign}`);
     }
 
-    // Check void of course (reduce score)
-    const voc = getVoidOfCourseMoon(moonPhase);
-    if (voc.isVOC) {
-      score -= 20;
+    // Check void of course with enhanced calculation
+    const vocCheck = isTimeVOC(currentDate);
+    if (vocCheck) {
+      score -= 25;
       reasons.push('Moon Void of Course (avoid)');
     }
 
