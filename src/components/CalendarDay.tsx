@@ -22,7 +22,7 @@ import { NatalChart } from "@/hooks/useNatalChart";
 import { calculateTransitAspects, getTopTransitAspects, getTransitPlanetSymbol, getHouseLabel, type TransitAspect } from "@/lib/transitAspects";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { isVenusStarPointDay } from "@/lib/venusStarPoint";
-import { getVOCMoonDetails, formatVOCDuration } from "@/lib/voidOfCourseMoon";
+import { getVOCMoonDetails, formatVOCTime } from "@/lib/voidOfCourseMoon";
 import { getCurrentPlanetaryHour, getDayRuler } from "@/lib/planetaryHours";
 
 // Outer planets that are most significant for transits
@@ -340,13 +340,13 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
         </div>
       )}
 
-      {/* VOC indicator - Enhanced */}
-      {vocDetails.isVOC && (
+      {/* VOC indicator - Time Range Display */}
+      {vocDetails.isVOC && vocDetails.displayStart && vocDetails.displayEnd && (
         <div 
           className="text-xs text-amber-600 mt-1 bg-amber-50 dark:bg-amber-900/30 px-1.5 py-0.5 rounded-sm"
-          title={`VOC Moon: ${vocDetails.start ? vocDetails.start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : ''} - ${vocDetails.end ? vocDetails.end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : ''}\n${vocDetails.lastAspect ? `Last aspect: ☽ ${vocDetails.lastAspect.symbol} ${vocDetails.lastAspect.planet}` : ''}\nMoon enters ${vocDetails.moonEntersSign || 'next sign'}`}
+          title={`Void of Course Moon\n${vocDetails.lastAspect ? `Last aspect: ☽ ${vocDetails.lastAspect.symbol} ${vocDetails.lastAspect.planet} at ${formatVOCTime(vocDetails.lastAspect.time)}` : 'Already VOC'}\nMoon enters ${vocDetails.moonEntersSign || 'next sign'} at ${vocDetails.end ? formatVOCTime(vocDetails.end) : ''}`}
         >
-          ⚠️ V/C {vocDetails.durationMinutes && `(${formatVOCDuration(vocDetails.durationMinutes)})`}
+          ⚠️ V/C {formatVOCTime(vocDetails.displayStart)} - {formatVOCTime(vocDetails.displayEnd)}
         </div>
       )}
 
