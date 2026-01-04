@@ -22,6 +22,8 @@ import { NatalChart } from "@/hooks/useNatalChart";
 import { calculateTransitAspects, getTopTransitAspects, getTransitPlanetSymbol, getHouseLabel, type TransitAspect } from "@/lib/transitAspects";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { isVenusStarPointDay } from "@/lib/venusStarPoint";
+import { getVOCMoonDetails, formatVOCDuration } from "@/lib/voidOfCourseMoon";
+import { getCurrentPlanetaryHour, getDayRuler } from "@/lib/planetaryHours";
 
 // Outer planets that are most significant for transits
 const OUTER_PLANETS = ['Saturn', 'Jupiter', 'Neptune', 'Pluto', 'Uranus'];
@@ -107,10 +109,12 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
   const energy = getEnergyRating(moonPhase, mercuryRetro);
   const aspects = calculateDailyAspects(planets);
   const voc = getVoidOfCourseMoon(moonPhase);
+  const vocDetails = getVOCMoonDetails(date);
   const dayColors = getDayColors(aspects, moonPhase);
   const collectiveDayType = getDayType(aspects, moonPhase);
   const exactLunarPhase = getExactLunarPhase(date);
   const venusStarPoint = isVenusStarPointDay(date);
+  const dayRuler = getDayRuler(date);
 
   // Calculate transit-to-natal aspects if chart is selected
   const transitAspects = activeChart 
@@ -336,9 +340,14 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
         </div>
       )}
 
-      {/* VOC indicator */}
-      {voc.isVOC && (
-        <div className="text-xs text-amber-600 mt-1">V/C</div>
+      {/* VOC indicator - Enhanced */}
+      {vocDetails.isVOC && (
+        <div 
+          className="text-xs text-amber-600 mt-1 bg-amber-50 dark:bg-amber-900/30 px-1.5 py-0.5 rounded-sm"
+          title={`VOC Moon: ${vocDetails.start ? vocDetails.start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : ''} - ${vocDetails.end ? vocDetails.end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : ''}\n${vocDetails.lastAspect ? `Last aspect: ☽ ${vocDetails.lastAspect.symbol} ${vocDetails.lastAspect.planet}` : ''}\nMoon enters ${vocDetails.moonEntersSign || 'next sign'}`}
+        >
+          ⚠️ V/C {vocDetails.durationMinutes && `(${formatVOCDuration(vocDetails.durationMinutes)})`}
+        </div>
       )}
 
       {/* Ingress indicator */}

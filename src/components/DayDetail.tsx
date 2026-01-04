@@ -23,6 +23,8 @@ import { calculateTransitAspects, getTransitPlanetSymbol, TransitAspect, hasHous
 import { getDetailedInterpretation, DetailedInterpretation } from '@/lib/detailedInterpretations';
 import { ComprehensiveTransitAnalysis } from './ComprehensiveTransitAnalysis';
 import { VenusStarPointTracker } from './VenusStarPointTracker';
+import { getVOCMoonDetails, formatVOCDuration } from '@/lib/voidOfCourseMoon';
+import { calculatePlanetaryHours, getDayRuler, formatPlanetaryHourTime, PlanetaryHour } from '@/lib/planetaryHours';
 
 // Sign-specific energies for daily guidance
 const SIGN_ENERGIES: Record<string, { action: string; focus: string; avoid: string }> = {
@@ -624,20 +626,11 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
           </div>
         )}
 
-        {/* Void of Course Moon Section */}
-        {voc && voc.isVOC && (
-          <div className="mb-6 pb-6 border-b border-border">
-            <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground mb-3">Void of Course Moon</h3>
-            {voc.start && voc.end && (
-              <p className="text-sm text-foreground">
-                {voc.start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} - {voc.end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-              </p>
-            )}
-            <p className="text-sm text-muted-foreground mt-2">
-              Avoid starting new projects during this time.
-            </p>
-          </div>
-        )}
+        {/* Void of Course Moon Section - Enhanced */}
+        <VOCMoonSection date={date} voc={voc} />
+
+        {/* Planetary Hours Section */}
+        <PlanetaryHoursSection date={date} />
 
         {/* Personal Transits Section */}
         {personalTransits.hasTransits && (
@@ -775,3 +768,226 @@ const ColorExplanationSection = ({ colorExplanation, aspects }: ColorExplanation
     </div>
   </div>
 );
+
+// VOC Moon Section Component
+const VOCMoonSection = ({ date, voc }: { date: Date; voc: DayData['voc'] }) => {
+  const vocDetails = getVOCMoonDetails(date);
+  
+  if (!vocDetails.isVOC) return null;
+  
+  return (
+    <div className="mb-6 pb-6 border-b border-border">
+      <div className="p-4 rounded-sm bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700">
+        <h3 className="text-sm font-semibold text-amber-700 dark:text-amber-300 mb-3 flex items-center gap-2">
+          ⚠️ Void of Course Moon
+        </h3>
+        
+        <div className="space-y-3">
+          {/* Time Range */}
+          <div className="flex items-center gap-2 text-foreground font-medium">
+            <span className="text-lg">
+              {vocDetails.start?.toLocaleTimeString('en-US', { 
+                timeZone: 'America/New_York',
+                hour: 'numeric', 
+                minute: '2-digit' 
+              })}
+            </span>
+            <span className="text-muted-foreground">—</span>
+            <span className="text-lg">
+              {vocDetails.end?.toLocaleTimeString('en-US', { 
+                timeZone: 'America/New_York',
+                hour: 'numeric', 
+                minute: '2-digit' 
+              })}
+            </span>
+            <span className="text-xs text-muted-foreground">ET</span>
+            {vocDetails.durationMinutes && (
+              <span className="ml-2 text-sm text-amber-600 dark:text-amber-400">
+                ({formatVOCDuration(vocDetails.durationMinutes)})
+              </span>
+            )}
+          </div>
+          
+          {/* Last Aspect Info */}
+          {vocDetails.lastAspect && (
+            <div className="text-sm">
+              <span className="text-muted-foreground">Moon's last aspect:</span>
+              <span className="ml-2 font-medium text-foreground">
+                ☽ {vocDetails.lastAspect.symbol} {vocDetails.lastAspect.planet}
+              </span>
+              <span className="ml-2 text-muted-foreground">
+                at {vocDetails.lastAspect.time.toLocaleTimeString('en-US', {
+                  timeZone: 'America/New_York',
+                  hour: 'numeric',
+                  minute: '2-digit',
+                })} ET
+              </span>
+            </div>
+          )}
+          
+          {/* Moon Enters Sign */}
+          {vocDetails.moonEntersSign && (
+            <div className="text-sm">
+              <span className="text-muted-foreground">Moon enters:</span>
+              <span className="ml-2 font-medium text-foreground">{vocDetails.moonEntersSign}</span>
+            </div>
+          )}
+          
+          {/* Guidance */}
+          <div className="mt-4 pt-3 border-t border-amber-200 dark:border-amber-700 text-sm">
+            <div className="grid gap-2">
+              <div>
+                <span className="font-medium text-red-600 dark:text-red-400">✗ Avoid:</span>
+                <span className="ml-2 text-foreground">Starting new projects, signing contracts, major purchases, important decisions</span>
+              </div>
+              <div>
+                <span className="font-medium text-green-600 dark:text-green-400">✓ Best for:</span>
+                <span className="ml-2 text-foreground">Finishing existing work, rest, meditation, routine tasks, tying up loose ends</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-xs text-amber-600 dark:text-amber-400 italic mt-2">
+            Things started during VOC tend to "go nowhere" or not develop as planned.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Planetary Hours Section Component
+const PlanetaryHoursSection = ({ date }: { date: Date }) => {
+  const [showAllHours, setShowAllHours] = useState(false);
+  const dayRuler = getDayRuler(date);
+  const hours = calculatePlanetaryHours(date);
+  const now = new Date();
+  const isToday = date.toDateString() === now.toDateString();
+  
+  // Find current hour if viewing today
+  const currentHourIndex = isToday 
+    ? hours.findIndex(h => now.getTime() >= h.start.getTime() && now.getTime() < h.end.getTime())
+    : -1;
+  
+  const currentHour = currentHourIndex >= 0 ? hours[currentHourIndex] : null;
+  const nextHour = currentHourIndex >= 0 && currentHourIndex < hours.length - 1 ? hours[currentHourIndex + 1] : null;
+  
+  // Get day hours (first 12) and night hours (last 12)
+  const dayHours = hours.slice(0, 12);
+  const nightHours = hours.slice(12, 24);
+  
+  return (
+    <div className="mb-6 pb-6 border-b border-border">
+      <div className="p-4 rounded-sm bg-secondary border border-border">
+        <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+          📅 Planetary Hours
+          <span className="text-xs font-normal text-muted-foreground">
+            ({dayRuler.dayName} is ruled by {dayRuler.symbol} {dayRuler.planet})
+          </span>
+        </h3>
+        
+        {/* Current Hour (if today) */}
+        {isToday && currentHour && (
+          <div className="mb-4 p-3 rounded-sm bg-primary/10 border border-primary/30">
+            <div className="flex items-center justify-between mb-2">
+              <div className="font-semibold text-primary flex items-center gap-2">
+                <span className="text-xl">{currentHour.symbol}</span>
+                <span>RIGHT NOW: {currentHour.planet} Hour</span>
+              </div>
+              <span className="text-xs text-muted-foreground">
+                {formatPlanetaryHourTime(currentHour.start)} - {formatPlanetaryHourTime(currentHour.end)}
+              </span>
+            </div>
+            
+            <div className="text-sm space-y-1">
+              <div>
+                <span className="font-medium text-green-600 dark:text-green-400">Best for:</span>
+                <span className="ml-2 text-foreground">{currentHour.meanings.bestFor.slice(0, 3).join(', ')}</span>
+              </div>
+            </div>
+            
+            {nextHour && (
+              <div className="mt-2 pt-2 border-t border-primary/20 text-xs text-muted-foreground">
+                <span>Next: {nextHour.symbol} {nextHour.planet} Hour ({formatPlanetaryHourTime(nextHour.start)})</span>
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* Collapsed/Expanded Schedule */}
+        <button
+          onClick={() => setShowAllHours(!showAllHours)}
+          className="flex items-center gap-2 text-xs text-primary hover:text-primary/80 transition-colors mb-2"
+        >
+          {showAllHours ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          {showAllHours ? 'Hide full schedule' : 'Show full schedule'}
+        </button>
+        
+        {showAllHours && (
+          <div className="space-y-4 mt-4">
+            {/* Day Hours */}
+            <div>
+              <div className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
+                ☀️ Day Hours (Sunrise to Sunset)
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {dayHours.map((hour, i) => (
+                  <div 
+                    key={i}
+                    className={`p-2 rounded-sm text-xs border ${
+                      currentHourIndex === i 
+                        ? 'bg-primary/10 border-primary' 
+                        : 'bg-background border-border'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-medium">{hour.symbol} {hour.planet}</span>
+                      <span className="text-muted-foreground">#{hour.hourNumber}</span>
+                    </div>
+                    <div className="text-muted-foreground">
+                      {formatPlanetaryHourTime(hour.start)} - {formatPlanetaryHourTime(hour.end)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Night Hours */}
+            <div>
+              <div className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
+                🌙 Night Hours (Sunset to Sunrise)
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {nightHours.map((hour, i) => (
+                  <div 
+                    key={i}
+                    className={`p-2 rounded-sm text-xs border ${
+                      currentHourIndex === i + 12 
+                        ? 'bg-primary/10 border-primary' 
+                        : 'bg-background border-border'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-medium">{hour.symbol} {hour.planet}</span>
+                      <span className="text-muted-foreground">#{hour.hourNumber}</span>
+                    </div>
+                    <div className="text-muted-foreground">
+                      {formatPlanetaryHourTime(hour.start)} - {formatPlanetaryHourTime(hour.end)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Quick Reference */}
+        {!showAllHours && (
+          <div className="text-xs text-muted-foreground mt-2">
+            Click to see when each planetary hour occurs today for precise timing.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};

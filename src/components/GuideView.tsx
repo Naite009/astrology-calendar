@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-type GuideSection = "overview" | "colors" | "symbols" | "moonphases" | "retrogrades" | "aspects" | "dignities" | "fixedstars" | "divinefeminine" | "venuscycles";
+type GuideSection = "overview" | "colors" | "symbols" | "moonphases" | "retrogrades" | "aspects" | "dignities" | "fixedstars" | "divinefeminine" | "venuscycles" | "vocmoon" | "planetaryhours";
 
 const SymbolCard = ({ icon, name, desc }: { icon: string; name: string; desc: string }) => (
   <div className="rounded-sm border border-border bg-secondary p-4">
@@ -735,6 +735,282 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
       </>
     ),
   },
+  vocmoon: {
+    title: "Understanding Void of Course Moon",
+    content: (
+      <>
+        <p>
+          The <strong>Void of Course Moon</strong> (VOC) is one of the most important timing 
+          techniques in astrology. It occurs when the Moon makes its last major aspect to 
+          another planet before changing signs—and before it enters the next sign.
+        </p>
+        
+        <h3>What Happens During VOC?</h3>
+        <p>
+          During this period, the Moon is "between" aspects—it has finished its business in 
+          one sign but hasn't yet started new business in the next. The energy is suspended, 
+          transitional, and unfocused.
+        </p>
+        
+        <div className="mt-4 p-4 rounded-sm bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700">
+          <div className="font-semibold text-foreground mb-3">⚠️ Why It Matters</div>
+          <p className="text-sm text-foreground mb-3">
+            Things started during VOC Moon tend to <strong>"go nowhere"</strong> or not develop 
+            as planned. Contracts signed may not be honored. Projects started may never be finished 
+            or may need to be completely redone later.
+          </p>
+          <div className="text-xs text-muted-foreground italic">
+            Ancient astrologers called this "the Moon runs wild" (Luna curso vacua).
+          </div>
+        </div>
+        
+        <h3>VOC Duration</h3>
+        <p>
+          VOC periods can last from a few minutes to over 24 hours! Short VOC periods (under 2 hours) 
+          are common and not a big deal. Long VOC periods (over 8 hours) are significant and worth 
+          planning around.
+        </p>
+        
+        <h3>What to Avoid During VOC</h3>
+        <div className="mt-4 grid gap-2 text-sm">
+          <div className="flex items-start gap-2 p-2 rounded-sm bg-red-50 dark:bg-red-900/20">
+            <span className="text-red-600">✗</span>
+            <span>Starting new projects or ventures</span>
+          </div>
+          <div className="flex items-start gap-2 p-2 rounded-sm bg-red-50 dark:bg-red-900/20">
+            <span className="text-red-600">✗</span>
+            <span>Signing contracts or making agreements</span>
+          </div>
+          <div className="flex items-start gap-2 p-2 rounded-sm bg-red-50 dark:bg-red-900/20">
+            <span className="text-red-600">✗</span>
+            <span>Making major purchases</span>
+          </div>
+          <div className="flex items-start gap-2 p-2 rounded-sm bg-red-50 dark:bg-red-900/20">
+            <span className="text-red-600">✗</span>
+            <span>Important meetings or interviews</span>
+          </div>
+          <div className="flex items-start gap-2 p-2 rounded-sm bg-red-50 dark:bg-red-900/20">
+            <span className="text-red-600">✗</span>
+            <span>Launching websites or products</span>
+          </div>
+        </div>
+        
+        <h3>What to DO During VOC</h3>
+        <div className="mt-4 grid gap-2 text-sm">
+          <div className="flex items-start gap-2 p-2 rounded-sm bg-green-50 dark:bg-green-900/20">
+            <span className="text-green-600">✓</span>
+            <span>Finish existing work and tie up loose ends</span>
+          </div>
+          <div className="flex items-start gap-2 p-2 rounded-sm bg-green-50 dark:bg-green-900/20">
+            <span className="text-green-600">✓</span>
+            <span>Rest, meditate, and recharge</span>
+          </div>
+          <div className="flex items-start gap-2 p-2 rounded-sm bg-green-50 dark:bg-green-900/20">
+            <span className="text-green-600">✓</span>
+            <span>Routine tasks and maintenance</span>
+          </div>
+          <div className="flex items-start gap-2 p-2 rounded-sm bg-green-50 dark:bg-green-900/20">
+            <span className="text-green-600">✓</span>
+            <span>Brainstorming (without implementation)</span>
+          </div>
+          <div className="flex items-start gap-2 p-2 rounded-sm bg-green-50 dark:bg-green-900/20">
+            <span className="text-green-600">✓</span>
+            <span>Activities you don't want to commit to</span>
+          </div>
+        </div>
+        
+        <h3>The Exception: Routine Activities</h3>
+        <p>
+          VOC is less impactful for things you do regularly. Going to work, regular meetings, 
+          routine errands—these are fine during VOC because they're not "new beginnings."
+        </p>
+        
+        <h3>How Your Calendar Shows VOC</h3>
+        <p>
+          On your calendar, VOC periods are marked with <strong>⚠️ V/C</strong> along with the 
+          duration. Click on any day to see the exact times, the Moon's last aspect, and what 
+          sign the Moon will enter when VOC ends.
+        </p>
+      </>
+    ),
+  },
+  planetaryhours: {
+    title: "Understanding Planetary Hours",
+    content: (
+      <>
+        <p>
+          <strong>Planetary Hours</strong> is an ancient system that divides each day and night into 
+          12 unequal "hours," each ruled by one of the seven classical planets. This gives you 
+          precise timing WITHIN a day—not just which day is good, but which HOUR is optimal.
+        </p>
+        
+        <h3>How It Works</h3>
+        <div className="mt-4 p-4 rounded-sm bg-secondary border border-border font-mono text-xs">
+          <div className="space-y-2 text-muted-foreground">
+            <div>☀️ <strong>Day Hours:</strong> Sunrise to Sunset (12 hours)</div>
+            <div>🌙 <strong>Night Hours:</strong> Sunset to Sunrise (12 hours)</div>
+            <div className="pt-2 border-t border-border">
+              Note: These are NOT clock hours! Each planetary "hour" 
+              expands or contracts with the actual length of day/night.
+            </div>
+          </div>
+        </div>
+        
+        <h3>The Chaldean Order</h3>
+        <p>
+          Planets cycle in a specific order called the <strong>Chaldean Order</strong>:
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2 justify-center">
+          <span className="px-3 py-2 rounded-sm bg-secondary text-sm">♄ Saturn</span>
+          <span className="text-muted-foreground">→</span>
+          <span className="px-3 py-2 rounded-sm bg-secondary text-sm">♃ Jupiter</span>
+          <span className="text-muted-foreground">→</span>
+          <span className="px-3 py-2 rounded-sm bg-secondary text-sm">♂ Mars</span>
+          <span className="text-muted-foreground">→</span>
+          <span className="px-3 py-2 rounded-sm bg-secondary text-sm">☉ Sun</span>
+          <span className="text-muted-foreground">→</span>
+          <span className="px-3 py-2 rounded-sm bg-secondary text-sm">♀ Venus</span>
+          <span className="text-muted-foreground">→</span>
+          <span className="px-3 py-2 rounded-sm bg-secondary text-sm">☿ Mercury</span>
+          <span className="text-muted-foreground">→</span>
+          <span className="px-3 py-2 rounded-sm bg-secondary text-sm">☽ Moon</span>
+          <span className="text-muted-foreground">→ (repeat)</span>
+        </div>
+        
+        <h3>Day Rulers</h3>
+        <p>
+          Each day of the week is ruled by a planet. The first hour after sunrise is ruled by that planet:
+        </p>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left py-2 px-3">Day</th>
+                <th className="text-left py-2 px-3">Ruler</th>
+                <th className="text-left py-2 px-3">Best For</th>
+              </tr>
+            </thead>
+            <tbody className="text-muted-foreground">
+              <tr className="border-b border-border/50">
+                <td className="py-2 px-3 font-medium text-foreground">Sunday</td>
+                <td className="py-2 px-3">☉ Sun</td>
+                <td className="py-2 px-3">Leadership, vitality, creativity, confidence</td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-2 px-3 font-medium text-foreground">Monday</td>
+                <td className="py-2 px-3">☽ Moon</td>
+                <td className="py-2 px-3">Home, family, emotions, intuition</td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-2 px-3 font-medium text-foreground">Tuesday</td>
+                <td className="py-2 px-3">♂ Mars</td>
+                <td className="py-2 px-3">Action, competition, courage, surgery</td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-2 px-3 font-medium text-foreground">Wednesday</td>
+                <td className="py-2 px-3">☿ Mercury</td>
+                <td className="py-2 px-3">Communication, learning, travel, tech</td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-2 px-3 font-medium text-foreground">Thursday</td>
+                <td className="py-2 px-3">♃ Jupiter</td>
+                <td className="py-2 px-3">Expansion, luck, legal matters, education</td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-2 px-3 font-medium text-foreground">Friday</td>
+                <td className="py-2 px-3">♀ Venus</td>
+                <td className="py-2 px-3">Love, beauty, pleasure, financial matters</td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-2 px-3 font-medium text-foreground">Saturday</td>
+                <td className="py-2 px-3">♄ Saturn</td>
+                <td className="py-2 px-3">Structure, discipline, long-term planning</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <h3>Using Planetary Hours</h3>
+        <div className="mt-4 space-y-4">
+          <div className="p-4 rounded-sm bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700">
+            <div className="font-semibold text-foreground mb-2">☉ Sun Hour</div>
+            <ul className="text-sm text-muted-foreground space-y-1">
+              <li>• Leadership decisions & self-promotion</li>
+              <li>• Creative projects & artistic expression</li>
+              <li>• Meeting authority figures</li>
+              <li>• Health and vitality matters</li>
+            </ul>
+          </div>
+          
+          <div className="p-4 rounded-sm bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700">
+            <div className="font-semibold text-foreground mb-2">☽ Moon Hour</div>
+            <ul className="text-sm text-muted-foreground space-y-1">
+              <li>• Family & domestic matters</li>
+              <li>• Emotional conversations</li>
+              <li>• Intuitive work & psychic practices</li>
+              <li>• Women's health & nurturing</li>
+            </ul>
+          </div>
+          
+          <div className="p-4 rounded-sm bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-700">
+            <div className="font-semibold text-foreground mb-2">☿ Mercury Hour</div>
+            <ul className="text-sm text-muted-foreground space-y-1">
+              <li>• Writing & communication</li>
+              <li>• Learning & study</li>
+              <li>• Travel planning</li>
+              <li>• Technology & business</li>
+            </ul>
+          </div>
+          
+          <div className="p-4 rounded-sm bg-pink-50 dark:bg-pink-900/30 border border-pink-200 dark:border-pink-700">
+            <div className="font-semibold text-foreground mb-2">♀ Venus Hour</div>
+            <ul className="text-sm text-muted-foreground space-y-1">
+              <li>• Love & romance</li>
+              <li>• Beauty treatments & shopping</li>
+              <li>• Social gatherings & parties</li>
+              <li>• Art & aesthetics</li>
+            </ul>
+          </div>
+          
+          <div className="p-4 rounded-sm bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700">
+            <div className="font-semibold text-foreground mb-2">♂ Mars Hour</div>
+            <ul className="text-sm text-muted-foreground space-y-1">
+              <li>• Physical activity & sports</li>
+              <li>• Competition & conflict resolution</li>
+              <li>• Surgery & medical procedures</li>
+              <li>• Courage-requiring tasks</li>
+            </ul>
+          </div>
+          
+          <div className="p-4 rounded-sm bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-700">
+            <div className="font-semibold text-foreground mb-2">♃ Jupiter Hour</div>
+            <ul className="text-sm text-muted-foreground space-y-1">
+              <li>• Legal matters & court</li>
+              <li>• Higher education & philosophy</li>
+              <li>• Long journeys & adventures</li>
+              <li>• Publishing & expansion</li>
+            </ul>
+          </div>
+          
+          <div className="p-4 rounded-sm bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600">
+            <div className="font-semibold text-foreground mb-2">♄ Saturn Hour</div>
+            <ul className="text-sm text-muted-foreground space-y-1">
+              <li>• Serious work & discipline</li>
+              <li>• Long-term planning</li>
+              <li>• Real estate & agriculture</li>
+              <li>• Setting boundaries & endings</li>
+            </ul>
+          </div>
+        </div>
+        
+        <h3>Viewing Planetary Hours</h3>
+        <p>
+          Click on any day in your calendar to see the complete planetary hour schedule. 
+          If you're viewing today, you'll see which hour is currently active and what's coming next.
+        </p>
+      </>
+    ),
+  },
   venuscycles: {
     title: "Understanding Venus Cycles",
     content: (
@@ -945,6 +1221,8 @@ const NAV_ITEMS: { key: GuideSection; label: string }[] = [
   { key: "colors", label: "Colors" },
   { key: "symbols", label: "Symbols" },
   { key: "moonphases", label: "Moon Phases" },
+  { key: "vocmoon", label: "VOC Moon" },
+  { key: "planetaryhours", label: "Planetary Hours" },
   { key: "venuscycles", label: "Venus Cycles" },
   { key: "retrogrades", label: "Retrogrades" },
   { key: "aspects", label: "Aspects" },
