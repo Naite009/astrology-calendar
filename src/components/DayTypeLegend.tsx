@@ -22,9 +22,9 @@ export const DayTypeLegend = ({ isOpen, onClose }: DayTypeLegendProps) => {
   ];
 
   const specialDays = [
-    { label: 'Seed Day', emoji: '🌑', description: 'New Moon — new beginnings, set intentions', isLucky: true },
-    { label: 'Peak Day', emoji: '🌕', description: 'Full Moon — emotional culmination, clarity', isLucky: false },
-    { label: 'Rest Day', emoji: '🌘', description: 'Balsamic Moon — release, reflect, restore', isLucky: false },
+    { label: 'Plant Seeds', emoji: '🌑', description: 'New Moon — set intentions, start new projects', isLucky: true },
+    { label: 'Harvest', emoji: '🌕', description: 'Full Moon — see results, gain clarity, celebrate', isLucky: false },
+    { label: 'Rest & Release', emoji: '🌘', description: 'Balsamic Moon — let go, reflect, recharge', isLucky: false },
   ];
 
   const luckIndicators = [
@@ -50,12 +50,29 @@ export const DayTypeLegend = ({ isOpen, onClose }: DayTypeLegendProps) => {
             </button>
           </div>
 
+          {/* Venus Star Point explanation */}
+          <div className="mb-6 p-4 bg-pink-50 dark:bg-pink-900/20 rounded-lg border border-pink-200 dark:border-pink-800">
+            <h3 className="font-medium text-foreground mb-2">♀⭐ Venus Star Point</h3>
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p>When you see <span className="text-pink-500 font-medium">♀⭐</span> on a date, it means <strong className="text-foreground">Venus and the Sun are exactly aligned</strong> (conjunction) — a rare event that happens only 5 times in 8 years!</p>
+              <p>Venus Star Points are powerful days for:</p>
+              <ul className="list-disc list-inside ml-2 space-y-1">
+                <li>Love and relationship breakthroughs</li>
+                <li>Creative inspiration and artistic expression</li>
+                <li>Financial decisions and attracting abundance</li>
+                <li>Beauty treatments and self-care rituals</li>
+              </ul>
+              <p className="text-pink-600 dark:text-pink-400 font-medium mt-2">Jan 4-6, 2026 is extra special: Venus, Sun, AND Pluto all align — a rare triple conjunction for deep transformation in love!</p>
+            </div>
+          </div>
+
           {/* Personal vs Collective explanation */}
           <div className="mb-6 p-4 bg-muted/50 rounded-lg">
-            <h3 className="font-medium text-foreground mb-2">📍 Two Types of Day Labels</h3>
+            <h3 className="font-medium text-foreground mb-2">📍 Your Day vs. The Sky</h3>
             <div className="space-y-2 text-sm text-muted-foreground">
-              <p><strong className="text-foreground">"Your [Day Type]"</strong> — Based on transits to YOUR natal chart. Shows which planet is most active in YOUR sky today.</p>
-              <p><strong className="text-foreground">"(sky: [Day Type])"</strong> — The collective energy based on aspects in the general sky for everyone.</p>
+              <p><strong className="text-foreground">"Your [Label]"</strong> — What's happening in YOUR chart today. The planets are making aspects to your birth chart, activating specific themes FOR YOU.</p>
+              <p><strong className="text-foreground">"(sky: [Label])"</strong> — The collective weather everyone feels. Based on what planets are doing in the sky right now.</p>
+              <p className="mt-2 italic">Example: Your day might say "Love & Beauty" because Venus is hitting your chart, while the sky shows "Go & Do" because Mars is active for everyone.</p>
             </div>
           </div>
 
