@@ -131,6 +131,179 @@ interface HistoricalMatch {
   journalEntry?: string;
 }
 
+interface CalculatedOccurrence {
+  date: Date;
+  approximate: boolean;
+  description: string;
+}
+
+// Orbital periods in days for calculating past transit occurrences
+const ORBITAL_PERIODS: Record<string, number> = {
+  sun: 365.25,
+  moon: 27.32,
+  mercury: 87.97,
+  venus: 224.7,
+  mars: 686.98,
+  jupiter: 4332.59,
+  saturn: 10759.22,
+  uranus: 30688.5,
+  neptune: 60182,
+  pluto: 90560,
+};
+
+// Calculate approximate degrees traveled per day
+const DEGREES_PER_DAY: Record<string, number> = {
+  sun: 360 / 365.25,           // ~0.986°/day
+  moon: 360 / 27.32,           // ~13.18°/day
+  mercury: 360 / 87.97,        // ~4.09°/day (average, varies widely)
+  venus: 360 / 224.7,          // ~1.60°/day
+  mars: 360 / 686.98,          // ~0.52°/day
+  jupiter: 360 / 4332.59,      // ~0.083°/day
+  saturn: 360 / 10759.22,      // ~0.033°/day
+  uranus: 360 / 30688.5,       // ~0.012°/day
+  neptune: 360 / 60182,        // ~0.006°/day
+  pluto: 360 / 90560,          // ~0.004°/day
+};
+
+// Calculate how often this SPECIFIC aspect happens (transit planet to a fixed natal point)
+const getTransitFrequency = (transitPlanet: string, aspectType: string): { 
+  frequency: string; 
+  description: string; 
+  nextIn: string;
+  rarity: 'common' | 'moderate' | 'rare' | 'very-rare' | 'once-in-lifetime';
+} => {
+  const planet = transitPlanet.toLowerCase();
+  const orbitalPeriod = ORBITAL_PERIODS[planet] || 365;
+  
+  // Most aspects happen twice per orbit (once applying, once separating)
+  // Except conjunctions and oppositions which happen once
+  const aspectsPerOrbit = aspectType === 'conjunction' || aspectType === 'opposition' ? 1 : 2;
+  const daysPerAspect = orbitalPeriod / aspectsPerOrbit;
+  
+  if (planet === 'moon') {
+    return {
+      frequency: `Every ~${Math.round(27.32 / aspectsPerOrbit)} days`,
+      description: `The Moon makes this aspect to your natal planet about ${aspectsPerOrbit === 1 ? 'once' : 'twice'} per month.`,
+      nextIn: `~${Math.round(27.32 / aspectsPerOrbit)} days`,
+      rarity: 'common'
+    };
+  }
+  
+  if (planet === 'sun' || planet === 'mercury' || planet === 'venus') {
+    return {
+      frequency: `${aspectsPerOrbit === 1 ? 'Once' : 'Twice'} per year`,
+      description: `The ${transitPlanet} makes this exact aspect to your natal planet ${aspectsPerOrbit === 1 ? 'once' : 'twice'} each year as it travels through the zodiac.`,
+      nextIn: `~${Math.round(daysPerAspect / 30)} months`,
+      rarity: 'moderate'
+    };
+  }
+  
+  if (planet === 'mars') {
+    return {
+      frequency: `${aspectsPerOrbit === 1 ? 'Once' : 'Twice'} every ~2 years`,
+      description: `Mars takes about 2 years to complete its orbit, so this aspect happens ${aspectsPerOrbit === 1 ? 'once' : 'twice'} in that cycle. Pay attention—this is moderately rare.`,
+      nextIn: `~${Math.round(daysPerAspect / 365)} year${daysPerAspect > 365 ? 's' : ''}`,
+      rarity: 'moderate'
+    };
+  }
+  
+  if (planet === 'jupiter') {
+    return {
+      frequency: `${aspectsPerOrbit === 1 ? 'Once' : 'Twice'} every ~12 years`,
+      description: `Jupiter takes 12 years to orbit the Sun. This aspect is significant—you only experience it ${aspectsPerOrbit === 1 ? 'once' : 'twice'} per Jupiter cycle.`,
+      nextIn: `~${Math.round(daysPerAspect / 365)} years`,
+      rarity: 'rare'
+    };
+  }
+  
+  if (planet === 'saturn') {
+    return {
+      frequency: `${aspectsPerOrbit === 1 ? 'Once' : 'Twice'} every ~29 years`,
+      description: `Saturn's 29-year cycle means this aspect marks major life chapters. You'll experience this ${aspectsPerOrbit === 1 ? 'once' : 'twice'} per Saturn Return cycle.`,
+      nextIn: `~${Math.round(daysPerAspect / 365)} years`,
+      rarity: 'very-rare'
+    };
+  }
+  
+  if (planet === 'uranus') {
+    return {
+      frequency: `${aspectsPerOrbit === 1 ? 'Once' : 'Twice'} every ~84 years`,
+      description: `Uranus takes 84 years to orbit. Most people only experience this aspect ${aspectsPerOrbit === 1 ? 'once' : 'twice'} in their lifetime. This is a pivotal, once-in-a-generation transit.`,
+      nextIn: `~${Math.round(daysPerAspect / 365)} years`,
+      rarity: 'once-in-lifetime'
+    };
+  }
+  
+  if (planet === 'neptune') {
+    return {
+      frequency: `${aspectsPerOrbit === 1 ? 'Once' : 'Twice'} every ~165 years`,
+      description: `Neptune's 165-year orbit means this aspect happens ${aspectsPerOrbit === 1 ? 'once' : 'at most twice'} in anyone's life. This is exceptionally rare and spiritually significant.`,
+      nextIn: `~${Math.round(daysPerAspect / 365)} years`,
+      rarity: 'once-in-lifetime'
+    };
+  }
+  
+  if (planet === 'pluto') {
+    return {
+      frequency: `${aspectsPerOrbit === 1 ? 'Once' : 'Twice'} every ~248 years`,
+      description: `Pluto's 248-year orbit means NO ONE experiences this same aspect twice at the same degree. This is a completely unique, transformative moment in your life.`,
+      nextIn: 'Never in your lifetime at this exact degree',
+      rarity: 'once-in-lifetime'
+    };
+  }
+  
+  return {
+    frequency: 'Varies',
+    description: 'This transit follows its own unique cycle.',
+    nextIn: 'See transit tables',
+    rarity: 'moderate'
+  };
+};
+
+// Calculate past occurrences of this transit
+const calculatePastOccurrences = (
+  transitPlanet: string, 
+  natalDegree: number, 
+  natalSign: string,
+  aspectType: string,
+  currentDate: Date
+): CalculatedOccurrence[] => {
+  const planet = transitPlanet.toLowerCase();
+  const orbitalPeriod = ORBITAL_PERIODS[planet];
+  const aspectsPerOrbit = aspectType === 'conjunction' || aspectType === 'opposition' ? 1 : 2;
+  const daysPerAspect = orbitalPeriod / aspectsPerOrbit;
+  
+  const occurrences: CalculatedOccurrence[] = [];
+  const today = currentDate.getTime();
+  
+  // Calculate backwards from today
+  // For outer planets, we may not have many past occurrences
+  // For inner planets, limit to last 5 years of occurrences
+  const maxLookbackDays = Math.min(orbitalPeriod * 3, 365 * 80); // Max 80 years or 3 orbits
+  const maxOccurrences = 10;
+  
+  let daysBack = daysPerAspect; // Start with the previous occurrence
+  while (daysBack <= maxLookbackDays && occurrences.length < maxOccurrences) {
+    const pastDate = new Date(today - daysBack * 24 * 60 * 60 * 1000);
+    
+    // Skip future dates somehow calculated
+    if (pastDate >= currentDate) {
+      daysBack += daysPerAspect;
+      continue;
+    }
+    
+    occurrences.push({
+      date: pastDate,
+      approximate: true,
+      description: `${transitPlanet} ${aspectType} your natal point`
+    });
+    
+    daysBack += daysPerAspect;
+  }
+  
+  return occurrences;
+};
+
 const findHistoricalMatches = (aspect: TransitAspect, currentDate: Date): HistoricalMatch[] => {
   const transitSignature = `${aspect.transitPlanet.toLowerCase()}-${aspect.aspect}-${aspect.natalPlanet.toLowerCase()}`;
   const journalEntries = JSON.parse(localStorage.getItem('transitJournals') || '[]');
@@ -168,22 +341,6 @@ const getTransitCycle = (planet: string): string => {
     pluto: 'Pluto completes a cycle every 248 years.',
   };
   return cycles[planet.toLowerCase()] || '';
-};
-
-const getNextOccurrence = (planet: string): string => {
-  const nextTimes: Record<string, string> = {
-    sun: '1 year',
-    moon: '1 month',
-    mercury: '1 year',
-    venus: '1-1.5 years',
-    mars: '2 years',
-    jupiter: '12 years',
-    saturn: '29 years',
-    uranus: '84 years',
-    neptune: '165 years',
-    pluto: '248 years',
-  };
-  return nextTimes[planet.toLowerCase()] || 'several years';
 };
 
 interface FeelingData {
@@ -634,129 +791,184 @@ const TransitTimeline = ({ transitPlanet, aspect, currentDate }: {
   );
 };
 
-const HistoricalPatterns = ({ matches, transitPlanet, natalPlanet, aspect }: {
+const HistoricalPatterns = ({ matches, transitPlanet, natalPlanet, natalDegree, natalSign, aspect, currentDate }: {
   matches: HistoricalMatch[];
   transitPlanet: string;
   natalPlanet: string;
+  natalDegree: number;
+  natalSign: string;
   aspect: string;
+  currentDate: Date;
 }) => {
-  if (!matches || matches.length === 0) {
-    return (
-      <div style={{
-        marginBottom: '24px',
-        padding: '20px',
-        background: '#F5F3EF',
-        borderRadius: '8px',
-        border: '1px solid #C8C4BC'
-      }}>
-        <h4 style={{
-          fontSize: '16px',
-          fontWeight: '700',
-          marginBottom: '12px',
-          color: '#6B6B6B'
-        }}>
-          📅 Historical Patterns
-        </h4>
-        <div style={{ fontSize: '14px', color: '#6B6B6B' }}>
-          This exact transit ({transitPlanet} {aspect} {natalPlanet}) has no previous journal entries.
-          Start journaling now to track the pattern for next time!
-        </div>
-        <div style={{ fontSize: '13px', color: '#8B7355', marginTop: '8px' }}>
-          {getTransitCycle(transitPlanet)} This same aspect will happen again in approximately{' '}
-          {getNextOccurrence(transitPlanet)}.
-        </div>
-      </div>
-    );
-  }
+  const frequency = getTransitFrequency(transitPlanet, aspect);
+  const calculatedOccurrences = calculatePastOccurrences(transitPlanet, natalDegree, natalSign, aspect, currentDate);
+  
+  // Rarity badge colors
+  const rarityColors: Record<string, { bg: string; text: string; border: string }> = {
+    'common': { bg: '#E8F5E9', text: '#2E7D32', border: '#81C784' },
+    'moderate': { bg: '#FFF3E0', text: '#E65100', border: '#FFB74D' },
+    'rare': { bg: '#E3F2FD', text: '#1565C0', border: '#64B5F6' },
+    'very-rare': { bg: '#F3E5F5', text: '#7B1FA2', border: '#BA68C8' },
+    'once-in-lifetime': { bg: '#FCE4EC', text: '#C2185B', border: '#F48FB1' },
+  };
+  
+  const rarityStyle = rarityColors[frequency.rarity] || rarityColors['moderate'];
   
   return (
     <div style={{
       marginBottom: '24px',
       padding: '20px',
-      background: 'linear-gradient(135deg, #E0F2F1 0%, #B2DFDB 100%)',
+      background: 'linear-gradient(135deg, #ECEFF1 0%, #CFD8DC 100%)',
       borderRadius: '8px',
-      border: '1px solid #26A69A'
+      border: '1px solid #90A4AE'
     }}>
-      <h4 style={{
-        fontSize: '16px',
-        fontWeight: '700',
-        marginBottom: '12px',
-        color: '#00695C'
-      }}>
-        📅 This SAME Transit Happened Before
-      </h4>
-      
-      <div style={{ fontSize: '14px', lineHeight: '1.8', color: '#2C2C2C' }}>
-        <div style={{ marginBottom: '16px', fontSize: '13px', color: '#00796B' }}>
-          Look for patterns in your journal from these dates. What was happening? 
-          How did you feel? What themes emerged?
-        </div>
-        
-        {matches.slice(0, 3).map((match, i) => (
-          <div key={i} style={{
-            marginBottom: '12px',
-            padding: '16px',
-            background: 'rgba(255,255,255,0.95)',
-            borderRadius: '4px',
-            borderLeft: '4px solid #26A69A'
-          }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '8px'
-            }}>
-              <div style={{ fontWeight: '600', color: '#00695C' }}>
-                {match.date.toLocaleDateString('en-US', { 
-                  weekday: 'long',
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}
-              </div>
-              <div style={{ fontSize: '12px', color: '#6B6B6B' }}>
-                {match.yearsAgo > 0 ? `${match.yearsAgo} year${match.yearsAgo > 1 ? 's' : ''} ago` : 'This year'}
-              </div>
-            </div>
-            
-            <div style={{ fontSize: '13px', color: '#424242', marginBottom: '8px' }}>
-              {getSymbol(match.transitPlanet)} {match.transitPlanet} at {match.transitDegree}° {match.transitSign}
-              {' '}{aspect}{' '}
-              {getSymbol(match.natalPlanet)} {match.natalPlanet} at {match.natalDegree}° {match.natalSign}
-            </div>
-            
-            {match.journalEntry && (
-              <div style={{
-                marginTop: '12px',
-                padding: '12px',
-                background: '#E0F2F1',
-                borderRadius: '4px',
-                fontSize: '13px',
-                fontStyle: 'italic'
-              }}>
-                <div style={{ fontWeight: '600', marginBottom: '6px' }}>Your Journal Entry:</div>
-                <div>{match.journalEntry}</div>
-              </div>
-            )}
-          </div>
-        ))}
-        
-        <div style={{
-          marginTop: '16px',
-          padding: '12px',
-          background: 'rgba(255,235,59,0.2)',
-          borderRadius: '4px',
-          fontSize: '13px'
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+        <h4 style={{
+          fontSize: '16px',
+          fontWeight: '700',
+          color: '#37474F'
         }}>
-          <div style={{ fontWeight: '600', marginBottom: '6px', color: '#00695C' }}>
-            🔮 Pattern Cycle:
-          </div>
-          <div>
-            {getTransitCycle(transitPlanet)} This same aspect will happen again in approximately{' '}
-            {getNextOccurrence(transitPlanet)}.
-          </div>
+          📅 When This Transit Occurs
+        </h4>
+        
+        {/* Rarity Badge */}
+        <div style={{
+          padding: '4px 10px',
+          background: rarityStyle.bg,
+          border: `1px solid ${rarityStyle.border}`,
+          borderRadius: '12px',
+          fontSize: '11px',
+          fontWeight: '600',
+          color: rarityStyle.text,
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px'
+        }}>
+          {frequency.rarity === 'once-in-lifetime' ? '✨ Once in Lifetime' : 
+           frequency.rarity === 'very-rare' ? '💎 Very Rare' :
+           frequency.rarity === 'rare' ? '⭐ Rare' :
+           frequency.rarity === 'moderate' ? '○ Occasional' : '● Regular'}
         </div>
       </div>
+      
+      {/* Frequency Info */}
+      <div style={{
+        padding: '16px',
+        background: 'rgba(255,255,255,0.9)',
+        borderRadius: '6px',
+        marginBottom: '16px',
+        borderLeft: `4px solid ${rarityStyle.border}`
+      }}>
+        <div style={{ fontSize: '15px', fontWeight: '600', color: '#37474F', marginBottom: '8px' }}>
+          {getSymbol(transitPlanet)} {transitPlanet} {aspect} {getSymbol(natalPlanet)} {natalPlanet}: {frequency.frequency}
+        </div>
+        <div style={{ fontSize: '13px', color: '#546E7A', lineHeight: '1.6' }}>
+          {frequency.description}
+        </div>
+        <div style={{ fontSize: '12px', color: '#78909C', marginTop: '8px' }}>
+          <strong>Next occurrence:</strong> {frequency.nextIn}
+        </div>
+      </div>
+      
+      {/* Calculated Past Occurrences */}
+      {calculatedOccurrences.length > 0 && (
+        <div style={{ marginBottom: '16px' }}>
+          <div style={{ fontSize: '14px', fontWeight: '600', color: '#37474F', marginBottom: '10px' }}>
+            📆 Approximate Past Occurrences:
+          </div>
+          <div style={{ fontSize: '12px', color: '#78909C', marginBottom: '10px', fontStyle: 'italic' }}>
+            These dates are calculated estimates based on orbital mechanics. Actual dates may vary slightly due to retrograde motion.
+          </div>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
+            gap: '8px' 
+          }}>
+            {calculatedOccurrences.slice(0, 8).map((occurrence, i) => {
+              const yearsAgo = Math.floor((currentDate.getTime() - occurrence.date.getTime()) / (1000 * 60 * 60 * 24 * 365));
+              return (
+                <div key={i} style={{
+                  padding: '10px 12px',
+                  background: 'rgba(255,255,255,0.8)',
+                  borderRadius: '4px',
+                  fontSize: '13px',
+                  border: '1px solid #CFD8DC'
+                }}>
+                  <div style={{ fontWeight: '500', color: '#37474F' }}>
+                    {occurrence.date.toLocaleDateString('en-US', { 
+                      month: 'short',
+                      year: 'numeric'
+                    })}
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#78909C' }}>
+                    ~{yearsAgo > 0 ? `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ago` : 'This year'}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      
+      {/* Journal Entries for this transit */}
+      {matches && matches.length > 0 && (
+        <div style={{
+          padding: '16px',
+          background: 'linear-gradient(135deg, #E0F2F1 0%, #B2DFDB 100%)',
+          borderRadius: '6px',
+          border: '1px solid #26A69A'
+        }}>
+          <div style={{ fontSize: '14px', fontWeight: '600', color: '#00695C', marginBottom: '12px' }}>
+            📓 Your Journal Entries for This Transit:
+          </div>
+          {matches.slice(0, 3).map((match, i) => (
+            <div key={i} style={{
+              marginBottom: i < matches.length - 1 ? '12px' : 0,
+              padding: '12px',
+              background: 'rgba(255,255,255,0.95)',
+              borderRadius: '4px',
+              borderLeft: '4px solid #26A69A'
+            }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '8px'
+              }}>
+                <div style={{ fontWeight: '600', color: '#00695C', fontSize: '13px' }}>
+                  {match.date.toLocaleDateString('en-US', { 
+                    weekday: 'long',
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}
+                </div>
+                <div style={{ fontSize: '11px', color: '#6B6B6B' }}>
+                  {match.yearsAgo > 0 ? `${match.yearsAgo} year${match.yearsAgo > 1 ? 's' : ''} ago` : 'This year'}
+                </div>
+              </div>
+              
+              {match.journalEntry && (
+                <div style={{ fontSize: '13px', fontStyle: 'italic', color: '#424242' }}>
+                  "{match.journalEntry}"
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+      
+      {/* Prompt to journal if no entries */}
+      {(!matches || matches.length === 0) && (
+        <div style={{
+          padding: '12px',
+          background: 'rgba(255,235,59,0.15)',
+          borderRadius: '4px',
+          fontSize: '13px',
+          color: '#5D4037'
+        }}>
+          💡 <strong>Tip:</strong> Start journaling this transit below! Next time it occurs, you'll be able to compare how you felt and identify patterns in your life.
+        </div>
+      )}
     </div>
   );
 };
@@ -806,8 +1018,8 @@ const JournalWithPatterns = ({ aspect, currentDate }: {
       
       <div style={{ fontSize: '14px', lineHeight: '1.8', color: '#2C2C2C', marginBottom: '16px' }}>
         <div style={{ marginBottom: '12px' }}>
-          Write about how you are experiencing this transit. In {getNextOccurrence(aspect.transitPlanet)}, 
-          when this same aspect happens again, you will see your entry here and recognize the pattern.
+          Write about how you are experiencing this transit. When this same aspect happens again, 
+          you will see your entry here and recognize the pattern.
         </div>
         
         <div style={{
@@ -1007,7 +1219,10 @@ export const ComprehensiveTransitAnalysis = ({
         matches={historicalMatches}
         transitPlanet={aspect.transitPlanet}
         natalPlanet={aspect.natalPlanet}
+        natalDegree={aspect.natalDegree}
+        natalSign={aspect.natalSign}
         aspect={aspect.aspect}
+        currentDate={currentDate}
       />
       
       {/* Section 6: Chart Patterns (Grand Cross, Yod, etc.) */}
