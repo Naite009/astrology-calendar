@@ -10,18 +10,21 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Printer, ChevronDown, ChevronUp, Scroll, Star, Moon, Sun, Flame, Mountain, Wind, Droplets } from 'lucide-react';
 import { 
-  calculateSaturnCycles, 
   calculateElementalBalance, 
   getCharacterCards, 
   getLifeLesson, 
   generateFinalDirective,
   getElementGuidance,
   calculateAge,
-  formatDegree,
-  SaturnCycle,
   ElementalBalance,
   CharacterCard,
 } from '@/lib/sacredScriptHelpers';
+import { 
+  calculateDetailedSaturnCycles, 
+  formatCycleDate,
+  SaturnCyclePhase,
+  DetailedSaturnCycles 
+} from '@/lib/saturnCycleCalculator';
 import { detectChartPatterns, ChartPattern } from '@/lib/chartPatterns';
 import { calculateSecondaryProgressions, getProgressedMoonInfo, ProgressedMoonInfo } from '@/lib/secondaryProgressions';
 
@@ -112,7 +115,7 @@ export const SacredScriptView = ({ natalChart }: SacredScriptViewProps) => {
   
   // Calculate all data
   const age = calculateAge(natalChart.birthDate);
-  const saturnCycles = calculateSaturnCycles(natalChart.birthDate, currentDate);
+  const detailedSaturnCycles = calculateDetailedSaturnCycles(natalChart, currentDate);
   const elements = calculateElementalBalance(natalChart);
   const characterCards = getCharacterCards(natalChart);
   const patterns = detectChartPatterns(natalChart);
@@ -182,16 +185,84 @@ export const SacredScriptView = ({ natalChart }: SacredScriptViewProps) => {
       <Section 
         title="2. Saturn Cycles (Timing)" 
         color="border-l-green-500" 
-        icon={<div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center text-green-600 text-xs font-bold">2</div>}
+        icon={<div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center text-green-600 text-xs font-bold">♄</div>}
       >
-        <p className="text-sm text-muted-foreground mb-4">
-          Saturn makes significant aspects to its natal position at these ages. Ask about what happened during past cycles.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {saturnCycles.map((cycle) => (
-            <SaturnCycleCard key={cycle.age} cycle={cycle} />
-          ))}
-        </div>
+        {detailedSaturnCycles ? (
+          <div className="space-y-4">
+            {/* Natal Saturn Position */}
+            <div className="bg-slate-100 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-300 dark:border-slate-700">
+              <h4 className="font-medium mb-1">Natal Saturn Position</h4>
+              <p className="text-lg font-serif">
+                ♄ {detailedSaturnCycles.natalSaturn.degree}°{detailedSaturnCycles.natalSaturn.minutes.toString().padStart(2, '0')}' {detailedSaturnCycles.natalSaturn.sign}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                All cycles are calculated from this exact position ({detailedSaturnCycles.natalSaturn.absoluteDegree.toFixed(2)}° zodiacal longitude)
+              </p>
+            </div>
+            
+            {/* First Saturn Cycle (Birth to ~29.5) */}
+            <div className="space-y-2">
+              <h4 className="font-medium text-green-700 dark:text-green-400 flex items-center gap-2">
+                <span className="text-lg">①</span> First Saturn Cycle (Birth to ~Age 29)
+              </h4>
+              <div className="grid grid-cols-1 gap-3">
+                {detailedSaturnCycles.cycles
+                  .filter(c => c.cycleNumber === 1)
+                  .map((cycle, idx) => (
+                    <DetailedSaturnCycleCard key={`1-${idx}`} cycle={cycle} birthDate={natalChart.birthDate} />
+                  ))}
+              </div>
+            </div>
+            
+            {/* Second Saturn Cycle (~29.5 to ~59) */}
+            <div className="space-y-2">
+              <h4 className="font-medium text-blue-700 dark:text-blue-400 flex items-center gap-2">
+                <span className="text-lg">②</span> Second Saturn Cycle (~Age 29 to ~59)
+              </h4>
+              <div className="grid grid-cols-1 gap-3">
+                {detailedSaturnCycles.cycles
+                  .filter(c => c.cycleNumber === 2)
+                  .map((cycle, idx) => (
+                    <DetailedSaturnCycleCard key={`2-${idx}`} cycle={cycle} birthDate={natalChart.birthDate} />
+                  ))}
+              </div>
+            </div>
+            
+            {/* Third Saturn Cycle (~59 to ~88) */}
+            <div className="space-y-2">
+              <h4 className="font-medium text-purple-700 dark:text-purple-400 flex items-center gap-2">
+                <span className="text-lg">③</span> Third Saturn Cycle (~Age 59 to ~88)
+              </h4>
+              <div className="grid grid-cols-1 gap-3">
+                {detailedSaturnCycles.cycles
+                  .filter(c => c.cycleNumber === 3)
+                  .map((cycle, idx) => (
+                    <DetailedSaturnCycleCard key={`3-${idx}`} cycle={cycle} birthDate={natalChart.birthDate} />
+                  ))}
+              </div>
+            </div>
+            
+            {/* Fourth Saturn Cycle if any events exist */}
+            {detailedSaturnCycles.cycles.some(c => c.cycleNumber === 4) && (
+              <div className="space-y-2">
+                <h4 className="font-medium text-amber-700 dark:text-amber-400 flex items-center gap-2">
+                  <span className="text-lg">④</span> Fourth Saturn Cycle (~Age 88+)
+                </h4>
+                <div className="grid grid-cols-1 gap-3">
+                  {detailedSaturnCycles.cycles
+                    .filter(c => c.cycleNumber === 4)
+                    .map((cycle, idx) => (
+                      <DetailedSaturnCycleCard key={`4-${idx}`} cycle={cycle} birthDate={natalChart.birthDate} />
+                    ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            No Saturn position found in natal chart. Please ensure Saturn is included in chart data.
+          </p>
+        )}
       </Section>
       
       {/* 3. Character */}
@@ -401,25 +472,75 @@ export const SacredScriptView = ({ natalChart }: SacredScriptViewProps) => {
   );
 };
 
-// Saturn Cycle Card
-const SaturnCycleCard = ({ cycle }: { cycle: SaturnCycle }) => {
+// Detailed Saturn Cycle Card with retrograde passes
+const DetailedSaturnCycleCard = ({ 
+  cycle, 
+  birthDate 
+}: { 
+  cycle: SaturnCyclePhase; 
+  birthDate: string;
+}) => {
   const bgColor = cycle.isPast 
     ? 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800' 
     : cycle.isUpcoming 
-      ? 'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800' 
+      ? 'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800 ring-2 ring-yellow-400' 
       : 'bg-secondary/30 border-border';
   
+  const phaseColors: Record<string, string> = {
+    'First Quarter': 'text-orange-600 dark:text-orange-400',
+    'Opposition': 'text-red-600 dark:text-red-400',
+    'Third Quarter': 'text-blue-600 dark:text-blue-400',
+    'Return': 'text-purple-600 dark:text-purple-400'
+  };
+  
+  const typeLabels: Record<string, string> = {
+    'exact': '① First Pass (Direct)',
+    'retrograde_pass': '② Retrograde Pass',
+    'direct_pass': '③ Final Pass (Direct)'
+  };
+  
   return (
-    <div className={`p-3 rounded-lg border ${bgColor}`}>
-      <div className="flex items-center justify-between mb-1">
-        <span className="font-medium">Age {cycle.age}</span>
-        <span className="text-xs text-muted-foreground">{cycle.year}</span>
+    <div className={`p-4 rounded-lg border ${bgColor}`}>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <span className={`text-lg font-bold ${phaseColors[cycle.phaseName]}`}>
+            {cycle.phaseSymbol}
+          </span>
+          <span className="font-medium">{cycle.phaseName}</span>
+        </div>
+        <span className="text-xs bg-background/50 px-2 py-1 rounded">
+          Target: {cycle.targetDegree.toFixed(1)}°
+        </span>
       </div>
-      <p className="text-xs text-muted-foreground mb-2">
-        {cycle.aspectType} • {cycle.description}
+      
+      <p className="text-sm text-muted-foreground mb-3">
+        {cycle.description}
       </p>
-      <p className="text-sm italic">"{cycle.question}"</p>
-      <NoteArea placeholder="Client's response..." />
+      
+      {/* All transit events with dates */}
+      <div className="bg-background/50 rounded p-3 mb-3 space-y-2">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          Exact Transits Over {cycle.targetDegree.toFixed(1)}°
+        </p>
+        {cycle.events.map((event, i) => (
+          <div key={i} className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">{typeLabels[event.type] || event.type}</span>
+            <div className="text-right">
+              <span className="font-medium">{formatCycleDate(event.date)}</span>
+              <span className="text-muted-foreground ml-2">(Age {event.age})</span>
+            </div>
+          </div>
+        ))}
+        {cycle.events.length > 1 && (
+          <p className="text-xs text-amber-600 dark:text-amber-400 mt-2 pt-2 border-t border-border/50">
+            ⚠️ Saturn retrograded over this degree — triple pass
+          </p>
+        )}
+      </div>
+      
+      <p className="text-sm italic text-foreground/80 mb-2">"{cycle.question}"</p>
+      
+      <NoteArea placeholder="Client's response about this time period..." />
     </div>
   );
 };
