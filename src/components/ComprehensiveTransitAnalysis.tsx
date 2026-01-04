@@ -7,6 +7,7 @@
 import { useState } from 'react';
 import { TransitAspect } from '@/lib/transitAspects';
 import { NatalChart } from '@/hooks/useNatalChart';
+import { getSabianSymbol } from '@/lib/sabianSymbols';
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -71,26 +72,8 @@ const ASPECT_MEANINGS: Record<string, { meaning: string; energy: string }> = {
   sextile: { meaning: 'supports', energy: 'Opportunity - potential that needs activation. Gentle gifts.' },
 };
 
-const getDegreeMeaning = (degree: number, sign: string): string => {
-  // Sabian Symbols database (sample - would be full 360 in production)
-  const sabianSymbols: Record<string, string> = {
-    '0-Aries': 'A woman rises out of water, a seal rises and embraces her. Emergence from the collective unconscious.',
-    '1-Aries': 'A comedian entertains a group. The ability to look at oneself objectively.',
-    '12-Capricorn': 'A student of nature lecturing. Teaching through mastery. Authority through knowledge.',
-    '12-Libra': 'Miners emerging from a deep coal mine. Bringing hidden treasures to light. Dark into light.',
-    '29-Pisces': 'A majestic rock formation. Ancient wisdom. Timeless spiritual truth.',
-    '28-Virgo': 'A baldheaded man dominating a gathering. Service leadership. Practical authority.',
-    '9-Cancer': 'A small naked girl bends over a pond trying to catch a fish. Emotional exploration. Trusting instincts.',
-    '8-Scorpio': 'A calm lake bathed in moonlight. Depth beneath surface calm. Emotional mastery.',
-    '9-Taurus': 'A fully decorated Christmas tree. Abundance. Celebration of earthly pleasures.',
-    '3-Libra': 'The dawn of a new day reveals everything changed. Fresh perspective on relationships.',
-    '28-Libra': 'A man in the midst of brightening influences. Illumination coming through relationships.',
-    '16-Libra': 'After a storm a boat landing stands in need of reconstruction. Rebuilding after conflict.',
-    '0-Sagittarius': 'Retired army veterans gather to reawaken old memories. Drawing on past experience.',
-  };
-  
-  const key = `${degree}-${sign}`;
-  return sabianSymbols[key] || `${degree}° ${sign} - A significant point activating themes of ${sign} energy at this precise degree.`;
+const getDegreeMeaning = (degree: number, sign: string): { symbol: string; meaning: string } => {
+  return getSabianSymbol(degree, sign);
 };
 
 const getSignExpression = (planet: string, sign: string): string => {
@@ -375,10 +358,13 @@ const DegreeMeaning = ({ degree, sign, house, natalChart }: {
           borderRadius: '4px'
         }}>
           <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', color: '#1565C0' }}>
-            Degree Symbolism:
+            Degree Symbolism ({Math.floor(degree) + 1}° {sign}):
           </div>
-          <div style={{ fontSize: '13px', color: '#424242' }}>
-            {getDegreeMeaning(degree, sign)}
+          <div style={{ fontSize: '13px', color: '#424242', fontStyle: 'italic', marginBottom: '4px' }}>
+            "{getDegreeMeaning(degree, sign).symbol}"
+          </div>
+          <div style={{ fontSize: '12px', color: '#616161' }}>
+            {getDegreeMeaning(degree, sign).meaning}
           </div>
         </div>
       </div>
