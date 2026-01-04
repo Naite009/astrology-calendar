@@ -99,6 +99,13 @@ const PLANET_SPEEDS: Record<string, number> = {
   jupiter: 0.083, saturn: 0.033, uranus: 0.012, neptune: 0.006, pluto: 0.004,
 };
 
+interface RetrogradePasses {
+  firstPass: { start: Date; exact: Date; end: Date };
+  secondPass: { start: Date; exact: Date; end: Date } | null;
+  thirdPass: { start: Date; exact: Date; end: Date } | null;
+  hasRetrograde: boolean;
+}
+
 interface TransitTimelineData {
   orbEntryDate: Date;
   exactDate: Date;
@@ -108,6 +115,8 @@ interface TransitTimelineData {
   totalDays: number;
   isApproaching: boolean;
   retrogradeNote: string;
+  retrogradePasses: RetrogradePasses | null;
+  orbExplanation: string;
 }
 
 const calculateDetailedTransitTimeline = (
@@ -127,16 +136,13 @@ const calculateDetailedTransitTimeline = (
   const speed = speeds[transitPlanet.toLowerCase()] || 1;
   
   // Calculate the target degree (where transit needs to be for exact aspect to natal)
-  // For a sextile to natal at 0°, the transit would be exact at 60° (or 300° on the other side)
-  // But here we're tracking relative to natal, so we just care about degree distance
-  const targetDegree = natalDegree; // The natal degree we're aspecting
+  const targetDegree = natalDegree;
   
   // Current degree distance (how far transit is from exact)
   const currentDegreeDistance = Math.abs(transitDegree - targetDegree);
   const adjustedDistance = currentDegreeDistance > 180 ? 360 - currentDegreeDistance : currentDegreeDistance;
   
   // Is the transit approaching or separating?
-  // If transit degree < natal degree, it's approaching (for direct motion)
   const isApproaching = transitDegree < natalDegree || (transitDegree > 330 && natalDegree < 30);
   
   // Days to/from exact at natal degree
@@ -161,12 +167,54 @@ const calculateDetailedTransitTimeline = (
   const orbExitDate = new Date(exactDegreeDate);
   orbExitDate.setDate(orbExitDate.getDate() + Math.floor(daysInOrb));
   
-  // Retrograde consideration for outer planets
+  // Retrograde passes calculation for outer planets
   let retrogradeNote = '';
+  let retrogradePasses: RetrogradePasses | null = null;
   const outerPlanets = ['jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
+  
   if (outerPlanets.includes(transitPlanet.toLowerCase())) {
-    retrogradeNote = `Note: ${transitPlanet} goes retrograde ~4 months/year. This aspect may occur 3 times (direct → retrograde → direct) over ${Math.round(daysInOrb * 3)} days.`;
+    // Outer planets typically retrograde for 4-5 months per year
+    // This creates 3 passes: direct → retrograde → direct
+    const retrogradeLength = transitPlanet.toLowerCase() === 'pluto' ? 160 : 
+                             transitPlanet.toLowerCase() === 'neptune' ? 158 :
+                             transitPlanet.toLowerCase() === 'uranus' ? 155 :
+                             transitPlanet.toLowerCase() === 'saturn' ? 140 : 120;
+    
+    // First pass (direct motion)
+    const firstPassExact = new Date(exactDegreeDate);
+    const firstPassStart = new Date(firstPassExact);
+    firstPassStart.setDate(firstPassStart.getDate() - Math.floor(daysInOrb));
+    const firstPassEnd = new Date(firstPassExact);
+    firstPassEnd.setDate(firstPassEnd.getDate() + Math.floor(daysInOrb / 3));
+    
+    // Second pass (retrograde motion) - typically 2-4 months after first
+    const secondPassExact = new Date(firstPassExact);
+    secondPassExact.setDate(secondPassExact.getDate() + Math.floor(retrogradeLength * 0.6));
+    const secondPassStart = new Date(secondPassExact);
+    secondPassStart.setDate(secondPassStart.getDate() - Math.floor(daysInOrb / 2));
+    const secondPassEnd = new Date(secondPassExact);
+    secondPassEnd.setDate(secondPassEnd.getDate() + Math.floor(daysInOrb / 2));
+    
+    // Third pass (direct motion again) - typically 2-4 months after second
+    const thirdPassExact = new Date(secondPassExact);
+    thirdPassExact.setDate(thirdPassExact.getDate() + Math.floor(retrogradeLength * 0.5));
+    const thirdPassStart = new Date(thirdPassExact);
+    thirdPassStart.setDate(thirdPassStart.getDate() - Math.floor(daysInOrb / 3));
+    const thirdPassEnd = new Date(thirdPassExact);
+    thirdPassEnd.setDate(thirdPassEnd.getDate() + Math.floor(daysInOrb));
+    
+    retrogradePasses = {
+      hasRetrograde: true,
+      firstPass: { start: firstPassStart, exact: firstPassExact, end: firstPassEnd },
+      secondPass: { start: secondPassStart, exact: secondPassExact, end: secondPassEnd },
+      thirdPass: { start: thirdPassStart, exact: thirdPassExact, end: thirdPassEnd },
+    };
+    
+    retrogradeNote = `${transitPlanet} retrogrades ~${Math.round(retrogradeLength / 30)} months/year, creating 3 passes over this degree.`;
   }
+  
+  // Explanation of what "entered orb" means
+  const orbExplanation = `"Orb" is the range of influence (±${orb}°). When ${transitPlanet} enters this ${orb}° range of your natal ${natalDegree}°, you begin feeling the transit. The effect intensifies as it approaches exact, then gradually fades.`;
   
   return {
     orbEntryDate,
@@ -177,6 +225,8 @@ const calculateDetailedTransitTimeline = (
     totalDays: Math.round(daysInOrb * 2),
     isApproaching,
     retrogradeNote,
+    retrogradePasses,
+    orbExplanation,
   };
 };
 
@@ -830,40 +880,124 @@ const TransitTimeline = ({ transitPlanet, transitDegree, natalPlanet, natalDegre
           </div>
         </div>
         
+        {/* What is Orb explanation */}
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'auto 1fr',
-          gap: '12px',
-          marginBottom: '16px'
+          padding: '10px 12px',
+          background: 'rgba(103,58,183,0.08)',
+          borderRadius: '4px',
+          marginBottom: '16px',
+          fontSize: '12px',
+          color: '#5E35B1',
+          borderLeft: '3px solid #7C4DFF'
         }}>
-          <div style={{ fontWeight: '600', color: '#6A1B9A' }}>Entered Orb:</div>
-          <div>{formatDateWithYear(timeline.orbEntryDate)} <span style={{ color: '#78909C', fontSize: '12px' }}>(when {getSymbol(transitPlanet)} entered aspect orb)</span></div>
-          
-          <div style={{ fontWeight: '600', color: '#6A1B9A' }}>EXACT at {natalDegree}°:</div>
-          <div>
-            {formatDateWithYear(timeline.exactDegreeDate)} ⭐
-            <span style={{ color: '#78909C', fontSize: '12px' }}> (when {getSymbol(transitPlanet)} was at exactly {natalDegree}°)</span>
-          </div>
-          
-          <div style={{ fontWeight: '600', color: '#6A1B9A' }}>Exits Orb:</div>
-          <div>{formatDateWithYear(timeline.orbExitDate)} <span style={{ color: '#78909C', fontSize: '12px' }}>(when aspect completes)</span></div>
-          
-          <div style={{ fontWeight: '600', color: '#6A1B9A' }}>Total Duration:</div>
-          <div>{timeline.totalDays} days in orb</div>
+          💡 <strong>What does "Entered Orb" mean?</strong> {timeline.orbExplanation}
         </div>
         
-        {/* Retrograde Note */}
-        {timeline.retrogradeNote && (
+        {/* 3 Passes for outer planets */}
+        {timeline.retrogradePasses?.hasRetrograde ? (
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ fontWeight: '600', color: '#6A1B9A', marginBottom: '12px', fontSize: '15px' }}>
+              🔄 Three Passes (Due to Retrograde):
+            </div>
+            
+            {/* First Pass */}
+            <div style={{
+              padding: '12px',
+              background: 'rgba(255,255,255,0.9)',
+              borderRadius: '6px',
+              marginBottom: '8px',
+              borderLeft: '4px solid #4CAF50'
+            }}>
+              <div style={{ fontWeight: '600', color: '#2E7D32', marginBottom: '6px' }}>
+                1st Pass (Direct Motion) →
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '4px 12px', fontSize: '13px' }}>
+                <span style={{ color: '#78909C' }}>Enters orb:</span>
+                <span>{formatDateWithYear(timeline.retrogradePasses.firstPass.start)}</span>
+                <span style={{ color: '#78909C' }}>EXACT at {natalDegree}°:</span>
+                <span style={{ fontWeight: '600' }}>{formatDateWithYear(timeline.retrogradePasses.firstPass.exact)} ⭐</span>
+                <span style={{ color: '#78909C' }}>Stations retrograde:</span>
+                <span>{formatDateWithYear(timeline.retrogradePasses.firstPass.end)}</span>
+              </div>
+            </div>
+            
+            {/* Second Pass */}
+            {timeline.retrogradePasses.secondPass && (
+              <div style={{
+                padding: '12px',
+                background: 'rgba(255,255,255,0.9)',
+                borderRadius: '6px',
+                marginBottom: '8px',
+                borderLeft: '4px solid #FF9800'
+              }}>
+                <div style={{ fontWeight: '600', color: '#E65100', marginBottom: '6px' }}>
+                  2nd Pass (Retrograde) ←
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '4px 12px', fontSize: '13px' }}>
+                  <span style={{ color: '#78909C' }}>Re-enters orb:</span>
+                  <span>{formatDateWithYear(timeline.retrogradePasses.secondPass.start)}</span>
+                  <span style={{ color: '#78909C' }}>EXACT at {natalDegree}°:</span>
+                  <span style={{ fontWeight: '600' }}>{formatDateWithYear(timeline.retrogradePasses.secondPass.exact)} ⭐</span>
+                  <span style={{ color: '#78909C' }}>Stations direct:</span>
+                  <span>{formatDateWithYear(timeline.retrogradePasses.secondPass.end)}</span>
+                </div>
+              </div>
+            )}
+            
+            {/* Third Pass */}
+            {timeline.retrogradePasses.thirdPass && (
+              <div style={{
+                padding: '12px',
+                background: 'rgba(255,255,255,0.9)',
+                borderRadius: '6px',
+                borderLeft: '4px solid #9C27B0'
+              }}>
+                <div style={{ fontWeight: '600', color: '#7B1FA2', marginBottom: '6px' }}>
+                  3rd Pass (Direct Motion) → Final
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '4px 12px', fontSize: '13px' }}>
+                  <span style={{ color: '#78909C' }}>Re-enters orb:</span>
+                  <span>{formatDateWithYear(timeline.retrogradePasses.thirdPass.start)}</span>
+                  <span style={{ color: '#78909C' }}>EXACT at {natalDegree}°:</span>
+                  <span style={{ fontWeight: '600' }}>{formatDateWithYear(timeline.retrogradePasses.thirdPass.exact)} ⭐</span>
+                  <span style={{ color: '#78909C' }}>Exits orb:</span>
+                  <span>{formatDateWithYear(timeline.retrogradePasses.thirdPass.end)}</span>
+                </div>
+              </div>
+            )}
+            
+            <div style={{
+              marginTop: '12px',
+              padding: '10px 12px',
+              background: 'rgba(156,39,176,0.1)',
+              borderRadius: '4px',
+              fontSize: '12px',
+              color: '#7B1FA2'
+            }}>
+              🔄 {timeline.retrogradeNote}
+            </div>
+          </div>
+        ) : (
+          /* Single pass for faster planets */
           <div style={{
-            padding: '10px 12px',
-            background: 'rgba(156,39,176,0.1)',
-            borderRadius: '4px',
-            marginBottom: '12px',
-            fontSize: '12px',
-            color: '#7B1FA2',
-            borderLeft: '3px solid #9C27B0'
+            display: 'grid',
+            gridTemplateColumns: 'auto 1fr',
+            gap: '12px',
+            marginBottom: '16px'
           }}>
-            🔄 {timeline.retrogradeNote}
+            <div style={{ fontWeight: '600', color: '#6A1B9A' }}>Entered Orb:</div>
+            <div>{formatDateWithYear(timeline.orbEntryDate)}</div>
+            
+            <div style={{ fontWeight: '600', color: '#6A1B9A' }}>EXACT at {natalDegree}°:</div>
+            <div>
+              {formatDateWithYear(timeline.exactDegreeDate)} ⭐
+            </div>
+            
+            <div style={{ fontWeight: '600', color: '#6A1B9A' }}>Exits Orb:</div>
+            <div>{formatDateWithYear(timeline.orbExitDate)}</div>
+            
+            <div style={{ fontWeight: '600', color: '#6A1B9A' }}>Total Duration:</div>
+            <div>{timeline.totalDays} days in orb</div>
           </div>
         )}
         
@@ -877,17 +1011,19 @@ const TransitTimeline = ({ transitPlanet, transitDegree, natalPlanet, natalDegre
             What to Expect:
           </div>
           <div style={{ marginBottom: '6px' }}>
-            • <strong>Building Phase</strong> ({formatDate(timeline.orbEntryDate)} - {formatDate(timeline.exactDate)}): 
-            Energy increases as {getSymbol(transitPlanet)} approaches your natal {getSymbol(natalPlanet)}.
+            • <strong>Building Phase</strong>: Energy increases as {getSymbol(transitPlanet)} approaches your natal {getSymbol(natalPlanet)}.
           </div>
           <div style={{ marginBottom: '6px' }}>
-            • <strong>Peak</strong> ({formatDate(timeline.exactDate)} at {natalDegree}°): 
-            Maximum intensity when {getSymbol(transitPlanet)} crosses your exact natal degree.
+            • <strong>Peak</strong> (at {natalDegree}°): Maximum intensity when {getSymbol(transitPlanet)} crosses your exact natal degree.
           </div>
           <div>
-            • <strong>Release Phase</strong> ({formatDate(timeline.exactDate)} - {formatDate(timeline.orbExitDate)}): 
-            Energy decreases as {getSymbol(transitPlanet)} separates. Integration period.
+            • <strong>Release Phase</strong>: Energy decreases as {getSymbol(transitPlanet)} separates. Integration period.
           </div>
+          {timeline.retrogradePasses?.hasRetrograde && (
+            <div style={{ marginTop: '8px', color: '#7B1FA2' }}>
+              • <strong>Retrograde deepening</strong>: The 2nd pass often brings the deepest transformation as you revisit themes.
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -972,21 +1108,38 @@ const HistoricalPatterns = ({ matches, transitPlanet, natalPlanet, natalDegree, 
         </div>
       </div>
       
-      {/* Calculated Past Occurrences */}
+      {/* Frequency Summary */}
+      <div style={{
+        padding: '12px 16px',
+        background: 'linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%)',
+        borderRadius: '6px',
+        marginBottom: '16px',
+        border: '1px solid #81C784'
+      }}>
+        <div style={{ fontSize: '14px', fontWeight: '600', color: '#2E7D32', marginBottom: '4px' }}>
+          📊 This happens: {frequency.frequency}
+        </div>
+        <div style={{ fontSize: '12px', color: '#558B2F' }}>
+          {getTransitCycle(transitPlanet)}
+        </div>
+      </div>
+      
+      {/* Calculated Past & Future Occurrences */}
       {calculatedOccurrences.length > 0 && (
         <div style={{ marginBottom: '16px' }}>
           <div style={{ fontSize: '14px', fontWeight: '600', color: '#37474F', marginBottom: '10px' }}>
-            📆 Approximate Past Occurrences:
+            📆 Past Occurrences:
           </div>
           <div style={{ fontSize: '12px', color: '#78909C', marginBottom: '10px', fontStyle: 'italic' }}>
-            These dates are calculated estimates based on orbital mechanics. Actual dates may vary slightly due to retrograde motion.
+            Calculated estimates based on orbital mechanics. Dates may vary due to retrograde.
           </div>
           <div style={{ 
             display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
+            gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', 
             gap: '8px' 
           }}>
             {calculatedOccurrences.slice(0, 8).map((occurrence, i) => {
+              const year = occurrence.date.getFullYear();
               const yearsAgo = Math.floor((currentDate.getTime() - occurrence.date.getTime()) / (1000 * 60 * 60 * 24 * 365));
               return (
                 <div key={i} style={{
@@ -994,16 +1147,14 @@ const HistoricalPatterns = ({ matches, transitPlanet, natalPlanet, natalDegree, 
                   background: 'rgba(255,255,255,0.8)',
                   borderRadius: '4px',
                   fontSize: '13px',
-                  border: '1px solid #CFD8DC'
+                  border: '1px solid #CFD8DC',
+                  textAlign: 'center'
                 }}>
-                  <div style={{ fontWeight: '500', color: '#37474F' }}>
-                    {occurrence.date.toLocaleDateString('en-US', { 
-                      month: 'short',
-                      year: 'numeric'
-                    })}
+                  <div style={{ fontWeight: '700', color: '#37474F', fontSize: '16px' }}>
+                    {year}
                   </div>
                   <div style={{ fontSize: '11px', color: '#78909C' }}>
-                    ~{yearsAgo > 0 ? `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ago` : 'This year'}
+                    {yearsAgo > 0 ? `${yearsAgo} yr${yearsAgo > 1 ? 's' : ''} ago` : 'This year'}
                   </div>
                 </div>
               );
