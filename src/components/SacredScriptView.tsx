@@ -18,7 +18,10 @@ import {
   calculateAge,
   ElementalBalance,
   CharacterCard,
+  getPlanetHouse,
 } from '@/lib/sacredScriptHelpers';
+import { generateCharacterSynthesis, CharacterSynthesis, HOUSE_DEEP_MEANINGS } from '@/lib/characterSynthesis';
+import { getDecan } from '@/lib/decans';
 import { 
   calculateDetailedSaturnCycles, 
   formatCycleDate,
@@ -129,6 +132,13 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
   const patterns = detectChartPatterns(natalChart);
   const lifeLesson = getLifeLesson(natalChart);
   const finalDirective = generateFinalDirective(natalChart, elements);
+  
+  // Get house positions for deep synthesis
+  const sunHouse = getPlanetHouse(natalChart, 'Sun');
+  const moonHouse = getPlanetHouse(natalChart, 'Moon');
+  
+  // Generate deep character synthesis
+  const characterSynthesis = generateCharacterSynthesis(natalChart, sunHouse, moonHouse);
   
   // Progressed Moon
   const progressions = calculateSecondaryProgressions(natalChart, currentDate);
@@ -297,40 +307,227 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
         color="border-l-amber-500" 
         icon={<Sun className="text-amber-500" size={20} />}
       >
-        <div className="space-y-4">
+        <div className="space-y-6">
+          {/* Opening Statement */}
           <p className="text-sm italic text-muted-foreground mb-4">
             "Your Sun is in {characterCards.find(c => c.planet === 'Sun')?.sign || '...'}, 
             your Moon is in {characterCards.find(c => c.planet === 'Moon')?.sign || '...'}, 
             and your Rising sign is {characterCards.find(c => c.planet === 'Rising')?.sign || '...'}."
           </p>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {characterCards.map((card) => (
-              <CharacterCardComponent key={card.planet} card={card} />
-            ))}
+          {/* Overview - How the Trinity Works Together */}
+          {characterSynthesis && (
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40 p-5 rounded-lg border border-amber-200 dark:border-amber-800">
+              <h4 className="font-serif text-lg font-medium text-amber-800 dark:text-amber-300 mb-3">The Big Picture</h4>
+              <p className="text-sm leading-relaxed">{characterSynthesis.overview}</p>
+            </div>
+          )}
+          
+          {/* Trinity Synthesis Narrative */}
+          {characterSynthesis && (
+            <div className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-lg border border-slate-200 dark:border-slate-700">
+              <h4 className="font-serif text-lg font-medium mb-3">How Your Big Three Work Together</h4>
+              <p className="text-sm leading-relaxed whitespace-pre-line">{characterSynthesis.trinitySynthesis}</p>
+            </div>
+          )}
+          
+          {/* Detailed Cards with Decan, Degree, and House */}
+          <div className="space-y-4">
+            <h4 className="font-serif text-base font-medium">Detailed Breakdown</h4>
+            
+            {/* SUN DEEP DIVE */}
+            {characterSynthesis?.sunDeep && (
+              <div className="bg-orange-50 dark:bg-orange-950/30 p-5 rounded-lg border-l-4 border-orange-500">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sun className="text-orange-500" size={24} />
+                  <h5 className="font-medium text-lg">Sun in {characterSynthesis.sunDeep.sign}</h5>
+                  <span className="text-sm text-muted-foreground ml-auto">
+                    {characterSynthesis.sunDeep.degree}° • {characterSynthesis.sunDeep.decan.number === 1 ? '1st' : characterSynthesis.sunDeep.decan.number === 2 ? '2nd' : '3rd'} Decan
+                    {characterSynthesis.sunDeep.house && ` • House ${characterSynthesis.sunDeep.house}`}
+                  </span>
+                </div>
+                
+                <div className="space-y-3 text-sm">
+                  {/* Decan Info */}
+                  <div className="bg-orange-100/50 dark:bg-orange-900/30 p-3 rounded">
+                    <p className="font-medium text-orange-700 dark:text-orange-400 mb-1">
+                      {characterSynthesis.sunDeep.decan.degrees} — Ruled by {characterSynthesis.sunDeep.decan.rulerSymbol} {characterSynthesis.sunDeep.decan.ruler}
+                    </p>
+                    <p>{characterSynthesis.sunDeep.decan.description}</p>
+                  </div>
+                  
+                  {/* Degree Meaning */}
+                  <div className={`p-3 rounded ${characterSynthesis.sunDeep.degreeMeaning.critical ? 'bg-rose-100/50 dark:bg-rose-900/30 border border-rose-300 dark:border-rose-700' : 'bg-slate-100/50 dark:bg-slate-800/30'}`}>
+                    <p className="font-medium mb-1">
+                      {characterSynthesis.sunDeep.degreeMeaning.critical && '⚡ '}
+                      Degree Meaning ({characterSynthesis.sunDeep.degree}°)
+                    </p>
+                    <p>{characterSynthesis.sunDeep.degreeMeaning.meaning}</p>
+                  </div>
+                  
+                  {/* House Meaning */}
+                  {characterSynthesis.sunDeep.house && characterSynthesis.sunDeep.houseMeaning && (
+                    <div className="bg-amber-100/50 dark:bg-amber-900/30 p-3 rounded">
+                      <p className="font-medium text-amber-700 dark:text-amber-400 mb-1">
+                        House {characterSynthesis.sunDeep.house}: {HOUSE_DEEP_MEANINGS[characterSynthesis.sunDeep.house]?.theme}
+                      </p>
+                      <p>{characterSynthesis.sunDeep.houseMeaning}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* MOON DEEP DIVE */}
+            {characterSynthesis?.moonDeep && (
+              <div className="bg-teal-50 dark:bg-teal-950/30 p-5 rounded-lg border-l-4 border-teal-500">
+                <div className="flex items-center gap-2 mb-3">
+                  <Moon className="text-teal-500" size={24} />
+                  <h5 className="font-medium text-lg">Moon in {characterSynthesis.moonDeep.sign}</h5>
+                  <span className="text-sm text-muted-foreground ml-auto">
+                    {characterSynthesis.moonDeep.degree}° • {characterSynthesis.moonDeep.decan.number === 1 ? '1st' : characterSynthesis.moonDeep.decan.number === 2 ? '2nd' : '3rd'} Decan
+                    {characterSynthesis.moonDeep.house && ` • House ${characterSynthesis.moonDeep.house}`}
+                  </span>
+                </div>
+                
+                <div className="space-y-3 text-sm">
+                  {/* Decan Info */}
+                  <div className="bg-teal-100/50 dark:bg-teal-900/30 p-3 rounded">
+                    <p className="font-medium text-teal-700 dark:text-teal-400 mb-1">
+                      {characterSynthesis.moonDeep.decan.degrees} — Ruled by {characterSynthesis.moonDeep.decan.rulerSymbol} {characterSynthesis.moonDeep.decan.ruler}
+                    </p>
+                    <p>{characterSynthesis.moonDeep.decan.description}</p>
+                  </div>
+                  
+                  {/* Degree Meaning */}
+                  <div className={`p-3 rounded ${characterSynthesis.moonDeep.degreeMeaning.critical ? 'bg-rose-100/50 dark:bg-rose-900/30 border border-rose-300 dark:border-rose-700' : 'bg-slate-100/50 dark:bg-slate-800/30'}`}>
+                    <p className="font-medium mb-1">
+                      {characterSynthesis.moonDeep.degreeMeaning.critical && '⚡ '}
+                      Degree Meaning ({characterSynthesis.moonDeep.degree}°)
+                    </p>
+                    <p>{characterSynthesis.moonDeep.degreeMeaning.meaning}</p>
+                  </div>
+                  
+                  {/* House Meaning */}
+                  {characterSynthesis.moonDeep.house && characterSynthesis.moonDeep.houseMeaning && (
+                    <div className="bg-cyan-100/50 dark:bg-cyan-900/30 p-3 rounded">
+                      <p className="font-medium text-cyan-700 dark:text-cyan-400 mb-1">
+                        House {characterSynthesis.moonDeep.house}: {HOUSE_DEEP_MEANINGS[characterSynthesis.moonDeep.house]?.theme}
+                      </p>
+                      <p>{characterSynthesis.moonDeep.houseMeaning}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* RISING DEEP DIVE */}
+            {characterSynthesis?.risingDeep && (
+              <div className="bg-purple-50 dark:bg-purple-950/30 p-5 rounded-lg border-l-4 border-purple-500">
+                <div className="flex items-center gap-2 mb-3">
+                  <Star className="text-purple-500" size={24} />
+                  <h5 className="font-medium text-lg">Rising in {characterSynthesis.risingDeep.sign}</h5>
+                  <span className="text-sm text-muted-foreground ml-auto">
+                    {characterSynthesis.risingDeep.degree}° • {characterSynthesis.risingDeep.decan.number === 1 ? '1st' : characterSynthesis.risingDeep.decan.number === 2 ? '2nd' : '3rd'} Decan
+                    {' • House 1'}
+                  </span>
+                </div>
+                
+                <div className="space-y-3 text-sm">
+                  {/* Decan Info */}
+                  <div className="bg-purple-100/50 dark:bg-purple-900/30 p-3 rounded">
+                    <p className="font-medium text-purple-700 dark:text-purple-400 mb-1">
+                      {characterSynthesis.risingDeep.decan.degrees} — Ruled by {characterSynthesis.risingDeep.decan.rulerSymbol} {characterSynthesis.risingDeep.decan.ruler}
+                    </p>
+                    <p>{characterSynthesis.risingDeep.decan.description}</p>
+                  </div>
+                  
+                  {/* Degree Meaning */}
+                  <div className={`p-3 rounded ${characterSynthesis.risingDeep.degreeMeaning.critical ? 'bg-rose-100/50 dark:bg-rose-900/30 border border-rose-300 dark:border-rose-700' : 'bg-slate-100/50 dark:bg-slate-800/30'}`}>
+                    <p className="font-medium mb-1">
+                      {characterSynthesis.risingDeep.degreeMeaning.critical && '⚡ '}
+                      Degree Meaning ({characterSynthesis.risingDeep.degree}°)
+                    </p>
+                    <p>{characterSynthesis.risingDeep.degreeMeaning.meaning}</p>
+                  </div>
+                  
+                  {/* Rising/1st House Always */}
+                  <div className="bg-violet-100/50 dark:bg-violet-900/30 p-3 rounded">
+                    <p className="font-medium text-violet-700 dark:text-violet-400 mb-1">
+                      House 1: Self, Identity, Physical Presence
+                    </p>
+                    <p>Your Rising sign is always in the 1st House—it IS the cusp of the 1st House. This is how you meet the world, your physical appearance, your immediate reactions, and the lens through which all other experiences are filtered.</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           
-          {/* Sun House Theme */}
-          {characterCards.find(c => c.planet === 'Sun')?.house && (
-            <div className="bg-amber-50 dark:bg-amber-950/30 p-4 rounded-lg mt-4">
-              <h4 className="font-medium text-amber-700 dark:text-amber-400 mb-1">
-                Sun in House {characterCards.find(c => c.planet === 'Sun')?.house}
-              </h4>
-              <p className="text-sm">This is the overall theme of your life purpose and where you shine brightest.</p>
+          {/* Element & Modality Dynamics */}
+          {characterSynthesis && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Element Dynamic */}
+              <div className="bg-gradient-to-br from-red-50 via-green-50 to-blue-50 dark:from-red-950/30 dark:via-green-950/30 dark:to-blue-950/30 p-4 rounded-lg border">
+                <h4 className="font-medium mb-2 flex items-center gap-2">
+                  <Flame className="text-orange-500" size={18} />
+                  <span>Element Dynamic</span>
+                  <span className="text-xs bg-secondary px-2 py-0.5 rounded ml-auto">{characterSynthesis.elementDynamic.combination}</span>
+                </h4>
+                <p className="text-sm mb-2">{characterSynthesis.elementDynamic.description}</p>
+                {characterSynthesis.elementDynamic.dynamic && (
+                  <p className="text-sm text-muted-foreground mb-2"><strong>Dynamic:</strong> {characterSynthesis.elementDynamic.dynamic}</p>
+                )}
+                {characterSynthesis.elementDynamic.gift && (
+                  <p className="text-sm text-green-700 dark:text-green-400"><strong>Gift:</strong> {characterSynthesis.elementDynamic.gift}</p>
+                )}
+                {characterSynthesis.elementDynamic.challenge && (
+                  <p className="text-sm text-rose-700 dark:text-rose-400 mt-1"><strong>Challenge:</strong> {characterSynthesis.elementDynamic.challenge}</p>
+                )}
+              </div>
+              
+              {/* Modality Dynamic */}
+              <div className="bg-gradient-to-br from-violet-50 via-indigo-50 to-purple-50 dark:from-violet-950/30 dark:via-indigo-950/30 dark:to-purple-950/30 p-4 rounded-lg border">
+                <h4 className="font-medium mb-2 flex items-center gap-2">
+                  <Star className="text-indigo-500" size={18} />
+                  <span>Modality Dynamic</span>
+                  <span className="text-xs bg-secondary px-2 py-0.5 rounded ml-auto">{characterSynthesis.modalityDynamic.combination}</span>
+                </h4>
+                <p className="text-sm mb-2">{characterSynthesis.modalityDynamic.description}</p>
+                {characterSynthesis.modalityDynamic.energy && (
+                  <p className="text-sm text-muted-foreground mb-2"><strong>Energy:</strong> {characterSynthesis.modalityDynamic.energy}</p>
+                )}
+                {characterSynthesis.modalityDynamic.challenge && (
+                  <p className="text-sm text-rose-700 dark:text-rose-400"><strong>Challenge:</strong> {characterSynthesis.modalityDynamic.challenge}</p>
+                )}
+              </div>
             </div>
           )}
           
           {/* Elemental Balance Visual */}
           <ElementalBalanceVisual elements={elements} />
           
+          {/* Quick Reference Cards - Keep the original simple view */}
+          <details className="group">
+            <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground flex items-center gap-2">
+              <ChevronDown size={16} className="group-open:rotate-180 transition-transform" />
+              Quick Reference Cards
+            </summary>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
+              {characterCards.map((card) => (
+                <CharacterCardComponent key={card.planet} card={card} />
+              ))}
+            </div>
+          </details>
+          
           <div className="bg-green-50 dark:bg-green-950/30 p-4 rounded-lg">
             <h4 className="font-medium mb-2">Check-in Questions</h4>
-            <CheckItem label="Does this sound like you?" />
-            <CheckItem label="How do you experience your Moon sign emotionally?" />
-            <CheckItem label="Do others recognize your Rising sign in you?" />
+            <CheckItem label="Does this Big Three combination feel accurate to you?" />
+            <CheckItem label="How do you experience the tension/harmony between your Sun and Moon elements?" />
+            <CheckItem label="Do people often comment on your Rising sign energy?" />
+            <CheckItem label="Can you feel the decan ruler's influence in how you express these placements?" />
           </div>
           
-          <NoteArea placeholder="Client's response to character description..." />
+          <NoteArea placeholder="Client's response to character synthesis. How do they experience their element/modality combination? Any resistance to the interpretation?" />
         </div>
       </Section>
       
