@@ -1332,6 +1332,148 @@ const JournalWithPatterns = ({ aspect, currentDate }: {
   );
 };
 
+// Retrograde information for outer planets
+const RETROGRADE_INFO: Record<string, { duration: string; frequency: string; passCount: number; description: string }> = {
+  pluto: {
+    duration: '5-6 months',
+    frequency: 'once per year',
+    passCount: 3,
+    description: 'Pluto retrogrades for about 5-6 months each year, typically from late April to early October. During this time, it moves backward through 3-4 degrees, often crossing the same point in your chart 3 times over 1-2 years. This creates a deep, transformative process where themes surface (1st pass), intensify during introspection (2nd retrograde pass), and finally integrate (3rd direct pass).'
+  },
+  neptune: {
+    duration: '5+ months',
+    frequency: 'once per year',
+    passCount: 3,
+    description: 'Neptune retrogrades for about 5-6 months each year, moving backward 2-3 degrees. This creates 3 passes over natal points, allowing spiritual and creative themes to emerge, dissolve, and re-form with greater clarity.'
+  },
+  uranus: {
+    duration: '5 months',
+    frequency: 'once per year',
+    passCount: 3,
+    description: 'Uranus retrogrades for about 5 months annually, backing up 4 degrees. Three passes allow revolutionary changes to shock, reconsider, and finally breakthrough.'
+  },
+  saturn: {
+    duration: '4.5 months',
+    frequency: 'once per year',
+    passCount: 3,
+    description: 'Saturn retrogrades for about 4.5 months each year. The 3 passes help solidify structures: first confrontation with limits, then internal restructuring, finally building lasting foundations.'
+  },
+  jupiter: {
+    duration: '4 months',
+    frequency: 'once per year',
+    passCount: 3,
+    description: 'Jupiter retrogrades for about 4 months annually. Three passes allow opportunities to appear, be reassessed, then fully embraced.'
+  }
+};
+
+// Calculate multiple passes for slow-moving planets
+const calculateRetrogradePasses = (
+  transitPlanet: string,
+  transitDegree: number,
+  natalDegree: number,
+  natalSign: string,
+  currentDate: Date,
+  aspectAngle: number
+): Array<{ date: Date; passNumber: number; direction: 'direct' | 'retrograde'; status: 'passed' | 'current' | 'upcoming' }> => {
+  const passes: Array<{ date: Date; passNumber: number; direction: 'direct' | 'retrograde'; status: 'passed' | 'current' | 'upcoming' }> = [];
+  const speed = PLANET_SPEEDS[transitPlanet.toLowerCase()] || 1;
+  const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+  
+  // Target degree for the aspect
+  const natalLongitude = signs.indexOf(natalSign) * 30 + natalDegree;
+  const targetTransitLongitude = (natalLongitude + aspectAngle) % 360;
+  const transitLongitude = signs.indexOf(signs[Math.floor(transitDegree / 30) % 12]) * 30 + (transitDegree % 30);
+  
+  // For slow planets (Pluto, Neptune, Uranus, Saturn, Jupiter), calculate 3 passes
+  const outerPlanets = ['pluto', 'neptune', 'uranus', 'saturn', 'jupiter'];
+  const isOuterPlanet = outerPlanets.includes(transitPlanet.toLowerCase());
+  
+  if (!isOuterPlanet) {
+    // For faster planets, just one pass
+    const degreesToTarget = targetTransitLongitude - transitDegree;
+    const daysToExact = degreesToTarget / speed;
+    const exactDate = new Date(currentDate);
+    exactDate.setDate(exactDate.getDate() + Math.floor(daysToExact));
+    
+    passes.push({
+      date: exactDate,
+      passNumber: 1,
+      direction: 'direct',
+      status: exactDate < currentDate ? 'passed' : 
+              Math.abs(exactDate.getTime() - currentDate.getTime()) < 30 * 24 * 60 * 60 * 1000 ? 'current' : 'upcoming'
+    });
+    return passes;
+  }
+  
+  // For outer planets - calculate approximate 3 passes over ~18 months for Pluto
+  // Retrograde cycle lengths (in days between station retrograde and station direct)
+  const retrogradeCycles: Record<string, { stationOffset: number; cycleLength: number }> = {
+    pluto: { stationOffset: 90, cycleLength: 170 }, // Stations ~90 days before crossing, ~170 day retrograde
+    neptune: { stationOffset: 80, cycleLength: 160 },
+    uranus: { stationOffset: 75, cycleLength: 155 },
+    saturn: { stationOffset: 60, cycleLength: 140 },
+    jupiter: { stationOffset: 50, cycleLength: 120 }
+  };
+  
+  const cycle = retrogradeCycles[transitPlanet.toLowerCase()] || { stationOffset: 60, cycleLength: 120 };
+  
+  // First pass (direct motion approaching) - Look backward and forward
+  // Estimate when the first pass happened/will happen
+  let degreesToTarget = natalDegree - transitDegree;
+  if (degreesToTarget < -180) degreesToTarget += 360;
+  if (degreesToTarget > 180) degreesToTarget -= 360;
+  
+  const daysToFirst = degreesToTarget / speed;
+  const firstPassDate = new Date(currentDate);
+  firstPassDate.setDate(firstPassDate.getDate() + Math.floor(daysToFirst));
+  
+  // Second pass (retrograde) - typically 2-4 months after first
+  const secondPassDate = new Date(firstPassDate);
+  secondPassDate.setDate(secondPassDate.getDate() + Math.floor(cycle.stationOffset + cycle.cycleLength * 0.4));
+  
+  // Third pass (direct again) - typically 2-4 months after second
+  const thirdPassDate = new Date(secondPassDate);
+  thirdPassDate.setDate(thirdPassDate.getDate() + Math.floor(cycle.cycleLength * 0.6));
+  
+  // Also calculate previous cycle (for looking back)
+  const orbitalDays = ORBITAL_PERIODS[transitPlanet.toLowerCase()] || 90560;
+  const prevFirstPass = new Date(firstPassDate);
+  prevFirstPass.setDate(prevFirstPass.getDate() - Math.floor(orbitalDays));
+  const prevSecondPass = new Date(prevFirstPass);
+  prevSecondPass.setDate(prevSecondPass.getDate() + Math.floor(cycle.stationOffset + cycle.cycleLength * 0.4));
+  const prevThirdPass = new Date(prevSecondPass);
+  prevThirdPass.setDate(prevThirdPass.getDate() + Math.floor(cycle.cycleLength * 0.6));
+  
+  // Add passes (include previous cycle if recent, within 3 years)
+  const threeYearsAgo = new Date(currentDate);
+  threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 3);
+  
+  const allDates = [
+    { date: prevFirstPass, pass: 1, dir: 'direct' as const },
+    { date: prevSecondPass, pass: 2, dir: 'retrograde' as const },
+    { date: prevThirdPass, pass: 3, dir: 'direct' as const },
+    { date: firstPassDate, pass: 1, dir: 'direct' as const },
+    { date: secondPassDate, pass: 2, dir: 'retrograde' as const },
+    { date: thirdPassDate, pass: 3, dir: 'direct' as const },
+  ].filter(d => d.date > threeYearsAgo);
+  
+  // Sort by date
+  allDates.sort((a, b) => a.date.getTime() - b.date.getTime());
+  
+  // Determine status
+  allDates.forEach(d => {
+    const daysDiff = Math.abs(d.date.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24);
+    passes.push({
+      date: d.date,
+      passNumber: d.pass,
+      direction: d.dir,
+      status: d.date < currentDate ? 'passed' : daysDiff < 60 ? 'current' : 'upcoming'
+    });
+  });
+  
+  return passes;
+};
+
 // All Natal Points Being Aspected by this Transit Planet
 const AllNatalAspects = ({ transitPlanet, transitDegree, transitSign, natalChart, currentDate }: {
   transitPlanet: string;
@@ -1351,7 +1493,15 @@ const AllNatalAspects = ({ transitPlanet, transitDegree, transitSign, natalChart
   const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
   const transitLongitude = signs.indexOf(transitSign) * 30 + transitDegree;
   
-  // Find all natal planets being aspected by this transit
+  // Check if this is an outer planet
+  const outerPlanets = ['pluto', 'neptune', 'uranus', 'saturn', 'jupiter'];
+  const isOuterPlanet = outerPlanets.includes(transitPlanet.toLowerCase());
+  const retroInfo = RETROGRADE_INFO[transitPlanet.toLowerCase()];
+  
+  // Find all natal planets being aspected by this transit (within tight orb for Pluto)
+  const aspectOrb = transitPlanet.toLowerCase() === 'pluto' ? 2 : 
+                    ['neptune', 'uranus'].includes(transitPlanet.toLowerCase()) ? 3 : 5;
+  
   const allAspects: Array<{
     natalPlanet: string;
     natalDegree: number;
@@ -1360,7 +1510,7 @@ const AllNatalAspects = ({ transitPlanet, transitDegree, transitSign, natalChart
     aspectSymbol: string;
     orb: number;
     isExact: boolean;
-    exactDate: Date;
+    passes: Array<{ date: Date; passNumber: number; direction: 'direct' | 'retrograde'; status: 'passed' | 'current' | 'upcoming' }>;
   }> = [];
   
   Object.entries(natalChart.planets).forEach(([planetName, position]) => {
@@ -1375,31 +1525,19 @@ const AllNatalAspects = ({ transitPlanet, transitDegree, transitSign, natalChart
       // Adjust for the aspect angle
       const angleDiff = Math.abs(diff - aspectData.angle);
       
-      if (angleDiff <= aspectData.orb) {
-        // Calculate when transit will be/was exact at this natal degree
-        const speed = PLANET_SPEEDS[transitPlanet.toLowerCase()] || 1;
-        
-        // For the specific aspect angle, we need to find when transit will be at the right position
-        // The "right position" is when the transit creates the exact aspect
-        const targetTransitLongitude = aspectData.angle === 0 
-          ? natalLongitude 
-          : aspectData.angle === 180
-          ? (natalLongitude + 180) % 360
-          : aspectData.angle === 120
-          ? (natalLongitude + (transitLongitude > natalLongitude ? 120 : -120) + 360) % 360
-          : aspectData.angle === 90
-          ? (natalLongitude + (transitLongitude > natalLongitude ? 90 : -90) + 360) % 360
-          : (natalLongitude + (transitLongitude > natalLongitude ? 60 : -60) + 360) % 360;
-        
-        // Days from current position to target
-        let degreesToTarget = targetTransitLongitude - transitLongitude;
-        if (degreesToTarget < -180) degreesToTarget += 360;
-        if (degreesToTarget > 180) degreesToTarget -= 360;
-        
-        const daysToExact = degreesToTarget / speed;
-        
-        const exactDate = new Date(currentDate);
-        exactDate.setDate(exactDate.getDate() + Math.floor(daysToExact));
+      // Use tighter orb for outer planets
+      const effectiveOrb = isOuterPlanet ? Math.min(aspectOrb, aspectData.orb) : aspectData.orb;
+      
+      if (angleDiff <= effectiveOrb) {
+        // Calculate multiple passes for outer planets
+        const passes = calculateRetrogradePasses(
+          transitPlanet,
+          transitDegree,
+          position.degree,
+          position.sign,
+          currentDate,
+          aspectData.angle
+        );
         
         allAspects.push({
           natalPlanet: planetName,
@@ -1409,7 +1547,7 @@ const AllNatalAspects = ({ transitPlanet, transitDegree, transitSign, natalChart
           aspectSymbol: aspectData.symbol,
           orb: angleDiff,
           isExact: angleDiff < 1,
-          exactDate,
+          passes,
         });
       }
     });
@@ -1438,67 +1576,208 @@ const AllNatalAspects = ({ transitPlanet, transitDegree, transitSign, natalChart
       </h4>
       
       <div style={{ fontSize: '13px', color: '#B71C1C', marginBottom: '16px' }}>
-        {getSymbol(transitPlanet)} at {transitDegree}° {transitSign} is currently making aspects to {allAspects.length} of your natal points:
+        {getSymbol(transitPlanet)} at {transitDegree}° {transitSign} is currently making aspects to {allAspects.length} of your natal points
+        {isOuterPlanet && ` (showing all passes within ±${aspectOrb}° orb)`}:
       </div>
       
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      {/* Retrograde Education Section for Outer Planets */}
+      {isOuterPlanet && retroInfo && (
+        <div style={{
+          marginBottom: '20px',
+          padding: '16px',
+          background: 'linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%)',
+          borderRadius: '8px',
+          border: '1px solid #42A5F5'
+        }}>
+          <h5 style={{ fontSize: '14px', fontWeight: '700', color: '#1565C0', marginBottom: '10px' }}>
+            📚 Understanding {transitPlanet} Retrograde Cycles
+          </h5>
+          <p style={{ fontSize: '12px', color: '#1976D2', lineHeight: '1.6', marginBottom: '12px' }}>
+            {retroInfo.description}
+          </p>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', 
+            gap: '10px',
+            fontSize: '11px'
+          }}>
+            <div style={{ background: 'rgba(255,255,255,0.7)', padding: '8px', borderRadius: '4px' }}>
+              <strong style={{ color: '#1565C0' }}>Retrograde Duration:</strong>
+              <div style={{ color: '#424242' }}>{retroInfo.duration}</div>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.7)', padding: '8px', borderRadius: '4px' }}>
+              <strong style={{ color: '#1565C0' }}>Frequency:</strong>
+              <div style={{ color: '#424242' }}>{retroInfo.frequency}</div>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.7)', padding: '8px', borderRadius: '4px' }}>
+              <strong style={{ color: '#1565C0' }}>Passes per Transit:</strong>
+              <div style={{ color: '#424242' }}>{retroInfo.passCount} times over 1-2 years</div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {allAspects.map((asp, idx) => {
-          const isPast = asp.exactDate < currentDate;
-          const isCurrent = Math.abs(asp.exactDate.getTime() - currentDate.getTime()) < (7 * 24 * 60 * 60 * 1000); // Within a week
+          const hasMultiplePasses = asp.passes.length > 1;
+          const passedPasses = asp.passes.filter(p => p.status === 'passed');
+          const upcomingPasses = asp.passes.filter(p => p.status === 'upcoming' || p.status === 'current');
           
           return (
             <div key={idx} style={{
-              padding: '12px',
-              background: isCurrent ? 'rgba(255,235,59,0.3)' : 'rgba(255,255,255,0.9)',
-              borderRadius: '6px',
-              borderLeft: `4px solid ${asp.isExact ? '#F44336' : isCurrent ? '#FFC107' : '#90A4AE'}`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: '8px'
+              padding: '16px',
+              background: 'rgba(255,255,255,0.95)',
+              borderRadius: '8px',
+              borderLeft: `4px solid ${asp.isExact ? '#F44336' : '#90A4AE'}`,
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '18px' }}>
-                  {getSymbol(transitPlanet)}{asp.aspectSymbol}{getSymbol(asp.natalPlanet)}
-                </span>
-                <div>
-                  <div style={{ fontWeight: '600', color: '#424242' }}>
-                    {asp.aspectType} to {PLANET_ESSENCES[asp.natalPlanet.toLowerCase()]?.name || asp.natalPlanet}
-                  </div>
-                  <div style={{ fontSize: '12px', color: '#757575' }}>
-                    Your {getSymbol(asp.natalPlanet)} at {asp.natalDegree}° {asp.natalSign} • Orb: {asp.orb.toFixed(1)}°
+              {/* Aspect Header */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '20px' }}>
+                    {getSymbol(transitPlanet)}{asp.aspectSymbol}{getSymbol(asp.natalPlanet)}
+                  </span>
+                  <div>
+                    <div style={{ fontWeight: '600', color: '#424242', fontSize: '14px' }}>
+                      {asp.aspectType} to {PLANET_ESSENCES[asp.natalPlanet.toLowerCase()]?.name || asp.natalPlanet}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#757575' }}>
+                      Your {getSymbol(asp.natalPlanet)} at {asp.natalDegree}° {asp.natalSign} • Orb: {asp.orb.toFixed(1)}°
+                    </div>
                   </div>
                 </div>
+                {asp.isExact && (
+                  <span style={{
+                    background: '#F44336',
+                    color: 'white',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    fontSize: '10px',
+                    fontWeight: '700'
+                  }}>
+                    EXACT NOW
+                  </span>
+                )}
               </div>
               
-              <div style={{ textAlign: 'right' }}>
+              {/* Multiple Passes Timeline */}
+              {hasMultiplePasses && (
+                <div style={{ 
+                  background: '#FAFAFA', 
+                  borderRadius: '6px', 
+                  padding: '12px',
+                  marginTop: '8px'
+                }}>
+                  <div style={{ fontSize: '11px', fontWeight: '600', color: '#616161', marginBottom: '10px' }}>
+                    📅 ALL PASSES ({asp.passes.length} total):
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {asp.passes.map((pass, pIdx) => (
+                      <div key={pIdx} style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '8px 10px',
+                        background: pass.status === 'current' ? 'rgba(255,235,59,0.3)' : 
+                                   pass.status === 'passed' ? 'rgba(158,158,158,0.1)' : 'rgba(76,175,80,0.1)',
+                        borderRadius: '4px',
+                        borderLeft: `3px solid ${
+                          pass.status === 'current' ? '#FFC107' : 
+                          pass.status === 'passed' ? '#9E9E9E' : '#4CAF50'
+                        }`
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ 
+                            fontSize: '10px', 
+                            fontWeight: '700',
+                            color: pass.direction === 'retrograde' ? '#7B1FA2' : '#1976D2',
+                            background: pass.direction === 'retrograde' ? 'rgba(123,31,162,0.1)' : 'rgba(25,118,210,0.1)',
+                            padding: '2px 6px',
+                            borderRadius: '3px'
+                          }}>
+                            {pass.passNumber === 1 ? '1st' : pass.passNumber === 2 ? '2nd' : '3rd'} 
+                            {pass.direction === 'retrograde' ? ' ℞' : ' →'}
+                          </span>
+                          <span style={{ fontSize: '12px', color: '#424242' }}>
+                            {pass.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </span>
+                        </div>
+                        <span style={{
+                          fontSize: '10px',
+                          fontWeight: '600',
+                          color: pass.status === 'current' ? '#F57F17' : 
+                                 pass.status === 'passed' ? '#78909C' : '#2E7D32'
+                        }}>
+                          {pass.status === 'current' ? '⭐ ACTIVE' : 
+                           pass.status === 'passed' ? '✓ PASSED' : 'UPCOMING'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Summary */}
+                  <div style={{ 
+                    marginTop: '10px', 
+                    fontSize: '11px', 
+                    color: '#616161',
+                    fontStyle: 'italic'
+                  }}>
+                    {passedPasses.length > 0 && upcomingPasses.length > 0 && (
+                      <>
+                        {passedPasses.length} pass{passedPasses.length > 1 ? 'es' : ''} completed, {upcomingPasses.length} remaining
+                      </>
+                    )}
+                    {passedPasses.length > 0 && upcomingPasses.length === 0 && (
+                      <>All {passedPasses.length} passes completed - transit finishing</>
+                    )}
+                    {passedPasses.length === 0 && upcomingPasses.length > 0 && (
+                      <>Transit beginning - {upcomingPasses.length} passes ahead</>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              {/* Single pass for faster planets */}
+              {!hasMultiplePasses && asp.passes[0] && (
                 <div style={{ 
                   fontSize: '12px', 
-                  fontWeight: '600',
-                  color: isCurrent ? '#F57F17' : isPast ? '#78909C' : '#2E7D32'
+                  color: '#757575',
+                  marginTop: '8px'
                 }}>
-                  {isCurrent ? '⭐ NOW' : isPast ? 'PASSED' : 'UPCOMING'}
+                  Exact: {asp.passes[0].date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  {' • '}
+                  <span style={{
+                    color: asp.passes[0].status === 'current' ? '#F57F17' : 
+                           asp.passes[0].status === 'passed' ? '#78909C' : '#2E7D32',
+                    fontWeight: '600'
+                  }}>
+                    {asp.passes[0].status === 'current' ? 'ACTIVE NOW' : 
+                     asp.passes[0].status === 'passed' ? 'PASSED' : 'UPCOMING'}
+                  </span>
                 </div>
-                <div style={{ fontSize: '11px', color: '#9E9E9E' }}>
-                  Exact: {asp.exactDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                </div>
-              </div>
+              )}
             </div>
           );
         })}
       </div>
       
       <div style={{ 
-        marginTop: '12px', 
-        padding: '10px', 
+        marginTop: '16px', 
+        padding: '12px', 
         background: 'rgba(255,255,255,0.8)', 
-        borderRadius: '4px',
+        borderRadius: '6px',
         fontSize: '12px',
-        color: '#5D4037'
+        color: '#5D4037',
+        lineHeight: '1.5'
       }}>
-        💡 <strong>Tip:</strong> Outer planets like {getSymbol(transitPlanet)} move slowly, so they often aspect multiple natal points simultaneously. 
-        Watch for themes connecting these life areas.
+        💡 <strong>Understanding the Passes:</strong> {isOuterPlanet ? (
+          <>
+            Because {transitPlanet} moves so slowly and retrogrades annually, it typically crosses each degree 3 times over 1-2 years. 
+            The <strong>1st pass</strong> (direct) introduces themes. The <strong>2nd pass</strong> (retrograde ℞) intensifies internal processing. 
+            The <strong>3rd pass</strong> (direct again) brings integration and resolution.
+          </>
+        ) : (
+          <>Watch for themes connecting these life areas as {transitPlanet} aspects multiple natal points.</>
+        )}
       </div>
     </div>
   );
