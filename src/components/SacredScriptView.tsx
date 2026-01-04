@@ -472,7 +472,7 @@ export const SacredScriptView = ({ natalChart }: SacredScriptViewProps) => {
   );
 };
 
-// Detailed Saturn Cycle Card with retrograde passes
+// Detailed Saturn Cycle Card with retrograde passes and sign themes
 const DetailedSaturnCycleCard = ({ 
   cycle, 
   birthDate 
@@ -480,6 +480,8 @@ const DetailedSaturnCycleCard = ({
   cycle: SaturnCyclePhase; 
   birthDate: string;
 }) => {
+  const [showThemes, setShowThemes] = useState(false);
+  
   const bgColor = cycle.isPast 
     ? 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800' 
     : cycle.isUpcoming 
@@ -493,6 +495,20 @@ const DetailedSaturnCycleCard = ({
     'Return': 'text-purple-600 dark:text-purple-400'
   };
   
+  const phaseTypeLabels: Record<string, string> = {
+    'waxing': '↗️ WAXING (Building)',
+    'culmination': '🔆 CULMINATION (Peak)',
+    'waning': '↘️ WANING (Releasing)',
+    'conjunction': '🔄 RETURN (Reset)'
+  };
+  
+  const elementIcons: Record<string, string> = {
+    'Fire': '🔥',
+    'Earth': '🌍',
+    'Air': '💨',
+    'Water': '💧'
+  };
+  
   const typeLabels: Record<string, string> = {
     'exact': '① First Pass (Direct)',
     'retrograde_pass': '② Retrograde Pass',
@@ -501,16 +517,38 @@ const DetailedSaturnCycleCard = ({
   
   return (
     <div className={`p-4 rounded-lg border ${bgColor}`}>
+      {/* Header with phase and transiting sign */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <span className={`text-lg font-bold ${phaseColors[cycle.phaseName]}`}>
+          <span className={`text-xl font-bold ${phaseColors[cycle.phaseName]}`}>
             {cycle.phaseSymbol}
           </span>
-          <span className="font-medium">{cycle.phaseName}</span>
+          <div>
+            <span className="font-medium">{cycle.phaseName}</span>
+            <span className="text-xs text-muted-foreground ml-2">
+              {phaseTypeLabels[cycle.phaseType]}
+            </span>
+          </div>
         </div>
-        <span className="text-xs bg-background/50 px-2 py-1 rounded">
-          Target: {cycle.targetDegree.toFixed(1)}°
-        </span>
+      </div>
+      
+      {/* Transiting Sign - THE KEY ADDITION */}
+      <div className="bg-background/70 rounded-lg p-3 mb-3 border border-border/50">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Saturn Transiting</p>
+            <p className="text-lg font-serif font-medium">
+              ♄ in {cycle.transitingSign} {elementIcons[cycle.transitingElement]}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs text-muted-foreground">Natal ♄</p>
+            <p className="text-sm">{cycle.natalSign}</p>
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground mt-1">
+          {cycle.natalSign} → {cycle.transitingSign} ({cycle.phaseSymbol} {cycle.phaseName.toLowerCase()})
+        </p>
       </div>
       
       <p className="text-sm text-muted-foreground mb-3">
@@ -520,7 +558,7 @@ const DetailedSaturnCycleCard = ({
       {/* All transit events with dates */}
       <div className="bg-background/50 rounded p-3 mb-3 space-y-2">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Exact Transits Over {cycle.targetDegree.toFixed(1)}°
+          Exact Transits Over {cycle.targetDegree.toFixed(1)}° {cycle.transitingSign}
         </p>
         {cycle.events.map((event, i) => (
           <div key={i} className="flex items-center justify-between text-sm">
@@ -537,6 +575,39 @@ const DetailedSaturnCycleCard = ({
           </p>
         )}
       </div>
+      
+      {/* Toggle for detailed themes */}
+      <button 
+        onClick={() => setShowThemes(!showThemes)}
+        className="text-xs text-primary hover:underline mb-3 flex items-center gap-1"
+      >
+        {showThemes ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+        {showThemes ? 'Hide' : 'Show'} detailed themes for ♄ in {cycle.transitingSign}
+      </button>
+      
+      {showThemes && (
+        <div className="space-y-3 mb-3">
+          {/* Phase Themes */}
+          <div className="bg-slate-100 dark:bg-slate-900/50 rounded p-3 text-sm">
+            <p className="font-medium mb-2 text-slate-700 dark:text-slate-300">
+              {cycle.phaseType === 'waxing' ? '↗️' : cycle.phaseType === 'waning' ? '↘️' : '🔄'} Phase Meaning:
+            </p>
+            <p className="text-slate-600 dark:text-slate-400 whitespace-pre-line text-xs leading-relaxed">
+              {cycle.phaseThemes}
+            </p>
+          </div>
+          
+          {/* Sign Themes */}
+          <div className="bg-indigo-50 dark:bg-indigo-950/30 rounded p-3 text-sm">
+            <p className="font-medium mb-2 text-indigo-700 dark:text-indigo-300">
+              {elementIcons[cycle.transitingElement]} Sign Themes ({cycle.transitingSign}):
+            </p>
+            <p className="text-indigo-600 dark:text-indigo-400 whitespace-pre-line text-xs leading-relaxed">
+              {cycle.signThemes}
+            </p>
+          </div>
+        </div>
+      )}
       
       <p className="text-sm italic text-foreground/80 mb-2">"{cycle.question}"</p>
       
