@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, ChevronDown } from "lucide-react";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
 import { YearView } from "./YearView";
@@ -28,6 +28,8 @@ export const AstroCalendar = () => {
   const [selectedDay, setSelectedDay] = useState<DayData | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("month");
   const [showLegend, setShowLegend] = useState(false);
+  const [selectedScriptChart, setSelectedScriptChart] = useState<string | null>(null);
+  const [showScriptDropdown, setShowScriptDropdown] = useState(false);
   const { userData, saveUserData } = useUserData();
   const { weekNotes, dayNotes, saveWeekNotes, saveDayNotes } = useNotes();
   const {
@@ -287,17 +289,49 @@ export const AstroCalendar = () => {
               </button>
               {/* Sacred Script - only visible when a chart is loaded */}
               {(userNatalChart || savedCharts.length > 0) && (
-                <button
-                  onClick={() => setViewMode("sacred-script")}
-                  className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
-                    viewMode === "sacred-script"
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Scroll size={14} />
-                  Script
-                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => setShowScriptDropdown(!showScriptDropdown)}
+                    className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                      viewMode === "sacred-script"
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Scroll size={14} />
+                    Script
+                    <ChevronDown size={12} />
+                  </button>
+                  {showScriptDropdown && (
+                    <div className="absolute top-full left-0 mt-1 z-50 bg-background border border-border rounded-sm shadow-lg min-w-[160px]">
+                      {userNatalChart && (
+                        <button
+                          onClick={() => {
+                            setSelectedScriptChart('user');
+                            setViewMode("sacred-script");
+                            setShowScriptDropdown(false);
+                          }}
+                          className="w-full text-left px-3 py-2 text-sm hover:bg-secondary transition-colors"
+                        >
+                          {userNatalChart.name}
+                        </button>
+                      )}
+                      {savedCharts.map(chart => (
+                        <button
+                          key={chart.id}
+                          onClick={() => {
+                            setSelectedScriptChart(chart.id);
+                            setViewMode("sacred-script");
+                            setShowScriptDropdown(false);
+                          }}
+                          className="w-full text-left px-3 py-2 text-sm hover:bg-secondary transition-colors"
+                        >
+                          {chart.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 
@@ -427,7 +461,13 @@ export const AstroCalendar = () => {
 
         {viewMode === "sacred-script" && (
           <SacredScriptView 
-            natalChart={activeChart || userNatalChart || savedCharts[0]} 
+            natalChart={
+              selectedScriptChart === 'user' 
+                ? userNatalChart 
+                : selectedScriptChart 
+                  ? savedCharts.find(c => c.id === selectedScriptChart) || userNatalChart || savedCharts[0]
+                  : userNatalChart || savedCharts[0]
+            } 
           />
         )}
       </div>
