@@ -1225,16 +1225,16 @@ export interface DayType {
 }
 
 export const DAY_TYPE_MAP: Record<string, DayType> = {
-  mercury: { label: 'Mental Day', emoji: '🧠', description: 'Communication, thinking, learning' },
-  venus: { label: 'Heart Day', emoji: '💗', description: 'Love, beauty, connection' },
-  mars: { label: 'Action Day', emoji: '⚡', description: 'Energy, drive, initiative' },
-  sun: { label: 'Vitality Day', emoji: '✨', description: 'Self-expression, confidence' },
-  moon: { label: 'Emotional Day', emoji: '🌙', description: 'Intuition, feelings, nurturing' },
-  jupiter: { label: 'Expansion Day', emoji: '🌟', description: 'Growth, luck, opportunity' },
-  saturn: { label: 'Structure Day', emoji: '🏛️', description: 'Discipline, responsibility' },
-  uranus: { label: 'Change Day', emoji: '⚡', description: 'Innovation, breakthroughs' },
-  neptune: { label: 'Dream Day', emoji: '🌊', description: 'Imagination, spirituality' },
-  pluto: { label: 'Transform Day', emoji: '🔥', description: 'Deep change, power' },
+  mercury: { label: 'Think & Talk', emoji: '🧠', description: 'Great for writing, meetings, learning, signing contracts' },
+  venus: { label: 'Love & Beauty', emoji: '💗', description: 'Perfect for romance, art, shopping, self-care' },
+  mars: { label: 'Go & Do', emoji: '🔥', description: 'Best for exercise, starting projects, asserting yourself' },
+  sun: { label: 'Shine & Lead', emoji: '✨', description: 'Ideal for visibility, leadership, creative expression' },
+  moon: { label: 'Feel & Nurture', emoji: '🌙', description: 'Focus on home, family, self-care, emotional processing' },
+  jupiter: { label: 'Grow & Expand', emoji: '🍀', description: 'Lucky for travel, education, taking risks, big decisions' },
+  saturn: { label: 'Build & Focus', emoji: '🏛️', description: 'Good for hard work, long-term planning, responsibilities' },
+  uranus: { label: 'Break & Change', emoji: '⚡', description: 'Expect surprises, try new things, embrace the unexpected' },
+  neptune: { label: 'Dream & Imagine', emoji: '🌊', description: 'Best for creativity, meditation, spiritual practices' },
+  pluto: { label: 'Transform & Heal', emoji: '🦋', description: 'Deep inner work, letting go, psychological breakthroughs' },
 };
 
 // Lucky day indicators based on beneficial aspects
@@ -1265,17 +1265,17 @@ export const getDayType = (aspects: Aspect[], moonPhase: MoonPhase): DayType => 
 
   // Balsamic moon = rest/dream day
   if (moonPhase.isBalsamic) {
-    return { label: 'Rest Day', emoji: '🌘', description: 'Release, reflect, restore' };
+    return { label: 'Rest & Release', emoji: '🌘', description: 'Let go of what no longer serves you, recharge' };
   }
 
   // Full moon = emotional peak
   if (moonPhase.phaseName === 'Full Moon') {
-    return { label: 'Peak Day', emoji: '🌕', description: 'Culmination, illumination' };
+    return { label: 'Harvest', emoji: '🌕', description: 'See results, gain clarity, celebrate achievements' };
   }
 
   // New moon = intention day
   if (moonPhase.phaseName === 'New Moon') {
-    return { label: 'Seed Day', emoji: '🌑', description: 'New beginnings, intentions' };
+    return { label: 'Plant Seeds', emoji: '🌑', description: 'Set intentions, start fresh, new beginnings' };
   }
 
   // Find the dominant planet
