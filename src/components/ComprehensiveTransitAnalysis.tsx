@@ -9,6 +9,9 @@ import { TransitAspect } from '@/lib/transitAspects';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { getSabianSymbol } from '@/lib/sabianSymbols';
 import { getDecan } from '@/lib/decans';
+import { getPlanetInSignExpression } from '@/lib/planetSignExpressions';
+import { getAspectInterpretation, getAspectFeeling, getAspectDynamics, ASPECT_INTERPRETATIONS } from '@/lib/aspectInterpretations';
+import { detectChartPatterns, getPatternActivation, ChartPattern } from '@/lib/chartPatterns';
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -78,38 +81,8 @@ const getDegreeMeaning = (degree: number, sign: string): { symbol: string; meani
 };
 
 const getSignExpression = (planet: string, sign: string): string => {
-  const expressions: Record<string, Record<string, string>> = {
-    Sun: {
-      Aries: 'Identity expressed through initiative, courage, and pioneering spirit.',
-      Taurus: 'Identity rooted in stability, sensuality, and material security.',
-      Gemini: 'Identity expressed through communication, curiosity, and adaptability.',
-      Cancer: 'Identity rooted in nurturing, emotions, and family connections.',
-      Leo: 'Identity expressed through creativity, leadership, and self-expression.',
-      Virgo: 'Identity rooted in service, analysis, and practical improvement.',
-      Libra: 'Identity expressed through relationships, harmony, and aesthetics.',
-      Scorpio: 'Identity rooted in intensity, transformation, and depth.',
-      Sagittarius: 'Identity expressed through adventure, philosophy, and expansion.',
-      Capricorn: 'Identity rooted in ambition, structure, and achievement.',
-      Aquarius: 'Identity expressed through innovation, individuality, and humanitarian ideals.',
-      Pisces: 'Identity rooted in spirituality, compassion, and transcendence.',
-    },
-    Moon: {
-      Aries: 'Emotions are quick, fiery, and need immediate expression.',
-      Taurus: 'Emotions seek comfort, stability, and sensory pleasures.',
-      Gemini: 'Emotions are processed through talking, thinking, and variety.',
-      Cancer: 'Emotions run deep with strong nurturing and protective instincts.',
-      Leo: 'Emotions need recognition, warmth, and creative expression.',
-      Virgo: 'Emotions are analyzed, practical, and service-oriented.',
-      Libra: 'Emotions seek harmony, beauty, and partnership.',
-      Scorpio: 'Emotions are intense, transformative, and deeply felt.',
-      Sagittarius: 'Emotions need freedom, adventure, and meaning.',
-      Capricorn: 'Emotions are controlled, responsible, and achievement-focused.',
-      Aquarius: 'Emotions are detached, unconventional, and group-oriented.',
-      Pisces: 'Emotions are boundless, intuitive, and deeply empathic.',
-    },
-  };
-  
-  return expressions[planet]?.[sign] || `${planet} expresses through the lens of ${sign} energy.`;
+  // Use the comprehensive planet-in-sign database
+  return getPlanetInSignExpression(planet, sign);
 };
 
 const getHouseToHouseMeaning = (transitHouse: number, natalHouse: number, aspectType: string): string => {
@@ -398,7 +371,11 @@ const TransitActivation = ({
 }) => {
   const transitInfo = PLANET_ESSENCES[transitPlanet.toLowerCase()] || { name: transitPlanet, essence: '' };
   const natalInfo = PLANET_ESSENCES[natalPlanet.toLowerCase()] || { name: natalPlanet, essence: '' };
-  const aspectInfo = ASPECT_MEANINGS[aspect] || { meaning: 'aspects', energy: '' };
+  const aspectData = ASPECT_INTERPRETATIONS[aspect] || ASPECT_INTERPRETATIONS.conjunction;
+  const aspectDynamics = getAspectDynamics(aspect);
+  
+  // Get the deep aspect interpretation
+  const deepInterpretation = getAspectInterpretation(transitPlanet, natalPlanet, aspect);
   
   return (
     <div style={{
@@ -418,6 +395,7 @@ const TransitActivation = ({
       </h4>
       
       <div style={{ fontSize: '14px', lineHeight: '1.8', color: '#2C2C2C' }}>
+        {/* Transit Planet Section */}
         <div style={{ marginBottom: '16px' }}>
           <div style={{ fontWeight: '600', color: '#1B5E20', marginBottom: '6px' }}>
             Transit {transitInfo.name} at {transitDegree}° {transitSign}{transitHouse ? ` (your ${transitHouse}${getOrdinal(transitHouse)} house)` : ''}:
@@ -426,11 +404,47 @@ const TransitActivation = ({
             {transitHouse ? `Your ${HOUSE_MEANINGS[transitHouse].short.toLowerCase()} area is being energized by` : 'Your chart is being activated by'}
             {' '}{transitInfo.name.toLowerCase()} energy. {transitInfo.essence}
           </div>
-          <div style={{ marginTop: '8px', fontStyle: 'italic', color: '#2E7D32' }}>
-            {getSignExpression(transitInfo.name, transitSign)}
+          <div style={{ marginTop: '10px', padding: '10px', background: 'rgba(255,255,255,0.8)', borderRadius: '4px', borderLeft: '3px solid #4CAF50' }}>
+            <div style={{ fontWeight: '600', fontSize: '12px', color: '#2E7D32', marginBottom: '4px' }}>
+              HOW {transitInfo.name.toUpperCase()} EXPRESSES THROUGH {transitSign.toUpperCase()}:
+            </div>
+            <div style={{ color: '#1B5E20' }}>
+              {getSignExpression(transitInfo.name, transitSign)}
+            </div>
           </div>
         </div>
         
+        {/* THE ASPECT - New section showing the specific aspect dynamics */}
+        <div style={{
+          padding: '16px',
+          background: 'linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%)',
+          borderRadius: '6px',
+          marginBottom: '16px',
+          border: '1px solid #64B5F6'
+        }}>
+          <div style={{ fontWeight: '700', color: '#1565C0', marginBottom: '8px', fontSize: '15px' }}>
+            {aspectData.symbol} THE {aspect.toUpperCase()} ({aspectData.keyword})
+          </div>
+          <div style={{ marginBottom: '10px', fontSize: '14px' }}>
+            {deepInterpretation}
+          </div>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '12px' }}>
+            {aspectDynamics.challenge && (
+              <div style={{ flex: '1', minWidth: '200px', padding: '10px', background: 'rgba(244,67,54,0.1)', borderRadius: '4px', border: '1px solid rgba(244,67,54,0.3)' }}>
+                <div style={{ fontWeight: '600', fontSize: '11px', color: '#C62828', marginBottom: '4px' }}>⚠️ CHALLENGE:</div>
+                <div style={{ fontSize: '13px', color: '#B71C1C' }}>{aspectDynamics.challenge}</div>
+              </div>
+            )}
+            {aspectDynamics.gift && (
+              <div style={{ flex: '1', minWidth: '200px', padding: '10px', background: 'rgba(76,175,80,0.1)', borderRadius: '4px', border: '1px solid rgba(76,175,80,0.3)' }}>
+                <div style={{ fontWeight: '600', fontSize: '11px', color: '#2E7D32', marginBottom: '4px' }}>🎁 GIFT:</div>
+                <div style={{ fontSize: '13px', color: '#1B5E20' }}>{aspectDynamics.gift}</div>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Natal Planet Section */}
         <div style={{
           padding: '16px',
           background: 'rgba(255,255,255,0.95)',
@@ -438,24 +452,29 @@ const TransitActivation = ({
           borderLeft: '4px solid #66BB6A'
         }}>
           <div style={{ fontWeight: '600', color: '#1B5E20', marginBottom: '6px' }}>
-            This {aspectInfo.meaning}s your Natal {natalInfo.name} at {natalDegree}° {natalSign}{natalHouse ? ` (your ${natalHouse}${getOrdinal(natalHouse)} house)` : ''}:
+            Your Natal {natalInfo.name} at {natalDegree}° {natalSign}{natalHouse ? ` (your ${natalHouse}${getOrdinal(natalHouse)} house)` : ''}:
           </div>
           <div>
             Your natal {natalInfo.name.toLowerCase()} represents {natalInfo.essence.toLowerCase()}
             {natalHouse && ` It lives in your ${HOUSE_MEANINGS[natalHouse].short.toLowerCase()} (${natalHouse}${getOrdinal(natalHouse)} house).`}
           </div>
-          <div style={{ marginTop: '8px', fontStyle: 'italic', color: '#2E7D32' }}>
-            {getSignExpression(natalInfo.name, natalSign)}
+          <div style={{ marginTop: '10px', padding: '10px', background: 'rgba(129,199,132,0.2)', borderRadius: '4px', borderLeft: '3px solid #66BB6A' }}>
+            <div style={{ fontWeight: '600', fontSize: '12px', color: '#2E7D32', marginBottom: '4px' }}>
+              HOW YOUR {natalInfo.name.toUpperCase()} EXPRESSES THROUGH {natalSign.toUpperCase()}:
+            </div>
+            <div style={{ color: '#1B5E20' }}>
+              {getSignExpression(natalInfo.name, natalSign)}
+            </div>
           </div>
         </div>
         
         {transitHouse && natalHouse && (
           <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(255,235,59,0.2)', borderRadius: '4px' }}>
             <div style={{ fontWeight: '600', marginBottom: '6px' }}>
-              🎯 THE CONNECTION:
+              🎯 HOUSE CONNECTION:
             </div>
             <div>
-              {getHouseToHouseMeaning(transitHouse, natalHouse, aspectInfo.meaning)}
+              {getHouseToHouseMeaning(transitHouse, natalHouse, aspectData.keyword.toLowerCase())}
             </div>
           </div>
         )}
@@ -864,6 +883,13 @@ export const ComprehensiveTransitAnalysis = ({
 }: ComprehensiveTransitAnalysisProps) => {
   const historicalMatches = findHistoricalMatches(aspect, currentDate);
   
+  // Detect chart patterns
+  const chartPatterns = detectChartPatterns(natalChart);
+  
+  // Check if this transit activates any patterns
+  const transitDegree = aspect.transitDegree + (['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].indexOf(aspect.transitSign) * 30);
+  const activatedPatterns = getPatternActivation(aspect.transitPlanet, transitDegree, natalChart);
+  
   return (
     <div style={{
       marginBottom: '32px',
@@ -984,7 +1010,87 @@ export const ComprehensiveTransitAnalysis = ({
         aspect={aspect.aspect}
       />
       
-      {/* Section 6: Journal Prompt with Pattern Tracking */}
+      {/* Section 6: Chart Patterns (Grand Cross, Yod, etc.) */}
+      {(chartPatterns.length > 0 || activatedPatterns.length > 0) && (
+        <div style={{
+          marginBottom: '24px',
+          padding: '20px',
+          background: 'linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%)',
+          borderRadius: '8px',
+          border: '1px solid #AB47BC'
+        }}>
+          <h4 style={{
+            fontSize: '16px',
+            fontWeight: '700',
+            marginBottom: '16px',
+            color: '#6A1B9A'
+          }}>
+            🔮 Chart Patterns Detected
+          </h4>
+          
+          {activatedPatterns.length > 0 && (
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ fontWeight: '600', color: '#7B1FA2', marginBottom: '8px', fontSize: '14px' }}>
+                ⚡ ACTIVATED BY THIS TRANSIT:
+              </div>
+              {activatedPatterns.map((pattern, idx) => (
+                <div key={idx} style={{
+                  padding: '12px',
+                  background: 'rgba(255,255,255,0.9)',
+                  borderRadius: '6px',
+                  marginBottom: '8px',
+                  borderLeft: '4px solid #AB47BC'
+                }}>
+                  <div style={{ fontWeight: '700', color: '#4A148C', marginBottom: '6px' }}>
+                    {pattern.symbol} {pattern.name}
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#4A148C', marginBottom: '8px' }}>
+                    {pattern.description}
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#6A1B9A', marginBottom: '6px' }}>
+                    {pattern.meaning}
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    <div style={{ flex: '1', minWidth: '180px', padding: '8px', background: 'rgba(244,67,54,0.1)', borderRadius: '4px' }}>
+                      <span style={{ fontWeight: '600', fontSize: '11px', color: '#C62828' }}>Challenge: </span>
+                      <span style={{ fontSize: '12px', color: '#B71C1C' }}>{pattern.challenge}</span>
+                    </div>
+                    <div style={{ flex: '1', minWidth: '180px', padding: '8px', background: 'rgba(76,175,80,0.1)', borderRadius: '4px' }}>
+                      <span style={{ fontWeight: '600', fontSize: '11px', color: '#2E7D32' }}>Gift: </span>
+                      <span style={{ fontSize: '12px', color: '#1B5E20' }}>{pattern.gift}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {chartPatterns.length > 0 && (
+            <div>
+              <div style={{ fontWeight: '600', color: '#7B1FA2', marginBottom: '8px', fontSize: '14px' }}>
+                📐 YOUR NATAL CHART PATTERNS:
+              </div>
+              {chartPatterns.map((pattern, idx) => (
+                <div key={idx} style={{
+                  padding: '12px',
+                  background: 'rgba(255,255,255,0.7)',
+                  borderRadius: '6px',
+                  marginBottom: '8px'
+                }}>
+                  <div style={{ fontWeight: '600', color: '#6A1B9A', marginBottom: '4px' }}>
+                    {pattern.symbol} {pattern.name}: {pattern.planets.join(', ')}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#7B1FA2' }}>
+                    {pattern.meaning}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      
+      {/* Section 7: Journal Prompt with Pattern Tracking */}
       <JournalWithPatterns
         aspect={aspect}
         currentDate={currentDate}
