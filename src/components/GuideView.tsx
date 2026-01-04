@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-type GuideSection = "overview" | "colors" | "symbols" | "moonphases" | "retrogrades" | "aspects" | "dignities" | "fixedstars" | "divinefeminine" | "venuscycles" | "vocmoon" | "planetaryhours";
+type GuideSection = "overview" | "colors" | "symbols" | "moonphases" | "retrogrades" | "aspects" | "dignities" | "fixedstars" | "divinefeminine" | "venuscycles" | "vocmoon" | "planetaryhours" | "solararc" | "progressions";
 
 const SymbolCard = ({ icon, name, desc }: { icon: string; name: string; desc: string }) => (
   <div className="rounded-sm border border-border bg-secondary p-4">
@@ -1214,6 +1214,183 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
       </>
     ),
   },
+  solararc: {
+    title: "Solar Arc Directions",
+    content: (
+      <>
+        <p>
+          <strong>Solar Arc Directions</strong> are a powerful predictive technique that shows your 
+          PERSONAL timing — not collective transits, but YOUR chart evolving through time. They 
+          predict major life events with remarkable accuracy.
+        </p>
+        
+        <h3>How It Works</h3>
+        <p>
+          The Solar Arc is simple: move every planet and point in your chart forward by 
+          approximately <strong>1° for each year of your life</strong>. At age 30, every planet 
+          has moved 30° from its birth position.
+        </p>
+        
+        <div className="mt-4 p-4 rounded-sm bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-700">
+          <div className="font-semibold text-foreground mb-2">Example:</div>
+          <div className="text-sm text-muted-foreground space-y-1">
+            <div>• Birth: Venus at 5° Aries</div>
+            <div>• Age 25: Solar Arc Venus at 30° Aries (0° Taurus)</div>
+            <div>• If your natal Sun is at 0° Taurus...</div>
+            <div className="font-medium text-purple-600 dark:text-purple-400 mt-2">
+              → Solar Arc Venus conjuncts natal Sun = Major relationship/creative event!
+            </div>
+          </div>
+        </div>
+        
+        <h3>Why Solar Arcs Matter</h3>
+        <p>
+          Unlike transits (which are collective — everyone experiences Saturn in Pisces together), 
+          Solar Arcs are <strong>uniquely personal</strong>. They show when YOUR chart's internal 
+          clock triggers specific themes.
+        </p>
+        
+        <h3>Key Interpretations</h3>
+        <div className="mt-4 space-y-4">
+          <div className="p-4 rounded-sm bg-pink-50 dark:bg-pink-900/30 border border-pink-200 dark:border-pink-700">
+            <div className="font-semibold text-foreground mb-2">SA Venus to Natal Sun/Ascendant</div>
+            <p className="text-sm text-muted-foreground">
+              Major relationship activation! Marriage, significant partnership, creative breakthrough, 
+              enhanced charm and attractiveness. One of the most positive Solar Arc contacts.
+            </p>
+          </div>
+          
+          <div className="p-4 rounded-sm bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700">
+            <div className="font-semibold text-foreground mb-2">SA Jupiter to Natal Sun/MC</div>
+            <p className="text-sm text-muted-foreground">
+              Career expansion, luck, recognition, promotion. Opportunities abound. 
+              Travel, education, or publishing success.
+            </p>
+          </div>
+          
+          <div className="p-4 rounded-sm bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600">
+            <div className="font-semibold text-foreground mb-2">SA Saturn to Natal Sun/Moon</div>
+            <p className="text-sm text-muted-foreground">
+              Major responsibility arrives. Maturation point. Career advancement through hard work. 
+              May feel heavy initially but builds lasting structure.
+            </p>
+          </div>
+          
+          <div className="p-4 rounded-sm bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700">
+            <div className="font-semibold text-foreground mb-2">SA Pluto to Natal Sun/Ascendant</div>
+            <p className="text-sm text-muted-foreground">
+              Complete life transformation. Rebirth of identity. Power dynamics shift dramatically. 
+              Nothing will be the same — you emerge stronger.
+            </p>
+          </div>
+        </div>
+        
+        <h3>Timing Details</h3>
+        <div className="mt-4 p-4 rounded-sm bg-secondary border border-border">
+          <ul className="text-sm text-muted-foreground space-y-2">
+            <li>• <strong>Orb:</strong> Use 1° orb (some use up to 1.5°)</li>
+            <li>• <strong>Duration:</strong> Effects last approximately 9 months</li>
+            <li>• <strong>Peak:</strong> Strongest when aspect is exact (orb = 0°)</li>
+            <li>• <strong>Direction:</strong> Both applying and separating aspects count</li>
+          </ul>
+        </div>
+        
+        <h3>Using Solar Arcs</h3>
+        <p>
+          Click on any day in your calendar with a natal chart loaded to see your current 
+          Solar Arc aspects. Pay special attention to aspects with orbs under 0.5° — these 
+          are the EXACT aspects happening THIS YEAR!
+        </p>
+      </>
+    ),
+  },
+  progressions: {
+    title: "Secondary Progressions",
+    content: (
+      <>
+        <p>
+          <strong>Secondary Progressions</strong> use the "day for a year" principle: each day 
+          after your birth represents one year of your life. This shows your internal emotional 
+          development and psychological maturation.
+        </p>
+        
+        <h3>The Most Important: Progressed Moon</h3>
+        <p>
+          The Progressed Moon is the SINGLE MOST IMPORTANT progression. It moves about 1° per 
+          month (12-13° per year), changing signs every <strong>~2.5 years</strong>. Each sign 
+          change marks a major emotional shift.
+        </p>
+        
+        <div className="mt-4 p-4 rounded-sm bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700">
+          <div className="font-semibold text-foreground mb-2">Progressed Moon Through Signs:</div>
+          <div className="text-sm text-muted-foreground space-y-2">
+            <div><strong>♈ Aries:</strong> New beginnings, independence, self-focus, courage</div>
+            <div><strong>♉ Taurus:</strong> Building security, finances, comfort, patience</div>
+            <div><strong>♊ Gemini:</strong> Learning, communication, curiosity, connections</div>
+            <div><strong>♋ Cancer:</strong> Home, family, nurturing, emotional security</div>
+            <div><strong>♌ Leo:</strong> Creativity, romance, self-expression, joy</div>
+            <div><strong>♍ Virgo:</strong> Health, service, improvement, daily routines</div>
+            <div><strong>♎ Libra:</strong> Relationships, partnership, balance, harmony</div>
+            <div><strong>♏ Scorpio:</strong> Transformation, intensity, depth, healing</div>
+            <div><strong>♐ Sagittarius:</strong> Travel, philosophy, adventure, expansion</div>
+            <div><strong>♑ Capricorn:</strong> Career, ambition, discipline, achievement</div>
+            <div><strong>♒ Aquarius:</strong> Community, innovation, friendship, ideals</div>
+            <div><strong>♓ Pisces:</strong> Spirituality, dreams, compassion, creativity</div>
+          </div>
+        </div>
+        
+        <h3>Progressed Moon Phase</h3>
+        <p>
+          Just like the monthly lunar cycle, your Progressed Moon goes through a ~30-year cycle 
+          relative to your Progressed Sun:
+        </p>
+        
+        <div className="mt-4 grid gap-4 text-sm md:grid-cols-2">
+          <div className="p-4 rounded-sm bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700">
+            <div className="font-semibold text-foreground mb-2">🌒 Waxing Phase (0°-180°)</div>
+            <p className="text-muted-foreground">
+              Growth, building, moving forward. Energy is outward-focused. 
+              New projects, relationships, and life directions take shape.
+            </p>
+          </div>
+          
+          <div className="p-4 rounded-sm bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-700">
+            <div className="font-semibold text-foreground mb-2">🌖 Waning Phase (180°-360°)</div>
+            <p className="text-muted-foreground">
+              Release, integration, inward focus. Letting go of what doesn't serve. 
+              Consolidating lessons and preparing for new cycles.
+            </p>
+          </div>
+        </div>
+        
+        <h3>Progressed Aspects to Natal</h3>
+        <p>
+          When progressed planets aspect natal planets, it marks periods of internal development:
+        </p>
+        
+        <div className="mt-4 space-y-3 text-sm">
+          <div className="p-3 rounded-sm bg-secondary border border-border">
+            <div className="font-medium text-foreground">P. Moon conjunct N. Sun</div>
+            <div className="text-muted-foreground">Major new emotional chapter. Identity and emotions align.</div>
+          </div>
+          <div className="p-3 rounded-sm bg-secondary border border-border">
+            <div className="font-medium text-foreground">P. Sun conjunct N. Moon</div>
+            <div className="text-muted-foreground">Core self touches emotional foundations. Deep integration.</div>
+          </div>
+          <div className="p-3 rounded-sm bg-secondary border border-border">
+            <div className="font-medium text-foreground">P. Venus conjunct N. Sun</div>
+            <div className="text-muted-foreground">Love and beauty themes prominent. Relationships highlighted.</div>
+          </div>
+        </div>
+        
+        <h3>Viewing Your Progressions</h3>
+        <p>
+          With a natal chart loaded, click on any day to see your current Secondary Progressions. 
+          The calendar highlights your Progressed Moon position and alerts you to upcoming sign changes.
+        </p>
+      </>
+    ),
+  },
 };
 
 const NAV_ITEMS: { key: GuideSection; label: string }[] = [
@@ -1223,6 +1400,8 @@ const NAV_ITEMS: { key: GuideSection; label: string }[] = [
   { key: "moonphases", label: "Moon Phases" },
   { key: "vocmoon", label: "VOC Moon" },
   { key: "planetaryhours", label: "Planetary Hours" },
+  { key: "solararc", label: "Solar Arc" },
+  { key: "progressions", label: "Progressions" },
   { key: "venuscycles", label: "Venus Cycles" },
   { key: "retrogrades", label: "Retrogrades" },
   { key: "aspects", label: "Aspects" },

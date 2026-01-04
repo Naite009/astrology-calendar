@@ -25,6 +25,9 @@ import { ComprehensiveTransitAnalysis } from './ComprehensiveTransitAnalysis';
 import { VenusStarPointTracker } from './VenusStarPointTracker';
 import { getVOCMoonDetails, formatVOCDuration } from '@/lib/voidOfCourseMoon';
 import { calculatePlanetaryHours, getDayRuler, formatPlanetaryHourTime, PlanetaryHour } from '@/lib/planetaryHours';
+import { calculateSolarArcChart, findSolarArcAspects, getExactSolarArcAspects, getUpcomingSolarArcAspects, getSolarArcPlanetSymbol, formatSolarArcAge } from '@/lib/solarArcDirections';
+import { calculateSecondaryProgressions, getProgressedMoonInfo, findProgressedAspects, getProgressedPlanetSymbol, formatSignChangeDate } from '@/lib/secondaryProgressions';
+import { getRetrogradeDisplay, getRetrogradeChartActivation, MARS_RETROGRADE_GUIDANCE, MERCURY_RETROGRADE_GUIDANCE, formatRetrogradeDate } from '@/lib/retrogradePatterns';
 
 // Sign-specific energies for daily guidance
 const SIGN_ENERGIES: Record<string, { action: string; focus: string; avoid: string }> = {
@@ -632,6 +635,15 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
         {/* Planetary Hours Section */}
         <PlanetaryHoursSection date={date} />
 
+        {/* Solar Arc Directions Section */}
+        {activeChart && <SolarArcSection date={date} natalChart={activeChart} />}
+
+        {/* Secondary Progressions Section */}
+        {activeChart && <SecondaryProgressionsSection date={date} natalChart={activeChart} />}
+
+        {/* Retrograde Patterns Section */}
+        <RetrogradePatternSection date={date} natalChart={activeChart} />
+
         {/* Personal Transits Section */}
         {personalTransits.hasTransits && (
           <div className="mb-6 pb-6 border-b border-border">
@@ -985,6 +997,295 @@ const PlanetaryHoursSection = ({ date }: { date: Date }) => {
         {!showAllHours && (
           <div className="text-xs text-muted-foreground mt-2">
             Click to see when each planetary hour occurs today for precise timing.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Solar Arc Directions Section Component
+const SolarArcSection = ({ date, natalChart }: { date: Date; natalChart: NatalChart }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const solarArcChart = calculateSolarArcChart(natalChart, date);
+  
+  if (!solarArcChart) return null;
+  
+  const allAspects = findSolarArcAspects(solarArcChart, natalChart);
+  const exactAspects = getExactSolarArcAspects(allAspects);
+  const upcomingAspects = getUpcomingSolarArcAspects(allAspects);
+  
+  return (
+    <div className="mb-6 pb-6 border-b border-border">
+      <div className="p-4 rounded-sm bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-700">
+        <h3 className="text-sm font-semibold text-purple-700 dark:text-purple-300 mb-3 flex items-center gap-2">
+          🌟 Solar Arc Directions
+          <span className="text-xs font-normal text-muted-foreground">
+            (Personal Timing)
+          </span>
+        </h3>
+        
+        {/* Age and Arc Info */}
+        <div className="text-sm mb-3">
+          <span className="text-muted-foreground">Age: </span>
+          <span className="font-medium text-foreground">
+            {formatSolarArcAge(solarArcChart.ageYears, solarArcChart.ageMonths)}
+          </span>
+          <span className="text-muted-foreground ml-4">Solar Arc: </span>
+          <span className="font-medium text-foreground">{solarArcChart.solarArc.toFixed(1)}°</span>
+        </div>
+        
+        {/* Exact Aspects THIS YEAR */}
+        {exactAspects.length > 0 && (
+          <div className="mb-4 p-3 rounded-sm bg-purple-100 dark:bg-purple-800/40 border border-purple-300 dark:border-purple-600">
+            <div className="text-xs uppercase tracking-widest text-purple-700 dark:text-purple-300 font-semibold mb-2">
+              ⚡ EXACT THIS YEAR
+            </div>
+            {exactAspects.map((aspect, i) => (
+              <div key={i} className="mb-3 last:mb-0">
+                <div className="flex items-center gap-2 font-semibold text-foreground mb-1">
+                  <span>SA {getSolarArcPlanetSymbol(aspect.solarArcPlanet)}</span>
+                  <span className="text-purple-600">{aspect.aspectSymbol}</span>
+                  <span>Natal {getSolarArcPlanetSymbol(aspect.natalPlanet)}</span>
+                  <span className="text-xs text-muted-foreground ml-auto">orb {aspect.orb}°</span>
+                </div>
+                <div className="text-sm text-foreground leading-relaxed">
+                  {aspect.interpretation}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {exactAspects.length === 0 && (
+          <div className="text-sm text-muted-foreground mb-3">
+            No exact Solar Arc aspects this year.
+          </div>
+        )}
+        
+        {/* Upcoming Aspects */}
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="flex items-center gap-2 text-xs text-purple-600 hover:text-purple-500 transition-colors"
+        >
+          {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          {isExpanded ? 'Hide upcoming aspects' : `Show ${upcomingAspects.length} upcoming aspects (next 3 years)`}
+        </button>
+        
+        {isExpanded && upcomingAspects.length > 0 && (
+          <div className="mt-3 space-y-2">
+            {upcomingAspects.slice(0, 5).map((aspect, i) => (
+              <div key={i} className="text-sm flex items-center gap-2 text-muted-foreground">
+                <span>• SA {getSolarArcPlanetSymbol(aspect.solarArcPlanet)} {aspect.aspectSymbol} {getSolarArcPlanetSymbol(aspect.natalPlanet)}</span>
+                <span className="text-xs">(age ~{Math.floor(aspect.exactAge)})</span>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        <div className="text-xs text-purple-600 dark:text-purple-400 italic mt-3">
+          Solar Arc aspects last ~9 months and represent personal life timing.
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Secondary Progressions Section Component
+const SecondaryProgressionsSection = ({ date, natalChart }: { date: Date; natalChart: NatalChart }) => {
+  const progressions = calculateSecondaryProgressions(natalChart, date);
+  
+  if (!progressions) return null;
+  
+  const moonInfo = getProgressedMoonInfo(progressions, natalChart);
+  const aspects = findProgressedAspects(progressions, natalChart);
+  
+  if (!moonInfo) return null;
+  
+  return (
+    <div className="mb-6 pb-6 border-b border-border">
+      <div className="p-4 rounded-sm bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700">
+        <h3 className="text-sm font-semibold text-green-700 dark:text-green-300 mb-3 flex items-center gap-2">
+          📈 Secondary Progressions
+          <span className="text-xs font-normal text-muted-foreground">
+            (Emotional Maturation)
+          </span>
+        </h3>
+        
+        {/* Progressed Moon - MOST IMPORTANT */}
+        <div className="mb-4 p-3 rounded-sm bg-green-100 dark:bg-green-800/40 border border-green-300 dark:border-green-600">
+          <div className="text-xs uppercase tracking-widest text-green-700 dark:text-green-300 font-semibold mb-2">
+            ☽ Progressed Moon (Most Important!)
+          </div>
+          
+          <div className="text-sm space-y-2">
+            <div>
+              <span className="text-muted-foreground">Position: </span>
+              <span className="font-medium text-foreground">
+                {moonInfo.degree}° {moonInfo.sign}
+                {moonInfo.house && ` (${moonInfo.house}th house)`}
+              </span>
+            </div>
+            
+            <div>
+              <span className="text-muted-foreground">Phase: </span>
+              <span className="font-medium text-foreground">{moonInfo.phase}</span>
+              <span className="text-muted-foreground ml-1">— {moonInfo.phaseDescription}</span>
+            </div>
+            
+            {moonInfo.signMeaning && (
+              <div className="p-2 rounded bg-background/50 mt-2">
+                <div className="font-medium text-foreground text-xs mb-1">
+                  Current Theme: {moonInfo.signMeaning.theme}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Focus on: {moonInfo.signMeaning.focus}
+                </div>
+              </div>
+            )}
+            
+            <div className="pt-2 border-t border-green-200 dark:border-green-700">
+              <div className="text-xs text-green-600 dark:text-green-400 font-medium">
+                ⚠️ Sign Change Coming: {moonInfo.nextSign} in ~{moonInfo.monthsUntilSignChange} months
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                ({formatSignChangeDate(moonInfo.signChangeDate)}) — This marks a major emotional shift!
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Other Progressed Planets */}
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          {Object.entries(progressions.planets)
+            .filter(([planet]) => planet !== 'Moon')
+            .slice(0, 4)
+            .map(([planet, data]) => (
+              <div key={planet} className="text-xs text-muted-foreground">
+                <span className="font-medium text-foreground">{getProgressedPlanetSymbol(planet)}</span>
+                <span className="ml-1">{Math.floor(data.degree)}° {data.sign}</span>
+              </div>
+            ))}
+        </div>
+        
+        {/* Progressed Aspects */}
+        {aspects.length > 0 && (
+          <div className="text-sm">
+            <div className="text-xs font-medium text-green-600 dark:text-green-400 mb-1">
+              Active Progressed Aspects:
+            </div>
+            {aspects.slice(0, 3).map((aspect, i) => (
+              <div key={i} className="text-xs text-muted-foreground">
+                • P.{getProgressedPlanetSymbol(aspect.progressedPlanet)} {aspect.aspectSymbol} N.{getProgressedPlanetSymbol(aspect.natalPlanet)}
+              </div>
+            ))}
+          </div>
+        )}
+        
+        <div className="text-xs text-green-600 dark:text-green-400 italic mt-3">
+          "A day for a year" — your internal emotional clock.
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Retrograde Patterns Section Component
+const RetrogradePatternSection = ({ date, natalChart }: { date: Date; natalChart: NatalChart | null | undefined }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const retroDisplay = getRetrogradeDisplay(date);
+  
+  if (!retroDisplay.hasActivity) return null;
+  
+  const { mars, mercury } = retroDisplay;
+  
+  return (
+    <div className="mb-6 pb-6 border-b border-border">
+      <div className="p-4 rounded-sm bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700">
+        <h3 className="text-sm font-semibold text-red-700 dark:text-red-300 mb-3 flex items-center gap-2">
+          ♂☿ Retrograde Activity
+        </h3>
+        
+        {/* Mars Retrograde */}
+        {(mars.isRetrograde || mars.isShadow) && mars.retrogradeInfo && (
+          <div className="mb-4 p-3 rounded-sm bg-red-100 dark:bg-red-800/40 border border-red-300 dark:border-red-600">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-lg">♂</span>
+              <span className="font-semibold text-foreground">
+                Mars {mars.isRetrograde ? 'Retrograde' : (mars.shadowType === 'pre' ? 'Pre-Shadow' : 'Post-Shadow')}
+              </span>
+              <span className="text-xs text-muted-foreground">in {mars.retrogradeInfo.sign}</span>
+            </div>
+            
+            <div className="text-sm space-y-1 text-muted-foreground">
+              <div>
+                <span className="font-medium">Retrograde:</span> {formatRetrogradeDate(mars.retrogradeInfo.start)} - {formatRetrogradeDate(mars.retrogradeInfo.end)}
+              </div>
+              {mars.isRetrograde && mars.daysRemaining && (
+                <div>
+                  <span className="font-medium">{mars.daysRemaining} days remaining</span>
+                  <span className="ml-2">({mars.percentComplete}% complete)</span>
+                </div>
+              )}
+            </div>
+            
+            {natalChart && (
+              <div className="mt-2 text-xs text-red-600 dark:text-red-400">
+                {getRetrogradeChartActivation(mars.retrogradeInfo, 'Mars', natalChart).slice(0, 2).join(' ')}
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* Mercury Retrograde */}
+        {(mercury.isRetrograde || mercury.isShadow) && mercury.retrogradeInfo && (
+          <div className="mb-3 p-3 rounded-sm bg-orange-100 dark:bg-orange-800/40 border border-orange-300 dark:border-orange-600">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-lg">☿</span>
+              <span className="font-semibold text-foreground">
+                Mercury {mercury.isRetrograde ? 'Retrograde' : (mercury.shadowType === 'pre' ? 'Pre-Shadow' : 'Post-Shadow')}
+              </span>
+              <span className="text-xs text-muted-foreground">in {mercury.retrogradeInfo.sign}</span>
+            </div>
+            
+            <div className="text-sm space-y-1 text-muted-foreground">
+              <div>
+                <span className="font-medium">Retrograde:</span> {formatRetrogradeDate(mercury.retrogradeInfo.start)} - {formatRetrogradeDate(mercury.retrogradeInfo.end)}
+              </div>
+              {mercury.isRetrograde && mercury.daysRemaining && (
+                <div>
+                  <span className="font-medium">{mercury.daysRemaining} days remaining</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        
+        {/* Guidance Toggle */}
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="flex items-center gap-2 text-xs text-red-600 hover:text-red-500 transition-colors"
+        >
+          {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          {isExpanded ? 'Hide guidance' : 'Show retrograde guidance'}
+        </button>
+        
+        {isExpanded && (
+          <div className="mt-3 space-y-3 text-xs">
+            {mars.isRetrograde && (
+              <div className="p-2 rounded bg-background/50">
+                <div className="font-semibold text-foreground mb-1">Mars Retrograde Tips:</div>
+                <div className="text-green-600">✓ Best: {MARS_RETROGRADE_GUIDANCE.bestActivities.slice(0, 3).join(', ')}</div>
+                <div className="text-red-600 mt-1">✗ Avoid: {MARS_RETROGRADE_GUIDANCE.avoid.slice(0, 3).join(', ')}</div>
+              </div>
+            )}
+            {mercury.isRetrograde && (
+              <div className="p-2 rounded bg-background/50">
+                <div className="font-semibold text-foreground mb-1">Mercury Retrograde Tips:</div>
+                <div className="text-green-600">✓ Best: {MERCURY_RETROGRADE_GUIDANCE.bestActivities.slice(0, 3).join(', ')}</div>
+                <div className="text-red-600 mt-1">✗ Avoid: {MERCURY_RETROGRADE_GUIDANCE.avoid.slice(0, 3).join(', ')}</div>
+              </div>
+            )}
           </div>
         )}
       </div>

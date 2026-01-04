@@ -1,6 +1,10 @@
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
 import { getPlanetaryPositions, isMercuryRetrograde, getVoidOfCourseMoon, getMoonPhase } from './astrology';
 import { isTimeVOC } from './voidOfCourseMoon';
+import { getPlanetaryHourAt } from './planetaryHours';
+import { getRetrogradeStatus, MARS_RETROGRADES, MERCURY_RETROGRADES } from './retrogradePatterns';
+import { calculateSolarArcChart, findSolarArcAspects, getExactSolarArcAspects } from './solarArcDirections';
+import { calculateSecondaryProgressions, getProgressedMoonInfo } from './secondaryProgressions';
 
 export type BestTimesCategory = 'love' | 'finance' | 'health' | 'beauty' | 'career' | 'travel';
 
@@ -318,6 +322,89 @@ export const calculateBestTimes = (
     if (moonPhase.isBalsamic) {
       score -= 15;
       reasons.push('Balsamic Moon (rest period)');
+    }
+
+    // Check planetary hour bonus (for personal timing)
+    const currentHour = getPlanetaryHourAt(currentDate);
+    if (currentHour) {
+      const hourPlanet = currentHour.planet;
+      
+      // Category-specific planetary hour bonuses
+      if ((category === 'love' || category === 'beauty') && hourPlanet === 'Venus') {
+        score += 20;
+        reasons.push('♀ Venus Hour (perfect for love/beauty!)');
+      } else if (category === 'finance' && (hourPlanet === 'Jupiter' || hourPlanet === 'Venus')) {
+        score += 15;
+        reasons.push(`${currentHour.symbol} ${hourPlanet} Hour (good for finances)`);
+      } else if (category === 'career' && (hourPlanet === 'Sun' || hourPlanet === 'Saturn' || hourPlanet === 'Jupiter')) {
+        score += 15;
+        reasons.push(`${currentHour.symbol} ${hourPlanet} Hour (good for career)`);
+      } else if (category === 'health' && (hourPlanet === 'Mars' || hourPlanet === 'Sun')) {
+        score += 15;
+        reasons.push(`${currentHour.symbol} ${hourPlanet} Hour (good for health/action)`);
+      } else if (category === 'travel' && (hourPlanet === 'Mercury' || hourPlanet === 'Jupiter')) {
+        score += 15;
+        reasons.push(`${currentHour.symbol} ${hourPlanet} Hour (good for travel)`);
+      }
+    }
+
+    // Check Mars retrograde (penalty for health/career/action)
+    const marsRetro = getRetrogradeStatus(currentDate, MARS_RETROGRADES);
+    if (marsRetro.isRetrograde) {
+      if (category === 'health' || category === 'career') {
+        score -= 15;
+        reasons.push('♂ Mars Retrograde (avoid new starts)');
+      }
+    }
+
+    // Check Mercury retrograde more broadly
+    const mercuryRetro = getRetrogradeStatus(currentDate, MERCURY_RETROGRADES);
+    if (mercuryRetro.isRetrograde && category !== 'travel') {
+      score -= 10;
+      reasons.push('☿ Mercury Retrograde (review/revise)');
+    }
+
+    // Personal chart: Check Solar Arc aspects
+    if (natalChart && natalChart.planets) {
+      const solarArcChart = calculateSolarArcChart(natalChart, currentDate);
+      if (solarArcChart) {
+        const allSAspects = findSolarArcAspects(solarArcChart, natalChart);
+        const exactSAspects = getExactSolarArcAspects(allSAspects);
+        
+        // If exact Solar Arc Venus aspects in a love context
+        for (const aspect of exactSAspects) {
+          if (category === 'love' && (aspect.solarArcPlanet === 'Venus' || aspect.natalPlanet === 'Venus')) {
+            score += 15;
+            reasons.push('SA Venus aspect exact (love year!)');
+            break;
+          }
+          if (category === 'career' && (aspect.solarArcPlanet === 'Jupiter' || aspect.solarArcPlanet === 'Saturn')) {
+            score += 15;
+            reasons.push(`SA ${aspect.solarArcPlanet} aspect exact (career year!)`);
+            break;
+          }
+        }
+      }
+
+      // Check Progressed Moon sign alignment
+      const progressions = calculateSecondaryProgressions(natalChart, currentDate);
+      if (progressions) {
+        const moonInfo = getProgressedMoonInfo(progressions, natalChart);
+        if (moonInfo && moonInfo.signMeaning) {
+          // Check if progressed moon theme aligns with category
+          const theme = moonInfo.signMeaning.theme.toLowerCase();
+          if (category === 'love' && (theme.includes('partner') || theme.includes('love') || moonInfo.sign === 'Libra' || moonInfo.sign === 'Taurus')) {
+            score += 10;
+            reasons.push(`P.Moon in ${moonInfo.sign} (relationship focus)`);
+          } else if (category === 'career' && (theme.includes('career') || theme.includes('ambition') || moonInfo.sign === 'Capricorn')) {
+            score += 10;
+            reasons.push(`P.Moon in ${moonInfo.sign} (career focus)`);
+          } else if (category === 'travel' && (theme.includes('travel') || theme.includes('adventure') || moonInfo.sign === 'Sagittarius')) {
+            score += 10;
+            reasons.push(`P.Moon in ${moonInfo.sign} (travel focus)`);
+          }
+        }
+      }
     }
 
     if (score > 30) {
