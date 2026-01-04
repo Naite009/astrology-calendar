@@ -1667,8 +1667,38 @@ const AllNatalAspects = ({ transitPlanet, transitDegree, transitSign, natalChart
                   padding: '12px',
                   marginTop: '8px'
                 }}>
+                  {/* Explanation of what the dates mean */}
+                  <div style={{ 
+                    fontSize: '11px', 
+                    color: '#5D4037', 
+                    marginBottom: '12px',
+                    padding: '10px',
+                    background: 'rgba(255,243,224,0.8)',
+                    borderRadius: '4px',
+                    lineHeight: '1.5'
+                  }}>
+                    <strong>What this means:</strong> {getSymbol(transitPlanet)} will cross exactly over your {asp.natalDegree}° {asp.natalSign} point <strong>3 times</strong>:
+                    <ol style={{ margin: '8px 0 0 16px', padding: 0 }}>
+                      <li style={{ marginBottom: '4px' }}>
+                        <strong>1st pass</strong> (→ direct): {getSymbol(transitPlanet)} approaches from earlier degrees, crosses {asp.natalDegree}°, continues forward to ~{Math.min(29, asp.natalDegree + 3)}-{Math.min(29, asp.natalDegree + 4)}° {asp.natalSign}
+                      </li>
+                      <li style={{ marginBottom: '4px' }}>
+                        <strong>Stations retrograde</strong>: {getSymbol(transitPlanet)} stops and turns backward
+                      </li>
+                      <li style={{ marginBottom: '4px' }}>
+                        <strong>2nd pass</strong> (℞ retrograde): Moving backward, crosses {asp.natalDegree}° again, continues back to ~{Math.max(0, asp.natalDegree - 3)}-{Math.max(0, asp.natalDegree - 4)}° {asp.natalSign}
+                      </li>
+                      <li style={{ marginBottom: '4px' }}>
+                        <strong>Stations direct</strong>: {getSymbol(transitPlanet)} stops and turns forward again
+                      </li>
+                      <li>
+                        <strong>3rd pass</strong> (→ direct): Moving forward, crosses {asp.natalDegree}° one final time, then moves on
+                      </li>
+                    </ol>
+                  </div>
+                  
                   <div style={{ fontSize: '11px', fontWeight: '600', color: '#616161', marginBottom: '10px' }}>
-                    📅 ALL PASSES ({asp.passes.length} total):
+                    📅 EXACT HITS at {asp.natalDegree}° {asp.natalSign} ({asp.passes.length} total):
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {asp.passes.map((pass, pIdx) => (
@@ -1685,7 +1715,7 @@ const AllNatalAspects = ({ transitPlanet, transitDegree, transitSign, natalChart
                           pass.status === 'passed' ? '#9E9E9E' : '#4CAF50'
                         }`
                       }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                           <span style={{ 
                             fontSize: '10px', 
                             fontWeight: '700',
@@ -1697,8 +1727,11 @@ const AllNatalAspects = ({ transitPlanet, transitDegree, transitSign, natalChart
                             {pass.passNumber === 1 ? '1st' : pass.passNumber === 2 ? '2nd' : '3rd'} 
                             {pass.direction === 'retrograde' ? ' ℞' : ' →'}
                           </span>
-                          <span style={{ fontSize: '12px', color: '#424242' }}>
+                          <span style={{ fontSize: '12px', color: '#424242', fontWeight: '500' }}>
                             {pass.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </span>
+                          <span style={{ fontSize: '10px', color: '#757575' }}>
+                            ({getSymbol(transitPlanet)} exact at {asp.natalDegree}° {asp.natalSign})
                           </span>
                         </div>
                         <span style={{
