@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll } from "lucide-react";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
 import { YearView } from "./YearView";
@@ -12,6 +12,7 @@ import { ChartLibrary } from "./ChartLibrary";
 import { BestTimesView } from "./BestTimesView";
 import { ColorsView } from "./ColorsView";
 import { PatternsView } from "./PatternsView";
+import { SacredScriptView } from "./SacredScriptView";
 import { DayTypeLegend } from "./DayTypeLegend";
 import { useUserData } from "@/hooks/useUserData";
 import { useNotes } from "@/hooks/useNotes";
@@ -19,7 +20,7 @@ import { useNatalChart, NatalChart } from "@/hooks/useNatalChart";
 import { useCloudBackup } from "@/hooks/useCloudBackup";
 import { DayData, generateICalExport } from "@/lib/astrology";
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "best-times" | "colors" | "patterns";
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "best-times" | "colors" | "patterns" | "sacred-script";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 0, 1)); // January 2026
@@ -116,6 +117,9 @@ export const AstroCalendar = () => {
     }
     if (viewMode === "patterns") {
       return "Patterns & Cycles";
+    }
+    if (viewMode === "sacred-script") {
+      return "Sacred Script";
     }
     if (viewMode === "moon-phases") {
       return `${currentDate.getFullYear()} Moon Phases`;
@@ -281,6 +285,20 @@ export const AstroCalendar = () => {
                 <Orbit size={14} />
                 Patterns
               </button>
+              {/* Sacred Script - only visible when a chart is loaded */}
+              {(userNatalChart || savedCharts.length > 0) && (
+                <button
+                  onClick={() => setViewMode("sacred-script")}
+                  className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                    viewMode === "sacred-script"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Scroll size={14} />
+                  Script
+                </button>
+              )}
             </div>
 
             {userData && (
@@ -405,6 +423,12 @@ export const AstroCalendar = () => {
 
         {viewMode === "patterns" && (
           <PatternsView year={currentDate.getFullYear()} />
+        )}
+
+        {viewMode === "sacred-script" && (
+          <SacredScriptView 
+            natalChart={activeChart || userNatalChart || savedCharts[0]} 
+          />
         )}
       </div>
 
