@@ -14,7 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      device_charts: {
+        Row: {
+          chart_data: Json
+          chart_id: string
+          chart_name: string
+          created_at: string | null
+          device_id: string
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          chart_data: Json
+          chart_id: string
+          chart_name: string
+          created_at?: string | null
+          device_id: string
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          chart_data?: Json
+          chart_id?: string
+          chart_name?: string
+          created_at?: string | null
+          device_id?: string
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
