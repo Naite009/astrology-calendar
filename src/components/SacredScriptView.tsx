@@ -30,6 +30,7 @@ import { calculateSecondaryProgressions, getProgressedMoonInfo, ProgressedMoonIn
 
 interface SacredScriptViewProps {
   natalChart: NatalChart;
+  allCharts?: NatalChart[];
 }
 
 // Section wrapper with collapsible and color coding
@@ -109,9 +110,16 @@ const ElementIcon = ({ element }: { element: string }) => {
   return icons[element] || null;
 };
 
-export const SacredScriptView = ({ natalChart }: SacredScriptViewProps) => {
+export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: SacredScriptViewProps) => {
   const printRef = useRef<HTMLDivElement>(null);
   const currentDate = new Date();
+  const [selectedChartId, setSelectedChartId] = useState<string>(initialChart?.id || '');
+  
+  // Get sorted charts alphabetically
+  const sortedCharts = [...allCharts].sort((a, b) => a.name.localeCompare(b.name));
+  
+  // Get the selected chart
+  const natalChart = sortedCharts.find(c => c.id === selectedChartId) || initialChart;
   
   // Calculate all data
   const age = calculateAge(natalChart.birthDate);
@@ -132,6 +140,24 @@ export const SacredScriptView = ({ natalChart }: SacredScriptViewProps) => {
   
   return (
     <div ref={printRef} className="max-w-4xl mx-auto space-y-4">
+      {/* Chart Selector */}
+      {sortedCharts.length > 1 && (
+        <div className="flex items-center gap-3 mb-6 print:hidden">
+          <label className="text-sm font-medium text-muted-foreground">Select Chart:</label>
+          <select
+            value={selectedChartId}
+            onChange={(e) => setSelectedChartId(e.target.value)}
+            className="flex-1 max-w-xs border border-border bg-background px-3 py-2 text-sm rounded-sm focus:border-primary focus:outline-none"
+          >
+            {sortedCharts.map(chart => (
+              <option key={chart.id} value={chart.id}>
+                {chart.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+      
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border pb-4 mb-6">
         <div className="flex items-center gap-4">
