@@ -85,13 +85,46 @@ const safeParseJSON = <T,>(key: string, fallback: T): T => {
   return fallback;
 };
 
+// Read a primary key, but fall back to a backup key if the primary is missing/corrupt.
+// If backup is used, we also repair the primary key.
+const readWithBackup = <T,>(key: string, fallback: T): T => {
+  const backupKey = `${key}__backup`;
+
+  const primary = safeParseJSON<T>(key, fallback);
+
+  // If primary looks empty, try backup (covers missing key, corrupted JSON, or accidental overwrite)
+  const shouldTryBackup =
+    primary === null ||
+    (Array.isArray(primary) && primary.length === 0);
+
+  if (!shouldTryBackup) return primary;
+
+  const backup = safeParseJSON<T>(backupKey, fallback);
+
+  // Repair primary if backup is better
+  const backupIsBetter =
+    backup !== null && (!Array.isArray(backup) || backup.length > 0);
+
+  if (backupIsBetter) {
+    try {
+      localStorage.setItem(key, JSON.stringify(backup));
+    } catch (e) {
+      console.warn(`Failed to repair ${key} from backup:`, e);
+    }
+    return backup;
+  }
+
+  return primary;
+};
+
 export const useNatalChart = () => {
   // Initialize state directly from localStorage to avoid flash of empty state
+  // Also keep a backup key to protect against rare corruption/overwrites.
   const [userNatalChart, setUserNatalChart] = useState<NatalChart | null>(() => {
-    return safeParseJSON<NatalChart | null>('userNatalChart', null);
+    return readWithBackup<NatalChart | null>('userNatalChart', null);
   });
   const [savedCharts, setSavedCharts] = useState<NatalChart[]>(() => {
-    return safeParseJSON<NatalChart[]>('savedCharts', []);
+    return readWithBackup<NatalChart[]>('savedCharts', []);
   });
   const [selectedChartForTiming, setSelectedChartForTiming] = useState<string>(() => {
     return localStorage.getItem('selectedChartForTiming') || 'user';
@@ -103,27 +136,55 @@ export const useNatalChart = () => {
       console.warn('Attempted to save invalid chart data, ignoring');
       return;
     }
-    localStorage.setItem('userNatalChart', JSON.stringify(chart));
+
+    try {
+      localStorage.setItem('userNatalChart', JSON.stringify(chart));
+      localStorage.setItem('userNatalChart__backup', JSON.stringify(chart));
+    } catch (e) {
+      console.warn('Failed to persist user natal chart to local storage:', e);
+    }
+
     setUserNatalChart(chart);
   };
 
   const addChart = (chart: NatalChart) => {
     const newChart = { ...chart, id: Date.now().toString() };
     const updated = [...savedCharts, newChart];
-    localStorage.setItem('savedCharts', JSON.stringify(updated));
+
+    try {
+      localStorage.setItem('savedCharts', JSON.stringify(updated));
+      localStorage.setItem('savedCharts__backup', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Failed to persist saved charts to local storage:', e);
+    }
+
     setSavedCharts(updated);
     return newChart;
   };
 
   const updateChart = (id: string, chart: Partial<NatalChart>) => {
-    const updated = savedCharts.map(c => c.id === id ? { ...c, ...chart } : c);
-    localStorage.setItem('savedCharts', JSON.stringify(updated));
+    const updated = savedCharts.map((c) => (c.id === id ? { ...c, ...chart } : c));
+
+    try {
+      localStorage.setItem('savedCharts', JSON.stringify(updated));
+      localStorage.setItem('savedCharts__backup', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Failed to persist saved charts to local storage:', e);
+    }
+
     setSavedCharts(updated);
   };
 
   const deleteChart = (id: string) => {
-    const updated = savedCharts.filter(c => c.id !== id);
-    localStorage.setItem('savedCharts', JSON.stringify(updated));
+    const updated = savedCharts.filter((c) => c.id !== id);
+
+    try {
+      localStorage.setItem('savedCharts', JSON.stringify(updated));
+      localStorage.setItem('savedCharts__backup', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Failed to persist saved charts to local storage:', e);
+    }
+
     setSavedCharts(updated);
   };
 
