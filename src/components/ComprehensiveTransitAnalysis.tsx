@@ -93,28 +93,90 @@ const getHouseToHouseMeaning = (transitHouse: number, natalHouse: number, aspect
   return `Energy flows between your ${HOUSE_MEANINGS[transitHouse].short.toLowerCase()} and ${HOUSE_MEANINGS[natalHouse].short.toLowerCase()}, connecting these life areas in ${aspectType} ways.`;
 };
 
-const calculateTransitDuration = (planet: string, aspect: string): { startDate: string; exactDate: string; endDate: string; totalDays: number } => {
-  const speeds: Record<string, number> = {
-    sun: 1, moon: 13, mercury: 1.5, venus: 1.2, mars: 0.5,
-    jupiter: 0.08, saturn: 0.03, uranus: 0.01, neptune: 0.006, pluto: 0.004,
+// Degrees per day for each planet (average direct motion)
+const PLANET_SPEEDS: Record<string, number> = {
+  sun: 0.986, moon: 13.18, mercury: 1.5, venus: 1.2, mars: 0.52,
+  jupiter: 0.083, saturn: 0.033, uranus: 0.012, neptune: 0.006, pluto: 0.004,
+};
+
+interface TransitTimelineData {
+  orbEntryDate: Date;
+  exactDate: Date;
+  orbExitDate: Date;
+  exactDegreeDate: Date; // When transit planet was at the EXACT natal degree
+  currentDegreeDistance: number; // Current distance from natal point in degrees
+  totalDays: number;
+  isApproaching: boolean;
+  retrogradeNote: string;
+}
+
+const calculateDetailedTransitTimeline = (
+  transitPlanet: string,
+  transitDegree: number,
+  natalDegree: number,
+  aspect: string,
+  currentDate: Date
+): TransitTimelineData => {
+  const speeds = PLANET_SPEEDS;
+  const aspectAngles: Record<string, number> = {
+    conjunction: 0, opposition: 180, trine: 120, square: 90, sextile: 60
   };
   
+  const aspectAngle = aspectAngles[aspect] || 0;
   const orb = aspect === 'conjunction' || aspect === 'opposition' ? 8 : aspect === 'square' ? 7 : 6;
-  const speed = speeds[planet.toLowerCase()] || 1;
-  const daysToOrb = orb / speed;
+  const speed = speeds[transitPlanet.toLowerCase()] || 1;
   
-  const today = new Date();
-  const startDate = new Date(today);
-  startDate.setDate(startDate.getDate() - Math.floor(daysToOrb));
+  // Calculate the target degree (where transit needs to be for exact aspect to natal)
+  // For a sextile to natal at 0°, the transit would be exact at 60° (or 300° on the other side)
+  // But here we're tracking relative to natal, so we just care about degree distance
+  const targetDegree = natalDegree; // The natal degree we're aspecting
   
-  const endDate = new Date(today);
-  endDate.setDate(endDate.getDate() + Math.floor(daysToOrb));
+  // Current degree distance (how far transit is from exact)
+  const currentDegreeDistance = Math.abs(transitDegree - targetDegree);
+  const adjustedDistance = currentDegreeDistance > 180 ? 360 - currentDegreeDistance : currentDegreeDistance;
+  
+  // Is the transit approaching or separating?
+  // If transit degree < natal degree, it's approaching (for direct motion)
+  const isApproaching = transitDegree < natalDegree || (transitDegree > 330 && natalDegree < 30);
+  
+  // Days to/from exact at natal degree
+  const degreesToExact = Math.abs(transitDegree - natalDegree);
+  const adjustedDegreesToExact = degreesToExact > 180 ? 360 - degreesToExact : degreesToExact;
+  const daysToExact = adjustedDegreesToExact / speed;
+  
+  // Calculate when transit was/will be at exact natal degree
+  const exactDegreeDate = new Date(currentDate);
+  if (isApproaching) {
+    exactDegreeDate.setDate(exactDegreeDate.getDate() + Math.floor(daysToExact));
+  } else {
+    exactDegreeDate.setDate(exactDegreeDate.getDate() - Math.floor(daysToExact));
+  }
+  
+  // Calculate orb entry and exit dates
+  const daysInOrb = orb / speed;
+  
+  const orbEntryDate = new Date(exactDegreeDate);
+  orbEntryDate.setDate(orbEntryDate.getDate() - Math.floor(daysInOrb));
+  
+  const orbExitDate = new Date(exactDegreeDate);
+  orbExitDate.setDate(orbExitDate.getDate() + Math.floor(daysInOrb));
+  
+  // Retrograde consideration for outer planets
+  let retrogradeNote = '';
+  const outerPlanets = ['jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
+  if (outerPlanets.includes(transitPlanet.toLowerCase())) {
+    retrogradeNote = `Note: ${transitPlanet} goes retrograde ~4 months/year. This aspect may occur 3 times (direct → retrograde → direct) over ${Math.round(daysInOrb * 3)} days.`;
+  }
   
   return {
-    startDate: startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-    exactDate: today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-    endDate: endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-    totalDays: Math.round(daysToOrb * 2),
+    orbEntryDate,
+    exactDate: exactDegreeDate,
+    orbExitDate,
+    exactDegreeDate,
+    currentDegreeDistance: adjustedDegreesToExact,
+    totalDays: Math.round(daysInOrb * 2),
+    isApproaching,
+    retrogradeNote,
   };
 };
 
@@ -720,12 +782,19 @@ const HowItFeels = ({ transitPlanet, natalPlanet, aspect, natalHouse }: {
   );
 };
 
-const TransitTimeline = ({ transitPlanet, aspect, currentDate }: {
+const TransitTimeline = ({ transitPlanet, transitDegree, natalPlanet, natalDegree, natalSign, aspect, currentDate }: {
   transitPlanet: string;
+  transitDegree: number;
+  natalPlanet: string;
+  natalDegree: number;
+  natalSign: string;
   aspect: string;
   currentDate: Date;
 }) => {
-  const duration = calculateTransitDuration(transitPlanet, aspect);
+  const timeline = calculateDetailedTransitTimeline(transitPlanet, transitDegree, natalDegree, aspect, currentDate);
+  
+  const formatDate = (date: Date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const formatDateWithYear = (date: Date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   
   return (
     <div style={{
@@ -745,24 +814,58 @@ const TransitTimeline = ({ transitPlanet, aspect, currentDate }: {
       </h4>
       
       <div style={{ fontSize: '14px', lineHeight: '1.8', color: '#2C2C2C' }}>
+        {/* Current Status */}
+        <div style={{
+          padding: '12px',
+          background: timeline.isApproaching ? 'rgba(76,175,80,0.15)' : 'rgba(255,152,0,0.15)',
+          borderRadius: '6px',
+          marginBottom: '16px',
+          borderLeft: `4px solid ${timeline.isApproaching ? '#4CAF50' : '#FF9800'}`
+        }}>
+          <div style={{ fontWeight: '600', marginBottom: '4px', color: timeline.isApproaching ? '#2E7D32' : '#E65100' }}>
+            {timeline.isApproaching ? '↗️ APPROACHING' : '↘️ SEPARATING'} — {timeline.currentDegreeDistance.toFixed(1)}° from exact
+          </div>
+          <div style={{ fontSize: '13px' }}>
+            {getSymbol(transitPlanet)} is currently at {transitDegree}° • Your {getSymbol(natalPlanet)} is at {natalDegree}° {natalSign}
+          </div>
+        </div>
+        
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'auto 1fr',
           gap: '12px',
           marginBottom: '16px'
         }}>
-          <div style={{ fontWeight: '600', color: '#6A1B9A' }}>First Contact:</div>
-          <div>{duration.startDate}</div>
+          <div style={{ fontWeight: '600', color: '#6A1B9A' }}>Entered Orb:</div>
+          <div>{formatDateWithYear(timeline.orbEntryDate)} <span style={{ color: '#78909C', fontSize: '12px' }}>(when {getSymbol(transitPlanet)} entered aspect orb)</span></div>
           
-          <div style={{ fontWeight: '600', color: '#6A1B9A' }}>EXACT:</div>
-          <div>{duration.exactDate} ⭐</div>
+          <div style={{ fontWeight: '600', color: '#6A1B9A' }}>EXACT at {natalDegree}°:</div>
+          <div>
+            {formatDateWithYear(timeline.exactDegreeDate)} ⭐
+            <span style={{ color: '#78909C', fontSize: '12px' }}> (when {getSymbol(transitPlanet)} was at exactly {natalDegree}°)</span>
+          </div>
           
-          <div style={{ fontWeight: '600', color: '#6A1B9A' }}>Separation:</div>
-          <div>{duration.endDate}</div>
+          <div style={{ fontWeight: '600', color: '#6A1B9A' }}>Exits Orb:</div>
+          <div>{formatDateWithYear(timeline.orbExitDate)} <span style={{ color: '#78909C', fontSize: '12px' }}>(when aspect completes)</span></div>
           
           <div style={{ fontWeight: '600', color: '#6A1B9A' }}>Total Duration:</div>
-          <div>{duration.totalDays} days</div>
+          <div>{timeline.totalDays} days in orb</div>
         </div>
+        
+        {/* Retrograde Note */}
+        {timeline.retrogradeNote && (
+          <div style={{
+            padding: '10px 12px',
+            background: 'rgba(156,39,176,0.1)',
+            borderRadius: '4px',
+            marginBottom: '12px',
+            fontSize: '12px',
+            color: '#7B1FA2',
+            borderLeft: '3px solid #9C27B0'
+          }}>
+            🔄 {timeline.retrogradeNote}
+          </div>
+        )}
         
         <div style={{
           padding: '12px',
@@ -774,16 +877,16 @@ const TransitTimeline = ({ transitPlanet, aspect, currentDate }: {
             What to Expect:
           </div>
           <div style={{ marginBottom: '6px' }}>
-            • <strong>Building Phase</strong> ({duration.startDate} - {duration.exactDate}): 
-            Energy increases. You start feeling it about 3 days before exact.
+            • <strong>Building Phase</strong> ({formatDate(timeline.orbEntryDate)} - {formatDate(timeline.exactDate)}): 
+            Energy increases as {getSymbol(transitPlanet)} approaches your natal {getSymbol(natalPlanet)}.
           </div>
           <div style={{ marginBottom: '6px' }}>
-            • <strong>Peak</strong> ({duration.exactDate}): 
-            Maximum intensity. This is when the aspect is most powerful.
+            • <strong>Peak</strong> ({formatDate(timeline.exactDate)} at {natalDegree}°): 
+            Maximum intensity when {getSymbol(transitPlanet)} crosses your exact natal degree.
           </div>
           <div>
-            • <strong>Release Phase</strong> ({duration.exactDate} - {duration.endDate}): 
-            Energy decreases. Integration period. Lasts about 3 days after exact.
+            • <strong>Release Phase</strong> ({formatDate(timeline.exactDate)} - {formatDate(timeline.orbExitDate)}): 
+            Energy decreases as {getSymbol(transitPlanet)} separates. Integration period.
           </div>
         </div>
       </div>
@@ -1078,6 +1181,178 @@ const JournalWithPatterns = ({ aspect, currentDate }: {
   );
 };
 
+// All Natal Points Being Aspected by this Transit Planet
+const AllNatalAspects = ({ transitPlanet, transitDegree, transitSign, natalChart, currentDate }: {
+  transitPlanet: string;
+  transitDegree: number;
+  transitSign: string;
+  natalChart: NatalChart;
+  currentDate: Date;
+}) => {
+  const aspectAngles: Record<string, { angle: number; orb: number; symbol: string; name: string }> = {
+    conjunction: { angle: 0, orb: 8, symbol: '☌', name: 'conjunction' },
+    opposition: { angle: 180, orb: 8, symbol: '☍', name: 'opposition' },
+    trine: { angle: 120, orb: 8, symbol: '△', name: 'trine' },
+    square: { angle: 90, orb: 7, symbol: '□', name: 'square' },
+    sextile: { angle: 60, orb: 6, symbol: '⚹', name: 'sextile' },
+  };
+  
+  const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+  const transitLongitude = signs.indexOf(transitSign) * 30 + transitDegree;
+  
+  // Find all natal planets being aspected by this transit
+  const allAspects: Array<{
+    natalPlanet: string;
+    natalDegree: number;
+    natalSign: string;
+    aspectType: string;
+    aspectSymbol: string;
+    orb: number;
+    isExact: boolean;
+    exactDate: Date;
+  }> = [];
+  
+  Object.entries(natalChart.planets).forEach(([planetName, position]) => {
+    if (!position?.sign || !position?.degree) return;
+    
+    const natalLongitude = signs.indexOf(position.sign) * 30 + position.degree;
+    
+    Object.entries(aspectAngles).forEach(([aspectName, aspectData]) => {
+      let diff = Math.abs(transitLongitude - natalLongitude);
+      if (diff > 180) diff = 360 - diff;
+      
+      // Adjust for the aspect angle
+      const angleDiff = Math.abs(diff - aspectData.angle);
+      
+      if (angleDiff <= aspectData.orb) {
+        // Calculate when transit will be/was exact at this natal degree
+        const speed = PLANET_SPEEDS[transitPlanet.toLowerCase()] || 1;
+        
+        // For the specific aspect angle, we need to find when transit will be at the right position
+        // The "right position" is when the transit creates the exact aspect
+        const targetTransitLongitude = aspectData.angle === 0 
+          ? natalLongitude 
+          : aspectData.angle === 180
+          ? (natalLongitude + 180) % 360
+          : aspectData.angle === 120
+          ? (natalLongitude + (transitLongitude > natalLongitude ? 120 : -120) + 360) % 360
+          : aspectData.angle === 90
+          ? (natalLongitude + (transitLongitude > natalLongitude ? 90 : -90) + 360) % 360
+          : (natalLongitude + (transitLongitude > natalLongitude ? 60 : -60) + 360) % 360;
+        
+        // Days from current position to target
+        let degreesToTarget = targetTransitLongitude - transitLongitude;
+        if (degreesToTarget < -180) degreesToTarget += 360;
+        if (degreesToTarget > 180) degreesToTarget -= 360;
+        
+        const daysToExact = degreesToTarget / speed;
+        
+        const exactDate = new Date(currentDate);
+        exactDate.setDate(exactDate.getDate() + Math.floor(daysToExact));
+        
+        allAspects.push({
+          natalPlanet: planetName,
+          natalDegree: position.degree,
+          natalSign: position.sign,
+          aspectType: aspectName,
+          aspectSymbol: aspectData.symbol,
+          orb: angleDiff,
+          isExact: angleDiff < 1,
+          exactDate,
+        });
+      }
+    });
+  });
+  
+  // Sort by orb (tightest first)
+  allAspects.sort((a, b) => a.orb - b.orb);
+  
+  if (allAspects.length === 0) return null;
+  
+  return (
+    <div style={{
+      marginBottom: '24px',
+      padding: '20px',
+      background: 'linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%)',
+      borderRadius: '8px',
+      border: '1px solid #EF5350'
+    }}>
+      <h4 style={{
+        fontSize: '16px',
+        fontWeight: '700',
+        marginBottom: '12px',
+        color: '#C62828'
+      }}>
+        🎯 All Your Natal Points {getSymbol(transitPlanet)} {transitPlanet} is Hitting
+      </h4>
+      
+      <div style={{ fontSize: '13px', color: '#B71C1C', marginBottom: '16px' }}>
+        {getSymbol(transitPlanet)} at {transitDegree}° {transitSign} is currently making aspects to {allAspects.length} of your natal points:
+      </div>
+      
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {allAspects.map((asp, idx) => {
+          const isPast = asp.exactDate < currentDate;
+          const isCurrent = Math.abs(asp.exactDate.getTime() - currentDate.getTime()) < (7 * 24 * 60 * 60 * 1000); // Within a week
+          
+          return (
+            <div key={idx} style={{
+              padding: '12px',
+              background: isCurrent ? 'rgba(255,235,59,0.3)' : 'rgba(255,255,255,0.9)',
+              borderRadius: '6px',
+              borderLeft: `4px solid ${asp.isExact ? '#F44336' : isCurrent ? '#FFC107' : '#90A4AE'}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '8px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '18px' }}>
+                  {getSymbol(transitPlanet)}{asp.aspectSymbol}{getSymbol(asp.natalPlanet)}
+                </span>
+                <div>
+                  <div style={{ fontWeight: '600', color: '#424242' }}>
+                    {asp.aspectType} to {PLANET_ESSENCES[asp.natalPlanet.toLowerCase()]?.name || asp.natalPlanet}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#757575' }}>
+                    Your {getSymbol(asp.natalPlanet)} at {asp.natalDegree}° {asp.natalSign} • Orb: {asp.orb.toFixed(1)}°
+                  </div>
+                </div>
+              </div>
+              
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ 
+                  fontSize: '12px', 
+                  fontWeight: '600',
+                  color: isCurrent ? '#F57F17' : isPast ? '#78909C' : '#2E7D32'
+                }}>
+                  {isCurrent ? '⭐ NOW' : isPast ? 'PASSED' : 'UPCOMING'}
+                </div>
+                <div style={{ fontSize: '11px', color: '#9E9E9E' }}>
+                  Exact: {asp.exactDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      
+      <div style={{ 
+        marginTop: '12px', 
+        padding: '10px', 
+        background: 'rgba(255,255,255,0.8)', 
+        borderRadius: '4px',
+        fontSize: '12px',
+        color: '#5D4037'
+      }}>
+        💡 <strong>Tip:</strong> Outer planets like {getSymbol(transitPlanet)} move slowly, so they often aspect multiple natal points simultaneously. 
+        Watch for themes connecting these life areas.
+      </div>
+    </div>
+  );
+};
+
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
@@ -1086,6 +1361,7 @@ interface ComprehensiveTransitAnalysisProps {
   aspect: TransitAspect;
   natalChart: NatalChart;
   currentDate: Date;
+  allTransitAspects?: TransitAspect[]; // All aspects from this transit planet
 }
 
 export const ComprehensiveTransitAnalysis = ({ 
@@ -1210,11 +1486,24 @@ export const ComprehensiveTransitAnalysis = ({
       {/* Section 4: Timeline & Duration */}
       <TransitTimeline
         transitPlanet={aspect.transitPlanet}
+        transitDegree={aspect.transitDegree}
+        natalPlanet={aspect.natalPlanet}
+        natalDegree={aspect.natalDegree}
+        natalSign={aspect.natalSign}
         aspect={aspect.aspect}
         currentDate={currentDate}
       />
       
-      {/* Section 5: Historical Patterns */}
+      {/* Section 5: All Natal Points Being Hit by This Transit Planet */}
+      <AllNatalAspects
+        transitPlanet={aspect.transitPlanet}
+        transitDegree={aspect.transitDegree}
+        transitSign={aspect.transitSign}
+        natalChart={natalChart}
+        currentDate={currentDate}
+      />
+      
+      {/* Section 6: Historical Patterns */}
       <HistoricalPatterns
         matches={historicalMatches}
         transitPlanet={aspect.transitPlanet}
