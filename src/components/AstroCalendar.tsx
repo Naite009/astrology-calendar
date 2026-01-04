@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle } from "lucide-react";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
@@ -16,6 +16,7 @@ import { DayTypeLegend } from "./DayTypeLegend";
 import { useUserData } from "@/hooks/useUserData";
 import { useNotes } from "@/hooks/useNotes";
 import { useNatalChart, NatalChart } from "@/hooks/useNatalChart";
+import { useCloudBackup } from "@/hooks/useCloudBackup";
 import { DayData, generateICalExport } from "@/lib/astrology";
 
 type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "best-times" | "colors" | "patterns";
@@ -37,7 +38,16 @@ export const AstroCalendar = () => {
     updateChart,
     deleteChart,
     selectChartForTiming,
+    setSavedCharts,
   } = useNatalChart();
+
+  // Cloud backup integration
+  const cloudBackup = useCloudBackup(
+    userNatalChart,
+    savedCharts,
+    setSavedCharts,
+    saveUserNatalChart
+  );
 
   // Get active chart for transit overlay
   const getActiveChart = (): NatalChart | null => {
@@ -372,6 +382,7 @@ export const AstroCalendar = () => {
             onAddChart={addChart}
             onUpdateChart={updateChart}
             onDeleteChart={deleteChart}
+            cloudBackup={cloudBackup}
           />
         )}
 

@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { X, Plus, Users, RefreshCw, Check, Eye, ChevronDown, ChevronUp, ClipboardPaste, Upload, Image, Loader2 } from 'lucide-react';
+import { X, Plus, Users, RefreshCw, Check, Eye, ChevronDown, ChevronUp, ClipboardPaste, Upload, Image, Loader2, Download, CloudOff, Cloud } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChart';
 import { getPlanetSymbol, calculateNatalChart, detectTimezoneFromLocation, calculatePlacidusHouseCusps } from '@/lib/astrology';
 import { getCoordinatesFromLocation } from '@/lib/placidusHouses';
 import { NatalChartNarrative } from './NatalChartNarrative';
+import { toast } from 'sonner';
 
 const ZODIAC_SIGNS = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
@@ -213,6 +214,20 @@ const HOUSE_LABELS = [
   { num: 12, label: '12th House', description: 'Subconscious' },
 ];
 
+interface CloudBackupState {
+  isLoading: boolean;
+  isSyncing: boolean;
+  lastSync: Date | null;
+  cloudChartCount: number;
+  hasCloudData: boolean;
+  deviceId: string;
+  syncNow: () => Promise<void>;
+  restoreFromCloud: () => Promise<boolean>;
+  deleteFromCloud: (chartId: string) => Promise<void>;
+  exportAllCharts: () => string;
+  importFromJson: (jsonString: string) => { success: boolean; count: number; error?: string };
+}
+
 interface ChartLibraryProps {
   userNatalChart: NatalChart | null;
   savedCharts: NatalChart[];
@@ -220,6 +235,7 @@ interface ChartLibraryProps {
   onAddChart: (chart: NatalChart) => NatalChart;
   onUpdateChart: (id: string, chart: Partial<NatalChart>) => void;
   onDeleteChart: (id: string) => void;
+  cloudBackup?: CloudBackupState;
 }
 
 interface ChartFormData {
@@ -257,12 +273,14 @@ export const ChartLibrary = ({
   onAddChart,
   onUpdateChart,
   onDeleteChart,
+  cloudBackup,
 }: ChartLibraryProps) => {
   const [editingChart, setEditingChart] = useState<'new' | 'user' | NatalChart | null>(null);
   const [viewingChart, setViewingChart] = useState<NatalChart | null>(null);
   const [showTransits, setShowTransits] = useState(true);
   // When true, the "Calculate from birth data" button will not overwrite a manually-entered Chiron.
   const [preserveManualChiron, setPreserveManualChiron] = useState(true);
+  const jsonImportInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<ChartFormData>({
     name: '',
     birthDate: '',
@@ -716,20 +734,119 @@ export const ChartLibrary = ({
     </div>
   );
 
+  // Handle JSON export
+  const handleExport = () => {
+    if (!cloudBackup) return;
+    const jsonData = cloudBackup.exportAllCharts();
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `astro-charts-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Charts exported successfully');
+  };
+
+  // Handle JSON import
+  const handleImportFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !cloudBackup) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      const result = cloudBackup.importFromJson(content);
+      if (!result.success) {
+        toast.error(result.error || 'Failed to import charts');
+      }
+    };
+    reader.readAsText(file);
+    
+    // Reset input
+    if (jsonImportInputRef.current) {
+      jsonImportInputRef.current.value = '';
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto">
+      {/* Cloud Sync Status Banner */}
+      {cloudBackup && (
+        <div className="mb-6 flex items-center justify-between rounded-sm border border-border bg-secondary/50 px-4 py-3">
+          <div className="flex items-center gap-3">
+            {cloudBackup.isSyncing ? (
+              <RefreshCw size={16} className="animate-spin text-primary" />
+            ) : cloudBackup.hasCloudData ? (
+              <Cloud size={16} className="text-primary" />
+            ) : (
+              <CloudOff size={16} className="text-muted-foreground" />
+            )}
+            <span className="text-sm text-muted-foreground">
+              {cloudBackup.isSyncing ? 'Syncing...' : 
+               cloudBackup.lastSync ? `Last synced ${cloudBackup.lastSync.toLocaleTimeString()}` :
+               'Not synced yet'}
+            </span>
+            {cloudBackup.cloudChartCount > 0 && (
+              <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
+                {cloudBackup.cloudChartCount} chart{cloudBackup.cloudChartCount !== 1 ? 's' : ''} backed up
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => cloudBackup.syncNow()}
+              disabled={cloudBackup.isSyncing}
+              className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-primary hover:underline disabled:opacity-50"
+            >
+              <RefreshCw size={12} />
+              Sync Now
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <Users className="text-primary" size={28} />
           <h2 className="font-serif text-2xl font-light text-foreground">Chart Library</h2>
         </div>
-        <button
-          onClick={() => openEditForm('new')}
-          className="flex items-center gap-2 border border-primary bg-primary px-4 py-2 text-[11px] uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary/90"
-        >
-          <Plus size={16} />
-          Add Chart
-        </button>
+        <div className="flex items-center gap-3">
+          {/* Export/Import Buttons */}
+          {cloudBackup && (
+            <>
+              <input
+                ref={jsonImportInputRef}
+                type="file"
+                accept=".json"
+                onChange={handleImportFile}
+                className="hidden"
+                id="json-import-input"
+              />
+              <label
+                htmlFor="json-import-input"
+                className="flex items-center gap-2 border border-border bg-transparent px-3 py-2 text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:border-primary hover:text-foreground cursor-pointer"
+              >
+                <Upload size={14} />
+                Import
+              </label>
+              <button
+                onClick={handleExport}
+                className="flex items-center gap-2 border border-border bg-transparent px-3 py-2 text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+              >
+                <Download size={14} />
+                Export
+              </button>
+            </>
+          )}
+          <button
+            onClick={() => openEditForm('new')}
+            className="flex items-center gap-2 border border-primary bg-primary px-4 py-2 text-[11px] uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            <Plus size={16} />
+            Add Chart
+          </button>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
