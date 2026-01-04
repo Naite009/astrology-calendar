@@ -1481,7 +1481,7 @@ const AllNatalAspects = ({ transitPlanet, transitDegree, transitSign, natalChart
                   {isCurrent ? '⭐ NOW' : isPast ? 'PASSED' : 'UPCOMING'}
                 </div>
                 <div style={{ fontSize: '11px', color: '#9E9E9E' }}>
-                  Exact: {asp.exactDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}
+                  Exact: {asp.exactDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </div>
               </div>
             </div>
