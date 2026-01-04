@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { TransitAspect } from '@/lib/transitAspects';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { getSabianSymbol } from '@/lib/sabianSymbols';
+import { getDecan } from '@/lib/decans';
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -357,8 +358,17 @@ const DegreeMeaning = ({ degree, sign, house, natalChart }: {
           background: 'rgba(255,255,255,0.9)',
           borderRadius: '4px'
         }}>
-          <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', color: '#1565C0' }}>
-            Degree Symbolism ({Math.floor(degree) + 1}° {sign}):
+          {/* Decan Info */}
+          <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px', color: '#6A1B9A' }}>
+            {Math.floor(degree)}° {sign} — {getDecan(degree, sign).number === 1 ? '1st' : getDecan(degree, sign).number === 2 ? '2nd' : '3rd'} Decan ({getDecan(degree, sign).rulerSymbol} {getDecan(degree, sign).ruler})
+          </div>
+          <div style={{ fontSize: '12px', color: '#7B1FA2', marginBottom: '10px', lineHeight: '1.5' }}>
+            {getDecan(degree, sign).description}
+          </div>
+          
+          {/* Sabian Symbol */}
+          <div style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', color: '#1565C0' }}>
+            Sabian Symbol:
           </div>
           <div style={{ fontSize: '13px', color: '#424242', fontStyle: 'italic', marginBottom: '4px' }}>
             "{getDegreeMeaning(degree, sign).symbol}"
