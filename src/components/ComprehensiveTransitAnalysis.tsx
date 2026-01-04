@@ -1332,13 +1332,13 @@ const JournalWithPatterns = ({ aspect, currentDate }: {
   );
 };
 
-// Retrograde information for outer planets
+// Retrograde information for outer planets with actual station dates
 const RETROGRADE_INFO: Record<string, { duration: string; frequency: string; passCount: number; description: string }> = {
   pluto: {
     duration: '5-6 months',
     frequency: 'once per year',
     passCount: 3,
-    description: 'Pluto retrogrades for about 5-6 months each year, typically from late April to early October. During this time, it moves backward through 3-4 degrees, often crossing the same point in your chart 3 times over 1-2 years. This creates a deep, transformative process where themes surface (1st pass), intensify during introspection (2nd retrograde pass), and finally integrate (3rd direct pass).'
+    description: 'Pluto retrogrades for about 5-6 months each year, typically from late April/early May to early October. During this time, it moves backward through 3-4 degrees, often crossing the same point in your chart 3 times over 1-2 years. This creates a deep, transformative process where themes surface (1st pass), intensify during introspection (2nd retrograde pass), and finally integrate (3rd direct pass).'
   },
   neptune: {
     duration: '5+ months',
@@ -1364,6 +1364,41 @@ const RETROGRADE_INFO: Record<string, { duration: string; frequency: string; pas
     passCount: 3,
     description: 'Jupiter retrogrades for about 4 months annually. Three passes allow opportunities to appear, be reassessed, then fully embraced.'
   }
+};
+
+// Actual station dates for outer planets (2024-2027)
+const STATION_DATES: Record<string, Array<{ year: number; retrograde: { date: string; degree: string }; direct: { date: string; degree: string } }>> = {
+  pluto: [
+    { year: 2024, retrograde: { date: 'May 2, 2024', degree: '2°06\' Aquarius' }, direct: { date: 'Oct 11, 2024', degree: '29°38\' Capricorn' } },
+    { year: 2025, retrograde: { date: 'May 4, 2025', degree: '4°02\' Aquarius' }, direct: { date: 'Oct 13, 2025', degree: '1°23\' Aquarius' } },
+    { year: 2026, retrograde: { date: 'May 6, 2026', degree: '6°01\' Aquarius' }, direct: { date: 'Oct 15, 2026', degree: '3°23\' Aquarius' } },
+    { year: 2027, retrograde: { date: 'May 9, 2027', degree: '8°02\' Aquarius' }, direct: { date: 'Oct 17, 2027', degree: '5°24\' Aquarius' } },
+  ],
+  neptune: [
+    { year: 2025, retrograde: { date: 'Jul 4, 2025', degree: '2°09\' Aries' }, direct: { date: 'Dec 10, 2025', degree: '29°22\' Pisces' } },
+    { year: 2026, retrograde: { date: 'Jul 6, 2026', degree: '4°00\' Aries' }, direct: { date: 'Dec 11, 2026', degree: '1°11\' Aries' } },
+  ],
+  uranus: [
+    { year: 2025, retrograde: { date: 'Sep 6, 2025', degree: '1°07\' Gemini' }, direct: { date: 'Feb 4, 2026', degree: '27°17\' Taurus' } },
+    { year: 2026, retrograde: { date: 'Sep 10, 2026', degree: '5°25\' Gemini' }, direct: { date: 'Feb 7, 2027', degree: '1°30\' Gemini' } },
+  ],
+  saturn: [
+    { year: 2025, retrograde: { date: 'Jul 13, 2025', degree: '1°51\' Aries' }, direct: { date: 'Nov 28, 2025', degree: '25°09\' Pisces' } },
+    { year: 2026, retrograde: { date: 'Aug 1, 2026', degree: '11°28\' Aries' }, direct: { date: 'Dec 16, 2026', degree: '4°51\' Aries' } },
+  ],
+  jupiter: [
+    { year: 2025, retrograde: { date: 'Nov 11, 2025', degree: '20°03\' Cancer' }, direct: { date: 'Mar 11, 2026', degree: '11°29\' Cancer' } },
+    { year: 2026, retrograde: { date: 'Dec 6, 2026', degree: '2°18\' Leo' }, direct: { date: 'Apr 6, 2027', degree: '23°41\' Cancer' } },
+  ],
+};
+
+// Get the transit sign for a given aspect (where the transit planet IS, not the natal point)
+const getTransitSignForAspect = (natalSign: string, aspectAngle: number): string => {
+  const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+  const natalSignIndex = signs.indexOf(natalSign);
+  const signOffset = Math.round(aspectAngle / 30);
+  const transitSignIndex = (natalSignIndex + signOffset) % 12;
+  return signs[transitSignIndex];
 };
 
 // Calculate multiple passes for slow-moving planets
@@ -1660,7 +1695,20 @@ const AllNatalAspects = ({ transitPlanet, transitDegree, transitSign, natalChart
               </div>
               
               {/* Multiple Passes Timeline */}
-              {hasMultiplePasses && (
+              {hasMultiplePasses && (() => {
+                // Calculate the transit sign based on the aspect angle
+                const transitSignForAspect = getTransitSignForAspect(asp.natalSign, 
+                  asp.aspectType === 'conjunction' ? 0 :
+                  asp.aspectType === 'opposition' ? 180 :
+                  asp.aspectType === 'trine' ? 120 :
+                  asp.aspectType === 'square' ? 90 : 60
+                );
+                
+                // Get station dates for this planet
+                const planetStations = STATION_DATES[transitPlanet.toLowerCase()] || [];
+                const relevantStations = planetStations.filter(s => s.year >= 2025 && s.year <= 2027);
+                
+                return (
                 <div style={{ 
                   background: '#FAFAFA', 
                   borderRadius: '6px', 
@@ -1677,28 +1725,67 @@ const AllNatalAspects = ({ transitPlanet, transitDegree, transitSign, natalChart
                     borderRadius: '4px',
                     lineHeight: '1.5'
                   }}>
-                    <strong>What this means:</strong> {getSymbol(transitPlanet)} will cross exactly over your {asp.natalDegree}° {asp.natalSign} point <strong>3 times</strong>:
+                    <strong>What this means:</strong> {getSymbol(transitPlanet)} in <strong>{transitSignForAspect}</strong> makes a {asp.aspectType} to your {getSymbol(asp.natalPlanet)} at {asp.natalDegree}° {asp.natalSign}. Each date below is when {getSymbol(transitPlanet)} is at exactly <strong>{asp.natalDegree}° {transitSignForAspect}</strong> (which {asp.aspectType}s {asp.natalDegree}° {asp.natalSign}):
                     <ol style={{ margin: '8px 0 0 16px', padding: 0 }}>
                       <li style={{ marginBottom: '4px' }}>
-                        <strong>1st pass</strong> (→ direct): {getSymbol(transitPlanet)} approaches from earlier degrees, crosses {asp.natalDegree}°, continues forward to ~{Math.min(29, asp.natalDegree + 3)}-{Math.min(29, asp.natalDegree + 4)}° {asp.natalSign}
+                        <strong>1st pass</strong> (→ direct): {getSymbol(transitPlanet)} approaches {asp.natalDegree}° {transitSignForAspect}, crosses it, continues forward to ~{Math.min(29, asp.natalDegree + 3)}°-{Math.min(29, asp.natalDegree + 4)}° {transitSignForAspect}
                       </li>
                       <li style={{ marginBottom: '4px' }}>
                         <strong>Stations retrograde</strong>: {getSymbol(transitPlanet)} stops and turns backward
+                        {relevantStations.length > 0 && (
+                          <span style={{ color: '#7B1FA2', fontWeight: '500' }}> (see dates below)</span>
+                        )}
                       </li>
                       <li style={{ marginBottom: '4px' }}>
-                        <strong>2nd pass</strong> (℞ retrograde): Moving backward, crosses {asp.natalDegree}° again, continues back to ~{Math.max(0, asp.natalDegree - 3)}-{Math.max(0, asp.natalDegree - 4)}° {asp.natalSign}
+                        <strong>2nd pass</strong> (℞ retrograde): Moving backward, crosses {asp.natalDegree}° {transitSignForAspect} again, continues back to ~{Math.max(0, asp.natalDegree - 3)}°-{Math.max(0, asp.natalDegree - 4)}° {transitSignForAspect}
                       </li>
                       <li style={{ marginBottom: '4px' }}>
                         <strong>Stations direct</strong>: {getSymbol(transitPlanet)} stops and turns forward again
+                        {relevantStations.length > 0 && (
+                          <span style={{ color: '#1976D2', fontWeight: '500' }}> (see dates below)</span>
+                        )}
                       </li>
                       <li>
-                        <strong>3rd pass</strong> (→ direct): Moving forward, crosses {asp.natalDegree}° one final time, then moves on
+                        <strong>3rd pass</strong> (→ direct): Moving forward, crosses {asp.natalDegree}° {transitSignForAspect} one final time, then moves on
                       </li>
                     </ol>
                   </div>
                   
+                  {/* Station Dates */}
+                  {relevantStations.length > 0 && (
+                    <div style={{ 
+                      marginBottom: '12px',
+                      padding: '10px',
+                      background: 'linear-gradient(135deg, rgba(156,39,176,0.1) 0%, rgba(33,150,243,0.1) 100%)',
+                      borderRadius: '4px',
+                      fontSize: '11px'
+                    }}>
+                      <strong style={{ color: '#424242' }}>📆 {transitPlanet} Station Dates:</strong>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '8px', marginTop: '8px' }}>
+                        {relevantStations.map((station, sIdx) => (
+                          <div key={sIdx} style={{ 
+                            background: 'rgba(255,255,255,0.8)', 
+                            padding: '8px', 
+                            borderRadius: '4px',
+                            borderLeft: '3px solid #9C27B0'
+                          }}>
+                            <div style={{ fontWeight: '600', color: '#424242', marginBottom: '4px' }}>{station.year}</div>
+                            <div style={{ color: '#7B1FA2' }}>
+                              ℞ Retrograde: <strong>{station.retrograde.date}</strong>
+                              <span style={{ color: '#757575' }}> at {station.retrograde.degree}</span>
+                            </div>
+                            <div style={{ color: '#1976D2' }}>
+                              → Direct: <strong>{station.direct.date}</strong>
+                              <span style={{ color: '#757575' }}> at {station.direct.degree}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
                   <div style={{ fontSize: '11px', fontWeight: '600', color: '#616161', marginBottom: '10px' }}>
-                    📅 EXACT HITS at {asp.natalDegree}° {asp.natalSign} ({asp.passes.length} total):
+                    📅 EXACT {asp.aspectType.toUpperCase()} DATES — {getSymbol(transitPlanet)} at {asp.natalDegree}° {transitSignForAspect} {asp.aspectSymbol} your {getSymbol(asp.natalPlanet)} at {asp.natalDegree}° {asp.natalSign}:
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {asp.passes.map((pass, pIdx) => (
@@ -1731,7 +1818,7 @@ const AllNatalAspects = ({ transitPlanet, transitDegree, transitSign, natalChart
                             {pass.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                           </span>
                           <span style={{ fontSize: '10px', color: '#757575' }}>
-                            ({getSymbol(transitPlanet)} exact at {asp.natalDegree}° {asp.natalSign})
+                            ({getSymbol(transitPlanet)} at {asp.natalDegree}° {transitSignForAspect})
                           </span>
                         </div>
                         <span style={{
@@ -1767,7 +1854,8 @@ const AllNatalAspects = ({ transitPlanet, transitDegree, transitSign, natalChart
                     )}
                   </div>
                 </div>
-              )}
+                );
+              })()}
               
               {/* Single pass for faster planets */}
               {!hasMultiplePasses && asp.passes[0] && (
