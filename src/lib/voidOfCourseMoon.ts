@@ -1,14 +1,22 @@
 import * as Astronomy from 'astronomy-engine';
-import { getPlanetaryPositions, PlanetaryPositions, longitudeToZodiac } from './astrology';
+import { longitudeToZodiac } from './astrology';
 
-// Aspect types for VOC Moon calculation
+// Major aspects for VOC Moon calculation - using tighter orbs for precision
 const MAJOR_ASPECTS = [
-  { name: 'conjunction', angle: 0, orb: 8 },
-  { name: 'sextile', angle: 60, orb: 6 },
-  { name: 'square', angle: 90, orb: 6 },
-  { name: 'trine', angle: 120, orb: 6 },
-  { name: 'opposition', angle: 180, orb: 8 },
+  { name: 'conjunction', angle: 0, orb: 3 },
+  { name: 'sextile', angle: 60, orb: 3 },
+  { name: 'square', angle: 90, orb: 3 },
+  { name: 'trine', angle: 120, orb: 3 },
+  { name: 'opposition', angle: 180, orb: 3 },
 ];
+
+const ASPECT_SYMBOLS: Record<string, string> = {
+  conjunction: '☌',
+  sextile: '⚹',
+  square: '□',
+  trine: '△',
+  opposition: '☍',
+};
 
 // Get moon longitude at a specific time
 const getMoonLongitude = (date: Date): number => {
@@ -28,29 +36,42 @@ const getPlanetLongitude = (body: Astronomy.Body, date: Date): number => {
   }
 };
 
-// Check if Moon makes an aspect to any planet
+// Get the zodiac sign the Moon is in (returns 0-11 for Aries-Pisces)
+const getMoonSignIndex = (date: Date): number => {
+  const moonLon = getMoonLongitude(date);
+  return Math.floor(moonLon / 30);
+};
+
+// Get the zodiac sign name the Moon is in
+const getMoonSign = (date: Date): string => {
+  const moonLon = getMoonLongitude(date);
+  return longitudeToZodiac(moonLon).signName;
+};
+
 interface AspectInfo {
   planet: string;
   aspectName: string;
   angle: number;
   orb: number;
+  time: Date;
 }
 
-const getMoonAspects = (date: Date): AspectInfo[] => {
+const planets: { name: string; body: Astronomy.Body }[] = [
+  { name: 'Sun', body: Astronomy.Body.Sun },
+  { name: 'Mercury', body: Astronomy.Body.Mercury },
+  { name: 'Venus', body: Astronomy.Body.Venus },
+  { name: 'Mars', body: Astronomy.Body.Mars },
+  { name: 'Jupiter', body: Astronomy.Body.Jupiter },
+  { name: 'Saturn', body: Astronomy.Body.Saturn },
+  { name: 'Uranus', body: Astronomy.Body.Uranus },
+  { name: 'Neptune', body: Astronomy.Body.Neptune },
+  { name: 'Pluto', body: Astronomy.Body.Pluto },
+];
+
+// Check if Moon makes an aspect to any planet at exact time
+const getMoonAspectsAtTime = (date: Date): AspectInfo[] => {
   const moonLon = getMoonLongitude(date);
   const aspects: AspectInfo[] = [];
-  
-  const planets: { name: string; body: Astronomy.Body }[] = [
-    { name: 'Sun', body: Astronomy.Body.Sun },
-    { name: 'Mercury', body: Astronomy.Body.Mercury },
-    { name: 'Venus', body: Astronomy.Body.Venus },
-    { name: 'Mars', body: Astronomy.Body.Mars },
-    { name: 'Jupiter', body: Astronomy.Body.Jupiter },
-    { name: 'Saturn', body: Astronomy.Body.Saturn },
-    { name: 'Uranus', body: Astronomy.Body.Uranus },
-    { name: 'Neptune', body: Astronomy.Body.Neptune },
-    { name: 'Pluto', body: Astronomy.Body.Pluto },
-  ];
   
   for (const planet of planets) {
     const planetLon = getPlanetLongitude(planet.body, date);
@@ -66,6 +87,7 @@ const getMoonAspects = (date: Date): AspectInfo[] => {
           aspectName: aspect.name,
           angle: aspect.angle,
           orb: orbDiff,
+          time: date,
         });
       }
     }
@@ -74,86 +96,95 @@ const getMoonAspects = (date: Date): AspectInfo[] => {
   return aspects;
 };
 
-// Get the zodiac sign the Moon is in
-const getMoonSign = (date: Date): string => {
-  const moonLon = getMoonLongitude(date);
-  return longitudeToZodiac(moonLon).signName;
-};
-
-// Find when Moon changes sign
-const findMoonSignChange = (startDate: Date, direction: 'forward' | 'backward' = 'forward'): Date => {
-  const startSign = getMoonSign(startDate);
+// Find when Moon NEXT changes sign (forward search)
+const findNextMoonSignChange = (startDate: Date): { time: Date; newSign: string } => {
+  const startSign = getMoonSignIndex(startDate);
   let current = new Date(startDate);
-  const increment = direction === 'forward' ? 30 : -30; // 30 minutes
   
-  // Search in increments
-  for (let i = 0; i < 150; i++) { // Up to 75 hours (Moon moves ~12°/day, sign = 30°)
-    current = new Date(current.getTime() + increment * 60 * 1000);
-    if (getMoonSign(current) !== startSign) {
+  // Moon takes ~2.5 days per sign, search in 1-hour increments first
+  for (let i = 0; i < 72; i++) { // Up to 3 days
+    current = new Date(current.getTime() + 60 * 60 * 1000); // 1 hour
+    if (getMoonSignIndex(current) !== startSign) {
       // Binary search for exact time
-      let low = new Date(current.getTime() - Math.abs(increment) * 60 * 1000);
+      let low = new Date(current.getTime() - 60 * 60 * 1000);
       let high = current;
       
       while (high.getTime() - low.getTime() > 60000) { // 1 minute precision
         const mid = new Date((low.getTime() + high.getTime()) / 2);
-        if (getMoonSign(mid) === startSign) {
+        if (getMoonSignIndex(mid) === startSign) {
           low = mid;
         } else {
           high = mid;
         }
       }
       
-      return direction === 'forward' ? high : low;
+      return { time: high, newSign: getMoonSign(high) };
     }
   }
   
-  return current;
+  return { time: current, newSign: getMoonSign(current) };
 };
 
-// Find last Moon aspect in current sign (looking backward from sign change)
-const findLastMoonAspect = (signChangeTime: Date, startOfDay: Date): { time: Date; aspect: AspectInfo } | null => {
-  let current = new Date(signChangeTime.getTime() - 60000); // Start 1 min before sign change
-  const moonSign = getMoonSign(startOfDay);
+// Find all Moon aspects between two times, return sorted by time
+const findMoonAspectsBetween = (startTime: Date, endTime: Date): AspectInfo[] => {
+  const aspects: AspectInfo[] = [];
+  const foundAspects = new Set<string>(); // Track unique aspects
   
-  // Work backward from sign change
-  while (current.getTime() > startOfDay.getTime() - 24 * 60 * 60 * 1000) {
-    const aspects = getMoonAspects(current);
+  let current = new Date(startTime);
+  const step = 30 * 60 * 1000; // 30 minutes
+  
+  while (current.getTime() < endTime.getTime()) {
+    const currentAspects = getMoonAspectsAtTime(current);
     
-    // Check if we're still in the same sign
-    if (getMoonSign(current) !== moonSign) {
-      current = new Date(current.getTime() - 15 * 60 * 1000);
-      continue;
-    }
-    
-    if (aspects.length > 0) {
-      // Find the tightest aspect (lowest orb)
-      const tightestAspect = aspects.reduce((min, asp) => asp.orb < min.orb ? asp : min, aspects[0]);
-      
-      // Search for exact aspect time (orb = 0)
-      let searchStart = new Date(current.getTime() - 30 * 60 * 1000);
-      let searchEnd = new Date(current.getTime() + 30 * 60 * 1000);
-      
-      // Binary search for exactness
-      while (searchEnd.getTime() - searchStart.getTime() > 60000) {
-        const mid = new Date((searchStart.getTime() + searchEnd.getTime()) / 2);
-        const midAspects = getMoonAspects(mid);
-        const sameAspect = midAspects.find(a => a.planet === tightestAspect.planet && a.aspectName === tightestAspect.aspectName);
-        
-        if (sameAspect && sameAspect.orb < tightestAspect.orb) {
-          // Getting closer to exact
-          return { time: mid, aspect: sameAspect };
+    for (const asp of currentAspects) {
+      const key = `${asp.planet}-${asp.aspectName}`;
+      if (!foundAspects.has(key)) {
+        foundAspects.add(key);
+        // Find more precise time when aspect is exact
+        const exactTime = findExactAspectTime(current, asp, endTime);
+        if (exactTime) {
+          aspects.push({ ...asp, time: exactTime, orb: 0 });
+        } else {
+          aspects.push(asp);
         }
-        
-        searchStart = mid;
       }
-      
-      return { time: current, aspect: tightestAspect };
     }
     
-    current = new Date(current.getTime() - 15 * 60 * 1000); // Check every 15 minutes
+    current = new Date(current.getTime() + step);
   }
   
-  return null;
+  // Sort by time
+  aspects.sort((a, b) => a.time.getTime() - b.time.getTime());
+  return aspects;
+};
+
+// Find more precise time when aspect is exact
+const findExactAspectTime = (nearTime: Date, aspectInfo: AspectInfo, endTime: Date): Date | null => {
+  // Search +/- 2 hours from nearTime
+  const searchStart = new Date(Math.max(nearTime.getTime() - 2 * 60 * 60 * 1000, 0));
+  const searchEnd = new Date(Math.min(nearTime.getTime() + 2 * 60 * 60 * 1000, endTime.getTime()));
+  
+  let bestTime = nearTime;
+  let bestOrb = aspectInfo.orb;
+  
+  let current = new Date(searchStart);
+  while (current.getTime() <= searchEnd.getTime()) {
+    const moonLon = getMoonLongitude(current);
+    const planet = planets.find(p => p.name === aspectInfo.planet);
+    if (planet) {
+      const planetLon = getPlanetLongitude(planet.body, current);
+      let diff = Math.abs(moonLon - planetLon);
+      if (diff > 180) diff = 360 - diff;
+      const orb = Math.abs(diff - aspectInfo.angle);
+      if (orb < bestOrb) {
+        bestOrb = orb;
+        bestTime = new Date(current);
+      }
+    }
+    current = new Date(current.getTime() + 5 * 60 * 1000); // 5 minute steps
+  }
+  
+  return bestTime;
 };
 
 export interface VOCMoonDetails {
@@ -169,101 +200,85 @@ export interface VOCMoonDetails {
   };
   moonEntersSign?: string;
   durationMinutes?: number;
+  displayStart?: Date; // For display: clamped to day start if VOC started before
+  displayEnd?: Date;   // For display: clamped to day end if VOC ends after
 }
 
-const ASPECT_SYMBOLS: Record<string, string> = {
-  conjunction: '☌',
-  sextile: '⚹',
-  square: '□',
-  trine: '△',
-  opposition: '☍',
-};
-
-// Main function to get VOC Moon details for a date
+// Main function to get VOC Moon details for a specific date
 export const getVOCMoonDetails = (date: Date): VOCMoonDetails => {
-  const startOfDay = new Date(date);
-  startOfDay.setHours(0, 0, 0, 0);
+  const dayStart = new Date(date);
+  dayStart.setHours(0, 0, 0, 0);
   
-  const endOfDay = new Date(date);
-  endOfDay.setHours(23, 59, 59, 999);
+  const dayEnd = new Date(date);
+  dayEnd.setHours(23, 59, 59, 999);
   
-  // Find when Moon changes sign (looking forward from start of day)
-  const signChangeTime = findMoonSignChange(startOfDay, 'forward');
+  // Strategy: Look back up to 3 days to find the Moon sign that's currently active
+  // or was active at the start of this day
+  const checkStart = new Date(dayStart.getTime() - 3 * 24 * 60 * 60 * 1000);
   
-  // If sign change is after end of day, check if there's a sign change earlier
-  if (signChangeTime.getTime() > endOfDay.getTime()) {
-    // Moon doesn't change signs today - check if there's a VOC period starting today
-    const currentSign = getMoonSign(startOfDay);
-    const nextSignChange = findMoonSignChange(startOfDay, 'forward');
+  // Find sign changes that might create VOC periods overlapping this day
+  let searchTime = new Date(checkStart);
+  
+  while (searchTime.getTime() < dayEnd.getTime()) {
+    // Get current sign
+    const currentSign = getMoonSign(searchTime);
     
-    // Find last aspect before this sign change
-    const lastAspect = findLastMoonAspect(nextSignChange, startOfDay);
+    // Find when Moon leaves this sign
+    const signChange = findNextMoonSignChange(searchTime);
     
-    if (lastAspect && lastAspect.time.getTime() >= startOfDay.getTime() && lastAspect.time.getTime() <= endOfDay.getTime()) {
-      // VOC starts today but ends after today
-      const nextSign = getMoonSign(nextSignChange);
+    // Find all aspects Moon makes before leaving this sign
+    const aspectsInSign = findMoonAspectsBetween(searchTime, signChange.time);
+    
+    // Determine VOC start time
+    let vocStart: Date;
+    let lastAspect: AspectInfo | null = null;
+    
+    if (aspectsInSign.length === 0) {
+      // Moon is already VOC from the start of this sign
+      vocStart = searchTime;
+    } else {
+      // VOC starts after the last aspect
+      lastAspect = aspectsInSign[aspectsInSign.length - 1];
+      vocStart = lastAspect.time;
+    }
+    
+    const vocEnd = signChange.time;
+    
+    // Check if this VOC period overlaps with our target day
+    if (vocStart.getTime() <= dayEnd.getTime() && vocEnd.getTime() >= dayStart.getTime()) {
+      // This VOC period overlaps with the target day
+      const durationMinutes = Math.round((vocEnd.getTime() - vocStart.getTime()) / 60000);
+      
+      // Calculate display times (clamped to day boundaries for display)
+      const displayStart = vocStart.getTime() < dayStart.getTime() ? dayStart : vocStart;
+      const displayEnd = vocEnd.getTime() > dayEnd.getTime() ? dayEnd : vocEnd;
+      
+      const now = new Date();
+      const isCurrentlyVOC = now.getTime() >= vocStart.getTime() && now.getTime() <= vocEnd.getTime();
+      
       return {
         isVOC: true,
-        isCurrentlyVOC: new Date().getTime() > lastAspect.time.getTime() && new Date().getTime() < nextSignChange.getTime(),
-        start: lastAspect.time,
-        end: nextSignChange,
-        lastAspect: {
-          planet: lastAspect.aspect.planet,
-          aspectName: lastAspect.aspect.aspectName,
-          symbol: ASPECT_SYMBOLS[lastAspect.aspect.aspectName] || '?',
+        isCurrentlyVOC,
+        start: vocStart,
+        end: vocEnd,
+        displayStart,
+        displayEnd,
+        lastAspect: lastAspect ? {
+          planet: lastAspect.planet,
+          aspectName: lastAspect.aspectName,
+          symbol: ASPECT_SYMBOLS[lastAspect.aspectName] || '?',
           time: lastAspect.time,
-        },
-        moonEntersSign: nextSign,
-        durationMinutes: Math.round((nextSignChange.getTime() - lastAspect.time.getTime()) / 60000),
+        } : undefined,
+        moonEntersSign: signChange.newSign,
+        durationMinutes,
       };
     }
     
-    // Check if VOC started yesterday and continues through today
-    const previousDay = new Date(startOfDay.getTime() - 24 * 60 * 60 * 1000);
-    const prevLastAspect = findLastMoonAspect(nextSignChange, previousDay);
-    
-    if (prevLastAspect && prevLastAspect.time.getTime() < startOfDay.getTime() && nextSignChange.getTime() > startOfDay.getTime()) {
-      const nextSign = getMoonSign(nextSignChange);
-      return {
-        isVOC: true,
-        isCurrentlyVOC: new Date().getTime() < nextSignChange.getTime(),
-        start: prevLastAspect.time,
-        end: nextSignChange,
-        lastAspect: {
-          planet: prevLastAspect.aspect.planet,
-          aspectName: prevLastAspect.aspect.aspectName,
-          symbol: ASPECT_SYMBOLS[prevLastAspect.aspect.aspectName] || '?',
-          time: prevLastAspect.time,
-        },
-        moonEntersSign: nextSign,
-        durationMinutes: Math.round((nextSignChange.getTime() - prevLastAspect.time.getTime()) / 60000),
-      };
-    }
-    
-    return { isVOC: false, isCurrentlyVOC: false };
+    // Move to the next sign
+    searchTime = new Date(signChange.time.getTime() + 60000); // 1 minute after sign change
   }
   
-  // Moon changes sign today - find the last aspect before the sign change
-  const lastAspect = findLastMoonAspect(signChangeTime, startOfDay);
-  
-  if (lastAspect && lastAspect.time.getTime() >= startOfDay.getTime() - 24 * 60 * 60 * 1000) {
-    const nextSign = getMoonSign(signChangeTime);
-    return {
-      isVOC: true,
-      isCurrentlyVOC: new Date().getTime() > lastAspect.time.getTime() && new Date().getTime() < signChangeTime.getTime(),
-      start: lastAspect.time,
-      end: signChangeTime,
-      lastAspect: {
-        planet: lastAspect.aspect.planet,
-        aspectName: lastAspect.aspect.aspectName,
-        symbol: ASPECT_SYMBOLS[lastAspect.aspect.aspectName] || '?',
-        time: lastAspect.time,
-      },
-      moonEntersSign: nextSign,
-      durationMinutes: Math.round((signChangeTime.getTime() - lastAspect.time.getTime()) / 60000),
-    };
-  }
-  
+  // No VOC period overlaps with this day
   return { isVOC: false, isCurrentlyVOC: false };
 };
 
@@ -281,4 +296,13 @@ export const formatVOCDuration = (minutes: number): string => {
   if (hours === 0) return `${mins}m`;
   if (mins === 0) return `${hours}h`;
   return `${hours}h ${mins}m`;
+};
+
+// Format time for display
+export const formatVOCTime = (date: Date): string => {
+  return date.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
 };
