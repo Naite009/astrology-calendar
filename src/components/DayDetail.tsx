@@ -22,6 +22,7 @@ import { CosmicWeatherBanner } from './CosmicWeatherBanner';
 import { calculateTransitAspects, getTransitPlanetSymbol, TransitAspect, hasHouseData, getHouseLabel, HOUSE_MEANINGS, getTopTransitAspects } from '@/lib/transitAspects';
 import { getDetailedInterpretation, DetailedInterpretation } from '@/lib/detailedInterpretations';
 import { ComprehensiveTransitAnalysis } from './ComprehensiveTransitAnalysis';
+import { VenusStarPointTracker } from './VenusStarPointTracker';
 
 // Sign-specific energies for daily guidance
 const SIGN_ENERGIES: Record<string, { action: string; focus: string; avoid: string }> = {
@@ -416,6 +417,11 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
             </div>
           </div>
         )}
+
+        {/* Venus Star Point Tracker - After lunar phase, before personal transits context */}
+        <div className="mb-6">
+          <VenusStarPointTracker date={date} activeChart={activeChart} />
+        </div>
 
         {/* Why These Colors Section */}
         <ColorExplanationSection colorExplanation={colorExplanation} aspects={aspects} />
