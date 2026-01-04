@@ -217,17 +217,25 @@ export const getCharacterCards = (chart: NatalChart): CharacterCard[] => {
     });
   }
   
+  // Prefer house1 cusp for Rising sign (more reliable than Ascendant planet entry)
+  // Fall back to Ascendant planet if house cusps not available
+  const house1Cusp = chart.houseCusps?.house1;
   const ascPos = chart.planets.Ascendant;
-  if (ascPos?.sign) {
+  
+  const risingSign = house1Cusp?.sign || ascPos?.sign;
+  const risingDegree = house1Cusp?.degree ?? ascPos?.degree ?? 0;
+  const risingMinutes = house1Cusp?.minutes ?? ascPos?.minutes ?? 0;
+  
+  if (risingSign) {
     cards.push({
       planet: 'Rising',
-      sign: ascPos.sign,
-      degree: ascPos.degree,
+      sign: risingSign,
+      degree: risingDegree,
       house: 1,
-      element: getElement(ascPos.sign),
-      modality: getModality(ascPos.sign),
-      description: `Your outer presentation and first impression expressed through ${ascPos.sign}`,
-      keywords: getRisingKeywords(ascPos.sign),
+      element: getElement(risingSign),
+      modality: getModality(risingSign),
+      description: `Your outer presentation and first impression expressed through ${risingSign}`,
+      keywords: getRisingKeywords(risingSign),
     });
   }
   
