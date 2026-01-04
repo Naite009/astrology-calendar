@@ -21,6 +21,7 @@ import { UserData } from "@/hooks/useUserData";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { calculateTransitAspects, getTopTransitAspects, getTransitPlanetSymbol, getHouseLabel, type TransitAspect } from "@/lib/transitAspects";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { isVenusStarPointDay } from "@/lib/venusStarPoint";
 
 // Outer planets that are most significant for transits
 const OUTER_PLANETS = ['Saturn', 'Jupiter', 'Neptune', 'Pluto', 'Uranus'];
@@ -109,6 +110,7 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
   const dayColors = getDayColors(aspects, moonPhase);
   const collectiveDayType = getDayType(aspects, moonPhase);
   const exactLunarPhase = getExactLunarPhase(date);
+  const venusStarPoint = isVenusStarPointDay(date);
 
   // Calculate transit-to-natal aspects if chart is selected
   const transitAspects = activeChart 
@@ -189,9 +191,19 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
             </span>
           )}
         </div>
-        <span className="text-lg opacity-70" title={moonPhase.phaseName}>
-          {moonPhase.phaseIcon}
-        </span>
+        <div className="flex flex-col items-end gap-1">
+          {venusStarPoint && (
+            <span 
+              className="text-sm text-pink-500" 
+              title={`Venus Star Point: ${venusStarPoint.degree}° ${venusStarPoint.sign}${venusStarPoint.companions ? ' — TRIPLE CONJUNCTION!' : ''}`}
+            >
+              ♀⭐
+            </span>
+          )}
+          <span className="text-lg opacity-70" title={moonPhase.phaseName}>
+            {moonPhase.phaseIcon}
+          </span>
+        </div>
       </div>
 
       {/* Planet positions */}

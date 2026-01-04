@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-type GuideSection = "overview" | "colors" | "symbols" | "moonphases" | "retrogrades" | "aspects" | "dignities" | "fixedstars" | "divinefeminine";
+type GuideSection = "overview" | "colors" | "symbols" | "moonphases" | "retrogrades" | "aspects" | "dignities" | "fixedstars" | "divinefeminine" | "venuscycles";
 
 const SymbolCard = ({ icon, name, desc }: { icon: string; name: string; desc: string }) => (
   <div className="rounded-sm border border-border bg-secondary p-4">
@@ -735,6 +735,209 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
       </>
     ),
   },
+  venuscycles: {
+    title: "Understanding Venus Cycles",
+    content: (
+      <>
+        <p>
+          Venus has a unique 584-day cycle that creates profound patterns in our lives around 
+          love, values, beauty, and self-worth. Twice in this cycle, Venus conjuncts the Sun—
+          these are called <strong>Venus Star Points</strong>.
+        </p>
+        
+        <h3>What is a Venus Star Point?</h3>
+        <p>
+          A Venus Star Point occurs when Venus aligns exactly with the Sun. There are two types:
+        </p>
+        
+        <div className="mt-4 mb-6 grid gap-4 text-sm">
+          <div className="p-4 rounded-sm bg-pink-50 dark:bg-pink-900/30 border border-pink-200 dark:border-pink-700">
+            <div className="font-semibold text-foreground mb-2">🌑 Inferior Conjunction (Venus Retrograde)</div>
+            <ul className="space-y-1 text-muted-foreground">
+              <li>• Venus passes BETWEEN Earth and Sun</li>
+              <li>• Venus is CLOSEST to Earth</li>
+              <li>• Like a "Venus New Moon" — NEW CYCLE BEGINS</li>
+              <li>• Inward, cocooning phase</li>
+              <li>• Time to reassess values, relationships, self-worth</li>
+              <li>• <strong>This is the main "Star Point"</strong></li>
+            </ul>
+          </div>
+          
+          <div className="p-4 rounded-sm bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700">
+            <div className="font-semibold text-foreground mb-2">☀️ Superior Conjunction</div>
+            <ul className="space-y-1 text-muted-foreground">
+              <li>• Venus passes on FAR SIDE of Sun</li>
+              <li>• Venus is FARTHEST from Earth</li>
+              <li>• Like a "Venus Full Moon" — maturation point</li>
+              <li>• Integration and consolidation phase</li>
+              <li>• Time to solidify what you've learned about love and value</li>
+            </ul>
+          </div>
+        </div>
+        
+        <h3>The Full Venus Cycle</h3>
+        <div className="mt-4 p-4 rounded-sm bg-secondary border border-border font-mono text-xs">
+          <div className="space-y-2">
+            <div><strong>🌑 INFERIOR CONJUNCTION</strong> (Retrograde)</div>
+            <div className="pl-4 border-l-2 border-pink-300 text-muted-foreground">
+              "Underworld Journey"<br/>
+              3 weeks before: Release what no longer serves<br/>
+              EXACT: New Venus cycle seed planted<br/>
+              3 weeks after: Integrate, prepare for emergence
+            </div>
+            <div className="text-center text-muted-foreground">↓ (Venus turns Direct) ↓</div>
+            
+            <div><strong>🌅 MORNING STAR PHASE</strong> (6-7 months)</div>
+            <div className="pl-4 border-l-2 border-orange-300 text-muted-foreground">
+              Venus visible before sunrise<br/>
+              INTERNAL refinement<br/>
+              Clarifying values, self-worth development<br/>
+              Relationship patterns examined internally
+            </div>
+            <div className="text-center text-muted-foreground">↓</div>
+            
+            <div><strong>☀️ SUPERIOR CONJUNCTION</strong></div>
+            <div className="pl-4 border-l-2 border-amber-300 text-muted-foreground">
+              "Venus Full Moon"<br/>
+              Maturation point<br/>
+              Integration of lessons
+            </div>
+            <div className="text-center text-muted-foreground">↓</div>
+            
+            <div><strong>🌆 EVENING STAR PHASE</strong> (6-7 months)</div>
+            <div className="pl-4 border-l-2 border-purple-300 text-muted-foreground">
+              Venus visible after sunset<br/>
+              EXTERNAL expression<br/>
+              Dating, socializing, beautifying<br/>
+              Relationship growth expressed outwardly
+            </div>
+            <div className="text-center text-muted-foreground">↓ [Venus turns Retrograde] ↓</div>
+            
+            <div><strong>🌑 NEXT INFERIOR CONJUNCTION</strong> (584 days later)</div>
+          </div>
+        </div>
+        
+        <h3>The Sacred Geometry: 8-Year Pentagram</h3>
+        <p>
+          Every <strong>8 years</strong>, Venus creates a perfect <strong>5-pointed star (pentagram)</strong> 
+          in the zodiac! Each inferior conjunction returns to approximately the same sign/degree 
+          every 8 years. This is why Venus Star Points that happened 8 years ago carry 
+          similar themes to current ones.
+        </p>
+        
+        <h3>Morning Star vs Evening Star</h3>
+        <div className="mt-4 mb-6 grid gap-4 text-sm md:grid-cols-2">
+          <div className="p-4 rounded-sm bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-700">
+            <div className="font-semibold text-foreground mb-2">🌅 Morning Star (Phosphorus)</div>
+            <p className="text-muted-foreground">
+              Venus rises before the Sun. Energy is <strong>new, eager, spontaneous, resilient</strong>. 
+              Perhaps a little naive when it comes to love. Internal work—clarifying what you truly value, 
+              developing self-worth privately before expressing it.
+            </p>
+          </div>
+          
+          <div className="p-4 rounded-sm bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-700">
+            <div className="font-semibold text-foreground mb-2">🌆 Evening Star (Hesperus)</div>
+            <p className="text-muted-foreground">
+              Venus follows the Sun. Energy is <strong>experienced, wiser, worldly</strong>. 
+              More cautious and practical about love. External expression—actively dating, 
+              socializing, beautifying your environment, attracting abundance.
+            </p>
+          </div>
+        </div>
+        
+        <h3>Why Venus Cycles Matter for Libra/Taurus</h3>
+        <p>
+          If you have Libra or Taurus rising, or a stellium in those signs, <strong>Venus rules your chart</strong>. 
+          When Venus has major cycles, your ENTIRE life restructures around relationships, values, money, 
+          beauty, and self-worth. Pay special attention to Star Points!
+        </p>
+        
+        <h3>Journal Prompts by Phase</h3>
+        <div className="mt-4 space-y-4 text-sm">
+          <div className="p-3 rounded-sm bg-pink-50 dark:bg-pink-900/30">
+            <div className="font-semibold mb-2">🌑 Inferior Conjunction (Underworld)</div>
+            <ul className="text-muted-foreground space-y-1">
+              <li>• What values no longer serve me?</li>
+              <li>• What relationships need releasing or deepening?</li>
+              <li>• Where have I lost touch with my self-worth?</li>
+              <li>• What does my heart truly want?</li>
+            </ul>
+          </div>
+          
+          <div className="p-3 rounded-sm bg-orange-50 dark:bg-orange-900/30">
+            <div className="font-semibold mb-2">🌅 Morning Star (Internal Refinement)</div>
+            <ul className="text-muted-foreground space-y-1">
+              <li>• How am I developing my values internally?</li>
+              <li>• What do I need to feel worthy?</li>
+              <li>• How can I love myself better?</li>
+              <li>• What relationship patterns am I healing?</li>
+            </ul>
+          </div>
+          
+          <div className="p-3 rounded-sm bg-amber-50 dark:bg-amber-900/30">
+            <div className="font-semibold mb-2">☀️ Superior Conjunction (Maturation)</div>
+            <ul className="text-muted-foreground space-y-1">
+              <li>• What has matured in my relationships since the last star point?</li>
+              <li>• What values have solidified?</li>
+              <li>• What commitments am I ready to make?</li>
+              <li>• How have I integrated Venus lessons?</li>
+            </ul>
+          </div>
+          
+          <div className="p-3 rounded-sm bg-purple-50 dark:bg-purple-900/30">
+            <div className="font-semibold mb-2">🌆 Evening Star (External Expression)</div>
+            <ul className="text-muted-foreground space-y-1">
+              <li>• How am I expressing my values outwardly?</li>
+              <li>• What relationships am I actively cultivating?</li>
+              <li>• How am I beautifying my environment?</li>
+              <li>• Where am I attracting abundance?</li>
+            </ul>
+          </div>
+        </div>
+        
+        <h3>Key Dates to Watch (2025-2027)</h3>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left py-2 px-3">Date</th>
+                <th className="text-left py-2 px-3">Type</th>
+                <th className="text-left py-2 px-3">Position</th>
+                <th className="text-left py-2 px-3">Significance</th>
+              </tr>
+            </thead>
+            <tbody className="text-muted-foreground">
+              <tr className="border-b border-border/50">
+                <td className="py-2 px-3 font-medium text-foreground">Mar 23, 2025</td>
+                <td className="py-2 px-3">Inferior ℞</td>
+                <td className="py-2 px-3">3° ♈ Aries</td>
+                <td className="py-2 px-3">New cycle begins</td>
+              </tr>
+              <tr className="border-b border-border/50 bg-amber-50 dark:bg-amber-900/20">
+                <td className="py-2 px-3 font-medium text-foreground">Jan 6, 2026</td>
+                <td className="py-2 px-3 font-bold">Superior + ☉♂</td>
+                <td className="py-2 px-3">16° ♑ Capricorn</td>
+                <td className="py-2 px-3">🌟 TRIPLE CONJUNCTION! Happens every 32 years</td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-2 px-3 font-medium text-foreground">Oct 23, 2026</td>
+                <td className="py-2 px-3">Inferior ℞</td>
+                <td className="py-2 px-3">0° ♏ Scorpio</td>
+                <td className="py-2 px-3">First Scorpio star point in new era</td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-2 px-3 font-medium text-foreground">Mar 10, 2027</td>
+                <td className="py-2 px-3">Superior</td>
+                <td className="py-2 px-3">20° ♓ Pisces</td>
+                <td className="py-2 px-3">Integration phase</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </>
+    ),
+  },
 };
 
 const NAV_ITEMS: { key: GuideSection; label: string }[] = [
@@ -742,6 +945,7 @@ const NAV_ITEMS: { key: GuideSection; label: string }[] = [
   { key: "colors", label: "Colors" },
   { key: "symbols", label: "Symbols" },
   { key: "moonphases", label: "Moon Phases" },
+  { key: "venuscycles", label: "Venus Cycles" },
   { key: "retrogrades", label: "Retrogrades" },
   { key: "aspects", label: "Aspects" },
   { key: "dignities", label: "Dignities" },
