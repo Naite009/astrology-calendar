@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { NatalChart } from './useNatalChart';
 import { toast } from 'sonner';
@@ -6,7 +7,7 @@ import { toast } from 'sonner';
 const DEVICE_ID_KEY = 'astro_device_id';
 const LAST_SYNC_KEY = 'astro_last_cloud_sync';
 
-// Generate a unique device ID on first visit
+// Generate a unique device ID on first visit (fallback for anonymous users)
 const getOrCreateDeviceId = (): string => {
   let deviceId = localStorage.getItem(DEVICE_ID_KEY);
   if (!deviceId) {
@@ -25,6 +26,7 @@ interface CloudChart {
   chart_name: string;
   created_at: string;
   updated_at: string;
+  user_id: string | null;
 }
 
 interface CloudBackupState {
@@ -33,6 +35,7 @@ interface CloudBackupState {
   lastSync: Date | null;
   cloudChartCount: number;
   hasCloudData: boolean;
+  isAuthenticated: boolean;
 }
 
 export const useCloudBackup = (
@@ -42,24 +45,56 @@ export const useCloudBackup = (
   saveUserNatalChart: (chart: NatalChart) => void
 ) => {
   const deviceId = useRef<string>(getOrCreateDeviceId());
+  const [user, setUser] = useState<User | null>(null);
   const [state, setState] = useState<CloudBackupState>({
     isLoading: true,
     isSyncing: false,
     lastSync: null,
     cloudChartCount: 0,
     hasCloudData: false,
+    isAuthenticated: false,
   });
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const initialCheckDoneRef = useRef(false);
+  
+  // Listen for auth state changes
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+        setState(prev => ({ ...prev, isAuthenticated: !!session?.user }));
+        
+        // When user logs in, trigger a sync to fetch their charts
+        if (event === 'SIGNED_IN' && session?.user) {
+          initialCheckDoneRef.current = false; // Reset to allow re-check
+        }
+      }
+    );
 
-  // Fetch charts from cloud for this device
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setState(prev => ({ ...prev, isAuthenticated: !!session?.user }));
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Fetch charts from cloud - by user_id if authenticated, else by device_id
   const fetchCloudCharts = useCallback(async (): Promise<CloudChart[]> => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('device_charts')
         .select('*')
-        .eq('device_id', deviceId.current)
         .order('updated_at', { ascending: false });
+      
+      // If authenticated, fetch by user_id; otherwise by device_id
+      if (user?.id) {
+        query = query.eq('user_id', user.id);
+      } else {
+        query = query.eq('device_id', deviceId.current);
+      }
+      
+      const { data, error } = await query;
 
       if (error) {
         console.error('[CloudBackup] Error fetching cloud charts:', error);
@@ -75,37 +110,41 @@ export const useCloudBackup = (
         chart_name: row.chart_name,
         created_at: row.created_at,
         updated_at: row.updated_at,
+        user_id: (row as unknown as CloudChart).user_id,
       })) as CloudChart[];
     } catch (err) {
       console.error('[CloudBackup] Exception fetching cloud charts:', err);
       return [];
     }
-  }, []);
+  }, [user]);
 
   // Sync a single chart to cloud
   const syncChartToCloud = useCallback(async (chart: NatalChart) => {
     if (!chart.id || !chart.name) return;
 
     try {
-      // First check if record exists
-      const { data: existing } = await supabase
-        .from('device_charts')
-        .select('id')
-        .eq('device_id', deviceId.current)
-        .eq('chart_id', chart.id)
-        .maybeSingle();
+      // Build query based on auth status
+      const lookupQuery = user?.id 
+        ? supabase.from('device_charts').select('id').eq('user_id', user.id).eq('chart_id', chart.id)
+        : supabase.from('device_charts').select('id').eq('device_id', deviceId.current).eq('chart_id', chart.id);
+      
+      const { data: existing } = await lookupQuery.maybeSingle();
 
       if (existing) {
         // Update existing record
-        const { error } = await supabase
-          .from('device_charts')
-          .update({
-            chart_data: JSON.parse(JSON.stringify(chart)),
-            chart_name: chart.name,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('device_id', deviceId.current)
-          .eq('chart_id', chart.id);
+        const updateQuery = user?.id
+          ? supabase.from('device_charts').update({
+              chart_data: JSON.parse(JSON.stringify(chart)),
+              chart_name: chart.name,
+              updated_at: new Date().toISOString(),
+            }).eq('user_id', user.id).eq('chart_id', chart.id)
+          : supabase.from('device_charts').update({
+              chart_data: JSON.parse(JSON.stringify(chart)),
+              chart_name: chart.name,
+              updated_at: new Date().toISOString(),
+            }).eq('device_id', deviceId.current).eq('chart_id', chart.id);
+
+        const { error } = await updateQuery;
 
         if (error) {
           console.error('[CloudBackup] Error updating chart:', chart.name, error);
@@ -113,13 +152,18 @@ export const useCloudBackup = (
           console.log('[CloudBackup] Updated chart:', chart.name);
         }
       } else {
-        // Insert new record using raw query to bypass type checking
-        const insertData = {
+        // Insert new record
+        const insertData: Record<string, unknown> = {
           device_id: deviceId.current,
           chart_id: chart.id,
           chart_data: JSON.parse(JSON.stringify(chart)),
           chart_name: chart.name,
         };
+        
+        // Add user_id if authenticated
+        if (user?.id) {
+          insertData.user_id = user.id;
+        }
         
         const { error } = await supabase
           .from('device_charts')
@@ -134,7 +178,7 @@ export const useCloudBackup = (
     } catch (err) {
       console.error('[CloudBackup] Exception syncing chart:', err);
     }
-  }, []);
+  }, [user]);
 
   // Sync all charts to cloud (debounced)
   const syncAllToCloud = useCallback(async () => {
@@ -242,11 +286,11 @@ export const useCloudBackup = (
   // Delete a chart from cloud
   const deleteFromCloud = useCallback(async (chartId: string) => {
     try {
-      const { error } = await supabase
-        .from('device_charts')
-        .delete()
-        .eq('device_id', deviceId.current)
-        .eq('chart_id', chartId);
+      const deleteQuery = user?.id
+        ? supabase.from('device_charts').delete().eq('user_id', user.id).eq('chart_id', chartId)
+        : supabase.from('device_charts').delete().eq('device_id', deviceId.current).eq('chart_id', chartId);
+      
+      const { error } = await deleteQuery;
 
       if (error) {
         console.error('[CloudBackup] Error deleting from cloud:', error);
@@ -256,7 +300,7 @@ export const useCloudBackup = (
     } catch (err) {
       console.error('[CloudBackup] Exception deleting from cloud:', err);
     }
-  }, []);
+  }, [user]);
 
   // Export all charts as JSON
   const exportAllCharts = useCallback((): string => {
@@ -343,8 +387,26 @@ export const useCloudBackup = (
     };
   }, [userNatalChart, savedCharts, triggerSync]);
 
+  // When user changes (login/logout), re-check cloud data
+  useEffect(() => {
+    const fetchOnAuthChange = async () => {
+      if (user?.id) {
+        console.log('[CloudBackup] User logged in, fetching their charts...');
+        // Fetch charts for this user
+        const cloudCharts = await fetchCloudCharts();
+        if (cloudCharts.length > 0) {
+          console.log('[CloudBackup] Found', cloudCharts.length, 'charts for user, restoring...');
+          await restoreFromCloud();
+        }
+      }
+    };
+    
+    fetchOnAuthChange();
+  }, [user?.id, fetchCloudCharts, restoreFromCloud]);
+
   return {
     ...state,
+    user,
     deviceId: deviceId.current,
     syncNow: syncAllToCloud,
     restoreFromCloud,
