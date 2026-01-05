@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Orbit, History, TrendingUp, AlertTriangle, Star, RefreshCw, Clock, MapPin } from 'lucide-react';
+import { PlanetDetailModal } from './PlanetDetailModal';
 import { 
   getPlanetaryPositions, 
   detectStelliums, 
@@ -178,6 +179,14 @@ const isOuterPlanetRetrograde = (planetName: string, date: Date): boolean => {
 // Live Planetary Positions Component with real-time updates
 const LivePlanetaryPositions = ({ userLocation }: { userLocation?: string }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [selectedPlanet, setSelectedPlanet] = useState<{
+    name: string;
+    symbol: string;
+    degree: number;
+    signName: string;
+    sign: string;
+    isRetrograde: boolean;
+  } | null>(null);
   
   // Update time every second
   useEffect(() => {
@@ -211,6 +220,17 @@ const LivePlanetaryPositions = ({ userLocation }: { userLocation?: string }) => 
     ];
     return bodies;
   }, [planets, nodes, chiron, lilith, currentTime]);
+
+  const handlePlanetClick = (body: typeof allBodies[0]) => {
+    setSelectedPlanet({
+      name: body.name,
+      symbol: body.symbol,
+      degree: body.degree,
+      signName: body.signName,
+      sign: body.sign,
+      isRetrograde: body.isRetrograde,
+    });
+  };
 
   return (
     <div className="space-y-4">
@@ -248,12 +268,13 @@ const LivePlanetaryPositions = ({ userLocation }: { userLocation?: string }) => 
       {/* Planetary Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
         {allBodies.map((body) => (
-          <div 
+          <button 
             key={body.name} 
-            className="p-3 rounded-sm bg-secondary border border-border hover:bg-secondary/80 transition-colors"
+            onClick={() => handlePlanetClick(body)}
+            className="p-3 rounded-sm bg-secondary border border-border hover:bg-primary/10 hover:border-primary/50 transition-all cursor-pointer text-left group"
           >
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xl">{body.symbol}</span>
+              <span className="text-xl group-hover:scale-110 transition-transform">{body.symbol}</span>
               <span className="font-medium text-foreground text-sm">
                 {body.name}
                 {body.isRetrograde && <span className="text-red-500 ml-1">℞</span>}
@@ -262,13 +283,24 @@ const LivePlanetaryPositions = ({ userLocation }: { userLocation?: string }) => 
             <div className="text-lg font-semibold text-primary">
               {body.degree}° {getSignSymbol(body.signName)} {body.signName}
             </div>
-          </div>
+            <div className="text-xs text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              Click to learn more →
+            </div>
+          </button>
         ))}
       </div>
 
       <p className="text-xs text-muted-foreground text-center italic">
-        Positions update in real-time • ℞ = Retrograde
+        Click any planet for detailed interpretation • Positions update in real-time • ℞ = Retrograde
       </p>
+
+      {/* Planet Detail Modal */}
+      <PlanetDetailModal
+        planet={selectedPlanet}
+        isOpen={!!selectedPlanet}
+        onClose={() => setSelectedPlanet(null)}
+        currentTime={currentTime}
+      />
     </div>
   );
 };
