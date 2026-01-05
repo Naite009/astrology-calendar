@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { Orbit, History, TrendingUp, AlertTriangle, Star, RefreshCw } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { Orbit, History, TrendingUp, AlertTriangle, Star, RefreshCw, Clock, MapPin } from 'lucide-react';
 import { 
   getPlanetaryPositions, 
   detectStelliums, 
@@ -7,9 +7,14 @@ import {
   detectNodeAspects,
   isMercuryRetrograde,
   getPlanetSymbol,
+  getNodePositions,
+  getChironPosition,
+  getBlackMoonLilith,
   Stellium,
   RareAspect,
   NodeAspect,
+  PlanetaryPositions,
+  isPlanetRetrograde,
 } from '@/lib/astrology';
 import {
   Accordion,
@@ -17,6 +22,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { useUserData } from '@/hooks/useUserData';
+import * as Astronomy from 'astronomy-engine';
 
 interface PatternsViewProps {
   year: number;
@@ -140,6 +147,131 @@ const HISTORICAL_CONJUNCTIONS = [
     ],
   },
 ];
+
+// Get sign symbol from name
+const getSignSymbol = (signName: string): string => {
+  const symbols: Record<string, string> = {
+    'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊', 'Cancer': '♋',
+    'Leo': '♌', 'Virgo': '♍', 'Libra': '♎', 'Scorpio': '♏',
+    'Sagittarius': '♐', 'Capricorn': '♑', 'Aquarius': '♒', 'Pisces': '♓'
+  };
+  return symbols[signName] || '';
+};
+
+// Check if outer planet is retrograde
+const isOuterPlanetRetrograde = (planetName: string, date: Date): boolean => {
+  const bodyMap: Record<string, Astronomy.Body> = {
+    'Mercury': Astronomy.Body.Mercury,
+    'Venus': Astronomy.Body.Venus,
+    'Mars': Astronomy.Body.Mars,
+    'Jupiter': Astronomy.Body.Jupiter,
+    'Saturn': Astronomy.Body.Saturn,
+    'Uranus': Astronomy.Body.Uranus,
+    'Neptune': Astronomy.Body.Neptune,
+    'Pluto': Astronomy.Body.Pluto,
+  };
+  const body = bodyMap[planetName];
+  if (!body) return false;
+  return isPlanetRetrograde(body, date);
+};
+
+// Live Planetary Positions Component with real-time updates
+const LivePlanetaryPositions = ({ userLocation }: { userLocation?: string }) => {
+  const [currentTime, setCurrentTime] = useState(new Date());
+  
+  // Update time every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const planets = useMemo(() => getPlanetaryPositions(currentTime), [currentTime]);
+  const nodes = useMemo(() => getNodePositions(currentTime), [currentTime]);
+  const chiron = useMemo(() => getChironPosition(currentTime), [currentTime]);
+  const lilith = useMemo(() => getBlackMoonLilith(currentTime), [currentTime]);
+
+  // All celestial bodies with their data
+  const allBodies = useMemo(() => {
+    const bodies = [
+      { name: 'Sun', symbol: '☉', ...planets.sun, isRetrograde: false },
+      { name: 'Moon', symbol: '☽', ...planets.moon, isRetrograde: false },
+      { name: 'Mercury', symbol: '☿', ...planets.mercury, isRetrograde: isOuterPlanetRetrograde('Mercury', currentTime) },
+      { name: 'Venus', symbol: '♀', ...planets.venus, isRetrograde: isOuterPlanetRetrograde('Venus', currentTime) },
+      { name: 'Mars', symbol: '♂', ...planets.mars, isRetrograde: isOuterPlanetRetrograde('Mars', currentTime) },
+      { name: 'Jupiter', symbol: '♃', ...planets.jupiter, isRetrograde: isOuterPlanetRetrograde('Jupiter', currentTime) },
+      { name: 'Saturn', symbol: '♄', ...planets.saturn, isRetrograde: isOuterPlanetRetrograde('Saturn', currentTime) },
+      { name: 'Uranus', symbol: '♅', ...planets.uranus, isRetrograde: isOuterPlanetRetrograde('Uranus', currentTime) },
+      { name: 'Neptune', symbol: '♆', ...planets.neptune, isRetrograde: isOuterPlanetRetrograde('Neptune', currentTime) },
+      { name: 'Pluto', symbol: '♇', ...planets.pluto, isRetrograde: isOuterPlanetRetrograde('Pluto', currentTime) },
+      { name: 'North Node', symbol: '☊', ...nodes.north, isRetrograde: true }, // Nodes always retrograde
+      { name: 'Chiron', symbol: '⚷', ...chiron, isRetrograde: false },
+      { name: 'Lilith', symbol: '⚸', ...lilith, isRetrograde: false },
+    ];
+    return bodies;
+  }, [planets, nodes, chiron, lilith, currentTime]);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Clock className="text-primary" size={24} />
+          <h3 className="font-serif text-xl">Live Planetary Positions</h3>
+        </div>
+        <div className="text-right">
+          <div className="text-sm font-medium text-foreground">
+            {currentTime.toLocaleTimeString('en-US', { 
+              hour: '2-digit', 
+              minute: '2-digit', 
+              second: '2-digit',
+              hour12: true 
+            })}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {currentTime.toLocaleDateString('en-US', { 
+              weekday: 'long',
+              month: 'long', 
+              day: 'numeric', 
+              year: 'numeric' 
+            })}
+          </div>
+          {userLocation && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1 justify-end">
+              <MapPin size={10} />
+              {userLocation}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Planetary Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+        {allBodies.map((body) => (
+          <div 
+            key={body.name} 
+            className="p-3 rounded-sm bg-secondary border border-border hover:bg-secondary/80 transition-colors"
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xl">{body.symbol}</span>
+              <span className="font-medium text-foreground text-sm">
+                {body.name}
+                {body.isRetrograde && <span className="text-red-500 ml-1">℞</span>}
+              </span>
+            </div>
+            <div className="text-lg font-semibold text-primary">
+              {body.degree}° {getSignSymbol(body.signName)} {body.signName}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <p className="text-xs text-muted-foreground text-center italic">
+        Positions update in real-time • ℞ = Retrograde
+      </p>
+    </div>
+  );
+};
 
 // Get current pattern analysis
 const getCurrentPatterns = (date: Date) => {
@@ -405,21 +537,45 @@ const CurrentPatternsPanel = ({ date }: { date: Date }) => {
         </div>
       )}
 
-      {/* Rare Aspects */}
+      {/* Rare Aspects - with positions */}
       {patterns.rareAspects.length > 0 && (
         <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-sm border border-purple-200 dark:border-purple-700">
           <h4 className="font-semibold text-foreground mb-3">Rare Aspects Active</h4>
-          <div className="space-y-2">
-            {patterns.rareAspects.map((aspect: RareAspect, i: number) => (
-              <div key={i} className="flex items-center gap-3 p-2 bg-background rounded-sm">
-                <span className="text-lg">{getPlanetSymbol(aspect.planet1.toLowerCase())}</span>
-                <span className="text-primary font-medium">{aspect.symbol}</span>
-                <span className="text-lg">{getPlanetSymbol(aspect.planet2.toLowerCase())}</span>
-                <span className="text-sm text-muted-foreground ml-auto">
-                  {aspect.type} ({aspect.orb}° orb)
-                </span>
-              </div>
-            ))}
+          <div className="space-y-3">
+            {patterns.rareAspects.map((aspect: RareAspect, i: number) => {
+              // Get current positions for the planets in this aspect
+              const p1Key = aspect.planet1.toLowerCase() as keyof PlanetaryPositions;
+              const p2Key = aspect.planet2.toLowerCase() as keyof PlanetaryPositions;
+              const p1Pos = patterns.planets[p1Key];
+              const p2Pos = patterns.planets[p2Key];
+              
+              return (
+                <div key={i} className="p-3 bg-background rounded-sm border border-border">
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <span className="text-xl">{getPlanetSymbol(aspect.planet1.toLowerCase())}</span>
+                    <span className="text-primary font-medium text-lg">{aspect.symbol}</span>
+                    <span className="text-xl">{getPlanetSymbol(aspect.planet2.toLowerCase())}</span>
+                    <span className="text-sm text-muted-foreground ml-auto">
+                      {aspect.type} ({aspect.orb}° orb)
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{aspect.planet1}:</span>
+                      <span className="text-primary">
+                        {p1Pos?.degree}° {p1Pos?.sign} {p1Pos?.signName}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{aspect.planet2}:</span>
+                      <span className="text-primary">
+                        {p2Pos?.degree}° {p2Pos?.sign} {p2Pos?.signName}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
@@ -459,6 +615,7 @@ const CurrentPatternsPanel = ({ date }: { date: Date }) => {
 
 export const PatternsView = ({ year }: PatternsViewProps) => {
   const [selectedDate] = useState(new Date());
+  const { userData } = useUserData();
 
   return (
     <div className="max-w-4xl mx-auto space-y-12">
@@ -471,6 +628,11 @@ export const PatternsView = ({ year }: PatternsViewProps) => {
       <p className="text-muted-foreground">
         Track retrograde patterns, major planetary conjunctions, and current cosmic configurations.
       </p>
+
+      {/* Live Planetary Positions - NEW SECTION */}
+      <section className="rounded-lg border border-border bg-card p-6">
+        <LivePlanetaryPositions userLocation={userData?.birthLocation} />
+      </section>
 
       {/* Current Patterns */}
       <section className="rounded-lg border border-border bg-card p-6">
