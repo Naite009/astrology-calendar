@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { X, Plus, Users, RefreshCw, Check, Eye, ChevronDown, ChevronUp, ClipboardPaste, Upload, Image, Loader2, Download, CloudOff, Cloud } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { X, Plus, Users, RefreshCw, Check, Eye, ChevronDown, ChevronUp, ClipboardPaste, Upload, Image, Loader2, Download, CloudOff, Cloud, LogIn, LogOut, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChart';
 import { getPlanetSymbol, calculateNatalChart, detectTimezoneFromLocation, calculatePlacidusHouseCusps } from '@/lib/astrology';
@@ -220,6 +221,8 @@ interface CloudBackupState {
   lastSync: Date | null;
   cloudChartCount: number;
   hasCloudData: boolean;
+  isAuthenticated: boolean;
+  user?: { id: string; email?: string } | null;
   deviceId: string;
   syncNow: () => Promise<void>;
   restoreFromCloud: () => Promise<boolean>;
@@ -275,6 +278,7 @@ export const ChartLibrary = ({
   onDeleteChart,
   cloudBackup,
 }: ChartLibraryProps) => {
+  const navigate = useNavigate();
   const [editingChart, setEditingChart] = useState<'new' | 'user' | NatalChart | null>(null);
   const [viewingChart, setViewingChart] = useState<NatalChart | null>(null);
   const [showTransits, setShowTransits] = useState(true);
@@ -773,36 +777,75 @@ export const ChartLibrary = ({
     <div className="max-w-4xl mx-auto">
       {/* Cloud Sync Status Banner */}
       {cloudBackup && (
-        <div className="mb-6 flex items-center justify-between rounded-sm border border-border bg-secondary/50 px-4 py-3">
-          <div className="flex items-center gap-3">
-            {cloudBackup.isSyncing ? (
-              <RefreshCw size={16} className="animate-spin text-primary" />
-            ) : cloudBackup.hasCloudData ? (
-              <Cloud size={16} className="text-primary" />
-            ) : (
-              <CloudOff size={16} className="text-muted-foreground" />
-            )}
-            <span className="text-sm text-muted-foreground">
-              {cloudBackup.isSyncing ? 'Syncing...' : 
-               cloudBackup.lastSync ? `Last synced ${cloudBackup.lastSync.toLocaleTimeString()}` :
-               'Not synced yet'}
-            </span>
-            {cloudBackup.cloudChartCount > 0 && (
-              <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
-                {cloudBackup.cloudChartCount} chart{cloudBackup.cloudChartCount !== 1 ? 's' : ''} backed up
+        <div className="mb-6 flex flex-col gap-3 rounded-sm border border-border bg-secondary/50 px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {cloudBackup.isAuthenticated ? (
+                <User size={16} className="text-primary" />
+              ) : cloudBackup.isSyncing ? (
+                <RefreshCw size={16} className="animate-spin text-primary" />
+              ) : cloudBackup.hasCloudData ? (
+                <Cloud size={16} className="text-primary" />
+              ) : (
+                <CloudOff size={16} className="text-muted-foreground" />
+              )}
+              <span className="text-sm text-muted-foreground">
+                {cloudBackup.isAuthenticated 
+                  ? 'Signed in — charts sync across all devices'
+                  : cloudBackup.isSyncing 
+                    ? 'Syncing...' 
+                    : cloudBackup.lastSync 
+                      ? `Last synced ${cloudBackup.lastSync.toLocaleTimeString()}` 
+                      : 'Not synced yet'
+                }
               </span>
-            )}
+              {cloudBackup.cloudChartCount > 0 && (
+                <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
+                  {cloudBackup.cloudChartCount} chart{cloudBackup.cloudChartCount !== 1 ? 's' : ''} backed up
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => cloudBackup.syncNow()}
+                disabled={cloudBackup.isSyncing}
+                className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-primary hover:underline disabled:opacity-50"
+              >
+                <RefreshCw size={12} />
+                Sync Now
+              </button>
+              {!cloudBackup.isAuthenticated ? (
+                <button
+                  onClick={() => navigate('/auth')}
+                  className="flex items-center gap-1.5 border border-primary bg-primary px-3 py-1.5 text-[10px] uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary/90 rounded-sm"
+                >
+                  <LogIn size={12} />
+                  Sign In to Sync Across Devices
+                </button>
+              ) : (
+                <button
+                  onClick={async () => {
+                    const { supabase } = await import('@/integrations/supabase/client');
+                    await supabase.auth.signOut();
+                    toast('Signed out');
+                  }}
+                  className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground"
+                >
+                  <LogOut size={12} />
+                  Sign Out
+                </button>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => cloudBackup.syncNow()}
-              disabled={cloudBackup.isSyncing}
-              className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-primary hover:underline disabled:opacity-50"
-            >
-              <RefreshCw size={12} />
-              Sync Now
-            </button>
-          </div>
+          {!cloudBackup.isAuthenticated ? (
+            <p className="text-xs text-muted-foreground">
+              Your charts are currently saved to this device only. Sign in to access them from any computer.
+            </p>
+          ) : cloudBackup.user?.email && (
+            <p className="text-xs text-muted-foreground">
+              Signed in as {cloudBackup.user.email}
+            </p>
+          )}
         </div>
       )}
 
