@@ -285,20 +285,32 @@ export const AstroCalendar = () => {
                 <Orbit size={14} />
                 Patterns
               </button>
-              {/* Sacred Script - only visible when a chart is loaded */}
-              {(userNatalChart || savedCharts.length > 0) && (
-                <button
-                  onClick={() => setViewMode("sacred-script")}
-                  className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
-                    viewMode === "sacred-script"
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Scroll size={14} />
-                  Script
-                </button>
-              )}
+              {/* Sacred Script */}
+              <button
+                onClick={() => {
+                  if (userNatalChart || savedCharts.length > 0) {
+                    setViewMode("sacred-script");
+                  } else {
+                    // No chart loaded yet — send user to Charts to add one.
+                    setViewMode("charts");
+                  }
+                }}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "sacred-script"
+                    ? "bg-primary text-primary-foreground"
+                    : userNatalChart || savedCharts.length > 0
+                      ? "text-muted-foreground hover:text-foreground"
+                      : "text-muted-foreground/60 hover:text-muted-foreground"
+                }`}
+                title={
+                  userNatalChart || savedCharts.length > 0
+                    ? "Sacred Script"
+                    : "Add a chart in Charts to unlock Sacred Script"
+                }
+              >
+                <Scroll size={14} />
+                Script
+              </button>
             </div>
 
             {userData && (
