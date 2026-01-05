@@ -30,9 +30,10 @@ export const VenusStarPointTracker = ({ date, activeChart }: VenusStarPointTrack
     return signIndex * 30 + pos.degree + (pos.minutes || 0) / 60;
   };
   
-  // Calculate personal significance if we have a chart
-  const personalSig = starPointToday && activeChart 
-    ? calculateVenusStarPointSignificance(starPointToday, {
+  // Calculate personal significance for the next star point (or today's if it's a star point day)
+  const relevantStarPoint = starPointToday || cycleStatus.nextStarPoint;
+  const personalSig = activeChart 
+    ? calculateVenusStarPointSignificance(relevantStarPoint, {
         positions: activeChart.planets ? Object.fromEntries(
           Object.entries(activeChart.planets)
             .filter(([_, v]) => v && v.sign)
@@ -40,6 +41,14 @@ export const VenusStarPointTracker = ({ date, activeChart }: VenusStarPointTrack
         ) : undefined
       })
     : null;
+  
+  // Get natal Venus info
+  const natalVenus = activeChart?.planets?.Venus;
+  const natalAscendant = activeChart?.planets?.Ascendant;
+  const isVenusRuled = natalAscendant?.sign === 'Libra' || natalAscendant?.sign === 'Taurus';
+  
+  // Check if natal Venus is in the same sign as current cycle
+  const venusReturnSign = natalVenus?.sign === relevantStarPoint.sign;
   
   // Find historical pattern (8 years ago = same star point position)
   const historicalMatch = VENUS_STAR_POINTS.find(sp => {
@@ -145,8 +154,97 @@ export const VenusStarPointTracker = ({ date, activeChart }: VenusStarPointTrack
             </div>
           )}
           
-          {/* Personal Significance */}
-          {personalSig && personalSig.score > 0 && (
+          {/* Personal Chart Connection - show for any chart, not just star point days */}
+          {activeChart && (
+            <div className="p-4 bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/30 rounded-sm border border-pink-200 dark:border-pink-800">
+              <div className="text-[10px] uppercase tracking-widest text-pink-600 dark:text-pink-400 mb-3">
+                ♀ Your Personal Venus Connection
+              </div>
+              
+              {/* Natal Venus info */}
+              {natalVenus && (
+                <div className="mb-4">
+                  <div className="font-medium text-foreground mb-1">
+                    Your Natal Venus: {natalVenus.degree}° {getSignSymbol(natalVenus.sign)} {natalVenus.sign}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {natalVenus.sign === 'Taurus' || natalVenus.sign === 'Libra' 
+                      ? `Venus is dignified in ${natalVenus.sign} — relationships, beauty, and values come naturally to you.`
+                      : natalVenus.sign === 'Aries' || natalVenus.sign === 'Scorpio'
+                      ? `Venus in ${natalVenus.sign} is in detriment — you love intensely but may struggle with compromise.`
+                      : natalVenus.sign === 'Virgo'
+                      ? `Venus in Virgo is in fall — you show love through service but may be self-critical about worthiness.`
+                      : natalVenus.sign === 'Pisces'
+                      ? `Venus is exalted in Pisces — you love unconditionally and are deeply romantic/artistic.`
+                      : `Venus in ${natalVenus.sign} colors how you love, attract, and value things.`
+                    }
+                  </div>
+                </div>
+              )}
+              
+              {/* Venus-ruled chart */}
+              {isVenusRuled && (
+                <div className="p-3 bg-pink-100 dark:bg-pink-900/40 rounded-sm mb-3">
+                  <div className="font-semibold text-pink-700 dark:text-pink-300 text-sm">
+                    ⭐ Venus Rules Your Chart!
+                  </div>
+                  <div className="text-sm text-foreground">
+                    With {natalAscendant?.sign} rising, Venus is your chart ruler. ALL Venus Star Points are personally significant for you — they activate your core identity and life direction.
+                  </div>
+                </div>
+              )}
+              
+              {/* Venus return sign match */}
+              {venusReturnSign && (
+                <div className="p-3 bg-amber-100 dark:bg-amber-900/40 rounded-sm mb-3">
+                  <div className="font-semibold text-amber-700 dark:text-amber-300 text-sm">
+                    🌟 Venus Return Activation!
+                  </div>
+                  <div className="text-sm text-foreground">
+                    The {starPointToday ? 'current' : 'upcoming'} Star Point at {relevantStarPoint.degree}° {relevantStarPoint.sign} is in your natal Venus sign! This is a powerful "Venus Return" moment — themes of love, money, and self-worth from your birth are being reactivated.
+                  </div>
+                </div>
+              )}
+              
+              {/* Significance score and aspects */}
+              {personalSig && personalSig.score > 0 && (
+                <div className="mt-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm font-medium text-foreground">
+                      {starPointToday ? "Today's" : "Next"} Star Point Significance for You:
+                    </div>
+                    <div className={`text-lg font-bold ${personalSig.score >= 70 ? 'text-pink-600' : personalSig.score >= 40 ? 'text-amber-600' : 'text-muted-foreground'}`}>
+                      {personalSig.score}/100
+                    </div>
+                  </div>
+                  {personalSig.reasons.length > 0 && (
+                    <ul className="space-y-1.5">
+                      {personalSig.reasons.map((reason, i) => (
+                        <li key={i} className="text-sm text-foreground flex items-start gap-2">
+                          <span className="text-pink-500">•</span>
+                          {reason}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+              
+              {/* Current cycle meaning for you */}
+              <div className="mt-3 pt-3 border-t border-pink-200 dark:border-pink-800">
+                <div className="text-sm text-foreground">
+                  <span className="font-medium">What this phase means for you:</span>{' '}
+                  {cycleStatus.phase === 'morning' 
+                    ? `As Venus rises before the Sun, you're in an internal refinement period. With your Venus in ${natalVenus?.sign || 'your sign'}, this is time to privately reassess what you truly value and whether your current relationships/finances align with that.`
+                    : `As Venus follows the Sun, you're in an external expression period. With your Venus in ${natalVenus?.sign || 'your sign'}, this is time to actively attract what you want — dating, networking, beautifying your space, asking for raises.`
+                  }
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Personal Significance - keep for backwards compat but hide if we showed above */}
+          {!activeChart && personalSig && personalSig.score > 0 && (
             <div className="p-4 bg-secondary rounded-sm">
               <div className="flex items-center justify-between mb-3">
                 <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
