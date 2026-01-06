@@ -9,14 +9,15 @@ interface OppositionPairsCardProps {
 }
 
 export const OppositionPairsCard = ({ sunSign, moonSign }: OppositionPairsCardProps) => {
-  // Check if Sun and Moon are in opposing signs
+  // Check if Sun and Moon are in ACTUALLY opposing signs (not the same sign)
   const sunOpposition = getOppositionPairForSign(sunSign);
-  const moonOpposition = getOppositionPairForSign(moonSign);
   
-  const areOpposed = sunOpposition && 
-    (sunOpposition.sign1 === moonSign || sunOpposition.sign2 === moonSign);
+  // Sun and Moon must be in different signs AND be in the same opposition pair
+  const areActuallyOpposed = sunOpposition && sunSign !== moonSign && 
+    ((sunOpposition.sign1 === sunSign && sunOpposition.sign2 === moonSign) ||
+     (sunOpposition.sign2 === sunSign && sunOpposition.sign1 === moonSign));
   
-  if (!areOpposed || !sunOpposition) return null;
+  if (!areActuallyOpposed || !sunOpposition) return null;
   
   return (
     <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-rose-50 dark:from-amber-950/40 dark:via-orange-950/40 dark:to-rose-950/40 p-6 rounded-xl border-2 border-amber-400 dark:border-amber-600">
