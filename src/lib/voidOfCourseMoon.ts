@@ -126,26 +126,41 @@ const findNextMoonSignChange = (startDate: Date): { time: Date; newSign: string 
 };
 
 // Find all Moon aspects between two times, return sorted by time
+// Uses a more thorough search to catch all aspects accurately
 const findMoonAspectsBetween = (startTime: Date, endTime: Date): AspectInfo[] => {
   const aspects: AspectInfo[] = [];
-  const foundAspects = new Set<string>(); // Track unique aspects
+  const foundAspects = new Map<string, AspectInfo>(); // Track unique aspects with best orb
   
   let current = new Date(startTime);
-  const step = 30 * 60 * 1000; // 30 minutes
+  // Use 15 minute steps for better accuracy (Moon moves ~0.5° per hour)
+  const step = 15 * 60 * 1000;
   
-  while (current.getTime() < endTime.getTime()) {
-    const currentAspects = getMoonAspectsAtTime(current);
+  while (current.getTime() <= endTime.getTime()) {
+    const moonLon = getMoonLongitude(current);
     
-    for (const asp of currentAspects) {
-      const key = `${asp.planet}-${asp.aspectName}`;
-      if (!foundAspects.has(key)) {
-        foundAspects.add(key);
-        // Find more precise time when aspect is exact
-        const exactTime = findExactAspectTime(current, asp, endTime);
-        if (exactTime) {
-          aspects.push({ ...asp, time: exactTime, orb: 0 });
-        } else {
-          aspects.push(asp);
+    for (const planet of planets) {
+      const planetLon = getPlanetLongitude(planet.body, current);
+      
+      for (const aspect of MAJOR_ASPECTS) {
+        let diff = Math.abs(moonLon - planetLon);
+        if (diff > 180) diff = 360 - diff;
+        
+        const orbDiff = Math.abs(diff - aspect.angle);
+        
+        // Use tight orb (1°) to detect when aspect is very close to exact
+        if (orbDiff <= 1) {
+          const key = `${planet.name}-${aspect.name}`;
+          const existing = foundAspects.get(key);
+          
+          if (!existing || orbDiff < existing.orb) {
+            foundAspects.set(key, {
+              planet: planet.name,
+              aspectName: aspect.name,
+              angle: aspect.angle,
+              orb: orbDiff,
+              time: new Date(current),
+            });
+          }
         }
       }
     }
@@ -153,35 +168,62 @@ const findMoonAspectsBetween = (startTime: Date, endTime: Date): AspectInfo[] =>
     current = new Date(current.getTime() + step);
   }
   
+  // Now refine each found aspect to find the exact time
+  for (const [key, asp] of foundAspects) {
+    const exactTime = findExactAspectTime(asp.time, asp, endTime);
+    if (exactTime && exactTime.getTime() >= startTime.getTime() && exactTime.getTime() <= endTime.getTime()) {
+      aspects.push({ ...asp, time: exactTime, orb: 0 });
+    }
+  }
+  
   // Sort by time
   aspects.sort((a, b) => a.time.getTime() - b.time.getTime());
   return aspects;
 };
 
-// Find more precise time when aspect is exact
+// Find more precise time when aspect is exact using binary search for efficiency
 const findExactAspectTime = (nearTime: Date, aspectInfo: AspectInfo, endTime: Date): Date | null => {
-  // Search +/- 2 hours from nearTime
-  const searchStart = new Date(Math.max(nearTime.getTime() - 2 * 60 * 60 * 1000, 0));
-  const searchEnd = new Date(Math.min(nearTime.getTime() + 2 * 60 * 60 * 1000, endTime.getTime()));
+  const planet = planets.find(p => p.name === aspectInfo.planet);
+  if (!planet) return nearTime;
+  
+  // Search +/- 1 hour from nearTime for initial pass
+  const searchStart = new Date(Math.max(nearTime.getTime() - 60 * 60 * 1000, 0));
+  const searchEnd = new Date(Math.min(nearTime.getTime() + 60 * 60 * 1000, endTime.getTime()));
   
   let bestTime = nearTime;
-  let bestOrb = aspectInfo.orb;
+  let bestOrb = Infinity;
   
+  // First pass: 2 minute steps
   let current = new Date(searchStart);
   while (current.getTime() <= searchEnd.getTime()) {
     const moonLon = getMoonLongitude(current);
-    const planet = planets.find(p => p.name === aspectInfo.planet);
-    if (planet) {
-      const planetLon = getPlanetLongitude(planet.body, current);
-      let diff = Math.abs(moonLon - planetLon);
-      if (diff > 180) diff = 360 - diff;
-      const orb = Math.abs(diff - aspectInfo.angle);
-      if (orb < bestOrb) {
-        bestOrb = orb;
-        bestTime = new Date(current);
-      }
+    const planetLon = getPlanetLongitude(planet.body, current);
+    let diff = Math.abs(moonLon - planetLon);
+    if (diff > 180) diff = 360 - diff;
+    const orb = Math.abs(diff - aspectInfo.angle);
+    if (orb < bestOrb) {
+      bestOrb = orb;
+      bestTime = new Date(current);
     }
-    current = new Date(current.getTime() + 5 * 60 * 1000); // 5 minute steps
+    current = new Date(current.getTime() + 2 * 60 * 1000);
+  }
+  
+  // Second pass: 15 second steps around best time for precision
+  const fineStart = new Date(bestTime.getTime() - 5 * 60 * 1000);
+  const fineEnd = new Date(bestTime.getTime() + 5 * 60 * 1000);
+  
+  current = new Date(fineStart);
+  while (current.getTime() <= fineEnd.getTime()) {
+    const moonLon = getMoonLongitude(current);
+    const planetLon = getPlanetLongitude(planet.body, current);
+    let diff = Math.abs(moonLon - planetLon);
+    if (diff > 180) diff = 360 - diff;
+    const orb = Math.abs(diff - aspectInfo.angle);
+    if (orb < bestOrb) {
+      bestOrb = orb;
+      bestTime = new Date(current);
+    }
+    current = new Date(current.getTime() + 15 * 1000); // 15 seconds
   }
   
   return bestTime;
