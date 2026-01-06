@@ -8,6 +8,35 @@ import { getDecan, Decan } from './decans';
 // ELEMENT & MODALITY COMBINATIONS
 // ============================================================================
 
+// Triple element combinations (Sun, Moon, Rising all same element)
+export const TRIPLE_ELEMENT_COMBINATIONS: Record<string, { description: string; dynamic: string; challenge: string; gift: string }> = {
+  'Fire': {
+    description: 'Triple Fire creates an unstoppable force of pure yang energy. With Sun, Moon, AND Rising all in Fire signs, you are a living flame—passionate, courageous, and perpetually in motion.',
+    dynamic: 'Your identity, emotions, AND outward persona all demand action, inspiration, and forward momentum. There is no internal brake—you ARE pure fire from every angle.',
+    challenge: 'Epic burnout potential, impatience with anything slow, may dominate conversations/situations, can miss emotional subtlety entirely. Without grounding, you consume yourself.',
+    gift: 'Unstoppable inspiration, magnetic leadership, ability to ignite movements and transform others through sheer enthusiasm. You embody courage itself.',
+  },
+  'Earth': {
+    description: 'Triple Earth creates an unshakeable foundation. With Sun, Moon, AND Rising all in Earth signs, you are bedrock—solid, sensual, and supremely practical.',
+    dynamic: 'Your identity, emotions, AND outward persona all require tangible security, material comfort, and concrete results. You are ALL about building in the real world.',
+    challenge: 'Resistance to change can become total rigidity, may miss spiritual dimensions, difficulty with abstractions. Can become too focused on material security.',
+    gift: 'Incredible manifesting power, patience that outlasts everything, ability to build empires. You embody reliability itself.',
+  },
+  'Air': {
+    description: 'Triple Air creates pure mind—a being of thoughts, connections, and endless intellectual curiosity. With Sun, Moon, AND Rising all in Air signs, you exist in the realm of ideas.',
+    dynamic: 'Your identity, emotions, AND outward persona all thrive on mental stimulation, social connection, and variety. You process everything through intellect—even feelings become thoughts.',
+    challenge: 'Profound difficulty grounding into the body, may intellectualize all emotions away, scattered energy. Without earth, ideas never become real. Can seem detached or cold.',
+    gift: 'Brilliant communication across all domains, seeing every perspective simultaneously, natural teacher, networker, and synthesizer of ideas. You embody thought itself.',
+  },
+  'Water': {
+    description: 'Triple Water creates oceanic emotional depth. With Sun, Moon, AND Rising all in Water signs, you are pure feeling—psychic, sensitive, and profoundly intuitive.',
+    dynamic: 'Your identity, emotions, AND outward persona all navigate through feeling. You absorb atmospheres, read undercurrents, and live in emotional dimensions others cannot access.',
+    challenge: 'Overwhelm without boundaries, absorbing everyone\'s pain, difficulty with decisive action, may drown in feelings. Without fire, you lack assertive power.',
+    gift: 'Profound empathy, artistic/healing genius, psychic sensitivity, connection to collective unconscious. You embody feeling itself.',
+  },
+};
+
+// Double element combinations (two of three same element)
 export const ELEMENT_COMBINATIONS: Record<string, { description: string; dynamic: string; challenge: string; gift: string }> = {
   'Fire-Fire': {
     description: 'Double fire creates an intensely passionate, action-oriented nature. You burn bright with enthusiasm and courage.',
@@ -71,6 +100,26 @@ export const ELEMENT_COMBINATIONS: Record<string, { description: string; dynamic
   },
 };
 
+// Triple modality combinations (Sun, Moon, Rising all same modality)
+export const TRIPLE_MODALITY_COMBINATIONS: Record<string, { description: string; energy: string; challenge: string }> = {
+  'Cardinal': {
+    description: 'Triple Cardinal creates pure initiating force. With Sun, Moon, AND Rising all in Cardinal signs, you are built to BEGIN—every part of you launches, leads, and sets direction.',
+    energy: 'Maximum action orientation. You initiate from your core (Sun), feel compelled to start things emotionally (Moon), and present as a leader to the world (Rising). You ARE the spark.',
+    challenge: 'May start endlessly but finish rarely. Restlessness becomes existential. Difficulty with maintenance, follow-through, and the "boring" middle of projects.',
+  },
+  'Fixed': {
+    description: 'Triple Fixed creates absolute determination incarnate. With Sun, Moon, AND Rising all in Fixed signs, you are immovable force—once set, nothing shifts you.',
+    energy: 'Maximum persistence. Your identity (Sun), emotions (Moon), and outward presentation (Rising) all resist change and commit completely. You ARE stability itself.',
+    challenge: 'Rigidity becomes your shadow. Difficulty adapting even when change is clearly needed. May miss opportunities by refusing to pivot.',
+  },
+  'Mutable': {
+    description: 'Triple Mutable creates pure adaptability—a shapeshifter who flows with every current. With Sun, Moon, AND Rising all in Mutable signs, you adjust to everything.',
+    energy: 'Maximum flexibility. Your identity (Sun), emotions (Moon), and outward presentation (Rising) all morph to fit circumstances. You ARE the flow itself.',
+    challenge: 'May lose sense of self entirely. Direction becomes impossible. Others may see you as inconsistent or unreliable. Need external structure desperately.',
+  },
+};
+
+// Double modality combinations (two of three same modality)
 export const MODALITY_COMBINATIONS: Record<string, { description: string; energy: string; challenge: string }> = {
   'Cardinal-Cardinal': {
     description: 'Double cardinal energy = pure initiation. You are built to start things, lead, and set direction.',
@@ -385,9 +434,10 @@ export const generateCharacterSynthesis = (
   const isTripleElement = uniqueElements.length === 1;
   const isDoubleElement = uniqueElements.length === 2;
   
-  // For display and lookup
-  const elementKey = isTripleElement ? `${sunElement}-${sunElement}` : [sunElement, moonElement].sort().join('-');
-  const elementCombo = ELEMENT_COMBINATIONS[elementKey] || ELEMENT_COMBINATIONS[`${sunElement}-${moonElement}`] || ELEMENT_COMBINATIONS[`${moonElement}-${sunElement}`];
+  // Use Triple combinations when all three are the same element, otherwise use Double combinations
+  const elementCombo = isTripleElement 
+    ? TRIPLE_ELEMENT_COMBINATIONS[sunElement] 
+    : (ELEMENT_COMBINATIONS[`${sunElement}-${moonElement}`] || ELEMENT_COMBINATIONS[`${moonElement}-${sunElement}`] || ELEMENT_COMBINATIONS[[sunElement, moonElement].sort().join('-')]);
   const elementDisplayLabel = isTripleElement ? `Triple ${sunElement}` : isDoubleElement ? `Double ${allElements.filter(e => allElements.filter(x => x === e).length >= 2)[0]} (${allElements.join(', ')})` : `${sunElement}, ${moonElement}, ${risingElement}`;
   
   // Modality combination (all three: Sun, Moon, Rising)
@@ -396,8 +446,10 @@ export const generateCharacterSynthesis = (
   const isTripleModality = uniqueModalities.length === 1;
   const isDoubleModality = uniqueModalities.length === 2;
   
-  const modalityKey = isTripleModality ? `${sunModality}-${sunModality}` : [sunModality, moonModality].sort().join('-');
-  const modalityCombo = MODALITY_COMBINATIONS[modalityKey] || MODALITY_COMBINATIONS[`${sunModality}-${moonModality}`] || MODALITY_COMBINATIONS[`${moonModality}-${sunModality}`];
+  // Use Triple combinations when all three are the same modality, otherwise use Double combinations
+  const modalityCombo = isTripleModality 
+    ? TRIPLE_MODALITY_COMBINATIONS[sunModality] 
+    : (MODALITY_COMBINATIONS[`${sunModality}-${moonModality}`] || MODALITY_COMBINATIONS[`${moonModality}-${sunModality}`] || MODALITY_COMBINATIONS[[sunModality, moonModality].sort().join('-')]);
   const modalityDisplayLabel = isTripleModality ? `Triple ${sunModality}` : isDoubleModality ? `Double ${allModalities.filter(m => allModalities.filter(x => x === m).length >= 2)[0]} (${allModalities.join(', ')})` : `${sunModality}, ${moonModality}, ${risingModality}`;
   
   // House meanings
