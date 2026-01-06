@@ -11,13 +11,15 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Printer, ChevronDown, ChevronUp, Scroll, Star, Moon, Sun, Flame, Mountain, Wind, Droplets, Sparkles, BookOpen, Upload } from 'lucide-react';
 import { DocumentUploader } from '@/components/DocumentUploader';
 import { 
-  calculateElementalBalance, 
+  calculateElementalBalance,
+  calculateModalityBalance,
   getCharacterCards, 
   getLifeLesson, 
   generateFinalDirective,
   getElementGuidance,
   calculateAge,
   ElementalBalance,
+  ModalityBalance,
   CharacterCard,
   getPlanetHouse,
 } from '@/lib/sacredScriptHelpers';
@@ -152,6 +154,7 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
   const age = calculateAge(natalChart.birthDate);
   const detailedSaturnCycles = calculateDetailedSaturnCycles(natalChart, currentDate);
   const elements = calculateElementalBalance(natalChart);
+  const modalities = calculateModalityBalance(natalChart);
   const characterCards = getCharacterCards(natalChart);
   const patterns = detectChartPatterns(natalChart);
   const lifeLesson = getLifeLesson(natalChart);
@@ -693,6 +696,121 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
           
           {/* Elemental Balance Visual */}
           <ElementalBalanceVisual elements={elements} />
+          
+          {/* Modality Balance Visual */}
+          <ModalityBalanceVisual modalities={modalities} />
+          
+          {/* North Node - Soul Direction */}
+          {natalChart.planets.NorthNode && (
+            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/40 dark:to-purple-950/40 p-4 rounded-lg border border-indigo-200 dark:border-indigo-800">
+              <h4 className="font-medium mb-2 flex items-center gap-2">
+                <Sparkles className="text-indigo-500" size={18} />
+                North Node — Soul Direction
+              </h4>
+              <p className="text-sm mb-2">
+                <span className="font-medium">{natalChart.planets.NorthNode.sign}</span> at {natalChart.planets.NorthNode.degree}°
+                {getPlanetHouse(natalChart, 'NorthNode') && ` • House ${getPlanetHouse(natalChart, 'NorthNode')}`}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {getNorthNodeDescription(natalChart.planets.NorthNode.sign)}
+              </p>
+              {natalChart.planets.SouthNode && (
+                <p className="text-xs text-muted-foreground mt-2 pt-2 border-t border-current/10">
+                  <span className="font-medium">South Node ({natalChart.planets.SouthNode.sign}):</span> Where you've been—your comfort zone, past-life gifts, and what to release.
+                </p>
+              )}
+            </div>
+          )}
+          
+          {/* Angular Points: ASC, IC, DC, MC */}
+          <div className="bg-gradient-to-r from-slate-50 to-zinc-50 dark:from-slate-950/40 dark:to-zinc-950/40 p-4 rounded-lg border border-slate-200 dark:border-slate-800">
+            <h4 className="font-medium mb-3 flex items-center gap-2">
+              <Star className="text-slate-500" size={18} />
+              Angular Points — The Four Angles
+            </h4>
+            <div className="grid grid-cols-2 gap-3">
+              {/* Ascendant */}
+              <div className="bg-background/50 p-3 rounded">
+                <p className="text-xs font-medium text-purple-600 dark:text-purple-400">ASC (1st House Cusp)</p>
+                <p className="text-sm font-medium">
+                  {natalChart.houseCusps?.house1?.sign || natalChart.planets.Ascendant?.sign || 'Unknown'}
+                  {(natalChart.houseCusps?.house1?.degree ?? natalChart.planets.Ascendant?.degree) !== undefined && 
+                    ` ${natalChart.houseCusps?.house1?.degree ?? natalChart.planets.Ascendant?.degree}°`}
+                </p>
+                <p className="text-xs text-muted-foreground">Your mask, how others first see you</p>
+              </div>
+              
+              {/* IC */}
+              <div className="bg-background/50 p-3 rounded">
+                <p className="text-xs font-medium text-teal-600 dark:text-teal-400">IC (4th House Cusp)</p>
+                <p className="text-sm font-medium">
+                  {natalChart.houseCusps?.house4?.sign || 'Unknown'}
+                  {natalChart.houseCusps?.house4?.degree !== undefined && ` ${natalChart.houseCusps.house4.degree}°`}
+                </p>
+                <p className="text-xs text-muted-foreground">Your roots, home, private self, ancestry</p>
+              </div>
+              
+              {/* Descendant */}
+              <div className="bg-background/50 p-3 rounded">
+                <p className="text-xs font-medium text-rose-600 dark:text-rose-400">DC (7th House Cusp)</p>
+                <p className="text-sm font-medium">
+                  {natalChart.houseCusps?.house7?.sign || 'Unknown'}
+                  {natalChart.houseCusps?.house7?.degree !== undefined && ` ${natalChart.houseCusps.house7.degree}°`}
+                </p>
+                <p className="text-xs text-muted-foreground">What you seek in partners, "the Other"</p>
+              </div>
+              
+              {/* Midheaven */}
+              <div className="bg-background/50 p-3 rounded">
+                <p className="text-xs font-medium text-amber-600 dark:text-amber-400">MC (10th House Cusp)</p>
+                <p className="text-sm font-medium">
+                  {natalChart.houseCusps?.house10?.sign || 'Unknown'}
+                  {natalChart.houseCusps?.house10?.degree !== undefined && ` ${natalChart.houseCusps.house10.degree}°`}
+                </p>
+                <p className="text-xs text-muted-foreground">Your public image, career calling, legacy</p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Goddess Asteroids */}
+          {(natalChart.planets.Ceres || natalChart.planets.Pallas || natalChart.planets.Juno || natalChart.planets.Vesta) && (
+            <div className="bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-950/40 dark:to-rose-950/40 p-4 rounded-lg border border-pink-200 dark:border-pink-800">
+              <h4 className="font-medium mb-3 flex items-center gap-2">
+                <Sparkles className="text-pink-500" size={18} />
+                Goddess Asteroids — The Feminine Powers
+              </h4>
+              <div className="grid grid-cols-2 gap-3">
+                {natalChart.planets.Ceres && (
+                  <div className="bg-background/50 p-3 rounded">
+                    <p className="text-xs font-medium text-green-600 dark:text-green-400">Ceres — The Great Mother</p>
+                    <p className="text-sm font-medium">{natalChart.planets.Ceres.sign} {natalChart.planets.Ceres.degree}°</p>
+                    <p className="text-xs text-muted-foreground">How you nurture and need to be nurtured</p>
+                  </div>
+                )}
+                {natalChart.planets.Pallas && (
+                  <div className="bg-background/50 p-3 rounded">
+                    <p className="text-xs font-medium text-blue-600 dark:text-blue-400">Pallas Athena — The Strategist</p>
+                    <p className="text-sm font-medium">{natalChart.planets.Pallas.sign} {natalChart.planets.Pallas.degree}°</p>
+                    <p className="text-xs text-muted-foreground">Your pattern recognition and creative intelligence</p>
+                  </div>
+                )}
+                {natalChart.planets.Juno && (
+                  <div className="bg-background/50 p-3 rounded">
+                    <p className="text-xs font-medium text-rose-600 dark:text-rose-400">Juno — The Sacred Partner</p>
+                    <p className="text-sm font-medium">{natalChart.planets.Juno.sign} {natalChart.planets.Juno.degree}°</p>
+                    <p className="text-xs text-muted-foreground">What you need in committed partnership</p>
+                  </div>
+                )}
+                {natalChart.planets.Vesta && (
+                  <div className="bg-background/50 p-3 rounded">
+                    <p className="text-xs font-medium text-orange-600 dark:text-orange-400">Vesta — The Sacred Flame</p>
+                    <p className="text-sm font-medium">{natalChart.planets.Vesta.sign} {natalChart.planets.Vesta.degree}°</p>
+                    <p className="text-xs text-muted-foreground">Where you devote yourself completely</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           
           {/* Quick Reference Cards - Keep the original simple view */}
           <details className="group">
@@ -1578,6 +1696,48 @@ const ElementalBalanceVisual = ({ elements }: { elements: ElementalBalance }) =>
   );
 };
 
+// Modality Balance Visual
+const ModalityBalanceVisual = ({ modalities }: { modalities: ModalityBalance }) => {
+  const total = modalities.Cardinal + modalities.Fixed + modalities.Mutable;
+  
+  const bars = [
+    { name: 'Cardinal', count: modalities.Cardinal, color: 'bg-red-500', planets: modalities.planets.Cardinal, keyword: 'Initiate' },
+    { name: 'Fixed', count: modalities.Fixed, color: 'bg-amber-500', planets: modalities.planets.Fixed, keyword: 'Stabilize' },
+    { name: 'Mutable', count: modalities.Mutable, color: 'bg-violet-500', planets: modalities.planets.Mutable, keyword: 'Adapt' },
+  ];
+  
+  return (
+    <div className="bg-secondary/30 p-4 rounded-lg mt-4">
+      <h4 className="font-medium mb-3">Modality Balance</h4>
+      <div className="space-y-2">
+        {bars.map((bar) => (
+          <div key={bar.name} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+            <div className="flex items-center gap-2 flex-1">
+              <span className="w-16 text-sm font-medium">{bar.name}</span>
+              <div className="flex-1 h-4 bg-background rounded overflow-hidden">
+                <div 
+                  className={`h-full ${bar.color}`} 
+                  style={{ width: `${(bar.count / total) * 100}%` }}
+                />
+              </div>
+              <span className="w-8 text-sm text-right">{bar.count}</span>
+            </div>
+            <div className="text-xs text-muted-foreground sm:w-auto pl-16 sm:pl-0">
+              {bar.planets.join(', ')}
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="text-sm text-muted-foreground mt-3">
+        Energy Pattern: <span className="font-medium">{modalities.pattern}</span>
+        {modalities.pattern === 'Initiator' && ' (Cardinal dominant = leadership, starting new things)'}
+        {modalities.pattern === 'Stabilizer' && ' (Fixed dominant = persistence, determination)'}
+        {modalities.pattern === 'Adapter' && ' (Mutable dominant = flexibility, versatility)'}
+      </p>
+    </div>
+  );
+};
+
 // Pattern Card
 const PatternCard = ({ pattern }: { pattern: ChartPattern }) => {
   return (
@@ -1653,4 +1813,23 @@ const ProgressedMoonCard = ({ moon }: { moon: ProgressedMoonInfo }) => {
       </div>
     </div>
   );
+};
+
+// North Node Soul Direction Descriptions
+const getNorthNodeDescription = (sign: string): string => {
+  const descriptions: Record<string, string> = {
+    Aries: "Your soul is learning INDEPENDENCE and COURAGE. You're moving away from people-pleasing (South Node in Libra) toward asserting yourself, taking initiative, and trusting your own desires. This lifetime: be the warrior.",
+    Taurus: "Your soul is learning STABILITY and SELF-WORTH. You're moving away from crisis and intensity (South Node in Scorpio) toward peace, simplicity, and building tangible security. This lifetime: trust the slow path.",
+    Gemini: "Your soul is learning CURIOSITY and COMMUNICATION. You're moving away from rigid beliefs (South Node in Sagittarius) toward asking questions, staying local, and valuing many perspectives. This lifetime: be the student.",
+    Cancer: "Your soul is learning NURTURING and EMOTIONAL HONESTY. You're moving away from achievement and control (South Node in Capricorn) toward vulnerability, family, and allowing yourself to need. This lifetime: come home to feelings.",
+    Leo: "Your soul is learning SELF-EXPRESSION and CREATIVE JOY. You're moving away from detachment and group identity (South Node in Aquarius) toward shining personally, taking center stage, and following your heart. This lifetime: be seen.",
+    Virgo: "Your soul is learning DISCERNMENT and SERVICE. You're moving away from escapism and victimhood (South Node in Pisces) toward practical help, healthy routines, and grounded spirituality. This lifetime: heal through doing.",
+    Libra: "Your soul is learning PARTNERSHIP and BALANCE. You're moving away from self-focus and independence (South Node in Aries) toward cooperation, compromise, and truly seeing others. This lifetime: master relationship.",
+    Scorpio: "Your soul is learning TRANSFORMATION and DEPTH. You're moving away from comfort and security (South Node in Taurus) toward intimacy, shared resources, and emotional truth no matter the cost. This lifetime: die and be reborn.",
+    Sagittarius: "Your soul is learning TRUTH and EXPANSION. You're moving away from surface facts and gossip (South Node in Gemini) toward meaning, philosophy, and teaching what you've learned. This lifetime: find your truth.",
+    Capricorn: "Your soul is learning MASTERY and RESPONSIBILITY. You're moving away from emotional dependency (South Node in Cancer) toward authority, achievement, and building structures that serve. This lifetime: become the elder.",
+    Aquarius: "Your soul is learning INDIVIDUALITY and HUMANITARIAN SERVICE. You're moving away from ego and personal drama (South Node in Leo) toward collective causes, innovation, and true friendship. This lifetime: serve humanity.",
+    Pisces: "Your soul is learning SURRENDER and SPIRITUAL FAITH. You're moving away from criticism and control (South Node in Virgo) toward trust, compassion, and allowing the mystery. This lifetime: dissolve into the divine.",
+  };
+  return descriptions[sign] || `Your soul is growing toward ${sign} qualities in this lifetime.`;
 };
