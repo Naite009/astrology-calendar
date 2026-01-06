@@ -371,7 +371,7 @@ export const calculateDetailedSaturnCycles = (
         transitingSign,
         transitingElement: SIGN_ELEMENTS[transitingSign],
         natalSign: saturnPos.sign,
-        cycleNumber: aspect.addDegrees === 0 ? cycleNum - 1 : cycleNum, // Returns end the previous cycle
+        cycleNumber: cycleNum, // All phases (including Returns) belong to their cycle
         events: finalEvents,
         description: getPhaseDescription(aspect.name, cycleNum),
         signThemes: getSignThemes(transitingSign, saturnPos.sign),
