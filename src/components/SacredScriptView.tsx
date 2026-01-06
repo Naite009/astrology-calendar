@@ -1449,7 +1449,7 @@ const DetailedSaturnCycleCard = ({
   );
 };
 
-// Character Card Component
+// Character Card Component - Rich display with Debra Silverman teachings
 const CharacterCardComponent = ({ card }: { card: CharacterCard }) => {
   const colors: Record<string, string> = {
     Sun: 'bg-orange-50 dark:bg-orange-950/30 border-orange-300 dark:border-orange-700',
@@ -1463,25 +1463,75 @@ const CharacterCardComponent = ({ card }: { card: CharacterCard }) => {
     Rising: <Star className="text-purple-500" size={24} />,
   };
   
+  const titles: Record<string, string> = {
+    Sun: 'Core Identity',
+    Moon: 'Emotional Needs',
+    Rising: 'World Mask',
+  };
+  
   return (
     <div className={`p-4 rounded-lg border ${colors[card.planet]}`}>
       <div className="flex items-center gap-2 mb-2">
         {icons[card.planet]}
-        <h4 className="font-medium">{card.planet}</h4>
+        <div>
+          <h4 className="font-medium">{card.planet} in {card.sign}</h4>
+          <p className="text-xs text-muted-foreground">{titles[card.planet]}</p>
+        </div>
       </div>
-      <p className="text-lg font-serif mb-1">{card.sign}</p>
-      <p className="text-xs text-muted-foreground mb-2">
-        {card.degree}° • {card.element} • {card.modality}
-        {card.house && ` • House ${card.house}`}
-      </p>
-      <p className="text-sm">{card.description}</p>
-      <div className="flex flex-wrap gap-1 mt-2">
-        {card.keywords.map((kw, i) => (
+      
+      {/* Mantra */}
+      {card.mantra && (
+        <p className="text-sm font-medium text-center py-2 mb-2 bg-background/50 rounded italic">
+          "{card.mantra}"
+        </p>
+      )}
+      
+      {/* Rich Description */}
+      <p className="text-sm leading-relaxed mb-3">{card.description}</p>
+      
+      {/* Archetypes */}
+      {card.archetypes && card.archetypes.length > 0 && (
+        <div className="mb-2">
+          <span className="text-xs font-medium">Archetypes: </span>
+          <span className="text-xs text-muted-foreground">{card.archetypes.join(' • ')}</span>
+        </div>
+      )}
+      
+      {/* Ruling Planet & Body */}
+      {(card.rulingPlanet || card.bodyPart) && (
+        <div className="text-xs text-muted-foreground mb-2">
+          {card.rulingPlanet && <span>Ruled by {card.rulingPlanet}</span>}
+          {card.rulingPlanet && card.bodyPart && <span> • </span>}
+          {card.bodyPart && <span>Body: {card.bodyPart}</span>}
+        </div>
+      )}
+      
+      {/* Life Lessons */}
+      {card.lifeLessons && card.lifeLessons.length > 0 && (
+        <div className="mt-3 pt-2 border-t border-current/10">
+          <p className="text-xs font-medium mb-1">Life Lessons:</p>
+          <ul className="text-xs text-muted-foreground space-y-0.5">
+            {card.lifeLessons.map((lesson, i) => (
+              <li key={i}>• {lesson}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      
+      {/* Keywords */}
+      <div className="flex flex-wrap gap-1 mt-3">
+        {card.keywords.slice(0, 6).map((kw, i) => (
           <span key={i} className="text-xs bg-background/50 px-2 py-0.5 rounded">
             {kw}
           </span>
         ))}
       </div>
+      
+      {/* Metadata */}
+      <p className="text-xs text-muted-foreground mt-2">
+        {card.degree}° • {card.element} • {card.modality}
+        {card.house && ` • House ${card.house}`}
+      </p>
     </div>
   );
 };
