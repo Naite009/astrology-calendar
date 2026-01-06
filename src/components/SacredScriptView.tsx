@@ -49,6 +49,12 @@ import {
   SaturnTeaching
 } from '@/lib/elementTeachings';
 
+// New Level 1 Handbook Components
+import { ElementSelfAssessment } from '@/components/sacredscript/ElementSelfAssessment';
+import { ElementStoryCard } from '@/components/sacredscript/ElementStoryCard';
+import { PermissionsCard } from '@/components/sacredscript/PermissionsCard';
+import { OppositionPairsCard } from '@/components/sacredscript/OppositionPairsCard';
+
 interface SacredScriptViewProps {
   natalChart: NatalChart;
   allCharts?: NatalChart[];
@@ -508,6 +514,17 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
               <p className="text-sm leading-relaxed whitespace-pre-line">{characterSynthesis.trinitySynthesis}</p>
             </div>
           )}
+          
+          {/* Opposition Pairs Teaching - when Sun and Moon are in opposing signs */}
+          {(() => {
+            const sunSign = characterCards.find(c => c.planet === 'Sun')?.sign;
+            const moonSign = characterCards.find(c => c.planet === 'Moon')?.sign;
+            
+            if (sunSign && moonSign) {
+              return <OppositionPairsCard sunSign={sunSign} moonSign={moonSign} />;
+            }
+            return null;
+          })()}
           
           {/* Detailed Cards with Decan, Degree, and House */}
           <div className="space-y-4">
@@ -1028,6 +1045,55 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
               Elemental balance is relatively even. No strong deficiencies or abundances.
             </p>
           )}
+          
+          {/* Element Self-Assessment from Level 1 Handbook */}
+          <div className="border-t border-border pt-6 mt-6">
+            <h4 className="font-serif text-lg font-medium mb-4 flex items-center gap-2">
+              <Sparkles className="text-violet-500" size={20} />
+              Level 1 Handbook Deep Dives
+            </h4>
+            
+            {/* Self-Assessment Questions */}
+            <ElementSelfAssessment 
+              elements={['Water', 'Air', 'Earth', 'Fire']} 
+              title="Element Self-Assessment (Identify Patterns)"
+            />
+            
+            {/* Element Stories */}
+            {(elements.dominant || elements.abundant.length > 0) && (
+              <details className="group mt-4">
+                <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground flex items-center gap-2">
+                  <BookOpen size={16} />
+                  <span>Element Stories & Teachings</span>
+                  <ChevronDown size={16} className="group-open:rotate-180 transition-transform ml-auto" />
+                </summary>
+                <div className="mt-4 space-y-4">
+                  {elements.dominant && (
+                    <ElementStoryCard element={elements.dominant} showExercises={true} />
+                  )}
+                  {elements.abundant
+                    .filter(el => el !== elements.dominant)
+                    .map(el => (
+                      <ElementStoryCard key={el} element={el} showExercises={false} />
+                    ))
+                  }
+                </div>
+              </details>
+            )}
+            
+            {/* Permissions Card */}
+            {(elements.dominant || elements.abundant.length > 0) && (
+              <div className="mt-4">
+                <PermissionsCard 
+                  dominantElements={elements.dominant 
+                    ? [elements.dominant, ...elements.abundant.filter(e => e !== elements.dominant)]
+                    : elements.abundant
+                  }
+                  clientName={natalChart.name}
+                />
+              </div>
+            )}
+          </div>
           
           <NoteArea placeholder="How client relates to missing/abundant elements..." />
         </div>
