@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, forwardRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, FileText, Trash2, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { Upload, FileText, Trash2, Loader2, AlertCircle, CheckCircle, LogIn, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface UploadedDocument {
@@ -16,8 +17,9 @@ interface UploadedDocument {
   created_at: string | null;
 }
 
-export const DocumentUploader = () => {
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+export const DocumentUploader = forwardRef<HTMLDivElement, Record<string, never>>((_, ref) => {
+  const navigate = useNavigate();
+  const { user, isAuthenticated, isLoading: authLoading, signOut } = useAuth();
   const [documents, setDocuments] = useState<UploadedDocument[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -26,10 +28,17 @@ export const DocumentUploader = () => {
 
   // Fetch documents when authenticated
   useEffect(() => {
+    // Helpful for debugging "I am signed in" reports without logging sensitive details
+    console.debug('[DocumentUploader] auth state', {
+      authLoading,
+      isAuthenticated,
+      hasUser: !!user,
+    });
+
     if (isAuthenticated && user) {
       fetchDocuments();
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, authLoading]);
 
   const fetchDocuments = async () => {
     if (!user) return;
@@ -187,37 +196,69 @@ export const DocumentUploader = () => {
   // Show loading state while checking auth
   if (authLoading) {
     return (
-      <Card className="border-dashed border-2 border-muted">
-        <CardContent className="py-8 text-center">
-          <Loader2 className="mx-auto text-muted-foreground mb-2 animate-spin" size={32} />
-          <p className="text-sm text-muted-foreground">
-            Checking authentication...
-          </p>
-        </CardContent>
-      </Card>
+      <div ref={ref}>
+        <Card className="border-dashed border-2 border-muted">
+          <CardContent className="py-8 text-center">
+            <Loader2 className="mx-auto text-muted-foreground mb-2 animate-spin" size={32} />
+            <p className="text-sm text-muted-foreground">
+              Checking authentication...
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <Card className="border-dashed border-2 border-muted">
-        <CardContent className="py-8 text-center">
-          <AlertCircle className="mx-auto text-muted-foreground mb-2" size={32} />
-          <p className="text-sm text-muted-foreground">
-            Sign in to upload reference documents
-          </p>
-        </CardContent>
-      </Card>
+      <div ref={ref}>
+        <Card className="border-dashed border-2 border-muted">
+          <CardContent className="py-8 text-center space-y-3">
+            <AlertCircle className="mx-auto text-muted-foreground" size={32} />
+            <div>
+              <p className="text-sm text-muted-foreground">Sign in to upload reference documents</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                (This is your account login — not the chart name at the top.)
+              </p>
+            </div>
+            <Button onClick={() => navigate('/auth')} className="gap-2">
+              <LogIn size={16} />
+              Sign in
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
+    <div ref={ref}>
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2">
-          <FileText size={18} />
-          Reference Documents
-        </CardTitle>
+        <div className="flex items-start justify-between gap-4">
+          <CardTitle className="text-base flex items-center gap-2">
+            <FileText size={18} />
+            Reference Documents
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <div className="text-right leading-tight">
+              <p className="text-xs text-muted-foreground">Signed in</p>
+              <p className="text-xs font-medium truncate max-w-[160px]">
+                {user?.email || 'Account'}
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => signOut()}
+              className="gap-2"
+              title="Sign out"
+            >
+              <LogOut size={16} />
+            </Button>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Upload Area */}
@@ -301,5 +342,6 @@ export const DocumentUploader = () => {
         )}
       </CardContent>
     </Card>
+  </div>
   );
-};
+});
