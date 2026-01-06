@@ -132,6 +132,59 @@ export const calculateElementalBalance = (chart: NatalChart): ElementalBalance =
   };
 };
 
+// Modality balance calculation
+export interface ModalityBalance {
+  Cardinal: number;
+  Fixed: number;
+  Mutable: number;
+  planets: Record<string, string[]>;
+  dominant: string;
+  missing: string[];
+  pattern: 'Initiator' | 'Stabilizer' | 'Adapter' | 'Balanced' | 'Variable';
+}
+
+export const calculateModalityBalance = (chart: NatalChart): ModalityBalance => {
+  const balance: Record<string, number> = { Cardinal: 0, Fixed: 0, Mutable: 0 };
+  const planetsByModality: Record<string, string[]> = { Cardinal: [], Fixed: [], Mutable: [] };
+  
+  const relevantPlanets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
+  
+  for (const planetName of relevantPlanets) {
+    const position = chart.planets[planetName as keyof typeof chart.planets];
+    if (position?.sign) {
+      const modality = getModality(position.sign);
+      if (balance[modality] !== undefined) {
+        balance[modality]++;
+        planetsByModality[modality].push(planetName);
+      }
+    }
+  }
+  
+  const entries = Object.entries(balance).sort(([, a], [, b]) => b - a);
+  const dominant = entries[0][0];
+  const missing = entries.filter(([, count]) => count <= 1).map(([modality]) => modality);
+  
+  // Determine pattern
+  let pattern: ModalityBalance['pattern'] = 'Balanced';
+  const maxCount = Math.max(...Object.values(balance));
+  const minCount = Math.min(...Object.values(balance));
+  
+  if (balance.Cardinal >= 5) pattern = 'Initiator';
+  else if (balance.Fixed >= 5) pattern = 'Stabilizer';
+  else if (balance.Mutable >= 5) pattern = 'Adapter';
+  else if (maxCount - minCount >= 4) pattern = 'Variable';
+  
+  return {
+    Cardinal: balance.Cardinal,
+    Fixed: balance.Fixed,
+    Mutable: balance.Mutable,
+    planets: planetsByModality,
+    dominant,
+    missing,
+    pattern,
+  };
+};
+
 // Get house number for a planet (based on house cusps)
 export const getPlanetHouse = (chart: NatalChart, planetName: string): number | null => {
   if (!chart.houseCusps) return null;
