@@ -56,6 +56,7 @@ export const useCloudBackup = (
   });
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const initialCheckDoneRef = useRef(false);
+  const hasShownRestoreToastRef = useRef(false);
   
   // Listen for auth state changes
   useEffect(() => {
@@ -270,7 +271,8 @@ export const useCloudBackup = (
         cloudChartCount: cloudCharts.length,
       }));
 
-      if (restoredCount > 0) {
+      if (restoredCount > 0 && !hasShownRestoreToastRef.current) {
+        hasShownRestoreToastRef.current = true;
         toast.success(`Restored ${restoredCount} chart${restoredCount > 1 ? 's' : ''} from cloud backup`);
       }
       
