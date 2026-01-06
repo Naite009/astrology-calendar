@@ -44,7 +44,9 @@ import {
   MERCURY_IN_SIGNS,
   getElementTeaching,
   getMercuryInSign,
-  getElementForSign
+  getElementForSign,
+  getSaturnTeaching,
+  SaturnTeaching
 } from '@/lib/elementTeachings';
 
 interface SacredScriptViewProps {
@@ -1070,59 +1072,140 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
         <NoteArea placeholder="How client is experiencing progressed Moon themes..." />
       </Section>
       
-      {/* 8. Life Lesson */}
+      {/* 8. Life Lesson (Saturn) */}
       <Section 
         title="8. Life Lesson (Saturn)" 
         color="border-l-slate-500" 
-        icon={<div className="w-6 h-6 rounded-full bg-slate-500/20 flex items-center justify-center text-slate-600 text-xs font-bold">8</div>}
+        icon={<div className="w-6 h-6 rounded-full bg-slate-500/20 flex items-center justify-center text-slate-600 text-xs font-bold">♄</div>}
       >
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground italic mb-2">
             "What house and sign is Saturn in? Breathe into this one. Think it through." — Debra Silverman (Step 5)
           </p>
           
-          {lifeLesson.saturn && (
-            <>
-              <div className="bg-slate-50 dark:bg-slate-950/30 p-4 rounded-lg">
-                <h4 className="font-medium mb-2">
-                  Saturn in {lifeLesson.saturn.sign}
-                  {lifeLesson.saturn.house && ` (House ${lifeLesson.saturn.house})`}
-                </h4>
-                <p className="text-sm mb-3">{lifeLesson.saturn.lesson}</p>
-                <p className="text-sm font-medium text-primary">
-                  Directive: {lifeLesson.saturn.directive}
-                </p>
-              </div>
-              
-              {/* Debra Silverman's Life Lessons for Saturn's Sign */}
-              {(() => {
-                const saturnArchetype = getSignArchetype(lifeLesson.saturn.sign);
-                if (!saturnArchetype) return null;
-                
-                return (
-                  <div className="bg-gradient-to-r from-slate-100 to-stone-100 dark:from-slate-900/50 dark:to-stone-900/50 p-4 rounded-lg border border-slate-300 dark:border-slate-700">
-                    <h5 className="font-medium text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
-                      <BookOpen size={16} />
-                      Life Lessons from {lifeLesson.saturn.sign} (Debra Silverman)
-                    </h5>
-                    <ul className="text-sm space-y-2">
-                      {saturnArchetype.lifeLessons.map((lesson, i) => (
-                        <li key={i} className="flex items-start gap-2">
-                          <span className="text-slate-500 mt-0.5">♄</span>
-                          <span>{lesson}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    
-                    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
-                      <p className="text-xs text-muted-foreground font-medium mb-1">Esoteric Purpose:</p>
-                      <p className="text-sm italic">{saturnArchetype.esotericMeaning.join(' • ')}</p>
+          {lifeLesson.saturn && (() => {
+            const saturnTeaching = getSaturnTeaching(lifeLesson.saturn.sign);
+            const saturnArchetype = getSignArchetype(lifeLesson.saturn.sign);
+            const age = calculateAge(natalChart.birthDate);
+            
+            return (
+              <>
+                {/* Saturn Position Header */}
+                <div className="bg-gradient-to-r from-slate-100 to-stone-100 dark:from-slate-900/60 dark:to-stone-900/60 p-5 rounded-lg border border-slate-300 dark:border-slate-700">
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="text-3xl">♄</span>
+                    <div>
+                      <h4 className="font-serif text-xl font-medium">
+                        Saturn in {lifeLesson.saturn.sign}
+                        {lifeLesson.saturn.house && <span className="text-muted-foreground ml-2">(House {lifeLesson.saturn.house})</span>}
+                      </h4>
+                      <p className="text-sm text-muted-foreground">Your Soul's Purpose</p>
                     </div>
                   </div>
-                );
-              })()}
-            </>
-          )}
+                  
+                  {saturnTeaching && (
+                    <div className="space-y-4">
+                      {/* Soul Purpose */}
+                      <div className="bg-white/50 dark:bg-black/30 p-4 rounded-lg">
+                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Soul Purpose:</p>
+                        <p className="text-sm leading-relaxed">{saturnTeaching.soulPurpose}</p>
+                      </div>
+                      
+                      {/* The Directive - Highlighted */}
+                      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/40 dark:to-yellow-950/40 p-4 rounded-lg border-2 border-amber-400 dark:border-amber-600">
+                        <p className="text-sm font-bold text-amber-800 dark:text-amber-300 mb-1">♄ THE DIRECTIVE:</p>
+                        <p className="text-lg font-serif italic leading-relaxed">{saturnTeaching.directive}</p>
+                      </div>
+                      
+                      {/* Life Lesson */}
+                      <div className="bg-white/50 dark:bg-black/30 p-4 rounded-lg">
+                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Life Lesson:</p>
+                        <p className="text-sm leading-relaxed">{saturnTeaching.lifeLesson}</p>
+                      </div>
+                      
+                      {/* Challenge & Mastery */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="bg-rose-50 dark:bg-rose-950/30 p-3 rounded-lg">
+                          <p className="text-xs font-medium text-rose-700 dark:text-rose-400 mb-1">Challenge:</p>
+                          <p className="text-sm">{saturnTeaching.challenge}</p>
+                        </div>
+                        <div className="bg-green-50 dark:bg-green-950/30 p-3 rounded-lg">
+                          <p className="text-xs font-medium text-green-700 dark:text-green-400 mb-1">Mastery:</p>
+                          <p className="text-sm">{saturnTeaching.mastery}</p>
+                        </div>
+                      </div>
+                      
+                      {/* Questions to Ask */}
+                      <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg">
+                        <p className="text-sm font-medium text-blue-700 dark:text-blue-400 mb-2">Questions to Explore:</p>
+                        <ul className="space-y-2">
+                          {saturnTeaching.questions.map((q, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm">
+                              <span className="text-blue-500 mt-0.5">?</span>
+                              <span>{q}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      
+                      {/* Saturn Return Context */}
+                      <details className="group">
+                        <summary className="cursor-pointer text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-2">
+                          <span>Saturn Return Themes</span>
+                          <ChevronDown size={14} className="group-open:rotate-180 transition-transform" />
+                        </summary>
+                        <div className="mt-3 space-y-3">
+                          <div className={`p-3 rounded-lg ${age >= 28 && age <= 31 ? 'bg-amber-100 dark:bg-amber-900/40 border border-amber-400' : 'bg-slate-50 dark:bg-slate-900/50'}`}>
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-sm font-medium">First Saturn Return (Age 28-30)</span>
+                              {age >= 28 && age <= 31 && <span className="text-xs bg-amber-500 text-white px-2 py-0.5 rounded">ACTIVE</span>}
+                            </div>
+                            <p className="text-sm text-muted-foreground">{saturnTeaching.firstReturn}</p>
+                          </div>
+                          <div className={`p-3 rounded-lg ${age >= 56 && age <= 60 ? 'bg-amber-100 dark:bg-amber-900/40 border border-amber-400' : 'bg-slate-50 dark:bg-slate-900/50'}`}>
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-sm font-medium">Second Saturn Return (Age 56-60)</span>
+                              {age >= 56 && age <= 60 && <span className="text-xs bg-amber-500 text-white px-2 py-0.5 rounded">ACTIVE</span>}
+                            </div>
+                            <p className="text-sm text-muted-foreground">{saturnTeaching.secondReturn}</p>
+                          </div>
+                        </div>
+                      </details>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Debra Silverman's Life Lessons for Saturn's Sign */}
+                {saturnArchetype && (
+                  <details className="group">
+                    <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground flex items-center gap-2">
+                      <BookOpen size={16} />
+                      <span>Additional Sign Teachings: {lifeLesson.saturn.sign}</span>
+                      <ChevronDown size={14} className="group-open:rotate-180 transition-transform ml-auto" />
+                    </summary>
+                    <div className="mt-3 bg-gradient-to-r from-slate-100 to-stone-100 dark:from-slate-900/50 dark:to-stone-900/50 p-4 rounded-lg border border-slate-300 dark:border-slate-700">
+                      <h5 className="font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Life Lessons from {lifeLesson.saturn.sign}
+                      </h5>
+                      <ul className="text-sm space-y-2">
+                        {saturnArchetype.lifeLessons.map((lesson, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <span className="text-slate-500 mt-0.5">♄</span>
+                            <span>{lesson}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      
+                      <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                        <p className="text-xs text-muted-foreground font-medium mb-1">Esoteric Purpose:</p>
+                        <p className="text-sm italic">{saturnArchetype.esotericMeaning.join(' • ')}</p>
+                      </div>
+                    </div>
+                  </details>
+                )}
+              </>
+            );
+          })()}
           
           {lifeLesson.northNode && (
             <div className="bg-slate-100 dark:bg-slate-900/30 p-4 rounded-lg border border-dashed border-slate-300 dark:border-slate-700">

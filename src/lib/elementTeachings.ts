@@ -826,6 +826,161 @@ export const MERCURY_IN_SIGNS: Record<string, MercuryInSign> = {
 };
 
 // ============================================================================
+// SATURN: YOUR SOUL'S PURPOSE (Debra Silverman)
+// ============================================================================
+
+export interface SaturnTeaching {
+  sign: string;
+  soulPurpose: string;
+  lifeLesson: string;
+  directive: string;
+  challenge: string;
+  mastery: string;
+  questions: string[];
+  firstReturn: string;
+  secondReturn: string;
+}
+
+export const SATURN_IN_SIGNS: Record<string, SaturnTeaching> = {
+  Aries: {
+    sign: 'Aries',
+    soulPurpose: 'To learn courage and self-reliance. To act independently without waiting for permission.',
+    lifeLesson: 'You are learning to trust your own initiative and take action even when afraid. The lesson is about healthy self-assertion and pioneering new paths.',
+    directive: 'Take action. Don\'t wait for permission. Your spark comes from doing, not planning.',
+    challenge: 'Fear of acting independently. Waiting for others to go first. Suppressed anger or aggression.',
+    mastery: 'The ability to initiate action with wisdom. Courageous leadership tempered by experience.',
+    questions: ['Where do you hold back from taking initiative?', 'What would you do if you weren\'t afraid?', 'How do you handle your anger?'],
+    firstReturn: 'Major restructuring around identity and independence. Time to stop waiting for permission and become the leader of your own life.',
+    secondReturn: 'Wisdom about when to act and when to wait. Teaching others about courage and initiative.'
+  },
+  Taurus: {
+    sign: 'Taurus',
+    soulPurpose: 'To build lasting security through patience and persistence. To learn true self-worth.',
+    lifeLesson: 'You are learning that real security comes from within, not from possessions. The lesson is about stability, self-worth, and building something that lasts.',
+    directive: 'Ground yourself. Build something tangible. Trust the physical world and your own value.',
+    challenge: 'Insecurity about money and resources. Stubbornness. Difficulty with change.',
+    mastery: 'The ability to create lasting value. Patience that produces results. Unshakeable self-worth.',
+    questions: ['What does security mean to you?', 'Where do you struggle with self-worth?', 'What are you building that will last?'],
+    firstReturn: 'Major restructuring around values, money, and self-worth. Time to build a foundation that truly supports you.',
+    secondReturn: 'Wisdom about what truly matters. Teaching others about patience and lasting value.'
+  },
+  Gemini: {
+    sign: 'Gemini',
+    soulPurpose: 'To master communication and commit to learning. To focus the mind and speak truth.',
+    lifeLesson: 'You are learning to focus your scattered mind and complete what you start. The lesson is about clear communication and intellectual discipline.',
+    directive: 'Focus your mind. Finish what you start. Speak your truth clearly.',
+    challenge: 'Scattered energy. Difficulty completing projects. Superficial learning. Nervous anxiety.',
+    mastery: 'The ability to communicate profound ideas clearly. Mental discipline with flexibility.',
+    questions: ['What ideas do you need to commit to fully?', 'Where do you scatter your mental energy?', 'What truth needs to be spoken?'],
+    firstReturn: 'Major restructuring around communication and learning. Time to focus your mind on what truly matters.',
+    secondReturn: 'Wisdom about the power of words. Teaching others through clear, disciplined communication.'
+  },
+  Cancer: {
+    sign: 'Cancer',
+    soulPurpose: 'To create emotional security and nurture responsibly. To learn healthy boundaries in caring.',
+    lifeLesson: 'You are learning to nurture without smothering and to create true emotional safety. The lesson is about family, belonging, and emotional maturity.',
+    directive: 'Create a safe container. Nurture without attachment. Let go of the past.',
+    challenge: 'Fear of abandonment. Over-protective tendencies. Difficulty letting go of family wounds.',
+    mastery: 'The ability to create emotional safety for yourself and others. Nurturing with wisdom.',
+    questions: ['What does home mean to you?', 'How do family patterns affect you now?', 'Where do you over-give or under-receive?'],
+    firstReturn: 'Major restructuring around family and emotional patterns. Time to create your own definition of home.',
+    secondReturn: 'Wisdom about emotional bonds. Becoming the wise elder of your family.'
+  },
+  Leo: {
+    sign: 'Leo',
+    soulPurpose: 'To develop authentic self-expression and creative authority. To shine without needing applause.',
+    lifeLesson: 'You are learning authentic self-expression without seeking external validation. The lesson is about creative power and generous leadership.',
+    directive: 'Express yourself authentically. Lead from the heart. Shine without needing permission.',
+    challenge: 'Need for validation. Fear of being seen. Creative blocks. Pride that masks insecurity.',
+    mastery: 'The ability to lead with warmth and creativity. Authentic self-expression that inspires others.',
+    questions: ['Where do you hide your light?', 'What would you create if no one was watching?', 'How do you handle not being recognized?'],
+    firstReturn: 'Major restructuring around self-expression and recognition. Time to stop performing and start being authentic.',
+    secondReturn: 'Wisdom about true creative power. Teaching others to find their own light.'
+  },
+  Virgo: {
+    sign: 'Virgo',
+    soulPurpose: 'To perfect your skills and serve with practical wisdom. To learn when good enough is perfect.',
+    lifeLesson: 'You are learning when "good enough" is perfect and how to serve without martyrdom. The lesson is about practical mastery and healthy service.',
+    directive: 'Master your craft. Serve with boundaries. Trust that imperfection is human.',
+    challenge: 'Perfectionism. Self-criticism. Worrying about details. Difficulty receiving help.',
+    mastery: 'The ability to discern what truly needs fixing. Service that heals without depleting.',
+    questions: ['Where is your inner critic too harsh?', 'What would "good enough" look like?', 'How do you serve without losing yourself?'],
+    firstReturn: 'Major restructuring around work, health, and service. Time to find the balance between excellence and self-acceptance.',
+    secondReturn: 'Wisdom about practical mastery. Teaching others through grounded, helpful guidance.'
+  },
+  Libra: {
+    sign: 'Libra',
+    soulPurpose: 'To master relationships and create balanced partnerships. To be fair to yourself and others.',
+    lifeLesson: 'You are learning balance in relationships and how to be fair to yourself AND others. The lesson is about partnership, justice, and harmony.',
+    directive: 'Balance self and other. Speak up for yourself. Create harmony without losing yourself.',
+    challenge: 'People-pleasing. Indecision. Avoiding conflict at any cost. Losing self in relationships.',
+    mastery: 'The ability to create true partnership. Diplomacy that serves justice and beauty.',
+    questions: ['Where do you lose yourself in relationships?', 'What conflict are you avoiding?', 'How do you balance your needs with others?'],
+    firstReturn: 'Major restructuring around relationships and fairness. Time to stop people-pleasing and create true balance.',
+    secondReturn: 'Wisdom about partnership. Teaching others about justice, beauty, and relating.'
+  },
+  Scorpio: {
+    sign: 'Scorpio',
+    soulPurpose: 'To transform through facing shadows and sharing resources. To trust and be trusted.',
+    lifeLesson: 'You are learning to trust, transform, and share power appropriately. The lesson is about intimacy, death/rebirth, and emotional honesty.',
+    directive: 'Face your shadows. Transform what needs to die. Trust deeply—and wisely.',
+    challenge: 'Control issues. Fear of vulnerability. Difficulty trusting. Holding onto resentments.',
+    mastery: 'The ability to transform crisis into growth. Deep intimacy with appropriate boundaries.',
+    questions: ['What are you afraid to let go of?', 'Where do control issues show up?', 'What needs to die so something new can be born?'],
+    firstReturn: 'Major restructuring around trust, power, and intimacy. Time to face your shadows and transform.',
+    secondReturn: 'Wisdom about transformation. Teaching others about the power of letting go.'
+  },
+  Sagittarius: {
+    sign: 'Sagittarius',
+    soulPurpose: 'To develop wisdom through experience and honest seeking. To commit to truth.',
+    lifeLesson: 'You are learning to commit to your truth and follow through on your ideals. The lesson is about meaning, faith, and the pursuit of wisdom.',
+    directive: 'Seek meaning, not just experience. Commit to your truth. Walk your talk.',
+    challenge: 'Overcommitting and under-delivering. Escaping through adventure. Preaching without practicing.',
+    mastery: 'The ability to teach from lived experience. Optimism grounded in reality.',
+    questions: ['What do you truly believe?', 'Where do you escape instead of committing?', 'How do you walk your talk?'],
+    firstReturn: 'Major restructuring around beliefs and purpose. Time to commit to your truth and stop running.',
+    secondReturn: 'Wisdom about meaning and faith. Becoming the teacher and philosopher.'
+  },
+  Capricorn: {
+    sign: 'Capricorn',
+    soulPurpose: 'To achieve mastery through discipline and integrity. To lead with responsibility.',
+    lifeLesson: 'You are learning mastery through consistent effort and responsible leadership. The lesson is about achievement, authority, and integrity.',
+    directive: 'Build your legacy. Lead by example. Master your craft through steady effort.',
+    challenge: 'Fear of failure. Over-responsibility. Coldness or emotional restriction. Workaholic tendencies.',
+    mastery: 'The ability to achieve lasting success with integrity. Leadership that earns respect.',
+    questions: ['What legacy do you want to leave?', 'Where do you fear failure?', 'How do you balance achievement with connection?'],
+    firstReturn: 'Major restructuring around career and authority. Time to become your own authority figure.',
+    secondReturn: 'Wisdom about true success. Teaching others about integrity and lasting achievement.'
+  },
+  Aquarius: {
+    sign: 'Aquarius',
+    soulPurpose: 'To innovate within structure and serve the collective. To be yourself within community.',
+    lifeLesson: 'You are learning to be yourself within groups and to innovate responsibly. The lesson is about individuality, friendship, and humanitarian vision.',
+    directive: 'Be yourself. Serve the collective. Innovate without destroying.',
+    challenge: 'Feeling alienated. Rebellion for its own sake. Detachment from emotions. Fear of intimacy.',
+    mastery: 'The ability to bring innovative ideas into practical form. Community leadership.',
+    questions: ['Where do you feel like an outsider?', 'How do you balance individuality with belonging?', 'What vision do you have for the future?'],
+    firstReturn: 'Major restructuring around individuality and community. Time to find your tribe while being yourself.',
+    secondReturn: 'Wisdom about innovation and humanity. Teaching others about the future.'
+  },
+  Pisces: {
+    sign: 'Pisces',
+    soulPurpose: 'To bring spiritual wisdom into practical form. To serve with healthy boundaries.',
+    lifeLesson: 'You are learning healthy boundaries while maintaining compassion and spiritual connection. The lesson is about faith, surrender, and transcendence.',
+    directive: 'Trust your intuition. Serve without martyrdom. Let go and let God.',
+    challenge: 'Escapism. Martyrdom. Boundary confusion. Difficulty with practical reality.',
+    mastery: 'The ability to be in the world but not of it. Spiritual service with groundedness.',
+    questions: ['Where do you escape instead of facing reality?', 'How do you maintain boundaries while staying compassionate?', 'What is your spiritual practice?'],
+    firstReturn: 'Major restructuring around spirituality and service. Time to ground your dreams in reality.',
+    secondReturn: 'Wisdom about the nature of existence. Becoming the mystic and healer.'
+  }
+};
+
+export const getSaturnTeaching = (sign: string): SaturnTeaching | undefined => {
+  return SATURN_IN_SIGNS[sign];
+};
+
+// ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
 
