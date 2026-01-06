@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -17,18 +17,18 @@ interface UploadedDocument {
 }
 
 export const DocumentUploader = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [documents, setDocuments] = useState<UploadedDocument[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch documents on mount
-  useState(() => {
+  // Fetch documents when authenticated
+  useEffect(() => {
     if (isAuthenticated && user) {
       fetchDocuments();
     }
-  });
+  }, [isAuthenticated, user]);
 
   const fetchDocuments = async () => {
     if (!user) return;
@@ -140,6 +140,20 @@ export const DocumentUploader = () => {
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
+
+  // Show loading state while checking auth
+  if (authLoading) {
+    return (
+      <Card className="border-dashed border-2 border-muted">
+        <CardContent className="py-8 text-center">
+          <Loader2 className="mx-auto text-muted-foreground mb-2 animate-spin" size={32} />
+          <p className="text-sm text-muted-foreground">
+            Checking authentication...
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
