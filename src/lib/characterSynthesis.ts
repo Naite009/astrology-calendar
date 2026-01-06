@@ -251,9 +251,19 @@ export const getDegreeMeaning = (degree: number): { critical: boolean; meaning: 
     };
   }
   
+  // Provide meaningful degree-specific interpretation
+  const deg = Math.floor(degree);
+  const decanNum = deg < 10 ? 1 : deg < 20 ? 2 : 3;
+  const decanPhase = decanNum === 1 ? 'initiating' : decanNum === 2 ? 'stabilizing' : 'completing';
+  const decanJourney = decanNum === 1 
+    ? 'the sign is just beginning its journey—energy is fresh, direct, and unrefined'
+    : decanNum === 2 
+    ? 'the sign has found its footing—energy is established, concentrated, and building'
+    : 'the sign is reaching its culmination—energy is mature, experienced, and ready to transition';
+  
   return {
     critical: false,
-    meaning: `${Math.floor(degree)}° expresses the sign's energy with the specific coloring of its position within the decan.`,
+    meaning: `At ${deg}°, ${decanJourney}. The ${decanPhase} phase of the decan colors how this energy expresses—less about "what" and more about "how mature" the sign's expression is at this point in its arc.`,
   };
 };
 
