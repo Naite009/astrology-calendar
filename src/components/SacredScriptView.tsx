@@ -707,16 +707,19 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
                 <Sparkles className="text-indigo-500" size={18} />
                 North Node — Soul Direction
               </h4>
-              <p className="text-sm mb-2">
+              <p className="text-sm mb-1">
                 <span className="font-medium">{natalChart.planets.NorthNode.sign}</span> at {natalChart.planets.NorthNode.degree}°
                 {getPlanetHouse(natalChart, 'NorthNode') && ` • House ${getPlanetHouse(natalChart, 'NorthNode')}`}
+              </p>
+              <p className="text-xs text-muted-foreground mb-2">
+                {getSignElement(natalChart.planets.NorthNode.sign)} • {getSignModality(natalChart.planets.NorthNode.sign)}
               </p>
               <p className="text-sm text-muted-foreground">
                 {getNorthNodeDescription(natalChart.planets.NorthNode.sign)}
               </p>
               {natalChart.planets.SouthNode && (
                 <p className="text-xs text-muted-foreground mt-2 pt-2 border-t border-current/10">
-                  <span className="font-medium">South Node ({natalChart.planets.SouthNode.sign}):</span> Where you've been—your comfort zone, past-life gifts, and what to release.
+                  <span className="font-medium">South Node ({natalChart.planets.SouthNode.sign} • {getSignElement(natalChart.planets.SouthNode.sign)} • {getSignModality(natalChart.planets.SouthNode.sign)}):</span> Where you've been—your comfort zone, past-life gifts, and what to release.
                 </p>
               )}
             </div>
@@ -730,45 +733,80 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
             </h4>
             <div className="grid grid-cols-2 gap-3">
               {/* Ascendant */}
-              <div className="bg-background/50 p-3 rounded">
-                <p className="text-xs font-medium text-purple-600 dark:text-purple-400">ASC (1st House Cusp)</p>
-                <p className="text-sm font-medium">
-                  {natalChart.houseCusps?.house1?.sign || natalChart.planets.Ascendant?.sign || 'Unknown'}
-                  {(natalChart.houseCusps?.house1?.degree ?? natalChart.planets.Ascendant?.degree) !== undefined && 
-                    ` ${natalChart.houseCusps?.house1?.degree ?? natalChart.planets.Ascendant?.degree}°`}
-                </p>
-                <p className="text-xs text-muted-foreground">Your mask, how others first see you</p>
-              </div>
+              {(() => {
+                const ascSign = natalChart.houseCusps?.house1?.sign || natalChart.planets.Ascendant?.sign;
+                const ascDegree = natalChart.houseCusps?.house1?.degree ?? natalChart.planets.Ascendant?.degree;
+                return (
+                  <div className="bg-background/50 p-3 rounded">
+                    <p className="text-xs font-medium text-purple-600 dark:text-purple-400">ASC (1st House Cusp)</p>
+                    <p className="text-sm font-medium">
+                      {ascSign || 'Unknown'}
+                      {ascDegree !== undefined && ` ${ascDegree}°`}
+                    </p>
+                    {ascSign && (
+                      <p className="text-xs text-muted-foreground">{getSignElement(ascSign)} • {getSignModality(ascSign)}</p>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-1">Your mask, how others first see you</p>
+                  </div>
+                );
+              })()}
               
               {/* IC */}
-              <div className="bg-background/50 p-3 rounded">
-                <p className="text-xs font-medium text-teal-600 dark:text-teal-400">IC (4th House Cusp)</p>
-                <p className="text-sm font-medium">
-                  {natalChart.houseCusps?.house4?.sign || 'Unknown'}
-                  {natalChart.houseCusps?.house4?.degree !== undefined && ` ${natalChart.houseCusps.house4.degree}°`}
-                </p>
-                <p className="text-xs text-muted-foreground">Your roots, home, private self, ancestry</p>
-              </div>
+              {(() => {
+                const icSign = natalChart.houseCusps?.house4?.sign;
+                const icDegree = natalChart.houseCusps?.house4?.degree;
+                return (
+                  <div className="bg-background/50 p-3 rounded">
+                    <p className="text-xs font-medium text-teal-600 dark:text-teal-400">IC (4th House Cusp)</p>
+                    <p className="text-sm font-medium">
+                      {icSign || 'Unknown'}
+                      {icDegree !== undefined && ` ${icDegree}°`}
+                    </p>
+                    {icSign && (
+                      <p className="text-xs text-muted-foreground">{getSignElement(icSign)} • {getSignModality(icSign)}</p>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-1">Your roots, home, private self, ancestry</p>
+                  </div>
+                );
+              })()}
               
               {/* Descendant */}
-              <div className="bg-background/50 p-3 rounded">
-                <p className="text-xs font-medium text-rose-600 dark:text-rose-400">DC (7th House Cusp)</p>
-                <p className="text-sm font-medium">
-                  {natalChart.houseCusps?.house7?.sign || 'Unknown'}
-                  {natalChart.houseCusps?.house7?.degree !== undefined && ` ${natalChart.houseCusps.house7.degree}°`}
-                </p>
-                <p className="text-xs text-muted-foreground">What you seek in partners, "the Other"</p>
-              </div>
+              {(() => {
+                const dcSign = natalChart.houseCusps?.house7?.sign;
+                const dcDegree = natalChart.houseCusps?.house7?.degree;
+                return (
+                  <div className="bg-background/50 p-3 rounded">
+                    <p className="text-xs font-medium text-rose-600 dark:text-rose-400">DC (7th House Cusp)</p>
+                    <p className="text-sm font-medium">
+                      {dcSign || 'Unknown'}
+                      {dcDegree !== undefined && ` ${dcDegree}°`}
+                    </p>
+                    {dcSign && (
+                      <p className="text-xs text-muted-foreground">{getSignElement(dcSign)} • {getSignModality(dcSign)}</p>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-1">What you seek in partners, "the Other"</p>
+                  </div>
+                );
+              })()}
               
               {/* Midheaven */}
-              <div className="bg-background/50 p-3 rounded">
-                <p className="text-xs font-medium text-amber-600 dark:text-amber-400">MC (10th House Cusp)</p>
-                <p className="text-sm font-medium">
-                  {natalChart.houseCusps?.house10?.sign || 'Unknown'}
-                  {natalChart.houseCusps?.house10?.degree !== undefined && ` ${natalChart.houseCusps.house10.degree}°`}
-                </p>
-                <p className="text-xs text-muted-foreground">Your public image, career calling, legacy</p>
-              </div>
+              {(() => {
+                const mcSign = natalChart.houseCusps?.house10?.sign;
+                const mcDegree = natalChart.houseCusps?.house10?.degree;
+                return (
+                  <div className="bg-background/50 p-3 rounded">
+                    <p className="text-xs font-medium text-amber-600 dark:text-amber-400">MC (10th House Cusp)</p>
+                    <p className="text-sm font-medium">
+                      {mcSign || 'Unknown'}
+                      {mcDegree !== undefined && ` ${mcDegree}°`}
+                    </p>
+                    {mcSign && (
+                      <p className="text-xs text-muted-foreground">{getSignElement(mcSign)} • {getSignModality(mcSign)}</p>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-1">Your public image, career calling, legacy</p>
+                  </div>
+                );
+              })()}
             </div>
           </div>
           
@@ -784,28 +822,32 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
                   <div className="bg-background/50 p-3 rounded">
                     <p className="text-xs font-medium text-green-600 dark:text-green-400">Ceres — The Great Mother</p>
                     <p className="text-sm font-medium">{natalChart.planets.Ceres.sign} {natalChart.planets.Ceres.degree}°</p>
-                    <p className="text-xs text-muted-foreground">How you nurture and need to be nurtured</p>
+                    <p className="text-xs text-muted-foreground">{getSignElement(natalChart.planets.Ceres.sign)} • {getSignModality(natalChart.planets.Ceres.sign)}</p>
+                    <p className="text-xs text-muted-foreground mt-1">How you nurture and need to be nurtured</p>
                   </div>
                 )}
                 {natalChart.planets.Pallas && (
                   <div className="bg-background/50 p-3 rounded">
                     <p className="text-xs font-medium text-blue-600 dark:text-blue-400">Pallas Athena — The Strategist</p>
                     <p className="text-sm font-medium">{natalChart.planets.Pallas.sign} {natalChart.planets.Pallas.degree}°</p>
-                    <p className="text-xs text-muted-foreground">Your pattern recognition and creative intelligence</p>
+                    <p className="text-xs text-muted-foreground">{getSignElement(natalChart.planets.Pallas.sign)} • {getSignModality(natalChart.planets.Pallas.sign)}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Your pattern recognition and creative intelligence</p>
                   </div>
                 )}
                 {natalChart.planets.Juno && (
                   <div className="bg-background/50 p-3 rounded">
                     <p className="text-xs font-medium text-rose-600 dark:text-rose-400">Juno — The Sacred Partner</p>
                     <p className="text-sm font-medium">{natalChart.planets.Juno.sign} {natalChart.planets.Juno.degree}°</p>
-                    <p className="text-xs text-muted-foreground">What you need in committed partnership</p>
+                    <p className="text-xs text-muted-foreground">{getSignElement(natalChart.planets.Juno.sign)} • {getSignModality(natalChart.planets.Juno.sign)}</p>
+                    <p className="text-xs text-muted-foreground mt-1">What you need in committed partnership</p>
                   </div>
                 )}
                 {natalChart.planets.Vesta && (
                   <div className="bg-background/50 p-3 rounded">
                     <p className="text-xs font-medium text-orange-600 dark:text-orange-400">Vesta — The Sacred Flame</p>
                     <p className="text-sm font-medium">{natalChart.planets.Vesta.sign} {natalChart.planets.Vesta.degree}°</p>
-                    <p className="text-xs text-muted-foreground">Where you devote yourself completely</p>
+                    <p className="text-xs text-muted-foreground">{getSignElement(natalChart.planets.Vesta.sign)} • {getSignModality(natalChart.planets.Vesta.sign)}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Where you devote yourself completely</p>
                   </div>
                 )}
               </div>
@@ -1832,4 +1874,30 @@ const getNorthNodeDescription = (sign: string): string => {
     Pisces: "Your soul is learning SURRENDER and SPIRITUAL FAITH. You're moving away from criticism and control (South Node in Virgo) toward trust, compassion, and allowing the mystery. This lifetime: dissolve into the divine.",
   };
   return descriptions[sign] || `Your soul is growing toward ${sign} qualities in this lifetime.`;
+};
+
+// Helper functions for element and modality
+const getSignElement = (sign: string): string => {
+  const elements: Record<string, string[]> = {
+    Fire: ['Aries', 'Leo', 'Sagittarius'],
+    Earth: ['Taurus', 'Virgo', 'Capricorn'],
+    Air: ['Gemini', 'Libra', 'Aquarius'],
+    Water: ['Cancer', 'Scorpio', 'Pisces'],
+  };
+  for (const [element, signs] of Object.entries(elements)) {
+    if (signs.includes(sign)) return element;
+  }
+  return 'Unknown';
+};
+
+const getSignModality = (sign: string): string => {
+  const modalities: Record<string, string[]> = {
+    Cardinal: ['Aries', 'Cancer', 'Libra', 'Capricorn'],
+    Fixed: ['Taurus', 'Leo', 'Scorpio', 'Aquarius'],
+    Mutable: ['Gemini', 'Virgo', 'Sagittarius', 'Pisces'],
+  };
+  for (const [modality, signs] of Object.entries(modalities)) {
+    if (signs.includes(sign)) return modality;
+  }
+  return 'Unknown';
 };
