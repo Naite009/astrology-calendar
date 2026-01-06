@@ -21,6 +21,7 @@ export const DocumentUploader = () => {
   const [documents, setDocuments] = useState<UploadedDocument[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDragActive, setIsDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch documents when authenticated
@@ -32,7 +33,7 @@ export const DocumentUploader = () => {
 
   const fetchDocuments = async () => {
     if (!user) return;
-    
+
     setIsLoading(true);
     try {
       const { data, error } = await supabase
@@ -50,27 +51,36 @@ export const DocumentUploader = () => {
     }
   };
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !user) return;
+  const validateFile = (file: File) => {
+    const allowedTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ];
 
-    // Validate file type
-    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
     if (!allowedTypes.includes(file.type)) {
       toast.error('Please upload a PDF or Word document');
-      return;
+      return false;
     }
 
     // Validate file size (50MB limit)
     if (file.size > 50 * 1024 * 1024) {
       toast.error('File size must be less than 50MB');
-      return;
+      return false;
     }
+
+    return true;
+  };
+
+  const uploadFile = async (file: File) => {
+    if (!user) return;
+    if (!validateFile(file)) return;
 
     setIsUploading(true);
     try {
       // Upload to storage
-      const filePath = `${user.id}/${Date.now()}_${file.name}`;
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const filePath = `${user.id}/${Date.now()}_${safeName}`;
       const { error: uploadError } = await supabase.storage
         .from('astrology-docs')
         .upload(filePath, file);
@@ -92,9 +102,9 @@ export const DocumentUploader = () => {
 
       if (dbError) throw dbError;
 
-      setDocuments(prev => [data, ...prev]);
+      setDocuments((prev) => [data, ...prev]);
       toast.success('Document uploaded successfully!');
-      
+
       // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -105,6 +115,39 @@ export const DocumentUploader = () => {
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    await uploadFile(file);
+  };
+
+  const handleDrop = async (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragActive(false);
+
+    const file = event.dataTransfer.files?.[0];
+    if (!file) return;
+    await uploadFile(file);
+  };
+
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
+  const handleDragEnter = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragActive(true);
+  };
+
+  const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragActive(false);
   };
 
   const handleDelete = async (doc: UploadedDocument) => {
@@ -178,9 +221,20 @@ export const DocumentUploader = () => {
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Upload Area */}
-        <div 
-          className="border-2 border-dashed border-muted rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
+        <div
+          className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
+            isDragActive ? 'border-primary bg-primary/5' : 'border-muted hover:border-primary/50'
+          }`}
           onClick={() => fileInputRef.current?.click()}
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click();
+          }}
         >
           <input
             ref={fileInputRef}
@@ -196,8 +250,8 @@ export const DocumentUploader = () => {
             </div>
           ) : (
             <div className="flex flex-col items-center gap-2">
-              <Upload className="text-muted-foreground" size={32} />
-              <p className="text-sm font-medium">Click to upload PDF</p>
+              <Upload className={isDragActive ? 'text-primary' : 'text-muted-foreground'} size={32} />
+              <p className="text-sm font-medium">Drag & drop a document here, or click to upload</p>
               <p className="text-xs text-muted-foreground">Max 50MB • PDF or Word documents</p>
             </div>
           )}
