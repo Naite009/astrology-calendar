@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Printer, ChevronDown, ChevronUp, Scroll, Star, Moon, Sun, Flame, Mountain, Wind, Droplets } from 'lucide-react';
+import { Printer, ChevronDown, ChevronUp, Scroll, Star, Moon, Sun, Flame, Mountain, Wind, Droplets, Sparkles, BookOpen } from 'lucide-react';
 import { 
   calculateElementalBalance, 
   getCharacterCards, 
@@ -30,6 +30,14 @@ import {
 } from '@/lib/saturnCycleCalculator';
 import { detectChartPatterns, ChartPattern } from '@/lib/chartPatterns';
 import { calculateSecondaryProgressions, getProgressedMoonInfo, ProgressedMoonInfo } from '@/lib/secondaryProgressions';
+import { 
+  SIGN_ARCHETYPES, 
+  ELEMENT_DESCRIPTIONS, 
+  MODALITY_DESCRIPTIONS,
+  MAJOR_CONFIGURATIONS,
+  getSignArchetype,
+  getOppositionPairForSign
+} from '@/lib/debraSilvermanGuide';
 
 interface SacredScriptViewProps {
   natalChart: NatalChart;
@@ -323,6 +331,161 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
             </div>
           )}
           
+          {/* Tree of Life Messages - Debra Silverman */}
+          {(() => {
+            const sunSign = characterCards.find(c => c.planet === 'Sun')?.sign;
+            const moonSign = characterCards.find(c => c.planet === 'Moon')?.sign;
+            const risingSign = characterCards.find(c => c.planet === 'Rising')?.sign;
+            const sunArchetype = sunSign ? getSignArchetype(sunSign) : null;
+            const moonArchetype = moonSign ? getSignArchetype(moonSign) : null;
+            const risingArchetype = risingSign ? getSignArchetype(risingSign) : null;
+            
+            // Get unique signs for Tree of Life messages
+            const uniqueSigns = [...new Set([sunSign, moonSign, risingSign].filter(Boolean))] as string[];
+            
+            return (
+              <details className="group">
+                <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground flex items-center gap-2">
+                  <BookOpen size={16} />
+                  <span>Tree of Life Messages (Debra Silverman)</span>
+                  <ChevronDown size={16} className="group-open:rotate-180 transition-transform ml-auto" />
+                </summary>
+                <div className="mt-3 space-y-4">
+                  {uniqueSigns.map(sign => {
+                    const archetype = SIGN_ARCHETYPES[sign];
+                    if (!archetype) return null;
+                    return (
+                      <div key={sign} className="bg-gradient-to-br from-violet-50/50 to-indigo-50/50 dark:from-violet-950/30 dark:to-indigo-950/30 p-4 rounded-lg border border-violet-200 dark:border-violet-800">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Sparkles className="text-violet-500" size={16} />
+                          <h5 className="font-medium">{sign}</h5>
+                          <span className="text-xs text-muted-foreground ml-auto">Gift: {archetype.treeOfLifeGift}</span>
+                        </div>
+                        <p className="text-sm italic leading-relaxed text-muted-foreground">"{archetype.treeOfLifeMessage}"</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </details>
+            );
+          })()}
+          
+          {/* Sign Archetypes & Life Lessons */}
+          {(() => {
+            const sunSign = characterCards.find(c => c.planet === 'Sun')?.sign;
+            const sunArchetype = sunSign ? getSignArchetype(sunSign) : null;
+            
+            if (!sunArchetype) return null;
+            
+            return (
+              <div className="bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950/30 dark:to-yellow-950/30 p-5 rounded-lg border border-orange-200 dark:border-orange-800">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sun className="text-orange-500" size={20} />
+                  <h4 className="font-serif text-lg font-medium">Sun Sign: {sunSign}</h4>
+                  <span className="text-xs bg-orange-200 dark:bg-orange-900 px-2 py-0.5 rounded ml-auto">{sunArchetype.mantras.join(' / ')}</span>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  {/* Archetypes */}
+                  <div>
+                    <p className="font-medium text-orange-700 dark:text-orange-400 mb-1">Archetypes</p>
+                    <p>{sunArchetype.archetypes.join(' • ')}</p>
+                  </div>
+                  
+                  {/* Traits */}
+                  <div>
+                    <p className="font-medium text-orange-700 dark:text-orange-400 mb-1">Traits</p>
+                    <p>{sunArchetype.traits.slice(0, 5).join(', ')}</p>
+                  </div>
+                </div>
+                
+                {/* Life Lessons */}
+                <div className="mt-4 p-3 bg-orange-100/50 dark:bg-orange-900/30 rounded">
+                  <p className="font-medium text-orange-700 dark:text-orange-400 mb-2">Life Lessons for {sunSign}</p>
+                  <ul className="text-sm space-y-1">
+                    {sunArchetype.lifeLessons.map((lesson, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="text-orange-500">•</span>
+                        <span>{lesson}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                {/* Esoteric Meaning */}
+                <div className="mt-3 p-3 bg-violet-100/50 dark:bg-violet-900/30 rounded">
+                  <p className="font-medium text-violet-700 dark:text-violet-400 mb-2">Esoteric Meaning</p>
+                  <ul className="text-sm space-y-1">
+                    {sunArchetype.esotericMeaning.map((meaning, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="text-violet-500">✦</span>
+                        <span>{meaning}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            );
+          })()}
+          
+          {/* Element Questions from Debra's Guide */}
+          {(() => {
+            const sunSign = characterCards.find(c => c.planet === 'Sun')?.sign;
+            const moonSign = characterCards.find(c => c.planet === 'Moon')?.sign;
+            
+            const getElement = (sign: string) => {
+              if (['Aries', 'Leo', 'Sagittarius'].includes(sign)) return 'Fire';
+              if (['Taurus', 'Virgo', 'Capricorn'].includes(sign)) return 'Earth';
+              if (['Gemini', 'Libra', 'Aquarius'].includes(sign)) return 'Air';
+              if (['Cancer', 'Scorpio', 'Pisces'].includes(sign)) return 'Water';
+              return null;
+            };
+            
+            const sunElement = sunSign ? getElement(sunSign) : null;
+            const moonElement = moonSign ? getElement(moonSign) : null;
+            const uniqueElements = [...new Set([sunElement, moonElement].filter(Boolean))] as string[];
+            
+            if (uniqueElements.length === 0) return null;
+            
+            return (
+              <details className="group">
+                <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground flex items-center gap-2">
+                  <Flame size={16} />
+                  <span>Element Reflection Questions</span>
+                  <ChevronDown size={16} className="group-open:rotate-180 transition-transform ml-auto" />
+                </summary>
+                <div className="mt-3 space-y-3">
+                  {uniqueElements.map(element => {
+                    const desc = ELEMENT_DESCRIPTIONS[element];
+                    if (!desc) return null;
+                    
+                    const elementColors: Record<string, string> = {
+                      Fire: 'from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30 border-red-200 dark:border-red-800',
+                      Earth: 'from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border-green-200 dark:border-green-800',
+                      Air: 'from-sky-50 to-blue-50 dark:from-sky-950/30 dark:to-blue-950/30 border-sky-200 dark:border-sky-800',
+                      Water: 'from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border-blue-200 dark:border-blue-800'
+                    };
+                    
+                    return (
+                      <div key={element} className={`bg-gradient-to-r ${elementColors[element]} p-4 rounded-lg border`}>
+                        <p className="font-medium mb-2 flex items-center gap-2">
+                          <ElementIcon element={element} />
+                          {element} Element
+                        </p>
+                        <p className="text-sm text-muted-foreground mb-2">{desc.keywords.join(' • ')}</p>
+                        <div className="space-y-2">
+                          {desc.questions.map((q, i) => (
+                            <p key={i} className="text-sm italic">"{q}"</p>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </details>
+            );
+          })()}
+          
           {/* Trinity Synthesis Narrative */}
           {characterSynthesis && (
             <div className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-lg border border-slate-200 dark:border-slate-700">
@@ -538,17 +701,49 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
         icon={<Star className="text-purple-500" size={20} />}
       >
         <div className="space-y-4">
+          <p className="text-sm text-muted-foreground italic mb-2">
+            "When you first look at the chart, what stands out for you and grabs your attention? Pay attention to that." — Debra Silverman
+          </p>
+          
           {patterns.length > 0 ? (
             <div className="space-y-3">
-              {patterns.map((pattern, i) => (
-                <PatternCard key={i} pattern={pattern} />
-              ))}
+              {patterns.map((pattern, i) => {
+                // Get Debra's interpretation for major configurations
+                const configKey = pattern.name === 'Grand Trine' ? 'GrandTrine' 
+                  : pattern.name === 'Grand Cross' ? 'GrandCross'
+                  : pattern.name === 'T-Square' ? 'TSquare'
+                  : pattern.name === 'Yod' ? 'Yod' : null;
+                const debraConfig = configKey ? MAJOR_CONFIGURATIONS[configKey] : null;
+                
+                return (
+                  <div key={i}>
+                    <PatternCard pattern={pattern} />
+                    {debraConfig && (
+                      <div className="ml-4 mt-2 p-3 bg-violet-50 dark:bg-violet-950/30 rounded border-l-2 border-violet-400">
+                        <p className="text-xs font-medium text-violet-700 dark:text-violet-400 mb-1">Debra Silverman's Interpretation:</p>
+                        <p className="text-sm italic">{debraConfig.interpretation}</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">
               No major patterns (Grand Trine, T-Square, etc.) detected. Focus on individual planetary aspects.
             </p>
           )}
+          
+          {/* Quick Aspect Checklist from Debra's Guide */}
+          <div className="bg-purple-50 dark:bg-purple-950/30 p-4 rounded-lg">
+            <h4 className="font-medium mb-2 text-purple-700 dark:text-purple-400">Aspect Check (Step 7)</h4>
+            <CheckItem label="Is there one planet standing alone with no aspects?" />
+            <CheckItem label="Is there one planet aspected both positively AND negatively?" />
+            <CheckItem label="Which planets are conjunct? (Act as one force)" />
+            <CheckItem label="Which planets are opposing? (Need dialogue/balance)" />
+            <CheckItem label="Which planets are in trine? (Effortless gifts)" />
+            <CheckItem label="Which planets are in square? (Growth through tension)" />
+          </div>
           
           <NoteArea placeholder="Additional patterns or aspects to discuss..." />
         </div>
@@ -643,17 +838,51 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
         icon={<div className="w-6 h-6 rounded-full bg-slate-500/20 flex items-center justify-center text-slate-600 text-xs font-bold">8</div>}
       >
         <div className="space-y-4">
+          <p className="text-sm text-muted-foreground italic mb-2">
+            "What house and sign is Saturn in? Breathe into this one. Think it through." — Debra Silverman (Step 5)
+          </p>
+          
           {lifeLesson.saturn && (
-            <div className="bg-slate-50 dark:bg-slate-950/30 p-4 rounded-lg">
-              <h4 className="font-medium mb-2">
-                Saturn in {lifeLesson.saturn.sign}
-                {lifeLesson.saturn.house && ` (House ${lifeLesson.saturn.house})`}
-              </h4>
-              <p className="text-sm mb-3">{lifeLesson.saturn.lesson}</p>
-              <p className="text-sm font-medium text-primary">
-                Directive: {lifeLesson.saturn.directive}
-              </p>
-            </div>
+            <>
+              <div className="bg-slate-50 dark:bg-slate-950/30 p-4 rounded-lg">
+                <h4 className="font-medium mb-2">
+                  Saturn in {lifeLesson.saturn.sign}
+                  {lifeLesson.saturn.house && ` (House ${lifeLesson.saturn.house})`}
+                </h4>
+                <p className="text-sm mb-3">{lifeLesson.saturn.lesson}</p>
+                <p className="text-sm font-medium text-primary">
+                  Directive: {lifeLesson.saturn.directive}
+                </p>
+              </div>
+              
+              {/* Debra Silverman's Life Lessons for Saturn's Sign */}
+              {(() => {
+                const saturnArchetype = getSignArchetype(lifeLesson.saturn.sign);
+                if (!saturnArchetype) return null;
+                
+                return (
+                  <div className="bg-gradient-to-r from-slate-100 to-stone-100 dark:from-slate-900/50 dark:to-stone-900/50 p-4 rounded-lg border border-slate-300 dark:border-slate-700">
+                    <h5 className="font-medium text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+                      <BookOpen size={16} />
+                      Life Lessons from {lifeLesson.saturn.sign} (Debra Silverman)
+                    </h5>
+                    <ul className="text-sm space-y-2">
+                      {saturnArchetype.lifeLessons.map((lesson, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <span className="text-slate-500 mt-0.5">♄</span>
+                          <span>{lesson}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    
+                    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                      <p className="text-xs text-muted-foreground font-medium mb-1">Esoteric Purpose:</p>
+                      <p className="text-sm italic">{saturnArchetype.esotericMeaning.join(' • ')}</p>
+                    </div>
+                  </div>
+                );
+              })()}
+            </>
           )}
           
           {lifeLesson.northNode && (
@@ -663,7 +892,7 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
                 {lifeLesson.northNode.house && ` (House ${lifeLesson.northNode.house})`}
               </h4>
               <p className="text-sm text-muted-foreground italic">
-                (For your reference—don't necessarily tell the client)
+                (For your reference—Step 6: "Combine Saturn, the Rising Sign and the North Node to identify someone's purpose")
               </p>
               <p className="text-sm mt-2">{lifeLesson.northNode.direction}</p>
             </div>
