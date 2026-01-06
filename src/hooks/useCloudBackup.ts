@@ -124,28 +124,46 @@ export const useCloudBackup = (
     if (!chart.id || !chart.name) return;
 
     try {
-      // Build query based on auth status
-      const lookupQuery = user?.id 
-        ? supabase.from('device_charts').select('id').eq('user_id', user.id).eq('chart_id', chart.id)
-        : supabase.from('device_charts').select('id').eq('device_id', deviceId.current).eq('chart_id', chart.id);
-      
-      const { data: existing } = await lookupQuery.maybeSingle();
+      // Find existing rows (there may be duplicates if a previous bug inserted multiple rows)
+      const baseLookup = supabase
+        .from('device_charts')
+        .select('id, updated_at')
+        .order('updated_at', { ascending: false })
+        .limit(10);
 
-      if (existing) {
-        // Update existing record
-        const updateQuery = user?.id
-          ? supabase.from('device_charts').update({
-              chart_data: JSON.parse(JSON.stringify(chart)),
-              chart_name: chart.name,
-              updated_at: new Date().toISOString(),
-            }).eq('user_id', user.id).eq('chart_id', chart.id)
-          : supabase.from('device_charts').update({
-              chart_data: JSON.parse(JSON.stringify(chart)),
-              chart_name: chart.name,
-              updated_at: new Date().toISOString(),
-            }).eq('device_id', deviceId.current).eq('chart_id', chart.id);
+      const { data: existingRows, error: lookupError } = user?.id
+        ? await baseLookup.eq('user_id', user.id).eq('chart_id', chart.id)
+        : await baseLookup.eq('device_id', deviceId.current).eq('chart_id', chart.id);
 
-        const { error } = await updateQuery;
+      if (lookupError) {
+        console.error('[CloudBackup] Error looking up existing chart rows:', chart.name, lookupError);
+        return;
+      }
+
+      const keepRowId = existingRows?.[0]?.id;
+
+      // If duplicates exist, delete extras so we stop compounding duplicates on refresh/sync
+      if (existingRows && existingRows.length > 1) {
+        const extraIds = existingRows.slice(1).map(r => r.id);
+        const deleteQuery = supabase.from('device_charts').delete().in('id', extraIds);
+        const { error: deleteError } = await deleteQuery;
+        if (deleteError) {
+          console.warn('[CloudBackup] Failed to delete duplicate cloud rows:', deleteError);
+        } else {
+          console.log('[CloudBackup] Deleted duplicate cloud rows:', extraIds.length);
+        }
+      }
+
+      if (keepRowId) {
+        // Update the kept record
+        const { error } = await supabase
+          .from('device_charts')
+          .update({
+            chart_data: JSON.parse(JSON.stringify(chart)),
+            chart_name: chart.name,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', keepRowId);
 
         if (error) {
           console.error('[CloudBackup] Error updating chart:', chart.name, error);
@@ -160,15 +178,13 @@ export const useCloudBackup = (
           chart_data: JSON.parse(JSON.stringify(chart)),
           chart_name: chart.name,
         };
-        
+
         // Add user_id if authenticated
         if (user?.id) {
           insertData.user_id = user.id;
         }
-        
-        const { error } = await supabase
-          .from('device_charts')
-          .insert(insertData as never);
+
+        const { error } = await supabase.from('device_charts').insert(insertData as never);
 
         if (error) {
           console.error('[CloudBackup] Error inserting chart:', chart.name, error);
@@ -233,21 +249,32 @@ export const useCloudBackup = (
   // Restore from cloud (called when local data is empty but cloud has data)
   const restoreFromCloud = useCallback(async () => {
     setState(prev => ({ ...prev, isLoading: true }));
-    
+
     try {
       const cloudCharts = await fetchCloudCharts();
-      
+
       if (cloudCharts.length === 0) {
         setState(prev => ({ ...prev, isLoading: false, hasCloudData: false }));
         return false;
       }
 
       let restoredCount = 0;
+
+      // De-dupe by chart_id (keep the most recently updated row)
+      const byChartId = new Map<string, CloudChart>();
+      for (const cc of cloudCharts) {
+        const existing = byChartId.get(cc.chart_id);
+        if (!existing || new Date(cc.updated_at).getTime() > new Date(existing.updated_at).getTime()) {
+          byChartId.set(cc.chart_id, cc);
+        }
+      }
+
+      const deduped = Array.from(byChartId.values());
       const restoredSavedCharts: NatalChart[] = [];
 
-      for (const cloudChart of cloudCharts) {
+      for (const cloudChart of deduped) {
         const chartData = cloudChart.chart_data as unknown as NatalChart;
-        
+
         if (cloudChart.chart_id === 'user') {
           saveUserNatalChart(chartData);
           restoredCount++;
@@ -268,15 +295,15 @@ export const useCloudBackup = (
         ...prev,
         isLoading: false,
         hasCloudData: true,
-        cloudChartCount: cloudCharts.length,
+        cloudChartCount: deduped.length,
       }));
 
       if (restoredCount > 0 && !hasShownRestoreToastRef.current) {
         hasShownRestoreToastRef.current = true;
         toast.success(`Restored ${restoredCount} chart${restoredCount > 1 ? 's' : ''} from cloud backup`);
       }
-      
-      console.log('[CloudBackup] Restored', restoredCount, 'charts from cloud');
+
+      console.log('[CloudBackup] Restored', restoredCount, 'charts from cloud (deduped from', cloudCharts.length, ')');
       return restoredCount > 0;
     } catch (err) {
       console.error('[CloudBackup] Restore failed:', err);
