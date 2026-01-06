@@ -379,13 +379,26 @@ export const generateCharacterSynthesis = (
   const moonDegreeMeaning = getDegreeMeaning(moonPos.degree);
   const risingDegreeMeaning = getDegreeMeaning(risingDegree);
   
-  // Element combination (Sun-Moon)
-  const elementKey = [sunElement, moonElement].sort().join('-');
-  const elementCombo = ELEMENT_COMBINATIONS[elementKey] || ELEMENT_COMBINATIONS[`${sunElement}-${moonElement}`] || ELEMENT_COMBINATIONS[`${moonElement}-${sunElement}`];
+  // Element combination (all three: Sun, Moon, Rising)
+  const allElements = [sunElement, moonElement, risingElement];
+  const uniqueElements = [...new Set(allElements)];
+  const isTripleElement = uniqueElements.length === 1;
+  const isDoubleElement = uniqueElements.length === 2;
   
-  // Modality combination (Sun-Moon)
-  const modalityKey = [sunModality, moonModality].sort().join('-');
+  // For display and lookup
+  const elementKey = isTripleElement ? `${sunElement}-${sunElement}` : [sunElement, moonElement].sort().join('-');
+  const elementCombo = ELEMENT_COMBINATIONS[elementKey] || ELEMENT_COMBINATIONS[`${sunElement}-${moonElement}`] || ELEMENT_COMBINATIONS[`${moonElement}-${sunElement}`];
+  const elementDisplayLabel = isTripleElement ? `Triple ${sunElement}` : isDoubleElement ? `Double ${allElements.filter(e => allElements.filter(x => x === e).length >= 2)[0]} (${allElements.join(', ')})` : `${sunElement}, ${moonElement}, ${risingElement}`;
+  
+  // Modality combination (all three: Sun, Moon, Rising)
+  const allModalities = [sunModality, moonModality, risingModality];
+  const uniqueModalities = [...new Set(allModalities)];
+  const isTripleModality = uniqueModalities.length === 1;
+  const isDoubleModality = uniqueModalities.length === 2;
+  
+  const modalityKey = isTripleModality ? `${sunModality}-${sunModality}` : [sunModality, moonModality].sort().join('-');
   const modalityCombo = MODALITY_COMBINATIONS[modalityKey] || MODALITY_COMBINATIONS[`${sunModality}-${moonModality}`] || MODALITY_COMBINATIONS[`${moonModality}-${sunModality}`];
+  const modalityDisplayLabel = isTripleModality ? `Triple ${sunModality}` : isDoubleModality ? `Double ${allModalities.filter(m => allModalities.filter(x => x === m).length >= 2)[0]} (${allModalities.join(', ')})` : `${sunModality}, ${moonModality}, ${risingModality}`;
   
   // House meanings
   const sunHouseMeaning = sunHouse ? HOUSE_DEEP_MEANINGS[sunHouse]?.sunMeaning || '' : '';
@@ -529,26 +542,26 @@ The Libra esoteric meaning: The end of duality. Male and female in tandem. Perso
   readingNarrative += risingDegreeMeaning.meaning + ' ';
   readingNarrative += `\n\n`;
   
-  // Element/Modality dynamics
+  // Element/Modality dynamics (now includes all three: Sun, Moon, Rising)
   if (elementCombo) {
-    readingNarrative += `**Element Dynamic (${sunElement}-${moonElement}):** ${elementCombo.dynamic} ${elementCombo.challenge ? `The challenge: ${elementCombo.challenge}` : ''} ${elementCombo.gift ? `The gift: ${elementCombo.gift}` : ''}\n\n`;
+    readingNarrative += `**Element Dynamic (${elementDisplayLabel}):** ${elementCombo.dynamic} ${elementCombo.challenge ? `The challenge: ${elementCombo.challenge}` : ''} ${elementCombo.gift ? `The gift: ${elementCombo.gift}` : ''}\n\n`;
   }
   
   if (modalityCombo) {
-    readingNarrative += `**Modality Dynamic (${sunModality}-${moonModality}):** ${modalityCombo.description} ${modalityCombo.energy}`;
+    readingNarrative += `**Modality Dynamic (${modalityDisplayLabel}):** ${modalityCombo.description} ${modalityCombo.energy}`;
   }
   
   return {
     overview,
     elementDynamic: {
-      combination: `${sunElement}-${moonElement}`,
+      combination: elementDisplayLabel,
       description: elementCombo?.description || '',
       dynamic: elementCombo?.dynamic || '',
       challenge: elementCombo?.challenge || '',
       gift: elementCombo?.gift || '',
     },
     modalityDynamic: {
-      combination: `${sunModality}-${moonModality}`,
+      combination: modalityDisplayLabel,
       description: modalityCombo?.description || '',
       energy: modalityCombo?.energy || '',
       challenge: modalityCombo?.challenge || '',
