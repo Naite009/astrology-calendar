@@ -39,6 +39,13 @@ import {
   getSignArchetype,
   getOppositionPairForSign
 } from '@/lib/debraSilvermanGuide';
+import { 
+  ELEMENT_TEACHINGS, 
+  MERCURY_IN_SIGNS,
+  getElementTeaching,
+  getMercuryInSign,
+  getElementForSign
+} from '@/lib/elementTeachings';
 
 interface SacredScriptViewProps {
   natalChart: NatalChart;
@@ -700,6 +707,96 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
         </div>
       </Section>
       
+      {/* 3.5 Mercury / The Mindset - NEW SECTION */}
+      <Section 
+        title="3.5 Mercury & The Mindset" 
+        color="border-l-sky-500" 
+        icon={<Wind className="text-sky-500" size={20} />}
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground italic mb-2">
+            "Mercury shows us HOW we think, communicate, and process information. It is the mindset through which we experience and express our thoughts." — Debra Silverman
+          </p>
+          
+          {(() => {
+            // Find Mercury in the chart - planets is an object, not an array
+            const mercuryPosition = natalChart.planets?.Mercury;
+            
+            if (!mercuryPosition) return (
+              <p className="text-sm text-muted-foreground">Mercury position not found in chart data.</p>
+            );
+            
+            const mercurySign = mercuryPosition.sign;
+            const mercuryData = getMercuryInSign(mercurySign);
+            
+            if (!mercuryData) return (
+              <p className="text-sm text-muted-foreground">Mercury interpretation not available for {mercurySign}.</p>
+            );
+            
+            const mercuryHouse = getPlanetHouse(natalChart, 'Mercury');
+            
+            return (
+              <div className="bg-gradient-to-r from-sky-50 to-cyan-50 dark:from-sky-950/30 dark:to-cyan-950/30 p-5 rounded-lg border border-sky-200 dark:border-sky-800">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-sky-500/20 flex items-center justify-center text-sky-600 text-lg">☿</div>
+                  <div>
+                    <h5 className="font-medium text-lg">Mercury in {mercurySign}</h5>
+                    <p className="text-sm text-muted-foreground">
+                      {mercuryData.mindset}
+                      {mercuryHouse && ` • House ${mercuryHouse}`}
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Thinking Style */}
+                <div className="mb-4">
+                  <h6 className="text-sm font-medium text-sky-700 dark:text-sky-400 mb-1">How This Mind Works:</h6>
+                  <p className="text-sm">{mercuryData.thinkingStyle}</p>
+                </div>
+                
+                {/* Communication Style */}
+                <div className="mb-4">
+                  <h6 className="text-sm font-medium text-sky-700 dark:text-sky-400 mb-1">Communication Style:</h6>
+                  <p className="text-sm">{mercuryData.communicationStyle}</p>
+                </div>
+                
+                {/* Gifts */}
+                <div className="mb-4 p-3 bg-green-50/50 dark:bg-green-950/30 rounded">
+                  <h6 className="text-sm font-medium text-green-700 dark:text-green-400 mb-2">Mercury Gifts:</h6>
+                  <ul className="text-sm space-y-1">
+                    {mercuryData.gifts.map((gift, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="text-green-600">✦</span>
+                        <span>{gift}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                {/* Challenges */}
+                <details className="group">
+                  <summary className="cursor-pointer text-sm font-medium text-rose-600 dark:text-rose-400 hover:underline flex items-center gap-1">
+                    Mercury Challenges <ChevronDown size={14} className="group-open:rotate-180 transition-transform" />
+                  </summary>
+                  <div className="mt-2 p-3 bg-rose-50/50 dark:bg-rose-950/30 rounded">
+                    <ul className="text-sm space-y-1">
+                      {mercuryData.challenges.map((challenge, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <span className="text-rose-500">•</span>
+                          <span>{challenge}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </details>
+              </div>
+            );
+          })()}
+          
+          <NoteArea placeholder="Client's thoughts on their Mercury/mindset. How do they experience their thinking and communication style?" />
+        </div>
+      </Section>
+      
       {/* 4. What Stands Out */}
       <Section 
         title="4. What Stands Out" 
@@ -755,36 +852,172 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
         </div>
       </Section>
       
-      {/* 5. Missing/Abundant Elements */}
+      {/* 5. Missing/Abundant Elements - Enhanced with Debra Silverman Teachings */}
       <Section 
-        title="5. Missing & Abundant Elements" 
+        title="5. Elemental Wisdom (Debra Silverman)" 
         color="border-l-rose-500" 
         icon={<div className="w-6 h-6 rounded-full bg-rose-500/20 flex items-center justify-center text-rose-600 text-xs font-bold">5</div>}
       >
-        <div className="space-y-4">
+        <div className="space-y-6">
+          <p className="text-sm text-muted-foreground italic">
+            "The Elements are as cosmic as they are earthy, simple as they are complex. They describe our unique energies and personality types and they teach us our life lessons." — Debra Silverman
+          </p>
+          
+          {/* Missing Elements with Full Teachings */}
           {elements.missing.length > 0 && (
-            <div className="bg-rose-50 dark:bg-rose-950/30 p-4 rounded-lg border border-rose-200 dark:border-rose-800">
-              <h4 className="font-medium text-rose-700 dark:text-rose-400 mb-2 flex items-center gap-2">
+            <div className="space-y-4">
+              <h4 className="font-medium text-rose-700 dark:text-rose-400 flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-rose-500/20 flex items-center justify-center text-xs">!</span>
                 Missing Element{elements.missing.length > 1 ? 's' : ''}: {elements.missing.join(', ')}
               </h4>
-              {elements.missing.map(el => (
-                <p key={el} className="text-sm mt-2">
-                  <ElementIcon element={el} /> <strong>{el}:</strong> {getElementGuidance(el, 'missing')}
-                </p>
-              ))}
+              {elements.missing.map(el => {
+                const teaching = getElementTeaching(el);
+                if (!teaching) return null;
+                
+                const elementColors: Record<string, string> = {
+                  Fire: 'from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30 border-red-200 dark:border-red-800',
+                  Earth: 'from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border-green-200 dark:border-green-800',
+                  Air: 'from-sky-50 to-blue-50 dark:from-sky-950/30 dark:to-blue-950/30 border-sky-200 dark:border-sky-800',
+                  Water: 'from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border-blue-200 dark:border-blue-800'
+                };
+                
+                return (
+                  <div key={el} className={`bg-gradient-to-r ${elementColors[el]} p-5 rounded-lg border`}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <ElementIcon element={el} />
+                      <h5 className="font-medium text-lg">Missing {el}</h5>
+                      <span className="text-xs text-muted-foreground ml-auto">{teaching.signs.join(' • ')}</span>
+                    </div>
+                    
+                    {/* Lack Symptoms */}
+                    <div className="mb-4">
+                      <p className="text-sm font-medium mb-2">Signs of Missing {el}:</p>
+                      <ul className="text-sm space-y-1">
+                        {teaching.lackSymptoms.slice(0, 4).map((symptom, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <span className="text-rose-500">•</span>
+                            <span>{symptom}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    
+                    {/* Medicine */}
+                    <details className="group">
+                      <summary className="cursor-pointer text-sm font-medium text-primary hover:underline flex items-center gap-1">
+                        Medicine for {el} <ChevronDown size={14} className="group-open:rotate-180 transition-transform" />
+                      </summary>
+                      <div className="mt-2 p-3 bg-white/50 dark:bg-black/20 rounded">
+                        <ul className="text-sm space-y-2">
+                          {teaching.medicine.map((med, i) => (
+                            <li key={i} className="flex items-start gap-2">
+                              <span className="text-green-600">✓</span>
+                              <span>{med}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </details>
+                  </div>
+                );
+              })}
             </div>
           )}
           
+          {/* Abundant Elements with Full Teachings */}
           {elements.abundant.length > 0 && (
-            <div className="bg-green-50 dark:bg-green-950/30 p-4 rounded-lg border border-green-200 dark:border-green-800">
-              <h4 className="font-medium text-green-700 dark:text-green-400 mb-2 flex items-center gap-2">
+            <div className="space-y-4">
+              <h4 className="font-medium text-green-700 dark:text-green-400 flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center text-xs">★</span>
                 Abundant Element{elements.abundant.length > 1 ? 's' : ''}: {elements.abundant.join(', ')}
               </h4>
-              {elements.abundant.map(el => (
-                <p key={el} className="text-sm mt-2">
-                  <ElementIcon element={el} /> <strong>{el}:</strong> {getElementGuidance(el, 'abundant')}
-                </p>
-              ))}
+              {elements.abundant.map(el => {
+                const teaching = getElementTeaching(el);
+                if (!teaching) return null;
+                
+                const elementColors: Record<string, string> = {
+                  Fire: 'from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30 border-red-200 dark:border-red-800',
+                  Earth: 'from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border-green-200 dark:border-green-800',
+                  Air: 'from-sky-50 to-blue-50 dark:from-sky-950/30 dark:to-blue-950/30 border-sky-200 dark:border-sky-800',
+                  Water: 'from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border-blue-200 dark:border-blue-800'
+                };
+                
+                return (
+                  <div key={el} className={`bg-gradient-to-r ${elementColors[el]} p-5 rounded-lg border`}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <ElementIcon element={el} />
+                      <h5 className="font-medium text-lg">Abundant {el}</h5>
+                      <span className="text-xs text-muted-foreground ml-auto">{teaching.signs.join(' • ')}</span>
+                    </div>
+                    
+                    <p className="text-sm italic mb-3">"{teaching.quote}"</p>
+                    
+                    {/* Themes */}
+                    <div className="mb-4">
+                      <p className="text-sm font-medium mb-2">{el} Themes:</p>
+                      <ul className="text-sm space-y-1">
+                        {teaching.themes.slice(0, 3).map((theme, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <span className="text-primary">•</span>
+                            <span>{theme}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    
+                    {/* Permissions */}
+                    <details className="group mb-3">
+                      <summary className="cursor-pointer text-sm font-medium text-primary hover:underline flex items-center gap-1">
+                        Permissions for {el} <ChevronDown size={14} className="group-open:rotate-180 transition-transform" />
+                      </summary>
+                      <div className="mt-2 p-3 bg-white/50 dark:bg-black/20 rounded">
+                        <ul className="text-sm space-y-2">
+                          {teaching.permissions.slice(0, 5).map((perm, i) => (
+                            <li key={i} className="flex items-start gap-2">
+                              <span className="text-green-600">✓</span>
+                              <span>{perm}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </details>
+                    
+                    {/* Shadow */}
+                    <details className="group">
+                      <summary className="cursor-pointer text-sm font-medium text-rose-600 dark:text-rose-400 hover:underline flex items-center gap-1">
+                        Shadow of {el} <ChevronDown size={14} className="group-open:rotate-180 transition-transform" />
+                      </summary>
+                      <div className="mt-2 p-3 bg-rose-50/50 dark:bg-rose-950/30 rounded">
+                        <ul className="text-sm space-y-2">
+                          {teaching.shadows.slice(0, 4).map((shadow, i) => (
+                            <li key={i} className="flex items-start gap-2">
+                              <span className="text-rose-500">⚠</span>
+                              <span>{shadow}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </details>
+                    
+                    {/* Evolved State */}
+                    <details className="group mt-3">
+                      <summary className="cursor-pointer text-sm font-medium text-violet-600 dark:text-violet-400 hover:underline flex items-center gap-1">
+                        Evolved {el} <ChevronDown size={14} className="group-open:rotate-180 transition-transform" />
+                      </summary>
+                      <div className="mt-2 p-3 bg-violet-50/50 dark:bg-violet-950/30 rounded">
+                        <ul className="text-sm space-y-2">
+                          {teaching.evolved.map((ev, i) => (
+                            <li key={i} className="flex items-start gap-2">
+                              <span className="text-violet-500">✦</span>
+                              <span>{ev}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </details>
+                  </div>
+                );
+              })}
             </div>
           )}
           
