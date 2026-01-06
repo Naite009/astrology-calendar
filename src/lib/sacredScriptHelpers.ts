@@ -90,7 +90,7 @@ export const calculateElementalBalance = (chart: NatalChart): ElementalBalance =
   const balance: Record<string, number> = { Fire: 0, Earth: 0, Air: 0, Water: 0 };
   const planetsByElement: Record<string, string[]> = { Fire: [], Earth: [], Air: [], Water: [] };
   
-  const relevantPlanets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Ascendant'];
+  const relevantPlanets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
   
   for (const planetName of relevantPlanets) {
     const position = chart.planets[planetName as keyof typeof chart.planets];
