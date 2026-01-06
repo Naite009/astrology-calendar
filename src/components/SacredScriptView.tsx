@@ -1502,18 +1502,20 @@ const ElementalBalanceVisual = ({ elements }: { elements: ElementalBalance }) =>
       <h4 className="font-medium mb-3">Elemental Balance</h4>
       <div className="space-y-2">
         {bars.map((bar) => (
-          <div key={bar.name} className="flex items-center gap-2">
-            <span className="w-12 text-sm">{bar.name}</span>
-            <div className="flex-1 h-4 bg-background rounded overflow-hidden">
-              <div 
-                className={`h-full ${bar.color}`} 
-                style={{ width: `${(bar.count / total) * 100}%` }}
-              />
+          <div key={bar.name} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+            <div className="flex items-center gap-2 flex-1">
+              <span className="w-12 text-sm font-medium">{bar.name}</span>
+              <div className="flex-1 h-4 bg-background rounded overflow-hidden">
+                <div 
+                  className={`h-full ${bar.color}`} 
+                  style={{ width: `${(bar.count / total) * 100}%` }}
+                />
+              </div>
+              <span className="w-8 text-sm text-right">{bar.count}</span>
             </div>
-            <span className="w-8 text-sm text-right">{bar.count}</span>
-            <span className="text-xs text-muted-foreground w-32 truncate">
+            <div className="text-xs text-muted-foreground sm:w-auto pl-14 sm:pl-0">
               {bar.planets.join(', ')}
-            </span>
+            </div>
           </div>
         ))}
       </div>
