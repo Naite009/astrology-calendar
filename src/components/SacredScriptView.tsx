@@ -8,7 +8,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Printer, ChevronDown, ChevronUp, Scroll, Star, Moon, Sun, Flame, Mountain, Wind, Droplets, Sparkles, BookOpen } from 'lucide-react';
+import { Printer, ChevronDown, ChevronUp, Scroll, Star, Moon, Sun, Flame, Mountain, Wind, Droplets, Sparkles, BookOpen, Upload } from 'lucide-react';
+import { DocumentUploader } from '@/components/DocumentUploader';
 import { 
   calculateElementalBalance, 
   getCharacterCards, 
@@ -194,6 +195,11 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
           <Printer size={16} />
           Print
         </button>
+      </div>
+      
+      {/* Reference Documents Upload */}
+      <div className="print:hidden">
+        <DocumentUploader />
       </div>
       
       {/* 1. Introduction */}
