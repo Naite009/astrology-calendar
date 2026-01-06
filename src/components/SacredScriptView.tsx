@@ -352,40 +352,33 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
             </div>
           )}
           
-          {/* Tree of Life Messages - Debra Silverman */}
+          {/* Tree of Life Messages - Debra Silverman - Now clarified as Sun Sign Soul Gift */}
           {(() => {
             const sunSign = characterCards.find(c => c.planet === 'Sun')?.sign;
-            const moonSign = characterCards.find(c => c.planet === 'Moon')?.sign;
-            const risingSign = characterCards.find(c => c.planet === 'Rising')?.sign;
             const sunArchetype = sunSign ? getSignArchetype(sunSign) : null;
-            const moonArchetype = moonSign ? getSignArchetype(moonSign) : null;
-            const risingArchetype = risingSign ? getSignArchetype(risingSign) : null;
             
-            // Get unique signs for Tree of Life messages
-            const uniqueSigns = [...new Set([sunSign, moonSign, risingSign].filter(Boolean))] as string[];
+            if (!sunArchetype) return null;
             
             return (
               <details className="group">
                 <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground flex items-center gap-2">
                   <BookOpen size={16} />
-                  <span>Tree of Life Messages (Debra Silverman)</span>
+                  <span>Your Sun Sign's Soul Gift (Tree of Life)</span>
                   <ChevronDown size={16} className="group-open:rotate-180 transition-transform ml-auto" />
                 </summary>
                 <div className="mt-3 space-y-4">
-                  {uniqueSigns.map(sign => {
-                    const archetype = SIGN_ARCHETYPES[sign];
-                    if (!archetype) return null;
-                    return (
-                      <div key={sign} className="bg-gradient-to-br from-violet-50/50 to-indigo-50/50 dark:from-violet-950/30 dark:to-indigo-950/30 p-4 rounded-lg border border-violet-200 dark:border-violet-800">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Sparkles className="text-violet-500" size={16} />
-                          <h5 className="font-medium">{sign}</h5>
-                          <span className="text-xs text-muted-foreground ml-auto">Gift: {archetype.treeOfLifeGift}</span>
-                        </div>
-                        <p className="text-sm italic leading-relaxed text-muted-foreground">"{archetype.treeOfLifeMessage}"</p>
-                      </div>
-                    );
-                  })}
+                  <p className="text-xs text-muted-foreground italic">
+                    The Tree of Life message speaks to your Sun sign's divine purpose—the gift your soul came to embody and share. 
+                    This is different from your North Node (life direction) or Saturn (lessons). The Sun represents your core light and what you're here to radiate.
+                  </p>
+                  <div className="bg-gradient-to-br from-violet-50/50 to-indigo-50/50 dark:from-violet-950/30 dark:to-indigo-950/30 p-4 rounded-lg border border-violet-200 dark:border-violet-800">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Sparkles className="text-violet-500" size={16} />
+                      <h5 className="font-medium">{sunSign} Sun</h5>
+                      <span className="text-xs bg-violet-200 dark:bg-violet-900 px-2 py-0.5 rounded ml-auto">Gift: {sunArchetype.treeOfLifeGift}</span>
+                    </div>
+                    <p className="text-sm italic leading-relaxed text-muted-foreground">"{sunArchetype.treeOfLifeMessage}"</p>
+                  </div>
                 </div>
               </details>
             );
