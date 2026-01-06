@@ -386,17 +386,56 @@ export const generateCharacterSynthesis = (
   const elementCounts: Record<string, number> = { Fire: 0, Earth: 0, Air: 0, Water: 0 };
   elements.forEach(e => { if (elementCounts[e] !== undefined) elementCounts[e]++; });
   
-  // Build overview
+  // Count signs - check for stellium or triple
+  const signs = [sunPos.sign, moonPos.sign, risingSign];
+  const signCounts: Record<string, number> = {};
+  signs.forEach(s => { signCounts[s] = (signCounts[s] || 0) + 1; });
+  const tripleSign = Object.entries(signCounts).find(([, c]) => c === 3)?.[0];
+  const doubleSign = Object.entries(signCounts).find(([, c]) => c === 2)?.[0];
+  
+  // Build overview with personality insight
   const dominantElements = Object.entries(elementCounts).filter(([, c]) => c >= 2).map(([e]) => e);
   const missingElements = Object.entries(elementCounts).filter(([, c]) => c === 0).map(([e]) => e);
   
-  let overview = `Your Big Three reveals a ${sunPos.sign} Sun, ${moonPos.sign} Moon, and ${risingSign} Rising. `;
+  let overview = '';
   
-  if (dominantElements.length > 0) {
-    overview += `With ${dominantElements.join(' and ')} appearing multiple times, there is a strong ${dominantElements.join('/')} emphasis in your core nature. `;
-  }
-  if (missingElements.length > 0) {
-    overview += `The absence of ${missingElements.join(' and ')} in your trinity suggests these qualities may be areas of growth or attraction. `;
+  // Special case: Triple sign - this is rare and significant
+  if (tripleSign) {
+    const tripleSignDescriptions: Record<string, string> = {
+      Aries: `You are pure fire, undiluted warrior energy. With Sun, Moon, and Rising all in Aries, there is no mask—who you are, what you feel, and how you appear are one seamless identity. You are direct, courageous, and pioneering. You cannot pretend. Your gift is authentic action and the courage to go first. Your challenge is patience, collaboration, and recognizing when to follow.`,
+      Taurus: `You are the embodiment of Earth—solid, sensual, and unshakeable. With Sun, Moon, and Rising all in Taurus, there is a profound consistency to your being. What you show the world is exactly who you are inside. You value stability, beauty, and the pleasures of the material world. Your gift is steadfast presence and the ability to build lasting things. Your challenge is flexibility when life demands change.`,
+      Gemini: `You are pure Mercury—mind in motion, eternal curiosity, the messenger. With Sun, Moon, and Rising all in Gemini, your entire being is oriented toward communication, learning, and connection. There's a quicksilver quality to you that others find fascinating and sometimes hard to pin down. Your gift is versatility and the ability to bridge any gap with words. Your challenge is depth over breadth, commitment over options.`,
+      Cancer: `You are pure Moon—feeling, nurturing, and deeply intuitive. With Sun, Moon, and Rising all in Cancer, your emotional nature permeates everything. You are the mother, the protector, the one who creates home wherever you go. Others experience you as profoundly caring, though perhaps moody. Your gift is emotional intelligence and the ability to make others feel safe. Your challenge is releasing the past and trusting that you are protected too.`,
+      Leo: `You are pure Sun—radiant, creative, and magnificently yourself. With Sun, Moon, and Rising all in Leo, there is no dimmer switch on your light. You are meant to be seen, to create, to lead with warmth. Drama is not optional—it's how you experience life. Your gift is the ability to inspire and bring joy. Your challenge is sharing the spotlight and finding validation from within rather than applause.`,
+      Virgo: `You are pure service—analytical, precise, and devoted to improvement. With Sun, Moon, and Rising all in Virgo, your entire being is oriented toward making things work better. You notice what others miss. You feel compelled to help, to fix, to refine. Your gift is mastery through humble dedication. Your challenge is accepting imperfection—in yourself and others—without losing your peace.`,
+      Libra: `You are pure Venus—harmony, beauty, and relationship incarnate. With Sun, Moon, and Rising all in Libra, your entire being is oriented toward balance, partnership, and aesthetic perfection. You see both sides of everything. You feel incomplete without a significant other to mirror you. You move through the world with grace that others envy. Your gift is diplomacy and the ability to create beauty and peace wherever you go. Your challenge is knowing your own desires when not in relationship, making decisions without endless weighing, and accepting that sometimes conflict is necessary for truth.`,
+      Scorpio: `You are pure Pluto—depth, intensity, and transformation itself. With Sun, Moon, and Rising all in Scorpio, there is nothing light about you, and you wouldn't want there to be. You see through masks, you feel everything at maximum intensity, and you present a mysterious façade even when you're trying to be open. Your gift is regenerative power and psychological insight. Your challenge is trusting, releasing control, and allowing vulnerability without it feeling like death.`,
+      Sagittarius: `You are pure Jupiter—expansion, adventure, and meaning-seeking. With Sun, Moon, and Rising all in Sagittarius, your entire being is oriented toward the horizon, the next truth, the bigger picture. You cannot be confined. You speak your truth—sometimes too bluntly. Your gift is inspiration, humor, and the ability to see life as a grand adventure. Your challenge is commitment to the present, depth over breadth, and tact in your honesty.`,
+      Capricorn: `You are pure Saturn—ambition, discipline, and mastery. With Sun, Moon, and Rising all in Capricorn, your entire being is oriented toward achievement, structure, and long-term building. You were born old and grow younger with age. You take life seriously—perhaps too seriously. Your gift is the ability to manifest anything through sustained effort. Your challenge is allowing pleasure, accepting help, and knowing that you are more than what you accomplish.`,
+      Aquarius: `You are pure Uranus—innovation, individuality, and humanitarian vision. With Sun, Moon, and Rising all in Aquarius, your entire being is oriented toward the future, the collective, and being authentically different. You cannot pretend to be normal even when you try. Your gift is original thinking and the ability to see what others will only understand later. Your challenge is intimacy, emotional accessibility, and staying connected to the present while envisioning the future.`,
+      Pisces: `You are pure Neptune—sensitivity, spirituality, and transcendence. With Sun, Moon, and Rising all in Pisces, your entire being is oriented toward the unseen, the mystical, the interconnected. Boundaries are thin for you—you absorb everything. You feel at home in art, music, dreams, and spiritual practice. Your gift is compassion and creative vision. Your challenge is staying grounded in practical reality, maintaining boundaries, and not escaping when life gets harsh.`,
+    };
+    overview = tripleSignDescriptions[tripleSign] || `With Sun, Moon, and Rising all in ${tripleSign}, you are a concentrated expression of this sign's energy—there is no conflict between who you are, how you feel, and how you appear.`;
+  } else if (doubleSign) {
+    // Two placements in same sign
+    const whichDouble = signs.filter(s => s === doubleSign).length === 2 ? signs.find(s => s !== doubleSign) : null;
+    const otherSign = signs.find(s => s !== doubleSign) || '';
+    overview = `With two of your Big Three in ${doubleSign}, there's a strong ${doubleSign} theme running through your personality—this is your dominant energy. Your ${otherSign} ${signs.indexOf(otherSign) === 0 ? 'Sun' : signs.indexOf(otherSign) === 1 ? 'Moon' : 'Rising'} adds a different flavor, bringing ${getElement(otherSign)} energy to complement your core ${getElement(doubleSign)} nature. `;
+    
+    if (dominantElements.length > 0) {
+      overview += `The ${dominantElements.join(' and ')} emphasis gives you ${dominantElements.includes('Fire') ? 'passion and initiative' : dominantElements.includes('Earth') ? 'groundedness and practical wisdom' : dominantElements.includes('Air') ? 'intellectual clarity and social ease' : 'emotional depth and intuitive understanding'}. `;
+    }
+  } else {
+    // All different signs
+    overview = `Your ${sunPos.sign} Sun, ${moonPos.sign} Moon, and ${risingSign} Rising create a dynamic interplay of different energies. `;
+    
+    if (dominantElements.length > 0) {
+      overview += `With ${dominantElements.join(' and ')} appearing twice, you're naturally strong in ${dominantElements.includes('Fire') ? 'taking action and inspiring others' : dominantElements.includes('Earth') ? 'building tangibly and staying grounded' : dominantElements.includes('Air') ? 'thinking clearly and connecting with others' : 'feeling deeply and trusting intuition'}. `;
+    }
+    
+    if (missingElements.length > 0) {
+      overview += `The absence of ${missingElements.join(' and ')} in your trinity means you may seek these qualities in partners or life circumstances—they represent your growth edges. `;
+    }
   }
   
   // Build trinity synthesis narrative
