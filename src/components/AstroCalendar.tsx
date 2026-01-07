@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle } from "lucide-react";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
 import { YearView } from "./YearView";
@@ -13,6 +13,7 @@ import { BestTimesView } from "./BestTimesView";
 import { ColorsView } from "./ColorsView";
 import { PatternsView } from "./PatternsView";
 import { SacredScriptView } from "./SacredScriptView";
+import { NatalChartWheel } from "./NatalChartWheel";
 import { DayTypeLegend } from "./DayTypeLegend";
 import { useUserData } from "@/hooks/useUserData";
 import { useNotes } from "@/hooks/useNotes";
@@ -20,7 +21,7 @@ import { useNatalChart, NatalChart } from "@/hooks/useNatalChart";
 import { useCloudBackup } from "@/hooks/useCloudBackup";
 import { DayData, generateICalExport } from "@/lib/astrology";
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "best-times" | "colors" | "patterns" | "sacred-script";
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "best-times" | "colors" | "patterns" | "sacred-script";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 0, 1)); // January 2026
@@ -253,6 +254,30 @@ export const AstroCalendar = () => {
                 Charts
               </button>
               <button
+                onClick={() => {
+                  if (userNatalChart || savedCharts.length > 0) {
+                    setViewMode("wheel");
+                  } else {
+                    setViewMode("charts");
+                  }
+                }}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "wheel"
+                    ? "bg-primary text-primary-foreground"
+                    : userNatalChart || savedCharts.length > 0
+                      ? "text-muted-foreground hover:text-foreground"
+                      : "text-muted-foreground/60 hover:text-muted-foreground"
+                }`}
+                title={
+                  userNatalChart || savedCharts.length > 0
+                    ? "Natal Chart Wheel"
+                    : "Add a chart to view the wheel"
+                }
+              >
+                <Circle size={14} />
+                Wheel
+              </button>
+              <button
                 onClick={() => setViewMode("best-times")}
                 className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
                   viewMode === "best-times"
@@ -413,6 +438,16 @@ export const AstroCalendar = () => {
             onUpdateChart={updateChart}
             onDeleteChart={deleteChart}
             cloudBackup={cloudBackup}
+          />
+        )}
+
+        {viewMode === "wheel" && (
+          <NatalChartWheel
+            natalChart={userNatalChart || savedCharts[0]}
+            allCharts={[
+              ...(userNatalChart ? [userNatalChart] : []),
+              ...savedCharts
+            ]}
           />
         )}
 
