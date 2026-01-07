@@ -248,6 +248,7 @@ interface ChartFormData {
   birthLocation: string;
   timezoneOffset: number;
   detectedTimezone?: string;
+  chartImageBase64?: string;
   planets: Record<string, NatalPlanetPosition>;
   houseCusps: Record<string, HouseCusp>;
   interceptedSigns: string[];
@@ -374,6 +375,7 @@ export const ChartLibrary = ({
         birthTime: '',
         birthLocation: '',
         timezoneOffset: -5,
+        chartImageBase64: undefined,
         planets: emptyPlanets(),
         houseCusps: emptyHouseCusps(),
         interceptedSigns: [],
@@ -385,6 +387,7 @@ export const ChartLibrary = ({
         birthTime: userNatalChart.birthTime,
         birthLocation: userNatalChart.birthLocation,
         timezoneOffset: userNatalChart.timezoneOffset ?? -5,
+        chartImageBase64: userNatalChart.chartImageBase64,
         planets: userNatalChart.planets as Record<string, NatalPlanetPosition>,
         houseCusps: (userNatalChart.houseCusps as Record<string, HouseCusp>) || emptyHouseCusps(),
         interceptedSigns: userNatalChart.interceptedSigns || [],
@@ -396,6 +399,7 @@ export const ChartLibrary = ({
         birthTime: chart.birthTime,
         birthLocation: chart.birthLocation,
         timezoneOffset: chart.timezoneOffset ?? -5,
+        chartImageBase64: chart.chartImageBase64,
         planets: chart.planets as Record<string, NatalPlanetPosition>,
         houseCusps: (chart.houseCusps as Record<string, HouseCusp>) || emptyHouseCusps(),
         interceptedSigns: chart.interceptedSigns || [],
@@ -622,10 +626,17 @@ export const ChartLibrary = ({
         if (planetsImported > 0) {
           setFormData(prev => ({
             ...prev,
+            chartImageBase64: imageBase64, // Store the original image
             planets: {
               ...prev.planets,
               ...validPlanets,
             },
+          }));
+        } else {
+          // Even if no planets imported, still save the image
+          setFormData(prev => ({
+            ...prev,
+            chartImageBase64: imageBase64,
           }));
         }
       }

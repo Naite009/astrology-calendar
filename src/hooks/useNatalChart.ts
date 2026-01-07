@@ -22,6 +22,7 @@ export interface NatalChart {
   birthTime: string;
   birthLocation: string;
   timezoneOffset?: number; // hours offset from UTC (e.g., -5 for EST)
+  chartImageBase64?: string; // Original uploaded chart image
   planets: {
     Sun?: NatalPlanetPosition;
     Moon?: NatalPlanetPosition;
