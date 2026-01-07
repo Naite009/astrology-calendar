@@ -139,6 +139,44 @@ const ElementIcon = ({ element }: { element: string }) => {
   return icons[element] || null;
 };
 
+// Grounded Sun sign meanings - what it actually means to have this Sun
+const getSunSignMeaning = (sign: string): string => {
+  const meanings: Record<string, string> = {
+    Aries: "Your identity is built around taking action and initiating. You feel most yourself when you're starting something new, asserting your independence, or standing up for what you believe in. You need to be first, to lead, and to feel courageous.",
+    Taurus: "Your identity is built around stability, sensuality, and values. You feel most yourself when you're building something lasting, enjoying physical pleasures, or maintaining what you've created. You need security, beauty, and consistency.",
+    Gemini: "Your identity is built around learning, communicating, and connecting ideas. You feel most yourself when you're gathering information, sharing stories, or moving between different interests. You need mental stimulation and variety.",
+    Cancer: "Your identity is built around nurturing, belonging, and emotional connection. You feel most yourself when you're caring for others, creating safety, or honoring your roots. You need to feel needed and emotionally secure.",
+    Leo: "Your identity is built around self-expression, creativity, and recognition. You feel most yourself when you're performing, creating, or being appreciated for your unique gifts. You need to shine and to feel special.",
+    Virgo: "Your identity is built around analyzing, improving, and serving. You feel most yourself when you're solving problems, refining systems, or being genuinely useful. You need order, purpose, and to feel competent.",
+    Libra: "Your identity is built around relating, balancing, and creating harmony. You feel most yourself when you're connecting with others, creating beauty, or mediating between different perspectives. You need partnership and to feel fair.",
+    Scorpio: "Your identity is built around depth, transformation, and intensity. You feel most yourself when you're uncovering hidden truths, experiencing deep intimacy, or navigating crisis. You need authenticity and emotional honesty.",
+    Sagittarius: "Your identity is built around seeking, exploring, and meaning-making. You feel most yourself when you're learning, traveling, or expanding your worldview. You need freedom, adventure, and a sense of purpose.",
+    Capricorn: "Your identity is built around achieving, structuring, and mastering. You feel most yourself when you're working toward long-term goals, building reputation, or taking responsibility. You need to feel accomplished and respected.",
+    Aquarius: "Your identity is built around innovating, reforming, and being different. You feel most yourself when you're questioning norms, contributing to the collective, or expressing your uniqueness. You need intellectual freedom and to feel true to yourself.",
+    Pisces: "Your identity is built around sensing, transcending, and connecting to something larger. You feel most yourself when you're creating art, helping the suffering, or dissolving boundaries. You need spiritual meaning and creative expression."
+  };
+  return meanings[sign] || "Your Sun sign represents your core identity and life force.";
+};
+
+// How the Sun sign shows up in daily life
+const getSunSignExpression = (sign: string): string => {
+  const expressions: Record<string, string> = {
+    Aries: "You come across as direct and energetic. You tend to speak your mind quickly, get frustrated with slowness, and feel restless when there's nothing to fight for or achieve. You naturally take charge, sometimes before being asked.",
+    Taurus: "You come across as calm and grounded. You tend to move at your own pace, resist being rushed, and hold firmly to your positions. You naturally create comfort and stability wherever you go.",
+    Gemini: "You come across as curious and adaptable. You tend to ask lots of questions, juggle multiple interests, and get bored with routine. You naturally see multiple sides of any situation.",
+    Cancer: "You come across as caring and emotionally attuned. You tend to remember personal details, nurture those around you, and withdraw when hurt. You naturally create a sense of home and belonging.",
+    Leo: "You come across as warm and confident. You tend to draw attention naturally, express yourself dramatically, and take pride in your creations. You naturally inspire and uplift others.",
+    Virgo: "You come across as helpful and detail-oriented. You tend to notice what needs fixing, offer practical solutions, and worry about doing things right. You naturally improve whatever you touch.",
+    Libra: "You come across as charming and considerate. You tend to weigh options carefully, seek input from others, and avoid conflict. You naturally see both sides and want everyone to feel included.",
+    Scorpio: "You come across as intense and perceptive. You tend to see beneath the surface, guard your privacy, and feel things deeply. You naturally cut through pretense to find what's real.",
+    Sagittarius: "You come across as optimistic and philosophical. You tend to see the big picture, speak bluntly, and need room to roam. You naturally inspire others with your enthusiasm and vision.",
+    Capricorn: "You come across as serious and capable. You tend to think long-term, respect tradition and structure, and take responsibility seriously. You naturally earn authority through competence.",
+    Aquarius: "You come across as independent and original. You tend to think differently, value your freedom, and care about fairness. You naturally bring fresh perspectives to any group.",
+    Pisces: "You come across as gentle and intuitive. You tend to absorb others' emotions, drift between worlds, and see the poetry in life. You naturally sense what others need before they ask."
+  };
+  return expressions[sign] || "Your Sun sign influences how you express yourself and what you naturally gravitate toward.";
+};
+
 export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: SacredScriptViewProps) => {
   const printRef = useRef<HTMLDivElement>(null);
   const currentDate = new Date();
@@ -371,16 +409,24 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
                 </summary>
                 <div className="mt-3 space-y-4">
                   <p className="text-xs text-muted-foreground italic">
-                    The Tree of Life message speaks to your Sun sign's divine purpose—the gift your soul came to embody and share. 
-                    This is different from your North Node (life direction) or Saturn (lessons). The Sun represents your core light and what you're here to radiate.
+                    Your Sun sign reveals how you express your core identity—who you are when you're being authentically yourself. 
+                    This is the energy you radiate naturally and what you're here to develop throughout your life.
                   </p>
                   <div className="bg-gradient-to-br from-violet-50/50 to-indigo-50/50 dark:from-violet-950/30 dark:to-indigo-950/30 p-4 rounded-lg border border-violet-200 dark:border-violet-800">
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-2 mb-3">
                       <Sparkles className="text-violet-500" size={16} />
                       <h5 className="font-medium">{sunSign} Sun</h5>
-                      <span className="text-xs bg-violet-200 dark:bg-violet-900 px-2 py-0.5 rounded ml-auto">Gift: {sunArchetype.treeOfLifeGift}</span>
                     </div>
-                    <p className="text-sm italic leading-relaxed text-muted-foreground">"{sunArchetype.treeOfLifeMessage}"</p>
+                    <div className="space-y-3 text-sm">
+                      <div>
+                        <p className="font-medium text-violet-700 dark:text-violet-400 mb-1">What This Means</p>
+                        <p className="text-muted-foreground">{getSunSignMeaning(sunSign)}</p>
+                      </div>
+                      <div>
+                        <p className="font-medium text-violet-700 dark:text-violet-400 mb-1">How This Shows Up</p>
+                        <p className="text-muted-foreground">{getSunSignExpression(sunSign)}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </details>
