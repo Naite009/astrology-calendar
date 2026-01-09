@@ -570,17 +570,24 @@ const DignityBox = ({
         <div>
           <span className="font-medium">🏛️ Ruler:</span>{' '}
           {Array.isArray(dignities.rulership) ? dignities.rulership.join(', ') : dignities.rulership}
+          <span className="text-muted-foreground ml-1">(home sign)</span>
         </div>
         <div>
           <span className="font-medium">⬆️ Exaltation:</span> {dignities.exaltation}
+          <span className="text-muted-foreground ml-1">(peak power degree)</span>
         </div>
         <div>
           <span className="font-medium">⬇️ Detriment:</span>{' '}
           {Array.isArray(dignities.detriment) ? dignities.detriment.join(', ') : dignities.detriment}
+          <span className="text-muted-foreground ml-1">(opposite home)</span>
         </div>
         <div>
           <span className="font-medium">❌ Fall:</span> {dignities.fall}
+          <span className="text-muted-foreground ml-1">(lowest power degree)</span>
         </div>
+      </div>
+      <div className="mt-2 text-[10px] text-muted-foreground italic border-t border-border/30 pt-2">
+        💡 The degrees shown (like 19°) are the <strong>exact exaltation/fall points</strong> from ancient astrology—where the planet reaches peak strength or greatest challenge. The closer your planet is to that exact degree, the more intensely you experience the dignity.
       </div>
       <button
         onClick={() => setShowMore(!showMore)}
