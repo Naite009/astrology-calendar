@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, CalendarCheck } from "lucide-react";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
 import { YearView } from "./YearView";
@@ -14,6 +14,7 @@ import { ColorsView } from "./ColorsView";
 import { PatternsView } from "./PatternsView";
 import { SacredScriptView } from "./SacredScriptView";
 import { NatalChartWheel } from "./NatalChartWheel";
+import { ElectionalCalendarView } from "./ElectionalCalendarView";
 import { DayTypeLegend } from "./DayTypeLegend";
 import { useUserData } from "@/hooks/useUserData";
 import { useNotes } from "@/hooks/useNotes";
@@ -21,7 +22,7 @@ import { useNatalChart, NatalChart } from "@/hooks/useNatalChart";
 import { useCloudBackup } from "@/hooks/useCloudBackup";
 import { DayData, generateICalExport } from "@/lib/astrology";
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "best-times" | "colors" | "patterns" | "sacred-script";
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "best-times" | "colors" | "patterns" | "sacred-script" | "electional";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 0, 1)); // January 2026
@@ -121,6 +122,9 @@ export const AstroCalendar = () => {
     }
     if (viewMode === "sacred-script") {
       return "Sacred Script";
+    }
+    if (viewMode === "electional") {
+      return "Electional Calendar";
     }
     if (viewMode === "moon-phases") {
       return `${currentDate.getFullYear()} Moon Phases`;
@@ -336,6 +340,17 @@ export const AstroCalendar = () => {
                 <Scroll size={14} />
                 Script
               </button>
+              <button
+                onClick={() => setViewMode("electional")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "electional"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <CalendarCheck size={14} />
+                Electional
+              </button>
             </div>
 
             {userData && (
@@ -479,6 +494,14 @@ export const AstroCalendar = () => {
               ...(userNatalChart ? [userNatalChart] : []),
               ...savedCharts
             ]}
+          />
+        )}
+
+        {viewMode === "electional" && (
+          <ElectionalCalendarView
+            year={currentDate.getFullYear()}
+            userNatalChart={userNatalChart}
+            savedCharts={savedCharts}
           />
         )}
       </div>
