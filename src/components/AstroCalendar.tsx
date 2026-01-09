@@ -9,12 +9,11 @@ import { MoonPhasesView } from "./MoonPhasesView";
 import { UserForm } from "./UserForm";
 import { DayDetail } from "./DayDetail";
 import { ChartLibrary } from "./ChartLibrary";
-import { BestTimesView } from "./BestTimesView";
+import { TimingView } from "./TimingView";
 import { ColorsView } from "./ColorsView";
 import { PatternsView } from "./PatternsView";
 import { SacredScriptView } from "./SacredScriptView";
 import { NatalChartWheel } from "./NatalChartWheel";
-import { ElectionalCalendarView } from "./ElectionalCalendarView";
 import { DayTypeLegend } from "./DayTypeLegend";
 import { useUserData } from "@/hooks/useUserData";
 import { useNotes } from "@/hooks/useNotes";
@@ -22,7 +21,7 @@ import { useNatalChart, NatalChart } from "@/hooks/useNatalChart";
 import { useCloudBackup } from "@/hooks/useCloudBackup";
 import { DayData, generateICalExport } from "@/lib/astrology";
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "best-times" | "colors" | "patterns" | "sacred-script" | "electional";
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 0, 1)); // January 2026
