@@ -11,7 +11,7 @@ import {
   PersonalActivation
 } from '@/lib/electionalCalendar';
 import { DATES_TO_AVOID_2026, BEST_DAYS_2026, get2026MonthData, ElectionalDayData } from '@/lib/electional2026Database';
-import { getVoidOfCoursePeriods } from '@/lib/voidOfCourseMoon';
+import { getVOCMoonDetails } from '@/lib/voidOfCourseMoon';
 import { calculatePlanetaryHours } from '@/lib/planetaryHours';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -104,9 +104,10 @@ const RightNowSection = ({ userLocation }: { userLocation?: { lat: number; lng: 
     setPlanetaryHours(hours);
 
     // Calculate VOC Moon
-    const vocPeriods = getVoidOfCoursePeriods(currentTime, 1);
-    const currentVoc = vocPeriods.find(p => currentTime >= p.start && currentTime <= p.end);
-    setVocMoon(currentVoc ? { isVoid: true, endsAt: currentVoc.end, nextSign: currentVoc.nextSign } : { isVoid: false });
+    const vocDetails = getVOCMoonDetails(currentTime);
+    setVocMoon(vocDetails.isCurrentlyVOC 
+      ? { isVoid: true, endsAt: vocDetails.end, nextSign: vocDetails.moonEntersSign } 
+      : { isVoid: false });
   }, [currentTime, userLocation]);
 
   // Find current planetary hour
