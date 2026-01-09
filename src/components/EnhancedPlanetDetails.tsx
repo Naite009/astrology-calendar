@@ -246,15 +246,90 @@ ${rulers.day} (day ruler) ${dayMeaning}—it's secondary but still helps. ${rule
   }
 };
 
-const getTermInterpretation = (planet: string, termRuler: string, degree: number, sign: string): string => {
-  return `At ${degree}° ${sign}, your ${planet} falls in the terms (bounds) of ${termRuler}. Terms are ancient dignity divisions giving ${termRuler} subtle influence over this degree. ${termRuler} acts as a minor host to your ${planet}, adding its flavor. If ${termRuler} is well-placed in your chart, it strengthens this ${planet}.`;
+const getTermInterpretation = (
+  planet: string, 
+  termRuler: string, 
+  degree: number, 
+  sign: string,
+  allPlanets?: Record<string, NatalPlanetPosition>
+): string => {
+  let termRulerAnalysis = "";
+  
+  if (allPlanets && termRuler) {
+    const rulerData = allPlanets[termRuler];
+    if (rulerData?.sign) {
+      const rulerDignity = getDignityStatus(termRuler, rulerData.sign);
+      const isStrong = rulerDignity.type === 'Ruler' || rulerDignity.type === 'Exaltation';
+      const isWeak = rulerDignity.type === 'Detriment' || rulerDignity.type === 'Fall';
+      
+      if (isStrong) {
+        termRulerAnalysis = `
+
+**Looking at YOUR ${termRuler}:** It's in ${rulerData.sign} (${rulerDignity.type}) — this is STRONG placement! Your ${termRuler} is well-positioned, which means it CAN effectively support your ${planet}. You likely feel this as: ${planet} matters flowing more smoothly, ${termRuler} themes naturally enhancing your ${planet} expression.`;
+      } else if (isWeak) {
+        termRulerAnalysis = `
+
+**Looking at YOUR ${termRuler}:** It's in ${rulerData.sign} (${rulerDignity.type}) — this is a CHALLENGED placement. Your ${termRuler} has to work harder, which means its support for your ${planet} may feel inconsistent or require more effort. You might notice: needing to consciously develop ${termRuler} skills to help your ${planet} shine.`;
+      } else {
+        termRulerAnalysis = `
+
+**Looking at YOUR ${termRuler}:** It's in ${rulerData.sign} (Peregrine/neutral). This is neither especially strong nor weak—${termRuler}'s support for your ${planet} depends more on aspects and house placement than sign dignity.`;
+      }
+    }
+  }
+  
+  return `At ${degree}° ${sign}, your ${planet} falls in the terms (bounds) of ${termRuler}. Terms are ancient dignity divisions—think of ${termRuler} as a "minor landlord" for this specific degree, adding its subtle flavor to your ${planet}.${termRulerAnalysis}`;
 };
 
-const getDecanInterpretation = (planet: string, decanRuler: string, decanIndex: number, sign: string): string => {
+const getDecanInterpretation = (
+  planet: string, 
+  decanRuler: string, 
+  decanIndex: number, 
+  sign: string,
+  allPlanets?: Record<string, NatalPlanetPosition>
+): string => {
   const decanName = decanIndex === 0 ? "first" : decanIndex === 1 ? "second" : "third";
   const degreeRange = `${decanIndex * 10}°-${(decanIndex + 1) * 10}°`;
   
-  return `Your ${planet} at ${degreeRange} ${sign} is in the ${decanName} decan, ruled by ${decanRuler}. This gives your ${planet} a ${decanRuler} sub-flavor. The decan (or "face") adds a layer of planetary influence: your ${planet} in ${sign} expresses with hints of ${decanRuler}'s nature woven in.`;
+  // How each planet as decan ruler FEELS
+  const decanFeelings: Record<string, string> = {
+    Sun: "a drive for recognition, leadership, and shining brightly in ${planet} matters",
+    Moon: "emotional sensitivity, intuitive responses, and nurturing instincts in ${planet} areas",
+    Mercury: "mental curiosity, communication needs, and adaptability in how ${planet} expresses",
+    Venus: "a desire for harmony, beauty, and pleasure connected to ${planet} themes",
+    Mars: "assertiveness, competitive drive, and action-orientation in ${planet} expression",
+    Jupiter: "optimism, expansion, and a generous, philosophical approach to ${planet} matters",
+    Saturn: "seriousness, discipline, and a need for structure in ${planet} expression"
+  };
+
+  let rulerAnalysis = "";
+  const feeling = decanFeelings[decanRuler]?.replace('${planet}', planet) || `${decanRuler} qualities`;
+  
+  if (allPlanets && decanRuler) {
+    const rulerData = allPlanets[decanRuler];
+    if (rulerData?.sign) {
+      const rulerDignity = getDignityStatus(decanRuler, rulerData.sign);
+      const isStrong = rulerDignity.type === 'Ruler' || rulerDignity.type === 'Exaltation';
+      
+      if (isStrong) {
+        rulerAnalysis = `
+
+**YOUR ${decanRuler} is in ${rulerData.sign} (${rulerDignity.type})** — strong! This amplifies the ${decanRuler} flavor in your ${planet}. You likely FEEL this as: ${feeling}. This comes naturally to you.`;
+      } else if (rulerDignity.type === 'Detriment' || rulerDignity.type === 'Fall') {
+        rulerAnalysis = `
+
+**YOUR ${decanRuler} is in ${rulerData.sign} (${rulerDignity.type})** — challenged. The ${decanRuler} sub-tone in your ${planet} may feel like something you have to work at. You might experience: ${feeling}, but it requires conscious effort to express smoothly.`;
+      } else {
+        rulerAnalysis = `
+
+**YOUR ${decanRuler} is in ${rulerData.sign}** (neutral). The ${decanRuler} flavor adds ${feeling}. This influence is moderate—neither amplified nor diminished.`;
+      }
+    }
+  }
+  
+  return `Your ${planet} at ${degreeRange} ${sign} is in the ${decanName} decan, ruled by ${decanRuler}. 
+
+**How you FEEL this:** The decan ruler adds a secondary "flavor" to your ${planet}. With ${decanRuler} ruling this decan, you experience ${feeling}.${rulerAnalysis}`;
 };
 
 const getHouseRulershipInterpretation = (planet: string, housesRuled: string): string => {
@@ -265,13 +340,76 @@ const getHouseRulershipInterpretation = (planet: string, housesRuled: string): s
 };
 
 const getSectInterpretation = (planet: string, sectStatus: string, isDayChart: boolean | null): string => {
-  const diurnal = ['Sun', 'Jupiter', 'Saturn'];
-  const nocturnal = ['Moon', 'Venus', 'Mars'];
+  // Experiential descriptions of out-of-sect planets
+  const outOfSectFeelings: Record<string, string> = {
+    Sun: `**How you might FEEL this:** Your core identity and vitality may feel like they have to fight for expression. In a night chart, the Sun's need for visibility and recognition doesn't get automatic support from the environment. You might experience:
+• Feeling like you have to work harder to be seen or acknowledged
+• Your confidence coming in waves rather than being steady
+• A sense that your true self is sometimes misunderstood
+• Developing resilience and self-validation skills others don't have to develop
+
+**The gift:** People with out-of-sect Suns often develop profound inner strength and don't rely on external validation. You know who you are regardless of recognition.`,
+    
+    Moon: `**How you might FEEL this:** Your emotional needs and instincts may feel at odds with your environment. In a day chart, the Moon's need for nurturing and security doesn't flow as naturally. You might experience:
+• Emotions feeling inconvenient or poorly timed
+• Having to consciously create emotional safety
+• Nurturing instincts that don't always get validated
+• Learning to trust your feelings despite external dismissal
+
+**The gift:** You develop emotional self-sufficiency and can nurture yourself and others deliberately.`,
+    
+    Jupiter: `**How you might FEEL this:** Your optimism and growth opportunities may require more effort. In a night chart, Jupiter's gifts don't arrive as easily. You might experience:
+• Having to work for luck rather than it finding you
+• Faith and optimism requiring conscious cultivation
+• Growth coming through effort rather than grace
+• Needing to create your own opportunities
+
+**The gift:** You develop earned wisdom and appreciation for what you achieve.`,
+    
+    Saturn: `**How you might FEEL this:** Your discipline and structure may feel heavy or restrictive. In a night chart, Saturn's challenges are more prominent. You might experience:
+• Responsibilities feeling burdensome rather than purposeful
+• Authority figures being more critical or demanding
+• Delays and obstacles feeling more frustrating
+• Having to prove yourself repeatedly
+
+**The gift:** You develop exceptional resilience and unshakeable competence through overcoming real obstacles.`,
+    
+    Venus: `**How you might FEEL this:** Your relationship needs and values may feel unsupported. In a day chart, Venus's gifts require more cultivation. You might experience:
+• Harmony not coming naturally in relationships
+• Having to work at pleasure and enjoyment
+• Aesthetic sensibilities that others don't immediately appreciate
+• Learning to value yourself independently
+
+**The gift:** You develop authentic self-worth and conscious relationship skills.`,
+    
+    Mars: `**How you might FEEL this:** Your assertiveness and drive may feel misplaced or excessive. In a day chart, Mars's fire doesn't harmonize as well. You might experience:
+• Anger or frustration being harder to channel productively
+• Initiative sometimes coming across as aggressive
+• Having to learn when to push and when to pause
+• Competitive instincts needing conscious management
+
+**The gift:** You develop controlled power and strategic action rather than reactive impulse.`
+  };
+
+  const inSectFeelings: Record<string, string> = {
+    Sun: `**How you FEEL this:** Your identity shines naturally in a day chart. Visibility, confidence, and vitality flow more easily. Others recognize and validate who you are without you having to fight for it.`,
+    Moon: `**How you FEEL this:** Your emotions and nurturing instincts are supported in a night chart. Intuition flows, emotional needs get met more easily, and caring for others feels natural.`,
+    Jupiter: `**How you FEEL this:** Luck and expansion come more gracefully in a day chart. Opportunities appear, optimism is rewarded, and growth happens through trust and openness.`,
+    Saturn: `**How you FEEL this:** Discipline and responsibility feel purposeful in a day chart. Hard work pays off, structures support you, and authority figures are helpful rather than obstructive.`,
+    Venus: `**How you FEEL this:** Love, beauty, and pleasure flow easily in a night chart. Relationships harmonize naturally, and your values attract appreciation.`,
+    Mars: `**How you FEEL this:** Action and assertion work smoothly in a night chart. Your drive gets results, anger is productive, and initiative is well-received.`
+  };
   
   if (sectStatus.includes('In Sect')) {
-    return `Your ${planet} is "in sect," meaning it matches your chart type (${isDayChart ? 'day' : 'night'} chart). In-sect planets function more smoothly—their nature is supported by the overall chart environment. ${planet}'s positive qualities shine more easily, and challenges are more manageable.`;
+    const feeling = inSectFeelings[planet] || `Your ${planet} functions smoothly—its positive qualities are supported by your chart type.`;
+    return `Your ${planet} is "in sect," meaning it matches your chart type (${isDayChart ? 'day' : 'night'} chart). In-sect planets work WITH the flow of the chart.
+
+${feeling}`;
   } else if (sectStatus.includes('Out of Sect')) {
-    return `Your ${planet} is "out of sect," meaning it doesn't match your chart type (${isDayChart ? 'day' : 'night'} chart). Out-of-sect planets work harder to express their gifts and their challenging qualities may be more noticeable. However, this often builds character and unique strengths through overcoming obstacles.`;
+    const feeling = outOfSectFeelings[planet] || `Your ${planet} works harder to express its gifts and may face more challenges. However, this builds character and unique strengths.`;
+    return `Your ${planet} is "out of sect," meaning it doesn't match your chart type (${isDayChart ? 'day' : 'night'} chart). Out-of-sect planets swim against the current—but this builds strength.
+
+${feeling}`;
   }
   return `${planet} (Mercury and outer planets) is neutral regarding sect—it works with both day and night charts. It adapts to whatever environment it's in, taking on the qualities of planets it aspects.`;
 };
@@ -353,6 +491,7 @@ interface EnhancedPlanetDetailsProps {
   house: number | null;
   sunHouse?: number | null;
   houseCusps?: Record<string, { sign: string; degree: number; minutes?: number }>;
+  allPlanets?: Record<string, NatalPlanetPosition>;
 }
 
 export const EnhancedPlanetDetails = ({
@@ -360,7 +499,8 @@ export const EnhancedPlanetDetails = ({
   planetData,
   house,
   sunHouse,
-  houseCusps
+  houseCusps,
+  allPlanets
 }: EnhancedPlanetDetailsProps) => {
   const [expanded, setExpanded] = useState(false);
 
@@ -519,14 +659,14 @@ export const EnhancedPlanetDetails = ({
             label="Term Ruler"
             value={termRuler}
             description={`Egyptian/Ptolemaic terms for ${degree}° ${sign}`}
-            interpretation={getTermInterpretation(planetName, termRuler, degree, sign)}
+            interpretation={getTermInterpretation(planetName, termRuler, degree, sign, allPlanets)}
           />
 
           <DetailRow
             label="Decan Ruler"
             value={decanRuler}
             description={`${degree}° is in the ${getDecanName(decanIndex)} decan (${decanIndex * 10}°-${(decanIndex + 1) * 10}°)`}
-            interpretation={getDecanInterpretation(planetName, decanRuler, decanIndex, sign)}
+            interpretation={getDecanInterpretation(planetName, decanRuler, decanIndex, sign, allPlanets)}
           />
 
           <DetailRow
