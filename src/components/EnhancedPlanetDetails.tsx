@@ -204,10 +204,46 @@ const getDispositorInterpretation = (planet: string, sign: string, dispositor: s
 };
 
 const getTriplicityInterpretation = (planet: string, element: string, rulers: { day: string; night: string; participating: string }, isDayChart: boolean | null): string => {
-  const chartType = isDayChart === null ? "your chart" : isDayChart ? "a day chart" : "a night chart";
-  const activeRuler = isDayChart === null ? "either ruler" : isDayChart ? rulers.day : rulers.night;
-  
-  return `Your ${planet} is in a ${element} sign, governed by the ${element} triplicity rulers. In ${chartType}, the primary triplicity ruler is ${activeRuler}. Day ruler: ${rulers.day} (supports when Sun is up). Night ruler: ${rulers.night} (supports when Sun is down). Participating ruler: ${rulers.participating} (offers backup support). These planets have a stake in your ${planet}'s success.`;
+  // Detailed meanings for each planet as triplicity ruler
+  const planetMeanings: Record<string, string> = {
+    Sun: "brings visibility, vitality, and conscious awareness",
+    Moon: "brings intuition, emotional attunement, and nurturing support",
+    Mercury: "brings mental agility, communication skills, and adaptability",
+    Venus: "brings harmony, attraction, pleasure, and relational ease",
+    Mars: "brings drive, courage, initiative, and competitive edge",
+    Jupiter: "brings expansion, optimism, opportunity, and faith",
+    Saturn: "brings structure, discipline, endurance, and long-term planning"
+  };
+
+  if (isDayChart === null) {
+    return `Your ${planet} is in a ${element} sign with triplicity rulers: ${rulers.day} (day), ${rulers.night} (night), and ${rulers.participating} (participating). These planets support your ${planet}'s expression. Check if your chart is day or night to know which ruler is primary.`;
+  }
+
+  if (isDayChart) {
+    const dayMeaning = planetMeanings[rulers.day] || "supports your planet";
+    const nightMeaning = planetMeanings[rulers.night] || "offers secondary support";
+    const partMeaning = planetMeanings[rulers.participating] || "provides backup";
+    
+    return `You have a DAY CHART (Sun above horizon), so ${rulers.day} is your primary ${element} triplicity ruler for your ${planet}.
+
+**What this means for you:** ${rulers.day} ${dayMeaning} to your ${planet}. Look at where ${rulers.day} is placed in your chart—its condition (sign, house, aspects) directly affects how well your ${planet} can thrive. A strong ${rulers.day} = strong support for your ${planet}.
+
+${rulers.night} (night ruler) ${nightMeaning}—it's secondary but still helps. ${rulers.participating} (participating ruler) ${partMeaning} as a third layer of support.
+
+**Practical tip:** When ${rulers.day} is activated by transit, your ${planet} also gets a boost.`;
+  } else {
+    const nightMeaning = planetMeanings[rulers.night] || "supports your planet";
+    const dayMeaning = planetMeanings[rulers.day] || "offers secondary support";
+    const partMeaning = planetMeanings[rulers.participating] || "provides backup";
+    
+    return `You have a NIGHT CHART (Sun below horizon), so ${rulers.night} is your primary ${element} triplicity ruler for your ${planet}.
+
+**What this means for you:** ${rulers.night} ${nightMeaning} to your ${planet}. Look at where ${rulers.night} is placed in your chart—its condition (sign, house, aspects) directly affects how well your ${planet} can thrive. A strong ${rulers.night} = strong support for your ${planet}.
+
+${rulers.day} (day ruler) ${dayMeaning}—it's secondary but still helps. ${rulers.participating} (participating ruler) ${partMeaning} as a third layer of support.
+
+**Practical tip:** When ${rulers.night} is activated by transit, your ${planet} also gets a boost.`;
+  }
 };
 
 const getTermInterpretation = (planet: string, termRuler: string, degree: number, sign: string): string => {
