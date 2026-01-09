@@ -559,7 +559,7 @@ export const EnhancedPlanetDetails = ({
         className="w-full flex items-center justify-between px-3 py-2 bg-secondary/50 hover:bg-secondary rounded text-xs font-medium text-foreground/80 transition-colors"
       >
         <span className="flex items-center gap-1.5">
-          🔍 View Technical Details
+          🔍 View Details
         </span>
         {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
       </button>
