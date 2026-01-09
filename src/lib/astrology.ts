@@ -722,6 +722,8 @@ export const isMercuryRetrograde = (date: Date): boolean => {
 };
 
 // Get moon phase using astronomy-engine
+// Note: Major phases (New, Full, Quarter) are tightened to ~12 degree range (~1 day window)
+// so we don't show "Full Moon" for days when the moon has clearly moved past that point
 export const getMoonPhase = (date: Date): MoonPhase => {
   const phase = Astronomy.MoonPhase(date);
   const illumination = Astronomy.Illumination(Astronomy.Body.Moon, date);
@@ -729,19 +731,25 @@ export const getMoonPhase = (date: Date): MoonPhase => {
   let phaseIcon: string;
   let phaseName: string;
 
-  if (phase < 22.5 || phase >= 337.5) {
+  // Tighter ranges for major phases (~12 degrees = roughly 1 day)
+  // New Moon: 0° (range: 354-6°)
+  // First Quarter: 90° (range: 84-96°)  
+  // Full Moon: 180° (range: 174-186°)
+  // Last Quarter: 270° (range: 264-276°)
+  
+  if (phase >= 354 || phase < 6) {
     phaseIcon = '🌑'; phaseName = 'New Moon';
-  } else if (phase < 67.5) {
+  } else if (phase >= 6 && phase < 84) {
     phaseIcon = '🌒'; phaseName = 'Waxing Crescent';
-  } else if (phase < 112.5) {
+  } else if (phase >= 84 && phase < 96) {
     phaseIcon = '🌓'; phaseName = 'First Quarter';
-  } else if (phase < 157.5) {
+  } else if (phase >= 96 && phase < 174) {
     phaseIcon = '🌔'; phaseName = 'Waxing Gibbous';
-  } else if (phase < 202.5) {
+  } else if (phase >= 174 && phase < 186) {
     phaseIcon = '🌕'; phaseName = 'Full Moon';
-  } else if (phase < 247.5) {
+  } else if (phase >= 186 && phase < 264) {
     phaseIcon = '🌖'; phaseName = 'Waning Gibbous';
-  } else if (phase < 292.5) {
+  } else if (phase >= 264 && phase < 276) {
     phaseIcon = '🌗'; phaseName = 'Last Quarter';
   } else {
     phaseIcon = '🌘'; phaseName = 'Waning Crescent';
