@@ -7,6 +7,7 @@ import {
 } from '@/lib/astrology';
 import { calculateTransitAspects, TransitAspect } from '@/lib/transitAspects';
 import { PLANET_ESSENCES, HOUSE_MEANINGS, ASPECT_MEANINGS } from '@/lib/detailedInterpretations';
+import { EnhancedPlanetDetails } from './EnhancedPlanetDetails';
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -283,6 +284,15 @@ const NatalPlanetsSummary = ({
 }) => {
   const planetOrder = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Chiron', 'NorthNode', 'Lilith'];
   
+  // Calculate sun house for sect determination
+  const sunData = planets.Sun;
+  const sunHouse = sunData?.sign 
+    ? getPlanetHouse(signToLongitude(sunData.sign, sunData.degree), houseCusps)
+    : null;
+
+  // Core planets that have dignities (exclude points/asteroids)
+  const planetsWithDignities = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
+  
   return (
     <div className="mb-8 p-6 bg-gradient-to-br from-secondary/50 to-secondary rounded-lg">
       <h3 className="text-xl font-bold mb-5 text-foreground">
@@ -297,6 +307,7 @@ const NatalPlanetsSummary = ({
           const planetLon = signToLongitude(planetData.sign, planetData.degree);
           const house = getPlanetHouse(planetLon, houseCusps);
           const planetInfo = PLANET_ESSENCES[planetKey.toLowerCase()];
+          const showTechnicalDetails = planetsWithDignities.includes(planetKey);
           
           return (
             <div key={planetKey} className="p-4 bg-background rounded border-l-4 border-primary/60">
@@ -321,6 +332,17 @@ const NatalPlanetsSummary = ({
                   </div>
                 )}
               </div>
+
+              {/* Enhanced Technical Details */}
+              {showTechnicalDetails && (
+                <EnhancedPlanetDetails
+                  planetName={planetKey}
+                  planetData={planetData}
+                  house={house}
+                  sunHouse={sunHouse}
+                  houseCusps={houseCusps}
+                />
+              )}
             </div>
           );
         })}
