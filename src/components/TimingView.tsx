@@ -86,10 +86,28 @@ const RATING_CONFIG: Record<string, {
 };
 
 // Right Now Section Component
-const RightNowSection = ({ userLocation }: { userLocation?: { lat: number; lng: number } }) => {
+const RightNowSection = ({ 
+  userNatalChart, 
+  savedCharts,
+  selectedChart,
+  setSelectedChart
+}: { 
+  userNatalChart: NatalChart | null;
+  savedCharts: NatalChart[];
+  selectedChart: string;
+  setSelectedChart: (id: string) => void;
+}) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [planetaryHours, setPlanetaryHours] = useState<any[]>([]);
   const [vocMoon, setVocMoon] = useState<{ isVoid: boolean; endsAt?: Date; nextSign?: string } | null>(null);
+  const [personalTransits, setPersonalTransits] = useState<any[]>([]);
+
+  // Get active natal chart
+  const activeChart = useMemo(() => {
+    if (selectedChart === 'general') return null;
+    if (selectedChart === 'user') return userNatalChart;
+    return savedCharts.find(c => c.id === selectedChart) || null;
+  }, [selectedChart, userNatalChart, savedCharts]);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -97,9 +115,9 @@ const RightNowSection = ({ userLocation }: { userLocation?: { lat: number; lng: 
   }, []);
 
   useEffect(() => {
-    // Calculate planetary hours
-    const lat = userLocation?.lat || 34.0522; // Default LA
-    const lng = userLocation?.lng || -118.2437;
+    // Calculate planetary hours - use default LA coordinates
+    const lat = 34.0522;
+    const lng = -118.2437;
     const hours = calculatePlanetaryHours(currentTime, lat, lng);
     setPlanetaryHours(hours);
 
@@ -108,17 +126,73 @@ const RightNowSection = ({ userLocation }: { userLocation?: { lat: number; lng: 
     setVocMoon(vocDetails.isCurrentlyVOC 
       ? { isVoid: true, endsAt: vocDetails.end, nextSign: vocDetails.moonEntersSign } 
       : { isVoid: false });
-  }, [currentTime, userLocation]);
+  }, [currentTime]);
 
-  // Find current planetary hour
+  // Calculate personal transits when chart changes
+  useEffect(() => {
+    if (!activeChart?.planets) {
+      setPersonalTransits([]);
+      return;
+    }
+
+    const transits = getTransitPositions(currentTime);
+    const aspects: any[] = [];
+    const ZODIAC_SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+    
+    // Calculate aspects from current transits to natal planets
+    const natalPlanets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'] as const;
+    
+    natalPlanets.forEach(natalPlanet => {
+      const natalPos = activeChart.planets[natalPlanet];
+      if (!natalPos?.sign) return;
+      
+      const natalSignIndex = ZODIAC_SIGNS.indexOf(natalPos.sign);
+      const natalLongitude = natalSignIndex * 30 + natalPos.degree + (natalPos.minutes || 0) / 60;
+      
+      transits.forEach(transit => {
+        if (transit.name === natalPlanet) return; // Skip same planet
+        
+        let diff = Math.abs(transit.longitude - natalLongitude);
+        if (diff > 180) diff = 360 - diff;
+        
+        // Check for aspects with 3° orb
+        const aspectTypes = [
+          { name: 'conjunction', angle: 0, symbol: '☌', effect: 'intensifies' },
+          { name: 'sextile', angle: 60, symbol: '⚹', effect: 'supports' },
+          { name: 'square', angle: 90, symbol: '□', effect: 'challenges' },
+          { name: 'trine', angle: 120, symbol: '△', effect: 'harmonizes with' },
+          { name: 'opposition', angle: 180, symbol: '☍', effect: 'opposes' }
+        ];
+        
+        aspectTypes.forEach(aspect => {
+          const orb = Math.abs(diff - aspect.angle);
+          if (orb <= 3) {
+            aspects.push({
+              transitPlanet: transit.name,
+              natalPlanet,
+              aspectType: aspect.name,
+              symbol: aspect.symbol,
+              orb: orb.toFixed(1),
+              effect: aspect.effect,
+              isHarmonious: ['conjunction', 'trine', 'sextile'].includes(aspect.name)
+            });
+          }
+        });
+      });
+    });
+    
+    setPersonalTransits(aspects);
+  }, [activeChart, currentTime]);
+
+  // Find current planetary hour - use correct property names (start/end not startTime/endTime)
   const currentHour = planetaryHours.find(h => {
-    const start = new Date(h.startTime);
-    const end = new Date(h.endTime);
+    const start = h.start instanceof Date ? h.start : new Date(h.start);
+    const end = h.end instanceof Date ? h.end : new Date(h.end);
     return currentTime >= start && currentTime < end;
   });
 
   const nextHour = planetaryHours.find(h => {
-    const start = new Date(h.startTime);
+    const start = h.start instanceof Date ? h.start : new Date(h.start);
     return start > currentTime;
   });
 
@@ -152,8 +226,35 @@ const RightNowSection = ({ userLocation }: { userLocation?: { lat: number; lng: 
     Saturn: { bestFor: 'Discipline, structure, long-term planning', avoid: 'Quick wins' }
   };
 
+  const allCharts = [
+    { id: 'general', name: 'Collective Only' },
+    ...(userNatalChart ? [{ id: 'user', name: userNatalChart.name }] : []),
+    ...savedCharts.map(c => ({ id: c.id, name: c.name }))
+  ];
+
   return (
     <div className="space-y-4">
+      {/* Chart Selector */}
+      <div className="p-4 rounded-lg border border-border bg-secondary/30">
+        <div className="flex items-center gap-3 flex-wrap">
+          <label className="text-xs uppercase tracking-widest text-muted-foreground">View transits for:</label>
+          <select
+            value={selectedChart}
+            onChange={(e) => setSelectedChart(e.target.value)}
+            className="border border-border bg-background px-3 py-2 text-sm rounded-sm focus:border-primary focus:outline-none"
+          >
+            {allCharts.map(c => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+          {activeChart && (
+            <span className="text-xs text-primary bg-primary/10 px-2 py-1 rounded-sm">
+              Personal transits active for {activeChart.name}
+            </span>
+          )}
+        </div>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-3">
         {/* Current Planetary Hour */}
         <div className="p-4 rounded-lg border border-border bg-card">
@@ -172,12 +273,12 @@ const RightNowSection = ({ userLocation }: { userLocation?: { lat: number; lng: 
               {nextHour && (
                 <p className="text-xs text-muted-foreground">
                   Next: {PLANET_SYMBOLS[nextHour.planet]} {nextHour.planet} at{' '}
-                  {new Date(nextHour.startTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                  {(nextHour.start instanceof Date ? nextHour.start : new Date(nextHour.start)).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                 </p>
               )}
             </div>
           ) : (
-            <p className="text-muted-foreground">Calculating...</p>
+            <p className="text-muted-foreground">Loading planetary hours...</p>
           )}
         </div>
 
@@ -226,14 +327,66 @@ const RightNowSection = ({ userLocation }: { userLocation?: { lat: number; lng: 
           </p>
         </div>
       </div>
+
+      {/* Personal Transits to Natal Chart */}
+      {activeChart && personalTransits.length > 0 && (
+        <div className="mt-6 p-4 rounded-lg border-2 border-primary/30 bg-primary/5">
+          <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <Star size={16} className="text-primary" />
+            Current Transits to {activeChart.name}'s Chart
+          </h4>
+          <div className="grid gap-2">
+            {personalTransits.slice(0, 6).map((transit, i) => (
+              <div key={i} className={`flex items-center gap-3 p-2 rounded ${transit.isHarmonious ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'}`}>
+                <span className={`text-lg ${transit.isHarmonious ? 'text-green-600' : 'text-red-600'}`}>
+                  {transit.isHarmonious ? '✨' : '⚡'}
+                </span>
+                <div className="flex-1">
+                  <div className="text-sm font-medium">
+                    {PLANET_SYMBOLS[transit.transitPlanet]} Transit {transit.transitPlanet} {transit.symbol} Natal {PLANET_SYMBOLS[transit.natalPlanet]} {transit.natalPlanet}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {transit.transitPlanet} {transit.effect} your natal {transit.natalPlanet} ({transit.orb}° orb)
+                  </div>
+                </div>
+              </div>
+            ))}
+            {personalTransits.length > 6 && (
+              <p className="text-xs text-muted-foreground text-center mt-2">
+                +{personalTransits.length - 6} more transits active
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 // Today Section Component
-const TodaySection = ({ date }: { date: Date }) => {
+const TodaySection = ({ 
+  date,
+  userNatalChart,
+  savedCharts,
+  selectedChart,
+  setSelectedChart
+}: { 
+  date: Date;
+  userNatalChart: NatalChart | null;
+  savedCharts: NatalChart[];
+  selectedChart: string;
+  setSelectedChart: (id: string) => void;
+}) => {
   const [aspects, setAspects] = useState<any[]>([]);
   const [transitPositions, setTransitPositions] = useState<any[]>([]);
+  const [personalTransits, setPersonalTransits] = useState<any[]>([]);
+
+  // Get active natal chart
+  const activeChart = useMemo(() => {
+    if (selectedChart === 'general') return null;
+    if (selectedChart === 'user') return userNatalChart;
+    return savedCharts.find(c => c.id === selectedChart) || null;
+  }, [selectedChart, userNatalChart, savedCharts]);
 
   useEffect(() => {
     const todayAspects = getCurrentAspects(date);
@@ -241,6 +394,60 @@ const TodaySection = ({ date }: { date: Date }) => {
     setAspects(todayAspects);
     setTransitPositions(positions);
   }, [date]);
+
+  // Calculate personal transits when chart changes
+  useEffect(() => {
+    if (!activeChart?.planets) {
+      setPersonalTransits([]);
+      return;
+    }
+
+    const transits = getTransitPositions(date);
+    const aspects: any[] = [];
+    const ZODIAC_SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+    
+    const natalPlanets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'] as const;
+    
+    natalPlanets.forEach(natalPlanet => {
+      const natalPos = activeChart.planets[natalPlanet];
+      if (!natalPos?.sign) return;
+      
+      const natalSignIndex = ZODIAC_SIGNS.indexOf(natalPos.sign);
+      const natalLongitude = natalSignIndex * 30 + natalPos.degree + (natalPos.minutes || 0) / 60;
+      
+      transits.forEach(transit => {
+        if (transit.name === natalPlanet) return;
+        
+        let diff = Math.abs(transit.longitude - natalLongitude);
+        if (diff > 180) diff = 360 - diff;
+        
+        const aspectTypes = [
+          { name: 'conjunction', angle: 0, symbol: '☌', effect: 'intensifies' },
+          { name: 'sextile', angle: 60, symbol: '⚹', effect: 'supports' },
+          { name: 'square', angle: 90, symbol: '□', effect: 'challenges' },
+          { name: 'trine', angle: 120, symbol: '△', effect: 'harmonizes with' },
+          { name: 'opposition', angle: 180, symbol: '☍', effect: 'opposes' }
+        ];
+        
+        aspectTypes.forEach(aspect => {
+          const orb = Math.abs(diff - aspect.angle);
+          if (orb <= 3) {
+            aspects.push({
+              transitPlanet: transit.name,
+              natalPlanet,
+              aspectType: aspect.name,
+              symbol: aspect.symbol,
+              orb: orb.toFixed(1),
+              effect: aspect.effect,
+              isHarmonious: ['conjunction', 'trine', 'sextile'].includes(aspect.name)
+            });
+          }
+        });
+      });
+    });
+    
+    setPersonalTransits(aspects);
+  }, [activeChart, date]);
 
   const getAspectColor = (type: string) => {
     switch (type) {
@@ -260,8 +467,35 @@ const TodaySection = ({ date }: { date: Date }) => {
     return '⚪';
   };
 
+  const allCharts = [
+    { id: 'general', name: 'Collective Only' },
+    ...(userNatalChart ? [{ id: 'user', name: userNatalChart.name }] : []),
+    ...savedCharts.map(c => ({ id: c.id, name: c.name }))
+  ];
+
   return (
     <div className="space-y-4">
+      {/* Chart Selector */}
+      <div className="p-4 rounded-lg border border-border bg-secondary/30">
+        <div className="flex items-center gap-3 flex-wrap">
+          <label className="text-xs uppercase tracking-widest text-muted-foreground">View transits for:</label>
+          <select
+            value={selectedChart}
+            onChange={(e) => setSelectedChart(e.target.value)}
+            className="border border-border bg-background px-3 py-2 text-sm rounded-sm focus:border-primary focus:outline-none"
+          >
+            {allCharts.map(c => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+          {activeChart && (
+            <span className="text-xs text-primary bg-primary/10 px-2 py-1 rounded-sm">
+              Personal transits active for {activeChart.name}
+            </span>
+          )}
+        </div>
+      </div>
+
       <div className="flex items-center gap-2 mb-4">
         <Calendar size={18} className="text-primary" />
         <span className="font-medium">
@@ -269,28 +503,68 @@ const TodaySection = ({ date }: { date: Date }) => {
         </span>
       </div>
 
-      {aspects.length > 0 ? (
-        <div className="space-y-3">
-          {aspects.map((aspect, i) => (
-            <div key={i} className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card">
-              <span className="text-lg">{getAspectRating(aspect.type)}</span>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className={`font-medium ${getAspectColor(aspect.type)}`}>
-                    {PLANET_SYMBOLS[aspect.planet1]} {aspect.planet1} {aspect.symbol} {PLANET_SYMBOLS[aspect.planet2]} {aspect.planet2}
-                  </span>
+      {/* Collective Aspects */}
+      <div>
+        <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+          <Users size={16} className="text-muted-foreground" />
+          Collective Aspects (Everyone)
+        </h4>
+        {aspects.length > 0 ? (
+          <div className="space-y-3">
+            {aspects.map((aspect, i) => (
+              <div key={i} className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card">
+                <span className="text-lg">{getAspectRating(aspect.type)}</span>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className={`font-medium ${getAspectColor(aspect.type)}`}>
+                      {PLANET_SYMBOLS[aspect.planet1]} {aspect.planet1} {aspect.symbol} {PLANET_SYMBOLS[aspect.planet2]} {aspect.planet2}
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {aspect.description}
+                  </p>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {aspect.description}
-                </p>
               </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-6 text-muted-foreground border border-dashed border-border rounded-lg">
+            <p>No major exact aspects today.</p>
+            <p className="text-sm mt-1">Check the Plan Ahead section for upcoming significant dates.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Personal Transits to Natal Chart */}
+      {activeChart && (
+        <div className="mt-6">
+          <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <Star size={16} className="text-primary" />
+            Transits to {activeChart.name}'s Chart
+          </h4>
+          {personalTransits.length > 0 ? (
+            <div className="grid gap-2">
+              {personalTransits.map((transit, i) => (
+                <div key={i} className={`flex items-center gap-3 p-3 rounded-lg border-2 ${transit.isHarmonious ? 'border-green-300 bg-green-50 dark:bg-green-900/20' : 'border-red-300 bg-red-50 dark:bg-red-900/20'}`}>
+                  <span className={`text-lg ${transit.isHarmonious ? 'text-green-600' : 'text-red-600'}`}>
+                    {transit.isHarmonious ? '✨' : '⚡'}
+                  </span>
+                  <div className="flex-1">
+                    <div className="text-sm font-medium">
+                      {PLANET_SYMBOLS[transit.transitPlanet]} Transit {transit.transitPlanet} {transit.symbol} Natal {PLANET_SYMBOLS[transit.natalPlanet]} {transit.natalPlanet}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {transit.transitPlanet} {transit.effect} your natal {transit.natalPlanet} ({transit.orb}° orb)
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-8 text-muted-foreground">
-          <p>No major exact aspects today.</p>
-          <p className="text-sm mt-1">Check the Plan Ahead section for upcoming significant dates.</p>
+          ) : (
+            <div className="text-center py-6 text-muted-foreground border border-dashed border-border rounded-lg">
+              <p>No major transits to your chart today.</p>
+            </div>
+          )}
         </div>
       )}
 
@@ -832,7 +1106,12 @@ export const TimingView = ({
                 Live timing information for immediate decisions. Updated every minute.
               </p>
             </div>
-            <RightNowSection />
+            <RightNowSection 
+              userNatalChart={userNatalChart}
+              savedCharts={savedCharts}
+              selectedChart={selectedChartForTiming}
+              setSelectedChart={setSelectedChartForTiming}
+            />
           </div>
         )}
 
@@ -844,7 +1123,13 @@ export const TimingView = ({
                 All aspects and transits happening today with interpretations.
               </p>
             </div>
-            <TodaySection date={new Date()} />
+            <TodaySection 
+              date={new Date()} 
+              userNatalChart={userNatalChart}
+              savedCharts={savedCharts}
+              selectedChart={selectedChartForTiming}
+              setSelectedChart={setSelectedChartForTiming}
+            />
           </div>
         )}
 
