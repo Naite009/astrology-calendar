@@ -448,6 +448,17 @@ export const AstroCalendar = () => {
               ...(userNatalChart ? [userNatalChart] : []),
               ...savedCharts
             ]}
+            onChartImageUpload={(chartId, imageBase64) => {
+              // Find the chart and update it
+              if (userNatalChart && chartId === userNatalChart.id) {
+                saveUserNatalChart({ ...userNatalChart, chartImageBase64: imageBase64 });
+              } else {
+                const chartToUpdate = savedCharts.find(c => c.id === chartId);
+                if (chartToUpdate) {
+                  updateChart(chartId, { chartImageBase64: imageBase64 });
+                }
+              }
+            }}
           />
         )}
 
