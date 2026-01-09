@@ -93,75 +93,167 @@ const getPositionInterpretation = (planet: string, degree: number, sign: string)
 };
 
 const getElementInterpretation = (planet: string, element: string, sign: string): string => {
-  const elementMeanings: Record<string, { quality: string; process: string; gift: string }> = {
+  const elementFeelings: Record<string, Record<string, string>> = {
     Fire: {
-      quality: "inspiration, initiative, and enthusiasm",
-      process: "through action, courage, and spontaneous expression",
-      gift: "the ability to inspire others and take bold action"
+      Sun: `**How you FEEL this:** Your identity burns bright—you need action, movement, and creative expression to feel alive. Sitting still for too long makes you restless. You feel most yourself when taking initiative, leading, or doing something bold. Boredom is your enemy; passion is your fuel.`,
+      Moon: `**How you FEEL this:** Your emotions are quick, hot, and dramatic. You process feelings through action—you might need to move, exercise, or DO something when upset. Emotional stagnation feels suffocating. You crave excitement and can get moody when life feels too routine.`,
+      Mercury: `**How you FEEL this:** Your mind is fast, enthusiastic, and impatient. You think by talking, often figuring things out mid-sentence. Slow, detailed explanations bore you—you want the big picture NOW. Ideas excite you physically; you might gesture wildly when inspired.`,
+      Venus: `**How you FEEL this:** In love and pleasure, you want intensity, adventure, and passion. Lukewarm relationships bore you. You're attracted to confidence, boldness, and people who can match your energy. You show love through grand gestures and spontaneous acts.`,
+      Mars: `**How you FEEL this:** Your drive is pure and direct. When you want something, you GO for it—hesitation feels foreign. Anger comes fast but usually burns out quickly. Physical activity is essential; you might feel anxious or irritable without it.`,
+      Jupiter: `**How you FEEL this:** Your optimism is active and infectious. You believe through DOING—faith means taking leaps. You grow through adventure, risk-taking, and bold expansion. Playing it safe feels like a slow death.`,
+      Saturn: `**How you FEEL this:** Responsibility and structure are things you want to conquer actively. You approach discipline like a warrior—attacking goals head-on. Delays frustrate you more than most; you want to BUILD and see results NOW.`
     },
     Earth: {
-      quality: "practicality, stability, and material awareness",
-      process: "through building, sensory experience, and concrete results",
-      gift: "the ability to manifest ideas into tangible reality"
+      Sun: `**How you FEEL this:** You feel most yourself when grounded, productive, and building something tangible. Abstract identity doesn't appeal—you ARE what you DO and CREATE. Security matters. You need to see, touch, and use results to feel real accomplishment.`,
+      Moon: `**How you FEEL this:** Emotional security comes through physical comfort, routine, and material stability. When stressed, you might eat, organize, or work with your hands. You process feelings slowly and need time to digest experiences. Chaos is deeply unsettling.`,
+      Mercury: `**How you FEEL this:** Your thinking is methodical and practical—you want to APPLY knowledge, not just discuss it. Abstract theories frustrate you unless they lead somewhere useful. You learn by doing and remember through physical or sensory experience.`,
+      Venus: `**How you FEEL this:** Love needs to be reliable, sensual, and demonstrated through consistent actions. Grand words mean little without follow-through. You appreciate quality—fine textures, good food, beautiful objects. You show love through practical care and physical presence.`,
+      Mars: `**How you FEEL this:** Your drive is steady and persistent rather than explosive. You build momentum over time. Once committed, you're nearly unstoppable, but starting requires clear purpose. You prefer working toward concrete, measurable goals.`,
+      Jupiter: `**How you FEEL this:** Growth and opportunity feel real when they produce tangible results—money, resources, skills you can use. Philosophical expansion for its own sake doesn't excite you; you want wisdom that WORKS.`,
+      Saturn: `**How you FEEL this:** Structure and discipline come naturally—you understand that slow, steady effort builds empires. You're patient with long-term goals but might struggle with abstract ambitions. You need to see the practical path.`
     },
     Air: {
-      quality: "intellect, communication, and social connection",
-      process: "through ideas, conversation, and mental analysis",
-      gift: "the ability to see multiple perspectives and connect concepts"
+      Sun: `**How you FEEL this:** You feel most alive in your MIND. Ideas, conversations, and intellectual connections define you more than emotional intensity or physical achievements. You might feel detached from your body or emotions—identity lives in your thoughts and social connections.`,
+      Moon: `**How you FEEL this:** You intellectualize emotions rather than drowning in them. When upset, you analyze WHY you feel that way. Raw emotional expression might feel uncomfortable or embarrassing. You process feelings through talking, writing, or thinking them through. People might say you're "in your head"—and you are. That's where you feel safe.`,
+      Mercury: `**How you FEEL this:** This is your natural element! Your mind is quick, curious, and constantly making connections. Ideas excite you viscerally. You might think in multiple streams simultaneously, enjoy wordplay, and feel genuinely energized by good conversation.`,
+      Venus: `**How you FEEL this:** Attraction starts in the mind. Intellectual connection is foreplay. You need someone you can TALK to, who stimulates your thinking. Purely physical or emotional relationships feel shallow. You show love through communication and shared ideas.`,
+      Mars: `**How you FEEL this:** You fight with words and strategy, not fists. Your drive is mental—you attack problems intellectually. Anger often manifests as sharp words or cutting logic. You're motivated by ideas, causes, and mental challenges rather than purely physical goals.`,
+      Jupiter: `**How you FEEL this:** Your growth comes through learning, connecting with diverse people, and spreading ideas. You're optimistic about humanity's potential for reason. Knowledge feels like wealth; a good library feels like a treasure chest.`,
+      Saturn: `**How you FEEL this:** You take ideas seriously. Mental discipline, structured thinking, and intellectual rigor matter to you. You might fear being seen as stupid or uninformed. Your greatest achievements likely involve communication, teaching, or sharing knowledge.`
     },
     Water: {
-      quality: "emotion, intuition, and empathic awareness",
-      process: "through feeling, instinct, and emotional intelligence",
-      gift: "the ability to sense what others need and heal through compassion"
+      Sun: `**How you FEEL this:** You feel most yourself when emotionally connected and intuitively tuned in. Pure logic without feeling seems hollow. You might struggle to articulate who you ARE because identity feels fluid—you sense yourself more than define yourself.`,
+      Moon: `**How you FEEL this:** This is your natural element! Emotions are powerful, deep, and often overwhelming. You absorb others' feelings like a sponge. You need solitude to process and discharge what you've absorbed. Intuition is strong—you know things without knowing how you know.`,
+      Mercury: `**How you FEEL this:** You think with your feelings. Logic follows intuition, not the other way around. You might struggle to explain HOW you arrived at conclusions because the knowing came through sensing, not reasoning. You remember how things FELT, not just what happened.`,
+      Venus: `**How you FEEL this:** Love is deep, merging, and all-consuming. You don't do shallow connections. Intimacy means emotional nakedness—knowing someone's soul. You're attracted to emotional depth and can sense when someone is hiding their true self.`,
+      Mars: `**How you FEEL this:** Your drive is connected to emotional motivation. You fight for what you CARE about. Anger can be passive-aggressive or explosive depending on how long it's been building. You're motivated by protecting those you love and pursuing what moves you.`,
+      Jupiter: `**How you FEEL this:** Growth comes through emotional and spiritual experiences. Travel or education mean nothing without FEELING the expansion. You grow through love, healing, and deep connection. Compassion is your philosophy.`,
+      Saturn: `**How you FEEL this:** Emotional boundaries are your life lesson. You might fear vulnerability or have experienced early emotional hardship that taught you to protect yourself. Your greatest mastery involves learning to feel deeply while staying boundaried.`
     }
   };
 
-  const meaning = elementMeanings[element];
-  if (!meaning) return "";
+  const planetFeeling = elementFeelings[element]?.[planet];
+  if (!planetFeeling) {
+    return `Your ${planet} in ${sign} operates through the ${element} element. This colors how you experience ${planet} themes—through ${element === 'Fire' ? 'action and inspiration' : element === 'Earth' ? 'practical, tangible experience' : element === 'Air' ? 'thought and communication' : 'feeling and intuition'}.`;
+  }
 
-  return `Your ${planet} in ${sign} operates through the ${element} element, giving it ${meaning.quality}. This means your ${planet} expresses ${meaning.process}. The ${element} element grants your ${planet} ${meaning.gift}.`;
+  return `Your ${planet} in ${sign} operates through the ${element} element.
+
+${planetFeeling}`;
 };
 
 const getModeInterpretation = (planet: string, mode: string, sign: string): string => {
-  const modeMeanings: Record<string, { action: string; strength: string; challenge: string }> = {
+  const modeFeelings: Record<string, Record<string, string>> = {
     Cardinal: {
-      action: "initiating new beginnings and taking the lead",
-      strength: "starting projects and catalyzing change",
-      challenge: "following through after the initial spark"
+      Sun: `**How you FEEL this:** You feel most alive when STARTING something. The beginning of projects, relationships, or adventures energizes you. Once things become routine, you might lose interest or want to start something new. Leadership and initiative feel natural.`,
+      Moon: `**How you FEEL this:** Emotionally, you need fresh starts and new beginnings. Stagnant emotional situations feel suffocating. You might be the one who initiates emotional conversations or pushes for change in relationships. You process feelings by taking action.`,
+      Mercury: `**How you FEEL this:** Your mind is oriented toward new ideas and initiating conversations. You think quickly and want to share ideas immediately. Planning feels exciting; execution can feel tedious. You're an idea-starter.`,
+      Venus: `**How you FEEL this:** In love, you're drawn to new connections and the excitement of beginnings. You might pursue what you want actively rather than waiting to be chosen. You bring initiative and freshness to relationships.`,
+      Mars: `**How you FEEL this:** Your drive is about launching, initiating, and being FIRST. Competition energizes you. You're a self-starter who doesn't need external motivation. Waiting for others to begin feels frustrating.`,
+      Jupiter: `**How you FEEL this:** Your growth comes through launching new ventures, starting journeys, and pioneering paths. You're optimistic about new beginnings and see opportunity in fresh starts.`,
+      Saturn: `**How you FEEL this:** Your ambition is about founding, establishing, and creating structures. You take responsibility for initiating change and building from scratch.`
     },
     Fixed: {
-      action: "sustaining effort and maintaining focus",
-      strength: "perseverance, loyalty, and depth of commitment",
-      challenge: "adapting when circumstances require change"
+      Sun: `**How you FEEL this:** You feel most yourself when deeply committed and consistent. Constant change feels destabilizing—you need continuity to know who you are. Others see you as reliable and stubborn. You resist being pushed.`,
+      Moon: `**How you FEEL this:** Emotionally, you're steady and don't shift easily. Your moods are consistent—for better or worse. Once attached, you're loyal for life. Emotional change comes slowly and resistance to feeling differently is strong.`,
+      Mercury: `**How you FEEL this:** Your thinking is thorough and persistent. You don't change your mind easily—you need serious evidence. You prefer to master one subject deeply rather than skip around. Mental habits are hard to break.`,
+      Venus: `**How you FEEL this:** In love, you're loyal, possessive, and committed. You don't fall in or out of love quickly. Relationships are long-term investments. You value stability over excitement and can be quite stubborn about what you want.`,
+      Mars: `**How you FEEL this:** Your drive is about endurance and follow-through. You might start slowly, but once committed, nothing stops you. Your willpower is formidable. You finish what you start.`,
+      Jupiter: `**How you FEEL this:** Growth comes through deepening, not spreading. You expand by going deeper into what you already have rather than constantly seeking new opportunities. Stability is wealth.`,
+      Saturn: `**How you FEEL this:** Discipline and persistence are your superpowers. You understand that lasting achievement requires sustained effort. You're not afraid of long-term commitment.`
     },
     Mutable: {
-      action: "adapting to circumstances and facilitating transitions",
-      strength: "flexibility, versatility, and bridging different perspectives",
-      challenge: "maintaining consistency and firm boundaries"
+      Sun: `**How you FEEL this:** Your identity is flexible and adaptable. You might feel like a different person in different contexts—and that's okay. Rigidity feels stifling. You define yourself through your ability to adjust and connect different worlds.`,
+      Moon: `**How you FEEL this:** Your emotions are changeable and responsive to your environment. You pick up on others' moods easily and might have trouble distinguishing your feelings from theirs. You process by talking or moving.`,
+      Mercury: `**How you FEEL this:** Your mind is versatile and quick to adapt. You can see multiple perspectives easily—sometimes too easily, leading to indecision. You love variety and get bored with repetition.`,
+      Venus: `**How you FEEL this:** In love, you're flexible and value mental connection. You can adapt to different partners and situations. Variety in relationships appeals to you; routine can feel stifling.`,
+      Mars: `**How you FEEL this:** Your drive adapts to circumstances. You're strategic rather than forceful, working around obstacles instead of through them. You might start many things without finishing all of them.`,
+      Jupiter: `**How you FEEL this:** Growth comes through learning, traveling, and synthesizing diverse experiences. You expand by connecting different worlds and translating between them.`,
+      Saturn: `**How you FEEL this:** Your discipline is about mastering adaptability—learning to be consistent while remaining flexible. Structure serves learning and communication.`
     }
   };
 
-  const meaning = modeMeanings[mode];
-  if (!meaning) return "";
+  const planetFeeling = modeFeelings[mode]?.[planet];
+  if (!planetFeeling) {
+    return `Your ${planet} in ${sign} is in ${mode} mode. This means your ${planet} expresses through ${mode === 'Cardinal' ? 'initiation and leadership' : mode === 'Fixed' ? 'persistence and determination' : 'adaptability and flexibility'}.`;
+  }
 
-  return `Your ${planet} in ${sign} is in ${mode} mode, naturally oriented toward ${meaning.action}. This gives your ${planet} the strength of ${meaning.strength}. The growth edge is ${meaning.challenge}.`;
+  return `Your ${planet} in ${sign} is in ${mode} mode.
+
+${planetFeeling}`;
 };
 
 const getAngularityInterpretation = (planet: string, houseType: string, house: number): string => {
-  const typeInterpretations: Record<string, string> = {
-    Angular: `Your ${planet} in the ${house}${getOrdinal(house)} house is in an angular position—the most powerful and visible placement. Angular planets are front and center in your life, actively shaping your identity and how others perceive you. This ${planet} is a major player in your chart.`,
-    Succedent: `Your ${planet} in the ${house}${getOrdinal(house)} house is in a succedent position—a place of building, resources, and sustained effort. Succedent planets work steadily behind the scenes, accumulating power and value over time. This ${planet} grows stronger as you invest in it.`,
-    Cadent: `Your ${planet} in the ${house}${getOrdinal(house)} house is in a cadent position—a place of learning, processing, and mental activity. Cadent planets work through analysis, communication, and adaptation. This ${planet} expresses through study, thought, and service to others.`
+  const angularFeelings: Record<string, Record<string, string>> = {
+    Angular: {
+      Sun: `**How you FEEL this:** Your identity is VISIBLE. People notice you, for better or worse. You can't hide who you are—and you probably don't want to. You feel most alive when in the spotlight, taking action, or actively shaping your world.`,
+      Moon: `**How you FEEL this:** Your emotions are front and center in your life. You can't hide how you feel—it shows on your face. Emotional situations find you, and you actively engage with nurturing, family, or public life.`,
+      Mercury: `**How you FEEL this:** Your thinking and communication are prominent features of who you are. You're known for your ideas, your words, or your intellect. Mental activity is central to your life direction.`,
+      Venus: `**How you FEEL this:** Your values, aesthetics, and relationships are highly visible parts of your identity. You might be known for your taste, your charm, or your partnerships. Love and beauty play a central role.`,
+      Mars: `**How you FEEL this:** Your drive and assertiveness are powerful and obvious. You're known for your energy, ambition, or competitive spirit. Action is a central theme—you make things happen.`,
+      Jupiter: `**How you FEEL this:** Your optimism, wisdom, or expansiveness is a visible part of who you are. You might be known for teaching, traveling, or big-picture thinking. Growth happens in obvious, public ways.`,
+      Saturn: `**How you FEEL this:** Your responsibilities, ambitions, and structures are central to your life. You're known for your discipline, achievements, or authority. Career and public standing matter greatly.`
+    },
+    Succedent: {
+      Sun: `**How you FEEL this:** Your identity develops through building resources and value over time. You might not seek the spotlight, but you accumulate power steadily. Your sense of self is connected to what you own or create.`,
+      Moon: `**How you FEEL this:** Emotional security comes through building stability—financial, material, or in terms of values. You invest emotionally in what you're building. Security grows over time.`,
+      Mercury: `**How you FEEL this:** Your thinking is oriented toward practical value and building knowledge systematically. You prefer deep understanding to quick impressions. Mental resources accumulate.`,
+      Venus: `**How you FEEL this:** Love and pleasure connect to what you're building. Relationships are investments. You value quality over quantity and appreciate steady, accumulating beauty.`,
+      Mars: `**How you FEEL this:** Your drive works steadily toward building something of value. You're not in a hurry—you're building for the long term. Power accumulates through persistent effort.`,
+      Jupiter: `**How you FEEL this:** Growth comes through investment—of time, money, energy. You expand your resources rather than just your horizons. Opportunity builds on opportunity.`,
+      Saturn: `**How you FEEL this:** You understand that real achievement takes sustained effort. You're building structures that last. Responsibility is an investment that pays off over time.`
+    },
+    Cadent: {
+      Sun: `**How you FEEL this:** Your identity expresses through learning, thinking, and adapting. You might feel like a perpetual student or helper. Your sense of self develops through mental activity and service.`,
+      Moon: `**How you FEEL this:** You process emotions through analysis, communication, or helping others. Feelings need to be understood, not just felt. You might be drawn to healing or supportive roles.`,
+      Mercury: `**How you FEEL this:** This is comfortable territory! Your mind is in its natural habitat—learning, communicating, analyzing, adapting. Intellectual and mental activities feel like home.`,
+      Venus: `**How you FEEL this:** Love and beauty connect to learning, communication, or service. You might find pleasure in helping, teaching, or intellectual pursuits. Relationships involve mental connection.`,
+      Mars: `**How you FEEL this:** Your drive expresses through mental effort, communication, or adaptive strategies. You work smarter, not just harder. Action serves learning or helping.`,
+      Jupiter: `**How you FEEL this:** Growth comes through learning, teaching, and intellectual expansion. Travel or education might be literal or metaphorical. Wisdom develops through processing experience.`,
+      Saturn: `**How you FEEL this:** Your discipline applies to mental work, learning, or service. You take communication and analysis seriously. Mastery comes through dedicated study and practice.`
+    }
   };
 
-  return typeInterpretations[houseType] || "";
+  const planetFeeling = angularFeelings[houseType]?.[planet];
+  if (!planetFeeling) {
+    return `Your ${planet} in the ${house}${getOrdinal(house)} house is in a ${houseType.toLowerCase()} position—${houseType === 'Angular' ? 'powerful and visible' : houseType === 'Succedent' ? 'building and accumulating' : 'learning and adapting'}.`;
+  }
+
+  return `Your ${planet} in the ${house}${getOrdinal(house)} house is in a ${houseType} position—${houseType === 'Angular' ? 'the most powerful and visible' : houseType === 'Succedent' ? 'a place of building and resources' : 'a place of learning and adaptation'}.
+
+${planetFeeling}`;
 };
 
 const getMotionInterpretation = (planet: string, isRetrograde: boolean): string => {
+  const retrogradeFeelings: Record<string, string> = {
+    Mercury: `**How you FEEL this:** Your thinking works differently—more reflective, internal, and nonlinear. You might struggle to express ideas clearly on the first try, but your inner processing is rich. You may have been misunderstood as a child or feel like your mind works in a way others don't quite get. Writing, revising, and refining thoughts comes naturally.`,
+    Venus: `**How you FEEL this:** Love and value operate internally first. You might not show affection obviously or pursue relationships conventionally. Your aesthetic sense is personal rather than mainstream. You may have felt unloved or undervalued early on, developing a rich inner relationship with beauty and worth.`,
+    Mars: `**How you FEEL this:** Your drive turns inward before expressing outward. You might hesitate before acting, processing anger internally, or take indirect routes to goals. Others might see you as passive, but there's a furnace inside. Your assertiveness developed later or in unconventional ways.`,
+    Jupiter: `**How you FEEL this:** Your growth and faith developed through inner journeys rather than outer adventures. You find wisdom through reflection, not just experience. Optimism might not come easily—you had to develop it consciously. Your philosophy is personal and hard-won.`,
+    Saturn: `**How you FEEL this:** Discipline and structure are internal matters. External authority might feel oppressive while your inner authority is strong. You set your own standards. Others' expectations matter less than your own, which can be even more demanding.`
+  };
+
+  const directFeelings: Record<string, string> = {
+    Mercury: `**How you FEEL this:** Your thinking flows naturally outward. You process by talking or writing, expressing ideas readily. Communication feels natural and others generally understand your mental approach.`,
+    Venus: `**How you FEEL this:** Love and pleasure express naturally. You can show affection, pursue what you value, and connect with beauty in straightforward ways. Your aesthetic sense aligns with how you present it.`,
+    Mars: `**How you FEEL this:** Your drive expresses directly. When you want something, you go for it. Anger comes out rather than turning inward. Others recognize your energy and assertiveness.`,
+    Jupiter: `**How you FEEL this:** Growth and opportunity flow outward. You expand through external experiences, travel, education, and sharing wisdom. Optimism comes naturally.`,
+    Saturn: `**How you FEEL this:** You work with external structures and authorities relatively smoothly. Discipline manifests in visible achievements. The rules make sense to you, even when challenging.`
+  };
+
   if (isRetrograde) {
-    return `Your ${planet} is retrograde (℞), meaning its energy turns inward. Rather than expressing outwardly in typical ${planet} ways, you process these themes internally first. You may have unique insights about ${planet} matters that differ from mainstream views. Past life astrologers see retrograde planets as carrying unfinished business requiring deeper integration this lifetime.`;
+    const feeling = retrogradeFeelings[planet] || `Your internal processing of ${planet} themes is rich, but external expression may take extra effort.`;
+    return `Your ${planet} is retrograde (℞), meaning its energy turns inward first.
+
+${feeling}
+
+**The gift:** Retrograde planets often develop profound, unique perspectives through deep internal work. What others do automatically, you've had to consciously develop—making you an eventual master.`;
   }
-  return `Your ${planet} is direct, moving forward through the zodiac in its natural rhythm. This allows ${planet}'s energy to flow outward naturally, expressing in expected ways. You likely engage with ${planet} themes in a straightforward manner that others easily recognize.`;
+
+  const feeling = directFeelings[planet] || `Your ${planet} expresses its energy outwardly in natural, recognizable ways.`;
+  return `Your ${planet} is direct, moving forward through the zodiac naturally.
+
+${feeling}`;
 };
 
 const getSpeedInterpretation = (planet: string, isRetrograde: boolean): string => {
@@ -185,22 +277,96 @@ const getSpeedInterpretation = (planet: string, isRetrograde: boolean): string =
 };
 
 const getDignityInterpretation = (planet: string, sign: string, dignityType: string): string => {
-  const interpretations: Record<string, string> = {
-    Ruler: `Your ${planet} is in its own sign of ${sign}—a position of rulership! This is like being at home: ${planet} can express its nature purely and powerfully. You have natural authority in ${planet} matters and others recognize your competence here. This is a significant strength in your chart.`,
-    Exaltation: `Your ${planet} is exalted in ${sign}—a position of honor and elevation! ${planet} is celebrated and functions at a high level here. Think of it as being a respected guest: not at home, but given special treatment. ${planet} themes come to you with grace and often bring recognition.`,
-    Detriment: `Your ${planet} is in detriment in ${sign}—the sign opposite its rulership. This doesn't mean "bad," but ${planet} must work harder to express itself clearly. You may approach ${planet} matters unconventionally, learning through challenge. This placement often produces unique mastery through effort.`,
-    Fall: `Your ${planet} is in fall in ${sign}—the sign opposite its exaltation. ${planet} must work to express its nature here, often feeling unsupported or misunderstood. However, this placement can develop profound humility and hard-won wisdom in ${planet} matters. Many successful people have fallen planets—they develop resilience.`,
-    Peregrine: `Your ${planet} in ${sign} has no essential dignity—it's "peregrine" or wandering. This is neutral: ${planet} isn't especially strong or weak by sign. It relies more on aspects, house placement, and other factors to determine how it functions. This gives flexibility in how you express ${planet} themes.`
+  const dignityFeelings: Record<string, Record<string, string>> = {
+    Ruler: {
+      Sun: `**How you FEEL this:** Your identity is clear and powerful. You know who you are. Confidence comes naturally, and others sense your authenticity. Being yourself doesn't require effort—you simply ARE.`,
+      Moon: `**How you FEEL this:** Your emotional nature flows easily. You feel your feelings fully and naturally nurture yourself and others. Emotional intelligence is instinctive, not learned.`,
+      Mercury: `**How you FEEL this:** Your mind works smoothly and powerfully. Thinking, communicating, and learning feel natural. You're in your element when processing information and expressing ideas.`,
+      Venus: `**How you FEEL this:** Love, beauty, and pleasure flow naturally. You know what you value and attract it easily. Relationships and aesthetics come effortlessly.`,
+      Mars: `**How you FEEL this:** Your drive and assertiveness are strong and effective. When you want something, you know how to get it. Energy flows freely and actions succeed.`,
+      Jupiter: `**How you FEEL this:** Optimism and growth come naturally. Opportunities find you, and expansion feels effortless. Faith is easy; luck seems to follow you.`,
+      Saturn: `**How you FEEL this:** Discipline and structure feel natural, not restrictive. You understand how to build, achieve, and take responsibility. Authority fits you like a glove.`
+    },
+    Exaltation: {
+      Sun: `**How you FEEL this:** Your identity is celebrated and elevated. You feel special, honored, and capable of greatness. Confidence comes with a sense of being destined for something.`,
+      Moon: `**How you FEEL this:** Your emotional nature is refined and honored. Feelings have depth and meaning. You're sensitive in a way that's valued, not dismissed.`,
+      Mercury: `**How you FEEL this:** Your mind is sharp and elevated. Ideas come with extra clarity and significance. Communication has grace and impact.`,
+      Venus: `**How you FEEL this:** Love and beauty feel exquisite. You experience pleasure deeply and attract admiration. There's a refinement to how you love and value.`,
+      Mars: `**How you FEEL this:** Your drive is purposeful and honored. Action feels meaningful and directed toward worthy goals. Energy is controlled and effective.`,
+      Jupiter: `**How you FEEL this:** Growth and wisdom feel blessed. You're on a fortunate path, and expansion brings genuine elevation—not just more, but better.`,
+      Saturn: `**How you FEEL this:** Discipline leads to genuine mastery. Hard work is rewarded and recognized. You build things that command respect.`
+    },
+    Detriment: {
+      Sun: `**How you FEEL this:** Your identity might feel unclear or like you have to prove yourself. Others might not "get" you at first. You've developed a unique sense of self through overcoming this—one that's truly yours, not borrowed from expectations.`,
+      Moon: `**How you FEEL this:** Emotions might feel inconvenient or mismatched with your environment. Nurturing doesn't come automatically—you had to learn it consciously. This gives you emotional wisdom others lack.`,
+      Mercury: `**How you FEEL this:** Your thinking might work differently than expected, and communication can require extra effort. But you've developed unique mental perspectives through this challenge.`,
+      Venus: `**How you FEEL this:** Love and pleasure might not flow easily or look conventional. You've had to consciously develop your values and relationship skills. This makes your connections more intentional.`,
+      Mars: `**How you FEEL this:** Your drive might feel blocked or misdirected at times. Assertiveness requires conscious effort. But you've learned strategic, thoughtful action rather than mere impulse.`,
+      Jupiter: `**How you FEEL this:** Growth and opportunity require work. Optimism isn't automatic—you've had to cultivate it. This makes your faith harder-won but more genuine.`,
+      Saturn: `**How you FEEL this:** Structure and authority might feel alien or oppressive. You've had to find your own path to discipline. This can create unique, unconventional achievements.`
+    },
+    Fall: {
+      Sun: `**How you FEEL this:** Your identity might have been diminished or overlooked early on. You've had to actively BUILD who you are rather than just being it. This creates remarkable inner strength and self-knowledge.`,
+      Moon: `**How you FEEL this:** Emotional needs might have been unmet or dismissed. You've learned to nurture yourself. This can make you an exceptional caretaker—because you KNOW what's missing.`,
+      Mercury: `**How you FEEL this:** Your thinking might have been criticized or undervalued. Mental confidence was hard-won. But you've developed careful, thorough thought processes as a result.`,
+      Venus: `**How you FEEL this:** Love or self-worth might have felt out of reach. You've had to consciously learn to value yourself and be valued. This creates deep, authentic relationships when you find them.`,
+      Mars: `**How you FEEL this:** Your drive might have been crushed or redirected. Direct assertion felt risky. You've learned subtle, strategic ways to pursue goals that are remarkably effective.`,
+      Jupiter: `**How you FEEL this:** Faith and optimism might have been tested severely. You know what it is to lose hope and rebuild it. This gives you a wisdom about growth that the naturally lucky never develop.`,
+      Saturn: `**How you FEEL this:** Authority and structure might have been destructive or absent. You had to learn discipline without good models. This can create either remarkable self-teaching or a complete rejection of conventions.`
+    },
+    Peregrine: {
+      Sun: `**How you FEEL this:** Your identity is flexible—not locked into one way of being. You adapt. This can feel like lacking a clear sense of self, or like having freedom others don't have.`,
+      Moon: `**How you FEEL this:** Your emotional nature takes its color from aspects and house placement more than sign. You're emotionally adaptable, neither naturally supported nor challenged.`,
+      Mercury: `**How you FEEL this:** Your mind is versatile, shaped more by experience and aspects than by any essential nature. You can think in many different styles.`,
+      Venus: `**How you FEEL this:** Love and values are shaped by context. You're neither naturally gifted nor challenged in relationships—your experiences and choices matter more.`,
+      Mars: `**How you FEEL this:** Your drive is neutral territory, shaped by what aspects it and where it lives. You have flexibility in how you assert and pursue.`,
+      Jupiter: `**How you FEEL this:** Growth depends on circumstances and choices rather than innate luck. You make your own opportunities rather than having them given or withheld.`,
+      Saturn: `**How you FEEL this:** Discipline and structure are tools you can use flexibly. Neither naturally aligned nor opposed, Saturn's lessons come through specific life circumstances.`
+    }
   };
 
-  return interpretations[dignityType] || "";
+  const planetFeeling = dignityFeelings[dignityType]?.[planet];
+  if (!planetFeeling) {
+    return `Your ${planet} in ${sign} is in ${dignityType} condition—${dignityType === 'Ruler' ? 'at home and powerful' : dignityType === 'Exaltation' ? 'elevated and honored' : dignityType === 'Detriment' ? 'working through challenge' : dignityType === 'Fall' ? 'building strength through difficulty' : 'neutral and flexible'}.`;
+  }
+
+  const baseDescription = {
+    Ruler: `Your ${planet} is in its own sign of ${sign}—a position of rulership! Like being at home, it expresses its nature purely.`,
+    Exaltation: `Your ${planet} is exalted in ${sign}—a position of honor! It functions at a high, celebrated level here.`,
+    Detriment: `Your ${planet} is in detriment in ${sign}—working against its natural grain. This creates challenge but also unique strength.`,
+    Fall: `Your ${planet} is in fall in ${sign}—facing its greatest challenge. But fallen planets often develop the deepest mastery.`,
+    Peregrine: `Your ${planet} in ${sign} has no essential dignity—it's "peregrine" or wandering. This gives flexibility in expression.`
+  };
+
+  return `${baseDescription[dignityType as keyof typeof baseDescription] || ''}
+
+${planetFeeling}`;
 };
 
 const getDispositorInterpretation = (planet: string, sign: string, dispositor: string): string => {
   if (planet === dispositor) {
-    return `Your ${planet} is in its own sign, so it "disposes itself." This means ${planet} has final authority over its own expression—no other planet is its boss. This gives your ${planet} autonomy and self-direction.`;
+    return `Your ${planet} is in its own sign, so it "disposes itself"—no other planet is its boss. 
+
+**How you FEEL this:** There's an independence and self-sufficiency to how your ${planet} works. You don't need permission or support from elsewhere to express ${planet} themes. This can feel like confidence, autonomy, or sometimes isolation—you ARE your own authority here.`;
   }
-  return `Your ${planet} in ${sign} is "disposed" by ${dispositor} (${sign}'s ruler). This means ${dispositor} influences how your ${planet} expresses. Look to where ${dispositor} is placed in your chart—that planet colors and directs your ${planet}'s energy. ${dispositor} is like the landlord of the house where ${planet} lives.`;
+  
+  const dispositorFeelings: Record<string, string> = {
+    Sun: `You experience your ${planet} through the lens of identity, visibility, and self-expression. Your ${planet} works best when it connects to who you ARE and when you're getting recognition.`,
+    Moon: `You experience your ${planet} through emotional needs, nurturing, and intuition. Your ${planet} is colored by your moods, your need for security, and your instinctive responses.`,
+    Mercury: `You experience your ${planet} through thinking, communicating, and learning. Your ${planet} wants to be UNDERSTOOD and expressed through words, ideas, and mental activity.`,
+    Venus: `You experience your ${planet} through values, relationships, and pleasure. Your ${planet} works best when it's connected to what you love, what feels beautiful, and who you're relating to.`,
+    Mars: `You experience your ${planet} through action, desire, and assertion. Your ${planet} is energized by drive, competition, and the courage to go after what you want.`,
+    Jupiter: `You experience your ${planet} through growth, optimism, and meaning-making. Your ${planet} wants to expand, to mean something, to connect to a bigger picture.`,
+    Saturn: `You experience your ${planet} through structure, discipline, and responsibility. Your ${planet} is shaped by what you're building, your ambitions, and the rules you follow.`
+  };
+
+  const feeling = dispositorFeelings[dispositor] || `${dispositor} colors and directs how your ${planet} expresses.`;
+
+  return `Your ${planet} in ${sign} is "disposed" by ${dispositor} (${sign}'s ruler). Think of ${dispositor} as the landlord of the house where your ${planet} lives.
+
+**How you FEEL this:** ${feeling}
+
+**Practical tip:** Check where ${dispositor} is in your chart. If it's strong, your ${planet} has good support. If challenged, your ${planet} has to work through ${dispositor}'s issues first.`;
 };
 
 const getTriplicityInterpretation = (planet: string, element: string, rulers: { day: string; night: string; participating: string }, isDayChart: boolean | null): string => {
@@ -418,7 +584,28 @@ const getDeclinationInterpretation = (planet: string, declination: string): stri
   const isNorth = declination.includes('N');
   const direction = isNorth ? "north" : "south";
   
-  return `Your ${planet} has a declination of ${declination}, meaning it sits ${direction} of the celestial equator. Planets at similar declinations form "parallel" aspects (north-north or south-south) or "contraparallel" aspects (north-south), creating hidden connections. High declination planets (near 23°) are "out of bounds" and can express in unusual, amplified ways.`;
+  // Extract numeric value
+  const degreeMatch = declination.match(/(\d+)/);
+  const degreeValue = degreeMatch ? parseInt(degreeMatch[1]) : 0;
+  const isOutOfBounds = degreeValue > 23;
+  
+  let oobFeeling = "";
+  if (isOutOfBounds) {
+    const oobFeelings: Record<string, string> = {
+      Sun: `Your identity operates outside normal bounds—you might feel like you don't fit conventional molds, and your self-expression is amplified, unique, or extreme in some way.`,
+      Moon: `Your emotions go to extremes that others don't experience. You might feel things more intensely than those around you, for better and worse.`,
+      Mercury: `Your thinking goes places others' minds don't reach. Genius-level insights are possible, but you might also struggle to communicate in "normal" ways.`,
+      Venus: `Your desires and values are unconventional or extreme. What you love, you LOVE. What you find beautiful might confuse others.`,
+      Mars: `Your drive and assertiveness operate beyond normal limits. You might have extraordinary energy or struggle to keep it within acceptable bounds.`,
+      Jupiter: `Your optimism and growth instincts go to extremes. Huge faith, huge risks, huge possibilities—but also potential for overreach.`,
+      Saturn: `Your relationship with structure and authority is extreme—either hypercontrolled or completely rejecting of limits.`
+    };
+    oobFeeling = `
+
+**OUT OF BOUNDS! How you FEEL this:** ${oobFeelings[planet] || 'This planet operates outside normal limits, expressing in amplified or unusual ways.'}`;
+  }
+  
+  return `Your ${planet} has a declination of ${declination}, meaning it sits ${direction} of the celestial equator. ${isOutOfBounds ? '⚠️ This is OUT OF BOUNDS (beyond 23°)!' : ''}${oobFeeling}`;
 };
 
 const getSaturnSymbolInterpretation = (sign: string, symbol: { symbol: string; meaning: string }): string => {
