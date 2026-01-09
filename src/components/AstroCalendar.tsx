@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, CalendarCheck } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle } from "lucide-react";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
 import { YearView } from "./YearView";
@@ -24,7 +24,7 @@ import { DayData, generateICalExport } from "@/lib/astrology";
 type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script";
 
 export const AstroCalendar = () => {
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 0, 1)); // January 2026
+  const [currentDate, setCurrentDate] = useState(new Date()); // Current date
   const [showUserForm, setShowUserForm] = useState(false);
   const [selectedDay, setSelectedDay] = useState<DayData | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("month");
@@ -110,8 +110,8 @@ export const AstroCalendar = () => {
     if (viewMode === "charts") {
       return "Chart Library";
     }
-    if (viewMode === "best-times") {
-      return "Best Times";
+    if (viewMode === "timing") {
+      return "Timing & Electional";
     }
     if (viewMode === "colors") {
       return "Astro Colors";
@@ -121,9 +121,6 @@ export const AstroCalendar = () => {
     }
     if (viewMode === "sacred-script") {
       return "Sacred Script";
-    }
-    if (viewMode === "electional") {
-      return "Electional Calendar";
     }
     if (viewMode === "moon-phases") {
       return `${currentDate.getFullYear()} Moon Phases`;
@@ -281,15 +278,15 @@ export const AstroCalendar = () => {
                 Wheel
               </button>
               <button
-                onClick={() => setViewMode("best-times")}
+                onClick={() => setViewMode("timing")}
                 className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
-                  viewMode === "best-times"
+                  viewMode === "timing"
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <Clock size={14} />
-                Best Times
+                Timing
               </button>
               <button
                 onClick={() => setViewMode("colors")}
@@ -338,17 +335,6 @@ export const AstroCalendar = () => {
               >
                 <Scroll size={14} />
                 Script
-              </button>
-              <button
-                onClick={() => setViewMode("electional")}
-                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
-                  viewMode === "electional"
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <CalendarCheck size={14} />
-                Electional
               </button>
             </div>
 
@@ -465,12 +451,13 @@ export const AstroCalendar = () => {
           />
         )}
 
-        {viewMode === "best-times" && (
-          <BestTimesView
+        {viewMode === "timing" && (
+          <TimingView
             userNatalChart={userNatalChart}
             savedCharts={savedCharts}
             selectedChartForTiming={selectedChartForTiming}
             setSelectedChartForTiming={selectChartForTiming}
+            currentDate={currentDate}
           />
         )}
 
@@ -493,14 +480,6 @@ export const AstroCalendar = () => {
               ...(userNatalChart ? [userNatalChart] : []),
               ...savedCharts
             ]}
-          />
-        )}
-
-        {viewMode === "electional" && (
-          <ElectionalCalendarView
-            year={currentDate.getFullYear()}
-            userNatalChart={userNatalChart}
-            savedCharts={savedCharts}
           />
         )}
       </div>
