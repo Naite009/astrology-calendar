@@ -416,17 +416,29 @@ export const useCloudBackup = (
     };
   }, [userNatalChart, savedCharts, triggerSync]);
 
-  // When user changes (login/logout), re-check cloud data
+  // When user changes (login/logout), re-check cloud data - but only once per user
+  const lastFetchedUserIdRef = useRef<string | null>(null);
+  
   useEffect(() => {
     const fetchOnAuthChange = async () => {
+      // Skip if we already fetched for this user
+      if (user?.id && user.id === lastFetchedUserIdRef.current) {
+        return;
+      }
+      
       if (user?.id) {
         console.log('[CloudBackup] User logged in, fetching their charts...');
+        lastFetchedUserIdRef.current = user.id;
+        
         // Fetch charts for this user
         const cloudCharts = await fetchCloudCharts();
         if (cloudCharts.length > 0) {
           console.log('[CloudBackup] Found', cloudCharts.length, 'charts for user, restoring...');
           await restoreFromCloud();
         }
+      } else {
+        // User logged out, reset
+        lastFetchedUserIdRef.current = null;
       }
     };
     
