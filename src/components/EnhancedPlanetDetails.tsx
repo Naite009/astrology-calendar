@@ -18,35 +18,263 @@ import {
   calculateDeclination
 } from '@/lib/planetDignities';
 
-// Educational content for each topic
-const LEARN_MORE_CONTENT: Record<string, string> = {
-  position: "The exact degree and sign placement of a planet determines its expression. Each degree has unique symbolism, and the sign colors how the planet's energy manifests in your life.",
-  element: "Elements represent fundamental energies: Fire (inspiration, action), Earth (practicality, material), Air (intellect, communication), and Water (emotion, intuition). Your planet expresses through this elemental lens.",
-  mode: "Modes show how energy moves: Cardinal signs initiate and lead, Fixed signs stabilize and persist, Mutable signs adapt and transform. This affects how your planet takes action.",
-  angularity: "Angular houses (1, 4, 7, 10) are most prominent and visible. Succedent houses (2, 5, 8, 11) build and sustain. Cadent houses (3, 6, 9, 12) process and distribute energy.",
-  motion: "Direct motion is forward movement through the zodiac. Retrograde (℞) appears backward from Earth's view, turning the planet's energy inward for reflection, review, and internalization.",
-  speed: "Planetary speed indicates how quickly themes manifest. Faster planets bring rapid changes; slower planets indicate long-term processes. Retrograde planets move more slowly or appear stationary.",
-  dignities: "Essential dignity measures a planet's strength by sign. In Rulership or Exaltation, planets express easily. In Detriment or Fall, they face challenges. Peregrine planets have neutral placement.",
-  dispositor: "The dispositor is the planet ruling the sign your planet occupies. It 'hosts' your planet and influences how it expresses. Following the dispositor chain reveals your chart's energy flow.",
-  triplicities: "Triplicity rulers are secondary dignities based on element. Day charts use the day ruler; night charts use the night ruler. The participating ruler offers additional support.",
-  terms: "Terms (or bounds) divide each sign into five unequal segments, each ruled by a planet. The Egyptian/Ptolemaic terms give subtle influence based on exact degree placement.",
-  decans: "Each sign is divided into three 10° segments called decans or faces. The decan ruler adds a secondary planetary influence to your planet's expression.",
-  houseRulerships: "The houses a planet rules show areas of life connected to that planet's themes. The ruler brings its sign's energy to those house matters.",
-  sect: "Sect divides planets into day (Sun, Jupiter, Saturn) and night (Moon, Venus, Mars) teams. Planets 'in sect' (matching chart type) function more harmoniously.",
-  declination: "Declination measures a planet's distance north or south of the celestial equator. Planets at similar declinations form parallel aspects, creating hidden connections.",
-  saturnSymbol: "Saturn's placement by sign carries special archetypal meaning about your karmic lessons, where you face tests, and how you build mastery through discipline and time."
+// ============================================================================
+// PERSONALIZED INTERPRETATION GENERATORS
+// ============================================================================
+
+const getPositionInterpretation = (planet: string, degree: number, sign: string): string => {
+  const decanNum = Math.floor(degree / 10) + 1;
+  const decanDescriptions: Record<string, Record<number, string>> = {
+    Aries: {
+      1: "pioneering energy and raw courage",
+      2: "creative leadership and heart-centered action", 
+      3: "diplomatic assertion and refined initiative"
+    },
+    Taurus: {
+      1: "intellectual grounding and practical thinking",
+      2: "emotional security and nurturing stability",
+      3: "disciplined building and structured growth"
+    },
+    Gemini: {
+      1: "expansive curiosity and optimistic communication",
+      2: "dynamic ideas and energetic expression",
+      3: "radiant intellect and creative thinking"
+    },
+    Cancer: {
+      1: "harmonious nurturing and beautiful care",
+      2: "communicative emotions and mental sensitivity",
+      3: "intuitive depth and emotional wisdom"
+    },
+    Leo: {
+      1: "structured creativity and disciplined expression",
+      2: "generous expansion and joyful abundance",
+      3: "passionate action and bold creativity"
+    },
+    Virgo: {
+      1: "illuminated service and conscious improvement",
+      2: "harmonious analysis and beautiful precision",
+      3: "intellectual refinement and communicative skill"
+    },
+    Libra: {
+      1: "intuitive balance and emotional diplomacy",
+      2: "structured harmony and committed partnership",
+      3: "expansive justice and philosophical fairness"
+    },
+    Scorpio: {
+      1: "intense transformation and powerful depth",
+      2: "illuminated mystery and conscious power",
+      3: "passionate intensity and harmonious transformation"
+    },
+    Sagittarius: {
+      1: "grounded wisdom and practical philosophy",
+      2: "emotional faith and intuitive expansion",
+      3: "disciplined seeking and structured belief"
+    },
+    Capricorn: {
+      1: "abundant ambition and expansive achievement",
+      2: "dynamic mastery and energetic building",
+      3: "radiant authority and creative leadership"
+    },
+    Aquarius: {
+      1: "harmonious innovation and beautiful vision",
+      2: "intellectual revolution and communicative change",
+      3: "intuitive humanity and emotional idealism"
+    },
+    Pisces: {
+      1: "structured spirituality and disciplined surrender",
+      2: "expansive compassion and abundant faith",
+      3: "transformative transcendence and deep mysticism"
+    }
+  };
+
+  const decanQuality = decanDescriptions[sign]?.[decanNum] || "unique expression";
+  
+  return `Your ${planet} at ${degree}° ${sign} sits in the ${decanNum === 1 ? 'first' : decanNum === 2 ? 'second' : 'third'} decan, expressing through ${decanQuality}. This specific degree gives your ${planet} a particular flavor within ${sign}'s broader themes.`;
 };
+
+const getElementInterpretation = (planet: string, element: string, sign: string): string => {
+  const elementMeanings: Record<string, { quality: string; process: string; gift: string }> = {
+    Fire: {
+      quality: "inspiration, initiative, and enthusiasm",
+      process: "through action, courage, and spontaneous expression",
+      gift: "the ability to inspire others and take bold action"
+    },
+    Earth: {
+      quality: "practicality, stability, and material awareness",
+      process: "through building, sensory experience, and concrete results",
+      gift: "the ability to manifest ideas into tangible reality"
+    },
+    Air: {
+      quality: "intellect, communication, and social connection",
+      process: "through ideas, conversation, and mental analysis",
+      gift: "the ability to see multiple perspectives and connect concepts"
+    },
+    Water: {
+      quality: "emotion, intuition, and empathic awareness",
+      process: "through feeling, instinct, and emotional intelligence",
+      gift: "the ability to sense what others need and heal through compassion"
+    }
+  };
+
+  const meaning = elementMeanings[element];
+  if (!meaning) return "";
+
+  return `Your ${planet} in ${sign} operates through the ${element} element, giving it ${meaning.quality}. This means your ${planet} expresses ${meaning.process}. The ${element} element grants your ${planet} ${meaning.gift}.`;
+};
+
+const getModeInterpretation = (planet: string, mode: string, sign: string): string => {
+  const modeMeanings: Record<string, { action: string; strength: string; challenge: string }> = {
+    Cardinal: {
+      action: "initiating new beginnings and taking the lead",
+      strength: "starting projects and catalyzing change",
+      challenge: "following through after the initial spark"
+    },
+    Fixed: {
+      action: "sustaining effort and maintaining focus",
+      strength: "perseverance, loyalty, and depth of commitment",
+      challenge: "adapting when circumstances require change"
+    },
+    Mutable: {
+      action: "adapting to circumstances and facilitating transitions",
+      strength: "flexibility, versatility, and bridging different perspectives",
+      challenge: "maintaining consistency and firm boundaries"
+    }
+  };
+
+  const meaning = modeMeanings[mode];
+  if (!meaning) return "";
+
+  return `Your ${planet} in ${sign} is in ${mode} mode, naturally oriented toward ${meaning.action}. This gives your ${planet} the strength of ${meaning.strength}. The growth edge is ${meaning.challenge}.`;
+};
+
+const getAngularityInterpretation = (planet: string, houseType: string, house: number): string => {
+  const typeInterpretations: Record<string, string> = {
+    Angular: `Your ${planet} in the ${house}${getOrdinal(house)} house is in an angular position—the most powerful and visible placement. Angular planets are front and center in your life, actively shaping your identity and how others perceive you. This ${planet} is a major player in your chart.`,
+    Succedent: `Your ${planet} in the ${house}${getOrdinal(house)} house is in a succedent position—a place of building, resources, and sustained effort. Succedent planets work steadily behind the scenes, accumulating power and value over time. This ${planet} grows stronger as you invest in it.`,
+    Cadent: `Your ${planet} in the ${house}${getOrdinal(house)} house is in a cadent position—a place of learning, processing, and mental activity. Cadent planets work through analysis, communication, and adaptation. This ${planet} expresses through study, thought, and service to others.`
+  };
+
+  return typeInterpretations[houseType] || "";
+};
+
+const getMotionInterpretation = (planet: string, isRetrograde: boolean): string => {
+  if (isRetrograde) {
+    return `Your ${planet} is retrograde (℞), meaning its energy turns inward. Rather than expressing outwardly in typical ${planet} ways, you process these themes internally first. You may have unique insights about ${planet} matters that differ from mainstream views. Past life astrologers see retrograde planets as carrying unfinished business requiring deeper integration this lifetime.`;
+  }
+  return `Your ${planet} is direct, moving forward through the zodiac in its natural rhythm. This allows ${planet}'s energy to flow outward naturally, expressing in expected ways. You likely engage with ${planet} themes in a straightforward manner that others easily recognize.`;
+};
+
+const getSpeedInterpretation = (planet: string, isRetrograde: boolean): string => {
+  const speedNotes: Record<string, string> = {
+    Sun: "moves approximately 1° per day, marking your solar return each year",
+    Moon: "is the fastest-moving body, changing signs every 2-3 days and cycling through the zodiac monthly",
+    Mercury: "moves quickly but retrogrades 3 times yearly, revisiting themes of communication",
+    Venus: "moves moderately, spending about a month in each sign, with a retrograde every 18 months",
+    Mars: "takes about 2 years to complete the zodiac, with a retrograde every 2 years",
+    Jupiter: "spends about a year in each sign, bringing expansion to that area annually",
+    Saturn: "spends 2-3 years per sign, bringing long-term lessons and structure",
+    Uranus: "spends 7 years per sign, marking generational shifts in innovation",
+    Neptune: "spends 14 years per sign, creating generational spiritual themes",
+    Pluto: "spends 12-30 years per sign (varying due to elliptical orbit), transforming generations"
+  };
+
+  const note = speedNotes[planet] || "moves through the zodiac at its own pace";
+  const retroNote = isRetrograde ? " Currently retrograde, it appears to slow or pause from Earth's view." : "";
+
+  return `Your ${planet} ${note}.${retroNote} This rhythm affects how quickly ${planet} themes unfold in your life—faster planets bring rapid changes while slower planets indicate long-term processes.`;
+};
+
+const getDignityInterpretation = (planet: string, sign: string, dignityType: string): string => {
+  const interpretations: Record<string, string> = {
+    Ruler: `Your ${planet} is in its own sign of ${sign}—a position of rulership! This is like being at home: ${planet} can express its nature purely and powerfully. You have natural authority in ${planet} matters and others recognize your competence here. This is a significant strength in your chart.`,
+    Exaltation: `Your ${planet} is exalted in ${sign}—a position of honor and elevation! ${planet} is celebrated and functions at a high level here. Think of it as being a respected guest: not at home, but given special treatment. ${planet} themes come to you with grace and often bring recognition.`,
+    Detriment: `Your ${planet} is in detriment in ${sign}—the sign opposite its rulership. This doesn't mean "bad," but ${planet} must work harder to express itself clearly. You may approach ${planet} matters unconventionally, learning through challenge. This placement often produces unique mastery through effort.`,
+    Fall: `Your ${planet} is in fall in ${sign}—the sign opposite its exaltation. ${planet} must work to express its nature here, often feeling unsupported or misunderstood. However, this placement can develop profound humility and hard-won wisdom in ${planet} matters. Many successful people have fallen planets—they develop resilience.`,
+    Peregrine: `Your ${planet} in ${sign} has no essential dignity—it's "peregrine" or wandering. This is neutral: ${planet} isn't especially strong or weak by sign. It relies more on aspects, house placement, and other factors to determine how it functions. This gives flexibility in how you express ${planet} themes.`
+  };
+
+  return interpretations[dignityType] || "";
+};
+
+const getDispositorInterpretation = (planet: string, sign: string, dispositor: string): string => {
+  if (planet === dispositor) {
+    return `Your ${planet} is in its own sign, so it "disposes itself." This means ${planet} has final authority over its own expression—no other planet is its boss. This gives your ${planet} autonomy and self-direction.`;
+  }
+  return `Your ${planet} in ${sign} is "disposed" by ${dispositor} (${sign}'s ruler). This means ${dispositor} influences how your ${planet} expresses. Look to where ${dispositor} is placed in your chart—that planet colors and directs your ${planet}'s energy. ${dispositor} is like the landlord of the house where ${planet} lives.`;
+};
+
+const getTriplicityInterpretation = (planet: string, element: string, rulers: { day: string; night: string; participating: string }, isDayChart: boolean | null): string => {
+  const chartType = isDayChart === null ? "your chart" : isDayChart ? "a day chart" : "a night chart";
+  const activeRuler = isDayChart === null ? "either ruler" : isDayChart ? rulers.day : rulers.night;
+  
+  return `Your ${planet} is in a ${element} sign, governed by the ${element} triplicity rulers. In ${chartType}, the primary triplicity ruler is ${activeRuler}. Day ruler: ${rulers.day} (supports when Sun is up). Night ruler: ${rulers.night} (supports when Sun is down). Participating ruler: ${rulers.participating} (offers backup support). These planets have a stake in your ${planet}'s success.`;
+};
+
+const getTermInterpretation = (planet: string, termRuler: string, degree: number, sign: string): string => {
+  return `At ${degree}° ${sign}, your ${planet} falls in the terms (bounds) of ${termRuler}. Terms are ancient dignity divisions giving ${termRuler} subtle influence over this degree. ${termRuler} acts as a minor host to your ${planet}, adding its flavor. If ${termRuler} is well-placed in your chart, it strengthens this ${planet}.`;
+};
+
+const getDecanInterpretation = (planet: string, decanRuler: string, decanIndex: number, sign: string): string => {
+  const decanName = decanIndex === 0 ? "first" : decanIndex === 1 ? "second" : "third";
+  const degreeRange = `${decanIndex * 10}°-${(decanIndex + 1) * 10}°`;
+  
+  return `Your ${planet} at ${degreeRange} ${sign} is in the ${decanName} decan, ruled by ${decanRuler}. This gives your ${planet} a ${decanRuler} sub-flavor. The decan (or "face") adds a layer of planetary influence: your ${planet} in ${sign} expresses with hints of ${decanRuler}'s nature woven in.`;
+};
+
+const getHouseRulershipInterpretation = (planet: string, housesRuled: string): string => {
+  if (housesRuled === 'None' || housesRuled === 'Unknown') {
+    return `Your ${planet} doesn't rule any house cusps in your chart (based on traditional rulership). Its influence flows through aspects and its house placement rather than through house lordship.`;
+  }
+  return `Your ${planet} rules the ${housesRuled} house${housesRuled.includes(',') ? 's' : ''} in your chart. This means ${planet} themes directly connect to those life areas. When ${planet} is activated by transit or progression, those house matters come into focus. ${planet} is a "lord" of those domains.`;
+};
+
+const getSectInterpretation = (planet: string, sectStatus: string, isDayChart: boolean | null): string => {
+  const diurnal = ['Sun', 'Jupiter', 'Saturn'];
+  const nocturnal = ['Moon', 'Venus', 'Mars'];
+  
+  if (sectStatus.includes('In Sect')) {
+    return `Your ${planet} is "in sect," meaning it matches your chart type (${isDayChart ? 'day' : 'night'} chart). In-sect planets function more smoothly—their nature is supported by the overall chart environment. ${planet}'s positive qualities shine more easily, and challenges are more manageable.`;
+  } else if (sectStatus.includes('Out of Sect')) {
+    return `Your ${planet} is "out of sect," meaning it doesn't match your chart type (${isDayChart ? 'day' : 'night'} chart). Out-of-sect planets work harder to express their gifts and their challenging qualities may be more noticeable. However, this often builds character and unique strengths through overcoming obstacles.`;
+  }
+  return `${planet} (Mercury and outer planets) is neutral regarding sect—it works with both day and night charts. It adapts to whatever environment it's in, taking on the qualities of planets it aspects.`;
+};
+
+const getDeclinationInterpretation = (planet: string, declination: string): string => {
+  const isNorth = declination.includes('N');
+  const direction = isNorth ? "north" : "south";
+  
+  return `Your ${planet} has a declination of ${declination}, meaning it sits ${direction} of the celestial equator. Planets at similar declinations form "parallel" aspects (north-north or south-south) or "contraparallel" aspects (north-south), creating hidden connections. High declination planets (near 23°) are "out of bounds" and can express in unusual, amplified ways.`;
+};
+
+const getSaturnSymbolInterpretation = (sign: string, symbol: { symbol: string; meaning: string }): string => {
+  return `Saturn in ${sign} carries special symbolism: ${symbol.symbol}. ${symbol.meaning}. This represents your particular Saturn lesson—the area where you're called to develop mastery, accept responsibility, and eventually become an authority through dedicated effort over time.`;
+};
+
+// ============================================================================
+// HELPER
+// ============================================================================
+
+const getOrdinal = (n: number): string => {
+  if (n === 1 || n === 21 || n === 31) return 'st';
+  if (n === 2 || n === 22) return 'nd';
+  if (n === 3 || n === 23) return 'rd';
+  return 'th';
+};
+
+// ============================================================================
+// COMPONENTS
+// ============================================================================
 
 interface DetailRowProps {
   label: string;
   value: string;
   description?: string;
-  learnMoreKey?: string;
+  interpretation?: string;
 }
 
-const DetailRow = ({ label, value, description, learnMoreKey }: DetailRowProps) => {
-  const [showLearnMore, setShowLearnMore] = useState(false);
-  const learnMoreContent = learnMoreKey ? LEARN_MORE_CONTENT[learnMoreKey] : null;
+const DetailRow = ({ label, value, description, interpretation }: DetailRowProps) => {
+  const [showMore, setShowMore] = useState(false);
 
   return (
     <div className="py-3 border-b border-border/50">
@@ -64,19 +292,19 @@ const DetailRow = ({ label, value, description, learnMoreKey }: DetailRowProps) 
             </div>
           )}
         </div>
-        {learnMoreContent && (
+        {interpretation && (
           <button
-            onClick={() => setShowLearnMore(!showLearnMore)}
+            onClick={() => setShowMore(!showMore)}
             className="text-xs text-primary hover:underline flex items-center gap-1 whitespace-nowrap shrink-0"
           >
             <Info size={10} />
-            {showLearnMore ? 'Hide' : 'Learn More'}
+            {showMore ? 'Hide' : 'What does this mean?'}
           </button>
         )}
       </div>
-      {showLearnMore && learnMoreContent && (
-        <div className="mt-2 p-2 bg-primary/5 rounded text-xs text-foreground/70 leading-relaxed border-l-2 border-primary/30">
-          {learnMoreContent}
+      {showMore && interpretation && (
+        <div className="mt-2 p-3 bg-primary/5 rounded text-xs text-foreground/80 leading-relaxed border-l-2 border-primary/30">
+          {interpretation}
         </div>
       )}
     </div>
@@ -173,27 +401,27 @@ export const EnhancedPlanetDetails = ({
           <DetailRow
             label="Position"
             value={`${degree}° ${sign}`}
-            learnMoreKey="position"
+            interpretation={getPositionInterpretation(planetName, degree, sign)}
           />
 
           <DetailRow
             label="Element"
             value={`${getElementSymbol(signProps.element)} ${signProps.element}`}
-            learnMoreKey="element"
+            interpretation={getElementInterpretation(planetName, signProps.element, sign)}
           />
 
           <DetailRow
             label="Mode"
             value={signProps.mode}
-            learnMoreKey="mode"
+            interpretation={getModeInterpretation(planetName, signProps.mode, sign)}
           />
 
-          {houseType && (
+          {houseType && house && (
             <DetailRow
               label="Angularity"
               value={houseType}
-              description={`${house}${house === 1 ? 'st' : house === 2 ? 'nd' : house === 3 ? 'rd' : 'th'} house is ${houseType.toLowerCase()}`}
-              learnMoreKey="angularity"
+              description={`${house}${getOrdinal(house)} house is ${houseType.toLowerCase()}`}
+              interpretation={getAngularityInterpretation(planetName, houseType, house)}
             />
           )}
 
@@ -201,13 +429,13 @@ export const EnhancedPlanetDetails = ({
             label="Motion"
             value={isRetrograde ? `Retrograde ℞` : 'Direct'}
             description={isRetrograde ? "Planet appears to move backward from Earth's perspective" : 'Planet moving forward in normal direction'}
-            learnMoreKey="motion"
+            interpretation={getMotionInterpretation(planetName, isRetrograde || false)}
           />
 
           <DetailRow
             label="Speed"
             value={speed}
-            learnMoreKey="speed"
+            interpretation={getSpeedInterpretation(planetName, isRetrograde || false)}
           />
 
           {/* Dignity Status Section */}
@@ -220,6 +448,8 @@ export const EnhancedPlanetDetails = ({
               </div>
 
               <DignityBox 
+                planetName={planetName}
+                sign={sign}
                 dignityStatus={dignityStatus} 
                 dignities={dignities} 
               />
@@ -237,7 +467,7 @@ export const EnhancedPlanetDetails = ({
             label="Dispositor"
             value={dispositor}
             description={`${sign} is ruled by ${dispositor}`}
-            learnMoreKey="dispositor"
+            interpretation={getDispositorInterpretation(planetName, sign, dispositor)}
           />
 
           {triplicityRulers && (
@@ -245,7 +475,7 @@ export const EnhancedPlanetDetails = ({
               label="Triplicity Rulers"
               value={`${triplicityRulers.day}, ${triplicityRulers.night}, ${triplicityRulers.participating}`}
               description={`Day: ${triplicityRulers.day} | Night: ${triplicityRulers.night} | Participating: ${triplicityRulers.participating}`}
-              learnMoreKey="triplicities"
+              interpretation={getTriplicityInterpretation(planetName, signProps.element, triplicityRulers, isDayChart)}
             />
           )}
 
@@ -253,21 +483,21 @@ export const EnhancedPlanetDetails = ({
             label="Term Ruler"
             value={termRuler}
             description={`Egyptian/Ptolemaic terms for ${degree}° ${sign}`}
-            learnMoreKey="terms"
+            interpretation={getTermInterpretation(planetName, termRuler, degree, sign)}
           />
 
           <DetailRow
             label="Decan Ruler"
             value={decanRuler}
             description={`${degree}° is in the ${getDecanName(decanIndex)} decan (${decanIndex * 10}°-${(decanIndex + 1) * 10}°)`}
-            learnMoreKey="decans"
+            interpretation={getDecanInterpretation(planetName, decanRuler, decanIndex, sign)}
           />
 
           <DetailRow
             label="Houses Ruled"
             value={housesRuled}
             description="Houses where this planet is the traditional ruler"
-            learnMoreKey="houseRulerships"
+            interpretation={getHouseRulershipInterpretation(planetName, housesRuled)}
           />
 
           {/* Condition Section */}
@@ -281,13 +511,13 @@ export const EnhancedPlanetDetails = ({
             label="Sect Status"
             value={sectInfo.status}
             description={sectInfo.description}
-            learnMoreKey="sect"
+            interpretation={getSectInterpretation(planetName, sectInfo.status, isDayChart)}
           />
 
           <DetailRow
             label="Declination"
             value={declination}
-            learnMoreKey="declination"
+            interpretation={getDeclinationInterpretation(planetName, declination)}
           />
 
           {/* Saturn Symbol (only for Saturn) */}
@@ -296,7 +526,7 @@ export const EnhancedPlanetDetails = ({
               label="Saturn Symbol"
               value={saturnSymbol.symbol}
               description={saturnSymbol.meaning}
-              learnMoreKey="saturnSymbol"
+              interpretation={getSaturnSymbolInterpretation(sign, saturnSymbol)}
             />
           )}
         </div>
@@ -305,15 +535,20 @@ export const EnhancedPlanetDetails = ({
   );
 };
 
-// Separate component for the dignity box with its own learn more
+// Separate component for the dignity box with its own interpretation
 const DignityBox = ({ 
+  planetName,
+  sign,
   dignityStatus, 
   dignities 
 }: { 
+  planetName: string;
+  sign: string;
   dignityStatus: { type: string; color: string; bgColor: string };
   dignities: { rulership: string | string[]; exaltation: string; detriment: string | string[]; fall: string };
 }) => {
-  const [showLearnMore, setShowLearnMore] = useState(false);
+  const [showMore, setShowMore] = useState(false);
+  const interpretation = getDignityInterpretation(planetName, sign, dignityStatus.type);
 
   return (
     <div 
@@ -348,15 +583,15 @@ const DignityBox = ({
         </div>
       </div>
       <button
-        onClick={() => setShowLearnMore(!showLearnMore)}
+        onClick={() => setShowMore(!showMore)}
         className="text-xs text-primary hover:underline mt-2 inline-flex items-center gap-1"
       >
         <Info size={10} />
-        {showLearnMore ? 'Hide' : 'Learn More about Dignities'}
+        {showMore ? 'Hide' : 'What does this mean for me?'}
       </button>
-      {showLearnMore && (
-        <div className="mt-2 p-2 bg-background/50 rounded text-xs text-foreground/70 leading-relaxed border-l-2 border-primary/30">
-          {LEARN_MORE_CONTENT.dignities}
+      {showMore && (
+        <div className="mt-2 p-3 bg-background/50 rounded text-xs text-foreground/80 leading-relaxed border-l-2 border-primary/30">
+          {interpretation}
         </div>
       )}
     </div>
