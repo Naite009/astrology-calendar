@@ -341,6 +341,7 @@ const NatalPlanetsSummary = ({
                   house={house}
                   sunHouse={sunHouse}
                   houseCusps={houseCusps}
+                  allPlanets={planets as Record<string, import('@/hooks/useNatalChart').NatalPlanetPosition>}
                 />
               )}
             </div>
