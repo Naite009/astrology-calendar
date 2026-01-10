@@ -188,8 +188,8 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
                 {personalDayType.isChallenging && '⚠️ '}
                 {personalDayType.label}
               </span>
-              <span className="text-[8px] text-muted-foreground" title={collectiveDayType.description}>
-                (sky: {collectiveDayType.label})
+              <span className="text-[8px] bg-foreground/10 text-foreground/70 px-1 py-0.5 rounded-sm" title={collectiveDayType.description}>
+                sky: {collectiveDayType.label}
               </span>
             </div>
           ) : (
@@ -386,7 +386,10 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
           className="text-xs text-amber-600 mt-1 bg-amber-50 dark:bg-amber-900/30 px-1.5 py-0.5 rounded-sm"
           title={`Void of Course Moon\n${vocDetails.lastAspect ? `Last aspect: ☽ ${vocDetails.lastAspect.symbol} ${vocDetails.lastAspect.planet} at ${formatVOCTime(vocDetails.lastAspect.time)}` : 'Already VOC'}\nMoon enters ${vocDetails.moonEntersSign || 'next sign'} at ${vocDetails.end ? formatVOCTime(vocDetails.end) : ''}`}
         >
-          ⚠️ V/C {formatVOCTime(vocDetails.displayStart)} - {formatVOCTime(vocDetails.displayEnd)}
+          ⚠️ V/C {formatVOCTime(vocDetails.displayStart)}-{formatVOCTime(vocDetails.displayEnd)}
+          {vocDetails.moonEntersSign && (
+            <span className="ml-1 font-medium">→ {vocDetails.moonEntersSign}</span>
+          )}
         </div>
       )}
 
