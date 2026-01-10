@@ -230,10 +230,10 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
                 e.stopPropagation();
                 onVoiceMemoClick?.(date, e);
               }}
-              className="opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity"
+              className="opacity-0 group-hover:opacity-100 transition-all duration-200 rounded-full bg-primary/90 hover:bg-primary hover:scale-110 p-1.5 shadow-md"
               title="Add voice memo"
             >
-              <Mic className="h-3.5 w-3.5 text-muted-foreground" />
+              <Mic className="h-4 w-4 text-primary-foreground" />
             </button>
           </div>
           {venusStarPoint && (
