@@ -31,31 +31,60 @@ export const NatalChartWheel = ({ natalChart: initialChart, allCharts = [], onCh
                      (initialChart?.chartImageBase64 ? initialChart : null) ||
                      sortedCharts[0];
 
-  // Handle file upload
-  const handleFileUpload = useCallback((file: File) => {
-    if (!file.type.startsWith('image/')) {
+// Handle file upload - supports images, PDFs, and documents
+  const handleFileUpload = useCallback(async (file: File) => {
+    const fileName = file.name.toLowerCase();
+    const fileType = file.type;
+    
+    // Check supported file types
+    const isImage = fileType.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|bmp|heic|heif)$/i.test(fileName);
+    const isPDF = fileType === 'application/pdf' || fileName.endsWith('.pdf');
+    const isWord = fileType.includes('word') || fileName.endsWith('.docx') || fileName.endsWith('.doc');
+    
+    if (!isImage && !isPDF && !isWord) {
       toast({
-        title: "Invalid file type",
-        description: "Please upload an image file (PNG, JPG, etc.)",
+        title: "Unsupported file type",
+        description: "Please upload an image (PNG, JPG), PDF, or Word document",
         variant: "destructive"
       });
       return;
     }
 
+    setUploadStatus('success'); // Show uploading state
+    
+    // Read file as base64
     const reader = new FileReader();
-    reader.onload = (e) => {
-      const base64 = e.target?.result as string;
+    const base64Promise = new Promise<string>((resolve, reject) => {
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+    });
+    reader.readAsDataURL(file);
+    
+    try {
+      const base64 = await base64Promise;
+      
+      // For PDFs and Word docs, we'll just save the first page preview or a placeholder
+      // The actual parsing should happen in Charts section
+      let imageToSave = base64;
+      
+      // If it's a PDF or Word doc, show a message about going to Charts for full parsing
+      if (isPDF || isWord) {
+        toast({
+          title: "Document received",
+          description: "For full chart parsing, upload in the Charts section. Saving reference here.",
+        });
+      }
       
       // Try to match chart by name in filename
-      const fileName = file.name.toLowerCase().replace(/\.[^/.]+$/, ""); // Remove extension
+      const cleanFileName = fileName.replace(/\.[^/.]+$/, ""); // Remove extension
       const matchedChart = allSortedCharts.find(chart => {
         const chartName = chart.name.toLowerCase();
-        return fileName.includes(chartName) || chartName.includes(fileName) ||
-               fileName.split(/[-_\s]/).some(part => chartName.includes(part) && part.length > 2);
+        return cleanFileName.includes(chartName) || chartName.includes(cleanFileName) ||
+               cleanFileName.split(/[-_\s]/).some(part => chartName.includes(part) && part.length > 2);
       });
       
       if (matchedChart && onChartImageUpload) {
-        onChartImageUpload(matchedChart.id, base64);
+        onChartImageUpload(matchedChart.id, imageToSave);
         setSelectedChartId(matchedChart.id);
         setUploadStatus('success');
         toast({
@@ -64,8 +93,7 @@ export const NatalChartWheel = ({ natalChart: initialChart, allCharts = [], onCh
         });
         setTimeout(() => setUploadStatus('idle'), 3000);
       } else if (initialChart && onChartImageUpload) {
-        // Default to initial chart if no match found
-        onChartImageUpload(initialChart.id, base64);
+        onChartImageUpload(initialChart.id, imageToSave);
         setUploadStatus('success');
         toast({
           title: "Chart uploaded!",
@@ -73,8 +101,7 @@ export const NatalChartWheel = ({ natalChart: initialChart, allCharts = [], onCh
         });
         setTimeout(() => setUploadStatus('idle'), 3000);
       } else if (allSortedCharts.length > 0 && onChartImageUpload) {
-        // Use first chart if nothing else available
-        onChartImageUpload(allSortedCharts[0].id, base64);
+        onChartImageUpload(allSortedCharts[0].id, imageToSave);
         setSelectedChartId(allSortedCharts[0].id);
         setUploadStatus('success');
         toast({
@@ -91,8 +118,16 @@ export const NatalChartWheel = ({ natalChart: initialChart, allCharts = [], onCh
         });
         setTimeout(() => setUploadStatus('idle'), 3000);
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      console.error('File upload error:', err);
+      setUploadStatus('error');
+      toast({
+        title: "Upload failed",
+        description: "Could not process the file. Please try again.",
+        variant: "destructive"
+      });
+      setTimeout(() => setUploadStatus('idle'), 3000);
+    }
   }, [allSortedCharts, initialChart, onChartImageUpload, toast]);
 
   // Drag and drop handlers
@@ -108,22 +143,24 @@ export const NatalChartWheel = ({ natalChart: initialChart, allCharts = [], onCh
     setIsDragging(false);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+const handleDrop = useCallback(async (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
     
     const files = e.dataTransfer.files;
     if (files.length > 0) {
-      handleFileUpload(files[0]);
+      await handleFileUpload(files[0]);
     }
   }, [handleFileUpload]);
 
-  const handleFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+const handleFileInputChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      handleFileUpload(files[0]);
+      await handleFileUpload(files[0]);
     }
+    // Reset input so same file can be uploaded again
+    e.target.value = '';
   }, [handleFileUpload]);
   
   // Handle download
@@ -138,14 +175,14 @@ export const NatalChartWheel = ({ natalChart: initialChart, allCharts = [], onCh
     document.body.removeChild(link);
   };
 
-  if (!natalChart || !natalChart.chartImageBase64) {
+if (!natalChart || !natalChart.chartImageBase64) {
     return (
-      <div className="max-w-4xl mx-auto p-10 text-center">
+      <div className="max-w-4xl mx-auto p-6 text-center">
         <div 
-          className={`bg-secondary/50 rounded-lg p-8 border-2 border-dashed transition-all duration-200 cursor-pointer
-            ${isDragging ? 'border-primary bg-primary/10 scale-[1.02]' : 'border-border hover:border-primary/50 hover:bg-secondary/70'}
+          className={`bg-secondary/30 rounded-xl p-12 border-3 border-dashed transition-all duration-300 cursor-pointer min-h-[400px] flex flex-col items-center justify-center
+            ${isDragging ? 'border-primary bg-primary/15 scale-[1.02] shadow-lg shadow-primary/20' : 'border-border/60 hover:border-primary/60 hover:bg-secondary/50'}
             ${uploadStatus === 'success' ? 'border-green-500 bg-green-500/10' : ''}
-            ${uploadStatus === 'error' ? 'border-red-500 bg-red-500/10' : ''}`}
+            ${uploadStatus === 'error' ? 'border-destructive bg-destructive/10' : ''}`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
@@ -154,43 +191,53 @@ export const NatalChartWheel = ({ natalChart: initialChart, allCharts = [], onCh
           <input
             id="wheel-chart-upload"
             type="file"
-            accept="image/*"
+            accept="image/*,.pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             className="hidden"
             onChange={handleFileInputChange}
           />
           
-          <div className="text-6xl mb-4">
+          <div className={`text-7xl mb-6 transition-transform duration-300 ${isDragging ? 'scale-110' : ''}`}>
             {uploadStatus === 'success' ? '✅' : uploadStatus === 'error' ? '❌' : isDragging ? '📥' : '🌌'}
           </div>
           
-          <h3 className="text-xl font-serif mb-3 text-foreground">
+          <h3 className="text-2xl font-serif mb-4 text-foreground">
             {uploadStatus === 'success' ? 'Chart Uploaded!' : 
              uploadStatus === 'error' ? 'Upload Failed' :
-             isDragging ? 'Drop Your Chart Here!' : 'No Chart Image Uploaded'}
+             isDragging ? 'Drop Your Chart Here!' : 'Upload Your Natal Chart'}
           </h3>
           
-          <p className="text-muted-foreground mb-4">
+          <p className="text-muted-foreground mb-6 text-lg">
             {isDragging ? (
               'Release to upload your natal chart wheel'
             ) : (
               <>
-                <span className="font-medium text-primary">Drag & drop</span> your natal chart image here, or{' '}
-                <span className="font-medium text-primary underline">click to browse</span>
+                <span className="font-semibold text-primary">Drag & drop</span> your chart file here
+                <br />
+                <span className="text-sm">or <span className="font-semibold text-primary underline">click to browse</span></span>
               </>
             )}
           </p>
           
+          {/* File type badges */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+            <span className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20">PNG</span>
+            <span className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20">JPG</span>
+            <span className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20">WEBP</span>
+            <span className="px-3 py-1.5 rounded-full bg-accent/30 text-accent-foreground text-xs font-medium border border-accent/30">PDF</span>
+            <span className="px-3 py-1.5 rounded-full bg-accent/30 text-accent-foreground text-xs font-medium border border-accent/30">DOCX</span>
+          </div>
+          
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Upload size={16} />
-            <span>Supports PNG, JPG, WEBP from astro.com or any astrology site</span>
+            <Upload size={18} />
+            <span>Works with astro.com, Cafe Astrology, or any chart image/document</span>
           </div>
           
           {allSortedCharts.length > 0 && (
-            <div className="mt-6 pt-4 border-t border-border/50">
-              <p className="text-xs text-muted-foreground mb-2">
-                💡 <strong>Tip:</strong> Name your file with the chart name (e.g., "John-chart.png") for automatic matching
+            <div className="mt-8 pt-6 border-t border-border/30 w-full max-w-md">
+              <p className="text-sm text-muted-foreground mb-2">
+                💡 <strong>Tip:</strong> Name your file with the chart name for automatic matching
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground/70">
                 Available charts: {allSortedCharts.map(c => c.name).join(', ')}
               </p>
             </div>
