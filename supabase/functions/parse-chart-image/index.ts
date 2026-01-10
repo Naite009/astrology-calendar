@@ -11,10 +11,10 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64 } = await req.json();
+    const { imageBase64, fileType, fileName } = await req.json();
 
     if (!imageBase64) {
-      return new Response(JSON.stringify({ error: "No image provided" }), {
+      return new Response(JSON.stringify({ error: "No file provided" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -28,7 +28,12 @@ serve(async (req) => {
       });
     }
 
-    const prompt = `Analyze this astrological chart image and extract all planet positions.
+    // Determine the content type based on fileType or base64 header
+    const isPDF = fileType === 'pdf' || imageBase64.includes('application/pdf');
+    const isWord = fileType === 'word' || imageBase64.includes('application/vnd.openxmlformats') || imageBase64.includes('application/msword');
+    const isImage = !isPDF && !isWord;
+
+    const prompt = `Analyze this astrological chart ${isPDF || isWord ? 'document' : 'image'} and extract all planet positions.
 
 For each planet you can identify, provide the data in this exact JSON format:
 {
@@ -60,6 +65,41 @@ IMPORTANT - Astro.com House Cusp Format:
 
 Return ONLY the JSON object, no other text.`;
 
+    // Build the message content based on file type
+    let messageContent: any[];
+    
+    if (isPDF) {
+      // For PDFs, include both the document and ask AI to extract text
+      messageContent = [
+        { type: "text", text: prompt },
+        { 
+          type: "file", 
+          file: { 
+            filename: fileName || "chart.pdf",
+            file_data: imageBase64 
+          } 
+        },
+      ];
+    } else if (isWord) {
+      // For Word docs, similar approach
+      messageContent = [
+        { type: "text", text: prompt },
+        { 
+          type: "file", 
+          file: { 
+            filename: fileName || "chart.docx",
+            file_data: imageBase64 
+          } 
+        },
+      ];
+    } else {
+      // For images, use image_url format
+      messageContent = [
+        { type: "text", text: prompt },
+        { type: "image_url", image_url: { url: imageBase64 } },
+      ];
+    }
+
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
       {
@@ -73,10 +113,7 @@ Return ONLY the JSON object, no other text.`;
           messages: [
             {
               role: "user",
-              content: [
-                { type: "text", text: prompt },
-                { type: "image_url", image_url: { url: imageBase64 } },
-              ],
+              content: messageContent,
             },
           ],
         }),
@@ -86,7 +123,7 @@ Return ONLY the JSON object, no other text.`;
     if (!response.ok) {
       const errorText = await response.text();
       console.error("AI API error:", errorText);
-      return new Response(JSON.stringify({ error: "Failed to analyze image" }), {
+      return new Response(JSON.stringify({ error: "Failed to analyze file" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

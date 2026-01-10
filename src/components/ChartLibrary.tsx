@@ -308,6 +308,7 @@ export const ChartLibrary = ({
   const [imageImportResult, setImageImportResult] = useState<{ planets: number; houses: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [isDragOver, setIsDragOver] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isNewChartRef = useRef(false);
   // Track if form has been explicitly opened to prevent auto-save on mount
@@ -567,10 +568,7 @@ export const ChartLibrary = ({
     }
   };
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
+  const processUploadedFile = async (file: File) => {
     // Reset states
     setImageImportStatus('uploading');
     setImageImportError(null);
@@ -584,21 +582,34 @@ export const ChartLibrary = ({
         reader.onerror = reject;
       });
       reader.readAsDataURL(file);
-      const imageBase64 = await base64Promise;
+      const fileBase64 = await base64Promise;
 
       setImageImportStatus('parsing');
 
-      // Call the edge function
+      // Determine file type and call appropriate handler
+      const fileType = file.type;
+      const fileName = file.name.toLowerCase();
+      
+      // Check if it's a PDF or document
+      const isPDF = fileType === 'application/pdf' || fileName.endsWith('.pdf');
+      const isWord = fileType.includes('word') || fileName.endsWith('.docx') || fileName.endsWith('.doc');
+      const isImage = fileType.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|bmp|heic|heif)$/i.test(fileName);
+
+      // Call the edge function with file info
       const { data, error } = await supabase.functions.invoke('parse-chart-image', {
-        body: { imageBase64 },
+        body: { 
+          imageBase64: fileBase64,
+          fileType: isPDF ? 'pdf' : isWord ? 'word' : 'image',
+          fileName: file.name
+        },
       });
 
       if (error) {
-        throw new Error(error.message || 'Failed to parse image');
+        throw new Error(error.message || 'Failed to parse file');
       }
 
       if (!data?.data) {
-        throw new Error('No chart data found in image. Try a clearer screenshot showing the planet positions table.');
+        throw new Error('No chart data found in file. Try a clearer document or screenshot showing the planet positions.');
       }
 
       const parsedData = data.data;
@@ -626,17 +637,16 @@ export const ChartLibrary = ({
         if (planetsImported > 0) {
           setFormData(prev => ({
             ...prev,
-            chartImageBase64: imageBase64, // Store the original image
+            chartImageBase64: isImage ? fileBase64 : prev.chartImageBase64,
             planets: {
               ...prev.planets,
               ...validPlanets,
             },
           }));
-        } else {
-          // Even if no planets imported, still save the image
+        } else if (isImage) {
           setFormData(prev => ({
             ...prev,
-            chartImageBase64: imageBase64,
+            chartImageBase64: fileBase64,
           }));
         }
       }
@@ -669,21 +679,51 @@ export const ChartLibrary = ({
       }
 
       if (planetsImported === 0 && housesImported === 0) {
-        throw new Error('Could not extract any positions. Try a screenshot with a clear planet positions list.');
+        throw new Error('Could not extract any positions. Try a file with clear planet positions listed.');
       }
 
       setImageImportResult({ planets: planetsImported, houses: housesImported });
       setImageImportStatus('success');
     } catch (err) {
-      console.error('Image import error:', err);
-      setImageImportError(err instanceof Error ? err.message : 'Failed to parse image');
+      console.error('File import error:', err);
+      setImageImportError(err instanceof Error ? err.message : 'Failed to parse file');
       setImageImportStatus('error');
     }
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    await processUploadedFile(file);
 
     // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+
+    await processUploadedFile(file);
   };
 
   // Render a planet row
@@ -1065,7 +1105,7 @@ export const ChartLibrary = ({
                 </div>
               </div>
 
-              {/* Astro.com Import Section */}
+              {/* Import Chart Data Section */}
               <div className="border-t border-border pt-5">
                 <button
                   type="button"
@@ -1081,61 +1121,96 @@ export const ChartLibrary = ({
                 
                 {showImportSection && (
                   <div className="mt-4 space-y-5">
-                    {/* Image Upload */}
+                    {/* Drag and Drop Upload Box */}
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <Upload size={14} className="text-primary" />
                         <span className="text-[11px] uppercase tracking-widest text-foreground font-medium">
-                          Upload Screenshot
+                          Upload Chart File
                         </span>
-                        <span className="text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded">Recommended</span>
+                        <span className="text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded">AI-Powered</span>
                       </div>
-                      <p className="text-[10px] text-muted-foreground italic">
-                        Upload a screenshot of your astro.com chart. AI will extract planet positions automatically.
-                      </p>
                       
                       <input
                         ref={fileInputRef}
                         type="file"
-                        accept="image/*"
+                        accept="image/*,.pdf,.doc,.docx,.txt"
                         onChange={handleImageUpload}
                         className="hidden"
-                        id="chart-image-upload"
+                        id="chart-file-upload"
                       />
                       
-                      <div className="flex items-center gap-3">
-                        <label
-                          htmlFor="chart-image-upload"
-                          className={`flex items-center gap-2 border border-primary bg-primary/10 px-4 py-2 text-[10px] uppercase tracking-widest text-primary transition-colors hover:bg-primary/20 cursor-pointer ${
-                            imageImportStatus === 'uploading' || imageImportStatus === 'parsing' ? 'opacity-50 pointer-events-none' : ''
-                          }`}
-                        >
-                          {imageImportStatus === 'uploading' || imageImportStatus === 'parsing' ? (
-                            <>
-                              <Loader2 size={14} className="animate-spin" />
-                              {imageImportStatus === 'uploading' ? 'Uploading...' : 'Analyzing...'}
-                            </>
-                          ) : (
-                            <>
-                              <Upload size={14} />
-                              Choose Image
-                            </>
-                          )}
-                        </label>
-                        
-                        {imageImportStatus === 'success' && imageImportResult && (
-                          <span className="text-[10px] text-green-600">
-                            ✓ Imported {imageImportResult.planets} planet{imageImportResult.planets !== 1 ? 's' : ''}
-                            {imageImportResult.houses > 0 && `, ${imageImportResult.houses} house cusp${imageImportResult.houses !== 1 ? 's' : ''}`}
-                          </span>
+                      {/* Prominent Drag & Drop Box */}
+                      <label
+                        htmlFor="chart-file-upload"
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                        className={`
+                          relative flex flex-col items-center justify-center w-full min-h-[160px] 
+                          border-2 border-dashed rounded-lg cursor-pointer transition-all duration-200
+                          ${isDragOver 
+                            ? 'border-primary bg-primary/10 scale-[1.02]' 
+                            : 'border-muted-foreground/30 hover:border-primary/50 hover:bg-muted/50'
+                          }
+                          ${imageImportStatus === 'uploading' || imageImportStatus === 'parsing' 
+                            ? 'pointer-events-none opacity-70' 
+                            : ''
+                          }
+                        `}
+                      >
+                        {imageImportStatus === 'uploading' || imageImportStatus === 'parsing' ? (
+                          <div className="flex flex-col items-center gap-3 text-primary">
+                            <Loader2 size={32} className="animate-spin" />
+                            <span className="text-sm font-medium">
+                              {imageImportStatus === 'uploading' ? 'Uploading...' : 'AI is analyzing your chart...'}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center gap-3 p-6">
+                            <div className={`p-4 rounded-full transition-colors ${isDragOver ? 'bg-primary/20' : 'bg-muted'}`}>
+                              <Upload size={28} className={`${isDragOver ? 'text-primary' : 'text-muted-foreground'}`} />
+                            </div>
+                            <div className="text-center">
+                              <p className="text-sm font-medium text-foreground">
+                                {isDragOver ? 'Drop your file here' : 'Drag & drop your chart file here'}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                or click to browse
+                              </p>
+                            </div>
+                            <div className="flex flex-wrap justify-center gap-1.5 mt-2">
+                              <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground">PNG</span>
+                              <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground">JPG</span>
+                              <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground">PDF</span>
+                              <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground">DOCX</span>
+                              <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground">Screenshots</span>
+                            </div>
+                          </div>
                         )}
-                        
-                        {imageImportStatus === 'error' && imageImportError && (
-                          <span className="text-[10px] text-destructive">
-                            ✕ {imageImportError}
+                      </label>
+                      
+                      {/* Status Messages */}
+                      {imageImportStatus === 'success' && imageImportResult && (
+                        <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                          <Check size={16} className="text-green-600" />
+                          <span className="text-sm text-green-700 dark:text-green-400">
+                            Successfully imported {imageImportResult.planets} planet{imageImportResult.planets !== 1 ? 's' : ''}
+                            {imageImportResult.houses > 0 && ` and ${imageImportResult.houses} house cusp${imageImportResult.houses !== 1 ? 's' : ''}`}
                           </span>
-                        )}
-                      </div>
+                        </div>
+                      )}
+                      
+                      {imageImportStatus === 'error' && imageImportError && (
+                        <div className="flex items-center gap-2 p-3 bg-destructive/10 rounded-lg border border-destructive/20">
+                          <X size={16} className="text-destructive" />
+                          <span className="text-sm text-destructive">{imageImportError}</span>
+                        </div>
+                      )}
+                      
+                      <p className="text-[10px] text-muted-foreground italic text-center">
+                        AI will automatically extract planet positions from your astrology chart document or screenshot
+                      </p>
                     </div>
 
                     {/* Divider */}
