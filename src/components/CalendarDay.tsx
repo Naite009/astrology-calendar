@@ -230,7 +230,7 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
                 e.stopPropagation();
                 onVoiceMemoClick?.(date, e);
               }}
-              className="opacity-0 group-hover:opacity-100 transition-all duration-200 rounded-full bg-primary/90 hover:bg-primary hover:scale-110 p-1.5 shadow-md"
+              className="invisible group-hover:visible transition-all duration-200 rounded-full bg-primary hover:bg-primary/80 hover:scale-110 p-1.5 shadow-lg ring-2 ring-white/50"
               title="Add voice memo"
             >
               <Mic className="h-4 w-4 text-primary-foreground" />
