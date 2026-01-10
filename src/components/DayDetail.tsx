@@ -344,8 +344,12 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
         onClick={(e) => e.stopPropagation()}
       >
         <button
-          className="absolute right-6 top-6 text-muted-foreground transition-colors hover:text-foreground"
-          onClick={onClose}
+          className="absolute right-6 top-6 z-10 p-2 text-muted-foreground transition-colors hover:text-foreground hover:bg-muted rounded-full"
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            onClose();
+          }}
         >
           <X size={24} />
         </button>
