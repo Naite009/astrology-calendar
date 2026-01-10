@@ -20,10 +20,11 @@ import { cn } from "@/lib/utils";
 import { UserData } from "@/hooks/useUserData";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { calculateTransitAspects, getTopTransitAspects, getTransitPlanetSymbol, getHouseLabel, type TransitAspect } from "@/lib/transitAspects";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Mic } from "lucide-react";
 import { isVenusStarPointDay } from "@/lib/venusStarPoint";
 import { getVOCMoonDetails, formatVOCTime } from "@/lib/voidOfCourseMoon";
 import { getCurrentPlanetaryHour, getDayRuler } from "@/lib/planetaryHours";
+import { VoiceMemo, getCategoryColor } from "@/hooks/useVoiceMemos";
 
 // Outer planets that are most significant for transits
 const OUTER_PLANETS = ['Saturn', 'Jupiter', 'Neptune', 'Pluto', 'Uranus'];
@@ -96,9 +97,11 @@ interface CalendarDayProps {
   userData: UserData | null;
   onDayClick: (dayData: DayData) => void;
   activeChart?: NatalChart | null;
+  voiceMemos?: VoiceMemo[];
+  onVoiceMemoClick?: (date: Date, e: React.MouseEvent) => void;
 }
 
-export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeChart }: CalendarDayProps) => {
+export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeChart, voiceMemos = [], onVoiceMemoClick }: CalendarDayProps) => {
   const planets = getPlanetaryPositions(date);
   const moonPhase = getMoonPhase(date);
   const mercuryRetro = isMercuryRetrograde(date);
@@ -196,6 +199,43 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
           )}
         </div>
         <div className="flex flex-col items-end gap-1">
+          {/* Voice Memo Indicator & Add Button */}
+          <div className="flex items-center gap-1">
+            {voiceMemos.length > 0 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onVoiceMemoClick?.(date, e);
+                }}
+                className="inline-flex items-center gap-0.5 rounded-full px-1 py-0.5 transition-all hover:scale-110"
+                style={{ backgroundColor: `${getCategoryColor(voiceMemos[0].category)}20` }}
+                title={`${voiceMemos.length} voice memo${voiceMemos.length > 1 ? 's' : ''}`}
+              >
+                <Mic
+                  className="h-3 w-3"
+                  style={{ color: getCategoryColor(voiceMemos[0].category) }}
+                />
+                {voiceMemos.length > 1 && (
+                  <span
+                    className="text-[9px] font-medium"
+                    style={{ color: getCategoryColor(voiceMemos[0].category) }}
+                  >
+                    {voiceMemos.length}
+                  </span>
+                )}
+              </button>
+            )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onVoiceMemoClick?.(date, e);
+              }}
+              className="opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity"
+              title="Add voice memo"
+            >
+              <Mic className="h-3.5 w-3.5 text-muted-foreground" />
+            </button>
+          </div>
           {venusStarPoint && (
             <span 
               className="text-sm text-pink-500" 

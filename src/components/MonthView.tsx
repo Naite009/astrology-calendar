@@ -2,6 +2,7 @@ import { DayData } from "@/lib/astrology";
 import { CalendarDay } from "./CalendarDay";
 import { UserData } from "@/hooks/useUserData";
 import { NatalChart } from "@/hooks/useNatalChart";
+import { VoiceMemo } from "@/hooks/useVoiceMemos";
 
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -10,15 +11,23 @@ interface MonthViewProps {
   userData: UserData | null;
   onDayClick: (dayData: DayData) => void;
   activeChart?: NatalChart | null;
+  voiceMemos?: VoiceMemo[];
+  onVoiceMemoClick?: (date: Date) => void;
 }
 
-export const MonthView = ({ currentDate, userData, onDayClick, activeChart }: MonthViewProps) => {
+export const MonthView = ({ currentDate, userData, onDayClick, activeChart, voiceMemos = [], onVoiceMemoClick }: MonthViewProps) => {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
   const daysInMonth = lastDay.getDate();
   const startingDayOfWeek = firstDay.getDay();
+
+  // Helper to get memos for a specific date
+  const getMemosForDay = (date: Date): VoiceMemo[] => {
+    const dateStr = date.toISOString().split('T')[0];
+    return voiceMemos.filter(m => m.date === dateStr);
+  };
 
   return (
     <>
@@ -47,6 +56,7 @@ export const MonthView = ({ currentDate, userData, onDayClick, activeChart }: Mo
           const day = i + 1;
           const date = new Date(year, month, day);
           const isToday = date.toDateString() === new Date().toDateString();
+          const dayMemos = getMemosForDay(date);
 
           return (
             <CalendarDay
@@ -57,6 +67,8 @@ export const MonthView = ({ currentDate, userData, onDayClick, activeChart }: Mo
               userData={userData}
               onDayClick={onDayClick}
               activeChart={activeChart}
+              voiceMemos={dayMemos}
+              onVoiceMemoClick={(d) => onVoiceMemoClick?.(d)}
             />
           );
         })}
@@ -75,6 +87,8 @@ export const MonthView = ({ currentDate, userData, onDayClick, activeChart }: Mo
         <span className="opacity-70">✦ Transit</span>
         <span className="opacity-50">·</span>
         <span className="opacity-70">⚡ Ingress</span>
+        <span className="opacity-50">·</span>
+        <span className="opacity-70">🎙️ Voice Memo</span>
         {activeChart && (
           <>
             <span className="opacity-50">·</span>
