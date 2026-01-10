@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic } from "lucide-react";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
 import { YearView } from "./YearView";
@@ -15,13 +15,16 @@ import { PatternsView } from "./PatternsView";
 import { SacredScriptView } from "./SacredScriptView";
 import { NatalChartWheel } from "./NatalChartWheel";
 import { DayTypeLegend } from "./DayTypeLegend";
+import { VoiceMemoModal } from "./VoiceMemoModal";
+import { VoiceMemoLibrary } from "./VoiceMemoLibrary";
 import { useUserData } from "@/hooks/useUserData";
 import { useNotes } from "@/hooks/useNotes";
 import { useNatalChart, NatalChart } from "@/hooks/useNatalChart";
 import { useCloudBackup } from "@/hooks/useCloudBackup";
+import { useVoiceMemos } from "@/hooks/useVoiceMemos";
 import { DayData, generateICalExport } from "@/lib/astrology";
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script";
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -51,6 +54,9 @@ export const AstroCalendar = () => {
     saveUserNatalChart
   );
 
+  // Voice memos
+  const voiceMemos = useVoiceMemos();
+  const [voiceMemoDate, setVoiceMemoDate] = useState<Date | null>(null);
   // Get active chart for transit overlay
   const getActiveChart = (): NatalChart | null => {
     if (selectedChartForTiming === 'general') return null;
@@ -121,6 +127,9 @@ export const AstroCalendar = () => {
     }
     if (viewMode === "sacred-script") {
       return "Sacred Script";
+    }
+    if (viewMode === "voice-memos") {
+      return "Voice Memos";
     }
     if (viewMode === "moon-phases") {
       return `${currentDate.getFullYear()} Moon Phases`;
@@ -336,6 +345,17 @@ export const AstroCalendar = () => {
                 <Scroll size={14} />
                 Script
               </button>
+              <button
+                onClick={() => setViewMode("voice-memos")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "voice-memos"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Mic size={14} />
+                Memos
+              </button>
             </div>
 
             {userData && (
@@ -407,6 +427,16 @@ export const AstroCalendar = () => {
             userData={userData}
             onDayClick={setSelectedDay}
             activeChart={activeChart}
+            voiceMemos={voiceMemos.memos}
+            onVoiceMemoClick={(date) => setVoiceMemoDate(date)}
+          />
+        )}
+
+        {viewMode === "voice-memos" && (
+          <VoiceMemoLibrary
+            memos={voiceMemos.memos}
+            onDelete={voiceMemos.deleteMemo}
+            onDownload={voiceMemos.downloadMemo}
           />
         )}
 
@@ -516,6 +546,19 @@ export const AstroCalendar = () => {
 
       {/* Day Type Legend */}
       <DayTypeLegend isOpen={showLegend} onClose={() => setShowLegend(false)} />
+
+      {/* Voice Memo Modal */}
+      {voiceMemoDate && (
+        <VoiceMemoModal
+          isOpen={!!voiceMemoDate}
+          onClose={() => setVoiceMemoDate(null)}
+          date={voiceMemoDate}
+          onSave={async (date, title, category, blob, duration, fileType) => {
+            const result = await voiceMemos.addMemo(date, title, category, blob, duration, fileType);
+            return !!result;
+          }}
+        />
+      )}
     </div>
   );
 };
