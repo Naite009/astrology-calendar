@@ -36,8 +36,8 @@ export const CalendarLegend = ({ onOpenFullLegend }: CalendarLegendProps) => {
   ];
 
   const luckIndicators = [
-    { icon: '🍀', label: 'Lucky', description: 'Harmonious transits to your chart' },
-    { icon: '⚠️', label: 'Challenging', description: 'Difficult aspects — go slow' },
+    { icon: '✦', label: 'Flowing', description: 'Harmonious transits to your chart', className: 'text-emerald-600' },
+    { icon: '△', label: 'Growth', description: 'Challenging aspects — opportunity for growth', className: 'text-amber-600' },
   ];
 
   // Special lunar phases
@@ -144,7 +144,7 @@ export const CalendarLegend = ({ onOpenFullLegend }: CalendarLegendProps) => {
         <div className="space-y-1">
           {luckIndicators.map((item, i) => (
             <div key={i} className="flex items-center gap-2 text-[10px]">
-              <span className="w-4 text-center shrink-0">{item.icon}</span>
+              <span className={`w-4 text-center shrink-0 font-bold ${item.className}`}>{item.icon}</span>
               <span className="font-medium text-foreground">{item.label}</span>
               <span className="text-muted-foreground">— {item.description}</span>
             </div>
