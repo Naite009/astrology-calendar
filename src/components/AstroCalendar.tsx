@@ -429,6 +429,7 @@ export const AstroCalendar = () => {
             activeChart={activeChart}
             voiceMemos={voiceMemos.memos}
             onVoiceMemoClick={(date) => setVoiceMemoDate(date)}
+            onOpenFullLegend={() => setShowLegend(true)}
           />
         )}
 
