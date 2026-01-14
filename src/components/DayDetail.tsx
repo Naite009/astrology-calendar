@@ -15,7 +15,11 @@ import {
   CHIRON_MEANINGS,
   LILITH_MEANINGS,
   getPlanetaryPositions,
+  getPersonalDayType,
+  getDayType,
+  type PersonalDayType,
 } from '@/lib/astrology';
+import { cn } from '@/lib/utils';
 import { UserData } from '@/hooks/useUserData';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { CosmicWeatherBanner } from './CosmicWeatherBanner';
@@ -358,6 +362,14 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
           {date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
         </h2>
 
+        {/* DAY OVERVIEW - Color blocks + Day Type at TOP */}
+        <DayOverviewSection 
+          dayData={dayData}
+          colorExplanation={colorExplanation}
+          activeChart={activeChart}
+          transitAspects={transitAspects}
+        />
+
         {/* Personal Transit Aspects - Comprehensive Professional Analysis */}
         {activeChart && transitAspects.length > 0 && (
           <div className="mb-6">
@@ -696,6 +708,142 @@ const PlanetItem = ({ symbol, name, position }: { symbol: string; name: string; 
     <span className="text-sm font-medium text-foreground">{position}</span>
   </div>
 );
+
+// Day Overview Section - Shows color blocks, day type, and luck at the TOP
+
+interface DayOverviewSectionProps {
+  dayData: DayData;
+  colorExplanation: ColorExplanation;
+  activeChart?: NatalChart | null;
+  transitAspects: TransitAspect[];
+}
+
+const DayOverviewSection = ({ dayData, colorExplanation, activeChart, transitAspects }: DayOverviewSectionProps) => {
+  const { aspects, moonPhase, planets } = dayData;
+  
+  // Get personal day type if chart active, otherwise collective
+  const personalDayType: PersonalDayType | null = activeChart 
+    ? getPersonalDayType(transitAspects)
+    : null;
+  const collectiveDayType = getDayType(aspects, moonPhase);
+  
+  const displayDayType = personalDayType || collectiveDayType;
+  
+  return (
+    <div className="mb-6 p-5 rounded-sm border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-background">
+      {/* Color Blocks Visual - matches calendar */}
+      <div className="flex items-start gap-5 mb-4">
+        {/* Color block stack - mimics calendar day appearance */}
+        <div className="flex flex-col w-20 h-20 rounded-sm overflow-hidden border border-border shadow-sm flex-shrink-0">
+          <div 
+            className="flex-1" 
+            style={{ backgroundColor: colorExplanation.primary.color }}
+          />
+          {colorExplanation.secondary && (
+            <div 
+              className="flex-1" 
+              style={{ backgroundColor: colorExplanation.secondary.color }}
+            />
+          )}
+        </div>
+        
+        {/* Color explanations */}
+        <div className="flex-1 space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">{getPlanetSymbol(colorExplanation.primary.planet.toLowerCase())}</span>
+            <span className="font-medium text-foreground">{colorExplanation.primary.planet}</span>
+            <span className="text-xs text-muted-foreground">— {colorExplanation.primary.meaning}</span>
+          </div>
+          {colorExplanation.primary.aspects && colorExplanation.primary.aspects.length > 0 && (
+            <div className="text-sm text-foreground/80 pl-7">
+              {colorExplanation.primary.aspects.map((a, i) => (
+                <span key={i}>
+                  {getPlanetSymbol(a.planet1)} {a.symbol} {getPlanetSymbol(a.planet2)}
+                  {i < (colorExplanation.primary.aspects?.length ?? 0) - 1 ? ', ' : ''}
+                </span>
+              ))}
+            </div>
+          )}
+          
+          {colorExplanation.secondary && (
+            <>
+              <div className="flex items-center gap-2 pt-1">
+                <span className="text-lg">{getPlanetSymbol(colorExplanation.secondary.planet.toLowerCase())}</span>
+                <span className="font-medium text-foreground">{colorExplanation.secondary.planet}</span>
+                <span className="text-xs text-muted-foreground">— {colorExplanation.secondary.meaning}</span>
+              </div>
+              {colorExplanation.secondary.aspects && colorExplanation.secondary.aspects.length > 0 && (
+                <div className="text-sm text-foreground/80 pl-7">
+                  {colorExplanation.secondary.aspects.map((a, i) => (
+                    <span key={i}>
+                      {getPlanetSymbol(a.planet1)} {a.symbol} {getPlanetSymbol(a.planet2)}
+                      {i < (colorExplanation.secondary?.aspects?.length ?? 0) - 1 ? ', ' : ''}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+      
+      {/* Day Type with Symbol */}
+      <div className="border-t border-border/50 pt-4 mt-4">
+        {personalDayType ? (
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">{personalDayType.symbol}</span>
+              <div>
+                <div className="font-medium text-lg text-foreground flex items-center gap-2">
+                  {personalDayType.label}
+                  {personalDayType.isLucky && <span className="text-emerald-600" title="Lucky day">✦</span>}
+                  {personalDayType.isChallenging && <span className="text-amber-600" title="Challenging day">⚡</span>}
+                </div>
+                <div className="text-sm text-muted-foreground">{personalDayType.description}</div>
+              </div>
+            </div>
+            
+            {/* Luck Indicator with Reason */}
+            <div className={cn(
+              "text-sm px-3 py-2 rounded-sm",
+              personalDayType.isLucky && "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300",
+              personalDayType.isChallenging && "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300",
+              !personalDayType.isLucky && !personalDayType.isChallenging && "bg-muted text-muted-foreground"
+            )}>
+              {personalDayType.isLucky && (
+                <span className="font-medium">✦ Flowing day</span>
+              )}
+              {personalDayType.isChallenging && (
+                <span className="font-medium">⚡ Growth day — patience needed</span>
+              )}
+              {!personalDayType.isLucky && !personalDayType.isChallenging && (
+                <span>○ Neutral energy</span>
+              )}
+              {personalDayType.reason && (
+                <span className="ml-2">— {personalDayType.reason}</span>
+              )}
+            </div>
+            
+            {/* Collective energy (sky) */}
+            <div className="text-xs text-muted-foreground flex items-center gap-2 pt-1">
+              <span>sky:</span>
+              <span>{collectiveDayType.symbol}</span>
+              <span>{collectiveDayType.label}</span>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">{collectiveDayType.symbol}</span>
+            <div>
+              <div className="font-medium text-lg text-foreground">{collectiveDayType.label}</div>
+              <div className="text-sm text-muted-foreground">{collectiveDayType.description}</div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 interface ColorExplanationSectionProps {
   colorExplanation: ColorExplanation;
