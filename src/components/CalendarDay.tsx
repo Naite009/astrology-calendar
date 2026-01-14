@@ -184,18 +184,18 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
                 )}
                 title={`${personalDayType.description}${personalDayType.reason ? ` — ${personalDayType.reason}` : ''}\nLuck score: ${personalDayType.luckyScore}/10`}
               >
-                {personalDayType.isLucky && <span>✦</span>}
-                {personalDayType.isChallenging && <span>⚡</span>}
-                <span>{personalDayType.symbol}</span>
+                {personalDayType.isLucky && <span className="font-bold">✦</span>}
+                {personalDayType.isChallenging && <span className="font-bold">△</span>}
+                <span>{personalDayType.emoji}</span>
                 <span>{personalDayType.label}</span>
               </span>
               <span className="text-[8px] bg-foreground/10 text-foreground/70 px-1 py-0.5 rounded-sm flex items-center gap-1" title={collectiveDayType.description}>
-                sky: {collectiveDayType.symbol} {collectiveDayType.label}
+                sky: {collectiveDayType.emoji} {collectiveDayType.label}
               </span>
             </div>
           ) : (
             <span className="text-[10px] font-medium text-foreground/80 mt-0.5 flex items-center gap-1" title={collectiveDayType.description}>
-              <span>{collectiveDayType.symbol}</span>
+              <span>{collectiveDayType.emoji}</span>
               <span>{collectiveDayType.label}</span>
             </span>
           )}

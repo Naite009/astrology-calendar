@@ -787,17 +787,17 @@ const DayOverviewSection = ({ dayData, colorExplanation, activeChart, transitAsp
         </div>
       </div>
       
-      {/* Day Type with Symbol */}
+      {/* Day Type with Emoji */}
       <div className="border-t border-border/50 pt-4 mt-4">
         {personalDayType ? (
           <div className="space-y-2">
             <div className="flex items-center gap-3">
-              <span className="text-2xl">{personalDayType.symbol}</span>
+              <span className="text-2xl">{personalDayType.emoji}</span>
               <div>
                 <div className="font-medium text-lg text-foreground flex items-center gap-2">
                   {personalDayType.label}
-                  {personalDayType.isLucky && <span className="text-emerald-600" title="Lucky day">✦</span>}
-                  {personalDayType.isChallenging && <span className="text-amber-600" title="Challenging day">⚡</span>}
+                  {personalDayType.isLucky && <span className="text-emerald-600 font-bold" title="Flowing day">✦</span>}
+                  {personalDayType.isChallenging && <span className="text-amber-600 font-bold" title="Growth day">△</span>}
                 </div>
                 <div className="text-sm text-muted-foreground">{personalDayType.description}</div>
               </div>
@@ -814,7 +814,7 @@ const DayOverviewSection = ({ dayData, colorExplanation, activeChart, transitAsp
                 <span className="font-medium">✦ Flowing day</span>
               )}
               {personalDayType.isChallenging && (
-                <span className="font-medium">⚡ Growth day — patience needed</span>
+                <span className="font-medium">△ Growth day — patience needed</span>
               )}
               {!personalDayType.isLucky && !personalDayType.isChallenging && (
                 <span>○ Neutral energy</span>
@@ -827,13 +827,13 @@ const DayOverviewSection = ({ dayData, colorExplanation, activeChart, transitAsp
             {/* Collective energy (sky) */}
             <div className="text-xs text-muted-foreground flex items-center gap-2 pt-1">
               <span>sky:</span>
-              <span>{collectiveDayType.symbol}</span>
+              <span>{collectiveDayType.emoji}</span>
               <span>{collectiveDayType.label}</span>
             </div>
           </div>
         ) : (
           <div className="flex items-center gap-3">
-            <span className="text-2xl">{collectiveDayType.symbol}</span>
+            <span className="text-2xl">{collectiveDayType.emoji}</span>
             <div>
               <div className="font-medium text-lg text-foreground">{collectiveDayType.label}</div>
               <div className="text-sm text-muted-foreground">{collectiveDayType.description}</div>
