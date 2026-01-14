@@ -178,14 +178,16 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
               <span 
                 className={cn(
                   "text-[10px] font-medium mt-0.5 flex items-center gap-1",
-                  personalDayType.isLucky && "text-emerald-600",
-                  personalDayType.isChallenging && "text-amber-600",
-                  !personalDayType.isLucky && !personalDayType.isChallenging && "text-foreground/80"
+                  personalDayType.tightestAspectType === 'flowing' && "text-emerald-600",
+                  personalDayType.tightestAspectType === 'challenging' && "text-amber-600",
+                  personalDayType.tightestAspectType === 'conjunction' && "text-foreground/80"
                 )}
                 title={`${personalDayType.description}${personalDayType.reason ? ` — ${personalDayType.reason}` : ''}\nLuck score: ${personalDayType.luckyScore}/10`}
               >
-                {personalDayType.isLucky && <span className="font-bold">✦</span>}
-                {personalDayType.isChallenging && <span className="font-bold">△</span>}
+                {/* Show indicator based on tightest aspect type, not overall score */}
+                {personalDayType.tightestAspectType === 'flowing' && <span className="font-bold">✦</span>}
+                {personalDayType.tightestAspectType === 'challenging' && <span className="font-bold">△</span>}
+                {personalDayType.tightestAspectType === 'conjunction' && <span className="font-bold">☌</span>}
                 <span>{personalDayType.emoji}</span>
                 <span>{personalDayType.label}</span>
               </span>
