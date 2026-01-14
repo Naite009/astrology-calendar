@@ -177,24 +177,26 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
             <div className="flex flex-col gap-0.5">
               <span 
                 className={cn(
-                  "text-[10px] font-medium mt-0.5",
+                  "text-[10px] font-medium mt-0.5 flex items-center gap-1",
                   personalDayType.isLucky && "text-emerald-600",
                   personalDayType.isChallenging && "text-amber-600",
                   !personalDayType.isLucky && !personalDayType.isChallenging && "text-foreground/80"
                 )}
                 title={`${personalDayType.description}${personalDayType.reason ? ` — ${personalDayType.reason}` : ''}\nLuck score: ${personalDayType.luckyScore}/10`}
               >
-                {personalDayType.isLucky && '🍀 '}
-                {personalDayType.isChallenging && '⚠️ '}
-                {personalDayType.label}
+                {personalDayType.isLucky && <span>✦</span>}
+                {personalDayType.isChallenging && <span>⚡</span>}
+                <span>{personalDayType.symbol}</span>
+                <span>{personalDayType.label}</span>
               </span>
-              <span className="text-[8px] bg-foreground/10 text-foreground/70 px-1 py-0.5 rounded-sm" title={collectiveDayType.description}>
-                sky: {collectiveDayType.label}
+              <span className="text-[8px] bg-foreground/10 text-foreground/70 px-1 py-0.5 rounded-sm flex items-center gap-1" title={collectiveDayType.description}>
+                sky: {collectiveDayType.symbol} {collectiveDayType.label}
               </span>
             </div>
           ) : (
-            <span className="text-[10px] font-medium text-foreground/80 mt-0.5" title={collectiveDayType.description}>
-              {collectiveDayType.label}
+            <span className="text-[10px] font-medium text-foreground/80 mt-0.5 flex items-center gap-1" title={collectiveDayType.description}>
+              <span>{collectiveDayType.symbol}</span>
+              <span>{collectiveDayType.label}</span>
             </span>
           )}
         </div>

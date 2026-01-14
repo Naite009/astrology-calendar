@@ -1229,20 +1229,21 @@ export const getDayColors = (aspects: Aspect[], moonPhase: MoonPhase): DayColors
 export interface DayType {
   label: string;
   emoji: string;
+  symbol: string; // Planet symbol for display
   description: string;
 }
 
 export const DAY_TYPE_MAP: Record<string, DayType> = {
-  mercury: { label: 'Think & Talk', emoji: '🧠', description: 'Great for writing, meetings, learning, signing contracts' },
-  venus: { label: 'Love & Beauty', emoji: '💗', description: 'Perfect for romance, art, shopping, self-care' },
-  mars: { label: 'Go & Do', emoji: '🔥', description: 'Best for exercise, starting projects, asserting yourself' },
-  sun: { label: 'Shine & Lead', emoji: '✨', description: 'Ideal for visibility, leadership, creative expression' },
-  moon: { label: 'Feel & Nurture', emoji: '🌙', description: 'Focus on home, family, self-care, emotional processing' },
-  jupiter: { label: 'Grow & Expand', emoji: '🍀', description: 'Lucky for travel, education, taking risks, big decisions' },
-  saturn: { label: 'Build & Focus', emoji: '🏛️', description: 'Good for hard work, long-term planning, responsibilities' },
-  uranus: { label: 'Break & Change', emoji: '⚡', description: 'Expect surprises, try new things, embrace the unexpected' },
-  neptune: { label: 'Dream & Imagine', emoji: '🌊', description: 'Best for creativity, meditation, spiritual practices' },
-  pluto: { label: 'Transform & Heal', emoji: '🦋', description: 'Deep inner work, letting go, psychological breakthroughs' },
+  mercury: { label: 'Think & Talk', emoji: '🧠', symbol: '☿', description: 'Great for writing, meetings, learning, signing contracts' },
+  venus: { label: 'Love & Beauty', emoji: '💗', symbol: '♀', description: 'Perfect for romance, art, shopping, self-care' },
+  mars: { label: 'Go & Do', emoji: '🔥', symbol: '♂', description: 'Best for exercise, starting projects, asserting yourself' },
+  sun: { label: 'Shine & Lead', emoji: '✨', symbol: '☉', description: 'Ideal for visibility, leadership, creative expression' },
+  moon: { label: 'Feel & Nurture', emoji: '🌙', symbol: '☽', description: 'Focus on home, family, self-care, emotional processing' },
+  jupiter: { label: 'Grow & Expand', emoji: '♃', symbol: '♃', description: 'Lucky for travel, education, taking risks, big decisions' },
+  saturn: { label: 'Build & Focus', emoji: '🏛️', symbol: '♄', description: 'Good for hard work, long-term planning, responsibilities' },
+  uranus: { label: 'Break & Change', emoji: '⚡', symbol: '♅', description: 'Expect surprises, try new things, embrace the unexpected' },
+  neptune: { label: 'Dream & Imagine', emoji: '🌊', symbol: '♆', description: 'Best for creativity, meditation, spiritual practices' },
+  pluto: { label: 'Transform & Heal', emoji: '🦋', symbol: '♇', description: 'Deep inner work, letting go, psychological breakthroughs' },
 };
 
 // Lucky day indicators based on beneficial aspects
@@ -1273,17 +1274,17 @@ export const getDayType = (aspects: Aspect[], moonPhase: MoonPhase): DayType => 
 
   // Balsamic moon = rest/dream day
   if (moonPhase.isBalsamic) {
-    return { label: 'Rest & Release', emoji: '🌘', description: 'Let go of what no longer serves you, recharge' };
+    return { label: 'Rest & Release', emoji: '🌘', symbol: '☽', description: 'Let go of what no longer serves you, recharge' };
   }
 
   // Full moon = emotional peak
   if (moonPhase.phaseName === 'Full Moon') {
-    return { label: 'Harvest', emoji: '🌕', description: 'See results, gain clarity, celebrate achievements' };
+    return { label: 'Harvest', emoji: '🌕', symbol: '☽', description: 'See results, gain clarity, celebrate achievements' };
   }
 
   // New moon = intention day
   if (moonPhase.phaseName === 'New Moon') {
-    return { label: 'Plant Seeds', emoji: '🌑', description: 'Set intentions, start fresh, new beginnings' };
+    return { label: 'Plant Seeds', emoji: '🌑', symbol: '☽', description: 'Set intentions, start fresh, new beginnings' };
   }
 
   // Find the dominant planet
@@ -1309,6 +1310,11 @@ export interface PersonalDayType extends DayType {
   reason?: string;
 }
 
+// Slow-moving planets count less for daily luck - they're long-term transits
+const SLOW_PLANETS = ['pluto', 'neptune', 'uranus'];
+const MEDIUM_PLANETS = ['saturn', 'jupiter', 'chiron'];
+const FAST_PLANETS = ['sun', 'moon', 'mercury', 'venus', 'mars'];
+
 export const getPersonalDayType = (transitAspects: Array<{
   transitPlanet: string;
   natalPlanet: string;
@@ -1319,6 +1325,7 @@ export const getPersonalDayType = (transitAspects: Array<{
     return { 
       label: 'Neutral Day', 
       emoji: '○', 
+      symbol: '○',
       description: 'No major transits to your chart today',
       luckyScore: 5,
       isLucky: false,
@@ -1326,7 +1333,7 @@ export const getPersonalDayType = (transitAspects: Array<{
     };
   }
 
-  // Count which planets are activating your chart
+  // Count which planets are activating your chart (weighted by orb tightness)
   const planetCounts: Record<string, number> = {};
   let luckyPoints = 0;
   let challengingPoints = 0;
@@ -1335,39 +1342,59 @@ export const getPersonalDayType = (transitAspects: Array<{
     const transitPlanet = asp.transitPlanet.toLowerCase();
     const natalPlanet = asp.natalPlanet.toLowerCase();
     const aspectName = asp.aspect.toLowerCase();
+    const orb = parseFloat(asp.orb);
     
-    // Count transiting planet activity on YOUR chart
-    planetCounts[transitPlanet] = (planetCounts[transitPlanet] || 0) + 1;
+    // Weight by orb - tighter orbs count more
+    const orbWeight = orb <= 1 ? 1.5 : orb <= 2 ? 1.0 : 0.5;
+    
+    // Slow-moving planets get reduced weight for daily luck
+    // They're important but shouldn't dominate daily readings
+    let speedWeight = 1.0;
+    if (SLOW_PLANETS.includes(transitPlanet)) {
+      speedWeight = 0.25; // Pluto, Neptune, Uranus barely move - long-term transit
+    } else if (MEDIUM_PLANETS.includes(transitPlanet)) {
+      speedWeight = 0.5; // Saturn, Jupiter - still fairly slow
+    }
+    
+    // Count transiting planet activity (weighted by orb for dominance)
+    planetCounts[transitPlanet] = (planetCounts[transitPlanet] || 0) + orbWeight;
     
     // Calculate luck score based on aspect type
     const isHarmonious = ['trine', 'sextile'].includes(aspectName);
     const isChallenging = ['square', 'opposition'].includes(aspectName);
     const isConjunction = aspectName === 'conjunction';
     
-    // Benefic planets (Venus, Jupiter) in harmonious aspects = very lucky
+    // Benefic planets (Venus, Jupiter) in harmonious aspects = lucky
     if (BENEFIC_PLANETS.includes(transitPlanet)) {
-      if (isHarmonious) luckyPoints += 3;
-      else if (isConjunction) luckyPoints += 2;
-      else if (isChallenging) luckyPoints += 1; // Even challenges from benefics can bring gifts
+      if (isHarmonious) luckyPoints += 3 * speedWeight;
+      else if (isConjunction) luckyPoints += 2 * speedWeight;
+      else if (isChallenging) luckyPoints += 0.5 * speedWeight;
     }
     
     // Malefic planets (Mars, Saturn, Pluto) in challenging aspects = difficult
     if (MALEFIC_PLANETS.includes(transitPlanet)) {
-      if (isChallenging) challengingPoints += 2;
-      else if (isConjunction) challengingPoints += 1;
+      if (isChallenging) challengingPoints += 2 * speedWeight;
+      else if (isConjunction) challengingPoints += 1 * speedWeight;
     }
     
-    // Sun trines/sextiles = vitality boost
+    // Sun trines/sextiles = vitality boost (fast-moving, counts more)
     if (transitPlanet === 'sun' && isHarmonious) luckyPoints += 2;
     
-    // Moon trines to benefics = emotional support
-    if (transitPlanet === 'moon' && isHarmonious) luckyPoints += 1;
+    // Moon trines = emotional support (fastest, counts)
+    if (transitPlanet === 'moon' && isHarmonious) luckyPoints += 1.5;
+    
+    // Challenging aspects from fast planets are felt more acutely
+    if (FAST_PLANETS.includes(transitPlanet) && isChallenging) {
+      challengingPoints += 1;
+    }
     
     // Harmonious aspects to natal Jupiter/Venus = luck amplified
-    if (BENEFIC_PLANETS.includes(natalPlanet) && isHarmonious) luckyPoints += 2;
+    if (BENEFIC_PLANETS.includes(natalPlanet) && isHarmonious) {
+      luckyPoints += 1.5 * speedWeight;
+    }
   });
 
-  // Find dominant transiting planet
+  // Find dominant transiting planet (by weighted count)
   let dominant = 'moon';
   let maxCount = 0;
   for (const [planet, count] of Object.entries(planetCounts)) {
@@ -1378,24 +1405,41 @@ export const getPersonalDayType = (transitAspects: Array<{
   }
 
   // Calculate final luck score (0-10)
+  // Start at 5 (neutral), add/subtract based on aspects
   const rawScore = 5 + luckyPoints - challengingPoints;
-  const luckyScore = Math.max(0, Math.min(10, rawScore));
+  const luckyScore = Math.max(0, Math.min(10, Math.round(rawScore)));
+  
+  // Thresholds: lucky needs 7+, challenging needs 3 or less
   const isLucky = luckyScore >= 7;
   const isChallenging = luckyScore <= 3;
 
   const baseType = DAY_TYPE_MAP[dominant] || DAY_TYPE_MAP.moon;
   
-  // Build reason string
+  // Build reason string with specific info
   let reason = '';
   if (isLucky) {
-    reason = 'Harmonious aspects from benefic planets today';
+    const beneficAspects = transitAspects.filter(a => 
+      BENEFIC_PLANETS.includes(a.transitPlanet.toLowerCase()) && 
+      ['trine', 'sextile'].includes(a.aspect.toLowerCase())
+    );
+    if (beneficAspects.length > 0) {
+      reason = `${beneficAspects[0].transitPlanet} ${beneficAspects[0].aspect} your ${beneficAspects[0].natalPlanet}`;
+    } else {
+      reason = 'Harmonious fast-moving aspects today';
+    }
   } else if (isChallenging) {
-    reason = 'Challenging aspects may require patience';
+    const hardAspects = transitAspects.filter(a => 
+      ['square', 'opposition'].includes(a.aspect.toLowerCase())
+    );
+    if (hardAspects.length > 0) {
+      reason = `${hardAspects[0].transitPlanet} ${hardAspects[0].aspect} your ${hardAspects[0].natalPlanet}`;
+    } else {
+      reason = 'Challenging aspects require patience';
+    }
   }
 
   return {
     ...baseType,
-    label: `Your ${baseType.label}`,
     luckyScore,
     isLucky,
     isChallenging,
