@@ -1413,29 +1413,46 @@ export const getPersonalDayType = (transitAspects: Array<{
   const isLucky = luckyScore >= 7;
   const isChallenging = luckyScore <= 3;
 
-  const baseType = DAY_TYPE_MAP[dominant] || DAY_TYPE_MAP.moon;
+  // Find the strongest aspect (tightest orb) to determine the day's energy
+  const sortedByOrb = [...transitAspects].sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb));
+  const strongestAspect = sortedByOrb[0];
+  const strongestAspectType = strongestAspect?.aspect?.toLowerCase() || '';
+  const isStrongestChallenging = ['square', 'opposition'].includes(strongestAspectType);
+  const strongestTransitPlanet = strongestAspect?.transitPlanet?.toLowerCase() || dominant;
+
+  // Use the planet from the strongest aspect, not just count-based dominance
+  const effectiveDominant = strongestTransitPlanet;
+  const baseType = DAY_TYPE_MAP[effectiveDominant] || DAY_TYPE_MAP.moon;
   
-  // Build reason string with specific info
+  // Build reason string with specific info about the strongest aspect
   let reason = '';
-  if (isLucky) {
-    const beneficAspects = transitAspects.filter(a => 
-      BENEFIC_PLANETS.includes(a.transitPlanet.toLowerCase()) && 
-      ['trine', 'sextile'].includes(a.aspect.toLowerCase())
-    );
-    if (beneficAspects.length > 0) {
-      reason = `${beneficAspects[0].transitPlanet} ${beneficAspects[0].aspect} your ${beneficAspects[0].natalPlanet}`;
-    } else {
-      reason = 'Harmonious fast-moving aspects today';
-    }
-  } else if (isChallenging) {
-    const hardAspects = transitAspects.filter(a => 
-      ['square', 'opposition'].includes(a.aspect.toLowerCase())
-    );
-    if (hardAspects.length > 0) {
-      reason = `${hardAspects[0].transitPlanet} ${hardAspects[0].aspect} your ${hardAspects[0].natalPlanet}`;
-    } else {
-      reason = 'Challenging aspects require patience';
-    }
+  const aspectSymbol = strongestAspectType === 'trine' ? '△' : 
+                       strongestAspectType === 'sextile' ? '⚹' :
+                       strongestAspectType === 'square' ? '□' :
+                       strongestAspectType === 'opposition' ? '☍' :
+                       strongestAspectType === 'conjunction' ? '☌' : '';
+  
+  if (strongestAspect) {
+    const transitSym = getPlanetSymbol(strongestAspect.transitPlanet);
+    const natalSym = getPlanetSymbol(strongestAspect.natalPlanet);
+    reason = `${transitSym} ${aspectSymbol} ${natalSym}`;
+  }
+
+  // If the dominant aspect is challenging, modify the label and description
+  // Don't say "Go & Do" when Jupiter is squaring Mercury!
+  if (isStrongestChallenging) {
+    const challengeType = DAY_TYPE_MAP[effectiveDominant] || DAY_TYPE_MAP.moon;
+    return {
+      label: `${challengeType.emoji} ${effectiveDominant.charAt(0).toUpperCase() + effectiveDominant.slice(1)} Tension`,
+      emoji: challengeType.emoji,
+      symbol: challengeType.symbol,
+      description: `${effectiveDominant.charAt(0).toUpperCase() + effectiveDominant.slice(1)} ${strongestAspectType} energy — patience needed, growth opportunity`,
+      luckyScore,
+      isLucky: false,
+      isChallenging: true,
+      topTransitPlanet: effectiveDominant,
+      reason
+    };
   }
 
   return {
@@ -1443,7 +1460,7 @@ export const getPersonalDayType = (transitAspects: Array<{
     luckyScore,
     isLucky,
     isChallenging,
-    topTransitPlanet: dominant,
+    topTransitPlanet: effectiveDominant,
     reason
   };
 };
