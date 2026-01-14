@@ -1264,14 +1264,6 @@ const BENEFIC_PLANETS = ['venus', 'jupiter'];
 const MALEFIC_PLANETS = ['mars', 'saturn', 'pluto'];
 
 export const getDayType = (aspects: Aspect[], moonPhase: MoonPhase): DayType => {
-  // Count planet occurrences in aspects
-  const planetCounts: Record<string, number> = {};
-  
-  aspects.forEach((asp) => {
-    planetCounts[asp.planet1] = (planetCounts[asp.planet1] || 0) + 1;
-    planetCounts[asp.planet2] = (planetCounts[asp.planet2] || 0) + 1;
-  });
-
   // Balsamic moon = rest/dream day
   if (moonPhase.isBalsamic) {
     return { label: 'Rest & Release', emoji: '🌘', symbol: '☽', description: 'Let go of what no longer serves you, recharge' };
@@ -1287,16 +1279,17 @@ export const getDayType = (aspects: Aspect[], moonPhase: MoonPhase): DayType => 
     return { label: 'Plant Seeds', emoji: '🌑', symbol: '☽', description: 'Set intentions, start fresh, new beginnings' };
   }
 
-  // Find the dominant planet
-  let dominant = 'moon';
-  let maxCount = 0;
-  
-  for (const [planet, count] of Object.entries(planetCounts)) {
-    if (count > maxCount) {
-      maxCount = count;
-      dominant = planet;
-    }
+  // Find tightest orb aspect to determine dominant energy
+  if (aspects.length === 0) {
+    return DAY_TYPE_MAP.moon;
   }
+
+  // Sort by orb (tightest first) - orb is a string, need to parse
+  const sortedByOrb = [...aspects].sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb));
+  const tightestAspect = sortedByOrb[0];
+  
+  // Use the first planet from the tightest aspect (typically the faster-moving planet)
+  const dominant = tightestAspect.planet1.toLowerCase();
 
   return DAY_TYPE_MAP[dominant] || DAY_TYPE_MAP.moon;
 };
@@ -1306,8 +1299,10 @@ export interface PersonalDayType extends DayType {
   luckyScore: number; // 0-10
   isLucky: boolean;
   isChallenging: boolean;
-  topTransitPlanet?: string;
-  reason?: string;
+  topNatalPlanet?: string; // The natal planet being activated (determines label)
+  topTransitPlanet?: string; // The transiting planet (for context)
+  tightestAspectType?: 'flowing' | 'challenging' | 'conjunction'; // Type of tightest aspect
+  reason?: string; // The aspect symbols e.g. "♃ □ ☿"
 }
 
 // Slow-moving planets count less for daily luck - they're long-term transits
@@ -1333,8 +1328,7 @@ export const getPersonalDayType = (transitAspects: Array<{
     };
   }
 
-  // Count which planets are activating your chart (weighted by orb tightness)
-  const planetCounts: Record<string, number> = {};
+  // Calculate luck score based on all transits
   let luckyPoints = 0;
   let challengingPoints = 0;
 
@@ -1348,119 +1342,106 @@ export const getPersonalDayType = (transitAspects: Array<{
     const orbWeight = orb <= 1 ? 1.5 : orb <= 2 ? 1.0 : 0.5;
     
     // Slow-moving planets get reduced weight for daily luck
-    // They're important but shouldn't dominate daily readings
     let speedWeight = 1.0;
     if (SLOW_PLANETS.includes(transitPlanet)) {
-      speedWeight = 0.25; // Pluto, Neptune, Uranus barely move - long-term transit
+      speedWeight = 0.25;
     } else if (MEDIUM_PLANETS.includes(transitPlanet)) {
-      speedWeight = 0.5; // Saturn, Jupiter - still fairly slow
+      speedWeight = 0.5;
     }
-    
-    // Count transiting planet activity (weighted by orb for dominance)
-    planetCounts[transitPlanet] = (planetCounts[transitPlanet] || 0) + orbWeight;
     
     // Calculate luck score based on aspect type
     const isHarmonious = ['trine', 'sextile'].includes(aspectName);
     const isChallenging = ['square', 'opposition'].includes(aspectName);
     const isConjunction = aspectName === 'conjunction';
     
-    // Benefic planets (Venus, Jupiter) in harmonious aspects = lucky
+    // Benefic planets in harmonious aspects = lucky
     if (BENEFIC_PLANETS.includes(transitPlanet)) {
       if (isHarmonious) luckyPoints += 3 * speedWeight;
       else if (isConjunction) luckyPoints += 2 * speedWeight;
       else if (isChallenging) luckyPoints += 0.5 * speedWeight;
     }
     
-    // Malefic planets (Mars, Saturn, Pluto) in challenging aspects = difficult
+    // Malefic planets in challenging aspects = difficult
     if (MALEFIC_PLANETS.includes(transitPlanet)) {
       if (isChallenging) challengingPoints += 2 * speedWeight;
       else if (isConjunction) challengingPoints += 1 * speedWeight;
     }
     
-    // Sun trines/sextiles = vitality boost (fast-moving, counts more)
+    // Fast planet aspects felt more
     if (transitPlanet === 'sun' && isHarmonious) luckyPoints += 2;
-    
-    // Moon trines = emotional support (fastest, counts)
     if (transitPlanet === 'moon' && isHarmonious) luckyPoints += 1.5;
-    
-    // Challenging aspects from fast planets are felt more acutely
     if (FAST_PLANETS.includes(transitPlanet) && isChallenging) {
       challengingPoints += 1;
     }
     
-    // Harmonious aspects to natal Jupiter/Venus = luck amplified
+    // Harmonious aspects to natal benefics = luck amplified
     if (BENEFIC_PLANETS.includes(natalPlanet) && isHarmonious) {
       luckyPoints += 1.5 * speedWeight;
     }
   });
 
-  // Find dominant transiting planet (by weighted count)
-  let dominant = 'moon';
-  let maxCount = 0;
-  for (const [planet, count] of Object.entries(planetCounts)) {
-    if (count > maxCount) {
-      maxCount = count;
-      dominant = planet;
-    }
-  }
-
   // Calculate final luck score (0-10)
-  // Start at 5 (neutral), add/subtract based on aspects
   const rawScore = 5 + luckyPoints - challengingPoints;
   const luckyScore = Math.max(0, Math.min(10, Math.round(rawScore)));
   
-  // Thresholds: lucky needs 7+, challenging needs 3 or less
+  // Thresholds based on overall score (not just tightest aspect)
   const isLucky = luckyScore >= 7;
   const isChallenging = luckyScore <= 3;
 
-  // Find the strongest aspect (tightest orb) to determine the day's energy
+  // Find the TIGHTEST ORB aspect - this determines the day's theme
   const sortedByOrb = [...transitAspects].sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb));
-  const strongestAspect = sortedByOrb[0];
-  const strongestAspectType = strongestAspect?.aspect?.toLowerCase() || '';
-  const isStrongestChallenging = ['square', 'opposition'].includes(strongestAspectType);
-  const strongestTransitPlanet = strongestAspect?.transitPlanet?.toLowerCase() || dominant;
+  const tightestAspect = sortedByOrb[0];
+  const tightestAspectName = tightestAspect?.aspect?.toLowerCase() || '';
+  
+  // Determine the type of the tightest aspect
+  const isTightestFlowing = ['trine', 'sextile'].includes(tightestAspectName);
+  const isTightestChallenging = ['square', 'opposition'].includes(tightestAspectName);
+  const tightestAspectType: 'flowing' | 'challenging' | 'conjunction' = 
+    isTightestFlowing ? 'flowing' : 
+    isTightestChallenging ? 'challenging' : 'conjunction';
 
-  // Use the planet from the strongest aspect, not just count-based dominance
-  const effectiveDominant = strongestTransitPlanet;
-  const baseType = DAY_TYPE_MAP[effectiveDominant] || DAY_TYPE_MAP.moon;
+  // KEY FIX: Use the NATAL PLANET being hit to determine the label
+  // If Jupiter squares your Mercury, the label is "Think & Talk" (Mercury theme)
+  // NOT "Grow & Expand" (Jupiter theme)
+  const natalPlanetHit = tightestAspect?.natalPlanet?.toLowerCase() || 'moon';
+  const transitPlanet = tightestAspect?.transitPlanet?.toLowerCase() || 'moon';
   
-  // Build reason string with specific info about the strongest aspect
+  // Get the day type based on NATAL planet being activated
+  const baseType = DAY_TYPE_MAP[natalPlanetHit] || DAY_TYPE_MAP.moon;
+  
+  // Build reason string showing the actual aspect
+  const aspectSymbol = tightestAspectName === 'trine' ? '△' : 
+                       tightestAspectName === 'sextile' ? '⚹' :
+                       tightestAspectName === 'square' ? '□' :
+                       tightestAspectName === 'opposition' ? '☍' :
+                       tightestAspectName === 'conjunction' ? '☌' : '';
+  
   let reason = '';
-  const aspectSymbol = strongestAspectType === 'trine' ? '△' : 
-                       strongestAspectType === 'sextile' ? '⚹' :
-                       strongestAspectType === 'square' ? '□' :
-                       strongestAspectType === 'opposition' ? '☍' :
-                       strongestAspectType === 'conjunction' ? '☌' : '';
-  
-  if (strongestAspect) {
-    const transitSym = getPlanetSymbol(strongestAspect.transitPlanet);
-    const natalSym = getPlanetSymbol(strongestAspect.natalPlanet);
+  if (tightestAspect) {
+    const transitSym = getPlanetSymbol(tightestAspect.transitPlanet);
+    const natalSym = getPlanetSymbol(tightestAspect.natalPlanet);
     reason = `${transitSym} ${aspectSymbol} ${natalSym}`;
   }
 
-  // If the dominant aspect is challenging, modify the label and description
-  // Don't say "Go & Do" when Jupiter is squaring Mercury!
-  if (isStrongestChallenging) {
-    const challengeType = DAY_TYPE_MAP[effectiveDominant] || DAY_TYPE_MAP.moon;
-    return {
-      label: `${challengeType.emoji} ${effectiveDominant.charAt(0).toUpperCase() + effectiveDominant.slice(1)} Tension`,
-      emoji: challengeType.emoji,
-      symbol: challengeType.symbol,
-      description: `${effectiveDominant.charAt(0).toUpperCase() + effectiveDominant.slice(1)} ${strongestAspectType} energy — patience needed, growth opportunity`,
-      luckyScore,
-      isLucky: false,
-      isChallenging: true,
-      topTransitPlanet: effectiveDominant,
-      reason
-    };
+  // Build description that includes the aspect context
+  let description = baseType.description;
+  if (isTightestChallenging) {
+    const transitPlanetName = tightestAspect?.transitPlanet || 'Planet';
+    description = `${transitPlanetName} ${tightestAspectName} your ${tightestAspect?.natalPlanet || 'planet'} — patience with ${baseType.label.toLowerCase()}`;
+  } else if (isTightestFlowing) {
+    const transitPlanetName = tightestAspect?.transitPlanet || 'Planet';
+    description = `${transitPlanetName} ${tightestAspectName} your ${tightestAspect?.natalPlanet || 'planet'} — ease with ${baseType.label.toLowerCase()}`;
   }
 
   return {
     ...baseType,
+    description,
     luckyScore,
     isLucky,
     isChallenging,
-    topTransitPlanet: effectiveDominant,
+    topNatalPlanet: natalPlanetHit,
+    topTransitPlanet: transitPlanet,
+    tightestAspectType,
     reason
   };
 };

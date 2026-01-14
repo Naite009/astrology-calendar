@@ -796,32 +796,46 @@ const DayOverviewSection = ({ dayData, colorExplanation, activeChart, transitAsp
               <div>
                 <div className="font-medium text-lg text-foreground flex items-center gap-2">
                   {personalDayType.label}
-                  {personalDayType.isLucky && <span className="text-emerald-600 font-bold" title="Flowing day">✦</span>}
-                  {personalDayType.isChallenging && <span className="text-amber-600 font-bold" title="Growth day">△</span>}
+                  {/* Show indicator based on tightest aspect type */}
+                  {personalDayType.tightestAspectType === 'flowing' && <span className="text-emerald-600 font-bold" title="Flowing aspect">✦</span>}
+                  {personalDayType.tightestAspectType === 'challenging' && <span className="text-amber-600 font-bold" title="Challenging aspect">△</span>}
+                  {personalDayType.tightestAspectType === 'conjunction' && <span className="text-purple-600 font-bold" title="Conjunction">☌</span>}
                 </div>
                 <div className="text-sm text-muted-foreground">{personalDayType.description}</div>
               </div>
             </div>
             
-            {/* Luck Indicator with Reason */}
+            {/* Aspect Indicator with Reason - based on tightest aspect */}
             <div className={cn(
               "text-sm px-3 py-2 rounded-sm",
-              personalDayType.isLucky && "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300",
-              personalDayType.isChallenging && "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300",
-              !personalDayType.isLucky && !personalDayType.isChallenging && "bg-muted text-muted-foreground"
+              personalDayType.tightestAspectType === 'flowing' && "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300",
+              personalDayType.tightestAspectType === 'challenging' && "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300",
+              personalDayType.tightestAspectType === 'conjunction' && "bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300"
             )}>
-              {personalDayType.isLucky && (
-                <span className="font-medium">✦ Flowing day</span>
+              {personalDayType.tightestAspectType === 'flowing' && (
+                <span className="font-medium">✦ Flowing aspect — energy flows easily</span>
               )}
-              {personalDayType.isChallenging && (
-                <span className="font-medium">△ Growth day — patience needed</span>
+              {personalDayType.tightestAspectType === 'challenging' && (
+                <span className="font-medium">△ Challenging aspect — patience & growth</span>
               )}
-              {!personalDayType.isLucky && !personalDayType.isChallenging && (
-                <span>○ Neutral energy</span>
+              {personalDayType.tightestAspectType === 'conjunction' && (
+                <span className="font-medium">☌ Conjunction — intense focus</span>
               )}
               {personalDayType.reason && (
                 <span className="ml-2">— {personalDayType.reason}</span>
               )}
+            </div>
+            
+            {/* Overall luck score */}
+            <div className={cn(
+              "text-xs px-2 py-1 rounded-sm inline-flex items-center gap-2",
+              personalDayType.isLucky && "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400",
+              personalDayType.isChallenging && "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",
+              !personalDayType.isLucky && !personalDayType.isChallenging && "bg-muted text-muted-foreground"
+            )}>
+              <span>Overall energy: {personalDayType.luckyScore}/10</span>
+              {personalDayType.isLucky && <span className="font-medium">— Lucky day!</span>}
+              {personalDayType.isChallenging && <span className="font-medium">— Tense day</span>}
             </div>
             
             {/* Collective energy (sky) */}
