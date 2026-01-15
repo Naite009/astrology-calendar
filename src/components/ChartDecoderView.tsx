@@ -91,7 +91,7 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
 
   // Computed values
   const aspects = useMemo(() => computeAspects(planets, aspectOrbs), [planets, aspectOrbs]);
-  const summaryNarrative = useMemo(() => generateSummaryNarrative(planets), [planets]);
+  const summaryNarrative = useMemo(() => generateSummaryNarrative(planets, useTraditional), [planets, useTraditional]);
 
   // Get selected planet data
   const selectedPlanetData = useMemo(() => {
@@ -99,7 +99,7 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
     const planet = planets.find(p => p.name === selectedPlanet);
     if (!planet) return null;
 
-    const dignity = computeDignity(planet.name, planet.sign);
+    const dignity = computeDignity(planet.name, planet.sign, useTraditional);
     const planetAspects = getAspectsForPlanet(planet.name, aspects);
     const dispositorChain = computeDispositorChain(planet, planets, useTraditional);
 
@@ -177,6 +177,7 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
                 planets={planets}
                 selectedPlanet={selectedPlanet}
                 onSelectPlanet={setSelectedPlanet}
+                useTraditional={useTraditional}
               />
             </CardContent>
           </Card>
@@ -235,6 +236,7 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
               <DignityTable
                 planets={planets}
                 onSelectPlanet={setSelectedPlanet}
+                useTraditional={useTraditional}
               />
             </CardContent>
           </Card>
