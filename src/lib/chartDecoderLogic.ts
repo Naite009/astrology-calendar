@@ -299,6 +299,38 @@ export function toAbsoluteDegree(sign: string, degree: number): number {
 /**
  * Compute all aspects between planets
  */
+
+// Luminaries and angles get wider orbs (10° for major aspects)
+const LUMINARY_PLANETS = ['Sun', 'Moon', 'Ascendant'];
+
+/**
+ * Get the appropriate orb based on which planets are involved
+ * Sun, Moon, and Ascendant get 10° orbs for conjunctions/oppositions
+ */
+export function getOrb(
+  planet1: string,
+  planet2: string,
+  aspectType: keyof AspectOrbs,
+  baseOrbs: AspectOrbs = DEFAULT_ORBS
+): number {
+  const isLuminaryAspect = 
+    LUMINARY_PLANETS.includes(planet1) || 
+    LUMINARY_PLANETS.includes(planet2);
+  
+  const baseOrb = baseOrbs[aspectType];
+  
+  if (isLuminaryAspect) {
+    // Sun, Moon, Ascendant get 10° for conjunction/opposition
+    if (aspectType === 'conjunction' || aspectType === 'opposition') {
+      return 10;
+    }
+    // Proportionally wider for other aspects (add 2°, max 8°)
+    return Math.min(baseOrb + 2, 8);
+  }
+  
+  return baseOrb;
+}
+
 export function computeAspects(
   planets: ChartPlanet[],
   orbs: AspectOrbs = DEFAULT_ORBS
@@ -306,10 +338,8 @@ export function computeAspects(
   const aspects: ChartAspect[] = [];
   const aspectTypes = Object.keys(ASPECT_ANGLES) as Array<keyof typeof ASPECT_ANGLES>;
 
-  // Filter out points that don't typically aspect (optional: keep Chiron/Nodes)
-  const aspectingPlanets = planets.filter(p => 
-    !['Ascendant', 'Midheaven'].includes(p.name)
-  );
+  // Include Ascendant for aspects (it's one of the "big three"), exclude only Midheaven
+  const aspectingPlanets = planets.filter(p => p.name !== 'Midheaven');
 
   for (let i = 0; i < aspectingPlanets.length; i++) {
     for (let j = i + 1; j < aspectingPlanets.length; j++) {
@@ -324,15 +354,16 @@ export function computeAspects(
 
       for (const aspectType of aspectTypes) {
         const exactAngle = ASPECT_ANGLES[aspectType];
-        const allowedOrb = orbs[aspectType];
-        const orb = Math.abs(delta - exactAngle);
+        // Use tiered orbs based on planets involved
+        const allowedOrb = getOrb(p1.name, p2.name, aspectType as keyof AspectOrbs, orbs);
+        const actualOrb = Math.abs(delta - exactAngle);
         
-        if (orb <= allowedOrb) {
+        if (actualOrb <= allowedOrb) {
           aspects.push({
             planet1: p1.name,
             planet2: p2.name,
             aspectType: aspectType as ChartAspect['aspectType'],
-            orb: Math.round(orb * 100) / 100,
+            orb: Math.round(actualOrb * 100) / 100,
             applying: deg1 < deg2 // simplified
           });
           break; // Only one aspect type per planet pair
