@@ -70,6 +70,23 @@ export const DispositorMap: React.FC<DispositorMapProps> = ({
 
   return (
     <div className="bg-secondary/20 rounded-lg p-4">
+      {/* Intro explanation */}
+      <div className="mb-4 p-3 bg-background/50 rounded-md border border-border/50">
+        <h4 className="text-sm font-medium mb-2">What is a Dispositor?</h4>
+        <p className="text-xs text-muted-foreground mb-2">
+          Every planet "reports to" the planet that rules its sign. This creates a chain of command in your chart.
+        </p>
+        <p className="text-xs text-muted-foreground mb-2">
+          <strong>How you feel this:</strong> When you try to express one planet's energy, you naturally rely on the themes
+          of its dispositor. For example, if your Mars is in Libra, you express drive and boundaries (Mars) through
+          relationship, fairness, and diplomacy (Venus, ruler of Libra).
+        </p>
+        <p className="text-xs text-muted-foreground">
+          <strong>Final dispositors</strong> (dashed rings) are planets in their own sign — they answer to no one and
+          act as the "boss" of the chain. These themes run through everything connected to them.
+        </p>
+      </div>
+
       <div className="flex items-center justify-between mb-3">
         <h4 className="text-[11px] uppercase tracking-widest text-muted-foreground">
           Dispositor Flow
@@ -194,7 +211,7 @@ export const DispositorMap: React.FC<DispositorMapProps> = ({
       </svg>
 
       <p className="text-[10px] text-muted-foreground mt-2 text-center">
-        Arrows show who each planet "reports to" (its dispositor). Dashed rings = final dispositors.
+        Tap any planet to see its full card. Arrows show the chain of command.
       </p>
     </div>
   );

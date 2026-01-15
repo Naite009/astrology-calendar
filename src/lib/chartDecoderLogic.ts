@@ -306,10 +306,15 @@ export function computeAspects(
   const aspects: ChartAspect[] = [];
   const aspectTypes = Object.keys(ASPECT_ANGLES) as Array<keyof typeof ASPECT_ANGLES>;
 
-  for (let i = 0; i < planets.length; i++) {
-    for (let j = i + 1; j < planets.length; j++) {
-      const p1 = planets[i];
-      const p2 = planets[j];
+  // Filter out points that don't typically aspect (optional: keep Chiron/Nodes)
+  const aspectingPlanets = planets.filter(p => 
+    !['Ascendant', 'Midheaven'].includes(p.name)
+  );
+
+  for (let i = 0; i < aspectingPlanets.length; i++) {
+    for (let j = i + 1; j < aspectingPlanets.length; j++) {
+      const p1 = aspectingPlanets[i];
+      const p2 = aspectingPlanets[j];
       
       const deg1 = toAbsoluteDegree(p1.sign, p1.degree);
       const deg2 = toAbsoluteDegree(p2.sign, p2.degree);
@@ -368,6 +373,69 @@ export function getAspectNature(aspectType: string): 'flowing' | 'challenging' |
   if (['trine', 'sextile'].includes(aspectType)) return 'flowing';
   if (['square', 'opposition', 'quincunx'].includes(aspectType)) return 'challenging';
   return 'neutral'; // conjunction
+}
+
+/**
+ * Get brief aspect meaning for planet combinations
+ */
+export function getAspectMeaning(planet1: string, planet2: string, aspectType: string): string {
+  // Normalize order alphabetically for consistent lookup
+  const [p1, p2] = [planet1, planet2].sort();
+  
+  const conjunctionMeanings: Record<string, string> = {
+    'Mars-Sun': 'Identity fused with drive — you lead with action and courage. Can be bold or combative.',
+    'Sun-Uranus': 'Identity electrified by rebellion — you need freedom and originality to feel like yourself.',
+    'Mars-Uranus': 'Sudden, explosive action — innovative but needs outlets or it becomes restless.',
+    'Moon-Sun': 'Emotional and identity needs aligned — what you want matches what you need.',
+    'Mercury-Sun': 'Mind and identity merged — you think and communicate as an expression of self.',
+    'Sun-Venus': 'Identity expressed through beauty, love, and values — charming, artistic nature.',
+    'Jupiter-Sun': 'Expansive identity — optimism, growth-oriented, can overcommit.',
+    'Saturn-Sun': 'Identity shaped by responsibility — serious, disciplined, may feel burdened by expectations.',
+    'Neptune-Sun': 'Identity blurred with ideals — imaginative, spiritual, but can lose boundaries.',
+    'Pluto-Sun': 'Intense, transformative identity — power struggles, depth, regeneration.',
+    'Mars-Moon': 'Emotions trigger action — reactive, passionate, needs physical outlets for feelings.',
+    'Moon-Venus': 'Emotional needs tied to love and beauty — nurturing through aesthetics and connection.',
+  };
+  
+  const squareMeanings: Record<string, string> = {
+    'Mars-Sun': 'Tension between will and action — inner conflict that drives achievement when mastered.',
+    'Sun-Uranus': 'Restlessness with authority — rebellious streak that disrupts but also innovates.',
+    'Saturn-Sun': 'Confidence vs. self-doubt — hard-won authority that builds through discipline.',
+    'Moon-Sun': 'Emotional needs conflict with identity goals — internal tug-of-war.',
+    'Mars-Moon': 'Emotions and drive clash — impulsive reactions need conscious management.',
+  };
+  
+  const oppositionMeanings: Record<string, string> = {
+    'Mars-Sun': 'Identity projected onto others — may attract conflict or strong partners.',
+    'Sun-Uranus': 'Freedom needs challenge identity — learning to integrate independence.',
+    'Moon-Sun': 'Awareness of emotional vs. ego needs — relationships mirror this balance.',
+  };
+
+  const trineMeanings: Record<string, string> = {
+    'Mars-Sun': 'Natural flow between will and action — confident initiative.',
+    'Sun-Uranus': 'Comfortable with uniqueness — innovation comes naturally.',
+    'Jupiter-Sun': 'Luck and expansion feel natural — optimism is a strength.',
+    'Moon-Venus': 'Emotional intelligence in relationships — nurturing comes easily.',
+  };
+
+  const key = p1 + '-' + p2;
+  
+  switch (aspectType) {
+    case 'conjunction':
+      return conjunctionMeanings[key] || `${planet1} and ${planet2} energies are merged — they act as one force.`;
+    case 'square':
+      return squareMeanings[key] || `${planet1} and ${planet2} create friction that demands integration.`;
+    case 'opposition':
+      return oppositionMeanings[key] || `${planet1} and ${planet2} seek balance — often projected onto relationships.`;
+    case 'trine':
+      return trineMeanings[key] || `${planet1} and ${planet2} flow together easily — a natural gift.`;
+    case 'sextile':
+      return `${planet1} and ${planet2} support each other — opportunities when you take action.`;
+    case 'quincunx':
+      return `${planet1} and ${planet2} need adjustment — they do not naturally understand each other.`;
+    default:
+      return '';
+  }
 }
 
 /**
