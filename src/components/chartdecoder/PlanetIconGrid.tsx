@@ -6,19 +6,21 @@ interface PlanetIconGridProps {
   planets: ChartPlanet[];
   selectedPlanet: string | null;
   onSelectPlanet: (name: string) => void;
+  useTraditional?: boolean;
 }
 
 export const PlanetIconGrid: React.FC<PlanetIconGridProps> = ({
   planets,
   selectedPlanet,
-  onSelectPlanet
+  onSelectPlanet,
+  useTraditional = true
 }) => {
   const mainPlanets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
   const outerPlanets = ['Uranus', 'Neptune', 'Pluto'];
   const points = ['Chiron', 'NorthNode', 'Ascendant', 'Midheaven'];
 
   const renderPlanetButton = (planet: ChartPlanet) => {
-    const dignity = computeDignity(planet.name, planet.sign);
+    const dignity = computeDignity(planet.name, planet.sign, useTraditional);
     const status = getDignityStatus(planet.name, planet.sign);
     const isSelected = selectedPlanet === planet.name;
 

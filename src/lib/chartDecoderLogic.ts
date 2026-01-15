@@ -158,9 +158,36 @@ export const DIGNITY_EXPLAINERS: Record<DignityType, string> = {
 
 /**
  * Compute the dignity status of a planet in a sign
+ * When useTraditional is false, modern outer planet rulerships are considered
  */
-export function computeDignity(planetName: string, sign: string): DignityType {
+export function computeDignity(planetName: string, sign: string, useTraditional: boolean = true): DignityType {
   const dignities = PLANET_DIGNITIES[planetName];
+  
+  // For modern rulerships: check if this planet rules this sign in modern astrology
+  if (!useTraditional) {
+    // Modern rulers: Pluto rules Scorpio, Uranus rules Aquarius, Neptune rules Pisces
+    const modernRulerships: Record<string, string> = {
+      Pluto: 'Scorpio',
+      Uranus: 'Aquarius', 
+      Neptune: 'Pisces'
+    };
+    
+    if (modernRulerships[planetName] === sign) {
+      return 'rulership';
+    }
+    
+    // Modern detriments (opposite of modern rulerships)
+    const modernDetriments: Record<string, string> = {
+      Pluto: 'Taurus',
+      Uranus: 'Leo',
+      Neptune: 'Virgo'
+    };
+    
+    if (modernDetriments[planetName] === sign) {
+      return 'detriment';
+    }
+  }
+  
   if (!dignities) return 'peregrine';
 
   // Check rulership
@@ -644,7 +671,7 @@ export function generateDispositorExperience(
 /**
  * Generate overall summary narrative
  */
-export function generateSummaryNarrative(planets: ChartPlanet[]): string[] {
+export function generateSummaryNarrative(planets: ChartPlanet[], useTraditional: boolean = true): string[] {
   const bullets: string[] = [
     "Tap any planet to see: what it wants, how it acts in its sign, whether it is in fall/detriment, its key aspects, and who it reports to (dispositor).",
     "Important: fall/detriment are NOT bad. They describe where you build skill and self-trust through practice."
@@ -652,7 +679,7 @@ export function generateSummaryNarrative(planets: ChartPlanet[]): string[] {
 
   // Check for Sun in fall
   const sun = planets.find(p => p.name === 'Sun');
-  if (sun && computeDignity('Sun', sun.sign) === 'fall') {
+  if (sun && computeDignity('Sun', sun.sign, useTraditional) === 'fall') {
     bullets.push(`☀️ Your Sun is in ${sun.sign} (fall) — your identity and confidence are built through practice, not handed to you. Check the Sun card for more.`);
   }
 
@@ -661,8 +688,8 @@ export function generateSummaryNarrative(planets: ChartPlanet[]): string[] {
     for (let j = i + 1; j < planets.length; j++) {
       const p1 = planets[i];
       const p2 = planets[j];
-      const ruler1 = getSignRuler(p1.sign, true);
-      const ruler2 = getSignRuler(p2.sign, true);
+      const ruler1 = getSignRuler(p1.sign, useTraditional);
+      const ruler2 = getSignRuler(p2.sign, useTraditional);
       
       if (ruler1 === p2.name && ruler2 === p1.name) {
         bullets.push(`✨ Mutual reception: ${p1.name} ↔ ${p2.name} — these planets support each other.`);
@@ -721,7 +748,7 @@ export function getSignSymbol(sign: string): string {
 /**
  * Generate dignity table rows for all planets
  */
-export function generateDignityRows(planets: ChartPlanet[]): Array<{
+export function generateDignityRows(planets: ChartPlanet[], useTraditional: boolean = true): Array<{
   planet: string;
   sign: string;
   degree: string;
@@ -732,7 +759,7 @@ export function generateDignityRows(planets: ChartPlanet[]): Array<{
   return planets
     .filter(p => !['Ascendant', 'Midheaven', 'NorthNode', 'SouthNode'].includes(p.name))
     .map(planet => {
-      const dignity = computeDignity(planet.name, planet.sign);
+      const dignity = computeDignity(planet.name, planet.sign, useTraditional);
       const status = getDignityStatus(planet.name, planet.sign);
       return {
         planet: planet.name,

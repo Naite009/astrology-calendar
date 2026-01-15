@@ -13,10 +13,15 @@ import { ChartPlanet, generateDignityRows, getPlanetSymbol, getSignSymbol } from
 interface DignityTableProps {
   planets: ChartPlanet[];
   onSelectPlanet?: (name: string) => void;
+  useTraditional?: boolean;
 }
 
-export const DignityTable: React.FC<DignityTableProps> = ({ planets, onSelectPlanet }) => {
-  const rows = generateDignityRows(planets);
+export const DignityTable: React.FC<DignityTableProps> = ({ 
+  planets, 
+  onSelectPlanet,
+  useTraditional = true 
+}) => {
+  const rows = generateDignityRows(planets, useTraditional);
 
   return (
     <div className="border rounded-lg overflow-hidden">
