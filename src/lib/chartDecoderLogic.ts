@@ -449,7 +449,7 @@ export function generateRemedies(planet: ChartPlanet, dignity: DignityType): str
       break;
     case 'Venus':
       remedies.push('Surround yourself with beauty that feels authentic to you.');
-      remedies.push('Clarify your values — what you'd pay for without regret.');
+      remedies.push('Clarify your values — what you would pay for without regret.');
       break;
     case 'Mars':
       remedies.push('Move your body daily — this planet needs physical outlet.');
