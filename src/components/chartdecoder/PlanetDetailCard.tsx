@@ -11,6 +11,7 @@ import {
   getSignSymbol,
   getAspectSymbol,
   getAspectNature,
+  getAspectMeaning,
   PLANET_MEANINGS,
   DIGNITY_EXPLAINERS,
   generatePlainEnglish,
@@ -123,37 +124,48 @@ export const PlanetDetailCard: React.FC<PlanetDetailCardProps> = ({
             Key Aspects to {planet.name}
           </h3>
           {aspects.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No major aspects found.</p>
+            <div className="text-sm text-muted-foreground">
+              <p>No major aspects found within standard orbs.</p>
+              <p className="text-xs mt-1 italic">
+                Note: This uses the chart data provided. If you expect aspects, check the degree positions.
+              </p>
+            </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {aspects.slice(0, 6).map((aspect, i) => {
                 const other = getOtherPlanet(aspect);
                 const nature = getAspectNature(aspect.aspectType);
+                const aspectMeaning = getAspectMeaning(planet.name, other?.name || '', aspect.aspectType);
                 return (
                   <div 
                     key={i}
-                    className={`flex items-center justify-between p-2 rounded text-sm ${
+                    className={`p-3 rounded ${
                       nature === 'flowing' 
-                        ? 'bg-emerald-500/10' 
+                        ? 'bg-emerald-500/10 border border-emerald-500/20' 
                         : nature === 'challenging' 
-                          ? 'bg-rose-500/10' 
-                          : 'bg-secondary/50'
+                          ? 'bg-rose-500/10 border border-rose-500/20' 
+                          : 'bg-secondary/50 border border-border/50'
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">{getAspectSymbol(aspect.aspectType)}</span>
-                      <span className="font-medium">
-                        {aspect.aspectType.charAt(0).toUpperCase() + aspect.aspectType.slice(1)}
-                      </span>
-                      {other && (
-                        <span className="text-muted-foreground">
-                          to {getPlanetSymbol(other.name)} {other.name}
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{getAspectSymbol(aspect.aspectType)}</span>
+                        <span className="font-medium text-sm">
+                          {aspect.aspectType.charAt(0).toUpperCase() + aspect.aspectType.slice(1)}
                         </span>
-                      )}
+                        {other && (
+                          <span className="text-muted-foreground text-sm">
+                            to {getPlanetSymbol(other.name)} {other.name}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        orb {aspect.orb.toFixed(1)}°
+                      </span>
                     </div>
-                    <span className="text-xs text-muted-foreground">
-                      orb {aspect.orb.toFixed(1)}°
-                    </span>
+                    {aspectMeaning && (
+                      <p className="text-xs text-muted-foreground mt-1">{aspectMeaning}</p>
+                    )}
                   </div>
                 );
               })}
