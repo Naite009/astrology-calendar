@@ -1,6 +1,6 @@
 import React from 'react';
-import { ChartPlanet, getPlanetSymbol, getSignSymbol, computeDignity, getDignityStatus } from '@/lib/chartDecoderLogic';
-import { getDignityStatus as getPlanetDignityStatus } from '@/lib/planetDignities';
+import { ChartPlanet, getPlanetSymbol, getSignSymbol, computeDignity } from '@/lib/chartDecoderLogic';
+import { getDignityStatus } from '@/lib/planetDignities';
 
 interface PlanetIconGridProps {
   planets: ChartPlanet[];
@@ -19,7 +19,7 @@ export const PlanetIconGrid: React.FC<PlanetIconGridProps> = ({
 
   const renderPlanetButton = (planet: ChartPlanet) => {
     const dignity = computeDignity(planet.name, planet.sign);
-    const status = getPlanetDignityStatus(planet.name, planet.sign);
+    const status = getDignityStatus(planet.name, planet.sign);
     const isSelected = selectedPlanet === planet.name;
 
     return (
