@@ -15,7 +15,8 @@ import {
   PLANET_MEANINGS,
   DIGNITY_EXPLAINERS,
   generatePlainEnglish,
-  generateRemedies
+  generateRemedies,
+  generateDispositorExperience
 } from '@/lib/chartDecoderLogic';
 import { getDignityStatus } from '@/lib/planetDignities';
 
@@ -191,6 +192,17 @@ export const PlanetDetailCard: React.FC<PlanetDetailCardProps> = ({
               <p key={i} className="text-xs text-muted-foreground mt-1">{note}</p>
             ))}
           </div>
+          
+          {/* Experiential explanation */}
+          <div className="mt-3 p-3 bg-primary/5 rounded-md border border-primary/20">
+            <h4 className="text-xs font-medium text-primary mb-2">💡 How You Feel This</h4>
+            <ul className="space-y-2">
+              {generateDispositorExperience(planet, dispositorChain, allPlanets).map((exp, i) => (
+                <li key={i} className="text-xs text-muted-foreground">{exp}</li>
+              ))}
+            </ul>
+          </div>
+
           <p className="text-xs text-muted-foreground mt-2 italic">
             A dispositor is the planet that rules the sign a planet is in. Following the chain reveals who calls the shots.
           </p>

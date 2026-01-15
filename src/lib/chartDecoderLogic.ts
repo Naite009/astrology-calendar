@@ -575,6 +575,73 @@ export function generateRemedies(planet: ChartPlanet, dignity: DignityType): str
 }
 
 /**
+ * Generate experiential explanation for a dispositor chain
+ * Explains how the client FEELS this chain in their life
+ */
+export function generateDispositorExperience(
+  planet: ChartPlanet,
+  chain: DispositorChainResult,
+  allPlanets: ChartPlanet[]
+): string[] {
+  const experiences: string[] = [];
+  const planetMeaning = PLANET_MEANINGS[planet.name]?.split(',')[0]?.toLowerCase() || planet.name.toLowerCase();
+  
+  // Handle mutual reception
+  if (chain.loopType === 'mutual_reception') {
+    const parts = chain.finalDispositor.replace('Loop: ', '').split(' ↔ ');
+    if (parts.length === 2) {
+      const [p1, p2] = parts;
+      const meaning1 = PLANET_MEANINGS[p1]?.split(',')[0]?.toLowerCase() || p1.toLowerCase();
+      const meaning2 = PLANET_MEANINGS[p2]?.split(',')[0]?.toLowerCase() || p2.toLowerCase();
+      
+      experiences.push(
+        `When you try to express your ${planet.name} (${planetMeaning}), you naturally filter it through both ${p1} (${meaning1}) and ${p2} (${meaning2}).`
+      );
+      experiences.push(
+        `These two planets trade keys — they support and strengthen each other. Together, they're your chart's command center.`
+      );
+      experiences.push(
+        `In practice: Your ${planetMeaning} feels most "right" when it serves both of these themes. Choices that honor only one may feel incomplete.`
+      );
+    }
+    return experiences;
+  }
+  
+  // Handle single ruler (planet in own sign)
+  if (chain.loopType === 'single_ruler') {
+    experiences.push(
+      `Your ${planet.name} reports directly to ${chain.finalDispositor} — and that planet answers to no one.`
+    );
+    experiences.push(
+      `This is a clean, direct chain. Your ${planetMeaning} expresses through ${chain.finalDispositor}'s themes without dilution.`
+    );
+    return experiences;
+  }
+  
+  // Handle regular chain
+  if (chain.chain.length > 1) {
+    const dispositor = chain.chain[1]?.split(' (')[0].replace('→ ', '') || chain.finalDispositor;
+    const dispositorMeaning = PLANET_MEANINGS[dispositor]?.split(',')[0]?.toLowerCase() || dispositor.toLowerCase();
+    
+    experiences.push(
+      `Your ${planet.name} (${planetMeaning}) relies on ${dispositor} (${dispositorMeaning}) for direction.`
+    );
+    experiences.push(
+      `How you feel this: When expressing your ${planetMeaning}, you naturally do it through ${dispositorMeaning} themes. For example, you may not feel fully "yourself" until those themes are honored.`
+    );
+    
+    if (chain.finalDispositor && !chain.finalDispositor.includes('Loop')) {
+      const finalMeaning = PLANET_MEANINGS[chain.finalDispositor]?.split(',')[0]?.toLowerCase() || chain.finalDispositor.toLowerCase();
+      experiences.push(
+        `The chain ends at ${chain.finalDispositor} (${finalMeaning}) — this is the "final boss" that all this energy ultimately serves.`
+      );
+    }
+  }
+  
+  return experiences;
+}
+
+/**
  * Generate overall summary narrative
  */
 export function generateSummaryNarrative(planets: ChartPlanet[]): string[] {
