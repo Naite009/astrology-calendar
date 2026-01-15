@@ -137,6 +137,13 @@ export const PlanetDetailCard: React.FC<PlanetDetailCardProps> = ({
                 const other = getOtherPlanet(aspect);
                 const nature = getAspectNature(aspect.aspectType);
                 const aspectMeaning = getAspectMeaning(planet.name, other?.name || '', aspect.aspectType);
+                
+                // Determine aspect strength
+                const isTight = aspect.orb < 3;
+                const isWide = aspect.orb > 5;
+                const strengthLabel = isTight ? 'EXACT' : isWide ? 'WIDE' : null;
+                const strengthColor = isTight ? 'text-amber-500 bg-amber-500/10' : 'text-muted-foreground bg-muted/30';
+                
                 return (
                   <div 
                     key={i}
@@ -160,12 +167,24 @@ export const PlanetDetailCard: React.FC<PlanetDetailCardProps> = ({
                           </span>
                         )}
                       </div>
-                      <span className="text-xs text-muted-foreground">
-                        orb {aspect.orb.toFixed(1)}°
-                      </span>
+                      <div className="flex items-center gap-2">
+                        {strengthLabel && (
+                          <span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded ${strengthColor}`}>
+                            {strengthLabel}
+                          </span>
+                        )}
+                        <span className="text-xs text-muted-foreground">
+                          {aspect.orb.toFixed(1)}°
+                        </span>
+                      </div>
                     </div>
                     {aspectMeaning && (
                       <p className="text-xs text-muted-foreground mt-1">{aspectMeaning}</p>
+                    )}
+                    {isTight && (
+                      <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1 italic">
+                        ✦ This is a tight aspect — you feel it strongly and consistently.
+                      </p>
                     )}
                   </div>
                 );

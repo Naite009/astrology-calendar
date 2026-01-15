@@ -6,6 +6,7 @@ import { PlanetIconGrid } from './chartdecoder/PlanetIconGrid';
 import { PlanetDetailCard } from './chartdecoder/PlanetDetailCard';
 import { DignityTable } from './chartdecoder/DignityTable';
 import { DispositorMap } from './chartdecoder/DispositorMap';
+import { ReadingScriptGenerator } from './chartdecoder/ReadingScriptGenerator';
 
 import { NatalChart } from '@/hooks/useNatalChart';
 import {
@@ -226,6 +227,14 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
               />
             </CardContent>
           </Card>
+
+          {/* Reading Script Generator */}
+          <ReadingScriptGenerator
+            planets={planets}
+            aspects={aspects}
+            chartName={activeChart?.name || 'This Chart'}
+            useTraditional={useTraditional}
+          />
 
           {/* Dignity Table */}
           <Card>
