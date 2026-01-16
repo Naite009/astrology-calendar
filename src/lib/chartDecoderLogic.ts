@@ -602,6 +602,80 @@ export function generateRemedies(planet: ChartPlanet, dignity: DignityType): str
 }
 
 /**
+ * Detailed experiential descriptions for planets as final dispositors
+ */
+const FINAL_DISPOSITOR_EXPERIENCES: Record<string, { selfRuled: string; rulingOthers: string }> = {
+  Sun: {
+    selfRuled: "Your Sun answers to no one. Your identity is SELF-DETERMINED. You don't need external permission to be who you are. When you walk into a room, you bring your own light—you're not borrowing it from anyone. This is rare and powerful. The challenge? You must actually CLAIM this. Many people with self-ruling Suns still look outside themselves for validation out of habit. Stop. You are the authority on you.",
+    rulingOthers: "All roads in your chart lead to your Sun—your IDENTITY. Every decision, every emotion, every thought ultimately asks: 'Does this serve who I AM?' You experience life through the lens of self-expression and authenticity. When something feels off, it's usually because you've compromised your core identity for something else."
+  },
+  Moon: {
+    selfRuled: "Your Moon answers to no one. Your emotional nature is SELF-SOURCING. You don't need others to make you feel safe—you create your own emotional home wherever you go. Your feelings are valid simply because you feel them; they don't require external justification. This is profound self-nurturing. The gift: emotional autonomy. The work: not isolating or refusing to let others in.",
+    rulingOthers: "All roads lead to your Moon—your EMOTIONAL NEEDS. Every choice filters through 'Does this make me feel safe? Nourished? At home?' Your identity, your thoughts, your relationships—all ultimately serve your emotional wellbeing. When life feels wrong, check: are you honoring what you actually NEED?"
+  },
+  Mercury: {
+    selfRuled: "Your Mercury answers to no one. Your mind is SELF-VALIDATING. You don't need others to confirm your ideas for them to be valid. Your way of thinking, learning, and communicating is its own authority. This gives you intellectual independence—but also the responsibility to use your mind wisely, since no one else is checking your work.",
+    rulingOthers: "All roads lead to Mercury—THINKING and COMMUNICATION. Every feeling, every drive, every identity question eventually becomes: 'What do I think about this? How do I understand it?' You process life through analysis and articulation. If you can't explain something, you haven't fully integrated it."
+  },
+  Venus: {
+    selfRuled: "Your Venus answers to no one. Your values and love style are SELF-DEFINED. You don't need others to validate what you find beautiful, worthy, or lovable. Your aesthetic and relational preferences are their own authority. This is creative and romantic autonomy—you love what you love without apology.",
+    rulingOthers: "All roads lead to Venus—VALUES and LOVE. Every action, every thought, every emotion ultimately serves: 'Is this beautiful? Is this aligned with what I value? Does this feel like love?' You experience life through the lens of attraction and worth. Decisions that ignore your values feel hollow."
+  },
+  Mars: {
+    selfRuled: "Your Mars answers to no one. Your drive and assertion are SELF-DIRECTED. You don't wait for permission to act or need others to motivate you. Your anger is valid, your desire is valid, your boundaries are valid—simply because they're yours. This is warrior energy that doesn't negotiate its existence.",
+    rulingOthers: "All roads lead to Mars—ACTION and DESIRE. Every thought, value, and emotion eventually asks: 'What am I going to DO about this?' You experience life through the lens of initiative and boundary. Passivity feels like death to you. You need to be MOVING toward something."
+  },
+  Jupiter: {
+    selfRuled: "Your Jupiter answers to no one. Your beliefs and sense of meaning are SELF-GENERATED. You don't need a teacher, guru, or institution to tell you what life means. Your faith—in yourself, in life, in possibility—is its own authority. This is philosophical independence. The work: not becoming preachy or missing wisdom from others.",
+    rulingOthers: "All roads lead to Jupiter—MEANING and EXPANSION. Every action, emotion, and thought ultimately serves: 'What does this MEAN? How does this help me GROW?' You experience life as a quest for understanding and expansion. Anything that feels small, contracted, or meaningless drains you."
+  },
+  Saturn: {
+    selfRuled: "Your Saturn answers to no one. Your authority is SELF-CONSTRUCTED. You don't need external validation to feel competent or worthy of responsibility. Your rules, your standards, your discipline—they come from within. This is mature self-governance. The challenge: not becoming rigidly self-critical or refusing help.",
+    rulingOthers: "All roads lead to Saturn—RESPONSIBILITY and STRUCTURE. Every emotion, desire, and idea eventually asks: 'Is this MATURE? Is this BUILDING something? Am I being RESPONSIBLE?' You experience life through the lens of duty and long-term consequence. Choices that lack discipline feel reckless to you."
+  },
+  Neptune: {
+    selfRuled: "Your Neptune answers to no one. Your spirituality and imagination are SELF-SOURCING. You don't need an external tradition to connect with the divine—you ARE the portal. Your dreams, your intuition, your artistic vision—they require no permission. The challenge: staying grounded enough to translate your visions into reality.",
+    rulingOthers: "All roads lead to Neptune—TRANSCENDENCE and IMAGINATION. Every practical concern, every relationship, every identity question eventually dissolves into: 'What is the DEEPER meaning? What is the SOUL of this?' You experience life through a mystical, artistic lens. Pure logic or harsh reality feels spiritually suffocating."
+  },
+  Uranus: {
+    selfRuled: "Your Uranus answers to no one. Your uniqueness and freedom are SELF-AUTHORIZED. You don't need anyone's permission to be different, to break rules, to innovate. Your originality is its own validation. This is radical authenticity. The challenge: not rejecting everything conventional just because it's conventional.",
+    rulingOthers: "All roads lead to Uranus—FREEDOM and INNOVATION. Every emotion, every responsibility, every relationship eventually asks: 'Am I FREE here? Is this AUTHENTIC? Am I being MYSELF?' You experience life through the lens of liberation and originality. Conformity feels like spiritual death."
+  },
+  Pluto: {
+    selfRuled: "Your Pluto answers to no one. Your power and transformation are SELF-DIRECTED. You don't need external crises to evolve—you can choose depth whenever you want. Your intensity, your psychological insight, your capacity for rebirth—they're entirely yours to wield. The challenge: not using this power destructively.",
+    rulingOthers: "All roads lead to Pluto—TRANSFORMATION and POWER. Every thought, every feeling, every action eventually asks: 'What is the TRUTH beneath the surface? What needs to DIE for something new to live?' You experience life through the lens of depth psychology. Superficiality is intolerable."
+  }
+};
+
+/**
+ * How it FEELS when a planet reports to another
+ */
+const DISPOSITOR_RELATIONSHIP_FEELINGS: Record<string, Record<string, string>> = {
+  Sun: {
+    Moon: "Your identity (Sun) reports to your emotional needs (Moon). You can't feel like 'yourself' unless you feel emotionally safe first. Your sense of self fluctuates with your moods. Before you can shine, you need to feel nourished. This is the performer who needs to feel 'at home' before going on stage.",
+    Mercury: "Your identity (Sun) reports to your mind (Mercury). You understand who you are through THINKING about it. Self-knowledge comes through analysis, conversation, and learning. You might over-intellectualize your identity or struggle to 'just be' without understanding why.",
+    Venus: "Your identity (Sun) reports to your values (Venus). You feel like yourself when you're surrounded by beauty, love, and things you value. Your self-worth is tied to relationships and aesthetics. You shine brightest when you feel loved and appreciated.",
+    Mars: "Your identity (Sun) reports to your drive (Mars). You feel most yourself when you're DOING something, competing, or fighting for something. Passivity makes you feel invisible. Your identity is expressed through action and courage.",
+    Jupiter: "Your identity (Sun) reports to your beliefs (Jupiter). You feel like yourself when you're growing, learning, exploring meaning. Your sense of self expands with your worldview. You need to believe in something bigger to feel alive.",
+    Saturn: "Your identity (Sun) reports to your sense of duty (Saturn). You feel like yourself when you're being RESPONSIBLE, achieving, building something that lasts. Your self-worth is earned through discipline and accomplishment. Fun for its own sake might feel frivolous.",
+    Neptune: "Your identity (Sun) reports to your imagination and spirituality (Neptune). You feel like yourself when you're connected to something transcendent—art, music, meditation, compassion. Your identity is diffuse, shape-shifting, and tied to the collective. You might struggle to know where 'you' end and others begin.",
+    Uranus: "Your identity (Sun) reports to your need for freedom (Uranus). You feel like yourself when you're being DIFFERENT, breaking from convention, innovating. Conformity makes you feel like you're dying inside. Your identity is tied to your uniqueness.",
+    Pluto: "Your identity (Sun) reports to your need for transformation (Pluto). You feel like yourself when you're going DEEP—facing shadows, transforming, wielding power. Superficial living makes you feel dead. Your identity regenerates through crisis and rebirth."
+  },
+  Moon: {
+    Sun: "Your emotional needs (Moon) report to your identity (Sun). You feel safe when you feel like YOURSELF. Emotional security comes from self-expression and recognition. You're nourished by being seen and acknowledged.",
+    Mercury: "Your emotional needs (Moon) report to your mind (Mercury). You feel safe when you UNDERSTAND things. Talking through feelings, analyzing them, learning about them—this is how you process emotion. You might over-think feelings instead of just feeling them.",
+    Venus: "Your emotional needs (Moon) report to your values (Venus). You feel safe when surrounded by beauty, love, and harmony. Ugly environments or conflict disturb you deeply. Relationships and aesthetics are how you self-soothe.",
+    Mars: "Your emotional needs (Moon) report to your drive (Mars). You feel safe when you're DOING something about your situation. Passivity increases anxiety. Action, competition, and physical activity are how you process emotion.",
+    Jupiter: "Your emotional needs (Moon) report to your beliefs (Jupiter). You feel safe when life has MEANING, when you're growing and expanding. Stagnation or meaninglessness feels emotionally threatening. Faith and optimism are your security blanket.",
+    Saturn: "Your emotional needs (Moon) report to Saturn. You feel safe when you're being RESPONSIBLE, when things are structured and predictable. Chaos is emotionally threatening. You might suppress emotions to 'be mature.'",
+    Neptune: "Your emotional needs (Moon) report to Neptune. You feel safe through transcendence—music, art, meditation, merging with something larger. Boundaries are emotionally difficult. You absorb others' feelings easily.",
+    Uranus: "Your emotional needs (Moon) report to Uranus. You feel safe when you're FREE, when you can be different, when things are exciting and unpredictable. Routine feels emotionally stifling. Your need for independence might conflict with need for closeness.",
+    Pluto: "Your emotional needs (Moon) report to Pluto. You feel safe through INTENSITY and truth. Superficial emotions don't register. You need to go deep, even if it's uncomfortable. Transformation is emotionally necessary."
+  }
+};
+
+/**
  * Generate experiential explanation for a dispositor chain
  * Explains how the client FEELS this chain in their life
  */
@@ -622,13 +696,19 @@ export function generateDispositorExperience(
       const meaning2 = PLANET_MEANINGS[p2]?.split(',')[0]?.toLowerCase() || p2.toLowerCase();
       
       experiences.push(
-        `When you try to express your ${planet.name} (${planetMeaning}), you naturally filter it through both ${p1} (${meaning1}) and ${p2} (${meaning2}).`
+        `**MUTUAL RECEPTION: ${p1} ↔ ${p2}**`
       );
       experiences.push(
-        `These two planets trade keys — they support and strengthen each other. Together, they're your chart's command center.`
+        `These two planets hold each other's keys—they're in each other's signs. This creates a POWER COUPLE at the center of your chart.`
       );
       experiences.push(
-        `In practice: Your ${planetMeaning} feels most "right" when it serves both of these themes. Choices that honor only one may feel incomplete.`
+        `When you try to express your ${planet.name} (${planetMeaning}), you naturally filter it through BOTH ${p1} (${meaning1}) and ${p2} (${meaning2}). Neither one is complete without the other.`
+      );
+      experiences.push(
+        `**How this feels:** You might notice that honoring just one of these planets leaves you feeling incomplete. A decision that serves your ${meaning1} but ignores your ${meaning2} (or vice versa) will nag at you until you integrate both.`
+      );
+      experiences.push(
+        `**The gift:** These planets strengthen each other. When ${p1} struggles, ${p2} can help—and vice versa. You have an internal support system.`
       );
     }
     return experiences;
@@ -636,31 +716,108 @@ export function generateDispositorExperience(
   
   // Handle single ruler (planet in own sign)
   if (chain.loopType === 'single_ruler') {
-    experiences.push(
-      `Your ${planet.name} reports directly to ${chain.finalDispositor} — and that planet answers to no one.`
-    );
-    experiences.push(
-      `This is a clean, direct chain. Your ${planetMeaning} expresses through ${chain.finalDispositor}'s themes without dilution.`
-    );
+    const finalExp = FINAL_DISPOSITOR_EXPERIENCES[chain.finalDispositor];
+    
+    if (planet.name === chain.finalDispositor) {
+      // The planet IS the final dispositor (in its own sign)
+      experiences.push(
+        `**${planet.name} IN ITS OWN SIGN — SELF-RULING**`
+      );
+      if (finalExp) {
+        experiences.push(finalExp.selfRuled);
+      }
+      experiences.push(
+        `**How this feels in daily life:** Your ${planetMeaning.toLowerCase()} doesn't ask permission. It doesn't look to other parts of your chart for validation. When you express ${planet.name} energy, it's direct, unfiltered, and entirely YOURS.`
+      );
+      
+      // Add sign-specific flavor
+      if (planet.name === 'Moon' && planet.sign === 'Cancer') {
+        experiences.push(
+          `**Moon in Cancer specifically:** Your emotional nature is self-nurturing at the deepest level. You instinctively know what you need to feel safe. Your home, your family (chosen or biological), your capacity to nurture—these come from an endless internal well. You don't need someone else to "make" you feel secure. The challenge is letting others nurture YOU, and not using self-sufficiency as a wall against intimacy.`
+        );
+      } else if (planet.name === 'Sun' && planet.sign === 'Leo') {
+        experiences.push(
+          `**Sun in Leo specifically:** Your identity radiates from within. You ARE the light, not reflecting someone else's. Creative self-expression isn't optional—it's how you exist. The challenge is shining without needing applause (though applause is nice).`
+        );
+      } else if (planet.name === 'Mercury' && (planet.sign === 'Gemini' || planet.sign === 'Virgo')) {
+        experiences.push(
+          `**Mercury in ${planet.sign} specifically:** Your mind is a precision instrument that validates itself. You think the way YOU think, and you don't need anyone to tell you it's right. Intellectual independence is your birthright.`
+        );
+      } else if (planet.name === 'Venus' && (planet.sign === 'Taurus' || planet.sign === 'Libra')) {
+        experiences.push(
+          `**Venus in ${planet.sign} specifically:** Your sense of beauty, value, and love is self-authorizing. You know what you like. You know what you're worth. You don't need trends or others' opinions to validate your aesthetic or relational choices.`
+        );
+      } else if (planet.name === 'Mars' && (planet.sign === 'Aries' || planet.sign === 'Scorpio')) {
+        experiences.push(
+          `**Mars in ${planet.sign} specifically:** Your drive, anger, and desire are YOURS. You don't wait for permission to act, fight, or want. Your boundaries are clear because YOU set them, not because someone told you to.`
+        );
+      } else if (planet.name === 'Jupiter' && (planet.sign === 'Sagittarius' || planet.sign === 'Pisces')) {
+        experiences.push(
+          `**Jupiter in ${planet.sign} specifically:** Your beliefs, your faith, your sense of meaning—these are self-generated. You don't need a religion or guru to tell you what life means. You're your own philosopher.`
+        );
+      } else if (planet.name === 'Saturn' && (planet.sign === 'Capricorn' || planet.sign === 'Aquarius')) {
+        experiences.push(
+          `**Saturn in ${planet.sign} specifically:** Your authority, discipline, and responsibility come from within. You don't need external rules to be structured—you create your own. You're the boss of you.`
+        );
+      }
+    } else {
+      // This planet reports to a self-ruling planet
+      experiences.push(
+        `**${planet.name} → ${chain.finalDispositor} (final authority)**`
+      );
+      experiences.push(
+        `Your ${planet.name} reports directly to ${chain.finalDispositor}—and ${chain.finalDispositor} answers to no one.`
+      );
+      if (finalExp) {
+        experiences.push(finalExp.rulingOthers);
+      }
+      
+      // Add specific relationship feeling
+      const relationshipFeel = DISPOSITOR_RELATIONSHIP_FEELINGS[planet.name]?.[chain.finalDispositor];
+      if (relationshipFeel) {
+        experiences.push(`**How this specifically feels:**`);
+        experiences.push(relationshipFeel);
+      }
+    }
     return experiences;
   }
   
-  // Handle regular chain
+  // Handle regular chain (multiple steps)
   if (chain.chain.length > 1) {
-    const dispositor = chain.chain[1]?.split(' (')[0].replace('→ ', '') || chain.finalDispositor;
-    const dispositorMeaning = PLANET_MEANINGS[dispositor]?.split(',')[0]?.toLowerCase() || dispositor.toLowerCase();
+    const immediateDispositor = chain.chain[1]?.split(' (')[0].replace('→ ', '') || '';
+    const dispositorMeaning = PLANET_MEANINGS[immediateDispositor]?.split(',')[0]?.toLowerCase() || immediateDispositor.toLowerCase();
     
     experiences.push(
-      `Your ${planet.name} (${planetMeaning}) relies on ${dispositor} (${dispositorMeaning}) for direction.`
+      `**DISPOSITOR CHAIN: ${chain.chain.join(' ')}**`
     );
     experiences.push(
-      `How you feel this: When expressing your ${planetMeaning}, you naturally do it through ${dispositorMeaning} themes. For example, you may not feel fully "yourself" until those themes are honored.`
+      `Your ${planet.name} (${planetMeaning}) doesn't operate independently. It looks to ${immediateDispositor} for direction.`
     );
     
-    if (chain.finalDispositor && !chain.finalDispositor.includes('Loop')) {
-      const finalMeaning = PLANET_MEANINGS[chain.finalDispositor]?.split(',')[0]?.toLowerCase() || chain.finalDispositor.toLowerCase();
+    // Add specific relationship feeling if available
+    const relationshipFeel = DISPOSITOR_RELATIONSHIP_FEELINGS[planet.name]?.[immediateDispositor];
+    if (relationshipFeel) {
+      experiences.push(`**How this feels:**`);
+      experiences.push(relationshipFeel);
+    } else {
       experiences.push(
-        `The chain ends at ${chain.finalDispositor} (${finalMeaning}) — this is the "final boss" that all this energy ultimately serves.`
+        `**How this feels:** When you try to express your ${planetMeaning}, you automatically route it through ${dispositorMeaning} themes. You might not even realize you're doing it.`
+      );
+    }
+    
+    // Explain the full chain if longer
+    if (chain.chain.length > 2 && chain.finalDispositor && !chain.finalDispositor.includes('Loop')) {
+      const finalMeaning = PLANET_MEANINGS[chain.finalDispositor]?.split(',')[0]?.toLowerCase() || chain.finalDispositor.toLowerCase();
+      const finalExp = FINAL_DISPOSITOR_EXPERIENCES[chain.finalDispositor];
+      
+      experiences.push(
+        `**The chain ultimately ends at ${chain.finalDispositor}** (${finalMeaning}). This is the FINAL AUTHORITY that your ${planet.name} ultimately serves.`
+      );
+      if (finalExp) {
+        experiences.push(finalExp.rulingOthers);
+      }
+      experiences.push(
+        `**The full journey:** Your ${planetMeaning} → filters through ${dispositorMeaning} → ultimately serves ${finalMeaning}. Each step adds a layer of translation.`
       );
     }
   }
