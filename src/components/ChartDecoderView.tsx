@@ -27,6 +27,57 @@ interface ChartDecoderViewProps {
   selectedChartId: string;
 }
 
+// Helper to convert sign + degree to absolute zodiac degree (0-359)
+const toAbsoluteDegree = (sign: string, degree: number): number => {
+  const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+                 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+  const signIndex = signs.indexOf(sign);
+  if (signIndex === -1) return 0;
+  return signIndex * 30 + degree;
+};
+
+// Calculate which house a planet is in based on house cusps
+const calculateHouse = (
+  planetSign: string, 
+  planetDegree: number, 
+  houseCusps: NatalChart['houseCusps']
+): number | null => {
+  if (!houseCusps) return null;
+  
+  const planetAbsDeg = toAbsoluteDegree(planetSign, planetDegree);
+  
+  // Build array of house cusp degrees
+  const cusps: number[] = [];
+  for (let i = 1; i <= 12; i++) {
+    const cusp = houseCusps[`house${i}` as keyof typeof houseCusps];
+    if (cusp) {
+      cusps.push(toAbsoluteDegree(cusp.sign, cusp.degree + (cusp.minutes || 0) / 60));
+    } else {
+      return null; // Missing house cusp data
+    }
+  }
+  
+  // Find which house the planet is in
+  for (let i = 0; i < 12; i++) {
+    const currentCusp = cusps[i];
+    const nextCusp = cusps[(i + 1) % 12];
+    
+    // Handle wrap-around at 0°/360°
+    if (nextCusp < currentCusp) {
+      // Cusp crosses 0° Aries
+      if (planetAbsDeg >= currentCusp || planetAbsDeg < nextCusp) {
+        return i + 1;
+      }
+    } else {
+      if (planetAbsDeg >= currentCusp && planetAbsDeg < nextCusp) {
+        return i + 1;
+      }
+    }
+  }
+  
+  return 1; // Default to 1st house if calculation fails
+};
+
 // Convert NatalChart to ChartPlanet[] format
 const convertNatalChartToPlanets = (chart: NatalChart): ChartPlanet[] => {
   const planets: ChartPlanet[] = [];
@@ -39,12 +90,17 @@ const convertNatalChartToPlanets = (chart: NatalChart): ChartPlanet[] => {
   for (const name of planetNames) {
     const pos = chart.planets[name as keyof typeof chart.planets];
     if (pos) {
+      const degree = pos.degree + (pos.minutes || 0) / 60;
+      const house = name === 'Ascendant' 
+        ? 1  // Ascendant is always 1st house cusp
+        : calculateHouse(pos.sign, degree, chart.houseCusps);
+      
       planets.push({
         name,
         sign: pos.sign,
-        degree: pos.degree + (pos.minutes || 0) / 60,
+        degree,
         retrograde: pos.isRetrograde || false,
-        house: null
+        house
       });
     }
   }
@@ -56,7 +112,7 @@ const convertNatalChartToPlanets = (chart: NatalChart): ChartPlanet[] => {
       sign: chart.houseCusps.house10.sign,
       degree: chart.houseCusps.house10.degree + (chart.houseCusps.house10.minutes || 0) / 60,
       retrograde: false,
-      house: null
+      house: 10  // Midheaven is always 10th house cusp
     });
   }
 
@@ -234,6 +290,7 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
             aspects={aspects}
             chartName={activeChart?.name || 'This Chart'}
             useTraditional={useTraditional}
+            natalChart={activeChart}
           />
 
           {/* Dignity Table */}

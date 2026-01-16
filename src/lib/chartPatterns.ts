@@ -168,6 +168,75 @@ const detectGrandCrosses = (planets: Array<{ name: string; degree: number }>): C
   return patterns;
 };
 
+// Detailed apex planet interpretations for Yods
+const APEX_PLANET_MEANINGS: Record<string, { mission: string; integration: string; shadow: string }> = {
+  Sun: {
+    mission: "Your life purpose centers on developing authentic self-expression and leadership. You're being called to shine in a way that may feel uncomfortable at first.",
+    integration: "Learn to claim your identity without apology. The universe keeps asking: 'Who ARE you, really?'",
+    shadow: "May struggle with ego—either inflated or deflated. Identity crises force evolution."
+  },
+  Moon: {
+    mission: "Emotional mastery and nurturing are your soul assignments. You're learning to feel deeply while not being ruled by emotions.",
+    integration: "Create safe spaces for yourself and others. Your sensitivity is a superpower once you stop fighting it.",
+    shadow: "Emotional volatility, over-dependency on others, or cutting off from feelings entirely."
+  },
+  Mercury: {
+    mission: "You're here to communicate something important. Your mind works differently—embrace it.",
+    integration: "Find YOUR way of thinking and expressing. Traditional learning may not work; alternative approaches will.",
+    shadow: "Anxiety, overthinking, difficulty being understood. The message keeps getting refined through frustration."
+  },
+  Venus: {
+    mission: "You're learning radical self-love and new relationship paradigms. Old models of love won't work for you.",
+    integration: "Redefine beauty, value, and connection on your own terms. What YOU love matters.",
+    shadow: "Relationship patterns that don't work, money issues that force values clarification."
+  },
+  Mars: {
+    mission: "You're developing a unique way of asserting yourself, taking action, and channeling anger. Direct aggression won't work—you need a different approach.",
+    integration: "Find constructive outlets for drive. Your warrior spirit needs a worthy cause, not random battles.",
+    shadow: "Misdirected anger, passive-aggression, or health issues from suppressed Mars energy. May attract conflict until you learn to wield this energy consciously."
+  },
+  Jupiter: {
+    mission: "Your beliefs and worldview are being constantly expanded. You're meant to teach or share wisdom, but first must earn it.",
+    integration: "Travel (inner or outer), study, and keep growing. Your philosophy of life is your greatest gift.",
+    shadow: "Over-promising, escapism through excess, or rigid beliefs that keep breaking."
+  },
+  Saturn: {
+    mission: "You're building something that lasts—mastery through discipline. The delays and restrictions are the training.",
+    integration: "Embrace structure, commit long-term, build your authority. Time is on your side.",
+    shadow: "Depression, chronic limitation, or authority problems that force you to become your own authority."
+  },
+  Uranus: {
+    mission: "You're a paradigm-breaker. Your unique perspective and innovations are needed, even when they make others uncomfortable.",
+    integration: "Stop trying to fit in. Your rebelliousness serves evolution—channel it consciously.",
+    shadow: "Chronic instability, relationship chaos, or nervous system issues from resisting your own uniqueness."
+  },
+  Neptune: {
+    mission: "You're developing spiritual sensitivity and creative/healing gifts. The boundary between you and the infinite is thin.",
+    integration: "Art, healing, meditation, service—find ways to channel the mystical. Grounding practices are essential.",
+    shadow: "Escapism, addiction, victimhood, or confusion until you learn to work with spiritual energy."
+  },
+  Pluto: {
+    mission: "You're here for deep transformation—dying and being reborn many times. Power and its responsible use are your curriculum.",
+    integration: "Face your shadows. Use your psychological depth to heal yourself and others. Don't fear intensity.",
+    shadow: "Control issues, power struggles, or life-upending crises that force transformation."
+  },
+  Chiron: {
+    mission: "Your wound becomes your medicine. You're learning to heal through your own pain.",
+    integration: "Don't hide your wounds—they're your credibility for helping others. The wounded healer path.",
+    shadow: "Chronic pain (physical or emotional) that won't resolve until you embrace the healing journey."
+  },
+  NorthNode: {
+    mission: "Multiple life themes converge on your soul direction. This Yod supercharges your karmic path.",
+    integration: "Lean into what feels unfamiliar but calling. Past-life skills support new growth.",
+    shadow: "Resistance to growth feels amplified. The universe won't let you stay comfortable."
+  },
+  Ascendant: {
+    mission: "Your very presence and approach to life is being refined. How you enter rooms matters.",
+    integration: "Experiment with self-presentation. Your first impression is more powerful than you know.",
+    shadow: "Identity confusion, feeling like you don't know how to 'be' in the world."
+  }
+};
+
 /**
  * Detect Yod (Finger of God) - two planets in sextile, both quincunx to a third
  */
@@ -184,14 +253,65 @@ const detectYods = (planets: Array<{ name: string; degree: number }>): ChartPatt
             const q2 = getAspectBetween(planets[j].degree, planets[k].degree, orb);
             
             if (q1 === 'quincunx' && q2 === 'quincunx') {
+              const apexPlanet = planets[k].name;
+              const basePlanet1 = planets[i].name;
+              const basePlanet2 = planets[j].name;
+              
+              // Find conjunctions to apex planet
+              const apexConjunctions: string[] = [];
+              for (let m = 0; m < planets.length; m++) {
+                if (m !== k && m !== i && m !== j) {
+                  const conj = getAspectBetween(planets[k].degree, planets[m].degree, 8);
+                  if (conj === 'conjunction') {
+                    apexConjunctions.push(planets[m].name);
+                  }
+                }
+              }
+              
+              // Get apex planet interpretation
+              const apexMeaning = APEX_PLANET_MEANINGS[apexPlanet] || {
+                mission: `${apexPlanet} at the apex indicates this planetary energy is being intensely developed.`,
+                integration: `Work consciously with ${apexPlanet} themes—they are your assignment.`,
+                shadow: `${apexPlanet} issues keep recurring until integrated.`
+              };
+              
+              // Build detailed description
+              let detailedDescription = `**THE YOD APEX: ${apexPlanet}**\n\n`;
+              detailedDescription += `${basePlanet1} sextile ${basePlanet2} form the base, both pointing (via quincunx) to ${apexPlanet}.\n\n`;
+              detailedDescription += `**Your Mission:** ${apexMeaning.mission}\n\n`;
+              detailedDescription += `**Integration Path:** ${apexMeaning.integration}\n\n`;
+              detailedDescription += `**Shadow Work:** ${apexMeaning.shadow}`;
+              
+              // Add conjunction information if present
+              if (apexConjunctions.length > 0) {
+                detailedDescription += `\n\n**CRITICAL: ${apexPlanet} is conjunct ${apexConjunctions.join(' and ')}**\n`;
+                detailedDescription += `This conjunction AMPLIFIES the Yod's intensity. ${apexConjunctions.join(' and ')} ${apexConjunctions.length > 1 ? 'are' : 'is'} fused with your apex planet—`;
+                
+                if (apexConjunctions.includes('Saturn')) {
+                  detailedDescription += `Saturn conjunct the apex adds weight, delay, and the demand for MASTERY. This isn't a quick lesson—it's a lifelong discipline. The pressure to perform and prove yourself in ${apexPlanet} matters is intense. Structure, patience, and earned authority are required.`;
+                } else if (apexConjunctions.includes('Pluto')) {
+                  detailedDescription += `Pluto conjunct the apex adds intensity, transformation, and power dynamics. You may experience crises around ${apexPlanet} themes that force complete reinvention.`;
+                } else if (apexConjunctions.includes('Uranus')) {
+                  detailedDescription += `Uranus conjunct the apex adds unpredictability and the demand for originality. Your ${apexPlanet} expression must be unique—conventional approaches won't work.`;
+                } else if (apexConjunctions.includes('Neptune')) {
+                  detailedDescription += `Neptune conjunct the apex adds spiritual sensitivity and creative potential, but also confusion. Clarity around ${apexPlanet} comes through surrender, not control.`;
+                } else if (apexConjunctions.includes('Jupiter')) {
+                  detailedDescription += `Jupiter conjunct the apex expands and amplifies everything. The mission is BIG. Guard against over-promising or believing you've mastered it before you have.`;
+                } else if (apexConjunctions.includes('Mars')) {
+                  detailedDescription += `Mars conjunct the apex adds drive, urgency, and potential for conflict. You'll need physical outlets and conscious anger management as part of your integration.`;
+                } else {
+                  detailedDescription += `their energy is woven into your mission and cannot be separated from ${apexPlanet}'s development.`;
+                }
+              }
+              
               patterns.push({
                 name: 'Yod (Finger of God)',
                 symbol: '⚲',
-                planets: [planets[i].name, planets[j].name, planets[k].name],
-                description: `${planets[i].name} and ${planets[j].name} point to ${planets[k].name}—a fated mission.`,
-                meaning: 'A Yod indicates a special mission or destiny. The apex planet represents a gift that must be developed through constant adjustment. Life keeps pushing you toward this purpose.',
-                challenge: 'Persistent feeling of being "off," health sensitivities, difficulty integrating the apex planet. Life seems to conspire to force growth.',
-                gift: 'A special purpose or mission. The apex planet becomes a unique gift once mastered. Fated encounters and turning points.',
+                planets: [basePlanet1, basePlanet2, apexPlanet, ...apexConjunctions],
+                description: detailedDescription,
+                meaning: `A Yod with ${apexPlanet} at the apex indicates a FATED MISSION around ${apexPlanet} themes. The base planets (${basePlanet1} and ${basePlanet2}) provide talents and resources, but they must be constantly adjusted to serve ${apexPlanet}'s development. Life keeps redirecting you toward this purpose through events that feel "meant to be."`,
+                challenge: `The quincunx creates persistent tension—like an itch you can't scratch. ${apexPlanet} matters don't flow naturally; they require constant conscious adjustment. You may feel "off" until you engage this mission directly. Health, timing, and situational issues often manifest as the universe's way of forcing adjustment.`,
+                gift: `Once integrated, ${apexPlanet} becomes your SUPERPOWER—a unique gift no one else has in quite the same way. You become a specialist, a teacher, or a healer in ${apexPlanet} domains. The very challenges that frustrated you become your credibility.`,
               });
             }
           }

@@ -20,12 +20,15 @@ import {
   DIGNITY_EXPLAINERS,
   DignityType
 } from '@/lib/chartDecoderLogic';
+import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
+import { detectChartPatterns, ChartPattern } from '@/lib/chartPatterns';
 
 interface ReadingScriptGeneratorProps {
   planets: ChartPlanet[];
   aspects: ChartAspect[];
   chartName: string;
   useTraditional: boolean;
+  natalChart?: NatalChart | null;
 }
 
 interface ScriptSection {
@@ -65,7 +68,8 @@ export const ReadingScriptGenerator: React.FC<ReadingScriptGeneratorProps> = ({
   planets,
   aspects,
   chartName,
-  useTraditional
+  useTraditional,
+  natalChart
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -237,7 +241,55 @@ export const ReadingScriptGenerator: React.FC<ReadingScriptGeneratorProps> = ({
       content: challengeContent
     });
 
-    // 7. CLOSING
+    // 7. CHART PATTERNS (Yod, T-Square, etc.)
+    if (natalChart) {
+      const patterns = detectChartPatterns(natalChart);
+      
+      if (patterns.length > 0) {
+        const patternContent: string[] = [];
+        patternContent.push(`"Your chart contains some significant patterns — geometric configurations that amplify certain themes."`);
+        
+        patterns.forEach(pattern => {
+          if (pattern.name.includes('Yod')) {
+            patternContent.push(`\n**⚲ YOD (FINGER OF GOD)**`);
+            patternContent.push(`"This is one of the most significant patterns in astrology — it indicates a special mission or destiny."`);
+            
+            // Parse the detailed description
+            const descLines = pattern.description.split('\n').filter(l => l.trim());
+            descLines.forEach(line => {
+              if (line.startsWith('**')) {
+                patternContent.push(line);
+              } else {
+                patternContent.push(`"${line}"`);
+              }
+            });
+            
+            patternContent.push(`\n**The Challenge:**`);
+            patternContent.push(`"${pattern.challenge}"`);
+            
+            patternContent.push(`\n**The Gift:**`);
+            patternContent.push(`"${pattern.gift}"`);
+          } else {
+            patternContent.push(`\n**${pattern.symbol} ${pattern.name.toUpperCase()}**`);
+            patternContent.push(`"Planets involved: ${pattern.planets.join(', ')}"`);
+            patternContent.push(`"${pattern.meaning}"`);
+            if (pattern.challenge) {
+              patternContent.push(`"Challenge: ${pattern.challenge}"`);
+            }
+            if (pattern.gift) {
+              patternContent.push(`"Gift: ${pattern.gift}"`);
+            }
+          }
+        });
+        
+        sections.push({
+          title: "Chart Patterns — Geometry of Destiny",
+          content: patternContent
+        });
+      }
+    }
+
+    // 8. CLOSING
     sections.push({
       title: "Closing",
       content: [
@@ -247,7 +299,7 @@ export const ReadingScriptGenerator: React.FC<ReadingScriptGeneratorProps> = ({
     });
 
     return sections;
-  }, [planets, aspects, chartName, useTraditional]);
+  }, [planets, aspects, chartName, useTraditional, natalChart]);
 
   const copyToClipboard = () => {
     const fullScript = script.map(section => 
