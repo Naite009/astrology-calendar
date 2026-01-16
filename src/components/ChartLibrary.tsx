@@ -616,6 +616,31 @@ export const ChartLibrary = ({
       let planetsImported = 0;
       let housesImported = 0;
 
+      // Extract birth info if available
+      const birthInfo = parsedData.birthInfo;
+      const birthInfoUpdates: Partial<ChartFormData> = {};
+      
+      if (birthInfo) {
+        if (birthInfo.name && typeof birthInfo.name === 'string') {
+          birthInfoUpdates.name = birthInfo.name;
+        }
+        if (birthInfo.birthDate && typeof birthInfo.birthDate === 'string') {
+          // Validate date format (YYYY-MM-DD)
+          if (/^\d{4}-\d{2}-\d{2}$/.test(birthInfo.birthDate)) {
+            birthInfoUpdates.birthDate = birthInfo.birthDate;
+          }
+        }
+        if (birthInfo.birthTime && typeof birthInfo.birthTime === 'string') {
+          // Validate time format (HH:MM)
+          if (/^\d{1,2}:\d{2}$/.test(birthInfo.birthTime)) {
+            birthInfoUpdates.birthTime = birthInfo.birthTime;
+          }
+        }
+        if (birthInfo.birthLocation && typeof birthInfo.birthLocation === 'string') {
+          birthInfoUpdates.birthLocation = birthInfo.birthLocation;
+        }
+      }
+
       // Import planets
       if (parsedData.planets && typeof parsedData.planets === 'object') {
         const validPlanets: Record<string, NatalPlanetPosition> = {};
@@ -634,9 +659,10 @@ export const ChartLibrary = ({
           }
         }
 
-        if (planetsImported > 0) {
+        if (planetsImported > 0 || Object.keys(birthInfoUpdates).length > 0) {
           setFormData(prev => ({
             ...prev,
+            ...birthInfoUpdates,
             chartImageBase64: isImage ? fileBase64 : prev.chartImageBase64,
             planets: {
               ...prev.planets,
@@ -646,9 +672,17 @@ export const ChartLibrary = ({
         } else if (isImage) {
           setFormData(prev => ({
             ...prev,
+            ...birthInfoUpdates,
             chartImageBase64: fileBase64,
           }));
         }
+      } else if (Object.keys(birthInfoUpdates).length > 0) {
+        // Even if no planets found, still update birth info if we have it
+        setFormData(prev => ({
+          ...prev,
+          ...birthInfoUpdates,
+          chartImageBase64: isImage ? fileBase64 : prev.chartImageBase64,
+        }));
       }
 
       // Import house cusps
