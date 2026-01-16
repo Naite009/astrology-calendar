@@ -33,10 +33,22 @@ serve(async (req) => {
     const isWord = fileType === 'word' || imageBase64.includes('application/vnd.openxmlformats') || imageBase64.includes('application/msword');
     const isImage = !isPDF && !isWord;
 
-    const prompt = `Analyze this astrological chart ${isPDF || isWord ? 'document' : 'image'} and extract all planet positions.
+    const prompt = `Analyze this astrological chart ${isPDF || isWord ? 'document' : 'image'} and extract all information.
+
+IMPORTANT: Extract the person's birth information if visible on the chart. Look for:
+- Name (often at the top of the chart)
+- Birth date (may be formatted as "Jan 15, 1990" or "15.01.1990" or "1990-01-15")
+- Birth time (may be "2:30 PM" or "14:30" or "2:30 am")
+- Birth location/place (city, state/country)
 
 For each planet you can identify, provide the data in this exact JSON format:
 {
+  "birthInfo": {
+    "name": "Person's Name",
+    "birthDate": "1990-01-15",
+    "birthTime": "14:30",
+    "birthLocation": "New York, NY, USA"
+  },
   "planets": {
     "Sun": { "sign": "Aries", "degree": 15, "minutes": 23, "isRetrograde": false },
     "Moon": { "sign": "Cancer", "degree": 8, "minutes": 12, "isRetrograde": false },
@@ -51,6 +63,11 @@ For each planet you can identify, provide the data in this exact JSON format:
     "house12": { "sign": "Aries", "degree": 1, "minutes": 0 }
   }
 }
+
+For birthInfo:
+- birthDate MUST be in YYYY-MM-DD format (e.g., "1990-01-15")
+- birthTime MUST be in 24-hour HH:MM format (e.g., "14:30" for 2:30 PM)
+- If you can't find certain birth info, omit that field (don't include empty strings)
 
 Planet names to look for: Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, Ascendant (or ASC), NorthNode (or North Node, NN, True Node), SouthNode, Chiron, Lilith (Black Moon Lilith), Ceres, Pallas, Juno, Vesta, PartOfFortune, Vertex, Eris, Sedna, Makemake, Haumea, Quaoar, Orcus, Ixion, Varuna.
 
