@@ -50,6 +50,8 @@ import {
   getSaturnTeaching,
   SaturnTeaching
 } from '@/lib/elementTeachings';
+import { getPlanetaryPositions } from '@/lib/astrology';
+import { calculateTransitAspects, TransitAspect, getTransitPlanetSymbol } from '@/lib/transitAspects';
 
 // New Level 1 Handbook Components
 import { ElementSelfAssessment } from '@/components/sacredscript/ElementSelfAssessment';
@@ -1304,18 +1306,115 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
         color="border-l-cyan-500" 
         icon={<div className="w-6 h-6 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-600 text-xs font-bold">6</div>}
       >
-        <p className="text-sm text-muted-foreground mb-4">
-          Check the calendar's Day Detail view for current transits to {natalChart.name}'s chart.
-          Focus on outer planet transits (Saturn, Jupiter, Uranus, Neptune, Pluto) within 1° orb.
-        </p>
-        
-        <div className="bg-cyan-50 dark:bg-cyan-950/30 p-4 rounded-lg">
-          <CheckItem label="Check Saturn transits (structure, lessons)" />
-          <CheckItem label="Check Jupiter transits (expansion, opportunity)" />
-          <CheckItem label="Check Uranus transits (change, awakening)" />
-          <CheckItem label="Check Neptune transits (dissolution, dreams)" />
-          <CheckItem label="Check Pluto transits (transformation, power)" />
-        </div>
+        {(() => {
+          // Calculate current transits
+          const today = new Date();
+          const currentPositions = getPlanetaryPositions(today);
+          const transits = calculateTransitAspects(today, currentPositions, natalChart);
+          
+          // Filter to outer planet transits (Saturn, Jupiter, Uranus, Neptune, Pluto) within 3° orb
+          const outerPlanetTransits = transits.filter(t => 
+            ['Saturn', 'Jupiter', 'Uranus', 'Neptune', 'Pluto'].includes(t.transitPlanet) &&
+            parseFloat(t.orb) <= 3
+          ).sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb));
+          
+          // Also get inner planet transits (tighter orbs)
+          const innerPlanetTransits = transits.filter(t =>
+            ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars'].includes(t.transitPlanet) &&
+            parseFloat(t.orb) <= 1
+          ).sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb)).slice(0, 5);
+          
+          return (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground mb-4">
+                Current transits to {natalChart.name}'s natal chart as of {today.toLocaleDateString()}.
+              </p>
+              
+              {outerPlanetTransits.length > 0 ? (
+                <div className="space-y-3">
+                  <h5 className="font-medium text-cyan-700 dark:text-cyan-300 text-sm">
+                    ⭐ Major Outer Planet Transits (within 3°)
+                  </h5>
+                  {outerPlanetTransits.map((transit, i) => (
+                    <div key={i} className="bg-cyan-50 dark:bg-cyan-950/30 p-4 rounded-lg border-l-4 border-cyan-400">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-lg">{getTransitPlanetSymbol(transit.transitPlanet)}</span>
+                        <span className="font-medium">
+                          Transit {transit.transitPlanet} {transit.symbol} Natal {transit.natalPlanet}
+                        </span>
+                        <span className="text-xs bg-cyan-200 dark:bg-cyan-800 px-2 py-0.5 rounded-full">
+                          {transit.orb}° orb
+                        </span>
+                        {transit.isExact && (
+                          <span className="text-xs bg-amber-200 dark:bg-amber-800 px-2 py-0.5 rounded-full font-medium">
+                            EXACT
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm mb-2">{transit.interpretation}</p>
+                      {transit.transitHouse && (
+                        <p className="text-xs text-muted-foreground">
+                          Transit {transit.transitPlanet} is in your {transit.transitHouse}th house
+                        </p>
+                      )}
+                      {transit.natalHouse && (
+                        <p className="text-xs text-muted-foreground">
+                          Affecting natal {transit.natalPlanet} in your {transit.natalHouse}th house
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-green-50 dark:bg-green-950/30 p-4 rounded-lg">
+                  <p className="text-sm text-green-700 dark:text-green-300">
+                    ✓ No major outer planet transits within 3° orb right now. A relatively quiet period.
+                  </p>
+                </div>
+              )}
+              
+              {innerPlanetTransits.length > 0 && (
+                <div className="space-y-2 mt-4">
+                  <h5 className="font-medium text-cyan-600 dark:text-cyan-400 text-sm">
+                    Fast-Moving Transits (within 1°)
+                  </h5>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {innerPlanetTransits.map((transit, i) => (
+                      <div key={i} className="bg-slate-50 dark:bg-slate-900/30 p-3 rounded text-sm">
+                        <span>{getTransitPlanetSymbol(transit.transitPlanet)} {transit.transitPlanet}</span>
+                        <span className="mx-1">{transit.symbol}</span>
+                        <span>n{transit.natalPlanet}</span>
+                        <span className="text-muted-foreground ml-2">({transit.orb}°)</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Current Planetary Positions */}
+              <details className="group mt-4">
+                <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground flex items-center gap-2">
+                  <span>Current Sky Positions</span>
+                  <ChevronDown size={14} className="group-open:rotate-180 transition-transform" />
+                </summary>
+                <div className="mt-2 grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
+                  {[
+                    { name: 'Jupiter', pos: currentPositions.jupiter },
+                    { name: 'Saturn', pos: currentPositions.saturn },
+                    { name: 'Uranus', pos: currentPositions.uranus },
+                    { name: 'Neptune', pos: currentPositions.neptune },
+                    { name: 'Pluto', pos: currentPositions.pluto },
+                  ].map(({ name, pos }) => (
+                    <div key={name} className="bg-slate-100 dark:bg-slate-800 p-2 rounded text-center">
+                      <div className="font-medium">{getTransitPlanetSymbol(name)}</div>
+                      <div>{pos.degree}° {pos.signName}</div>
+                    </div>
+                  ))}
+                </div>
+              </details>
+            </div>
+          );
+        })()}
         
         <NoteArea placeholder="Current transits affecting the client..." />
       </Section>

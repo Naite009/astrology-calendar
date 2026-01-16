@@ -192,35 +192,55 @@ export const getPlanetHouse = (chart: NatalChart, planetName: string): number | 
   const position = chart.planets[planetName as keyof typeof chart.planets];
   if (!position?.sign) return null;
   
-  const planetLongitude = ZODIAC_SIGNS.indexOf(position.sign) * 30 + position.degree + position.minutes / 60;
+  // Calculate planet's absolute longitude (0-360)
+  const planetSignIndex = ZODIAC_SIGNS.indexOf(position.sign);
+  if (planetSignIndex === -1) return null;
+  const planetLongitude = planetSignIndex * 30 + position.degree + (position.minutes || 0) / 60;
   
+  // Build array of house cusp longitudes
   const cusps: number[] = [];
   for (let i = 1; i <= 12; i++) {
     const cusp = chart.houseCusps[`house${i}` as keyof typeof chart.houseCusps];
     if (cusp) {
       const signIndex = ZODIAC_SIGNS.indexOf(cusp.sign);
       if (signIndex >= 0) {
-        cusps.push(signIndex * 30 + cusp.degree + cusp.minutes / 60);
+        cusps.push(signIndex * 30 + cusp.degree + (cusp.minutes || 0) / 60);
       }
     }
   }
   
   if (cusps.length !== 12) return null;
   
+  // Normalize planet longitude to 0-360
   const normalizedPlanet = ((planetLongitude % 360) + 360) % 360;
   
+  // Find which house the planet is in
+  // A planet is in house N if it's between cusp N and cusp N+1
   for (let i = 0; i < 12; i++) {
-    const cuspStart = cusps[i];
-    const cuspEnd = cusps[(i + 1) % 12];
+    const cuspStart = ((cusps[i] % 360) + 360) % 360;
+    const cuspEnd = ((cusps[(i + 1) % 12] % 360) + 360) % 360;
     
-    if (cuspEnd > cuspStart) {
-      if (normalizedPlanet >= cuspStart && normalizedPlanet < cuspEnd) {
-        return i + 1;
-      }
-    } else {
+    // Handle wrap-around at 0°/360°
+    if (cuspEnd <= cuspStart) {
+      // House crosses 0° Aries
       if (normalizedPlanet >= cuspStart || normalizedPlanet < cuspEnd) {
         return i + 1;
       }
+    } else {
+      // Normal case - house doesn't cross 0°
+      if (normalizedPlanet >= cuspStart && normalizedPlanet < cuspEnd) {
+        return i + 1;
+      }
+    }
+  }
+  
+  // Fallback: if we somehow didn't find a house, check if planet is very close to a cusp
+  // This handles edge cases with floating point precision
+  for (let i = 0; i < 12; i++) {
+    const cuspDeg = ((cusps[i] % 360) + 360) % 360;
+    const diff = Math.abs(normalizedPlanet - cuspDeg);
+    if (diff < 0.01 || diff > 359.99) {
+      return i + 1; // On the cusp, assign to that house
     }
   }
   
