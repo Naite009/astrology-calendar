@@ -13,23 +13,25 @@ interface NatalChartWheelProps {
 }
 
 export const NatalChartWheel = ({ natalChart: initialChart, allCharts = [], onChartImageUpload }: NatalChartWheelProps) => {
-  const [selectedChartId, setSelectedChartId] = useState<string>(initialChart?.id || '');
+  // Get all charts sorted alphabetically
+  const allSortedCharts = [...allCharts].sort((a, b) => a.name.localeCompare(b.name));
+  
+  // Initialize selected chart: prefer initialChart, then first chart with image, then first chart
+  const [selectedChartId, setSelectedChartId] = useState<string>(() => {
+    if (initialChart?.id) return initialChart.id;
+    const firstWithImage = allCharts.find(c => c.chartImageBase64);
+    if (firstWithImage) return firstWithImage.id;
+    return allCharts[0]?.id || '';
+  });
+  
   const [zoom, setZoom] = useState(1);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const { toast } = useToast();
   
-  // Get charts that have images
-  const chartsWithImages = allCharts.filter(c => c.chartImageBase64);
-  const sortedCharts = [...chartsWithImages].sort((a, b) => a.name.localeCompare(b.name));
-  
-  // Get all charts for matching (including those without images)
-  const allSortedCharts = [...allCharts].sort((a, b) => a.name.localeCompare(b.name));
-  
-  // Get the selected chart
-  const natalChart = sortedCharts.find(c => c.id === selectedChartId) || 
-                     (initialChart?.chartImageBase64 ? initialChart : null) ||
-                     sortedCharts[0];
+  // Get the currently selected chart (may or may not have an image)
+  const selectedChart = allSortedCharts.find(c => c.id === selectedChartId) || initialChart || allSortedCharts[0];
+  const hasImage = selectedChart?.chartImageBase64;
 
 // Handle file upload - supports images, PDFs, and documents
   const handleFileUpload = useCallback(async (file: File) => {
@@ -165,112 +167,180 @@ const handleFileInputChange = useCallback(async (e: React.ChangeEvent<HTMLInputE
   
   // Handle download
   const handleDownload = () => {
-    if (!natalChart?.chartImageBase64) return;
+    if (!selectedChart?.chartImageBase64) return;
     
     const link = document.createElement('a');
-    link.href = natalChart.chartImageBase64;
-    link.download = `${natalChart.name.replace(/\s+/g, '-').toLowerCase()}-natal-chart.png`;
+    link.href = selectedChart.chartImageBase64;
+    link.download = `${selectedChart.name.replace(/\s+/g, '-').toLowerCase()}-natal-chart.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-if (!natalChart || !natalChart.chartImageBase64) {
+  // Upload to the currently selected chart
+  const handleUploadToSelected = useCallback(async (file: File) => {
+    if (!selectedChart || !onChartImageUpload) {
+      toast({
+        title: "No chart selected",
+        description: "Please select a chart first",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const fileName = file.name.toLowerCase();
+    const fileType = file.type;
+    const isImage = fileType.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|bmp|heic|heif)$/i.test(fileName);
+    
+    if (!isImage) {
+      toast({
+        title: "Please upload an image",
+        description: "Supported formats: PNG, JPG, WEBP, GIF",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    const base64Promise = new Promise<string>((resolve, reject) => {
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+    });
+    reader.readAsDataURL(file);
+    
+    try {
+      const base64 = await base64Promise;
+      onChartImageUpload(selectedChart.id, base64);
+      toast({
+        title: "Chart updated!",
+        description: `Saved to "${selectedChart.name}"'s chart`,
+      });
+    } catch (err) {
+      console.error('File upload error:', err);
+      toast({
+        title: "Upload failed",
+        description: "Could not process the file. Please try again.",
+        variant: "destructive"
+      });
+    }
+  }, [selectedChart, onChartImageUpload, toast]);
+
+  const handleReplaceInputChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      await handleUploadToSelected(files[0]);
+    }
+    e.target.value = '';
+  }, [handleUploadToSelected]);
+
+  // Chart selector component - always shown when there are multiple charts
+  const ChartSelector = () => {
+    if (allSortedCharts.length <= 1) return null;
+    
     return (
-      <div className="max-w-4xl mx-auto p-6 text-center">
-        <div 
-          className={`bg-secondary/30 rounded-xl p-12 border-3 border-dashed transition-all duration-300 cursor-pointer min-h-[400px] flex flex-col items-center justify-center
-            ${isDragging ? 'border-primary bg-primary/15 scale-[1.02] shadow-lg shadow-primary/20' : 'border-border/60 hover:border-primary/60 hover:bg-secondary/50'}
-            ${uploadStatus === 'success' ? 'border-green-500 bg-green-500/10' : ''}
-            ${uploadStatus === 'error' ? 'border-destructive bg-destructive/10' : ''}`}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onClick={() => document.getElementById('wheel-chart-upload')?.click()}
+      <div className="flex items-center gap-3 mb-6">
+        <label className="text-sm font-medium text-muted-foreground">Select Chart:</label>
+        <select
+          value={selectedChartId}
+          onChange={(e) => setSelectedChartId(e.target.value)}
+          className="flex-1 max-w-xs border border-border bg-background px-3 py-2 text-sm rounded-md focus:border-primary focus:outline-none"
         >
-          <input
-            id="wheel-chart-upload"
-            type="file"
-            accept="image/*,.pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            className="hidden"
-            onChange={handleFileInputChange}
-          />
-          
-          <div className={`text-7xl mb-6 transition-transform duration-300 ${isDragging ? 'scale-110' : ''}`}>
-            {uploadStatus === 'success' ? '✅' : uploadStatus === 'error' ? '❌' : isDragging ? '📥' : '🌌'}
-          </div>
-          
-          <h3 className="text-2xl font-serif mb-4 text-foreground">
-            {uploadStatus === 'success' ? 'Chart Uploaded!' : 
-             uploadStatus === 'error' ? 'Upload Failed' :
-             isDragging ? 'Drop Your Chart Here!' : 'Upload Your Natal Chart'}
-          </h3>
-          
-          <p className="text-muted-foreground mb-6 text-lg">
-            {isDragging ? (
-              'Release to upload your natal chart wheel'
-            ) : (
-              <>
-                <span className="font-semibold text-primary">Drag & drop</span> your chart file here
-                <br />
-                <span className="text-sm">or <span className="font-semibold text-primary underline">click to browse</span></span>
-              </>
-            )}
-          </p>
-          
-          {/* File type badges */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
-            <span className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20">PNG</span>
-            <span className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20">JPG</span>
-            <span className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20">WEBP</span>
-            <span className="px-3 py-1.5 rounded-full bg-accent/30 text-accent-foreground text-xs font-medium border border-accent/30">PDF</span>
-            <span className="px-3 py-1.5 rounded-full bg-accent/30 text-accent-foreground text-xs font-medium border border-accent/30">DOCX</span>
-          </div>
-          
-          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Upload size={18} />
-            <span>Works with astro.com, Cafe Astrology, or any chart image/document</span>
-          </div>
-          
-          {allSortedCharts.length > 0 && (
-            <div className="mt-8 pt-6 border-t border-border/30 w-full max-w-md">
-              <p className="text-sm text-muted-foreground mb-2">
-                💡 <strong>Tip:</strong> Name your file with the chart name for automatic matching
-              </p>
-              <p className="text-xs text-muted-foreground/70">
-                Available charts: {allSortedCharts.map(c => c.name).join(', ')}
-              </p>
+          {allSortedCharts.map(chart => (
+            <option key={chart.id} value={chart.id}>
+              {chart.name} {chart.chartImageBase64 ? '✓' : '(no wheel)'}
+            </option>
+          ))}
+        </select>
+      </div>
+    );
+  };
+
+  // Show upload area if no image for selected chart
+  if (!hasImage) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <ChartSelector />
+        
+        <div className="text-center">
+          <div 
+            className={`bg-secondary/30 rounded-xl p-12 border-3 border-dashed transition-all duration-300 cursor-pointer min-h-[400px] flex flex-col items-center justify-center
+              ${isDragging ? 'border-primary bg-primary/15 scale-[1.02] shadow-lg shadow-primary/20' : 'border-border/60 hover:border-primary/60 hover:bg-secondary/50'}
+              ${uploadStatus === 'success' ? 'border-green-500 bg-green-500/10' : ''}
+              ${uploadStatus === 'error' ? 'border-destructive bg-destructive/10' : ''}`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={() => document.getElementById('wheel-chart-upload')?.click()}
+          >
+            <input
+              id="wheel-chart-upload"
+              type="file"
+              accept="image/*,.pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              className="hidden"
+              onChange={handleFileInputChange}
+            />
+            
+            <div className={`text-7xl mb-6 transition-transform duration-300 ${isDragging ? 'scale-110' : ''}`}>
+              {uploadStatus === 'success' ? '✅' : uploadStatus === 'error' ? '❌' : isDragging ? '📥' : '🌌'}
             </div>
-          )}
+            
+            <h3 className="text-2xl font-serif mb-4 text-foreground">
+              {uploadStatus === 'success' ? 'Chart Uploaded!' : 
+               uploadStatus === 'error' ? 'Upload Failed' :
+               isDragging ? 'Drop Your Chart Here!' : 
+               selectedChart ? `Upload ${selectedChart.name}'s Natal Chart` : 'Upload Your Natal Chart'}
+            </h3>
+            
+            <p className="text-muted-foreground mb-6 text-lg">
+              {isDragging ? (
+                'Release to upload your natal chart wheel'
+              ) : (
+                <>
+                  <span className="font-semibold text-primary">Drag & drop</span> your chart file here
+                  <br />
+                  <span className="text-sm">or <span className="font-semibold text-primary underline">click to browse</span></span>
+                </>
+              )}
+            </p>
+            
+            {/* File type badges */}
+            <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+              <span className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20">PNG</span>
+              <span className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20">JPG</span>
+              <span className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20">WEBP</span>
+              <span className="px-3 py-1.5 rounded-full bg-accent/30 text-accent-foreground text-xs font-medium border border-accent/30">PDF</span>
+              <span className="px-3 py-1.5 rounded-full bg-accent/30 text-accent-foreground text-xs font-medium border border-accent/30">DOCX</span>
+            </div>
+            
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <Upload size={18} />
+              <span>Works with astro.com, Cafe Astrology, or any chart image/document</span>
+            </div>
+            
+            {allSortedCharts.length > 0 && (
+              <div className="mt-8 pt-6 border-t border-border/30 w-full max-w-md">
+                <p className="text-sm text-muted-foreground mb-2">
+                  💡 <strong>Tip:</strong> Name your file with the chart name for automatic matching
+                </p>
+                <p className="text-xs text-muted-foreground/70">
+                  Available charts: {allSortedCharts.map(c => c.name).join(', ')}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* Chart Selector */}
-      {sortedCharts.length > 1 && (
-        <div className="flex items-center gap-3 mb-6">
-          <label className="text-sm font-medium text-muted-foreground">Select Chart:</label>
-          <select
-            value={selectedChartId || natalChart.id}
-            onChange={(e) => setSelectedChartId(e.target.value)}
-            className="flex-1 max-w-xs border border-border bg-background px-3 py-2 text-sm rounded-sm focus:border-primary focus:outline-none"
-          >
-            {sortedCharts.map(chart => (
-              <option key={chart.id} value={chart.id}>
-                {chart.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+    <div className="max-w-4xl mx-auto p-6">
+      <ChartSelector />
 
       <div className="flex flex-col items-center">
-        <h2 className="font-serif text-2xl mb-2 text-center">{natalChart.name}'s Natal Chart</h2>
+        <h2 className="font-serif text-2xl mb-2 text-center">{selectedChart.name}'s Natal Chart</h2>
         <p className="text-sm text-muted-foreground mb-4 text-center">
-          {natalChart.birthDate} • {natalChart.birthTime} • {natalChart.birthLocation}
+          {selectedChart.birthDate} • {selectedChart.birthTime} • {selectedChart.birthLocation}
         </p>
 
         {/* Zoom Controls */}
@@ -306,13 +376,27 @@ if (!natalChart || !natalChart.chartImageBase64) {
           >
             <Download size={18} />
           </button>
+          <button
+            onClick={() => document.getElementById('wheel-chart-replace')?.click()}
+            className="p-2 rounded border border-border hover:bg-secondary transition-colors flex items-center gap-1"
+            title="Replace Chart Image"
+          >
+            <Upload size={18} />
+          </button>
+          <input
+            id="wheel-chart-replace"
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleReplaceInputChange}
+          />
         </div>
 
         {/* Chart Image */}
         <div className="overflow-auto max-w-full max-h-[70vh] border border-border rounded-lg bg-white p-2">
           <img
-            src={natalChart.chartImageBase64}
-            alt={`${natalChart.name}'s Natal Chart`}
+            src={selectedChart.chartImageBase64}
+            alt={`${selectedChart.name}'s Natal Chart`}
             className="transition-transform duration-200"
             style={{ 
               transform: `scale(${zoom})`,
