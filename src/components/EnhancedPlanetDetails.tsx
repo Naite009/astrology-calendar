@@ -392,7 +392,7 @@ const getTriplicityInterpretation = (planet: string, element: string, rulers: { 
     
     return `You have a DAY CHART (Sun above horizon), so ${rulers.day} is your primary ${element} triplicity ruler for your ${planet}.
 
-**What this means for you:** ${rulers.day} ${dayMeaning} to your ${planet}. Look at where ${rulers.day} is placed in your chart—its condition (sign, house, aspects) directly affects how well your ${planet} can thrive. A strong ${rulers.day} = strong support for your ${planet}.
+**What this means for you:** ${rulers.day} ${dayMeaning} to your ${planet}. The condition of ${rulers.day} in your chart directly affects how well your ${planet} can thrive — a well-placed ${rulers.day} strengthens your ${planet}'s expression.
 
 ${rulers.night} (night ruler) ${nightMeaning}—it's secondary but still helps. ${rulers.participating} (participating ruler) ${partMeaning} as a third layer of support.
 
@@ -404,7 +404,7 @@ ${rulers.night} (night ruler) ${nightMeaning}—it's secondary but still helps. 
     
     return `You have a NIGHT CHART (Sun below horizon), so ${rulers.night} is your primary ${element} triplicity ruler for your ${planet}.
 
-**What this means for you:** ${rulers.night} ${nightMeaning} to your ${planet}. Look at where ${rulers.night} is placed in your chart—its condition (sign, house, aspects) directly affects how well your ${planet} can thrive. A strong ${rulers.night} = strong support for your ${planet}.
+**What this means for you:** ${rulers.night} ${nightMeaning} to your ${planet}. The condition of ${rulers.night} in your chart directly affects how well your ${planet} can thrive — a well-placed ${rulers.night} strengthens your ${planet}'s expression.
 
 ${rulers.day} (day ruler) ${dayMeaning}—it's secondary but still helps. ${rulers.participating} (participating ruler) ${partMeaning} as a third layer of support.
 

@@ -532,8 +532,25 @@ export function generatePlainEnglish(planet: ChartPlanet, dignity: DignityType):
       explanations.push(`The work is real, but so is the payoff once you integrate it.`);
       break;
     case 'peregrine':
-      explanations.push(`Your ${planet.name} in ${planet.sign} is in neutral territory.`);
-      explanations.push(`Look to aspects and house placement for how this energy expresses.`);
+      explanations.push(`Your ${planet.name} in ${planet.sign} is a free agent — no special advantage or disadvantage from the sign itself.`);
+      if (planet.house) {
+        const houseDescriptions: Record<number, string> = {
+          1: 'front and center in your identity and first impressions',
+          2: 'tied to your values, money, and sense of security',
+          3: 'woven into daily communication, learning, and local connections',
+          4: 'rooted in home, family, and emotional foundations',
+          5: 'expressing through creativity, romance, and self-expression',
+          6: 'active in daily routines, health, and service to others',
+          7: 'playing out in partnerships and one-on-one relationships',
+          8: 'diving into shared resources, intimacy, and transformation',
+          9: 'reaching toward philosophy, travel, and higher learning',
+          10: 'visible in career, public reputation, and life direction',
+          11: 'operating through groups, friendships, and future visions',
+          12: 'working behind the scenes through solitude, dreams, and the unconscious'
+        };
+        explanations.push(`In the ${planet.house}${planet.house === 1 ? 'st' : planet.house === 2 ? 'nd' : planet.house === 3 ? 'rd' : 'th'} house, this energy is ${houseDescriptions[planet.house] || 'expressing in this life area'}.`);
+      }
+      explanations.push(`This placement gets its color from aspects — how it relates to other planets in your chart.`);
       break;
   }
 
