@@ -1,7 +1,7 @@
 // Natal Chart Wheel Visualization
 // Displays the uploaded chart image or a drag-and-drop area to upload one
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { ZoomIn, ZoomOut, RotateCcw, Download, Upload, CheckCircle, XCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -31,7 +31,20 @@ export const NatalChartWheel = ({ natalChart: initialChart, allCharts = [], onCh
   
   // Get the currently selected chart (may or may not have an image)
   const selectedChart = allSortedCharts.find(c => c.id === selectedChartId) || initialChart || allSortedCharts[0];
-  const hasImage = selectedChart?.chartImageBase64;
+  
+  // Validate base64 image - check if it's a valid data URL or has minimum length
+  const chartImageBase64 = selectedChart?.chartImageBase64;
+  const isPdfFile = chartImageBase64?.startsWith('data:application/pdf');
+  const isValidBase64Image = chartImageBase64 && 
+    chartImageBase64.length > 100 && 
+    (chartImageBase64.startsWith('data:image/') || isPdfFile);
+  const hasImage = isValidBase64Image;
+  const [imageLoadError, setImageLoadError] = useState(false);
+
+  // Reset error state when chart selection changes
+  useEffect(() => {
+    setImageLoadError(false);
+  }, [selectedChartId]);
 
 // Handle file upload - supports images, PDFs, and documents
   const handleFileUpload = useCallback(async (file: File) => {
@@ -86,8 +99,10 @@ export const NatalChartWheel = ({ natalChart: initialChart, allCharts = [], onCh
       });
       
       if (matchedChart && onChartImageUpload) {
+        console.log('[NatalChartWheel] Uploading to matched chart:', matchedChart.name, 'base64 length:', imageToSave.length, 'prefix:', imageToSave.substring(0, 50));
         onChartImageUpload(matchedChart.id, imageToSave);
         setSelectedChartId(matchedChart.id);
+        setImageLoadError(false); // Reset error state
         setUploadStatus('success');
         toast({
           title: "Chart uploaded!",
@@ -392,18 +407,75 @@ const handleFileInputChange = useCallback(async (e: React.ChangeEvent<HTMLInputE
           />
         </div>
 
-        {/* Chart Image */}
+        {/* Chart Image or PDF */}
         <div className="overflow-auto max-w-full max-h-[70vh] border border-border rounded-lg bg-white p-2">
-          <img
-            src={selectedChart.chartImageBase64}
-            alt={`${selectedChart.name}'s Natal Chart`}
-            className="transition-transform duration-200"
-            style={{ 
-              transform: `scale(${zoom})`,
-              transformOrigin: 'top left',
-              maxWidth: zoom === 1 ? '100%' : 'none'
-            }}
-          />
+          {imageLoadError ? (
+            <div className="flex flex-col items-center justify-center p-8 text-center">
+              <div className="text-5xl mb-4">⚠️</div>
+              <h3 className="text-lg font-semibold text-destructive mb-2">Image Failed to Load</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                The chart image may be corrupted or too large. Try uploading again.
+              </p>
+              <button
+                onClick={() => {
+                  setImageLoadError(false);
+                  document.getElementById('wheel-chart-replace')?.click();
+                }}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 flex items-center gap-2"
+              >
+                <Upload size={16} />
+                Re-upload Chart
+              </button>
+            </div>
+          ) : isPdfFile ? (
+            // PDF files need to be displayed with embed/iframe, or show a message
+            <div className="flex flex-col items-center justify-center min-h-[400px]">
+              <div className="text-5xl mb-4">📄</div>
+              <h3 className="text-lg font-semibold mb-2">PDF Chart Uploaded</h3>
+              <p className="text-sm text-muted-foreground mb-4 text-center max-w-md">
+                This chart was saved as a PDF. For best viewing, please re-upload as an image (PNG, JPG).
+              </p>
+              <div className="flex gap-2">
+                <a
+                  href={chartImageBase64}
+                  download={`${selectedChart.name.replace(/\s+/g, '-').toLowerCase()}-natal-chart.pdf`}
+                  className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 flex items-center gap-2"
+                >
+                  <Download size={16} />
+                  Download PDF
+                </a>
+                <button
+                  onClick={() => document.getElementById('wheel-chart-replace')?.click()}
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 flex items-center gap-2"
+                >
+                  <Upload size={16} />
+                  Upload as Image
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-4">
+                💡 Tip: Take a screenshot of your PDF chart or export as PNG from astro.com
+              </p>
+            </div>
+          ) : (
+            <img
+              src={chartImageBase64}
+              alt={`${selectedChart.name}'s Natal Chart`}
+              className="transition-transform duration-200"
+              style={{ 
+                transform: `scale(${zoom})`,
+                transformOrigin: 'top left',
+                maxWidth: zoom === 1 ? '100%' : 'none'
+              }}
+              onError={() => {
+                console.error('[NatalChartWheel] Image failed to load, base64 length:', chartImageBase64?.length);
+                setImageLoadError(true);
+              }}
+              onLoad={() => {
+                console.log('[NatalChartWheel] Image loaded successfully');
+                setImageLoadError(false);
+              }}
+            />
+          )}
         </div>
 
         <p className="text-xs text-muted-foreground mt-4 text-center">
