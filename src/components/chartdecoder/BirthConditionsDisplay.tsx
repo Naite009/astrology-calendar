@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { getBirthConditions, BirthMoonPhaseData, SectData, TimeOfDayData } from '@/lib/birthConditions';
+import { ELEMENT_TEACHINGS, ElementTeaching } from '@/lib/elementTeachings';
+import { SIGN_PROPERTIES } from '@/lib/planetDignities';
 
 interface BirthConditionsDisplayProps {
   chart: NatalChart;
@@ -11,6 +15,11 @@ interface BirthConditionsDisplayProps {
 export const BirthConditionsDisplay: React.FC<BirthConditionsDisplayProps> = ({ chart }) => {
   const conditions = getBirthConditions(chart);
   const { moonPhase, sect, timeOfDay } = conditions;
+  
+  // Get Moon's element
+  const moonSign = chart.planets.Moon?.sign;
+  const moonElement = moonSign ? SIGN_PROPERTIES[moonSign]?.element : null;
+  const moonElementTeaching = moonElement ? ELEMENT_TEACHINGS[moonElement] : null;
 
   return (
     <div className="space-y-4">
@@ -49,9 +58,218 @@ export const BirthConditionsDisplay: React.FC<BirthConditionsDisplayProps> = ({ 
           </p>
         </CardContent>
       </Card>
+
+      {/* Moon Element Section */}
+      {moonSign && moonElement && moonElementTeaching && (
+        <MoonElementCard 
+          moonSign={moonSign} 
+          element={moonElement} 
+          teaching={moonElementTeaching} 
+        />
+      )}
     </div>
   );
 };
+
+// Moon Element Card - Full element teachings for the Moon
+interface MoonElementCardProps {
+  moonSign: string;
+  element: string;
+  teaching: ElementTeaching;
+}
+
+const MoonElementCard: React.FC<MoonElementCardProps> = ({ moonSign, element, teaching }) => {
+  const [expanded, setExpanded] = useState(false);
+  
+  const elementColors: Record<string, { bg: string; border: string; text: string; icon: string }> = {
+    Fire: { bg: 'bg-orange-500/10', border: 'border-orange-500/30', text: 'text-orange-500', icon: '🔥' },
+    Earth: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', text: 'text-emerald-500', icon: '🌍' },
+    Air: { bg: 'bg-sky-500/10', border: 'border-sky-500/30', text: 'text-sky-500', icon: '💨' },
+    Water: { bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-500', icon: '💧' }
+  };
+  
+  const colors = elementColors[element] || elementColors.Water;
+
+  return (
+    <Card className={`${colors.bg} ${colors.border}`}>
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <span className="text-2xl">{colors.icon}</span>
+            Working with Your {element} Moon
+          </CardTitle>
+          <Badge variant="outline" className={`${colors.text} border-current`}>
+            ☽ {moonSign}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Quote */}
+        <blockquote className="text-sm italic text-muted-foreground border-l-2 border-current pl-3" style={{ borderColor: colors.text.replace('text-', '') }}>
+          "{teaching.quote}"
+        </blockquote>
+
+        {/* Core Emotional Nature */}
+        <div>
+          <h4 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
+            Your Emotional Nature ({element})
+          </h4>
+          <p className="text-sm text-foreground">
+            {getMoonElementDescription(element)}
+          </p>
+        </div>
+
+        {/* Key Permissions for the Moon */}
+        <div>
+          <h4 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
+            Permissions for Your {element} Moon
+          </h4>
+          <ul className="space-y-1.5">
+            {teaching.permissions.slice(0, 4).map((permission, i) => (
+              <li key={i} className="flex items-start gap-2 text-sm">
+                <span className={`${colors.text} mt-0.5`}>✓</span>
+                <span className="text-foreground">{permission}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Medicine for This Element */}
+        <div className="bg-background/50 rounded-md p-3">
+          <h4 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
+            Medicine for Your Moon
+          </h4>
+          <ul className="space-y-1.5">
+            {teaching.medicine.slice(0, 2).map((med, i) => (
+              <li key={i} className="flex items-start gap-2 text-sm">
+                <span className="text-primary mt-0.5">💊</span>
+                <span className="text-muted-foreground">{med}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Expand/Collapse for more */}
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => setExpanded(!expanded)}
+          className="w-full text-xs"
+        >
+          {expanded ? (
+            <>Show Less <ChevronUp size={14} className="ml-1" /></>
+          ) : (
+            <>Show Full Element Teaching <ChevronDown size={14} className="ml-1" /></>
+          )}
+        </Button>
+
+        {/* Expanded Content */}
+        {expanded && (
+          <div className="space-y-4 pt-4 border-t border-border/50">
+            {/* Themes */}
+            <div>
+              <h4 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                {element} Themes & Wisdom
+              </h4>
+              <ul className="space-y-2">
+                {teaching.themes.map((theme, i) => (
+                  <li key={i} className="text-sm text-foreground pl-4 border-l-2 border-primary/30">
+                    {theme}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Shadows */}
+            <div>
+              <h4 className="text-xs uppercase tracking-wider text-amber-500 mb-2">
+                {element} Shadow Side (Watch For)
+              </h4>
+              <ul className="space-y-1.5">
+                {teaching.shadows.slice(0, 5).map((shadow, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm">
+                    <span className="text-amber-500 mt-0.5">⚠</span>
+                    <span className="text-muted-foreground">{shadow}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Evolved State */}
+            <div>
+              <h4 className="text-xs uppercase tracking-wider text-emerald-500 mb-2">
+                {element} at Its Best (Evolved Expression)
+              </h4>
+              <ul className="space-y-1.5">
+                {teaching.evolved.map((ev, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm">
+                    <span className="text-emerald-500 mt-0.5">✦</span>
+                    <span className="text-foreground">{ev}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* All Permissions */}
+            <div>
+              <h4 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                All {element} Permissions
+              </h4>
+              <ul className="space-y-1.5 max-h-48 overflow-y-auto pr-2">
+                {teaching.permissions.map((permission, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm">
+                    <span className={`${colors.text} mt-0.5 shrink-0`}>✓</span>
+                    <span className="text-foreground">{permission}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Self-Exercises */}
+            <div className="bg-background/50 rounded-md p-3">
+              <h4 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                Self-Inquiry Exercises for {element} Moons
+              </h4>
+              <ul className="space-y-2">
+                {teaching.exercises.map((ex, i) => (
+                  <li key={i} className="text-sm text-foreground italic">
+                    {i + 1}. {ex}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* All Medicine */}
+            <div>
+              <h4 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                All {element} Medicine
+              </h4>
+              <ul className="space-y-1.5">
+                {teaching.medicine.map((med, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm">
+                    <span className="text-primary mt-0.5">💊</span>
+                    <span className="text-muted-foreground">{med}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+// Helper function for Moon element description
+function getMoonElementDescription(element: string): string {
+  const descriptions: Record<string, string> = {
+    Water: 'Your emotional nature runs DEEP. You feel everything intensely—your own feelings and often others\' too. You need quiet, solitude, and safe spaces to process. Tears are your release valve. Music, water, and sacred spaces are your medicine. Your intuition is highly developed, but you must learn boundaries to prevent emotional overwhelm.',
+    Fire: 'Your emotional nature is DYNAMIC. You need action, movement, and passion to feel alive. Stagnation is your enemy. You express emotions through doing, not discussing. You need physical outlets for feelings—movement, adventure, creativity. Your enthusiasm is contagious, but impatience and burnout are your shadows.',
+    Air: 'Your emotional nature is MENTAL. You process feelings through thinking, talking, and understanding. You need to articulate your emotions to release them. Journaling, conversation, and mental stimulation are your medicine. You may intellectualize feelings rather than fully experiencing them—the work is dropping from head to heart.',
+    Earth: 'Your emotional nature is GROUNDED. You need physical comfort, routine, and tangible security to feel safe. You process slowly and need time. Touch, nature, good food, and stable environments are your medicine. You may hold onto feelings too long—the work is learning to let things flow rather than crystallize.'
+  };
+  return descriptions[element] || 'Your emotional nature is unique and complex.';
+}
 
 // Sub-components
 const MoonPhaseCard: React.FC<{ moonPhase: BirthMoonPhaseData }> = ({ moonPhase }) => (
