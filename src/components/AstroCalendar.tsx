@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles, Gauge } from "lucide-react";
 import { ChartDecoderView } from "./ChartDecoderView";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
@@ -18,6 +18,7 @@ import { NatalChartWheel } from "./NatalChartWheel";
 import { DayTypeLegend } from "./DayTypeLegend";
 import { VoiceMemoModal } from "./VoiceMemoModal";
 import { VoiceMemoLibrary } from "./VoiceMemoLibrary";
+import { PlanetarySpeedsView } from "./PlanetarySpeedsView";
 import { useUserData } from "@/hooks/useUserData";
 import { useNotes } from "@/hooks/useNotes";
 import { useNatalChart, NatalChart } from "@/hooks/useNatalChart";
@@ -25,7 +26,7 @@ import { useCloudBackup } from "@/hooks/useCloudBackup";
 import { useVoiceMemos } from "@/hooks/useVoiceMemos";
 import { DayData, generateICalExport } from "@/lib/astrology";
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder";
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -134,6 +135,9 @@ export const AstroCalendar = () => {
     }
     if (viewMode === "decoder") {
       return "Chart Decoder";
+    }
+    if (viewMode === "speeds") {
+      return "Planetary Speeds";
     }
     if (viewMode === "moon-phases") {
       return `${currentDate.getFullYear()} Moon Phases`;
@@ -384,6 +388,17 @@ export const AstroCalendar = () => {
                 <Sparkles size={14} />
                 Decoder
               </button>
+              <button
+                onClick={() => setViewMode("speeds")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "speeds"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Gauge size={14} />
+                Speeds
+              </button>
             </div>
 
             {userData && (
@@ -562,6 +577,10 @@ export const AstroCalendar = () => {
             ]}
             selectedChartId={selectedChartForTiming}
           />
+        )}
+
+        {viewMode === "speeds" && (
+          <PlanetarySpeedsView />
         )}
       </div>
 
