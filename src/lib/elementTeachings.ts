@@ -315,9 +315,9 @@ export const ELEMENT_TEACHINGS: Record<string, ElementTeaching> = {
     ],
     
     medicine: [
-      'Take a class like Toastmasters or Dale Carnegie to learn public speaking and social etiquette',
-      'Act like you\'re interested in the stories of people around you',
-      'Write in a journal and "air" your thoughts and feelings',
+      'Take a class focused on public speaking or conscious communication to strengthen your voice',
+      'Practice deep listening—let others finish before responding, and notice what you learn when you give space',
+      'Write in a journal and "air" your thoughts and feelings—let the words flow without editing',
       'Ask questions. The single most powerful gift that an air person knows is how to ask questions and engage the other in telling their story',
       'If you\'ve been told you talk too much, ask for feedback. "Did you understand what I just said?" Then listen to those around you'
     ]

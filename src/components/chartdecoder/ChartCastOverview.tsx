@@ -5,6 +5,13 @@ import { ChartPlanet, getPlanetSymbol, getSignSymbol, computeDignity } from '@/l
 import { getDignityStatus } from '@/lib/planetDignities';
 import { generateCharacterProfile, CharacterProfile, PLANET_ROLES, HOUSE_STAGES } from '@/lib/cinematicNarrative';
 
+// Traditional rulers for determining chart ruler
+const SIGN_RULERS: Record<string, string> = {
+  Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon',
+  Leo: 'Sun', Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Mars',
+  Sagittarius: 'Jupiter', Capricorn: 'Saturn', Aquarius: 'Saturn', Pisces: 'Jupiter'
+};
+
 interface ChartCastOverviewProps {
   planets: ChartPlanet[];
   onSelectPlanet: (planetName: string) => void;
@@ -18,10 +25,43 @@ export const ChartCastOverview: React.FC<ChartCastOverviewProps> = ({
   selectedPlanet,
   useTraditional = true
 }) => {
-  // Generate profiles for all planets
+  // Determine chart ruler based on Ascendant sign
+  const ascendant = planets.find(p => p.name === 'Ascendant');
+  const chartRuler = ascendant ? SIGN_RULERS[ascendant.sign] : null;
+  
+  // Find signs of Sun, Moon, Ascendant to determine which planets rule key placements
+  const sunSign = planets.find(p => p.name === 'Sun')?.sign;
+  const moonSign = planets.find(p => p.name === 'Moon')?.sign;
+  const ascSign = ascendant?.sign;
+  
+  // Planets that rule key placements get elevated importance
+  const rulingPlanets = new Set<string>();
+  if (sunSign) rulingPlanets.add(SIGN_RULERS[sunSign]);
+  if (moonSign) rulingPlanets.add(SIGN_RULERS[moonSign]);
+  if (ascSign) rulingPlanets.add(SIGN_RULERS[ascSign]);
+
+  // Generate profiles for all planets with adjusted importance
   const profiles = React.useMemo(() => 
-    planets.map(p => generateCharacterProfile(p, useTraditional)),
-    [planets, useTraditional]
+    planets.map(p => {
+      const profile = generateCharacterProfile(p, useTraditional);
+      
+      // Elevate chart ruler and planets ruling Sun/Moon/Asc to lead status
+      if (rulingPlanets.has(p.name) && profile.who.importance !== 'lead') {
+        const isChartRuler = p.name === chartRuler;
+        return {
+          ...profile,
+          who: {
+            ...profile.who,
+            importance: 'lead' as const,
+            role: isChartRuler 
+              ? `The Chart Ruler / ${profile.who.role}`
+              : `Key Ruler / ${profile.who.role}`
+          }
+        };
+      }
+      return profile;
+    }),
+    [planets, useTraditional, chartRuler, rulingPlanets]
   );
 
   // Group by importance
