@@ -232,6 +232,7 @@ export interface CelestialBodySpeed {
   timeInSign: string;        // average time in each sign
   retrogradeFrequency?: string;
   retrogradeDuration?: string;
+  retrogradeDetails?: string; // Detailed explanation of retrograde cycle
   speedNote: string;         // Why this matters
   summary: string;           // What this body represents
   discovery?: string;        // When discovered (for minor planets)
@@ -277,7 +278,20 @@ export const CELESTIAL_BODY_SPEEDS: CelestialBodySpeed[] = [
     timeInSign: '14-30 days (varies due to retrograde)',
     retrogradeFrequency: '3-4 times per year',
     retrogradeDuration: '~3 weeks each',
-    speedNote: 'Mercury never strays more than 28° from the Sun. Its speed varies dramatically—sometimes 2°/day, sometimes appearing stationary before retrograde.',
+    retrogradeDetails: `Mercury goes retrograde 3-4 times per year in a predictable pattern:
+• Each retrograde lasts about 3 weeks (21-24 days)
+• Pre-retrograde shadow: ~2 weeks before (Mercury slows, themes emerge)
+• Post-retrograde shadow: ~2 weeks after (re-processing lessons)
+• Total cycle: ~7-8 weeks from first shadow to clear
+
+The 3 retrogrades each year move backwards through elements:
+• 2025: Aries (Mar), Leo/Virgo (Jul-Aug), Sagittarius (Nov)
+• 2026: Pisces/Aries (Feb-Mar), Cancer/Leo (Jun-Jul), Scorpio (Oct-Nov)
+
+Why 3 times? Mercury orbits the Sun 4x per year. Each orbit, it passes between Earth and Sun once, creating the apparent backward motion. The 4th retrograde sometimes squeezes into late December/January.
+
+During retrograde: Mercury appears to move backwards ~10-15°, revisiting degrees it already crossed. This is why old issues, ex-partners, and past miscommunications resurface.`,
+    speedNote: 'Mercury never strays more than 28° from the Sun. Its speed varies dramatically—sometimes 2°/day direct, sometimes appearing stationary before retrograde.',
     summary: 'Communication, thinking patterns, learning style, and how you process and share information. Mercury rules the mind and connections.'
   },
   {
@@ -291,6 +305,20 @@ export const CELESTIAL_BODY_SPEEDS: CelestialBodySpeed[] = [
     timeInSign: '23-60 days (varies due to retrograde)',
     retrogradeFrequency: 'Every 18 months',
     retrogradeDuration: '~40 days',
+    retrogradeDetails: `Venus retrograde is rare and intense—only every 18 months:
+• Each retrograde lasts ~40-43 days
+• Pre-retrograde shadow: ~3 weeks before
+• Post-retrograde shadow: ~3 weeks after
+• Total cycle: ~10-11 weeks
+
+Venus retrogrades follow an 8-year pattern (the Venus Star Point):
+• 2025: Pisces/Aries (Mar-Apr 2025)
+• 2026: Leo/Virgo (Jul-Sep 2026)
+• 2028: Capricorn/Aquarius (Dec 2027-Jan 2028)
+
+The 5 Venus retrograde points over 8 years create a perfect pentagram in the sky—this is why the 5-pointed star is associated with Venus/Aphrodite.
+
+During retrograde: Old loves return, relationship issues surface for review, and your values undergo deep reassessment. Not ideal for starting new relationships, major purchases, or aesthetic changes (haircuts, cosmetic procedures). Great for reuniting with lost loves if the connection has substance.`,
     speedNote: 'Venus never strays more than 48° from the Sun. When retrograde, Venus can spend up to 4 months in one sign, intensifying its themes there.',
     summary: 'Love, beauty, values, pleasure, and how you attract and appreciate. Venus shows what you find beautiful and how you relate.'
   },
@@ -305,6 +333,20 @@ export const CELESTIAL_BODY_SPEEDS: CelestialBodySpeed[] = [
     timeInSign: '6-7 weeks (up to 7 months when retrograde)',
     retrogradeFrequency: 'Every 26 months',
     retrogradeDuration: '~2.5 months',
+    retrogradeDetails: `Mars retrograde is the rarest of the personal planets—only every 26 months (2+ years):
+• Each retrograde lasts ~58-80 days (2-2.5 months)
+• Pre-retrograde shadow: ~6-8 weeks before
+• Post-retrograde shadow: ~6-8 weeks after
+• Total cycle: ~5-6 months from first shadow to clear
+
+Recent and upcoming Mars retrogrades:
+• Dec 2024 - Feb 2025: Leo/Cancer (just ended!)
+• Jan 2027 - Apr 2027: Virgo/Leo
+• Mar 2029 - May 2029: Libra/Virgo
+
+Mars spends 6-7 months in the retrograde sign, making it the longest-lasting personal planet transit. This is why Mars retrograde years feel so significant—one area of life gets intensely worked over.
+
+During retrograde: Physical energy decreases, anger can simmer rather than express, projects stall. Not ideal for starting aggressive campaigns, surgeries (if avoidable), or new physical training regimes. Great for reviewing strategies, healing from old conflicts, and addressing buried anger.`,
     speedNote: 'Mars has the most eccentric orbit of the personal planets. When retrograde, Mars can spend 6-7 months in one sign, creating prolonged action themes.',
     summary: 'Drive, ambition, anger, sexuality, and how you assert yourself. Mars shows how you fight for what you want and your physical energy.'
   },
@@ -321,6 +363,18 @@ export const CELESTIAL_BODY_SPEEDS: CelestialBodySpeed[] = [
     timeInSign: '~12 months',
     retrogradeFrequency: 'Once per year',
     retrogradeDuration: '~4 months',
+    retrogradeDetails: `Jupiter goes retrograde once per year like clockwork:
+• Each retrograde lasts ~4 months (120 days)
+• Retrogrades every year, shifting ~10-11 degrees through the zodiac
+• Jupiter is retrograde about 30% of the time
+
+Jupiter retrograde isn't as disruptive as inner planet retrogrades. During this time:
+• Expansion turns inward—internal growth over external success
+• Beliefs and philosophy are reconsidered
+• Over-extension from the direct period is corrected
+• Legal matters may slow or require review
+
+Because Jupiter retrograde is so common, many people are born with natal Jupiter retrograde (~30% of the population). These individuals often find their luck comes from internal wisdom rather than external opportunities.`,
     speedNote: 'Jupiter spends about one year in each sign, making its annual sign change a major astrological event affecting collective optimism and growth areas.',
     summary: 'Expansion, luck, wisdom, higher learning, and beliefs. Jupiter shows where you seek growth, meaning, and abundance.'
   },
@@ -335,6 +389,18 @@ export const CELESTIAL_BODY_SPEEDS: CelestialBodySpeed[] = [
     timeInSign: '~2.5 years',
     retrogradeFrequency: 'Once per year',
     retrogradeDuration: '~4.5 months',
+    retrogradeDetails: `Saturn goes retrograde once per year:
+• Each retrograde lasts ~4.5 months (135-140 days)
+• Saturn is retrograde about 36% of the time
+• Like Jupiter, many people have natal Saturn retrograde
+
+Saturn retrograde effects:
+• Delays and obstacles are internalized—you question your own structures
+• Authority issues surface for review
+• Karmic debts come due or are released
+• Responsibilities that aren't truly yours become clearer
+
+With Saturn retrograde, the hard work doesn't stop—but it becomes more about internal discipline and restructuring your relationship with responsibility, rather than meeting external demands.`,
     speedNote: 'Saturn\'s 29.5-year cycle creates the famous "Saturn Return" at ages 28-30, 58-60, and 87-90. These are major life restructuring periods.',
     summary: 'Discipline, responsibility, limitations, karma, and mastery. Saturn shows where you must work hard and develop maturity.'
   },
@@ -351,6 +417,15 @@ export const CELESTIAL_BODY_SPEEDS: CelestialBodySpeed[] = [
     timeInSign: '~7 years',
     retrogradeFrequency: 'Once per year',
     retrogradeDuration: '~5 months',
+    retrogradeDetails: `Uranus goes retrograde once per year for about 5 months:
+• Retrograde about 40% of the time
+• Very common to have natal Uranus retrograde
+
+Outer planet retrogrades are less personally disruptive because they're so common and move so slowly. Uranus retrograde effects are subtle:
+• Inner rebellion and awakening rather than external revolution
+• Reviewing where you've been too radical OR too conformist
+• Technology and innovation projects may stall for internal restructuring
+• Sudden insights come from within rather than external breakthroughs`,
     speedNote: 'Uranus takes 84 years to complete the zodiac—roughly a human lifespan. Its 7-year sign transits mark generational shifts in innovation and rebellion.',
     summary: 'Revolution, awakening, individuality, and sudden change. Uranus shows where you break free from convention and embrace your uniqueness.'
   },
@@ -365,6 +440,17 @@ export const CELESTIAL_BODY_SPEEDS: CelestialBodySpeed[] = [
     timeInSign: '~14 years',
     retrogradeFrequency: 'Once per year',
     retrogradeDuration: '~5.5 months',
+    retrogradeDetails: `Neptune goes retrograde once per year for about 5-6 months:
+• Retrograde about 40% of the time
+• Very common to have natal Neptune retrograde
+
+Neptune retrograde effects are the subtlest of all:
+• Dreams and spiritual experiences become more internal/private
+• Illusions and delusions you've been under may become clearer
+• Creative projects enter an incubation phase
+• Addictive patterns may surface for review and release
+
+Neptune is currently in Pisces (2012-2026), its home sign, making this an especially spiritually potent time. When it enters Aries in 2026, a new 165-year cycle of collective imagination begins.`,
     speedNote: 'Neptune spends 14 years in each sign, shaping the spiritual and artistic sensibilities of entire generations. Currently in Pisces (2012-2026), its home sign.',
     summary: 'Dreams, spirituality, illusion, and transcendence. Neptune shows where you dissolve boundaries and connect to the divine or deceive yourself.'
   },
@@ -379,6 +465,22 @@ export const CELESTIAL_BODY_SPEEDS: CelestialBodySpeed[] = [
     timeInSign: '12-30 years (varies due to eccentric orbit)',
     retrogradeFrequency: 'Once per year',
     retrogradeDuration: '~6 months',
+    retrogradeDetails: `Pluto goes retrograde once per year for about 5-6 months:
+• Retrograde about 44% of the time—the most of any planet
+• Very common to have natal Pluto retrograde
+
+Pluto's eccentric orbit creates dramatic speed variations:
+• Fastest through Scorpio & Sagittarius: ~12 years per sign
+• Slowest through Taurus & Gemini: ~30 years per sign
+• Currently in Aquarius (2024-2044): ~20 years
+
+Pluto retrograde effects:
+• Transformation work becomes internal and psychological
+• Power dynamics you've been ignoring surface for review
+• Obsessive patterns are confronted from within
+• Shadow work intensifies—what's buried demands attention
+
+Pluto won't return to its current zodiac position for 248 years. The "Pluto in Scorpio" generation (1983-1995) won't see Pluto in Scorpio again in their lifetimes.`,
     speedNote: 'Pluto\'s highly elliptical orbit means it spends 12 years in Scorpio but 30 years in Taurus. It moves fastest through Scorpio and Sagittarius.',
     summary: 'Transformation, power, death/rebirth, and the shadow self. Pluto shows where you experience profound change and must confront your depths.'
   },

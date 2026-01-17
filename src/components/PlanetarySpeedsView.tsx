@@ -308,6 +308,18 @@ export const PlanetarySpeedsView = () => {
                         </div>
                       </div>
                     )}
+                    
+                    {/* Detailed Retrograde Explanation */}
+                    {body.retrogradeDetails && (
+                      <div className="col-span-2 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                        <h4 className="text-xs uppercase tracking-wider text-amber-400 mb-2 flex items-center gap-2">
+                          <span className="text-base">℞</span> Retrograde Cycle Explained
+                        </h4>
+                        <div className="text-sm text-muted-foreground whitespace-pre-line leading-relaxed">
+                          {body.retrogradeDetails}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
                 
