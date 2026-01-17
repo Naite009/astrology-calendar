@@ -217,6 +217,477 @@ export const AVERAGE_SPEEDS: Record<string, string> = {
   Pluto: '0° 0.1\' / day'
 };
 
+// ============================================================================
+// COMPREHENSIVE PLANETARY MOTION DATA
+// ============================================================================
+
+export interface CelestialBodySpeed {
+  name: string;
+  symbol: string;
+  category: 'luminaries' | 'personal' | 'social' | 'transpersonal' | 'points' | 'asteroids' | 'tno';
+  averageSpeed: string;      // degrees per day
+  degreesPerDay: number;     // numeric for sorting
+  orbitalPeriod: string;     // around the zodiac
+  orbitalYears: number;      // numeric years
+  timeInSign: string;        // average time in each sign
+  retrogradeFrequency?: string;
+  retrogradeDuration?: string;
+  speedNote: string;         // Why this matters
+  summary: string;           // What this body represents
+  discovery?: string;        // When discovered (for minor planets)
+  diameter?: string;         // Physical size context
+}
+
+export const CELESTIAL_BODY_SPEEDS: CelestialBodySpeed[] = [
+  // LUMINARIES
+  {
+    name: 'Sun',
+    symbol: '☉',
+    category: 'luminaries',
+    averageSpeed: '0° 59\' / day',
+    degreesPerDay: 0.9856,
+    orbitalPeriod: '365.25 days',
+    orbitalYears: 1,
+    timeInSign: '~30 days',
+    speedNote: 'The Sun moves almost exactly 1° per day, completing the zodiac in one year. This is why your "birthday degree" returns each year.',
+    summary: 'Your core identity, ego, life force, and conscious self. The Sun represents what you are becoming and your essential vitality.'
+  },
+  {
+    name: 'Moon',
+    symbol: '☽',
+    category: 'luminaries',
+    averageSpeed: '13° 10\' / day',
+    degreesPerDay: 13.176,
+    orbitalPeriod: '27.3 days (sidereal) / 29.5 days (synodic)',
+    orbitalYears: 0.0748,
+    timeInSign: '~2.5 days',
+    speedNote: 'The fastest-moving body used in astrology. The Moon changes signs every 2-3 days, which is why knowing your exact birth time matters so much for Moon sign accuracy.',
+    summary: 'Your emotional nature, instinctive reactions, needs, and inner child. The Moon shows how you nurture and need to be nurtured.'
+  },
+  
+  // PERSONAL PLANETS
+  {
+    name: 'Mercury',
+    symbol: '☿',
+    category: 'personal',
+    averageSpeed: '1° 23\' / day',
+    degreesPerDay: 1.383,
+    orbitalPeriod: '88 days',
+    orbitalYears: 0.24,
+    timeInSign: '14-30 days (varies due to retrograde)',
+    retrogradeFrequency: '3-4 times per year',
+    retrogradeDuration: '~3 weeks each',
+    speedNote: 'Mercury never strays more than 28° from the Sun. Its speed varies dramatically—sometimes 2°/day, sometimes appearing stationary before retrograde.',
+    summary: 'Communication, thinking patterns, learning style, and how you process and share information. Mercury rules the mind and connections.'
+  },
+  {
+    name: 'Venus',
+    symbol: '♀',
+    category: 'personal',
+    averageSpeed: '1° 12\' / day',
+    degreesPerDay: 1.2,
+    orbitalPeriod: '225 days',
+    orbitalYears: 0.615,
+    timeInSign: '23-60 days (varies due to retrograde)',
+    retrogradeFrequency: 'Every 18 months',
+    retrogradeDuration: '~40 days',
+    speedNote: 'Venus never strays more than 48° from the Sun. When retrograde, Venus can spend up to 4 months in one sign, intensifying its themes there.',
+    summary: 'Love, beauty, values, pleasure, and how you attract and appreciate. Venus shows what you find beautiful and how you relate.'
+  },
+  {
+    name: 'Mars',
+    symbol: '♂',
+    category: 'personal',
+    averageSpeed: '0° 31\' / day',
+    degreesPerDay: 0.524,
+    orbitalPeriod: '687 days (1.88 years)',
+    orbitalYears: 1.88,
+    timeInSign: '6-7 weeks (up to 7 months when retrograde)',
+    retrogradeFrequency: 'Every 26 months',
+    retrogradeDuration: '~2.5 months',
+    speedNote: 'Mars has the most eccentric orbit of the personal planets. When retrograde, Mars can spend 6-7 months in one sign, creating prolonged action themes.',
+    summary: 'Drive, ambition, anger, sexuality, and how you assert yourself. Mars shows how you fight for what you want and your physical energy.'
+  },
+  
+  // SOCIAL PLANETS
+  {
+    name: 'Jupiter',
+    symbol: '♃',
+    category: 'social',
+    averageSpeed: '0° 5\' / day',
+    degreesPerDay: 0.0833,
+    orbitalPeriod: '11.86 years',
+    orbitalYears: 11.86,
+    timeInSign: '~12 months',
+    retrogradeFrequency: 'Once per year',
+    retrogradeDuration: '~4 months',
+    speedNote: 'Jupiter spends about one year in each sign, making its annual sign change a major astrological event affecting collective optimism and growth areas.',
+    summary: 'Expansion, luck, wisdom, higher learning, and beliefs. Jupiter shows where you seek growth, meaning, and abundance.'
+  },
+  {
+    name: 'Saturn',
+    symbol: '♄',
+    category: 'social',
+    averageSpeed: '0° 2\' / day',
+    degreesPerDay: 0.0333,
+    orbitalPeriod: '29.46 years',
+    orbitalYears: 29.46,
+    timeInSign: '~2.5 years',
+    retrogradeFrequency: 'Once per year',
+    retrogradeDuration: '~4.5 months',
+    speedNote: 'Saturn\'s 29.5-year cycle creates the famous "Saturn Return" at ages 28-30, 58-60, and 87-90. These are major life restructuring periods.',
+    summary: 'Discipline, responsibility, limitations, karma, and mastery. Saturn shows where you must work hard and develop maturity.'
+  },
+  
+  // TRANSPERSONAL PLANETS
+  {
+    name: 'Uranus',
+    symbol: '♅',
+    category: 'transpersonal',
+    averageSpeed: '0° 0.5\' / day',
+    degreesPerDay: 0.0117,
+    orbitalPeriod: '84 years',
+    orbitalYears: 84,
+    timeInSign: '~7 years',
+    retrogradeFrequency: 'Once per year',
+    retrogradeDuration: '~5 months',
+    speedNote: 'Uranus takes 84 years to complete the zodiac—roughly a human lifespan. Its 7-year sign transits mark generational shifts in innovation and rebellion.',
+    summary: 'Revolution, awakening, individuality, and sudden change. Uranus shows where you break free from convention and embrace your uniqueness.'
+  },
+  {
+    name: 'Neptune',
+    symbol: '♆',
+    category: 'transpersonal',
+    averageSpeed: '0° 0.2\' / day',
+    degreesPerDay: 0.00667,
+    orbitalPeriod: '165 years',
+    orbitalYears: 165,
+    timeInSign: '~14 years',
+    retrogradeFrequency: 'Once per year',
+    retrogradeDuration: '~5.5 months',
+    speedNote: 'Neptune spends 14 years in each sign, shaping the spiritual and artistic sensibilities of entire generations. Currently in Pisces (2012-2026), its home sign.',
+    summary: 'Dreams, spirituality, illusion, and transcendence. Neptune shows where you dissolve boundaries and connect to the divine or deceive yourself.'
+  },
+  {
+    name: 'Pluto',
+    symbol: '♇',
+    category: 'transpersonal',
+    averageSpeed: '0° 0.1\' / day',
+    degreesPerDay: 0.00417,
+    orbitalPeriod: '248 years',
+    orbitalYears: 248,
+    timeInSign: '12-30 years (varies due to eccentric orbit)',
+    retrogradeFrequency: 'Once per year',
+    retrogradeDuration: '~6 months',
+    speedNote: 'Pluto\'s highly elliptical orbit means it spends 12 years in Scorpio but 30 years in Taurus. It moves fastest through Scorpio and Sagittarius.',
+    summary: 'Transformation, power, death/rebirth, and the shadow self. Pluto shows where you experience profound change and must confront your depths.'
+  },
+  
+  // POINTS
+  {
+    name: 'North Node',
+    symbol: '☊',
+    category: 'points',
+    averageSpeed: '-0° 3\' / day (retrograde)',
+    degreesPerDay: -0.0528,
+    orbitalPeriod: '18.6 years',
+    orbitalYears: 18.6,
+    timeInSign: '~18 months',
+    speedNote: 'The Lunar Nodes always move retrograde (backwards through the zodiac). The Node Return at 18-19 years marks a major karmic turning point.',
+    summary: 'Your soul\'s growth direction and destiny. The North Node shows where you\'re meant to evolve, even though it feels uncomfortable.'
+  },
+  {
+    name: 'South Node',
+    symbol: '☋',
+    category: 'points',
+    averageSpeed: '-0° 3\' / day (retrograde)',
+    degreesPerDay: -0.0528,
+    orbitalPeriod: '18.6 years',
+    orbitalYears: 18.6,
+    timeInSign: '~18 months',
+    speedNote: 'Always exactly opposite the North Node. Represents your karmic past and what comes naturally but may need releasing.',
+    summary: 'Past life gifts and karmic baggage. The South Node shows your comfort zone and where you may over-rely on old patterns.'
+  },
+  {
+    name: 'Chiron',
+    symbol: '⚷',
+    category: 'points',
+    averageSpeed: '0° 1.2\' / day (avg)',
+    degreesPerDay: 0.02,
+    orbitalPeriod: '50.7 years',
+    orbitalYears: 50.7,
+    timeInSign: '2-8 years (highly eccentric orbit)',
+    retrogradeFrequency: 'Once per year',
+    retrogradeDuration: '~5 months',
+    discovery: '1977',
+    speedNote: 'Chiron\'s eccentric orbit means it races through Libra in ~2 years but crawls through Aries for ~8 years. The Chiron Return at 50 is a major healing crisis.',
+    summary: 'The "wounded healer." Chiron shows your deepest wound and your greatest gift for healing others through your own pain.'
+  },
+  {
+    name: 'Lilith (Mean)',
+    symbol: '⚸',
+    category: 'points',
+    averageSpeed: '3° 23\' / month',
+    degreesPerDay: 0.111,
+    orbitalPeriod: '8.85 years',
+    orbitalYears: 8.85,
+    timeInSign: '~9 months',
+    speedNote: 'Black Moon Lilith is the lunar apogee—a calculated point, not a physical body. It represents the Moon\'s farthest point from Earth.',
+    summary: 'Your shadow feminine, repressed desires, and raw power. Lilith shows where you refuse to be tamed and may face exile for your authenticity.'
+  },
+  {
+    name: 'Part of Fortune',
+    symbol: '⊕',
+    category: 'points',
+    averageSpeed: 'N/A (calculated)',
+    degreesPerDay: 0,
+    orbitalPeriod: 'N/A',
+    orbitalYears: 0,
+    timeInSign: 'Fixed in natal chart',
+    speedNote: 'Calculated from Sun, Moon, and Ascendant. Shows where luck, prosperity, and joy naturally flow in your life.',
+    summary: 'Your point of greatest fortune and ease. Where the Part of Fortune falls shows natural gifts and paths to happiness.'
+  },
+  {
+    name: 'Vertex',
+    symbol: 'Vx',
+    category: 'points',
+    averageSpeed: 'N/A (calculated)',
+    degreesPerDay: 0,
+    orbitalPeriod: 'N/A',
+    orbitalYears: 0,
+    timeInSign: 'Fixed in natal chart',
+    speedNote: 'The Vertex is a mathematically calculated point in the western hemisphere of the chart. It\'s called the "fated encounter" point.',
+    summary: 'Fated meetings and destined events. The Vertex shows where karmic connections and turning points enter your life through others.'
+  },
+  
+  // ASTEROIDS
+  {
+    name: 'Ceres',
+    symbol: '⚳',
+    category: 'asteroids',
+    averageSpeed: '0° 12\' / day (avg)',
+    degreesPerDay: 0.214,
+    orbitalPeriod: '4.6 years',
+    orbitalYears: 4.6,
+    timeInSign: '~4.5 months',
+    retrogradeFrequency: 'Once per year',
+    retrogradeDuration: '~3 months',
+    discovery: '1801 (first asteroid discovered)',
+    diameter: '940 km (largest asteroid)',
+    speedNote: 'Ceres was reclassified as a "dwarf planet" in 2006 along with Pluto. It\'s the largest body in the asteroid belt.',
+    summary: 'Nurturing, food, agriculture, and the mother-child bond. Ceres shows how you nurture and need to be nurtured, including your relationship with food and nature.'
+  },
+  {
+    name: 'Pallas',
+    symbol: '⚴',
+    category: 'asteroids',
+    averageSpeed: '0° 13\' / day (avg)',
+    degreesPerDay: 0.214,
+    orbitalPeriod: '4.62 years',
+    orbitalYears: 4.62,
+    timeInSign: '~4.5 months',
+    discovery: '1802',
+    diameter: '512 km',
+    speedNote: 'Named for Pallas Athena. Moves at similar speed to Ceres through the main asteroid belt.',
+    summary: 'Wisdom, strategy, pattern recognition, and creative intelligence. Pallas shows your ability to see the big picture and solve problems creatively.'
+  },
+  {
+    name: 'Juno',
+    symbol: '⚵',
+    category: 'asteroids',
+    averageSpeed: '0° 14\' / day (avg)',
+    degreesPerDay: 0.227,
+    orbitalPeriod: '4.36 years',
+    orbitalYears: 4.36,
+    timeInSign: '~4 months',
+    discovery: '1804',
+    diameter: '233 km',
+    speedNote: 'Named for Jupiter\'s wife. Important in synastry and marriage charts.',
+    summary: 'Marriage, commitment, partnership equality, and jealousy. Juno shows what you need in a committed partner and issues of fairness in relationships.'
+  },
+  {
+    name: 'Vesta',
+    symbol: '⚶',
+    category: 'asteroids',
+    averageSpeed: '0° 16\' / day (avg)',
+    degreesPerDay: 0.272,
+    orbitalPeriod: '3.63 years',
+    orbitalYears: 3.63,
+    timeInSign: '~3.5 months',
+    discovery: '1807',
+    diameter: '525 km',
+    speedNote: 'Named for the goddess of the hearth. Vesta is the brightest asteroid and occasionally visible to naked eye.',
+    summary: 'Devotion, sacred sexuality, focus, and the sacred flame. Vesta shows where you devote yourself completely and what you hold sacred.'
+  },
+  
+  // TRANS-NEPTUNIAN OBJECTS (TNOs) / DWARF PLANETS
+  {
+    name: 'Eris',
+    symbol: '⯰',
+    category: 'tno',
+    averageSpeed: '0° 0.5\' / year',
+    degreesPerDay: 0.00137,
+    orbitalPeriod: '559 years',
+    orbitalYears: 559,
+    timeInSign: '~46 years (average)',
+    discovery: '2005 (caused Pluto\'s reclassification)',
+    diameter: '2,326 km (larger than Pluto)',
+    speedNote: 'Eris is EXTREMELY slow—slower than Pluto. It has been in Aries since 1926 and will be there until 2048. Everyone alive has Eris in Aries or Pisces.',
+    summary: 'Discord, strife, competition, and the outsider. Eris shows where you create chaos to expose truth and fight for inclusion.'
+  },
+  {
+    name: 'Sedna',
+    symbol: '⯲',
+    category: 'tno',
+    averageSpeed: '0° 0.15\' / year',
+    degreesPerDay: 0.00041,
+    orbitalPeriod: '11,400 years',
+    orbitalYears: 11400,
+    timeInSign: '~950 years',
+    discovery: '2003',
+    diameter: '~1,000 km',
+    speedNote: 'Sedna has the longest known orbital period of any observed Solar System object. It takes 11,400 years to orbit the Sun! Currently in late Taurus, moving less than 1° per decade.',
+    summary: 'Deep isolation, victimization, and transcendent survival. Named for the Inuit goddess of the sea, Sedna shows themes of betrayal and finding power in extreme isolation.'
+  },
+  {
+    name: 'Makemake',
+    symbol: '🜨',
+    category: 'tno',
+    averageSpeed: '0° 1.1\' / year',
+    degreesPerDay: 0.003,
+    orbitalPeriod: '306 years',
+    orbitalYears: 306,
+    timeInSign: '~25 years',
+    discovery: '2005',
+    diameter: '1,430 km',
+    speedNote: 'Named for the Rapa Nui (Easter Island) creator god. Makemake has been in Libra since 2000 and enters Scorpio around 2025.',
+    summary: 'Creation, fertility, environmental awareness, and connection to nature. Makemake shows where you create something from nothing and your relationship to Earth\'s resources.'
+  },
+  {
+    name: 'Haumea',
+    symbol: '🜵',
+    category: 'tno',
+    averageSpeed: '0° 1.3\' / year',
+    degreesPerDay: 0.0036,
+    orbitalPeriod: '285 years',
+    orbitalYears: 285,
+    timeInSign: '~24 years',
+    discovery: '2004',
+    diameter: '~1,600 km (elongated shape)',
+    speedNote: 'Haumea has the fastest rotation of any large body in the Solar System (4 hours). This gives it an elongated shape. Named for Hawaiian goddess of childbirth.',
+    summary: 'Rebirth, regeneration, fertility, and the life cycle. Haumea shows where you experience renewal and connection to the creative life force.'
+  },
+  {
+    name: 'Quaoar',
+    symbol: '🝾',
+    category: 'tno',
+    averageSpeed: '0° 1.2\' / year',
+    degreesPerDay: 0.0033,
+    orbitalPeriod: '288 years',
+    orbitalYears: 288,
+    timeInSign: '~24 years',
+    discovery: '2002',
+    diameter: '1,110 km',
+    speedNote: 'Named for the creation god of the Tongva people of Southern California. Quaoar has been in Capricorn since 2000 and stays there until around 2025.',
+    summary: 'Creation through dance and song, manifestation, and sacred creativity. Quaoar shows where you bring things into being through rhythm and resonance.'
+  },
+  {
+    name: 'Orcus',
+    symbol: '🝿',
+    category: 'tno',
+    averageSpeed: '0° 1.4\' / year',
+    degreesPerDay: 0.0038,
+    orbitalPeriod: '247.5 years',
+    orbitalYears: 247.5,
+    timeInSign: '~20 years',
+    discovery: '2004',
+    diameter: '910 km',
+    speedNote: 'Orcus is called the "anti-Pluto" because its orbit is almost a mirror image of Pluto\'s. When Pluto is at perihelion, Orcus is at aphelion. Currently in Virgo (since ~2011), moving about 1.4° per year.',
+    summary: 'Oaths, promises, punishment for broken vows, and the underworld. Named for the Etruscan god of the dead, Orcus shows where you must keep your word or face consequences.'
+  },
+  {
+    name: 'Ixion',
+    symbol: '⯳',
+    category: 'tno',
+    averageSpeed: '0° 1.3\' / year',
+    degreesPerDay: 0.0036,
+    orbitalPeriod: '250 years',
+    orbitalYears: 250,
+    timeInSign: '~21 years',
+    discovery: '2001',
+    diameter: '~650 km',
+    speedNote: 'Named for the first human murderer in Greek mythology. Ixion has been in Sagittarius since the mid-2000s and will be there until the late 2020s.',
+    summary: 'Transgression, lust, ingratitude, and the consequences of violating sacred trust. Ixion shows where you may cross ethical lines or be tempted by forbidden desires.'
+  },
+  {
+    name: 'Varuna',
+    symbol: '⯴',
+    category: 'tno',
+    averageSpeed: '0° 1.2\' / year',
+    degreesPerDay: 0.0033,
+    orbitalPeriod: '282 years',
+    orbitalYears: 282,
+    timeInSign: '~23 years',
+    discovery: '2000',
+    diameter: '~700 km',
+    speedNote: 'Named for the Vedic god of the cosmic ocean and moral law. One of the first large TNOs discovered. Currently in Leo.',
+    summary: 'Cosmic order, fame, the waters of life, and natural law. Varuna shows where you connect to universal truth and may achieve lasting recognition.'
+  },
+  
+  // FIXED STARS (bonus)
+  {
+    name: 'Regulus',
+    symbol: '★',
+    category: 'points',
+    averageSpeed: '0° 0.8\' / century',
+    degreesPerDay: 0.0000219,
+    orbitalPeriod: 'Fixed (precesses ~1° per 72 years)',
+    orbitalYears: 25920,
+    timeInSign: '~2,160 years',
+    speedNote: 'Fixed stars move only due to precession of the equinoxes. Regulus moved from Leo to Virgo in 2012—a once-in-2000-years event!',
+    summary: 'The "Heart of the Lion." Royal star of success, fame, and power. Associated with leadership and military honors, but warns against revenge.'
+  },
+  {
+    name: 'Spica',
+    symbol: '★',
+    category: 'points',
+    averageSpeed: '0° 0.8\' / century',
+    degreesPerDay: 0.0000219,
+    orbitalPeriod: 'Fixed (precesses ~1° per 72 years)',
+    orbitalYears: 25920,
+    timeInSign: '~2,160 years',
+    speedNote: 'Currently at ~24° Libra. One of the brightest stars in the sky. Moves only by precession.',
+    summary: 'The brightest star in Virgo. Associated with gifts, talent, abundance, and the harvest. One of the most fortunate fixed stars, bringing success without effort.'
+  }
+];
+
+// Helper to get category label
+export const getCategoryLabel = (category: string): string => {
+  const labels: Record<string, string> = {
+    luminaries: 'Luminaries',
+    personal: 'Personal Planets',
+    social: 'Social Planets',
+    transpersonal: 'Transpersonal/Outer Planets',
+    points: 'Sensitive Points',
+    asteroids: 'Asteroids',
+    tno: 'Trans-Neptunian Objects (Dwarf Planets)'
+  };
+  return labels[category] || category;
+};
+
+// Helper to format speed comparison
+export const getSpeedComparison = (body: CelestialBodySpeed): string => {
+  if (body.degreesPerDay >= 1) {
+    return `Fast-moving: completes the zodiac in ${body.orbitalPeriod}`;
+  } else if (body.degreesPerDay >= 0.01) {
+    return `Moderate: spends ${body.timeInSign} in each sign`;
+  } else if (body.degreesPerDay > 0) {
+    return `Very slow: generational influence, in each sign for ${body.timeInSign}`;
+  } else {
+    return 'Calculated point based on other factors';
+  }
+};
+
 // Saturn symbols by sign
 export const SATURN_SYMBOLS: Record<string, { symbol: string; meaning: string }> = {
   Libra: { 
