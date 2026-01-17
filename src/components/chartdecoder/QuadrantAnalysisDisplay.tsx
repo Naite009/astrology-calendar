@@ -239,16 +239,14 @@ const HemisphereCard: React.FC<HemisphereCardProps> = ({ title, upper, lower }) 
       
       <div className="flex justify-between text-sm pt-1">
         <div className="flex flex-wrap gap-0.5">
-          {upper.planets.slice(0, 4).map(p => (
+          {upper.planets.map(p => (
             <span key={p} title={p}>{getPlanetSymbol(p)}</span>
           ))}
-          {upper.planets.length > 4 && <span className="text-xs text-muted-foreground">+{upper.planets.length - 4}</span>}
         </div>
         <div className="flex flex-wrap gap-0.5 justify-end">
-          {lower.planets.slice(0, 4).map(p => (
+          {lower.planets.map(p => (
             <span key={p} title={p}>{getPlanetSymbol(p)}</span>
           ))}
-          {lower.planets.length > 4 && <span className="text-xs text-muted-foreground">+{lower.planets.length - 4}</span>}
         </div>
       </div>
     </CardContent>
