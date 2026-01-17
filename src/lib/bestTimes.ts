@@ -2,7 +2,7 @@ import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
 import { getPlanetaryPositions, isMercuryRetrograde, getVoidOfCourseMoon, getMoonPhase } from './astrology';
 import { isTimeVOC } from './voidOfCourseMoon';
 import { getPlanetaryHourAt } from './planetaryHours';
-import { getRetrogradeStatus, MARS_RETROGRADES, MERCURY_RETROGRADES } from './retrogradePatterns';
+import { getRetrogradeStatus, getMarsRetrogrades, getMercuryRetrogrades } from './retrogradePatterns';
 import { calculateSolarArcChart, findSolarArcAspects, getExactSolarArcAspects } from './solarArcDirections';
 import { calculateSecondaryProgressions, getProgressedMoonInfo } from './secondaryProgressions';
 
@@ -349,7 +349,7 @@ export const calculateBestTimes = (
     }
 
     // Check Mars retrograde (penalty for health/career/action)
-    const marsRetro = getRetrogradeStatus(currentDate, MARS_RETROGRADES);
+    const marsRetro = getRetrogradeStatus(currentDate, getMarsRetrogrades(currentDate));
     if (marsRetro.isRetrograde) {
       if (category === 'health' || category === 'career') {
         score -= 15;
@@ -358,7 +358,7 @@ export const calculateBestTimes = (
     }
 
     // Check Mercury retrograde more broadly
-    const mercuryRetro = getRetrogradeStatus(currentDate, MERCURY_RETROGRADES);
+    const mercuryRetro = getRetrogradeStatus(currentDate, getMercuryRetrogrades(currentDate));
     if (mercuryRetro.isRetrograde && category !== 'travel') {
       score -= 10;
       reasons.push('☿ Mercury Retrograde (review/revise)');

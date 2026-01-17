@@ -1,38 +1,10 @@
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
+import * as Astronomy from 'astronomy-engine';
 
 // Zodiac signs in order
 const ZODIAC_SIGNS = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
   'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
-];
-
-// Mars Retrograde Database (2020-2030)
-export const MARS_RETROGRADES = [
-  { start: new Date('2020-09-09'), end: new Date('2020-11-13'), sign: 'Aries', preStart: new Date('2020-07-08'), postEnd: new Date('2021-01-02') },
-  { start: new Date('2022-10-30'), end: new Date('2023-01-12'), sign: 'Gemini', preStart: new Date('2022-09-03'), postEnd: new Date('2023-03-15') },
-  { start: new Date('2024-12-06'), end: new Date('2025-02-23'), sign: 'Leo/Cancer', preStart: new Date('2024-10-04'), postEnd: new Date('2025-05-02') },
-  { start: new Date('2027-01-10'), end: new Date('2027-04-01'), sign: 'Virgo', preStart: new Date('2026-11-12'), postEnd: new Date('2027-06-03') },
-  { start: new Date('2029-02-10'), end: new Date('2029-05-02'), sign: 'Libra', preStart: new Date('2028-12-17'), postEnd: new Date('2029-07-02') },
-];
-
-// Mercury Retrograde Database (2024-2027)
-export const MERCURY_RETROGRADES = [
-  // 2024
-  { start: new Date('2024-04-01'), end: new Date('2024-04-25'), sign: 'Aries', preStart: new Date('2024-03-18'), postEnd: new Date('2024-05-13') },
-  { start: new Date('2024-08-04'), end: new Date('2024-08-28'), sign: 'Virgo/Leo', preStart: new Date('2024-07-16'), postEnd: new Date('2024-09-11') },
-  { start: new Date('2024-11-25'), end: new Date('2024-12-15'), sign: 'Sagittarius', preStart: new Date('2024-11-07'), postEnd: new Date('2025-01-02') },
-  // 2025
-  { start: new Date('2025-03-15'), end: new Date('2025-04-07'), sign: 'Aries/Pisces', preStart: new Date('2025-03-01'), postEnd: new Date('2025-04-22') },
-  { start: new Date('2025-07-17'), end: new Date('2025-08-11'), sign: 'Leo', preStart: new Date('2025-07-03'), postEnd: new Date('2025-08-26') },
-  { start: new Date('2025-11-09'), end: new Date('2025-11-29'), sign: 'Sagittarius', preStart: new Date('2025-10-25'), postEnd: new Date('2025-12-14') },
-  // 2026
-  { start: new Date('2026-02-25'), end: new Date('2026-03-20'), sign: 'Pisces', preStart: new Date('2026-02-10'), postEnd: new Date('2026-04-04') },
-  { start: new Date('2026-06-29'), end: new Date('2026-07-23'), sign: 'Cancer/Leo', preStart: new Date('2026-06-14'), postEnd: new Date('2026-08-07') },
-  { start: new Date('2026-10-23'), end: new Date('2026-11-12'), sign: 'Scorpio', preStart: new Date('2026-10-08'), postEnd: new Date('2026-11-27') },
-  // 2027
-  { start: new Date('2027-02-09'), end: new Date('2027-03-03'), sign: 'Pisces/Aquarius', preStart: new Date('2027-01-25'), postEnd: new Date('2027-03-18') },
-  { start: new Date('2027-06-10'), end: new Date('2027-07-04'), sign: 'Cancer', preStart: new Date('2027-05-27'), postEnd: new Date('2027-07-19') },
-  { start: new Date('2027-10-06'), end: new Date('2027-10-28'), sign: 'Scorpio', preStart: new Date('2027-09-21'), postEnd: new Date('2027-11-12') },
 ];
 
 export interface RetrogradeInfo {
@@ -57,6 +29,175 @@ export interface RetrogradeDisplay {
   mercury: RetrogradeStatus;
   hasActivity: boolean;
 }
+
+// Cache for computed retrograde periods to avoid recalculation
+const retrogradeCache: Map<string, RetrogradeInfo[]> = new Map();
+
+// Check if a planet is retrograde on a specific date using astronomy-engine
+const isPlanetRetrograde = (body: Astronomy.Body, date: Date): boolean => {
+  try {
+    const yesterday = new Date(date);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    const todayVector = Astronomy.GeoVector(body, date, false);
+    const yesterdayVector = Astronomy.GeoVector(body, yesterday, false);
+    
+    const todayEcliptic = Astronomy.Ecliptic(todayVector);
+    const yesterdayEcliptic = Astronomy.Ecliptic(yesterdayVector);
+    
+    // Handle wrap-around at 0/360
+    let diff = todayEcliptic.elon - yesterdayEcliptic.elon;
+    if (diff > 180) diff -= 360;
+    if (diff < -180) diff += 360;
+    
+    return diff < 0;
+  } catch {
+    return false;
+  }
+};
+
+// Get zodiac sign from ecliptic longitude
+const getSignFromLongitude = (longitude: number): string => {
+  const signIndex = Math.floor(longitude / 30) % 12;
+  return ZODIAC_SIGNS[signIndex];
+};
+
+// Get the sign a planet is in on a specific date
+const getPlanetSign = (body: Astronomy.Body, date: Date): string => {
+  try {
+    const vector = Astronomy.GeoVector(body, date, false);
+    const ecliptic = Astronomy.Ecliptic(vector);
+    return getSignFromLongitude(ecliptic.elon);
+  } catch {
+    return 'Unknown';
+  }
+};
+
+// Find retrograde station (when planet goes retrograde or direct)
+const findStation = (
+  body: Astronomy.Body, 
+  startDate: Date, 
+  endDate: Date, 
+  lookingForRetrograde: boolean
+): Date | null => {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  
+  // Search day by day
+  const current = new Date(start);
+  let prevRetrograde = isPlanetRetrograde(body, current);
+  
+  while (current <= end) {
+    current.setDate(current.getDate() + 1);
+    const nowRetrograde = isPlanetRetrograde(body, current);
+    
+    if (lookingForRetrograde && !prevRetrograde && nowRetrograde) {
+      return new Date(current);
+    }
+    if (!lookingForRetrograde && prevRetrograde && !nowRetrograde) {
+      return new Date(current);
+    }
+    
+    prevRetrograde = nowRetrograde;
+  }
+  
+  return null;
+};
+
+// Compute retrograde periods for a given year range dynamically
+const computeRetrogradePeriods = (
+  body: Astronomy.Body,
+  startYear: number,
+  endYear: number,
+  avgRetrosPerYear: number = 3,
+  shadowDays: number = 14
+): RetrogradeInfo[] => {
+  const periods: RetrogradeInfo[] = [];
+  
+  // Calculate for each year
+  for (let year = startYear; year <= endYear; year++) {
+    const yearStart = new Date(year, 0, 1);
+    const yearEnd = new Date(year, 11, 31);
+    
+    let searchStart = new Date(yearStart);
+    
+    // Find all retrograde periods in this year
+    while (searchStart < yearEnd) {
+      // Find the next retrograde station
+      const retroStart = findStation(body, searchStart, yearEnd, true);
+      
+      if (!retroStart) break;
+      
+      // Find when it goes direct again (search up to 6 months for Mars)
+      const searchEnd = new Date(retroStart);
+      searchEnd.setMonth(searchEnd.getMonth() + 6);
+      
+      const retroEnd = findStation(body, retroStart, searchEnd, false);
+      
+      if (!retroEnd) break;
+      
+      // Get the sign(s) during retrograde
+      const startSign = getPlanetSign(body, retroStart);
+      const endSign = getPlanetSign(body, retroEnd);
+      const sign = startSign === endSign ? startSign : `${startSign}/${endSign}`;
+      
+      // Calculate shadow periods
+      const preStart = new Date(retroStart);
+      preStart.setDate(preStart.getDate() - shadowDays);
+      
+      const postEnd = new Date(retroEnd);
+      postEnd.setDate(postEnd.getDate() + shadowDays);
+      
+      periods.push({
+        start: retroStart,
+        end: retroEnd,
+        sign,
+        preStart,
+        postEnd
+      });
+      
+      // Move search forward past this retrograde period
+      searchStart = new Date(retroEnd);
+      searchStart.setDate(searchStart.getDate() + 30); // Skip ahead to avoid re-finding same period
+    }
+  }
+  
+  return periods;
+};
+
+// Get cached or compute retrograde periods
+export const getRetrogradePeriods = (body: Astronomy.Body, forDate: Date): RetrogradeInfo[] => {
+  const year = forDate.getFullYear();
+  const startYear = year - 1; // Include previous year for shadow periods
+  const endYear = year + 1; // Include next year for shadow periods
+  
+  const cacheKey = `${body}_${startYear}_${endYear}`;
+  
+  if (retrogradeCache.has(cacheKey)) {
+    return retrogradeCache.get(cacheKey)!;
+  }
+  
+  // Configure based on planet
+  let shadowDays = 14;
+  if (body === Astronomy.Body.Mars) {
+    shadowDays = 30; // Mars has longer shadow periods
+  }
+  
+  const periods = computeRetrogradePeriods(body, startYear, endYear, 3, shadowDays);
+  retrogradeCache.set(cacheKey, periods);
+  
+  return periods;
+};
+
+// Get Mercury retrograde periods (dynamically computed)
+export const getMercuryRetrogrades = (forDate: Date): RetrogradeInfo[] => {
+  return getRetrogradePeriods(Astronomy.Body.Mercury, forDate);
+};
+
+// Get Mars retrograde periods (dynamically computed)
+export const getMarsRetrogrades = (forDate: Date): RetrogradeInfo[] => {
+  return getRetrogradePeriods(Astronomy.Body.Mars, forDate);
+};
 
 // Check if date is during retrograde
 export const getRetrogradeStatus = (date: Date, retrogrades: RetrogradeInfo[]): RetrogradeStatus => {
@@ -107,10 +248,13 @@ export const getRetrogradeStatus = (date: Date, retrogrades: RetrogradeInfo[]): 
   return { isRetrograde: false, isShadow: false };
 };
 
-// Get retrograde display info for both Mars and Mercury
+// Get retrograde display info for both Mars and Mercury - NOW DYNAMIC!
 export const getRetrogradeDisplay = (date: Date): RetrogradeDisplay => {
-  const mars = getRetrogradeStatus(date, MARS_RETROGRADES);
-  const mercury = getRetrogradeStatus(date, MERCURY_RETROGRADES);
+  const mercuryRetros = getMercuryRetrogrades(date);
+  const marsRetros = getMarsRetrogrades(date);
+  
+  const mars = getRetrogradeStatus(date, marsRetros);
+  const mercury = getRetrogradeStatus(date, mercuryRetros);
   
   return {
     mars,
@@ -223,4 +367,19 @@ export const formatRetrogradeDate = (date: Date): string => {
 // Get days until retrograde ends
 export const getDaysUntilEnd = (endDate: Date, currentDate: Date): number => {
   return Math.ceil((endDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
+};
+
+// Get all upcoming retrogrades for a planet within next N months
+export const getUpcomingRetrogrades = (
+  body: Astronomy.Body,
+  fromDate: Date,
+  monthsAhead: number = 24
+): RetrogradeInfo[] => {
+  const endDate = new Date(fromDate);
+  endDate.setMonth(endDate.getMonth() + monthsAhead);
+  
+  const periods = getRetrogradePeriods(body, fromDate);
+  
+  // Filter to only future retrogrades
+  return periods.filter(p => p.start >= fromDate && p.start <= endDate);
 };
