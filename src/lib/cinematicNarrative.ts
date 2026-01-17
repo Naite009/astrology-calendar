@@ -35,10 +35,10 @@ export const PLANET_ROLES: Record<string, CharacterRole> = {
     importance: 'lead'
   },
   Venus: {
-    role: 'The Love Interest / Art Director',
-    archetype: 'What makes life beautiful and worth living—love, pleasure, aesthetics, and values.',
+    role: 'The Heart & Beauty Director',
+    archetype: 'What makes life beautiful and worth living—love, pleasure, aesthetics, values, and attraction.',
     movieAnalogy: 'Like the love interest AND the cinematographer combined. The romance subplot AND the visual beauty of the film.',
-    importance: 'supporting'
+    importance: 'supporting' // Note: Gets elevated to 'lead' when ruling Sun, Moon, or Ascendant
   },
   Mars: {
     role: 'The Action Hero / Warrior',
