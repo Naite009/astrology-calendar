@@ -1,12 +1,17 @@
 import React, { useState, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Sparkles, Info } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Sparkles, Info, Users, Heart, Grid3X3, Star } from 'lucide-react';
 
 import { PlanetIconGrid } from './chartdecoder/PlanetIconGrid';
 import { PlanetDetailCard } from './chartdecoder/PlanetDetailCard';
 import { DignityTable } from './chartdecoder/DignityTable';
 import { DispositorMap } from './chartdecoder/DispositorMap';
 import { ReadingScriptGenerator } from './chartdecoder/ReadingScriptGenerator';
+import { BirthConditionsDisplay } from './chartdecoder/BirthConditionsDisplay';
+import { ChartCastOverview } from './chartdecoder/ChartCastOverview';
+import { QuadrantAnalysisDisplay } from './chartdecoder/QuadrantAnalysisDisplay';
+import { HighestPotentialSynthesis } from './chartdecoder/HighestPotentialSynthesis';
 
 import { NatalChart } from '@/hooks/useNatalChart';
 import {
@@ -129,6 +134,7 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
     selectedChartId === 'general' ? (natalChart?.id || allCharts[0]?.id || '') : selectedChartId
   );
   const [selectedPlanet, setSelectedPlanet] = useState<string | null>('Sun');
+  const [activeTab, setActiveTab] = useState<string>('overview');
   
   // Settings state
   const [useTraditional, setUseTraditional] = useState(true);
@@ -182,9 +188,9 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
         <div className="flex items-center gap-3">
           <Sparkles className="text-primary" size={24} />
           <div>
-            <h2 className="text-2xl font-serif">Chart Decoder</h2>
+            <h2 className="text-2xl font-serif">Story of Self</h2>
             <p className="text-sm text-muted-foreground">
-              Read your natal chart in plain English — dignities, aspects, and dispositors explained.
+              Your cinematic chart interpretation — discover your cast of characters
             </p>
           </div>
         </div>
@@ -217,32 +223,48 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
         </div>
       </div>
 
-      {/* Two-Panel Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Panel - Planet Grid */}
-        <div className="lg:col-span-4 space-y-6">
-          {/* Planet Picker */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                Tap a Planet
-                <Info size={14} className="text-muted-foreground" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <PlanetIconGrid
-                planets={planets}
-                selectedPlanet={selectedPlanet}
-                onSelectPlanet={setSelectedPlanet}
-                useTraditional={useTraditional}
-              />
-            </CardContent>
-          </Card>
-        </div>
+      {/* Tabbed Interface */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-5 h-auto">
+          <TabsTrigger value="overview" className="flex items-center gap-1.5 py-2.5">
+            <Sparkles size={14} />
+            <span className="hidden sm:inline">Overview</span>
+          </TabsTrigger>
+          <TabsTrigger value="characters" className="flex items-center gap-1.5 py-2.5">
+            <Users size={14} />
+            <span className="hidden sm:inline">Characters</span>
+          </TabsTrigger>
+          <TabsTrigger value="relationships" className="flex items-center gap-1.5 py-2.5">
+            <Heart size={14} />
+            <span className="hidden sm:inline">Relationships</span>
+          </TabsTrigger>
+          <TabsTrigger value="patterns" className="flex items-center gap-1.5 py-2.5">
+            <Grid3X3 size={14} />
+            <span className="hidden sm:inline">Patterns</span>
+          </TabsTrigger>
+          <TabsTrigger value="synthesis" className="flex items-center gap-1.5 py-2.5">
+            <Star size={14} />
+            <span className="hidden sm:inline">Synthesis</span>
+          </TabsTrigger>
+        </TabsList>
 
-        {/* Right Panel - Details */}
-        <div className="lg:col-span-8 space-y-6">
-          {/* Big Picture Summary */}
+        {/* OVERVIEW TAB */}
+        <TabsContent value="overview" className="mt-6 space-y-6">
+          {/* Birth Conditions */}
+          <BirthConditionsDisplay chart={activeChart} />
+          
+          {/* Cast Overview */}
+          <ChartCastOverview 
+            planets={planets}
+            onSelectPlanet={(name) => {
+              setSelectedPlanet(name);
+              setActiveTab('characters');
+            }}
+            selectedPlanet={selectedPlanet}
+            useTraditional={useTraditional}
+          />
+          
+          {/* Quick Summary */}
           <Card className="bg-primary/5 border-primary/20">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Your Chart in Simple Words</CardTitle>
@@ -258,31 +280,121 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
               </ul>
             </CardContent>
           </Card>
+        </TabsContent>
 
-          {/* Planet Detail Card */}
-          {selectedPlanetData && (
-            <PlanetDetailCard
-              planet={selectedPlanetData.planet}
-              dignity={selectedPlanetData.dignity}
-              aspects={selectedPlanetData.aspects}
-              dispositorChain={selectedPlanetData.dispositorChain}
-              allPlanets={planets}
-            />
-          )}
+        {/* CHARACTERS TAB */}
+        <TabsContent value="characters" className="mt-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left Panel - Planet Grid */}
+            <div className="lg:col-span-4 space-y-6">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    Tap a Character
+                    <Info size={14} className="text-muted-foreground" />
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <PlanetIconGrid
+                    planets={planets}
+                    selectedPlanet={selectedPlanet}
+                    onSelectPlanet={setSelectedPlanet}
+                    useTraditional={useTraditional}
+                  />
+                </CardContent>
+              </Card>
+            </div>
 
-          {/* Dispositor Map */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Dispositor Map</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <DispositorMap
-                planets={planets}
-                useTraditional={useTraditional}
-                onSelectPlanet={setSelectedPlanet}
-              />
-            </CardContent>
-          </Card>
+            {/* Right Panel - Details */}
+            <div className="lg:col-span-8 space-y-6">
+              {/* Planet Detail Card */}
+              {selectedPlanetData && (
+                <PlanetDetailCard
+                  planet={selectedPlanetData.planet}
+                  dignity={selectedPlanetData.dignity}
+                  aspects={selectedPlanetData.aspects}
+                  dispositorChain={selectedPlanetData.dispositorChain}
+                  allPlanets={planets}
+                />
+              )}
+
+              {/* Dignity Table */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Dignities at a Glance</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <DignityTable
+                    planets={planets}
+                    onSelectPlanet={setSelectedPlanet}
+                    useTraditional={useTraditional}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* RELATIONSHIPS TAB */}
+        <TabsContent value="relationships" className="mt-6 space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Dispositor Map */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Dispositor Map — Who Reports to Whom</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DispositorMap
+                  planets={planets}
+                  useTraditional={useTraditional}
+                  onSelectPlanet={setSelectedPlanet}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Aspect Summary */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Cast Chemistry — Aspects</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-xs text-emerald-500 font-medium mb-2">Allies (Flowing)</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {aspects.filter(a => ['trine', 'sextile'].includes(a.aspectType)).slice(0, 8).map((a, i) => (
+                        <span key={i} className="text-xs bg-emerald-500/10 text-emerald-600 px-2 py-1 rounded">
+                          {a.planet1} {a.aspectType === 'trine' ? '△' : '✱'} {a.planet2}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-xs text-amber-500 font-medium mb-2">Rivals (Productive Tension)</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {aspects.filter(a => ['square', 'opposition'].includes(a.aspectType)).slice(0, 8).map((a, i) => (
+                        <span key={i} className="text-xs bg-amber-500/10 text-amber-600 px-2 py-1 rounded">
+                          {a.planet1} {a.aspectType === 'square' ? '□' : '☍'} {a.planet2}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-xs text-primary font-medium mb-2">Merged (Conjunctions)</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {aspects.filter(a => a.aspectType === 'conjunction').slice(0, 6).map((a, i) => (
+                        <span key={i} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                          {a.planet1} ☌ {a.planet2}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Reading Script Generator */}
           <ReadingScriptGenerator
@@ -292,22 +404,23 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
             useTraditional={useTraditional}
             natalChart={activeChart}
           />
+        </TabsContent>
 
-          {/* Dignity Table */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Dignities at a Glance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <DignityTable
-                planets={planets}
-                onSelectPlanet={setSelectedPlanet}
-                useTraditional={useTraditional}
-              />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+        {/* PATTERNS TAB */}
+        <TabsContent value="patterns" className="mt-6">
+          <QuadrantAnalysisDisplay planets={planets} />
+        </TabsContent>
+
+        {/* SYNTHESIS TAB */}
+        <TabsContent value="synthesis" className="mt-6">
+          <HighestPotentialSynthesis
+            chart={activeChart}
+            planets={planets}
+            aspects={aspects}
+            useTraditional={useTraditional}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
