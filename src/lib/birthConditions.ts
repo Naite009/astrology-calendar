@@ -294,7 +294,9 @@ function generateSectData(sect: ChartSect): SectData {
     },
     Mercury: {
       inSect: true, // Mercury is neutral, belongs to both sects
-      meaning: 'Mercury belongs to both sects—it adapts to the chart. Look at its sign and aspects for expression.'
+      meaning: sect === 'Day' 
+        ? 'Mercury belongs to both sects and adapts to yours. In your day chart, Mercury leans toward direct, logical communication and visible intellectual pursuits.'
+        : 'Mercury belongs to both sects and adapts to yours. In your night chart, Mercury leans toward reflective thinking, intuitive knowing, and processing ideas internally before sharing.'
     }
   };
 

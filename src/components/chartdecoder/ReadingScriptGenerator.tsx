@@ -37,13 +37,15 @@ interface ScriptSection {
 }
 
 // Generate experiential language for placements
-function getPlacementFeeling(planet: string, sign: string, dignity: DignityType): string {
+function getPlacementFeeling(planet: string, sign: string, dignity: DignityType, house?: number): string {
   const dignityFeelings: Record<DignityType, string> = {
     rulership: `Your ${planet} in ${sign} is at home — this energy flows naturally and consistently for you.`,
     exaltation: `Your ${planet} is elevated in ${sign} — this placement often feels like a gift or natural talent.`,
     detriment: `Your ${planet} in ${sign} requires more conscious navigation. You may feel pulled between what ${planet} wants and how ${sign} expresses.`,
     fall: `Your ${planet} in ${sign} is where you build earned confidence. This isn't weakness — it's where mastery develops through practice.`,
-    peregrine: `Your ${planet} in ${sign} is in neutral territory — look to aspects and house placement for how this expresses.`
+    peregrine: house 
+      ? `Your ${planet} in ${sign} is a free agent. It expresses most clearly through the ${house}${house === 1 ? 'st' : house === 2 ? 'nd' : house === 3 ? 'rd' : 'th'} house themes and through its aspects to other planets.`
+      : `Your ${planet} in ${sign} is a free agent — its expression comes through its aspects and the life areas it touches.`
   };
   return dignityFeelings[dignity];
 }
