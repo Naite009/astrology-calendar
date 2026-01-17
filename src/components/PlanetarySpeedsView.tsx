@@ -222,7 +222,7 @@ export const PlanetarySpeedsView = () => {
                       {getCategoryLabel(body.category)}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground line-clamp-1">{body.summary}</p>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{body.summary}</p>
                 </div>
                 
                 {/* Speed Info */}
@@ -317,6 +317,18 @@ export const PlanetarySpeedsView = () => {
                         </h4>
                         <div className="text-sm text-muted-foreground whitespace-pre-line leading-relaxed">
                           {body.retrogradeDetails}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Fixed Star Significance - How they become personal */}
+                    {body.fixedStarSignificance && (
+                      <div className="col-span-2 p-4 rounded-lg bg-violet-500/10 border border-violet-500/20">
+                        <h4 className="text-xs uppercase tracking-wider text-violet-400 mb-2 flex items-center gap-2">
+                          <span className="text-base">✧</span> How Fixed Stars Become Personal
+                        </h4>
+                        <div className="text-sm text-muted-foreground whitespace-pre-line leading-relaxed">
+                          {body.fixedStarSignificance}
                         </div>
                       </div>
                     )}

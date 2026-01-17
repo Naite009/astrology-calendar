@@ -237,6 +237,7 @@ export interface CelestialBodySpeed {
   summary: string;           // What this body represents
   discovery?: string;        // When discovered (for minor planets)
   diameter?: string;         // Physical size context
+  fixedStarSignificance?: string; // How fixed stars become personally significant
 }
 
 export const CELESTIAL_BODY_SPEEDS: CelestialBodySpeed[] = [
@@ -736,7 +737,7 @@ Pluto won't return to its current zodiac position for 248 years. The "Pluto in S
     summary: 'Cosmic order, fame, the waters of life, and natural law. Varuna shows where you connect to universal truth and may achieve lasting recognition.'
   },
   
-  // FIXED STARS (bonus)
+  // FIXED STARS
   {
     name: 'Regulus',
     symbol: '★',
@@ -746,8 +747,25 @@ Pluto won't return to its current zodiac position for 248 years. The "Pluto in S
     orbitalPeriod: 'Fixed (precesses ~1° per 72 years)',
     orbitalYears: 25920,
     timeInSign: '~2,160 years',
-    speedNote: 'Fixed stars move only due to precession of the equinoxes. Regulus moved from Leo to Virgo in 2012—a once-in-2000-years event!',
-    summary: 'The "Heart of the Lion." Royal star of success, fame, and power. Associated with leadership and military honors, but warns against revenge.'
+    speedNote: 'Fixed stars move only due to precession of the equinoxes (~1° every 72 years). Regulus moved from Leo to Virgo in 2012—a once-in-2160-years event! Currently at ~0° Virgo.',
+    summary: 'The "Heart of the Lion" (Alpha Leonis). One of the four Royal Stars of Persia (along with Aldebaran, Antares, and Fomalhaut). Regulus brings success, fame, military honors, and leadership ability. It confers the "touch of greatness" on those who have planets or angles conjunct it. However, it carries a warning: if success is achieved through revenge or cruelty, what was gained will be lost. The star promises glory but demands nobility of character. In ancient times, kings were crowned when planets transited Regulus.',
+    fixedStarSignificance: `Yes, everyone born in the same century has Regulus at essentially the same zodiacal degree—so how does it become personally significant?
+
+**Fixed stars become uniquely yours through:**
+
+1. **Conjunction to natal planets (within 1-2°)**: If your Sun, Moon, or any planet is at 0° Virgo (Regulus's current position), that planet is "crowned" by the royal star. Your Sun at 0° Virgo = Regulus on the Sun = leadership themes amplified.
+
+2. **Conjunction to chart angles (within 1°)**: Even more powerful! Regulus on your Ascendant, Midheaven, Descendant, or IC makes the star prominently personal to YOU. Someone born at 3am might have Regulus on the Ascendant while someone born at 3pm doesn't.
+
+3. **Aspects from personal planets**: A planet at 0° Sagittarius (square) or 0° Aries (trine) activates Regulus.
+
+**Why the slowness matters:**
+- Regulus moved from 29° Leo to 0° Virgo in 2012
+- Everyone born 2012+ has Regulus in Virgo (humble service vs. kingly Leo)
+- This is a 2,160-year generational shift! A "Great Month" in the Platonic Year
+- Your grandparents had Regulus in Leo; your grandchildren will have it in Virgo
+
+**The key**: The FIXED position of stars means they're like landmarks—your moving planets and angles either touch them or don't. That's what makes them personal.`
   },
   {
     name: 'Spica',
@@ -758,8 +776,48 @@ Pluto won't return to its current zodiac position for 248 years. The "Pluto in S
     orbitalPeriod: 'Fixed (precesses ~1° per 72 years)',
     orbitalYears: 25920,
     timeInSign: '~2,160 years',
-    speedNote: 'Currently at ~24° Libra. One of the brightest stars in the sky. Moves only by precession.',
-    summary: 'The brightest star in Virgo. Associated with gifts, talent, abundance, and the harvest. One of the most fortunate fixed stars, bringing success without effort.'
+    speedNote: 'Currently at ~24° Libra. One of the brightest stars in the sky (the 16th brightest). Moves only by precession, shifting about 1° every 72 years.',
+    summary: 'The "Ear of Wheat" held by the Virgin goddess (Alpha Virginis). The most fortunate of all fixed stars, bringing gifts, honors, and success that seems to come without struggle. Spica grants artistic and scientific ability, love of beauty, and the capacity for refined pleasures. Unlike some powerful stars, Spica has no negative side—it is purely benefic. Associated with harvest, abundance, and the reaping of what was sown. Those with Spica prominent are often "lucky" in ways that seem almost magical.',
+    fixedStarSignificance: `Spica at 24° Libra becomes personal through the same mechanisms as all fixed stars:
+
+**Personal activation:**
+1. **Planets at 24° Libra**: Your Venus, Mercury, or any planet at 24° Libra = conjunct Spica = blessed with gifts
+2. **Chart angles at 24° Libra**: MC at 24° Libra = Spica crowning your career point
+3. **Aspects**: Planets at 24° Cancer/Capricorn (square) or 24° Gemini/Aquarius (trine) also feel Spica
+
+**Historical consistency:**
+- For the past several centuries, Spica has been in late Libra
+- This "fixed" quality is actually its power—it's a stable point of fortune
+- Ancient temples were aligned to Spica's rising
+
+**Practical interpretation:**
+If your chart has nothing near 24° Libra, Spica won't feature in your natal chart. But when a transit or progression reaches 24° Libra, it "touches" Spica and activates that benefic energy temporarily for everyone.`
+  },
+  {
+    name: 'Algol',
+    symbol: '★',
+    category: 'points',
+    averageSpeed: '0° 0.8\' / century',
+    degreesPerDay: 0.0000219,
+    orbitalPeriod: 'Fixed (precesses ~1° per 72 years)',
+    orbitalYears: 25920,
+    timeInSign: '~2,160 years',
+    speedNote: 'Currently at ~26° Taurus. Known as the "Demon Star" because it visibly blinks (it\'s an eclipsing binary). Arabs called it "Ra\'s al-Ghul" (Head of the Demon).',
+    summary: 'The "Demon Star" representing the severed head of Medusa. Despite its fearsome reputation, Algol is not purely malefic—it represents raw primal power, the feminine rage that transforms, and the ability to face what others cannot. Those with Algol prominent often deal with intense themes: loss of the head (literal or metaphorical), confronting monsters, channeling dangerous forces. It grants protection against evil to those who can handle its intensity. Many successful people have Algol contacts, having learned to wield rather than fear its power.',
+    fixedStarSignificance: `Algol at 26° Taurus activates when your planets or angles touch that degree:
+
+**Activation points:**
+- Planets at 26° Taurus = direct conjunction
+- Planets at 26° Scorpio = opposition (also powerful)
+- Planets at 26° Leo or Aquarius = square (challenging)
+
+**Why Algol's reputation:**
+- Visible "winking" made ancients think it was alive/demonic
+- Associated with Medusa—whose gaze turned people to stone
+- But Perseus used that head as a WEAPON—this is Algol's secret
+
+**Modern interpretation:**
+Algol prominent = ability to handle the shadow, to face what others flee. Many surgeons, psychologists, and crisis workers have strong Algol. It's not bad luck—it's intense transformative power that requires conscious handling.`
   }
 ];
 
