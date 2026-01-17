@@ -2,7 +2,7 @@
 // These foundational conditions color the entire chart interpretation
 
 import { NatalChart } from '@/hooks/useNatalChart';
-
+import { getNatalPlanetHouse } from '@/lib/houseCalculations';
 // ============================================================================
 // MOON PHASE AT BIRTH
 // ============================================================================
@@ -206,43 +206,47 @@ const SECT_PLANETS = {
  * Houses 7-12 are ABOVE the horizon (day/public)
  */
 export function calculateSect(chart: NatalChart): SectData {
+  // Best source of truth: compute the Sun's house from the saved house cusps.
+  // Sect is determined by whether the Sun is in houses 7–12 (above horizon) or 1–6 (below horizon).
+  const sunHouse = getNatalPlanetHouse('Sun', chart);
+  if (typeof sunHouse === 'number' && sunHouse >= 1 && sunHouse <= 12) {
+    const sect: ChartSect = sunHouse >= 7 ? 'Day' : 'Night';
+    return generateSectData(sect);
+  }
+  // Fallback: approximate using Ascendant sign-degree vs Sun sign-degree.
+  // (Less reliable if the underlying chart uses non-equal houses / interceptions, but better than nothing.)
   const sunSign = chart.planets.Sun?.sign;
   const sunDegree = chart.planets.Sun?.degree || 0;
   const ascSign = chart.planets.Ascendant?.sign;
   const ascDegree = chart.planets.Ascendant?.degree || 0;
-  
+
   if (!sunSign || !ascSign) {
     // Default to night chart if we can't calculate (safer assumption)
     return generateSectData('Night');
   }
-  
+
   const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-                 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
-  
+    'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+
   const sunIndex = signs.indexOf(sunSign);
   const ascIndex = signs.indexOf(ascSign);
-  
+
+  // If we can't resolve sign names, default to Night (safer than calling Day incorrectly)
+  if (sunIndex === -1 || ascIndex === -1) {
+    return generateSectData('Night');
+  }
+
   // Convert to absolute degrees (0-360)
   const sunAbsolute = sunIndex * 30 + sunDegree;
   const ascAbsolute = ascIndex * 30 + ascDegree;
-  
-  // The Descendant is exactly opposite the Ascendant
-  const descAbsolute = (ascAbsolute + 180) % 360;
-  
-  // Calculate how far the Sun is from the Ascendant, going counter-clockwise through the houses
-  // Houses 1-6 = Sun is 0-180° before the Descendant (below horizon)
-  // Houses 7-12 = Sun is 0-180° after the Descendant (above horizon)
-  
+
   let sunFromAsc = sunAbsolute - ascAbsolute;
   if (sunFromAsc < 0) sunFromAsc += 360;
-  
-  // Sun is ABOVE horizon if it's between Descendant (180°) and Ascendant (360°/0°)
-  // That means sunFromAsc is between 180 and 360 (or equivalently, >= 180)
-  // Sun is BELOW horizon if sunFromAsc is between 0 and 180
-  
+
+  // Sun above horizon ≈ houses 7–12 (180°..360° from Asc)
   const sunAboveHorizon = sunFromAsc >= 180;
   const sect: ChartSect = sunAboveHorizon ? 'Day' : 'Night';
-  
+
   return generateSectData(sect);
 }
 
