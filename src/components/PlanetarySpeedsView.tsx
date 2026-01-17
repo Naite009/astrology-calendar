@@ -222,7 +222,7 @@ export const PlanetarySpeedsView = () => {
                       {getCategoryLabel(body.category)}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground line-clamp-2">{body.summary}</p>
+                  <p className="text-sm text-muted-foreground">{body.summary}</p>
                 </div>
                 
                 {/* Speed Info */}
