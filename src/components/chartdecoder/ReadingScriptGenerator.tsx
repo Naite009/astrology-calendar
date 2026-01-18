@@ -30,6 +30,7 @@ import {
   getHouseInterpretationForAge,
   getSaturnReturnContext
 } from '@/lib/houseInterpretations';
+import { getContextualAspectExplanation } from '@/lib/aspectContextInterpreter';
 
 interface ReadingScriptGeneratorProps {
   planets: ChartPlanet[];
@@ -558,7 +559,7 @@ export const ReadingScriptGenerator: React.FC<ReadingScriptGeneratorProps> = ({
       });
     }
 
-    // 4. KEY ASPECTS (tight ones first)
+    // 4. KEY ASPECTS (tight ones first) - with contextual explanations
     const tightAspects = aspects.filter(a => a.orb < 3).slice(0, 5);
     const aspectContent: string[] = [];
     
@@ -566,11 +567,37 @@ export const ReadingScriptGenerator: React.FC<ReadingScriptGeneratorProps> = ({
       aspectContent.push(`"Now let's look at the strongest connections in your chart — aspects under 3° that you feel intensely."`);
       
       tightAspects.forEach(aspect => {
+        const p1 = planets.find(p => p.name === aspect.planet1);
+        const p2 = planets.find(p => p.name === aspect.planet2);
         const p1Meaning = PLANET_MEANINGS[aspect.planet1]?.split(',')[0] || aspect.planet1;
         const p2Meaning = PLANET_MEANINGS[aspect.planet2]?.split(',')[0] || aspect.planet2;
         const symbol = getAspectSymbol(aspect.aspectType);
         
         aspectContent.push(`"${aspect.planet1} ${symbol} ${aspect.planet2} (${aspect.orb.toFixed(1)}°): ${getAspectFeeling(aspect, p1Meaning, p2Meaning)}"`);
+        
+        // Add contextual explanation if we have sign/house data
+        if (p1 && p2) {
+          const contextual = getContextualAspectExplanation(
+            aspect.planet1,
+            p1.sign,
+            p1.house || 1,
+            aspect.planet2,
+            p2.sign,
+            p2.house || 1,
+            aspect.aspectType
+          );
+          
+          // Add the "why" explanation
+          aspectContent.push(`"Why this matters: ${contextual.whyTensionExists.slice(0, 300)}${contextual.whyTensionExists.length > 300 ? '...' : ''}"`);
+          
+          // Add how others perceive this
+          aspectContent.push(`"Others sense this: ${contextual.othersPerceive}"`);
+          
+          // Add one key remedy
+          if (contextual.whatHelps.length > 0) {
+            aspectContent.push(`"What helps: ${contextual.whatHelps[0]}"`);
+          }
+        }
       });
     } else {
       aspectContent.push(`"Your aspects are more diffuse — no single connection dominates. This can mean more flexibility in how these energies express."`);
