@@ -123,29 +123,45 @@ export const ProgressionsDisplay: React.FC<ProgressionsDisplayProps> = ({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Current Position */}
             <div className="flex items-center gap-4">
               <div className="text-center">
                 <div className="text-3xl">{SIGN_SYMBOLS[progressedMoonInfo.sign]}</div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  {progressedMoonInfo.degree}° {progressedMoonInfo.sign}
+                <div className="text-sm font-medium mt-1">
+                  {progressedMoonInfo.exactDegree.toFixed(1)}° {progressedMoonInfo.sign}
                 </div>
+                {progressedMoonInfo.house && (
+                  <div className="text-xs text-muted-foreground">
+                    House {progressedMoonInfo.house}
+                  </div>
+                )}
               </div>
               
               <div className="flex-1">
                 <Badge variant={progressedMoonInfo.phase === 'Waxing' ? 'default' : 'secondary'}>
-                  {progressedMoonInfo.phase} Phase
+                  {progressedMoonInfo.detailedPhase.phaseName}
                 </Badge>
-                <p className="text-sm mt-2">{progressedMoonInfo.phaseDescription}</p>
+                <p className="text-sm mt-2">{progressedMoonInfo.detailedPhase.description}</p>
               </div>
             </div>
 
             <Separator />
 
+            {/* Detailed Phase Interpretation */}
+            <div className="bg-primary/5 p-4 rounded-md space-y-2">
+              <h4 className="text-xs font-medium uppercase tracking-wide text-primary">
+                {progressedMoonInfo.detailedPhase.phaseName} Life Theme
+              </h4>
+              <p className="text-sm leading-relaxed">{progressedMoonInfo.detailedPhase.lifeTheme}</p>
+              <p className="text-xs text-muted-foreground">{progressedMoonInfo.detailedPhase.timing}</p>
+            </div>
+
+            {/* Current Experience */}
             <div>
               <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
                 Current Theme: {progressedMoonInfo.signMeaning?.theme}
               </h4>
-              <p className="text-sm">{progressedMoonInfo.signMeaning?.focus}</p>
+              <p className="text-sm">{progressedMoonInfo.currentExperience}</p>
               
               <div className="flex flex-wrap gap-1 mt-2">
                 {progressedMoonInfo.signMeaning?.keywords.map((kw, i) => (
@@ -156,18 +172,59 @@ export const ProgressionsDisplay: React.FC<ProgressionsDisplayProps> = ({
               </div>
             </div>
 
+            {/* Current House Activation */}
             {progressedMoonInfo.house && progressedMoonInfo.houseMeaning && (
               <>
                 <Separator />
                 <div>
                   <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                    Activating House {progressedMoonInfo.house}: {progressedMoonInfo.houseMeaning.short}
+                    Currently Activating House {progressedMoonInfo.house}: {progressedMoonInfo.houseMeaning.short}
                   </h4>
                   <p className="text-sm">{progressedMoonInfo.houseMeaning.themes}</p>
                 </div>
               </>
             )}
 
+            {/* HOUSE CHANGE — Often more immediately felt than sign change */}
+            {progressedMoonInfo.houseChange.monthsUntilHouseChange !== null && 
+             progressedMoonInfo.houseChange.monthsUntilHouseChange < progressedMoonInfo.monthsUntilSignChange && (
+              <>
+                <Separator />
+                <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-md space-y-3">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle size={16} className="text-amber-600" />
+                    <h4 className="text-sm font-medium text-amber-700">
+                      House Change Coming First — ~{progressedMoonInfo.houseChange.monthsUntilHouseChange} months
+                    </h4>
+                  </div>
+                  <p className="text-sm">
+                    <strong>What you'll feel before the sign change:</strong> The house change is when you'll actually FEEL a shift in your daily life. Your emotional focus will move from House {progressedMoonInfo.houseChange.currentHouse} to House {progressedMoonInfo.houseChange.nextHouse}.
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {progressedMoonInfo.houseChange.howItFeelsBefore}
+                  </p>
+                  <div className="pt-2 border-t border-amber-500/20">
+                    <p className="text-sm">
+                      <strong>What House {progressedMoonInfo.houseChange.nextHouse} brings:</strong>
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {progressedMoonInfo.houseChange.whatHouseChangeBrings}
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Upcoming Shift Summary */}
+            <div className="bg-secondary/30 p-3 rounded-md">
+              <h4 className="text-xs font-medium mb-2 flex items-center gap-1">
+                <ArrowRight size={12} />
+                Upcoming Shift
+              </h4>
+              <p className="text-sm">{progressedMoonInfo.upcomingShift}</p>
+            </div>
+
+            {/* Sign Change Timing */}
             <div className="bg-secondary/30 p-3 rounded-md flex items-center gap-3">
               <Clock size={16} className="text-muted-foreground" />
               <div className="text-xs">
