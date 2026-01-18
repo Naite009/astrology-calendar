@@ -31,6 +31,7 @@ import {
   getSaturnReturnContext
 } from '@/lib/houseInterpretations';
 import { getContextualAspectExplanation } from '@/lib/aspectContextInterpreter';
+import { analyzeChartStrengths } from '@/lib/chartStrengths';
 
 interface ReadingScriptGeneratorProps {
   planets: ChartPlanet[];
@@ -403,6 +404,43 @@ export const ReadingScriptGenerator: React.FC<ReadingScriptGeneratorProps> = ({
       title: "Your Core Patterns & Highest Potential",
       content: openingContent
     });
+
+    // 1.5 STRENGTHS & SUPPORTS (Traditional Techniques)
+    if (natalChart) {
+      const strengthsAnalysis = analyzeChartStrengths(planets, aspects, natalChart, useTraditional);
+      const strengthsContent: string[] = [];
+      
+      strengthsContent.push(`"Not everything in your chart requires work. Some placements offer natural gifts, ease, and support. Traditional astrology calls these your 'benefic' influences — areas where life tends to help you."`);
+      
+      strengthsContent.push(`\n**YOUR GUIDING LIGHT: ${strengthsAnalysis.sectLight.planet}**`);
+      strengthsContent.push(`"${strengthsAnalysis.sectLight.interpretation}"`);
+      strengthsContent.push(`"${strengthsAnalysis.sectLight.guidance}"`);
+      
+      strengthsContent.push(`\n**YOUR PRIMARY HELPER: ${strengthsAnalysis.sectBenefic.planet}**`);
+      strengthsContent.push(`"${strengthsAnalysis.sectBenefic.interpretation}"`);
+      if (strengthsAnalysis.sectBenefic.easeZones.length > 0) {
+        strengthsContent.push(`"Where luck flows: ${strengthsAnalysis.sectBenefic.easeZones.slice(0, 2).join('; ')}."`);
+      }
+      
+      if (strengthsAnalysis.wellPlacedPlanets.length > 0) {
+        strengthsContent.push(`\n**YOUR NATURAL RESOURCES**`);
+        strengthsAnalysis.wellPlacedPlanets.slice(0, 3).forEach(planet => {
+          strengthsContent.push(`"${planet.planet} (${planet.qualityRating}): ${planet.traditionalInterpretation}"`);
+        });
+      }
+      
+      strengthsContent.push(`\n**THE ROLE OF ${strengthsAnalysis.sectMalefic.planet.toUpperCase()}**`);
+      strengthsContent.push(`"${strengthsAnalysis.sectMalefic.interpretation}"`);
+      strengthsContent.push(`"${strengthsAnalysis.sectMalefic.missionSupport}"`);
+      
+      strengthsContent.push(`\n**CONTENTMENT INDICATORS**`);
+      strengthsContent.push(`"${strengthsAnalysis.contentment.overall}"`);
+      
+      sections.push({
+        title: "Your Strengths & Supports",
+        content: strengthsContent
+      });
+    }
 
     // 2. THE BIG THREE (Sun, Moon, Ascendant)
     const bigThreeContent: string[] = [];
