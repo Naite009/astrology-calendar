@@ -73,14 +73,16 @@ const getDailyGuidance = (
   if (mercuryRetro) {
     return `Mercury Retrograde in ${moonSign} - Review and revise communications. Back up data. Reconnect with old contacts. Avoid new contracts. Practice patience with technology and travel.`;
   }
-  if (moonPhase.isBalsamic) {
-    return `Balsamic Moon in ${moonSign} - The final surrender before rebirth. This is sacred rest time. Release attachments. Meditate and dream. Trust the void. ${signData.focus} dissolves into the cosmic flow. Avoid starting anything new.`;
-  }
+  // If today contains an exact New/Full Moon moment, that story comes first.
+  // (The balsamic phase is still true, but the exact lunation is the headline.)
   if (isExactNewMoon) {
     return `New Moon in ${phaseSign} - Plant seeds of intention. Set powerful goals aligned with ${signData.focus}. ${signData.action} with fresh vision. Channel this initiating energy wisely. Avoid: ${signData.avoid}.`;
   }
   if (isExactFullMoon) {
     return `Full Moon in ${phaseSign} - Maximum illumination! Celebrate what you have manifested around ${signData.focus}. Release what no longer serves. Emotions peak. ${signData.action} with full awareness. Harvest your efforts.`;
+  }
+  if (moonPhase.isBalsamic) {
+    return `Balsamic Moon in ${moonSign} - The final surrender before rebirth. This is sacred rest time. Release attachments. Meditate and dream. Trust the void. ${signData.focus} dissolves into the cosmic flow. Avoid starting anything new.`;
   }
   if (phaseForGuidance.includes('Waxing')) {
     return `${phaseForGuidance} in ${moonSign} - Energy is building. ${signData.action} with awareness of ${signData.focus}. Avoid ${signData.avoid}.`;
@@ -719,18 +721,87 @@ interface DayOverviewSectionProps {
 }
 
 const DayOverviewSection = ({ dayData, colorExplanation, activeChart, transitAspects }: DayOverviewSectionProps) => {
-  const { aspects, moonPhase, planets } = dayData;
-  
+  const { aspects, moonPhase, exactLunarPhase } = dayData;
+
+  // Personal "lunation spotlight": if today contains an exact New/Full Moon moment,
+  // compute transits AT THE EXACT EVENT TIME (not the day's generic timestamp)
+  // so the degree hits show up accurately.
+  const lunationSpotlight = (() => {
+    if (!activeChart || !exactLunarPhase) return null;
+    if (exactLunarPhase.type !== 'New Moon' && exactLunarPhase.type !== 'Full Moon') return null;
+
+    const eventPlanets = getPlanetaryPositions(exactLunarPhase.time);
+    const eventAspects = calculateTransitAspects(exactLunarPhase.time, eventPlanets, activeChart)
+      .filter(a => (a.transitPlanet === 'Sun' || a.transitPlanet === 'Moon'))
+      // keep it tight — this is meant to catch the "exact hit" moments
+      .filter(a => parseFloat(String(a.orb)) <= 1.5);
+
+    // Prefer hits to Sun/Moon/Angles
+    const natalPriority: Record<string, number> = {
+      Sun: 100,
+      Moon: 95,
+      Ascendant: 90,
+      MC: 85,
+      IC: 80,
+      Descendant: 80,
+      Mercury: 60,
+      Venus: 60,
+      Mars: 60,
+    };
+
+    const sorted = [...eventAspects].sort((a, b) => {
+      const pA = natalPriority[a.natalPlanet] ?? 0;
+      const pB = natalPriority[b.natalPlanet] ?? 0;
+      if (pB !== pA) return pB - pA;
+      return parseFloat(String(a.orb)) - parseFloat(String(b.orb));
+    });
+
+    const top = sorted.slice(0, 3);
+    if (top.length === 0) return null;
+
+    return {
+      headline: `${exactLunarPhase.emoji} ${exactLunarPhase.type} at ${exactLunarPhase.position}`,
+      when: exactLunarPhase.time.toLocaleTimeString('en-US', {
+        timeZone: 'America/New_York',
+        hour: 'numeric',
+        minute: '2-digit',
+      }) + ' ET',
+      lines: top.map(a => {
+        const orb = parseFloat(String(a.orb));
+        const orbText = orb < 0.05 ? 'exact' : `orb ${a.orb}°`;
+        return `${getTransitPlanetSymbol(a.transitPlanet)} ${a.symbol} ${getTransitPlanetSymbol(a.natalPlanet)} — ${a.transitPlanet} ${a.aspect}s your natal ${a.natalPlanet} (${orbText})`;
+      }),
+    };
+  })();
+
   // Get personal day type if chart active, otherwise collective
   const personalDayType: PersonalDayType | null = activeChart 
     ? getPersonalDayType(transitAspects)
     : null;
   const collectiveDayType = getDayType(aspects, moonPhase);
-  
-  const displayDayType = personalDayType || collectiveDayType;
-  
+
   return (
     <div className="mb-6 p-5 rounded-sm border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-background">
+      {/* Lunation spotlight comes FIRST so it can't be missed */}
+      {lunationSpotlight && (
+        <div className="mb-4 rounded-sm border border-border bg-background/70 p-4">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="text-[11px] uppercase tracking-widest text-muted-foreground">Spotlight</div>
+              <div className="mt-1 font-serif text-lg font-medium text-foreground">
+                {lunationSpotlight.headline}
+              </div>
+              <div className="text-xs text-muted-foreground">{lunationSpotlight.when}</div>
+            </div>
+          </div>
+          <div className="mt-3 space-y-1 text-sm text-foreground">
+            {lunationSpotlight.lines.map((l, i) => (
+              <div key={i} className="leading-relaxed">{l}</div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Color Blocks Visual - matches calendar */}
       <div className="flex items-start gap-5 mb-4">
         {/* Color block stack - mimics calendar day appearance */}
