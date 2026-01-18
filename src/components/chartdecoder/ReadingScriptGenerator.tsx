@@ -22,6 +22,8 @@ import {
 } from '@/lib/chartDecoderLogic';
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
 import { detectChartPatterns, ChartPattern } from '@/lib/chartPatterns';
+import { PLANET_IN_SIGN } from '@/lib/planetSignExpressions';
+import { SIGN_COSTUMES } from '@/lib/cinematicNarrative';
 
 interface ReadingScriptGeneratorProps {
   planets: ChartPlanet[];
@@ -39,13 +41,13 @@ interface ScriptSection {
 // Generate experiential language for placements
 function getPlacementFeeling(planet: string, sign: string, dignity: DignityType, house?: number): string {
   const dignityFeelings: Record<DignityType, string> = {
-    rulership: `Your ${planet} in ${sign} is at home — this energy flows naturally and consistently for you.`,
-    exaltation: `Your ${planet} is elevated in ${sign} — this placement often feels like a gift or natural talent.`,
-    detriment: `Your ${planet} in ${sign} requires more conscious navigation. You may feel pulled between what ${planet} wants and how ${sign} expresses.`,
-    fall: `Your ${planet} in ${sign} is where you build earned confidence. This isn't weakness — it's where mastery develops through practice.`,
+    rulership: `This energy flows naturally and consistently for you — ${planet} is at home here.`,
+    exaltation: `This placement often feels like a gift or natural talent — ${planet} is elevated here.`,
+    detriment: `This requires more conscious navigation. You may feel pulled between what ${planet} wants and how ${sign} expresses.`,
+    fall: `This is where you build earned confidence. Not weakness — mastery develops through practice.`,
     peregrine: house 
-      ? `Your ${planet} in ${sign} is a free agent. It expresses most clearly through the ${house}${house === 1 ? 'st' : house === 2 ? 'nd' : house === 3 ? 'rd' : 'th'} house themes and through its aspects to other planets.`
-      : `Your ${planet} in ${sign} is a free agent — its expression comes through its aspects and the life areas it touches.`
+      ? `This energy expresses most clearly through the ${house}${house === 1 ? 'st' : house === 2 ? 'nd' : house === 3 ? 'rd' : 'th'} house themes and its aspects.`
+      : `A free agent — its expression comes through aspects and the life areas it touches.`
   };
   return dignityFeelings[dignity];
 }
@@ -96,18 +98,31 @@ export const ReadingScriptGenerator: React.FC<ReadingScriptGeneratorProps> = ({
     
     if (sun) {
       const sunDignity = computeDignity('Sun', sun.sign, useTraditional);
-      bigThreeContent.push(`"Your Sun is in ${sun.sign} at ${sun.degree.toFixed(0)}°. This is your core identity — who you're becoming."`);
-      bigThreeContent.push(`"${getPlacementFeeling('Sun', sun.sign, sunDignity)}"`);
+      const sunDescription = PLANET_IN_SIGN.Sun?.[sun.sign] || `Your core identity expresses through ${sun.sign}.`;
+      bigThreeContent.push(`"Your Sun is in ${sun.sign} at ${sun.degree.toFixed(0)}°${sun.house ? ` in the ${sun.house}${sun.house === 1 ? 'st' : sun.house === 2 ? 'nd' : sun.house === 3 ? 'rd' : 'th'} house` : ''}."`);
+      bigThreeContent.push(`"${sunDescription}"`);
+      if (sunDignity !== 'peregrine') {
+        bigThreeContent.push(`"${getPlacementFeeling('Sun', sun.sign, sunDignity, sun.house)}"`);
+      }
     }
     
     if (moon) {
       const moonDignity = computeDignity('Moon', moon.sign, useTraditional);
-      bigThreeContent.push(`"Your Moon is in ${moon.sign}. This is your emotional nature — what you need to feel safe and nourished."`);
-      bigThreeContent.push(`"${getPlacementFeeling('Moon', moon.sign, moonDignity)}"`);
+      const moonDescription = PLANET_IN_SIGN.Moon?.[moon.sign] || `Your emotional nature expresses through ${moon.sign}.`;
+      bigThreeContent.push(`"Your Moon is in ${moon.sign}${moon.house ? ` in the ${moon.house}${moon.house === 1 ? 'st' : moon.house === 2 ? 'nd' : moon.house === 3 ? 'rd' : 'th'} house` : ''}."`);
+      bigThreeContent.push(`"${moonDescription}"`);
+      if (moonDignity !== 'peregrine') {
+        bigThreeContent.push(`"${getPlacementFeeling('Moon', moon.sign, moonDignity, moon.house)}"`);
+      }
     }
     
     if (asc) {
-      bigThreeContent.push(`"Your Ascendant is in ${asc.sign}. This is how you appear to others and your approach to new situations."`);
+      const ascCostume = SIGN_COSTUMES[asc.sign];
+      const ascDescription = ascCostume 
+        ? `You enter every room wearing ${ascCostume.costume}. Your energy reads as ${ascCostume.energy}. You approach life ${ascCostume.howTheyDoIt}.`
+        : `Your Ascendant in ${asc.sign} shapes how you appear to others and approach new situations.`;
+      bigThreeContent.push(`"Your Ascendant is in ${asc.sign}."`);
+      bigThreeContent.push(`"${ascDescription}"`);
     }
     
     sections.push({
