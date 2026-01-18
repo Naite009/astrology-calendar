@@ -123,8 +123,19 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
   const transitAspects = activeChart 
     ? calculateTransitAspects(date, planets, activeChart)
     : [];
+
+  // If today contains an exact New/Full Moon moment, compute transits at the exact event time
+  // so the daily label + key hits reflect the actual lunation activation.
+  const transitAspectsForDisplay = (() => {
+    if (!activeChart || !exactLunarPhase) return transitAspects;
+    if (exactLunarPhase.type !== 'New Moon' && exactLunarPhase.type !== 'Full Moon') return transitAspects;
+
+    const eventPlanets = getPlanetaryPositions(exactLunarPhase.time);
+    return calculateTransitAspects(exactLunarPhase.time, eventPlanets, activeChart);
+  })();
+
   // Categorize transits - only show ≤2° orb on calendar, ≤5° in Day Detail
-  const sortedTransits = getTopTransitAspects(transitAspects, transitAspects.length);
+  const sortedTransits = getTopTransitAspects(transitAspectsForDisplay, transitAspectsForDisplay.length);
   const { primary, northNode, asteroids, other } = categorizeTransits(sortedTransits, 2);
   
   // State for collapsible sections
@@ -134,7 +145,7 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
   
   // Get personal day type based on transits to YOUR chart
   const personalDayType = activeChart 
-    ? getPersonalDayType(transitAspects)
+    ? getPersonalDayType(transitAspectsForDisplay)
     : null;
 
   const dayData: DayData = {

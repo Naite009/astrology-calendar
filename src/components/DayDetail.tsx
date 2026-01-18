@@ -774,9 +774,19 @@ const DayOverviewSection = ({ dayData, colorExplanation, activeChart, transitAsp
     };
   })();
 
+  // Prefer exact lunation timing for the headline day label.
+  // Otherwise the label can be hijacked by a random (even wide) daily snapshot aspect.
+  const transitAspectsForDayType = (() => {
+    if (!activeChart || !exactLunarPhase) return transitAspects;
+    if (exactLunarPhase.type !== 'New Moon' && exactLunarPhase.type !== 'Full Moon') return transitAspects;
+
+    const eventPlanets = getPlanetaryPositions(exactLunarPhase.time);
+    return calculateTransitAspects(exactLunarPhase.time, eventPlanets, activeChart);
+  })();
+
   // Get personal day type if chart active, otherwise collective
   const personalDayType: PersonalDayType | null = activeChart 
-    ? getPersonalDayType(transitAspects)
+    ? getPersonalDayType(transitAspectsForDayType)
     : null;
   const collectiveDayType = getDayType(aspects, moonPhase);
 
