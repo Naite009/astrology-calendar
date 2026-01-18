@@ -75,53 +75,126 @@ function getHouseContext(house: number | undefined, planetName: string): string 
   return `In the ${house}${house === 1 ? 'st' : house === 2 ? 'nd' : house === 3 ? 'rd' : 'th'} house of ${context.area}: ${context.meaning}`;
 }
 
-// Synthesis statements that weave sign + house together
-const SIGN_HOUSE_SYNTHESIS: Record<string, Record<number, string>> = {
-  Mercury: {
-    1: 'Your thinking IS your identity — you lead with your mind and people know you by how you communicate.',
-    2: 'Your mind is wired for practical value — you think about money, resources, and what ideas are actually worth.',
-    3: 'Your mind is in its natural habitat — constant communication, learning, and mental stimulation are your daily bread.',
-    4: 'Your thinking happens at home, in private — you process best in familiar environments and may keep your best ideas to yourself.',
-    5: 'Your mind wants to play and create — you think best when you\'re having fun, and communication is a form of self-expression.',
-    6: 'Your mind is wired for work and problem-solving — you think in terms of improvement, efficiency, and practical service.',
-    7: 'Your thinking happens through others — you process best in dialogue, and your mind needs a partner to bounce ideas off.',
-    8: 'Your mind goes deep — you think about what\'s hidden, you research obsessively, and your communication carries psychological weight.',
-    9: 'Your mind seeks meaning — you think in big pictures, philosophies, and need your ideas to connect to something larger.',
-    10: 'Your thinking is public — you\'re known for your ideas, your communication style is part of your career, and your mind builds your reputation.',
-    11: 'Your mind is wired for the collective — you think about the future, connect ideas across groups, and your thoughts serve causes larger than yourself.',
-    12: 'Your thinking happens behind the scenes — you process best in solitude, your mind connects to the unconscious, and you may communicate through dreams, art, or private writing.'
-  },
-  Venus: {
-    1: 'Your values and aesthetics ARE your identity — beauty, grace, and harmony are immediately visible in how you present yourself.',
-    2: 'Your values are tied to what you own — you attract money, you spend on beauty, and self-worth connects to material security.',
-    3: 'Your love language is communication — you charm through words, value mental connection, and find beauty in learning.',
-    4: 'Your love lives at home — you need a beautiful sanctuary, you nurture through comfort, and your deepest values are private.',
-    5: 'Your love is playful and creative — romance is dramatic, you attract through self-expression, and love feels like celebration.',
-    6: 'Your love shows through service — you care by helping, you find beauty in useful things, and daily routines must feel harmonious.',
-    7: 'Your love needs partnership to exist — you come alive in relationship, you value balance above all, and you attract significant others easily.',
-    8: 'Your love goes deep — you merge intensely, you\'re attracted to power and transformation, and love feels like psychological rebirth.',
-    9: 'Your love needs freedom and meaning — you\'re attracted to wisdom, adventure, and partners who expand your world.',
-    10: 'Your love is public — relationships affect your reputation, you may attract through your career, and you value achievement in partners.',
-    11: 'Your love flows through friendship — you value independence in relationships, you\'re attracted to unique individuals, and love connects to causes.',
-    12: 'Your love is hidden or spiritual — you may have secret relationships, you\'re attracted to transcendence, and love can feel sacrificial or boundless.'
-  },
-  Mars: {
-    1: 'Your drive IS your identity — you come across as assertive, competitive, and action-oriented. People see your energy immediately.',
-    2: 'Your drive is wired for earning — you fight for financial security, you\'re aggressive about money, and your energy goes into building resources.',
-    3: 'Your drive expresses through communication — you argue, debate, and your words have force. Mental activity is how you take action.',
-    4: 'Your drive lives at home — you may fight with family, you\'re protective of your private space, and your energy needs a base to operate from.',
-    5: 'Your drive is creative and romantic — you pursue love dramatically, you compete in play, and your energy needs creative outlet.',
-    6: 'Your drive goes into work and health — you\'re a workhorse, you push your body, and your energy is most focused on daily tasks and service.',
-    7: 'Your drive expresses through partnership — you may fight with or for partners, you\'re attracted to assertive people, and relationships activate your energy.',
-    8: 'Your drive goes into depth and transformation — you pursue power, you\'re sexually intense, and your energy is focused on psychological change.',
-    9: 'Your drive seeks meaning and freedom — you fight for your beliefs, you take action through travel or education, and your energy needs a cause.',
-    10: 'Your drive is career-focused — you\'re ambitious, you fight for status, and your energy builds your public reputation.',
-    11: 'Your drive serves the collective — you fight for causes, you\'re energized by groups, and your action needs to connect to future visions.',
-    12: 'Your drive is hidden or self-sabotaging — you may turn anger inward, you act behind the scenes, and your energy connects to the unconscious or spiritual realms.'
-  },
-  // Jupiter and Saturn need sign+house combined syntheses, not generic house statements
-  // These will be generated dynamically in getJupiterSynthesis and getSaturnSynthesis functions
-};
+// Mercury synthesis that weaves sign + house coherently
+function getMercurySynthesis(sign: string, house: number | undefined): string {
+  if (!house) return '';
+  
+  const signStyle: Record<string, string> = {
+    Aries: 'thinks fast, speaks directly, and processes through action',
+    Taurus: 'thinks slowly and thoroughly, speaks deliberately, and grounds ideas in practical reality',
+    Gemini: 'thinks in connections, speaks constantly, and needs endless mental variety',
+    Cancer: 'thinks through feeling, speaks from emotional memory, and processes intuitively',
+    Leo: 'thinks creatively, speaks with authority, and needs ideas to shine',
+    Virgo: 'thinks analytically, speaks precisely, and needs to understand the details',
+    Libra: 'thinks relationally, speaks diplomatically, and weighs every perspective before deciding',
+    Scorpio: 'thinks penetratingly, speaks strategically, and seeks the hidden truth',
+    Sagittarius: 'thinks expansively, speaks bluntly, and needs ideas to mean something',
+    Capricorn: 'thinks strategically, speaks with authority, and values practical knowledge',
+    Aquarius: 'thinks unconventionally, speaks progressively, and values intellectual freedom',
+    Pisces: 'thinks in images and impressions, speaks poetically, and absorbs information intuitively'
+  };
+  
+  const houseContext: Record<number, string> = {
+    1: 'Your mind IS your identity — people know you by how you think and speak. You lead with your intellect.',
+    2: 'Your mind serves your survival — you think about money, resources, and what knowledge is worth.',
+    3: 'Your mind is in its home — communication, learning, and daily mental engagement are central to your life.',
+    4: 'Your mind lives in private spaces — you think best at home, may keep your best ideas to yourself, and your inner dialogue is rich.',
+    5: 'Your mind wants to create and play — thinking is a form of self-expression, and you need intellectual joy.',
+    6: 'Your mind serves work and health — you think in terms of improvement, problem-solving, and practical service.',
+    7: 'Your mind comes alive through others — you think best in dialogue and need a partner to process with.',
+    8: 'Your mind goes into hidden depths — you research obsessively, think psychologically, and communicate about what others avoid.',
+    9: 'Your mind seeks ultimate meaning — you think philosophically, learn through travel or higher education, and need big ideas.',
+    10: 'Your mind builds your reputation — you\'re known for your ideas, and your thinking style shapes your career.',
+    11: 'Your mind serves the collective — you think about the future, connect across groups, and your ideas need a cause.',
+    12: 'Your mind operates behind the veil — you think in solitude, process through dreams or meditation, and may communicate through art or spiritual channels.'
+  };
+  
+  const style = signStyle[sign] || 'expresses through your sign';
+  const context = houseContext[house] || '';
+  
+  return `Your Mercury ${style}. ${context}`;
+}
+
+// Venus synthesis that weaves sign + house coherently
+function getVenusSynthesis(sign: string, house: number | undefined): string {
+  if (!house) return '';
+  
+  const signStyle: Record<string, string> = {
+    Aries: 'loves through pursuit and conquest — you want the chase and need passion',
+    Taurus: 'loves through devotion and sensory pleasure — you want stability and need comfort',
+    Gemini: 'loves through conversation and curiosity — you want mental connection and need variety',
+    Cancer: 'loves through nurturing and protection — you want emotional safety and need belonging',
+    Leo: 'loves through adoration and generosity — you want to be celebrated and need appreciation',
+    Virgo: 'loves through service and attention — you want to be useful and need to improve what you love',
+    Libra: 'loves through partnership and harmony — you want balance and need relationship to feel complete',
+    Scorpio: 'loves through intensity and merging — you want depth and need emotional truth',
+    Sagittarius: 'loves through adventure and expansion — you want freedom and need growth together',
+    Capricorn: 'loves through commitment and building — you want to invest and need lasting structures',
+    Aquarius: 'loves through friendship and ideals — you want independence and need intellectual respect',
+    Pisces: 'loves through merging and transcendence — you want to dissolve into love and need spiritual connection'
+  };
+  
+  const houseContext: Record<number, string> = {
+    1: 'You attract through your presence — beauty, charm, and values are immediately visible. You lead with grace.',
+    2: 'You attract resources — money flows toward you, and your self-worth is tied to what you value and possess.',
+    3: 'You attract through words — communication is charming, siblings may be significant, and you find beauty in learning.',
+    4: 'You attract through home — you need a beautiful private sanctuary, and love lives in your family roots.',
+    5: 'You attract through creativity and romance — love is playful, dramatic, and expressed through self-expression.',
+    6: 'You attract through service — you love by helping, and daily work must feel harmonious.',
+    7: 'You attract through partnership — relationship is essential, and you come alive in committed connection.',
+    8: 'You attract through intensity — intimacy transforms you, and you may draw resources through others.',
+    9: 'You attract through meaning — love needs freedom and expansion, and you\'re drawn to wisdom seekers.',
+    10: 'You attract through achievement — your public image has charm, and relationships affect your career.',
+    11: 'You attract through community — friendships matter deeply, and love connects to causes and groups.',
+    12: 'You attract through the unseen — love is private or spiritual, and you may sacrifice for those you love.'
+  };
+  
+  const style = signStyle[sign] || 'expresses love through your sign';
+  const context = houseContext[house] || '';
+  
+  return `Your Venus ${style}. ${context}`;
+}
+
+// Mars synthesis that weaves sign + house coherently  
+function getMarsSynthesis(sign: string, house: number | undefined): string {
+  if (!house) return '';
+  
+  const signStyle: Record<string, string> = {
+    Aries: 'acts with instinctive courage — anger is direct and brief, and you need to be first',
+    Taurus: 'acts with patient determination — anger builds slowly but erupts powerfully, and you fight for security',
+    Gemini: 'acts through words and versatility — anger is verbal, and your energy scatters across many pursuits',
+    Cancer: 'acts to protect — anger is defensive and moody, and you fight for emotional security',
+    Leo: 'acts with dramatic confidence — anger is proud, and your energy needs recognition',
+    Virgo: 'acts with precise efficiency — anger is critical, and your energy goes into work and improvement',
+    Libra: 'acts through diplomacy — anger is aestheticized or passive-aggressive, and you need a partner or cause to act for',
+    Scorpio: 'acts with strategic intensity — anger is volcanic and controlled, and you pursue psychological power',
+    Sagittarius: 'acts with bold enthusiasm — anger is righteous but brief, and you fight for truth and freedom',
+    Capricorn: 'acts with disciplined ambition — anger is cold and calculated, and you pursue long-term goals',
+    Aquarius: 'acts for causes and revolution — anger is detached, and your energy serves the collective',
+    Pisces: 'acts through inspiration and compassion — anger is confused or turned inward, and you fight for the unseen'
+  };
+  
+  const houseContext: Record<number, string> = {
+    1: 'Your energy IS your identity — people see your drive immediately. You lead with action.',
+    2: 'Your energy builds resources — you fight for financial security and pour drive into earning.',
+    3: 'Your energy expresses through words — you debate, argue, and communicate forcefully.',
+    4: 'Your energy lives at home — you may fight with family, and your drive needs a private base.',
+    5: 'Your energy is creative and romantic — you pursue love dramatically and compete through play.',
+    6: 'Your energy serves work and health — you\'re a workhorse, and your body needs physical outlet.',
+    7: 'Your energy activates through partnership — you fight with or for partners, and relationships energize you.',
+    8: 'Your energy goes deep — you pursue power and transformation, and your drive is sexually intense.',
+    9: 'Your energy seeks meaning — you take action through travel, education, or belief, and fight for truth.',
+    10: 'Your energy builds your career — you\'re ambitious, and your drive is visible in your public role.',
+    11: 'Your energy serves causes — you fight for the future, and groups activate your drive.',
+    12: 'Your energy operates behind the scenes — you may turn anger inward, and your drive connects to the unconscious.'
+  };
+  
+  const style = signStyle[sign] || 'expresses drive through your sign';
+  const context = houseContext[house] || '';
+  
+  return `Your Mars ${style}. ${context}`;
+}
+
 
 // Jupiter synthesis that actually weaves sign + house together
 function getJupiterSynthesis(sign: string, house: number | undefined): string {
@@ -212,13 +285,14 @@ function getSaturnSynthesis(sign: string, house: number | undefined): string {
 function getSynthesis(planetName: string, sign: string, house: number | undefined): string {
   if (!house) return '';
   
-  // For Jupiter and Saturn, use the dedicated functions
+  // Use dedicated synthesis functions for each planet
+  if (planetName === 'Mercury') return getMercurySynthesis(sign, house);
+  if (planetName === 'Venus') return getVenusSynthesis(sign, house);
+  if (planetName === 'Mars') return getMarsSynthesis(sign, house);
   if (planetName === 'Jupiter') return getJupiterSynthesis(sign, house);
   if (planetName === 'Saturn') return getSaturnSynthesis(sign, house);
   
-  const planetSyntheses = SIGN_HOUSE_SYNTHESIS[planetName];
-  if (!planetSyntheses) return '';
-  return planetSyntheses[house] || '';
+  return '';
 }
 
 // Get aspect feeling based on type and orb
@@ -249,20 +323,29 @@ export const ReadingScriptGenerator: React.FC<ReadingScriptGeneratorProps> = ({
   const script = useMemo(() => {
     const sections: ScriptSection[] = [];
     
-    // 1. OPENING
-    sections.push({
-      title: "Opening",
-      content: [
-        `"Let's explore ${chartName}'s natal chart together. I'll walk you through the key patterns I see."`,
-        `"Remember: nothing in your chart is 'bad.' Some placements require more conscious work, but those often become your greatest strengths."`
-      ]
-    });
-
-    // 2. THE BIG THREE (Sun, Moon, Ascendant)
+    // Get key planets first (needed for opening)
     const sun = planets.find(p => p.name === 'Sun');
     const moon = planets.find(p => p.name === 'Moon');
     const asc = planets.find(p => p.name === 'Ascendant');
     
+    // 1. OPENING — Core Patterns & Highest Potential
+    const chartRuler = asc ? getSignRuler(asc.sign, useTraditional) : null;
+    const chartRulerPlanet = chartRuler ? planets.find(p => p.name === chartRuler) : null;
+    
+    sections.push({
+      title: "Your Core Patterns & Highest Potential",
+      content: [
+        `"Your natal chart is a map of your psyche at the moment of your first breath. Each planet represents a different part of you — a drive, a need, a way of processing experience — that seeks expression in your life."`,
+        `"These aren't external forces acting on you. They ARE you. The Sun is your conscious identity. The Moon is your emotional body. Mercury is how your mind works. Venus is what you love and value. Mars is how you take action. Jupiter is where you grow. Saturn is where you master through challenge."`,
+        `"The signs show HOW each part of you operates. The houses show WHERE in life that energy plays out. The aspects show how these parts of you relate to each other — do they cooperate, or create inner tension?"`,
+        chartRulerPlanet 
+          ? `"Your chart is ruled by ${chartRuler} (because your Ascendant is ${asc?.sign}). This means ${chartRuler} is the director of your life story — its condition, house, and aspects shape your entire path. When ${chartRuler} is activated by transit, your whole life feels it."`
+          : `"Your chart ruler directs the overall story of your life."`,
+        `"Your highest potential lives in conscious relationship with ALL these parts of yourself. The goal isn't to 'fix' challenging placements — it's to understand them deeply enough that you can work WITH them instead of against them."`
+      ]
+    });
+
+    // 2. THE BIG THREE (Sun, Moon, Ascendant)
     const bigThreeContent: string[] = [];
     
     if (sun) {
