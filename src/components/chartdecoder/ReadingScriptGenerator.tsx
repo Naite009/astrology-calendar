@@ -24,6 +24,12 @@ import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
 import { detectChartPatterns, ChartPattern } from '@/lib/chartPatterns';
 import { PLANET_IN_SIGN } from '@/lib/planetSignExpressions';
 import { SIGN_COSTUMES, RISING_SIGN_PSYCHOLOGY } from '@/lib/cinematicNarrative';
+import { 
+  DEEP_HOUSE_INTERPRETATIONS, 
+  PLANET_IN_HOUSE_EFFECTS,
+  getHouseInterpretationForAge,
+  getSaturnReturnContext
+} from '@/lib/houseInterpretations';
 
 interface ReadingScriptGeneratorProps {
   planets: ChartPlanet[];
@@ -31,6 +37,7 @@ interface ReadingScriptGeneratorProps {
   chartName: string;
   useTraditional: boolean;
   natalChart?: NatalChart | null;
+  age?: number;
 }
 
 interface ScriptSection {
@@ -68,6 +75,27 @@ const HOUSE_CONTEXTS: Record<number, { area: string; meaning: string }> = {
   12: { area: 'the unconscious, solitude, and hidden realms', meaning: 'This operates behind the scenes — in dreams, isolation, institutions, spirituality, and what you hide even from yourself.' }
 };
 
+// Enhanced house context that includes life-stage and how others respond
+function getEnhancedHouseContext(house: number | undefined, planetName: string, age: number): { basic: string; lifeStage: string; othersRespond: string; childContext?: string } | null {
+  if (!house) return null;
+  const context = HOUSE_CONTEXTS[house];
+  const deepInterp = DEEP_HOUSE_INTERPRETATIONS[house];
+  const planetEffects = PLANET_IN_HOUSE_EFFECTS[planetName]?.[house];
+  
+  if (!context || !deepInterp) return null;
+  
+  // Get life stage specific interpretation
+  const lifeStageKey = age < 12 ? 'child' : age < 21 ? 'adolescent' : age < 30 ? 'youngAdult' : age < 50 ? 'adult' : 'elder';
+  
+  return {
+    basic: `In the ${house}${house === 1 ? 'st' : house === 2 ? 'nd' : house === 3 ? 'rd' : 'th'} house of ${context.area}: ${context.meaning}`,
+    lifeStage: deepInterp.lifeStages[lifeStageKey],
+    othersRespond: planetEffects?.othersRespond || deepInterp.othersPerceive,
+    childContext: age < 12 ? planetEffects?.childContext : undefined
+  };
+}
+
+// Simple house context for backward compatibility
 function getHouseContext(house: number | undefined, planetName: string): string {
   if (!house) return '';
   const context = HOUSE_CONTEXTS[house];
@@ -316,9 +344,19 @@ export const ReadingScriptGenerator: React.FC<ReadingScriptGeneratorProps> = ({
   aspects,
   chartName,
   useTraditional,
-  natalChart
+  natalChart,
+  age = 35
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  
+  // Get life stage label
+  const lifeStage = useMemo(() => {
+    if (age < 12) return 'child';
+    if (age < 21) return 'adolescent';
+    if (age < 30) return 'youngAdult';
+    if (age < 50) return 'adult';
+    return 'elder';
+  }, [age]);
 
   const script = useMemo(() => {
     const sections: ScriptSection[] = [];
@@ -332,17 +370,37 @@ export const ReadingScriptGenerator: React.FC<ReadingScriptGeneratorProps> = ({
     const chartRuler = asc ? getSignRuler(asc.sign, useTraditional) : null;
     const chartRulerPlanet = chartRuler ? planets.find(p => p.name === chartRuler) : null;
     
+    // Saturn Return context
+    const saturnContext = getSaturnReturnContext(age);
+    
+    const openingContent = [
+      `"Your natal chart is a map of your psyche at the moment of your first breath. Each planet represents a different part of you — a drive, a need, a way of processing experience — that seeks expression in your life."`,
+      `"These aren't external forces acting on you. They ARE you. The Sun is your conscious identity. The Moon is your emotional body. Mercury is how your mind works. Venus is what you love and value. Mars is how you take action. Jupiter is where you grow. Saturn is where you master through challenge."`,
+      `"The signs show HOW each part of you operates. The houses show WHERE in life that energy plays out. The aspects show how these parts of you relate to each other — do they cooperate, or create inner tension?"`,
+      chartRulerPlanet 
+        ? `"Your chart is ruled by ${chartRuler} (because your Ascendant is ${asc?.sign}). This means ${chartRuler} is the director of your life story — its condition, house, and aspects shape your entire path. When ${chartRuler} is activated by transit, your whole life feels it."`
+        : `"Your chart ruler directs the overall story of your life."`,
+      `"Your highest potential lives in conscious relationship with ALL these parts of yourself. The goal isn't to 'fix' challenging placements — it's to understand them deeply enough that you can work WITH them instead of against them."`
+    ];
+    
+    // Add life-stage context
+    if (age < 12) {
+      openingContent.push(`\n**READING FOR A CHILD (age ${age})**`);
+      openingContent.push(`"When reading for a child, we focus on understanding their natural temperament, learning style, and emotional needs. The chart shows potentials — not fixed destiny. Our job is to support their development."`);
+    } else if (age < 21) {
+      openingContent.push(`\n**READING FOR AN ADOLESCENT (age ${age})**`);
+      openingContent.push(`"At this age, the chart reveals how identity is forming, social dynamics, and the journey toward independence. Challenging placements may feel more acute as the person learns to work with their nature."`);
+    }
+    
+    // Add Saturn Return context if applicable
+    if (saturnContext) {
+      openingContent.push(`\n**${saturnContext.phase.toUpperCase()}**`);
+      openingContent.push(`"${saturnContext.description}"`);
+    }
+    
     sections.push({
       title: "Your Core Patterns & Highest Potential",
-      content: [
-        `"Your natal chart is a map of your psyche at the moment of your first breath. Each planet represents a different part of you — a drive, a need, a way of processing experience — that seeks expression in your life."`,
-        `"These aren't external forces acting on you. They ARE you. The Sun is your conscious identity. The Moon is your emotional body. Mercury is how your mind works. Venus is what you love and value. Mars is how you take action. Jupiter is where you grow. Saturn is where you master through challenge."`,
-        `"The signs show HOW each part of you operates. The houses show WHERE in life that energy plays out. The aspects show how these parts of you relate to each other — do they cooperate, or create inner tension?"`,
-        chartRulerPlanet 
-          ? `"Your chart is ruled by ${chartRuler} (because your Ascendant is ${asc?.sign}). This means ${chartRuler} is the director of your life story — its condition, house, and aspects shape your entire path. When ${chartRuler} is activated by transit, your whole life feels it."`
-          : `"Your chart ruler directs the overall story of your life."`,
-        `"Your highest potential lives in conscious relationship with ALL these parts of yourself. The goal isn't to 'fix' challenging placements — it's to understand them deeply enough that you can work WITH them instead of against them."`
-      ]
+      content: openingContent
     });
 
     // 2. THE BIG THREE (Sun, Moon, Ascendant)
@@ -648,7 +706,7 @@ export const ReadingScriptGenerator: React.FC<ReadingScriptGeneratorProps> = ({
     });
 
     return sections;
-  }, [planets, aspects, chartName, useTraditional, natalChart]);
+  }, [planets, aspects, chartName, useTraditional, natalChart, age, lifeStage]);
 
   const copyToClipboard = () => {
     const fullScript = script.map(section => 
