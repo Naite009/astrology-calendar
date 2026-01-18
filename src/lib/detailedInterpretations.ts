@@ -188,6 +188,12 @@ export const PLANET_ESSENCES: Record<string, { symbol: string; name: string; ess
     essence: "Your wild, untamed feminine power. Where you refuse to be tamed or controlled.",
     represents: "raw sexuality, rage, independence, the shadow feminine, rebellion"
   },
+  eris: {
+    symbol: '⯰',
+    name: 'Eris',
+    essence: "Your Feminine Warrior energy and soul purpose. What you fight for and cannot NOT do.",
+    represents: "discord that reveals truth, feminine warrior, soul purpose, paradigm shifting, outsider power, necessary chaos"
+  },
   ascendant: {
     symbol: 'ASC',
     name: 'Ascendant',

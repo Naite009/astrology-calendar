@@ -94,7 +94,7 @@ const convertNatalChartToPlanets = (chart: NatalChart): ChartPlanet[] => {
   
   const planetNames = [
     'Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn',
-    'Uranus', 'Neptune', 'Pluto', 'Chiron', 'NorthNode'
+    'Uranus', 'Neptune', 'Pluto', 'Eris', 'Chiron', 'NorthNode'
   ] as const;
 
   for (const name of planetNames) {

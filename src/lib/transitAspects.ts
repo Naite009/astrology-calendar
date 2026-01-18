@@ -56,10 +56,10 @@ const signToLongitude = (sign: string, degree: number, minutes: number = 0): num
 const PLANET_SYMBOLS: Record<string, string> = {
   sun: '☉', moon: '☽', mercury: '☿', venus: '♀', mars: '♂',
   jupiter: '♃', saturn: '♄', uranus: '♅', neptune: '♆', pluto: '♇',
-  northNode: '☊', chiron: '⚷', lilith: '⚸',
+  northNode: '☊', chiron: '⚷', lilith: '⚸', eris: '⯰',
   Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀', Mars: '♂',
   Jupiter: '♃', Saturn: '♄', Uranus: '♅', Neptune: '♆', Pluto: '♇',
-  NorthNode: '☊', Chiron: '⚷', Lilith: '⚸',
+  NorthNode: '☊', Chiron: '⚷', Lilith: '⚸', Eris: '⯰',
 };
 
 export const getTransitPlanetSymbol = (planet: string): string => {
