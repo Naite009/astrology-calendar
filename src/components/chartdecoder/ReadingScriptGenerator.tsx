@@ -52,6 +52,29 @@ function getPlacementFeeling(planet: string, sign: string, dignity: DignityType,
   return dignityFeelings[dignity];
 }
 
+// House descriptions for WHERE the energy expresses
+const HOUSE_CONTEXTS: Record<number, { area: string; meaning: string }> = {
+  1: { area: 'identity and first impressions', meaning: 'This is front and center — it\'s how you present yourself and what people notice immediately about you.' },
+  2: { area: 'money, possessions, and self-worth', meaning: 'This operates through what you own, earn, and value. Your sense of security is tied to this energy.' },
+  3: { area: 'communication, siblings, and daily environment', meaning: 'This shows up in how you talk, write, and move through your neighborhood and daily routines.' },
+  4: { area: 'home, family, and emotional foundations', meaning: 'This operates in private — at home, with family, in your inner emotional world. It\'s not for public display.' },
+  5: { area: 'creativity, romance, and self-expression', meaning: 'This wants to play, create, and be seen. It expresses through hobbies, dating, children, and what brings you joy.' },
+  6: { area: 'work, health, and daily routines', meaning: 'This shows up in your job, your health habits, and how you structure your days. It\'s about service and maintenance.' },
+  7: { area: 'partnerships and one-on-one relationships', meaning: 'This operates through others — you experience it most clearly in marriage, close partnerships, and committed relationships.' },
+  8: { area: 'shared resources, intimacy, and transformation', meaning: 'This goes deep — other people\'s money, sex, death, psychological intensity. It\'s hidden but powerful.' },
+  9: { area: 'philosophy, travel, and higher learning', meaning: 'This seeks meaning — through education, travel, publishing, spirituality, and big-picture thinking.' },
+  10: { area: 'career, reputation, and public role', meaning: 'This is visible to everyone. It\'s your profession, your legacy, what you\'re known for in the world.' },
+  11: { area: 'friends, groups, and future visions', meaning: 'This operates through community — your social circles, causes, hopes for the future, and sense of belonging to something larger.' },
+  12: { area: 'the unconscious, solitude, and hidden realms', meaning: 'This operates behind the scenes — in dreams, isolation, institutions, spirituality, and what you hide even from yourself.' }
+};
+
+function getHouseContext(house: number | undefined, planetName: string): string {
+  if (!house) return '';
+  const context = HOUSE_CONTEXTS[house];
+  if (!context) return '';
+  return `In the ${house}${house === 1 ? 'st' : house === 2 ? 'nd' : house === 3 ? 'rd' : 'th'} house of ${context.area}: ${context.meaning}`;
+}
+
 // Get aspect feeling based on type and orb
 function getAspectFeeling(aspect: ChartAspect, planet1Meaning: string, planet2Meaning: string): string {
   const isTight = aspect.orb < 3;
@@ -137,25 +160,46 @@ export const ReadingScriptGenerator: React.FC<ReadingScriptGeneratorProps> = ({
     
     if (mercury) {
       const mercuryDignity = computeDignity('Mercury', mercury.sign, useTraditional);
-      personalContent.push(`"Mercury in ${mercury.sign} shows how you think and communicate. ${mercury.retrograde ? 'Being retrograde, your Mercury works more internally — you process before speaking.' : ''}"`);
+      const mercuryDescription = PLANET_IN_SIGN.Mercury?.[mercury.sign] || `Your Mercury expresses through ${mercury.sign}.`;
+      const mercuryHouse = getHouseContext(mercury.house, 'Mercury');
+      personalContent.push(`"Mercury in ${mercury.sign}${mercury.house ? ` (${mercury.house}${mercury.house === 1 ? 'st' : mercury.house === 2 ? 'nd' : mercury.house === 3 ? 'rd' : 'th'} house)` : ''}:"`);
+      personalContent.push(`"${mercuryDescription}"`);
+      if (mercuryHouse) {
+        personalContent.push(`"${mercuryHouse}"`);
+      }
+      if (mercury.retrograde) {
+        personalContent.push(`"Mercury retrograde: You process internally before speaking. Ideas gestate longer. You may revise, reconsider, and return to old thoughts. Communication flows better in writing or after reflection."`);
+      }
       if (mercuryDignity !== 'peregrine') {
-        personalContent.push(`"${getPlacementFeeling('Mercury', mercury.sign, mercuryDignity)}"`);
+        personalContent.push(`"${getPlacementFeeling('Mercury', mercury.sign, mercuryDignity, mercury.house)}"`);
       }
     }
     
     if (venus) {
       const venusDignity = computeDignity('Venus', venus.sign, useTraditional);
-      personalContent.push(`"Venus in ${venus.sign} reveals your love style, values, and what you find beautiful."`);
+      const venusDescription = PLANET_IN_SIGN.Venus?.[venus.sign] || `Your Venus expresses through ${venus.sign}.`;
+      const venusHouse = getHouseContext(venus.house, 'Venus');
+      personalContent.push(`"Venus in ${venus.sign}${venus.house ? ` (${venus.house}${venus.house === 1 ? 'st' : venus.house === 2 ? 'nd' : venus.house === 3 ? 'rd' : 'th'} house)` : ''}:"`);
+      personalContent.push(`"${venusDescription}"`);
+      if (venusHouse) {
+        personalContent.push(`"${venusHouse}"`);
+      }
       if (venusDignity !== 'peregrine') {
-        personalContent.push(`"${getPlacementFeeling('Venus', venus.sign, venusDignity)}"`);
+        personalContent.push(`"${getPlacementFeeling('Venus', venus.sign, venusDignity, venus.house)}"`);
       }
     }
     
     if (mars) {
       const marsDignity = computeDignity('Mars', mars.sign, useTraditional);
-      personalContent.push(`"Mars in ${mars.sign} shows how you assert yourself, pursue goals, and handle anger."`);
+      const marsDescription = PLANET_IN_SIGN.Mars?.[mars.sign] || `Your Mars expresses through ${mars.sign}.`;
+      const marsHouse = getHouseContext(mars.house, 'Mars');
+      personalContent.push(`"Mars in ${mars.sign}${mars.house ? ` (${mars.house}${mars.house === 1 ? 'st' : mars.house === 2 ? 'nd' : mars.house === 3 ? 'rd' : 'th'} house)` : ''}:"`);
+      personalContent.push(`"${marsDescription}"`);
+      if (marsHouse) {
+        personalContent.push(`"${marsHouse}"`);
+      }
       if (marsDignity !== 'peregrine') {
-        personalContent.push(`"${getPlacementFeeling('Mars', mars.sign, marsDignity)}"`);
+        personalContent.push(`"${getPlacementFeeling('Mars', mars.sign, marsDignity, mars.house)}"`);
       }
     }
     
