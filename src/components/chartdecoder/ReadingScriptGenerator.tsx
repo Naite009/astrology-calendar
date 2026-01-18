@@ -32,6 +32,8 @@ import {
 } from '@/lib/houseInterpretations';
 import { getContextualAspectExplanation } from '@/lib/aspectContextInterpreter';
 import { analyzeChartStrengths } from '@/lib/chartStrengths';
+import { calculatePlanetaryCondition, PlanetaryCondition } from '@/lib/planetaryCondition';
+import { calculateSect } from '@/lib/birthConditions';
 
 interface ReadingScriptGeneratorProps {
   planets: ChartPlanet[];
@@ -325,6 +327,71 @@ function getSynthesis(planetName: string, sign: string, house: number | undefine
   return '';
 }
 
+// Generate personalized chart ruler path summary
+function generateChartRulerPathSummary(
+  chartRuler: string,
+  chartRulerPlanet: ChartPlanet,
+  dignity: DignityType,
+  condition: PlanetaryCondition,
+  tightAspects: ChartAspect[],
+  allAspects: ChartAspect[]
+): string {
+  const parts: string[] = [];
+  
+  // Start with the core identity of the ruler
+  const rulerMeaning = PLANET_MEANINGS[chartRuler] || chartRuler.toLowerCase();
+  parts.push(`Your life direction is fundamentally about ${rulerMeaning}.`);
+  
+  // Condition impact
+  if (condition.qualityRating === 'Excellent' || condition.qualityRating === 'Good') {
+    parts.push(`Because ${chartRuler} is well-placed, this comes relatively naturally to you. Your path has support.`);
+  } else if (condition.qualityRating === 'Challenged' || condition.qualityRating === 'Difficult') {
+    parts.push(`Because ${chartRuler} faces challenges, your path requires conscious work — but this builds authentic mastery.`);
+  } else {
+    parts.push(`${chartRuler} operates in neutral territory — your path responds to how you consciously engage.`);
+  }
+  
+  // House impact
+  if (chartRulerPlanet.house) {
+    const houseAreas: Record<number, string> = {
+      1: 'self-discovery and personal presence',
+      2: 'building resources and self-worth',
+      3: 'communication and learning',
+      4: 'home, family, and emotional foundations',
+      5: 'creative self-expression and joy',
+      6: 'service, health, and daily work',
+      7: 'partnership and committed relationships',
+      8: 'transformation and deep intimacy',
+      9: 'meaning, travel, and higher learning',
+      10: 'career achievement and public recognition',
+      11: 'community, friendship, and future visions',
+      12: 'spirituality, solitude, and inner work'
+    };
+    parts.push(`Your path leads through ${houseAreas[chartRulerPlanet.house] || 'this life area'}.`);
+  }
+  
+  // Aspect impact
+  const supportingAspects = tightAspects.filter(a => {
+    const nature = getAspectNature(a.aspectType);
+    return nature === 'flowing' || a.aspectType === 'conjunction';
+  });
+  const challengingAspects = tightAspects.filter(a => getAspectNature(a.aspectType) === 'challenging');
+  
+  if (supportingAspects.length > 0 && challengingAspects.length > 0) {
+    const supporters = supportingAspects.map(a => a.planet1 === chartRuler ? a.planet2 : a.planet1);
+    const challengers = challengingAspects.map(a => a.planet1 === chartRuler ? a.planet2 : a.planet1);
+    parts.push(`${supporters.join(' and ')} actively support your direction, while ${challengers.join(' and ')} create productive tension that demands integration.`);
+  } else if (supportingAspects.length > 0) {
+    const supporters = supportingAspects.map(a => a.planet1 === chartRuler ? a.planet2 : a.planet1);
+    parts.push(`${supporters.join(' and ')} actively support your direction.`);
+  } else if (challengingAspects.length > 0) {
+    const challengers = challengingAspects.map(a => a.planet1 === chartRuler ? a.planet2 : a.planet1);
+    parts.push(`${challengers.join(' and ')} create tension with your direction that demands conscious work to integrate.`);
+  }
+  
+  return parts.join(' ');
+}
+
 // Get aspect feeling based on type and orb
 function getAspectFeeling(aspect: ChartAspect, planet1Meaning: string, planet2Meaning: string): string {
   const isTight = aspect.orb < 3;
@@ -378,12 +445,126 @@ export const ReadingScriptGenerator: React.FC<ReadingScriptGeneratorProps> = ({
     const openingContent = [
       `"Your natal chart is a map of your psyche at the moment of your first breath. Each planet represents a different part of you — a drive, a need, a way of processing experience — that seeks expression in your life."`,
       `"These aren't external forces acting on you. They ARE you. The Sun is your conscious identity. The Moon is your emotional body. Mercury is how your mind works. Venus is what you love and value. Mars is how you take action. Jupiter is where you grow. Saturn is where you master through challenge."`,
-      `"The signs show HOW each part of you operates. The houses show WHERE in life that energy plays out. The aspects show how these parts of you relate to each other — do they cooperate, or create inner tension?"`,
-      chartRulerPlanet 
-        ? `"Your chart is ruled by ${chartRuler} (because your Ascendant is ${asc?.sign}). This means ${chartRuler} is the director of your life story — its condition, house, and aspects shape your entire path. When ${chartRuler} is activated by transit, your whole life feels it."`
-        : `"Your chart ruler directs the overall story of your life."`,
-      `"Your highest potential lives in conscious relationship with ALL these parts of yourself. The goal isn't to 'fix' challenging placements — it's to understand them deeply enough that you can work WITH them instead of against them."`
+      `"The signs show HOW each part of you operates. The houses show WHERE in life that energy plays out. The aspects show how these parts of you relate to each other — do they cooperate, or create inner tension?"`
     ];
+    
+    // DETAILED CHART RULER ANALYSIS
+    if (chartRulerPlanet && asc && natalChart) {
+      const chartRulerDignity = computeDignity(chartRuler, chartRulerPlanet.sign, true); // Always use traditional for dignities
+      const sectData = calculateSect(natalChart);
+      const chartRulerCondition = calculatePlanetaryCondition(chartRulerPlanet, aspects, sectData.sect, true);
+      const chartRulerAspects = aspects.filter(a => a.planet1 === chartRuler || a.planet2 === chartRuler);
+      const tightAspects = chartRulerAspects.filter(a => a.orb < 3);
+      
+      openingContent.push(`\n**YOUR CHART RULER: ${getPlanetSymbol(chartRuler)} ${chartRuler} (rules your ${asc.sign} Ascendant)**`);
+      
+      // The declaration
+      openingContent.push(`"${chartRuler} is the director of your life story. Everything about this planet — its condition, house placement, and aspects — shapes your entire path. When ${chartRuler} is activated by transit, your whole life responds."`);
+      
+      // CONDITION
+      openingContent.push(`\n**${chartRuler}'S CONDITION: ${chartRulerCondition.qualityRating} (score: ${chartRulerCondition.totalScore})**`);
+      openingContent.push(`"${chartRulerCondition.traditionalInterpretation}"`);
+      
+      // Dignity details
+      if (chartRulerDignity !== 'peregrine') {
+        const dignityTexts: Record<DignityType, string> = {
+          rulership: `${chartRuler} is in its own sign (${chartRulerPlanet.sign}) — it operates with natural authority and ease. Your chart ruler is strong. The director has full creative control.`,
+          exaltation: `${chartRuler} is exalted in ${chartRulerPlanet.sign} — it operates at an elevated, idealized level. Your chart ruler has special gifts to offer.`,
+          detriment: `${chartRuler} is in detriment in ${chartRulerPlanet.sign} — it must work in unfamiliar territory. This doesn't mean weakness, but your chart ruler needs conscious strategy to express itself.`,
+          fall: `${chartRuler} is in fall in ${chartRulerPlanet.sign} — it lacks natural confidence here. Your chart ruler earns its authority through effort rather than inheritance.`,
+          peregrine: ''
+        };
+        openingContent.push(`"${dignityTexts[chartRulerDignity]}"`);
+      }
+      
+      // Sect condition
+      if (chartRulerCondition.isInSect) {
+        openingContent.push(`"${chartRuler} is in sect — it works WITH your chart's day/night nature. This is supportive."`);
+      } else {
+        openingContent.push(`"${chartRuler} is out of sect — it requires more conscious management. You may need to actively cultivate its gifts."`);
+      }
+      
+      // HOUSE
+      if (chartRulerPlanet.house) {
+        const houseContext = HOUSE_CONTEXTS[chartRulerPlanet.house];
+        openingContent.push(`\n**${chartRuler} IS IN THE ${chartRulerPlanet.house}${chartRulerPlanet.house === 1 ? 'ST' : chartRulerPlanet.house === 2 ? 'ND' : chartRulerPlanet.house === 3 ? 'RD' : 'TH'} HOUSE**`);
+        openingContent.push(`"Your chart ruler lives in the house of ${houseContext?.area}. This means your life direction is fundamentally oriented toward ${houseContext?.area}."`);
+        openingContent.push(`"${houseContext?.meaning}"`);
+        
+        // Visibility
+        const angularHouses = [1, 4, 7, 10];
+        const succedentHouses = [2, 5, 8, 11];
+        if (angularHouses.includes(chartRulerPlanet.house)) {
+          openingContent.push(`"This is an ANGULAR house — highly visible. Your chart ruler is front and center in your life. Others see your ${chartRuler} energy immediately."`);
+        } else if (succedentHouses.includes(chartRulerPlanet.house)) {
+          openingContent.push(`"This is a SUCCEDENT house — stable. Your chart ruler operates with consistency. It builds and maintains."`);
+        } else {
+          openingContent.push(`"This is a CADENT house — operating behind the scenes. Your chart ruler's influence is less visible but no less important."`);
+        }
+      }
+      
+      // ASPECTS
+      if (tightAspects.length > 0) {
+        openingContent.push(`\n**${chartRuler}'S KEY RELATIONSHIPS (aspects within 3°)**`);
+        openingContent.push(`"The planets that aspect your chart ruler directly influence your life direction:"`);
+        
+        tightAspects.slice(0, 4).forEach(aspect => {
+          const otherPlanet = aspect.planet1 === chartRuler ? aspect.planet2 : aspect.planet1;
+          const otherPlanetMeaning = PLANET_MEANINGS[otherPlanet] || otherPlanet;
+          const aspectNature = getAspectNature(aspect.aspectType);
+          
+          let aspectInterpretation = '';
+          if (aspectNature === 'flowing') {
+            aspectInterpretation = `${getAspectSymbol(aspect.aspectType)} ${aspect.aspectType.charAt(0).toUpperCase() + aspect.aspectType.slice(1)} to ${getPlanetSymbol(otherPlanet)} ${otherPlanet} (${aspect.orb.toFixed(1)}°): Your life direction is SUPPORTED by your ${otherPlanetMeaning.toLowerCase()}. These work together naturally. ${otherPlanet} helps ${chartRuler} achieve its goals.`;
+          } else if (aspectNature === 'challenging') {
+            aspectInterpretation = `${getAspectSymbol(aspect.aspectType)} ${aspect.aspectType.charAt(0).toUpperCase() + aspect.aspectType.slice(1)} to ${getPlanetSymbol(otherPlanet)} ${otherPlanet} (${aspect.orb.toFixed(1)}°): Your life direction is in DYNAMIC TENSION with your ${otherPlanetMeaning.toLowerCase()}. These don't naturally agree. You must consciously integrate ${otherPlanet}'s needs with ${chartRuler}'s mission.`;
+          } else {
+            aspectInterpretation = `${getAspectSymbol(aspect.aspectType)} Conjunction to ${getPlanetSymbol(otherPlanet)} ${otherPlanet} (${aspect.orb.toFixed(1)}°): Your life direction is MERGED with your ${otherPlanetMeaning.toLowerCase()}. These are inseparable. ${otherPlanet} amplifies and colors everything ${chartRuler} does.`;
+          }
+          openingContent.push(`"${aspectInterpretation}"`);
+        });
+      } else {
+        openingContent.push(`\n"Your chart ruler has no tight aspects (within 3°). This means ${chartRuler} operates relatively independently — it's not in close dialogue with other planets. Its expression is more pure but may feel isolated."`);
+      }
+      
+      // HOW THIS SHAPES YOUR PATH
+      openingContent.push(`\n**HOW ${chartRuler} SHAPES YOUR ENTIRE PATH**`);
+      const pathSummary = generateChartRulerPathSummary(chartRuler, chartRulerPlanet, chartRulerDignity, chartRulerCondition, tightAspects, aspects);
+      openingContent.push(`"${pathSummary}"`);
+      
+    } else {
+      openingContent.push(
+        chartRulerPlanet 
+          ? `"Your chart is ruled by ${chartRuler} (because your Ascendant is ${asc?.sign}). This means ${chartRuler} is the director of your life story."`
+          : `"Your chart ruler directs the overall story of your life."`
+      );
+    }
+    
+    // Highest potential — now personalized
+    if (chartRulerPlanet && natalChart) {
+      const wellPlaced = planets.filter(p => {
+        const d = computeDignity(p.name, p.sign, true);
+        return d === 'rulership' || d === 'exaltation';
+      });
+      const challenged = planets.filter(p => {
+        const d = computeDignity(p.name, p.sign, true);
+        return d === 'detriment' || d === 'fall';
+      });
+      
+      openingContent.push(`\n**YOUR HIGHEST POTENTIAL**`);
+      
+      if (wellPlaced.length > 0 && challenged.length > 0) {
+        openingContent.push(`"Your highest potential lives in conscious relationship with ALL parts of yourself. Your natural strengths (${wellPlaced.map(p => p.name).join(', ')}) give you resources to work with. Your growth edges (${challenged.map(p => p.name).join(', ')}) offer the deepest wisdom when you learn to work WITH them instead of against them."`);
+      } else if (wellPlaced.length > 0) {
+        openingContent.push(`"Your chart has strong placements (${wellPlaced.map(p => p.name).join(', ')}) that provide natural resources. Your work is to consciously deploy these gifts rather than taking them for granted."`);
+      } else if (challenged.length > 0) {
+        openingContent.push(`"Your chart has challenging placements (${challenged.map(p => p.name).join(', ')}) that become your deepest teachings. The planets that require work often become your greatest strengths once mastered."`);
+      } else {
+        openingContent.push(`"Your planets are mostly peregrine — free agents that express through aspects and house placement rather than essential dignity. Your work is to consciously direct these energies rather than waiting for them to express automatically."`);
+      }
+    } else {
+      openingContent.push(`"Your highest potential lives in conscious relationship with ALL these parts of yourself. The goal isn't to 'fix' challenging placements — it's to understand them deeply enough that you can work WITH them instead of against them."`);
+    }
     
     // Add life-stage context
     if (age < 12) {
