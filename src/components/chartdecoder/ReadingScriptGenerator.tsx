@@ -23,7 +23,7 @@ import {
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
 import { detectChartPatterns, ChartPattern } from '@/lib/chartPatterns';
 import { PLANET_IN_SIGN } from '@/lib/planetSignExpressions';
-import { SIGN_COSTUMES } from '@/lib/cinematicNarrative';
+import { SIGN_COSTUMES, RISING_SIGN_PSYCHOLOGY } from '@/lib/cinematicNarrative';
 
 interface ReadingScriptGeneratorProps {
   planets: ChartPlanet[];
@@ -117,10 +117,8 @@ export const ReadingScriptGenerator: React.FC<ReadingScriptGeneratorProps> = ({
     }
     
     if (asc) {
-      const ascCostume = SIGN_COSTUMES[asc.sign];
-      const ascDescription = ascCostume 
-        ? `You enter every room wearing ${ascCostume.costume}. Your energy reads as ${ascCostume.energy}. You approach life ${ascCostume.howTheyDoIt}.`
-        : `Your Ascendant in ${asc.sign} shapes how you appear to others and approach new situations.`;
+      const ascPsychology = RISING_SIGN_PSYCHOLOGY[asc.sign];
+      const ascDescription = ascPsychology || `Your Ascendant in ${asc.sign} shapes how you approach life and how others first experience you.`;
       bigThreeContent.push(`"Your Ascendant is in ${asc.sign}."`);
       bigThreeContent.push(`"${ascDescription}"`);
     }
