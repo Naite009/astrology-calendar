@@ -15,6 +15,8 @@ import { ChartCastOverview } from './chartdecoder/ChartCastOverview';
 import { QuadrantAnalysisDisplay } from './chartdecoder/QuadrantAnalysisDisplay';
 import { HighestPotentialSynthesis } from './chartdecoder/HighestPotentialSynthesis';
 import { ProgressionsDisplay } from './chartdecoder/ProgressionsDisplay';
+import { ChartRulerDeepDive } from './chartdecoder/ChartRulerDeepDive';
+import { ProgressedMoonTimeline } from './chartdecoder/ProgressedMoonTimeline';
 
 import { NatalChart } from '@/hooks/useNatalChart';
 import {
@@ -467,6 +469,16 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
             </Card>
           </div>
 
+          {/* Chart Ruler Deep Dive */}
+          {activeChart && (
+            <ChartRulerDeepDive
+              planets={planets}
+              aspects={aspects}
+              natalChart={activeChart}
+              useTraditional={useTraditional}
+            />
+          )}
+
           {/* Reading Script Generator */}
           <ReadingScriptGenerator
             planets={planets}
@@ -479,12 +491,18 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
         </TabsContent>
 
         {/* PROGRESSIONS TAB */}
-        <TabsContent value="progressions" className="mt-6">
+        <TabsContent value="progressions" className="mt-6 space-y-6">
           {activeChart && (
-            <ProgressionsDisplay 
-              natalChart={activeChart} 
-              age={calculatedAge}
-            />
+            <>
+              <ProgressedMoonTimeline 
+                natalChart={activeChart} 
+                age={calculatedAge}
+              />
+              <ProgressionsDisplay 
+                natalChart={activeChart} 
+                age={calculatedAge}
+              />
+            </>
           )}
         </TabsContent>
 
