@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown } from 'lucide-react';
 import {
   ChartPlanet,
   ChartAspect,
@@ -19,6 +21,7 @@ import {
   generateDispositorExperience
 } from '@/lib/chartDecoderLogic';
 import { getDignityStatus } from '@/lib/planetDignities';
+import { getContextualAspectExplanation } from '@/lib/aspectContextInterpreter';
 
 interface PlanetDetailCardProps {
   planet: ChartPlanet;
@@ -138,6 +141,17 @@ export const PlanetDetailCard: React.FC<PlanetDetailCardProps> = ({
                 const nature = getAspectNature(aspect.aspectType);
                 const aspectMeaning = getAspectMeaning(planet.name, other?.name || '', aspect.aspectType);
                 
+                // Get contextual explanation with sign/house details
+                const contextualExplanation = other ? getContextualAspectExplanation(
+                  planet.name,
+                  planet.sign,
+                  planet.house || 1,
+                  other.name,
+                  other.sign,
+                  other.house || 1,
+                  aspect.aspectType
+                ) : null;
+                
                 // Determine aspect strength
                 const isTight = aspect.orb < 3;
                 const isWide = aspect.orb > 5;
@@ -145,48 +159,101 @@ export const PlanetDetailCard: React.FC<PlanetDetailCardProps> = ({
                 const strengthColor = isTight ? 'text-amber-500 bg-amber-500/10' : 'text-muted-foreground bg-muted/30';
                 
                 return (
-                  <div 
-                    key={i}
-                    className={`p-3 rounded ${
-                      nature === 'flowing' 
-                        ? 'bg-emerald-500/10 border border-emerald-500/20' 
-                        : nature === 'challenging' 
-                          ? 'bg-rose-500/10 border border-rose-500/20' 
-                          : 'bg-secondary/50 border border-border/50'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">{getAspectSymbol(aspect.aspectType)}</span>
-                        <span className="font-medium text-sm">
-                          {aspect.aspectType.charAt(0).toUpperCase() + aspect.aspectType.slice(1)}
-                        </span>
-                        {other && (
-                          <span className="text-muted-foreground text-sm">
-                            to {getPlanetSymbol(other.name)} {other.name}
-                          </span>
+                  <Collapsible key={i}>
+                    <div 
+                      className={`p-3 rounded ${
+                        nature === 'flowing' 
+                          ? 'bg-emerald-500/10 border border-emerald-500/20' 
+                          : nature === 'challenging' 
+                            ? 'bg-rose-500/10 border border-rose-500/20' 
+                            : 'bg-secondary/50 border border-border/50'
+                      }`}
+                    >
+                      <CollapsibleTrigger className="w-full">
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{getAspectSymbol(aspect.aspectType)}</span>
+                            <span className="font-medium text-sm">
+                              {aspect.aspectType.charAt(0).toUpperCase() + aspect.aspectType.slice(1)}
+                            </span>
+                            {other && (
+                              <span className="text-muted-foreground text-sm">
+                                to {getPlanetSymbol(other.name)} {other.name}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {strengthLabel && (
+                              <span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded ${strengthColor}`}>
+                                {strengthLabel}
+                              </span>
+                            )}
+                            <span className="text-xs text-muted-foreground">
+                              {aspect.orb.toFixed(1)}°
+                            </span>
+                            <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                          </div>
+                        </div>
+                      </CollapsibleTrigger>
+                      
+                      {aspectMeaning && (
+                        <p className="text-xs text-muted-foreground mt-1">{aspectMeaning}</p>
+                      )}
+                      {isTight && (
+                        <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1 italic">
+                          ✦ This is a tight aspect — you feel it strongly and consistently.
+                        </p>
+                      )}
+                      
+                      {/* Expanded contextual explanation */}
+                      <CollapsibleContent className="mt-3 pt-3 border-t border-current/10 space-y-3">
+                        {contextualExplanation && (
+                          <>
+                            <div>
+                              <h4 className="text-[10px] uppercase tracking-wider text-primary font-medium mb-1">
+                                Why This Tension Exists
+                              </h4>
+                              <p className="text-xs text-foreground/80 leading-relaxed">
+                                {contextualExplanation.whyTensionExists}
+                              </p>
+                            </div>
+                            
+                            <div>
+                              <h4 className="text-[10px] uppercase tracking-wider text-primary font-medium mb-1">
+                                How It Manifests
+                              </h4>
+                              <p className="text-xs text-foreground/80 leading-relaxed">
+                                {contextualExplanation.howItManifests}
+                              </p>
+                            </div>
+                            
+                            <div>
+                              <h4 className="text-[10px] uppercase tracking-wider text-primary font-medium mb-1">
+                                How Others Respond to You
+                              </h4>
+                              <p className="text-xs text-foreground/80 leading-relaxed">
+                                {contextualExplanation.othersPerceive}
+                              </p>
+                            </div>
+                            
+                            <div>
+                              <h4 className="text-[10px] uppercase tracking-wider text-emerald-600 font-medium mb-1">
+                                What Helps Ease the Tension
+                              </h4>
+                              <ul className="space-y-1">
+                                {contextualExplanation.whatHelps.slice(0, 3).map((tip, idx) => (
+                                  <li key={idx} className="text-xs text-foreground/80 flex items-start gap-1.5">
+                                    <span className="text-emerald-500 mt-0.5">•</span>
+                                    <span>{tip}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </>
                         )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {strengthLabel && (
-                          <span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded ${strengthColor}`}>
-                            {strengthLabel}
-                          </span>
-                        )}
-                        <span className="text-xs text-muted-foreground">
-                          {aspect.orb.toFixed(1)}°
-                        </span>
-                      </div>
+                      </CollapsibleContent>
                     </div>
-                    {aspectMeaning && (
-                      <p className="text-xs text-muted-foreground mt-1">{aspectMeaning}</p>
-                    )}
-                    {isTight && (
-                      <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1 italic">
-                        ✦ This is a tight aspect — you feel it strongly and consistently.
-                      </p>
-                    )}
-                  </div>
+                  </Collapsible>
                 );
               })}
             </div>
