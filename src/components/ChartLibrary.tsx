@@ -309,10 +309,13 @@ export const ChartLibrary = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [isDragOver, setIsDragOver] = useState(false);
+  const [cardDragOver, setCardDragOver] = useState<string | null>(null); // Track which card has drag-over
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isNewChartRef = useRef(false);
   // Track if form has been explicitly opened to prevent auto-save on mount
   const hasFormOpenedRef = useRef(false);
+  // Track pending file to process after form opens
+  const pendingFileRef = useRef<File | null>(null);
 
   // Auto-save with debounce
   const triggerAutoSave = useCallback(() => {
@@ -760,6 +763,46 @@ export const ChartLibrary = ({
     await processUploadedFile(file);
   };
 
+  // Handle drop directly on a chart card - opens that chart and processes the file
+  const handleCardDragOver = (e: React.DragEvent, chartId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCardDragOver(chartId);
+  };
+
+  const handleCardDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCardDragOver(null);
+  };
+
+  const handleCardDrop = async (e: React.DragEvent, chartOrUser: 'user' | NatalChart) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCardDragOver(null);
+
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+
+    // Store the file to process after form opens
+    pendingFileRef.current = file;
+    
+    // Open the chart for editing
+    openEditForm(chartOrUser);
+    
+    // Toast to let user know what's happening
+    toast.info(`Parsing chart image for ${chartOrUser === 'user' ? 'your chart' : chartOrUser.name}...`);
+  };
+
+  // Process pending file when form opens
+  useEffect(() => {
+    if (editingChart && pendingFileRef.current) {
+      const file = pendingFileRef.current;
+      pendingFileRef.current = null;
+      processUploadedFile(file);
+    }
+  }, [editingChart]);
+
   // Render a planet row
   const renderPlanetRow = (planet: string) => (
     <div key={planet} className="grid grid-cols-[40px_110px_1fr_70px_70px_70px_90px] gap-2 items-center">
@@ -979,7 +1022,16 @@ export const ChartLibrary = ({
 
       <div className="grid gap-4 md:grid-cols-2">
         {/* User's Personal Chart */}
-        <div className="rounded-sm border-2 border-primary/30 bg-secondary p-5">
+        <div 
+          className={`rounded-sm border-2 bg-secondary p-5 transition-all cursor-pointer ${
+            cardDragOver === 'user' 
+              ? 'border-primary bg-primary/10 ring-2 ring-primary/30' 
+              : 'border-primary/30 hover:border-primary/50'
+          }`}
+          onDragOver={(e) => handleCardDragOver(e, 'user')}
+          onDragLeave={handleCardDragLeave}
+          onDrop={(e) => handleCardDrop(e, 'user')}
+        >
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-serif text-lg font-medium text-foreground flex items-center gap-2">
               {userNatalChart ? userNatalChart.name : 'Your Chart'}
@@ -989,7 +1041,12 @@ export const ChartLibrary = ({
               Primary
             </span>
           </div>
-          {userNatalChart ? (
+          {cardDragOver === 'user' ? (
+            <div className="flex items-center justify-center py-4 text-primary">
+              <Upload size={24} className="mr-2" />
+              <span className="text-sm">Drop to update chart</span>
+            </div>
+          ) : userNatalChart ? (
             <>
               <div className="text-sm text-foreground mb-3 space-y-0.5">
                 <p>☉ {userNatalChart.planets.Sun?.degree}° {userNatalChart.planets.Sun?.sign}</p>
@@ -999,6 +1056,7 @@ export const ChartLibrary = ({
                   {(userNatalChart.houseCusps?.house1?.sign ?? userNatalChart.planets.Ascendant?.sign)}
                 </p>
               </div>
+              <p className="text-[10px] text-muted-foreground mb-2 italic">Drag chart image here to update</p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setViewingChart(userNatalChart)}
@@ -1027,37 +1085,57 @@ export const ChartLibrary = ({
 
         {/* Saved Charts */}
         {savedCharts.map(chart => (
-          <div key={chart.id} className="rounded-sm border border-border bg-secondary p-5">
+          <div 
+            key={chart.id} 
+            className={`rounded-sm border bg-secondary p-5 transition-all cursor-pointer ${
+              cardDragOver === chart.id 
+                ? 'border-primary bg-primary/10 ring-2 ring-primary/30' 
+                : 'border-border hover:border-primary/50'
+            }`}
+            onDragOver={(e) => handleCardDragOver(e, chart.id)}
+            onDragLeave={handleCardDragLeave}
+            onDrop={(e) => handleCardDrop(e, chart)}
+          >
             <h3 className="font-serif text-lg font-medium text-foreground mb-2">{chart.name}</h3>
-            <div className="text-sm text-foreground mb-3 space-y-0.5">
-              <p>☉ {chart.planets.Sun?.degree}° {chart.planets.Sun?.sign}</p>
-              <p>☽ {chart.planets.Moon?.degree}° {chart.planets.Moon?.sign}</p>
-              <p>
-                ASC {(chart.houseCusps?.house1?.degree ?? chart.planets.Ascendant?.degree)}°{' '}
-                {(chart.houseCusps?.house1?.sign ?? chart.planets.Ascendant?.sign)}
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setViewingChart(chart)}
-                className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-primary hover:underline"
-              >
-                <Eye size={14} />
-                View
-              </button>
-              <button
-                onClick={() => openEditForm(chart)}
-                className="text-[11px] uppercase tracking-widest text-primary hover:underline"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => onDeleteChart(chart.id)}
-                className="text-[11px] uppercase tracking-widest text-destructive hover:underline"
-              >
-                Delete
-              </button>
-            </div>
+            {cardDragOver === chart.id ? (
+              <div className="flex items-center justify-center py-4 text-primary">
+                <Upload size={24} className="mr-2" />
+                <span className="text-sm">Drop to update chart</span>
+              </div>
+            ) : (
+              <>
+                <div className="text-sm text-foreground mb-3 space-y-0.5">
+                  <p>☉ {chart.planets.Sun?.degree}° {chart.planets.Sun?.sign}</p>
+                  <p>☽ {chart.planets.Moon?.degree}° {chart.planets.Moon?.sign}</p>
+                  <p>
+                    ASC {(chart.houseCusps?.house1?.degree ?? chart.planets.Ascendant?.degree)}°{' '}
+                    {(chart.houseCusps?.house1?.sign ?? chart.planets.Ascendant?.sign)}
+                  </p>
+                </div>
+                <p className="text-[10px] text-muted-foreground mb-2 italic">Drag chart image here to update</p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setViewingChart(chart)}
+                    className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-primary hover:underline"
+                  >
+                    <Eye size={14} />
+                    View
+                  </button>
+                  <button
+                    onClick={() => openEditForm(chart)}
+                    className="text-[11px] uppercase tracking-widest text-primary hover:underline"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => onDeleteChart(chart.id)}
+                    className="text-[11px] uppercase tracking-widest text-destructive hover:underline"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         ))}
       </div>
