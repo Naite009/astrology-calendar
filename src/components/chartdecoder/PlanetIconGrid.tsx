@@ -17,7 +17,8 @@ export const PlanetIconGrid: React.FC<PlanetIconGridProps> = ({
 }) => {
   const mainPlanets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
   const outerPlanets = ['Uranus', 'Neptune', 'Pluto'];
-  const points = ['Chiron', 'NorthNode', 'Ascendant', 'Midheaven'];
+  const dwarfPlanetsAndPoints = ['Eris', 'Chiron', 'NorthNode'];
+  const angles = ['Ascendant', 'Midheaven'];
 
   const renderPlanetButton = (planet: ChartPlanet) => {
     const dignity = computeDignity(planet.name, planet.sign, useTraditional);
@@ -90,11 +91,22 @@ export const PlanetIconGrid: React.FC<PlanetIconGridProps> = ({
         </div>
       </div>
 
-      {/* Points */}
+      {/* Dwarf Planets & Points */}
       <div>
-        <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Points</h4>
+        <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Dwarf Planets & Points</h4>
         <div className="flex flex-wrap gap-2">
-          {points.map(name => {
+          {dwarfPlanetsAndPoints.map(name => {
+            const planet = getPlanetByName(name);
+            return planet ? renderPlanetButton(planet) : null;
+          })}
+        </div>
+      </div>
+
+      {/* Angles */}
+      <div>
+        <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Angles</h4>
+        <div className="flex flex-wrap gap-2">
+          {angles.map(name => {
             const planet = getPlanetByName(name);
             return planet ? renderPlanetButton(planet) : null;
           })}
