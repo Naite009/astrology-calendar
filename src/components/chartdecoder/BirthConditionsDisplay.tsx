@@ -120,8 +120,20 @@ export const BirthConditionsDisplay: React.FC<BirthConditionsDisplayProps> = ({ 
           <p className="text-sm text-foreground">
             <span className="font-medium">Your Birth Story: </span>
             You were born during a <span className="text-primary font-medium">{moonPhase?.phase || 'moon phase'}</span>
-            {timeOfDay && <span> at <span className="text-primary font-medium">{timeOfDay.timeOfDay.replace('_', ' ')}</span></span>}
-            , giving you a <span className="text-primary font-medium">{sect.sect} Chart</span>.
+            {timeOfDay && (
+              <span>
+                {' '}
+                <span className="text-primary font-medium">
+                  {timeOfDay.timeOfDay === 'morning' && sect.sect === 'Night'
+                    ? 'before sunrise'
+                    : timeOfDay.timeOfDay === 'evening' && sect.sect === 'Day'
+                    ? 'before sunset'
+                    : timeOfDay.timeOfDay.replace('_', ' ')}
+                </span>
+              </span>
+            )}
+            —a <span className="text-primary font-medium">{sect.sect} Chart</span>
+            {sect.sect === 'Night' ? ' (Sun below the horizon)' : ' (Sun above the horizon)'}.
             {moonPhase && ` Your soul archetype is ${moonPhase.archetype}.`}
           </p>
         </CardContent>
