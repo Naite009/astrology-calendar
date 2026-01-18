@@ -1264,6 +1264,29 @@ export const ChartLibrary = ({
                 
                 {showImportSection && (
                   <div className="mt-4 space-y-5">
+                    {/* Clear Data Button */}
+                    <div className="flex items-center justify-between p-3 bg-destructive/5 border border-destructive/20 rounded-lg">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Clear All Positions</p>
+                        <p className="text-xs text-muted-foreground">Wipe all planet & house data so you can reimport fresh</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          if (confirm('Clear ALL planet positions and house cusps? This cannot be undone.')) {
+                            setFormData(prev => ({
+                              ...prev,
+                              planets: emptyPlanets(),
+                              houseCusps: emptyHouseCusps(),
+                            }));
+                            toast.success('All positions cleared. You can now reimport your chart.');
+                          }
+                        }}
+                        className="px-3 py-1.5 text-xs uppercase tracking-widest bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded"
+                      >
+                        Clear All
+                      </button>
+                    </div>
+
                     {/* Drag and Drop Upload Box */}
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
@@ -1273,6 +1296,9 @@ export const ChartLibrary = ({
                         </span>
                         <span className="text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded">AI-Powered</span>
                       </div>
+                      <p className="text-xs text-muted-foreground">
+                        Import only fills empty slots. Use "Clear All" above first if you want to fully replace your chart.
+                      </p>
                       
                       <input
                         ref={fileInputRef}
