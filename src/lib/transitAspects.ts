@@ -446,24 +446,100 @@ export const getPersonalizedJournalPrompt = (
     `${mainAspect.interpretation} How did you experience this today?`;
 };
 
+// Priority score for natal planets - personal points and luminaries are MOST important
+const NATAL_PLANET_PRIORITY: Record<string, number> = {
+  Sun: 100,        // Sun is THE most important - identity, vitality
+  Moon: 95,        // Moon - emotions, instincts, equally vital
+  Ascendant: 90,   // ASC - how you meet the world
+  MC: 85,          // MC - career, public life
+  IC: 80,          // IC - home, roots
+  Descendant: 80,  // DSC - relationships
+  Mercury: 60,
+  Venus: 60,
+  Mars: 60,
+  Jupiter: 50,
+  Saturn: 50,
+  Uranus: 40,
+  Neptune: 40,
+  Pluto: 40,
+  NorthNode: 35,
+  Chiron: 30,
+};
+
+// Priority score for transit planets
+const TRANSIT_PLANET_PRIORITY: Record<string, number> = {
+  Sun: 90,         // Transit Sun conjunct natal Sun = Solar Return energy!
+  Moon: 85,        // Transit Moon (especially New/Full) hitting natal points
+  Pluto: 80,       // Outer planets = longer, more transformative
+  Neptune: 75,
+  Uranus: 70,
+  Saturn: 65,
+  Jupiter: 60,
+  Mars: 50,
+  Venus: 45,
+  Mercury: 40,
+};
+
+// Aspect priority - conjunctions are THE most powerful
+const ASPECT_PRIORITY: Record<string, number> = {
+  conjunction: 100,  // Conjunctions are the MOST significant - merging of energies
+  opposition: 70,
+  square: 60,
+  trine: 50,
+  sextile: 40,
+};
+
 // Get top transit aspects for calendar display (limit to most significant)
 export const getTopTransitAspects = (aspects: TransitAspect[], limit: number = 3): TransitAspect[] => {
-  // Prioritize: exact aspects, outer planet transits, tight orbs
-  const prioritized = [...aspects].sort((a, b) => {
-    // Exact aspects first
-    if (a.isExact && !b.isExact) return -1;
-    if (!a.isExact && b.isExact) return 1;
+  // Calculate significance score for each aspect
+  const withScores = aspects.map(asp => {
+    let score = 0;
     
-    // Outer planets are more significant
-    const outerPlanets = ['Pluto', 'Neptune', 'Uranus', 'Saturn', 'Jupiter'];
-    const aIsOuter = outerPlanets.includes(a.transitPlanet);
-    const bIsOuter = outerPlanets.includes(b.transitPlanet);
-    if (aIsOuter && !bIsOuter) return -1;
-    if (!aIsOuter && bIsOuter) return 1;
+    // EXACT aspects get a MASSIVE bonus
+    if (asp.isExact) score += 200;
     
-    // Tighter orbs are more significant
-    return parseFloat(a.orb) - parseFloat(b.orb);
+    // Very tight orbs (under 0.5°) also get bonus
+    const orb = parseFloat(asp.orb);
+    if (orb < 0.5) score += 100;
+    else if (orb < 1) score += 50;
+    else if (orb < 2) score += 25;
+    
+    // Natal planet priority - hitting Sun/Moon/Angles is HUGE
+    score += NATAL_PLANET_PRIORITY[asp.natalPlanet] || 30;
+    
+    // Transit planet priority
+    score += TRANSIT_PLANET_PRIORITY[asp.transitPlanet] || 30;
+    
+    // Aspect type priority - conjunctions are most significant
+    score += ASPECT_PRIORITY[asp.aspect] || 30;
+    
+    // Special case: Luminary conjunctions to personal points are PEAK significance
+    // New Moon (Sun+Moon conjunct) hitting natal Sun = life-changing!
+    if (asp.aspect === 'conjunction') {
+      if ((asp.transitPlanet === 'Sun' || asp.transitPlanet === 'Moon') && 
+          (asp.natalPlanet === 'Sun' || asp.natalPlanet === 'Moon')) {
+        score += 150; // Huge bonus for luminary-to-luminary conjunctions
+      }
+      // Conjunctions to Ascendant/MC are career/identity defining
+      if (asp.natalPlanet === 'Ascendant' || asp.natalPlanet === 'MC') {
+        score += 75;
+      }
+    }
+    
+    // Penalize very wide orbs
+    if (orb > 4) score -= 20;
+    if (orb > 6) score -= 30;
+    
+    return { aspect: asp, score };
   });
+  
+  // Sort by score (highest first), then by orb for tiebreaker
+  const prioritized = withScores
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return parseFloat(a.aspect.orb) - parseFloat(b.aspect.orb);
+    })
+    .map(item => item.aspect);
 
   return prioritized.slice(0, limit);
 };
