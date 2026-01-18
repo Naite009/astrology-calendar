@@ -103,7 +103,7 @@ export const PLANET_ROLES: Record<string, CharacterRole> = {
 };
 
 // ============================================================================
-// COSTUME/ROLE (HOW - The Sign)
+// SIGN EXPRESSION (HOW - The Sign)
 // ============================================================================
 
 export const SIGN_COSTUMES: Record<string, {
@@ -112,65 +112,81 @@ export const SIGN_COSTUMES: Record<string, {
   howTheyDoIt: string;
 }> = {
   Aries: {
-    costume: 'the warrior\'s armor, sword drawn',
+    costume: 'an instinct to act before thinking',
     energy: 'bold, pioneering, impatient, direct',
-    howTheyDoIt: 'by CHARGING forward, initiating, taking action first'
+    howTheyDoIt: 'by moving first, asking questions later, and trusting your impulses over deliberation'
   },
   Taurus: {
-    costume: 'the artisan\'s apron, hands in the earth',
+    costume: 'a need for stability before risk',
     energy: 'steady, sensual, stubborn, grounded',
-    howTheyDoIt: 'by BUILDING slowly, savoring each step, refusing to rush'
+    howTheyDoIt: 'by slowing down, trusting what you can touch, and refusing to be rushed by others\' timelines'
   },
   Gemini: {
-    costume: 'the messenger\'s wings, notebook in hand',
-    energy: 'curious, chatty, versatile, restless',
-    howTheyDoIt: 'by COMMUNICATING, asking questions, making connections'
+    costume: 'a mind that needs constant input',
+    energy: 'curious, adaptable, scattered, witty',
+    howTheyDoIt: 'by asking questions, making connections between unrelated things, and staying mentally stimulated'
   },
   Cancer: {
-    costume: 'the caretaker\'s shawl, protective shell',
-    energy: 'nurturing, moody, protective, intuitive',
-    howTheyDoIt: 'by FEELING deeply, protecting what matters, nurturing'
+    costume: 'an emotional radar scanning for safety',
+    energy: 'protective, intuitive, moody, nurturing',
+    howTheyDoIt: 'by reading the emotional temperature of every room before deciding how much of yourself to reveal'
   },
   Leo: {
-    costume: 'the royal regalia, spotlight-ready',
-    energy: 'dramatic, warm, proud, creative',
-    howTheyDoIt: 'by SHINING, expressing creatively, leading with heart'
+    costume: 'a need to be seen and appreciated',
+    energy: 'warm, dramatic, proud, generous',
+    howTheyDoIt: 'by leading with your heart, creating from your center, and needing acknowledgment to feel real'
   },
   Virgo: {
-    costume: 'the healer\'s bag, attention to detail',
-    energy: 'analytical, helpful, perfectionist, discerning',
-    howTheyDoIt: 'by REFINING, improving, serving, paying attention to what others miss'
+    costume: 'an eye that catches what others miss',
+    energy: 'analytical, helpful, anxious, discerning',
+    howTheyDoIt: 'by improving, analyzing, and serving — sometimes to the point of self-erasure'
   },
   Libra: {
-    costume: 'the diplomat\'s elegant attire, scales in hand',
-    energy: 'charming, indecisive, harmonizing, aesthetic',
-    howTheyDoIt: 'by BALANCING, seeking beauty and fairness, partnering'
+    costume: 'a nervous system calibrated to other people',
+    energy: 'relational, indecisive, aesthetic, peace-seeking',
+    howTheyDoIt: 'by reading others to find yourself, seeking harmony even when conflict would serve you better, and needing partnership to feel complete'
   },
   Scorpio: {
-    costume: 'the detective\'s dark coat, penetrating gaze',
-    energy: 'intense, secretive, transformative, probing',
-    howTheyDoIt: 'by INVESTIGATING, going deep, transforming what they touch'
+    costume: 'a psychological x-ray that sees beneath surfaces',
+    energy: 'intense, private, magnetic, probing',
+    howTheyDoIt: 'by testing people before trusting them, controlling what you reveal, and transforming through crisis'
   },
   Sagittarius: {
-    costume: 'the explorer\'s travel gear, bow aimed at stars',
+    costume: 'a restlessness that needs meaning',
     energy: 'adventurous, philosophical, blunt, optimistic',
-    howTheyDoIt: 'by EXPLORING, seeking meaning, shooting for the horizon'
+    howTheyDoIt: 'by seeking the bigger picture, speaking truth even when it stings, and needing freedom to feel alive'
   },
   Capricorn: {
-    costume: 'the executive\'s tailored suit, climbing gear',
-    energy: 'ambitious, disciplined, cautious, strategic',
-    howTheyDoIt: 'by BUILDING for the long-term, earning authority, climbing steadily'
+    costume: 'an awareness of how you appear to authority',
+    energy: 'ambitious, guarded, responsible, strategic',
+    howTheyDoIt: 'by earning respect through competence, building slowly, and hiding vulnerability behind achievement'
   },
   Aquarius: {
-    costume: 'the innovator\'s eccentric outfit, future-focused',
-    energy: 'unconventional, humanitarian, detached, visionary',
-    howTheyDoIt: 'by INNOVATING, thinking differently, serving the collective'
+    costume: 'a need to be different from the group',
+    energy: 'detached, innovative, stubborn, humanitarian',
+    howTheyDoIt: 'by observing humanity from slight distance, valuing ideas over emotions, and resisting anything that feels like conformity'
   },
   Pisces: {
-    costume: 'the mystic\'s flowing robes, dreamy gaze',
-    energy: 'imaginative, compassionate, escapist, intuitive',
-    howTheyDoIt: 'by DISSOLVING boundaries, dreaming, channeling the unseen'
+    costume: 'permeable boundaries that absorb everything',
+    energy: 'empathic, dreamy, escapist, intuitive',
+    howTheyDoIt: 'by feeling what others feel (whether you want to or not), needing solitude to recover, and living partly in unseen realms'
   }
+};
+
+// Psychological/esoteric Ascendant descriptions
+export const RISING_SIGN_PSYCHOLOGY: Record<string, string> = {
+  Aries: 'You approach life with your body first. New situations trigger action before thought. Your defense mechanism is aggression or withdrawal — rarely passivity. People experience you as direct, sometimes abrupt. You need to feel like you\'re in motion to feel alive.',
+  Taurus: 'You approach life by assessing physical reality first. New situations make you slow down and evaluate. Your defense mechanism is stubborn immobility. People experience you as calm, solid, sometimes immovable. You need sensory comfort to feel safe.',
+  Gemini: 'You approach life by gathering information first. New situations trigger questions. Your defense mechanism is intellectualization — thinking instead of feeling. People experience you as quick, curious, sometimes hard to pin down. You need mental stimulation to feel present.',
+  Cancer: 'You approach life with your emotional antennae extended. New situations trigger a safety assessment — is this environment nurturing or threatening? Your defense mechanism is withdrawal into your shell. People experience you as warm but guarded. You need to feel emotionally held to open up.',
+  Leo: 'You approach life expecting to be seen. New situations are stages where you assess your role. Your defense mechanism is pride — performing confidence when you feel unsure. People experience you as warm, dramatic, sometimes needing too much attention. You need appreciation to feel valued.',
+  Virgo: 'You approach life by noticing what needs fixing. New situations trigger analysis — what\'s wrong here, and can I help? Your defense mechanism is perfectionism and self-criticism. People experience you as helpful, competent, sometimes anxious. You need to be useful to feel worthy.',
+  Libra: 'You approach life through others. New situations make you scan for relational cues — who\'s here, what do they want, how do I fit? Your defense mechanism is people-pleasing and avoiding conflict. People experience you as gracious, charming, sometimes hard to know. You need partnership to feel complete.',
+  Scorpio: 'You approach life expecting hidden agendas. New situations trigger surveillance — what\'s really going on beneath the surface? Your defense mechanism is control and secrecy. People experience you as intense, magnetic, sometimes intimidating. You need emotional truth to trust.',
+  Sagittarius: 'You approach life as a quest for meaning. New situations trigger optimism and the question "what can I learn here?" Your defense mechanism is escapism — physical or philosophical flight. People experience you as enthusiastic, honest, sometimes preachy. You need freedom to feel alive.',
+  Capricorn: 'You approach life as a test of competence. New situations trigger evaluation — how will I be judged, and how do I measure up? Your defense mechanism is emotional suppression and overwork. People experience you as capable, serious, sometimes cold. You need achievement to feel secure.',
+  Aquarius: 'You approach life as an observer of humanity. New situations trigger detachment — you watch before participating. Your defense mechanism is intellectualizing emotions and maintaining distance. People experience you as friendly but aloof, interesting but unreachable. You need to feel unique to feel real.',
+  Pisces: 'You approach life with dissolving boundaries. New situations flood you with impressions — moods, energies, the unspoken. Your defense mechanism is escapism, fantasy, or merging with others. People experience you as gentle, elusive, sometimes confusing. You need solitude and creative outlet to stay grounded.'
 };
 
 // ============================================================================
