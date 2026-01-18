@@ -644,63 +644,94 @@ export const ChartLibrary = ({
         }
       }
 
-      // Import planets
+      // Import planets - ONLY fill in empty slots, don't overwrite existing data
       if (parsedData.planets && typeof parsedData.planets === 'object') {
         const validPlanets: Record<string, NatalPlanetPosition> = {};
+        let newPlanetsAdded = 0;
+        let planetsSkipped = 0;
         
         for (const [planet, position] of Object.entries(parsedData.planets)) {
           const pos = position as any;
           if (pos?.sign && ZODIAC_SIGNS.includes(pos.sign)) {
-            validPlanets[planet] = {
-              sign: pos.sign,
-              degree: Math.min(29, Math.max(0, parseInt(pos.degree) || 0)),
-              minutes: Math.min(59, Math.max(0, parseInt(pos.minutes) || 0)),
-              seconds: 0,
-              isRetrograde: Boolean(pos.isRetrograde),
-            };
-            planetsImported++;
+            // Check if this planet already has data in the form
+            const existingPlanet = formData.planets[planet];
+            const hasExistingData = existingPlanet?.sign && existingPlanet.sign !== '';
+            
+            if (hasExistingData) {
+              // Skip - don't overwrite existing data
+              planetsSkipped++;
+              console.log(`[Import] Skipping ${planet} - already has data (${existingPlanet.degree}° ${existingPlanet.sign})`);
+            } else {
+              // Fill in this empty slot
+              validPlanets[planet] = {
+                sign: pos.sign,
+                degree: Math.min(29, Math.max(0, parseInt(pos.degree) || 0)),
+                minutes: Math.min(59, Math.max(0, parseInt(pos.minutes) || 0)),
+                seconds: 0,
+                isRetrograde: Boolean(pos.isRetrograde),
+              };
+              newPlanetsAdded++;
+              planetsImported++;
+              console.log(`[Import] Adding ${planet}: ${pos.degree}° ${pos.sign}`);
+            }
           }
         }
 
-        if (planetsImported > 0 || Object.keys(birthInfoUpdates).length > 0) {
+        if (newPlanetsAdded > 0 || Object.keys(birthInfoUpdates).length > 0) {
           setFormData(prev => ({
             ...prev,
-            ...birthInfoUpdates,
+            // Only update birth info if fields are empty
+            name: birthInfoUpdates.name && !prev.name ? birthInfoUpdates.name : prev.name,
+            birthDate: birthInfoUpdates.birthDate && !prev.birthDate ? birthInfoUpdates.birthDate : prev.birthDate,
+            birthTime: birthInfoUpdates.birthTime && !prev.birthTime ? birthInfoUpdates.birthTime : prev.birthTime,
+            birthLocation: birthInfoUpdates.birthLocation && !prev.birthLocation ? birthInfoUpdates.birthLocation : prev.birthLocation,
             chartImageBase64: isImage ? fileBase64 : prev.chartImageBase64,
             planets: {
               ...prev.planets,
               ...validPlanets,
             },
           }));
+          
+          if (planetsSkipped > 0) {
+            toast.info(`Added ${newPlanetsAdded} new positions, kept ${planetsSkipped} existing positions unchanged.`);
+          }
         } else if (isImage) {
           setFormData(prev => ({
             ...prev,
-            ...birthInfoUpdates,
             chartImageBase64: fileBase64,
           }));
         }
       } else if (Object.keys(birthInfoUpdates).length > 0) {
-        // Even if no planets found, still update birth info if we have it
+        // Even if no planets found, still update birth info if we have it (only empty fields)
         setFormData(prev => ({
           ...prev,
-          ...birthInfoUpdates,
+          name: birthInfoUpdates.name && !prev.name ? birthInfoUpdates.name : prev.name,
+          birthDate: birthInfoUpdates.birthDate && !prev.birthDate ? birthInfoUpdates.birthDate : prev.birthDate,
+          birthTime: birthInfoUpdates.birthTime && !prev.birthTime ? birthInfoUpdates.birthTime : prev.birthTime,
+          birthLocation: birthInfoUpdates.birthLocation && !prev.birthLocation ? birthInfoUpdates.birthLocation : prev.birthLocation,
           chartImageBase64: isImage ? fileBase64 : prev.chartImageBase64,
         }));
       }
 
-      // Import house cusps
+      // Import house cusps - ONLY fill in empty slots
       if (parsedData.houseCusps && typeof parsedData.houseCusps === 'object') {
         const validCusps: Record<string, HouseCusp> = {};
         
         for (const [house, cusp] of Object.entries(parsedData.houseCusps)) {
           const c = cusp as any;
           if (c?.sign && ZODIAC_SIGNS.includes(c.sign)) {
-            validCusps[house] = {
-              sign: c.sign,
-              degree: Math.min(29, Math.max(0, parseInt(c.degree) || 0)),
-              minutes: Math.min(59, Math.max(0, parseInt(c.minutes) || 0)),
-            };
-            housesImported++;
+            // Check if this house already has data
+            const existingCusp = formData.houseCusps[house];
+            const hasExistingData = existingCusp?.sign && existingCusp.sign !== '';
+            
+            if (!hasExistingData) {
+              validCusps[house] = {
+                sign: c.sign,
+                degree: Math.min(29, Math.max(0, parseInt(c.degree) || 0)),
+                minutes: Math.min(59, Math.max(0, parseInt(c.minutes) || 0)),
+              };
+              housesImported++;
+            }
           }
         }
 
