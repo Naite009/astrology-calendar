@@ -89,16 +89,14 @@ const convertNatalChartToPlanets = (chart: NatalChart): ChartPlanet[] => {
   
   const planetNames = [
     'Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn',
-    'Uranus', 'Neptune', 'Pluto', 'Chiron', 'NorthNode', 'Ascendant'
+    'Uranus', 'Neptune', 'Pluto', 'Chiron', 'NorthNode'
   ] as const;
 
   for (const name of planetNames) {
     const pos = chart.planets[name as keyof typeof chart.planets];
     if (pos) {
       const degree = pos.degree + (pos.minutes || 0) / 60;
-      const house = name === 'Ascendant' 
-        ? 1  // Ascendant is always 1st house cusp
-        : calculateHouse(pos.sign, degree, chart.houseCusps);
+      const house = calculateHouse(pos.sign, degree, chart.houseCusps);
       
       planets.push({
         name,
@@ -108,6 +106,18 @@ const convertNatalChartToPlanets = (chart: NatalChart): ChartPlanet[] => {
         house
       });
     }
+  }
+
+  // Add Ascendant - prefer houseCusps.house1 (more reliable), then fall back to planets.Ascendant
+  const ascendantSource = chart.houseCusps?.house1 || chart.planets.Ascendant;
+  if (ascendantSource) {
+    planets.push({
+      name: 'Ascendant',
+      sign: ascendantSource.sign,
+      degree: ascendantSource.degree + (ascendantSource.minutes || 0) / 60,
+      retrograde: false,
+      house: 1  // Ascendant is always 1st house cusp
+    });
   }
 
   // Add Midheaven from house cusps if available
