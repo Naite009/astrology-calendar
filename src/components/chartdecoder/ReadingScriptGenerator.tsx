@@ -119,38 +119,103 @@ const SIGN_HOUSE_SYNTHESIS: Record<string, Record<number, string>> = {
     11: 'Your drive serves the collective — you fight for causes, you\'re energized by groups, and your action needs to connect to future visions.',
     12: 'Your drive is hidden or self-sabotaging — you may turn anger inward, you act behind the scenes, and your energy connects to the unconscious or spiritual realms.'
   },
-  Jupiter: {
-    1: 'Your expansion IS your identity — you come across as optimistic, generous, and larger than life. Growth happens through being yourself.',
-    2: 'Your expansion flows through money and values — you attract wealth, you spend generously, and growth happens through what you own.',
-    3: 'Your expansion happens through learning and communication — you\'re endlessly curious, you grow through teaching, and luck comes through connections.',
-    4: 'Your expansion lives at home — you need a big space, you grow through family, and luck comes through your emotional foundations.',
-    5: 'Your expansion is creative and romantic — you attract love, you grow through self-expression, and luck comes through play and children.',
-    6: 'Your expansion happens through work and service — you grow by helping others, luck comes through health and daily routines.',
-    7: 'Your expansion flows through partnership — you attract beneficial relationships, you grow through others, and luck comes through marriage or commitment.',
-    8: 'Your expansion goes deep — you grow through transformation, luck comes through shared resources or inheritance, and you expand through crisis.',
-    9: 'Your expansion is in its natural home — you grow through travel, philosophy, and higher learning. Luck flows easily here.',
-    10: 'Your expansion is career-focused — you grow through achievement, luck comes through your profession, and you expand your public role.',
-    11: 'Your expansion flows through community — you grow through friends and groups, luck comes through collective efforts, and you expand through humanitarian causes.',
-    12: 'Your expansion is hidden or spiritual — you grow through solitude and inner work, luck comes from the unconscious, and you expand through surrender.'
-  },
-  Saturn: {
-    1: 'Your lessons ARE your identity — you come across as serious, responsible, and mature. You grow by building authentic selfhood.',
-    2: 'Your lessons involve money and self-worth — security doesn\'t come easy, you earn everything, and mastery develops through patient accumulation.',
-    3: 'Your lessons involve communication and learning — you may have felt slow or blocked early on, but mastery comes through disciplined thinking.',
-    4: 'Your lessons live at home — family may have felt restrictive, you carry ancestral weight, and mastery comes through building inner security.',
-    5: 'Your lessons involve creativity and self-expression — you may have felt blocked from play, but mastery comes through disciplined creative work.',
-    6: 'Your lessons involve work and health — you take responsibility seriously, you may struggle with perfectionism, and mastery comes through service.',
-    7: 'Your lessons involve partnership — relationships may feel heavy or karmic, commitment is serious business, and mastery comes through mature relating.',
-    8: 'Your lessons go deep — you face death/rebirth themes, control is a lesson, and mastery comes through psychological transformation.',
-    9: 'Your lessons involve meaning and belief — your philosophy is tested, freedom must be earned, and mastery comes through grounded wisdom.',
-    10: 'Your lessons are career-focused — ambition is serious, authority is earned slowly, and mastery comes through long-term professional building.',
-    11: 'Your lessons involve community and the future — you may feel like an outsider, groups require work, and mastery comes through responsible innovation.',
-    12: 'Your lessons are hidden or karmic — you carry unconscious burdens, solitude is necessary, and mastery comes through spiritual discipline.'
-  }
+  // Jupiter and Saturn need sign+house combined syntheses, not generic house statements
+  // These will be generated dynamically in getJupiterSynthesis and getSaturnSynthesis functions
 };
+
+// Jupiter synthesis that actually weaves sign + house together
+function getJupiterSynthesis(sign: string, house: number | undefined): string {
+  if (!house) return '';
+  
+  // Sign qualities for Jupiter
+  const signQualities: Record<string, { how: string; through: string }> = {
+    Aries: { how: 'through bold action and being first', through: 'courage and initiative' },
+    Taurus: { how: 'slowly and steadily through patient accumulation', through: 'building something tangible and lasting' },
+    Gemini: { how: 'through learning, connections, and variety', through: 'curiosity and communication' },
+    Cancer: { how: 'through nurturing and emotional investment', through: 'caring for others and building security' },
+    Leo: { how: 'through creative self-expression and generosity', through: 'shining brightly and inspiring others' },
+    Virgo: { how: 'through practical service and attention to detail', through: 'being useful and improving things' },
+    Libra: { how: 'through partnership and creating harmony', through: 'relationships and aesthetic refinement' },
+    Scorpio: { how: 'through intensity and psychological depth', through: 'transformation and facing what others avoid' },
+    Sagittarius: { how: 'through adventure, philosophy, and faith', through: 'following your vision and staying optimistic' },
+    Capricorn: { how: 'through discipline and long-term strategy', through: 'earning authority and building structures' },
+    Aquarius: { how: 'through innovation and serving the collective', through: 'thinking differently and breaking conventions' },
+    Pisces: { how: 'through compassion and spiritual surrender', through: 'dissolving boundaries and trusting the universe' }
+  };
+  
+  // House areas for Jupiter
+  const houseAreas: Record<number, { area: string; luck: string }> = {
+    1: { area: 'your identity and how you present yourself', luck: 'You attract opportunities just by being yourself — people see your optimism immediately.' },
+    2: { area: 'money, possessions, and self-worth', luck: 'Financial abundance comes when you invest in what you truly value.' },
+    3: { area: 'communication, learning, and daily connections', luck: 'Luck finds you through conversations, siblings, neighbors, or local travel.' },
+    4: { area: 'home, family, and emotional foundations', luck: 'Your family or home base is a source of abundance — you may need a large space or come from a supportive lineage.' },
+    5: { area: 'creativity, romance, and self-expression', luck: 'Love, children, and creative projects bring you joy and growth. You attract romance easily.' },
+    6: { area: 'work, health, and daily routines', luck: 'Luck comes through your job and service to others. Your health benefits from optimism.' },
+    7: { area: 'partnerships and committed relationships', luck: 'Your partners bring you luck. Marriage or business partnerships expand your world.' },
+    8: { area: 'shared resources, intimacy, and transformation', luck: 'Luck comes through other people\'s resources — inheritance, investments, partnership money. Deep intimacy transforms you.' },
+    9: { area: 'philosophy, travel, and higher learning', luck: 'This is Jupiter\'s home turf. Education, travel, publishing, and spiritual seeking all flow naturally.' },
+    10: { area: 'career, reputation, and public role', luck: 'Your profession brings abundance. You\'re known for your optimism or wisdom. Public recognition comes.' },
+    11: { area: 'friends, groups, and future visions', luck: 'Your social network is your abundance. Friends bring opportunities. Causes you believe in prosper.' },
+    12: { area: 'the unconscious, solitude, and hidden realms', luck: 'Luck comes from behind the scenes — through retreat, spiritual practice, or anonymous service. You\'re protected in ways you can\'t see.' }
+  };
+  
+  const sq = signQualities[sign];
+  const ha = houseAreas[house];
+  if (!sq || !ha) return '';
+  
+  return `Jupiter brings growth and luck to ${ha.area}. You grow ${sq.how}. ${ha.luck}`;
+}
+
+// Saturn synthesis that actually weaves sign + house together  
+function getSaturnSynthesis(sign: string, house: number | undefined): string {
+  if (!house) return '';
+  
+  // Sign qualities for Saturn
+  const signQualities: Record<string, { lesson: string; mastery: string }> = {
+    Aries: { lesson: 'patience with your impulses — you can\'t always go first', mastery: 'disciplined courage that doesn\'t burn out' },
+    Taurus: { lesson: 'that security must be earned, not assumed', mastery: 'building lasting wealth through patience' },
+    Gemini: { lesson: 'focused thinking — your mind can\'t chase every idea', mastery: 'structured communication and deep knowledge' },
+    Cancer: { lesson: 'emotional boundaries and mature nurturing', mastery: 'building inner security that doesn\'t depend on others' },
+    Leo: { lesson: 'that recognition must be earned, not demanded', mastery: 'authentic self-expression that inspires rather than performs' },
+    Virgo: { lesson: 'that perfectionism is a trap — good enough is sometimes enough', mastery: 'practical excellence through disciplined service' },
+    Libra: { lesson: 'that relationships require commitment, not just charm', mastery: 'mature partnership built on fairness and accountability' },
+    Scorpio: { lesson: 'that control is an illusion — surrender is the real power', mastery: 'psychological depth through facing your shadows' },
+    Sagittarius: { lesson: 'that freedom must be earned and beliefs must be tested', mastery: 'grounded wisdom that comes from real experience' },
+    Capricorn: { lesson: 'that authority is a responsibility, not a reward', mastery: 'becoming a true elder who earns respect through integrity' },
+    Aquarius: { lesson: 'that being different isn\'t enough — your ideas must work', mastery: 'sustainable innovation that actually helps the collective' },
+    Pisces: { lesson: 'that escape isn\'t healing — you must face reality', mastery: 'structured spirituality and grounded compassion' }
+  };
+  
+  // House areas for Saturn
+  const houseAreas: Record<number, { area: string; challenge: string }> = {
+    1: { area: 'your identity and self-presentation', challenge: 'You may have felt unseen or criticized early on. You come across as serious, mature, sometimes guarded.' },
+    2: { area: 'money, possessions, and self-worth', challenge: 'Financial security doesn\'t come easy. You may have felt "not enough." Everything must be earned.' },
+    3: { area: 'communication and learning', challenge: 'You may have felt slow, blocked, or misunderstood early on. Speaking up doesn\'t come naturally.' },
+    4: { area: 'home, family, and emotional foundations', challenge: 'Family may have felt cold, demanding, or absent. You carry ancestral weight. Home requires work.' },
+    5: { area: 'creativity, romance, and self-expression', challenge: 'Play didn\'t come easy. Romance feels serious. You may have blocked your creative side.' },
+    6: { area: 'work and health', challenge: 'Work is demanding. Health requires constant attention. You take responsibility for everything.' },
+    7: { area: 'partnerships and committed relationships', challenge: 'Relationships feel karmic and heavy. You may marry late or choose a serious partner. Commitment isn\'t casual.' },
+    8: { area: 'shared resources, intimacy, and transformation', challenge: 'Trust comes hard. Intimacy requires control to release. Other people\'s resources may be restricted.' },
+    9: { area: 'philosophy, travel, and higher learning', challenge: 'Beliefs were tested early. Education may have been delayed or difficult. You earn your wisdom.' },
+    10: { area: 'career and public reputation', challenge: 'Ambition runs deep but success comes slowly. You may fear failure publicly. Authority is earned over decades.' },
+    11: { area: 'friends, groups, and future visions', challenge: 'You may feel like an outsider. Friendships require work. Groups can feel restricting.' },
+    12: { area: 'the unconscious and hidden realms', challenge: 'You carry unconscious burdens — possibly karmic. Solitude is necessary. The unseen feels heavy.' }
+  };
+  
+  const sq = signQualities[sign];
+  const ha = houseAreas[house];
+  if (!sq || !ha) return '';
+  
+  return `Saturn tests you in ${ha.area}. Your core lesson is ${sq.lesson}. ${ha.challenge} The payoff: ${sq.mastery}.`;
+}
 
 function getSynthesis(planetName: string, sign: string, house: number | undefined): string {
   if (!house) return '';
+  
+  // For Jupiter and Saturn, use the dedicated functions
+  if (planetName === 'Jupiter') return getJupiterSynthesis(sign, house);
+  if (planetName === 'Saturn') return getSaturnSynthesis(sign, house);
+  
   const planetSyntheses = SIGN_HOUSE_SYNTHESIS[planetName];
   if (!planetSyntheses) return '';
   return planetSyntheses[house] || '';
