@@ -1,18 +1,74 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Sun, Moon, Sparkles, Shield } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { getBirthConditions, BirthMoonPhaseData, SectData, TimeOfDayData } from '@/lib/birthConditions';
 import { ELEMENT_TEACHINGS, ElementTeaching } from '@/lib/elementTeachings';
 import { SIGN_PROPERTIES } from '@/lib/planetDignities';
+import { analyzeChartStrengths, ChartStrengthsAnalysis } from '@/lib/chartStrengths';
+import { analyzeAllPlanetaryConditions, PlanetaryCondition } from '@/lib/planetaryCondition';
+import { ChartPlanet, computeAspects, DEFAULT_ORBS } from '@/lib/chartDecoderLogic';
+import { PlanetaryConditionDashboard } from './PlanetaryConditionDashboard';
+import { WhereLifeHelpsCard } from './WhereLifeHelpsCard';
 
 interface BirthConditionsDisplayProps {
   chart: NatalChart;
+  useTraditional?: boolean;
 }
 
-export const BirthConditionsDisplay: React.FC<BirthConditionsDisplayProps> = ({ chart }) => {
+// Helper to convert NatalChart planets to ChartPlanet format
+const convertToChartPlanets = (chart: NatalChart): ChartPlanet[] => {
+  const planets: ChartPlanet[] = [];
+  const planetNames = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'] as const;
+  
+  const toAbsoluteDegree = (sign: string, degree: number): number => {
+    const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+    const signIndex = signs.indexOf(sign);
+    return signIndex === -1 ? 0 : signIndex * 30 + degree;
+  };
+  
+  const calculateHouse = (planetSign: string, planetDegree: number): number | null => {
+    if (!chart.houseCusps) return null;
+    const planetAbsDeg = toAbsoluteDegree(planetSign, planetDegree);
+    const cusps: number[] = [];
+    for (let i = 1; i <= 12; i++) {
+      const cusp = chart.houseCusps[`house${i}` as keyof typeof chart.houseCusps];
+      if (cusp) cusps.push(toAbsoluteDegree(cusp.sign, cusp.degree + (cusp.minutes || 0) / 60));
+      else return null;
+    }
+    for (let i = 0; i < 12; i++) {
+      const currentCusp = cusps[i];
+      const nextCusp = cusps[(i + 1) % 12];
+      if (nextCusp < currentCusp) {
+        if (planetAbsDeg >= currentCusp || planetAbsDeg < nextCusp) return i + 1;
+      } else {
+        if (planetAbsDeg >= currentCusp && planetAbsDeg < nextCusp) return i + 1;
+      }
+    }
+    return 1;
+  };
+  
+  for (const name of planetNames) {
+    const pos = chart.planets[name as keyof typeof chart.planets];
+    if (pos) {
+      const degree = pos.degree + (pos.minutes || 0) / 60;
+      planets.push({
+        name,
+        sign: pos.sign,
+        degree,
+        retrograde: pos.isRetrograde || false,
+        house: calculateHouse(pos.sign, degree)
+      });
+    }
+  }
+  return planets;
+};
+
+export const BirthConditionsDisplay: React.FC<BirthConditionsDisplayProps> = ({ chart, useTraditional = true }) => {
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  
   const conditions = getBirthConditions(chart);
   const { moonPhase, sect, timeOfDay } = conditions;
   
@@ -20,6 +76,18 @@ export const BirthConditionsDisplay: React.FC<BirthConditionsDisplayProps> = ({ 
   const moonSign = chart.planets.Moon?.sign;
   const moonElement = moonSign ? SIGN_PROPERTIES[moonSign]?.element : null;
   const moonElementTeaching = moonElement ? ELEMENT_TEACHINGS[moonElement] : null;
+
+  // Calculate planetary conditions and strengths
+  // NOTE: For essential dignities (rulership, fall, etc.), we ALWAYS use traditional rulers
+  // Modern rulers are only used for other purposes when useTraditional is false
+  const { planetaryConditions, strengthsAnalysis } = useMemo(() => {
+    const planets = convertToChartPlanets(chart);
+    const aspects = computeAspects(planets, DEFAULT_ORBS);
+    // Always use traditional for dignities
+    const conditions = analyzeAllPlanetaryConditions(planets, aspects, chart, true);
+    const analysis = analyzeChartStrengths(planets, aspects, chart, true);
+    return { planetaryConditions: conditions, strengthsAnalysis: analysis };
+  }, [chart]);
 
   return (
     <div className="space-y-4">
@@ -38,7 +106,7 @@ export const BirthConditionsDisplay: React.FC<BirthConditionsDisplayProps> = ({ 
         )}
 
         {/* Day/Night Sect */}
-        <SectCard sect={sect} />
+        <SectCard sect={sect} analysis={strengthsAnalysis} />
 
         {/* Time of Day */}
         {timeOfDay && (
@@ -59,12 +127,18 @@ export const BirthConditionsDisplay: React.FC<BirthConditionsDisplayProps> = ({ 
         </CardContent>
       </Card>
 
+      {/* Where Life Helps You Card */}
+      <WhereLifeHelpsCard analysis={strengthsAnalysis} />
+
+      {/* Planetary Condition Dashboard */}
+      <PlanetaryConditionDashboard conditions={planetaryConditions} />
+
       {/* Moon Element Section */}
       {moonSign && moonElement && moonElementTeaching && (
         <MoonElementCard 
           moonSign={moonSign} 
           element={moonElement} 
-          teaching={moonElementTeaching} 
+          teaching={moonElementTeaching}
         />
       )}
     </div>
@@ -312,54 +386,138 @@ const MoonPhaseCard: React.FC<{ moonPhase: BirthMoonPhaseData }> = ({ moonPhase 
   </Card>
 );
 
-const SectCard: React.FC<{ sect: SectData }> = ({ sect }) => (
-  <Card className="h-full">
-    <CardHeader className="pb-2">
-      <div className="flex items-center justify-between">
-        <CardTitle className="text-sm font-medium flex items-center gap-2">
-          <span className="text-2xl">{sect.sect === 'Day' ? '☀️' : '🌙'}</span>
-          {sect.sect} Chart
-        </CardTitle>
-        <Badge 
-          variant="outline" 
-          className={sect.sect === 'Day' ? 'border-amber-500 text-amber-500' : 'border-indigo-500 text-indigo-500'}
-        >
-          {sect.sect} Sect
-        </Badge>
-      </div>
-    </CardHeader>
-    <CardContent className="space-y-3">
-      <p className="text-xs text-foreground">
-        {sect.description.split('.')[0]}.
-      </p>
-      
-      <div className="space-y-2 text-xs">
-        <div className="flex items-center gap-2">
-          <span className="text-emerald-500">✦</span>
-          <span className="text-muted-foreground">
-            <span className="font-medium text-foreground">{sect.sectBenefic}</span> is your Sect Benefic — luck flows naturally
-          </span>
+const SectCard: React.FC<{ sect: SectData; analysis?: ChartStrengthsAnalysis }> = ({ sect, analysis }) => {
+  const [expanded, setExpanded] = useState(false);
+  
+  return (
+    <Card className="h-full">
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <span className="text-2xl">{sect.sect === 'Day' ? '☀️' : '🌙'}</span>
+            {sect.sect} Chart
+          </CardTitle>
+          <Badge 
+            variant="outline" 
+            className={sect.sect === 'Day' ? 'border-amber-500 text-amber-500' : 'border-indigo-500 text-indigo-500'}
+          >
+            {sect.sect} Sect
+          </Badge>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-amber-500">✦</span>
-          <span className="text-muted-foreground">
-            <span className="font-medium text-foreground">{sect.sectMalefic}</span> is your Sect Malefic — challenges are manageable
-          </span>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-xs text-foreground">
+          {sect.description.split('.')[0]}.
+        </p>
+        
+        {/* Guiding Light */}
+        {analysis?.sectLight && (
+          <div className={`p-2 rounded-sm ${analysis.sectLight.isWellPlaced ? 'bg-emerald-500/10' : 'bg-muted/30'}`}>
+            <div className="flex items-center gap-2 mb-1">
+              {analysis.sectLight.planet === 'Sun' ? <Sun size={14} className="text-amber-500" /> : <Moon size={14} className="text-indigo-400" />}
+              <span className="text-xs font-medium">Your Guiding Light: {analysis.sectLight.planet}</span>
+              {analysis.sectLight.isWellPlaced && (
+                <Badge variant="secondary" className="text-[10px] bg-emerald-500/20 text-emerald-600">Well-Placed</Badge>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">{analysis.sectLight.guidance}</p>
+          </div>
+        )}
+        
+        <div className="space-y-2 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-emerald-500">✦</span>
+            <span className="text-muted-foreground">
+              <span className="font-medium text-foreground">{sect.sectBenefic}</span> is your Sect Benefic — luck flows naturally
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-amber-500">✦</span>
+            <span className="text-muted-foreground">
+              <span className="font-medium text-foreground">{sect.sectMalefic}</span> is your Sect Malefic — challenges are manageable
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-rose-400">✦</span>
+            <span className="text-muted-foreground">
+              <span className="font-medium text-foreground">{sect.outOfSectMalefic}</span> is out of sect — may need more conscious work
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-rose-400">✦</span>
-          <span className="text-muted-foreground">
-            <span className="font-medium text-foreground">{sect.outOfSectMalefic}</span> is out of sect — may need more conscious work
-          </span>
-        </div>
-      </div>
-      
-      <p className="text-xs text-muted-foreground italic pt-2 border-t border-border/50">
-        {sect.overallMeaning.split('.')[0]}.
-      </p>
-    </CardContent>
-  </Card>
-);
+        
+        {/* Expand for detailed benefic/malefic analysis */}
+        {analysis && (
+          <>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setExpanded(!expanded)}
+              className="w-full text-xs"
+            >
+              {expanded ? (
+                <>Hide Detailed Analysis <ChevronUp size={14} className="ml-1" /></>
+              ) : (
+                <>Show Benefic & Malefic Analysis <ChevronDown size={14} className="ml-1" /></>
+              )}
+            </Button>
+            
+            {expanded && (
+              <div className="space-y-3 pt-3 border-t border-border/50">
+                {/* Sect Benefic */}
+                <div className="p-2 bg-emerald-500/10 rounded-sm">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Sparkles size={12} className="text-emerald-500" />
+                    <span className="text-xs font-medium text-emerald-700">
+                      {analysis.sectBenefic.planet} — Your Primary Helper
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{analysis.sectBenefic.interpretation.split('.')[0]}.</p>
+                </div>
+                
+                {/* Out of Sect Benefic */}
+                <div className="p-2 bg-sky-500/10 rounded-sm">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Sparkles size={12} className="text-sky-500" />
+                    <span className="text-xs font-medium text-sky-700">
+                      {analysis.outOfSectBenefic.planet} — Secondary Support
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{analysis.outOfSectBenefic.interpretation.split('.')[0]}.</p>
+                </div>
+                
+                {/* Sect Malefic */}
+                <div className="p-2 bg-amber-500/10 rounded-sm">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Shield size={12} className="text-amber-500" />
+                    <span className="text-xs font-medium text-amber-700">
+                      {analysis.sectMalefic.planet} — Manageable Discipline
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{analysis.sectMalefic.missionSupport}</p>
+                </div>
+                
+                {/* Out of Sect Malefic */}
+                <div className="p-2 bg-rose-500/10 rounded-sm">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Shield size={12} className="text-rose-400" />
+                    <span className="text-xs font-medium text-rose-600">
+                      {analysis.outOfSectMalefic.planet} — Requires Conscious Work
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{analysis.outOfSectMalefic.interpretation.split('.')[0]}.</p>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+        
+        <p className="text-xs text-muted-foreground italic pt-2 border-t border-border/50">
+          {sect.overallMeaning.split('.')[0]}.
+        </p>
+      </CardContent>
+    </Card>
+  );
+};
 
 const TimeOfDayCard: React.FC<{ timeOfDay: TimeOfDayData }> = ({ timeOfDay }) => {
   const timeEmojis: Record<string, string> = {
