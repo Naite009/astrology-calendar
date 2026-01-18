@@ -1,7 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sparkles, Info, Users, Heart, Grid3X3, Star } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Sparkles, Info, Users, Heart, Grid3X3, Star, Clock, Calendar } from 'lucide-react';
 
 import { PlanetIconGrid } from './chartdecoder/PlanetIconGrid';
 import { PlanetDetailCard } from './chartdecoder/PlanetDetailCard';
@@ -12,6 +14,7 @@ import { BirthConditionsDisplay } from './chartdecoder/BirthConditionsDisplay';
 import { ChartCastOverview } from './chartdecoder/ChartCastOverview';
 import { QuadrantAnalysisDisplay } from './chartdecoder/QuadrantAnalysisDisplay';
 import { HighestPotentialSynthesis } from './chartdecoder/HighestPotentialSynthesis';
+import { ProgressionsDisplay } from './chartdecoder/ProgressionsDisplay';
 
 import { NatalChart } from '@/hooks/useNatalChart';
 import {
@@ -149,12 +152,43 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
   // Settings state
   const [useTraditional, setUseTraditional] = useState(true);
   const [aspectOrbs] = useState<AspectOrbs>(DEFAULT_ORBS);
+  
+  // Age input for life-stage interpretations
+  const [ageInput, setAgeInput] = useState<string>('');
 
-  // Get the active chart
+  // Get the active chart (must be defined before calculatedAge)
   const activeChart = useMemo(() => {
     if (localSelectedChart === 'user') return natalChart;
     return allCharts.find(c => c.id === localSelectedChart) || natalChart || allCharts[0];
   }, [localSelectedChart, natalChart, allCharts]);
+  
+  // Calculate age from birth date if not manually set
+  const calculatedAge = useMemo(() => {
+    if (ageInput && !isNaN(parseInt(ageInput))) {
+      return parseInt(ageInput);
+    }
+    if (activeChart?.birthDate) {
+      const [year, month, day] = activeChart.birthDate.split('-').map(Number);
+      const birthDate = new Date(year, month - 1, day);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      return age;
+    }
+    return 35; // Default adult age
+  }, [ageInput, activeChart?.birthDate]);
+  
+  // Life stage label
+  const lifeStage = useMemo(() => {
+    if (calculatedAge < 12) return 'Child';
+    if (calculatedAge < 21) return 'Adolescent';
+    if (calculatedAge < 30) return 'Young Adult';
+    if (calculatedAge < 50) return 'Adult';
+    return 'Elder';
+  }, [calculatedAge]);
 
   // Convert to ChartPlanet[] format
   const planets = useMemo(() => {
@@ -206,22 +240,45 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
         </div>
 
         {/* Chart Selector */}
-        <div className="flex items-center gap-2">
-          <label className="text-[11px] uppercase tracking-widest text-muted-foreground">
-            Decoding:
-          </label>
-          <select
-            value={localSelectedChart}
-            onChange={(e) => setLocalSelectedChart(e.target.value)}
-            className="border border-border bg-background px-3 py-2 text-sm rounded-sm focus:border-primary focus:outline-none"
-          >
-            {allCharts.map(chart => (
-              <option key={chart.id} value={chart.id}>{chart.name}</option>
-            ))}
-          </select>
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2">
+            <label className="text-[11px] uppercase tracking-widest text-muted-foreground">
+              Decoding:
+            </label>
+            <select
+              value={localSelectedChart}
+              onChange={(e) => setLocalSelectedChart(e.target.value)}
+              className="border border-border bg-background px-3 py-2 text-sm rounded-sm focus:border-primary focus:outline-none"
+            >
+              {allCharts.map(chart => (
+                <option key={chart.id} value={chart.id}>{chart.name}</option>
+              ))}
+            </select>
+          </div>
+          
+          {/* Age Input */}
+          <div className="flex items-center gap-2">
+            <Label htmlFor="age-input" className="text-[11px] uppercase tracking-widest text-muted-foreground flex items-center gap-1">
+              <Calendar size={12} />
+              Age:
+            </Label>
+            <Input
+              id="age-input"
+              type="number"
+              min="0"
+              max="120"
+              value={ageInput}
+              onChange={(e) => setAgeInput(e.target.value)}
+              placeholder={String(calculatedAge)}
+              className="w-16 h-8 text-sm"
+            />
+            <span className="text-xs text-muted-foreground px-2 py-1 bg-secondary/50 rounded">
+              {lifeStage}
+            </span>
+          </div>
           
           {/* Traditional Rulers Toggle */}
-          <label className="flex items-center gap-2 text-xs text-muted-foreground ml-4">
+          <label className="flex items-center gap-2 text-xs text-muted-foreground">
             <input
               type="checkbox"
               checked={useTraditional}
@@ -235,7 +292,7 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
 
       {/* Tabbed Interface */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5 h-auto">
+        <TabsList className="grid w-full grid-cols-6 h-auto">
           <TabsTrigger value="overview" className="flex items-center gap-1.5 py-2.5">
             <Sparkles size={14} />
             <span className="hidden sm:inline">Overview</span>
@@ -247,6 +304,10 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
           <TabsTrigger value="relationships" className="flex items-center gap-1.5 py-2.5">
             <Heart size={14} />
             <span className="hidden sm:inline">Relationships</span>
+          </TabsTrigger>
+          <TabsTrigger value="progressions" className="flex items-center gap-1.5 py-2.5">
+            <Clock size={14} />
+            <span className="hidden sm:inline">Progressions</span>
           </TabsTrigger>
           <TabsTrigger value="patterns" className="flex items-center gap-1.5 py-2.5">
             <Grid3X3 size={14} />
@@ -413,7 +474,18 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
             chartName={activeChart?.name || 'This Chart'}
             useTraditional={useTraditional}
             natalChart={activeChart}
+            age={calculatedAge}
           />
+        </TabsContent>
+
+        {/* PROGRESSIONS TAB */}
+        <TabsContent value="progressions" className="mt-6">
+          {activeChart && (
+            <ProgressionsDisplay 
+              natalChart={activeChart} 
+              age={calculatedAge}
+            />
+          )}
         </TabsContent>
 
         {/* PATTERNS TAB */}
