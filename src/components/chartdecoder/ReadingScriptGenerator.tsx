@@ -75,6 +75,87 @@ function getHouseContext(house: number | undefined, planetName: string): string 
   return `In the ${house}${house === 1 ? 'st' : house === 2 ? 'nd' : house === 3 ? 'rd' : 'th'} house of ${context.area}: ${context.meaning}`;
 }
 
+// Synthesis statements that weave sign + house together
+const SIGN_HOUSE_SYNTHESIS: Record<string, Record<number, string>> = {
+  Mercury: {
+    1: 'Your thinking IS your identity — you lead with your mind and people know you by how you communicate.',
+    2: 'Your mind is wired for practical value — you think about money, resources, and what ideas are actually worth.',
+    3: 'Your mind is in its natural habitat — constant communication, learning, and mental stimulation are your daily bread.',
+    4: 'Your thinking happens at home, in private — you process best in familiar environments and may keep your best ideas to yourself.',
+    5: 'Your mind wants to play and create — you think best when you\'re having fun, and communication is a form of self-expression.',
+    6: 'Your mind is wired for work and problem-solving — you think in terms of improvement, efficiency, and practical service.',
+    7: 'Your thinking happens through others — you process best in dialogue, and your mind needs a partner to bounce ideas off.',
+    8: 'Your mind goes deep — you think about what\'s hidden, you research obsessively, and your communication carries psychological weight.',
+    9: 'Your mind seeks meaning — you think in big pictures, philosophies, and need your ideas to connect to something larger.',
+    10: 'Your thinking is public — you\'re known for your ideas, your communication style is part of your career, and your mind builds your reputation.',
+    11: 'Your mind is wired for the collective — you think about the future, connect ideas across groups, and your thoughts serve causes larger than yourself.',
+    12: 'Your thinking happens behind the scenes — you process best in solitude, your mind connects to the unconscious, and you may communicate through dreams, art, or private writing.'
+  },
+  Venus: {
+    1: 'Your values and aesthetics ARE your identity — beauty, grace, and harmony are immediately visible in how you present yourself.',
+    2: 'Your values are tied to what you own — you attract money, you spend on beauty, and self-worth connects to material security.',
+    3: 'Your love language is communication — you charm through words, value mental connection, and find beauty in learning.',
+    4: 'Your love lives at home — you need a beautiful sanctuary, you nurture through comfort, and your deepest values are private.',
+    5: 'Your love is playful and creative — romance is dramatic, you attract through self-expression, and love feels like celebration.',
+    6: 'Your love shows through service — you care by helping, you find beauty in useful things, and daily routines must feel harmonious.',
+    7: 'Your love needs partnership to exist — you come alive in relationship, you value balance above all, and you attract significant others easily.',
+    8: 'Your love goes deep — you merge intensely, you\'re attracted to power and transformation, and love feels like psychological rebirth.',
+    9: 'Your love needs freedom and meaning — you\'re attracted to wisdom, adventure, and partners who expand your world.',
+    10: 'Your love is public — relationships affect your reputation, you may attract through your career, and you value achievement in partners.',
+    11: 'Your love flows through friendship — you value independence in relationships, you\'re attracted to unique individuals, and love connects to causes.',
+    12: 'Your love is hidden or spiritual — you may have secret relationships, you\'re attracted to transcendence, and love can feel sacrificial or boundless.'
+  },
+  Mars: {
+    1: 'Your drive IS your identity — you come across as assertive, competitive, and action-oriented. People see your energy immediately.',
+    2: 'Your drive is wired for earning — you fight for financial security, you\'re aggressive about money, and your energy goes into building resources.',
+    3: 'Your drive expresses through communication — you argue, debate, and your words have force. Mental activity is how you take action.',
+    4: 'Your drive lives at home — you may fight with family, you\'re protective of your private space, and your energy needs a base to operate from.',
+    5: 'Your drive is creative and romantic — you pursue love dramatically, you compete in play, and your energy needs creative outlet.',
+    6: 'Your drive goes into work and health — you\'re a workhorse, you push your body, and your energy is most focused on daily tasks and service.',
+    7: 'Your drive expresses through partnership — you may fight with or for partners, you\'re attracted to assertive people, and relationships activate your energy.',
+    8: 'Your drive goes into depth and transformation — you pursue power, you\'re sexually intense, and your energy is focused on psychological change.',
+    9: 'Your drive seeks meaning and freedom — you fight for your beliefs, you take action through travel or education, and your energy needs a cause.',
+    10: 'Your drive is career-focused — you\'re ambitious, you fight for status, and your energy builds your public reputation.',
+    11: 'Your drive serves the collective — you fight for causes, you\'re energized by groups, and your action needs to connect to future visions.',
+    12: 'Your drive is hidden or self-sabotaging — you may turn anger inward, you act behind the scenes, and your energy connects to the unconscious or spiritual realms.'
+  },
+  Jupiter: {
+    1: 'Your expansion IS your identity — you come across as optimistic, generous, and larger than life. Growth happens through being yourself.',
+    2: 'Your expansion flows through money and values — you attract wealth, you spend generously, and growth happens through what you own.',
+    3: 'Your expansion happens through learning and communication — you\'re endlessly curious, you grow through teaching, and luck comes through connections.',
+    4: 'Your expansion lives at home — you need a big space, you grow through family, and luck comes through your emotional foundations.',
+    5: 'Your expansion is creative and romantic — you attract love, you grow through self-expression, and luck comes through play and children.',
+    6: 'Your expansion happens through work and service — you grow by helping others, luck comes through health and daily routines.',
+    7: 'Your expansion flows through partnership — you attract beneficial relationships, you grow through others, and luck comes through marriage or commitment.',
+    8: 'Your expansion goes deep — you grow through transformation, luck comes through shared resources or inheritance, and you expand through crisis.',
+    9: 'Your expansion is in its natural home — you grow through travel, philosophy, and higher learning. Luck flows easily here.',
+    10: 'Your expansion is career-focused — you grow through achievement, luck comes through your profession, and you expand your public role.',
+    11: 'Your expansion flows through community — you grow through friends and groups, luck comes through collective efforts, and you expand through humanitarian causes.',
+    12: 'Your expansion is hidden or spiritual — you grow through solitude and inner work, luck comes from the unconscious, and you expand through surrender.'
+  },
+  Saturn: {
+    1: 'Your lessons ARE your identity — you come across as serious, responsible, and mature. You grow by building authentic selfhood.',
+    2: 'Your lessons involve money and self-worth — security doesn\'t come easy, you earn everything, and mastery develops through patient accumulation.',
+    3: 'Your lessons involve communication and learning — you may have felt slow or blocked early on, but mastery comes through disciplined thinking.',
+    4: 'Your lessons live at home — family may have felt restrictive, you carry ancestral weight, and mastery comes through building inner security.',
+    5: 'Your lessons involve creativity and self-expression — you may have felt blocked from play, but mastery comes through disciplined creative work.',
+    6: 'Your lessons involve work and health — you take responsibility seriously, you may struggle with perfectionism, and mastery comes through service.',
+    7: 'Your lessons involve partnership — relationships may feel heavy or karmic, commitment is serious business, and mastery comes through mature relating.',
+    8: 'Your lessons go deep — you face death/rebirth themes, control is a lesson, and mastery comes through psychological transformation.',
+    9: 'Your lessons involve meaning and belief — your philosophy is tested, freedom must be earned, and mastery comes through grounded wisdom.',
+    10: 'Your lessons are career-focused — ambition is serious, authority is earned slowly, and mastery comes through long-term professional building.',
+    11: 'Your lessons involve community and the future — you may feel like an outsider, groups require work, and mastery comes through responsible innovation.',
+    12: 'Your lessons are hidden or karmic — you carry unconscious burdens, solitude is necessary, and mastery comes through spiritual discipline.'
+  }
+};
+
+function getSynthesis(planetName: string, sign: string, house: number | undefined): string {
+  if (!house) return '';
+  const planetSyntheses = SIGN_HOUSE_SYNTHESIS[planetName];
+  if (!planetSyntheses) return '';
+  return planetSyntheses[house] || '';
+}
+
 // Get aspect feeling based on type and orb
 function getAspectFeeling(aspect: ChartAspect, planet1Meaning: string, planet2Meaning: string): string {
   const isTight = aspect.orb < 3;
@@ -162,10 +243,14 @@ export const ReadingScriptGenerator: React.FC<ReadingScriptGeneratorProps> = ({
       const mercuryDignity = computeDignity('Mercury', mercury.sign, useTraditional);
       const mercuryDescription = PLANET_IN_SIGN.Mercury?.[mercury.sign] || `Your Mercury expresses through ${mercury.sign}.`;
       const mercuryHouse = getHouseContext(mercury.house, 'Mercury');
+      const mercurySynthesis = getSynthesis('Mercury', mercury.sign, mercury.house);
       personalContent.push(`"Mercury in ${mercury.sign}${mercury.house ? ` (${mercury.house}${mercury.house === 1 ? 'st' : mercury.house === 2 ? 'nd' : mercury.house === 3 ? 'rd' : 'th'} house)` : ''}:"`);
       personalContent.push(`"${mercuryDescription}"`);
       if (mercuryHouse) {
         personalContent.push(`"${mercuryHouse}"`);
+      }
+      if (mercurySynthesis) {
+        personalContent.push(`"THE SYNTHESIS: ${mercurySynthesis}"`);
       }
       if (mercury.retrograde) {
         personalContent.push(`"Mercury retrograde: You process internally before speaking. Ideas gestate longer. You may revise, reconsider, and return to old thoughts. Communication flows better in writing or after reflection."`);
@@ -179,10 +264,14 @@ export const ReadingScriptGenerator: React.FC<ReadingScriptGeneratorProps> = ({
       const venusDignity = computeDignity('Venus', venus.sign, useTraditional);
       const venusDescription = PLANET_IN_SIGN.Venus?.[venus.sign] || `Your Venus expresses through ${venus.sign}.`;
       const venusHouse = getHouseContext(venus.house, 'Venus');
+      const venusSynthesis = getSynthesis('Venus', venus.sign, venus.house);
       personalContent.push(`"Venus in ${venus.sign}${venus.house ? ` (${venus.house}${venus.house === 1 ? 'st' : venus.house === 2 ? 'nd' : venus.house === 3 ? 'rd' : 'th'} house)` : ''}:"`);
       personalContent.push(`"${venusDescription}"`);
       if (venusHouse) {
         personalContent.push(`"${venusHouse}"`);
+      }
+      if (venusSynthesis) {
+        personalContent.push(`"THE SYNTHESIS: ${venusSynthesis}"`);
       }
       if (venusDignity !== 'peregrine') {
         personalContent.push(`"${getPlacementFeeling('Venus', venus.sign, venusDignity, venus.house)}"`);
@@ -193,10 +282,14 @@ export const ReadingScriptGenerator: React.FC<ReadingScriptGeneratorProps> = ({
       const marsDignity = computeDignity('Mars', mars.sign, useTraditional);
       const marsDescription = PLANET_IN_SIGN.Mars?.[mars.sign] || `Your Mars expresses through ${mars.sign}.`;
       const marsHouse = getHouseContext(mars.house, 'Mars');
+      const marsSynthesis = getSynthesis('Mars', mars.sign, mars.house);
       personalContent.push(`"Mars in ${mars.sign}${mars.house ? ` (${mars.house}${mars.house === 1 ? 'st' : mars.house === 2 ? 'nd' : mars.house === 3 ? 'rd' : 'th'} house)` : ''}:"`);
       personalContent.push(`"${marsDescription}"`);
       if (marsHouse) {
         personalContent.push(`"${marsHouse}"`);
+      }
+      if (marsSynthesis) {
+        personalContent.push(`"THE SYNTHESIS: ${marsSynthesis}"`);
       }
       if (marsDignity !== 'peregrine') {
         personalContent.push(`"${getPlacementFeeling('Mars', mars.sign, marsDignity, mars.house)}"`);
@@ -207,6 +300,55 @@ export const ReadingScriptGenerator: React.FC<ReadingScriptGeneratorProps> = ({
       sections.push({
         title: "Personal Planets — How You Operate",
         content: personalContent
+      });
+    }
+
+    // 3.5 SOCIAL PLANETS (Jupiter, Saturn)
+    const jupiter = planets.find(p => p.name === 'Jupiter');
+    const saturn = planets.find(p => p.name === 'Saturn');
+    
+    const socialContent: string[] = [];
+    
+    if (jupiter) {
+      const jupiterDignity = computeDignity('Jupiter', jupiter.sign, useTraditional);
+      const jupiterDescription = PLANET_IN_SIGN.Jupiter?.[jupiter.sign] || `Your Jupiter expresses through ${jupiter.sign}.`;
+      const jupiterHouse = getHouseContext(jupiter.house, 'Jupiter');
+      const jupiterSynthesis = getSynthesis('Jupiter', jupiter.sign, jupiter.house);
+      socialContent.push(`"Jupiter in ${jupiter.sign}${jupiter.house ? ` (${jupiter.house}${jupiter.house === 1 ? 'st' : jupiter.house === 2 ? 'nd' : jupiter.house === 3 ? 'rd' : 'th'} house)` : ''} — WHERE YOU EXPAND:"`);
+      socialContent.push(`"${jupiterDescription}"`);
+      if (jupiterHouse) {
+        socialContent.push(`"${jupiterHouse}"`);
+      }
+      if (jupiterSynthesis) {
+        socialContent.push(`"THE SYNTHESIS: ${jupiterSynthesis}"`);
+      }
+      if (jupiterDignity !== 'peregrine') {
+        socialContent.push(`"${getPlacementFeeling('Jupiter', jupiter.sign, jupiterDignity, jupiter.house)}"`);
+      }
+    }
+    
+    if (saturn) {
+      const saturnDignity = computeDignity('Saturn', saturn.sign, useTraditional);
+      const saturnDescription = PLANET_IN_SIGN.Saturn?.[saturn.sign] || `Your Saturn expresses through ${saturn.sign}.`;
+      const saturnHouse = getHouseContext(saturn.house, 'Saturn');
+      const saturnSynthesis = getSynthesis('Saturn', saturn.sign, saturn.house);
+      socialContent.push(`"Saturn in ${saturn.sign}${saturn.house ? ` (${saturn.house}${saturn.house === 1 ? 'st' : saturn.house === 2 ? 'nd' : saturn.house === 3 ? 'rd' : 'th'} house)` : ''} — WHERE YOU MASTER THROUGH CHALLENGE:"`);
+      socialContent.push(`"${saturnDescription}"`);
+      if (saturnHouse) {
+        socialContent.push(`"${saturnHouse}"`);
+      }
+      if (saturnSynthesis) {
+        socialContent.push(`"THE SYNTHESIS: ${saturnSynthesis}"`);
+      }
+      if (saturnDignity !== 'peregrine') {
+        socialContent.push(`"${getPlacementFeeling('Saturn', saturn.sign, saturnDignity, saturn.house)}"`);
+      }
+    }
+    
+    if (socialContent.length > 0) {
+      sections.push({
+        title: "Social Planets — Growth & Mastery",
+        content: socialContent
       });
     }
 
