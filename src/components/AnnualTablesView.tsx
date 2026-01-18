@@ -1,6 +1,6 @@
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import * as Astronomy from "astronomy-engine";
-import { Download } from "lucide-react";
+import { Download, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -10,6 +10,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useDownloadImage } from "@/hooks/useDownloadImage";
+import { getNewMoonInterpretation, NewMoonInterpretation } from "@/lib/newMoonInterpretations";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 interface AnnualTablesViewProps {
   year: number;
@@ -21,6 +27,7 @@ interface ExactLunarEvent {
   moonSign: string;
   moonDegree: string;
   moonMinutes: string;
+  moonLongitude: number; // Add longitude for interpretation
   sunSign?: string;
   sunDegree?: string;
   sunMinutes?: string;
@@ -134,6 +141,193 @@ const findMoonSignEntry = (eventTime: Date, targetSign: string): Date | undefine
   return undefined;
 };
 
+// Format time in EST/EDT with proper DST handling
+const formatTimeESTFull = (date: Date): string => {
+  return date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "America/New_York",
+  });
+};
+
+// New Moon Card Component with expandable interpretation
+const NewMoonCard = ({ 
+  event, 
+  interpretation 
+}: { 
+  event: ExactLunarEvent; 
+  interpretation: NewMoonInterpretation;
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  const getSignSymbol = (sign: string): string => {
+    const symbols: Record<string, string> = {
+      Aries: '♈', Taurus: '♉', Gemini: '♊', Cancer: '♋',
+      Leo: '♌', Virgo: '♍', Libra: '♎', Scorpio: '♏',
+      Sagittarius: '♐', Capricorn: '♑', Aquarius: '♒', Pisces: '♓'
+    };
+    return symbols[sign] || '';
+  };
+  
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <div className="rounded-lg border border-border bg-card overflow-hidden">
+        {/* Header - always visible */}
+        <CollapsibleTrigger asChild>
+          <button className="w-full p-4 flex items-center justify-between hover:bg-secondary/30 transition-colors text-left">
+            <div className="flex items-center gap-4 flex-wrap">
+              {/* Date */}
+              <div className="min-w-[120px]">
+                <div className="font-medium text-foreground">
+                  {event.time.toLocaleDateString("en-US", {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                    timeZone: "America/New_York",
+                  })}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {formatTimeESTFull(event.time)} {getTimezoneAbbr(event.time)}
+                </div>
+              </div>
+              
+              {/* Name & Position */}
+              <div className="min-w-[150px]">
+                <div className="font-medium text-foreground">{event.name}</div>
+                <div className="text-sm text-muted-foreground font-mono">
+                  {event.moonDegree}°{event.moonMinutes}′ {getSignSymbol(event.moonSign)} {event.moonSign}
+                </div>
+              </div>
+              
+              {/* Quick Info - Ruler */}
+              <div className="min-w-[130px] hidden sm:block">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground">Ruler</div>
+                <div className="text-sm text-foreground">
+                  {interpretation.rulerSymbol} {interpretation.ruler} in {interpretation.rulerSign}
+                  {interpretation.rulerRetrograde && <span className="text-amber-500 ml-1">℞</span>}
+                </div>
+              </div>
+              
+              {/* Conjunctions */}
+              {interpretation.conjunctions.length > 0 && (
+                <div className="min-w-[100px] hidden md:block">
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground">Conjunct</div>
+                  <div className="text-sm text-foreground flex gap-1">
+                    {interpretation.conjunctions.map((c, i) => (
+                      <span key={i} className="text-primary">{c.symbol}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Stellium Badge */}
+              {interpretation.hasStellium && (
+                <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-amber-500/20 text-amber-600 text-xs">
+                  <Sparkles size={12} />
+                  {interpretation.stelliumPlanets.length}-planet stellium
+                </div>
+              )}
+            </div>
+            
+            <div className="flex items-center gap-2 text-muted-foreground ml-4">
+              <span className="text-xs">Planetary Weather</span>
+              {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </div>
+          </button>
+        </CollapsibleTrigger>
+        
+        {/* Expandable Content */}
+        <CollapsibleContent>
+          <div className="px-4 pb-4 space-y-4 border-t border-border pt-4">
+            {/* Main Theme */}
+            <div>
+              <h4 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">The Story of This Moon</h4>
+              <p className="text-sm text-foreground leading-relaxed">{interpretation.mainTheme}</p>
+            </div>
+            
+            {/* Aspects Grid */}
+            {interpretation.conjunctions.length > 0 && (
+              <div>
+                <h4 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                  Planets Conjunct This New Moon
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {interpretation.conjunctions.map((planet, i) => (
+                    <div key={i} className="flex items-center gap-2 p-2 rounded bg-secondary/30">
+                      <span className="text-lg">{planet.symbol}</span>
+                      <div>
+                        <div className="text-sm font-medium text-foreground">{planet.name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {planet.degree}° {planet.sign}
+                          {planet.isRetrograde && <span className="text-amber-500 ml-1">℞</span>}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Other Aspects */}
+            {interpretation.aspects.filter(a => a.aspectType !== 'conjunction').length > 0 && (
+              <div>
+                <h4 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                  Aspects to This New Moon
+                </h4>
+                <div className="space-y-1">
+                  {interpretation.aspects
+                    .filter(a => a.aspectType !== 'conjunction')
+                    .map((aspect, i) => (
+                      <div key={i} className="flex items-center gap-2 text-sm">
+                        <span className={`${aspect.aspectType === 'trine' || aspect.aspectType === 'sextile' ? 'text-green-500' : aspect.aspectType === 'square' || aspect.aspectType === 'opposition' ? 'text-red-400' : 'text-muted-foreground'}`}>
+                          {aspect.aspectSymbol}
+                        </span>
+                        <span className="text-foreground">{aspect.symbol} {aspect.planet}</span>
+                        <span className="text-muted-foreground text-xs">({aspect.orb}° orb)</span>
+                        <span className="text-muted-foreground">—</span>
+                        <span className="text-muted-foreground text-xs">{aspect.meaning}</span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+            
+            {/* What to Set */}
+            <div className="rounded-lg bg-primary/5 p-3 border border-primary/20">
+              <h4 className="text-xs uppercase tracking-wider text-primary mb-2 flex items-center gap-1">
+                <Sparkles size={12} />
+                What to Set Intentions For
+              </h4>
+              <p className="text-sm text-foreground">{interpretation.whatToSet}</p>
+            </div>
+            
+            {/* Soul Level */}
+            <div>
+              <h4 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Soul Level</h4>
+              <p className="text-sm text-muted-foreground italic">{interpretation.soulLevel}</p>
+            </div>
+            
+            {/* Practical Advice */}
+            <div>
+              <h4 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Practical Guidance</h4>
+              <p className="text-sm text-foreground">{interpretation.practicalAdvice}</p>
+            </div>
+            
+            {/* How to Work With It */}
+            {interpretation.howToWork && (
+              <div>
+                <h4 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Support & Challenges</h4>
+                <p className="text-sm text-muted-foreground">{interpretation.howToWork}</p>
+              </div>
+            )}
+          </div>
+        </CollapsibleContent>
+      </div>
+    </Collapsible>
+  );
+};
+
 export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
   const { downloadAsImage } = useDownloadImage();
   const fullMoonsRef = useRef<HTMLDivElement>(null);
@@ -166,6 +360,7 @@ export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
             moonSign: moonZodiac.sign,
             moonDegree: moonZodiac.degree.toString().padStart(2, "0"),
             moonMinutes: moonZodiac.minutes.toString().padStart(2, "0"),
+            moonLongitude: ecliptic.elon,
             name: MOON_NAMES[newMoon.date.getMonth()] || "",
             isSupermoon,
             distance: Math.round(distance),
@@ -212,6 +407,7 @@ export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
             moonSign: moonZodiac.sign,
             moonDegree: moonZodiac.degree.toString().padStart(2, "0"),
             moonMinutes: moonZodiac.minutes.toString().padStart(2, "0"),
+            moonLongitude: ecliptic.elon,
             sunSign: sunZodiac.sign,
             sunDegree: sunZodiac.degree.toString().padStart(2, "0"),
             sunMinutes: sunZodiac.minutes.toString().padStart(2, "0"),
@@ -554,61 +750,15 @@ export const AnnualTablesView = ({ year }: AnnualTablesViewProps) => {
           </button>
         </div>
         <p className="mb-4 text-sm text-muted-foreground">
-          Exact times shown in Eastern Time (EST/EDT). New Moon = Sun conjunct Moon.
+          Exact times shown in Eastern Time (EST/EDT). New Moon = Sun conjunct Moon. Click any row for detailed planetary weather.
         </p>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-[11px] uppercase tracking-widest">Date</TableHead>
-                <TableHead className="text-[11px] uppercase tracking-widest">Time</TableHead>
-                <TableHead className="text-[11px] uppercase tracking-widest">Name</TableHead>
-                <TableHead className="text-[11px] uppercase tracking-widest">Position</TableHead>
-                <TableHead className="text-[11px] uppercase tracking-widest">Moon Entered Sign</TableHead>
-                <TableHead className="text-[11px] uppercase tracking-widest">Notes</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {newMoons.map((event, idx) => (
-                <TableRow key={idx}>
-                  <TableCell className="font-medium">
-                    {event.time.toLocaleDateString("en-US", {
-                      weekday: "short",
-                      month: "short",
-                      day: "numeric",
-                      timeZone: "America/New_York",
-                    })}
-                  </TableCell>
-                  <TableCell>
-                    {formatTimeEST(event.time)} {getTimezoneAbbr(event.time)}
-                  </TableCell>
-                  <TableCell className="font-medium">{event.name}</TableCell>
-                  <TableCell>
-                    <span className="font-mono">
-                      {event.moonDegree}°{event.moonMinutes}′
-                    </span>{" "}
-                    {event.moonSign}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {event.signEntryDate
-                      ? event.signEntryDate.toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          hour: "numeric",
-                          minute: "2-digit",
-                          timeZone: "America/New_York",
-                        })
-                      : "—"}
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-xs text-muted-foreground">
-                      Best for: New beginnings, setting intentions
-                    </span>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <div className="space-y-4">
+          {newMoons.map((event, idx) => {
+            const interp = getNewMoonInterpretation(event.time, event.moonLongitude);
+            return (
+              <NewMoonCard key={idx} event={event} interpretation={interp} />
+            );
+          })}
         </div>
       </section>
 
