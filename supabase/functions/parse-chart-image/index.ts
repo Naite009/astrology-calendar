@@ -33,15 +33,21 @@ serve(async (req) => {
     const isWord = fileType === 'word' || imageBase64.includes('application/vnd.openxmlformats') || imageBase64.includes('application/msword');
     const isImage = !isPDF && !isWord;
 
-    const prompt = `Analyze this astrological chart ${isPDF || isWord ? 'document' : 'image'} and extract all information.
+    const prompt = `Analyze this astrological chart ${isPDF || isWord ? 'document' : 'image'} and extract ONLY the NATAL (birth) chart placements.
 
-IMPORTANT: Extract the person's birth information if visible on the chart. Look for:
+CRITICAL INSTRUCTIONS (avoid wrong charts):
+- Many files include multiple charts/tables (natal + transits + progressions + synastry). You MUST select the NATAL chart only, typically labeled: "Natal", "Radix", "Birth Chart", "RASI" (if Vedic), or the one that contains the person's birth info.
+- Prefer reading the PRINTED TABLE of planet positions and house cusps (usually near the bottom or side). Do NOT infer placements from the wheel if a table is present.
+- Ignore transit/progression/aspect tables, "current" positions, and any additional charts.
+- If the table is blurry/partially cut off, return a best-effort JSON plus a "warnings" array describing what you could not read.
+
+Extract the person's birth information if visible on the chart. Look for:
 - Name (often at the top of the chart)
 - Birth date (may be formatted as "Jan 15, 1990" or "15.01.1990" or "1990-01-15")
-- Birth time (may be "2:30 PM" or "14:30" or "2:30 am")
+- Birth time (may be "2:30 PM" or "14:30")
 - Birth location/place (city, state/country)
 
-For each planet you can identify, provide the data in this exact JSON format:
+Return data in this exact JSON shape (no extra commentary, no markdown):
 {
   "birthInfo": {
     "name": "Person's Name",
@@ -51,8 +57,7 @@ For each planet you can identify, provide the data in this exact JSON format:
   },
   "planets": {
     "Sun": { "sign": "Aries", "degree": 15, "minutes": 23, "isRetrograde": false },
-    "Moon": { "sign": "Cancer", "degree": 8, "minutes": 12, "isRetrograde": false },
-    ...
+    "Moon": { "sign": "Cancer", "degree": 8, "minutes": 12, "isRetrograde": false }
   },
   "astroComCusps": {
     "AC": { "sign": "Leo", "degree": 5, "minutes": 30 },
@@ -61,26 +66,23 @@ For each planet you can identify, provide the data in this exact JSON format:
     "MC": { "sign": "Aquarius", "degree": 5, "minutes": 30 },
     "house11": { "sign": "Pisces", "degree": 2, "minutes": 15 },
     "house12": { "sign": "Aries", "degree": 1, "minutes": 0 }
-  }
+  },
+  "warnings": ["optional human-readable issues"]
 }
 
-For birthInfo:
-- birthDate MUST be in YYYY-MM-DD format (e.g., "1990-01-15")
-- birthTime MUST be in 24-hour HH:MM format (e.g., "14:30" for 2:30 PM)
-- If you can't find certain birth info, omit that field (don't include empty strings)
-
-Planet names to look for: Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, Ascendant (or ASC), NorthNode (or North Node, NN, True Node), SouthNode, Chiron, Lilith (Black Moon Lilith), Ceres, Pallas, Juno, Vesta, PartOfFortune, Vertex, Eris, Sedna, Makemake, Haumea, Quaoar, Orcus, Ixion, Varuna.
-
-Signs: Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces.
-
-If a planet shows retrograde (R, ℞, or Rx), set isRetrograde to true.
+Rules:
+- birthDate MUST be YYYY-MM-DD.
+- birthTime MUST be 24-hour HH:MM.
+- Omit any birthInfo field you cannot confidently read.
+- Planet names allowed: Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, Ascendant (or ASC), NorthNode, SouthNode, Chiron, Lilith, Ceres, Pallas, Juno, Vesta, PartOfFortune, Vertex, Eris, Sedna, Makemake, Haumea, Quaoar, Orcus, Ixion, Varuna.
+- Signs allowed: Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces.
+- Retrograde markers (R, ℞, Rx) => isRetrograde: true.
 
 IMPORTANT - Astro.com House Cusp Format:
-- At the bottom, astro.com prints 6 cusps: AC, 2, 3, MC, 11, 12.
-- Interpret these as: AC=house1, house2=house2, house3=house3, MC=house10, house11=house11, house12=house12.
-- Extract ONLY these 6 printed cusps into astroComCusps.
+- Astro.com prints 6 cusps: AC, 2, 3, MC, 11, 12.
+- Extract ONLY these 6 into astroComCusps. Do NOT output all 12 cusps here.
 
-Return ONLY the JSON object, no other text.`;
+Return ONLY the JSON object.`;
 
     // Build the message content based on file type
     let messageContent: any[];
@@ -126,7 +128,8 @@ Return ONLY the JSON object, no other text.`;
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
+          // Use a stronger multimodal model for higher OCR + table accuracy.
+          model: "google/gemini-2.5-pro",
           messages: [
             {
               role: "user",
