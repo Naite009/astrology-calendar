@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles, Gauge } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles, Gauge, Globe } from "lucide-react";
 import { ChartDecoderView } from "./ChartDecoderView";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
@@ -19,6 +19,7 @@ import { DayTypeLegend } from "./DayTypeLegend";
 import { VoiceMemoModal } from "./VoiceMemoModal";
 import { VoiceMemoLibrary } from "./VoiceMemoLibrary";
 import { PlanetarySpeedsView } from "./PlanetarySpeedsView";
+import { DwarfPlanetsGuide } from "./DwarfPlanetsGuide";
 import { useUserData } from "@/hooks/useUserData";
 import { useNotes } from "@/hooks/useNotes";
 import { useNatalChart, NatalChart } from "@/hooks/useNatalChart";
@@ -26,7 +27,7 @@ import { useCloudBackup } from "@/hooks/useCloudBackup";
 import { useVoiceMemos } from "@/hooks/useVoiceMemos";
 import { DayData, generateICalExport } from "@/lib/astrology";
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds";
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -138,6 +139,9 @@ export const AstroCalendar = () => {
     }
     if (viewMode === "speeds") {
       return "Planetary Speeds";
+    }
+    if (viewMode === "dwarf-planets") {
+      return "Dwarf Planets Guide";
     }
     if (viewMode === "moon-phases") {
       return `${currentDate.getFullYear()} Moon Phases`;
@@ -399,6 +403,17 @@ export const AstroCalendar = () => {
                 <Gauge size={14} />
                 Speeds
               </button>
+              <button
+                onClick={() => setViewMode("dwarf-planets")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "dwarf-planets"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Globe size={14} />
+                TNOs
+              </button>
             </div>
 
             {userData && (
@@ -581,6 +596,10 @@ export const AstroCalendar = () => {
 
         {viewMode === "speeds" && (
           <PlanetarySpeedsView />
+        )}
+
+        {viewMode === "dwarf-planets" && (
+          <DwarfPlanetsGuide />
         )}
       </div>
 
