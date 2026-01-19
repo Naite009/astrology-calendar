@@ -199,6 +199,60 @@ export const PLANET_ESSENCES: Record<string, { symbol: string; name: string; ess
     name: 'Ascendant',
     essence: "How you meet the world. Your mask, first impression, and physical presence.",
     represents: "appearance, persona, approach, dawn of self, immediate environment"
+  },
+  sedna: {
+    symbol: '⯲',
+    name: 'Sedna',
+    essence: "Your deepest wound around betrayal, abandonment, and victimization. Where you must reclaim sovereignty from the depths.",
+    represents: "deep survival, betrayal transcendence, victim to sovereign, ocean depths of psyche, ancestral trauma, self-sufficiency"
+  },
+  makemake: {
+    symbol: '🜨',
+    name: 'Makemake',
+    essence: "Your connection to primal creation and environmental consciousness. Where you create something from nothing.",
+    represents: "creation, fertility, environmental awareness, resourcefulness, connection to Earth, manifestation from void"
+  },
+  haumea: {
+    symbol: '🜵',
+    name: 'Haumea',
+    essence: "Your capacity for rebirth and regeneration. The creative life force that renews and transforms.",
+    represents: "rebirth, regeneration, fertility goddess, creative life force, rapid transformation, sacred creation"
+  },
+  quaoar: {
+    symbol: '🝾',
+    name: 'Quaoar',
+    essence: "Your power to manifest through sacred rhythm and dance. Creation through resonance and vibration.",
+    represents: "creation through dance/song, sacred rhythm, manifestation, cosmic order, bringing form from chaos"
+  },
+  orcus: {
+    symbol: '🝿',
+    name: 'Orcus',
+    essence: "Your relationship to oaths, promises, and karmic contracts. Where broken vows have consequences.",
+    represents: "oaths and promises, karmic contracts, consequence of betrayal, underworld justice, integrity, shadow Pluto"
+  },
+  ixion: {
+    symbol: '⯳',
+    name: 'Ixion',
+    essence: "Your shadow around gratitude, entitlement, and abuse of privilege. Where you must learn ethical boundaries.",
+    represents: "abuse of trust, entitlement vs gratitude, ethical lessons, second chances, repetitive patterns"
+  },
+  varuna: {
+    symbol: '⯴',
+    name: 'Varuna',
+    essence: "Your connection to cosmic law, vast vision, and divine order. The all-seeing eye of truth.",
+    represents: "cosmic law, vast perspective, truth and lies, fame/infamy, divine order, all-seeing awareness"
+  },
+  pholus: {
+    symbol: '⯛',
+    name: 'Pholus',
+    essence: "Where small actions create massive change. The catalyst that uncorks generational patterns.",
+    represents: "small cause big effect, catalyst, generational healing, addiction patterns, opening Pandora's box, turning points"
+  },
+  nessus: {
+    symbol: '⯜',
+    name: 'Nessus',
+    essence: "Where cycles of abuse, karma, and toxic patterns end. The buck stops here energy.",
+    represents: "ending abuse cycles, karmic return, toxic patterns, accountability, the buck stops here, breaking chains"
   }
 };
 
