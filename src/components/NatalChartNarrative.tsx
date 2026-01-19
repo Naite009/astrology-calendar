@@ -24,9 +24,27 @@ const getSymbol = (planet: string): string => {
   const symbols: Record<string, string> = {
     sun: '☉', moon: '☽', mercury: '☿', venus: '♀', mars: '♂',
     jupiter: '♃', saturn: '♄', uranus: '♅', neptune: '♆', pluto: '♇',
-    chiron: '⚷', lilith: '⚸', northnode: '☊', ascendant: 'AC', midheaven: 'MC'
+    chiron: '⚷', lilith: '⚸', northnode: '☊', ascendant: 'AC', midheaven: 'MC',
+    eris: '⯰', sedna: '⯲', makemake: '🜨', haumea: '🜵', quaoar: '🝾',
+    orcus: '🝿', ixion: '⯳', varuna: '⯴', pholus: '⯛', nessus: '⯜',
+    ceres: '⚳', pallas: '⚴', juno: '⚵', vesta: '⚶', partoffortune: '⊕', vertex: 'Vx'
   };
-  return symbols[planet.toLowerCase()] || planet[0];
+  return symbols[planet.toLowerCase()] || '';
+};
+
+// Get full planet name from key (handles all planets including dwarf planets)
+const getPlanetFullName = (planet: string): string => {
+  const names: Record<string, string> = {
+    sun: 'Sun', moon: 'Moon', mercury: 'Mercury', venus: 'Venus', mars: 'Mars',
+    jupiter: 'Jupiter', saturn: 'Saturn', uranus: 'Uranus', neptune: 'Neptune', pluto: 'Pluto',
+    chiron: 'Chiron', lilith: 'Black Moon Lilith', northnode: 'North Node', southnode: 'South Node',
+    ascendant: 'Ascendant', midheaven: 'Midheaven', mc: 'Midheaven', ic: 'IC',
+    eris: 'Eris', sedna: 'Sedna', makemake: 'Makemake', haumea: 'Haumea', quaoar: 'Quaoar',
+    orcus: 'Orcus', ixion: 'Ixion', varuna: 'Varuna', pholus: 'Pholus', nessus: 'Nessus',
+    ceres: 'Ceres', pallas: 'Pallas', juno: 'Juno', vesta: 'Vesta',
+    partoffortune: 'Part of Fortune', vertex: 'Vertex'
+  };
+  return names[planet.toLowerCase()] || planet;
 };
 
 // Convert sign + degree to longitude for house calculation
@@ -1025,11 +1043,13 @@ const CurrentTransitsReport = ({
           {Object.entries(groupedByNatal).map(([natalPlanet, planetAspects]) => {
             const natalPlanetInfo = PLANET_ESSENCES[natalPlanet.toLowerCase()];
             const natalData = natalChart.planets[natalPlanet as keyof typeof natalChart.planets];
+            const fullName = natalPlanetInfo?.name || getPlanetFullName(natalPlanet);
+            const essence = natalPlanetInfo?.essence || `Your ${fullName} is activated.`;
             
             return (
               <div key={natalPlanet} className="p-5 bg-background/95 rounded-lg shadow">
                 <div className="text-lg font-bold mb-3 text-green-800 dark:text-green-300">
-                  Transits to Your Natal {getSymbol(natalPlanet)} {natalPlanetInfo?.name}
+                  Transits to Your Natal {getSymbol(natalPlanet)} {fullName}
                   {natalData && (
                     <span className="text-sm font-normal text-muted-foreground ml-3">
                       ({natalData.degree}° {natalData.sign})
@@ -1038,7 +1058,7 @@ const CurrentTransitsReport = ({
                 </div>
                 
                 <div className="text-sm text-foreground mb-4 p-3 bg-green-50 dark:bg-green-950/30 rounded border-l-4 border-green-500">
-                  <strong>Your Natal {natalPlanetInfo?.name}:</strong> {natalPlanetInfo?.essence}
+                  <strong>Your Natal {fullName}:</strong> {essence}
                 </div>
                 
                 {planetAspects.map((aspect, i) => {
