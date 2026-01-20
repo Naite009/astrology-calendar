@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { X, ChevronDown, ChevronUp } from 'lucide-react';
+import { TransitListModal } from './TransitListModal';
 import { 
   DayData, 
   getPlanetSymbol, 
@@ -306,6 +307,10 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
   const { date, planets, moonPhase, mercuryRetro, personalTransits, majorIngresses, aspects, voc, exactLunarPhase } = dayData;
   const colorExplanation = getColorExplanation(aspects || [], moonPhase);
   
+  // State for transit list modal
+  const [isTransitListOpen, setIsTransitListOpen] = useState(false);
+  const transitRefs = useRef<(HTMLDivElement | null)[]>([]);
+  
   // Divine Feminine features
   const fixedStarHits = getFixedStarConjunctions(planets);
   const stelliums = detectStelliums(planets);
@@ -342,6 +347,19 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
   
   // Final order: Key transits first, then all others (same as calendar)
   const transitAspects = [...keyTransits, ...otherTransits];
+  
+  // Handle clicking a transit from the modal - scroll to it
+  const handleTransitClick = (index: number) => {
+    const ref = transitRefs.current[index];
+    if (ref) {
+      ref.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Add a brief highlight effect
+      ref.classList.add('ring-2', 'ring-primary', 'ring-offset-2');
+      setTimeout(() => {
+        ref.classList.remove('ring-2', 'ring-primary', 'ring-offset-2');
+      }, 2000);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/80 p-5" onClick={onClose}>
@@ -379,21 +397,39 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
               <h3 className="text-[11px] uppercase tracking-widest text-primary font-semibold">
                 ✨ Your Personal Transits — {activeChart.name}
               </h3>
-              <span className="text-[10px] bg-primary/20 text-primary px-2 py-1 rounded-sm">
-                {transitAspects.length} aspect{transitAspects.length !== 1 ? 's' : ''} within 5°
-              </span>
+              <button
+                onClick={() => setIsTransitListOpen(true)}
+                className="text-[10px] bg-primary/20 text-primary px-2 py-1 rounded-sm hover:bg-primary/30 transition-colors cursor-pointer font-medium"
+                title="Click to see all transits sorted by impact"
+              >
+                {transitAspects.length} aspect{transitAspects.length !== 1 ? 's' : ''} within 5° →
+              </button>
             </div>
             <div className="space-y-6">
               {/* Show ALL transits within 5° in sorted order (matching calendar) */}
               {transitAspects.map((asp, i) => (
-                <ComprehensiveTransitAnalysis 
+                <div 
                   key={i} 
-                  aspect={asp} 
-                  natalChart={activeChart}
-                  currentDate={date}
-                />
+                  ref={(el) => { transitRefs.current[i] = el; }}
+                  className="transition-all duration-300"
+                >
+                  <ComprehensiveTransitAnalysis 
+                    aspect={asp} 
+                    natalChart={activeChart}
+                    currentDate={date}
+                  />
+                </div>
               ))}
             </div>
+            
+            {/* Transit List Modal */}
+            <TransitListModal
+              isOpen={isTransitListOpen}
+              onClose={() => setIsTransitListOpen(false)}
+              transits={transitAspects}
+              chartName={activeChart.name}
+              onTransitClick={handleTransitClick}
+            />
           </div>
         )}
 
