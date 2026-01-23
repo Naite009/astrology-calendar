@@ -27,7 +27,8 @@ type TimingSection = 'now' | 'today' | 'plan';
 
 const PLANET_SYMBOLS: Record<string, string> = {
   Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀', Mars: '♂',
-  Jupiter: '♃', Saturn: '♄', Uranus: '♅', Neptune: '♆', Pluto: '♇'
+  Jupiter: '♃', Saturn: '♄', Uranus: '♅', Neptune: '♆', Pluto: '♇',
+  Chiron: '⚷'
 };
 
 const MONTHS = [
@@ -507,17 +508,41 @@ const TodaySection = ({
       <div>
         <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
           <Users size={16} className="text-muted-foreground" />
-          Collective Aspects (Everyone)
+          Today's Collective Aspects
+          {aspects.filter(a => a.isExact).length > 0 && (
+            <span className="ml-2 px-2 py-0.5 text-xs font-bold bg-primary text-primary-foreground rounded-full animate-pulse">
+              {aspects.filter(a => a.isExact).length} EXACT
+            </span>
+          )}
         </h4>
         {aspects.length > 0 ? (
           <div className="space-y-3">
             {aspects.map((aspect, i) => (
-              <div key={i} className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card">
-                <span className="text-lg">{getAspectRating(aspect.type)}</span>
+              <div 
+                key={i} 
+                className={`flex items-start gap-3 p-3 rounded-lg border-2 transition-all ${
+                  aspect.isExact 
+                    ? 'border-primary bg-primary/10 shadow-md ring-2 ring-primary/20' 
+                    : 'border-border bg-card'
+                }`}
+              >
+                <div className="flex flex-col items-center">
+                  <span className="text-lg">{getAspectRating(aspect.type)}</span>
+                  {aspect.isExact && (
+                    <span className="text-[10px] font-bold text-primary mt-1">EXACT</span>
+                  )}
+                </div>
                 <div className="flex-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className={`font-medium ${getAspectColor(aspect.type)}`}>
-                      {PLANET_SYMBOLS[aspect.planet1]} {aspect.planet1} {aspect.symbol} {PLANET_SYMBOLS[aspect.planet2]} {aspect.planet2}
+                      {PLANET_SYMBOLS[aspect.planet1] || '?'} {aspect.planet1} {aspect.symbol} {PLANET_SYMBOLS[aspect.planet2] || '?'} {aspect.planet2}
+                    </span>
+                    <span className={`text-xs px-1.5 py-0.5 rounded ${
+                      aspect.isExact 
+                        ? 'bg-primary text-primary-foreground font-bold' 
+                        : 'bg-muted text-muted-foreground'
+                    }`}>
+                      {aspect.orb}° orb
                     </span>
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">
@@ -529,7 +554,7 @@ const TodaySection = ({
           </div>
         ) : (
           <div className="text-center py-6 text-muted-foreground border border-dashed border-border rounded-lg">
-            <p>No major exact aspects today.</p>
+            <p>No major aspects today.</p>
             <p className="text-sm mt-1">Check the Plan Ahead section for upcoming significant dates.</p>
           </div>
         )}

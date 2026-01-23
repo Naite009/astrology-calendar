@@ -130,9 +130,20 @@ export const getTransitPositions = (date: Date): TransitPosition[] => {
 };
 
 // Get current aspects for visualization
-export const getCurrentAspects = (date: Date): { planet1: string; planet2: string; type: string; symbol: string; angle: number; description: string }[] => {
+export interface CollectiveAspect {
+  planet1: string;
+  planet2: string;
+  type: string;
+  symbol: string;
+  angle: number;
+  description: string;
+  orb: number;
+  isExact: boolean; // within 1° orb
+}
+
+export const getCurrentAspects = (date: Date): CollectiveAspect[] => {
   const planets = getPlanetaryPositions(date);
-  const aspects: { planet1: string; planet2: string; type: string; symbol: string; angle: number; description: string }[] = [];
+  const aspects: CollectiveAspect[] = [];
   
   const planetList = [
     { name: 'Sun', pos: planets.sun },
@@ -145,6 +156,7 @@ export const getCurrentAspects = (date: Date): { planet1: string; planet2: strin
     { name: 'Uranus', pos: planets.uranus },
     { name: 'Neptune', pos: planets.neptune },
     { name: 'Pluto', pos: planets.pluto },
+    { name: 'Chiron', pos: planets.chiron }, // Added for wound/healing themes
   ];
 
   const aspectDefs = [
@@ -160,6 +172,9 @@ export const getCurrentAspects = (date: Date): { planet1: string; planet2: strin
       const p1 = planetList[i];
       const p2 = planetList[j];
       
+      // Skip if either planet position is missing
+      if (!p1.pos || !p2.pos) continue;
+      
       const lon1 = ZODIAC_SIGNS.indexOf(p1.pos.signName) * 30 + p1.pos.degree;
       const lon2 = ZODIAC_SIGNS.indexOf(p2.pos.signName) * 30 + p2.pos.degree;
       const diff = Math.abs(((lon2 - lon1 + 180) % 360) - 180);
@@ -167,13 +182,18 @@ export const getCurrentAspects = (date: Date): { planet1: string; planet2: strin
       for (const aspectDef of aspectDefs) {
         const orbDiff = Math.abs(diff - aspectDef.angle);
         if (orbDiff < aspectDef.orb) {
+          const isExact = orbDiff <= 1;
           aspects.push({
             planet1: p1.name,
             planet2: p2.name,
             type: aspectDef.type,
             symbol: aspectDef.symbol,
             angle: aspectDef.angle,
-            description: aspectDef.desc
+            description: isExact 
+              ? `EXACT: ${aspectDef.desc}` 
+              : aspectDef.desc,
+            orb: Math.round(orbDiff * 10) / 10,
+            isExact
           });
           break;
         }
@@ -181,7 +201,8 @@ export const getCurrentAspects = (date: Date): { planet1: string; planet2: strin
     }
   }
 
-  return aspects;
+  // Sort by orb (tightest first) to prioritize exact aspects
+  return aspects.sort((a, b) => a.orb - b.orb);
 };
 
 export const calculateBestTimes = (
