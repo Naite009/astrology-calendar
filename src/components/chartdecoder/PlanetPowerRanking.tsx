@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BarChart3, Users } from 'lucide-react';
+import { BarChart3, Users, Eye } from 'lucide-react';
 import { PlanetaryCondition } from '@/lib/planetaryCondition';
+import { ChartAspect } from '@/lib/chartDecoderLogic';
+import { PlanetSpotlightModal } from './PlanetSpotlightModal';
 
 interface PlanetPowerRankingProps {
   conditions: PlanetaryCondition[];
+  aspects?: ChartAspect[];
+  houseCusps?: Record<number, { sign: string; degree: number }>;
   onSelectPlanet?: (planet: string) => void;
 }
 
@@ -39,9 +43,12 @@ const getTextColor = (score: number): string => {
 };
 
 export const PlanetPowerRanking: React.FC<PlanetPowerRankingProps> = ({ 
-  conditions, 
+  conditions,
+  aspects = [],
+  houseCusps,
   onSelectPlanet 
 }) => {
+  const [selectedPlanet, setSelectedPlanet] = useState<PlanetaryCondition | null>(null);
   // Find min and max scores for scaling
   const scores = conditions.map(c => c.totalScore);
   const maxScore = Math.max(...scores, 10);
@@ -82,15 +89,19 @@ export const PlanetPowerRanking: React.FC<PlanetPowerRankingProps> = ({
             </span>
           </div>
         </div>
+        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+          <Eye size={12} /> Tap any planet for detailed spotlight
+        </p>
       </CardHeader>
       <CardContent className="space-y-2">
         {conditions.map((condition, index) => (
           <div
             key={condition.planet}
-            className={`group flex items-center gap-3 p-2 rounded-sm hover:bg-muted/50 transition-colors ${
-              onSelectPlanet ? 'cursor-pointer' : ''
-            }`}
-            onClick={() => onSelectPlanet?.(condition.planet)}
+            className="group flex items-center gap-3 p-2 rounded-sm hover:bg-muted/50 transition-colors cursor-pointer"
+            onClick={() => {
+              setSelectedPlanet(condition);
+              onSelectPlanet?.(condition.planet);
+            }}
           >
             {/* Rank Number */}
             <div className="w-5 text-xs text-muted-foreground text-center">
@@ -209,6 +220,15 @@ export const PlanetPowerRanking: React.FC<PlanetPowerRankingProps> = ({
           </div>
         </div>
       </CardContent>
+
+      {/* Planet Spotlight Modal */}
+      <PlanetSpotlightModal
+        isOpen={!!selectedPlanet}
+        onClose={() => setSelectedPlanet(null)}
+        condition={selectedPlanet}
+        aspects={aspects}
+        houseCusps={houseCusps}
+      />
     </Card>
   );
 };

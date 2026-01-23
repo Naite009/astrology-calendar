@@ -1,11 +1,12 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Crown, TrendingUp, TrendingDown, Flame, Target, Sparkles, AlertTriangle } from 'lucide-react';
+import { Crown, TrendingUp, TrendingDown, Flame, Target, Sparkles, AlertTriangle, Home } from 'lucide-react';
 import { PlanetaryCondition } from '@/lib/planetaryCondition';
 
 interface MostPowerfulPlanetCardProps {
   conditions: PlanetaryCondition[];
+  houseCusps?: Record<number, { sign: string; degree: number }>;
 }
 
 const PLANET_SYMBOLS: Record<string, string> = {
@@ -19,6 +20,34 @@ const PLANET_SYMBOLS: Record<string, string> = {
   Uranus: '♅',
   Neptune: '♆',
   Pluto: '♇'
+};
+
+const TRADITIONAL_RULERS: Record<string, string[]> = {
+  Sun: ['Leo'],
+  Moon: ['Cancer'],
+  Mercury: ['Gemini', 'Virgo'],
+  Venus: ['Taurus', 'Libra'],
+  Mars: ['Aries', 'Scorpio'],
+  Jupiter: ['Sagittarius', 'Pisces'],
+  Saturn: ['Capricorn', 'Aquarius'],
+  Uranus: [],
+  Neptune: [],
+  Pluto: []
+};
+
+const HOUSE_TOPICS: Record<number, { title: string; keywords: string }> = {
+  1: { title: 'Identity', keywords: 'self-image, appearance, first impressions' },
+  2: { title: 'Resources', keywords: 'money, possessions, self-worth' },
+  3: { title: 'Communication', keywords: 'learning, siblings, daily exchanges' },
+  4: { title: 'Home', keywords: 'family, roots, emotional foundation' },
+  5: { title: 'Creativity', keywords: 'romance, children, self-expression' },
+  6: { title: 'Service', keywords: 'work, health, daily routines' },
+  7: { title: 'Partnership', keywords: 'marriage, close relationships' },
+  8: { title: 'Transformation', keywords: 'intimacy, shared resources, depth' },
+  9: { title: 'Expansion', keywords: 'travel, philosophy, higher learning' },
+  10: { title: 'Career', keywords: 'reputation, public role, achievements' },
+  11: { title: 'Community', keywords: 'friends, groups, future visions' },
+  12: { title: 'Spirituality', keywords: 'solitude, unconscious, dreams' }
 };
 
 const PLANET_KEYWORDS: Record<string, { nature: string; gift: string; guidance: string }> = {
@@ -117,7 +146,25 @@ const GROWTH_EDGE_GUIDANCE: Record<string, { work: string; reframe: string }> = 
   }
 };
 
-export const MostPowerfulPlanetCard: React.FC<MostPowerfulPlanetCardProps> = ({ conditions }) => {
+// Helper to get houses ruled by a planet
+function getHousesRuled(
+  planetName: string,
+  houseCusps?: Record<number, { sign: string; degree: number }>
+): number[] {
+  if (!houseCusps) return [];
+  const ruledSigns = TRADITIONAL_RULERS[planetName] || [];
+  const housesRuled: number[] = [];
+  
+  for (let h = 1; h <= 12; h++) {
+    const cusp = houseCusps[h];
+    if (cusp && ruledSigns.includes(cusp.sign)) {
+      housesRuled.push(h);
+    }
+  }
+  return housesRuled;
+}
+
+export const MostPowerfulPlanetCard: React.FC<MostPowerfulPlanetCardProps> = ({ conditions, houseCusps }) => {
   if (conditions.length === 0) return null;
 
   // Most powerful = highest score (first in sorted array)
@@ -125,6 +172,9 @@ export const MostPowerfulPlanetCard: React.FC<MostPowerfulPlanetCardProps> = ({ 
   
   // Growth edge = lowest score (last in sorted array)
   const growthEdge = conditions[conditions.length - 1];
+  
+  // Get houses ruled by MVP
+  const mvpHousesRuled = getHousesRuled(mostPowerful.planet, houseCusps);
   
   const powerInfo = PLANET_KEYWORDS[mostPowerful.planet] || {
     nature: 'its unique energy',
@@ -211,11 +261,40 @@ export const MostPowerfulPlanetCard: React.FC<MostPowerfulPlanetCardProps> = ({ 
               <div>
                 <div className="text-xs font-medium text-foreground">How to Use It</div>
                 <p className="text-xs text-muted-foreground">
-                  {powerInfo.guidance}
+              {powerInfo.guidance}
                 </p>
               </div>
             </div>
           </div>
+
+          {/* House Rulership - Life Areas Governed */}
+          {mvpHousesRuled.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Home size={14} className="text-primary" />
+                <span className="text-xs font-medium text-foreground">Life Areas Governed</span>
+              </div>
+              <div className="space-y-1.5">
+                {mvpHousesRuled.map(h => {
+                  const info = HOUSE_TOPICS[h];
+                  return (
+                    <div key={h} className="p-2 bg-background/50 rounded-md">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/30">
+                          House {h}
+                        </Badge>
+                        <span className="text-xs font-medium text-foreground">{info.title}</span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground mt-1">{info.keywords}</p>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] text-muted-foreground italic">
+                Your MVP's strength flows into these life areas
+              </p>
+            </div>
+          )}
 
           {/* Dignity Tags */}
           <div className="flex flex-wrap gap-1.5">
