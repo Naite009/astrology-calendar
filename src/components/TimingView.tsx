@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Clock, Calendar, CalendarCheck, Sparkles, Sun, Moon, AlertTriangle, CheckCircle, Star, ChevronLeft, ChevronRight, Users, User, Info } from 'lucide-react';
+import { Clock, Calendar, CalendarCheck, Sparkles, Sun, Moon, AlertTriangle, CheckCircle, Star, ChevronLeft, ChevronRight, Users, User, Info, Activity } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { calculateBestTimes, BestTimesCategory, BestTimeResult, CATEGORY_INFO, getTransitPositions, getCurrentAspects } from '@/lib/bestTimes';
 import { 
@@ -14,6 +14,8 @@ import { DATES_TO_AVOID_2026, BEST_DAYS_2026, get2026MonthData, ElectionalDayDat
 import { getVOCMoonDetails } from '@/lib/voidOfCourseMoon';
 import { calculatePlanetaryHours } from '@/lib/planetaryHours';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { BiorhythmCard } from '@/components/BiorhythmCard';
+import { BiorhythmForecast } from '@/components/BiorhythmForecast';
 
 interface TimingViewProps {
   userNatalChart: NatalChart | null;
@@ -328,6 +330,31 @@ const RightNowSection = ({
           </p>
         </div>
       </div>
+
+      {/* Biorhythm Card - Only show if natal chart is loaded */}
+      {activeChart && (
+        <div className="mt-6">
+          <BiorhythmCard 
+            birthDate={new Date(activeChart.birthDate)} 
+            targetDate={currentTime}
+          />
+        </div>
+      )}
+
+      {/* Prompt to load chart for biorhythms */}
+      {!activeChart && (
+        <div className="mt-6 p-4 rounded-lg border border-dashed border-border bg-secondary/20">
+          <div className="flex items-center gap-3">
+            <Activity size={20} className="text-muted-foreground" />
+            <div>
+              <p className="text-sm font-medium">Biorhythm Cycles</p>
+              <p className="text-xs text-muted-foreground">
+                Select a chart above to see your personal biorhythm cycles based on your birth date.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Personal Transits to Natal Chart */}
       {activeChart && personalTransits.length > 0 && (
@@ -1063,6 +1090,36 @@ const PlanAheadSection = ({
           )
         )}
       </div>
+
+      {/* Biorhythm Forecast Section */}
+      {activeChart && (
+        <div className="mt-8">
+          <h4 className="text-lg font-serif mb-4 flex items-center gap-2">
+            <Activity size={20} className="text-primary" />
+            Personal Biorhythm Forecast
+          </h4>
+          <BiorhythmForecast 
+            birthDate={new Date(activeChart.birthDate)}
+            startDate={new Date(selectedYear, currentMonth, 1)}
+            days={35}
+          />
+        </div>
+      )}
+
+      {/* Prompt for biorhythm when no chart */}
+      {!activeChart && viewMode === 'personal' && (
+        <div className="mt-8 p-4 rounded-lg border border-dashed border-border bg-secondary/20">
+          <div className="flex items-center gap-3">
+            <Activity size={20} className="text-muted-foreground" />
+            <div>
+              <p className="text-sm font-medium">Biorhythm Forecast Available</p>
+              <p className="text-xs text-muted-foreground">
+                Select a chart to see your 30-day biorhythm forecast alongside personal transits.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
