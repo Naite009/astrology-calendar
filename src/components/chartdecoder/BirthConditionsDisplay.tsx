@@ -12,6 +12,9 @@ import { analyzeAllPlanetaryConditions, PlanetaryCondition } from '@/lib/planeta
 import { ChartPlanet, computeAspects, DEFAULT_ORBS } from '@/lib/chartDecoderLogic';
 import { PlanetaryConditionDashboard } from './PlanetaryConditionDashboard';
 import { WhereLifeHelpsCard } from './WhereLifeHelpsCard';
+import { MostPowerfulPlanetCard } from './MostPowerfulPlanetCard';
+import { PlanetPowerRanking } from './PlanetPowerRanking';
+import { DignityDistribution } from './DignityDistribution';
 
 interface BirthConditionsDisplayProps {
   chart: NatalChart;
@@ -142,7 +145,16 @@ export const BirthConditionsDisplay: React.FC<BirthConditionsDisplayProps> = ({ 
       {/* Where Life Helps You Card */}
       <WhereLifeHelpsCard analysis={strengthsAnalysis} />
 
-      {/* Planetary Condition Dashboard */}
+      {/* Most Powerful Planet & Growth Edge Cards */}
+      <MostPowerfulPlanetCard conditions={planetaryConditions} />
+
+      {/* Planetary Power Ranking */}
+      <PlanetPowerRanking conditions={planetaryConditions} />
+
+      {/* Dignity Distribution */}
+      <DignityDistribution conditions={planetaryConditions} />
+
+      {/* Planetary Condition Dashboard (detailed) */}
       <PlanetaryConditionDashboard conditions={planetaryConditions} />
 
       {/* Moon Element Section */}
