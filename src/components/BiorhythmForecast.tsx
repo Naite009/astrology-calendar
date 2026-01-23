@@ -176,7 +176,175 @@ const WaveChart = ({
   );
 };
 
-export const BiorhythmForecast = ({ 
+// Compatibility Wave Chart - shows overall compatibility over time
+const CompatibilityWaveChart = ({ 
+  forecast, 
+  selectedDay,
+  onDaySelect 
+}: { 
+  forecast: { date: Date; overall: number; passion: number; communication: number }[];
+  selectedDay: number;
+  onDaySelect: (index: number) => void;
+}) => {
+  const width = 700;
+  const height = 150;
+  const padding = { top: 20, right: 20, bottom: 30, left: 40 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+  
+  const xScale = (index: number) => padding.left + (index / (forecast.length - 1)) * chartWidth;
+  const yScale = (value: number) => padding.top + ((100 - value) / 100) * chartHeight;
+  
+  const createPath = (values: number[]) => {
+    return values.map((val, i) => {
+      const x = xScale(i);
+      const y = yScale(val);
+      return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+    }).join(' ');
+  };
+  
+  // Create area fill path
+  const createAreaPath = (values: number[]) => {
+    const linePath = createPath(values);
+    const lastX = xScale(values.length - 1);
+    const firstX = xScale(0);
+    const bottomY = yScale(0);
+    return `${linePath} L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`;
+  };
+  
+  const overallPath = createPath(forecast.map(d => d.overall));
+  const overallAreaPath = createAreaPath(forecast.map(d => d.overall));
+  
+  // Find peak compatibility days
+  const peakDays = forecast.map((d, i) => ({ ...d, index: i })).filter(d => d.overall >= 70);
+  
+  // Find today's index
+  const todayIndex = forecast.findIndex(d => {
+    const today = new Date();
+    return d.date.getDate() === today.getDate() && 
+           d.date.getMonth() === today.getMonth() &&
+           d.date.getFullYear() === today.getFullYear();
+  });
+  
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
+      {/* Background gradient zones */}
+      <defs>
+        <linearGradient id="compatGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="hsl(330 80% 60%)" stopOpacity="0.3" />
+          <stop offset="100%" stopColor="hsl(330 80% 60%)" stopOpacity="0.05" />
+        </linearGradient>
+      </defs>
+      
+      {/* Grid lines */}
+      <line 
+        x1={padding.left} 
+        y1={yScale(70)} 
+        x2={width - padding.right} 
+        y2={yScale(70)} 
+        stroke="hsl(330 80% 60%)" 
+        strokeOpacity={0.3} 
+        strokeDasharray="4 4"
+      />
+      <line 
+        x1={padding.left} 
+        y1={yScale(40)} 
+        x2={width - padding.right} 
+        y2={yScale(40)} 
+        stroke="currentColor" 
+        strokeOpacity={0.2} 
+        strokeDasharray="2 2"
+      />
+      
+      {/* Y-axis labels */}
+      <text x={padding.left - 5} y={yScale(100)} textAnchor="end" className="text-[10px] fill-muted-foreground">100%</text>
+      <text x={padding.left - 5} y={yScale(70)} textAnchor="end" className="text-[10px] fill-pink-500">70%</text>
+      <text x={padding.left - 5} y={yScale(40)} textAnchor="end" className="text-[10px] fill-muted-foreground">40%</text>
+      <text x={padding.left - 5} y={yScale(0)} textAnchor="end" className="text-[10px] fill-muted-foreground">0%</text>
+      
+      {/* Area fill */}
+      <path d={overallAreaPath} fill="url(#compatGradient)" />
+      
+      {/* Compatibility line */}
+      <path d={overallPath} fill="none" stroke="hsl(330 80% 60%)" strokeWidth={2.5} />
+      
+      {/* Today marker */}
+      {todayIndex >= 0 && (
+        <line 
+          x1={xScale(todayIndex)} 
+          y1={padding.top} 
+          x2={xScale(todayIndex)} 
+          y2={height - padding.bottom} 
+          stroke="hsl(var(--primary))" 
+          strokeWidth={2}
+          strokeDasharray="4 2"
+        />
+      )}
+      
+      {/* Peak day markers */}
+      {peakDays.map((day, i) => (
+        <g key={i}>
+          <circle
+            cx={xScale(day.index)}
+            cy={yScale(day.overall)}
+            r={5}
+            fill="hsl(330 80% 60%)"
+            stroke="white"
+            strokeWidth={2}
+          />
+          <text 
+            x={xScale(day.index)} 
+            y={yScale(day.overall) - 10} 
+            textAnchor="middle" 
+            className="text-[9px] fill-pink-500 font-bold"
+          >
+            ❤️
+          </text>
+        </g>
+      ))}
+      
+      {/* Interactive points */}
+      {forecast.map((day, i) => (
+        <g key={i} onClick={() => onDaySelect(i)} className="cursor-pointer">
+          <rect
+            x={xScale(i) - 10}
+            y={padding.top}
+            width={20}
+            height={chartHeight}
+            fill="transparent"
+          />
+          
+          {selectedDay === i && (
+            <rect
+              x={xScale(i) - 8}
+              y={padding.top}
+              width={16}
+              height={chartHeight}
+              fill="hsl(330 80% 60%)"
+              fillOpacity={0.15}
+              rx={4}
+            />
+          )}
+        </g>
+      ))}
+      
+      {/* X-axis date labels (every 5 days) */}
+      {forecast.filter((_, i) => i % 5 === 0).map((day, i) => (
+        <text 
+          key={i}
+          x={xScale(i * 5)} 
+          y={height - 10} 
+          textAnchor="middle" 
+          className="text-[10px] fill-muted-foreground"
+        >
+          {format(day.date, 'M/d')}
+        </text>
+      ))}
+    </svg>
+  );
+};
+
+export const BiorhythmForecast = ({
   birthDate, 
   startDate = new Date(), 
   days = 30,
@@ -287,6 +455,13 @@ export const BiorhythmForecast = ({
                   </SelectContent>
                 </Select>
               )}
+              
+              {/* Message when only 1 chart exists */}
+              {mode === 'romance' && savedCharts.length <= 1 && (
+                <span className="text-xs text-pink-500 bg-pink-50 dark:bg-pink-900/20 px-2 py-1 rounded">
+                  Add another chart for compatibility
+                </span>
+              )}
             </div>
             
             <div className="flex gap-4 text-xs">
@@ -334,18 +509,34 @@ export const BiorhythmForecast = ({
             </div>
           )}
           
-          {mode === 'romance' && !partnerChartId && (
+          {mode === 'romance' && !partnerChartId && savedCharts.length > 1 && (
             <div className="mb-4 p-3 rounded-lg bg-pink-50 dark:bg-pink-900/20 border border-pink-200 dark:border-pink-800 text-center text-sm text-muted-foreground">
               <Heart size={16} className="inline mr-2 text-pink-400" />
               Select a partner above to see romance compatibility
             </div>
           )}
           
+          {/* Personal Wave Chart */}
           <WaveChart 
             forecast={forecast} 
             selectedDay={selectedDayIndex}
             onDaySelect={setSelectedDayIndex}
           />
+          
+          {/* Compatibility Wave Chart - shown when in romance mode with partner selected */}
+          {mode === 'romance' && partnerBirthDate && compatibilityForecast && (
+            <div className="mt-4 pt-4 border-t border-pink-200 dark:border-pink-800">
+              <h5 className="text-sm font-medium mb-3 flex items-center gap-2">
+                <Heart size={14} className="text-pink-500" fill="currentColor" />
+                30-Day Compatibility Forecast
+              </h5>
+              <CompatibilityWaveChart 
+                forecast={compatibilityForecast}
+                selectedDay={selectedDayIndex}
+                onDaySelect={setSelectedDayIndex}
+              />
+            </div>
+          )}
           
           {/* Selected Day Details */}
           {selectedDay && (
