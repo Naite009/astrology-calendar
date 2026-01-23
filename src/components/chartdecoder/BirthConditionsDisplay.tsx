@@ -15,6 +15,7 @@ import { WhereLifeHelpsCard } from './WhereLifeHelpsCard';
 import { MostPowerfulPlanetCard } from './MostPowerfulPlanetCard';
 import { PlanetPowerRanking } from './PlanetPowerRanking';
 import { DignityDistribution } from './DignityDistribution';
+import { SectAnalysisCard } from './SectAnalysisCard';
 
 interface BirthConditionsDisplayProps {
   chart: NatalChart;
@@ -83,13 +84,23 @@ export const BirthConditionsDisplay: React.FC<BirthConditionsDisplayProps> = ({ 
   // Calculate planetary conditions and strengths
   // NOTE: For essential dignities (rulership, fall, etc.), we ALWAYS use traditional rulers
   // Modern rulers are only used for other purposes when useTraditional is false
-  const { planetaryConditions, strengthsAnalysis } = useMemo(() => {
+  const { planetaryConditions, strengthsAnalysis, aspects, houseCusps } = useMemo(() => {
     const planets = convertToChartPlanets(chart);
-    const aspects = computeAspects(planets, DEFAULT_ORBS);
+    const calculatedAspects = computeAspects(planets, DEFAULT_ORBS);
     // Always use traditional for dignities
-    const conditions = analyzeAllPlanetaryConditions(planets, aspects, chart, true);
-    const analysis = analyzeChartStrengths(planets, aspects, chart, true);
-    return { planetaryConditions: conditions, strengthsAnalysis: analysis };
+    const conditions = analyzeAllPlanetaryConditions(planets, calculatedAspects, chart, true);
+    const analysis = analyzeChartStrengths(planets, calculatedAspects, chart, true);
+    
+    // Build house cusps
+    const cusps: Record<number, { sign: string; degree: number }> = {};
+    if (chart.houseCusps) {
+      for (let i = 1; i <= 12; i++) {
+        const cusp = chart.houseCusps[`house${i}` as keyof typeof chart.houseCusps];
+        if (cusp) cusps[i] = cusp;
+      }
+    }
+    
+    return { planetaryConditions: conditions, strengthsAnalysis: analysis, aspects: calculatedAspects, houseCusps: cusps };
   }, [chart]);
 
   return (
@@ -146,10 +157,13 @@ export const BirthConditionsDisplay: React.FC<BirthConditionsDisplayProps> = ({ 
       <WhereLifeHelpsCard analysis={strengthsAnalysis} />
 
       {/* Most Powerful Planet & Growth Edge Cards */}
-      <MostPowerfulPlanetCard conditions={planetaryConditions} />
+      <MostPowerfulPlanetCard conditions={planetaryConditions} houseCusps={houseCusps} />
 
-      {/* Planetary Power Ranking */}
-      <PlanetPowerRanking conditions={planetaryConditions} />
+      {/* Sect Analysis Card */}
+      <SectAnalysisCard analysis={strengthsAnalysis} conditions={planetaryConditions} />
+
+      {/* Planetary Power Ranking with Spotlight */}
+      <PlanetPowerRanking conditions={planetaryConditions} aspects={aspects} houseCusps={houseCusps} />
 
       {/* Dignity Distribution */}
       <DignityDistribution conditions={planetaryConditions} />
