@@ -13,6 +13,7 @@ import { ReadingScriptGenerator } from './chartdecoder/ReadingScriptGenerator';
 import { BirthConditionsDisplay } from './chartdecoder/BirthConditionsDisplay';
 import { ChartCastOverview } from './chartdecoder/ChartCastOverview';
 import { QuadrantAnalysisDisplay } from './chartdecoder/QuadrantAnalysisDisplay';
+import { QuadrantSummaryBadge } from './chartdecoder/QuadrantSummaryBadge';
 import { HighestPotentialSynthesis } from './chartdecoder/HighestPotentialSynthesis';
 import { ProgressionsDisplay } from './chartdecoder/ProgressionsDisplay';
 import { ChartRulerDeepDive } from './chartdecoder/ChartRulerDeepDive';
@@ -323,6 +324,9 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
 
         {/* OVERVIEW TAB */}
         <TabsContent value="overview" className="mt-6 space-y-6">
+          {/* Quadrant/Hemisphere Quick Summary */}
+          <QuadrantSummaryBadge planets={planets} />
+
           {/* Birth Conditions */}
           <BirthConditionsDisplay chart={activeChart} />
           
