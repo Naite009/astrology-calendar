@@ -139,24 +139,32 @@ export interface CollectiveAspect {
   description: string;
   orb: number;
   isExact: boolean; // within 1° orb
+  isApplying: boolean; // true if orb is decreasing (aspect building)
+  isSeparating: boolean; // true if orb is increasing (aspect waning)
+  motion: 'applying' | 'separating' | 'stationary';
 }
 
 export const getCurrentAspects = (date: Date): CollectiveAspect[] => {
   const planets = getPlanetaryPositions(date);
+  
+  // Get positions 1 hour later to determine motion
+  const futureDate = new Date(date.getTime() + 60 * 60 * 1000);
+  const futurePlanets = getPlanetaryPositions(futureDate);
+  
   const aspects: CollectiveAspect[] = [];
   
   const planetList = [
-    { name: 'Sun', pos: planets.sun },
-    { name: 'Moon', pos: planets.moon },
-    { name: 'Mercury', pos: planets.mercury },
-    { name: 'Venus', pos: planets.venus },
-    { name: 'Mars', pos: planets.mars },
-    { name: 'Jupiter', pos: planets.jupiter },
-    { name: 'Saturn', pos: planets.saturn },
-    { name: 'Uranus', pos: planets.uranus },
-    { name: 'Neptune', pos: planets.neptune },
-    { name: 'Pluto', pos: planets.pluto },
-    { name: 'Chiron', pos: planets.chiron }, // Added for wound/healing themes
+    { name: 'Sun', pos: planets.sun, futurePos: futurePlanets.sun },
+    { name: 'Moon', pos: planets.moon, futurePos: futurePlanets.moon },
+    { name: 'Mercury', pos: planets.mercury, futurePos: futurePlanets.mercury },
+    { name: 'Venus', pos: planets.venus, futurePos: futurePlanets.venus },
+    { name: 'Mars', pos: planets.mars, futurePos: futurePlanets.mars },
+    { name: 'Jupiter', pos: planets.jupiter, futurePos: futurePlanets.jupiter },
+    { name: 'Saturn', pos: planets.saturn, futurePos: futurePlanets.saturn },
+    { name: 'Uranus', pos: planets.uranus, futurePos: futurePlanets.uranus },
+    { name: 'Neptune', pos: planets.neptune, futurePos: futurePlanets.neptune },
+    { name: 'Pluto', pos: planets.pluto, futurePos: futurePlanets.pluto },
+    { name: 'Chiron', pos: planets.chiron, futurePos: futurePlanets.chiron },
   ];
 
   const aspectDefs = [
@@ -173,16 +181,33 @@ export const getCurrentAspects = (date: Date): CollectiveAspect[] => {
       const p2 = planetList[j];
       
       // Skip if either planet position is missing
-      if (!p1.pos || !p2.pos) continue;
+      if (!p1.pos || !p2.pos || !p1.futurePos || !p2.futurePos) continue;
       
       const lon1 = ZODIAC_SIGNS.indexOf(p1.pos.signName) * 30 + p1.pos.degree;
       const lon2 = ZODIAC_SIGNS.indexOf(p2.pos.signName) * 30 + p2.pos.degree;
       const diff = Math.abs(((lon2 - lon1 + 180) % 360) - 180);
+      
+      // Calculate future positions for motion detection
+      const futureLon1 = ZODIAC_SIGNS.indexOf(p1.futurePos.signName) * 30 + p1.futurePos.degree;
+      const futureLon2 = ZODIAC_SIGNS.indexOf(p2.futurePos.signName) * 30 + p2.futurePos.degree;
+      const futureDiff = Math.abs(((futureLon2 - futureLon1 + 180) % 360) - 180);
 
       for (const aspectDef of aspectDefs) {
         const orbDiff = Math.abs(diff - aspectDef.angle);
         if (orbDiff < aspectDef.orb) {
           const isExact = orbDiff <= 1;
+          
+          // Determine if applying or separating
+          const currentOrbToExact = Math.abs(diff - aspectDef.angle);
+          const futureOrbToExact = Math.abs(futureDiff - aspectDef.angle);
+          
+          const isApplying = futureOrbToExact < currentOrbToExact;
+          const isSeparating = futureOrbToExact > currentOrbToExact;
+          const motion: 'applying' | 'separating' | 'stationary' = 
+            isApplying ? 'applying' : 
+            isSeparating ? 'separating' : 
+            'stationary';
+          
           aspects.push({
             planet1: p1.name,
             planet2: p2.name,
@@ -193,7 +218,10 @@ export const getCurrentAspects = (date: Date): CollectiveAspect[] => {
               ? `EXACT: ${aspectDef.desc}` 
               : aspectDef.desc,
             orb: Math.round(orbDiff * 10) / 10,
-            isExact
+            isExact,
+            isApplying,
+            isSeparating,
+            motion
           });
           break;
         }

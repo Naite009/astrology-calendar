@@ -16,6 +16,7 @@ import { calculatePlanetaryHours } from '@/lib/planetaryHours';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { BiorhythmCard } from '@/components/BiorhythmCard';
 import { BiorhythmForecast } from '@/components/BiorhythmForecast';
+import { SaturnReturnCalculator } from '@/components/SaturnReturnCalculator';
 
 interface TimingViewProps {
   userNatalChart: NatalChart | null;
@@ -567,9 +568,37 @@ const TodaySection = ({
                     }`}>
                       {aspect.orb}° orb
                     </span>
+                    {/* Applying/Separating Indicator */}
+                    <span className={`text-xs px-1.5 py-0.5 rounded flex items-center gap-1 ${
+                      aspect.isApplying 
+                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
+                        : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                    }`}>
+                      {aspect.isApplying ? (
+                        <>
+                          <span className="text-[10px]">↗</span>
+                          Applying
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-[10px]">↘</span>
+                          Separating
+                        </>
+                      )}
+                    </span>
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">
                     {aspect.description}
+                    {aspect.isApplying && (
+                      <span className="text-green-600 dark:text-green-400 ml-1">
+                        • Building in intensity
+                      </span>
+                    )}
+                    {aspect.isSeparating && (
+                      <span className="text-amber-600 dark:text-amber-400 ml-1">
+                        • Waning in effect
+                      </span>
+                    )}
                   </p>
                 </div>
               </div>
@@ -1119,6 +1148,17 @@ const PlanAheadSection = ({
           </div>
         )}
       </div>
+      
+      {/* Saturn Return Calculator */}
+      {activeChart && (
+        <div className="mt-8">
+          <h4 className="text-lg font-serif mb-4 flex items-center gap-2">
+            <span className="text-xl">♄</span>
+            Saturn Return Calculator
+          </h4>
+          <SaturnReturnCalculator chart={activeChart} currentDate={new Date()} />
+        </div>
+      )}
     </div>
   );
 };
