@@ -15,7 +15,7 @@ import { NatalChart } from '@/hooks/useNatalChart';
 import { format } from 'date-fns';
 
 interface BiorhythmCardProps {
-  birthDate: Date;
+  birthDate: Date | null;
   targetDate?: Date;
   savedCharts?: NatalChart[];
   selectedChartId?: string;
@@ -278,12 +278,12 @@ export const BiorhythmCard = ({
   const [compareChartId, setCompareChartId] = useState<string>('');
   
   const biorhythms = useMemo(() => 
-    getAllBiorhythms(birthDate, targetDate), 
+    birthDate ? getAllBiorhythms(birthDate, targetDate) : [], 
     [birthDate, targetDate]
   );
   
   const dayQuality = useMemo(() => 
-    getDayQuality(birthDate, targetDate), 
+    birthDate ? getDayQuality(birthDate, targetDate) : null, 
     [birthDate, targetDate]
   );
   
@@ -293,7 +293,7 @@ export const BiorhythmCard = ({
   );
   
   const compatibility = useMemo(() => {
-    if (!compareChart) return null;
+    if (!compareChart || !birthDate) return null;
     return getCompatibility(birthDate, new Date(compareChart.birthDate), targetDate);
   }, [birthDate, compareChart, targetDate]);
   
@@ -311,18 +311,18 @@ export const BiorhythmCard = ({
           <div className="flex items-center gap-2">
             <Activity size={18} className="text-primary" />
             <span className="text-xs uppercase tracking-widest text-muted-foreground">
-              Biorhythms
+              Personal Biorhythm
             </span>
           </div>
           
           <div className="flex items-center gap-2">
-            {/* Chart Selector */}
+            {/* Chart Selector - Always visible if there are charts */}
             {savedCharts.length > 0 && onChartChange && (
-              <Select value={selectedChartId} onValueChange={onChartChange}>
-                <SelectTrigger className="h-8 text-xs w-[120px]">
-                  <SelectValue placeholder="Select chart" />
+              <Select value={selectedChartId || ''} onValueChange={onChartChange}>
+                <SelectTrigger className="h-8 text-xs w-[140px]">
+                  <SelectValue placeholder="Select person" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-popover border border-border z-50">
                   {savedCharts.map(chart => (
                     <SelectItem key={chart.id} value={chart.id} className="text-xs">
                       {chart.name}
@@ -332,35 +332,53 @@ export const BiorhythmCard = ({
               </Select>
             )}
             
-            {/* Mode toggle */}
-            {comparisonOptions.length > 0 && (
+            {/* Mode toggle - Only show when we have a chart selected AND comparison options */}
+            {birthDate && comparisonOptions.length > 0 && (
               <div className="flex rounded-md border border-border overflow-hidden">
-                <button
-                  onClick={() => setMode('personal')}
-                  className={`px-2 py-1 text-[10px] transition-colors ${
-                    mode === 'personal' 
-                      ? 'bg-primary text-primary-foreground' 
-                      : 'bg-secondary hover:bg-secondary/80'
-                  }`}
-                >
-                  <Users size={12} />
-                </button>
-                <button
-                  onClick={() => setMode('compatibility')}
-                  className={`px-2 py-1 text-[10px] transition-colors ${
-                    mode === 'compatibility' 
-                      ? 'bg-pink-500 text-white' 
-                      : 'bg-secondary hover:bg-secondary/80'
-                  }`}
-                >
-                  <Heart size={12} />
-                </button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setMode('personal')}
+                      className={`px-2 py-1 text-[10px] transition-colors ${
+                        mode === 'personal' 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'bg-secondary hover:bg-secondary/80'
+                      }`}
+                    >
+                      <Users size={12} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>Personal View</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setMode('compatibility')}
+                      className={`px-2 py-1 text-[10px] transition-colors ${
+                        mode === 'compatibility' 
+                          ? 'bg-pink-500 text-white' 
+                          : 'bg-secondary hover:bg-secondary/80'
+                      }`}
+                    >
+                      <Heart size={12} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>Romance Compatibility</TooltipContent>
+                </Tooltip>
               </div>
             )}
           </div>
         </div>
         
-        {mode === 'compatibility' ? (
+        {/* No chart selected state */}
+        {!birthDate && (
+          <div className="text-center py-8 text-sm text-muted-foreground">
+            <Activity size={24} className="mx-auto mb-2 opacity-50" />
+            <p>Select a person above to see their biorhythm cycles</p>
+          </div>
+        )}
+        
+        {birthDate && mode === 'compatibility' ? (
           <>
             {/* Comparison chart selector */}
             <div className="mb-4">
@@ -368,7 +386,7 @@ export const BiorhythmCard = ({
                 <SelectTrigger className="h-8 text-xs">
                   <SelectValue placeholder="Compare with..." />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-popover border border-border z-50">
                   {comparisonOptions.map(chart => (
                     <SelectItem key={chart.id} value={chart.id} className="text-xs">
                       {chart.name}
@@ -381,7 +399,7 @@ export const BiorhythmCard = ({
             {compatibility && compareChart ? (
               <CompatibilityView 
                 compatibility={compatibility}
-                person1Name={chartName}
+                person1Name={chartName || 'You'}
                 person2Name={compareChart.name}
                 targetDate={targetDate}
               />
@@ -391,7 +409,7 @@ export const BiorhythmCard = ({
               </div>
             )}
           </>
-        ) : (
+        ) : birthDate && dayQuality ? (
           <>
             {/* Day quality badge */}
             <div className="flex justify-end mb-2">
@@ -450,7 +468,7 @@ export const BiorhythmCard = ({
               </p>
             </div>
           </>
-        )}
+        ) : null}
       </div>
     </TooltipProvider>
   );

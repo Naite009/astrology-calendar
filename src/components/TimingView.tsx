@@ -331,43 +331,26 @@ const RightNowSection = ({
         </div>
       </div>
 
-      {/* Biorhythm Card - Only show if natal chart is loaded */}
-      {activeChart && (
-        <div className="mt-6">
-          <BiorhythmCard 
-            birthDate={new Date(activeChart.birthDate)} 
-            targetDate={currentTime}
-            savedCharts={[...(userNatalChart ? [userNatalChart] : []), ...savedCharts]}
-            selectedChartId={selectedChart === 'user' ? userNatalChart?.id : selectedChart}
-            onChartChange={(id) => {
-              const chart = [...(userNatalChart ? [userNatalChart] : []), ...savedCharts].find(c => c.id === id);
-              if (chart) {
-                if (userNatalChart && chart.id === userNatalChart.id) {
-                  setSelectedChart('user');
-                } else {
-                  setSelectedChart(id);
-                }
+      {/* Biorhythm Section - Always visible with its own chart selector */}
+      <div className="mt-6">
+        <BiorhythmCard 
+          birthDate={activeChart ? new Date(activeChart.birthDate) : null} 
+          targetDate={currentTime}
+          savedCharts={[...(userNatalChart ? [userNatalChart] : []), ...savedCharts]}
+          selectedChartId={activeChart ? (selectedChart === 'user' ? userNatalChart?.id : selectedChart) : undefined}
+          onChartChange={(id) => {
+            const chart = [...(userNatalChart ? [userNatalChart] : []), ...savedCharts].find(c => c.id === id);
+            if (chart) {
+              if (userNatalChart && chart.id === userNatalChart.id) {
+                setSelectedChart('user');
+              } else {
+                setSelectedChart(id);
               }
-            }}
-            chartName={activeChart.name}
-          />
-        </div>
-      )}
-
-      {/* Prompt to load chart for biorhythms */}
-      {!activeChart && (
-        <div className="mt-6 p-4 rounded-lg border border-dashed border-border bg-secondary/20">
-          <div className="flex items-center gap-3">
-            <Activity size={20} className="text-muted-foreground" />
-            <div>
-              <p className="text-sm font-medium">Biorhythm Cycles</p>
-              <p className="text-xs text-muted-foreground">
-                Select a chart above to see your personal biorhythm cycles based on your birth date.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+            }
+          }}
+          chartName={activeChart?.name}
+        />
+      </div>
 
       {/* Personal Transits to Natal Chart */}
       {activeChart && personalTransits.length > 0 && (
