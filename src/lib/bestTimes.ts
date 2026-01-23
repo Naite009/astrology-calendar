@@ -142,6 +142,9 @@ export const getCurrentAspects = (date: Date): { planet1: string; planet2: strin
     { name: 'Mars', pos: planets.mars },
     { name: 'Jupiter', pos: planets.jupiter },
     { name: 'Saturn', pos: planets.saturn },
+    { name: 'Uranus', pos: planets.uranus },
+    { name: 'Neptune', pos: planets.neptune },
+    { name: 'Pluto', pos: planets.pluto },
   ];
 
   const aspectDefs = [
