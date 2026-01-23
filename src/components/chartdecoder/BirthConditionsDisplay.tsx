@@ -16,6 +16,9 @@ import { MostPowerfulPlanetCard } from './MostPowerfulPlanetCard';
 import { PlanetPowerRanking } from './PlanetPowerRanking';
 import { DignityDistribution } from './DignityDistribution';
 import { SectAnalysisCard } from './SectAnalysisCard';
+import { ChartRulerDeepDive } from './ChartRulerDeepDive';
+import { HouseLordAnalysis } from './HouseLordAnalysis';
+import { NatalAspectsSummary } from './NatalAspectsSummary';
 
 interface BirthConditionsDisplayProps {
   chart: NatalChart;
@@ -156,11 +159,25 @@ export const BirthConditionsDisplay: React.FC<BirthConditionsDisplayProps> = ({ 
       {/* Where Life Helps You Card */}
       <WhereLifeHelpsCard analysis={strengthsAnalysis} />
 
+      {/* Chart Ruler Deep Dive */}
+      <ChartRulerDeepDive 
+        planets={convertToChartPlanets(chart)} 
+        aspects={aspects} 
+        natalChart={chart} 
+        useTraditional={useTraditional} 
+      />
+
       {/* Most Powerful Planet & Growth Edge Cards */}
       <MostPowerfulPlanetCard conditions={planetaryConditions} houseCusps={houseCusps} />
 
       {/* Sect Analysis Card */}
       <SectAnalysisCard analysis={strengthsAnalysis} conditions={planetaryConditions} />
+
+      {/* Natal Aspects Summary */}
+      <NatalAspectsSummary aspects={aspects} />
+
+      {/* House Lord Analysis */}
+      <HouseLordAnalysis chart={chart} />
 
       {/* Planetary Power Ranking with Spotlight */}
       <PlanetPowerRanking conditions={planetaryConditions} aspects={aspects} houseCusps={houseCusps} />
