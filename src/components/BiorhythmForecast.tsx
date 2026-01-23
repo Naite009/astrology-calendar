@@ -1,19 +1,30 @@
 import { useMemo, useState } from 'react';
-import { TrendingUp, AlertTriangle, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { TrendingUp, AlertTriangle, Sparkles, ChevronLeft, ChevronRight, Heart, User } from 'lucide-react';
 import { 
   getBiorhythmForecast, 
   getCriticalDays, 
   getPeakDays,
+  getCompatibilityForecast,
   BiorhythmDay,
   BIORHYTHM_CYCLES
 } from '@/lib/biorhythms';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format, isSameDay } from 'date-fns';
+
+interface SavedChart {
+  id: string;
+  name: string;
+  birthDate: string;
+}
 
 interface BiorhythmForecastProps {
   birthDate: Date;
   startDate?: Date;
   days?: number;
+  savedCharts?: SavedChart[];
+  selectedChartId?: string;
+  onChartChange?: (chartId: string) => void;
 }
 
 const WaveChart = ({ 
@@ -168,9 +179,17 @@ const WaveChart = ({
 export const BiorhythmForecast = ({ 
   birthDate, 
   startDate = new Date(), 
-  days = 30 
+  days = 30,
+  savedCharts = [],
+  selectedChartId,
+  onChartChange
 }: BiorhythmForecastProps) => {
   const [selectedDayIndex, setSelectedDayIndex] = useState<number>(0);
+  const [mode, setMode] = useState<'personal' | 'romance'>('personal');
+  const [partnerChartId, setPartnerChartId] = useState<string>('');
+  
+  const partnerChart = savedCharts.find(c => c.id === partnerChartId);
+  const partnerBirthDate = partnerChart ? new Date(partnerChart.birthDate) : null;
   
   const forecast = useMemo(() => {
     // Start 3 days before today for context
@@ -178,6 +197,13 @@ export const BiorhythmForecast = ({
     adjustedStart.setDate(adjustedStart.getDate() - 3);
     return getBiorhythmForecast(birthDate, adjustedStart, days + 3);
   }, [birthDate, startDate, days]);
+  
+  const compatibilityForecast = useMemo(() => {
+    if (mode !== 'romance' || !partnerBirthDate) return null;
+    const adjustedStart = new Date(startDate);
+    adjustedStart.setDate(adjustedStart.getDate() - 3);
+    return getCompatibilityForecast(birthDate, partnerBirthDate, adjustedStart, days + 3);
+  }, [birthDate, partnerBirthDate, startDate, days, mode]);
   
   const criticalDays = useMemo(() => 
     getCriticalDays(birthDate, startDate, days), 
@@ -190,6 +216,7 @@ export const BiorhythmForecast = ({
   );
   
   const selectedDay = forecast[selectedDayIndex];
+  const selectedCompatibility = compatibilityForecast?.[selectedDayIndex];
   
   // Navigate selected day
   const navigateDay = (delta: number) => {
@@ -197,13 +224,71 @@ export const BiorhythmForecast = ({
     setSelectedDayIndex(newIndex);
   };
   
+  const currentChartName = savedCharts.find(c => c.id === selectedChartId)?.name || 'You';
+  
   return (
     <TooltipProvider>
       <div className="space-y-4">
         {/* Wave Chart */}
         <div className="p-4 rounded-lg border border-border bg-card">
           <div className="flex items-center justify-between mb-4">
-            <h4 className="text-sm font-medium">30-Day Biorhythm Forecast</h4>
+            <div className="flex items-center gap-3">
+              <h4 className="text-sm font-medium">30-Day Biorhythm Forecast</h4>
+              
+              {/* Person Selector Dropdown */}
+              {savedCharts.length > 0 && onChartChange && (
+                <Select value={selectedChartId} onValueChange={onChartChange}>
+                  <SelectTrigger className="h-7 text-xs w-[130px] bg-background">
+                    <User size={12} className="mr-1" />
+                    <SelectValue placeholder="Select person" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover z-50">
+                    {savedCharts.map(chart => (
+                      <SelectItem key={chart.id} value={chart.id} className="text-xs">
+                        {chart.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              
+              {/* Romance Mode Toggle */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setMode(mode === 'personal' ? 'romance' : 'personal')}
+                    className={`p-1.5 rounded-full transition-colors ${
+                      mode === 'romance' 
+                        ? 'bg-pink-500 text-white' 
+                        : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
+                    }`}
+                  >
+                    <Heart size={14} fill={mode === 'romance' ? 'currentColor' : 'none'} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{mode === 'romance' ? 'Exit Romance Mode' : 'Romance Compatibility'}</p>
+                </TooltipContent>
+              </Tooltip>
+              
+              {/* Partner Selector (when in romance mode) */}
+              {mode === 'romance' && savedCharts.length > 1 && (
+                <Select value={partnerChartId} onValueChange={setPartnerChartId}>
+                  <SelectTrigger className="h-7 text-xs w-[130px] bg-pink-50 dark:bg-pink-900/20 border-pink-200 dark:border-pink-800">
+                    <Heart size={12} className="mr-1 text-pink-500" />
+                    <SelectValue placeholder="Select partner" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover z-50">
+                    {savedCharts.filter(c => c.id !== selectedChartId).map(chart => (
+                      <SelectItem key={chart.id} value={chart.id} className="text-xs">
+                        {chart.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+            
             <div className="flex gap-4 text-xs">
               <span className="flex items-center gap-1">
                 <span className="w-3 h-0.5 bg-destructive rounded" /> Physical
@@ -216,6 +301,45 @@ export const BiorhythmForecast = ({
               </span>
             </div>
           </div>
+          
+          {/* Romance Compatibility Summary */}
+          {mode === 'romance' && partnerBirthDate && selectedCompatibility && (
+            <div className="mb-4 p-3 rounded-lg bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-900/20 dark:to-rose-900/20 border border-pink-200 dark:border-pink-800">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Heart size={16} className="text-pink-500" fill="currentColor" />
+                  <span className="text-sm font-medium">{currentChartName} + {partnerChart?.name}</span>
+                </div>
+                <div className="flex gap-4 text-xs">
+                  <div className="text-center">
+                    <div className="text-muted-foreground">Passion</div>
+                    <div className={`font-bold ${selectedCompatibility.passion >= 70 ? 'text-pink-500' : selectedCompatibility.passion >= 40 ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                      {selectedCompatibility.passion}%
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-muted-foreground">Communication</div>
+                    <div className={`font-bold ${selectedCompatibility.communication >= 70 ? 'text-pink-500' : selectedCompatibility.communication >= 40 ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                      {selectedCompatibility.communication}%
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-muted-foreground">Overall</div>
+                    <div className={`font-bold ${selectedCompatibility.overall >= 70 ? 'text-pink-500' : selectedCompatibility.overall >= 40 ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                      {selectedCompatibility.overall}%
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {mode === 'romance' && !partnerChartId && (
+            <div className="mb-4 p-3 rounded-lg bg-pink-50 dark:bg-pink-900/20 border border-pink-200 dark:border-pink-800 text-center text-sm text-muted-foreground">
+              <Heart size={16} className="inline mr-2 text-pink-400" />
+              Select a partner above to see romance compatibility
+            </div>
+          )}
           
           <WaveChart 
             forecast={forecast} 

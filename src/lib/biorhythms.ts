@@ -410,7 +410,7 @@ export function getCompatibilityForecast(
   birthDate2: Date,
   startDate: Date,
   days: number
-): { date: Date; overall: number; physical: number; emotional: number; intellectual: number }[] {
+): { date: Date; overall: number; physical: number; emotional: number; intellectual: number; passion: number; communication: number }[] {
   const forecast = [];
   
   for (let i = 0; i < days; i++) {
@@ -421,8 +421,10 @@ export function getCompatibilityForecast(
     const emotional = calculateCycleCompatibility(birthDate1, birthDate2, date, BIORHYTHM_CYCLES.emotional.length);
     const intellectual = calculateCycleCompatibility(birthDate1, birthDate2, date, BIORHYTHM_CYCLES.intellectual.length);
     const overall = Math.round((physical + emotional + intellectual) / 3);
+    const passion = Math.round((physical + emotional) / 2);
+    const communication = Math.round((intellectual + emotional) / 2);
     
-    forecast.push({ date, overall, physical, emotional, intellectual });
+    forecast.push({ date, overall, physical, emotional, intellectual, passion, communication });
   }
   
   return forecast;
