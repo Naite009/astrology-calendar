@@ -35,6 +35,17 @@ export interface BiorhythmDay {
   peakCycles: string[];
 }
 
+export interface CompatibilityResult {
+  physical: number;      // 0-100% compatibility
+  emotional: number;
+  intellectual: number;
+  overall: number;
+  passion: number;       // Physical + Emotional average
+  communication: number; // Intellectual + Emotional average  
+  synergy: string;       // Description of the compatibility
+  peakDays: { date: Date; score: number }[];  // Best days together
+}
+
 export type BiorhythmState = 'peak' | 'high' | 'neutral' | 'low' | 'critical';
 
 export const BIORHYTHM_CYCLES: Record<string, BiorhythmCycle> = {
@@ -299,4 +310,120 @@ export function getNextCycleEvent(
   }
   
   return null;
+}
+
+/**
+ * ROMANTIC COMPATIBILITY BIORHYTHMS
+ * 
+ * Compatibility is calculated by comparing the phase alignment of two people's cycles.
+ * When cycles are in sync (same phase), compatibility is high.
+ * When cycles are opposite (180° out of phase), there can be friction but also attraction.
+ */
+
+/**
+ * Calculate compatibility percentage between two birthdays for a specific cycle
+ * Uses the cosine of the phase difference - 100% when in sync, 0% when 90° apart
+ */
+export function calculateCycleCompatibility(
+  birthDate1: Date, 
+  birthDate2: Date, 
+  targetDate: Date, 
+  cycleLength: number
+): number {
+  const value1 = calculateBiorhythm(birthDate1, targetDate, cycleLength);
+  const value2 = calculateBiorhythm(birthDate2, targetDate, cycleLength);
+  
+  // Calculate phase difference
+  // When both are at same value, compatibility is 100%
+  // When opposite, it's 0% (but passion may be high)
+  const diff = Math.abs(value1 - value2);
+  const compatibility = Math.round(100 - (diff / 2)); // 0-200 range -> 0-100
+  
+  return Math.max(0, Math.min(100, compatibility));
+}
+
+/**
+ * Get full romantic compatibility analysis between two people
+ */
+export function getCompatibility(
+  birthDate1: Date,
+  birthDate2: Date,
+  targetDate: Date = new Date()
+): CompatibilityResult {
+  const physical = calculateCycleCompatibility(birthDate1, birthDate2, targetDate, BIORHYTHM_CYCLES.physical.length);
+  const emotional = calculateCycleCompatibility(birthDate1, birthDate2, targetDate, BIORHYTHM_CYCLES.emotional.length);
+  const intellectual = calculateCycleCompatibility(birthDate1, birthDate2, targetDate, BIORHYTHM_CYCLES.intellectual.length);
+  
+  const overall = Math.round((physical + emotional + intellectual) / 3);
+  const passion = Math.round((physical + emotional) / 2);
+  const communication = Math.round((intellectual + emotional) / 2);
+  
+  // Find peak compatibility days in next 30 days
+  const peakDays: { date: Date; score: number }[] = [];
+  for (let i = 0; i < 30; i++) {
+    const date = new Date(targetDate);
+    date.setDate(date.getDate() + i);
+    
+    const p = calculateCycleCompatibility(birthDate1, birthDate2, date, BIORHYTHM_CYCLES.physical.length);
+    const e = calculateCycleCompatibility(birthDate1, birthDate2, date, BIORHYTHM_CYCLES.emotional.length);
+    const int = calculateCycleCompatibility(birthDate1, birthDate2, date, BIORHYTHM_CYCLES.intellectual.length);
+    const dayScore = Math.round((p + e + int) / 3);
+    
+    if (dayScore >= 80) {
+      peakDays.push({ date, score: dayScore });
+    }
+  }
+  
+  // Generate synergy description
+  let synergy: string;
+  if (overall >= 85) {
+    synergy = 'Exceptional harmony! Your rhythms are deeply synchronized today.';
+  } else if (overall >= 70) {
+    synergy = 'Strong connection. Natural flow and mutual understanding.';
+  } else if (overall >= 55) {
+    synergy = 'Good balance. Some rhythms align well while others complement.';
+  } else if (overall >= 40) {
+    synergy = 'Mixed energy. Be patient and communicate clearly.';
+  } else if (passion >= 60 && overall < 50) {
+    synergy = 'Magnetic tension! Physical chemistry high but needs patience.';
+  } else {
+    synergy = 'Rhythms are out of sync today. Best for individual activities.';
+  }
+  
+  return {
+    physical,
+    emotional,
+    intellectual,
+    overall,
+    passion,
+    communication,
+    synergy,
+    peakDays
+  };
+}
+
+/**
+ * Get compatibility forecast for multiple days
+ */
+export function getCompatibilityForecast(
+  birthDate1: Date,
+  birthDate2: Date,
+  startDate: Date,
+  days: number
+): { date: Date; overall: number; physical: number; emotional: number; intellectual: number }[] {
+  const forecast = [];
+  
+  for (let i = 0; i < days; i++) {
+    const date = new Date(startDate);
+    date.setDate(date.getDate() + i);
+    
+    const physical = calculateCycleCompatibility(birthDate1, birthDate2, date, BIORHYTHM_CYCLES.physical.length);
+    const emotional = calculateCycleCompatibility(birthDate1, birthDate2, date, BIORHYTHM_CYCLES.emotional.length);
+    const intellectual = calculateCycleCompatibility(birthDate1, birthDate2, date, BIORHYTHM_CYCLES.intellectual.length);
+    const overall = Math.round((physical + emotional + intellectual) / 3);
+    
+    forecast.push({ date, overall, physical, emotional, intellectual });
+  }
+  
+  return forecast;
 }

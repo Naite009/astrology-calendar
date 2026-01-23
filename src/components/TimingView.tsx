@@ -337,6 +337,19 @@ const RightNowSection = ({
           <BiorhythmCard 
             birthDate={new Date(activeChart.birthDate)} 
             targetDate={currentTime}
+            savedCharts={[...(userNatalChart ? [userNatalChart] : []), ...savedCharts]}
+            selectedChartId={selectedChart === 'user' ? userNatalChart?.id : selectedChart}
+            onChartChange={(id) => {
+              const chart = [...(userNatalChart ? [userNatalChart] : []), ...savedCharts].find(c => c.id === id);
+              if (chart) {
+                if (userNatalChart && chart.id === userNatalChart.id) {
+                  setSelectedChart('user');
+                } else {
+                  setSelectedChart(id);
+                }
+              }
+            }}
+            chartName={activeChart.name}
           />
         </div>
       )}
