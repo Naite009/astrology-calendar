@@ -1,5 +1,6 @@
 import * as Astronomy from 'astronomy-engine';
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
+import { detectTimezoneFromLocation, isUSDaylightSavingTime } from './astrology';
 
 // Zodiac signs in order
 const ZODIAC_SIGNS = [
@@ -192,13 +193,39 @@ export interface SecondaryProgressions {
   planets: Record<string, ProgressedPlanet>;
 }
 
-// Parse birth date from chart
+// Parse birth date from chart with timezone awareness
+// Returns a Date object adjusted to UTC for accurate ephemeris calculations
 const parseBirthDate = (chart: NatalChart): Date | null => {
   try {
     const [year, month, day] = chart.birthDate.split('-').map(Number);
     const timeParts = chart.birthTime?.split(':').map(Number) || [12, 0];
     const [hour, minute] = timeParts;
-    return new Date(year, month - 1, day, hour, minute);
+    
+    // Create a local date first to check DST
+    const localDate = new Date(year, month - 1, day, hour, minute);
+    
+    // Try to detect timezone from birth location
+    let timezoneOffset = 0; // Default to UTC if unknown
+    
+    if (chart.birthLocation) {
+      const detected = detectTimezoneFromLocation(chart.birthLocation, localDate);
+      if (detected) {
+        timezoneOffset = detected.offset;
+      }
+    }
+    
+    // Convert local birth time to UTC
+    // If birth was at 17:50 EST (UTC-5), UTC time is 22:50
+    // We create the UTC date by subtracting the offset hours
+    const utcDate = new Date(Date.UTC(
+      year, 
+      month - 1, 
+      day, 
+      hour - timezoneOffset, // Subtract offset to get UTC
+      minute
+    ));
+    
+    return utcDate;
   } catch {
     return null;
   }
@@ -213,8 +240,19 @@ export const calculateSecondaryProgressions = (
   const birthDate = parseBirthDate(natalChart);
   if (!birthDate) return null;
   
+  // Convert currentDate to UTC for consistent comparison
+  // Since birthDate is now in UTC, we need currentDate in UTC too
+  const currentDateUTC = new Date(Date.UTC(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    currentDate.getDate(),
+    currentDate.getHours(),
+    currentDate.getMinutes()
+  ));
+  
   // Calculate precise age in days (including fractional days)
-  const msSinceBirth = currentDate.getTime() - birthDate.getTime();
+  // Both dates are now in UTC for accurate comparison
+  const msSinceBirth = currentDateUTC.getTime() - birthDate.getTime();
   const daysSinceBirth = msSinceBirth / (1000 * 60 * 60 * 24);
   const ageInYears = daysSinceBirth / 365.25;
   
@@ -224,6 +262,7 @@ export const calculateSecondaryProgressions = (
   const progressedDays = ageInYears; // days after birth
   
   // Create the progressed date with fractional day precision
+  // This date is in UTC which is what astronomy-engine expects
   const progressedDate = new Date(birthDate.getTime() + progressedDays * 24 * 60 * 60 * 1000);
   
   // Create AstroTime for the astronomy library
