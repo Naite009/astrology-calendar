@@ -219,11 +219,11 @@ export const ShadowIndicatorsCard = ({ analysis, chart1Name, chart2Name }: Shado
               </AlertDescription>
             </Alert>
 
-            {/* Resources Link */}
+            {/* Resources Link - safety-focused, no couples therapy recommendation */}
             {analysis.overallRiskLevel === 'significant' && (
               <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
                 <p className="text-xs text-blue-700 dark:text-blue-300">
-                  <strong>Need support?</strong> If you're experiencing concerning dynamics in your relationship:
+                  <strong>Your safety comes first.</strong> If any of these patterns feel concerning:
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   <a 
@@ -232,7 +232,7 @@ export const ShadowIndicatorsCard = ({ analysis, chart1Name, chart2Name }: Shado
                     rel="noopener noreferrer"
                     className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
                   >
-                    National Domestic Violence Hotline <ExternalLink size={10} />
+                    National Domestic Violence Hotline (1-800-799-7233) <ExternalLink size={10} />
                   </a>
                   <span className="text-xs text-muted-foreground">|</span>
                   <a 
@@ -241,7 +241,7 @@ export const ShadowIndicatorsCard = ({ analysis, chart1Name, chart2Name }: Shado
                     rel="noopener noreferrer"
                     className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
                   >
-                    Find a Therapist <ExternalLink size={10} />
+                    Find Individual Support <ExternalLink size={10} />
                   </a>
                 </div>
               </div>
