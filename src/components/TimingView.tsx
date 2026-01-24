@@ -371,12 +371,13 @@ const RightNowSection = ({
         />
       </div>
 
-      {/* Synastry Analysis - show when 2+ charts exist */}
-      {savedCharts.length >= 1 && activeChart && (
+      {/* Synastry Analysis - always show with chart selector */}
+      {activeChart && (
         <div className="mt-6">
           <SynastryAnalysisCard 
             chart1={activeChart}
             chart2={savedCharts.find(c => c.id !== activeChart?.id) || null}
+            availableCharts={[activeChart, ...savedCharts.filter(c => c.id !== activeChart?.id)]}
           />
         </div>
       )}
