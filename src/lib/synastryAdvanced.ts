@@ -741,6 +741,161 @@ function calculateRelationshipTypes(chart1: NatalChart, chart2: NatalChart): Rel
 }
 
 // ============================================
+// HOUSE OVERLAY ANALYSIS
+// ============================================
+
+const HOUSE_LIFE_AREAS: Record<number, string> = {
+  1: 'Self-Image & First Impressions',
+  2: 'Money, Values & Self-Worth',
+  3: 'Communication & Daily Life',
+  4: 'Home, Family & Emotional Foundation',
+  5: 'Romance, Creativity & Fun',
+  6: 'Health, Work & Daily Routines',
+  7: 'Partnership & Marriage',
+  8: 'Intimacy, Shared Resources & Transformation',
+  9: 'Philosophy, Travel & Higher Learning',
+  10: 'Career, Reputation & Public Image',
+  11: 'Friendships, Groups & Future Vision',
+  12: 'Spirituality, Secrets & Subconscious'
+};
+
+const PLANET_HOUSE_OVERLAYS: Record<string, Record<number, { interpretation: string; impact: 'activating' | 'challenging' | 'nurturing' | 'transformative' }>> = {
+  Sun: {
+    1: { interpretation: "They light up your sense of self. You feel more confident and alive around them. They see the 'real' you.", impact: 'activating' },
+    2: { interpretation: "They boost your self-worth and may impact your finances or values. Their presence feels stabilizing.", impact: 'nurturing' },
+    3: { interpretation: "Stimulating conversations. They make you think and communicate more. Mental connection is strong.", impact: 'activating' },
+    4: { interpretation: "They feel like home. Deep emotional comfort. May trigger family patterns or desire for domestic life together.", impact: 'nurturing' },
+    5: { interpretation: "Romance and fun! They bring out your playful, creative side. Strong romantic and creative chemistry.", impact: 'activating' },
+    6: { interpretation: "They impact your daily life and health routines. May feel like a helpful but sometimes critical presence.", impact: 'challenging' },
+    7: { interpretation: "Strong partnership indicator. They embody what you seek in a partner. Relationship-oriented connection.", impact: 'activating' },
+    8: { interpretation: "Intense, transformative connection. Deep intimacy and shared resources. Powerful psychological impact.", impact: 'transformative' },
+    9: { interpretation: "They expand your worldview. Travel, learning, and philosophical discussions together. Growth-oriented.", impact: 'activating' },
+    10: { interpretation: "They impact your career or public image. May help your reputation or inspire professional growth.", impact: 'activating' },
+    11: { interpretation: "Friendship first. They fit naturally into your social circle and share your hopes for the future.", impact: 'nurturing' },
+    12: { interpretation: "Spiritual, subconscious connection. May bring up hidden patterns. Private, behind-the-scenes relationship.", impact: 'transformative' }
+  },
+  Moon: {
+    1: { interpretation: "They intuitively understand your persona. Emotional connection to your identity and appearance.", impact: 'nurturing' },
+    2: { interpretation: "They affect your emotional security around money and values. May nurture or destabilize self-worth.", impact: 'nurturing' },
+    3: { interpretation: "Emotional communication flows. They understand your thought patterns and daily concerns.", impact: 'nurturing' },
+    4: { interpretation: "Deeply nurturing. They feel like family. Strong domestic and emotional foundation together.", impact: 'nurturing' },
+    5: { interpretation: "Emotional creativity and romance. They nurture your inner child and bring out playfulness.", impact: 'nurturing' },
+    6: { interpretation: "They care about your health and daily wellbeing. May mother you—for better or worse.", impact: 'nurturing' },
+    7: { interpretation: "Emotional partnership needs are met. They instinctively understand what you need in relationship.", impact: 'nurturing' },
+    8: { interpretation: "Deep emotional intimacy. They access your vulnerabilities. Transformative emotional experiences together.", impact: 'transformative' },
+    9: { interpretation: "Emotional expansion through beliefs, travel, and learning. They nurture your growth.", impact: 'nurturing' },
+    10: { interpretation: "They emotionally support your career. Your reputation and their emotions are connected.", impact: 'nurturing' },
+    11: { interpretation: "Emotionally supportive friendship. They care about your dreams and social connections.", impact: 'nurturing' },
+    12: { interpretation: "Subconscious emotional bond. Past-life feeling. May bring up buried emotions for healing.", impact: 'transformative' }
+  },
+  Venus: {
+    1: { interpretation: "Strong attraction. They find you beautiful/charming. Your appearance pleases them.", impact: 'activating' },
+    2: { interpretation: "Shared values and financial harmony. They appreciate what you have and are.", impact: 'nurturing' },
+    3: { interpretation: "Sweet, harmonious communication. Pleasant conversations. They love how you think.", impact: 'nurturing' },
+    4: { interpretation: "Domestic bliss potential. They love your home life and family. Comfortable togetherness.", impact: 'nurturing' },
+    5: { interpretation: "ROMANCE! Strong romantic and creative attraction. They bring love and fun into your life.", impact: 'activating' },
+    6: { interpretation: "They appreciate your work ethic and daily habits. Love through service and care.", impact: 'nurturing' },
+    7: { interpretation: "Ideal partner placement. They embody your relationship ideals. Strong marriage indicator.", impact: 'activating' },
+    8: { interpretation: "Intense, passionate love. Deep bonding around intimacy and shared resources. Magnetic.", impact: 'transformative' },
+    9: { interpretation: "Love of learning and adventure together. They share your philosophy of love.", impact: 'activating' },
+    10: { interpretation: "They enhance your public image. May be a 'power couple' dynamic. Career harmony.", impact: 'activating' },
+    11: { interpretation: "Love through friendship. They fit your social ideals and support your dreams.", impact: 'nurturing' },
+    12: { interpretation: "Hidden or private love. Spiritual romance. May involve secrets or karmic patterns.", impact: 'transformative' }
+  },
+  Mars: {
+    1: { interpretation: "Physical attraction. They energize and sometimes challenge your identity. Sparks fly.", impact: 'activating' },
+    2: { interpretation: "They activate your earning potential or challenge your values. Financial drive together.", impact: 'activating' },
+    3: { interpretation: "Stimulating debates. They challenge how you think and communicate. Mental sparring.", impact: 'challenging' },
+    4: { interpretation: "May activate family issues or drive to create home together. Emotional passion.", impact: 'challenging' },
+    5: { interpretation: "Passionate romance and creative fire. Strong sexual and creative chemistry.", impact: 'activating' },
+    6: { interpretation: "They push you to work harder or improve health. Can feel demanding.", impact: 'challenging' },
+    7: { interpretation: "Partnership drive. May be competitive or passionate. They push you toward commitment.", impact: 'activating' },
+    8: { interpretation: "Intense sexual chemistry. Power dynamics around intimacy and shared resources.", impact: 'transformative' },
+    9: { interpretation: "Adventure together! They inspire action toward growth, travel, and new experiences.", impact: 'activating' },
+    10: { interpretation: "Career drive. They push your professional ambitions. May compete or collaborate publicly.", impact: 'activating' },
+    11: { interpretation: "Active friendship. They energize your social life and fight for your dreams.", impact: 'activating' },
+    12: { interpretation: "Hidden drives activated. May bring up subconscious anger or spiritual warrior energy.", impact: 'transformative' }
+  },
+  Jupiter: {
+    1: { interpretation: "They expand your self-expression. You feel luckier and more confident around them.", impact: 'activating' },
+    5: { interpretation: "Joy and abundance in romance and creativity. They bring luck to your love life.", impact: 'activating' },
+    7: { interpretation: "Expansive partnership. They bring growth and opportunity to committed relationships.", impact: 'activating' },
+    10: { interpretation: "Career luck! They expand your professional opportunities and public standing.", impact: 'activating' }
+  },
+  Saturn: {
+    1: { interpretation: "They may feel critical of your self-expression but offer structure and maturity.", impact: 'challenging' },
+    4: { interpretation: "Serious about home and family. May trigger family responsibility or restriction.", impact: 'challenging' },
+    7: { interpretation: "Commitment-focused but may feel limiting. Long-term relationship potential with work.", impact: 'challenging' },
+    10: { interpretation: "Career lessons. They may be a mentor or authority figure. Professional structure.", impact: 'challenging' }
+  }
+};
+
+function calculateHouseOverlays(chart1: NatalChart, chart2: NatalChart): HouseOverlay[] {
+  const overlays: HouseOverlay[] = [];
+  
+  // We need house cusps to do proper overlays
+  // For now, we'll use whole sign houses based on Ascendant
+  if (!chart1.planets.Ascendant || !chart2.planets.Ascendant) {
+    return overlays;
+  }
+  
+  const getHouseForPlanet = (planetPos: NatalPlanetPosition, ascSign: string): number => {
+    const planetSignIndex = ZODIAC_SIGNS.indexOf(planetPos.sign);
+    const ascSignIndex = ZODIAC_SIGNS.indexOf(ascSign);
+    if (planetSignIndex === -1 || ascSignIndex === -1) return 1;
+    
+    let house = ((planetSignIndex - ascSignIndex + 12) % 12) + 1;
+    return house;
+  };
+  
+  const planets = ['Sun', 'Moon', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
+  
+  // Chart1's planets in Chart2's houses
+  for (const planet of planets) {
+    const planetPos = chart1.planets[planet as keyof typeof chart1.planets];
+    if (!planetPos) continue;
+    
+    const house = getHouseForPlanet(planetPos, chart2.planets.Ascendant.sign);
+    const overlayData = PLANET_HOUSE_OVERLAYS[planet]?.[house];
+    
+    if (overlayData) {
+      overlays.push({
+        planet,
+        planetOwner: chart1.name,
+        house,
+        houseOwner: chart2.name,
+        interpretation: overlayData.interpretation,
+        lifeArea: HOUSE_LIFE_AREAS[house],
+        impact: overlayData.impact
+      });
+    }
+  }
+  
+  // Chart2's planets in Chart1's houses
+  for (const planet of planets) {
+    const planetPos = chart2.planets[planet as keyof typeof chart2.planets];
+    if (!planetPos) continue;
+    
+    const house = getHouseForPlanet(planetPos, chart1.planets.Ascendant.sign);
+    const overlayData = PLANET_HOUSE_OVERLAYS[planet]?.[house];
+    
+    if (overlayData) {
+      overlays.push({
+        planet,
+        planetOwner: chart2.name,
+        house,
+        houseOwner: chart1.name,
+        interpretation: overlayData.interpretation,
+        lifeArea: HOUSE_LIFE_AREAS[house],
+        impact: overlayData.impact
+      });
+    }
+  }
+  
+  return overlays;
+}
+
+// ============================================
 // MAIN REPORT GENERATOR
 // ============================================
 
@@ -749,6 +904,7 @@ export function generateAdvancedSynastryReport(chart1: NatalChart, chart2: Natal
   const karmicIndicators = getKarmicIndicators(chart1, chart2);
   const attractionDynamics = getAttractionDynamics(chart1, chart2);
   const conflictTriggers = getConflictTriggers(chart1, chart2);
+  const houseOverlays = calculateHouseOverlays(chart1, chart2);
   
   // Extract scores
   const romanticScore = relationshipTypes.find(r => r.type === 'romantic')?.score || 50;
@@ -807,7 +963,7 @@ export function generateAdvancedSynastryReport(chart1: NatalChart, chart2: Natal
     pastLifeConnection,
     attractionDynamics,
     conflictTriggers,
-    houseOverlays: [], // TODO: Implement when house data available
+    houseOverlays,
     whyDrawnTogether,
     relationshipPurpose,
     growthOpportunities,

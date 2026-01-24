@@ -1,12 +1,13 @@
 import { useState, useMemo } from 'react';
-import { Heart, Users, Briefcase, GraduationCap, Sparkles, Palette, AlertTriangle, Flame, Moon, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { Heart, Users, Briefcase, GraduationCap, Sparkles, Palette, AlertTriangle, Flame, Moon, ChevronDown, ChevronUp, Info, Home, HelpCircle } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
-import { generateAdvancedSynastryReport, RelationshipTypeScore } from '@/lib/synastryAdvanced';
+import { generateAdvancedSynastryReport, RelationshipTypeScore, HouseOverlay } from '@/lib/synastryAdvanced';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface SynastryViewProps {
   userNatalChart: NatalChart | null;
@@ -51,6 +52,30 @@ const RelationshipTypeCard = ({ type }: { type: RelationshipTypeScore }) => {
   );
 };
 
+const HouseOverlayCard = ({ overlay }: { overlay: HouseOverlay }) => {
+  const impactColors = {
+    activating: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
+    challenging: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+    nurturing: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+    transformative: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
+  };
+  
+  return (
+    <div className="p-3 rounded-lg border border-border bg-card">
+      <div className="flex items-center justify-between mb-2">
+        <span className="font-medium text-sm">
+          {overlay.planetOwner}'s {overlay.planet} → {overlay.houseOwner}'s {overlay.house}th House
+        </span>
+        <Badge className={impactColors[overlay.impact]} variant="secondary">
+          {overlay.impact}
+        </Badge>
+      </div>
+      <p className="text-xs text-muted-foreground mb-1">{overlay.lifeArea}</p>
+      <p className="text-sm">{overlay.interpretation}</p>
+    </div>
+  );
+};
+
 export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps) => {
   const allCharts = useMemo(() => {
     const charts: NatalChart[] = [];
@@ -61,6 +86,7 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
   
   const [chart1Id, setChart1Id] = useState<string>(allCharts[0]?.id || '');
   const [chart2Id, setChart2Id] = useState<string>(allCharts[1]?.id || '');
+  const [showChartInfo, setShowChartInfo] = useState(false);
   
   const chart1 = allCharts.find(c => c.id === chart1Id) || null;
   const chart2 = allCharts.find(c => c.id === chart2Id) || null;
@@ -120,6 +146,31 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
             </SelectContent>
           </Select>
         </div>
+        
+        {/* Composite vs Davison Info */}
+        <Collapsible open={showChartInfo} onOpenChange={setShowChartInfo}>
+          <CollapsibleTrigger className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 mx-auto">
+            <HelpCircle size={12} />
+            What is Synastry vs Composite vs Davison?
+            {showChartInfo ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="mt-4 p-4 rounded-lg bg-secondary/50 text-left max-w-2xl mx-auto text-sm space-y-3">
+              <div>
+                <strong className="text-primary">Synastry</strong> (this view) compares two individual birth charts by looking at how one person's planets aspect the other's. It shows the dynamic between two separate people—attraction, tension, and compatibility.
+              </div>
+              <div>
+                <strong className="text-primary">Composite Chart</strong> creates a single chart using the mathematical midpoints of each pair of planets. It represents the relationship itself as a third entity—what the partnership creates together.
+              </div>
+              <div>
+                <strong className="text-primary">Davison Chart</strong> calculates the exact midpoint in time and space between two births, then casts a chart for that moment/location. It's the "birth chart" of the relationship, showing its inherent nature.
+              </div>
+              <p className="text-xs text-muted-foreground italic">
+                Synastry shows how you interact. Composite/Davison show what you create together.
+              </p>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
       
       {report && (
@@ -147,6 +198,34 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
               ))}
             </div>
           </section>
+          
+          {/* House Overlays */}
+          {report.houseOverlays.length > 0 && (
+            <section>
+              <h3 className="text-xl font-serif mb-4 flex items-center gap-2">
+                <Home className="text-blue-500" size={20} />
+                House Overlays
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <HelpCircle size={14} className="text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p>Shows which life areas (houses) each person's planets activate in the other's chart. This reveals where you impact each other's lives.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Where each person's planets land in the other's chart reveals which life areas are activated by the relationship.
+              </p>
+              <div className="grid md:grid-cols-2 gap-3">
+                {report.houseOverlays.map((overlay, i) => (
+                  <HouseOverlayCard key={i} overlay={overlay} />
+                ))}
+              </div>
+            </section>
+          )}
           
           {/* Karmic Indicators */}
           {report.karmicIndicators.length > 0 && (
