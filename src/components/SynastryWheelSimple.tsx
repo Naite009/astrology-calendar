@@ -180,18 +180,24 @@ export const SynastryWheelSimple = ({ chart1, chart2, size = 500 }: SynastryWhee
     return 180; // 0° Libra
   }, [activeHouseChart]);
   
-  // Planets to show including North Node
-  // Include South Node, goddess asteroids (Juno, Ceres, Pallas, Vesta) for relationship context
-  const PLANETS_TO_SHOW = [
+  // Planets to show on the WHEEL (simplified for visual clarity)
+  // Only show 10 major planets + North Node + Chiron
+  const PLANETS_TO_SHOW_ON_WHEEL = [
+    'Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto',
+    'NorthNode', 'Chiron'
+  ];
+  
+  // ALL planets/points for ANALYSIS (includes asteroids, used in aspect calculation)
+  const PLANETS_FOR_ANALYSIS = [
     'Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto',
     'NorthNode', 'SouthNode', 'Chiron', 'Juno', 'Ceres', 'Pallas', 'Vesta', 'Lilith', 'Eris'
   ];
   
-  // Calculate planet positions for both charts
+  // Calculate planet positions for both charts (WHEEL display - simplified)
   const chart1Positions = useMemo(() => {
     const positions: Array<{ planet: string; degree: number; symbol: string; sign: string; degMin: string }> = [];
     
-    for (const planet of PLANETS_TO_SHOW) {
+    for (const planet of PLANETS_TO_SHOW_ON_WHEEL) {
       const pos = chart1.planets[planet as keyof typeof chart1.planets];
       if (pos) {
         positions.push({
@@ -209,7 +215,7 @@ export const SynastryWheelSimple = ({ chart1, chart2, size = 500 }: SynastryWhee
   const chart2Positions = useMemo(() => {
     const positions: Array<{ planet: string; degree: number; symbol: string; sign: string; degMin: string }> = [];
     
-    for (const planet of PLANETS_TO_SHOW) {
+    for (const planet of PLANETS_TO_SHOW_ON_WHEEL) {
       const pos = chart2.planets[planet as keyof typeof chart2.planets];
       if (pos) {
         positions.push({
@@ -222,6 +228,41 @@ export const SynastryWheelSimple = ({ chart1, chart2, size = 500 }: SynastryWhee
       }
     }
     return spreadPlanets(positions, 8);
+  }, [chart2]);
+  
+  // Full planet positions for aspect analysis (includes asteroids)
+  const chart1FullPositions = useMemo(() => {
+    const positions: Array<{ planet: string; degree: number; symbol: string; sign: string; degMin: string }> = [];
+    for (const planet of PLANETS_FOR_ANALYSIS) {
+      const pos = chart1.planets[planet as keyof typeof chart1.planets];
+      if (pos) {
+        positions.push({
+          planet,
+          degree: toAbsoluteDegree(pos),
+          symbol: PLANET_SYMBOLS[planet] || planet[0],
+          sign: pos.sign,
+          degMin: `${pos.degree}°${pos.minutes ? pos.minutes.toString().padStart(2, '0') : '00'}'`
+        });
+      }
+    }
+    return positions;
+  }, [chart1]);
+  
+  const chart2FullPositions = useMemo(() => {
+    const positions: Array<{ planet: string; degree: number; symbol: string; sign: string; degMin: string }> = [];
+    for (const planet of PLANETS_FOR_ANALYSIS) {
+      const pos = chart2.planets[planet as keyof typeof chart2.planets];
+      if (pos) {
+        positions.push({
+          planet,
+          degree: toAbsoluteDegree(pos),
+          symbol: PLANET_SYMBOLS[planet] || planet[0],
+          sign: pos.sign,
+          degMin: `${pos.degree}°${pos.minutes ? pos.minutes.toString().padStart(2, '0') : '00'}'`
+        });
+      }
+    }
+    return positions;
   }, [chart2]);
   
   // Calculate aspects between charts

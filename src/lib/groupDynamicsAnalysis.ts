@@ -51,6 +51,10 @@ export interface GroupMemberProfile {
   sunModality: string;
   roleInGroup: string;
   primaryEnergy: string;
+  pallasSign?: string;
+  vestaSign?: string;
+  pallasInsight?: string;
+  vestaInsight?: string;
 }
 
 export interface PairDynamic {
@@ -72,7 +76,42 @@ export interface GroupDynamicsReport {
   pairDynamics: PairDynamic[];
   focusInsights: string[];
   recommendations: string[];
+  // Asteroid insights for group
+  pallasAnalysis?: string;
+  vestaAnalysis?: string;
 }
+
+// Pallas interpretations by sign for strategy/business
+const PALLAS_INSIGHTS: Record<string, string> = {
+  Aries: 'Bold strategic initiator - takes decisive action on ideas',
+  Taurus: 'Practical strategist - builds sustainable, value-focused plans',
+  Gemini: 'Versatile thinker - excels at multi-pronged approaches',
+  Cancer: 'Intuitive strategist - reads emotional currents for advantage',
+  Leo: 'Creative visionary - leads with confidence and flair',
+  Virgo: 'Analytical planner - masters detail and process optimization',
+  Libra: 'Diplomatic negotiator - excels at partnerships and mediation',
+  Scorpio: 'Deep investigator - uncovers hidden patterns and leverage',
+  Sagittarius: 'Big-picture thinker - connects strategy to meaning',
+  Capricorn: 'Executive planner - builds enduring structures',
+  Aquarius: 'Innovative strategist - sees unconventional solutions',
+  Pisces: 'Intuitive visionary - strategizes through imagination'
+};
+
+// Vesta interpretations by sign for dedication/focus
+const VESTA_INSIGHTS: Record<string, string> = {
+  Aries: 'Focused on pioneering - dedicates to breaking new ground',
+  Taurus: 'Focused on stability - dedicates to building lasting value',
+  Gemini: 'Focused on learning - dedicates to information and ideas',
+  Cancer: 'Focused on nurturing - dedicates to home and emotional care',
+  Leo: 'Focused on expression - dedicates to creative self-actualization',
+  Virgo: 'Focused on service - dedicates to improvement and healing',
+  Libra: 'Focused on harmony - dedicates to relationships and beauty',
+  Scorpio: 'Focused on transformation - dedicates to depth and healing',
+  Sagittarius: 'Focused on truth - dedicates to wisdom and exploration',
+  Capricorn: 'Focused on achievement - dedicates to mastery and legacy',
+  Aquarius: 'Focused on humanity - dedicates to collective progress',
+  Pisces: 'Focused on transcendence - dedicates to spiritual service'
+};
 
 function analyzeGroupMember(chart: NatalChart): GroupMemberProfile {
   const sunSign = chart.planets.Sun?.sign || 'Unknown';
@@ -80,6 +119,10 @@ function analyzeGroupMember(chart: NatalChart): GroupMemberProfile {
   const sunElement = getElement(sunSign);
   const moonElement = getElement(moonSign);
   const sunModality = getModality(sunSign);
+  
+  // Get asteroid signs
+  const pallasSign = chart.planets.Pallas?.sign;
+  const vestaSign = chart.planets.Vesta?.sign;
 
   // Determine role based on sun/moon combination
   let roleInGroup = 'Contributor';
@@ -109,7 +152,11 @@ function analyzeGroupMember(chart: NatalChart): GroupMemberProfile {
     moonElement,
     sunModality,
     roleInGroup,
-    primaryEnergy
+    primaryEnergy,
+    pallasSign,
+    vestaSign,
+    pallasInsight: pallasSign ? PALLAS_INSIGHTS[pallasSign] : undefined,
+    vestaInsight: vestaSign ? VESTA_INSIGHTS[vestaSign] : undefined
   };
 }
 
@@ -304,6 +351,22 @@ export function analyzeGroupDynamics(
       focusInsights.push(`Group of ${charts.length} people with diverse energies`);
   }
 
+  // Generate Pallas analysis for business focus
+  let pallasAnalysis: string | undefined;
+  if (focus === 'business' || focus === 'all') {
+    const pallasInsights = members.filter(m => m.pallasInsight).map(m => `${m.chart.name}: ${m.pallasInsight}`);
+    if (pallasInsights.length > 0) {
+      pallasAnalysis = `Strategic Strengths (Pallas): ${pallasInsights.join('; ')}`;
+    }
+  }
+  
+  // Generate Vesta analysis for dedication patterns
+  let vestaAnalysis: string | undefined;
+  const vestaInsights = members.filter(m => m.vestaInsight).map(m => `${m.chart.name}: ${m.vestaInsight}`);
+  if (vestaInsights.length > 0) {
+    vestaAnalysis = `Dedication Patterns (Vesta): ${vestaInsights.join('; ')}`;
+  }
+
   return {
     memberCount: charts.length,
     members,
@@ -314,6 +377,8 @@ export function analyzeGroupDynamics(
     groupChallenges,
     pairDynamics,
     focusInsights,
-    recommendations
+    recommendations,
+    pallasAnalysis,
+    vestaAnalysis
   };
 }
