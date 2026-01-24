@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { DayData } from "@/lib/astrology";
 import { CalendarDay } from "./CalendarDay";
 import { CalendarLegend } from "./CalendarLegend";
@@ -25,11 +26,26 @@ export const MonthView = ({ currentDate, userData, onDayClick, activeChart, voic
   const daysInMonth = lastDay.getDate();
   const startingDayOfWeek = firstDay.getDay();
 
-  // Helper to get memos for a specific date
-  const getMemosForDay = (date: Date): VoiceMemo[] => {
-    const dateStr = date.toISOString().split('T')[0];
-    return voiceMemos.filter(m => m.date === dateStr);
-  };
+  const memosByDate = useMemo(() => {
+    const map = new Map<string, VoiceMemo[]>();
+    for (const memo of voiceMemos) {
+      if (!map.has(memo.date)) map.set(memo.date, []);
+      map.get(memo.date)!.push(memo);
+    }
+    return map;
+  }, [voiceMemos]);
+
+  const dayCells = useMemo(() => {
+    const todayStr = new Date().toDateString();
+    return Array.from({ length: daysInMonth }).map((_, i) => {
+      const day = i + 1;
+      const date = new Date(year, month, day);
+      const isToday = date.toDateString() === todayStr;
+      const dateKey = date.toISOString().split("T")[0];
+      const dayMemos = memosByDate.get(dateKey) || [];
+      return { day, date, isToday, dayMemos };
+    });
+  }, [daysInMonth, month, year, memosByDate]);
 
   return (
     <div className="flex gap-4">
@@ -56,26 +72,19 @@ export const MonthView = ({ currentDate, userData, onDayClick, activeChart, voic
           ))}
 
           {/* Actual days of the month */}
-          {Array.from({ length: daysInMonth }).map((_, i) => {
-            const day = i + 1;
-            const date = new Date(year, month, day);
-            const isToday = date.toDateString() === new Date().toDateString();
-            const dayMemos = getMemosForDay(date);
-
-            return (
-              <CalendarDay
-                key={day}
-                date={date}
-                day={day}
-                isToday={isToday}
-                userData={userData}
-                onDayClick={onDayClick}
-                activeChart={activeChart}
-                voiceMemos={dayMemos}
-                onVoiceMemoClick={(d) => onVoiceMemoClick?.(d)}
-              />
-            );
-          })}
+          {dayCells.map(({ day, date, isToday, dayMemos }) => (
+            <CalendarDay
+              key={day}
+              date={date}
+              day={day}
+              isToday={isToday}
+              userData={userData}
+              onDayClick={onDayClick}
+              activeChart={activeChart}
+              voiceMemos={dayMemos}
+              onVoiceMemoClick={(d) => onVoiceMemoClick?.(d)}
+            />
+          ))}
         </div>
 
         {/* Footer Legend */}

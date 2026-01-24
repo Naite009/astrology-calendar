@@ -527,6 +527,109 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
       </>
     ),
   },
+  difficultplacements: {
+    title: "Working With Difficult Placements",
+    content: (
+      <>
+        <p>
+          In this app, “costume adjustments” means: the planet isn’t broken — it’s just wearing a costume that
+          makes its instincts come out sideways at first. Your work is to make the planet conscious, trainable,
+          and trustworthy.
+        </p>
+
+        <h3>Step 1: Name the reflex (no shame)</h3>
+        <ul>
+          <li>
+            <strong>Detriment:</strong> the planet is in the sign opposite its home sign. It still wants its normal
+            job, but it’s forced to speak a “foreign language.”
+          </li>
+          <li>
+            <strong>Fall:</strong> the planet is opposite its exaltation — it’s easiest to collapse into the shadow
+            expression when stressed.
+          </li>
+        </ul>
+
+        <h3>Step 2: Give it a clean job description</h3>
+        <p>
+          Ask: “What is this planet trying to protect or achieve?” Then give it a lawful role.
+          Example:
+        </p>
+        <ul>
+          <li>
+            <strong>Venus:</strong> Values, bonding, pleasure, aesthetics, receiving.
+          </li>
+          <li>
+            <strong>Uranus:</strong> Truth, freedom, invention, differentiation, disruption of stagnation.
+          </li>
+        </ul>
+
+        <h3>Step 3: Build a practice (somatic + behavioral)</h3>
+        <div className="mt-4 grid gap-3">
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <h4 className="font-medium text-foreground">Conscious Venus — examples</h4>
+            <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
+              <li>
+                <strong>Receiving drill (2 minutes):</strong> accept a compliment without deflecting. Just say “thank you.”
+              </li>
+              <li>
+                <strong>Values list (weekly):</strong> write 5 values you want relationships to obey (e.g., honesty, reciprocity). 
+                Then choose one boundary that protects them.
+              </li>
+              <li>
+                <strong>Beauty as regulation:</strong> one intentional aesthetic act per day (music, clothing, scent, color). 
+                The goal is nervous system safety, not perfection.
+              </li>
+            </ul>
+          </div>
+
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <h4 className="font-medium text-foreground">Conscious Uranus — examples</h4>
+            <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
+              <li>
+                <strong>Truth filter:</strong> before you disrupt, ask: “Is this rebellion, or is it integrity?”
+              </li>
+              <li>
+                <strong>Experiment contract:</strong> run a 14‑day experiment (new routine, new tool, new boundary). 
+                Keep it small and measurable.
+              </li>
+              <li>
+                <strong>Contain the lightning:</strong> schedule one outlet for intensity (movement, cold water, breathwork) 
+                so relationships don’t become the dumping ground.
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Step 4: Journal prompts (turn insight into behavior)</h3>
+        <ul>
+          <li>
+            “When I’m stressed, this planet tends to ___ (control / disappear / please / provoke). What is it trying to protect?”
+          </li>
+          <li>
+            “If this planet were mature, it would say ‘no’ to ___. It would say ‘yes’ to ___.”
+          </li>
+          <li>
+            “What does ‘safe expression’ look like in my real life this week? Give one concrete example.”
+          </li>
+        </ul>
+
+        <h3>Step 5: Use the app to target the work</h3>
+        <p>
+          Go to <strong>Decoder → Director’s Notes</strong>. Look for:
+        </p>
+        <ul>
+          <li><strong>Loudest Characters:</strong> where to consciously amplify (angular houses).</li>
+          <li><strong>Costume Adjustments:</strong> where to practice the “clean job + practice” method above.</li>
+        </ul>
+
+        <TryItButton section="difficultplacements" onNavigate={undefined} />
+        <p className="mt-6 text-sm text-muted-foreground">
+          Tip: If you want, tell me which planet + sign the app flags as a “costume adjustment” for your chart and I’ll
+          write a tailored practice plan (behavior, boundary, and a 14‑day experiment).
+        </p>
+      </>
+    ),
+  },
   fixedstars: {
     title: "Fixed Stars",
     content: (
