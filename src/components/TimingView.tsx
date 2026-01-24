@@ -377,7 +377,10 @@ const RightNowSection = ({
           <SynastryAnalysisCard 
             chart1={activeChart}
             chart2={savedCharts.find(c => c.id !== activeChart?.id) || null}
-            availableCharts={[activeChart, ...savedCharts.filter(c => c.id !== activeChart?.id)]}
+            availableCharts={[
+              ...(userNatalChart ? [userNatalChart] : []),
+              ...savedCharts.filter(c => c.id !== userNatalChart?.id)
+            ]}
           />
         </div>
       )}
