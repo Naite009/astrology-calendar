@@ -19,6 +19,7 @@ import { RelationshipChartWheel } from './RelationshipChartWheel';
 import { SynastryTransitTimeline } from './SynastryTransitTimeline';
 import { SynastryPDFExport } from './SynastryPDFExport';
 import { RelationshipTimingCalculator } from './RelationshipTimingCalculator';
+import { CompatibilityRadarChart } from './CompatibilityRadarChart';
 import { format } from 'date-fns';
 
 interface SynastryViewProps {
@@ -759,6 +760,13 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                           {report.whyDrawnTogether}
                         </p>
                       </div>
+                      
+                      {/* Compatibility Summary Radar Chart - Only in "All Types" mode */}
+                      {relationshipFocus === 'all' && (
+                        <section>
+                          <CompatibilityRadarChart chart1={chart1} chart2={chart2} />
+                        </section>
+                      )}
                       
                       {/* Relationship Types - only show when "All Types" is selected */}
                       {relationshipFocus === 'all' && (
