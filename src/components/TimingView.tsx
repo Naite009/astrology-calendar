@@ -106,10 +106,7 @@ const RightNowSection = ({
   selectedChart: string;
   setSelectedChart: (id: string) => void;
 }) => {
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [planetaryHours, setPlanetaryHours] = useState<any[]>([]);
-  const [vocMoon, setVocMoon] = useState<{ isVoid: boolean; endsAt?: Date; nextSign?: string } | null>(null);
-  const [personalTransits, setPersonalTransits] = useState<any[]>([]);
+  const [currentTime, setCurrentTime] = useState(() => new Date());
 
   // Get active natal chart
   const activeChart = useMemo(() => {
@@ -118,37 +115,35 @@ const RightNowSection = ({
     return savedCharts.find(c => c.id === selectedChart) || null;
   }, [selectedChart, userNatalChart, savedCharts]);
 
+  // Update time every minute - but use a stable interval
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    // Calculate planetary hours - use default LA coordinates
+  // Memoize planetary hours calculation
+  const planetaryHours = useMemo(() => {
     const lat = 34.0522;
     const lng = -118.2437;
-    const hours = calculatePlanetaryHours(currentTime, lat, lng);
-    setPlanetaryHours(hours);
-
-    // Calculate VOC Moon
-    const vocDetails = getVOCMoonDetails(currentTime);
-    setVocMoon(vocDetails.isCurrentlyVOC 
-      ? { isVoid: true, endsAt: vocDetails.end, nextSign: vocDetails.moonEntersSign } 
-      : { isVoid: false });
+    return calculatePlanetaryHours(currentTime, lat, lng);
   }, [currentTime]);
 
-  // Calculate personal transits when chart changes
-  useEffect(() => {
-    if (!activeChart?.planets) {
-      setPersonalTransits([]);
-      return;
-    }
+  // Memoize VOC Moon calculation
+  const vocMoon = useMemo(() => {
+    const vocDetails = getVOCMoonDetails(currentTime);
+    return vocDetails.isCurrentlyVOC 
+      ? { isVoid: true, endsAt: vocDetails.end, nextSign: vocDetails.moonEntersSign } 
+      : { isVoid: false };
+  }, [currentTime]);
+
+  // Memoize personal transits calculation
+  const personalTransits = useMemo(() => {
+    if (!activeChart?.planets) return [];
 
     const transits = getTransitPositions(currentTime);
     const aspects: any[] = [];
     const ZODIAC_SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
     
-    // Calculate aspects from current transits to natal planets
     const natalPlanets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'] as const;
     
     natalPlanets.forEach(natalPlanet => {
@@ -159,12 +154,11 @@ const RightNowSection = ({
       const natalLongitude = natalSignIndex * 30 + natalPos.degree + (natalPos.minutes || 0) / 60;
       
       transits.forEach(transit => {
-        if (transit.name === natalPlanet) return; // Skip same planet
+        if (transit.name === natalPlanet) return;
         
         let diff = Math.abs(transit.longitude - natalLongitude);
         if (diff > 180) diff = 360 - diff;
         
-        // Check for aspects with 3° orb
         const aspectTypes = [
           { name: 'conjunction', angle: 0, symbol: '☌', effect: 'intensifies' },
           { name: 'sextile', angle: 60, symbol: '⚹', effect: 'supports' },
@@ -190,7 +184,7 @@ const RightNowSection = ({
       });
     });
     
-    setPersonalTransits(aspects);
+    return aspects;
   }, [activeChart, currentTime]);
 
   // Find current planetary hour - use correct property names (start/end not startTime/endTime)
