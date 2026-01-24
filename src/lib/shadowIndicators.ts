@@ -158,7 +158,7 @@ export function analyzeShadowDynamics(chart1: NatalChart, chart2: NatalChart, ch
         `${plutoMoonOwnership.planet1Owner} creates dramatic emotional scenes to regain control`,
         `${plutoMoonOwnership.planet2Owner} walks on eggshells to avoid ${plutoMoonOwnership.planet1Owner}'s reactions`
       ],
-      healingPath: `${plutoMoonOwnership.planet2Owner} must maintain external support systems and trust their own feelings. ${plutoMoonOwnership.planet1Owner} must commit to therapy addressing control patterns.`,
+      healingPath: `Both can practice naming emotions clearly and checking in with outside perspectives. ${plutoMoonOwnership.planet2Owner} benefits from maintaining trusted friendships; ${plutoMoonOwnership.planet1Owner} benefits from self-reflection on emotional patterns.`,
       planets: ['Pluto', 'Moon'],
       aspect: plutoMoon,
       planetOwnership: plutoMoonOwnership
@@ -174,17 +174,16 @@ export function analyzeShadowDynamics(chart1: NatalChart, chart2: NatalChart, ch
       name: 'Mars-Pluto: Explosive Anger Dynamics',
       category: 'rage',
       riskLevel: marsPluto.type === 'square' ? 'significant' : 'caution',
-      description: `${marsPluto.type} (${marsPluto.orb}° orb): Intense power struggles with potential for explosive confrontations.`,
-      dynamicExplanation: `This combination creates intense sexual chemistry but also volatile anger. Mars wants direct action; Pluto wants total control. Power struggles can escalate into physical or emotional violence. Both may "push each other's buttons" deliberately. Rage can feel intoxicating. Making up after fights can create an addictive cycle.`,
-      healthyExpression: 'Channeled into passionate creative or physical projects together. Both committed to non-violent communication. Intensity expressed sexually with full consent.',
+      description: `${marsPluto.type} (${marsPluto.orb}° orb): Intense energy that can fuel passion or create power struggles.`,
+      dynamicExplanation: `This combination creates intense chemistry but requires conscious handling of anger. Mars represents direct action; Pluto adds depth and intensity. When channeled constructively, this becomes transformative passion; when unconscious, it can lead to power struggles.`,
+      healthyExpression: 'Channeled into passionate creative or physical projects together. Both committed to honest communication. Intensity expressed through shared adventures and mutual support.',
       warningBehaviors: [
-        'Arguments escalate quickly to yelling or physical intimidation',
-        'Either person has broken objects during fights',
-        'Make-up sex replaces actual resolution of conflicts',
-        'Feeling like you "can\'t control" your anger around this person',
-        'Physical grabbing, pushing, or blocking exits during arguments'
+        'Arguments escalate quickly without resolution',
+        'Feeling like conflicts become competitions to "win"',
+        'Difficulty letting go of old grievances',
+        'The relationship feels exhausting rather than energizing'
       ],
-      healingPath: 'Both parties need individual anger management. Establish clear "time-out" protocols. Consider if this relationship is physically safe. Zero tolerance for physical escalation.',
+      healingPath: 'Practice pausing before reacting. Channel the intense energy into shared physical activities or creative projects. Agree on communication ground rules.',
       planets: ['Mars', 'Pluto'],
       aspect: marsPluto
     });

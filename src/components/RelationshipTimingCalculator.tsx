@@ -164,10 +164,10 @@ export const RelationshipTimingCalculator = ({ chart1, chart2 }: RelationshipTim
       }
     }
     
-    // Score each day
+    // Score each day - start with lower base for more variance
     let currentDate = new Date();
     while (currentDate <= endDate) {
-      let score = 50; // Base score
+      let score = 30; // Lower base score for more variance
       const positiveAspects: string[] = [];
       const warnings: string[] = [];
       
@@ -189,10 +189,10 @@ export const RelationshipTimingCalculator = ({ chart1, chart2 }: RelationshipTim
         positiveAspects.push(`☽ Moon in ${moonSign} (favorable)`);
       }
       
-      // Check transits to natal positions
+      // Check transits to natal positions - INCREASED scoring for more variance
       for (const transitPlanet of transitPlanets) {
         const transitDegree = getTransitPlanetPosition(transitPlanet, currentDate);
-        const planetWeight = weights[transitPlanet] || 0;
+        const planetWeight = weights[transitPlanet] || 1;
         
         for (const natal of natalPositions) {
           let diff = Math.abs(transitDegree - natal.degree);
@@ -200,11 +200,15 @@ export const RelationshipTimingCalculator = ({ chart1, chart2 }: RelationshipTim
           
           const aspect = getAspect(diff);
           if (aspect) {
-            const aspectScore = planetWeight * (aspect.quality === 'positive' ? 5 : -3);
+            // Increased base scoring: positive aspects worth more, tight orbs get bonus
+            const orbBonus = diff < 2 ? 3 : diff < 4 ? 2 : 0; // Exact aspects get bonus
+            const baseScore = aspect.quality === 'positive' ? 8 : -5;
+            const aspectScore = (planetWeight * baseScore) + orbBonus;
             score += aspectScore;
             
             if (aspect.quality === 'positive' && planetWeight >= 2) {
-              positiveAspects.push(`${PLANET_SYMBOLS[transitPlanet]} ${transitPlanet} ${aspect.type} ${natal.owner}'s ${PLANET_SYMBOLS[natal.planet]} ${natal.planet}`);
+              const exactLabel = diff < 2 ? ' (EXACT!)' : '';
+              positiveAspects.push(`${PLANET_SYMBOLS[transitPlanet]} ${transitPlanet} ${aspect.type} ${natal.owner}'s ${PLANET_SYMBOLS[natal.planet]} ${natal.planet}${exactLabel}`);
             } else if (aspect.quality === 'challenging' && planetWeight >= 2) {
               warnings.push(`${PLANET_SYMBOLS[transitPlanet]} ${transitPlanet} ${aspect.type} ${natal.owner}'s ${PLANET_SYMBOLS[natal.planet]} ${natal.planet}`);
             }

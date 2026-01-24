@@ -220,9 +220,9 @@ const NODE_SYNASTRY: Record<string, Record<string, { interpretation: string; pas
       lesson: "Learning that emotional security supports rather than hinders growth."
     },
     opposition: {
-      interpretation: "The Moon person's emotional patterns represent the Node person's comfort zone—familiar but potentially limiting. There may be emotional dependency to outgrow.",
-      pastLife: "Emotional patterns from past lives that feel safe but no longer serve growth.",
-      lesson: "Evolve beyond familiar emotional dynamics while honoring the connection."
+      interpretation: "The Moon person provides emotional familiarity and comfort for the Node person. This nurturing connection offers a safe foundation.",
+      pastLife: "Emotional patterns from past connections that feel nurturing and secure.",
+      lesson: "Build on the emotional foundation while continuing to evolve together."
     }
   },
   'NorthNode-Venus': {
@@ -232,9 +232,9 @@ const NODE_SYNASTRY: Record<string, Record<string, { interpretation: string; pas
       lesson: "Learning to receive and give love in alignment with soul growth."
     },
     opposition: {
-      interpretation: "The Venus person represents past-life love patterns. There's strong attraction but a sense that this love style is familiar rather than growth-inducing.",
-      pastLife: "A romantic connection from the past that was comfortable but may have kept both people from evolving.",
-      lesson: "Appreciate the love while also growing beyond old romantic patterns."
+      interpretation: "The Venus person represents familiar love patterns for the Node person. There's natural attraction with an element of comfort and recognition.",
+      pastLife: "A love connection with echoes of the past—familiar energy that may feel like 'coming home.'",
+      lesson: "Appreciate the natural ease while continuing to grow together."
     }
   },
   'NorthNode-Mars': {
