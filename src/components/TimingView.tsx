@@ -18,7 +18,8 @@ import { BiorhythmCard } from '@/components/BiorhythmCard';
 import { BiorhythmForecast } from '@/components/BiorhythmForecast';
 import { SaturnReturnCalculator } from '@/components/SaturnReturnCalculator';
 import { DailySynthesisCard } from '@/components/DailySynthesisCard';
-
+import { BestRomanceDaysCard } from '@/components/BestRomanceDaysCard';
+import { SynastryAnalysisCard } from '@/components/SynastryAnalysisCard';
 interface TimingViewProps {
   userNatalChart: NatalChart | null;
   savedCharts: NatalChart[];
@@ -364,6 +365,24 @@ const RightNowSection = ({
           chartName={activeChart?.name}
         />
       </div>
+
+      {/* Best Romance Days Card */}
+      <div className="mt-6">
+        <BestRomanceDaysCard 
+          birthDate={activeChart ? new Date(activeChart.birthDate) : null}
+          partnerBirthDate={savedCharts.length > 0 && savedCharts[0].id !== activeChart?.id ? new Date(savedCharts[0].birthDate) : null}
+        />
+      </div>
+
+      {/* Synastry Analysis - show when 2+ charts exist */}
+      {savedCharts.length >= 1 && activeChart && (
+        <div className="mt-6">
+          <SynastryAnalysisCard 
+            chart1={activeChart}
+            chart2={savedCharts.find(c => c.id !== activeChart?.id) || null}
+          />
+        </div>
+      )}
 
       {/* Personal Transits to Natal Chart */}
       {activeChart && personalTransits.length > 0 && (
