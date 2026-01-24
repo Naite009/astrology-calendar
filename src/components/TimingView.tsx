@@ -17,6 +17,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { BiorhythmCard } from '@/components/BiorhythmCard';
 import { BiorhythmForecast } from '@/components/BiorhythmForecast';
 import { SaturnReturnCalculator } from '@/components/SaturnReturnCalculator';
+import { DailySynthesisCard } from '@/components/DailySynthesisCard';
 
 interface TimingViewProps {
   userNatalChart: NatalChart | null;
@@ -331,6 +332,17 @@ const RightNowSection = ({
           </p>
         </div>
       </div>
+
+      {/* Daily Power Synthesis Card */}
+      {activeChart && (
+        <div className="mt-6">
+          <DailySynthesisCard 
+            birthDate={new Date(activeChart.birthDate)}
+            targetDate={currentTime}
+            natalChart={activeChart}
+          />
+        </div>
+      )}
 
       {/* Biorhythm Section - Always visible with its own chart selector */}
       <div className="mt-6">

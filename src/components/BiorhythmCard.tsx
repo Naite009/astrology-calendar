@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Activity, AlertTriangle, TrendingUp, TrendingDown, Minus, Heart, Users } from 'lucide-react';
+import { Activity, AlertTriangle, TrendingUp, TrendingDown, Minus, Heart, Users, Layers, Sparkles, ArrowUp, ArrowDown } from 'lucide-react';
 import { 
   getAllBiorhythms, 
   getDayQuality, 
@@ -9,6 +9,7 @@ import {
   getStateLabel,
   CompatibilityResult
 } from '@/lib/biorhythms';
+import { getSecondaryCycles, getRomanceReadiness, SecondaryCycle, RomanceReadiness } from '@/lib/dailySynthesis';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { NatalChart } from '@/hooks/useNatalChart';
@@ -28,13 +29,15 @@ const CircularGauge = ({
   color, 
   icon, 
   label,
-  state 
+  state,
+  direction
 }: { 
   value: number; 
   color: string; 
   icon: string; 
   label: string;
   state: string;
+  direction?: 'rising' | 'falling' | 'peak' | 'trough';
 }) => {
   // Normalize value from -100/+100 to 0-100 for the gauge
   const normalizedValue = (value + 100) / 2;
@@ -91,6 +94,14 @@ const CircularGauge = ({
             {isPeak ? 'PEAK' : 'CRIT'}
           </div>
         )}
+        
+        {/* Direction indicator */}
+        {direction && !isPeak && !isCritical && (
+          <div className="absolute -bottom-1 right-0 text-xs text-muted-foreground">
+            {direction === 'rising' && <ArrowUp size={14} className="text-green-500" />}
+            {direction === 'falling' && <ArrowDown size={14} className="text-red-400" />}
+          </div>
+        )}
       </div>
       
       <div className="mt-2 text-center">
@@ -103,6 +114,155 @@ const CircularGauge = ({
           {state === 'critical' && <AlertTriangle size={12} className="text-yellow-500" />}
           {getStateLabel(state as any)}
         </div>
+      </div>
+    </div>
+  );
+};
+
+// Smaller gauge for secondary cycles
+const SecondaryGauge = ({ 
+  cycle 
+}: { 
+  cycle: SecondaryCycle;
+}) => {
+  const normalizedValue = (cycle.value + 100) / 2;
+  const circumference = 2 * Math.PI * 20;
+  const strokeDashoffset = circumference - (normalizedValue / 100) * circumference;
+  const isPositive = cycle.value >= 0;
+  
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="flex flex-col items-center cursor-help">
+          <div className="relative w-12 h-12">
+            <svg className="w-12 h-12 transform -rotate-90">
+              <circle
+                cx="24"
+                cy="24"
+                r="20"
+                stroke="currentColor"
+                strokeWidth="4"
+                fill="none"
+                className="text-secondary"
+              />
+              <circle
+                cx="24"
+                cy="24"
+                r="20"
+                stroke={cycle.color}
+                strokeWidth="4"
+                fill="none"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+                className="transition-all duration-500"
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-sm">{cycle.icon}</span>
+            </div>
+          </div>
+          <div className="mt-1 text-center">
+            <div className="text-[10px] font-medium">{cycle.name}</div>
+            <div className={`text-[10px] font-bold ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+              {cycle.value > 0 ? '+' : ''}{cycle.value}%
+            </div>
+          </div>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-[200px]">
+        <p className="font-medium mb-1">{cycle.name}</p>
+        <p className="text-xs text-muted-foreground">{cycle.description}</p>
+        <p className="text-xs mt-1">Components: {cycle.components.join(' + ')}</p>
+      </TooltipContent>
+    </Tooltip>
+  );
+};
+
+// Romance Readiness View (Solo)
+const RomanceReadinessView = ({ 
+  romanceReadiness 
+}: { 
+  romanceReadiness: RomanceReadiness;
+}) => {
+  const getScoreColor = (value: number) => {
+    if (value >= 60) return 'text-pink-500';
+    if (value >= 30) return 'text-amber-500';
+    if (value >= 0) return 'text-muted-foreground';
+    return 'text-blue-400';
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 mb-2">
+        <Heart size={16} className="text-pink-500" fill="currentColor" />
+        <span className="text-xs uppercase tracking-widest text-muted-foreground">
+          Romance Readiness
+        </span>
+      </div>
+      
+      {/* Main romance score */}
+      <div className="text-center">
+        <div className={`text-3xl font-bold ${getScoreColor(romanceReadiness.overallEnergy)}`}>
+          {romanceReadiness.overallEnergy > 0 ? '+' : ''}{romanceReadiness.overallEnergy}%
+        </div>
+        <div className="text-xs text-muted-foreground">Overall Romantic Energy</div>
+      </div>
+      
+      {/* Romance gauges */}
+      <div className="grid grid-cols-4 gap-2">
+        <div className="text-center p-2 rounded bg-secondary/50">
+          <div className="text-lg">🔥</div>
+          <div className={`text-sm font-bold ${getScoreColor(romanceReadiness.passionScore)}`}>
+            {romanceReadiness.passionScore}%
+          </div>
+          <div className="text-[10px] text-muted-foreground">Passion</div>
+        </div>
+        <div className="text-center p-2 rounded bg-secondary/50">
+          <div className="text-lg">💗</div>
+          <div className={`text-sm font-bold ${getScoreColor(romanceReadiness.heartOpenness)}`}>
+            {romanceReadiness.heartOpenness}%
+          </div>
+          <div className="text-[10px] text-muted-foreground">Heart</div>
+        </div>
+        <div className="text-center p-2 rounded bg-secondary/50">
+          <div className="text-lg">✨</div>
+          <div className={`text-sm font-bold ${getScoreColor(romanceReadiness.magnetism)}`}>
+            {romanceReadiness.magnetism}%
+          </div>
+          <div className="text-[10px] text-muted-foreground">Magnetism</div>
+        </div>
+        <div className="text-center p-2 rounded bg-secondary/50">
+          <div className="text-lg">🔮</div>
+          <div className={`text-sm font-bold ${getScoreColor(romanceReadiness.intuition)}`}>
+            {romanceReadiness.intuition}%
+          </div>
+          <div className="text-[10px] text-muted-foreground">Intuition</div>
+        </div>
+      </div>
+      
+      {/* Best activities */}
+      <div className="pt-2">
+        <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
+          Best For Today
+        </div>
+        <div className="flex flex-wrap gap-1">
+          {romanceReadiness.bestActivities.slice(0, 4).map((activity, i) => (
+            <span 
+              key={i}
+              className="text-[10px] px-1.5 py-0.5 bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 rounded"
+            >
+              {activity}
+            </span>
+          ))}
+        </div>
+      </div>
+      
+      {/* Recommendation */}
+      <div className="pt-3 border-t border-border">
+        <p className="text-sm text-center text-muted-foreground">
+          {romanceReadiness.recommendation}
+        </p>
       </div>
     </div>
   );
@@ -274,11 +434,22 @@ export const BiorhythmCard = ({
   onChartChange,
   chartName = 'You'
 }: BiorhythmCardProps) => {
-  const [mode, setMode] = useState<'personal' | 'compatibility'>('personal');
+  const [mode, setMode] = useState<'personal' | 'romance' | 'compatibility'>('personal');
+  const [cycleView, setCycleView] = useState<'primary' | 'secondary'>('primary');
   const [compareChartId, setCompareChartId] = useState<string>('');
   
   const biorhythms = useMemo(() => 
-    birthDate ? getAllBiorhythms(birthDate, targetDate) : [], 
+    birthDate ? getAllBiorhythms(birthDate, targetDate, true) : [], 
+    [birthDate, targetDate]
+  );
+  
+  const secondaryCycles = useMemo(() =>
+    birthDate ? getSecondaryCycles(birthDate, targetDate) : [],
+    [birthDate, targetDate]
+  );
+  
+  const romanceReadiness = useMemo(() =>
+    birthDate ? getRomanceReadiness(birthDate, targetDate) : null,
     [birthDate, targetDate]
   );
   
@@ -302,6 +473,11 @@ export const BiorhythmCard = ({
   
   // Filter out current chart from comparison options
   const comparisonOptions = savedCharts.filter(c => c.id !== selectedChartId);
+  
+  // Only show 3 primary cycles (not intuitive)
+  const primaryBiorhythms = biorhythms.filter(b => 
+    b.cycle === 'Physical' || b.cycle === 'Emotional' || b.cycle === 'Intellectual'
+  );
   
   return (
     <TooltipProvider>
@@ -332,8 +508,8 @@ export const BiorhythmCard = ({
               </Select>
             )}
             
-            {/* Mode toggle - Only show when we have a chart selected AND comparison options */}
-            {birthDate && comparisonOptions.length > 0 && (
+            {/* Mode toggle - Personal / Solo Romance / Compatibility */}
+            {birthDate && (
               <div className="flex rounded-md border border-border overflow-hidden">
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -353,18 +529,35 @@ export const BiorhythmCard = ({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
-                      onClick={() => setMode('compatibility')}
+                      onClick={() => setMode('romance')}
                       className={`px-2 py-1 text-[10px] transition-colors ${
-                        mode === 'compatibility' 
+                        mode === 'romance' 
                           ? 'bg-pink-500 text-white' 
                           : 'bg-secondary hover:bg-secondary/80'
                       }`}
                     >
-                      <Heart size={12} />
+                      <Sparkles size={12} />
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent>Romance Compatibility</TooltipContent>
+                  <TooltipContent>Solo Romance Readiness</TooltipContent>
                 </Tooltip>
+                {comparisonOptions.length > 0 && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => setMode('compatibility')}
+                        className={`px-2 py-1 text-[10px] transition-colors ${
+                          mode === 'compatibility' 
+                            ? 'bg-pink-600 text-white' 
+                            : 'bg-secondary hover:bg-secondary/80'
+                        }`}
+                      >
+                        <Heart size={12} />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>Partner Compatibility</TooltipContent>
+                  </Tooltip>
+                )}
               </div>
             )}
           </div>
@@ -378,6 +571,12 @@ export const BiorhythmCard = ({
           </div>
         )}
         
+        {/* Solo Romance Mode */}
+        {birthDate && mode === 'romance' && romanceReadiness && (
+          <RomanceReadinessView romanceReadiness={romanceReadiness} />
+        )}
+        
+        {/* Compatibility Mode */}
         {birthDate && mode === 'compatibility' ? (
           <>
             {/* Comparison chart selector */}
@@ -409,10 +608,45 @@ export const BiorhythmCard = ({
               </div>
             )}
           </>
-        ) : birthDate && dayQuality ? (
+        ) : birthDate && mode === 'personal' && dayQuality ? (
           <>
-            {/* Day quality badge */}
-            <div className="flex justify-end mb-2">
+            {/* Cycle view toggle and day quality badge */}
+            <div className="flex justify-between items-center mb-3">
+              {/* Primary/Secondary toggle */}
+              <div className="flex rounded-md border border-border overflow-hidden">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setCycleView('primary')}
+                      className={`px-2 py-1 text-[10px] transition-colors ${
+                        cycleView === 'primary' 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'bg-secondary hover:bg-secondary/80'
+                      }`}
+                    >
+                      Primary
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>Physical, Emotional, Intellectual</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setCycleView('secondary')}
+                      className={`px-2 py-1 text-[10px] transition-colors ${
+                        cycleView === 'secondary' 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'bg-secondary hover:bg-secondary/80'
+                      }`}
+                    >
+                      <Layers size={12} className="inline mr-1" />
+                      Secondary
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>Mastery, Passion, Wisdom, Awareness, Aesthetic</TooltipContent>
+                </Tooltip>
+              </div>
+              
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className={`px-2 py-1 rounded text-xs font-medium ${
@@ -433,33 +667,52 @@ export const BiorhythmCard = ({
               </Tooltip>
             </div>
             
-            {/* Circular Gauges */}
-            <div className="flex justify-around items-start">
-              {biorhythms.map((bio) => {
-                const cycleKey = bio.cycle.toLowerCase();
-                const cycleInfo = BIORHYTHM_CYCLES[cycleKey];
-                
-                return (
-                  <Tooltip key={bio.cycle}>
-                    <TooltipTrigger asChild>
-                      <div className="cursor-help">
-                        <CircularGauge
-                          value={bio.value}
-                          color={bio.color}
-                          icon={bio.icon}
-                          label={bio.cycle}
-                          state={bio.state}
-                        />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="max-w-[200px]">
-                      <p className="font-medium mb-1">{bio.cycle} Cycle ({BIORHYTHM_CYCLES[cycleKey].length} days)</p>
-                      <p className="text-xs text-muted-foreground">{cycleInfo?.description}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                );
-              })}
-            </div>
+            {/* Primary Cycles */}
+            {cycleView === 'primary' && (
+              <div className="flex justify-around items-start">
+                {primaryBiorhythms.map((bio) => {
+                  const cycleKey = bio.cycle.toLowerCase();
+                  const cycleInfo = BIORHYTHM_CYCLES[cycleKey];
+                  
+                  return (
+                    <Tooltip key={bio.cycle}>
+                      <TooltipTrigger asChild>
+                        <div className="cursor-help">
+                          <CircularGauge
+                            value={bio.value}
+                            color={bio.color}
+                            icon={bio.icon}
+                            label={bio.cycle}
+                            state={bio.state}
+                            direction={bio.direction}
+                          />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="max-w-[200px]">
+                        <p className="font-medium mb-1">{bio.cycle} Cycle ({BIORHYTHM_CYCLES[cycleKey].length} days)</p>
+                        <p className="text-xs text-muted-foreground">{cycleInfo?.description}</p>
+                        {bio.direction && (
+                          <p className="text-xs mt-1">
+                            {bio.direction === 'rising' ? '↗ Rising toward peak' : 
+                             bio.direction === 'falling' ? '↘ Falling toward trough' :
+                             bio.direction === 'peak' ? '⭐ At peak' : '💫 At trough'}
+                          </p>
+                        )}
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                })}
+              </div>
+            )}
+            
+            {/* Secondary Cycles */}
+            {cycleView === 'secondary' && (
+              <div className="flex justify-around items-start flex-wrap gap-2">
+                {secondaryCycles.map((cycle) => (
+                  <SecondaryGauge key={cycle.name} cycle={cycle} />
+                ))}
+              </div>
+            )}
             
             {/* Summary message */}
             <div className="mt-4 pt-3 border-t border-border">
