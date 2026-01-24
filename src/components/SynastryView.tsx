@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
-import { Heart, Users, Briefcase, GraduationCap, Sparkles, Palette, AlertTriangle, Flame, Moon, ChevronDown, ChevronUp, Info, Home, HelpCircle, Handshake, Lightbulb } from 'lucide-react';
+import { Heart, Users, Briefcase, GraduationCap, Sparkles, Palette, AlertTriangle, Flame, Moon, ChevronDown, ChevronUp, Info, Home, HelpCircle, Handshake, Lightbulb, CheckCircle2, XCircle, Circle } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { generateAdvancedSynastryReport, RelationshipTypeScore, HouseOverlay } from '@/lib/synastryAdvanced';
 import { calculateCompositeChart, calculateDavisonChart, getPlanetSymbol } from '@/lib/compositeChart';
+import { analyzeRelationshipFocus, FocusAnalysis, FocusIndicator } from '@/lib/relationshipFocusAnalysis';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -12,6 +13,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { SynastryWheelSimple } from './SynastryWheelSimple';
+import { RelationshipChartWheel } from './RelationshipChartWheel';
 import { format } from 'date-fns';
 
 interface SynastryViewProps {
@@ -92,6 +94,57 @@ const HouseOverlayCard = ({ overlay }: { overlay: HouseOverlay }) => {
   );
 };
 
+// Focus Analysis Display Component
+const FocusAnalysisCard = ({ analysis }: { analysis: FocusAnalysis }) => {
+  const [expanded, setExpanded] = useState(false);
+  
+  return (
+    <div className="p-4 rounded-xl border bg-card space-y-4">
+      <div className="flex items-center justify-between">
+        <h4 className="font-semibold">{analysis.title}</h4>
+        <div className="text-2xl font-bold text-primary">{analysis.overallStrength}%</div>
+      </div>
+      <Progress value={analysis.overallStrength} className="h-2" />
+      <p className="text-sm text-muted-foreground">{analysis.summary}</p>
+      
+      <Collapsible open={expanded} onOpenChange={setExpanded}>
+        <CollapsibleTrigger className="text-sm font-medium text-primary flex items-center gap-1">
+          {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          {expanded ? 'Hide' : 'Show'} detailed indicators
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-4 space-y-3">
+          {analysis.indicators.map((ind, i) => (
+            <div key={i} className="p-3 rounded-lg bg-secondary/30 border">
+              <div className="flex items-center gap-2 mb-1">
+                {ind.strength === 'strong' ? <CheckCircle2 size={14} className="text-green-500" /> :
+                 ind.strength === 'moderate' ? <Circle size={14} className="text-amber-500" /> :
+                 ind.strength === 'weak' ? <Circle size={14} className="text-muted-foreground" /> :
+                 <XCircle size={14} className="text-muted-foreground/50" />}
+                <span className="font-medium text-sm">{ind.name}</span>
+                {ind.aspect && (
+                  <Badge variant="outline" className="text-xs ml-auto">
+                    {ind.aspect.type} ({ind.aspect.orb}°)
+                  </Badge>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">{ind.interpretation}</p>
+            </div>
+          ))}
+          
+          {analysis.recommendations.length > 0 && (
+            <div className="pt-3 border-t">
+              <h5 className="text-sm font-medium mb-2">Recommendations</h5>
+              <ul className="text-xs text-muted-foreground space-y-1">
+                {analysis.recommendations.map((r, i) => <li key={i}>• {r}</li>)}
+              </ul>
+            </div>
+          )}
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
+  );
+};
+
 // Composite/Davison Chart Display Component
 const RelationshipChartDisplay = ({ 
   chart1, 
@@ -116,6 +169,15 @@ const RelationshipChartDisplay = ({
   
   return (
     <div className="space-y-6">
+      {/* Chart Wheel Visualization */}
+      <div className="flex justify-center">
+        <RelationshipChartWheel 
+          planets={planets} 
+          chartName={method === 'composite' ? 'Composite Chart' : 'Davison Chart'} 
+          size={350} 
+        />
+      </div>
+      
       {/* Davison Date Info */}
       {method === 'davison' && 'averagedDate' in chartData && chartData.averagedDate instanceof Date && (
         <div className="p-4 rounded-lg bg-secondary/50 border">
@@ -123,10 +185,17 @@ const RelationshipChartDisplay = ({
             <strong>Relationship "Birth Date":</strong> {format(chartData.averagedDate, 'MMMM d, yyyy')}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            This is the midpoint in time between both birth dates, representing when the "relationship entity" was born.
+            Davison calculates actual planetary positions for this date - different from Composite's midpoint method.
           </p>
         </div>
       )}
+      
+      {/* Method Explanation */}
+      <div className="p-3 rounded-lg bg-muted/50 text-center text-sm">
+        {method === 'composite' 
+          ? '📐 Composite uses mathematical midpoints between each planet pair'
+          : '📅 Davison projects planets to the midpoint date using actual planetary motion'}
+      </div>
       
       {/* Key Planet Signs */}
       <div className="flex flex-wrap gap-2 justify-center">
@@ -261,6 +330,12 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
     );
   }, [report, relationshipFocus]);
   
+  // Get detailed focus analysis
+  const focusAnalysis = useMemo(() => {
+    if (!chart1 || !chart2 || relationshipFocus === 'all') return null;
+    return analyzeRelationshipFocus(chart1, chart2, relationshipFocus);
+  }, [chart1, chart2, relationshipFocus]);
+  
   // Get focus-specific insights
   const focusInsights = useMemo(() => {
     if (!report || relationshipFocus === 'all') return null;
@@ -378,32 +453,9 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
             </div>
           </div>
           
-          {/* Focus-specific Insights */}
-          {focusInsights && (
-            <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
-              <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
-                <Lightbulb size={16} className="text-primary" />
-                {focusInsights.title} - Key Indicators
-              </h4>
-              <div className="grid md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-1">What to look for:</p>
-                  <ul className="space-y-0.5">
-                    {focusInsights.aspects.map((a, i) => (
-                      <li key={i} className="text-muted-foreground">• {a}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-1">Tips:</p>
-                  <ul className="space-y-0.5">
-                    {focusInsights.tips.map((t, i) => (
-                      <li key={i} className="text-muted-foreground">• {t}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
+          {/* Detailed Focus Analysis */}
+          {focusAnalysis && (
+            <FocusAnalysisCard analysis={focusAnalysis} />
           )}
           
           {/* Chart Type Tabs */}

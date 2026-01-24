@@ -31,7 +31,8 @@ const ZODIAC_SYMBOLS = ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', 
 const PLANET_SYMBOLS: Record<string, string> = {
   Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀', Mars: '♂',
   Jupiter: '♃', Saturn: '♄', Uranus: '♅', Neptune: '♆', Pluto: '♇',
-  NorthNode: '☊', SouthNode: '☋', Chiron: '⚷', Ascendant: 'AC', Midheaven: 'MC'
+  NorthNode: '☊', SouthNode: '☋', Chiron: '⚷', Ascendant: 'AC', Midheaven: 'MC',
+  Juno: '⚵', Ceres: '⚳', Pallas: '⚴', Vesta: '🜨', Lilith: '⚸', Eris: '⯰'
 };
 
 const ASPECT_NAMES: Record<string, string> = {
@@ -180,7 +181,11 @@ export const SynastryWheelSimple = ({ chart1, chart2, size = 500 }: SynastryWhee
   }, [activeHouseChart]);
   
   // Planets to show including North Node
-  const PLANETS_TO_SHOW = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'NorthNode', 'Chiron'];
+  // Include South Node, goddess asteroids (Juno, Ceres, Pallas, Vesta) for relationship context
+  const PLANETS_TO_SHOW = [
+    'Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto',
+    'NorthNode', 'SouthNode', 'Chiron', 'Juno', 'Ceres', 'Pallas', 'Vesta', 'Lilith', 'Eris'
+  ];
   
   // Calculate planet positions for both charts
   const chart1Positions = useMemo(() => {
