@@ -188,11 +188,11 @@ const LivePlanetaryPositions = ({ userLocation }: { userLocation?: string }) => 
     isRetrograde: boolean;
   } | null>(null);
   
-  // Update time every second
+  // Update time every 30 seconds (was 1 second - caused performance issues)
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
-    }, 1000);
+    }, 30000);
     return () => clearInterval(timer);
   }, []);
 

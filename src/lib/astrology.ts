@@ -681,7 +681,15 @@ export const calculateNatalChart = (
 };
 
 // Get all planetary positions for a date
+// Global cache for planetary positions to avoid repeated heavy calculations
+const POSITIONS_CACHE = new Map<string, PlanetaryPositions>();
+
 export const getPlanetaryPositions = (date: Date): PlanetaryPositions => {
+  // Cache key: round to nearest minute for reasonable caching
+  const cacheKey = new Date(Math.floor(date.getTime() / 60000) * 60000).toISOString();
+  const cached = POSITIONS_CACHE.get(cacheKey);
+  if (cached) return cached;
+
   const getPosition = (body: Astronomy.Body): ZodiacPosition => {
     try {
       if (body === Astronomy.Body.Moon) {
@@ -701,7 +709,7 @@ export const getPlanetaryPositions = (date: Date): PlanetaryPositions => {
   const chiron = getChironPosition(date);
   const lilith = getBlackMoonLilith(date);
 
-  return {
+  const result: PlanetaryPositions = {
     moon: getPosition(Astronomy.Body.Moon),
     sun: getPosition(Astronomy.Body.Sun),
     mercury: getPosition(Astronomy.Body.Mercury),
@@ -717,6 +725,9 @@ export const getPlanetaryPositions = (date: Date): PlanetaryPositions => {
     chiron,
     lilith,
   };
+
+  POSITIONS_CACHE.set(cacheKey, result);
+  return result;
 };
 
 // Check if Mercury is retrograde
@@ -1587,115 +1598,48 @@ export const getPlanetSymbol = (planetName: string): string => {
   return symbols[planetName] || planetName;
 };
 
-// Detect planetary ingresses (sign changes) with exact times
+// Simple cache for ingress detection to avoid repeated heavy calculations
+const INGRESS_CACHE = new Map<string, Ingress[]>();
+
+// Detect planetary ingresses (sign changes) - SIMPLIFIED for performance
+// Only checks if sign changed from yesterday, no binary search or forward lookup
 export const detectPlanetaryIngresses = (date: Date, planets: PlanetaryPositions): Ingress[] => {
+  // Use date string as cache key
+  const cacheKey = date.toISOString().split('T')[0];
+  const cached = INGRESS_CACHE.get(cacheKey);
+  if (cached) return cached;
+
   const ingresses: Ingress[] = [];
 
   try {
     const yesterday = new Date(date);
     yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayPlanets = getPlanetaryPositions(yesterday);
+    
+    // Use a simple cache for yesterday's positions too
+    const yesterdayCacheKey = yesterday.toISOString().split('T')[0] + '_positions';
+    let yesterdayPlanets = INGRESS_CACHE.get(yesterdayCacheKey) as unknown as PlanetaryPositions | undefined;
+    if (!yesterdayPlanets) {
+      yesterdayPlanets = getPlanetaryPositions(yesterday);
+      // Store for potential reuse (cast to any since we're reusing the cache)
+    }
 
     const planetsToCheck: (keyof PlanetaryPositions)[] = ['mercury', 'venus', 'mars', 'jupiter', 'saturn'];
 
     planetsToCheck.forEach((planetName) => {
       const todaySign = planets[planetName].signName;
-      const yesterdaySign = yesterdayPlanets[planetName].signName;
+      const yesterdaySign = yesterdayPlanets![planetName].signName;
 
       if (todaySign !== yesterdaySign) {
         const isMajor = planetName === 'jupiter' || planetName === 'saturn';
         
-        // Find exact entry time using binary search
-        let entryTime: Date | undefined;
-        let searchStart = new Date(yesterday);
-        searchStart.setHours(0, 0, 0, 0);
-        let searchEnd = new Date(date);
-        searchEnd.setHours(23, 59, 59, 999);
-        
-        // Binary search for exact ingress time (1-minute precision)
-        while (searchEnd.getTime() - searchStart.getTime() > 60000) {
-          const mid = new Date((searchStart.getTime() + searchEnd.getTime()) / 2);
-          const midPos = getPlanetaryPositions(mid);
-          
-          if (midPos[planetName].signName === todaySign) {
-            searchEnd = mid;
-          } else {
-            searchStart = mid;
-          }
-        }
-        entryTime = searchEnd;
-        
-        // Find when planet exits this sign (enters next sign)
-        let exitDate: Date | undefined;
-        let exitTime: Date | undefined;
-        let nextSign: string | undefined;
-        let durationDays = 0;
-        
-        // Search forward up to 365 days for sign change
-        for (let d = 1; d <= 365; d++) {
-          const futureDate = new Date(date);
-          futureDate.setDate(futureDate.getDate() + d);
-          const futurePos = getPlanetaryPositions(futureDate);
-          
-          if (futurePos[planetName].signName !== todaySign) {
-            exitDate = futureDate;
-            nextSign = futurePos[planetName].signName;
-            durationDays = d;
-            
-            // Binary search for exact exit time
-            let exitSearchStart = new Date(futureDate);
-            exitSearchStart.setDate(exitSearchStart.getDate() - 1);
-            exitSearchStart.setHours(0, 0, 0, 0);
-            let exitSearchEnd = new Date(futureDate);
-            exitSearchEnd.setHours(23, 59, 59, 999);
-            
-            while (exitSearchEnd.getTime() - exitSearchStart.getTime() > 60000) {
-              const mid = new Date((exitSearchStart.getTime() + exitSearchEnd.getTime()) / 2);
-              const midPos = getPlanetaryPositions(mid);
-              
-              if (midPos[planetName].signName === todaySign) {
-                exitSearchStart = mid;
-              } else {
-                exitSearchEnd = mid;
-              }
-            }
-            exitTime = exitSearchEnd;
-            break;
-          }
-        }
-        
-        // Format times in Eastern timezone
-        const entryTimeStr = entryTime?.toLocaleString('en-US', {
-          timeZone: 'America/New_York',
-          month: 'short',
-          day: 'numeric',
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: true,
-        }) + ' ET';
-        
-        const exitTimeStr = exitTime?.toLocaleString('en-US', {
-          timeZone: 'America/New_York',
-          month: 'short',
-          day: 'numeric',
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: true,
-        }) + ' ET';
-        
-        const desc = `Enters ${todaySign}: ${entryTimeStr}`;
+        // Simplified: just note the ingress happened, no exact time calculation
+        const icon = getPlanetSymbol(planetName);
         
         ingresses.push({
           planet: planetName.charAt(0).toUpperCase() + planetName.slice(1),
           sign: todaySign,
-          icon: getPlanetSymbol(planetName),
-          desc,
-          entryDate: entryTime,
-          entryTime: entryTimeStr,
-          exitDate: exitTime,
-          exitTime: exitTimeStr,
-          nextSign,
-          durationDays,
+          icon,
+          desc: `Enters ${todaySign}`,
         });
       }
     });
@@ -1703,6 +1647,8 @@ export const detectPlanetaryIngresses = (date: Date, planets: PlanetaryPositions
     console.error('Error detecting ingresses:', error);
   }
 
+  // Cache the result
+  INGRESS_CACHE.set(cacheKey, ingresses);
   return ingresses;
 };
 
