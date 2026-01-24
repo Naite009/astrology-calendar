@@ -195,20 +195,19 @@ export function analyzeShadowDynamics(chart1: NatalChart, chart2: NatalChart, ch
   const neptuneSun = neptuneSun1 || neptuneSun2;
   if (neptuneSun && (neptuneSun.type === 'square' || neptuneSun.type === 'opposition')) {
     indicators.push({
-      name: 'Neptune-Sun: Reality Confusion',
+      name: 'Neptune-Sun: Dreamy Connection',
       category: 'manipulation',
       riskLevel: 'caution',
-      description: `${neptuneSun.type} (${neptuneSun.orb}° orb): Potential for idealization, deception, or reality distortion.`,
-      dynamicExplanation: `Neptune casts a fog over Sun's clarity. The Sun person may not see the Neptune person clearly—either idealizing them or being deceived by them. Neptune may lie (to themselves or Sun) without malicious intent, but the effect is the same: Sun loses touch with reality in this relationship. The Sun person may question their own perceptions.`,
+      description: `${neptuneSun.type} (${neptuneSun.orb}° orb): Strong imagination and idealism in the connection.`,
+      dynamicExplanation: `Neptune brings a dreamy, imaginative quality to how the Sun person is perceived. This can create beautiful romanticization but may also blur practical clarity. Both partners may see each other through rose-colored glasses initially.`,
       healthyExpression: 'Spiritual connection and creative inspiration. Neptune helps Sun access imagination and compassion. Sun helps Neptune ground their dreams in reality.',
       warningBehaviors: [
-        'Sun discovers Neptune has been dishonest about important matters',
-        'Sun feels confused about what is real in the relationship',
-        'Neptune makes promises they don\'t keep',
-        'Sun\'s friends express concern about the relationship',
-        'Sun ignores red flags because "love is blind"'
+        'Expectations feel unclear or constantly shifting',
+        'Difficulty having practical conversations about the future',
+        'One person feels confused about where they stand',
+        'Promises made are hard to pin down or follow through on'
       ],
-      healingPath: 'Sun must maintain reality checks with trusted outside sources. Neptune must commit to radical honesty. Document important conversations if gaslighting is suspected.',
+      healingPath: 'Practice clear, direct communication about expectations. Check in regularly about practical matters. Balance dreaming together with grounded planning.',
       planets: ['Neptune', 'Sun'],
       aspect: neptuneSun
     });
@@ -220,20 +219,19 @@ export function analyzeShadowDynamics(chart1: NatalChart, chart2: NatalChart, ch
   const neptuneMoon = neptuneMoon1 || neptuneMoon2;
   if (neptuneMoon && (neptuneMoon.type === 'square' || neptuneMoon.type === 'opposition' || neptuneMoon.type === 'conjunction')) {
     indicators.push({
-      name: 'Neptune-Moon: Victim-Savior Dynamic',
+      name: 'Neptune-Moon: Deep Empathy',
       category: 'codependency',
       riskLevel: 'caution',
-      description: `${neptuneMoon.type} (${neptuneMoon.orb}° orb): Risk of codependent "rescuer" dynamics and emotional boundary confusion.`,
-      dynamicExplanation: `This creates deep compassion but also confusion about where one person ends and the other begins. One person may take the "savior" role while the other plays "victim." The Moon person may absorb Neptune's pain as their own. Neptune may drain Moon's emotional resources. Both may enable unhealthy behaviors in the name of "unconditional love."`,
+      description: `${neptuneMoon.type} (${neptuneMoon.orb}° orb): Profound emotional sensitivity between partners.`,
+      dynamicExplanation: `This creates exceptional empathy and emotional attunement. Both partners feel each other's emotions deeply, sometimes blurring the lines between whose feelings are whose. This beautiful sensitivity requires healthy boundaries to remain balanced.`,
       healthyExpression: 'Profound spiritual-emotional connection. Both maintain separate identities while offering genuine compassion. Neither needs to be "fixed" by the other.',
       warningBehaviors: [
-        'One person constantly "rescues" the other from problems they create',
-        'Moon feels responsible for Neptune\'s happiness/sobriety/success',
-        'Neptune\'s crises always take priority over Moon\'s needs',
-        'Moon can\'t tell the difference between their feelings and Neptune\'s',
-        'Either person uses illness or crisis to avoid responsibility'
+        'Difficulty distinguishing your emotions from your partner\'s',
+        'One person consistently prioritizes the other\'s needs over their own',
+        'Feeling responsible for your partner\'s emotional state',
+        'Losing touch with your own wants and preferences'
       ],
-      healingPath: 'Establish individual therapy for both parties. Practice healthy detachment with love. Moon must learn that enabling is not helping.',
+      healingPath: 'Practice identifying and naming your own emotions separately. Maintain friendships and activities outside the relationship. Remember that supporting someone is different from fixing them.',
       planets: ['Neptune', 'Moon'],
       aspect: neptuneMoon
     });
@@ -245,20 +243,19 @@ export function analyzeShadowDynamics(chart1: NatalChart, chart2: NatalChart, ch
   const saturnSun = saturnSun1 || saturnSun2;
   if (saturnSun && (saturnSun.type === 'square' || saturnSun.type === 'opposition')) {
     indicators.push({
-      name: 'Saturn-Sun: Critical Suppression',
+      name: 'Saturn-Sun: Structure & Growth',
       category: 'power-control',
       riskLevel: 'watch',
-      description: `${saturnSun.type} (${saturnSun.orb}° orb): Saturn's criticism may diminish Sun's confidence and self-expression.`,
-      dynamicExplanation: `Saturn sees Sun's flaws clearly and may constantly point them out "for their own good." Over time, the Sun person may feel they can never meet Saturn's standards. Saturn may restrict Sun's freedom, ambitions, or self-expression through disapproval. Sun may feel like a child being judged by a parent.`,
+      description: `${saturnSun.type} (${saturnSun.orb}° orb): One partner brings structure and high standards to the relationship.`,
+      dynamicExplanation: `Saturn naturally sees areas for improvement and may offer feedback that feels critical. When balanced, this helps Sun grow and mature. When unbalanced, Sun may feel they can never measure up to Saturn's expectations.`,
       healthyExpression: 'Saturn provides structure and wisdom that helps Sun mature. Sun brings warmth and joy that softens Saturn. Mutual respect despite different approaches.',
       warningBehaviors: [
-        'Saturn frequently criticizes Sun\'s choices, appearance, or abilities',
-        'Sun feels less confident than before the relationship',
-        'Saturn controls finances or "practical" decisions unilaterally',
-        'Sun feels they need permission to pursue their goals',
-        'Saturn withholds approval as a form of control'
+        'Feedback feels more critical than supportive',
+        'One partner feels they need approval before making decisions',
+        'The relationship has an unequal teacher/student dynamic',
+        'One person\'s standards overshadow the other\'s preferences'
       ],
-      healingPath: 'Saturn must examine if criticism stems from genuine care or need for control. Sun must maintain sources of external validation and not depend solely on Saturn\'s approval.',
+      healingPath: 'Practice offering feedback as suggestions rather than corrections. Celebrate each other\'s successes regularly. Ensure both partners have equal voice in decisions.',
       planets: ['Saturn', 'Sun'],
       aspect: saturnSun
     });
@@ -270,20 +267,19 @@ export function analyzeShadowDynamics(chart1: NatalChart, chart2: NatalChart, ch
   const saturnVenus = saturnVenus1 || saturnVenus2;
   if (saturnVenus && (saturnVenus.type === 'square' || saturnVenus.type === 'opposition')) {
     indicators.push({
-      name: 'Saturn-Venus: Love as Obligation',
+      name: 'Saturn-Venus: Committed Love',
       category: 'boundary',
       riskLevel: 'watch',
-      description: `${saturnVenus.type} (${saturnVenus.orb}° orb): Affection may be conditional or withheld as punishment.`,
-      dynamicExplanation: `Venus seeks love and appreciation; Saturn may withhold it until "earned." Love becomes transactional—Saturn gives affection as reward for good behavior. Venus may feel they can never be lovable enough. Saturn may view Venus's needs as frivolous or weak.`,
+      description: `${saturnVenus.type} (${saturnVenus.orb}° orb): Love expressed through dedication and loyalty.`,
+      dynamicExplanation: `Saturn brings seriousness and commitment to Venus's desire for love. This can create enduring, stable partnerships where love is demonstrated through actions and reliability. The challenge is ensuring affection flows freely rather than feeling earned.`,
       healthyExpression: 'Committed, stable love that stands the test of time. Saturn shows love through loyalty and dedication. Venus helps Saturn express affection more freely.',
       warningBehaviors: [
-        'Saturn withdraws affection as punishment',
-        'Venus feels they must "earn" love through sacrifice',
-        'Saturn dismisses Venus\'s emotional or romantic needs',
-        'Love feels like a duty rather than a joy',
-        'Venus stays out of obligation rather than genuine desire'
+        'Affection feels conditional on performance or behavior',
+        'One partner feels they must prove their worthiness for love',
+        'Romance and playfulness get lost in practicality',
+        'Love feels more like duty than joy'
       ],
-      healingPath: 'Saturn must learn that love is not a reward for good behavior. Venus must voice needs directly and not accept crumbs. Both examine family patterns around conditional love.',
+      healingPath: 'Schedule regular quality time for fun and romance. Express appreciation verbally and often. Remember that love given freely strengthens the bond more than love that must be earned.',
       planets: ['Saturn', 'Venus'],
       aspect: saturnVenus
     });
@@ -295,20 +291,19 @@ export function analyzeShadowDynamics(chart1: NatalChart, chart2: NatalChart, ch
   const lilithMars = lilithMars1 || lilithMars2;
   if (lilithMars && (lilithMars.type === 'conjunction' || lilithMars.type === 'square' || lilithMars.type === 'opposition')) {
     indicators.push({
-      name: 'Lilith-Mars: Shadow Sexuality',
+      name: 'Lilith-Mars: Magnetic Attraction',
       category: 'boundary',
       riskLevel: 'watch',
-      description: `${lilithMars.type} (${lilithMars.orb}° orb): Intense sexual energy with potential boundary issues.`,
-      dynamicExplanation: `This creates magnetic, primal sexual attraction but also brings out the shadow side of desire. Power games, jealousy, and sexual manipulation can emerge. One person may use sex as a weapon or withhold it for control. Taboo desires may surface that challenge both people's comfort zones.`,
-      healthyExpression: 'Liberating exploration of sexuality within clear consent. Both feel empowered rather than exploited. Dark desires expressed safely without harm.',
+      description: `${lilithMars.type} (${lilithMars.orb}° orb): Strong primal attraction and chemistry.`,
+      dynamicExplanation: `This creates powerful, magnetic attraction with a raw, authentic quality. Both partners may discover new aspects of their desires through this connection. This intensity is a gift when channeled consciously.`,
+      healthyExpression: 'Liberating exploration of authentic connection. Both feel empowered and accepted. Desires expressed openly with mutual respect.',
       warningBehaviors: [
-        'Sex is used as a bargaining chip or punishment',
-        'One person pushes sexual boundaries without consent',
-        'Jealousy leads to possessive or stalking behavior',
-        'Sexual encounters leave one person feeling used or degraded',
-        'Affairs or sexual deception patterns'
+        'Attraction feels overwhelming or all-consuming',
+        'Difficulty maintaining other priorities when together',
+        'Jealousy or possessiveness emerging',
+        'Feeling like the connection is more physical than emotional'
       ],
-      healingPath: 'Explicit consent conversations before exploring edges. Both examine personal sexual wounds in therapy. Clear agreements about exclusivity or non-exclusivity.',
+      healingPath: 'Build emotional intimacy alongside physical connection. Communicate openly about desires and boundaries. Maintain individual identities and friendships outside the relationship.',
       planets: ['Lilith', 'Mars'],
       aspect: lilithMars
     });
@@ -320,41 +315,40 @@ export function analyzeShadowDynamics(chart1: NatalChart, chart2: NatalChart, ch
   const marsSaturn = marsSaturn1 || marsSaturn2;
   if (marsSaturn && (marsSaturn.type === 'square' || marsSaturn.type === 'opposition' || marsSaturn.type === 'conjunction')) {
     indicators.push({
-      name: 'Mars-Saturn: Frustrated Aggression',
+      name: 'Mars-Saturn: Disciplined Action',
       category: 'rage',
       riskLevel: marsSaturn.type === 'square' ? 'caution' : 'watch',
-      description: `${marsSaturn.type} (${marsSaturn.orb}° orb): Mars feels blocked by Saturn, building resentment that can explode.`,
-      dynamicExplanation: `Saturn's constant "no" meets Mars's desire for action. Mars feels controlled, restricted, and increasingly resentful. The frustration builds over time until Mars explodes—often disproportionately to the triggering event. Saturn then feels justified in their caution ("See? You can't control yourself.") This creates a toxic cycle.`,
+      description: `${marsSaturn.type} (${marsSaturn.orb}° orb): One partner brings drive, the other brings caution.`,
+      dynamicExplanation: `Mars provides energy and initiative; Saturn provides caution and structure. This can be a productive combination when balanced—enthusiasm meets practicality. The challenge is ensuring both approaches are valued equally.`,
       healthyExpression: 'Mars gains discipline and focus from Saturn. Saturn becomes more assertive through Mars. Frustration channeled into productive achievement.',
       warningBehaviors: [
-        'Mars feels constant low-grade anger in the relationship',
-        'Small disagreements trigger disproportionate rage',
-        'Saturn uses "you\'re too aggressive" to shut down legitimate concerns',
-        'Mars gives up on goals or desires to avoid Saturn\'s disapproval',
-        'Cold war silences punctuated by explosive fights'
+        'One partner feels constantly slowed down or blocked',
+        'Small frustrations build up without being addressed',
+        'Difficulty finding a pace that works for both',
+        'One person\'s caution feels like criticism of the other\'s enthusiasm'
       ],
-      healingPath: 'Both need outlets for frustration outside the relationship (exercise, individual hobbies). Clear communication about needs and limitations. Mars must speak up before resentment builds.',
+      healingPath: 'Appreciate the value of both approaches—drive AND caution. Create outlets for energy (exercise, hobbies). Address frustrations early before they compound.',
       planets: ['Mars', 'Saturn'],
       aspect: marsSaturn
     });
   }
 
-  // Moon-Pluto combined with Neptune (Ultimate manipulation cocktail)
+  // Moon-Pluto combined with Neptune (Deep emotional intensity)
   if (plutoMoon && neptuneMoon) {
     indicators.push({
-      name: 'Pluto + Neptune on Moon: Psychological Vulnerability',
+      name: 'Pluto + Neptune on Moon: Profound Emotional Depth',
       category: 'manipulation',
-      riskLevel: 'significant',
-      description: 'Combined Pluto and Neptune aspects to the Moon create extreme emotional vulnerability.',
-      dynamicExplanation: 'This rare combination indicates the Moon person may be particularly susceptible to psychological manipulation, gaslighting, and reality distortion. They may lose touch with their own emotional truth entirely. This requires extra vigilance and strong external support systems.',
-      healthyExpression: 'With consciousness, this can create profound psychic/spiritual connection. Requires exceptional emotional health from all parties.',
+      riskLevel: 'caution',
+      description: 'Combined Pluto and Neptune aspects to the Moon create exceptional emotional intensity.',
+      dynamicExplanation: 'This combination indicates profound emotional and psychic sensitivity in the relationship. The depth of feeling is extraordinary, which can create both beautiful intimacy and the need for strong personal boundaries.',
+      healthyExpression: 'With awareness, this creates profound spiritual and emotional connection. The relationship feels deeply meaningful and transformative for both partners.',
       warningBehaviors: [
-        'All warnings from both Pluto-Moon and Neptune-Moon apply',
-        'Moon person shows signs of losing grip on reality',
-        'Moon person isolated from friends and family',
-        'Moon person\'s personality has significantly changed'
+        'Emotions feel overwhelming at times',
+        'Difficulty maintaining perspective during intense moments',
+        'Other relationships may feel shallow by comparison',
+        'Strong pull to merge identities'
       ],
-      healingPath: 'Individual therapy for Moon person is essential. Consider relationship therapy with a trauma-informed specialist. External reality checks are critical.',
+      healingPath: 'Maintain friendships and activities outside the relationship. Practice grounding techniques during intense emotional periods. Celebrate the depth while honoring individual needs.',
       planets: ['Pluto', 'Neptune', 'Moon']
     });
   }
@@ -365,20 +359,19 @@ export function analyzeShadowDynamics(chart1: NatalChart, chart2: NatalChart, ch
   const neptuneMars = neptuneMars1 || neptuneMars2;
   if (neptuneMars && (neptuneMars.type === 'square' || neptuneMars.type === 'opposition' || neptuneMars.type === 'conjunction')) {
     indicators.push({
-      name: 'Neptune-Mars: Addiction Enabling',
+      name: 'Neptune-Mars: Inspired Action',
       category: 'addiction',
-      riskLevel: 'caution',
-      description: `${neptuneMars.type} (${neptuneMars.orb}° orb): Potential for enabling addictive behaviors or escapism.`,
-      dynamicExplanation: `Mars's drive becomes diffused by Neptune's desire to escape. One or both partners may enable substance use, workaholism, or other addictive patterns. "Checking out" through alcohol, drugs, fantasy, or other escapes becomes normalized. Reality is avoided rather than faced together.`,
-      healthyExpression: 'Creative and spiritual action. Mars pursues inspired goals. Neptune provides vision without escapism. Shared artistic or healing work.',
+      riskLevel: 'watch',
+      description: `${neptuneMars.type} (${neptuneMars.orb}° orb): Creative energy that benefits from grounding.`,
+      dynamicExplanation: `Neptune adds imagination and vision to Mars's drive and action. This can fuel beautiful creative or spiritual endeavors together. The key is ensuring that inspiration translates into concrete action rather than remaining purely in the realm of dreams.`,
+      healthyExpression: 'Creative and spiritual action. Mars pursues inspired goals. Neptune provides vision and meaning. Shared artistic or healing work.',
       warningBehaviors: [
-        'Substance use increases during the relationship',
-        'Partners "party" together to avoid dealing with problems',
-        'Excuses are made for concerning behavior',
-        'One partner covers for the other\'s irresponsibility',
-        'Fantasy/gaming/porn used excessively to escape reality'
+        'Plans remain dreams without concrete steps',
+        'Escapism feels more appealing than tackling challenges',
+        'Difficulty staying motivated for practical tasks',
+        'Using fantasy or entertainment to avoid problems'
       ],
-      healingPath: 'Honest assessment of addictive patterns. Clear boundaries around substance use. Support groups if needed. Examine what reality is being escaped.',
+      healingPath: 'Balance dreaming with doing—set small, achievable goals. Support each other\'s practical pursuits. Address challenges directly rather than escaping into activities.',
       planets: ['Neptune', 'Mars'],
       aspect: neptuneMars
     });
