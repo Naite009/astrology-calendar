@@ -78,137 +78,19 @@ export interface FocusAnalysis {
   recommendations: string[];
 }
 
-// Business Partnership Analysis
+// Business Partnership Analysis - REBALANCED SCORING
+// Uses weighted scoring with a maximum theoretical score to produce realistic percentages
 function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): FocusAnalysis {
   const indicators: FocusIndicator[] = [];
-  let score = 0;
   
-  // *** KARMIC BUSINESS INDICATORS - Saturn-Node connections ***
-  const saturnNorthNode = checkAspect(chart1, 'Saturn', chart2, 'NorthNode') || checkAspect(chart2, 'Saturn', chart1, 'NorthNode');
-  if (saturnNorthNode) {
-    indicators.push({
-      name: '★ KARMIC: Saturn-North Node',
-      found: true,
-      aspect: saturnNorthNode,
-      planet1: 'Saturn',
-      planet2: 'NorthNode',
-      interpretation: `${saturnNorthNode.type} (${saturnNorthNode.orb}° orb): **HIGHLY SIGNIFICANT for business.** This is a fated connection where Saturn provides the structure, discipline, and long-term commitment the North Node person needs for their destiny path. ${saturnNorthNode.type === 'conjunction' ? 'The conjunction is especially powerful—Saturn acts as a karmic teacher, providing exactly the professional lessons needed for growth. This partnership has "meant to be" energy around shared work and building something lasting.' : 'This aspect indicates a destined professional relationship with important lessons around responsibility, structure, and achievement.'}`,
-      strength: 'strong'
-    });
-    // Saturn-Node conjunction is a MAJOR business indicator
-    score += saturnNorthNode.type === 'conjunction' ? 25 : 18;
-  } else {
-    indicators.push({
-      name: 'Karmic: Saturn-North Node',
-      found: false,
-      interpretation: 'No Saturn-Node aspect. The partnership lacks the "fated business lesson" signature, but can still be successful through other connections.',
-      strength: 'absent'
-    });
-  }
+  // Track raw points and maximum possible points for weighted percentage
+  let rawPoints = 0;
+  let maxPossiblePoints = 0;
   
-  const saturnSouthNode = checkAspect(chart1, 'Saturn', chart2, 'SouthNode') || checkAspect(chart2, 'Saturn', chart1, 'SouthNode');
-  if (saturnSouthNode) {
-    indicators.push({
-      name: 'Past-Life: Saturn-South Node',
-      found: true,
-      aspect: saturnSouthNode,
-      planet1: 'Saturn',
-      planet2: 'SouthNode',
-      interpretation: `${saturnSouthNode.type} (${saturnSouthNode.orb}° orb): You've likely worked together before in a past life. There's a familiar professional dynamic—you may fall into established roles easily. The challenge is to not repeat old patterns that limited growth before.`,
-      strength: 'moderate'
-    });
-    score += 10;
-  }
-
-  // *** NEW: Node-Jupiter for Growth Destiny ***
-  const nodeJupiter = checkAspect(chart1, 'NorthNode', chart2, 'Jupiter') || checkAspect(chart2, 'NorthNode', chart1, 'Jupiter');
-  if (nodeJupiter) {
-    indicators.push({
-      name: '★ KARMIC: North Node-Jupiter',
-      found: true,
-      aspect: nodeJupiter,
-      planet1: 'NorthNode',
-      planet2: 'Jupiter',
-      interpretation: `${nodeJupiter.type} (${nodeJupiter.orb}° orb): **GROWTH DESTINY.** Jupiter blesses the North Node person's path with expansion, opportunity, and luck. This partnership is meant to bring both people into greater abundance and success. Together you attract fortunate circumstances.`,
-      strength: 'strong'
-    });
-    score += nodeJupiter.type === 'conjunction' ? 22 : 15;
-  }
-
-  // *** NEW: Node-MC for Career Alignment (using house 10 cusp as MC proxy) ***
-  // MC is typically the 10th house cusp - check if houseCusps are available
-  const getMCPosition = (chart: NatalChart): NatalPlanetPosition | null => {
-    if (chart.houseCusps?.house10) {
-      return {
-        sign: chart.houseCusps.house10.sign,
-        degree: chart.houseCusps.house10.degree,
-        minutes: chart.houseCusps.house10.minutes,
-        seconds: 0
-      };
-    }
-    return null;
-  };
-  
-  const mc1 = getMCPosition(chart1);
-  const mc2 = getMCPosition(chart2);
-  
-  let nodeMC: AspectResult | null = null;
-  if (mc2 && chart1.planets.NorthNode) {
-    const pos1 = chart1.planets.NorthNode;
-    const angle = calculateAngle(pos1, mc2 as NatalPlanetPosition);
-    nodeMC = getAspect(angle);
-  }
-  if (!nodeMC && mc1 && chart2.planets.NorthNode) {
-    const pos2 = chart2.planets.NorthNode;
-    const angle = calculateAngle(pos2, mc1 as NatalPlanetPosition);
-    nodeMC = getAspect(angle);
-  }
-  
-  if (nodeMC) {
-    indicators.push({
-      name: '★ KARMIC: North Node-Midheaven',
-      found: true,
-      aspect: nodeMC,
-      planet1: 'NorthNode',
-      planet2: 'Midheaven',
-      interpretation: `${nodeMC.type} (${nodeMC.orb}° orb): **CAREER DESTINY.** One person's life direction (Node) aligns with the other's career path (MC). This is a powerful business indicator suggesting you're meant to work together in public/professional settings. Career advancement comes through partnership.`,
-      strength: 'strong'
-    });
-    score += 20;
-  }
-
-  // *** NEW: Pallas-Pallas for Strategic Alignment ***
-  const pallasPallas = checkAspect(chart1, 'Pallas', chart2, 'Pallas');
-  if (chart1.planets.Pallas && chart2.planets.Pallas && pallasPallas) {
-    indicators.push({
-      name: 'Pallas-Pallas: Strategic Minds',
-      found: true,
-      aspect: pallasPallas,
-      planet1: 'Pallas',
-      planet2: 'Pallas',
-      interpretation: `${pallasPallas.type} (${pallasPallas.orb}° orb): Your strategic minds ${pallasPallas.quality === 'harmonious' ? 'align naturally—you see patterns and solve problems in compatible ways' : 'interact dynamically—different strategic approaches that can complement or clash'}.`,
-      strength: pallasPallas.quality === 'harmonious' ? 'strong' : 'moderate'
-    });
-    score += pallasPallas.quality === 'harmonious' ? 12 : 6;
-  }
-
-  // *** NEW: Vesta aspects for dedication/focus ***
-  const vestaSun = checkAspect(chart1, 'Vesta', chart2, 'Sun') || checkAspect(chart2, 'Vesta', chart1, 'Sun');
-  if ((chart1.planets.Vesta || chart2.planets.Vesta) && vestaSun) {
-    indicators.push({
-      name: 'Vesta-Sun: Dedicated Focus',
-      found: true,
-      aspect: vestaSun,
-      planet1: 'Vesta',
-      planet2: 'Sun',
-      interpretation: `${vestaSun.type} (${vestaSun.orb}° orb): Vesta brings sacred dedication to the Sun person's goals. This partnership inspires focused, devoted work. You help each other stay committed to the mission.`,
-      strength: 'moderate'
-    });
-    score += 10;
-  }
-  
-  // Saturn aspects - structure and commitment
+  // TIER 1: CORE BUSINESS INDICATORS (max 10 points each, these are essential)
+  // Saturn-Sun: Authority and structure
   const saturnSun = checkAspect(chart1, 'Saturn', chart2, 'Sun') || checkAspect(chart2, 'Saturn', chart1, 'Sun');
+  maxPossiblePoints += 10;
   indicators.push({
     name: 'Saturn-Sun: Authority & Structure',
     found: !!saturnSun,
@@ -220,24 +102,11 @@ function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): Foc
       : 'No direct Saturn-Sun aspect. Structure and authority roles may need conscious definition.',
     strength: saturnSun ? (saturnSun.quality === 'harmonious' ? 'strong' : 'moderate') : 'absent'
   });
-  if (saturnSun) score += saturnSun.quality === 'harmonious' ? 15 : 10;
-  
-  const saturnMercury = checkAspect(chart1, 'Saturn', chart2, 'Mercury') || checkAspect(chart2, 'Saturn', chart1, 'Mercury');
-  indicators.push({
-    name: 'Saturn-Mercury: Practical Communication',
-    found: !!saturnMercury,
-    aspect: saturnMercury,
-    planet1: 'Saturn',
-    planet2: 'Mercury',
-    interpretation: saturnMercury
-      ? `${saturnMercury.type} (${saturnMercury.orb}° orb): Business communications are ${saturnMercury.quality === 'harmonious' ? 'grounded and productive' : 'sometimes tense, but ultimately clarifying'}. Saturn adds weight to Mercury's ideas.`
-      : 'No Saturn-Mercury aspect. Communication style may be less formal - ensure important agreements are documented.',
-    strength: saturnMercury ? (saturnMercury.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
-  });
-  if (saturnMercury) score += saturnMercury.quality === 'harmonious' ? 12 : 8;
-  
-  // Mercury aspects - communication
+  if (saturnSun) rawPoints += saturnSun.quality === 'harmonious' ? 10 : 6;
+
+  // Mercury-Mercury: Communication
   const mercuryMercury = checkAspect(chart1, 'Mercury', chart2, 'Mercury');
+  maxPossiblePoints += 10;
   indicators.push({
     name: 'Mercury-Mercury: Mental Sync',
     found: !!mercuryMercury,
@@ -249,10 +118,44 @@ function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): Foc
       : 'No Mercury-Mercury aspect. You may think in different ways - this can be a strength with conscious bridging.',
     strength: mercuryMercury ? (mercuryMercury.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
   });
-  if (mercuryMercury) score += mercuryMercury.quality === 'harmonious' ? 12 : 6;
-  
-  // Jupiter aspects - expansion and opportunity
+  if (mercuryMercury) rawPoints += mercuryMercury.quality === 'harmonious' ? 10 : 5;
+
+  // Jupiter-Saturn: Vision + Execution (the ideal business combination)
+  const jupiterSaturn = checkAspect(chart1, 'Jupiter', chart2, 'Saturn') || checkAspect(chart2, 'Jupiter', chart1, 'Saturn');
+  maxPossiblePoints += 10;
+  if (jupiterSaturn) {
+    indicators.push({
+      name: 'Jupiter-Saturn: Vision + Execution',
+      found: true,
+      aspect: jupiterSaturn,
+      planet1: 'Jupiter',
+      planet2: 'Saturn',
+      interpretation: `${jupiterSaturn.type} (${jupiterSaturn.orb}° orb): The ideal business combination! One partner brings expansive vision while the other provides realistic structure. ${jupiterSaturn.quality === 'harmonious' ? 'These energies blend well - dreams meet practicality.' : 'There may be tension between "go big" and "go slow" but both perspectives are valuable.'}`,
+      strength: jupiterSaturn.quality === 'harmonious' ? 'strong' : 'moderate'
+    });
+    rawPoints += jupiterSaturn.quality === 'harmonious' ? 10 : 6;
+  }
+
+  // TIER 2: IMPORTANT BUSINESS INDICATORS (max 8 points each)
+  // Saturn-Mercury: Practical communication
+  const saturnMercury = checkAspect(chart1, 'Saturn', chart2, 'Mercury') || checkAspect(chart2, 'Saturn', chart1, 'Mercury');
+  maxPossiblePoints += 8;
+  indicators.push({
+    name: 'Saturn-Mercury: Practical Communication',
+    found: !!saturnMercury,
+    aspect: saturnMercury,
+    planet1: 'Saturn',
+    planet2: 'Mercury',
+    interpretation: saturnMercury
+      ? `${saturnMercury.type} (${saturnMercury.orb}° orb): Business communications are ${saturnMercury.quality === 'harmonious' ? 'grounded and productive' : 'sometimes tense, but ultimately clarifying'}.`
+      : 'No Saturn-Mercury aspect. Communication style may be less formal.',
+    strength: saturnMercury ? (saturnMercury.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
+  });
+  if (saturnMercury) rawPoints += saturnMercury.quality === 'harmonious' ? 8 : 4;
+
+  // Jupiter-Sun: Growth & Opportunity
   const jupiterSun = checkAspect(chart1, 'Jupiter', chart2, 'Sun') || checkAspect(chart2, 'Jupiter', chart1, 'Sun');
+  maxPossiblePoints += 8;
   indicators.push({
     name: 'Jupiter-Sun: Growth & Opportunity',
     found: !!jupiterSun,
@@ -264,40 +167,11 @@ function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): Foc
       : 'No Jupiter-Sun aspect. Growth opportunities exist but may require more deliberate cultivation.',
     strength: jupiterSun ? (jupiterSun.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
   });
-  if (jupiterSun) score += jupiterSun.quality === 'harmonious' ? 15 : 8;
-  
-  // Jupiter-Saturn - balance of expansion and structure (great for business!)
-  const jupiterSaturn = checkAspect(chart1, 'Jupiter', chart2, 'Saturn') || checkAspect(chart2, 'Jupiter', chart1, 'Saturn');
-  if (jupiterSaturn) {
-    indicators.push({
-      name: 'Jupiter-Saturn: Vision + Execution',
-      found: true,
-      aspect: jupiterSaturn,
-      planet1: 'Jupiter',
-      planet2: 'Saturn',
-      interpretation: `${jupiterSaturn.type} (${jupiterSaturn.orb}° orb): The ideal business combination! One partner brings expansive vision while the other provides realistic structure. ${jupiterSaturn.quality === 'harmonious' ? 'These energies blend well - dreams meet practicality.' : 'There may be tension between "go big" and "go slow" but both perspectives are valuable.'}`,
-      strength: jupiterSaturn.quality === 'harmonious' ? 'strong' : 'moderate'
-    });
-    score += jupiterSaturn.quality === 'harmonious' ? 18 : 10;
-  }
-  
-  // Pluto aspects - power dynamics (important for business)
-  const plutoSun = checkAspect(chart1, 'Pluto', chart2, 'Sun') || checkAspect(chart2, 'Pluto', chart1, 'Sun');
-  indicators.push({
-    name: 'Pluto-Sun: Power Dynamics',
-    found: !!plutoSun,
-    aspect: plutoSun,
-    planet1: 'Pluto',
-    planet2: 'Sun',
-    interpretation: plutoSun
-      ? `${plutoSun.type} (${plutoSun.orb}° orb): Intense power dynamics. ${plutoSun.quality === 'tense' ? 'Power struggles possible - requires mature handling and clear boundaries.' : 'Transformative partnership potential - you empower each other.'}`
-      : 'No Pluto-Sun aspect. Power dynamics are less intense, which can be easier to navigate.',
-    strength: plutoSun ? (plutoSun.quality === 'harmonious' ? 'moderate' : 'moderate') : 'absent'
-  });
-  if (plutoSun) score += 5; // Neutral - powerful but can be tricky
-  
-  // Mars aspects - action and drive
+  if (jupiterSun) rawPoints += jupiterSun.quality === 'harmonious' ? 8 : 4;
+
+  // Mars-Mars: Shared Drive
   const marsMars = checkAspect(chart1, 'Mars', chart2, 'Mars');
+  maxPossiblePoints += 8;
   indicators.push({
     name: 'Mars-Mars: Shared Drive',
     found: !!marsMars,
@@ -305,78 +179,103 @@ function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): Foc
     planet1: 'Mars',
     planet2: 'Mars',
     interpretation: marsMars
-      ? `${marsMars.type} (${marsMars.orb}° orb): Your action styles ${marsMars.quality === 'harmonious' ? 'align well - you energize each other' : 'clash - different approaches to getting things done'}. ${marsMars.type === 'conjunction' ? 'Very similar drive!' : ''}`
-      : 'No Mars-Mars aspect. Your working styles are different enough to require understanding.',
+      ? `${marsMars.type} (${marsMars.orb}° orb): Your action styles ${marsMars.quality === 'harmonious' ? 'align well - you energize each other' : 'clash - different approaches to getting things done'}.`
+      : 'No Mars-Mars aspect. Your working styles may differ.',
     strength: marsMars ? (marsMars.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
   });
-  if (marsMars) score += marsMars.quality === 'harmonious' ? 12 : 4;
-  
-  // Pallas for strategy (business asteroid!)
-  const pallasSun = checkAspect(chart1, 'Pallas', chart2, 'Sun') || checkAspect(chart2, 'Pallas', chart1, 'Sun');
-  if (pallasSun) {
+  if (marsMars) rawPoints += marsMars.quality === 'harmonious' ? 8 : 3;
+
+  // TIER 3: KARMIC/DESTINY INDICATORS (bonus points, max 6 each)
+  // These ADD to the score but don't inflate unrealistically
+  const saturnNorthNode = checkAspect(chart1, 'Saturn', chart2, 'NorthNode') || checkAspect(chart2, 'Saturn', chart1, 'NorthNode');
+  if (saturnNorthNode) {
     indicators.push({
-      name: 'Pallas-Sun: Strategic Vision',
+      name: '★ KARMIC: Saturn-North Node',
       found: true,
-      aspect: pallasSun,
-      planet1: 'Pallas',
-      planet2: 'Sun',
-      interpretation: `${pallasSun.type} (${pallasSun.orb}° orb): Pallas is the asteroid of strategy and pattern recognition. This aspect enhances your ability to plan and strategize together. The Pallas person sees patterns that help the Sun person shine.`,
-      strength: 'moderate'
-    });
-    score += 8;
-  }
-  
-  // 2nd/10th house overlays (money/career houses)
-  // Simplified check - look for Saturn, Jupiter, or Sun in relevant positions
-  const saturnSaturn = checkAspect(chart1, 'Saturn', chart2, 'Saturn');
-  if (saturnSaturn) {
-    indicators.push({
-      name: 'Saturn-Saturn: Generational Work Ethic',
-      found: true,
-      aspect: saturnSaturn,
+      aspect: saturnNorthNode,
       planet1: 'Saturn',
-      planet2: 'Saturn',
-      interpretation: `${saturnSaturn.type} (${saturnSaturn.orb}° orb): Similar generational approach to responsibility and structure. ${saturnSaturn.quality === 'harmonious' ? 'Shared values around work and commitment.' : 'Different but related lessons around responsibility.'}`,
-      strength: saturnSaturn.quality === 'harmonious' ? 'strong' : 'moderate'
-    });
-    if (saturnSaturn.quality === 'harmonious') score += 10;
-  }
-
-  // *** NEW: Ceres for nurturing business relationships ***
-  const ceresSun = checkAspect(chart1, 'Ceres', chart2, 'Sun') || checkAspect(chart2, 'Ceres', chart1, 'Sun');
-  if ((chart1.planets.Ceres || chart2.planets.Ceres) && ceresSun) {
-    indicators.push({
-      name: 'Ceres-Sun: Nurturing Leadership',
-      found: true,
-      aspect: ceresSun,
-      planet1: 'Ceres',
-      planet2: 'Sun',
-      interpretation: `${ceresSun.type} (${ceresSun.orb}° orb): Ceres brings a nurturing quality to business. This partnership includes care for each other's wellbeing alongside professional goals. Good for mentorship dynamics.`,
-      strength: 'moderate'
-    });
-    score += 6;
-  }
-
-  // *** NEW: Juno for commitment in business ***
-  const junoSaturn = checkAspect(chart1, 'Juno', chart2, 'Saturn') || checkAspect(chart2, 'Juno', chart1, 'Saturn');
-  if ((chart1.planets.Juno || chart2.planets.Juno) && junoSaturn) {
-    indicators.push({
-      name: 'Juno-Saturn: Committed Partnership',
-      found: true,
-      aspect: junoSaturn,
-      planet1: 'Juno',
-      planet2: 'Saturn',
-      interpretation: `${junoSaturn.type} (${junoSaturn.orb}° orb): Juno (commitment) meets Saturn (structure). This indicates a serious, long-term business commitment. Both partners take the partnership seriously and are willing to put in the work.`,
+      planet2: 'NorthNode',
+      interpretation: `${saturnNorthNode.type} (${saturnNorthNode.orb}° orb): **Fated business connection.** Saturn provides the structure and lessons the North Node person needs for their destiny path. This partnership has a "meant to be" quality around shared work.`,
       strength: 'strong'
     });
-    score += 12;
+    rawPoints += saturnNorthNode.type === 'conjunction' ? 6 : 4;
+    maxPossiblePoints += 6; // Only count if present
   }
-  
-  // Calculate overall strength
-  const overallStrength = Math.min(100, Math.round(score));
+
+  const nodeJupiter = checkAspect(chart1, 'NorthNode', chart2, 'Jupiter') || checkAspect(chart2, 'NorthNode', chart1, 'Jupiter');
+  if (nodeJupiter) {
+    indicators.push({
+      name: '★ KARMIC: North Node-Jupiter',
+      found: true,
+      aspect: nodeJupiter,
+      planet1: 'NorthNode',
+      planet2: 'Jupiter',
+      interpretation: `${nodeJupiter.type} (${nodeJupiter.orb}° orb): **Growth Destiny.** Jupiter blesses the partnership with expansion and opportunity. You attract fortunate circumstances together.`,
+      strength: 'strong'
+    });
+    rawPoints += nodeJupiter.type === 'conjunction' ? 6 : 4;
+    maxPossiblePoints += 6;
+  }
+
+  // TIER 4: SUPPORTING INDICATORS (smaller points, 4 max each)
+  // Pallas for strategy
+  const pallasSun = checkAspect(chart1, 'Pallas', chart2, 'Sun') || checkAspect(chart2, 'Pallas', chart1, 'Sun');
+  if (chart1.planets.Pallas || chart2.planets.Pallas) {
+    maxPossiblePoints += 4;
+    if (pallasSun) {
+      indicators.push({
+        name: 'Pallas-Sun: Strategic Vision',
+        found: true,
+        aspect: pallasSun,
+        planet1: 'Pallas',
+        planet2: 'Sun',
+        interpretation: `${pallasSun.type} (${pallasSun.orb}° orb): Enhanced ability to plan and strategize together.`,
+        strength: 'moderate'
+      });
+      rawPoints += 4;
+    }
+  }
+
+  // Vesta for dedication (only if present)
+  const vestaSun = checkAspect(chart1, 'Vesta', chart2, 'Sun') || checkAspect(chart2, 'Vesta', chart1, 'Sun');
+  if ((chart1.planets.Vesta || chart2.planets.Vesta) && vestaSun) {
+    maxPossiblePoints += 4;
+    indicators.push({
+      name: 'Vesta-Sun: Dedicated Focus',
+      found: true,
+      aspect: vestaSun,
+      planet1: 'Vesta',
+      planet2: 'Sun',
+      interpretation: `${vestaSun.type} (${vestaSun.orb}° orb): Vesta brings sacred dedication to shared goals.`,
+      strength: 'moderate'
+    });
+    rawPoints += 4;
+  }
+
+  // NEGATIVE MODIFIERS (tension aspects reduce score)
+  const plutoSun = checkAspect(chart1, 'Pluto', chart2, 'Sun') || checkAspect(chart2, 'Pluto', chart1, 'Sun');
+  if (plutoSun && plutoSun.quality === 'tense') {
+    indicators.push({
+      name: 'Pluto-Sun: Power Dynamics',
+      found: true,
+      aspect: plutoSun,
+      planet1: 'Pluto',
+      planet2: 'Sun',
+      interpretation: `${plutoSun.type} (${plutoSun.orb}° orb): Intense power dynamics. Power struggles possible - requires mature handling.`,
+      strength: 'moderate'
+    });
+    rawPoints -= 3; // Penalty for tense power dynamics
+  }
+
+  // Calculate percentage based on what was actually possible
+  // Base score of 30% (any partnership has some potential)
+  // Plus weighted percentage of achieved vs possible
+  const baseScore = 30;
+  const achievedPercentage = maxPossiblePoints > 0 ? (rawPoints / maxPossiblePoints) * 50 : 0;
+  const overallStrength = Math.max(15, Math.min(85, Math.round(baseScore + achievedPercentage)));
   
   const strongIndicators = indicators.filter(i => i.strength === 'strong');
-  const karmicIndicators = indicators.filter(i => i.name.includes('KARMIC') || i.name.includes('Past-Life'));
+  const karmicIndicators = indicators.filter(i => i.name.includes('KARMIC'));
   const challenges = indicators.filter(i => i.aspect?.quality === 'tense');
   
   return {
@@ -384,31 +283,31 @@ function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): Foc
     title: 'Business Partnership Analysis',
     overallStrength,
     indicators,
-    summary: overallStrength >= 70 
-      ? `Strong business partnership potential! You have ${strongIndicators.length} key indicators for professional success. ${karmicIndicators.length > 0 ? `This includes ${karmicIndicators.length} karmic indicator(s) suggesting a fated professional connection.` : ''}`
-      : overallStrength >= 50
-      ? `Moderate business potential. ${karmicIndicators.length > 0 ? `Your ${karmicIndicators[0].name} is significant - there's a destined quality to this work relationship.` : 'Some structure exists, but conscious effort needed.'} ${challenges.length > 0 ? 'Watch for tension points.' : ''}`
-      : `Business partnership would require conscious effort. ${karmicIndicators.length > 0 ? `However, your karmic connection suggests there may be important lessons to learn through working together.` : 'Consider defining very clear roles and expectations.'}`,
+    summary: overallStrength >= 65 
+      ? `Strong business partnership potential with ${strongIndicators.length} key indicators. ${karmicIndicators.length > 0 ? `Karmic connections suggest a fated professional bond.` : ''}`
+      : overallStrength >= 45
+      ? `Moderate business potential. ${strongIndicators.length > 0 ? `You have ${strongIndicators.length} supportive indicator(s).` : 'Requires conscious effort to build structure.'} ${karmicIndicators.length > 0 ? `Karmic elements add depth.` : ''}`
+      : `Business partnership would require significant effort. Focus on clearly defined roles and regular communication.`,
     recommendations: [
-      ...(saturnNorthNode ? ['★ Your Saturn-North Node connection is a MAJOR karmic business indicator. This partnership has a fated quality - Saturn provides exactly the structure and lessons the Node person needs for their professional destiny.'] : []),
-      ...(nodeJupiter ? ['★ Your Node-Jupiter connection brings expansion and luck to your shared path. Trust that growth comes through this partnership.'] : []),
-      ...(nodeMC ? ['★ Your Node-Midheaven connection suggests career destiny is intertwined. Public/professional visibility comes through working together.'] : []),
-      ...(saturnSun ? ['Use your Saturn-Sun dynamic to establish clear authority structures'] : ['Create explicit agreements about decision-making authority']),
-      ...(mercuryMercury ? ['Leverage your Mercury connection for regular strategy sessions'] : ['Schedule regular check-ins to bridge different communication styles']),
-      ...(jupiterSun ? ['Pursue growth opportunities together - your Jupiter-Sun aspect supports expansion'] : ['Set specific growth targets to stay aligned']),
-      ...(jupiterSaturn ? ['Balance your Jupiter-Saturn dynamic: let the visionary dream big while the pragmatist ensures execution'] : []),
-      ...(challenges.length > 0 ? ['Address potential friction points proactively - your challenging aspects are growth edges'] : [])
+      ...(saturnNorthNode ? ['★ Your Saturn-North Node connection indicates a fated professional relationship.'] : []),
+      ...(nodeJupiter ? ['★ Your Node-Jupiter brings growth and luck to shared ventures.'] : []),
+      ...(saturnSun ? ['Leverage your Saturn-Sun dynamic for clear authority structures.'] : ['Establish explicit decision-making agreements.']),
+      ...(mercuryMercury ? ['Use your Mercury connection for regular strategy sessions.'] : ['Schedule regular check-ins to bridge communication styles.']),
+      ...(jupiterSaturn ? ['Balance vision (Jupiter) with execution (Saturn).'] : []),
+      ...(challenges.length > 0 ? ['Address power dynamics proactively.'] : [])
     ]
   };
 }
 
-// Friendship Analysis
+// Friendship Analysis - REBALANCED SCORING
 function analyzeFriendship(chart1: NatalChart, chart2: NatalChart): FocusAnalysis {
   const indicators: FocusIndicator[] = [];
-  let score = 0;
+  let rawPoints = 0;
+  let maxPossiblePoints = 0;
   
-  // Mercury aspects - communication and mental connection
+  // TIER 1: Core friendship indicators (10 pts each)
   const mercuryMercury = checkAspect(chart1, 'Mercury', chart2, 'Mercury');
+  maxPossiblePoints += 10;
   indicators.push({
     name: 'Mercury-Mercury: Conversation Flow',
     found: !!mercuryMercury,
@@ -416,29 +315,14 @@ function analyzeFriendship(chart1: NatalChart, chart2: NatalChart): FocusAnalysi
     planet1: 'Mercury',
     planet2: 'Mercury',
     interpretation: mercuryMercury
-      ? `${mercuryMercury.type} (${mercuryMercury.orb}° orb): ${mercuryMercury.quality === 'harmonious' ? 'You could talk for hours! Natural mental rapport and easy conversation.' : 'Stimulating but sometimes challenging discussions. You make each other think.'}`
-      : 'No direct Mercury aspect. Conversation may require more effort but can still be rewarding.',
+      ? `${mercuryMercury.type} (${mercuryMercury.orb}° orb): ${mercuryMercury.quality === 'harmonious' ? 'You could talk for hours! Natural mental rapport.' : 'Stimulating discussions that make each other think.'}`
+      : 'No direct Mercury aspect. Conversation may require more effort.',
     strength: mercuryMercury ? (mercuryMercury.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
   });
-  if (mercuryMercury) score += mercuryMercury.quality === 'harmonious' ? 15 : 8;
+  if (mercuryMercury) rawPoints += mercuryMercury.quality === 'harmonious' ? 10 : 5;
   
-  // Jupiter aspects - fun and growth
-  const jupiterMoon = checkAspect(chart1, 'Jupiter', chart2, 'Moon') || checkAspect(chart2, 'Jupiter', chart1, 'Moon');
-  indicators.push({
-    name: 'Jupiter-Moon: Emotional Uplift',
-    found: !!jupiterMoon,
-    aspect: jupiterMoon,
-    planet1: 'Jupiter',
-    planet2: 'Moon',
-    interpretation: jupiterMoon
-      ? `${jupiterMoon.type} (${jupiterMoon.orb}° orb): You make each other feel good! Jupiter expands and uplifts Moon's emotional world. ${jupiterMoon.quality === 'harmonious' ? 'Naturally supportive and encouraging.' : 'Sometimes too much optimism, but generally positive.'}`
-      : 'No Jupiter-Moon aspect. Emotional support exists but may need conscious cultivation.',
-    strength: jupiterMoon ? 'strong' : 'weak'
-  });
-  if (jupiterMoon) score += 15;
-  
-  // Sun-Moon - emotional understanding
   const sunMoon = checkAspect(chart1, 'Sun', chart2, 'Moon') || checkAspect(chart2, 'Sun', chart1, 'Moon');
+  maxPossiblePoints += 10;
   indicators.push({
     name: 'Sun-Moon: Core Understanding',
     found: !!sunMoon,
@@ -446,14 +330,30 @@ function analyzeFriendship(chart1: NatalChart, chart2: NatalChart): FocusAnalysi
     planet1: 'Sun',
     planet2: 'Moon',
     interpretation: sunMoon
-      ? `${sunMoon.type} (${sunMoon.orb}° orb): ${sunMoon.quality === 'harmonious' ? 'You "get" each other at a fundamental level. Natural emotional attunement.' : 'Your core natures interact intensely - sometimes understanding, sometimes friction.'}`
-      : 'No Sun-Moon aspect. Understanding requires more conscious effort but can deepen over time.',
+      ? `${sunMoon.type} (${sunMoon.orb}° orb): ${sunMoon.quality === 'harmonious' ? 'You "get" each other at a fundamental level.' : 'Your core natures interact intensely.'}`
+      : 'No Sun-Moon aspect. Understanding develops over time.',
     strength: sunMoon ? (sunMoon.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
   });
-  if (sunMoon) score += sunMoon.quality === 'harmonious' ? 15 : 8;
+  if (sunMoon) rawPoints += sunMoon.quality === 'harmonious' ? 10 : 5;
   
-  // Venus aspects - affection and shared pleasures
+  // TIER 2: Supporting indicators (8 pts each)
+  const jupiterMoon = checkAspect(chart1, 'Jupiter', chart2, 'Moon') || checkAspect(chart2, 'Jupiter', chart1, 'Moon');
+  maxPossiblePoints += 8;
+  indicators.push({
+    name: 'Jupiter-Moon: Emotional Uplift',
+    found: !!jupiterMoon,
+    aspect: jupiterMoon,
+    planet1: 'Jupiter',
+    planet2: 'Moon',
+    interpretation: jupiterMoon
+      ? `${jupiterMoon.type} (${jupiterMoon.orb}° orb): You make each other feel good! Naturally supportive and encouraging.`
+      : 'No Jupiter-Moon aspect. Emotional support needs conscious cultivation.',
+    strength: jupiterMoon ? 'strong' : 'weak'
+  });
+  if (jupiterMoon) rawPoints += 8;
+  
   const venusVenus = checkAspect(chart1, 'Venus', chart2, 'Venus');
+  maxPossiblePoints += 8;
   indicators.push({
     name: 'Venus-Venus: Shared Pleasures',
     found: !!venusVenus,
@@ -461,29 +361,14 @@ function analyzeFriendship(chart1: NatalChart, chart2: NatalChart): FocusAnalysi
     planet1: 'Venus',
     planet2: 'Venus',
     interpretation: venusVenus
-      ? `${venusVenus.type} (${venusVenus.orb}° orb): Similar tastes and values! ${venusVenus.quality === 'harmonious' ? 'You enjoy the same things - easy companionship.' : 'Different but complementary aesthetics and values.'}`
-      : 'No Venus-Venus aspect. You may have different tastes, which can introduce each other to new things.',
+      ? `${venusVenus.type} (${venusVenus.orb}° orb): ${venusVenus.quality === 'harmonious' ? 'Similar tastes - easy companionship.' : 'Different but complementary values.'}`
+      : 'No Venus-Venus aspect. Different tastes can introduce new things.',
     strength: venusVenus ? (venusVenus.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
   });
-  if (venusVenus) score += venusVenus.quality === 'harmonious' ? 12 : 6;
+  if (venusVenus) rawPoints += venusVenus.quality === 'harmonious' ? 8 : 4;
   
-  // Uranus aspects - excitement and uniqueness
-  const uranusSun = checkAspect(chart1, 'Uranus', chart2, 'Sun') || checkAspect(chart2, 'Uranus', chart1, 'Sun');
-  indicators.push({
-    name: 'Uranus-Sun: Excitement Factor',
-    found: !!uranusSun,
-    aspect: uranusSun,
-    planet1: 'Uranus',
-    planet2: 'Sun',
-    interpretation: uranusSun
-      ? `${uranusSun.type} (${uranusSun.orb}° orb): Never boring! Uranus electrifies the Sun person. ${uranusSun.quality === 'harmonious' ? 'Exciting adventures and shared uniqueness.' : 'Unpredictable but stimulating - keeps things interesting.'}`
-      : 'No Uranus-Sun aspect. Excitement comes from other sources in your friendship.',
-    strength: uranusSun ? 'moderate' : 'absent'
-  });
-  if (uranusSun) score += 10;
-  
-  // Moon-Moon - emotional resonance
   const moonMoon = checkAspect(chart1, 'Moon', chart2, 'Moon');
+  maxPossiblePoints += 8;
   indicators.push({
     name: 'Moon-Moon: Emotional Resonance',
     found: !!moonMoon,
@@ -491,13 +376,32 @@ function analyzeFriendship(chart1: NatalChart, chart2: NatalChart): FocusAnalysi
     planet1: 'Moon',
     planet2: 'Moon',
     interpretation: moonMoon
-      ? `${moonMoon.type} (${moonMoon.orb}° orb): ${moonMoon.quality === 'harmonious' ? 'Deep emotional understanding - you feel safe with each other.' : 'Your emotional needs interact intensely - requires mutual awareness.'}`
-      : 'No Moon-Moon aspect. Emotional attunement develops through shared experiences.',
+      ? `${moonMoon.type} (${moonMoon.orb}° orb): ${moonMoon.quality === 'harmonious' ? 'Deep emotional understanding.' : 'Emotional needs interact intensely.'}`
+      : 'No Moon-Moon aspect. Emotional attunement develops through experience.',
     strength: moonMoon ? (moonMoon.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
   });
-  if (moonMoon) score += moonMoon.quality === 'harmonious' ? 15 : 6;
+  if (moonMoon) rawPoints += moonMoon.quality === 'harmonious' ? 8 : 4;
   
-  const overallStrength = Math.min(100, Math.round(score * 1.1));
+  // TIER 3: Bonus indicators (4 pts each)
+  const uranusSun = checkAspect(chart1, 'Uranus', chart2, 'Sun') || checkAspect(chart2, 'Uranus', chart1, 'Sun');
+  if (uranusSun) {
+    maxPossiblePoints += 4;
+    indicators.push({
+      name: 'Uranus-Sun: Excitement Factor',
+      found: true,
+      aspect: uranusSun,
+      planet1: 'Uranus',
+      planet2: 'Sun',
+      interpretation: `${uranusSun.type} (${uranusSun.orb}° orb): Never boring! Exciting adventures together.`,
+      strength: 'moderate'
+    });
+    rawPoints += 4;
+  }
+  
+  // Calculate balanced percentage
+  const baseScore = 30;
+  const achievedPercentage = maxPossiblePoints > 0 ? (rawPoints / maxPossiblePoints) * 50 : 0;
+  const overallStrength = Math.max(15, Math.min(85, Math.round(baseScore + achievedPercentage)));
   const strongIndicators = indicators.filter(i => i.strength === 'strong');
   
   return {
@@ -505,29 +409,31 @@ function analyzeFriendship(chart1: NatalChart, chart2: NatalChart): FocusAnalysi
     title: 'Friendship Compatibility Analysis',
     overallStrength,
     indicators,
-    summary: overallStrength >= 70
-      ? `Strong friendship potential! ${strongIndicators.length} key connections support natural companionship and mutual understanding.`
-      : overallStrength >= 50
-      ? `Good friendship foundation. You have areas of natural connection that can deepen with shared experiences.`
-      : `Friendship may require more conscious effort, but can still be rewarding. Focus on shared activities and interests.`,
+    summary: overallStrength >= 65
+      ? `Strong friendship potential! ${strongIndicators.length} key connections support natural companionship.`
+      : overallStrength >= 45
+      ? `Good friendship foundation. Natural connection in some areas.`
+      : `Friendship may require more conscious effort. Focus on shared activities.`,
     recommendations: [
-      ...(mercuryMercury ? ['Use your Mercury connection for long conversations and idea-sharing'] : ['Find topics you both enjoy discussing']),
-      ...(jupiterMoon ? ['Your Jupiter-Moon supports emotional encouragement - lean into uplifting each other'] : []),
-      ...(venusVenus ? ['Plan activities around your shared tastes and pleasures'] : ['Explore each other\'s interests to broaden your friendship']),
+      ...(mercuryMercury ? ['Use your Mercury connection for long conversations'] : ['Find topics you both enjoy']),
+      ...(jupiterMoon ? ['Lean into uplifting each other'] : []),
+      ...(venusVenus ? ['Plan activities around your shared tastes'] : ['Explore each other\'s interests']),
       'Shared experiences build the strongest friendships'
     ]
   };
 }
 
-// Romantic Analysis
+// Romantic Analysis - REBALANCED SCORING
 function analyzeRomantic(chart1: NatalChart, chart2: NatalChart): FocusAnalysis {
   const indicators: FocusIndicator[] = [];
-  let score = 0;
+  let rawPoints = 0;
+  let maxPossiblePoints = 0;
   
-  // Venus-Mars - sexual chemistry
+  // TIER 1: Core romantic indicators (10 pts each)
   const venusMars1 = checkAspect(chart1, 'Venus', chart2, 'Mars');
   const venusMars2 = checkAspect(chart2, 'Venus', chart1, 'Mars');
   const venusMars = venusMars1 || venusMars2;
+  maxPossiblePoints += 10;
   indicators.push({
     name: 'Venus-Mars: Sexual Chemistry',
     found: !!venusMars,
@@ -535,14 +441,14 @@ function analyzeRomantic(chart1: NatalChart, chart2: NatalChart): FocusAnalysis 
     planet1: 'Venus',
     planet2: 'Mars',
     interpretation: venusMars
-      ? `${venusMars.type} (${venusMars.orb}° orb): Classic attraction! ${venusMars.quality === 'harmonious' ? 'Natural romantic and sexual chemistry flows easily.' : 'Intense attraction with friction that can be exciting or challenging.'}`
-      : 'No Venus-Mars aspect. Attraction may build through other connections or develop over time.',
+      ? `${venusMars.type} (${venusMars.orb}° orb): Classic attraction! ${venusMars.quality === 'harmonious' ? 'Natural romantic and sexual chemistry.' : 'Intense attraction with exciting friction.'}`
+      : 'No Venus-Mars aspect. Attraction may build over time.',
     strength: venusMars ? 'strong' : 'weak'
   });
-  if (venusMars) score += 20;
+  if (venusMars) rawPoints += 10;
   
-  // Sun-Moon - fundamental compatibility
   const sunMoon = checkAspect(chart1, 'Sun', chart2, 'Moon') || checkAspect(chart2, 'Sun', chart1, 'Moon');
+  maxPossiblePoints += 10;
   indicators.push({
     name: 'Sun-Moon: Soul Connection',
     found: !!sunMoon,
@@ -550,14 +456,15 @@ function analyzeRomantic(chart1: NatalChart, chart2: NatalChart): FocusAnalysis 
     planet1: 'Sun',
     planet2: 'Moon',
     interpretation: sunMoon
-      ? `${sunMoon.type} (${sunMoon.orb}° orb): ${sunMoon.quality === 'harmonious' ? 'Deep soul-level understanding. One\'s identity nourishes the other\'s emotions.' : 'Intense connection with growth edges - you challenge each other to evolve.'}`
-      : 'No Sun-Moon aspect. Soul connection develops through conscious nurturing.',
+      ? `${sunMoon.type} (${sunMoon.orb}° orb): ${sunMoon.quality === 'harmonious' ? 'Deep soul-level understanding.' : 'Intense connection with growth potential.'}`
+      : 'No Sun-Moon aspect. Soul connection develops through nurturing.',
     strength: sunMoon ? (sunMoon.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
   });
-  if (sunMoon) score += sunMoon.quality === 'harmonious' ? 18 : 10;
+  if (sunMoon) rawPoints += sunMoon.quality === 'harmonious' ? 10 : 5;
   
-  // Venus-Venus - shared values in love
+  // TIER 2: Important romantic indicators (8 pts each)
   const venusVenus = checkAspect(chart1, 'Venus', chart2, 'Venus');
+  maxPossiblePoints += 8;
   indicators.push({
     name: 'Venus-Venus: Love Languages',
     found: !!venusVenus,
@@ -565,14 +472,14 @@ function analyzeRomantic(chart1: NatalChart, chart2: NatalChart): FocusAnalysis 
     planet1: 'Venus',
     planet2: 'Venus',
     interpretation: venusVenus
-      ? `${venusVenus.type} (${venusVenus.orb}° orb): ${venusVenus.quality === 'harmonious' ? 'Similar love languages and values. You naturally appreciate each other.' : 'Different but complementary ways of loving. Learning each other\'s style is key.'}`
-      : 'No Venus-Venus aspect. You may express love differently - communicate your needs.',
+      ? `${venusVenus.type} (${venusVenus.orb}° orb): ${venusVenus.quality === 'harmonious' ? 'Similar love languages - you naturally appreciate each other.' : 'Different but complementary ways of loving.'}`
+      : 'No Venus-Venus aspect. Communicate your needs.',
     strength: venusVenus ? (venusVenus.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
   });
-  if (venusVenus) score += venusVenus.quality === 'harmonious' ? 15 : 8;
+  if (venusVenus) rawPoints += venusVenus.quality === 'harmonious' ? 8 : 4;
   
-  // Moon-Moon - emotional compatibility
   const moonMoon = checkAspect(chart1, 'Moon', chart2, 'Moon');
+  maxPossiblePoints += 8;
   indicators.push({
     name: 'Moon-Moon: Emotional Home',
     found: !!moonMoon,
@@ -580,120 +487,82 @@ function analyzeRomantic(chart1: NatalChart, chart2: NatalChart): FocusAnalysis 
     planet1: 'Moon',
     planet2: 'Moon',
     interpretation: moonMoon
-      ? `${moonMoon.type} (${moonMoon.orb}° orb): ${moonMoon.quality === 'harmonious' ? 'You feel emotionally safe together - a sense of home.' : 'Emotional needs interact intensely - understanding each other\'s triggers is essential.'}`
-      : 'No Moon-Moon aspect. Emotional safety builds through consistent care.',
+      ? `${moonMoon.type} (${moonMoon.orb}° orb): ${moonMoon.quality === 'harmonious' ? 'You feel emotionally safe together.' : 'Emotional needs interact intensely.'}`
+      : 'No Moon-Moon aspect. Emotional safety builds through care.',
     strength: moonMoon ? (moonMoon.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
   });
-  if (moonMoon) score += moonMoon.quality === 'harmonious' ? 15 : 8;
+  if (moonMoon) rawPoints += moonMoon.quality === 'harmonious' ? 8 : 4;
   
-  // *** ENHANCED: Juno aspects - marriage/commitment indicator ***
+  // TIER 3: Juno indicators - marriage/commitment (6 pts each, ONLY for romantic)
   const junoSun = checkAspect(chart1, 'Juno', chart2, 'Sun') || checkAspect(chart2, 'Juno', chart1, 'Sun');
   if (chart1.planets.Juno || chart2.planets.Juno) {
-    indicators.push({
-      name: '★ Juno-Sun: Marriage Potential',
-      found: !!junoSun,
-      aspect: junoSun,
-      planet1: 'Juno',
-      planet2: 'Sun',
-      interpretation: junoSun
-        ? `${junoSun.type} (${junoSun.orb}° orb): Juno (goddess of marriage) connects to the Sun. ${junoSun.quality === 'harmonious' ? 'Strong marriage potential - one sees the other as "the one."' : 'Intense commitment energy that may require working through expectations.'}`
-        : 'No Juno-Sun aspect. Commitment builds through other connections.',
-      strength: junoSun ? 'strong' : 'absent'
-    });
-    if (junoSun) score += 18;
+    maxPossiblePoints += 6;
+    if (junoSun) {
+      indicators.push({
+        name: '★ Juno-Sun: Marriage Potential',
+        found: true,
+        aspect: junoSun,
+        planet1: 'Juno',
+        planet2: 'Sun',
+        interpretation: `${junoSun.type} (${junoSun.orb}° orb): Juno (goddess of marriage) connects to the Sun. ${junoSun.quality === 'harmonious' ? 'Strong marriage potential.' : 'Commitment energy that requires working through expectations.'}`,
+        strength: 'strong'
+      });
+      rawPoints += 6;
+    }
   }
 
-  // *** NEW: Juno-Venus for romantic commitment ***
   const junoVenus = checkAspect(chart1, 'Juno', chart2, 'Venus') || checkAspect(chart2, 'Juno', chart1, 'Venus');
   if ((chart1.planets.Juno || chart2.planets.Juno) && junoVenus) {
+    maxPossiblePoints += 6;
     indicators.push({
       name: '★ Juno-Venus: Love & Commitment United',
       found: true,
       aspect: junoVenus,
       planet1: 'Juno',
       planet2: 'Venus',
-      interpretation: `${junoVenus.type} (${junoVenus.orb}° orb): A beautiful indicator! Juno (commitment) blends with Venus (love). This suggests a relationship where love naturally leads to lasting partnership. The desire for commitment and romantic love align.`,
+      interpretation: `${junoVenus.type} (${junoVenus.orb}° orb): Juno (commitment) blends with Venus (love). Love naturally leads to lasting partnership.`,
       strength: 'strong'
     });
-    score += 20;
+    rawPoints += 6;
   }
 
-  // *** NEW: Juno-Moon for emotional commitment ***
-  const junoMoon = checkAspect(chart1, 'Juno', chart2, 'Moon') || checkAspect(chart2, 'Juno', chart1, 'Moon');
-  if ((chart1.planets.Juno || chart2.planets.Juno) && junoMoon) {
-    indicators.push({
-      name: 'Juno-Moon: Emotional Partnership',
-      found: true,
-      aspect: junoMoon,
-      planet1: 'Juno',
-      planet2: 'Moon',
-      interpretation: `${junoMoon.type} (${junoMoon.orb}° orb): Commitment meets emotional needs. The Moon person feels emotionally secure with Juno's partnership energy. A natural domestic partnership potential.`,
-      strength: 'strong'
-    });
-    score += 15;
-  }
-
-  // *** NEW: Ceres for nurturing in love ***
+  // TIER 4: Ceres for nurturing (4 pts each)
   const ceresMoon = checkAspect(chart1, 'Ceres', chart2, 'Moon') || checkAspect(chart2, 'Ceres', chart1, 'Moon');
   if ((chart1.planets.Ceres || chart2.planets.Ceres) && ceresMoon) {
+    maxPossiblePoints += 4;
     indicators.push({
       name: 'Ceres-Moon: Deep Nurturing',
       found: true,
       aspect: ceresMoon,
       planet1: 'Ceres',
       planet2: 'Moon',
-      interpretation: `${ceresMoon.type} (${ceresMoon.orb}° orb): Ceres (nurturing goddess) connects with the Moon. This creates a deeply nurturing dynamic where both feel cared for. Excellent for long-term relationships and family-building.`,
+      interpretation: `${ceresMoon.type} (${ceresMoon.orb}° orb): Ceres connects with the Moon. Deeply nurturing dynamic - excellent for family-building.`,
       strength: 'strong'
     });
-    score += 15;
-  }
-
-  // *** NEW: Ceres-Venus for nurturing love ***
-  const ceresVenus = checkAspect(chart1, 'Ceres', chart2, 'Venus') || checkAspect(chart2, 'Ceres', chart1, 'Venus');
-  if ((chart1.planets.Ceres || chart2.planets.Ceres) && ceresVenus) {
-    indicators.push({
-      name: 'Ceres-Venus: Nurturing Affection',
-      found: true,
-      aspect: ceresVenus,
-      planet1: 'Ceres',
-      planet2: 'Venus',
-      interpretation: `${ceresVenus.type} (${ceresVenus.orb}° orb): Love and nurturing combine beautifully. You express affection through care-taking. This is the "I made you soup when you're sick" kind of love.`,
-      strength: 'moderate'
-    });
-    score += 10;
+    rawPoints += 4;
   }
   
-  // Node connections - destiny
+  // Node connections - destiny (5 pts each)
   const nodeVenus = checkAspect(chart1, 'NorthNode', chart2, 'Venus') || checkAspect(chart2, 'NorthNode', chart1, 'Venus');
-  indicators.push({
-    name: '★ North Node-Venus: Fated Love',
-    found: !!nodeVenus,
-    aspect: nodeVenus,
-    planet1: 'NorthNode',
-    planet2: 'Venus',
-    interpretation: nodeVenus
-      ? `${nodeVenus.type} (${nodeVenus.orb}° orb): Fated romantic connection. The Venus person embodies the love the Node person is destined to experience. Strong "meant to be" feeling.`
-      : 'No Node-Venus aspect. The relationship is less "fated" but can still be deeply fulfilling.',
-    strength: nodeVenus ? 'strong' : 'absent'
-  });
-  if (nodeVenus) score += 18;
-
-  // *** NEW: Node-Moon for emotional destiny ***
-  const nodeMoon = checkAspect(chart1, 'NorthNode', chart2, 'Moon') || checkAspect(chart2, 'NorthNode', chart1, 'Moon');
-  if (nodeMoon) {
+  if (nodeVenus) {
+    maxPossiblePoints += 5;
     indicators.push({
-      name: '★ North Node-Moon: Emotional Destiny',
+      name: '★ North Node-Venus: Fated Love',
       found: true,
-      aspect: nodeMoon,
+      aspect: nodeVenus,
       planet1: 'NorthNode',
-      planet2: 'Moon',
-      interpretation: `${nodeMoon.type} (${nodeMoon.orb}° orb): The Moon person provides the emotional nourishment the Node person needs to fulfill their destiny. This is a deeply nurturing, fated emotional bond.`,
+      planet2: 'Venus',
+      interpretation: `${nodeVenus.type} (${nodeVenus.orb}° orb): Fated romantic connection. Strong "meant to be" feeling.`,
       strength: 'strong'
     });
-    score += 18;
+    rawPoints += 5;
   }
+
+  // Calculate balanced percentage
+  const baseScore = 30;
+  const achievedPercentage = maxPossiblePoints > 0 ? (rawPoints / maxPossiblePoints) * 50 : 0;
+  const overallStrength = Math.max(15, Math.min(85, Math.round(baseScore + achievedPercentage)));
   
-  const overallStrength = Math.min(100, Math.round(score));
   const strongIndicators = indicators.filter(i => i.strength === 'strong');
   const junoIndicators = indicators.filter(i => i.name.includes('Juno'));
   
@@ -702,29 +571,31 @@ function analyzeRomantic(chart1: NatalChart, chart2: NatalChart): FocusAnalysis 
     title: 'Romantic Compatibility Analysis',
     overallStrength,
     indicators,
-    summary: overallStrength >= 75
-      ? `High romantic potential! ${strongIndicators.length} major love indicators suggest strong chemistry and compatibility.${junoIndicators.length > 0 ? ` The Juno connections point toward lasting commitment.` : ''}`
-      : overallStrength >= 50
-      ? `Solid romantic foundation with room to grow. Key connections support love, with some areas requiring conscious nurturing.`
-      : `Romance may develop more slowly. Focus on building friendship first; attraction can grow through deeper understanding.`,
+    summary: overallStrength >= 65
+      ? `High romantic potential! ${strongIndicators.length} love indicators suggest strong chemistry.${junoIndicators.length > 0 ? ` Juno connections point to lasting commitment.` : ''}`
+      : overallStrength >= 45
+      ? `Solid romantic foundation. Key connections support love with some areas needing nurturing.`
+      : `Romance may develop gradually. Build friendship first; attraction grows with understanding.`,
     recommendations: [
-      ...(venusMars ? ['Your Venus-Mars chemistry is real - physical affection is important'] : ['Build attraction through shared experiences and emotional intimacy']),
-      ...(sunMoon ? ['Honor your Sun-Moon connection through emotional attunement'] : []),
-      ...(nodeVenus ? ['This feels fated - trust the connection while doing the work'] : []),
-      ...(junoVenus || junoSun ? ['★ Your Juno connection indicates marriage potential - commitment comes naturally here'] : []),
-      ...(ceresMoon || ceresVenus ? ['Nurture each other through acts of care - this is a love language here'] : []),
+      ...(venusMars ? ['Your Venus-Mars chemistry is real - physical affection matters'] : ['Build attraction through shared experiences']),
+      ...(sunMoon ? ['Honor your Sun-Moon connection'] : []),
+      ...(nodeVenus ? ['This feels fated - trust it while doing the work'] : []),
+      ...(junoVenus || junoSun ? ['★ Juno connections indicate marriage potential'] : []),
+      ...(ceresMoon ? ['Nurture each other through acts of care'] : []),
       'Communicate love languages explicitly'
     ]
   };
 }
 
-// Creative Partnership Analysis
+// Creative Partnership Analysis - REBALANCED SCORING
 function analyzeCreative(chart1: NatalChart, chart2: NatalChart): FocusAnalysis {
   const indicators: FocusIndicator[] = [];
-  let score = 0;
+  let rawPoints = 0;
+  let maxPossiblePoints = 0;
   
-  // Neptune aspects - inspiration and imagination
+  // TIER 1: Core creative indicators (10 pts each)
   const neptuneSun = checkAspect(chart1, 'Neptune', chart2, 'Sun') || checkAspect(chart2, 'Neptune', chart1, 'Sun');
+  maxPossiblePoints += 10;
   indicators.push({
     name: 'Neptune-Sun: Shared Vision',
     found: !!neptuneSun,
@@ -732,14 +603,14 @@ function analyzeCreative(chart1: NatalChart, chart2: NatalChart): FocusAnalysis 
     planet1: 'Neptune',
     planet2: 'Sun',
     interpretation: neptuneSun
-      ? `${neptuneSun.type} (${neptuneSun.orb}° orb): Neptune inspires the Sun person's creative identity. ${neptuneSun.quality === 'harmonious' ? 'Beautiful imaginative flow and shared dreams.' : 'Intense but potentially confusing creative energy - clarify visions together.'}`
+      ? `${neptuneSun.type} (${neptuneSun.orb}° orb): Neptune inspires the Sun person's creative identity. ${neptuneSun.quality === 'harmonious' ? 'Beautiful imaginative flow.' : 'Intense creative energy - clarify visions together.'}`
       : 'No Neptune-Sun aspect. Creative inspiration comes from other sources.',
     strength: neptuneSun ? (neptuneSun.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
   });
-  if (neptuneSun) score += neptuneSun.quality === 'harmonious' ? 18 : 10;
+  if (neptuneSun) rawPoints += neptuneSun.quality === 'harmonious' ? 10 : 5;
   
-  // Venus aspects - aesthetic harmony
   const venusVenus = checkAspect(chart1, 'Venus', chart2, 'Venus');
+  maxPossiblePoints += 10;
   indicators.push({
     name: 'Venus-Venus: Aesthetic Harmony',
     found: !!venusVenus,
@@ -747,14 +618,15 @@ function analyzeCreative(chart1: NatalChart, chart2: NatalChart): FocusAnalysis 
     planet1: 'Venus',
     planet2: 'Venus',
     interpretation: venusVenus
-      ? `${venusVenus.type} (${venusVenus.orb}° orb): ${venusVenus.quality === 'harmonious' ? 'Similar aesthetic sensibilities - you naturally create beauty together.' : 'Different but stimulating aesthetics - creative tension can spark innovation.'}`
-      : 'No Venus-Venus aspect. You may have different artistic preferences, which can enrich collaboration.',
+      ? `${venusVenus.type} (${venusVenus.orb}° orb): ${venusVenus.quality === 'harmonious' ? 'Similar aesthetics - you create beauty together.' : 'Different aesthetics can spark innovation.'}`
+      : 'No Venus-Venus aspect. Different preferences can enrich collaboration.',
     strength: venusVenus ? (venusVenus.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
   });
-  if (venusVenus) score += venusVenus.quality === 'harmonious' ? 15 : 8;
+  if (venusVenus) rawPoints += venusVenus.quality === 'harmonious' ? 10 : 5;
   
-  // Mercury-Venus - creative communication
+  // TIER 2: Supporting creative indicators (8 pts each)
   const mercuryVenus = checkAspect(chart1, 'Mercury', chart2, 'Venus') || checkAspect(chart2, 'Mercury', chart1, 'Venus');
+  maxPossiblePoints += 8;
   indicators.push({
     name: 'Mercury-Venus: Artistic Expression',
     found: !!mercuryVenus,
@@ -762,29 +634,14 @@ function analyzeCreative(chart1: NatalChart, chart2: NatalChart): FocusAnalysis 
     planet1: 'Mercury',
     planet2: 'Venus',
     interpretation: mercuryVenus
-      ? `${mercuryVenus.type} (${mercuryVenus.orb}° orb): Beautiful communication! Ideas are expressed artistically. ${mercuryVenus.quality === 'harmonious' ? 'Natural creative dialogue and artistic expression together.' : 'Stimulating creative discussions with occasional friction.'}`
+      ? `${mercuryVenus.type} (${mercuryVenus.orb}° orb): Ideas are expressed artistically. Natural creative dialogue.`
       : 'No Mercury-Venus aspect. Creative communication develops through practice.',
     strength: mercuryVenus ? 'strong' : 'weak'
   });
-  if (mercuryVenus) score += 15;
+  if (mercuryVenus) rawPoints += 8;
   
-  // Uranus aspects - innovation and uniqueness
-  const uranusVenus = checkAspect(chart1, 'Uranus', chart2, 'Venus') || checkAspect(chart2, 'Uranus', chart1, 'Venus');
-  indicators.push({
-    name: 'Uranus-Venus: Creative Innovation',
-    found: !!uranusVenus,
-    aspect: uranusVenus,
-    planet1: 'Uranus',
-    planet2: 'Venus',
-    interpretation: uranusVenus
-      ? `${uranusVenus.type} (${uranusVenus.orb}° orb): Uranus electrifies Venus's creativity. ${uranusVenus.quality === 'harmonious' ? 'Innovative, ahead-of-the-curve creative work.' : 'Unpredictable but exciting creative bursts.'}`
-      : 'No Uranus-Venus aspect. Innovation comes from conscious experimentation.',
-    strength: uranusVenus ? 'moderate' : 'absent'
-  });
-  if (uranusVenus) score += 12;
-  
-  // Moon-Neptune - emotional/intuitive creativity
   const moonNeptune = checkAspect(chart1, 'Moon', chart2, 'Neptune') || checkAspect(chart2, 'Moon', chart1, 'Neptune');
+  maxPossiblePoints += 8;
   indicators.push({
     name: 'Moon-Neptune: Intuitive Creation',
     found: !!moonNeptune,
@@ -792,13 +649,32 @@ function analyzeCreative(chart1: NatalChart, chart2: NatalChart): FocusAnalysis 
     planet1: 'Moon',
     planet2: 'Neptune',
     interpretation: moonNeptune
-      ? `${moonNeptune.type} (${moonNeptune.orb}° orb): Deeply intuitive creative connection. ${moonNeptune.quality === 'harmonious' ? 'You tap into a shared creative stream - almost telepathic inspiration.' : 'Powerful but sometimes overwhelming emotional creativity.'}`
-      : 'No Moon-Neptune aspect. Intuitive creativity develops through shared experience.',
+      ? `${moonNeptune.type} (${moonNeptune.orb}° orb): ${moonNeptune.quality === 'harmonious' ? 'Shared creative stream - almost telepathic.' : 'Powerful emotional creativity.'}`
+      : 'No Moon-Neptune aspect. Intuitive creativity develops through experience.',
     strength: moonNeptune ? (moonNeptune.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
   });
-  if (moonNeptune) score += moonNeptune.quality === 'harmonious' ? 15 : 8;
+  if (moonNeptune) rawPoints += moonNeptune.quality === 'harmonious' ? 8 : 4;
   
-  const overallStrength = Math.min(100, Math.round(score * 1.2));
+  // TIER 3: Innovation indicators (4 pts each)
+  const uranusVenus = checkAspect(chart1, 'Uranus', chart2, 'Venus') || checkAspect(chart2, 'Uranus', chart1, 'Venus');
+  if (uranusVenus) {
+    maxPossiblePoints += 4;
+    indicators.push({
+      name: 'Uranus-Venus: Creative Innovation',
+      found: true,
+      aspect: uranusVenus,
+      planet1: 'Uranus',
+      planet2: 'Venus',
+      interpretation: `${uranusVenus.type} (${uranusVenus.orb}° orb): Uranus electrifies creativity. Innovative, ahead-of-the-curve work.`,
+      strength: 'moderate'
+    });
+    rawPoints += 4;
+  }
+  
+  // Calculate balanced percentage
+  const baseScore = 30;
+  const achievedPercentage = maxPossiblePoints > 0 ? (rawPoints / maxPossiblePoints) * 50 : 0;
+  const overallStrength = Math.max(15, Math.min(85, Math.round(baseScore + achievedPercentage)));
   const strongIndicators = indicators.filter(i => i.strength === 'strong');
   
   return {
@@ -806,15 +682,15 @@ function analyzeCreative(chart1: NatalChart, chart2: NatalChart): FocusAnalysis 
     title: 'Creative Partnership Analysis',
     overallStrength,
     indicators,
-    summary: overallStrength >= 70
-      ? `Strong creative partnership potential! ${strongIndicators.length} key connections support artistic collaboration and shared vision.`
+    summary: overallStrength >= 65
+      ? `Strong creative partnership! ${strongIndicators.length} key connections support artistic collaboration.`
       : overallStrength >= 45
-      ? `Good creative potential. Some natural synergy exists; others require conscious cultivation.`
-      : `Creative collaboration may require more structure and explicit goal-setting. Different creative styles can complement if harnessed well.`,
+      ? `Good creative potential. Some synergy exists; others need cultivation.`
+      : `Creative collaboration needs structure. Different styles can complement if harnessed well.`,
     recommendations: [
-      ...(neptuneSun ? ['Your Neptune-Sun connection supports shared dreaming - use vision boards and brainstorming'] : []),
-      ...(venusVenus ? ['Lean into your shared aesthetic - create in your mutual style'] : ['Explore each other\'s aesthetic preferences']),
-      ...(mercuryVenus ? ['Your Mercury-Venus supports artistic dialogue - talk through creative ideas together'] : []),
+      ...(neptuneSun ? ['Your Neptune-Sun supports shared dreaming'] : []),
+      ...(venusVenus ? ['Lean into your shared aesthetic'] : ['Explore each other\'s preferences']),
+      ...(mercuryVenus ? ['Use your Mercury-Venus for creative dialogue'] : []),
       'Schedule regular creative sessions together'
     ]
   };
