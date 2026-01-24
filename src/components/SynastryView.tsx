@@ -558,6 +558,27 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
     return analyzeShadowDynamics(chart1, chart2);
   }, [chart1, chart2]);
 
+  // Calculate TRUE overall score as weighted average of all 5 focus types
+  const trueOverallScore = useMemo(() => {
+    if (!chart1 || !chart2) return null;
+    
+    const focusTypes: Array<'romantic' | 'friendship' | 'business' | 'creative' | 'family'> = 
+      ['romantic', 'friendship', 'business', 'creative', 'family'];
+    
+    const scores = focusTypes.map(focus => {
+      const analysis = analyzeRelationshipFocus(chart1, chart2, focus);
+      return analysis.overallStrength;
+    });
+    
+    // Calculate weighted average (all equal weight)
+    const average = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+    
+    return {
+      overall: average,
+      breakdown: focusTypes.map((focus, i) => ({ focus, score: scores[i] }))
+    };
+  }, [chart1, chart2]);
+
   // Handle adding/removing/changing people
   const addPerson = (id: string) => {
     if (!selectedChartIds.includes(id)) {
@@ -700,6 +721,27 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
               ))}
             </div>
           </div>
+
+          {/* OVERALL SCORE BANNER - Shows first for all pair analyses */}
+          {!isGroupAnalysis && trueOverallScore && chart1 && chart2 && (
+            <div className="text-center p-6 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/30 border">
+              <div className="text-5xl font-bold text-primary mb-2">
+                {trueOverallScore.overall}%
+              </div>
+              <p className="text-lg font-medium">Overall Compatibility</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                {chart1.name} & {chart2.name}
+              </p>
+              <div className="flex flex-wrap justify-center gap-3 mt-4">
+                {trueOverallScore.breakdown.map(({ focus, score }) => (
+                  <div key={focus} className="text-center">
+                    <div className="text-sm font-semibold text-primary">{score}%</div>
+                    <div className="text-xs text-muted-foreground capitalize">{focus}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           
           {/* GROUP ANALYSIS VIEW */}
           {isGroupAnalysis && groupReport && (
@@ -719,15 +761,6 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                     chart2Name={chart2.name} 
                   />
                 </div>
-              )}
-
-              {/* Shadow Indicators - only for pair analysis */}
-              {shadowAnalysis && shadowAnalysis.indicators.length > 0 && chart1 && chart2 && (
-                <ShadowIndicatorsCard 
-                  analysis={shadowAnalysis} 
-                  chart1Name={chart1.name} 
-                  chart2Name={chart2.name} 
-                />
               )}
               
               {/* Chart Type Tabs */}
@@ -775,13 +808,9 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                         <SynastryWheelSimple chart1={chart1} chart2={chart2} size={420} />
                       </section>
                       
-                      {/* Overall Score */}
-                      <div className="text-center p-8 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/30 border">
-                        <div className="text-6xl font-bold text-primary mb-2">
-                          {report.overallCompatibility}%
-                        </div>
-                        <p className="text-lg font-medium">Overall Compatibility</p>
-                        <p className="text-sm text-muted-foreground mt-2 max-w-xl mx-auto">
+                      {/* Why Drawn Together - narrative context */}
+                      <div className="p-4 rounded-lg bg-secondary/30 border">
+                        <p className="text-sm text-center text-muted-foreground max-w-xl mx-auto">
                           {report.whyDrawnTogether}
                         </p>
                       </div>
@@ -929,6 +958,15 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                           </ul>
                         </div>
                       </section>
+
+                      {/* Shadow Indicators - placed LAST, after all positive content */}
+                      {shadowAnalysis && shadowAnalysis.indicators.length > 0 && (
+                        <ShadowIndicatorsCard 
+                          analysis={shadowAnalysis} 
+                          chart1Name={chart1.name} 
+                          chart2Name={chart2.name} 
+                        />
+                      )}
                     </>
                   )}
                 </TabsContent>

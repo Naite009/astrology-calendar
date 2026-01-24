@@ -117,7 +117,7 @@ export function analyzeShadowDynamics(chart1: NatalChart, chart2: NatalChart): S
         'Sun feels smaller or less confident over time',
         'Pluto monitors or controls Sun\'s activities'
       ],
-      healingPath: 'Sun must maintain strong boundaries around identity. Pluto must examine their need for control. Couples therapy focusing on power dynamics is highly recommended.',
+      healingPath: 'Sun must maintain strong boundaries around identity. Pluto must examine their need for control through individual therapy. If feeling unsafe, prioritize your own well-being and seek support independently.',
       planets: ['Pluto', 'Sun'],
       aspect: plutoSun
     });
@@ -384,7 +384,7 @@ export function analyzeShadowDynamics(chart1: NatalChart, chart2: NatalChart): S
   // Generate summary
   let summary: string;
   if (overallRiskLevel === 'significant') {
-    summary = `This synastry shows ${indicators.length} shadow indicators including ${significantCount} significant pattern(s). These are not predictions—they are energetic tendencies that require conscious awareness and may benefit from professional support. Both partners must commit to healthy communication and consider couples therapy.`;
+    summary = `This synastry shows ${indicators.length} shadow indicators including ${significantCount} significant pattern(s). These are energetic tendencies—not predictions—that benefit from self-awareness and individual support. If any patterns feel concerning, prioritize your safety and well-being above all else.`;
   } else if (overallRiskLevel === 'caution') {
     summary = `This synastry shows ${indicators.length} shadow pattern(s) that warrant awareness. With consciousness and communication, these can be navigated successfully. Pay attention to the warning behaviors listed and address patterns early.`;
   } else if (overallRiskLevel === 'watch') {
@@ -397,6 +397,6 @@ export function analyzeShadowDynamics(chart1: NatalChart, chart2: NatalChart): S
     indicators,
     overallRiskLevel,
     summary,
-    disclaimer: `IMPORTANT: Astrological patterns indicate energetic tendencies, not guaranteed outcomes. Anyone can choose to express their chart consciously. These indicators are meant to promote awareness, not to label individuals as "abusers" or "victims." Healthy relationships require ongoing work regardless of synastry. If you are experiencing abuse, please contact a domestic violence hotline or professional support.`
+    disclaimer: `IMPORTANT: Astrological patterns indicate energetic tendencies, not guaranteed outcomes. These indicators promote awareness, not labels. If you are experiencing abuse or feel unsafe, couples therapy is NOT recommended—please prioritize your safety and contact the National Domestic Violence Hotline (1-800-799-7233) or seek individual professional support.`
   };
 }
