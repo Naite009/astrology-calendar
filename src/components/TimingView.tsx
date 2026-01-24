@@ -20,6 +20,9 @@ import { SaturnReturnCalculator } from '@/components/SaturnReturnCalculator';
 import { DailySynthesisCard } from '@/components/DailySynthesisCard';
 import { BestRomanceDaysCard } from '@/components/BestRomanceDaysCard';
 import { SynastryAnalysisCard } from '@/components/SynastryAnalysisCard';
+import { TransitAlertsCard } from '@/components/TransitAlertsCard';
+import { CompositeChartCard } from '@/components/CompositeChartCard';
+import { BestDaysSummaryCard } from '@/components/BestDaysSummaryCard';
 interface TimingViewProps {
   userNatalChart: NatalChart | null;
   savedCharts: NatalChart[];
@@ -378,6 +381,26 @@ const RightNowSection = ({
       {savedCharts.length >= 1 && activeChart && (
         <div className="mt-6">
           <SynastryAnalysisCard 
+            chart1={activeChart}
+            chart2={savedCharts.find(c => c.id !== activeChart?.id) || null}
+          />
+        </div>
+      )}
+
+      {/* Transit Alerts Card */}
+      <div className="mt-6">
+        <TransitAlertsCard natalChart={activeChart} />
+      </div>
+
+      {/* Best Days Summary Card */}
+      <div className="mt-6">
+        <BestDaysSummaryCard natalChart={activeChart} />
+      </div>
+
+      {/* Composite Chart */}
+      {savedCharts.length >= 1 && activeChart && (
+        <div className="mt-6">
+          <CompositeChartCard 
             chart1={activeChart}
             chart2={savedCharts.find(c => c.id !== activeChart?.id) || null}
           />
