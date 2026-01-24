@@ -79,6 +79,13 @@ export interface ShadowIndicator {
   healingPath: string;
   planets: string[];
   aspect?: AspectResult;
+  // NEW: Track who owns which planet
+  planetOwnership?: {
+    planet1: string;
+    planet1Owner: string;
+    planet2: string;
+    planet2Owner: string;
+  };
 }
 
 export interface ShadowAnalysis {
@@ -91,8 +98,10 @@ export interface ShadowAnalysis {
 /**
  * Analyze shadow dynamics and risk factors in synastry
  */
-export function analyzeShadowDynamics(chart1: NatalChart, chart2: NatalChart): ShadowAnalysis {
+export function analyzeShadowDynamics(chart1: NatalChart, chart2: NatalChart, chart1Name?: string, chart2Name?: string): ShadowAnalysis {
   const indicators: ShadowIndicator[] = [];
+  const name1 = chart1Name || chart1.name || 'Person 1';
+  const name2 = chart2Name || chart2.name || 'Person 2';
 
   // ============================================
   // POWER & CONTROL PATTERNS
@@ -102,24 +111,28 @@ export function analyzeShadowDynamics(chart1: NatalChart, chart2: NatalChart): S
   const plutoSun1 = checkAspect(chart1, 'Pluto', chart2, 'Sun');
   const plutoSun2 = checkAspect(chart2, 'Pluto', chart1, 'Sun');
   const plutoSun = plutoSun1 || plutoSun2;
+  const plutoSunOwnership = plutoSun1 
+    ? { planet1: 'Pluto', planet1Owner: name1, planet2: 'Sun', planet2Owner: name2 }
+    : { planet1: 'Pluto', planet1Owner: name2, planet2: 'Sun', planet2Owner: name1 };
+    
   if (plutoSun && (plutoSun.type === 'square' || plutoSun.type === 'opposition' || plutoSun.type === 'conjunction')) {
     indicators.push({
       name: 'Pluto-Sun: Power Over Identity',
       category: 'power-control',
       riskLevel: plutoSun.type === 'square' ? 'significant' : 'caution',
-      description: `${plutoSun.type} (${plutoSun.orb}° orb): Pluto seeks to transform or control Sun's core identity.`,
-      dynamicExplanation: `The Pluto person may unconsciously attempt to reshape, dominate, or "improve" the Sun person's sense of self. The Sun person may initially be fascinated by Pluto's intensity but over time feel their individuality is being erased. Pluto can use psychological insight as a weapon. The Sun person may feel they can never fully be themselves.`,
-      healthyExpression: 'Pluto empowers Sun to embrace their shadow and become more authentic. Sun helps Pluto soften their intensity. Both transform together rather than one dominating.',
+      description: `${plutoSun.type} (${plutoSun.orb}° orb): ${plutoSunOwnership.planet1Owner}'s Pluto ♇ aspects ${plutoSunOwnership.planet2Owner}'s Sun ☉`,
+      dynamicExplanation: `${plutoSunOwnership.planet1Owner} (Pluto) may unconsciously attempt to reshape, dominate, or "improve" ${plutoSunOwnership.planet2Owner}'s (Sun) sense of self. ${plutoSunOwnership.planet2Owner} may initially be fascinated by ${plutoSunOwnership.planet1Owner}'s intensity but over time feel their individuality is being erased.`,
+      healthyExpression: `${plutoSunOwnership.planet1Owner} empowers ${plutoSunOwnership.planet2Owner} to embrace their shadow and become more authentic. ${plutoSunOwnership.planet2Owner} helps ${plutoSunOwnership.planet1Owner} soften their intensity. Both transform together rather than one dominating.`,
       warningBehaviors: [
-        'Pluto criticizes Sun\'s friends, interests, or self-expression',
-        'Sun starts changing who they are to please Pluto',
-        'Pluto uses emotional intensity to "win" arguments',
-        'Sun feels smaller or less confident over time',
-        'Pluto monitors or controls Sun\'s activities'
+        `${plutoSunOwnership.planet1Owner} criticizes ${plutoSunOwnership.planet2Owner}'s friends, interests, or self-expression`,
+        `${plutoSunOwnership.planet2Owner} starts changing who they are to please ${plutoSunOwnership.planet1Owner}`,
+        `${plutoSunOwnership.planet1Owner} uses emotional intensity to "win" arguments`,
+        `${plutoSunOwnership.planet2Owner} feels smaller or less confident over time`
       ],
-      healingPath: 'Sun must maintain strong boundaries around identity. Pluto must examine their need for control through individual therapy. If feeling unsafe, prioritize your own well-being and seek support independently.',
+      healingPath: `${plutoSunOwnership.planet2Owner} must maintain strong boundaries around identity. ${plutoSunOwnership.planet1Owner} must examine their need for control through individual therapy.`,
       planets: ['Pluto', 'Sun'],
-      aspect: plutoSun
+      aspect: plutoSun,
+      planetOwnership: plutoSunOwnership
     });
   }
 
@@ -127,24 +140,28 @@ export function analyzeShadowDynamics(chart1: NatalChart, chart2: NatalChart): S
   const plutoMoon1 = checkAspect(chart1, 'Pluto', chart2, 'Moon');
   const plutoMoon2 = checkAspect(chart2, 'Pluto', chart1, 'Moon');
   const plutoMoon = plutoMoon1 || plutoMoon2;
+  const plutoMoonOwnership = plutoMoon1 
+    ? { planet1: 'Pluto', planet1Owner: name1, planet2: 'Moon', planet2Owner: name2 }
+    : { planet1: 'Pluto', planet1Owner: name2, planet2: 'Moon', planet2Owner: name1 };
+    
   if (plutoMoon && (plutoMoon.type === 'square' || plutoMoon.type === 'opposition' || plutoMoon.type === 'conjunction')) {
     indicators.push({
       name: 'Pluto-Moon: Emotional Manipulation Risk',
       category: 'manipulation',
       riskLevel: plutoMoon.type === 'square' ? 'significant' : 'caution',
-      description: `${plutoMoon.type} (${plutoMoon.orb}° orb): Intense emotional dynamics with potential for psychological manipulation.`,
-      dynamicExplanation: `The Pluto person can easily access the Moon person's deepest emotional vulnerabilities. This creates profound intimacy but also danger—Pluto may use emotional knowledge to control, manipulate, or gaslight the Moon person. The Moon person becomes emotionally dependent and may lose touch with their own feelings. Jealousy, possessiveness, and emotional blackmail can emerge.`,
-      healthyExpression: 'Deep emotional transformation and healing. Pluto helps Moon access buried feelings safely. Moon teaches Pluto emotional vulnerability without loss of power.',
+      description: `${plutoMoon.type} (${plutoMoon.orb}° orb): ${plutoMoonOwnership.planet1Owner}'s Pluto ♇ aspects ${plutoMoonOwnership.planet2Owner}'s Moon ☽`,
+      dynamicExplanation: `${plutoMoonOwnership.planet1Owner} (Pluto) can easily access ${plutoMoonOwnership.planet2Owner}'s (Moon) deepest emotional vulnerabilities. This creates profound intimacy but also danger—${plutoMoonOwnership.planet1Owner} may use emotional knowledge to control or gaslight ${plutoMoonOwnership.planet2Owner}.`,
+      healthyExpression: `Deep emotional transformation and healing. ${plutoMoonOwnership.planet1Owner} helps ${plutoMoonOwnership.planet2Owner} access buried feelings safely. ${plutoMoonOwnership.planet2Owner} teaches ${plutoMoonOwnership.planet1Owner} emotional vulnerability without loss of power.`,
       warningBehaviors: [
-        'Pluto uses "I know you better than you know yourself" to override Moon\'s feelings',
-        'Moon feels crazy, confused, or doubts their own emotional reality',
-        'Pluto creates dramatic emotional scenes to regain control',
-        'Moon walks on eggshells to avoid Pluto\'s reactions',
-        'Pluto isolates Moon from other emotional support'
+        `${plutoMoonOwnership.planet1Owner} uses "I know you better than you know yourself" to override ${plutoMoonOwnership.planet2Owner}'s feelings`,
+        `${plutoMoonOwnership.planet2Owner} feels crazy, confused, or doubts their own emotional reality`,
+        `${plutoMoonOwnership.planet1Owner} creates dramatic emotional scenes to regain control`,
+        `${plutoMoonOwnership.planet2Owner} walks on eggshells to avoid ${plutoMoonOwnership.planet1Owner}'s reactions`
       ],
-      healingPath: 'Moon must maintain external support systems and trust their own feelings. Pluto must commit to therapy addressing control patterns. This aspect requires conscious work to remain healthy.',
+      healingPath: `${plutoMoonOwnership.planet2Owner} must maintain external support systems and trust their own feelings. ${plutoMoonOwnership.planet1Owner} must commit to therapy addressing control patterns.`,
       planets: ['Pluto', 'Moon'],
-      aspect: plutoMoon
+      aspect: plutoMoon,
+      planetOwnership: plutoMoonOwnership
     });
   }
 

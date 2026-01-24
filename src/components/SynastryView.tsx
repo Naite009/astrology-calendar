@@ -45,23 +45,25 @@ const RelationshipTypeCard = ({ type }: { type: RelationshipTypeScore }) => {
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <div className="p-4 rounded-lg border border-border bg-card hover:bg-secondary/30 transition-colors">
-        <CollapsibleTrigger className="w-full">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">{type.icon}</span>
-              <div className="text-left">
-                <h4 className="font-medium text-sm">{type.label}</h4>
-                <p className="text-xs text-muted-foreground">{type.description}</p>
+        <CollapsibleTrigger asChild>
+          <button className="w-full text-left">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">{type.icon}</span>
+                <div className="text-left">
+                  <h4 className="font-medium text-sm">{type.label}</h4>
+                  <p className="text-xs text-muted-foreground">{type.description}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <div className="text-xl font-bold text-primary">{type.score}%</div>
+                </div>
+                {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <div className="text-xl font-bold text-primary">{type.score}%</div>
-              </div>
-              {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-            </div>
-          </div>
-          <Progress value={type.score} className="mt-2 h-2" />
+            <Progress value={type.score} className="mt-2 h-2" />
+          </button>
         </CollapsibleTrigger>
         <CollapsibleContent>
           {type.indicators.length > 0 && (
@@ -552,10 +554,10 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
     return analyzeRelationshipFocus(chart1, chart2, relationshipFocus);
   }, [chart1, chart2, relationshipFocus]);
 
-  // Get shadow dynamics analysis
+  // Get shadow dynamics analysis - pass chart names for personalized output
   const shadowAnalysis = useMemo(() => {
     if (!chart1 || !chart2) return null;
-    return analyzeShadowDynamics(chart1, chart2);
+    return analyzeShadowDynamics(chart1, chart2, chart1.name, chart2.name);
   }, [chart1, chart2]);
 
   // Calculate TRUE overall score as weighted average of all 5 focus types
@@ -822,17 +824,37 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                         </section>
                       )}
                       
-                      {/* Relationship Types - only show when "All Types" is selected */}
-                      {relationshipFocus === 'all' && (
+                      {/* Relationship Types - use balanced scores from trueOverallScore */}
+                      {relationshipFocus === 'all' && trueOverallScore && (
                         <section>
                           <h3 className="text-xl font-serif mb-4 flex items-center gap-2">
                             <Sparkles className="text-primary" size={20} />
                             Connection Types Overview
                           </h3>
                           <div className="grid md:grid-cols-2 gap-4">
-                            {report.bestRelationshipTypes.map((type) => (
-                              <RelationshipTypeCard key={type.type} type={type} />
-                            ))}
+                            {trueOverallScore.breakdown.map(({ focus, score }) => {
+                              const focusConfig = {
+                                romantic: { label: 'Romantic Partnership', icon: '💕', description: 'Intimate, romantic, and potentially long-term love connection' },
+                                friendship: { label: 'Friendship', icon: '🤝', description: 'Platonic connection, companionship, mutual enjoyment' },
+                                business: { label: 'Business Partnership', icon: '💼', description: 'Professional collaboration, shared ventures, career synergy' },
+                                creative: { label: 'Creative Partnership', icon: '🎨', description: 'Artistic collaboration, inspiration, imaginative projects' },
+                                family: { label: 'Family Bond', icon: '🏠', description: 'Family dynamics, nurturing connections, domestic harmony' }
+                              };
+                              const config = focusConfig[focus as keyof typeof focusConfig];
+                              return (
+                                <RelationshipTypeCard 
+                                  key={focus} 
+                                  type={{
+                                    type: focus as any,
+                                    score,
+                                    label: config.label,
+                                    description: config.description,
+                                    icon: config.icon,
+                                    indicators: []
+                                  }} 
+                                />
+                              );
+                            })}
                           </div>
                         </section>
                       )}
