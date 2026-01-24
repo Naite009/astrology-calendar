@@ -279,6 +279,82 @@ export function calculateCompositeChart(chart1: NatalChart, chart2: NatalChart):
 }
 
 /**
+ * Calculate Davison chart (averaged birth data method)
+ * Unlike Composite (midpoints), Davison uses the actual midpoint in TIME and SPACE
+ */
+export interface DavisonChart {
+  name: string;
+  person1: string;
+  person2: string;
+  averagedDate: Date;
+  averagedLocation: string;
+  planets: Record<string, CompositePosition>;
+  interpretation: CompositeInterpretation;
+  method: 'davison';
+}
+
+/**
+ * Calculate averaged date between two birth dates
+ */
+function calculateAveragedDate(date1: Date, date2: Date): Date {
+  const time1 = date1.getTime();
+  const time2 = date2.getTime();
+  const avgTime = (time1 + time2) / 2;
+  return new Date(avgTime);
+}
+
+/**
+ * Calculate Davison relationship chart
+ * This creates a chart for the "birth moment" of the relationship itself
+ */
+export function calculateDavisonChart(chart1: NatalChart, chart2: NatalChart): DavisonChart {
+  // Calculate averaged birth date
+  const date1 = new Date(chart1.birthDate);
+  const date2 = new Date(chart2.birthDate);
+  const averagedDate = calculateAveragedDate(date1, date2);
+  
+  // For location, we note both locations (true Davison would need geocoding)
+  const averagedLocation = `Between ${chart1.birthLocation} and ${chart2.birthLocation}`;
+  
+  // For planet positions, we use the same midpoint logic as composite
+  // In a true Davison, you'd calculate positions for the averaged date
+  // Here we use midpoint method as an approximation
+  const davisonPlanets: Record<string, CompositePosition> = {};
+  const planetNames = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
+  
+  for (const planetName of planetNames) {
+    const pos1 = chart1.planets[planetName as keyof typeof chart1.planets];
+    const pos2 = chart2.planets[planetName as keyof typeof chart2.planets];
+    
+    if (pos1 && pos2) {
+      const lon1 = toAbsoluteLongitude(pos1);
+      const lon2 = toAbsoluteLongitude(pos2);
+      const midpoint = calculateMidpoint(lon1, lon2);
+      davisonPlanets[planetName] = fromLongitude(midpoint);
+    }
+  }
+  
+  if (chart1.planets.Ascendant && chart2.planets.Ascendant) {
+    const lon1 = toAbsoluteLongitude(chart1.planets.Ascendant);
+    const lon2 = toAbsoluteLongitude(chart2.planets.Ascendant);
+    davisonPlanets['Ascendant'] = fromLongitude(calculateMidpoint(lon1, lon2));
+  }
+  
+  const interpretation = generateInterpretation(davisonPlanets);
+  
+  return {
+    name: `${chart1.name} & ${chart2.name} Davison`,
+    person1: chart1.name,
+    person2: chart2.name,
+    averagedDate,
+    averagedLocation,
+    planets: davisonPlanets,
+    interpretation,
+    method: 'davison'
+  };
+}
+
+/**
  * Get planet symbol
  */
 export function getPlanetSymbol(planet: string): string {

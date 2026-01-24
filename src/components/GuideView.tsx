@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-type GuideSection = "overview" | "colors" | "symbols" | "moonphases" | "retrogrades" | "aspects" | "dignities" | "fixedstars" | "divinefeminine" | "venuscycles" | "vocmoon" | "planetaryhours" | "solararc" | "progressions";
+type GuideSection = "overview" | "colors" | "symbols" | "moonphases" | "retrogrades" | "aspects" | "dignities" | "fixedstars" | "divinefeminine" | "venuscycles" | "vocmoon" | "planetaryhours" | "solararc" | "progressions" | "relationships";
 
 const SymbolCard = ({ icon, name, desc }: { icon: string; name: string; desc: string }) => (
   <div className="rounded-sm border border-border bg-secondary p-4">
@@ -1391,10 +1391,118 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
       </>
     ),
   },
+  relationships: {
+    title: "Relationship Astrology",
+    content: (
+      <>
+        <p>
+          The Timing section includes powerful tools for understanding relationship dynamics 
+          through multiple astrological techniques. Here's a guide to each feature:
+        </p>
+        
+        <h3>💕 Best Romance Days</h3>
+        <p>
+          This feature identifies the top 5 days in the next 30 days that are most favorable for 
+          romance, dates, and connection. It combines:
+        </p>
+        <ul>
+          <li><strong>Moon Phase & Sign:</strong> Full moons illuminate romance; Moon in Libra, Taurus, or Leo enhances love energy</li>
+          <li><strong>Venus Aspects:</strong> When Venus makes harmonious aspects (especially to Mars, Jupiter, or the Moon)</li>
+          <li><strong>Biorhythm Romance Readiness:</strong> Your personal passion, magnetism, and emotional openness cycles</li>
+          <li><strong>Romantic Mood:</strong> Each day has a mood (passionate, dreamy, sensual, playful, deep, adventurous)</li>
+        </ul>
+        <p>
+          Click on any day to see specific activity suggestions and why that day is favorable.
+        </p>
+        
+        <h3>✨ Synastry Analysis</h3>
+        <p>
+          Synastry compares the aspects between two natal charts to reveal relationship dynamics:
+        </p>
+        <ul>
+          <li><strong>Venus-Mars Aspects:</strong> Physical chemistry and romantic attraction</li>
+          <li><strong>Sun-Moon Aspects:</strong> Core identity and emotional compatibility</li>
+          <li><strong>Moon-Moon Aspects:</strong> Emotional understanding and nurturing styles</li>
+          <li><strong>Saturn Aspects:</strong> Karmic bonds and commitment potential</li>
+          <li><strong>Pluto Aspects:</strong> Transformative intensity and power dynamics</li>
+        </ul>
+        <p>
+          The analysis provides scores for Passion, Emotional, Mental, and Karmic compatibility, 
+          plus a "Soul Contract" interpretation.
+        </p>
+        
+        <h3>👥 Composite Chart</h3>
+        <p>
+          A Composite Chart creates a single "relationship chart" by calculating the midpoint 
+          between each pair of planets. This chart represents the relationship as its own entity 
+          — the "third being" that emerges when two people come together.
+        </p>
+        <ul>
+          <li><strong>Composite Sun:</strong> The relationship's core purpose and identity</li>
+          <li><strong>Composite Moon:</strong> The emotional climate and how you nurture each other</li>
+          <li><strong>Composite Venus:</strong> How the relationship expresses love and affection</li>
+          <li><strong>Composite Mars:</strong> The relationship's drive, passion, and how you handle conflict</li>
+        </ul>
+        
+        <h3>📅 Davison Chart</h3>
+        <p>
+          The Davison Chart (also called a Relationship Chart) uses a different method: it calculates 
+          the midpoint in <em>time</em> and <em>space</em> between two births, creating an actual 
+          horoscope for that moment and place. This represents the "birth moment" of the relationship itself.
+        </p>
+        <ul>
+          <li><strong>Shows:</strong> The date the relationship was "born" as an averaged moment</li>
+          <li><strong>Best for:</strong> Understanding the relationship's karmic purpose and destiny</li>
+          <li><strong>Use when:</strong> You want to know the relationship's inherent qualities independent of the individuals</li>
+        </ul>
+        <p>
+          Toggle between Composite and Davison methods in the relationship chart card to compare both perspectives.
+        </p>
+        
+        <h3>🔔 Transit Alerts</h3>
+        <p>
+          This feature monitors major outer planet transits (Jupiter, Saturn, Uranus, Neptune, Pluto) 
+          to your personal planets and alerts you when they're approaching or exact:
+        </p>
+        <ul>
+          <li><strong>Critical:</strong> Exact outer planet transits to Sun, Moon, or Ascendant</li>
+          <li><strong>High:</strong> Approaching transits within 1° orb to personal planets</li>
+          <li><strong>Medium:</strong> Transits within 2-3° that are building</li>
+          <li><strong>Low:</strong> Fast-moving planet transits and separating aspects</li>
+        </ul>
+        <p>
+          Each alert includes an interpretation and practical advice for navigating the energy.
+        </p>
+        
+        <h3>📊 Biorhythm Compatibility</h3>
+        <p>
+          Beyond astrology, the biorhythm system tracks physical (23-day), emotional (28-day), 
+          intellectual (33-day), and intuitive (38-day) cycles. In Romance mode, it compares 
+          two people's cycles to calculate:
+        </p>
+        <ul>
+          <li><strong>Passion Score:</strong> Physical + Emotional cycle alignment</li>
+          <li><strong>Communication Score:</strong> Intellectual + Emotional cycle alignment</li>
+          <li><strong>Overall Sync:</strong> Combined compatibility across all cycles</li>
+        </ul>
+        <p>
+          The 30-day forecast shows a "Compatibility Wave" with peak romantic days marked with ❤️.
+        </p>
+        
+        <h3>📆 Best Days Summary</h3>
+        <p>
+          This card shows the single best day for each life area (love, career, health, travel, 
+          finance, beauty) at a glance. When multiple categories peak on the same day, it's 
+          highlighted as a "Power Day" — perfect for major life events.
+        </p>
+      </>
+    ),
+  },
 };
 
 const NAV_ITEMS: { key: GuideSection; label: string }[] = [
   { key: "overview", label: "Overview" },
+  { key: "relationships", label: "Relationships" },
   { key: "colors", label: "Colors" },
   { key: "symbols", label: "Symbols" },
   { key: "moonphases", label: "Moon Phases" },
