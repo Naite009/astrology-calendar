@@ -6,6 +6,7 @@ import { calculateCompositeChart, calculateDavisonChart, getPlanetSymbol } from 
 import { analyzeRelationshipFocus, FocusAnalysis, FocusIndicator } from '@/lib/relationshipFocusAnalysis';
 import { filterHouseOverlaysForFocus, filterKarmicIndicatorsForFocus, generateFocusedSoulContractTheme, RelationshipFocus } from '@/lib/focusAwareInterpretations';
 import { analyzeGroupDynamics, GroupDynamicsReport } from '@/lib/groupDynamicsAnalysis';
+import { analyzeShadowDynamics } from '@/lib/shadowIndicators';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -20,6 +21,8 @@ import { SynastryTransitTimeline } from './SynastryTransitTimeline';
 import { SynastryPDFExport } from './SynastryPDFExport';
 import { RelationshipTimingCalculator } from './RelationshipTimingCalculator';
 import { CompatibilityRadarChart } from './CompatibilityRadarChart';
+import { ScoringBreakdownView } from './ScoringBreakdownView';
+import { ShadowIndicatorsCard } from './ShadowIndicatorsCard';
 import { format } from 'date-fns';
 
 interface SynastryViewProps {
@@ -549,6 +552,12 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
     return analyzeRelationshipFocus(chart1, chart2, relationshipFocus);
   }, [chart1, chart2, relationshipFocus]);
 
+  // Get shadow dynamics analysis
+  const shadowAnalysis = useMemo(() => {
+    if (!chart1 || !chart2) return null;
+    return analyzeShadowDynamics(chart1, chart2);
+  }, [chart1, chart2]);
+
   // Handle adding/removing/changing people
   const addPerson = (id: string) => {
     if (!selectedChartIds.includes(id)) {
@@ -700,9 +709,25 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
           {/* PAIR ANALYSIS VIEW */}
           {!isGroupAnalysis && (
             <>
-              {/* Detailed Focus Analysis */}
-              {focusAnalysis && (
-                <FocusAnalysisCard analysis={focusAnalysis} />
+              {/* Detailed Focus Analysis with Scoring Breakdown */}
+              {focusAnalysis && chart1 && chart2 && (
+                <div className="space-y-4">
+                  <FocusAnalysisCard analysis={focusAnalysis} />
+                  <ScoringBreakdownView 
+                    analysis={focusAnalysis} 
+                    chart1Name={chart1.name} 
+                    chart2Name={chart2.name} 
+                  />
+                </div>
+              )}
+
+              {/* Shadow Indicators - only for pair analysis */}
+              {shadowAnalysis && shadowAnalysis.indicators.length > 0 && chart1 && chart2 && (
+                <ShadowIndicatorsCard 
+                  analysis={shadowAnalysis} 
+                  chart1Name={chart1.name} 
+                  chart2Name={chart2.name} 
+                />
               )}
               
               {/* Chart Type Tabs */}

@@ -713,7 +713,7 @@ function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): Foc
 }
 
 // ============================================
-// FRIENDSHIP ANALYSIS - Professional-grade
+// FRIENDSHIP ANALYSIS - Professional-grade (Expanded)
 // ============================================
 function analyzeFriendship(chart1: NatalChart, chart2: NatalChart): FocusAnalysis {
   const indicators: FocusIndicator[] = [];
@@ -721,7 +721,10 @@ function analyzeFriendship(chart1: NatalChart, chart2: NatalChart): FocusAnalysi
   let maxStandardPoints = 0;
   let karmicBonus = 0;
   
+  // ============================================
   // TIER 1: Core friendship indicators (10 pts each)
+  // ============================================
+  
   const mercuryMercury = checkAspect(chart1, 'Mercury', chart2, 'Mercury');
   maxStandardPoints += 10;
   indicators.push({
@@ -731,6 +734,7 @@ function analyzeFriendship(chart1: NatalChart, chart2: NatalChart): FocusAnalysi
     planet1: 'Mercury',
     planet2: 'Mercury',
     tier: 1,
+    points: mercuryMercury ? (mercuryMercury.quality === 'harmonious' ? 10 : 5) : 0,
     interpretation: mercuryMercury
       ? `${mercuryMercury.type} (${mercuryMercury.orb}° orb): ${mercuryMercury.quality === 'harmonious' ? 'You could talk for hours! Natural mental rapport.' : 'Stimulating discussions that make each other think.'}`
       : 'No direct Mercury aspect. Conversation may require more effort.',
@@ -747,6 +751,7 @@ function analyzeFriendship(chart1: NatalChart, chart2: NatalChart): FocusAnalysi
     planet1: 'Sun',
     planet2: 'Moon',
     tier: 1,
+    points: sunMoon ? (sunMoon.quality === 'harmonious' ? 10 : 5) : 0,
     interpretation: sunMoon
       ? `${sunMoon.type} (${sunMoon.orb}° orb): ${sunMoon.quality === 'harmonious' ? 'You "get" each other at a fundamental level.' : 'Your core natures interact intensely.'}`
       : 'No Sun-Moon aspect. Understanding develops over time.',
@@ -754,24 +759,44 @@ function analyzeFriendship(chart1: NatalChart, chart2: NatalChart): FocusAnalysi
   });
   if (sunMoon) standardPoints += sunMoon.quality === 'harmonious' ? 10 : 5;
   
-  // Sun-Sun for identity alignment
   const sunSun = checkAspect(chart1, 'Sun', chart2, 'Sun');
   maxStandardPoints += 10;
-  if (sunSun) {
-    indicators.push({
-      name: 'Sun-Sun: Identity Resonance',
-      found: true,
-      aspect: sunSun,
-      planet1: 'Sun',
-      planet2: 'Sun',
-      tier: 1,
-      interpretation: `${sunSun.type} (${sunSun.orb}° orb): ${sunSun.quality === 'harmonious' ? 'Your core selves resonate naturally.' : 'Dynamic interplay of identities.'}`,
-      strength: sunSun.quality === 'harmonious' ? 'strong' : 'moderate'
-    });
-    standardPoints += sunSun.quality === 'harmonious' ? 10 : 5;
-  }
+  indicators.push({
+    name: 'Sun-Sun: Identity Resonance',
+    found: !!sunSun,
+    aspect: sunSun,
+    planet1: 'Sun',
+    planet2: 'Sun',
+    tier: 1,
+    points: sunSun ? (sunSun.quality === 'harmonious' ? 10 : 5) : 0,
+    interpretation: sunSun
+      ? `${sunSun.type} (${sunSun.orb}° orb): ${sunSun.quality === 'harmonious' ? 'Your core selves resonate naturally.' : 'Dynamic interplay of identities.'}`
+      : 'No Sun-Sun aspect. Different identities can complement.',
+    strength: sunSun ? (sunSun.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
+  });
+  if (sunSun) standardPoints += sunSun.quality === 'harmonious' ? 10 : 5;
+
+  const moonMoon = checkAspect(chart1, 'Moon', chart2, 'Moon');
+  maxStandardPoints += 10;
+  indicators.push({
+    name: 'Moon-Moon: Emotional Resonance',
+    found: !!moonMoon,
+    aspect: moonMoon,
+    planet1: 'Moon',
+    planet2: 'Moon',
+    tier: 1,
+    points: moonMoon ? (moonMoon.quality === 'harmonious' ? 10 : 5) : 0,
+    interpretation: moonMoon
+      ? `${moonMoon.type} (${moonMoon.orb}° orb): ${moonMoon.quality === 'harmonious' ? 'Deep emotional understanding.' : 'Emotional needs interact intensely.'}`
+      : 'No Moon-Moon aspect. Emotional attunement develops through experience.',
+    strength: moonMoon ? (moonMoon.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
+  });
+  if (moonMoon) standardPoints += moonMoon.quality === 'harmonious' ? 10 : 5;
   
+  // ============================================
   // TIER 2: Supporting indicators (8 pts each)
+  // ============================================
+  
   const jupiterMoon = checkAspect(chart1, 'Jupiter', chart2, 'Moon') || checkAspect(chart2, 'Jupiter', chart1, 'Moon');
   maxStandardPoints += 8;
   indicators.push({
@@ -781,6 +806,7 @@ function analyzeFriendship(chart1: NatalChart, chart2: NatalChart): FocusAnalysi
     planet1: 'Jupiter',
     planet2: 'Moon',
     tier: 2,
+    points: jupiterMoon ? 8 : 0,
     interpretation: jupiterMoon
       ? `${jupiterMoon.type} (${jupiterMoon.orb}° orb): You make each other feel good! Naturally supportive and encouraging.`
       : 'No Jupiter-Moon aspect. Emotional support needs conscious cultivation.',
@@ -797,84 +823,271 @@ function analyzeFriendship(chart1: NatalChart, chart2: NatalChart): FocusAnalysi
     planet1: 'Venus',
     planet2: 'Venus',
     tier: 2,
+    points: venusVenus ? (venusVenus.quality === 'harmonious' ? 8 : 4) : 0,
     interpretation: venusVenus
       ? `${venusVenus.type} (${venusVenus.orb}° orb): ${venusVenus.quality === 'harmonious' ? 'Similar tastes - easy companionship.' : 'Different but complementary values.'}`
       : 'No Venus-Venus aspect. Different tastes can introduce new things.',
     strength: venusVenus ? (venusVenus.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
   });
   if (venusVenus) standardPoints += venusVenus.quality === 'harmonious' ? 8 : 4;
-  
-  const moonMoon = checkAspect(chart1, 'Moon', chart2, 'Moon');
-  maxStandardPoints += 8;
-  indicators.push({
-    name: 'Moon-Moon: Emotional Resonance',
-    found: !!moonMoon,
-    aspect: moonMoon,
-    planet1: 'Moon',
-    planet2: 'Moon',
-    tier: 2,
-    interpretation: moonMoon
-      ? `${moonMoon.type} (${moonMoon.orb}° orb): ${moonMoon.quality === 'harmonious' ? 'Deep emotional understanding.' : 'Emotional needs interact intensely.'}`
-      : 'No Moon-Moon aspect. Emotional attunement develops through experience.',
-    strength: moonMoon ? (moonMoon.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
-  });
-  if (moonMoon) standardPoints += moonMoon.quality === 'harmonious' ? 8 : 4;
 
-  // Jupiter-Jupiter: Shared joy
   const jupiterJupiter = checkAspect(chart1, 'Jupiter', chart2, 'Jupiter');
   maxStandardPoints += 8;
-  if (jupiterJupiter) {
-    indicators.push({
-      name: 'Jupiter-Jupiter: Shared Joy',
-      found: true,
-      aspect: jupiterJupiter,
-      planet1: 'Jupiter',
-      planet2: 'Jupiter',
-      tier: 2,
-      interpretation: `${jupiterJupiter.type} (${jupiterJupiter.orb}° orb): You expand each other's worlds. Shared adventures and growth.`,
-      strength: jupiterJupiter.quality === 'harmonious' ? 'strong' : 'moderate'
-    });
-    standardPoints += jupiterJupiter.quality === 'harmonious' ? 8 : 4;
-  }
+  indicators.push({
+    name: 'Jupiter-Jupiter: Shared Joy',
+    found: !!jupiterJupiter,
+    aspect: jupiterJupiter,
+    planet1: 'Jupiter',
+    planet2: 'Jupiter',
+    tier: 2,
+    points: jupiterJupiter ? (jupiterJupiter.quality === 'harmonious' ? 8 : 4) : 0,
+    interpretation: jupiterJupiter
+      ? `${jupiterJupiter.type} (${jupiterJupiter.orb}° orb): You expand each other's worlds. Shared adventures and growth.`
+      : 'No Jupiter-Jupiter aspect. Growth philosophies may differ.',
+    strength: jupiterJupiter ? (jupiterJupiter.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
+  });
+  if (jupiterJupiter) standardPoints += jupiterJupiter.quality === 'harmonious' ? 8 : 4;
+
+  const venusSun = checkAspect(chart1, 'Venus', chart2, 'Sun') || checkAspect(chart2, 'Venus', chart1, 'Sun');
+  maxStandardPoints += 8;
+  indicators.push({
+    name: 'Venus-Sun: Appreciation & Warmth',
+    found: !!venusSun,
+    aspect: venusSun,
+    planet1: 'Venus',
+    planet2: 'Sun',
+    tier: 2,
+    points: venusSun ? (venusSun.quality === 'harmonious' ? 8 : 5) : 0,
+    interpretation: venusSun
+      ? `${venusSun.type} (${venusSun.orb}° orb): Natural appreciation for each other. Venus admires Sun's essence.`
+      : 'No Venus-Sun aspect. Appreciation develops through quality time.',
+    strength: venusSun ? 'strong' : 'weak'
+  });
+  if (venusSun) standardPoints += venusSun.quality === 'harmonious' ? 8 : 5;
+
+  const mercurySun = checkAspect(chart1, 'Mercury', chart2, 'Sun') || checkAspect(chart2, 'Mercury', chart1, 'Sun');
+  maxStandardPoints += 8;
+  indicators.push({
+    name: 'Mercury-Sun: Understanding Identity',
+    found: !!mercurySun,
+    aspect: mercurySun,
+    planet1: 'Mercury',
+    planet2: 'Sun',
+    tier: 2,
+    points: mercurySun ? (mercurySun.quality === 'harmonious' ? 8 : 4) : 0,
+    interpretation: mercurySun
+      ? `${mercurySun.type} (${mercurySun.orb}° orb): Communication flows naturally about who you really are.`
+      : 'No Mercury-Sun aspect. Getting to know each other takes more time.',
+    strength: mercurySun ? (mercurySun.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
+  });
+  if (mercurySun) standardPoints += mercurySun.quality === 'harmonious' ? 8 : 4;
+
+  const jupiterSun = checkAspect(chart1, 'Jupiter', chart2, 'Sun') || checkAspect(chart2, 'Jupiter', chart1, 'Sun');
+  maxStandardPoints += 8;
+  indicators.push({
+    name: 'Jupiter-Sun: Mutual Encouragement',
+    found: !!jupiterSun,
+    aspect: jupiterSun,
+    planet1: 'Jupiter',
+    planet2: 'Sun',
+    tier: 2,
+    points: jupiterSun ? 8 : 0,
+    interpretation: jupiterSun
+      ? `${jupiterSun.type} (${jupiterSun.orb}° orb): Jupiter expands and encourages Sun's identity. Natural cheerleaders for each other.`
+      : 'No Jupiter-Sun aspect. Encouragement requires conscious effort.',
+    strength: jupiterSun ? 'strong' : 'weak'
+  });
+  if (jupiterSun) standardPoints += 8;
+
+  const mercuryMoon = checkAspect(chart1, 'Mercury', chart2, 'Moon') || checkAspect(chart2, 'Mercury', chart1, 'Moon');
+  maxStandardPoints += 8;
+  indicators.push({
+    name: 'Mercury-Moon: Emotional Communication',
+    found: !!mercuryMoon,
+    aspect: mercuryMoon,
+    planet1: 'Mercury',
+    planet2: 'Moon',
+    tier: 2,
+    points: mercuryMoon ? (mercuryMoon.quality === 'harmonious' ? 8 : 4) : 0,
+    interpretation: mercuryMoon
+      ? `${mercuryMoon.type} (${mercuryMoon.orb}° orb): Thoughts and feelings flow easily. You can talk about emotions.`
+      : 'No Mercury-Moon aspect. Emotional discussions may feel awkward at first.',
+    strength: mercuryMoon ? (mercuryMoon.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
+  });
+  if (mercuryMoon) standardPoints += mercuryMoon.quality === 'harmonious' ? 8 : 4;
   
-  // TIER 3: Bonus indicators (4-5 pts each)
+  // ============================================
+  // TIER 3: Bonus indicators (5-6 pts each)
+  // ============================================
+  
   const uranusSun = checkAspect(chart1, 'Uranus', chart2, 'Sun') || checkAspect(chart2, 'Uranus', chart1, 'Sun');
-  if (uranusSun) {
-    maxStandardPoints += 5;
-    indicators.push({
-      name: 'Uranus-Sun: Excitement Factor',
-      found: true,
-      aspect: uranusSun,
-      planet1: 'Uranus',
-      planet2: 'Sun',
-      tier: 3,
-      interpretation: `${uranusSun.type} (${uranusSun.orb}° orb): Never boring! Exciting adventures together.`,
-      strength: 'moderate'
-    });
-    standardPoints += 5;
-  }
+  maxStandardPoints += 5;
+  indicators.push({
+    name: 'Uranus-Sun: Excitement Factor',
+    found: !!uranusSun,
+    aspect: uranusSun,
+    planet1: 'Uranus',
+    planet2: 'Sun',
+    tier: 3,
+    points: uranusSun ? 5 : 0,
+    interpretation: uranusSun
+      ? `${uranusSun.type} (${uranusSun.orb}° orb): Never boring! Exciting adventures together.`
+      : 'No Uranus-Sun aspect. Excitement comes from elsewhere.',
+    strength: uranusSun ? 'moderate' : 'weak'
+  });
+  if (uranusSun) standardPoints += 5;
+
+  const uranusMoon = checkAspect(chart1, 'Uranus', chart2, 'Moon') || checkAspect(chart2, 'Uranus', chart1, 'Moon');
+  maxStandardPoints += 5;
+  indicators.push({
+    name: 'Uranus-Moon: Emotional Freedom',
+    found: !!uranusMoon,
+    aspect: uranusMoon,
+    planet1: 'Uranus',
+    planet2: 'Moon',
+    tier: 3,
+    points: uranusMoon ? 5 : 0,
+    interpretation: uranusMoon
+      ? `${uranusMoon.type} (${uranusMoon.orb}° orb): Friendship feels liberating. You encourage each other's authenticity.`
+      : 'No Uranus-Moon aspect.',
+    strength: uranusMoon ? 'moderate' : 'weak'
+  });
+  if (uranusMoon) standardPoints += 5;
+
+  const marsSun = checkAspect(chart1, 'Mars', chart2, 'Sun') || checkAspect(chart2, 'Mars', chart1, 'Sun');
+  maxStandardPoints += 6;
+  indicators.push({
+    name: 'Mars-Sun: Active Energy',
+    found: !!marsSun,
+    aspect: marsSun,
+    planet1: 'Mars',
+    planet2: 'Sun',
+    tier: 3,
+    points: marsSun ? (marsSun.quality === 'harmonious' ? 6 : 3) : 0,
+    interpretation: marsSun
+      ? `${marsSun.type} (${marsSun.orb}° orb): ${marsSun.quality === 'harmonious' ? 'Great for active adventures together!' : 'Dynamic energy - can motivate or clash.'}`
+      : 'No Mars-Sun aspect.',
+    strength: marsSun ? (marsSun.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
+  });
+  if (marsSun) standardPoints += marsSun.quality === 'harmonious' ? 6 : 3;
+
+  const marsMars = checkAspect(chart1, 'Mars', chart2, 'Mars');
+  maxStandardPoints += 5;
+  indicators.push({
+    name: 'Mars-Mars: Shared Drive',
+    found: !!marsMars,
+    aspect: marsMars,
+    planet1: 'Mars',
+    planet2: 'Mars',
+    tier: 3,
+    points: marsMars ? (marsMars.quality === 'harmonious' ? 5 : 2) : 0,
+    interpretation: marsMars
+      ? `${marsMars.type} (${marsMars.orb}° orb): ${marsMars.quality === 'harmonious' ? 'Compatible energy levels for activities.' : 'Different action styles - can spark or clash.'}`
+      : 'No Mars-Mars aspect.',
+    strength: marsMars ? (marsMars.quality === 'harmonious' ? 'moderate' : 'weak') : 'weak'
+  });
+  if (marsMars) standardPoints += marsMars.quality === 'harmonious' ? 5 : 2;
 
   // Juno for loyalty in friendship
   const junoSun = checkAspect(chart1, 'Juno', chart2, 'Sun') || checkAspect(chart2, 'Juno', chart1, 'Sun');
-  if ((chart1.planets.Juno || chart2.planets.Juno) && junoSun) {
-    maxStandardPoints += 5;
+  if (chart1.planets.Juno || chart2.planets.Juno) {
+    maxStandardPoints += 6;
     indicators.push({
       name: 'Juno-Sun: Loyal Bond',
-      found: true,
+      found: !!junoSun,
       aspect: junoSun,
       planet1: 'Juno',
       planet2: 'Sun',
       tier: 3,
-      interpretation: `${junoSun.type} (${junoSun.orb}° orb): Juno brings commitment to the friendship. A loyal, enduring bond.`,
-      strength: 'moderate'
+      points: junoSun ? 6 : 0,
+      interpretation: junoSun
+        ? `${junoSun.type} (${junoSun.orb}° orb): Juno brings commitment to the friendship. A loyal, enduring bond.`
+        : 'No Juno-Sun aspect. Loyalty builds through time.',
+      strength: junoSun ? 'strong' : 'weak'
     });
-    standardPoints += 5;
+    if (junoSun) standardPoints += 6;
   }
 
-  // Karmic: North Node connections
+  // Vesta for dedicated friendship
+  const vestaSun = checkAspect(chart1, 'Vesta', chart2, 'Sun') || checkAspect(chart2, 'Vesta', chart1, 'Sun');
+  if (chart1.planets.Vesta || chart2.planets.Vesta) {
+    maxStandardPoints += 5;
+    indicators.push({
+      name: 'Vesta-Sun: Dedicated Friend',
+      found: !!vestaSun,
+      aspect: vestaSun,
+      planet1: 'Vesta',
+      planet2: 'Sun',
+      tier: 3,
+      points: vestaSun ? 5 : 0,
+      interpretation: vestaSun
+        ? `${vestaSun.type} (${vestaSun.orb}° orb): Vesta brings dedication. This friendship has focus and purpose.`
+        : 'No Vesta-Sun aspect.',
+      strength: vestaSun ? 'moderate' : 'weak'
+    });
+    if (vestaSun) standardPoints += 5;
+  }
+
+  // Chiron for healing friendships
+  const chironSun = checkAspect(chart1, 'Chiron', chart2, 'Sun') || checkAspect(chart2, 'Chiron', chart1, 'Sun');
+  maxStandardPoints += 5;
+  indicators.push({
+    name: 'Chiron-Sun: Healing Friendship',
+    found: !!chironSun,
+    aspect: chironSun,
+    planet1: 'Chiron',
+    planet2: 'Sun',
+    tier: 3,
+    points: chironSun ? 5 : 0,
+    interpretation: chironSun
+      ? `${chironSun.type} (${chironSun.orb}° orb): Chiron brings healing energy. You help each other grow through wounds.`
+      : 'No Chiron-Sun aspect.',
+    strength: chironSun ? 'moderate' : 'weak'
+  });
+  if (chironSun) standardPoints += 5;
+
+  const chironMoon = checkAspect(chart1, 'Chiron', chart2, 'Moon') || checkAspect(chart2, 'Chiron', chart1, 'Moon');
+  maxStandardPoints += 5;
+  indicators.push({
+    name: 'Chiron-Moon: Emotional Healing',
+    found: !!chironMoon,
+    aspect: chironMoon,
+    planet1: 'Chiron',
+    planet2: 'Moon',
+    tier: 3,
+    points: chironMoon ? 5 : 0,
+    interpretation: chironMoon
+      ? `${chironMoon.type} (${chironMoon.orb}° orb): Deep emotional healing potential. Safe space for vulnerability.`
+      : 'No Chiron-Moon aspect.',
+    strength: chironMoon ? 'moderate' : 'weak'
+  });
+  if (chironMoon) standardPoints += 5;
+
+  // Vertex for fated friendships
+  const vertexSun = checkAspect(chart1, 'Vertex', chart2, 'Sun') || checkAspect(chart2, 'Vertex', chart1, 'Sun');
+  if ((chart1.planets.Vertex || chart2.planets.Vertex) && vertexSun) {
+    karmicBonus += vertexSun.type === 'conjunction' ? 8 : 5;
+    indicators.push({
+      name: '★ FATED: Vertex-Sun Connection',
+      found: true,
+      aspect: vertexSun,
+      planet1: 'Vertex',
+      planet2: 'Sun',
+      tier: 0,
+      points: vertexSun.type === 'conjunction' ? 8 : 5,
+      interpretation: `${vertexSun.type} (${vertexSun.orb}° orb): Vertex indicates fated encounters. This friendship was "meant to happen."`,
+      strength: 'strong'
+    });
+  }
+
+  // ============================================
+  // KARMIC INDICATORS (Flat bonus)
+  // ============================================
+
   const nodeVenus = checkAspect(chart1, 'NorthNode', chart2, 'Venus') || checkAspect(chart2, 'NorthNode', chart1, 'Venus');
   if (nodeVenus) {
-    karmicBonus += nodeVenus.type === 'conjunction' ? 8 : 5;
+    const pts = nodeVenus.type === 'conjunction' ? 10 : 6;
+    karmicBonus += pts;
     indicators.push({
       name: '★ KARMIC: North Node-Venus',
       found: true,
@@ -882,6 +1095,7 @@ function analyzeFriendship(chart1: NatalChart, chart2: NatalChart): FocusAnalysi
       planet1: 'NorthNode',
       planet2: 'Venus',
       tier: 0,
+      points: pts,
       interpretation: `${nodeVenus.type} (${nodeVenus.orb}° orb): Fated connection bringing love and appreciation into each other's lives.`,
       strength: 'strong'
     });
@@ -889,29 +1103,84 @@ function analyzeFriendship(chart1: NatalChart, chart2: NatalChart): FocusAnalysi
 
   const nodeSun = checkAspect(chart1, 'NorthNode', chart2, 'Sun') || checkAspect(chart2, 'NorthNode', chart1, 'Sun');
   if (nodeSun) {
-    karmicBonus += nodeSun.type === 'conjunction' ? 10 : 6;
+    const pts = nodeSun.type === 'conjunction' ? 12 : 7;
+    karmicBonus += pts;
     indicators.push({
-      name: '★ KARMIC: North Node-Sun',
+      name: '★★ KARMIC: North Node-Sun',
       found: true,
       aspect: nodeSun,
       planet1: 'NorthNode',
       planet2: 'Sun',
       tier: 0,
+      points: pts,
       interpretation: `${nodeSun.type} (${nodeSun.orb}° orb): Destined friendship. The Sun person embodies growth for the Node person.`,
       strength: 'strong'
     });
   }
+
+  const nodeMoon = checkAspect(chart1, 'NorthNode', chart2, 'Moon') || checkAspect(chart2, 'NorthNode', chart1, 'Moon');
+  if (nodeMoon) {
+    const pts = nodeMoon.type === 'conjunction' ? 10 : 6;
+    karmicBonus += pts;
+    indicators.push({
+      name: '★ KARMIC: North Node-Moon',
+      found: true,
+      aspect: nodeMoon,
+      planet1: 'NorthNode',
+      planet2: 'Moon',
+      tier: 0,
+      points: pts,
+      interpretation: `${nodeMoon.type} (${nodeMoon.orb}° orb): Emotional destiny connection. Deep comfort and understanding.`,
+      strength: 'strong'
+    });
+  }
+
+  const nodeJupiter = checkAspect(chart1, 'NorthNode', chart2, 'Jupiter') || checkAspect(chart2, 'NorthNode', chart1, 'Jupiter');
+  if (nodeJupiter) {
+    const pts = nodeJupiter.type === 'conjunction' ? 10 : 6;
+    karmicBonus += pts;
+    indicators.push({
+      name: '★ KARMIC: North Node-Jupiter',
+      found: true,
+      aspect: nodeJupiter,
+      planet1: 'NorthNode',
+      planet2: 'Jupiter',
+      tier: 0,
+      points: pts,
+      interpretation: `${nodeJupiter.type} (${nodeJupiter.orb}° orb): Growth and expansion aligned with destiny. Lucky friendship.`,
+      strength: 'strong'
+    });
+  }
+
+  const southNodeMoon = checkAspect(chart1, 'SouthNode', chart2, 'Moon') || checkAspect(chart2, 'SouthNode', chart1, 'Moon');
+  if (southNodeMoon) {
+    const pts = southNodeMoon.type === 'conjunction' ? 10 : 6;
+    karmicBonus += pts;
+    indicators.push({
+      name: '★★ KARMIC: South Node-Moon - Past Life Friend',
+      found: true,
+      aspect: southNodeMoon,
+      planet1: 'SouthNode',
+      planet2: 'Moon',
+      tier: 0,
+      points: pts,
+      interpretation: `${southNodeMoon.type} (${southNodeMoon.orb}° orb): **PAST LIFE FRIEND.** Instant familiarity - you likely knew each other before.`,
+      strength: 'strong'
+    });
+  }
   
-  // Calculate with new formula
+  // ============================================
+  // CALCULATE FINAL SCORE
+  // ============================================
   const baseScore = 25;
   const standardPercentage = maxStandardPoints > 0 ? (Math.max(0, standardPoints) / maxStandardPoints) * 45 : 0;
-  const cappedKarmicBonus = Math.min(20, karmicBonus);
+  const cappedKarmicBonus = Math.min(22, karmicBonus);
   
   let overallStrength = Math.round(baseScore + standardPercentage + cappedKarmicBonus);
   overallStrength = Math.max(15, Math.min(92, overallStrength));
   
   const strongIndicators = indicators.filter(i => i.strength === 'strong');
-  const karmicIndicators = indicators.filter(i => i.name.includes('KARMIC'));
+  const karmicIndicators = indicators.filter(i => i.name.includes('KARMIC') || i.name.includes('FATED'));
   
   return {
     focus: 'friendship',
@@ -928,6 +1197,7 @@ function analyzeFriendship(chart1: NatalChart, chart2: NatalChart): FocusAnalysi
       ...(mercuryMercury ? ['Use your Mercury connection for long conversations'] : ['Find topics you both enjoy']),
       ...(jupiterMoon ? ['Lean into uplifting each other'] : []),
       ...(venusVenus ? ['Plan activities around your shared tastes'] : ['Explore each other\'s interests']),
+      ...(chironSun || chironMoon ? ['This friendship has healing potential - be there for each other'] : []),
       'Shared experiences build the strongest friendships'
     ]
   };
@@ -1494,7 +1764,7 @@ function analyzeCreative(chart1: NatalChart, chart2: NatalChart): FocusAnalysis 
 }
 
 // ============================================
-// FAMILY ANALYSIS - Uses friendship + nurturing indicators
+// FAMILY ANALYSIS - Professional-grade (Expanded)
 // ============================================
 function analyzeFamily(chart1: NatalChart, chart2: NatalChart): FocusAnalysis {
   const indicators: FocusIndicator[] = [];
@@ -1502,7 +1772,10 @@ function analyzeFamily(chart1: NatalChart, chart2: NatalChart): FocusAnalysis {
   let maxStandardPoints = 0;
   let karmicBonus = 0;
   
+  // ============================================
   // TIER 1: Core family indicators (10 pts each)
+  // ============================================
+  
   const moonMoon = checkAspect(chart1, 'Moon', chart2, 'Moon');
   maxStandardPoints += 10;
   indicators.push({
@@ -1512,6 +1785,7 @@ function analyzeFamily(chart1: NatalChart, chart2: NatalChart): FocusAnalysis {
     planet1: 'Moon',
     planet2: 'Moon',
     tier: 1,
+    points: moonMoon ? (moonMoon.quality === 'harmonious' ? 10 : 5) : 0,
     interpretation: moonMoon
       ? `${moonMoon.type} (${moonMoon.orb}° orb): ${moonMoon.quality === 'harmonious' ? 'Deep emotional understanding - you feel like family.' : 'Strong emotional connection, though needs may differ.'}`
       : 'No Moon-Moon aspect. Emotional attunement develops through shared experiences.',
@@ -1528,6 +1802,7 @@ function analyzeFamily(chart1: NatalChart, chart2: NatalChart): FocusAnalysis {
     planet1: 'Sun',
     planet2: 'Moon',
     tier: 1,
+    points: sunMoon ? (sunMoon.quality === 'harmonious' ? 10 : 5) : 0,
     interpretation: sunMoon
       ? `${sunMoon.type} (${sunMoon.orb}° orb): ${sunMoon.quality === 'harmonious' ? 'Natural understanding of each other\'s needs.' : 'Dynamic interplay of identity and emotion.'}`
       : 'No Sun-Moon aspect. Understanding develops through care and patience.',
@@ -1535,132 +1810,334 @@ function analyzeFamily(chart1: NatalChart, chart2: NatalChart): FocusAnalysis {
   });
   if (sunMoon) standardPoints += sunMoon.quality === 'harmonious' ? 10 : 5;
 
+  const sunSun = checkAspect(chart1, 'Sun', chart2, 'Sun');
+  maxStandardPoints += 10;
+  indicators.push({
+    name: 'Sun-Sun: Family Identity',
+    found: !!sunSun,
+    aspect: sunSun,
+    planet1: 'Sun',
+    planet2: 'Sun',
+    tier: 1,
+    points: sunSun ? (sunSun.quality === 'harmonious' ? 10 : 5) : 0,
+    interpretation: sunSun
+      ? `${sunSun.type} (${sunSun.orb}° orb): ${sunSun.quality === 'harmonious' ? 'Core selves resonate - shared family pride.' : 'Different identities can create family diversity.'}`
+      : 'No Sun-Sun aspect. Family identity builds through shared experiences.',
+    strength: sunSun ? (sunSun.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
+  });
+  if (sunSun) standardPoints += sunSun.quality === 'harmonious' ? 10 : 5;
+
+  // ============================================
   // TIER 2: Nurturing indicators (8 pts each)
-  // Ceres is ESSENTIAL for family (APPROPRIATE)
+  // ============================================
+  
+  // Ceres is ESSENTIAL for family
   const ceresMoon = checkAspect(chart1, 'Ceres', chart2, 'Moon') || checkAspect(chart2, 'Ceres', chart1, 'Moon');
-  if (chart1.planets.Ceres || chart2.planets.Ceres) {
-    maxStandardPoints += 8;
-    if (ceresMoon) {
-      indicators.push({
-        name: '★ Ceres-Moon: Deep Nurturing',
-        found: true,
-        aspect: ceresMoon,
-        planet1: 'Ceres',
-        planet2: 'Moon',
-        tier: 2,
-        interpretation: `${ceresMoon.type} (${ceresMoon.orb}° orb): Ceres (mother/nurturer) connects with the Moon. Natural caregiving dynamic - essential for family bonds.`,
-        strength: 'strong'
-      });
-      standardPoints += 8;
-    }
-  }
+  maxStandardPoints += 8;
+  indicators.push({
+    name: '★ Ceres-Moon: Deep Nurturing',
+    found: !!ceresMoon,
+    aspect: ceresMoon,
+    planet1: 'Ceres',
+    planet2: 'Moon',
+    tier: 2,
+    points: ceresMoon ? 8 : 0,
+    interpretation: ceresMoon
+      ? `${ceresMoon.type} (${ceresMoon.orb}° orb): Ceres (mother/nurturer) connects with the Moon. Natural caregiving dynamic - essential for family bonds.`
+      : 'No Ceres-Moon aspect. Nurturing expressed in other ways.',
+    strength: ceresMoon ? 'strong' : 'weak'
+  });
+  if (ceresMoon) standardPoints += 8;
 
   const ceresSun = checkAspect(chart1, 'Ceres', chart2, 'Sun') || checkAspect(chart2, 'Ceres', chart1, 'Sun');
-  if ((chart1.planets.Ceres || chart2.planets.Ceres) && ceresSun) {
-    maxStandardPoints += 7;
-    indicators.push({
-      name: 'Ceres-Sun: Nurturing Identity',
-      found: true,
-      aspect: ceresSun,
-      planet1: 'Ceres',
-      planet2: 'Sun',
-      tier: 2,
-      interpretation: `${ceresSun.type} (${ceresSun.orb}° orb): Ceres nurtures the Sun person's core self. Supportive family dynamic.`,
-      strength: 'moderate'
-    });
-    standardPoints += 7;
-  }
+  maxStandardPoints += 7;
+  indicators.push({
+    name: 'Ceres-Sun: Nurturing Identity',
+    found: !!ceresSun,
+    aspect: ceresSun,
+    planet1: 'Ceres',
+    planet2: 'Sun',
+    tier: 2,
+    points: ceresSun ? 7 : 0,
+    interpretation: ceresSun
+      ? `${ceresSun.type} (${ceresSun.orb}° orb): Ceres nurtures the Sun person's core self. Supportive family dynamic.`
+      : 'No Ceres-Sun aspect.',
+    strength: ceresSun ? 'moderate' : 'weak'
+  });
+  if (ceresSun) standardPoints += 7;
+
+  const ceresVenus = checkAspect(chart1, 'Ceres', chart2, 'Venus') || checkAspect(chart2, 'Ceres', chart1, 'Venus');
+  maxStandardPoints += 6;
+  indicators.push({
+    name: 'Ceres-Venus: Nurturing Love',
+    found: !!ceresVenus,
+    aspect: ceresVenus,
+    planet1: 'Ceres',
+    planet2: 'Venus',
+    tier: 2,
+    points: ceresVenus ? 6 : 0,
+    interpretation: ceresVenus
+      ? `${ceresVenus.type} (${ceresVenus.orb}° orb): Love expressed through nurturing. Taking care of each other comes naturally.`
+      : 'No Ceres-Venus aspect.',
+    strength: ceresVenus ? 'moderate' : 'weak'
+  });
+  if (ceresVenus) standardPoints += 6;
 
   // Saturn for family structure
   const saturnMoon = checkAspect(chart1, 'Saturn', chart2, 'Moon') || checkAspect(chart2, 'Saturn', chart1, 'Moon');
   maxStandardPoints += 8;
-  if (saturnMoon) {
-    indicators.push({
-      name: 'Saturn-Moon: Emotional Structure',
-      found: true,
-      aspect: saturnMoon,
-      planet1: 'Saturn',
-      planet2: 'Moon',
-      tier: 2,
-      interpretation: `${saturnMoon.type} (${saturnMoon.orb}° orb): Saturn provides emotional stability. ${saturnMoon.quality === 'harmonious' ? 'Solid emotional foundation.' : 'May feel restrictive but builds security.'}`,
-      strength: saturnMoon.quality === 'harmonious' ? 'strong' : 'moderate'
-    });
-    standardPoints += saturnMoon.quality === 'harmonious' ? 8 : 4;
-  }
+  indicators.push({
+    name: 'Saturn-Moon: Emotional Structure',
+    found: !!saturnMoon,
+    aspect: saturnMoon,
+    planet1: 'Saturn',
+    planet2: 'Moon',
+    tier: 2,
+    points: saturnMoon ? (saturnMoon.quality === 'harmonious' ? 8 : 4) : 0,
+    interpretation: saturnMoon
+      ? `${saturnMoon.type} (${saturnMoon.orb}° orb): Saturn provides emotional stability. ${saturnMoon.quality === 'harmonious' ? 'Solid emotional foundation.' : 'May feel restrictive but builds security.'}`
+      : 'No Saturn-Moon aspect. Structure comes from elsewhere.',
+    strength: saturnMoon ? (saturnMoon.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
+  });
+  if (saturnMoon) standardPoints += saturnMoon.quality === 'harmonious' ? 8 : 4;
 
-  // Juno for family commitment (APPROPRIATE)
+  const saturnSun = checkAspect(chart1, 'Saturn', chart2, 'Sun') || checkAspect(chart2, 'Saturn', chart1, 'Sun');
+  maxStandardPoints += 7;
+  indicators.push({
+    name: 'Saturn-Sun: Authority & Stability',
+    found: !!saturnSun,
+    aspect: saturnSun,
+    planet1: 'Saturn',
+    planet2: 'Sun',
+    tier: 2,
+    points: saturnSun ? (saturnSun.quality === 'harmonious' ? 7 : 3) : 0,
+    interpretation: saturnSun
+      ? `${saturnSun.type} (${saturnSun.orb}° orb): ${saturnSun.quality === 'harmonious' ? 'Healthy authority dynamic. Mutual respect.' : 'May feel hierarchical but provides structure.'}`
+      : 'No Saturn-Sun aspect.',
+    strength: saturnSun ? (saturnSun.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
+  });
+  if (saturnSun) standardPoints += saturnSun.quality === 'harmonious' ? 7 : 3;
+
+  // Juno for family commitment
   const junoMoon = checkAspect(chart1, 'Juno', chart2, 'Moon') || checkAspect(chart2, 'Juno', chart1, 'Moon');
-  if ((chart1.planets.Juno || chart2.planets.Juno) && junoMoon) {
-    maxStandardPoints += 6;
-    indicators.push({
-      name: 'Juno-Moon: Committed Bond',
-      found: true,
-      aspect: junoMoon,
-      planet1: 'Juno',
-      planet2: 'Moon',
-      tier: 2,
-      interpretation: `${junoMoon.type} (${junoMoon.orb}° orb): Juno brings commitment to emotional bonds. Strong family loyalty.`,
-      strength: 'strong'
-    });
-    standardPoints += 6;
-  }
+  maxStandardPoints += 7;
+  indicators.push({
+    name: 'Juno-Moon: Committed Bond',
+    found: !!junoMoon,
+    aspect: junoMoon,
+    planet1: 'Juno',
+    planet2: 'Moon',
+    tier: 2,
+    points: junoMoon ? 7 : 0,
+    interpretation: junoMoon
+      ? `${junoMoon.type} (${junoMoon.orb}° orb): Juno brings commitment to emotional bonds. Strong family loyalty.`
+      : 'No Juno-Moon aspect. Loyalty expressed differently.',
+    strength: junoMoon ? 'strong' : 'weak'
+  });
+  if (junoMoon) standardPoints += 7;
 
-  // Vesta for family dedication (APPROPRIATE)
+  const junoSun = checkAspect(chart1, 'Juno', chart2, 'Sun') || checkAspect(chart2, 'Juno', chart1, 'Sun');
+  maxStandardPoints += 6;
+  indicators.push({
+    name: 'Juno-Sun: Family Commitment',
+    found: !!junoSun,
+    aspect: junoSun,
+    planet1: 'Juno',
+    planet2: 'Sun',
+    tier: 2,
+    points: junoSun ? 6 : 0,
+    interpretation: junoSun
+      ? `${junoSun.type} (${junoSun.orb}° orb): Juno brings commitment to identity. Dedicated family bond.`
+      : 'No Juno-Sun aspect.',
+    strength: junoSun ? 'moderate' : 'weak'
+  });
+  if (junoSun) standardPoints += 6;
+
+  // Vesta for family dedication
   const vestaMoon = checkAspect(chart1, 'Vesta', chart2, 'Moon') || checkAspect(chart2, 'Vesta', chart1, 'Moon');
-  if ((chart1.planets.Vesta || chart2.planets.Vesta) && vestaMoon) {
-    maxStandardPoints += 5;
-    indicators.push({
-      name: 'Vesta-Moon: Sacred Home',
-      found: true,
-      aspect: vestaMoon,
-      planet1: 'Vesta',
-      planet2: 'Moon',
-      tier: 3,
-      interpretation: `${vestaMoon.type} (${vestaMoon.orb}° orb): Vesta (keeper of the hearth) honors the home. Dedication to family.`,
-      strength: 'moderate'
-    });
-    standardPoints += 5;
-  }
+  maxStandardPoints += 6;
+  indicators.push({
+    name: 'Vesta-Moon: Sacred Home',
+    found: !!vestaMoon,
+    aspect: vestaMoon,
+    planet1: 'Vesta',
+    planet2: 'Moon',
+    tier: 2,
+    points: vestaMoon ? 6 : 0,
+    interpretation: vestaMoon
+      ? `${vestaMoon.type} (${vestaMoon.orb}° orb): Vesta (keeper of the hearth) honors the home. Dedication to family.`
+      : 'No Vesta-Moon aspect.',
+    strength: vestaMoon ? 'moderate' : 'weak'
+  });
+  if (vestaMoon) standardPoints += 6;
 
   // Communication for family
   const mercuryMoon = checkAspect(chart1, 'Mercury', chart2, 'Moon') || checkAspect(chart2, 'Mercury', chart1, 'Moon');
-  maxStandardPoints += 6;
-  if (mercuryMoon) {
-    indicators.push({
-      name: 'Mercury-Moon: Emotional Communication',
-      found: true,
-      aspect: mercuryMoon,
-      planet1: 'Mercury',
-      planet2: 'Moon',
-      tier: 2,
-      interpretation: `${mercuryMoon.type} (${mercuryMoon.orb}° orb): Thoughts and feelings connect easily. Good for family discussions.`,
-      strength: mercuryMoon.quality === 'harmonious' ? 'strong' : 'moderate'
-    });
-    standardPoints += mercuryMoon.quality === 'harmonious' ? 6 : 3;
-  }
+  maxStandardPoints += 7;
+  indicators.push({
+    name: 'Mercury-Moon: Emotional Communication',
+    found: !!mercuryMoon,
+    aspect: mercuryMoon,
+    planet1: 'Mercury',
+    planet2: 'Moon',
+    tier: 2,
+    points: mercuryMoon ? (mercuryMoon.quality === 'harmonious' ? 7 : 4) : 0,
+    interpretation: mercuryMoon
+      ? `${mercuryMoon.type} (${mercuryMoon.orb}° orb): Thoughts and feelings connect easily. Good for family discussions.`
+      : 'No Mercury-Moon aspect. Open communication requires effort.',
+    strength: mercuryMoon ? (mercuryMoon.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
+  });
+  if (mercuryMoon) standardPoints += mercuryMoon.quality === 'harmonious' ? 7 : 4;
+
+  const mercuryMercury = checkAspect(chart1, 'Mercury', chart2, 'Mercury');
+  maxStandardPoints += 7;
+  indicators.push({
+    name: 'Mercury-Mercury: Family Communication',
+    found: !!mercuryMercury,
+    aspect: mercuryMercury,
+    planet1: 'Mercury',
+    planet2: 'Mercury',
+    tier: 2,
+    points: mercuryMercury ? (mercuryMercury.quality === 'harmonious' ? 7 : 4) : 0,
+    interpretation: mercuryMercury
+      ? `${mercuryMercury.type} (${mercuryMercury.orb}° orb): ${mercuryMercury.quality === 'harmonious' ? 'Easy communication flow.' : 'Different communication styles - requires patience.'}`
+      : 'No Mercury-Mercury aspect.',
+    strength: mercuryMercury ? (mercuryMercury.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
+  });
+  if (mercuryMercury) standardPoints += mercuryMercury.quality === 'harmonious' ? 7 : 4;
 
   // Jupiter-Moon for emotional support
   const jupiterMoon = checkAspect(chart1, 'Jupiter', chart2, 'Moon') || checkAspect(chart2, 'Jupiter', chart1, 'Moon');
+  maxStandardPoints += 8;
+  indicators.push({
+    name: 'Jupiter-Moon: Emotional Expansion',
+    found: !!jupiterMoon,
+    aspect: jupiterMoon,
+    planet1: 'Jupiter',
+    planet2: 'Moon',
+    tier: 2,
+    points: jupiterMoon ? 8 : 0,
+    interpretation: jupiterMoon
+      ? `${jupiterMoon.type} (${jupiterMoon.orb}° orb): Jupiter uplifts and encourages. Natural emotional support.`
+      : 'No Jupiter-Moon aspect. Encouragement through action.',
+    strength: jupiterMoon ? 'strong' : 'weak'
+  });
+  if (jupiterMoon) standardPoints += 8;
+
+  const jupiterSun = checkAspect(chart1, 'Jupiter', chart2, 'Sun') || checkAspect(chart2, 'Jupiter', chart1, 'Sun');
   maxStandardPoints += 7;
-  if (jupiterMoon) {
+  indicators.push({
+    name: 'Jupiter-Sun: Growth & Support',
+    found: !!jupiterSun,
+    aspect: jupiterSun,
+    planet1: 'Jupiter',
+    planet2: 'Sun',
+    tier: 2,
+    points: jupiterSun ? 7 : 0,
+    interpretation: jupiterSun
+      ? `${jupiterSun.type} (${jupiterSun.orb}° orb): Jupiter expands the Sun's confidence. Uplifting family dynamic.`
+      : 'No Jupiter-Sun aspect.',
+    strength: jupiterSun ? 'strong' : 'weak'
+  });
+  if (jupiterSun) standardPoints += 7;
+
+  // ============================================
+  // TIER 3: Supporting indicators (5-6 pts each)
+  // ============================================
+
+  const venusVenus = checkAspect(chart1, 'Venus', chart2, 'Venus');
+  maxStandardPoints += 6;
+  indicators.push({
+    name: 'Venus-Venus: Shared Values',
+    found: !!venusVenus,
+    aspect: venusVenus,
+    planet1: 'Venus',
+    planet2: 'Venus',
+    tier: 3,
+    points: venusVenus ? (venusVenus.quality === 'harmonious' ? 6 : 3) : 0,
+    interpretation: venusVenus
+      ? `${venusVenus.type} (${venusVenus.orb}° orb): ${venusVenus.quality === 'harmonious' ? 'Shared family values and aesthetics.' : 'Different values can enrich family life.'}`
+      : 'No Venus-Venus aspect.',
+    strength: venusVenus ? (venusVenus.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
+  });
+  if (venusVenus) standardPoints += venusVenus.quality === 'harmonious' ? 6 : 3;
+
+  const venusMoon = checkAspect(chart1, 'Venus', chart2, 'Moon') || checkAspect(chart2, 'Venus', chart1, 'Moon');
+  maxStandardPoints += 6;
+  indicators.push({
+    name: 'Venus-Moon: Emotional Affection',
+    found: !!venusMoon,
+    aspect: venusMoon,
+    planet1: 'Venus',
+    planet2: 'Moon',
+    tier: 3,
+    points: venusMoon ? 6 : 0,
+    interpretation: venusMoon
+      ? `${venusMoon.type} (${venusMoon.orb}° orb): Love and emotion blend harmoniously. Warm, affectionate bond.`
+      : 'No Venus-Moon aspect.',
+    strength: venusMoon ? 'strong' : 'weak'
+  });
+  if (venusMoon) standardPoints += 6;
+
+  const chironMoon = checkAspect(chart1, 'Chiron', chart2, 'Moon') || checkAspect(chart2, 'Chiron', chart1, 'Moon');
+  maxStandardPoints += 5;
+  indicators.push({
+    name: 'Chiron-Moon: Healing Family Wounds',
+    found: !!chironMoon,
+    aspect: chironMoon,
+    planet1: 'Chiron',
+    planet2: 'Moon',
+    tier: 3,
+    points: chironMoon ? 5 : 0,
+    interpretation: chironMoon
+      ? `${chironMoon.type} (${chironMoon.orb}° orb): Chiron brings healing to family emotional patterns.`
+      : 'No Chiron-Moon aspect.',
+    strength: chironMoon ? 'moderate' : 'weak'
+  });
+  if (chironMoon) standardPoints += 5;
+
+  const chironSun = checkAspect(chart1, 'Chiron', chart2, 'Sun') || checkAspect(chart2, 'Chiron', chart1, 'Sun');
+  maxStandardPoints += 5;
+  indicators.push({
+    name: 'Chiron-Sun: Identity Healing',
+    found: !!chironSun,
+    aspect: chironSun,
+    planet1: 'Chiron',
+    planet2: 'Sun',
+    tier: 3,
+    points: chironSun ? 5 : 0,
+    interpretation: chironSun
+      ? `${chironSun.type} (${chironSun.orb}° orb): Chiron helps heal identity wounds within the family.`
+      : 'No Chiron-Sun aspect.',
+    strength: chironSun ? 'moderate' : 'weak'
+  });
+  if (chironSun) standardPoints += 5;
+
+  // Vertex for fated family
+  const vertexMoon = checkAspect(chart1, 'Vertex', chart2, 'Moon') || checkAspect(chart2, 'Vertex', chart1, 'Moon');
+  if ((chart1.planets.Vertex || chart2.planets.Vertex) && vertexMoon) {
+    karmicBonus += vertexMoon.type === 'conjunction' ? 10 : 6;
     indicators.push({
-      name: 'Jupiter-Moon: Emotional Expansion',
+      name: '★★ FATED: Vertex-Moon Connection',
       found: true,
-      aspect: jupiterMoon,
-      planet1: 'Jupiter',
+      aspect: vertexMoon,
+      planet1: 'Vertex',
       planet2: 'Moon',
-      tier: 2,
-      interpretation: `${jupiterMoon.type} (${jupiterMoon.orb}° orb): Jupiter uplifts and encourages. Natural emotional support.`,
+      tier: 0,
+      points: vertexMoon.type === 'conjunction' ? 10 : 6,
+      interpretation: `${vertexMoon.type} (${vertexMoon.orb}° orb): Vertex on the Moon indicates fated emotional/family connection.`,
       strength: 'strong'
     });
-    standardPoints += 7;
   }
 
-  // Karmic family connections
+  // ============================================
+  // KARMIC INDICATORS (Flat bonus)
+  // ============================================
+
   const nodeMoon = checkAspect(chart1, 'NorthNode', chart2, 'Moon') || checkAspect(chart2, 'NorthNode', chart1, 'Moon');
   if (nodeMoon) {
-    const points = nodeMoon.type === 'conjunction' ? 12 : 7;
-    karmicBonus += points;
+    const pts = nodeMoon.type === 'conjunction' ? 12 : 7;
+    karmicBonus += pts;
     indicators.push({
       name: '★★ KARMIC: North Node-Moon',
       found: true,
@@ -1668,7 +2145,7 @@ function analyzeFamily(chart1: NatalChart, chart2: NatalChart): FocusAnalysis {
       planet1: 'NorthNode',
       planet2: 'Moon',
       tier: 0,
-      points,
+      points: pts,
       interpretation: `${nodeMoon.type} (${nodeMoon.orb}° orb): Fated emotional/family connection. The Moon person provides the emotional foundation needed for soul growth.`,
       strength: 'strong'
     });
@@ -1676,25 +2153,42 @@ function analyzeFamily(chart1: NatalChart, chart2: NatalChart): FocusAnalysis {
 
   const southNodeMoon = checkAspect(chart1, 'SouthNode', chart2, 'Moon') || checkAspect(chart2, 'SouthNode', chart1, 'Moon');
   if (southNodeMoon) {
-    const points = southNodeMoon.type === 'conjunction' ? 10 : 6;
-    karmicBonus += points;
+    const pts = southNodeMoon.type === 'conjunction' ? 12 : 8;
+    karmicBonus += pts;
     indicators.push({
-      name: '★★ KARMIC: South Node-Moon - Past Life Family',
+      name: '★★★ KARMIC: South Node-Moon - Past Life Family',
       found: true,
       aspect: southNodeMoon,
       planet1: 'SouthNode',
       planet2: 'Moon',
       tier: 0,
-      points,
+      points: pts,
       interpretation: `${southNodeMoon.type} (${southNodeMoon.orb}° orb): **PAST LIFE FAMILY.** Instant familiarity suggests you were family before. Deep comfort and understanding.`,
+      strength: 'strong'
+    });
+  }
+
+  const nodeSun = checkAspect(chart1, 'NorthNode', chart2, 'Sun') || checkAspect(chart2, 'NorthNode', chart1, 'Sun');
+  if (nodeSun) {
+    const pts = nodeSun.type === 'conjunction' ? 10 : 6;
+    karmicBonus += pts;
+    indicators.push({
+      name: '★ KARMIC: North Node-Sun',
+      found: true,
+      aspect: nodeSun,
+      planet1: 'NorthNode',
+      planet2: 'Sun',
+      tier: 0,
+      points: pts,
+      interpretation: `${nodeSun.type} (${nodeSun.orb}° orb): Destined family connection. Identity growth through family bond.`,
       strength: 'strong'
     });
   }
 
   const nodeSaturn = checkAspect(chart1, 'NorthNode', chart2, 'Saturn') || checkAspect(chart2, 'NorthNode', chart1, 'Saturn');
   if (nodeSaturn) {
-    const points = nodeSaturn.type === 'conjunction' ? 8 : 5;
-    karmicBonus += points;
+    const pts = nodeSaturn.type === 'conjunction' ? 10 : 6;
+    karmicBonus += pts;
     indicators.push({
       name: '★ KARMIC: North Node-Saturn',
       found: true,
@@ -1702,13 +2196,32 @@ function analyzeFamily(chart1: NatalChart, chart2: NatalChart): FocusAnalysis {
       planet1: 'NorthNode',
       planet2: 'Saturn',
       tier: 0,
-      points,
+      points: pts,
       interpretation: `${nodeSaturn.type} (${nodeSaturn.orb}° orb): Karmic lessons around family responsibility and structure.`,
       strength: 'moderate'
     });
   }
 
-  // Calculate
+  const nodeCeres = checkAspect(chart1, 'NorthNode', chart2, 'Ceres') || checkAspect(chart2, 'NorthNode', chart1, 'Ceres');
+  if (nodeCeres) {
+    const pts = nodeCeres.type === 'conjunction' ? 8 : 5;
+    karmicBonus += pts;
+    indicators.push({
+      name: '★ KARMIC: North Node-Ceres',
+      found: true,
+      aspect: nodeCeres,
+      planet1: 'NorthNode',
+      planet2: 'Ceres',
+      tier: 0,
+      points: pts,
+      interpretation: `${nodeCeres.type} (${nodeCeres.orb}° orb): Nurturing aligned with destiny. Caring for each other is part of your soul path.`,
+      strength: 'strong'
+    });
+  }
+
+  // ============================================
+  // CALCULATE FINAL SCORE
+  // ============================================
   const baseScore = 25;
   const standardPercentage = maxStandardPoints > 0 ? (Math.max(0, standardPoints) / maxStandardPoints) * 45 : 0;
   const cappedKarmicBonus = Math.min(22, karmicBonus);
@@ -1717,7 +2230,7 @@ function analyzeFamily(chart1: NatalChart, chart2: NatalChart): FocusAnalysis {
   overallStrength = Math.max(15, Math.min(92, overallStrength));
   
   const strongIndicators = indicators.filter(i => i.strength === 'strong');
-  const karmicIndicators = indicators.filter(i => i.name.includes('KARMIC'));
+  const karmicIndicators = indicators.filter(i => i.name.includes('KARMIC') || i.name.includes('FATED'));
   
   return {
     focus: 'family',
@@ -1733,7 +2246,8 @@ function analyzeFamily(chart1: NatalChart, chart2: NatalChart): FocusAnalysis {
       ...(karmicIndicators.length > 0 ? ['★ Karmic indicators suggest past-life family connection.'] : []),
       ...(ceresMoon ? ['Your Ceres-Moon connection is excellent for nurturing each other.'] : ['Focus on expressing care through actions.']),
       ...(moonMoon ? ['Honor your Moon-Moon emotional bond.'] : ['Build emotional safety through consistent care.']),
-      ...(jupiterMoon ? ['Lean into the Jupiter-Moon for uplift and encouragement.'] : []),
+      ...(jupiterMoon || jupiterSun ? ['Lean into Jupiter for uplift and encouragement.'] : []),
+      ...(saturnMoon || saturnSun ? ['Saturn provides stability - honor the structure.'] : []),
       'Create shared rituals and traditions'
     ]
   };
