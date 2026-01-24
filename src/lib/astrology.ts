@@ -452,6 +452,85 @@ export const calculateAscendant = (
   return getDetailedPosition(ascLon);
 };
 
+/**
+ * Calculate Vertex - The "fated encounter" point
+ * The Vertex is the point where the prime vertical intersects the ecliptic on the western side
+ * It represents fated encounters and destined meetings
+ */
+export const calculateVertex = (
+  date: Date,
+  latitude: number,
+  longitude: number
+): { sign: string; degree: number; minutes: number; seconds: number } => {
+  const gst = Astronomy.SiderealTime(date);
+  const localLST = (gst + longitude / 15 + 24) % 24;
+  const ramcDeg = localLST * 15;
+  
+  const obliquity = 23.4392911;
+  const obliqRad = obliquity * Math.PI / 180;
+  
+  // Vertex is calculated using colatitude (90 - latitude) as if looking from the equator
+  const colatitude = 90 - latitude;
+  const colatRad = colatitude * Math.PI / 180;
+  
+  const ramcRad = ramcDeg * Math.PI / 180;
+  
+  // Calculate anti-Ascendant (western horizon intersection)
+  const y = Math.cos(ramcRad);
+  const x = -(Math.sin(obliqRad) * Math.tan(colatRad) + Math.cos(obliqRad) * Math.sin(ramcRad));
+  
+  let vtxLon = Math.atan2(y, x) * 180 / Math.PI;
+  
+  // Adjust for western hemisphere (opposite the Ascendant calculation)
+  if (ramcDeg >= 0 && ramcDeg < 180) {
+    vtxLon = vtxLon + 180;
+  }
+  if (ramcDeg >= 180 && ramcDeg < 360) {
+    vtxLon = vtxLon + 360;
+  }
+  
+  // Normalize
+  vtxLon = ((vtxLon % 360) + 360) % 360;
+  
+  return getDetailedPosition(vtxLon);
+};
+
+/**
+ * Calculate Part of Fortune (Lot of Fortune)
+ * Day births: ASC + Moon - Sun
+ * Night births: ASC + Sun - Moon
+ * Represents material fortune, prosperity, and where luck flows
+ */
+export const calculatePartOfFortune = (
+  ascLongitude: number,
+  sunLongitude: number,
+  moonLongitude: number,
+  date: Date,
+  latitude: number
+): { sign: string; degree: number; minutes: number; seconds: number } => {
+  // Determine if day or night birth (Sun above/below horizon)
+  // Simple approximation: if Sun's longitude is between 0-180° from ASC, it's above horizon
+  let sunAbove = false;
+  let diff = sunLongitude - ascLongitude;
+  if (diff < 0) diff += 360;
+  sunAbove = diff < 180;
+  
+  let pofLongitude: number;
+  
+  if (sunAbove) {
+    // Day birth: ASC + Moon - Sun
+    pofLongitude = ascLongitude + moonLongitude - sunLongitude;
+  } else {
+    // Night birth: ASC + Sun - Moon
+    pofLongitude = ascLongitude + sunLongitude - moonLongitude;
+  }
+  
+  // Normalize to 0-360
+  pofLongitude = ((pofLongitude % 360) + 360) % 360;
+  
+  return getDetailedPosition(pofLongitude);
+};
+
 // US timezone regions for auto-detection
 const US_TIMEZONE_REGIONS: Record<string, { standard: number; daylight: number; abbrevStandard: string; abbrevDaylight: string }> = {
   // Eastern
@@ -648,19 +727,35 @@ export const calculateNatalChart = (
   const juno = getDetailedJunoPosition(date);
   const vesta = getDetailedVestaPosition(date);
   
-  // Calculate Ascendant if we have coordinates
+  // Calculate Ascendant, Vertex, and Part of Fortune if we have coordinates
   let ascendant: { sign: string; degree: number; minutes: number; seconds: number } = { sign: '', degree: 0, minutes: 0, seconds: 0 };
+  let vertex: { sign: string; degree: number; minutes: number; seconds: number } = { sign: '', degree: 0, minutes: 0, seconds: 0 };
+  let partOfFortune: { sign: string; degree: number; minutes: number; seconds: number } = { sign: '', degree: 0, minutes: 0, seconds: 0 };
+  
+  // Get Sun and Moon longitudes for Part of Fortune
+  const sunPos = getPosition(Astronomy.Body.Sun);
+  const moonPos = getPosition(Astronomy.Body.Moon);
+  const sunLongitude = ZODIAC_SIGNS.findIndex(s => s.name === sunPos.sign) * 30 + sunPos.degree + (sunPos.minutes / 60);
+  const moonLongitude = ZODIAC_SIGNS.findIndex(s => s.name === moonPos.sign) * 30 + moonPos.degree + (moonPos.minutes / 60);
+  
   if (coordinates) {
     try {
       ascendant = calculateAscendant(date, coordinates.lat, coordinates.lon);
+      
+      // Calculate Vertex (anti-Ascendant on the Western horizon)
+      vertex = calculateVertex(date, coordinates.lat, coordinates.lon);
+      
+      // Calculate Part of Fortune
+      const ascLongitude = ZODIAC_SIGNS.findIndex(s => s.name === ascendant.sign) * 30 + ascendant.degree + (ascendant.minutes / 60);
+      partOfFortune = calculatePartOfFortune(ascLongitude, sunLongitude, moonLongitude, date, coordinates.lat);
     } catch {
       // If calculation fails, leave empty for manual entry
     }
   }
   
   return {
-    Sun: getPosition(Astronomy.Body.Sun),
-    Moon: getPosition(Astronomy.Body.Moon),
+    Sun: sunPos,
+    Moon: moonPos,
     Mercury: getPosition(Astronomy.Body.Mercury),
     Venus: getPosition(Astronomy.Body.Venus),
     Mars: getPosition(Astronomy.Body.Mars),
@@ -677,6 +772,8 @@ export const calculateNatalChart = (
     Juno: juno,
     Vesta: vesta,
     Ascendant: ascendant,
+    Vertex: vertex,
+    PartOfFortune: partOfFortune,
   };
 };
 
