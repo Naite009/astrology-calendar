@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles, Gauge, Globe } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles, Gauge, Globe, Heart } from "lucide-react";
 import { ChartDecoderView } from "./ChartDecoderView";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
@@ -613,6 +613,13 @@ export const AstroCalendar = () => {
 
         {viewMode === "dwarf-planets" && (
           <DwarfPlanetsGuide />
+        )}
+
+        {viewMode === "synastry" && (
+          <SynastryView
+            userNatalChart={userNatalChart}
+            savedCharts={savedCharts}
+          />
         )}
       </div>
 
