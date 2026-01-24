@@ -18,6 +18,7 @@ import { SynastryWheelSimple } from './SynastryWheelSimple';
 import { RelationshipChartWheel } from './RelationshipChartWheel';
 import { SynastryTransitTimeline } from './SynastryTransitTimeline';
 import { SynastryPDFExport } from './SynastryPDFExport';
+import { RelationshipTimingCalculator } from './RelationshipTimingCalculator';
 import { format } from 'date-fns';
 
 interface SynastryViewProps {
@@ -722,24 +723,20 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                         </p>
                       </div>
                       
-                      {/* Best Relationship Types */}
-                      <section>
-                        <h3 className="text-xl font-serif mb-4 flex items-center gap-2">
-                          <Sparkles className="text-primary" size={20} />
-                          {relationshipFocus === 'all' ? 'Best Connection Types' : `${RELATIONSHIP_FOCUS_OPTIONS.find(o => o.value === relationshipFocus)?.label} Compatibility`}
-                        </h3>
-                        {filteredRelationshipTypes.length > 0 ? (
+                      {/* Relationship Types - only show when "All Types" is selected */}
+                      {relationshipFocus === 'all' && (
+                        <section>
+                          <h3 className="text-xl font-serif mb-4 flex items-center gap-2">
+                            <Sparkles className="text-primary" size={20} />
+                            Connection Types Overview
+                          </h3>
                           <div className="grid md:grid-cols-2 gap-4">
-                            {filteredRelationshipTypes.map((type) => (
+                            {report.bestRelationshipTypes.map((type) => (
                               <RelationshipTypeCard key={type.type} type={type} />
                             ))}
                           </div>
-                        ) : (
-                          <p className="text-muted-foreground text-center py-4">
-                            No specific {relationshipFocus} indicators found. Try viewing "All Types" for complete analysis.
-                          </p>
-                        )}
-                      </section>
+                        </section>
+                      )}
                       
                       {/* Focus-Aware House Overlays */}
                       {focusedHouseOverlays.length > 0 && (
@@ -837,6 +834,11 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                       {/* Transit Timeline */}
                       <section className="p-4 rounded-xl border bg-card">
                         <SynastryTransitTimeline chart1={chart1} chart2={chart2} focus={relationshipFocus} />
+                      </section>
+                      
+                      {/* Relationship Timing Calculator */}
+                      <section>
+                        <RelationshipTimingCalculator chart1={chart1} chart2={chart2} />
                       </section>
                       
                       {/* Purpose & Growth */}

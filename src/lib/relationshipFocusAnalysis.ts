@@ -119,6 +119,93 @@ function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): Foc
     });
     score += 10;
   }
+
+  // *** NEW: Node-Jupiter for Growth Destiny ***
+  const nodeJupiter = checkAspect(chart1, 'NorthNode', chart2, 'Jupiter') || checkAspect(chart2, 'NorthNode', chart1, 'Jupiter');
+  if (nodeJupiter) {
+    indicators.push({
+      name: '★ KARMIC: North Node-Jupiter',
+      found: true,
+      aspect: nodeJupiter,
+      planet1: 'NorthNode',
+      planet2: 'Jupiter',
+      interpretation: `${nodeJupiter.type} (${nodeJupiter.orb}° orb): **GROWTH DESTINY.** Jupiter blesses the North Node person's path with expansion, opportunity, and luck. This partnership is meant to bring both people into greater abundance and success. Together you attract fortunate circumstances.`,
+      strength: 'strong'
+    });
+    score += nodeJupiter.type === 'conjunction' ? 22 : 15;
+  }
+
+  // *** NEW: Node-MC for Career Alignment (using house 10 cusp as MC proxy) ***
+  // MC is typically the 10th house cusp - check if houseCusps are available
+  const getMCPosition = (chart: NatalChart): NatalPlanetPosition | null => {
+    if (chart.houseCusps?.house10) {
+      return {
+        sign: chart.houseCusps.house10.sign,
+        degree: chart.houseCusps.house10.degree,
+        minutes: chart.houseCusps.house10.minutes,
+        seconds: 0
+      };
+    }
+    return null;
+  };
+  
+  const mc1 = getMCPosition(chart1);
+  const mc2 = getMCPosition(chart2);
+  
+  let nodeMC: AspectResult | null = null;
+  if (mc2 && chart1.planets.NorthNode) {
+    const pos1 = chart1.planets.NorthNode;
+    const angle = calculateAngle(pos1, mc2 as NatalPlanetPosition);
+    nodeMC = getAspect(angle);
+  }
+  if (!nodeMC && mc1 && chart2.planets.NorthNode) {
+    const pos2 = chart2.planets.NorthNode;
+    const angle = calculateAngle(pos2, mc1 as NatalPlanetPosition);
+    nodeMC = getAspect(angle);
+  }
+  
+  if (nodeMC) {
+    indicators.push({
+      name: '★ KARMIC: North Node-Midheaven',
+      found: true,
+      aspect: nodeMC,
+      planet1: 'NorthNode',
+      planet2: 'Midheaven',
+      interpretation: `${nodeMC.type} (${nodeMC.orb}° orb): **CAREER DESTINY.** One person's life direction (Node) aligns with the other's career path (MC). This is a powerful business indicator suggesting you're meant to work together in public/professional settings. Career advancement comes through partnership.`,
+      strength: 'strong'
+    });
+    score += 20;
+  }
+
+  // *** NEW: Pallas-Pallas for Strategic Alignment ***
+  const pallasPallas = checkAspect(chart1, 'Pallas', chart2, 'Pallas');
+  if (chart1.planets.Pallas && chart2.planets.Pallas && pallasPallas) {
+    indicators.push({
+      name: 'Pallas-Pallas: Strategic Minds',
+      found: true,
+      aspect: pallasPallas,
+      planet1: 'Pallas',
+      planet2: 'Pallas',
+      interpretation: `${pallasPallas.type} (${pallasPallas.orb}° orb): Your strategic minds ${pallasPallas.quality === 'harmonious' ? 'align naturally—you see patterns and solve problems in compatible ways' : 'interact dynamically—different strategic approaches that can complement or clash'}.`,
+      strength: pallasPallas.quality === 'harmonious' ? 'strong' : 'moderate'
+    });
+    score += pallasPallas.quality === 'harmonious' ? 12 : 6;
+  }
+
+  // *** NEW: Vesta aspects for dedication/focus ***
+  const vestaSun = checkAspect(chart1, 'Vesta', chart2, 'Sun') || checkAspect(chart2, 'Vesta', chart1, 'Sun');
+  if ((chart1.planets.Vesta || chart2.planets.Vesta) && vestaSun) {
+    indicators.push({
+      name: 'Vesta-Sun: Dedicated Focus',
+      found: true,
+      aspect: vestaSun,
+      planet1: 'Vesta',
+      planet2: 'Sun',
+      interpretation: `${vestaSun.type} (${vestaSun.orb}° orb): Vesta brings sacred dedication to the Sun person's goals. This partnership inspires focused, devoted work. You help each other stay committed to the mission.`,
+      strength: 'moderate'
+    });
+    score += 10;
+  }
   
   // Saturn aspects - structure and commitment
   const saturnSun = checkAspect(chart1, 'Saturn', chart2, 'Sun') || checkAspect(chart2, 'Saturn', chart1, 'Sun');
@@ -254,6 +341,36 @@ function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): Foc
     });
     if (saturnSaturn.quality === 'harmonious') score += 10;
   }
+
+  // *** NEW: Ceres for nurturing business relationships ***
+  const ceresSun = checkAspect(chart1, 'Ceres', chart2, 'Sun') || checkAspect(chart2, 'Ceres', chart1, 'Sun');
+  if ((chart1.planets.Ceres || chart2.planets.Ceres) && ceresSun) {
+    indicators.push({
+      name: 'Ceres-Sun: Nurturing Leadership',
+      found: true,
+      aspect: ceresSun,
+      planet1: 'Ceres',
+      planet2: 'Sun',
+      interpretation: `${ceresSun.type} (${ceresSun.orb}° orb): Ceres brings a nurturing quality to business. This partnership includes care for each other's wellbeing alongside professional goals. Good for mentorship dynamics.`,
+      strength: 'moderate'
+    });
+    score += 6;
+  }
+
+  // *** NEW: Juno for commitment in business ***
+  const junoSaturn = checkAspect(chart1, 'Juno', chart2, 'Saturn') || checkAspect(chart2, 'Juno', chart1, 'Saturn');
+  if ((chart1.planets.Juno || chart2.planets.Juno) && junoSaturn) {
+    indicators.push({
+      name: 'Juno-Saturn: Committed Partnership',
+      found: true,
+      aspect: junoSaturn,
+      planet1: 'Juno',
+      planet2: 'Saturn',
+      interpretation: `${junoSaturn.type} (${junoSaturn.orb}° orb): Juno (commitment) meets Saturn (structure). This indicates a serious, long-term business commitment. Both partners take the partnership seriously and are willing to put in the work.`,
+      strength: 'strong'
+    });
+    score += 12;
+  }
   
   // Calculate overall strength
   const overallStrength = Math.min(100, Math.round(score));
@@ -274,6 +391,8 @@ function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): Foc
       : `Business partnership would require conscious effort. ${karmicIndicators.length > 0 ? `However, your karmic connection suggests there may be important lessons to learn through working together.` : 'Consider defining very clear roles and expectations.'}`,
     recommendations: [
       ...(saturnNorthNode ? ['★ Your Saturn-North Node connection is a MAJOR karmic business indicator. This partnership has a fated quality - Saturn provides exactly the structure and lessons the Node person needs for their professional destiny.'] : []),
+      ...(nodeJupiter ? ['★ Your Node-Jupiter connection brings expansion and luck to your shared path. Trust that growth comes through this partnership.'] : []),
+      ...(nodeMC ? ['★ Your Node-Midheaven connection suggests career destiny is intertwined. Public/professional visibility comes through working together.'] : []),
       ...(saturnSun ? ['Use your Saturn-Sun dynamic to establish clear authority structures'] : ['Create explicit agreements about decision-making authority']),
       ...(mercuryMercury ? ['Leverage your Mercury connection for regular strategy sessions'] : ['Schedule regular check-ins to bridge different communication styles']),
       ...(jupiterSun ? ['Pursue growth opportunities together - your Jupiter-Sun aspect supports expansion'] : ['Set specific growth targets to stay aligned']),
@@ -467,11 +586,11 @@ function analyzeRomantic(chart1: NatalChart, chart2: NatalChart): FocusAnalysis 
   });
   if (moonMoon) score += moonMoon.quality === 'harmonious' ? 15 : 8;
   
-  // Juno aspects - marriage/commitment indicator
+  // *** ENHANCED: Juno aspects - marriage/commitment indicator ***
   const junoSun = checkAspect(chart1, 'Juno', chart2, 'Sun') || checkAspect(chart2, 'Juno', chart1, 'Sun');
   if (chart1.planets.Juno || chart2.planets.Juno) {
     indicators.push({
-      name: 'Juno-Sun: Marriage Potential',
+      name: '★ Juno-Sun: Marriage Potential',
       found: !!junoSun,
       aspect: junoSun,
       planet1: 'Juno',
@@ -481,13 +600,73 @@ function analyzeRomantic(chart1: NatalChart, chart2: NatalChart): FocusAnalysis 
         : 'No Juno-Sun aspect. Commitment builds through other connections.',
       strength: junoSun ? 'strong' : 'absent'
     });
-    if (junoSun) score += 15;
+    if (junoSun) score += 18;
+  }
+
+  // *** NEW: Juno-Venus for romantic commitment ***
+  const junoVenus = checkAspect(chart1, 'Juno', chart2, 'Venus') || checkAspect(chart2, 'Juno', chart1, 'Venus');
+  if ((chart1.planets.Juno || chart2.planets.Juno) && junoVenus) {
+    indicators.push({
+      name: '★ Juno-Venus: Love & Commitment United',
+      found: true,
+      aspect: junoVenus,
+      planet1: 'Juno',
+      planet2: 'Venus',
+      interpretation: `${junoVenus.type} (${junoVenus.orb}° orb): A beautiful indicator! Juno (commitment) blends with Venus (love). This suggests a relationship where love naturally leads to lasting partnership. The desire for commitment and romantic love align.`,
+      strength: 'strong'
+    });
+    score += 20;
+  }
+
+  // *** NEW: Juno-Moon for emotional commitment ***
+  const junoMoon = checkAspect(chart1, 'Juno', chart2, 'Moon') || checkAspect(chart2, 'Juno', chart1, 'Moon');
+  if ((chart1.planets.Juno || chart2.planets.Juno) && junoMoon) {
+    indicators.push({
+      name: 'Juno-Moon: Emotional Partnership',
+      found: true,
+      aspect: junoMoon,
+      planet1: 'Juno',
+      planet2: 'Moon',
+      interpretation: `${junoMoon.type} (${junoMoon.orb}° orb): Commitment meets emotional needs. The Moon person feels emotionally secure with Juno's partnership energy. A natural domestic partnership potential.`,
+      strength: 'strong'
+    });
+    score += 15;
+  }
+
+  // *** NEW: Ceres for nurturing in love ***
+  const ceresMoon = checkAspect(chart1, 'Ceres', chart2, 'Moon') || checkAspect(chart2, 'Ceres', chart1, 'Moon');
+  if ((chart1.planets.Ceres || chart2.planets.Ceres) && ceresMoon) {
+    indicators.push({
+      name: 'Ceres-Moon: Deep Nurturing',
+      found: true,
+      aspect: ceresMoon,
+      planet1: 'Ceres',
+      planet2: 'Moon',
+      interpretation: `${ceresMoon.type} (${ceresMoon.orb}° orb): Ceres (nurturing goddess) connects with the Moon. This creates a deeply nurturing dynamic where both feel cared for. Excellent for long-term relationships and family-building.`,
+      strength: 'strong'
+    });
+    score += 15;
+  }
+
+  // *** NEW: Ceres-Venus for nurturing love ***
+  const ceresVenus = checkAspect(chart1, 'Ceres', chart2, 'Venus') || checkAspect(chart2, 'Ceres', chart1, 'Venus');
+  if ((chart1.planets.Ceres || chart2.planets.Ceres) && ceresVenus) {
+    indicators.push({
+      name: 'Ceres-Venus: Nurturing Affection',
+      found: true,
+      aspect: ceresVenus,
+      planet1: 'Ceres',
+      planet2: 'Venus',
+      interpretation: `${ceresVenus.type} (${ceresVenus.orb}° orb): Love and nurturing combine beautifully. You express affection through care-taking. This is the "I made you soup when you're sick" kind of love.`,
+      strength: 'moderate'
+    });
+    score += 10;
   }
   
   // Node connections - destiny
   const nodeVenus = checkAspect(chart1, 'NorthNode', chart2, 'Venus') || checkAspect(chart2, 'NorthNode', chart1, 'Venus');
   indicators.push({
-    name: 'North Node-Venus: Fated Love',
+    name: '★ North Node-Venus: Fated Love',
     found: !!nodeVenus,
     aspect: nodeVenus,
     planet1: 'NorthNode',
@@ -498,9 +677,25 @@ function analyzeRomantic(chart1: NatalChart, chart2: NatalChart): FocusAnalysis 
     strength: nodeVenus ? 'strong' : 'absent'
   });
   if (nodeVenus) score += 18;
+
+  // *** NEW: Node-Moon for emotional destiny ***
+  const nodeMoon = checkAspect(chart1, 'NorthNode', chart2, 'Moon') || checkAspect(chart2, 'NorthNode', chart1, 'Moon');
+  if (nodeMoon) {
+    indicators.push({
+      name: '★ North Node-Moon: Emotional Destiny',
+      found: true,
+      aspect: nodeMoon,
+      planet1: 'NorthNode',
+      planet2: 'Moon',
+      interpretation: `${nodeMoon.type} (${nodeMoon.orb}° orb): The Moon person provides the emotional nourishment the Node person needs to fulfill their destiny. This is a deeply nurturing, fated emotional bond.`,
+      strength: 'strong'
+    });
+    score += 18;
+  }
   
-  const overallStrength = Math.min(100, Math.round(score * 1.0));
+  const overallStrength = Math.min(100, Math.round(score));
   const strongIndicators = indicators.filter(i => i.strength === 'strong');
+  const junoIndicators = indicators.filter(i => i.name.includes('Juno'));
   
   return {
     focus: 'romantic',
@@ -508,7 +703,7 @@ function analyzeRomantic(chart1: NatalChart, chart2: NatalChart): FocusAnalysis 
     overallStrength,
     indicators,
     summary: overallStrength >= 75
-      ? `High romantic potential! ${strongIndicators.length} major love indicators suggest strong chemistry and compatibility.`
+      ? `High romantic potential! ${strongIndicators.length} major love indicators suggest strong chemistry and compatibility.${junoIndicators.length > 0 ? ` The Juno connections point toward lasting commitment.` : ''}`
       : overallStrength >= 50
       ? `Solid romantic foundation with room to grow. Key connections support love, with some areas requiring conscious nurturing.`
       : `Romance may develop more slowly. Focus on building friendship first; attraction can grow through deeper understanding.`,
@@ -516,6 +711,8 @@ function analyzeRomantic(chart1: NatalChart, chart2: NatalChart): FocusAnalysis 
       ...(venusMars ? ['Your Venus-Mars chemistry is real - physical affection is important'] : ['Build attraction through shared experiences and emotional intimacy']),
       ...(sunMoon ? ['Honor your Sun-Moon connection through emotional attunement'] : []),
       ...(nodeVenus ? ['This feels fated - trust the connection while doing the work'] : []),
+      ...(junoVenus || junoSun ? ['★ Your Juno connection indicates marriage potential - commitment comes naturally here'] : []),
+      ...(ceresMoon || ceresVenus ? ['Nurture each other through acts of care - this is a love language here'] : []),
       'Communicate love languages explicitly'
     ]
   };
