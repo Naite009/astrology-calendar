@@ -27,7 +27,9 @@ import { useCloudBackup } from "@/hooks/useCloudBackup";
 import { useVoiceMemos } from "@/hooks/useVoiceMemos";
 import { DayData, generateICalExport } from "@/lib/astrology";
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets";
+import { SynastryView } from "./SynastryView";
+
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -413,6 +415,17 @@ export const AstroCalendar = () => {
               >
                 <Globe size={14} />
                 TNOs
+              </button>
+              <button
+                onClick={() => setViewMode("synastry")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "synastry"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Heart size={14} />
+                Synastry
               </button>
             </div>
 
