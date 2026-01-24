@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Heart, Users, Briefcase, GraduationCap, Sparkles, Palette, AlertTriangle, Flame, Moon, ChevronDown, ChevronUp, Info, Home, HelpCircle, Handshake, Lightbulb, CheckCircle2, XCircle, Circle, UserPlus, X } from 'lucide-react';
+import { Heart, Users, Briefcase, GraduationCap, Sparkles, Palette, AlertTriangle, Flame, Moon, ChevronDown, ChevronUp, Info, Home, HelpCircle, Handshake, Lightbulb, CheckCircle2, XCircle, Circle, UserPlus, X, Calendar } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { generateAdvancedSynastryReport, RelationshipTypeScore, HouseOverlay, KarmicIndicator } from '@/lib/synastryAdvanced';
 import { calculateCompositeChart, calculateDavisonChart, getPlanetSymbol } from '@/lib/compositeChart';
@@ -16,6 +16,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { SynastryWheelSimple } from './SynastryWheelSimple';
 import { RelationshipChartWheel } from './RelationshipChartWheel';
+import { SynastryTransitTimeline } from './SynastryTransitTimeline';
+import { SynastryPDFExport } from './SynastryPDFExport';
 import { format } from 'date-fns';
 
 interface SynastryViewProps {
@@ -299,6 +301,19 @@ const GroupDynamicsDisplay = ({ report, focus }: { report: GroupDynamicsReport; 
               <li key={i}>• {r}</li>
             ))}
           </ul>
+        </div>
+      )}
+      
+      {/* Pallas & Vesta Analysis */}
+      {(report.pallasAnalysis || report.vestaAnalysis) && (
+        <div className="p-4 rounded-lg bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800">
+          <h4 className="font-medium text-sm mb-2">🔮 Asteroid Insights</h4>
+          {report.pallasAnalysis && (
+            <p className="text-sm text-muted-foreground mb-2">⚴ {report.pallasAnalysis}</p>
+          )}
+          {report.vestaAnalysis && (
+            <p className="text-sm text-muted-foreground">🜨 {report.vestaAnalysis}</p>
+          )}
         </div>
       )}
     </div>
@@ -678,6 +693,19 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                 <TabsContent value="synastry" className="space-y-8 mt-6">
                   {report && chart1 && chart2 && (
                     <>
+                      {/* Export Button */}
+                      <div className="flex justify-end">
+                        <SynastryPDFExport
+                          chart1={chart1}
+                          chart2={chart2}
+                          report={report}
+                          focusAnalysis={focusAnalysis}
+                          houseOverlays={focusedHouseOverlays}
+                          karmicIndicators={focusedKarmicIndicators}
+                          focus={relationshipFocus}
+                        />
+                      </div>
+                      
                       {/* Synastry Wheel Visualization */}
                       <section className="flex flex-col items-center">
                         <SynastryWheelSimple chart1={chart1} chart2={chart2} size={420} />
@@ -805,6 +833,11 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                           </div>
                         </section>
                       )}
+                      
+                      {/* Transit Timeline */}
+                      <section className="p-4 rounded-xl border bg-card">
+                        <SynastryTransitTimeline chart1={chart1} chart2={chart2} focus={relationshipFocus} />
+                      </section>
                       
                       {/* Purpose & Growth */}
                       <section className="grid md:grid-cols-2 gap-6">
