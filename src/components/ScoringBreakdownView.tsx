@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Calculator, Star, AlertTriangle, Home, Sparkles, Info } from 'lucide-react';
+import { ChevronDown, ChevronUp, Calculator, Star, AlertTriangle, Home, Sparkles, Info, TrendingUp } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { FocusIndicator, FocusAnalysis } from '@/lib/relationshipFocusAnalysis';
 
@@ -43,11 +42,12 @@ export const ScoringBreakdownView = ({ analysis, chart1Name, chart2Name }: Scori
   
   const totalStandardPoints = tier1Points + tier2Points + tier3Points;
   
-  // Estimate max possible (rough calculation for display)
-  const maxTier1 = tier1Indicators.length * 10;
-  const maxTier2 = tier2Indicators.length * 8;
-  const maxTier3 = tier3Indicators.length * 6;
-  const totalMaxStandard = maxTier1 + maxTier2 + maxTier3;
+  // Use actual max from analysis if available, otherwise estimate
+  const totalMaxStandard = analysis.maxStandardPoints || (tier1Indicators.length * 10 + tier2Indicators.length * 8 + tier3Indicators.length * 6);
+  const earnedStandard = analysis.earnedStandardPoints ?? totalStandardPoints;
+  
+  // Aspect ratio data
+  const aspectRatio = analysis.aspectRatio;
 
   const getTierColor = (tier: number) => {
     switch (tier) {
