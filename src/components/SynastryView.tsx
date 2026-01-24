@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Heart, Users, Briefcase, GraduationCap, Sparkles, Palette, AlertTriangle, Flame, Moon, ChevronDown, ChevronUp, Info, Home, HelpCircle } from 'lucide-react';
+import { Heart, Users, Briefcase, GraduationCap, Sparkles, Palette, AlertTriangle, Flame, Moon, ChevronDown, ChevronUp, Info, Home, HelpCircle, Circle } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { generateAdvancedSynastryReport, RelationshipTypeScore, HouseOverlay } from '@/lib/synastryAdvanced';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -8,6 +8,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { SynastryWheelSimple } from './SynastryWheelSimple';
 
 interface SynastryViewProps {
   userNatalChart: NatalChart | null;
@@ -173,8 +174,13 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
         </Collapsible>
       </div>
       
-      {report && (
+      {report && chart1 && chart2 && (
         <div className="space-y-8">
+          {/* Synastry Wheel Visualization */}
+          <section className="flex flex-col items-center">
+            <SynastryWheelSimple chart1={chart1} chart2={chart2} size={420} />
+          </section>
+          
           {/* Overall Score */}
           <div className="text-center p-8 rounded-xl bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20 border border-pink-200 dark:border-pink-800">
             <div className="text-6xl font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent mb-2">
