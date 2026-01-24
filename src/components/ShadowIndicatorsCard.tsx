@@ -62,6 +62,12 @@ const IndicatorCard = ({ indicator }: { indicator: ShadowIndicator }) => {
                   <span className="font-medium text-sm">{indicator.name}</span>
                   {getRiskBadge(indicator.riskLevel)}
                 </div>
+                {/* Show planet ownership if available */}
+                {indicator.planetOwnership && (
+                  <p className="text-xs font-medium text-primary mt-1">
+                    {indicator.planetOwnership.planet1Owner}'s {indicator.planetOwnership.planet1} → {indicator.planetOwnership.planet2Owner}'s {indicator.planetOwnership.planet2}
+                  </p>
+                )}
                 <p className="text-xs text-muted-foreground mt-1">{indicator.description}</p>
               </div>
             </div>
@@ -72,28 +78,28 @@ const IndicatorCard = ({ indicator }: { indicator: ShadowIndicator }) => {
 
       <CollapsibleContent>
         <div className="mt-2 p-4 rounded-lg bg-secondary/30 space-y-4">
+          {/* HEALTHY EXPRESSION FIRST - emphasize the positive potential */}
+          <div className="p-3 rounded-lg bg-green-50/50 dark:bg-green-950/20 border-2 border-green-300 dark:border-green-800">
+            <h5 className="text-xs font-semibold text-green-700 dark:text-green-300 uppercase tracking-wider mb-1 flex items-center gap-1">
+              <Heart size={12} />
+              ✨ Healthy Expression (The Gift)
+            </h5>
+            <p className="text-sm text-green-800 dark:text-green-200">{indicator.healthyExpression}</p>
+          </div>
+
           {/* Dynamic Explanation */}
           <div>
             <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-              How This Pattern Manifests
+              How This Pattern Can Manifest
             </h5>
             <p className="text-sm">{indicator.dynamicExplanation}</p>
-          </div>
-
-          {/* Healthy Expression */}
-          <div className="p-3 rounded-lg bg-green-50/50 dark:bg-green-950/20 border border-green-200 dark:border-green-900/30">
-            <h5 className="text-xs font-semibold text-green-700 dark:text-green-300 uppercase tracking-wider mb-1 flex items-center gap-1">
-              <Heart size={12} />
-              Healthy Expression
-            </h5>
-            <p className="text-sm text-green-800 dark:text-green-200">{indicator.healthyExpression}</p>
           </div>
 
           {/* Warning Behaviors */}
           <div className="p-3 rounded-lg bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30">
             <h5 className="text-xs font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wider mb-2 flex items-center gap-1">
               <AlertCircle size={12} />
-              Warning Behaviors to Watch For
+              Signs It's Moving Toward Shadow
             </h5>
             <ul className="text-sm space-y-1">
               {indicator.warningBehaviors.map((behavior, i) => (
@@ -109,7 +115,7 @@ const IndicatorCard = ({ indicator }: { indicator: ShadowIndicator }) => {
           <div className="p-3 rounded-lg bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-900/30">
             <h5 className="text-xs font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wider mb-1 flex items-center gap-1">
               <Shield size={12} />
-              Healing Path
+              Path to Conscious Expression
             </h5>
             <p className="text-sm text-purple-800 dark:text-purple-200">{indicator.healingPath}</p>
           </div>
