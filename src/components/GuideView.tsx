@@ -1,6 +1,17 @@
 import { useState } from "react";
+import { ArrowRight, HelpCircle } from "lucide-react";
+import { 
+  GuideSection, 
+  GUIDE_NAV_ITEMS, 
+  getViewForSection, 
+  sectionHasTryIt, 
+  getTryItLabel,
+  ViewMode 
+} from "@/lib/guideNavigation";
 
-type GuideSection = "overview" | "colors" | "symbols" | "moonphases" | "retrogrades" | "aspects" | "dignities" | "fixedstars" | "divinefeminine" | "venuscycles" | "vocmoon" | "planetaryhours" | "solararc" | "progressions" | "relationships";
+interface GuideViewProps {
+  onNavigateToView?: (view: ViewMode) => void;
+}
 
 const SymbolCard = ({ icon, name, desc }: { icon: string; name: string; desc: string }) => (
   <div className="rounded-sm border border-border bg-secondary p-4">
@@ -17,6 +28,20 @@ const ColorCard = ({ color, planet, symbol, desc }: { color: string; planet: str
     <div className="text-xs leading-relaxed text-muted-foreground">{desc}</div>
   </div>
 );
+
+const TryItButton = ({ section, onNavigate }: { section: GuideSection; onNavigate?: (view: ViewMode) => void }) => {
+  if (!sectionHasTryIt(section) || !onNavigate) return null;
+  
+  return (
+    <button
+      onClick={() => onNavigate(getViewForSection(section))}
+      className="mt-6 inline-flex items-center gap-2 rounded-sm border border-primary bg-primary/10 px-4 py-2 text-sm font-medium text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+    >
+      {getTryItLabel(section)}
+      <ArrowRight size={16} />
+    </button>
+  );
+};
 
 const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }> = {
   overview: {
@@ -45,6 +70,15 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
           <li><strong>Phases:</strong> Visual moon phase chart for the entire year</li>
           <li><strong>Tables:</strong> Annual reference for full/new moons, retrogrades</li>
           <li><strong>Guide:</strong> This reference section</li>
+          <li><strong>Charts:</strong> Save and manage multiple natal charts</li>
+          <li><strong>Wheel:</strong> Visual natal chart wheel display</li>
+          <li><strong>Timing:</strong> Best days, biorhythms, and electional astrology</li>
+          <li><strong>Colors:</strong> Personalized astro-inspired color palettes</li>
+          <li><strong>Patterns:</strong> Live planetary positions and cycle tracking</li>
+          <li><strong>Script:</strong> Sacred Script reading generator (Debra Silverman method)</li>
+          <li><strong>Decoder:</strong> Deep chart analysis with dignities and dispositors</li>
+          <li><strong>Speeds:</strong> Planetary speed reference guide</li>
+          <li><strong>TNOs:</strong> Dwarf planets and Trans-Neptunian Objects guide</li>
         </ul>
         
         <h3>Color Coding</h3>
@@ -89,6 +123,12 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
         </ul>
         <p>
           Example: Mars square Moon in morning (red top) + Venus trine Sun in afternoon (rose bottom) = Red-to-Rose gradient day
+        </p>
+        
+        <h3>Personalized Colors</h3>
+        <p>
+          The Colors tab generates personalized color palettes based on your natal chart transits. 
+          Each day's palette reflects the current planetary influences on YOUR chart specifically.
         </p>
       </>
     ),
@@ -478,6 +518,12 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
             </li>
           </ul>
         </div>
+        
+        <h3>See It In Action</h3>
+        <p>
+          The <strong>Chart Decoder</strong> tab shows your natal chart's dignity distribution, 
+          including a full breakdown of which planets are strong or weak by placement.
+        </p>
       </>
     ),
   },
@@ -549,7 +595,7 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
               <span className="text-xs text-amber-600 dark:text-amber-400">Brightest Star</span>
             </div>
             <div className="text-sm text-muted-foreground leading-relaxed">
-              The Dog Star. Spiritual wisdom, success, fame. Ancient Egyptian sacred star marking the New Year. Divine downloads, kundalini awakening, connection to higher consciousness.
+              The Dog Star. Spiritual wisdom, success, fame. Ancient Egyptian sacred star marking the New Year. Divine downloads, kundalini awakening.
             </div>
           </div>
           
@@ -560,7 +606,7 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
               <span className="text-xs text-red-600 dark:text-red-400">Most Infamous</span>
             </div>
             <div className="text-sm text-muted-foreground leading-relaxed">
-              Medusa's Head. Transformation through facing shadow. Feminine rage transmuted to power. Losing one's head, then reclaiming it. Passion, intensity.
+              Medusa's Head. Transformation through facing shadow. Feminine rage transmuted to power. Losing one's head, then reclaiming it.
             </div>
           </div>
           
@@ -571,18 +617,7 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
               <span className="text-xs text-green-600 dark:text-green-400">Most Benefic</span>
             </div>
             <div className="text-sm text-muted-foreground leading-relaxed">
-              The Wheat Sheaf. Gifts, talents, protection. Venus-Jupiter nature. Artistic success, harvest of efforts. Spiritual gifts, mystical knowledge. The priestess star.
-            </div>
-          </div>
-          
-          <div className="rounded-sm border border-border bg-secondary p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">⭐</span>
-              <span className="font-semibold text-foreground">Alcyone (0° Gemini)</span>
-              <span className="text-xs text-purple-600 dark:text-purple-400">Pleiades</span>
-            </div>
-            <div className="text-sm text-muted-foreground leading-relaxed">
-              Central star of the Seven Sisters. Vision, mysticism, grief. Something to cry about. Ambition, mourning. Connection to ancient star wisdom.
+              The Wheat Sheaf. Gifts, talents, protection. Venus-Jupiter nature. Artistic success, harvest of efforts. The priestess star.
             </div>
           </div>
         </div>
@@ -638,165 +673,157 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
           healing gift. Where Chiron falls in your chart shows where you've been wounded—and where 
           you can heal others once you've done your own healing work.
         </p>
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-sm border-collapse">
-            <thead>
-              <tr className="bg-primary text-primary-foreground">
-                <th className="p-3 text-left font-semibold">Chiron in Sign</th>
-                <th className="p-3 text-left font-semibold">The Wound & The Healing</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="bg-background border-b border-border">
-                <td className="p-3 font-medium">♈ Aries</td>
-                <td className="p-3 text-muted-foreground">Wound: Identity, self-assertion. Healing: Courage to be yourself.</td>
-              </tr>
-              <tr className="bg-secondary border-b border-border">
-                <td className="p-3 font-medium">♉ Taurus</td>
-                <td className="p-3 text-muted-foreground">Wound: Self-worth, security. Healing: Grounding, valuing yourself.</td>
-              </tr>
-              <tr className="bg-background border-b border-border">
-                <td className="p-3 font-medium">♊ Gemini</td>
-                <td className="p-3 text-muted-foreground">Wound: Communication, learning. Healing: Finding your voice.</td>
-              </tr>
-              <tr className="bg-secondary border-b border-border">
-                <td className="p-3 font-medium">♋ Cancer</td>
-                <td className="p-3 text-muted-foreground">Wound: Family, belonging. Healing: Nurturing self and others.</td>
-              </tr>
-              <tr className="bg-background border-b border-border">
-                <td className="p-3 font-medium">♌ Leo</td>
-                <td className="p-3 text-muted-foreground">Wound: Self-expression, recognition. Healing: Authentic creativity.</td>
-              </tr>
-              <tr className="bg-secondary border-b border-border">
-                <td className="p-3 font-medium">♍ Virgo</td>
-                <td className="p-3 text-muted-foreground">Wound: Perfectionism, health. Healing: Accepting imperfection.</td>
-              </tr>
-              <tr className="bg-background border-b border-border">
-                <td className="p-3 font-medium">♎ Libra</td>
-                <td className="p-3 text-muted-foreground">Wound: Relationships, fairness. Healing: Healthy boundaries.</td>
-              </tr>
-              <tr className="bg-secondary border-b border-border">
-                <td className="p-3 font-medium">♏ Scorpio</td>
-                <td className="p-3 text-muted-foreground">Wound: Trust, intimacy. Healing: Deep emotional healing.</td>
-              </tr>
-              <tr className="bg-background border-b border-border">
-                <td className="p-3 font-medium">♐ Sagittarius</td>
-                <td className="p-3 text-muted-foreground">Wound: Meaning, truth. Healing: Faith, philosophical understanding.</td>
-              </tr>
-              <tr className="bg-secondary border-b border-border">
-                <td className="p-3 font-medium">♑ Capricorn</td>
-                <td className="p-3 text-muted-foreground">Wound: Authority, achievement. Healing: Building from wounds.</td>
-              </tr>
-              <tr className="bg-background border-b border-border">
-                <td className="p-3 font-medium">♒ Aquarius</td>
-                <td className="p-3 text-muted-foreground">Wound: Belonging, uniqueness. Healing: Embracing difference.</td>
-              </tr>
-              <tr className="bg-secondary">
-                <td className="p-3 font-medium">♓ Pisces</td>
-                <td className="p-3 text-muted-foreground">Wound: Boundaries, escapism. Healing: Compassion, mystical connection.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
         
-        <h3>⚸ Black Moon Lilith — The Wild Feminine</h3>
+        <h3>⚸ Lilith — Dark Moon</h3>
         <p>
-          Black Moon Lilith is not a planet but a mathematical point—the lunar apogee (Moon's 
-          farthest point from Earth). She represents the wild, untamed feminine, sexuality, 
-          and the parts of ourselves we've been taught to suppress.
+          The lunar apogee—the point where the Moon is farthest from Earth. Represents the 
+          wild, untamed feminine. Your primal instincts, raw sexuality, and what you refuse 
+          to be controlled about. Shadow self and repressed desires.
         </p>
-        <div className="mt-4 p-4 rounded-sm bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-700">
-          <div className="font-semibold text-foreground mb-2">Lilith Themes by Sign</div>
-          <div className="grid gap-2 text-sm">
-            <div><strong>♈ Aries:</strong> Wild independence. Power through fierce autonomy.</div>
-            <div><strong>♉ Taurus:</strong> Sensual sovereignty. Body as temple.</div>
-            <div><strong>♊ Gemini:</strong> Voice as weapon. Speaking dangerous truths.</div>
-            <div><strong>♋ Cancer:</strong> Primal mother. Raw emotional intensity.</div>
-            <div><strong>♌ Leo:</strong> Creative fury. Shameless self-expression.</div>
-            <div><strong>♍ Virgo:</strong> Perfect imperfection. Sacred service.</div>
-            <div><strong>♎ Libra:</strong> Relationship rebel. Authentic partnership.</div>
-            <div><strong>♏ Scorpio:</strong> Sexual power. Transformative intensity.</div>
-            <div><strong>♐ Sagittarius:</strong> Wild freedom. Untamed spirit.</div>
-            <div><strong>♑ Capricorn:</strong> Authority defiance. Building your empire.</div>
-            <div><strong>♒ Aquarius:</strong> Radical uniqueness. Revolutionary change.</div>
-            <div><strong>♓ Pisces:</strong> Mystic wild. Spiritual rebellion.</div>
+        
+        <h3>The Asteroid Goddesses</h3>
+        <div className="mt-4 grid gap-4">
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="font-semibold text-foreground mb-2">⚳ Ceres — The Great Mother</div>
+            <div className="text-sm text-muted-foreground">
+              Nurturing, sustenance, what we need to feel nurtured. Mother-child dynamics, 
+              food relationship, grief and loss, seasons of life.
+            </div>
+          </div>
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="font-semibold text-foreground mb-2">⚴ Pallas — The Warrior Strategist</div>
+            <div className="text-sm text-muted-foreground">
+              Intelligence, pattern recognition, creative wisdom. Political savvy, 
+              father-daughter dynamics, legal acumen.
+            </div>
+          </div>
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="font-semibold text-foreground mb-2">⚵ Juno — The Divine Consort</div>
+            <div className="text-sm text-muted-foreground">
+              Committed partnership, marriage, what you need in long-term relationships. 
+              Loyalty, jealousy, balance of power in partnership.
+            </div>
+          </div>
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="font-semibold text-foreground mb-2">⚶ Vesta — The Sacred Flame</div>
+            <div className="text-sm text-muted-foreground">
+              Devotion, dedication, what you're willing to sacrifice for. Sexual energy 
+              channeled into work, focus, spiritual service.
+            </div>
+          </div>
+        </div>
+      </>
+    ),
+  },
+  venuscycles: {
+    title: "Understanding Venus Cycles",
+    content: (
+      <>
+        <p>
+          Venus has a unique 584-day cycle that creates profound patterns in our lives around 
+          love, values, beauty, and self-worth. Twice in this cycle, Venus conjuncts the Sun—
+          these are called <strong>Venus Star Points</strong>.
+        </p>
+        
+        <h3>What is a Venus Star Point?</h3>
+        <p>
+          A Venus Star Point occurs when Venus aligns exactly with the Sun. There are two types:
+        </p>
+        
+        <div className="mt-4 mb-6 grid gap-4 text-sm">
+          <div className="p-4 rounded-sm bg-pink-50 dark:bg-pink-900/30 border border-pink-200 dark:border-pink-700">
+            <div className="font-semibold text-foreground mb-2">🌑 Inferior Conjunction (Venus Retrograde)</div>
+            <ul className="space-y-1 text-muted-foreground">
+              <li>• Venus passes BETWEEN Earth and Sun</li>
+              <li>• Venus is CLOSEST to Earth</li>
+              <li>• Like a "Venus New Moon" — NEW CYCLE BEGINS</li>
+              <li>• Time to reassess values, relationships, self-worth</li>
+              <li>• <strong>This is the main "Star Point"</strong></li>
+            </ul>
+          </div>
+          
+          <div className="p-4 rounded-sm bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700">
+            <div className="font-semibold text-foreground mb-2">☀️ Superior Conjunction</div>
+            <ul className="space-y-1 text-muted-foreground">
+              <li>• Venus passes on FAR SIDE of Sun</li>
+              <li>• Like a "Venus Full Moon" — maturation point</li>
+              <li>• Integration and consolidation phase</li>
+              <li>• Time to solidify what you've learned about love and value</li>
+            </ul>
           </div>
         </div>
         
-        <h3>Working with Divine Feminine Energy</h3>
-        <div className="mt-4 p-4 rounded-sm bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-700">
-          <ul className="space-y-2">
-            <li><strong>North Node transits:</strong> Major life direction themes activated. Pay attention to destiny opportunities.</li>
-            <li><strong>Chiron transits:</strong> Healing crises and opportunities. Old wounds resurface for healing.</li>
-            <li><strong>Lilith transits:</strong> Reclaiming suppressed parts of self. Rage, sexuality, power emerging.</li>
-            <li><strong>Stelliums:</strong> When 3+ planets gather in one sign, that sign's themes dominate.</li>
-          </ul>
+        <h3>The Sacred Geometry: 8-Year Pentagram</h3>
+        <p>
+          Every <strong>8 years</strong>, Venus creates a perfect <strong>5-pointed star (pentagram)</strong> 
+          in the zodiac! Each inferior conjunction returns to approximately the same sign/degree 
+          every 8 years. This is why Venus Star Points that happened 8 years ago carry 
+          similar themes to current ones.
+        </p>
+        
+        <h3>Morning Star vs Evening Star</h3>
+        <div className="mt-4 mb-6 grid gap-4 text-sm md:grid-cols-2">
+          <div className="p-4 rounded-sm bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-700">
+            <div className="font-semibold text-foreground mb-2">🌅 Morning Star (Phosphorus)</div>
+            <p className="text-muted-foreground">
+              Venus rises before the Sun. Energy is <strong>new, eager, spontaneous</strong>. 
+              Internal work—clarifying what you truly value.
+            </p>
+          </div>
+          
+          <div className="p-4 rounded-sm bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-700">
+            <div className="font-semibold text-foreground mb-2">🌆 Evening Star (Hesperus)</div>
+            <p className="text-muted-foreground">
+              Venus follows the Sun. Energy is <strong>experienced, wiser, worldly</strong>. 
+              External expression—dating, socializing, beautifying.
+            </p>
+          </div>
         </div>
       </>
     ),
   },
   vocmoon: {
-    title: "Understanding Void of Course Moon",
+    title: "Void of Course Moon",
     content: (
       <>
         <p>
-          The <strong>Void of Course Moon</strong> (VOC) is one of the most important timing 
-          techniques in astrology. It occurs when the Moon makes its last major aspect to 
-          another planet before changing signs—and before it enters the next sign.
+          The <strong>Void of Course (VOC) Moon</strong> is the period between when the Moon makes 
+          its last major aspect in one sign and when it enters the next sign. During this time, 
+          the Moon is "between worlds" — finishing one cycle but not yet starting the next.
         </p>
         
         <h3>What Happens During VOC?</h3>
         <p>
-          During this period, the Moon is "between" aspects—it has finished its business in 
-          one sign but hasn't yet started new business in the next. The energy is suspended, 
-          transitional, and unfocused.
+          Activities started during VOC often "come to nothing" — not necessarily bad outcomes, 
+          but things don't develop as expected. It's a period of flux and transition.
         </p>
         
-        <div className="mt-4 p-4 rounded-sm bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700">
-          <div className="font-semibold text-foreground mb-3">⚠️ Why It Matters</div>
-          <p className="text-sm text-foreground mb-3">
-            Things started during VOC Moon tend to <strong>"go nowhere"</strong> or not develop 
-            as planned. Contracts signed may not be honored. Projects started may never be finished 
-            or may need to be completely redone later.
-          </p>
-          <div className="text-xs text-muted-foreground italic">
-            Ancient astrologers called this "the Moon runs wild" (Luna curso vacua).
+        <h3>❌ What to Avoid During VOC</h3>
+        <div className="mt-4 mb-6 grid gap-2 text-sm">
+          <div className="flex items-start gap-2 p-2 rounded-sm bg-red-50 dark:bg-red-900/20">
+            <span className="text-red-600">✗</span>
+            <span>Starting new projects or initiatives</span>
+          </div>
+          <div className="flex items-start gap-2 p-2 rounded-sm bg-red-50 dark:bg-red-900/20">
+            <span className="text-red-600">✗</span>
+            <span>Important business decisions</span>
+          </div>
+          <div className="flex items-start gap-2 p-2 rounded-sm bg-red-50 dark:bg-red-900/20">
+            <span className="text-red-600">✗</span>
+            <span>Signing contracts or making commitments</span>
+          </div>
+          <div className="flex items-start gap-2 p-2 rounded-sm bg-red-50 dark:bg-red-900/20">
+            <span className="text-red-600">✗</span>
+            <span>First dates or job interviews</span>
+          </div>
+          <div className="flex items-start gap-2 p-2 rounded-sm bg-red-50 dark:bg-red-900/20">
+            <span className="text-red-600">✗</span>
+            <span>Launching products or campaigns</span>
           </div>
         </div>
         
-        <h3>VOC Duration</h3>
-        <p>
-          VOC periods can last from a few minutes to over 24 hours! Short VOC periods (under 2 hours) 
-          are common and not a big deal. Long VOC periods (over 8 hours) are significant and worth 
-          planning around.
-        </p>
-        
-        <h3>What to Avoid During VOC</h3>
-        <div className="mt-4 grid gap-2 text-sm">
-          <div className="flex items-start gap-2 p-2 rounded-sm bg-red-50 dark:bg-red-900/20">
-            <span className="text-red-600">✗</span>
-            <span>Starting new projects or ventures</span>
-          </div>
-          <div className="flex items-start gap-2 p-2 rounded-sm bg-red-50 dark:bg-red-900/20">
-            <span className="text-red-600">✗</span>
-            <span>Signing contracts or making agreements</span>
-          </div>
-          <div className="flex items-start gap-2 p-2 rounded-sm bg-red-50 dark:bg-red-900/20">
-            <span className="text-red-600">✗</span>
-            <span>Making major purchases</span>
-          </div>
-          <div className="flex items-start gap-2 p-2 rounded-sm bg-red-50 dark:bg-red-900/20">
-            <span className="text-red-600">✗</span>
-            <span>Important meetings or interviews</span>
-          </div>
-          <div className="flex items-start gap-2 p-2 rounded-sm bg-red-50 dark:bg-red-900/20">
-            <span className="text-red-600">✗</span>
-            <span>Launching websites or products</span>
-          </div>
-        </div>
-        
-        <h3>What to DO During VOC</h3>
-        <div className="mt-4 grid gap-2 text-sm">
+        <h3>✓ What Works Well During VOC</h3>
+        <div className="mt-4 mb-6 grid gap-2 text-sm">
           <div className="flex items-start gap-2 p-2 rounded-sm bg-green-50 dark:bg-green-900/20">
             <span className="text-green-600">✓</span>
             <span>Finish existing work and tie up loose ends</span>
@@ -813,23 +840,12 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
             <span className="text-green-600">✓</span>
             <span>Brainstorming (without implementation)</span>
           </div>
-          <div className="flex items-start gap-2 p-2 rounded-sm bg-green-50 dark:bg-green-900/20">
-            <span className="text-green-600">✓</span>
-            <span>Activities you don't want to commit to</span>
-          </div>
         </div>
-        
-        <h3>The Exception: Routine Activities</h3>
-        <p>
-          VOC is less impactful for things you do regularly. Going to work, regular meetings, 
-          routine errands—these are fine during VOC because they're not "new beginnings."
-        </p>
         
         <h3>How Your Calendar Shows VOC</h3>
         <p>
           On your calendar, VOC periods are marked with <strong>⚠️ V/C</strong> along with the 
-          duration. Click on any day to see the exact times, the Moon's last aspect, and what 
-          sign the Moon will enter when VOC ends.
+          duration. The Timing tab shows current VOC status in real-time.
         </p>
       </>
     ),
@@ -874,13 +890,9 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
           <span className="px-3 py-2 rounded-sm bg-secondary text-sm">☿ Mercury</span>
           <span className="text-muted-foreground">→</span>
           <span className="px-3 py-2 rounded-sm bg-secondary text-sm">☽ Moon</span>
-          <span className="text-muted-foreground">→ (repeat)</span>
         </div>
         
         <h3>Day Rulers</h3>
-        <p>
-          Each day of the week is ruled by a planet. The first hour after sunrise is ruled by that planet:
-        </p>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -894,323 +906,47 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
               <tr className="border-b border-border/50">
                 <td className="py-2 px-3 font-medium text-foreground">Sunday</td>
                 <td className="py-2 px-3">☉ Sun</td>
-                <td className="py-2 px-3">Leadership, vitality, creativity, confidence</td>
+                <td className="py-2 px-3">Leadership, vitality, creativity</td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 px-3 font-medium text-foreground">Monday</td>
                 <td className="py-2 px-3">☽ Moon</td>
-                <td className="py-2 px-3">Home, family, emotions, intuition</td>
+                <td className="py-2 px-3">Home, family, emotions</td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 px-3 font-medium text-foreground">Tuesday</td>
                 <td className="py-2 px-3">♂ Mars</td>
-                <td className="py-2 px-3">Action, competition, courage, surgery</td>
+                <td className="py-2 px-3">Action, competition, courage</td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 px-3 font-medium text-foreground">Wednesday</td>
                 <td className="py-2 px-3">☿ Mercury</td>
-                <td className="py-2 px-3">Communication, learning, travel, tech</td>
+                <td className="py-2 px-3">Communication, learning, travel</td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 px-3 font-medium text-foreground">Thursday</td>
                 <td className="py-2 px-3">♃ Jupiter</td>
-                <td className="py-2 px-3">Expansion, luck, legal matters, education</td>
+                <td className="py-2 px-3">Expansion, luck, education</td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 px-3 font-medium text-foreground">Friday</td>
                 <td className="py-2 px-3">♀ Venus</td>
-                <td className="py-2 px-3">Love, beauty, pleasure, financial matters</td>
+                <td className="py-2 px-3">Love, beauty, pleasure</td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 px-3 font-medium text-foreground">Saturday</td>
                 <td className="py-2 px-3">♄ Saturn</td>
-                <td className="py-2 px-3">Structure, discipline, long-term planning</td>
+                <td className="py-2 px-3">Structure, discipline, planning</td>
               </tr>
             </tbody>
           </table>
-        </div>
-        
-        <h3>Using Planetary Hours</h3>
-        <div className="mt-4 space-y-4">
-          <div className="p-4 rounded-sm bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700">
-            <div className="font-semibold text-foreground mb-2">☉ Sun Hour</div>
-            <ul className="text-sm text-muted-foreground space-y-1">
-              <li>• Leadership decisions & self-promotion</li>
-              <li>• Creative projects & artistic expression</li>
-              <li>• Meeting authority figures</li>
-              <li>• Health and vitality matters</li>
-            </ul>
-          </div>
-          
-          <div className="p-4 rounded-sm bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700">
-            <div className="font-semibold text-foreground mb-2">☽ Moon Hour</div>
-            <ul className="text-sm text-muted-foreground space-y-1">
-              <li>• Family & domestic matters</li>
-              <li>• Emotional conversations</li>
-              <li>• Intuitive work & psychic practices</li>
-              <li>• Women's health & nurturing</li>
-            </ul>
-          </div>
-          
-          <div className="p-4 rounded-sm bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-700">
-            <div className="font-semibold text-foreground mb-2">☿ Mercury Hour</div>
-            <ul className="text-sm text-muted-foreground space-y-1">
-              <li>• Writing & communication</li>
-              <li>• Learning & study</li>
-              <li>• Travel planning</li>
-              <li>• Technology & business</li>
-            </ul>
-          </div>
-          
-          <div className="p-4 rounded-sm bg-pink-50 dark:bg-pink-900/30 border border-pink-200 dark:border-pink-700">
-            <div className="font-semibold text-foreground mb-2">♀ Venus Hour</div>
-            <ul className="text-sm text-muted-foreground space-y-1">
-              <li>• Love & romance</li>
-              <li>• Beauty treatments & shopping</li>
-              <li>• Social gatherings & parties</li>
-              <li>• Art & aesthetics</li>
-            </ul>
-          </div>
-          
-          <div className="p-4 rounded-sm bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700">
-            <div className="font-semibold text-foreground mb-2">♂ Mars Hour</div>
-            <ul className="text-sm text-muted-foreground space-y-1">
-              <li>• Physical activity & sports</li>
-              <li>• Competition & conflict resolution</li>
-              <li>• Surgery & medical procedures</li>
-              <li>• Courage-requiring tasks</li>
-            </ul>
-          </div>
-          
-          <div className="p-4 rounded-sm bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-700">
-            <div className="font-semibold text-foreground mb-2">♃ Jupiter Hour</div>
-            <ul className="text-sm text-muted-foreground space-y-1">
-              <li>• Legal matters & court</li>
-              <li>• Higher education & philosophy</li>
-              <li>• Long journeys & adventures</li>
-              <li>• Publishing & expansion</li>
-            </ul>
-          </div>
-          
-          <div className="p-4 rounded-sm bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600">
-            <div className="font-semibold text-foreground mb-2">♄ Saturn Hour</div>
-            <ul className="text-sm text-muted-foreground space-y-1">
-              <li>• Serious work & discipline</li>
-              <li>• Long-term planning</li>
-              <li>• Real estate & agriculture</li>
-              <li>• Setting boundaries & endings</li>
-            </ul>
-          </div>
         </div>
         
         <h3>Viewing Planetary Hours</h3>
         <p>
-          Click on any day in your calendar to see the complete planetary hour schedule. 
-          If you're viewing today, you'll see which hour is currently active and what's coming next.
+          The Timing tab shows the current planetary hour in real-time. Click on any day 
+          to see the complete planetary hour schedule for that day.
         </p>
-      </>
-    ),
-  },
-  venuscycles: {
-    title: "Understanding Venus Cycles",
-    content: (
-      <>
-        <p>
-          Venus has a unique 584-day cycle that creates profound patterns in our lives around 
-          love, values, beauty, and self-worth. Twice in this cycle, Venus conjuncts the Sun—
-          these are called <strong>Venus Star Points</strong>.
-        </p>
-        
-        <h3>What is a Venus Star Point?</h3>
-        <p>
-          A Venus Star Point occurs when Venus aligns exactly with the Sun. There are two types:
-        </p>
-        
-        <div className="mt-4 mb-6 grid gap-4 text-sm">
-          <div className="p-4 rounded-sm bg-pink-50 dark:bg-pink-900/30 border border-pink-200 dark:border-pink-700">
-            <div className="font-semibold text-foreground mb-2">🌑 Inferior Conjunction (Venus Retrograde)</div>
-            <ul className="space-y-1 text-muted-foreground">
-              <li>• Venus passes BETWEEN Earth and Sun</li>
-              <li>• Venus is CLOSEST to Earth</li>
-              <li>• Like a "Venus New Moon" — NEW CYCLE BEGINS</li>
-              <li>• Inward, cocooning phase</li>
-              <li>• Time to reassess values, relationships, self-worth</li>
-              <li>• <strong>This is the main "Star Point"</strong></li>
-            </ul>
-          </div>
-          
-          <div className="p-4 rounded-sm bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700">
-            <div className="font-semibold text-foreground mb-2">☀️ Superior Conjunction</div>
-            <ul className="space-y-1 text-muted-foreground">
-              <li>• Venus passes on FAR SIDE of Sun</li>
-              <li>• Venus is FARTHEST from Earth</li>
-              <li>• Like a "Venus Full Moon" — maturation point</li>
-              <li>• Integration and consolidation phase</li>
-              <li>• Time to solidify what you've learned about love and value</li>
-            </ul>
-          </div>
-        </div>
-        
-        <h3>The Full Venus Cycle</h3>
-        <div className="mt-4 p-4 rounded-sm bg-secondary border border-border font-mono text-xs">
-          <div className="space-y-2">
-            <div><strong>🌑 INFERIOR CONJUNCTION</strong> (Retrograde)</div>
-            <div className="pl-4 border-l-2 border-pink-300 text-muted-foreground">
-              "Underworld Journey"<br/>
-              3 weeks before: Release what no longer serves<br/>
-              EXACT: New Venus cycle seed planted<br/>
-              3 weeks after: Integrate, prepare for emergence
-            </div>
-            <div className="text-center text-muted-foreground">↓ (Venus turns Direct) ↓</div>
-            
-            <div><strong>🌅 MORNING STAR PHASE</strong> (6-7 months)</div>
-            <div className="pl-4 border-l-2 border-orange-300 text-muted-foreground">
-              Venus visible before sunrise<br/>
-              INTERNAL refinement<br/>
-              Clarifying values, self-worth development<br/>
-              Relationship patterns examined internally
-            </div>
-            <div className="text-center text-muted-foreground">↓</div>
-            
-            <div><strong>☀️ SUPERIOR CONJUNCTION</strong></div>
-            <div className="pl-4 border-l-2 border-amber-300 text-muted-foreground">
-              "Venus Full Moon"<br/>
-              Maturation point<br/>
-              Integration of lessons
-            </div>
-            <div className="text-center text-muted-foreground">↓</div>
-            
-            <div><strong>🌆 EVENING STAR PHASE</strong> (6-7 months)</div>
-            <div className="pl-4 border-l-2 border-purple-300 text-muted-foreground">
-              Venus visible after sunset<br/>
-              EXTERNAL expression<br/>
-              Dating, socializing, beautifying<br/>
-              Relationship growth expressed outwardly
-            </div>
-            <div className="text-center text-muted-foreground">↓ [Venus turns Retrograde] ↓</div>
-            
-            <div><strong>🌑 NEXT INFERIOR CONJUNCTION</strong> (584 days later)</div>
-          </div>
-        </div>
-        
-        <h3>The Sacred Geometry: 8-Year Pentagram</h3>
-        <p>
-          Every <strong>8 years</strong>, Venus creates a perfect <strong>5-pointed star (pentagram)</strong> 
-          in the zodiac! Each inferior conjunction returns to approximately the same sign/degree 
-          every 8 years. This is why Venus Star Points that happened 8 years ago carry 
-          similar themes to current ones.
-        </p>
-        
-        <h3>Morning Star vs Evening Star</h3>
-        <div className="mt-4 mb-6 grid gap-4 text-sm md:grid-cols-2">
-          <div className="p-4 rounded-sm bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-700">
-            <div className="font-semibold text-foreground mb-2">🌅 Morning Star (Phosphorus)</div>
-            <p className="text-muted-foreground">
-              Venus rises before the Sun. Energy is <strong>new, eager, spontaneous, resilient</strong>. 
-              Perhaps a little naive when it comes to love. Internal work—clarifying what you truly value, 
-              developing self-worth privately before expressing it.
-            </p>
-          </div>
-          
-          <div className="p-4 rounded-sm bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-700">
-            <div className="font-semibold text-foreground mb-2">🌆 Evening Star (Hesperus)</div>
-            <p className="text-muted-foreground">
-              Venus follows the Sun. Energy is <strong>experienced, wiser, worldly</strong>. 
-              More cautious and practical about love. External expression—actively dating, 
-              socializing, beautifying your environment, attracting abundance.
-            </p>
-          </div>
-        </div>
-        
-        <h3>Why Venus Cycles Matter for Libra/Taurus</h3>
-        <p>
-          If you have Libra or Taurus rising, or a stellium in those signs, <strong>Venus rules your chart</strong>. 
-          When Venus has major cycles, your ENTIRE life restructures around relationships, values, money, 
-          beauty, and self-worth. Pay special attention to Star Points!
-        </p>
-        
-        <h3>Journal Prompts by Phase</h3>
-        <div className="mt-4 space-y-4 text-sm">
-          <div className="p-3 rounded-sm bg-pink-50 dark:bg-pink-900/30">
-            <div className="font-semibold mb-2">🌑 Inferior Conjunction (Underworld)</div>
-            <ul className="text-muted-foreground space-y-1">
-              <li>• What values no longer serve me?</li>
-              <li>• What relationships need releasing or deepening?</li>
-              <li>• Where have I lost touch with my self-worth?</li>
-              <li>• What does my heart truly want?</li>
-            </ul>
-          </div>
-          
-          <div className="p-3 rounded-sm bg-orange-50 dark:bg-orange-900/30">
-            <div className="font-semibold mb-2">🌅 Morning Star (Internal Refinement)</div>
-            <ul className="text-muted-foreground space-y-1">
-              <li>• How am I developing my values internally?</li>
-              <li>• What do I need to feel worthy?</li>
-              <li>• How can I love myself better?</li>
-              <li>• What relationship patterns am I healing?</li>
-            </ul>
-          </div>
-          
-          <div className="p-3 rounded-sm bg-amber-50 dark:bg-amber-900/30">
-            <div className="font-semibold mb-2">☀️ Superior Conjunction (Maturation)</div>
-            <ul className="text-muted-foreground space-y-1">
-              <li>• What has matured in my relationships since the last star point?</li>
-              <li>• What values have solidified?</li>
-              <li>• What commitments am I ready to make?</li>
-              <li>• How have I integrated Venus lessons?</li>
-            </ul>
-          </div>
-          
-          <div className="p-3 rounded-sm bg-purple-50 dark:bg-purple-900/30">
-            <div className="font-semibold mb-2">🌆 Evening Star (External Expression)</div>
-            <ul className="text-muted-foreground space-y-1">
-              <li>• How am I expressing my values outwardly?</li>
-              <li>• What relationships am I actively cultivating?</li>
-              <li>• How am I beautifying my environment?</li>
-              <li>• Where am I attracting abundance?</li>
-            </ul>
-          </div>
-        </div>
-        
-        <h3>Key Dates to Watch (2025-2027)</h3>
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="text-left py-2 px-3">Date</th>
-                <th className="text-left py-2 px-3">Type</th>
-                <th className="text-left py-2 px-3">Position</th>
-                <th className="text-left py-2 px-3">Significance</th>
-              </tr>
-            </thead>
-            <tbody className="text-muted-foreground">
-              <tr className="border-b border-border/50">
-                <td className="py-2 px-3 font-medium text-foreground">Mar 23, 2025</td>
-                <td className="py-2 px-3">Inferior ℞</td>
-                <td className="py-2 px-3">3° ♈ Aries</td>
-                <td className="py-2 px-3">New cycle begins</td>
-              </tr>
-              <tr className="border-b border-border/50 bg-amber-50 dark:bg-amber-900/20">
-                <td className="py-2 px-3 font-medium text-foreground">Jan 6, 2026</td>
-                <td className="py-2 px-3 font-bold">Superior + ☉♂</td>
-                <td className="py-2 px-3">16° ♑ Capricorn</td>
-                <td className="py-2 px-3">🌟 TRIPLE CONJUNCTION! Happens every 32 years</td>
-              </tr>
-              <tr className="border-b border-border/50">
-                <td className="py-2 px-3 font-medium text-foreground">Oct 23, 2026</td>
-                <td className="py-2 px-3">Inferior ℞</td>
-                <td className="py-2 px-3">0° ♏ Scorpio</td>
-                <td className="py-2 px-3">First Scorpio star point in new era</td>
-              </tr>
-              <tr className="border-b border-border/50">
-                <td className="py-2 px-3 font-medium text-foreground">Mar 10, 2027</td>
-                <td className="py-2 px-3">Superior</td>
-                <td className="py-2 px-3">20° ♓ Pisces</td>
-                <td className="py-2 px-3">Integration phase</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
       </>
     ),
   },
@@ -1220,15 +956,13 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
       <>
         <p>
           <strong>Solar Arc Directions</strong> are a powerful predictive technique that shows your 
-          PERSONAL timing — not collective transits, but YOUR chart evolving through time. They 
-          predict major life events with remarkable accuracy.
+          PERSONAL timing — not collective transits, but YOUR chart evolving through time.
         </p>
         
         <h3>How It Works</h3>
         <p>
-          The Solar Arc is simple: move every planet and point in your chart forward by 
-          approximately <strong>1° for each year of your life</strong>. At age 30, every planet 
-          has moved 30° from its birth position.
+          Move every planet and point in your chart forward by approximately <strong>1° for each 
+          year of your life</strong>. At age 30, every planet has moved 30° from its birth position.
         </p>
         
         <div className="mt-4 p-4 rounded-sm bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-700">
@@ -1243,63 +977,33 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
           </div>
         </div>
         
-        <h3>Why Solar Arcs Matter</h3>
-        <p>
-          Unlike transits (which are collective — everyone experiences Saturn in Pisces together), 
-          Solar Arcs are <strong>uniquely personal</strong>. They show when YOUR chart's internal 
-          clock triggers specific themes.
-        </p>
-        
         <h3>Key Interpretations</h3>
         <div className="mt-4 space-y-4">
           <div className="p-4 rounded-sm bg-pink-50 dark:bg-pink-900/30 border border-pink-200 dark:border-pink-700">
             <div className="font-semibold text-foreground mb-2">SA Venus to Natal Sun/Ascendant</div>
             <p className="text-sm text-muted-foreground">
-              Major relationship activation! Marriage, significant partnership, creative breakthrough, 
-              enhanced charm and attractiveness. One of the most positive Solar Arc contacts.
+              Major relationship activation! Marriage, significant partnership, creative breakthrough.
             </p>
           </div>
           
           <div className="p-4 rounded-sm bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700">
             <div className="font-semibold text-foreground mb-2">SA Jupiter to Natal Sun/MC</div>
             <p className="text-sm text-muted-foreground">
-              Career expansion, luck, recognition, promotion. Opportunities abound. 
-              Travel, education, or publishing success.
+              Career expansion, luck, recognition, promotion. Opportunities abound.
             </p>
           </div>
           
           <div className="p-4 rounded-sm bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600">
             <div className="font-semibold text-foreground mb-2">SA Saturn to Natal Sun/Moon</div>
             <p className="text-sm text-muted-foreground">
-              Major responsibility arrives. Maturation point. Career advancement through hard work. 
-              May feel heavy initially but builds lasting structure.
-            </p>
-          </div>
-          
-          <div className="p-4 rounded-sm bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700">
-            <div className="font-semibold text-foreground mb-2">SA Pluto to Natal Sun/Ascendant</div>
-            <p className="text-sm text-muted-foreground">
-              Complete life transformation. Rebirth of identity. Power dynamics shift dramatically. 
-              Nothing will be the same — you emerge stronger.
+              Major responsibility arrives. Maturation point. Career advancement through hard work.
             </p>
           </div>
         </div>
         
-        <h3>Timing Details</h3>
-        <div className="mt-4 p-4 rounded-sm bg-secondary border border-border">
-          <ul className="text-sm text-muted-foreground space-y-2">
-            <li>• <strong>Orb:</strong> Use 1° orb (some use up to 1.5°)</li>
-            <li>• <strong>Duration:</strong> Effects last approximately 9 months</li>
-            <li>• <strong>Peak:</strong> Strongest when aspect is exact (orb = 0°)</li>
-            <li>• <strong>Direction:</strong> Both applying and separating aspects count</li>
-          </ul>
-        </div>
-        
-        <h3>Using Solar Arcs</h3>
+        <h3>See Your Solar Arcs</h3>
         <p>
-          Click on any day in your calendar with a natal chart loaded to see your current 
-          Solar Arc aspects. Pay special attention to aspects with orbs under 0.5° — these 
-          are the EXACT aspects happening THIS YEAR!
+          The <strong>Chart Decoder</strong> tab shows your current Solar Arc aspects with exact orbs.
         </p>
       </>
     ),
@@ -1324,208 +1028,599 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
         <div className="mt-4 p-4 rounded-sm bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700">
           <div className="font-semibold text-foreground mb-2">Progressed Moon Through Signs:</div>
           <div className="text-sm text-muted-foreground space-y-2">
-            <div><strong>♈ Aries:</strong> New beginnings, independence, self-focus, courage</div>
-            <div><strong>♉ Taurus:</strong> Building security, finances, comfort, patience</div>
-            <div><strong>♊ Gemini:</strong> Learning, communication, curiosity, connections</div>
-            <div><strong>♋ Cancer:</strong> Home, family, nurturing, emotional security</div>
-            <div><strong>♌ Leo:</strong> Creativity, romance, self-expression, joy</div>
-            <div><strong>♍ Virgo:</strong> Health, service, improvement, daily routines</div>
-            <div><strong>♎ Libra:</strong> Relationships, partnership, balance, harmony</div>
-            <div><strong>♏ Scorpio:</strong> Transformation, intensity, depth, healing</div>
-            <div><strong>♐ Sagittarius:</strong> Travel, philosophy, adventure, expansion</div>
-            <div><strong>♑ Capricorn:</strong> Career, ambition, discipline, achievement</div>
-            <div><strong>♒ Aquarius:</strong> Community, innovation, friendship, ideals</div>
-            <div><strong>♓ Pisces:</strong> Spirituality, dreams, compassion, creativity</div>
-          </div>
-        </div>
-        
-        <h3>Progressed Moon Phase</h3>
-        <p>
-          Just like the monthly lunar cycle, your Progressed Moon goes through a ~30-year cycle 
-          relative to your Progressed Sun:
-        </p>
-        
-        <div className="mt-4 grid gap-4 text-sm md:grid-cols-2">
-          <div className="p-4 rounded-sm bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700">
-            <div className="font-semibold text-foreground mb-2">🌒 Waxing Phase (0°-180°)</div>
-            <p className="text-muted-foreground">
-              Growth, building, moving forward. Energy is outward-focused. 
-              New projects, relationships, and life directions take shape.
-            </p>
-          </div>
-          
-          <div className="p-4 rounded-sm bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-700">
-            <div className="font-semibold text-foreground mb-2">🌖 Waning Phase (180°-360°)</div>
-            <p className="text-muted-foreground">
-              Release, integration, inward focus. Letting go of what doesn't serve. 
-              Consolidating lessons and preparing for new cycles.
-            </p>
-          </div>
-        </div>
-        
-        <h3>Progressed Aspects to Natal</h3>
-        <p>
-          When progressed planets aspect natal planets, it marks periods of internal development:
-        </p>
-        
-        <div className="mt-4 space-y-3 text-sm">
-          <div className="p-3 rounded-sm bg-secondary border border-border">
-            <div className="font-medium text-foreground">P. Moon conjunct N. Sun</div>
-            <div className="text-muted-foreground">Major new emotional chapter. Identity and emotions align.</div>
-          </div>
-          <div className="p-3 rounded-sm bg-secondary border border-border">
-            <div className="font-medium text-foreground">P. Sun conjunct N. Moon</div>
-            <div className="text-muted-foreground">Core self touches emotional foundations. Deep integration.</div>
-          </div>
-          <div className="p-3 rounded-sm bg-secondary border border-border">
-            <div className="font-medium text-foreground">P. Venus conjunct N. Sun</div>
-            <div className="text-muted-foreground">Love and beauty themes prominent. Relationships highlighted.</div>
+            <div><strong>♈ Aries:</strong> New beginnings, independence, self-focus</div>
+            <div><strong>♉ Taurus:</strong> Building security, finances, comfort</div>
+            <div><strong>♊ Gemini:</strong> Learning, communication, curiosity</div>
+            <div><strong>♋ Cancer:</strong> Home, family, nurturing</div>
+            <div><strong>♌ Leo:</strong> Creativity, romance, self-expression</div>
+            <div><strong>♍ Virgo:</strong> Health, service, improvement</div>
+            <div><strong>♎ Libra:</strong> Relationships, partnership, balance</div>
+            <div><strong>♏ Scorpio:</strong> Transformation, intensity, depth</div>
+            <div><strong>♐ Sagittarius:</strong> Travel, philosophy, adventure</div>
+            <div><strong>♑ Capricorn:</strong> Career, ambition, discipline</div>
+            <div><strong>♒ Aquarius:</strong> Community, innovation, friendship</div>
+            <div><strong>♓ Pisces:</strong> Spirituality, dreams, compassion</div>
           </div>
         </div>
         
         <h3>Viewing Your Progressions</h3>
         <p>
-          With a natal chart loaded, click on any day to see your current Secondary Progressions. 
-          The calendar highlights your Progressed Moon position and alerts you to upcoming sign changes.
+          The <strong>Chart Decoder</strong> tab shows your current Progressed Moon position and 
+          a timeline of when it will change signs next.
         </p>
       </>
     ),
   },
-  relationships: {
-    title: "Relationship Astrology",
+  biorhythms: {
+    title: "Biorhythms Guide",
     content: (
       <>
         <p>
-          The Timing section includes powerful tools for understanding relationship dynamics 
-          through multiple astrological techniques. Here's a guide to each feature:
+          <strong>Biorhythms</strong> are a system that tracks natural cycles in your physical, 
+          emotional, and mental energy based on your birth date. Unlike astrology (which is based 
+          on planetary positions), biorhythms are mathematical cycles that begin at birth.
+        </p>
+        
+        <h3>Primary Cycles</h3>
+        <div className="mt-4 grid gap-4">
+          <div className="rounded-sm border border-border bg-red-50 dark:bg-red-900/20 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">💪</span>
+              <span className="font-semibold text-foreground">Physical Cycle — 23 Days</span>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Governs your physical energy, strength, endurance, and coordination. 
+              High phases are ideal for exercise, competition, and physical challenges.
+              Low phases require more rest and recovery.
+            </div>
+          </div>
+          
+          <div className="rounded-sm border border-border bg-blue-50 dark:bg-blue-900/20 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">💙</span>
+              <span className="font-semibold text-foreground">Emotional Cycle — 28 Days</span>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Governs your emotional stability, sensitivity, and mood. 
+              High phases favor relationships, creativity, and emotional expression.
+              Low phases may bring moodiness or emotional sensitivity.
+            </div>
+          </div>
+          
+          <div className="rounded-sm border border-border bg-amber-50 dark:bg-amber-900/20 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">🧠</span>
+              <span className="font-semibold text-foreground">Intellectual Cycle — 33 Days</span>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Governs mental clarity, concentration, learning, and decision-making.
+              High phases are excellent for studying, problem-solving, and important decisions.
+              Low phases may bring mental fatigue or difficulty focusing.
+            </div>
+          </div>
+          
+          <div className="rounded-sm border border-border bg-purple-50 dark:bg-purple-900/20 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">✨</span>
+              <span className="font-semibold text-foreground">Intuitive Cycle — 38 Days</span>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Governs intuition, psychic awareness, and subconscious perception.
+              High phases enhance gut feelings, dreams, and spiritual connection.
+              A longer cycle that subtly influences the other three.
+            </div>
+          </div>
+        </div>
+        
+        <h3>⚠️ Critical Days</h3>
+        <p>
+          <strong>Critical Days</strong> occur when a cycle crosses from positive to negative (or vice versa). 
+          These are transition points where the associated energy is unstable:
+        </p>
+        <ul>
+          <li><strong>Physical Critical:</strong> Higher accident risk, avoid extreme sports</li>
+          <li><strong>Emotional Critical:</strong> Mood swings, avoid major relationship decisions</li>
+          <li><strong>Intellectual Critical:</strong> Mental blocks, double-check important work</li>
+        </ul>
+        
+        <h3>Secondary Cycles (Advanced)</h3>
+        <p>
+          Composite cycles are created by combining primary cycles:
+        </p>
+        <ul>
+          <li><strong>Mastery:</strong> Physical + Intellectual = 14 days (coordination of body and mind)</li>
+          <li><strong>Passion:</strong> Physical + Emotional = 12.75 days (romantic and creative energy)</li>
+          <li><strong>Wisdom:</strong> Emotional + Intellectual = 15.17 days (emotional intelligence)</li>
+        </ul>
+        
+        <h3>Romance Mode</h3>
+        <p>
+          The biorhythm card includes a <strong>Romance mode</strong> (heart icon) that shows:
+        </p>
+        <ul>
+          <li><strong>Solo mode:</strong> Your personal "romance readiness" — magnetism, passion, emotional openness</li>
+          <li><strong>Compatibility mode:</strong> When comparing two birth dates, shows passion sync, communication sync, and overall compatibility</li>
+        </ul>
+        
+        <h3>30-Day Forecast</h3>
+        <p>
+          The wave chart shows all four cycles plotted over 30 days. Look for:
+        </p>
+        <ul>
+          <li>📈 <strong>Peaks:</strong> When multiple cycles are high simultaneously</li>
+          <li>📉 <strong>Troughs:</strong> When multiple cycles are low — plan rest days</li>
+          <li>❤️ <strong>Romance peaks:</strong> In compatibility mode, best days for connection</li>
+        </ul>
+      </>
+    ),
+  },
+  timing: {
+    title: "Timing & Electional Astrology",
+    content: (
+      <>
+        <p>
+          The Timing tab brings together multiple systems to help you choose the best times 
+          for important activities. This guide explains each feature.
         </p>
         
         <h3>💕 Best Romance Days</h3>
         <p>
-          This feature identifies the top 5 days in the next 30 days that are most favorable for 
-          romance, dates, and connection. It combines:
+          Identifies the top 5 days in the next 30 days that are most favorable for romance:
         </p>
         <ul>
-          <li><strong>Moon Phase & Sign:</strong> Full moons illuminate romance; Moon in Libra, Taurus, or Leo enhances love energy</li>
-          <li><strong>Venus Aspects:</strong> When Venus makes harmonious aspects (especially to Mars, Jupiter, or the Moon)</li>
-          <li><strong>Biorhythm Romance Readiness:</strong> Your personal passion, magnetism, and emotional openness cycles</li>
-          <li><strong>Romantic Mood:</strong> Each day has a mood (passionate, dreamy, sensual, playful, deep, adventurous)</li>
+          <li><strong>Moon Phase & Sign:</strong> Full moons illuminate romance; Moon in Libra, Taurus, or Leo enhances love</li>
+          <li><strong>Venus Aspects:</strong> When Venus makes harmonious aspects</li>
+          <li><strong>Biorhythm Romance Readiness:</strong> Your personal passion and magnetism cycles</li>
+          <li><strong>Romantic Mood:</strong> Each day has a mood (passionate, dreamy, sensual, playful)</li>
         </ul>
-        <p>
-          Click on any day to see specific activity suggestions and why that day is favorable.
-        </p>
         
         <h3>✨ Synastry Analysis</h3>
         <p>
-          Synastry compares the aspects between two natal charts to reveal relationship dynamics:
+          Compares the aspects between two natal charts to reveal relationship dynamics:
         </p>
         <ul>
           <li><strong>Venus-Mars Aspects:</strong> Physical chemistry and romantic attraction</li>
           <li><strong>Sun-Moon Aspects:</strong> Core identity and emotional compatibility</li>
-          <li><strong>Moon-Moon Aspects:</strong> Emotional understanding and nurturing styles</li>
           <li><strong>Saturn Aspects:</strong> Karmic bonds and commitment potential</li>
-          <li><strong>Pluto Aspects:</strong> Transformative intensity and power dynamics</li>
         </ul>
-        <p>
-          The analysis provides scores for Passion, Emotional, Mental, and Karmic compatibility, 
-          plus a "Soul Contract" interpretation.
-        </p>
         
         <h3>👥 Composite Chart</h3>
         <p>
-          A Composite Chart creates a single "relationship chart" by calculating the midpoint 
-          between each pair of planets. This chart represents the relationship as its own entity 
-          — the "third being" that emerges when two people come together.
+          Creates a single "relationship chart" by calculating the midpoint between each pair of planets. 
+          This represents the relationship as its own entity.
         </p>
-        <ul>
-          <li><strong>Composite Sun:</strong> The relationship's core purpose and identity</li>
-          <li><strong>Composite Moon:</strong> The emotional climate and how you nurture each other</li>
-          <li><strong>Composite Venus:</strong> How the relationship expresses love and affection</li>
-          <li><strong>Composite Mars:</strong> The relationship's drive, passion, and how you handle conflict</li>
-        </ul>
         
         <h3>📅 Davison Chart</h3>
         <p>
-          The Davison Chart (also called a Relationship Chart) uses a different method: it calculates 
-          the midpoint in <em>time</em> and <em>space</em> between two births, creating an actual 
-          horoscope for that moment and place. This represents the "birth moment" of the relationship itself.
-        </p>
-        <ul>
-          <li><strong>Shows:</strong> The date the relationship was "born" as an averaged moment</li>
-          <li><strong>Best for:</strong> Understanding the relationship's karmic purpose and destiny</li>
-          <li><strong>Use when:</strong> You want to know the relationship's inherent qualities independent of the individuals</li>
-        </ul>
-        <p>
-          Toggle between Composite and Davison methods in the relationship chart card to compare both perspectives.
+          An alternative relationship chart that calculates the midpoint in <em>time</em> and <em>space</em> 
+          between two births, creating an actual horoscope for the relationship's "birth moment."
         </p>
         
         <h3>🔔 Transit Alerts</h3>
         <p>
-          This feature monitors major outer planet transits (Jupiter, Saturn, Uranus, Neptune, Pluto) 
-          to your personal planets and alerts you when they're approaching or exact:
+          Monitors major outer planet transits to your personal planets and alerts you when they're 
+          approaching or exact:
         </p>
         <ul>
           <li><strong>Critical:</strong> Exact outer planet transits to Sun, Moon, or Ascendant</li>
-          <li><strong>High:</strong> Approaching transits within 1° orb to personal planets</li>
+          <li><strong>High:</strong> Approaching transits within 1° orb</li>
           <li><strong>Medium:</strong> Transits within 2-3° that are building</li>
-          <li><strong>Low:</strong> Fast-moving planet transits and separating aspects</li>
         </ul>
+        
+        <h3>♄ Saturn Return Calculator</h3>
         <p>
-          Each alert includes an interpretation and practical advice for navigating the energy.
+          Tracks your Saturn cycles — the most significant life transitions at ages ~28-30 and ~57-59. 
+          Shows your current Saturn phase and upcoming major transitions.
         </p>
         
-        <h3>📊 Biorhythm Compatibility</h3>
+        <h3>📆 Electional Calendar</h3>
         <p>
-          Beyond astrology, the biorhythm system tracks physical (23-day), emotional (28-day), 
-          intellectual (33-day), and intuitive (38-day) cycles. In Romance mode, it compares 
-          two people's cycles to calculate:
+          A monthly grid showing which days are best (green), neutral (yellow), or challenging (red) 
+          for launching new projects, making major decisions, or starting important ventures.
+        </p>
+        
+        <h3>📊 Best Days Summary</h3>
+        <p>
+          Shows the single best day for each life area (love, career, health, travel, finance) at a glance. 
+          When multiple categories peak on the same day, it's highlighted as a "Power Day."
+        </p>
+      </>
+    ),
+  },
+  patterns: {
+    title: "Patterns & Cycles",
+    content: (
+      <>
+        <p>
+          The Patterns tab shows live planetary positions and helps you track major astrological 
+          cycles and configurations.
+        </p>
+        
+        <h3>Live Planetary Positions</h3>
+        <p>
+          Real-time positions of all planets, updating every second. Click any planet to see 
+          detailed information about its current sign, degree, and any special conditions.
+        </p>
+        
+        <h3>Current Patterns</h3>
+        <p>
+          The app detects and alerts you to significant configurations:
         </p>
         <ul>
-          <li><strong>Passion Score:</strong> Physical + Emotional cycle alignment</li>
-          <li><strong>Communication Score:</strong> Intellectual + Emotional cycle alignment</li>
-          <li><strong>Overall Sync:</strong> Combined compatibility across all cycles</li>
+          <li><strong>Stelliums:</strong> 3+ planets in one sign — concentrated energy in that sign's themes</li>
+          <li><strong>Grand Trines:</strong> Three planets forming a perfect triangle — flowing, harmonious energy</li>
+          <li><strong>T-Squares:</strong> Two planets opposing with a third squaring both — dynamic tension</li>
+          <li><strong>Yods:</strong> Two planets sextile with both quincunx a third — "finger of fate"</li>
         </ul>
+        
+        <h3>Mercury Retrograde Tracker</h3>
         <p>
-          The 30-day forecast shows a "Compatibility Wave" with peak romantic days marked with ❤️.
+          Visual tracker showing Mercury retrograde periods over multiple years, including which 
+          signs Mercury retrogrades through (the element shifts every few years).
         </p>
         
-        <h3>📆 Best Days Summary</h3>
+        <h3>Historical Conjunctions</h3>
         <p>
-          This card shows the single best day for each life area (love, career, health, travel, 
-          finance, beauty) at a glance. When multiple categories peak on the same day, it's 
-          highlighted as a "Power Day" — perfect for major life events.
+          Major planetary conjunctions mark generational shifts:
+        </p>
+        <ul>
+          <li><strong>Jupiter-Saturn:</strong> Every ~20 years — social and economic restructuring</li>
+          <li><strong>Saturn-Uranus:</strong> Every ~45 years — tension between old and new structures</li>
+          <li><strong>Saturn-Neptune:</strong> Every ~36 years — dissolution of rigid structures</li>
+          <li><strong>Saturn-Pluto:</strong> Every ~33 years — power restructuring, endings and beginnings</li>
+        </ul>
+      </>
+    ),
+  },
+  chartdecoder: {
+    title: "Chart Decoder Guide",
+    content: (
+      <>
+        <p>
+          The Chart Decoder provides deep analysis of a natal chart, breaking down its components 
+          and showing how planets interact. Here's what each section reveals:
+        </p>
+        
+        <h3>☀️ Birth Conditions</h3>
+        <p>
+          Fundamental context for interpreting the chart:
+        </p>
+        <ul>
+          <li><strong>Day/Night Sect:</strong> Born during day or night — affects which planets are most supportive</li>
+          <li><strong>Natal Moon Phase:</strong> The lunar phase at birth — your natural emotional rhythm</li>
+          <li><strong>Chart Shape:</strong> Overall pattern (bowl, bucket, bundle, locomotive, etc.)</li>
+        </ul>
+        
+        <h3>👑 Chart Ruler Deep Dive</h3>
+        <p>
+          Your Ascendant's ruling planet is the "CEO" of your chart. This section analyzes:
+        </p>
+        <ul>
+          <li>Which planet rules your rising sign</li>
+          <li>That planet's sign, house, and condition</li>
+          <li>What this means for your overall life direction</li>
+        </ul>
+        
+        <h3>📊 Dignity Distribution</h3>
+        <p>
+          A breakdown of how many planets are in each dignity state (domicile, exaltation, 
+          detriment, fall, or peregrine). Shows your chart's overall "strength profile."
+        </p>
+        
+        <h3>☀️🌙 Sect Analysis</h3>
+        <p>
+          In ancient astrology, planets are divided into day and night "teams":
+        </p>
+        <ul>
+          <li><strong>Day Sect:</strong> Sun, Jupiter, Saturn (if born during day)</li>
+          <li><strong>Night Sect:</strong> Moon, Venus, Mars (if born at night)</li>
+          <li>Planets "in sect" are more supportive; planets "out of sect" may cause more challenges</li>
+        </ul>
+        
+        <h3>🗺️ Dispositor Map</h3>
+        <p>
+          Every planet is "disposed" by the ruler of the sign it's in. This creates a chain of 
+          command showing which planet ultimately controls the chart's energy flow.
+        </p>
+        
+        <h3>📈 Planetary Condition Dashboard</h3>
+        <p>
+          A scoring system that rates each planet's overall condition based on:
+        </p>
+        <ul>
+          <li>Dignity (sign placement)</li>
+          <li>Sect (day/night team alignment)</li>
+          <li>House placement</li>
+          <li>Aspects received</li>
+        </ul>
+        
+        <h3>🌙 Progressed Moon Timeline</h3>
+        <p>
+          Shows your Progressed Moon's journey through the signs, including when it will next 
+          change signs and what themes that will bring.
+        </p>
+        
+        <h3>🧭 Quadrant Analysis</h3>
+        <p>
+          Divides the chart into four quadrants to show where planetary energy is concentrated:
+        </p>
+        <ul>
+          <li><strong>1st Quadrant (Houses 1-3):</strong> Self-development</li>
+          <li><strong>2nd Quadrant (Houses 4-6):</strong> Personal resources</li>
+          <li><strong>3rd Quadrant (Houses 7-9):</strong> Relationships and expansion</li>
+          <li><strong>4th Quadrant (Houses 10-12):</strong> Public life and transcendence</li>
+        </ul>
+      </>
+    ),
+  },
+  sacredscript: {
+    title: "Sacred Script Guide",
+    content: (
+      <>
+        <p>
+          The Sacred Script tab generates a structured astrological reading based on 
+          <strong> Debra Silverman's</strong> methodology. This is a professional framework for 
+          conducting comprehensive natal chart readings.
+        </p>
+        
+        <h3>The 9-Section Reading Structure</h3>
+        <p>
+          Each Sacred Script reading follows this framework:
+        </p>
+        
+        <div className="mt-4 space-y-4">
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="font-semibold text-foreground mb-2">1️⃣ Introduction</div>
+            <div className="text-sm text-muted-foreground">
+              Establish rapport, explain the reading process, set intentions.
+            </div>
+          </div>
+          
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="font-semibold text-foreground mb-2">2️⃣ Saturn Cycles</div>
+            <div className="text-sm text-muted-foreground">
+              Where you are in your Saturn Return cycle — the most important timing marker.
+              Saturn returns at ages ~28-30 and ~57-59 mark major life transitions.
+            </div>
+          </div>
+          
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="font-semibold text-foreground mb-2">3️⃣ Character (Sun, Moon, Rising)</div>
+            <div className="text-sm text-muted-foreground">
+              The "Big Three" — your core identity (Sun), emotional nature (Moon), 
+              and outward presentation (Rising). The foundation of who you are.
+            </div>
+          </div>
+          
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="font-semibold text-foreground mb-2">4️⃣ Mercury & Communication</div>
+            <div className="text-sm text-muted-foreground">
+              How you think, learn, and communicate. Mercury's sign, house, and aspects 
+              reveal your mental style.
+            </div>
+          </div>
+          
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="font-semibold text-foreground mb-2">5️⃣ What Stands Out</div>
+            <div className="text-sm text-muted-foreground">
+              Unique chart features: stelliums, chart patterns, dominant planets, 
+              unusual configurations.
+            </div>
+          </div>
+          
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="font-semibold text-foreground mb-2">6️⃣ Elements & Modalities</div>
+            <div className="text-sm text-muted-foreground">
+              Balance of Fire, Earth, Air, Water and Cardinal, Fixed, Mutable. 
+              Shows your natural strengths and blind spots.
+            </div>
+          </div>
+          
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="font-semibold text-foreground mb-2">7️⃣ Current Transits</div>
+            <div className="text-sm text-muted-foreground">
+              What's happening NOW — major transits affecting your chart and their timing.
+            </div>
+          </div>
+          
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="font-semibold text-foreground mb-2">8️⃣ Progressed Moon</div>
+            <div className="text-sm text-muted-foreground">
+              Your current emotional chapter — which sign your Progressed Moon is in 
+              and what themes that brings.
+            </div>
+          </div>
+          
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="font-semibold text-foreground mb-2">9️⃣ Life Lesson & Closing</div>
+            <div className="text-sm text-muted-foreground">
+              The North Node message — your soul's growth direction in this lifetime.
+              Integration and actionable takeaways.
+            </div>
+          </div>
+        </div>
+        
+        <h3>Element Balance</h3>
+        <p>
+          The reading analyzes how planets are distributed across the four elements:
+        </p>
+        <ul>
+          <li><strong>🔥 Fire (Aries, Leo, Sagittarius):</strong> Inspiration, action, enthusiasm</li>
+          <li><strong>🌍 Earth (Taurus, Virgo, Capricorn):</strong> Practicality, stability, manifestation</li>
+          <li><strong>💨 Air (Gemini, Libra, Aquarius):</strong> Ideas, communication, connection</li>
+          <li><strong>💧 Water (Cancer, Scorpio, Pisces):</strong> Emotions, intuition, depth</li>
+        </ul>
+        
+        <h3>Document Upload</h3>
+        <p>
+          You can upload PDF or image files of additional astrological materials to integrate 
+          into your reading (such as previously cast charts or notes).
+        </p>
+      </>
+    ),
+  },
+  dwarfplanets: {
+    title: "Dwarf Planets & TNOs",
+    content: (
+      <>
+        <p>
+          <strong>Trans-Neptunian Objects (TNOs)</strong> are celestial bodies orbiting beyond Neptune. 
+          While smaller than the traditional planets, they carry powerful symbolic meaning, especially 
+          for generational and civilizational themes.
+        </p>
+        
+        <h3>Why Dwarf Planets Matter</h3>
+        <p>
+          These bodies have extremely long orbital periods (165-550+ years), meaning their sign 
+          placements are shared by entire generations. They speak to collective evolution and 
+          the deepest layers of the psyche.
+        </p>
+        
+        <h3>Key Dwarf Planets</h3>
+        <div className="mt-4 space-y-4">
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="font-semibold text-foreground mb-2">⚢ Eris — Discord & Strife</div>
+            <div className="text-sm text-muted-foreground">
+              <strong>Orbital Period:</strong> 558 years<br/>
+              Goddess of discord. Reveals what we exclude and the chaos that results. 
+              The "uninvited guest" who exposes uncomfortable truths. Currently in Aries since 1926.
+            </div>
+          </div>
+          
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="font-semibold text-foreground mb-2">⯕ Sedna — Ancestral Trauma</div>
+            <div className="text-sm text-muted-foreground">
+              <strong>Orbital Period:</strong> 11,400 years<br/>
+              Inuit goddess of the sea. Represents deep ancestral wounds, especially around 
+              betrayal and abandonment. Themes of resource scarcity and survival.
+            </div>
+          </div>
+          
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="font-semibold text-foreground mb-2">🜃 Makemake — Fertility & Creation</div>
+            <div className="text-sm text-muted-foreground">
+              <strong>Orbital Period:</strong> 305 years<br/>
+              Rapa Nui (Easter Island) creator god. Themes of environmentalism, sustainability, 
+              and the consequences of resource depletion. Fertility and creation myths.
+            </div>
+          </div>
+          
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="font-semibold text-foreground mb-2">🜄 Haumea — Rebirth & Family</div>
+            <div className="text-sm text-muted-foreground">
+              <strong>Orbital Period:</strong> 283 years<br/>
+              Hawaiian goddess of fertility. Themes of childbirth, regeneration, and family lineage. 
+              The ability to regenerate parts of self (like a lizard's tail).
+            </div>
+          </div>
+          
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="font-semibold text-foreground mb-2">Quaoar — Creation Stories</div>
+            <div className="text-sm text-muted-foreground">
+              <strong>Orbital Period:</strong> 286 years<br/>
+              Tongva creation deity. Represents the stories we tell to make sense of existence. 
+              Mythmaking, cultural narratives, and the power of creation through dance and song.
+            </div>
+          </div>
+        </div>
+        
+        <h3>Centaurs</h3>
+        <p>
+          Centaurs orbit between Jupiter and Neptune, bridging the personal and transpersonal:
+        </p>
+        <ul>
+          <li><strong>⚷ Chiron:</strong> The Wounded Healer — our deepest wound and healing gift</li>
+          <li><strong>Pholus:</strong> Small cause, big effect — the butterfly effect in your life</li>
+          <li><strong>Nessus:</strong> Toxic patterns and abuse cycles — what must end</li>
+        </ul>
+        
+        <h3>The TNOs Tab</h3>
+        <p>
+          The TNOs tab provides detailed information on each dwarf planet, including their 
+          mythology, current sign placement, and how to interpret them in your chart.
+        </p>
+      </>
+    ),
+  },
+  speeds: {
+    title: "Planetary Speeds Guide",
+    content: (
+      <>
+        <p>
+          Understanding how fast planets move is crucial for interpreting their influence. 
+          Faster planets affect daily life; slower planets shape generations.
+        </p>
+        
+        <h3>Speed Categories</h3>
+        <div className="mt-4 space-y-4">
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="font-semibold text-foreground mb-2">⚡ Fast (Personal Planets)</div>
+            <div className="text-sm text-muted-foreground">
+              <strong>Moon:</strong> 27.3 days per orbit, ~2.5 days per sign<br/>
+              <strong>Mercury:</strong> 88 days per orbit, ~3 weeks per sign<br/>
+              <strong>Venus:</strong> 225 days per orbit, ~4 weeks per sign<br/>
+              <strong>Sun:</strong> 365 days per orbit, ~1 month per sign<br/>
+              <strong>Mars:</strong> 687 days per orbit, ~6 weeks per sign
+            </div>
+          </div>
+          
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="font-semibold text-foreground mb-2">🔄 Medium (Social Planets)</div>
+            <div className="text-sm text-muted-foreground">
+              <strong>Jupiter:</strong> 12 years per orbit, ~1 year per sign<br/>
+              <strong>Saturn:</strong> 29.5 years per orbit, ~2.5 years per sign
+            </div>
+          </div>
+          
+          <div className="rounded-sm border border-border bg-secondary p-4">
+            <div className="font-semibold text-foreground mb-2">🐢 Slow (Generational Planets)</div>
+            <div className="text-sm text-muted-foreground">
+              <strong>Uranus:</strong> 84 years per orbit, ~7 years per sign<br/>
+              <strong>Neptune:</strong> 165 years per orbit, ~14 years per sign<br/>
+              <strong>Pluto:</strong> 248 years per orbit, ~12-31 years per sign (varies due to eccentric orbit)
+            </div>
+          </div>
+        </div>
+        
+        <h3>Why Speed Matters</h3>
+        <ul>
+          <li><strong>Fast planets:</strong> Their transits affect you personally and frequently. 
+            Moon transits last hours, Mercury transits last days.</li>
+          <li><strong>Slow planets:</strong> Their transits are rare and transformative. 
+            A Pluto transit can last 2-3 years and restructure your life.</li>
+          <li><strong>Generational planets:</strong> When Uranus, Neptune, or Pluto change signs, 
+            it marks a shift in collective consciousness.</li>
+        </ul>
+        
+        <h3>Retrograde Motion</h3>
+        <p>
+          All planets (except Sun and Moon) appear to move backward periodically. 
+          Slower planets spend more time retrograde:
+        </p>
+        <ul>
+          <li><strong>Mercury:</strong> ~3 weeks retrograde, 3-4 times per year</li>
+          <li><strong>Venus/Mars:</strong> ~6-10 weeks retrograde, every 1-2 years</li>
+          <li><strong>Outer planets:</strong> ~5-6 months retrograde every year</li>
+        </ul>
+        
+        <h3>The Speeds Tab</h3>
+        <p>
+          The Speeds tab provides a comprehensive reference with exact orbital periods, 
+          average daily motion, and interpretive guidance for each celestial body.
         </p>
       </>
     ),
   },
 };
 
-const NAV_ITEMS: { key: GuideSection; label: string }[] = [
-  { key: "overview", label: "Overview" },
-  { key: "relationships", label: "Relationships" },
-  { key: "colors", label: "Colors" },
-  { key: "symbols", label: "Symbols" },
-  { key: "moonphases", label: "Moon Phases" },
-  { key: "vocmoon", label: "VOC Moon" },
-  { key: "planetaryhours", label: "Planetary Hours" },
-  { key: "solararc", label: "Solar Arc" },
-  { key: "progressions", label: "Progressions" },
-  { key: "venuscycles", label: "Venus Cycles" },
-  { key: "retrogrades", label: "Retrogrades" },
-  { key: "aspects", label: "Aspects" },
-  { key: "dignities", label: "Dignities" },
-  { key: "fixedstars", label: "Fixed Stars" },
-  { key: "divinefeminine", label: "Divine Feminine" },
-];
-
-export const GuideView = () => {
+export const GuideView = ({ onNavigateToView }: GuideViewProps = {}) => {
   const [guideSection, setGuideSection] = useState<GuideSection>("overview");
 
   return (
     <div className="mx-auto max-w-4xl animate-fade-in">
       {/* Navigation */}
       <div className="mb-8 flex flex-wrap gap-2">
-        {NAV_ITEMS.map((item) => (
+        {GUIDE_NAV_ITEMS.map((item) => (
           <button
             key={item.key}
             onClick={() => setGuideSection(item.key)}
@@ -1546,42 +1641,36 @@ export const GuideView = () => {
           {SECTIONS[guideSection].title}
         </h2>
         {SECTIONS[guideSection].content}
+        
+        {/* Try It button */}
+        <TryItButton section={guideSection} onNavigate={onNavigateToView} />
       </div>
 
       <style>{`
         .guide-content h3 {
-          font-family: var(--font-serif);
-          font-size: 1.5rem;
-          font-weight: 400;
           margin-top: 2rem;
-          margin-bottom: 1rem;
+          margin-bottom: 0.75rem;
+          font-size: 1.125rem;
+          font-weight: 600;
           color: hsl(var(--foreground));
         }
         .guide-content p {
-          font-size: 0.875rem;
-          line-height: 1.8;
-          color: hsl(var(--foreground));
           margin-bottom: 1rem;
+          line-height: 1.75;
+          color: hsl(var(--muted-foreground));
         }
         .guide-content ul {
-          list-style: none;
-          padding: 0;
           margin-bottom: 1rem;
+          margin-left: 1.5rem;
+          list-style-type: disc;
         }
         .guide-content li {
-          font-size: 0.875rem;
-          line-height: 1.8;
-          color: hsl(var(--foreground));
-          padding-left: 1.5rem;
-          position: relative;
-          margin-bottom: 0.75rem;
+          margin-bottom: 0.5rem;
+          line-height: 1.625;
+          color: hsl(var(--muted-foreground));
         }
-        .guide-content li::before {
-          content: '•';
-          position: absolute;
-          left: 0.5rem;
-          color: hsl(var(--primary));
-          font-weight: bold;
+        .guide-content strong {
+          color: hsl(var(--foreground));
         }
       `}</style>
     </div>

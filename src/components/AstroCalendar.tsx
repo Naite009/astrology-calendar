@@ -516,7 +516,7 @@ export const AstroCalendar = () => {
 
         {viewMode === "annual-tables" && <AnnualTablesView year={currentDate.getFullYear()} />}
 
-        {viewMode === "guide" && <GuideView />}
+        {viewMode === "guide" && <GuideView onNavigateToView={(view) => setViewMode(view)} />}
 
         {viewMode === "charts" && (
           <ChartLibrary
