@@ -77,23 +77,55 @@ export const DailySynthesisCard = ({
         
         {/* Power Score */}
         <div className={`rounded-lg p-4 mb-4 bg-gradient-to-r ${getPowerScoreBg(synthesis.powerScore)}`}>
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-center gap-4">
+            {/* Main Score */}
+            <div className="flex-shrink-0">
               <div className="text-xs text-muted-foreground mb-1">Power Score</div>
               <div className={`text-4xl font-bold ${getPowerScoreColor(synthesis.powerScore)}`}>
                 {synthesis.powerScore}
               </div>
             </div>
             
-            {/* Score breakdown */}
-            <div className="text-right text-xs space-y-1">
-              <div className="flex items-center gap-2 justify-end">
-                <Activity size={12} />
-                <span>Biorhythm: {synthesis.biorhythmContribution.score}%</span>
+            {/* Score breakdown with visual bars */}
+            <div className="flex-1 space-y-2">
+              {/* Biorhythm */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1">
+                    <Activity size={12} className="text-blue-500" />
+                    <span className="text-muted-foreground">Biorhythm</span>
+                  </div>
+                  <span className="font-medium">{synthesis.biorhythmContribution.score}%</span>
+                </div>
+                <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all duration-500"
+                    style={{ width: `${synthesis.biorhythmContribution.score}%` }}
+                  />
+                </div>
+                <div className="text-[10px] text-muted-foreground">
+                  60% weight • Physical + Emotional + Intellectual cycles
+                </div>
               </div>
-              <div className="flex items-center gap-2 justify-end">
-                <Moon size={12} />
-                <span>Astrology: {synthesis.astrologyContribution.score}%</span>
+              
+              {/* Astrology */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1">
+                    <Moon size={12} className="text-purple-500" />
+                    <span className="text-muted-foreground">Astrology</span>
+                  </div>
+                  <span className="font-medium">{synthesis.astrologyContribution.score}%</span>
+                </div>
+                <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-purple-400 to-purple-600 rounded-full transition-all duration-500"
+                    style={{ width: `${synthesis.astrologyContribution.score}%` }}
+                  />
+                </div>
+                <div className="text-[10px] text-muted-foreground">
+                  40% weight • Aspects, Moon phase, VOC status
+                </div>
               </div>
             </div>
           </div>

@@ -1,15 +1,28 @@
 import { useMemo, useState } from 'react';
-import { Heart, Flame, Brain, Moon, Sparkles, ChevronDown, ChevronUp, Star } from 'lucide-react';
+import { Heart, Flame, Brain, Moon, Sparkles, ChevronDown, ChevronUp, Star, Users, Plus, Info } from 'lucide-react';
 import { generateSynastryReport, getAspectSymbol, getCategoryEmoji, SynastryAspect, SynastryReport } from '@/lib/synastry';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface SynastryAnalysisCardProps {
   chart1: NatalChart | null;
   chart2: NatalChart | null;
+  availableCharts?: NatalChart[];
+  onChartSelect?: (chart1Id: string, chart2Id: string) => void;
+}
+
+// Quick compare person - just birth date
+interface QuickPerson {
+  name: string;
+  birthDate: string;
 }
 
 const ScoreGauge = ({ 
@@ -81,24 +94,126 @@ const AspectRow = ({ aspect }: { aspect: SynastryAspect }) => {
   );
 };
 
-export const SynastryAnalysisCard = ({ chart1, chart2 }: SynastryAnalysisCardProps) => {
+export const SynastryAnalysisCard = ({ 
+  chart1, 
+  chart2, 
+  availableCharts = [],
+  onChartSelect
+}: SynastryAnalysisCardProps) => {
   const [showAllAspects, setShowAllAspects] = useState(false);
+  const [showQuickCompare, setShowQuickCompare] = useState(false);
+  const [quickPerson, setQuickPerson] = useState<QuickPerson>({ name: '', birthDate: '' });
+  const [selectedChart1, setSelectedChart1] = useState<string>(chart1?.id || '');
+  const [selectedChart2, setSelectedChart2] = useState<string>(chart2?.id || '');
+  
+  // Create a temporary chart from quick compare data
+  const quickCompareChart = useMemo((): NatalChart | null => {
+    if (!quickPerson.name || !quickPerson.birthDate) return null;
+    return {
+      id: 'quick-compare',
+      name: quickPerson.name,
+      birthDate: quickPerson.birthDate,
+      birthTime: '12:00', // Noon default
+      birthLocation: 'Unknown',
+      planets: {} // Will use basic calculations
+    };
+  }, [quickPerson]);
+  
+  // Determine which charts to compare
+  const effectiveChart1 = availableCharts.find(c => c.id === selectedChart1) || chart1;
+  const effectiveChart2 = quickCompareChart || availableCharts.find(c => c.id === selectedChart2) || chart2;
   
   const report = useMemo(() => {
-    if (!chart1 || !chart2) return null;
-    return generateSynastryReport(chart1, chart2);
-  }, [chart1, chart2]);
+    if (!effectiveChart1 || !effectiveChart2) return null;
+    return generateSynastryReport(effectiveChart1, effectiveChart2);
+  }, [effectiveChart1, effectiveChart2]);
   
-  if (!chart1 || !chart2) {
+  // Empty state with chart selector
+  if (!effectiveChart1 || !effectiveChart2 || !report) {
     return (
       <div className="p-4 rounded-xl border border-dashed border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/20">
-        <div className="flex items-center gap-2 text-purple-500 mb-2">
+        <div className="flex items-center gap-2 text-purple-500 mb-3">
           <Heart size={18} />
           <h3 className="font-medium">Synastry Analysis</h3>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Select two charts to see their astrological compatibility
-        </p>
+        
+        {availableCharts.length >= 2 ? (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground mb-3">
+              Choose two people to compare:
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <Select value={selectedChart1} onValueChange={setSelectedChart1}>
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder="Person 1" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border shadow-lg z-50">
+                  {availableCharts.map(c => (
+                    <SelectItem key={c.id} value={c.id} disabled={c.id === selectedChart2}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={selectedChart2} onValueChange={setSelectedChart2}>
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder="Person 2" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border shadow-lg z-50">
+                  {availableCharts.map(c => (
+                    <SelectItem key={c.id} value={c.id} disabled={c.id === selectedChart1}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Add another chart to compare, or enter quick birth data:
+            </p>
+            
+            <div className="p-3 rounded-lg bg-background border border-border space-y-2">
+              <div>
+                <Label className="text-xs">Name</Label>
+                <Input 
+                  placeholder="Their name"
+                  value={quickPerson.name}
+                  onChange={e => setQuickPerson(p => ({ ...p, name: e.target.value }))}
+                  className="h-8 text-sm"
+                />
+              </div>
+              <div>
+                <Label className="text-xs">Birth Date</Label>
+                <Input 
+                  type="date"
+                  value={quickPerson.birthDate}
+                  onChange={e => setQuickPerson(p => ({ ...p, birthDate: e.target.value }))}
+                  className="h-8 text-sm"
+                />
+              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Info size={12} />
+                      <span>Birth date gives basic compatibility. Add full chart for accuracy.</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p className="text-sm">
+                      <strong>Birth date only:</strong> Shows planetary aspects (Venus, Mars, Sun, Moon at noon).<br/><br/>
+                      <strong>With birth time:</strong> Adds Moon sign accuracy, Ascendant, and house overlays.<br/><br/>
+                      <strong>With location:</strong> Adds house cusps for deepest analysis.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -112,7 +227,7 @@ export const SynastryAnalysisCard = ({ chart1, chart2 }: SynastryAnalysisCardPro
   
   return (
     <div className="p-4 rounded-xl border border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-950/20 dark:to-pink-950/20">
-      {/* Header */}
+      {/* Header with Chart Selectors */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-gradient-to-br from-purple-400 to-pink-500 text-white">
@@ -120,9 +235,39 @@ export const SynastryAnalysisCard = ({ chart1, chart2 }: SynastryAnalysisCardPro
           </div>
           <div>
             <h3 className="font-semibold text-sm">Synastry Analysis</h3>
-            <p className="text-xs text-muted-foreground">
-              {chart1.name} & {chart2.name}
-            </p>
+            {availableCharts.length >= 2 ? (
+              <div className="flex items-center gap-1 mt-1">
+                <Select value={selectedChart1 || effectiveChart1?.id} onValueChange={setSelectedChart1}>
+                  <SelectTrigger className="h-6 text-xs px-2 py-0 w-auto min-w-[80px] bg-background">
+                    <SelectValue placeholder={effectiveChart1?.name} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border shadow-lg z-50">
+                    {availableCharts.map(c => (
+                      <SelectItem key={c.id} value={c.id} disabled={c.id === selectedChart2} className="text-xs">
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <span className="text-xs text-muted-foreground">&</span>
+                <Select value={selectedChart2 || effectiveChart2?.id} onValueChange={setSelectedChart2}>
+                  <SelectTrigger className="h-6 text-xs px-2 py-0 w-auto min-w-[80px] bg-background">
+                    <SelectValue placeholder={effectiveChart2?.name} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border shadow-lg z-50">
+                    {availableCharts.map(c => (
+                      <SelectItem key={c.id} value={c.id} disabled={c.id === selectedChart1} className="text-xs">
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                {effectiveChart1?.name} & {effectiveChart2?.name}
+              </p>
+            )}
           </div>
         </div>
         <div className="text-right">
@@ -132,6 +277,54 @@ export const SynastryAnalysisCard = ({ chart1, chart2 }: SynastryAnalysisCardPro
           <p className="text-xs text-muted-foreground">Overall</p>
         </div>
       </div>
+      
+      {/* Quick Compare Toggle */}
+      {!quickCompareChart && (
+        <button
+          onClick={() => setShowQuickCompare(!showQuickCompare)}
+          className="mb-3 text-xs text-purple-500 hover:text-purple-600 flex items-center gap-1"
+        >
+          <Plus size={12} />
+          Compare with someone else
+        </button>
+      )}
+      
+      {showQuickCompare && !quickCompareChart && (
+        <div className="mb-4 p-3 rounded-lg bg-background border border-border space-y-2">
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-xs">Name</Label>
+              <Input 
+                placeholder="Their name"
+                value={quickPerson.name}
+                onChange={e => setQuickPerson(p => ({ ...p, name: e.target.value }))}
+                className="h-8 text-sm"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">Birth Date</Label>
+              <Input 
+                type="date"
+                value={quickPerson.birthDate}
+                onChange={e => setQuickPerson(p => ({ ...p, birthDate: e.target.value }))}
+                className="h-8 text-sm"
+              />
+            </div>
+          </div>
+          <p className="text-[10px] text-muted-foreground">
+            💡 Just birth date works! Add full chart later for Moon sign & house accuracy.
+          </p>
+        </div>
+      )}
+      
+      {quickCompareChart && (
+        <button
+          onClick={() => setQuickPerson({ name: '', birthDate: '' })}
+          className="mb-3 text-xs text-amber-600 hover:text-amber-700"
+        >
+          ✕ Clear quick compare
+        </button>
+      )}
       
       {/* Summary */}
       <div className="mb-4 p-3 rounded-lg bg-white/50 dark:bg-black/20 border border-purple-100 dark:border-purple-900/30">
