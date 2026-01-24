@@ -22,6 +22,7 @@ export interface BiorhythmValue {
   state: BiorhythmState;
   color: string;
   icon: string;
+  direction?: 'rising' | 'falling' | 'peak' | 'trough';
 }
 
 export interface BiorhythmDay {
@@ -33,6 +34,8 @@ export interface BiorhythmDay {
   average: number;
   criticalCycles: string[];
   peakCycles: string[];
+  doubleCritical?: boolean;
+  tripleCritical?: boolean;
 }
 
 export interface CompatibilityResult {
@@ -133,6 +136,21 @@ export function getStateLabel(state: BiorhythmState): string {
 /**
  * Get all biorhythm values for a specific date
  */
+/**
+ * Get cycle direction - is it rising toward peak or falling toward trough?
+ */
+export function getCycleDirection(birthDate: Date, targetDate: Date, cycleLength: number): 'rising' | 'falling' | 'peak' | 'trough' {
+  const today = calculateBiorhythm(birthDate, targetDate, cycleLength);
+  const tomorrow = calculateBiorhythm(birthDate, new Date(targetDate.getTime() + 86400000), cycleLength);
+  
+  if (today >= 95) return 'peak';
+  if (today <= -95) return 'trough';
+  return tomorrow > today ? 'rising' : 'falling';
+}
+
+/**
+ * Get all biorhythm values for a specific date
+ */
 export function getAllBiorhythms(birthDate: Date, targetDate: Date, includeIntuitive = false): BiorhythmValue[] {
   const cycles = includeIntuitive 
     ? ['physical', 'emotional', 'intellectual', 'intuitive']
@@ -142,13 +160,15 @@ export function getAllBiorhythms(birthDate: Date, targetDate: Date, includeIntui
     const cycle = BIORHYTHM_CYCLES[cycleKey];
     const value = calculateBiorhythm(birthDate, targetDate, cycle.length);
     const state = getBiorhythmState(value);
+    const direction = getCycleDirection(birthDate, targetDate, cycle.length);
     
     return {
       cycle: cycle.name,
       value,
       state,
       color: cycle.color,
-      icon: cycle.icon
+      icon: cycle.icon,
+      direction
     };
   });
 }
