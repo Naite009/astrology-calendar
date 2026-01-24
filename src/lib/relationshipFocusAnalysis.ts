@@ -83,6 +83,43 @@ function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): Foc
   const indicators: FocusIndicator[] = [];
   let score = 0;
   
+  // *** KARMIC BUSINESS INDICATORS - Saturn-Node connections ***
+  const saturnNorthNode = checkAspect(chart1, 'Saturn', chart2, 'NorthNode') || checkAspect(chart2, 'Saturn', chart1, 'NorthNode');
+  if (saturnNorthNode) {
+    indicators.push({
+      name: '★ KARMIC: Saturn-North Node',
+      found: true,
+      aspect: saturnNorthNode,
+      planet1: 'Saturn',
+      planet2: 'NorthNode',
+      interpretation: `${saturnNorthNode.type} (${saturnNorthNode.orb}° orb): **HIGHLY SIGNIFICANT for business.** This is a fated connection where Saturn provides the structure, discipline, and long-term commitment the North Node person needs for their destiny path. ${saturnNorthNode.type === 'conjunction' ? 'The conjunction is especially powerful—Saturn acts as a karmic teacher, providing exactly the professional lessons needed for growth. This partnership has "meant to be" energy around shared work and building something lasting.' : 'This aspect indicates a destined professional relationship with important lessons around responsibility, structure, and achievement.'}`,
+      strength: 'strong'
+    });
+    // Saturn-Node conjunction is a MAJOR business indicator
+    score += saturnNorthNode.type === 'conjunction' ? 25 : 18;
+  } else {
+    indicators.push({
+      name: 'Karmic: Saturn-North Node',
+      found: false,
+      interpretation: 'No Saturn-Node aspect. The partnership lacks the "fated business lesson" signature, but can still be successful through other connections.',
+      strength: 'absent'
+    });
+  }
+  
+  const saturnSouthNode = checkAspect(chart1, 'Saturn', chart2, 'SouthNode') || checkAspect(chart2, 'Saturn', chart1, 'SouthNode');
+  if (saturnSouthNode) {
+    indicators.push({
+      name: 'Past-Life: Saturn-South Node',
+      found: true,
+      aspect: saturnSouthNode,
+      planet1: 'Saturn',
+      planet2: 'SouthNode',
+      interpretation: `${saturnSouthNode.type} (${saturnSouthNode.orb}° orb): You've likely worked together before in a past life. There's a familiar professional dynamic—you may fall into established roles easily. The challenge is to not repeat old patterns that limited growth before.`,
+      strength: 'moderate'
+    });
+    score += 10;
+  }
+  
   // Saturn aspects - structure and commitment
   const saturnSun = checkAspect(chart1, 'Saturn', chart2, 'Sun') || checkAspect(chart2, 'Saturn', chart1, 'Sun');
   indicators.push({
@@ -142,6 +179,21 @@ function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): Foc
   });
   if (jupiterSun) score += jupiterSun.quality === 'harmonious' ? 15 : 8;
   
+  // Jupiter-Saturn - balance of expansion and structure (great for business!)
+  const jupiterSaturn = checkAspect(chart1, 'Jupiter', chart2, 'Saturn') || checkAspect(chart2, 'Jupiter', chart1, 'Saturn');
+  if (jupiterSaturn) {
+    indicators.push({
+      name: 'Jupiter-Saturn: Vision + Execution',
+      found: true,
+      aspect: jupiterSaturn,
+      planet1: 'Jupiter',
+      planet2: 'Saturn',
+      interpretation: `${jupiterSaturn.type} (${jupiterSaturn.orb}° orb): The ideal business combination! One partner brings expansive vision while the other provides realistic structure. ${jupiterSaturn.quality === 'harmonious' ? 'These energies blend well - dreams meet practicality.' : 'There may be tension between "go big" and "go slow" but both perspectives are valuable.'}`,
+      strength: jupiterSaturn.quality === 'harmonious' ? 'strong' : 'moderate'
+    });
+    score += jupiterSaturn.quality === 'harmonious' ? 18 : 10;
+  }
+  
   // Pluto aspects - power dynamics (important for business)
   const plutoSun = checkAspect(chart1, 'Pluto', chart2, 'Sun') || checkAspect(chart2, 'Pluto', chart1, 'Sun');
   indicators.push({
@@ -172,6 +224,21 @@ function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): Foc
   });
   if (marsMars) score += marsMars.quality === 'harmonious' ? 12 : 4;
   
+  // Pallas for strategy (business asteroid!)
+  const pallasSun = checkAspect(chart1, 'Pallas', chart2, 'Sun') || checkAspect(chart2, 'Pallas', chart1, 'Sun');
+  if (pallasSun) {
+    indicators.push({
+      name: 'Pallas-Sun: Strategic Vision',
+      found: true,
+      aspect: pallasSun,
+      planet1: 'Pallas',
+      planet2: 'Sun',
+      interpretation: `${pallasSun.type} (${pallasSun.orb}° orb): Pallas is the asteroid of strategy and pattern recognition. This aspect enhances your ability to plan and strategize together. The Pallas person sees patterns that help the Sun person shine.`,
+      strength: 'moderate'
+    });
+    score += 8;
+  }
+  
   // 2nd/10th house overlays (money/career houses)
   // Simplified check - look for Saturn, Jupiter, or Sun in relevant positions
   const saturnSaturn = checkAspect(chart1, 'Saturn', chart2, 'Saturn');
@@ -189,9 +256,10 @@ function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): Foc
   }
   
   // Calculate overall strength
-  const overallStrength = Math.min(100, Math.round(score * 1.2));
+  const overallStrength = Math.min(100, Math.round(score));
   
   const strongIndicators = indicators.filter(i => i.strength === 'strong');
+  const karmicIndicators = indicators.filter(i => i.name.includes('KARMIC') || i.name.includes('Past-Life'));
   const challenges = indicators.filter(i => i.aspect?.quality === 'tense');
   
   return {
@@ -200,14 +268,16 @@ function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): Foc
     overallStrength,
     indicators,
     summary: overallStrength >= 70 
-      ? `Strong business partnership potential. You have ${strongIndicators.length} key indicators for professional success together.`
+      ? `Strong business partnership potential! You have ${strongIndicators.length} key indicators for professional success. ${karmicIndicators.length > 0 ? `This includes ${karmicIndicators.length} karmic indicator(s) suggesting a fated professional connection.` : ''}`
       : overallStrength >= 50
-      ? `Moderate business potential. Some structure exists, but conscious effort needed in ${challenges.length > 0 ? 'managing tensions' : 'building frameworks'}.`
-      : `Business partnership would require significant conscious effort. Consider defining very clear roles and expectations.`,
+      ? `Moderate business potential. ${karmicIndicators.length > 0 ? `Your ${karmicIndicators[0].name} is significant - there's a destined quality to this work relationship.` : 'Some structure exists, but conscious effort needed.'} ${challenges.length > 0 ? 'Watch for tension points.' : ''}`
+      : `Business partnership would require conscious effort. ${karmicIndicators.length > 0 ? `However, your karmic connection suggests there may be important lessons to learn through working together.` : 'Consider defining very clear roles and expectations.'}`,
     recommendations: [
+      ...(saturnNorthNode ? ['★ Your Saturn-North Node connection is a MAJOR karmic business indicator. This partnership has a fated quality - Saturn provides exactly the structure and lessons the Node person needs for their professional destiny.'] : []),
       ...(saturnSun ? ['Use your Saturn-Sun dynamic to establish clear authority structures'] : ['Create explicit agreements about decision-making authority']),
       ...(mercuryMercury ? ['Leverage your Mercury connection for regular strategy sessions'] : ['Schedule regular check-ins to bridge different communication styles']),
       ...(jupiterSun ? ['Pursue growth opportunities together - your Jupiter-Sun aspect supports expansion'] : ['Set specific growth targets to stay aligned']),
+      ...(jupiterSaturn ? ['Balance your Jupiter-Saturn dynamic: let the visionary dream big while the pragmatist ensures execution'] : []),
       ...(challenges.length > 0 ? ['Address potential friction points proactively - your challenging aspects are growth edges'] : [])
     ]
   };
