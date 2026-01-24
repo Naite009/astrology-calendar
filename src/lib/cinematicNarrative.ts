@@ -398,6 +398,95 @@ ${dignityImpact}${retrogradeNote}`;
 /**
  * Generate the "Director's Notes" - practical guidance based on character insights
  */
+
+// Planet-specific guidance for "leaning in" to angular house placements
+const LEAN_IN_GUIDANCE: Record<string, string> = {
+  Sun: 'Put yourself forward. Take leadership roles. Let people SEE you—don\'t hide your light. Make decisions visibly. Your confidence inspires others.',
+  Moon: 'Let people know how you feel. Create nurturing environments publicly. Your emotional authenticity moves others. Trust your instincts in public situations.',
+  Mercury: 'Speak up, write, teach, present. Your ideas need an audience. Start conversations. Your communication style IS your brand.',
+  Venus: 'Express your aesthetic. Be the one who makes things beautiful. Share what you love openly. Let your values be known. Attract through authenticity.',
+  Mars: 'Take initiative. Be the one who starts things. Your directness is an asset. Physical presence matters. Lead with action, not words.',
+  Jupiter: 'Share your wisdom. Be generous publicly. Your optimism is contagious. Teach, mentor, expand horizons for others. Think bigger than seems reasonable.',
+  Saturn: 'Take responsibility publicly. Be the mature one. Your discipline is visible—use it to build lasting structures. Authority looks natural on you.',
+  Uranus: 'Be unapologetically different. Your unconventional approach IS the point. Innovate publicly. Challenge norms. Your uniqueness is your visibility.',
+  Neptune: 'Share your vision. Create art, music, spiritual practices openly. Your imagination inspires others. Trust your intuition in public roles.',
+  Pluto: 'Transform publicly. Don\'t hide your depth. Your intensity is magnetic. Lead through crisis. You\'re here to facilitate collective evolution.',
+  Chiron: 'Share your wounds as wisdom. Your vulnerability heals others. Be the mentor who says "I\'ve been there." Your sensitivity is a public gift.'
+};
+
+// Planet-specific guidance for cadent house placements (behind the scenes)
+const BEHIND_SCENES_GUIDANCE: Record<string, string> = {
+  Sun: 'Your identity develops through reflection, study, and service. You shine in supportive roles. Inner development matters more than outer recognition.',
+  Moon: 'Your emotional life is private, rich, contemplative. You process feelings through analysis or spiritual practice. Journaling and solitude feed your soul.',
+  Mercury: 'Your mind works best in quiet spaces. Writing, research, analysis—you think deeply rather than quickly. Your ideas need time to gestate.',
+  Venus: 'Your aesthetic is refined, subtle, not flashy. You appreciate beauty in details others miss. Love develops through service and shared routines.',
+  Mars: 'Your energy is best applied to mental pursuits, healing work, or spiritual practice. You fight for ideas, not territory.',
+  Jupiter: 'Your wisdom comes through teaching, travel, or behind-the-scenes guidance. You expand through learning and contemplation.',
+  Saturn: 'Your discipline is internal. You build structures that support others\' growth. Your authority is quiet but profound.',
+  Uranus: 'Your innovations happen in labs, studios, or spiritual communities. You revolutionize through ideas and healing modalities.',
+  Neptune: 'Your imagination is deeply internal. You channel the collective unconscious. Art, healing, and service are your expressions.',
+  Pluto: 'Your transformative power works through research, psychology, or spiritual practice. You heal from behind the scenes.'
+};
+
+// Planet-specific "conscious work" for planets in detriment or fall
+const CONSCIOUS_WORK_GUIDANCE: Record<string, { detriment: string; fall: string; practices: string[] }> = {
+  Sun: {
+    detriment: 'In Aquarius, your ego must learn to serve the collective rather than stand alone. Practice: lead a group where the mission matters more than personal recognition.',
+    fall: 'In Libra, your identity gets lost in partnership. Practice: make one decision daily based solely on YOUR preference, not others\' expectations.',
+    practices: ['Daily affirmations of self-worth that aren\'t dependent on others\' approval', 'Solo activities that build confidence', 'Leadership roles where you set the vision']
+  },
+  Moon: {
+    detriment: 'In Capricorn, your emotions feel like a burden. Practice: schedule "feeling time"—give emotions structure rather than suppressing them.',
+    fall: 'In Scorpio, emotions are intense and sometimes overwhelming. Practice: emotional release through physical movement, water rituals, or therapeutic writing.',
+    practices: ['Name your emotions out loud without judgment', 'Create safe containers for emotional expression', 'Nurture yourself the way you\'d nurture a child']
+  },
+  Mercury: {
+    detriment: 'In Sagittarius, your mind leaps before it looks. Practice: outline before you speak. Let ideas percolate before broadcasting them.',
+    fall: 'In Pisces, your thinking is impressionistic, not linear. Practice: translate intuitive knowing into concrete words through journaling.',
+    practices: ['Morning pages to capture wandering thoughts', 'Structured communication (outlines, lists) as scaffolding', 'Allow pauses in conversation']
+  },
+  Venus: {
+    detriment: 'In Aries or Scorpio, love feels like a battle or an obsession. Practice: cultivate pleasure for its own sake, without conquest or agenda. Let beauty exist without possessing it.',
+    fall: 'In Virgo, you criticize what you love. Practice: appreciation lists. Find three beautiful things in every person and situation before any critique.',
+    practices: ['Receive compliments without deflecting', 'Pursue beauty for no practical reason', 'Give without expecting return']
+  },
+  Mars: {
+    detriment: 'In Libra or Taurus, your drive gets blocked by diplomacy or comfort. Practice: healthy confrontation exercises. Voice disagreement once daily.',
+    fall: 'In Cancer, anger feels unsafe. Practice: physical expression (martial arts, drumming, running) to give anger a body-safe outlet.',
+    practices: ['Identify what you\'re REALLY angry about', 'Set boundaries without apologizing', 'Take action on something you\'ve been postponing']
+  },
+  Jupiter: {
+    detriment: 'In Gemini or Virgo, your faith gets scattered into details or doubts. Practice: zoom out daily—what\'s the bigger picture? What meaning connects the dots?',
+    fall: 'In Capricorn, optimism feels naive. Practice: vision boarding. Let yourself imagine abundance without immediately thinking "how?"',
+    practices: ['Generosity practices (give something away weekly)', 'Study something purely for joy, not career', 'Travel or explore unfamiliar perspectives']
+  },
+  Saturn: {
+    detriment: 'In Cancer or Leo, structure clashes with emotion or self-expression. Practice: build structure that SUPPORTS creativity, doesn\'t suppress it.',
+    fall: 'In Aries, discipline feels like imprisonment. Practice: short bursts of focused effort (Pomodoro technique). Master impulse through micro-commitments.',
+    practices: ['Break large tasks into small, achievable steps', 'Create routines that feel supportive, not punishing', 'Celebrate small wins before moving to next goal']
+  },
+  Uranus: {
+    detriment: 'In Leo or Taurus, your revolutionary spirit clashes with ego or stability. Practice: innovate in ways that build rather than destroy. Sustainable disruption.',
+    fall: 'In Taurus, change threatens your security. Practice: small experiments. Change one small thing regularly to build tolerance for transformation.',
+    practices: ['Question one assumption weekly', 'Seek out perspectives opposite to your own', 'Allow freedom within structure']
+  },
+  Neptune: {
+    detriment: 'In Virgo, your dreams drown in criticism. Practice: suspend analysis during creative flow. Edit LATER, not during creation.',
+    fall: 'In Capricorn, imagination feels impractical. Practice: vision boards, fantasy journaling—give your dreams a container without demanding they be "realistic."',
+    practices: ['Daily creative expression without judgment', 'Meditation or contemplative practice', 'Engage with art, music, or nature for its own sake']
+  },
+  Pluto: {
+    detriment: 'In Taurus or Libra, transformation threatens comfort or harmony. Practice: embrace small deaths. Let go of one thing monthly—possessions, relationships, beliefs.',
+    fall: '', // Pluto has no traditional fall
+    practices: ['Shadow journaling—what do you deny or hide?', 'Face one uncomfortable truth about yourself', 'Allow endings without immediately seeking replacement']
+  },
+  Chiron: {
+    detriment: '',
+    fall: '',
+    practices: ['Share your story of healing with others', 'Recognize that your wound is also your gift', 'Offer mentorship in areas where you\'ve struggled']
+  }
+};
+
 export function generateDirectorsNotes(profiles: CharacterProfile[]): string[] {
   const notes: string[] = [];
   
@@ -416,31 +505,71 @@ export function generateDirectorsNotes(profiles: CharacterProfile[]): string[] {
     p.dignity === 'detriment' || p.dignity === 'fall'
   );
   
+  // LOUDEST CHARACTERS - with specific how-to guidance
   if (loudCharacters.length > 0) {
-    const leadingLoud = loudCharacters.slice(0, 2);
-    notes.push(`**Your Loudest Characters:** ${leadingLoud.map(p => p.planet.name).join(' and ')} are in angular houses—these energies are prominent and VISIBLE in your life. Lean into them.`);
+    const leadingLoud = loudCharacters.slice(0, 3);
+    notes.push(`**Your Loudest Characters:** ${leadingLoud.map(p => p.planet.name).join(', ')} are in angular houses—these energies are prominent and VISIBLE in your life.`);
+    
+    // Add specific guidance for each loud character
+    leadingLoud.forEach(p => {
+      const guidance = LEAN_IN_GUIDANCE[p.planet.name];
+      if (guidance) {
+        const houseName = p.where.house === 1 ? '1st (Self/Identity)' :
+                         p.where.house === 4 ? '4th (Home/Roots)' :
+                         p.where.house === 7 ? '7th (Partnership)' :
+                         p.where.house === 10 ? '10th (Career/Public)' : `${p.where.house}th`;
+        notes.push(`**→ ${p.planet.name} in the ${houseName}:** ${guidance}`);
+      }
+    });
   }
   
+  // BEHIND THE SCENES - with specific guidance
   if (quietCharacters.length > 0) {
     const mercury12 = profiles.find(p => p.planet.name === 'Mercury' && p.where.house === 12);
     if (mercury12) {
-      notes.push(`**Your Narrator Speaks Quietly:** Mercury in the 12th means your inner voice is profound but harder for OTHERS to hear. Journaling, art, and meditative practices help you access your own narration.`);
+      notes.push(`**Your Narrator Speaks Quietly:** Mercury in the 12th means your inner voice is profound but harder for OTHERS to hear. **How to work with this:** Journaling, art, and meditative practices help you access your own narration. Write before speaking. Your thoughts need private processing before they're ready for the world.`);
     }
     
-    const quietNames = quietCharacters.slice(0, 2).map(p => p.planet.name);
-    if (!mercury12 || quietCharacters.length > 1) {
-      notes.push(`**Behind-the-Scenes Players:** ${quietNames.join(' and ')} work in cadent houses—their gifts are subtler, expressed through refinement, service, or spiritual practice.`);
+    const quietNames = quietCharacters.filter(p => p.planet.name !== 'Mercury' || p.where.house !== 12).slice(0, 2);
+    if (quietNames.length > 0) {
+      notes.push(`**Behind-the-Scenes Players:** ${quietNames.map(p => p.planet.name).join(' and ')} work in cadent houses—their gifts are subtler, expressed through refinement, service, or spiritual practice.`);
+      
+      quietNames.forEach(p => {
+        const guidance = BEHIND_SCENES_GUIDANCE[p.planet.name];
+        if (guidance) {
+          notes.push(`**→ ${p.planet.name}:** ${guidance}`);
+        }
+      });
     }
   }
   
+  // CHARACTERS NEEDING COSTUME ADJUSTMENTS - with detailed conscious work
   if (challengedCharacters.length > 0) {
-    notes.push(`**Characters Needing Costume Adjustments:** ${challengedCharacters.map(p => p.planet.name).join(', ')} are in challenging signs—they can still perform brilliantly, but require more conscious work.`);
+    notes.push(`**Characters Needing Costume Adjustments:** ${challengedCharacters.map(p => p.planet.name).join(', ')} are in challenging signs. They CAN perform brilliantly—but require conscious work. Here's how:`);
+    
+    challengedCharacters.forEach(p => {
+      const guidance = CONSCIOUS_WORK_GUIDANCE[p.planet.name];
+      if (guidance) {
+        const specificGuidance = p.dignity === 'fall' && guidance.fall ? guidance.fall : guidance.detriment;
+        const dignityLabel = p.dignity === 'fall' ? 'Fall' : 'Detriment';
+        
+        if (specificGuidance) {
+          notes.push(`**→ ${p.planet.name} in ${dignityLabel} (${p.planet.sign}):** ${specificGuidance}`);
+        }
+        
+        // Add practices
+        if (guidance.practices && guidance.practices.length > 0) {
+          const practices = guidance.practices.slice(0, 2).join(' • ');
+          notes.push(`**Practices for ${p.planet.name}:** ${practices}`);
+        }
+      }
+    });
   }
   
-  // Add retrograde notes
+  // Add retrograde notes with guidance
   const retrogradeCharacters = profiles.filter(p => p.planet.retrograde);
   if (retrogradeCharacters.length > 0) {
-    notes.push(`**Inward-Facing Characters:** ${retrogradeCharacters.map(p => p.planet.name).join(', ')} are retrograde—they process internally first. Honor their need for reflection before action.`);
+    notes.push(`**Inward-Facing Characters:** ${retrogradeCharacters.map(p => p.planet.name).join(', ')} are retrograde—they process internally first. **How to work with this:** Honor their need for reflection before action. These functions need private rehearsal before public performance. Don't rush them.`);
   }
   
   return notes;
