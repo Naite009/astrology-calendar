@@ -1,0 +1,291 @@
+/**
+ * Composite Chart Calculator
+ * 
+ * Blends two natal charts into a single "relationship chart"
+ * using the midpoint method to show the partnership's combined energy.
+ */
+
+import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
+
+// Zodiac signs in order
+const ZODIAC_SIGNS = [
+  'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+  'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
+];
+
+export interface CompositePosition {
+  sign: string;
+  degree: number;
+  minutes: number;
+  longitude: number;
+}
+
+export interface CompositeChart {
+  name: string;
+  person1: string;
+  person2: string;
+  planets: Record<string, CompositePosition>;
+  interpretation: CompositeInterpretation;
+}
+
+export interface CompositeInterpretation {
+  sunSign: string;
+  moonSign: string;
+  venusSign: string;
+  marsSign: string;
+  relationshipStyle: string;
+  emotionalCore: string;
+  loveLanguage: string;
+  passionStyle: string;
+  challenges: string[];
+  strengths: string[];
+  overallTheme: string;
+}
+
+// Sign interpretations for composite planets
+const SUN_INTERPRETATIONS: Record<string, string> = {
+  'Aries': 'Your relationship is pioneering, competitive, and action-oriented. You inspire each other to be bold.',
+  'Taurus': 'Stability, sensuality, and building lasting value together define your partnership.',
+  'Gemini': 'Communication and mental stimulation are central. You keep each other curious and engaged.',
+  'Cancer': 'Emotional security and nurturing are your foundation. Home and family are important.',
+  'Leo': 'Your relationship is creative, dramatic, and seeks recognition. You bring out each other\'s shine.',
+  'Virgo': 'Service, improvement, and practical support characterize your bond. You help each other grow.',
+  'Libra': 'Balance, harmony, and partnership are your essence. You create beauty together.',
+  'Scorpio': 'Deep transformation, intensity, and profound intimacy define your connection.',
+  'Sagittarius': 'Adventure, growth, and shared philosophy drive your partnership. You expand together.',
+  'Capricorn': 'Ambition, structure, and long-term goals unite you. You build something lasting.',
+  'Aquarius': 'Innovation, friendship, and unconventional approaches define your bond.',
+  'Pisces': 'Spiritual connection, empathy, and creative flow are your essence. Dreamy and intuitive.'
+};
+
+const MOON_INTERPRETATIONS: Record<string, string> = {
+  'Aries': 'Emotionally direct and spontaneous. Needs excitement to feel alive together.',
+  'Taurus': 'Emotionally steady and comfort-seeking. Security and sensory pleasure nurture you.',
+  'Gemini': 'Emotionally curious and talkative. You process feelings through conversation.',
+  'Cancer': 'Deeply nurturing and protective. Home is your emotional sanctuary.',
+  'Leo': 'Emotionally expressive and dramatic. You need to feel special together.',
+  'Virgo': 'Emotionally practical and helpful. Acts of service show care.',
+  'Libra': 'Emotionally balanced and peace-seeking. Harmony is essential.',
+  'Scorpio': 'Emotionally intense and private. Deep loyalty and transformation.',
+  'Sagittarius': 'Emotionally adventurous and optimistic. Freedom within connection.',
+  'Capricorn': 'Emotionally reserved but loyal. Security comes from achievement.',
+  'Aquarius': 'Emotionally independent and unconventional. Friendship first.',
+  'Pisces': 'Emotionally merged and intuitive. Profound empathy and spiritual connection.'
+};
+
+const VENUS_INTERPRETATIONS: Record<string, string> = {
+  'Aries': 'Passionate, direct love. Pursuit and conquest energize romance.',
+  'Taurus': 'Sensual, loyal love. Physical affection and material comfort matter.',
+  'Gemini': 'Playful, communicative love. Flirtation and mental connection.',
+  'Cancer': 'Nurturing, protective love. Emotional safety is paramount.',
+  'Leo': 'Generous, dramatic love. Romance, appreciation, and fun.',
+  'Virgo': 'Devoted, practical love. Love through acts of service.',
+  'Libra': 'Harmonious, balanced love. Beauty, fairness, and partnership.',
+  'Scorpio': 'Intense, transformative love. Deep bonding and passion.',
+  'Sagittarius': 'Adventurous, free-spirited love. Growth and exploration.',
+  'Capricorn': 'Committed, mature love. Building something lasting.',
+  'Aquarius': 'Unconventional, friendly love. Independence and innovation.',
+  'Pisces': 'Romantic, spiritual love. Empathy and transcendence.'
+};
+
+const MARS_INTERPRETATIONS: Record<string, string> = {
+  'Aries': 'Direct, competitive drive. Quick to action, loves challenges.',
+  'Taurus': 'Steady, determined drive. Slow but unstoppable when motivated.',
+  'Gemini': 'Scattered, versatile drive. Multiple projects and mental energy.',
+  'Cancer': 'Protective, indirect drive. Action motivated by emotional security.',
+  'Leo': 'Creative, bold drive. Action for recognition and self-expression.',
+  'Virgo': 'Precise, productive drive. Detailed and efficient action.',
+  'Libra': 'Diplomatic, balanced drive. Action through partnership.',
+  'Scorpio': 'Intense, strategic drive. Powerful and transformative action.',
+  'Sagittarius': 'Adventurous, optimistic drive. Action toward expansion.',
+  'Capricorn': 'Ambitious, disciplined drive. Action for achievement.',
+  'Aquarius': 'Independent, innovative drive. Action for change.',
+  'Pisces': 'Inspired, intuitive drive. Action guided by feeling.'
+};
+
+/**
+ * Convert position to ecliptic longitude (0-360)
+ */
+function toAbsoluteLongitude(pos: NatalPlanetPosition): number {
+  const signIndex = ZODIAC_SIGNS.indexOf(pos.sign);
+  if (signIndex === -1) return 0;
+  return signIndex * 30 + pos.degree + (pos.minutes || 0) / 60;
+}
+
+/**
+ * Convert longitude back to sign/degree/minutes
+ */
+function fromLongitude(longitude: number): CompositePosition {
+  // Normalize to 0-360
+  longitude = ((longitude % 360) + 360) % 360;
+  
+  const signIndex = Math.floor(longitude / 30);
+  const degreeWithDecimal = longitude % 30;
+  const degree = Math.floor(degreeWithDecimal);
+  const minutes = Math.round((degreeWithDecimal - degree) * 60);
+  
+  return {
+    sign: ZODIAC_SIGNS[signIndex],
+    degree,
+    minutes,
+    longitude
+  };
+}
+
+/**
+ * Calculate midpoint between two longitudes (shorter arc)
+ */
+function calculateMidpoint(lon1: number, lon2: number): number {
+  // Normalize both to 0-360
+  lon1 = ((lon1 % 360) + 360) % 360;
+  lon2 = ((lon2 % 360) + 360) % 360;
+  
+  let diff = lon2 - lon1;
+  
+  // Use shorter arc
+  if (Math.abs(diff) > 180) {
+    if (diff > 0) {
+      diff = diff - 360;
+    } else {
+      diff = diff + 360;
+    }
+  }
+  
+  let midpoint = lon1 + diff / 2;
+  
+  // Normalize result
+  return ((midpoint % 360) + 360) % 360;
+}
+
+/**
+ * Generate composite chart interpretation
+ */
+function generateInterpretation(planets: Record<string, CompositePosition>): CompositeInterpretation {
+  const sunSign = planets['Sun']?.sign || 'Unknown';
+  const moonSign = planets['Moon']?.sign || 'Unknown';
+  const venusSign = planets['Venus']?.sign || 'Unknown';
+  const marsSign = planets['Mars']?.sign || 'Unknown';
+  
+  const strengths: string[] = [];
+  const challenges: string[] = [];
+  
+  // Check for element balance
+  const elements: Record<string, number> = { fire: 0, earth: 0, air: 0, water: 0 };
+  const fireSign = ['Aries', 'Leo', 'Sagittarius'];
+  const earthSign = ['Taurus', 'Virgo', 'Capricorn'];
+  const airSign = ['Gemini', 'Libra', 'Aquarius'];
+  const waterSign = ['Cancer', 'Scorpio', 'Pisces'];
+  
+  Object.values(planets).forEach(pos => {
+    if (fireSign.includes(pos.sign)) elements.fire++;
+    else if (earthSign.includes(pos.sign)) elements.earth++;
+    else if (airSign.includes(pos.sign)) elements.air++;
+    else if (waterSign.includes(pos.sign)) elements.water++;
+  });
+  
+  // Determine dominant element
+  const dominantElement = Object.entries(elements).sort((a, b) => b[1] - a[1])[0][0];
+  
+  if (dominantElement === 'fire') {
+    strengths.push('Passionate and inspiring energy');
+    challenges.push('May burn too hot or fast');
+  } else if (dominantElement === 'earth') {
+    strengths.push('Stable and practical foundation');
+    challenges.push('May become too routine');
+  } else if (dominantElement === 'air') {
+    strengths.push('Strong mental connection');
+    challenges.push('May over-intellectualize feelings');
+  } else {
+    strengths.push('Deep emotional attunement');
+    challenges.push('May become too emotionally merged');
+  }
+  
+  // Sun-Moon compatibility
+  if (sunSign === moonSign) {
+    strengths.push('Natural alignment of will and emotions');
+  }
+  
+  // Venus-Mars chemistry
+  if (venusSign === marsSign) {
+    strengths.push('Love and passion naturally aligned');
+  }
+  
+  // Generate overall theme
+  let overallTheme = '';
+  if (elements.fire >= 3) {
+    overallTheme = 'A dynamic, action-oriented partnership that inspires growth and adventure.';
+  } else if (elements.earth >= 3) {
+    overallTheme = 'A stable, grounded partnership focused on building something lasting.';
+  } else if (elements.air >= 3) {
+    overallTheme = 'An intellectually stimulating partnership with strong communication.';
+  } else if (elements.water >= 3) {
+    overallTheme = 'A deeply emotional, intuitive partnership with profound empathy.';
+  } else {
+    overallTheme = 'A well-balanced partnership with diverse strengths across elements.';
+  }
+  
+  return {
+    sunSign,
+    moonSign,
+    venusSign,
+    marsSign,
+    relationshipStyle: SUN_INTERPRETATIONS[sunSign] || 'Unique relationship energy.',
+    emotionalCore: MOON_INTERPRETATIONS[moonSign] || 'Emotional patterns to explore.',
+    loveLanguage: VENUS_INTERPRETATIONS[venusSign] || 'Affection style to discover.',
+    passionStyle: MARS_INTERPRETATIONS[marsSign] || 'Drive and action to understand.',
+    challenges,
+    strengths,
+    overallTheme
+  };
+}
+
+/**
+ * Calculate composite chart from two natal charts
+ */
+export function calculateCompositeChart(chart1: NatalChart, chart2: NatalChart): CompositeChart {
+  const compositePlanets: Record<string, CompositePosition> = {};
+  
+  // List of planets to calculate
+  const planetNames = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
+  
+  for (const planetName of planetNames) {
+    const pos1 = chart1.planets[planetName as keyof typeof chart1.planets];
+    const pos2 = chart2.planets[planetName as keyof typeof chart2.planets];
+    
+    if (pos1 && pos2) {
+      const lon1 = toAbsoluteLongitude(pos1);
+      const lon2 = toAbsoluteLongitude(pos2);
+      const midpoint = calculateMidpoint(lon1, lon2);
+      compositePlanets[planetName] = fromLongitude(midpoint);
+    }
+  }
+  
+  // Calculate Ascendant midpoint if available
+  if (chart1.planets.Ascendant && chart2.planets.Ascendant) {
+    const lon1 = toAbsoluteLongitude(chart1.planets.Ascendant);
+    const lon2 = toAbsoluteLongitude(chart2.planets.Ascendant);
+    compositePlanets['Ascendant'] = fromLongitude(calculateMidpoint(lon1, lon2));
+  }
+  
+  const interpretation = generateInterpretation(compositePlanets);
+  
+  return {
+    name: `${chart1.name} & ${chart2.name} Composite`,
+    person1: chart1.name,
+    person2: chart2.name,
+    planets: compositePlanets,
+    interpretation
+  };
+}
+
+/**
+ * Get planet symbol
+ */
+export function getPlanetSymbol(planet: string): string {
+  const symbols: Record<string, string> = {
+    Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀', Mars: '♂',
+    Jupiter: '♃', Saturn: '♄', Uranus: '♅', Neptune: '♆', Pluto: '♇',
+    Ascendant: 'AC', NorthNode: '☊', Chiron: '⚷'
+  };
+  return symbols[planet] || planet.charAt(0);
+}
