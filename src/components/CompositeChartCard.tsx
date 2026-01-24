@@ -1,9 +1,13 @@
 import { useMemo, useState } from 'react';
-import { Heart, Users, ChevronDown, ChevronUp } from 'lucide-react';
-import { calculateCompositeChart, getPlanetSymbol, CompositeChart } from '@/lib/compositeChart';
+import { Heart, Users, ChevronDown, ChevronUp, Calendar, Info } from 'lucide-react';
+import { calculateCompositeChart, calculateDavisonChart, getPlanetSymbol, CompositeChart, DavisonChart } from '@/lib/compositeChart';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { format } from 'date-fns';
+
+type ChartMethod = 'composite' | 'davison';
 
 interface CompositeChartCardProps {
   chart1: NatalChart | null;
@@ -22,20 +26,76 @@ const PlanetRow = ({ planet, sign, degree }: { planet: string; sign: string; deg
   </div>
 );
 
+const MethodToggle = ({ 
+  method, 
+  onMethodChange 
+}: { 
+  method: ChartMethod; 
+  onMethodChange: (m: ChartMethod) => void;
+}) => (
+  <TooltipProvider>
+    <div className="flex items-center gap-1 p-0.5 rounded-lg bg-secondary/50">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={() => onMethodChange('composite')}
+            className={`px-2 py-1 text-xs rounded-md transition-colors ${
+              method === 'composite' 
+                ? 'bg-primary text-primary-foreground' 
+                : 'hover:bg-secondary'
+            }`}
+          >
+            Composite
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" className="max-w-[200px]">
+          <p className="text-xs">Midpoint method: calculates the midpoint between each planet pair</p>
+        </TooltipContent>
+      </Tooltip>
+      
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={() => onMethodChange('davison')}
+            className={`px-2 py-1 text-xs rounded-md transition-colors ${
+              method === 'davison' 
+                ? 'bg-primary text-primary-foreground' 
+                : 'hover:bg-secondary'
+            }`}
+          >
+            Davison
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" className="max-w-[200px]">
+          <p className="text-xs">Averaged birth data: calculates positions for the midpoint in time and space</p>
+        </TooltipContent>
+      </Tooltip>
+    </div>
+  </TooltipProvider>
+);
+
 export const CompositeChartCard = ({ chart1, chart2 }: CompositeChartCardProps) => {
   const [showPlanets, setShowPlanets] = useState(false);
+  const [method, setMethod] = useState<ChartMethod>('composite');
   
   const composite = useMemo(() => {
     if (!chart1 || !chart2) return null;
     return calculateCompositeChart(chart1, chart2);
   }, [chart1, chart2]);
   
+  const davison = useMemo(() => {
+    if (!chart1 || !chart2) return null;
+    return calculateDavisonChart(chart1, chart2);
+  }, [chart1, chart2]);
+  
+  const activeChart = method === 'composite' ? composite : davison;
+  
   if (!chart1 || !chart2) {
     return (
       <div className="p-4 rounded-xl border border-dashed border-indigo-200 dark:border-indigo-800 bg-indigo-50/50 dark:bg-indigo-950/20">
         <div className="flex items-center gap-2 text-indigo-500 mb-2">
           <Users size={18} />
-          <h3 className="font-medium">Composite Chart</h3>
+          <h3 className="font-medium">Relationship Chart</h3>
         </div>
         <p className="text-sm text-muted-foreground">
           Select two charts to see your relationship's combined energy
@@ -44,9 +104,9 @@ export const CompositeChartCard = ({ chart1, chart2 }: CompositeChartCardProps) 
     );
   }
   
-  if (!composite) return null;
+  if (!activeChart) return null;
   
-  const { interpretation } = composite;
+  const { interpretation } = activeChart;
   
   return (
     <div className="p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-gradient-to-br from-indigo-50/50 to-violet-50/50 dark:from-indigo-950/20 dark:to-violet-950/20">
@@ -57,20 +117,41 @@ export const CompositeChartCard = ({ chart1, chart2 }: CompositeChartCardProps) 
             <Users size={18} />
           </div>
           <div>
-            <h3 className="font-semibold text-sm">Composite Chart</h3>
+            <h3 className="font-semibold text-sm">
+              {method === 'composite' ? 'Composite' : 'Davison'} Chart
+            </h3>
             <p className="text-xs text-muted-foreground">
               {chart1.name} + {chart2.name}
             </p>
           </div>
         </div>
-        <div className="flex gap-1">
-          <Badge variant="outline" className="text-xs">
-            ☉ {interpretation.sunSign}
-          </Badge>
-          <Badge variant="outline" className="text-xs">
-            ☽ {interpretation.moonSign}
-          </Badge>
+        <MethodToggle method={method} onMethodChange={setMethod} />
+      </div>
+      
+      {/* Davison Date Info */}
+      {method === 'davison' && davison && (
+        <div className="mb-4 p-2 rounded-lg bg-violet-50 dark:bg-violet-950/20 border border-violet-100 dark:border-violet-900/30 flex items-center gap-2">
+          <Calendar size={14} className="text-violet-500" />
+          <p className="text-xs text-muted-foreground">
+            Relationship "birth": <span className="font-medium text-foreground">{format(davison.averagedDate, 'MMMM d, yyyy')}</span>
+          </p>
         </div>
+      )}
+      
+      {/* Planet Signs */}
+      <div className="flex gap-1 mb-4">
+        <Badge variant="outline" className="text-xs">
+          ☉ {interpretation.sunSign}
+        </Badge>
+        <Badge variant="outline" className="text-xs">
+          ☽ {interpretation.moonSign}
+        </Badge>
+        <Badge variant="outline" className="text-xs">
+          ♀ {interpretation.venusSign}
+        </Badge>
+        <Badge variant="outline" className="text-xs">
+          ♂ {interpretation.marsSign}
+        </Badge>
       </div>
       
       {/* Overall Theme */}
@@ -139,13 +220,13 @@ export const CompositeChartCard = ({ chart1, chart2 }: CompositeChartCardProps) 
       <Collapsible open={showPlanets} onOpenChange={setShowPlanets}>
         <CollapsibleTrigger asChild>
           <button className="w-full flex items-center justify-center gap-2 text-xs text-muted-foreground hover:text-foreground py-2 transition-colors">
-            {showPlanets ? 'Hide' : 'Show'} composite planet positions
+            {showPlanets ? 'Hide' : 'Show'} {method} planet positions
             {showPlanets ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent>
           <div className="grid grid-cols-2 gap-1.5 mt-2">
-            {Object.entries(composite.planets).map(([planet, pos]) => (
+            {Object.entries(activeChart.planets).map(([planet, pos]) => (
               <PlanetRow key={planet} planet={planet} sign={pos.sign} degree={pos.degree} />
             ))}
           </div>
