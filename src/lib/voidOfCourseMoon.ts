@@ -18,6 +18,9 @@ const ASPECT_SYMBOLS: Record<string, string> = {
   opposition: '☍',
 };
 
+// Global cache for VOC details to avoid repeated heavy calculations
+const VOC_CACHE = new Map<string, ReturnType<typeof getVOCMoonDetails>>();
+
 // Get moon longitude at a specific time
 const getMoonLongitude = (date: Date): number => {
   const geoMoon = Astronomy.GeoMoon(date);
@@ -248,6 +251,11 @@ export interface VOCMoonDetails {
 
 // Main function to get VOC Moon details for a specific date
 export const getVOCMoonDetails = (date: Date): VOCMoonDetails => {
+  // Cache key: round to nearest hour for reasonable caching (VOC periods are typically hours long)
+  const cacheKey = new Date(Math.floor(date.getTime() / 3600000) * 3600000).toISOString();
+  const cached = VOC_CACHE.get(cacheKey);
+  if (cached) return cached;
+
   const dayStart = new Date(date);
   dayStart.setHours(0, 0, 0, 0);
   
@@ -298,7 +306,7 @@ export const getVOCMoonDetails = (date: Date): VOCMoonDetails => {
       const now = new Date();
       const isCurrentlyVOC = now.getTime() >= vocStart.getTime() && now.getTime() <= vocEnd.getTime();
       
-      return {
+      const result: VOCMoonDetails = {
         isVOC: true,
         isCurrentlyVOC,
         start: vocStart,
@@ -314,6 +322,8 @@ export const getVOCMoonDetails = (date: Date): VOCMoonDetails => {
         moonEntersSign: signChange.newSign,
         durationMinutes,
       };
+      VOC_CACHE.set(cacheKey, result);
+      return result;
     }
     
     // Move to the next sign
@@ -321,7 +331,9 @@ export const getVOCMoonDetails = (date: Date): VOCMoonDetails => {
   }
   
   // No VOC period overlaps with this day
-  return { isVOC: false, isCurrentlyVOC: false };
+  const noVocResult: VOCMoonDetails = { isVOC: false, isCurrentlyVOC: false };
+  VOC_CACHE.set(cacheKey, noVocResult);
+  return noVocResult;
 };
 
 // Quick check if a specific time is during VOC
