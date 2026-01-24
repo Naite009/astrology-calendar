@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { TrendingUp, AlertTriangle, Sparkles, ChevronLeft, ChevronRight, Heart, User } from 'lucide-react';
+import { TrendingUp, AlertTriangle, Sparkles, ChevronLeft, ChevronRight, Heart, User, Moon } from 'lucide-react';
 import { 
   getBiorhythmForecast, 
   getCriticalDays, 
@@ -8,6 +8,7 @@ import {
   BiorhythmDay,
   BIORHYTHM_CYCLES
 } from '@/lib/biorhythms';
+import { getMoonPhase } from '@/lib/astrology';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format, isSameDay } from 'date-fns';
@@ -18,6 +19,13 @@ interface SavedChart {
   birthDate: string;
 }
 
+interface MoonPhaseData {
+  date: Date;
+  phase: string;
+  emoji: string;
+  isSignificant: boolean; // New/Full moon
+}
+
 interface BiorhythmForecastProps {
   birthDate: Date;
   startDate?: Date;
@@ -25,20 +33,23 @@ interface BiorhythmForecastProps {
   savedCharts?: SavedChart[];
   selectedChartId?: string;
   onChartChange?: (chartId: string) => void;
+  showMoonOverlay?: boolean;
 }
 
 const WaveChart = ({ 
   forecast, 
   selectedDay,
-  onDaySelect 
+  onDaySelect,
+  moonPhases
 }: { 
   forecast: BiorhythmDay[];
   selectedDay: number;
   onDaySelect: (index: number) => void;
+  moonPhases?: MoonPhaseData[];
 }) => {
   const width = 700;
-  const height = 200;
-  const padding = { top: 20, right: 20, bottom: 30, left: 40 };
+  const height = 220; // Slightly taller for moon icons
+  const padding = { top: 30, right: 20, bottom: 30, left: 40 };
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
   
@@ -59,6 +70,15 @@ const WaveChart = ({
   
   // Find today's index
   const todayIndex = forecast.findIndex(d => isSameDay(d.date, new Date()));
+  
+  // Find moon phase markers from props
+  const significantMoonDays = useMemo(() => {
+    if (!moonPhases) return [];
+    return forecast.map((day, i) => {
+      const moonData = moonPhases.find(m => isSameDay(m.date, day.date));
+      return moonData?.isSignificant ? { index: i, ...moonData } : null;
+    }).filter(Boolean) as { index: number; emoji: string; phase: string }[];
+  }, [forecast, moonPhases]);
   
   return (
     <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
@@ -93,6 +113,30 @@ const WaveChart = ({
       <text x={padding.left - 5} y={yScale(100)} textAnchor="end" className="text-[10px] fill-muted-foreground">+100%</text>
       <text x={padding.left - 5} y={yScale(0)} textAnchor="end" className="text-[10px] fill-muted-foreground">0%</text>
       <text x={padding.left - 5} y={yScale(-100)} textAnchor="end" className="text-[10px] fill-muted-foreground">-100%</text>
+      
+      {/* Moon phase markers at top */}
+      {significantMoonDays.map((moon, i) => (
+        <g key={i}>
+          <text 
+            x={xScale(moon.index)} 
+            y={12} 
+            textAnchor="middle" 
+            className="text-sm"
+          >
+            {moon.emoji}
+          </text>
+          <line
+            x1={xScale(moon.index)}
+            y1={18}
+            x2={xScale(moon.index)}
+            y2={padding.top}
+            stroke="hsl(var(--muted-foreground))"
+            strokeWidth={1}
+            strokeDasharray="2 2"
+            strokeOpacity={0.5}
+          />
+        </g>
+      ))}
       
       {/* Cycle lines */}
       <path d={physicalPath} fill="none" stroke="hsl(var(--destructive))" strokeWidth={2} strokeOpacity={0.8} />
