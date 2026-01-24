@@ -548,7 +548,7 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
     return analyzeRelationshipFocus(chart1, chart2, relationshipFocus);
   }, [chart1, chart2, relationshipFocus]);
 
-  // Handle adding/removing people
+  // Handle adding/removing/changing people
   const addPerson = (id: string) => {
     if (!selectedChartIds.includes(id)) {
       setSelectedChartIds([...selectedChartIds, id]);
@@ -556,9 +556,15 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
   };
 
   const removePerson = (id: string) => {
+    // Allow removal as long as at least 2 people remain
     if (selectedChartIds.length > 2) {
       setSelectedChartIds(selectedChartIds.filter(cid => cid !== id));
     }
+  };
+
+  const changePerson = (oldId: string, newId: string) => {
+    if (oldId === newId) return;
+    setSelectedChartIds(selectedChartIds.map(id => id === oldId ? newId : id));
   };
   
   if (allCharts.length < 2) {
@@ -573,6 +579,10 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
     );
   }
   
+  // Get charts not currently selected (for swap dropdowns)
+  const availableForSwap = (currentId: string) => 
+    allCharts.filter(c => c.id === currentId || !selectedChartIds.includes(c.id));
+  
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       {/* Header & Chart Selection */}
@@ -582,24 +592,51 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
           Compare charts using Synastry, Composite, or Davison methods. Select 2 people for pair analysis, or 3+ for group dynamics.
         </p>
         
-        {/* Selected People Display */}
+        {/* Selected People Display - Fully Editable */}
         <div className="flex flex-wrap items-center justify-center gap-2 p-4 rounded-lg bg-secondary/30 border">
           <span className="text-sm text-muted-foreground mr-2">Analyzing:</span>
+          
           {selectedCharts.map((chart, i) => (
-            <Badge key={chart.id} variant="secondary" className="flex items-center gap-1 py-1 px-2">
-              {chart.name}
+            <div key={chart.id} className="flex items-center gap-1">
+              {/* Person Selector - Always changeable */}
+              <Select 
+                value={chart.id} 
+                onValueChange={(newId) => changePerson(chart.id, newId)}
+              >
+                <SelectTrigger className="h-8 bg-background border-primary/30 min-w-[120px]">
+                  <span className="text-sm font-medium">{chart.name}</span>
+                </SelectTrigger>
+                <SelectContent className="bg-popover border shadow-lg z-50">
+                  {availableForSwap(chart.id).map(c => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              {/* Remove button - show when 3+ people selected */}
               {selectedChartIds.length > 2 && (
-                <button onClick={() => removePerson(chart.id)} className="ml-1 hover:text-destructive">
-                  <X size={12} />
+                <button 
+                  onClick={() => removePerson(chart.id)} 
+                  className="p-1 rounded hover:bg-destructive/10 hover:text-destructive transition-colors"
+                  title="Remove from analysis"
+                >
+                  <X size={14} />
                 </button>
               )}
-            </Badge>
+              
+              {/* Separator between people */}
+              {i < selectedCharts.length - 1 && (
+                <span className="text-muted-foreground mx-1">+</span>
+              )}
+            </div>
           ))}
           
-          {/* Add Person Dropdown */}
+          {/* Add Person Button */}
           {allCharts.filter(c => !selectedChartIds.includes(c.id)).length > 0 && (
             <Select onValueChange={addPerson}>
-              <SelectTrigger className="w-40 h-8 bg-background">
+              <SelectTrigger className="w-32 h-8 bg-background ml-2">
                 <div className="flex items-center gap-1 text-xs">
                   <UserPlus size={12} />
                   Add person
