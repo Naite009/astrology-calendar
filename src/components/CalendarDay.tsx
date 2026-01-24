@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { 
   getPlanetaryPositions, 
   getMoonPhase, 
@@ -14,7 +14,8 @@ import {
   detectPlanetaryIngresses,
   getPlanetSymbol,
   getExactLunarPhase,
-  type DayData 
+  type DayData,
+  type PlanetaryPositions
 } from "@/lib/astrology";
 import { cn } from "@/lib/utils";
 import { UserData } from "@/hooks/useUserData";
@@ -30,6 +31,18 @@ import { VoiceMemo, getCategoryColor } from "@/hooks/useVoiceMemos";
 const OUTER_PLANETS = ['Saturn', 'Jupiter', 'Neptune', 'Pluto', 'Uranus'];
 // Personal points that matter most when aspected
 const PERSONAL_POINTS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Ascendant', 'IC', 'MC', 'Descendant'];
+
+// Simple in-memory cache to avoid re-running astronomy-engine work for the same timestamps.
+// Keyed by full ISO string so it works for both day cells and exact lunation timestamps.
+const PLANET_CACHE = new Map<string, PlanetaryPositions>();
+const getCachedPlanetaryPositions = (date: Date): PlanetaryPositions => {
+  const key = date.toISOString();
+  const cached = PLANET_CACHE.get(key);
+  if (cached) return cached;
+  const computed = getPlanetaryPositions(date);
+  PLANET_CACHE.set(key, computed);
+  return computed;
+};
 
 // Filter transits into categories with orb filtering
 const categorizeTransits = (transits: TransitAspect[], maxOrb: number = 5) => {
@@ -101,42 +114,52 @@ interface CalendarDayProps {
   onVoiceMemoClick?: (date: Date, e: React.MouseEvent) => void;
 }
 
-export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeChart, voiceMemos = [], onVoiceMemoClick }: CalendarDayProps) => {
-  const planets = getPlanetaryPositions(date);
-  const moonPhase = getMoonPhase(date);
-  const mercuryRetro = isMercuryRetrograde(date);
-  const personalTransits = getPersonalTransits(planets, userData);
-  const majorIngresses = checkMajorIngresses(planets);
-  const detectedIngresses = detectPlanetaryIngresses(date, planets);
-  const allIngresses = [...majorIngresses, ...detectedIngresses];
-  const energy = getEnergyRating(moonPhase, mercuryRetro);
-  const aspects = calculateDailyAspects(planets);
-  const voc = getVoidOfCourseMoon(moonPhase);
-  const vocDetails = getVOCMoonDetails(date);
-  const dayColors = getDayColors(aspects, moonPhase);
-  const collectiveDayType = getDayType(aspects, moonPhase);
-  const exactLunarPhase = getExactLunarPhase(date);
-  const venusStarPoint = isVenusStarPointDay(date);
-  const dayRuler = getDayRuler(date);
+export const CalendarDay = memo(({ date, day, isToday, userData, onDayClick, activeChart, voiceMemos = [], onVoiceMemoClick }: CalendarDayProps) => {
+  const planets = useMemo(() => getCachedPlanetaryPositions(date), [date]);
+  const moonPhase = useMemo(() => getMoonPhase(date), [date]);
+  const mercuryRetro = useMemo(() => isMercuryRetrograde(date), [date]);
+  const aspects = useMemo(() => calculateDailyAspects(planets), [planets]);
+  const dayColors = useMemo(() => getDayColors(aspects, moonPhase), [aspects, moonPhase]);
+  const collectiveDayType = useMemo(() => getDayType(aspects, moonPhase), [aspects, moonPhase]);
+  const energy = useMemo(() => getEnergyRating(moonPhase, mercuryRetro), [moonPhase, mercuryRetro]);
+
+  const personalTransits = useMemo(() => getPersonalTransits(planets, userData), [planets, userData]);
+  const majorIngresses = useMemo(() => checkMajorIngresses(planets), [planets]);
+  const detectedIngresses = useMemo(() => detectPlanetaryIngresses(date, planets), [date, planets]);
+  const allIngresses = useMemo(() => [...majorIngresses, ...detectedIngresses], [majorIngresses, detectedIngresses]);
+
+  const voc = useMemo(() => getVoidOfCourseMoon(moonPhase), [moonPhase]);
+  const vocDetails = useMemo(() => getVOCMoonDetails(date), [date]);
+
+  const exactLunarPhase = useMemo(() => getExactLunarPhase(date), [date]);
+  const venusStarPoint = useMemo(() => isVenusStarPointDay(date), [date]);
+  const dayRuler = useMemo(() => getDayRuler(date), [date]);
 
   // Calculate transit-to-natal aspects if chart is selected
-  const transitAspects = activeChart 
-    ? calculateTransitAspects(date, planets, activeChart)
-    : [];
+  const transitAspects = useMemo(() => {
+    if (!activeChart) return [];
+    return calculateTransitAspects(date, planets, activeChart);
+  }, [activeChart, date, planets]);
 
   // If today contains an exact New/Full Moon moment, compute transits at the exact event time
   // so the daily label + key hits reflect the actual lunation activation.
-  const transitAspectsForDisplay = (() => {
+  const transitAspectsForDisplay = useMemo(() => {
     if (!activeChart || !exactLunarPhase) return transitAspects;
     if (exactLunarPhase.type !== 'New Moon' && exactLunarPhase.type !== 'Full Moon') return transitAspects;
 
-    const eventPlanets = getPlanetaryPositions(exactLunarPhase.time);
+    const eventPlanets = getCachedPlanetaryPositions(exactLunarPhase.time);
     return calculateTransitAspects(exactLunarPhase.time, eventPlanets, activeChart);
-  })();
+  }, [activeChart, exactLunarPhase, transitAspects]);
 
   // Categorize transits - only show ≤2° orb on calendar, ≤5° in Day Detail
-  const sortedTransits = getTopTransitAspects(transitAspectsForDisplay, transitAspectsForDisplay.length);
-  const { primary, northNode, asteroids, other } = categorizeTransits(sortedTransits, 2);
+  const sortedTransits = useMemo(
+    () => getTopTransitAspects(transitAspectsForDisplay, transitAspectsForDisplay.length),
+    [transitAspectsForDisplay]
+  );
+  const { primary, northNode, asteroids, other } = useMemo(
+    () => categorizeTransits(sortedTransits, 2),
+    [sortedTransits]
+  );
   
   // State for collapsible sections
   const [showNorthNode, setShowNorthNode] = useState(false);
@@ -144,23 +167,39 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
   const [showOther, setShowOther] = useState(false);
   
   // Get personal day type based on transits to YOUR chart
-  const personalDayType = activeChart 
-    ? getPersonalDayType(transitAspectsForDisplay)
-    : null;
+  const personalDayType = useMemo(() => {
+    if (!activeChart) return null;
+    return getPersonalDayType(transitAspectsForDisplay);
+  }, [activeChart, transitAspectsForDisplay]);
 
-  const dayData: DayData = {
-    date,
-    planets,
-    moonPhase,
-    mercuryRetro,
-    personalTransits,
-    majorIngresses: allIngresses,
-    energy,
-    aspects,
-    voc,
-    dayColors,
-    exactLunarPhase,
-  };
+  const dayData: DayData = useMemo(
+    () => ({
+      date,
+      planets,
+      moonPhase,
+      mercuryRetro,
+      personalTransits,
+      majorIngresses: allIngresses,
+      energy,
+      aspects,
+      voc,
+      dayColors,
+      exactLunarPhase,
+    }),
+    [
+      date,
+      planets,
+      moonPhase,
+      mercuryRetro,
+      personalTransits,
+      allIngresses,
+      energy,
+      aspects,
+      voc,
+      dayColors,
+      exactLunarPhase,
+    ]
+  );
 
   // Build background style based on day colors
   const bgStyle = dayColors.secondary
@@ -422,4 +461,6 @@ export const CalendarDay = ({ date, day, isToday, userData, onDayClick, activeCh
       )}
     </div>
   );
-};
+});
+
+CalendarDay.displayName = "CalendarDay";

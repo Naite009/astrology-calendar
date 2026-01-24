@@ -9,6 +9,7 @@ export type GuideSection =
   | "retrogrades" 
   | "aspects" 
   | "dignities" 
+  | "difficultplacements"
   | "fixedstars" 
   | "divinefeminine" 
   | "venuscycles" 
@@ -51,6 +52,7 @@ export const SECTION_TO_VIEW: Record<GuideSection, ViewMode> = {
   retrogrades: "month",
   aspects: "month",
   dignities: "decoder",
+  difficultplacements: "decoder",
   fixedstars: "month",
   divinefeminine: "month",
   venuscycles: "timing",
@@ -105,6 +107,7 @@ export const GUIDE_NAV_ITEMS: GuideNavItem[] = [
   { key: "aspects", label: "Aspects" },
   { key: "retrogrades", label: "Retrogrades" },
   { key: "dignities", label: "Dignities" },
+  { key: "difficultplacements", label: "Difficult Placements" },
   { key: "fixedstars", label: "Fixed Stars" },
   { key: "venuscycles", label: "Venus Cycles" },
   { key: "solararc", label: "Solar Arc" },
@@ -149,6 +152,7 @@ export function getTryItLabel(section: GuideSection): string {
     speeds: "Open Speeds",
     moonphases: "Open Moon Phases",
     dignities: "Open Decoder",
+    difficultplacements: "Open Decoder",
     solararc: "Open Decoder",
     progressions: "Open Decoder",
     vocmoon: "Open Timing",
