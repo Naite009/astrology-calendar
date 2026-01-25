@@ -342,6 +342,20 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
   }
 ];
 
+// Normalize aspect types (synastry uses "conjunction", directional uses "conjunct")
+const normalizeAspectType = (aspectType: string): string => {
+  const typeMap: Record<string, string> = {
+    'conjunction': 'conjunct',
+    'opposition': 'opposite',
+    'trine': 'trine',
+    'square': 'square',
+    'sextile': 'sextile',
+    'quincunx': 'quincunx'
+  };
+  const lower = aspectType.toLowerCase();
+  return typeMap[lower] || lower;
+};
+
 // Helper function to get directional interpretation
 export const getDirectionalInterpretation = (
   planet1: string,
@@ -349,15 +363,16 @@ export const getDirectionalInterpretation = (
   planet2: string,
   context: RelationshipContext
 ): DirectionalAspectInterpretation | null => {
-  // Normalize input
-  const aspectKey = `${planet1.toLowerCase()}_${aspect.toLowerCase()}_${planet2.toLowerCase()}`;
+  // Normalize input - convert "conjunction" to "conjunct", etc.
+  const normalizedAspect = normalizeAspectType(aspect);
+  const aspectKey = `${planet1.toLowerCase()}_${normalizedAspect}_${planet2.toLowerCase()}`;
   
   // Try exact match
   let found = directionalAspectDatabase.find(d => d.aspectKey === aspectKey);
   
   // Try reverse (e.g., saturn_conjunct_venus instead of venus_conjunct_saturn)
   if (!found) {
-    const reverseKey = `${planet2.toLowerCase()}_${aspect.toLowerCase()}_${planet1.toLowerCase()}`;
+    const reverseKey = `${planet2.toLowerCase()}_${normalizedAspect}_${planet1.toLowerCase()}`;
     found = directionalAspectDatabase.find(d => d.aspectKey === reverseKey);
     
     // If found reversed, swap the person labels in the returned object
