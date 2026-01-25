@@ -29,8 +29,9 @@ import { useVoiceMemos } from "@/hooks/useVoiceMemos";
 import { DayData, generateICalExport } from "@/lib/astrology";
 
 import { SynastryView } from "./SynastryView";
+import { RelationshipTimelineView } from "./RelationshipTimelineView";
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health";
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -148,6 +149,9 @@ export const AstroCalendar = () => {
     }
     if (viewMode === "health") {
       return "Health Astrology";
+    }
+    if (viewMode === "timeline") {
+      return "Relationship Timeline";
     }
     if (viewMode === "moon-phases") {
       return `${currentDate.getFullYear()} Moon Phases`;
@@ -432,6 +436,17 @@ export const AstroCalendar = () => {
                 Synastry
               </button>
               <button
+                onClick={() => setViewMode("timeline")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "timeline"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Calendar size={14} />
+                Timeline
+              </button>
+              <button
                 onClick={() => {
                   if (userNatalChart || savedCharts.length > 0) {
                     setViewMode("health");
@@ -645,6 +660,13 @@ export const AstroCalendar = () => {
 
         {viewMode === "synastry" && (
           <SynastryView
+            userNatalChart={userNatalChart}
+            savedCharts={savedCharts}
+          />
+        )}
+
+        {viewMode === "timeline" && (
+          <RelationshipTimelineView
             userNatalChart={userNatalChart}
             savedCharts={savedCharts}
           />
