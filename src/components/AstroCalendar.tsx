@@ -204,7 +204,7 @@ export const AstroCalendar = () => {
           </div>
           <div className="flex flex-wrap items-center gap-4">
             {/* View Toggle */}
-            <div className="flex gap-1 rounded-sm bg-secondary p-1">
+            <div className="flex flex-wrap gap-1 rounded-sm bg-secondary p-1">
               <button
                 onClick={() => setViewMode("month")}
                 className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
