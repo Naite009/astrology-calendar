@@ -187,11 +187,20 @@ function calculateShortTermPotential(
   
   score = Math.min(100, Math.max(0, score));
   
+  // Generate SPECIFIC descriptions based on what was actually found
   let description = '';
-  if (score >= 80) description = 'Excellent short-term chemistry. Strong immediate attraction and easy rapport.';
-  else if (score >= 65) description = 'Good short-term potential. Natural compatibility and enjoyable connection.';
-  else if (score >= 50) description = 'Moderate short-term dynamics. May take time to warm up to each other.';
-  else description = 'Challenging initial chemistry. Connection requires conscious effort.';
+  if (factors.length === 0) {
+    description = 'No major short-term chemistry indicators detected. Initial attraction may build slowly over time.';
+  } else if (score >= 80) {
+    description = `Strong initial chemistry! ${factors[0]}. Your first meetings are likely to feel exciting and natural.`;
+  } else if (score >= 65) {
+    const topFactor = factors[0] || 'Solid Venus-Mars dynamics';
+    description = `Good spark potential. ${topFactor}. You\'ll likely enjoy each other\'s company from the start.`;
+  } else if (score >= 50) {
+    description = `Moderate initial chemistry. ${factors.length > 0 ? factors[0] : 'Connection may develop gradually'}.`;
+  } else {
+    description = `Initial chemistry may require conscious effort. ${factors.length > 0 ? 'However: ' + factors[0] : 'Give it time—deeper connection can emerge.'}`;
+  }
   
   return { score, description, factors };
 }
@@ -308,11 +317,31 @@ function calculateLongTermPotential(
   
   score = Math.min(100, Math.max(0, score));
   
+  // Generate SPECIFIC descriptions based on actual findings
   let description = '';
-  if (score >= 75) description = 'Strong long-term potential. Solid foundation for lasting commitment.';
-  else if (score >= 55) description = 'Moderate long-term potential. Success depends on both partners\' commitment.';
-  else if (score >= 40) description = 'Limited long-term indicators. May be meant as shorter-term connection.';
-  else description = 'Challenging for long-term. Better as a growth catalyst than permanent partner.';
+  const hasStrongSaturn = factors.some(f => f.toLowerCase().includes('saturn'));
+  const hasGrowthAspects = factors.some(f => f.toLowerCase().includes('jupiter') || f.toLowerCase().includes('north node'));
+  const hasChallenges = factors.some(f => f.includes('danger') || f.includes('coldness') || f.includes('authority'));
+  
+  if (factors.length === 0) {
+    description = 'Limited long-term indicators found. This connection may be better suited for shorter-term experiences or conscious partnership building.';
+  } else if (score >= 75) {
+    if (hasStrongSaturn && hasGrowthAspects) {
+      description = `Strong foundation for lasting commitment. ${factors[0]}. Saturn provides staying power while Jupiter aspects ensure continued growth together.`;
+    } else {
+      description = `Solid long-term potential. ${factors[0]}. This connection has the structural support to weather challenges.`;
+    }
+  } else if (score >= 55) {
+    if (hasChallenges) {
+      description = `Long-term success is possible but requires addressing specific patterns: ${factors.find(f => f.includes('must') || f.includes('require')) || factors[0]}.`;
+    } else {
+      description = `Moderate long-term indicators. ${factors[0]}. Building commitment will require intentional effort from both.`;
+    }
+  } else if (score >= 40) {
+    description = `Limited long-term structural support. ${factors.length > 0 ? factors[0] : 'Consider whether this serves a shorter-term purpose.'}.`;
+  } else {
+    description = `This connection may serve as a growth catalyst rather than permanent partnership. ${factors.length > 0 ? 'Key pattern: ' + factors[0] : ''}.`;
+  }
   
   return { score, description, factors };
 }
