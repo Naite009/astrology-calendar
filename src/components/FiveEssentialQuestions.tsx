@@ -18,6 +18,8 @@ import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ThemeBreakdownGuide } from '@/components/ThemeBreakdownGuide';
+import { DirectionalAspectCard } from '@/components/synastry/DirectionalAspectCard';
+import { getDirectionalInterpretation } from '@/data/directionalAspectData';
 import { 
   ChevronDown, ChevronUp, Sun, Moon, Heart, Sparkles, Users, 
   Clock, GraduationCap, BookOpen, Lightbulb, AlertTriangle, 
@@ -876,6 +878,11 @@ const AspectCard = ({
   const [expanded, setExpanded] = useState(false);
   const expressions = generateAspectExpressions(planet1, planet2, aspect, personAName, personBName);
   
+  // Get directional interpretation if available
+  const directionalInterp = useMemo(() => {
+    return getDirectionalInterpretation(planet1, aspect, planet2, 'romance');
+  }, [planet1, aspect, planet2]);
+  
   const p1Symbol = PLANET_SYMBOLS[planet1] || planet1;
   const p2Symbol = PLANET_SYMBOLS[planet2] || planet2;
   const aspectSymbol = ASPECT_SYMBOLS[aspect] || aspect;
@@ -892,9 +899,16 @@ const AspectCard = ({
                   <span className="text-primary">{aspectSymbol} {aspect}</span>
                   <span>{personBName}'s {planet2} ({p2Symbol})</span>
                 </div>
-                {orb !== undefined && (
-                  <Badge variant="outline" className="mt-1 text-xs">{orb.toFixed(1)}° orb</Badge>
-                )}
+                <div className="flex items-center gap-2 mt-1">
+                  {orb !== undefined && (
+                    <Badge variant="outline" className="text-xs">{orb.toFixed(1)}° orb</Badge>
+                  )}
+                  {directionalInterp && (
+                    <Badge variant="secondary" className="text-xs">
+                      ↔️ Who feels what
+                    </Badge>
+                  )}
+                </div>
               </div>
               {expanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
             </div>
@@ -903,6 +917,16 @@ const AspectCard = ({
         
         <CollapsibleContent>
           <div className="p-4 space-y-4">
+            {/* Directional Aspect Analysis - Who Feels What */}
+            {directionalInterp && (
+              <DirectionalAspectCard
+                interpretation={directionalInterp}
+                context="romance"
+                personAName={personAName}
+                personBName={personBName}
+              />
+            )}
+            
             {/* The Energy */}
             <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
               <h4 className="font-medium text-sm mb-1 text-primary">The Energy</h4>
