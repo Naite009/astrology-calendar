@@ -27,8 +27,10 @@ export interface DirectionalAspectInterpretation {
   challengeLevel: number; // 1-10
   
   evolutionTimeline: {
-    year1_3: string;
-    year4_7: string;
-    year7_plus: string;
+    romance: { year1_3: string; year4_7: string; year7_plus: string };
+    friendship: { year1_3: string; year4_7: string; year7_plus: string };
+    business: { year1_3: string; year4_7: string; year7_plus: string };
+    creative: { year1_3: string; year4_7: string; year7_plus: string };
+    family: { childhood: string; adolescence: string; adulthood: string };
   };
 }
