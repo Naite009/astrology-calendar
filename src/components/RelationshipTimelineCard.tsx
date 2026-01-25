@@ -218,6 +218,14 @@ function getHowPartnerFeels(
       harmonic: `${partnerName}, ${natalOwnerName} is processing emotions maturely. They may want to create more stability in your home or emotional life together.`,
       tense: `${partnerName}, ${natalOwnerName} might feel emotionally restricted or cold. This isn't about you—Saturn is teaching them emotional resilience.`
     },
+    'Saturn-Venus': {
+      harmonic: `${partnerName}, ${natalOwnerName} is taking love seriously. They may want to formalize or deepen your commitment.`,
+      tense: `${partnerName}, ${natalOwnerName} might feel unappreciated or doubt whether love is enough. Reassure them without being clingy.`
+    },
+    'Saturn-Mars': {
+      harmonic: `${partnerName}, ${natalOwnerName}'s actions are disciplined and focused. Great time for tackling long-term projects together.`,
+      tense: `${partnerName}, ${natalOwnerName} may feel frustrated or blocked in taking action. Avoid adding pressure—let them work through it.`
+    },
     'Jupiter-Sun': {
       harmonic: `${partnerName}, ${natalOwnerName} is radiating confidence and optimism! They may want to expand horizons together—say yes to adventures.`,
       tense: `${partnerName}, ${natalOwnerName} might feel restless or overextend. Help them channel this growth energy constructively.`
@@ -226,6 +234,14 @@ function getHowPartnerFeels(
       harmonic: `${partnerName}, ${natalOwnerName} is feeling generous and romantic. Expect gifts, grand gestures, or desires to celebrate your love.`,
       tense: `${partnerName}, ${natalOwnerName} may overindulge in pleasure or spending. Gently help them stay balanced.`
     },
+    'Jupiter-Moon': {
+      harmonic: `${partnerName}, ${natalOwnerName} is emotionally expansive and nurturing. They may want to grow your home life or family together.`,
+      tense: `${partnerName}, ${natalOwnerName}'s emotions may feel bigger than usual. Give them space to process without taking it personally.`
+    },
+    'Jupiter-Mars': {
+      harmonic: `${partnerName}, ${natalOwnerName} is fired up with enthusiasm and ambition. Great time for starting new projects together.`,
+      tense: `${partnerName}, ${natalOwnerName} may be impulsive or overly aggressive in pursuing goals. Encourage patience.`
+    },
     'Mars-Venus': {
       harmonic: `${partnerName}, passion is ignited in ${natalOwnerName}. They may pursue you more actively or want to reignite chemistry.`,
       tense: `${partnerName}, ${natalOwnerName}'s desire may feel intense or impatient. Clear communication about pace helps.`
@@ -233,6 +249,65 @@ function getHowPartnerFeels(
     'Mars-Mars': {
       harmonic: `${partnerName}, ${natalOwnerName}'s drive and energy are amplified. Great for tackling projects together or active dates.`,
       tense: `${partnerName}, ${natalOwnerName} may seem more competitive or argumentative. Pick your battles wisely.`
+    },
+    'Mars-Sun': {
+      harmonic: `${partnerName}, ${natalOwnerName} feels energized and assertive. They may take charge in positive ways.`,
+      tense: `${partnerName}, ${natalOwnerName}'s ego may be activated. Avoid power struggles—let minor things go.`
+    },
+    'Mars-Moon': {
+      harmonic: `${partnerName}, ${natalOwnerName} is emotionally passionate. They may be more expressive about their feelings for you.`,
+      tense: `${partnerName}, ${natalOwnerName}'s emotions may be reactive. If they seem irritable, give space rather than engage.`
+    },
+    // Neptune aspects (dreamy, spiritual, potentially confusing)
+    'Neptune-Venus': {
+      harmonic: `${partnerName}, ${natalOwnerName} is experiencing a wave of romantic idealism. They may see you through rose-colored glasses—enjoy it, but stay grounded.`,
+      tense: `${partnerName}, ${natalOwnerName} may be confused about love or feel disillusioned. Don't take it personally—Neptune fogs the heart temporarily.`
+    },
+    'Neptune-Sun': {
+      harmonic: `${partnerName}, ${natalOwnerName} is in a creative, dreamy state. They may want to share spiritual or artistic experiences with you.`,
+      tense: `${partnerName}, ${natalOwnerName} may feel lost or unclear about their identity. Be a steady presence without trying to "fix" them.`
+    },
+    'Neptune-Moon': {
+      harmonic: `${partnerName}, ${natalOwnerName}'s intuition and empathy are heightened. They may feel deeply connected to you on a soul level.`,
+      tense: `${partnerName}, ${natalOwnerName}'s emotions may be foggy or overwhelming. Encourage grounding activities like walks in nature.`
+    },
+    'Neptune-Mars': {
+      harmonic: `${partnerName}, ${natalOwnerName}'s actions are inspired by idealism. They may want to do something meaningful together.`,
+      tense: `${partnerName}, ${natalOwnerName} may lack motivation or feel directionless. Patience is key—don't push.`
+    },
+    // Uranus aspects (sudden, liberating, unpredictable)
+    'Uranus-Venus': {
+      harmonic: `${partnerName}, ${natalOwnerName} craves excitement in love. Spontaneous dates or trying something new together will thrill them.`,
+      tense: `${partnerName}, ${natalOwnerName} may feel restless in routine. Give them space for independence—it strengthens the bond.`
+    },
+    'Uranus-Sun': {
+      harmonic: `${partnerName}, ${natalOwnerName} is feeling free-spirited and innovative. Support their unique ideas and personal growth.`,
+      tense: `${partnerName}, ${natalOwnerName} may be unpredictable or rebellious. This is about their need for authenticity, not rejection of you.`
+    },
+    'Uranus-Moon': {
+      harmonic: `${partnerName}, ${natalOwnerName}'s emotional life is awakening in new ways. They may share unconventional feelings or insights.`,
+      tense: `${partnerName}, ${natalOwnerName}'s moods may be erratic. Offer stability without trying to control their emotional process.`
+    },
+    'Uranus-Mars': {
+      harmonic: `${partnerName}, ${natalOwnerName} is ready for bold action and innovation. Great time for exciting new ventures together.`,
+      tense: `${partnerName}, ${natalOwnerName} may be impulsive or accident-prone. Encourage thoughtful action without dampening their spirit.`
+    },
+    // Pluto aspects (deep, transformative, intense)
+    'Pluto-Venus': {
+      harmonic: `${partnerName}, ${natalOwnerName} is experiencing profound love transformation. Your bond may deepen significantly.`,
+      tense: `${partnerName}, ${natalOwnerName} may be processing intense feelings about love, possibly including jealousy or control issues. Be patient and honest.`
+    },
+    'Pluto-Sun': {
+      harmonic: `${partnerName}, ${natalOwnerName} is stepping into their power. They may become more confident and magnetic.`,
+      tense: `${partnerName}, ${natalOwnerName} may be going through ego death and rebirth. Support their transformation without taking it personally.`
+    },
+    'Pluto-Moon': {
+      harmonic: `${partnerName}, ${natalOwnerName} is accessing deep emotional truth. Profound intimacy is possible now.`,
+      tense: `${partnerName}, ${natalOwnerName} may be processing intense emotions, possibly related to the past. Hold space without fixing.`
+    },
+    'Pluto-Mars': {
+      harmonic: `${partnerName}, ${natalOwnerName}'s willpower is supercharged. Great for accomplishing major goals together.`,
+      tense: `${partnerName}, ${natalOwnerName} may be confronting power issues. Avoid power struggles—let them process their inner battle.`
     }
   };
 
