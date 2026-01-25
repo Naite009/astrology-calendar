@@ -573,7 +573,30 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
     return calculateKarmicAnalysis(chart1, chart2);
   }, [chart1, chart2]);
 
+  // Calculate TRUE overall score as weighted average of all 5 focus types
+  // MUST be before safetyAssessment since it depends on this
+  const trueOverallScore = useMemo(() => {
+    if (!chart1 || !chart2) return null;
+    
+    const focusTypes: Array<'romantic' | 'friendship' | 'business' | 'creative' | 'family'> = 
+      ['romantic', 'friendship', 'business', 'creative', 'family'];
+    
+    const scores = focusTypes.map(focus => {
+      const analysis = analyzeRelationshipFocus(chart1, chart2, focus);
+      return analysis.overallStrength;
+    });
+    
+    // Calculate weighted average (all equal weight)
+    const average = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+    
+    return {
+      overall: average,
+      breakdown: focusTypes.map((focus, i) => ({ focus, score: scores[i] }))
+    };
+  }, [chart1, chart2]);
+
   // Compute safety assessment from karmic analysis
+  // Factor in compatibility - high compatibility connections need higher threshold for professional support warning
   const safetyAssessment = useMemo((): SafetyAssessment | null => {
     if (!karmicAnalysis) return null;
     
@@ -598,10 +621,18 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
         type: flag.includes('Pluto') ? 'Power Dynamics' : flag.includes('Saturn') ? 'Restriction' : 'Intensity',
         severity,
         description: flag,
-        mitigation: 'Maintain strong boundaries and self-awareness. Consider professional support if patterns feel overwhelming.'
+        mitigation: 'Maintain strong boundaries and self-awareness.'
       });
     });
 
+    // Get compatibility score if available
+    const compatScore = trueOverallScore?.overall || 0;
+    
+    // Adjust thresholds based on compatibility
+    // High compatibility (60%+) means strong positive indicators exist alongside challenges
+    // This is common in intense, transformative relationships - not inherently dangerous
+    const adjustedRiskThreshold = compatScore >= 60 ? 75 : compatScore >= 45 ? 60 : 50;
+    
     const safetyLevel: SafetyAssessment['safetyLevel'] = 
       riskScore >= 60 ? 'high_risk' : 
       riskScore >= 40 ? 'moderate_risk' : 
@@ -618,16 +649,24 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
     if (northNodeCount >= 2) {
       greenFlags.push('Multiple North Node contacts - supports mutual evolution');
     }
+    // Add green flag for high compatibility with intensity
+    if (compatScore >= 60 && riskScore >= 30) {
+      greenFlags.push('High compatibility suggests transformative potential, not just challenge');
+    }
+
+    // Only recommend professional support for genuinely concerning patterns
+    // Not just "intense" connections with high compatibility
+    const professionalSupportRecommended = riskScore >= adjustedRiskThreshold;
 
     return {
       safetyLevel,
       riskScore: Math.min(100, riskScore),
       dangerIndicators,
       greenFlags,
-      proceedWithCaution: riskScore >= 30,
-      professionalSupportRecommended: riskScore >= 50
+      proceedWithCaution: riskScore >= 30 && !professionalSupportRecommended,
+      professionalSupportRecommended
     };
-  }, [karmicAnalysis]);
+  }, [karmicAnalysis, trueOverallScore]);
 
   // Calculate relationship potential (short-term vs long-term)
   const relationshipPotential = useMemo(() => {
@@ -641,27 +680,6 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
     if (!chart1 || !chart2) return null;
     const compositeData = calculateCompositeChart(chart1, chart2);
     return calculatePurposeAlignment(chart1, chart2, compositeData.interpretation);
-  }, [chart1, chart2]);
-
-  // Calculate TRUE overall score as weighted average of all 5 focus types
-  const trueOverallScore = useMemo(() => {
-    if (!chart1 || !chart2) return null;
-    
-    const focusTypes: Array<'romantic' | 'friendship' | 'business' | 'creative' | 'family'> = 
-      ['romantic', 'friendship', 'business', 'creative', 'family'];
-    
-    const scores = focusTypes.map(focus => {
-      const analysis = analyzeRelationshipFocus(chart1, chart2, focus);
-      return analysis.overallStrength;
-    });
-    
-    // Calculate weighted average (all equal weight)
-    const average = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
-    
-    return {
-      overall: average,
-      breakdown: focusTypes.map((focus, i) => ({ focus, score: scores[i] }))
-    };
   }, [chart1, chart2]);
 
   // Handle adding/removing/changing people
