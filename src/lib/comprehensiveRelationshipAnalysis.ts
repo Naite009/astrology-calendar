@@ -132,8 +132,8 @@ export function analyzeRelationship(
   // 1. Run your existing synastry analysis
   const synastryAnalysis = {}; // Your existing synastry function here
   
-  // 2. Run karmic analysis
-  const karmicAnalysis = calculateKarmicAnalysis(chart1, chart2);
+  // 2. Run karmic analysis with focus
+  const karmicAnalysis = calculateKarmicAnalysis(chart1, chart2, focus);
   
   // 3. Calculate composite chart
   const compositeChart = calculateCompositeChart(chart1, chart2, person1Name, person2Name);
