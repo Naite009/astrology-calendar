@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Heart, Users, Briefcase, GraduationCap, Sparkles, Palette, AlertTriangle, Flame, Moon, ChevronDown, ChevronUp, Info, Home, HelpCircle, Handshake, Lightbulb, CheckCircle2, XCircle, Circle, UserPlus, X, Calendar, TrendingUp, Compass, BookOpen } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { generateAdvancedSynastryReport, RelationshipTypeScore, HouseOverlay, KarmicIndicator } from '@/lib/synastryAdvanced';
@@ -9,6 +9,7 @@ import { analyzeGroupDynamics, GroupDynamicsReport } from '@/lib/groupDynamicsAn
 import { analyzeShadowDynamics } from '@/lib/shadowIndicators';
 import calculateKarmicAnalysis from '@/lib/karmicAnalysis';
 import { calculateRelationshipPotential, calculatePurposeAlignment } from '@/lib/relationshipPotentialCalculator';
+import { FamilyRelationshipContext } from '@/lib/familyRelationshipTypes';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -31,6 +32,7 @@ import { RelationshipPotentialCard } from './RelationshipPotentialCard';
 import { PurposeAlignmentCard } from './PurposeAlignmentCard';
 import { RelationshipTimelineCard } from './RelationshipTimelineCard';
 import { FiveEssentialQuestions } from './FiveEssentialQuestions';
+import { FamilyRelationshipSelector } from './FamilyRelationshipSelector';
 import { format } from 'date-fns';
 
 interface SynastryViewProps {
@@ -568,7 +570,15 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
     return analyzeShadowDynamics(chart1, chart2, chart1.name, chart2.name);
   }, [chart1, chart2]);
 
-  // Get karmic analysis using the new professional system - NOW FOCUS-AWARE
+  // Family relationship context state
+  const [familyContext, setFamilyContext] = useState<FamilyRelationshipContext | null>(null);
+  
+  // Handler for family context changes
+  const handleFamilyContextChange = useCallback((context: FamilyRelationshipContext | null) => {
+    setFamilyContext(context);
+  }, []);
+
+  // Get karmic analysis using the new professional system - NOW FOCUS-AWARE + FAMILY-AWARE
   const karmicAnalysis = useMemo(() => {
     if (!chart1 || !chart2) return null;
     // Map the relationshipFocus to karmic analysis focus type
@@ -582,8 +592,14 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
       'creative': 'creative'
     };
     const karmicFocus = focusMap[relationshipFocus] || 'romance';
-    return calculateKarmicAnalysis(chart1, chart2, karmicFocus);
-  }, [chart1, chart2, relationshipFocus]);
+    // Pass family context when focus is family
+    return calculateKarmicAnalysis(
+      chart1, 
+      chart2, 
+      karmicFocus, 
+      karmicFocus === 'family' ? familyContext || undefined : undefined
+    );
+  }, [chart1, chart2, relationshipFocus, familyContext]);
 
   // Calculate TRUE overall score as weighted average of all 5 focus types
   // MUST be before safetyAssessment since it depends on this
@@ -840,6 +856,17 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                 </TooltipProvider>
               ))}
             </div>
+            
+            {/* Family Relationship Selector - Shows when Family focus is selected */}
+            {relationshipFocus === 'family' && chart1 && chart2 && (
+              <div className="w-full max-w-lg mt-4">
+                <FamilyRelationshipSelector
+                  userName={chart1.name}
+                  otherPersonName={chart2.name}
+                  onContextChange={handleFamilyContextChange}
+                />
+              </div>
+            )}
           </div>
 
           {/* OVERALL SCORE BANNER - Shows first for all pair analyses */}
