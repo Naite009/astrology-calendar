@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Heart, Users, Briefcase, GraduationCap, Sparkles, Palette, AlertTriangle, Flame, Moon, ChevronDown, ChevronUp, Info, Home, HelpCircle, Handshake, Lightbulb, CheckCircle2, XCircle, Circle, UserPlus, X, Calendar, TrendingUp, Compass } from 'lucide-react';
+import { Heart, Users, Briefcase, GraduationCap, Sparkles, Palette, AlertTriangle, Flame, Moon, ChevronDown, ChevronUp, Info, Home, HelpCircle, Handshake, Lightbulb, CheckCircle2, XCircle, Circle, UserPlus, X, Calendar, TrendingUp, Compass, BookOpen } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { generateAdvancedSynastryReport, RelationshipTypeScore, HouseOverlay, KarmicIndicator } from '@/lib/synastryAdvanced';
 import { calculateCompositeChart, calculateDavisonChart, getPlanetSymbol } from '@/lib/compositeChart';
@@ -30,6 +30,7 @@ import { KarmicAnalysisCard } from './KarmicAnalysisCard';
 import { RelationshipPotentialCard } from './RelationshipPotentialCard';
 import { PurposeAlignmentCard } from './PurposeAlignmentCard';
 import { RelationshipTimelineCard } from './RelationshipTimelineCard';
+import { FiveEssentialQuestions } from './FiveEssentialQuestions';
 import { format } from 'date-fns';
 
 interface SynastryViewProps {
@@ -668,19 +669,24 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
     };
   }, [karmicAnalysis, trueOverallScore]);
 
+  // Get composite interpretation for 5 Essential Questions
+  const compositeInterpretation = useMemo(() => {
+    if (!chart1 || !chart2) return null;
+    const compositeData = calculateCompositeChart(chart1, chart2);
+    return compositeData.interpretation;
+  }, [chart1, chart2]);
+
   // Calculate relationship potential (short-term vs long-term)
   const relationshipPotential = useMemo(() => {
     if (!chart1 || !chart2) return null;
-    const compositeData = calculateCompositeChart(chart1, chart2);
-    return calculateRelationshipPotential(chart1, chart2, karmicAnalysis || undefined, compositeData.interpretation);
-  }, [chart1, chart2, karmicAnalysis]);
+    return calculateRelationshipPotential(chart1, chart2, karmicAnalysis || undefined, compositeInterpretation || undefined);
+  }, [chart1, chart2, karmicAnalysis, compositeInterpretation]);
 
   // Calculate purpose alignment
   const purposeAlignment = useMemo(() => {
     if (!chart1 || !chart2) return null;
-    const compositeData = calculateCompositeChart(chart1, chart2);
-    return calculatePurposeAlignment(chart1, chart2, compositeData.interpretation);
-  }, [chart1, chart2]);
+    return calculatePurposeAlignment(chart1, chart2, compositeInterpretation || undefined);
+  }, [chart1, chart2, compositeInterpretation]);
 
   // Handle adding/removing/changing people
   const addPerson = (id: string) => {
@@ -906,25 +912,45 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                         />
                       </div>
                       
-                      {/* NEW: Safety Assessment - Shows first for awareness */}
-                      {safetyAssessment && (
-                        <SafetyAssessmentCard 
-                          assessment={safetyAssessment} 
-                          chart1Name={chart1.name} 
-                          chart2Name={chart2.name} 
-                        />
-                      )}
+                      {/* THE 5 ESSENTIAL QUESTIONS - Primary educational structure */}
+                      <FiveEssentialQuestions
+                        chart1={chart1}
+                        chart2={chart2}
+                        report={report}
+                        karmicAnalysis={karmicAnalysis}
+                        compositeInterpretation={compositeInterpretation}
+                      />
                       
-                      {/* NEW: Karmic Analysis - Soul-level connection insights */}
-                      {karmicAnalysis && (
-                        <KarmicAnalysisCard 
-                          analysis={karmicAnalysis} 
-                          chart1Name={chart1.name} 
-                          chart2Name={chart2.name} 
-                        />
-                      )}
+                      {/* Additional Technical Views - Expandable */}
+                      <Collapsible>
+                        <CollapsibleTrigger className="w-full flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-secondary/30 transition-colors">
+                          <span className="font-medium flex items-center gap-2">
+                            <BookOpen size={18} />
+                            View Additional Analysis Tools
+                          </span>
+                          <ChevronDown size={18} />
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="mt-4 space-y-8">
+                          {/* Safety Assessment */}
+                          {safetyAssessment && (
+                            <SafetyAssessmentCard 
+                              assessment={safetyAssessment} 
+                              chart1Name={chart1.name} 
+                              chart2Name={chart2.name} 
+                            />
+                          )}
+                          
+                          {/* Karmic Analysis Card */}
+                          {karmicAnalysis && (
+                            <KarmicAnalysisCard 
+                              analysis={karmicAnalysis} 
+                              chart1Name={chart1.name} 
+                              chart2Name={chart2.name} 
+                            />
+                          )}
+                        </CollapsibleContent>
+                      </Collapsible>
                       
-                      {/* Synastry Wheel Visualization */}
                       <section className="flex flex-col items-center">
                         <SynastryWheelSimple chart1={chart1} chart2={chart2} size={420} />
                       </section>
