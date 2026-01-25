@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { AlertTriangle, Shield, ShieldCheck, ShieldAlert, ChevronDown, ChevronUp, AlertCircle, CheckCircle2, Heart } from 'lucide-react';
+import { Lightbulb, ChevronDown, ChevronUp, CheckCircle2, Heart, Sparkles, BookOpen, Users, ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 export type SafetyLevel = 'high_risk' | 'moderate_risk' | 'low_risk' | 'safe';
@@ -29,123 +28,287 @@ interface SafetyAssessmentCardProps {
   chart2Name: string;
 }
 
-const safetyConfig: Record<SafetyLevel, { 
-  icon: React.ReactNode; 
-  color: string; 
-  bgColor: string; 
+// Planet symbols for educational display
+const planetSymbols: Record<string, string> = {
+  Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀', Mars: '♂',
+  Jupiter: '♃', Saturn: '♄', Uranus: '♅', Neptune: '♆', Pluto: '♇',
+  NorthNode: '☊', SouthNode: '☋', Chiron: '⚷'
+};
+
+// Aspect symbols
+const aspectSymbols: Record<string, string> = {
+  conjunction: '☌', opposition: '☍', square: '□', trine: '△', sextile: '⚹'
+};
+
+// Educational labels instead of severity
+const intensityLabels: Record<DangerIndicator['severity'], { label: string; color: string }> = {
+  critical: { label: 'Intense pattern worth understanding', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' },
+  high: { label: 'Complex dynamic requiring awareness', color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300' },
+  moderate: { label: 'Growth opportunity', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' },
+  low: { label: 'Minor pattern to notice', color: 'bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-300' }
+};
+
+// Educational framing based on level
+const educationalConfig: Record<SafetyLevel, {
+  title: string;
+  subtitle: string;
+  icon: React.ReactNode;
+  bgGradient: string;
   borderColor: string;
-  label: string;
-  description: string;
 }> = {
   high_risk: {
-    icon: <ShieldAlert size={28} />,
-    color: 'text-destructive',
-    bgColor: 'bg-destructive/10',
-    borderColor: 'border-destructive',
-    label: 'High Risk',
-    description: 'Multiple concerning patterns detected. Professional guidance strongly recommended.'
+    title: 'Relationship Dynamics to Understand',
+    subtitle: 'This relationship has several intense patterns that benefit from conscious awareness',
+    icon: <BookOpen size={24} />,
+    bgGradient: 'from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20',
+    borderColor: 'border-purple-200 dark:border-purple-800'
   },
   moderate_risk: {
-    icon: <AlertTriangle size={28} />,
-    color: 'text-amber-600 dark:text-amber-400',
-    bgColor: 'bg-amber-50 dark:bg-amber-950/30',
-    borderColor: 'border-amber-400',
-    label: 'Moderate Risk',
-    description: 'Some challenging dynamics present. Proceed with awareness and clear boundaries.'
+    title: 'Relationship Dynamics to Understand',
+    subtitle: 'This relationship has some intense patterns worth being conscious of',
+    icon: <BookOpen size={24} />,
+    bgGradient: 'from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20',
+    borderColor: 'border-blue-200 dark:border-blue-800'
   },
   low_risk: {
-    icon: <Shield size={28} />,
-    color: 'text-blue-600 dark:text-blue-400',
-    bgColor: 'bg-blue-50 dark:bg-blue-950/30',
-    borderColor: 'border-blue-400',
-    label: 'Low Risk',
-    description: 'Minor growth areas to navigate. Generally healthy connection.'
+    title: 'Generally Harmonious Connection',
+    subtitle: 'This relationship has mostly supportive patterns with a few growth areas',
+    icon: <Sparkles size={24} />,
+    bgGradient: 'from-teal-50 to-green-50 dark:from-teal-950/20 dark:to-green-950/20',
+    borderColor: 'border-teal-200 dark:border-teal-800'
   },
   safe: {
-    icon: <ShieldCheck size={28} />,
-    color: 'text-green-600 dark:text-green-400',
-    bgColor: 'bg-green-50 dark:bg-green-950/30',
-    borderColor: 'border-green-400',
-    label: 'Safe',
-    description: 'Healthy connection with strong green flags. Foundation for growth.'
+    title: 'Naturally Supportive Connection',
+    subtitle: 'This relationship has strong harmonious patterns and healthy foundations',
+    icon: <Heart size={24} />,
+    bgGradient: 'from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20',
+    borderColor: 'border-green-200 dark:border-green-800'
   }
 };
 
-const severityColors: Record<DangerIndicator['severity'], string> = {
-  critical: 'bg-destructive text-destructive-foreground',
-  high: 'bg-red-500 text-white',
-  moderate: 'bg-amber-500 text-white',
-  low: 'bg-yellow-500 text-black'
-};
+// Parse description to extract planets and aspect
+function parseAspectDescription(description: string): {
+  planet1: string;
+  planet2: string;
+  aspect: string;
+} | null {
+  // Match patterns like "Pluto square Moon" or "Pluto conjunction Venus"
+  const aspectMatch = description.match(/(Pluto|Saturn|Mars|Neptune|Uranus|Chiron)\s+(square|conjunction|opposition|trine|sextile)\s+(Sun|Moon|Venus|Mars|Mercury)/i);
+  if (aspectMatch) {
+    return {
+      planet1: aspectMatch[1],
+      aspect: aspectMatch[2].toLowerCase(),
+      planet2: aspectMatch[3]
+    };
+  }
+  
+  // Match "8th house" patterns
+  if (description.includes('8th house')) {
+    return { planet1: 'Multiple planets', aspect: 'overlay', planet2: '8th House' };
+  }
+  
+  return null;
+}
+
+// Generate personalized explanation based on the dynamic
+function generatePersonalizedExplanation(
+  description: string,
+  personAName: string,
+  personBName: string
+): {
+  whatThisMeans: string;
+  howItShowsUp: string[];
+  whatToBeAwareOf: { forA: string; forB: string };
+  growthOpportunity: string;
+  planetMeanings?: { planet1: string; planet2: string };
+} {
+  const parsed = parseAspectDescription(description);
+  
+  // Pluto-Moon dynamics
+  if (description.includes('Pluto') && description.includes('Moon')) {
+    return {
+      whatThisMeans: `${personAName} may unconsciously trigger deep emotional responses in ${personBName}. ${personBName} might feel emotionally controlled or manipulated, even if ${personAName} doesn't intend this.`,
+      howItShowsUp: [
+        `${personBName} feels like they can't express emotions freely around ${personAName}`,
+        `${personAName} may try to "fix" or control ${personBName}'s emotional reactions`,
+        `Intense emotional moments where ${personBName} feels overwhelmed`
+      ],
+      whatToBeAwareOf: {
+        forA: `Notice if you're trying to change how ${personBName} feels. Let them have their emotions without needing to transform or fix them.`,
+        forB: `Your emotions are valid. If you feel controlled or manipulated, speak up early. You don't need permission to feel.`
+      },
+      growthOpportunity: `This aspect can lead to profound emotional transformation if ${personBName} learns emotional sovereignty and ${personAName} learns to respect emotional boundaries. The intensity can become healing rather than overwhelming.`,
+      planetMeanings: {
+        planet1: 'Pluto represents deep transformation, power, and unconscious drives. In relationships, Pluto brings intensity and the urge to transform.',
+        planet2: 'Moon represents emotions, nurturing needs, and our inner child. In relationships, Moon shows how we need to feel safe and emotionally connected.'
+      }
+    };
+  }
+  
+  // Pluto-Venus dynamics
+  if (description.includes('Pluto') && description.includes('Venus')) {
+    return {
+      whatThisMeans: `${personAName} and ${personBName} experience intense attraction that can feel almost obsessive. This creates deep bonding but also potential for jealousy or possessiveness.`,
+      howItShowsUp: [
+        `Magnetic attraction that feels fated or "meant to be"`,
+        `${personAName} may feel possessive or want to "own" the relationship`,
+        `Power dynamics around love, affection, or money`,
+        `Difficulty letting go if the relationship ends`
+      ],
+      whatToBeAwareOf: {
+        forA: `Notice when attraction becomes possessiveness. Love freely without needing to control.`,
+        forB: `Your worthiness isn't determined by how much they desire you. Maintain your sense of self.`
+      },
+      growthOpportunity: `This aspect creates the potential for deeply transformative love that changes both of you forever. The key is channeling intensity into growth rather than control.`,
+      planetMeanings: {
+        planet1: 'Pluto represents obsessive desire, transformation through crisis, and the urge to merge completely.',
+        planet2: 'Venus represents love, values, and what we find beautiful. In relationships, Venus shows how we give and receive affection.'
+      }
+    };
+  }
+  
+  // Saturn-Moon dynamics
+  if (description.includes('Saturn') && description.includes('Moon')) {
+    return {
+      whatThisMeans: `${personAName} may come across as emotionally cold or critical to ${personBName}. ${personBName} might feel their emotions aren't validated or that they need to "grow up."`,
+      howItShowsUp: [
+        `${personBName} feels emotionally unsupported or criticized`,
+        `${personAName} may seem dismissive of ${personBName}'s feelings`,
+        `A parent-child dynamic where ${personAName} seems like the "adult"`,
+        `${personBName} suppresses emotions to seem more acceptable`
+      ],
+      whatToBeAwareOf: {
+        forA: `Validate emotions before offering solutions. Not everything needs to be fixed—sometimes people just need to feel heard.`,
+        forB: `Your emotional needs are legitimate, not immature. Don't shrink yourself to seem more acceptable.`
+      },
+      growthOpportunity: `This aspect can create deep emotional maturity and stability if ${personAName} learns to nurture rather than critique, and ${personBName} learns that boundaries aren't rejection.`,
+      planetMeanings: {
+        planet1: 'Saturn represents structure, responsibility, and lessons. In relationships, Saturn brings commitment but also criticism and restriction.',
+        planet2: 'Moon represents emotional needs and the inner child. It shows what we need to feel safe and nurtured.'
+      }
+    };
+  }
+  
+  // Saturn-Sun dynamics
+  if (description.includes('Saturn') && description.includes('Sun')) {
+    return {
+      whatThisMeans: `${personAName} may seem to restrict or criticize ${personBName}'s self-expression. ${personBName} might feel judged or like they can never quite measure up.`,
+      howItShowsUp: [
+        `${personBName} feels their confidence diminished around ${personAName}`,
+        `${personAName} takes on an authority role, intentionally or not`,
+        `${personBName} works harder to "earn" approval`
+      ],
+      whatToBeAwareOf: {
+        forA: `Celebrate their wins. Your respect means more to them than you realize.`,
+        forB: `Your worth isn't measured by their approval. Shine regardless.`
+      },
+      growthOpportunity: `This aspect can build lasting respect and help ${personBName} develop genuine self-confidence that doesn't depend on external validation.`,
+      planetMeanings: {
+        planet1: 'Saturn represents authority, criticism, and structure.',
+        planet2: 'Sun represents identity, ego, and life force—our core sense of self.'
+      }
+    };
+  }
+
+  // 8th house dynamics
+  if (description.includes('8th house')) {
+    return {
+      whatThisMeans: `Multiple planets falling into the 8th house creates intense psychological connection. This can feel like you're merging at a soul level—which is powerful but requires boundaries.`,
+      howItShowsUp: [
+        `Conversations naturally go to deep, taboo, or psychological topics`,
+        `Difficulty maintaining separate identities`,
+        `Intense physical and emotional attraction`,
+        `Shared resources or finances become complicated`
+      ],
+      whatToBeAwareOf: {
+        forA: `Maintain your separate identity. You can connect deeply without losing yourself.`,
+        forB: `Same applies—merging completely isn't love, it's enmeshment.`
+      },
+      growthOpportunity: `This connection can facilitate profound transformation if both people maintain their separate sense of self while choosing to be vulnerable with each other.`
+    };
+  }
+  
+  // Mars dynamics
+  if (description.includes('Mars')) {
+    return {
+      whatThisMeans: `There's significant activation energy between you. This creates passion but also potential for conflict if anger isn't expressed healthily.`,
+      howItShowsUp: [
+        `Arguments can escalate quickly`,
+        `Strong physical/sexual chemistry`,
+        `Competitiveness with each other`,
+        `Both feeling the need to "win" disagreements`
+      ],
+      whatToBeAwareOf: {
+        forA: `Pause before reacting. Your intensity can feel aggressive even when you don't intend it.`,
+        forB: `You don't have to match their energy. De-escalation is strength, not weakness.`
+      },
+      growthOpportunity: `This dynamic creates the energy to actually DO things together. Channel the fire into shared goals rather than conflict.`
+    };
+  }
+  
+  // Default fallback
+  return {
+    whatThisMeans: `This pattern creates intensity in your relationship that benefits from conscious awareness.`,
+    howItShowsUp: [
+      `Moments of tension that feel bigger than the situation warrants`,
+      `Strong reactions that seem to come from nowhere`,
+      `Patterns that repeat despite wanting to change`
+    ],
+    whatToBeAwareOf: {
+      forA: `Stay curious about your reactions. Ask "why does this trigger me?" instead of just reacting.`,
+      forB: `Same for you—your reactions carry information worth understanding.`
+    },
+    growthOpportunity: `Awareness is the first step. By understanding this pattern, you can work with it consciously rather than being controlled by it.`
+  };
+}
 
 export const SafetyAssessmentCard = ({ assessment, chart1Name, chart2Name }: SafetyAssessmentCardProps) => {
-  const [showDetails, setShowDetails] = useState(assessment.safetyLevel === 'high_risk');
-  const config = safetyConfig[assessment.safetyLevel];
+  const [showDetails, setShowDetails] = useState(assessment.dangerIndicators.length > 0);
+  const config = educationalConfig[assessment.safetyLevel];
+  
+  const hasPatterns = assessment.dangerIndicators.length > 0;
   
   return (
-    <div className={`rounded-xl border-2 ${config.borderColor} ${config.bgColor} overflow-hidden`}>
+    <div className={`rounded-xl border-2 ${config.borderColor} bg-gradient-to-br ${config.bgGradient} overflow-hidden`}>
       {/* Header */}
       <div className="p-6">
         <div className="flex items-start gap-4">
-          <div className={`${config.color} flex-shrink-0`}>
+          <div className="p-3 rounded-full bg-background/80 text-primary flex-shrink-0">
             {config.icon}
           </div>
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <h3 className={`text-xl font-semibold ${config.color}`}>
-                {config.label}
-              </h3>
-              <Badge variant="outline" className="font-mono">
-                {100 - assessment.riskScore}% Safety Score
-              </Badge>
-            </div>
+            <h3 className="text-xl font-semibold text-foreground mb-1">
+              {config.title}
+            </h3>
             <p className="text-sm text-muted-foreground">
-              {config.description}
+              {config.subtitle}
             </p>
-            
-            {/* Risk Bar */}
-            <div className="mt-4">
-              <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                <span>Risk Level</span>
-                <span>{assessment.riskScore}%</span>
-              </div>
-              <Progress 
-                value={assessment.riskScore} 
-                className={`h-2 ${
-                  assessment.riskScore >= 60 ? '[&>div]:bg-destructive' :
-                  assessment.riskScore >= 40 ? '[&>div]:bg-amber-500' :
-                  assessment.riskScore >= 20 ? '[&>div]:bg-yellow-500' :
-                  '[&>div]:bg-green-500'
-                }`}
-              />
-            </div>
           </div>
         </div>
         
-        {/* Critical Warnings - Always visible for high/moderate risk */}
-        {assessment.safetyLevel !== 'safe' && assessment.safetyLevel !== 'low_risk' && (
+        {/* Context Message - Educational framing */}
+        {hasPatterns && (
           <div className="mt-4 p-4 rounded-lg bg-background/80 border">
-            {assessment.professionalSupportRecommended && (
-              <div className="flex items-center gap-2 text-sm font-medium text-destructive mb-2">
-                <AlertCircle size={16} />
-                Professional support recommended before deepening this connection
+            <div className="flex items-start gap-3">
+              <Lightbulb size={18} className="text-amber-500 flex-shrink-0 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-medium text-foreground mb-1">Understanding these patterns</p>
+                <p className="text-muted-foreground">
+                  Having challenging aspects doesn't mean the relationship is doomed—it means there are 
+                  specific growth areas to be conscious of. Many deeply fulfilling relationships have 
+                  intense aspects; what matters is how you work with them.
+                </p>
               </div>
-            )}
-            {assessment.proceedWithCaution && !assessment.professionalSupportRecommended && (
-              <div className="flex items-center gap-2 text-sm font-medium text-amber-600 dark:text-amber-400">
-                <AlertTriangle size={16} />
-                Proceed with clear boundaries and self-awareness
-              </div>
-            )}
+            </div>
           </div>
         )}
         
-        {/* Green Flags for safe relationships */}
-        {(assessment.safetyLevel === 'safe' || assessment.safetyLevel === 'low_risk') && assessment.greenFlags.length > 0 && (
+        {/* Green Flags Section */}
+        {assessment.greenFlags.length > 0 && (
           <div className="mt-4 p-4 rounded-lg bg-green-100/50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
             <div className="flex items-center gap-2 text-sm font-medium text-green-700 dark:text-green-300 mb-2">
               <Heart size={16} />
-              Green Flags Detected
+              What's Working Well
             </div>
             <ul className="space-y-1">
               {assessment.greenFlags.map((flag, i) => (
@@ -159,70 +322,129 @@ export const SafetyAssessmentCard = ({ assessment, chart1Name, chart2Name }: Saf
         )}
       </div>
       
-      {/* Expandable Details */}
-      {(assessment.dangerIndicators.length > 0 || assessment.greenFlags.length > 0) && (
+      {/* Expandable Dynamics Education */}
+      {hasPatterns && (
         <Collapsible open={showDetails} onOpenChange={setShowDetails}>
-          <CollapsibleTrigger className="w-full px-6 py-3 border-t bg-background/50 hover:bg-background/80 transition-colors flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <CollapsibleTrigger className="w-full px-6 py-3 border-t bg-background/50 hover:bg-background/80 transition-colors flex items-center justify-center gap-2 text-sm">
+            <Users size={16} className="text-primary" />
             {showDetails ? (
               <>
                 <ChevronUp size={16} />
-                Hide detailed analysis
+                Hide dynamics breakdown
               </>
             ) : (
               <>
                 <ChevronDown size={16} />
-                View detailed analysis ({assessment.dangerIndicators.length} indicator{assessment.dangerIndicators.length !== 1 ? 's' : ''})
+                Understand the {assessment.dangerIndicators.length} pattern{assessment.dangerIndicators.length !== 1 ? 's' : ''} between {chart1Name} & {chart2Name}
               </>
             )}
           </CollapsibleTrigger>
           
           <CollapsibleContent>
-            <div className="px-6 py-4 border-t bg-background/30 space-y-4">
-              {/* Danger Indicators */}
-              {assessment.dangerIndicators.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-sm mb-3">Areas Requiring Awareness</h4>
-                  <ScrollArea className="max-h-64">
-                    <div className="space-y-3">
-                      {assessment.dangerIndicators.map((indicator, i) => (
-                        <div 
-                          key={i} 
-                          className="p-3 rounded-lg border bg-background"
-                        >
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge className={severityColors[indicator.severity]}>
-                              {indicator.severity}
-                            </Badge>
-                            <span className="font-medium text-sm">{indicator.type}</span>
+            <div className="px-6 py-4 border-t bg-background/30 space-y-6">
+              <ScrollArea className="max-h-[600px]">
+                {assessment.dangerIndicators.map((indicator, i) => {
+                  const parsed = parseAspectDescription(indicator.description);
+                  const explanation = generatePersonalizedExplanation(
+                    indicator.description,
+                    chart1Name,
+                    chart2Name
+                  );
+                  
+                  return (
+                    <div key={i} className="mb-6 last:mb-0 p-4 rounded-xl border bg-background">
+                      {/* Pattern Header */}
+                      <div className="mb-4">
+                        <Badge className={intensityLabels[indicator.severity].color} variant="secondary">
+                          {intensityLabels[indicator.severity].label}
+                        </Badge>
+                        
+                        {/* Show the actual relationship dynamic with names */}
+                        {parsed && (
+                          <div className="mt-3">
+                            <div className="text-lg font-semibold text-foreground">
+                              {chart1Name}'s {parsed.planet1} {parsed.aspect} {chart2Name}'s {parsed.planet2}
+                            </div>
+                            <div className="text-sm text-muted-foreground mt-1 font-mono">
+                              {parsed.planet1} ({planetSymbols[parsed.planet1] || '?'}) {aspectSymbols[parsed.aspect] || '–'} {parsed.planet2} ({planetSymbols[parsed.planet2] || '?'})
+                            </div>
                           </div>
-                          <p className="text-sm text-muted-foreground mb-2">
-                            {indicator.description}
-                          </p>
-                          <div className="text-xs text-primary border-t pt-2 mt-2">
-                            <strong>Path Forward:</strong> {indicator.mitigation}
+                        )}
+                        
+                        {!parsed && (
+                          <div className="mt-3 text-lg font-semibold text-foreground">
+                            {indicator.type}: {indicator.description}
                           </div>
+                        )}
+                      </div>
+                      
+                      {/* Planet Meanings - Educational */}
+                      {explanation.planetMeanings && (
+                        <div className="mb-4 p-3 rounded-lg bg-muted/50 text-xs space-y-1">
+                          <div><strong>{parsed?.planet1}:</strong> {explanation.planetMeanings.planet1}</div>
+                          <div><strong>{parsed?.planet2}:</strong> {explanation.planetMeanings.planet2}</div>
                         </div>
-                      ))}
+                      )}
+                      
+                      {/* What This Means */}
+                      <div className="mb-4">
+                        <h5 className="font-medium text-sm mb-2 flex items-center gap-2">
+                          <Lightbulb size={14} className="text-amber-500" />
+                          What this means
+                        </h5>
+                        <p className="text-sm text-muted-foreground">
+                          {explanation.whatThisMeans}
+                        </p>
+                      </div>
+                      
+                      {/* How It Shows Up */}
+                      <div className="mb-4">
+                        <h5 className="font-medium text-sm mb-2">How it can show up</h5>
+                        <ul className="space-y-1">
+                          {explanation.howItShowsUp.map((item, j) => (
+                            <li key={j} className="text-sm text-muted-foreground flex items-start gap-2">
+                              <ArrowRight size={12} className="mt-1 flex-shrink-0 text-muted-foreground/50" />
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      
+                      {/* What to be Aware Of - Personalized */}
+                      <div className="mb-4 grid md:grid-cols-2 gap-3">
+                        <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+                          <h6 className="font-medium text-xs mb-1 text-primary">For {chart1Name}:</h6>
+                          <p className="text-xs text-muted-foreground">{explanation.whatToBeAwareOf.forA}</p>
+                        </div>
+                        <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+                          <h6 className="font-medium text-xs mb-1 text-primary">For {chart2Name}:</h6>
+                          <p className="text-xs text-muted-foreground">{explanation.whatToBeAwareOf.forB}</p>
+                        </div>
+                      </div>
+                      
+                      {/* Growth Opportunity */}
+                      <div className="p-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
+                        <h5 className="font-medium text-sm mb-1 text-green-700 dark:text-green-300 flex items-center gap-2">
+                          <Sparkles size={14} />
+                          The growth opportunity
+                        </h5>
+                        <p className="text-sm text-green-700 dark:text-green-300">
+                          {explanation.growthOpportunity}
+                        </p>
+                      </div>
                     </div>
-                  </ScrollArea>
-                </div>
-              )}
+                  );
+                })}
+              </ScrollArea>
               
-              {/* Green Flags - for high/moderate risk, show what's working */}
-              {assessment.greenFlags.length > 0 && (assessment.safetyLevel === 'high_risk' || assessment.safetyLevel === 'moderate_risk') && (
-                <div className="p-4 rounded-lg bg-green-50/50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
-                  <h4 className="font-medium text-sm mb-2 text-green-700 dark:text-green-300">
-                    ✨ What's Working
-                  </h4>
-                  <ul className="space-y-1">
-                    {assessment.greenFlags.map((flag, i) => (
-                      <li key={i} className="text-sm text-green-700 dark:text-green-300">
-                        • {flag}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+              {/* Bottom educational note */}
+              <div className="p-4 rounded-lg bg-muted/50 border text-center">
+                <p className="text-xs text-muted-foreground">
+                  Remember: These patterns describe <em>tendencies</em>, not destinies. 
+                  Conscious awareness transforms challenging dynamics into opportunities for growth.
+                  Many long-term relationships thrive <em>because of</em> working through difficult aspects together.
+                </p>
+              </div>
             </div>
           </CollapsibleContent>
         </Collapsible>
