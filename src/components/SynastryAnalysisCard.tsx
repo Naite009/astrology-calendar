@@ -11,6 +11,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { getDirectionalInterpretation } from '@/data/directionalAspectData';
+import { DirectionalAspectCard } from '@/components/synastry/DirectionalAspectCard';
+import { RelationshipContext } from '@/types/directionalAspects';
 
 interface SynastryAnalysisCardProps {
   chart1: NatalChart | null;
@@ -50,8 +53,29 @@ const ScoreGauge = ({
   </div>
 );
 
-const AspectRow = ({ aspect }: { aspect: SynastryAspect }) => {
+const AspectRow = ({ 
+  aspect, 
+  relationshipContext,
+  personAName,
+  personBName 
+}: { 
+  aspect: SynastryAspect; 
+  relationshipContext?: RelationshipContext;
+  personAName?: string;
+  personBName?: string;
+}) => {
   const [isOpen, setIsOpen] = useState(false);
+  
+  // Get directional interpretation if available
+  const directionalInterp = useMemo(() => {
+    if (!relationshipContext) return null;
+    return getDirectionalInterpretation(
+      aspect.planet1,
+      aspect.aspectType,
+      aspect.planet2,
+      relationshipContext
+    );
+  }, [aspect, relationshipContext]);
   
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -75,6 +99,11 @@ const AspectRow = ({ aspect }: { aspect: SynastryAspect }) => {
             >
               {aspect.aspectType} ({aspect.orb}°)
             </Badge>
+            {directionalInterp && (
+              <Badge variant="outline" className="text-[10px] px-1.5">
+                ↔️ Who feels what
+              </Badge>
+            )}
             {isOpen ? (
               <ChevronUp size={14} className="text-muted-foreground" />
             ) : (
@@ -84,10 +113,20 @@ const AspectRow = ({ aspect }: { aspect: SynastryAspect }) => {
         </div>
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <div className="px-2 pb-2">
+        <div className="px-2 pb-2 space-y-3">
           <p className="text-sm text-muted-foreground bg-secondary/30 p-2 rounded-lg">
             {aspect.interpretation}
           </p>
+          
+          {/* Directional Aspect Card */}
+          {directionalInterp && personAName && personBName && (
+            <DirectionalAspectCard
+              interpretation={directionalInterp}
+              context={relationshipContext!}
+              personAName={personAName}
+              personBName={personBName}
+            />
+          )}
         </div>
       </CollapsibleContent>
     </Collapsible>
@@ -405,24 +444,24 @@ export const SynastryAnalysisCard = ({
           <div className="space-y-1">
             {/* Show passion aspects first */}
             {passionAspects.slice(0, showAllAspects ? undefined : 2).map((aspect, i) => (
-              <AspectRow key={`passion-${i}`} aspect={aspect} />
+              <AspectRow key={`passion-${i}`} aspect={aspect} relationshipContext="romance" personAName={effectiveChart1?.name} personBName={effectiveChart2?.name} />
             ))}
             
             {/* Emotional aspects */}
             {emotionalAspects.slice(0, showAllAspects ? undefined : 2).map((aspect, i) => (
-              <AspectRow key={`emotional-${i}`} aspect={aspect} />
+              <AspectRow key={`emotional-${i}`} aspect={aspect} relationshipContext="romance" personAName={effectiveChart1?.name} personBName={effectiveChart2?.name} />
             ))}
             
             {/* Karmic aspects */}
             {karmicAspects.slice(0, showAllAspects ? undefined : 1).map((aspect, i) => (
-              <AspectRow key={`karmic-${i}`} aspect={aspect} />
+              <AspectRow key={`karmic-${i}`} aspect={aspect} relationshipContext="romance" personAName={effectiveChart1?.name} personBName={effectiveChart2?.name} />
             ))}
             
             {/* Rest of aspects when expanded */}
             {showAllAspects && report.aspects
               .filter(a => !passionAspects.includes(a) && !emotionalAspects.includes(a) && !karmicAspects.includes(a))
               .map((aspect, i) => (
-                <AspectRow key={`other-${i}`} aspect={aspect} />
+                <AspectRow key={`other-${i}`} aspect={aspect} relationshipContext="romance" personAName={effectiveChart1?.name} personBName={effectiveChart2?.name} />
               ))}
           </div>
         </ScrollArea>
