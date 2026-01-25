@@ -7,6 +7,7 @@ import { analyzeRelationshipFocus, FocusAnalysis, FocusIndicator } from '@/lib/r
 import { filterHouseOverlaysForFocus, filterKarmicIndicatorsForFocus, generateFocusedSoulContractTheme, RelationshipFocus } from '@/lib/focusAwareInterpretations';
 import { analyzeGroupDynamics, GroupDynamicsReport } from '@/lib/groupDynamicsAnalysis';
 import { analyzeShadowDynamics } from '@/lib/shadowIndicators';
+import calculateKarmicAnalysis from '@/lib/karmicAnalysis';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -23,6 +24,8 @@ import { RelationshipTimingCalculator } from './RelationshipTimingCalculator';
 import { CompatibilityRadarChart } from './CompatibilityRadarChart';
 import { ScoringBreakdownView } from './ScoringBreakdownView';
 import { ShadowIndicatorsCard } from './ShadowIndicatorsCard';
+import { SafetyAssessmentCard, SafetyAssessment } from './SafetyAssessmentCard';
+import { KarmicAnalysisCard } from './KarmicAnalysisCard';
 import { format } from 'date-fns';
 
 interface SynastryViewProps {
@@ -560,6 +563,68 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
     return analyzeShadowDynamics(chart1, chart2, chart1.name, chart2.name);
   }, [chart1, chart2]);
 
+  // Get karmic analysis using the new professional system
+  const karmicAnalysis = useMemo(() => {
+    if (!chart1 || !chart2) return null;
+    return calculateKarmicAnalysis(chart1, chart2);
+  }, [chart1, chart2]);
+
+  // Compute safety assessment from karmic analysis
+  const safetyAssessment = useMemo((): SafetyAssessment | null => {
+    if (!karmicAnalysis) return null;
+    
+    let riskScore = 0;
+    const dangerIndicators: SafetyAssessment['dangerIndicators'] = [];
+    
+    karmicAnalysis.dangerFlags.forEach(flag => {
+      let severity: 'critical' | 'high' | 'moderate' | 'low' = 'moderate';
+      if (flag.includes('Pluto') && (flag.includes('Venus') || flag.includes('Moon'))) {
+        severity = 'critical';
+        riskScore += 25;
+      } else if (flag.includes('Saturn') && flag.includes('Moon')) {
+        severity = 'high';
+        riskScore += 20;
+      } else if (flag.includes('8th house')) {
+        severity = 'high';
+        riskScore += 15;
+      } else {
+        riskScore += 10;
+      }
+      dangerIndicators.push({
+        type: flag.includes('Pluto') ? 'Power Dynamics' : flag.includes('Saturn') ? 'Restriction' : 'Intensity',
+        severity,
+        description: flag,
+        mitigation: 'Maintain strong boundaries and self-awareness. Consider professional support if patterns feel overwhelming.'
+      });
+    });
+
+    const safetyLevel: SafetyAssessment['safetyLevel'] = 
+      riskScore >= 60 ? 'high_risk' : 
+      riskScore >= 40 ? 'moderate_risk' : 
+      riskScore >= 20 ? 'low_risk' : 'safe';
+
+    const greenFlags: string[] = [];
+    if (karmicAnalysis.karmicType === 'soul_family' || karmicAnalysis.karmicType === 'new_contract') {
+      greenFlags.push('Healthy soul connection without heavy karmic baggage');
+    }
+    if (karmicAnalysis.healingOpportunities.length >= 3) {
+      greenFlags.push('Strong healing potential in this connection');
+    }
+    const northNodeCount = karmicAnalysis.indicators.filter(i => i.theme === 'soul_growth').length;
+    if (northNodeCount >= 2) {
+      greenFlags.push('Multiple North Node contacts - supports mutual evolution');
+    }
+
+    return {
+      safetyLevel,
+      riskScore: Math.min(100, riskScore),
+      dangerIndicators,
+      greenFlags,
+      proceedWithCaution: riskScore >= 30,
+      professionalSupportRecommended: riskScore >= 50
+    };
+  }, [karmicAnalysis]);
+
   // Calculate TRUE overall score as weighted average of all 5 focus types
   const trueOverallScore = useMemo(() => {
     if (!chart1 || !chart2) return null;
@@ -804,6 +869,24 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                           focus={relationshipFocus}
                         />
                       </div>
+                      
+                      {/* NEW: Safety Assessment - Shows first for awareness */}
+                      {safetyAssessment && (
+                        <SafetyAssessmentCard 
+                          assessment={safetyAssessment} 
+                          chart1Name={chart1.name} 
+                          chart2Name={chart2.name} 
+                        />
+                      )}
+                      
+                      {/* NEW: Karmic Analysis - Soul-level connection insights */}
+                      {karmicAnalysis && (
+                        <KarmicAnalysisCard 
+                          analysis={karmicAnalysis} 
+                          chart1Name={chart1.name} 
+                          chart2Name={chart2.name} 
+                        />
+                      )}
                       
                       {/* Synastry Wheel Visualization */}
                       <section className="flex flex-col items-center">
