@@ -17,6 +17,7 @@ import { CompositeInterpretation, getPlanetSymbol } from '@/lib/compositeChart';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ThemeBreakdownGuide } from '@/components/ThemeBreakdownGuide';
 import { 
   ChevronDown, ChevronUp, Sun, Moon, Heart, Sparkles, Users, 
   Clock, GraduationCap, BookOpen, Lightbulb, AlertTriangle, 
@@ -242,6 +243,152 @@ function generateAspectExpressions(
       personBAdvice: `Stand in your authentic power. Don't shrink yourself.`,
       growthEdge: 'Both can be powerful without diminishing the other.'
     },
+    'Pluto-Sun-conjunction': {
+      energy: 'Intense identity transformation through merging energies.',
+      lightExpressions: [
+        `${personAName}'s transformative power fuses with ${personBName}'s core identity`,
+        'Profound capacity for mutual empowerment',
+        'Deep understanding of each other\'s shadows and light',
+        'Potential for soul-level recognition'
+      ],
+      shadowExpressions: [
+        'Risk of identity fusion or enmeshment',
+        `${personBName} may feel consumed by ${personAName}'s intensity`,
+        'Obsessive focus on each other',
+        'Difficulty separating individual identities'
+      ],
+      personAAdvice: 'Your intensity is felt deeply. Use it to witness and empower, not consume.',
+      personBAdvice: 'You can be transformed by this connection while keeping your own light.',
+      growthEdge: 'Profound transformation through conscious power-sharing.'
+    },
+    'Pluto-Mars-square': {
+      energy: 'Intense power dynamics around action, desire, and will.',
+      lightExpressions: [
+        'Powerful motivation to achieve together',
+        'Sexual chemistry that transforms both',
+        'Courage to face difficult truths together',
+        'Mutual empowerment to take bold action'
+      ],
+      shadowExpressions: [
+        'Power struggles over who controls what',
+        'Explosive anger or arguments',
+        'Compulsive or obsessive pursuit',
+        'Physical tension or aggression'
+      ],
+      personAAdvice: 'Channel intensity into shared goals rather than competition.',
+      personBAdvice: 'Assert your will without escalating into power battles.',
+      growthEdge: 'Learning to wield power together, not against each other.'
+    },
+    // Neptune aspects
+    'Neptune-Venus-conjunction': {
+      energy: 'Romantic idealization with spiritual love potential.',
+      lightExpressions: [
+        'Soul-mate feeling and spiritual connection',
+        'Unconditional love and compassion',
+        'Artistic and creative inspiration together',
+        'Deep empathy and emotional attunement'
+      ],
+      shadowExpressions: [
+        'Idealization that leads to disappointment',
+        'Difficulty seeing each other clearly',
+        'Sacrificing too much for love',
+        'Confusion about relationship boundaries'
+      ],
+      personAAdvice: 'Your love is real, but keep one foot grounded in reality.',
+      personBAdvice: 'Enjoy the magic, but communicate your real needs.',
+      growthEdge: 'Balancing spiritual love with practical partnership.'
+    },
+    'Neptune-Venus-square': {
+      energy: 'Romantic confusion with a call for unconditional love.',
+      lightExpressions: [
+        'Learning to love without conditions',
+        'Spiritual growth through relationship challenges',
+        'Compassion deepened through difficulty',
+        'Creative inspiration from longing'
+      ],
+      shadowExpressions: [
+        'Deception or self-deception about love',
+        'Unrealistic expectations leading to disappointment',
+        `${personBName} may feel ${personAName} is unavailable or confusing`,
+        'Escapism or avoidance in the relationship'
+      ],
+      personAAdvice: 'Be honest about what you can offer. Clarity is kindness.',
+      personBAdvice: 'Trust your feelings, but verify with direct communication.',
+      growthEdge: 'Developing discernment while keeping the heart open.'
+    },
+    'Neptune-Moon-square': {
+      energy: 'Emotional confusion with psychic sensitivity.',
+      lightExpressions: [
+        'Deep psychic and emotional connection',
+        'Intuitive understanding of each other\'s moods',
+        'Compassion for emotional vulnerabilities',
+        'Spiritual bonding through shared feelings'
+      ],
+      shadowExpressions: [
+        'Emotional boundaries may dissolve unhealthily',
+        `${personBName} may absorb ${personAName}'s moods`,
+        'Confusion about whose emotions are whose',
+        'Emotional martyrdom or victimhood patterns'
+      ],
+      personAAdvice: 'Be clear about your emotional state so others don\'t get lost in your fog.',
+      personBAdvice: 'Check in with yourself - are these your feelings or theirs?',
+      growthEdge: 'Maintaining emotional boundaries while staying compassionately connected.'
+    },
+    // Uranus aspects
+    'Uranus-Venus-conjunction': {
+      energy: 'Electric attraction with freedom as a core value.',
+      lightExpressions: [
+        'Exciting, unconventional love connection',
+        'Freedom to be authentic with each other',
+        'Innovation and experimentation in love',
+        'Mutual liberation from old relationship patterns'
+      ],
+      shadowExpressions: [
+        'Instability or unpredictability in love',
+        'Difficulty with commitment or consistency',
+        'Sudden changes that destabilize the bond',
+        'One or both may fear being "tied down"'
+      ],
+      personAAdvice: 'Your need for freedom is valid - communicate it as a need, not a rejection.',
+      personBAdvice: 'Excitement is part of the package. Build security through trust, not control.',
+      growthEdge: 'Creating a relationship that honors both connection and autonomy.'
+    },
+    'Uranus-Moon-square': {
+      energy: 'Emotional volatility with a need for authentic feeling.',
+      lightExpressions: [
+        'Emotional breakthroughs and awakenings',
+        'Freedom to feel authentically without judgment',
+        'Innovation in nurturing and home life',
+        'Breaking free from family patterns'
+      ],
+      shadowExpressions: [
+        'Emotional instability or unpredictability',
+        `${personBName} may feel unsettled by ${personAName}'s detachment`,
+        'Difficulty creating consistent emotional security',
+        'Sudden mood shifts that confuse the partner'
+      ],
+      personAAdvice: 'Your emotional authenticity is a gift, but consistency builds trust.',
+      personBAdvice: 'Accept that their emotions run on an unusual frequency. Find your own stability.',
+      growthEdge: 'Creating emotional freedom within secure connection.'
+    },
+    'Uranus-Sun-opposition': {
+      energy: 'Push-pull between individuality and partnership.',
+      lightExpressions: [
+        'Each person inspires the other to be more authentic',
+        'Mutual respect for individual paths',
+        'Electric attraction through difference',
+        'Growth through honoring uniqueness'
+      ],
+      shadowExpressions: [
+        'Sudden disruptions to identity or life direction',
+        'Rebellion against the partner\'s expectations',
+        'Unpredictable behavior that creates insecurity',
+        'Difficulty finding middle ground'
+      ],
+      personAAdvice: 'Your uniqueness enriches the relationship - share it, don\'t weaponize it.',
+      personBAdvice: 'Let them be different. Your security comes from within, not from controlling them.',
+      growthEdge: 'Celebrating individuality while choosing partnership.'
+    },
     'Saturn-Moon-conjunction': {
       energy: 'Emotional structure and security through commitment.',
       lightExpressions: [
@@ -277,6 +424,24 @@ function generateAspectExpressions(
       personAAdvice: `Show love in warm ways, not just practical ones. ${personBName} needs affection.`,
       personBAdvice: `Recognize ${personAName}'s practical support as love. Ask for warmth directly.`,
       growthEdge: 'Learning that real love includes both support and sweetness.'
+    },
+    'Saturn-Sun-square': {
+      energy: 'Authority dynamics and tests of self-worth.',
+      lightExpressions: [
+        'Growth through structure and discipline',
+        'Maturity developing through challenges',
+        'Respect earned through demonstrated reliability',
+        'Building a solid foundation together'
+      ],
+      shadowExpressions: [
+        `${personBName} may feel criticized or inadequate around ${personAName}`,
+        'Authority or control issues between you',
+        'Coldness or withholding of warmth',
+        'Fear of not being "good enough"'
+      ],
+      personAAdvice: 'Your standards are valuable, but express them with warmth, not judgment.',
+      personBAdvice: 'Their expectations feel heavy, but your worth isn\'t defined by meeting them.',
+      growthEdge: 'Developing inner authority while respecting each other\'s autonomy.'
     },
     'Venus-Mars-conjunction': {
       energy: 'Powerful romantic and sexual chemistry.',
@@ -367,6 +532,60 @@ function generateAspectExpressions(
       personAAdvice: `Share your ideas but create space for ${personBName}'s voice to emerge.`,
       personBAdvice: `Speak up. Your thoughts matter and are evolving.`,
       growthEdge: 'Finding your unique voice through dialogue.'
+    },
+    'NorthNode-Moon-conjunction': {
+      energy: 'Emotional evolution through the relationship.',
+      lightExpressions: [
+        `${personBName} is learning about emotional security through ${personAName}`,
+        'The relationship nurtures soul growth',
+        'Emotional patterns are destined to evolve',
+        'Home and belonging as growth themes'
+      ],
+      shadowExpressions: [
+        'Emotional dependency on the relationship for growth',
+        'Over-reliance on one person for nurturing',
+        'Confusing need with destiny',
+        'Difficulty moving forward independently'
+      ],
+      personAAdvice: 'Your nurturing helps their growth, but don\'t become their only source of comfort.',
+      personBAdvice: 'Learn the emotional lessons, then practice them on your own too.',
+      growthEdge: 'Growing into emotional maturity together while maintaining independence.'
+    },
+    'Chiron-Venus-conjunction': {
+      energy: 'Healing old love wounds through this relationship.',
+      lightExpressions: [
+        'This relationship can heal old love patterns',
+        'Deep compassion for each other\'s romantic wounds',
+        'Learning to love despite past hurts',
+        'Transforming relationship pain into wisdom'
+      ],
+      shadowExpressions: [
+        'Old wounds may be triggered by the relationship',
+        'Pain from past relationships may resurface',
+        'Feeling inadequate in love',
+        'Avoiding vulnerability to prevent hurt'
+      ],
+      personAAdvice: 'Your presence touches old wounds. Be gentle and patient.',
+      personBAdvice: 'If old pain surfaces, it\'s for healing, not repeating.',
+      growthEdge: 'Allowing love to heal rather than retraumatize.'
+    },
+    'Chiron-Moon-square': {
+      energy: 'Emotional wounds surfacing for potential healing.',
+      lightExpressions: [
+        'Opportunity for deep emotional healing',
+        'Understanding each other\'s emotional vulnerabilities',
+        'Compassion developed through shared pain',
+        'Breaking generational emotional patterns'
+      ],
+      shadowExpressions: [
+        'Triggering each other\'s deepest insecurities',
+        'Emotional reactions that seem "too much"',
+        'Feeling unsafe emotionally',
+        'Old family wounds playing out in the relationship'
+      ],
+      personAAdvice: 'Your presence triggers old wounds. Stay present with compassion, not defensiveness.',
+      personBAdvice: 'If you\'re over-reacting, ask: "Is this about now, or about then?"',
+      growthEdge: 'Conscious healing replaces unconscious re-wounding.'
     }
   };
 
@@ -1093,6 +1312,23 @@ export const FiveEssentialQuestions = ({
             </div>
           </CollapsibleContent>
         </Collapsible>
+
+        {/* Theme Breakdown Guide - Educational Section */}
+        {karmicAnalysis && (
+          <Collapsible open={expandedSections.calculations} onOpenChange={() => toggleSection('calculations')}>
+            <CollapsibleTrigger className="w-full flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-secondary/30 transition-colors">
+              <span className="font-medium">How We Determined These Themes (Teaching Guide)</span>
+              {expandedSections.calculations ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-2 p-4 rounded-lg border bg-card">
+              <ThemeBreakdownGuide 
+                chart1={chart1}
+                chart2={chart2}
+                karmicAnalysis={karmicAnalysis}
+              />
+            </CollapsibleContent>
+          </Collapsible>
+        )}
 
         {/* Karmic Breakdown */}
         {karmicAnalysis && (
