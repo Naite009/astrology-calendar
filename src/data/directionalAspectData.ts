@@ -401,16 +401,27 @@ export const getDirectionalInterpretation = (
   const normalizedAspect = normalizeAspectType(aspect);
   const aspectKey = `${planet1.toLowerCase()}_${normalizedAspect}_${planet2.toLowerCase()}`;
   
+  console.log('[Directional Aspect Debug]', {
+    planet1,
+    planet2,
+    originalAspect: aspect,
+    normalizedAspect,
+    aspectKey,
+    context
+  });
+  
   // Try exact match
   let found = directionalAspectDatabase.find(d => d.aspectKey === aspectKey);
   
   // Try reverse (e.g., saturn_conjunct_venus instead of venus_conjunct_saturn)
   if (!found) {
     const reverseKey = `${planet2.toLowerCase()}_${normalizedAspect}_${planet1.toLowerCase()}`;
+    console.log('[Directional Aspect Debug] Trying reverse:', reverseKey);
     found = directionalAspectDatabase.find(d => d.aspectKey === reverseKey);
     
     // If found reversed, swap the person labels in the returned object
     if (found) {
+      console.log('[Directional Aspect Debug] Found with reverse key!');
       return {
         ...found,
         personARole: found.personBRole,
@@ -419,6 +430,12 @@ export const getDirectionalInterpretation = (
         personBExperience: found.personAExperience
       };
     }
+  }
+  
+  if (found) {
+    console.log('[Directional Aspect Debug] Found exact match!');
+  } else {
+    console.log('[Directional Aspect Debug] No match found');
   }
   
   return found || null;
