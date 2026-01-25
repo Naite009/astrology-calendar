@@ -31,6 +31,7 @@ import { KarmicAnalysisCard } from './KarmicAnalysisCard';
 import { RelationshipPotentialCard } from './RelationshipPotentialCard';
 import { PurposeAlignmentCard } from './PurposeAlignmentCard';
 import { RelationshipTimelineCard } from './RelationshipTimelineCard';
+import { RelationshipTimeline } from './synastry/RelationshipTimeline';
 import { FiveEssentialQuestions } from './FiveEssentialQuestions';
 import { FamilyRelationshipSelector } from './FamilyRelationshipSelector';
 import { format } from 'date-fns';
@@ -1164,6 +1165,17 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                           chart1={chart1}
                           chart2={chart2}
                           months={12}
+                        />
+                      </section>
+                      
+                      {/* Historical Relationship Timeline - Date-based Analysis */}
+                      <section>
+                        <RelationshipTimeline
+                          person1Name={chart1.name}
+                          person2Name={chart2.name}
+                          person1Chart={chart1}
+                          person2Chart={chart2}
+                          synastryAspects={report.karmicIndicators || []}
                         />
                       </section>
                       
