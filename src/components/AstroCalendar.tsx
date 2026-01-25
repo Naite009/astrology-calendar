@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles, Gauge, Globe, Heart } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles, Gauge, Globe, Heart, Activity } from "lucide-react";
 import { ChartDecoderView } from "./ChartDecoderView";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
@@ -20,6 +20,7 @@ import { VoiceMemoModal } from "./VoiceMemoModal";
 import { VoiceMemoLibrary } from "./VoiceMemoLibrary";
 import { PlanetarySpeedsView } from "./PlanetarySpeedsView";
 import { DwarfPlanetsGuide } from "./DwarfPlanetsGuide";
+import { HealthAstrologyView } from "./HealthAstrologyView";
 import { useUserData } from "@/hooks/useUserData";
 import { useNotes } from "@/hooks/useNotes";
 import { useNatalChart, NatalChart } from "@/hooks/useNatalChart";
@@ -29,7 +30,7 @@ import { DayData, generateICalExport } from "@/lib/astrology";
 
 import { SynastryView } from "./SynastryView";
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry";
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -144,6 +145,9 @@ export const AstroCalendar = () => {
     }
     if (viewMode === "dwarf-planets") {
       return "Dwarf Planets Guide";
+    }
+    if (viewMode === "health") {
+      return "Health Astrology";
     }
     if (viewMode === "moon-phases") {
       return `${currentDate.getFullYear()} Moon Phases`;
@@ -427,6 +431,30 @@ export const AstroCalendar = () => {
                 <Heart size={14} />
                 Synastry
               </button>
+              <button
+                onClick={() => {
+                  if (userNatalChart || savedCharts.length > 0) {
+                    setViewMode("health");
+                  } else {
+                    setViewMode("charts");
+                  }
+                }}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "health"
+                    ? "bg-primary text-primary-foreground"
+                    : userNatalChart || savedCharts.length > 0
+                      ? "text-muted-foreground hover:text-foreground"
+                      : "text-muted-foreground/60 hover:text-muted-foreground"
+                }`}
+                title={
+                  userNatalChart || savedCharts.length > 0
+                    ? "Health Astrology"
+                    : "Add a chart to view Health Astrology"
+                }
+              >
+                <Activity size={14} />
+                Health
+              </button>
             </div>
 
             {userData && (
@@ -619,6 +647,16 @@ export const AstroCalendar = () => {
           <SynastryView
             userNatalChart={userNatalChart}
             savedCharts={savedCharts}
+          />
+        )}
+
+        {viewMode === "health" && (
+          <HealthAstrologyView
+            natalChart={userNatalChart || savedCharts[0]}
+            allCharts={[
+              ...(userNatalChart ? [userNatalChart] : []),
+              ...savedCharts
+            ]}
           />
         )}
       </div>

@@ -22,19 +22,19 @@ export const HealthTimingCard = () => {
   const moonPhase = useMemo(() => getMoonPhase(today), []);
 
   // Map moon phase to lunar cycle key
-  const getLunarCycleKey = (phase: string): string => {
-    if (phase.includes('New')) return 'New Moon';
-    if (phase.includes('Waxing Crescent')) return 'Waxing Crescent';
-    if (phase.includes('First Quarter')) return 'First Quarter';
-    if (phase.includes('Waxing Gibbous')) return 'Waxing Gibbous';
-    if (phase.includes('Full')) return 'Full Moon';
-    if (phase.includes('Waning Gibbous')) return 'Waning Gibbous';
-    if (phase.includes('Last Quarter') || phase.includes('Third Quarter')) return 'Last Quarter';
-    if (phase.includes('Waning Crescent')) return 'Waning Crescent';
+  const getLunarCycleKey = (phaseName: string): string => {
+    if (phaseName.includes('New')) return 'New Moon';
+    if (phaseName.includes('Waxing Crescent')) return 'Waxing Crescent';
+    if (phaseName.includes('First Quarter')) return 'First Quarter';
+    if (phaseName.includes('Waxing Gibbous')) return 'Waxing Gibbous';
+    if (phaseName.includes('Full')) return 'Full Moon';
+    if (phaseName.includes('Waning Gibbous')) return 'Waning Gibbous';
+    if (phaseName.includes('Last Quarter') || phaseName.includes('Third Quarter')) return 'Last Quarter';
+    if (phaseName.includes('Waning Crescent')) return 'Waning Crescent';
     return 'New Moon';
   };
 
-  const lunarKey = getLunarCycleKey(moonPhase.phase);
+  const lunarKey = getLunarCycleKey(moonPhase.phaseName);
   const lunarHealthAdvice = LUNAR_CYCLE_HEALTH[lunarKey];
 
   return (
@@ -126,10 +126,10 @@ export const HealthTimingCard = () => {
               {/* Current Phase */}
               <div className="rounded-sm border border-primary/30 bg-primary/5 p-4 space-y-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl">{moonPhase.emoji}</span>
+                  <span className="text-2xl">{moonPhase.phaseIcon}</span>
                   <div>
                     <span className="font-medium">{lunarKey}</span>
-                    <span className="text-sm text-muted-foreground ml-2">{moonPhase.sign}</span>
+                    <span className="text-sm text-muted-foreground ml-2">({Math.round(moonPhase.illumination * 100)}% illuminated)</span>
                   </div>
                 </div>
                 <p className="text-sm">{lunarHealthAdvice}</p>
