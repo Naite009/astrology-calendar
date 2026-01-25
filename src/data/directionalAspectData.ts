@@ -29,9 +29,31 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
     challengeLevel: 8,
     
     evolutionTimeline: {
-      year1_3: "Venus person feels increasingly restricted and may become needy or resentful. Saturn person feels pressured and may withdraw further, creating a painful push-pull dynamic.",
-      year4_7: "If both are committed to growth, Saturn person begins to soften and trust. Venus person develops genuine self-worth. The relationship stabilizes as both mature into their roles.",
-      year7_plus: "Can become profoundly stable, mature love. Venus brings joy and beauty to Saturn's structure. Saturn provides the container for Venus's love to deepen. Both feel safe enough to be fully themselves."
+      romance: {
+        year1_3: "Venus person feels increasingly restricted and may become needy or resentful. Saturn person feels pressured and may withdraw further, creating a painful push-pull dynamic.",
+        year4_7: "If both are committed to growth, Saturn person begins to soften and trust. Venus person develops genuine self-worth. The relationship stabilizes as both mature into their roles.",
+        year7_plus: "Can become profoundly stable, mature love. Venus brings joy and beauty to Saturn's structure. Saturn provides the container for Venus's love to deepen. Both feel safe enough to be fully themselves."
+      },
+      friendship: {
+        year1_3: "Venus feels like they're always initiating warmth while Saturn holds back. The friendship may feel one-sided or formal. Trust builds slowly.",
+        year4_7: "Saturn begins to rely on Venus's warmth and shows appreciation in their own reserved way. Venus learns to appreciate Saturn's quiet loyalty.",
+        year7_plus: "Deep, reliable friendship. Saturn is the rock Venus can always count on. Venus brings joy and lightness to Saturn's serious world. Lifelong bond."
+      },
+      business: {
+        year1_3: "Tension between creative vision and practical constraints. Venus feels stifled; Saturn feels like they're doing all the responsible work.",
+        year4_7: "If they survive, they learn their complementary strengths. Venus handles clients and aesthetics; Saturn handles operations and finances.",
+        year7_plus: "Highly successful partnership. Venus's creativity is grounded by Saturn's structure. Both respect what the other brings. Built to last."
+      },
+      creative: {
+        year1_3: "Friction between artistic freedom and discipline. Venus feels criticized; Saturn feels their standards aren't appreciated.",
+        year4_7: "Venus learns that Saturn's feedback makes the work better. Saturn learns to deliver criticism constructively.",
+        year7_plus: "Master-level collaboration. Venus's beauty meets Saturn's craftsmanship. The work has both inspiration and excellence."
+      },
+      family: {
+        childhood: "Venus child feels they can never earn Saturn parent's approval. Love feels conditional on achievement. Saturn parent feels responsible but struggles to show warmth. Emotional distance despite good intentions.",
+        adolescence: "Venus pushes for emotional connection; Saturn responds with more rules or withdrawal. Conflict over 'being responsible' vs. 'being loving.' Venus may rebel or become a people-pleaser to earn love.",
+        adulthood: "If both have done the work, Saturn learns to express love directly and Venus develops self-worth independent of parental approval. Can become a deeply respectful, mature relationship. If not, emotional distance persists."
+      }
     }
   },
   
@@ -63,9 +85,31 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
     challengeLevel: 9,
     
     evolutionTimeline: {
-      year1_3: "Extremely difficult. Venus feels increasingly hurt and may become people-pleasing. Saturn becomes more critical as their fears increase. May not survive this phase without conscious work.",
-      year4_7: "Either breaks or both people do serious healing work. If it survives, there's a grudging respect developing. Saturn starts to appreciate Venus's persistence. Venus starts to see Saturn's criticism as protection, not rejection.",
-      year7_plus: "If still together, it's EARNED. Deep respect, mature love, and shared accomplishment. Both have grown tremendously. The square never fully disappears but becomes workable—even a source of strength."
+      romance: {
+        year1_3: "Extremely difficult. Venus feels increasingly hurt and may become people-pleasing. Saturn becomes more critical as their fears increase. May not survive this phase without conscious work.",
+        year4_7: "Either breaks or both people do serious healing work. If it survives, there's a grudging respect developing. Saturn starts to appreciate Venus's persistence. Venus starts to see Saturn's criticism as protection, not rejection.",
+        year7_plus: "If still together, it's EARNED. Deep respect, mature love, and shared accomplishment. Both have grown tremendously. The square never fully disappears but becomes workable—even a source of strength."
+      },
+      friendship: {
+        year1_3: "Venus feels rejected and may try harder or pull away. Saturn feels suffocated by Venus's need for closeness. Frequent hurt feelings and misunderstandings.",
+        year4_7: "Either the friendship fades or both accept each other's different needs. If surviving: Saturn shows up when it matters; Venus stops expecting warmth Saturn can't give.",
+        year7_plus: "Hard-won respect. Venus knows Saturn's loyalty runs deep despite the distance. Saturn has learned to show appreciation in small ways. Not easy, but enduring."
+      },
+      business: {
+        year1_3: "Constant friction over approach. Venus feels micromanaged; Saturn feels ignored on risk. Power struggles over creative direction.",
+        year4_7: "Make or break. Either clear role separation emerges or the partnership dissolves. If surviving: strict boundaries about who decides what.",
+        year7_plus: "If survived: battle-tested partnership that's weathered real challenges. Both know their lanes. Mutual respect for what the other survived."
+      },
+      creative: {
+        year1_3: "Venus feels creatively suffocated. Saturn's standards feel impossible. Work may be technically good but joyless.",
+        year4_7: "Either Venus leaves to work with someone less critical, or they learn to use the friction productively.",
+        year7_plus: "Rare creative partnership where the tension produces exceptional work. Both have learned to fight FOR the work, not against each other."
+      },
+      family: {
+        childhood: "Venus child feels constantly criticized and never good enough. Saturn parent's love feels entirely conditional. Deep wounds around worthiness form early. Venus may develop anxiety or perfectionism.",
+        adolescence: "Major conflict. Venus rebels against impossible standards or becomes a perfectionist trying to earn love. Saturn doubles down on control. The relationship is strained or breaks entirely.",
+        adulthood: "Requires significant healing work from both. Venus must grieve the unconditional love they didn't receive. Saturn must acknowledge their own wounds and learn new patterns. If both do the work: respect replaces resentment. If not: estrangement or painful obligatory contact."
+      }
     }
   },
 
@@ -97,9 +141,31 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
     challengeLevel: 9,
     
     evolutionTimeline: {
-      year1_3: "Intense fascination and power struggles. Sun feels both empowered and controlled. Pluto is obsessed. Everything is heightened. Jealousy, possessiveness, and transformation all at once.",
-      year4_7: "Crisis point: evolve or implode. Either Pluto learns to release control and Sun learns to own their power, OR the relationship becomes destructive. Major tests around control, trust, and autonomy.",
-      year7_plus: "If survived consciously, becomes a profoundly transformative partnership. Both are changed forever. Deep trust, mutual empowerment, and the ability to weather any storm together. Unshakeable bond forged through crisis."
+      romance: {
+        year1_3: "Intense fascination and power struggles. Sun feels both empowered and controlled. Pluto is obsessed. Everything is heightened. Jealousy, possessiveness, and transformation all at once.",
+        year4_7: "Crisis point: evolve or implode. Either Pluto learns to release control and Sun learns to own their power, OR the relationship becomes destructive. Major tests around control, trust, and autonomy.",
+        year7_plus: "If survived consciously, becomes a profoundly transformative partnership. Both are changed forever. Deep trust, mutual empowerment, and the ability to weather any storm together. Unshakeable bond forged through crisis."
+      },
+      friendship: {
+        year1_3: "Intensity from day one. Sun feels Pluto sees everything. Pluto is fascinated by Sun's light. The friendship goes deep fast—no superficial conversations here.",
+        year4_7: "Power dynamics surface. Does Pluto empower or try to control? Does Sun accept transformation or resist? Crisis tests the friendship's foundation.",
+        year7_plus: "If survived: unbreakable bond. Both have transformed through knowing each other. Pluto helped Sun own their power; Sun helped Pluto trust the light."
+      },
+      business: {
+        year1_3: "Intense collaboration. Pluto sees Sun's potential and pushes hard. Sun feels both supported and controlled. Power dynamics are constant.",
+        year4_7: "Major tests around control of the business. Who leads? Who has final say? Either clear hierarchy emerges or destructive power struggles.",
+        year7_plus: "If survived: formidable partnership. Sun's leadership is empowered by Pluto's strategic depth. Pluto trusts Sun's vision. Together, unstoppable."
+      },
+      creative: {
+        year1_3: "Intense creative chemistry. Work goes to depths Sun didn't know they could access. Pluto pushes Sun toward authentic expression.",
+        year4_7: "Creative differences may become power struggles. Whose vision wins? Can both serve the work without ego battles?",
+        year7_plus: "Transformative creative legacy. The work has changed both people. Deep, powerful art that couldn't have been made alone."
+      },
+      family: {
+        childhood: "Pluto parent's intensity feels overwhelming. Child feels seen but also controlled. Power dynamics are present from earliest memories. Child may feel they can't have secrets or privacy.",
+        adolescence: "Major power struggles. Child pushes for autonomy; Pluto parent struggles to release control. This is the crucible—either transformation or trauma.",
+        adulthood: "If Pluto parent learned to release control, this becomes profound mutual respect. Child has individuated; parent has evolved. If not: ongoing control dynamics or estrangement."
+      }
     }
   },
 
@@ -131,9 +197,31 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
     challengeLevel: 10,
     
     evolutionTimeline: {
-      year1_3: "Intense attraction and equally intense power struggles. The magnetic pull is undeniable but so are the conflicts. Both feel simultaneously drawn together and pushed apart. Crisis moments test whether the connection can survive.",
-      year4_7: "Make or break period. Either both learn to balance power and respect autonomy, OR the relationship becomes a destructive cycle of control and rebellion. If surviving: deep mutual transformation is underway.",
-      year7_plus: "If both have done the work, this becomes an unshakeable bond. You've weathered the storms and emerged transformed. Mutual empowerment replaces power struggles. If not, the pattern of control and resistance continues."
+      romance: {
+        year1_3: "Intense attraction and equally intense power struggles. The magnetic pull is undeniable but so are the conflicts. Both feel simultaneously drawn together and pushed apart. Crisis moments test whether the connection can survive.",
+        year4_7: "Make or break period. Either both learn to balance power and respect autonomy, OR the relationship becomes a destructive cycle of control and rebellion. If surviving: deep mutual transformation is underway.",
+        year7_plus: "If both have done the work, this becomes an unshakeable bond. You've weathered the storms and emerged transformed. Mutual empowerment replaces power struggles. If not, the pattern of control and resistance continues."
+      },
+      friendship: {
+        year1_3: "Magnetic but volatile. Sun is drawn to Pluto's depth; Pluto to Sun's light. Power dynamics surface quickly. Not a casual friendship.",
+        year4_7: "Either learned to balance the intensity or it became too much. Surviving friendships have navigated major power confrontations.",
+        year7_plus: "If survived: profound, rare friendship. Both have transformed through knowing each other. Unshakeable loyalty forged through crisis."
+      },
+      business: {
+        year1_3: "Magnetic attraction to collaborate but immediate power struggles. Who leads? Who controls resources? The opposition is felt in every decision.",
+        year4_7: "Crisis around control. Either clear power-sharing emerges or the partnership explodes. If surviving: hard-won respect for each other's domain.",
+        year7_plus: "Battle-tested partnership. Both know they can trust the other through crisis. Power is shared consciously. Formidable together."
+      },
+      creative: {
+        year1_3: "Electric creative chemistry and immediate creative conflicts. Sun wants visibility; Pluto wants depth. Can you have both?",
+        year4_7: "The work is either brilliant or the collaboration implodes. If surviving: you've learned to balance light and shadow in the work.",
+        year7_plus: "Transformative creative legacy. The opposition that once threatened to destroy has become the source of creative power."
+      },
+      family: {
+        childhood: "Child feels Pluto parent's intensity as overwhelming or controlling. Power dynamics are set early. Child may feel consumed or invisible depending on Pluto's awareness.",
+        adolescence: "Major rebellion or power struggles. Child pushes for autonomy; parent struggles to release control. The opposition creates crisis that demands transformation.",
+        adulthood: "If both have done the work, transforms into mutual respect. Parent sees child as equal; child owns their power. If not: ongoing power struggles or estrangement."
+      }
     }
   },
 
@@ -165,9 +253,31 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
     challengeLevel: 3,
     
     evolutionTimeline: {
-      year1_3: "Blissful emotional harmony. Feels like you've known each other forever. Safe haven from the world.",
-      year4_7: "Comfortable, possibly too comfortable. May need to consciously introduce challenge and growth. Risk of taking each other for granted emotionally.",
-      year7_plus: "Either beautifully secure and supportive OR emotionally merged and stagnant. Need other aspects to provide growth and differentiation. At its best: lifelong emotional home base."
+      romance: {
+        year1_3: "Blissful emotional harmony. Feels like you've known each other forever. Safe haven from the world.",
+        year4_7: "Comfortable, possibly too comfortable. May need to consciously introduce challenge and growth. Risk of taking each other for granted emotionally.",
+        year7_plus: "Either beautifully secure and supportive OR emotionally merged and stagnant. Need other aspects to provide growth and differentiation. At its best: lifelong emotional home base."
+      },
+      friendship: {
+        year1_3: "Instant emotional recognition. You 'get' each other without explanation. Easy, comfortable connection.",
+        year4_7: "Deep emotional intimacy and trust. May rely on each other heavily. Risk of enmeshment if no other friends provide contrast.",
+        year7_plus: "Lifelong emotional support. This friend knows you at your core. Beautiful safety if not codependent."
+      },
+      business: {
+        year1_3: "Emotionally comfortable work environment. You understand each other's stress responses and needs.",
+        year4_7: "May avoid necessary conflicts. Too much emotional similarity can mean blind spots. Need outside perspectives.",
+        year7_plus: "Stable, supportive work relationship. Know how to support each other through challenges. May need partners with different Moon signs for growth."
+      },
+      creative: {
+        year1_3: "Emotional creative harmony. You feel into the work the same way. Easy collaboration.",
+        year4_7: "May become predictable. The comfort zone is limiting. Need creative tension from elsewhere.",
+        year7_plus: "Beautiful emotional foundation for creative work, but needs challenge from other sources to stay vital."
+      },
+      family: {
+        childhood: "Deep emotional attunement between family members. Understanding without words. Beautiful nurturing if both are healthy. Risk of enmeshment if one has unhealthy patterns.",
+        adolescence: "Continued emotional closeness. May struggle to differentiate. Need outside relationships to develop individual emotional identity.",
+        adulthood: "Lifelong emotional understanding and support. Beautiful if both have individuated. Codependent if boundaries were never established."
+      }
     }
   },
 
@@ -199,9 +309,31 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
     challengeLevel: 8,
     
     evolutionTimeline: {
-      year1_3: "Hot and exciting OR fighting constantly. Sexual chemistry high but fights are also intense. Testing boundaries and power dynamics. May be addictive chaos.",
-      year4_7: "Either learned to work with the friction (exciting, productive) OR exhausted from constant conflict. Breakup common at this stage if no progress made. If surviving: developed dance of who leads when.",
-      year7_plus: "If still together, you've mastered the art of productive tension. Respect for different approaches. Still passionate but not destructive. You've learned each other's triggers and how to de-escalate. The square keeps life interesting without destroying it."
+      romance: {
+        year1_3: "Hot and exciting OR fighting constantly. Sexual chemistry high but fights are also intense. Testing boundaries and power dynamics. May be addictive chaos.",
+        year4_7: "Either learned to work with the friction (exciting, productive) OR exhausted from constant conflict. Breakup common at this stage if no progress made. If surviving: developed dance of who leads when.",
+        year7_plus: "If still together, you've mastered the art of productive tension. Respect for different approaches. Still passionate but not destructive. You've learned each other's triggers and how to de-escalate. The square keeps life interesting without destroying it."
+      },
+      friendship: {
+        year1_3: "Competitive, energetic, possibly combative. You push each other—for better or worse.",
+        year4_7: "Either channeled into healthy competition (sports, games, mutual goals) or the friendship has become too exhausting.",
+        year7_plus: "If survived: you've learned to be friendly rivals who push each other to be better. Mutual respect for each other's warrior spirit."
+      },
+      business: {
+        year1_3: "Power struggles over direction and control. Different instincts about when and how to act.",
+        year4_7: "Either clear role separation (different domains of control) or the partnership has dissolved in conflict.",
+        year7_plus: "If survived: you've learned to leverage the tension productively. Different approaches mean better coverage. Still fiery but constructive."
+      },
+      creative: {
+        year1_3: "Creative conflicts about direction, execution, style. Both want to lead.",
+        year4_7: "Either found complementary roles or the collaboration has imploded. If surviving: the friction produces better work.",
+        year7_plus: "The creative tension has become the source of innovation. You push each other beyond comfort zones."
+      },
+      family: {
+        childhood: "Aggressive dynamics between family members. Arguments and power struggles. Both easily triggered by the other. Need conscious de-escalation strategies.",
+        adolescence: "Intensified conflict as both assert independence. May feel like constant war. Need third-party mediation or physical outlets for the Mars energy.",
+        adulthood: "If both learned healthy anger expression: mutual respect for each other's strength. If not: explosive gatherings or avoidance. The square never disappears but can be managed consciously."
+      }
     }
   },
 
@@ -233,9 +365,31 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
     challengeLevel: 6,
     
     evolutionTimeline: {
-      year1_3: "Electric attraction. Opposites attract phase. Exciting, passionate, magnetic. You're fascinated by how different you are. Sexual chemistry is high.",
-      year4_7: "Either learning to appreciate differences (strength phase) OR frustrated by them (conflict phase). Mars may feel rejected; Venus may feel pressured. Both learning to give what the other needs, not what they would need.",
-      year7_plus: "At its best: beautifully integrated partnership where both have developed the other's qualities. Venus is more assertive; Mars is more receptive. You complete each other without losing yourselves. Lasting attraction AND deep respect."
+      romance: {
+        year1_3: "Electric attraction. Opposites attract phase. Exciting, passionate, magnetic. You're fascinated by how different you are. Sexual chemistry is high.",
+        year4_7: "Either learning to appreciate differences (strength phase) OR frustrated by them (conflict phase). Mars may feel rejected; Venus may feel pressured. Both learning to give what the other needs, not what they would need.",
+        year7_plus: "At its best: beautifully integrated partnership where both have developed the other's qualities. Venus is more assertive; Mars is more receptive. You complete each other without losing yourselves. Lasting attraction AND deep respect."
+      },
+      friendship: {
+        year1_3: "Dynamic friendship. Venus provides social grace; Mars provides energy and initiative. You do different things well.",
+        year4_7: "Either appreciate the complementarity or tire of the differences. Venus may find Mars exhausting; Mars may find Venus passive.",
+        year7_plus: "If survived: balanced friendship. Venus has learned to be more direct; Mars has learned to be more harmonious. You've integrated each other's gifts."
+      },
+      business: {
+        year1_3: "Natural role division. Venus handles relationships and aesthetics; Mars handles execution and drive.",
+        year4_7: "Either the division works beautifully or resentment builds (Mars feels Venus doesn't work hard enough; Venus feels Mars is too aggressive).",
+        year7_plus: "If survived: highly effective partnership. Both have integrated the other's approach while maintaining their strengths."
+      },
+      creative: {
+        year1_3: "Exciting creative polarity. Venus brings beauty; Mars brings boldness. The work has both refinement and courage.",
+        year4_7: "Either the creative tension produces great work or the differences become irreconcilable.",
+        year7_plus: "At its best: the opposition creates work that's both beautiful and powerful. You've learned to let each other lead in different phases."
+      },
+      family: {
+        childhood: "Clear polarity in family roles. One parent/sibling is the harmonizer; the other is the doer/protector. Can model healthy complementarity or rigid gender roles.",
+        adolescence: "May push against assigned roles. The opposition creates tension around 'masculine' and 'feminine' energy. Need to integrate both within each person.",
+        adulthood: "If healthy: appreciation for complementary strengths. If unhealthy: resentment about who does what. Best outcome: both have integrated the other's energy while honoring their nature."
+      }
     }
   },
 
@@ -267,9 +421,31 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
     challengeLevel: 7,
     
     evolutionTimeline: {
-      year1_3: "Frequent miscommunications. Frustration that they 'don't get it.' Feeling unheard or like you're speaking different languages. May find it charming at first ('we're so different!') but novelty wears off.",
-      year4_7: "Either developed translation skills and appreciate different perspectives OR given up trying to communicate effectively. Breakup common here due to communication breakdown. If surviving: you've created systems and learned each other's language.",
-      year7_plus: "If still together, you've mastered cross-cultural communication. You can translate your thoughts into their language and vice versa. The square becomes a source of diverse perspectives that enrich decision-making. You've turned a bug into a feature."
+      romance: {
+        year1_3: "Frequent miscommunications. Frustration that they 'don't get it.' Feeling unheard or like you're speaking different languages. May find it charming at first ('we're so different!') but novelty wears off.",
+        year4_7: "Either developed translation skills and appreciate different perspectives OR given up trying to communicate effectively. Breakup common here due to communication breakdown. If surviving: you've created systems and learned each other's language.",
+        year7_plus: "If still together, you've mastered cross-cultural communication. You can translate your thoughts into their language and vice versa. The square becomes a source of diverse perspectives that enrich decision-making. You've turned a bug into a feature."
+      },
+      friendship: {
+        year1_3: "Miscommunications and frustrations. You talk past each other regularly.",
+        year4_7: "Either learned to appreciate different thinking styles or the friendship has faded from exhaustion.",
+        year7_plus: "If survived: you've learned to translate. Different perspectives enrich both of you. The square keeps conversations interesting."
+      },
+      business: {
+        year1_3: "Communication breakdowns. Different approaches to problems. Need explicit protocols.",
+        year4_7: "Either developed systems for clear communication or the partnership has dissolved. If surviving: different thinking styles are now an asset (diverse perspectives).",
+        year7_plus: "The communication challenges have become a strength. You catch each other's blind spots. Clear protocols mean fewer misunderstandings."
+      },
+      creative: {
+        year1_3: "Creative brainstorming is chaotic. Different ways of thinking about the work.",
+        year4_7: "Either found complementary roles (one conceptualizes, other executes) or too frustrating to continue.",
+        year7_plus: "If survived: the different thinking styles produce more innovative work. You've learned to translate between your creative languages."
+      },
+      family: {
+        childhood: "Feeling misunderstood by this family member. Different communication wavelengths. May feel dismissed or frustrated by their thinking style.",
+        adolescence: "Communication gaps widen. Different thought processes feel like deliberate misunderstanding. Need patience and explicit translation efforts.",
+        adulthood: "If both have made effort: learned to communicate across difference. If not: persistent feeling of being on different wavelengths. Can improve with conscious work at any age."
+      }
     }
   },
 
@@ -301,9 +477,31 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
     challengeLevel: 2,
     
     evolutionTimeline: {
-      year1_3: "Honeymoon vibes. Everything feels easy, generous, and joyful. You see the best in each other. Love and optimism are high. This is the 'falling in love' aspect.",
-      year4_7: "Still positive but may have taken each other for granted. Need to consciously maintain appreciation. Risk of boredom if no challenges in the relationship—Jupiter-Venus alone doesn't create depth.",
-      year7_plus: "Sustained mutual appreciation and joy IF both people continue to grow. At its best: lifelong cheerleaders for each other. At its worst: shallow happiness without real intimacy. Depends on other aspects for depth."
+      romance: {
+        year1_3: "Honeymoon vibes. Everything feels easy, generous, and joyful. You see the best in each other. Love and optimism are high. This is the 'falling in love' aspect.",
+        year4_7: "Still positive but may have taken each other for granted. Need to consciously maintain appreciation. Risk of boredom if no challenges in the relationship—Jupiter-Venus alone doesn't create depth.",
+        year7_plus: "Sustained mutual appreciation and joy IF both people continue to grow. At its best: lifelong cheerleaders for each other. At its worst: shallow happiness without real intimacy. Depends on other aspects for depth."
+      },
+      friendship: {
+        year1_3: "Joyful, fun, generous friendship. You celebrate each other. Good times together.",
+        year4_7: "Still enjoyable. May need to add depth or the friendship stays surface-level fun.",
+        year7_plus: "Lifelong fun friendship with mutual appreciation. May lack depth but provides consistent joy and support."
+      },
+      business: {
+        year1_3: "Optimistic partnership. Big visions, generous investments in each other.",
+        year4_7: "Need to balance expansion with sustainability. Risk of overextending.",
+        year7_plus: "If balanced: successful, growing partnership. If not balanced: may have expanded beyond capacity."
+      },
+      creative: {
+        year1_3: "Mutual creative encouragement. Big visions, generous support.",
+        year4_7: "Need to balance inspiration with craft. Risk of grandiosity without substance.",
+        year7_plus: "At its best: sustained creative partnership with mutual belief in each other's talent."
+      },
+      family: {
+        childhood: "Generous, optimistic family relationship. Feeling celebrated and valued. May lack discipline or realistic expectations.",
+        adolescence: "Continued warmth and generosity. Risk of overindulgence or avoiding difficult conversations.",
+        adulthood: "Warm, appreciative family bond. You celebrate each other's successes. Need other family dynamics for depth and challenge."
+      }
     }
   },
 
@@ -335,9 +533,31 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
     challengeLevel: 10,
     
     evolutionTimeline: {
-      year1_3: "Enchanted, magical, perfect. Living in a dream. You feel you've found your soulmate. Everything is romantic, spiritual, transcendent. WARNING: You may not be seeing reality at all.",
-      year4_7: "Reality check. The fog lifts. You start to see who they actually are (Venus person) or who you actually are (Neptune person). Disillusionment is common. May discover deception (theirs, yours, or mutual). Crisis point: can you love the real person or were you only in love with the fantasy?",
-      year7_plus: "If still together, you've integrated the spiritual with the real. Conscious spiritual partnership where both people are committed to truth AND transcendence. Rare but beautiful. More commonly: painful breakup when illusions shatter. Neptune-Venus requires exceptional maturity and honesty to succeed long-term."
+      romance: {
+        year1_3: "Enchanted, magical, perfect. Living in a dream. You feel you've found your soulmate. Everything is romantic, spiritual, transcendent. WARNING: You may not be seeing reality at all.",
+        year4_7: "Reality check. The fog lifts. You start to see who they actually are (Venus person) or who you actually are (Neptune person). Disillusionment is common. May discover deception (theirs, yours, or mutual). Crisis point: can you love the real person or were you only in love with the fantasy?",
+        year7_plus: "If still together, you've integrated the spiritual with the real. Conscious spiritual partnership where both people are committed to truth AND transcendence. Rare but beautiful. More commonly: painful breakup when illusions shatter. Neptune-Venus requires exceptional maturity and honesty to succeed long-term."
+      },
+      friendship: {
+        year1_3: "Magical, spiritual connection. You feel understood at soul level. Beautiful empathy and compassion.",
+        year4_7: "Either boundaries have been established or enmeshment has occurred. Reality testing: is this friendship healthy or enabling?",
+        year7_plus: "If healthy: deep spiritual friendship with maintained boundaries. If not: codependency or painful awakening when illusions shatter."
+      },
+      business: {
+        year1_3: "Inspired vision but unclear execution. Dreams without discipline. Risk of confusion about roles, money, agreements.",
+        year4_7: "Reality check: is the business viable? Have commitments been kept? Often dissolves when Neptune's promises don't materialize.",
+        year7_plus: "Rare to survive unless strong Saturn elsewhere. If it has: spiritual business with practical grounding. Usually dissolved by this point."
+      },
+      creative: {
+        year1_3: "Transcendent creative inspiration. Beautiful work but may lack finish or commercial viability.",
+        year4_7: "Need to ground the vision. Is the work being completed? Is it reaching audiences? Reality testing.",
+        year7_plus: "If grounded: beautiful, inspired creative partnership. If not: a lot of half-finished projects and unfulfilled potential."
+      },
+      family: {
+        childhood: "Magical, spiritual bond with this family member. May idealize them or feel spiritually connected. Risk of boundaries being dissolved or codependency developing.",
+        adolescence: "Either healthy compassion or unhealthy enmeshment. Need reality testing: am I seeing them clearly? Am I losing myself in their needs?",
+        adulthood: "If healthy: beautiful spiritual connection with maintained boundaries. If not: codependency, enabling, or painful disillusionment. Requires conscious boundary work."
+      }
     }
   },
 
@@ -369,9 +589,31 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
     challengeLevel: 9,
     
     evolutionTimeline: {
-      year1_3: "Old love wounds resurface intensely. You're triggering each other's deepest insecurities around worthiness and lovability. Painful but illuminating. You're being shown exactly what needs healing.",
-      year4_7: "Crisis and breakthrough. Either both people are doing healing work and the relationship becomes medicine, OR one or both retraumatize and the relationship becomes destructive. Make or break period.",
-      year7_plus: "If survived consciously: profound healing and teaching relationship. Both people have healed love wounds through this connection. You can now help others heal similar wounds. If not survived: was a painful but necessary teacher showing you what needs healing before you try again."
+      romance: {
+        year1_3: "Old love wounds resurface intensely. You're triggering each other's deepest insecurities around worthiness and lovability. Painful but illuminating. You're being shown exactly what needs healing.",
+        year4_7: "Crisis and breakthrough. Either both people are doing healing work and the relationship becomes medicine, OR one or both retraumatize and the relationship becomes destructive. Make or break period.",
+        year7_plus: "If survived consciously: profound healing and teaching relationship. Both people have healed love wounds through this connection. You can now help others heal similar wounds. If not survived: was a painful but necessary teacher showing you what needs healing before you try again."
+      },
+      friendship: {
+        year1_3: "Worthiness wounds surface. You trigger each other's insecurities about being accepted and valued.",
+        year4_7: "Either healing together or retraumatizing each other. The friendship is medicine or poison depending on mutual awareness.",
+        year7_plus: "If survived: deep understanding and healing. You've helped each other become more whole. The friendship has therapeutic value."
+      },
+      business: {
+        year1_3: "Money and value wounds surface. Imposter syndrome and worthiness issues in the work.",
+        year4_7: "Either learned to value each other and self appropriately, or scarcity dynamics have poisoned the partnership.",
+        year7_plus: "If survived: you've healed money wounds through the work together. You know your value and price it appropriately."
+      },
+      creative: {
+        year1_3: "Creative worthiness wounds surface. 'Am I good enough?' The collaboration triggers deep artistic insecurities.",
+        year4_7: "Either healing creative shame together or reinforcing it. The work reveals what needs healing.",
+        year7_plus: "If survived: you've healed creative wounds. You can create from wholeness rather than wound. The collaboration has been therapeutic."
+      },
+      family: {
+        childhood: "This family member activates wounds around love, worth, and acceptance. May recreate earlier family dynamics. Early exposure to themes of worthiness.",
+        adolescence: "Wounds deepen or begin healing depending on awareness. The family relationship shows what needs healing. Pain is present but potentially transformative.",
+        adulthood: "If both have done healing work: the relationship becomes medicine. Old wounds have transformed into wisdom. If not: continued triggering of worthiness issues. Can heal at any point with conscious effort."
+      }
     }
   }
 ];
