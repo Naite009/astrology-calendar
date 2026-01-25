@@ -73,6 +73,17 @@ export interface KarmicAnalysis {
 }
 
 export function calculateKarmicAnalysis(chart1: NatalChart, chart2: NatalChart): KarmicAnalysis {
+  // Debug: Log chart structure to understand data format
+  console.log('=== KARMIC ANALYSIS DEBUG ===');
+  console.log('Chart 1 Name:', chart1.name);
+  console.log('Chart 1 NorthNode:', chart1.planets.NorthNode);
+  console.log('Chart 1 Sun:', chart1.planets.Sun);
+  console.log('Chart 2 Name:', chart2.name);
+  console.log('Chart 2 NorthNode:', chart2.planets.NorthNode);
+  console.log('Chart 2 Venus:', chart2.planets.Venus);
+  console.log('Sample Planet Keys:', Object.keys(chart1.planets).slice(0, 10));
+  console.log('=============================');
+
   const indicators: KarmicIndicator[] = [];
   const dangerFlags: string[] = [];
   const healingOpportunities: string[] = [];

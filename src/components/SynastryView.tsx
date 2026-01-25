@@ -906,67 +906,6 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                         />
                       )}
                       
-                      {/* DEBUG: Raw Karmic Analysis Data */}
-                      {karmicAnalysis && (
-                        <Collapsible>
-                          <CollapsibleTrigger className="w-full p-3 rounded-lg bg-muted/50 border text-left text-sm flex items-center justify-between hover:bg-muted transition-colors">
-                            <span className="font-mono text-xs">🔍 Debug: View Raw Karmic Analysis Data</span>
-                            <ChevronDown size={14} />
-                          </CollapsibleTrigger>
-                          <CollapsibleContent className="mt-2 p-4 rounded-lg border bg-card overflow-auto max-h-96">
-                            <div className="space-y-4 font-mono text-xs">
-                              <div>
-                                <h5 className="font-semibold text-sm mb-1">Karmic Type:</h5>
-                                <code className="bg-muted px-2 py-1 rounded">{karmicAnalysis.karmicType}</code>
-                              </div>
-                              <div>
-                                <h5 className="font-semibold text-sm mb-1">Past Life Probability:</h5>
-                                <code className="bg-muted px-2 py-1 rounded">{karmicAnalysis.pastLifeProbability}%</code>
-                              </div>
-                              <div>
-                                <h5 className="font-semibold text-sm mb-1">Total Karmic Score:</h5>
-                                <code className="bg-muted px-2 py-1 rounded">{karmicAnalysis.totalKarmicScore}</code>
-                              </div>
-                              <div>
-                                <h5 className="font-semibold text-sm mb-1">Indicators ({karmicAnalysis.indicators.length}):</h5>
-                                <pre className="bg-muted p-2 rounded overflow-x-auto text-[10px]">
-{JSON.stringify(karmicAnalysis.indicators, null, 2)}
-                                </pre>
-                              </div>
-                              <div>
-                                <h5 className="font-semibold text-sm mb-1">Danger Flags:</h5>
-                                <pre className="bg-muted p-2 rounded overflow-x-auto text-[10px]">
-{JSON.stringify(karmicAnalysis.dangerFlags, null, 2)}
-                                </pre>
-                              </div>
-                              <div>
-                                <h5 className="font-semibold text-sm mb-1">Healing Opportunities:</h5>
-                                <pre className="bg-muted p-2 rounded overflow-x-auto text-[10px]">
-{JSON.stringify(karmicAnalysis.healingOpportunities, null, 2)}
-                                </pre>
-                              </div>
-                              <div>
-                                <h5 className="font-semibold text-sm mb-1">Full Object:</h5>
-                                <pre className="bg-muted p-2 rounded overflow-x-auto text-[10px] select-all cursor-pointer" title="Click to select all">
-{JSON.stringify(karmicAnalysis, null, 2)}
-                                </pre>
-                              </div>
-                              <Button 
-                                size="sm" 
-                                variant="outline" 
-                                onClick={() => {
-                                  navigator.clipboard.writeText(JSON.stringify(karmicAnalysis, null, 2));
-                                  console.log('Karmic Analysis Data:', karmicAnalysis);
-                                }}
-                                className="mt-2"
-                              >
-                                📋 Copy to Clipboard & Log to Console
-                              </Button>
-                            </div>
-                          </CollapsibleContent>
-                        </Collapsible>
-                      )}
-                      
                       {/* Synastry Wheel Visualization */}
                       <section className="flex flex-col items-center">
                         <SynastryWheelSimple chart1={chart1} chart2={chart2} size={420} />
