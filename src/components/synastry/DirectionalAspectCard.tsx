@@ -113,17 +113,22 @@ export const DirectionalAspectCard: React.FC<DirectionalAspectCardProps> = ({
           <div className="p-4 rounded-lg bg-muted/50 border border-border">
             <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
               <Clock size={16} className="text-primary" />
-              How This Dynamic Evolves Over Time
+              How This Dynamic Evolves
             </h4>
             <p className="text-xs text-muted-foreground mb-3 italic">
-              Based on years together in this relationship
+              {context === 'family' 
+                ? "How this dynamic shifts through life stages"
+                : "Based on years together in this relationship"
+              }
             </p>
             <div className="relative">
               <div className="absolute left-[7px] top-3 bottom-3 w-0.5 bg-border" />
               <div className="space-y-4">
                 <div className="relative pl-6">
                   <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-primary/20 border-2 border-primary" />
-                  <h5 className="font-medium text-sm text-foreground">First 1-3 Years Together</h5>
+                  <h5 className="font-medium text-sm text-foreground">
+                    {context === 'family' ? "Childhood & Early Years" : "First 1-3 Years Together"}
+                  </h5>
                   <p className="text-sm text-muted-foreground mt-1">
                     {interpretation.evolutionTimeline.year1_3}
                   </p>
@@ -131,7 +136,9 @@ export const DirectionalAspectCard: React.FC<DirectionalAspectCardProps> = ({
                 
                 <div className="relative pl-6">
                   <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-primary/40 border-2 border-primary" />
-                  <h5 className="font-medium text-sm text-foreground">Years 4-7 Together</h5>
+                  <h5 className="font-medium text-sm text-foreground">
+                    {context === 'family' ? "Adolescence & Young Adulthood" : "Years 4-7 Together"}
+                  </h5>
                   <p className="text-sm text-muted-foreground mt-1">
                     {interpretation.evolutionTimeline.year4_7}
                   </p>
@@ -139,7 +146,9 @@ export const DirectionalAspectCard: React.FC<DirectionalAspectCardProps> = ({
                 
                 <div className="relative pl-6">
                   <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-primary border-2 border-primary" />
-                  <h5 className="font-medium text-sm text-foreground">7+ Years Together</h5>
+                  <h5 className="font-medium text-sm text-foreground">
+                    {context === 'family' ? "Adult Relationship" : "7+ Years Together"}
+                  </h5>
                   <p className="text-sm text-muted-foreground mt-1">
                     {interpretation.evolutionTimeline.year7_plus}
                   </p>
