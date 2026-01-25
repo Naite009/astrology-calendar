@@ -1,4 +1,5 @@
 import { NatalChart } from '@/hooks/useNatalChart';
+import { FamilyRelationshipContext, getFamilyAspectInterpretation } from './familyRelationshipTypes';
 
 // Relationship focus type
 export type RelationshipFocus = 'romance' | 'friendship' | 'business' | 'family' | 'creative';
@@ -55,6 +56,12 @@ export interface KarmicIndicator {
   weight: number;
   interpretation: string;
   theme: 'past_life' | 'soul_growth' | 'karmic_debt' | 'transformation' | 'healing' | 'fated';
+  // Family-specific fields
+  familyAdvice?: {
+    forUser: string;
+    forOther: string;
+    generationalPattern: string;
+  };
 }
 
 export interface KarmicAnalysis {
@@ -68,6 +75,8 @@ export interface KarmicAnalysis {
   recommendedApproach: string;
   timeline: { likely_duration: string; key_lessons: string[]; completion_indicators: string[]; };
   focus: RelationshipFocus;
+  // Family-specific context
+  familyContext?: FamilyRelationshipContext;
 }
 
 const ZODIAC_SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
@@ -856,7 +865,8 @@ function getApproach(karmicType: KarmicAnalysis['karmicType'], focus: Relationsh
 export function calculateKarmicAnalysis(
   chart1: NatalChart, 
   chart2: NatalChart,
-  focus: RelationshipFocus = 'romance'
+  focus: RelationshipFocus = 'romance',
+  familyContext?: FamilyRelationshipContext
 ): KarmicAnalysis {
   const indicators: KarmicIndicator[] = [];
   const dangerFlags: string[] = [];
@@ -878,6 +888,26 @@ export function calculateKarmicAnalysis(
   analyzeEighthHouseOverlays(chart2, chart1, indicators, dangerFlags, focus);
   analyzeVertexContacts(chart1, chart2, indicators, focus);
 
+  // If family context is provided, enhance indicators with family-specific advice
+  if (focus === 'family' && familyContext) {
+    indicators.forEach(indicator => {
+      const familyInterpretation = getFamilyAspectInterpretation(
+        indicator.planet1,
+        indicator.planet2,
+        indicator.aspect || 'conjunction',
+        familyContext
+      );
+      
+      // Override interpretation with family-specific one
+      indicator.interpretation = familyInterpretation.interpretation;
+      indicator.familyAdvice = {
+        forUser: familyInterpretation.forUser,
+        forOther: familyInterpretation.forOther,
+        generationalPattern: familyInterpretation.generationalPattern
+      };
+    });
+  }
+
   const totalKarmicScore = indicators.reduce((sum, ind) => sum + ind.weight, 0);
   const pastLifeScore = indicators.filter(ind => ind.theme === 'past_life').reduce((sum, ind) => sum + ind.weight, 0);
   const pastLifeProbability = Math.min(100, Math.round((pastLifeScore / 80) * 100));
@@ -892,8 +922,34 @@ export function calculateKarmicAnalysis(
     new_contract: { likely_duration: 'Variable', key_lessons: ['Present-moment relating'], completion_indicators: ['Based on choice'] }
   };
 
+  // Family-specific timeline adjustments
+  if (focus === 'family' && familyContext) {
+    if (familyContext.relationType === 'parent-child' || familyContext.relationType === 'child-parent') {
+      timelines.soul_family = { 
+        likely_duration: 'Lifetime bond', 
+        key_lessons: ['Unconditional love', 'Healthy boundaries', 'Adult-to-adult relating'], 
+        completion_indicators: ['Shifts from dependency to mutual respect'] 
+      };
+    } else if (familyContext.relationType === 'siblings' || familyContext.relationType === 'step-sibling') {
+      timelines.soul_family = { 
+        likely_duration: 'Lifetime bond (evolving)', 
+        key_lessons: ['Adult friendship', 'Releasing childhood roles'], 
+        completion_indicators: ['Relating as equals, not roles'] 
+      };
+    }
+  }
+
   let approach = dangerFlags.length >= 3 ? '⚠️ HIGH ALERT: Multiple intensity indicators. ' : dangerFlags.length > 0 ? '⚠️ CAUTION: ' : '';
   approach += getApproach(karmicType, focus);
+
+  // Family-specific approach additions
+  if (focus === 'family' && familyContext) {
+    if (familyContext.isBloodRelated) {
+      approach += ' Remember: These patterns may be inherited across generations.';
+    } else {
+      approach += ' As chosen family, you have the opportunity to create new patterns together.';
+    }
+  }
 
   return {
     totalKarmicScore,
@@ -905,7 +961,8 @@ export function calculateKarmicAnalysis(
     soulPurpose: getSoulPurpose(karmicType, focus),
     recommendedApproach: approach,
     timeline: timelines[karmicType],
-    focus
+    focus,
+    familyContext
   };
 }
 
