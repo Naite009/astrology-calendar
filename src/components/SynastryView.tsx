@@ -568,11 +568,22 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
     return analyzeShadowDynamics(chart1, chart2, chart1.name, chart2.name);
   }, [chart1, chart2]);
 
-  // Get karmic analysis using the new professional system
+  // Get karmic analysis using the new professional system - NOW FOCUS-AWARE
   const karmicAnalysis = useMemo(() => {
     if (!chart1 || !chart2) return null;
-    return calculateKarmicAnalysis(chart1, chart2);
-  }, [chart1, chart2]);
+    // Map the relationshipFocus to karmic analysis focus type
+    const focusMap: Record<string, 'romance' | 'friendship' | 'business' | 'family' | 'creative'> = {
+      'all': 'romance',
+      'romantic': 'romance',
+      'friends': 'friendship',
+      'friendship': 'friendship',
+      'business': 'business',
+      'family': 'family',
+      'creative': 'creative'
+    };
+    const karmicFocus = focusMap[relationshipFocus] || 'romance';
+    return calculateKarmicAnalysis(chart1, chart2, karmicFocus);
+  }, [chart1, chart2, relationshipFocus]);
 
   // Calculate TRUE overall score as weighted average of all 5 focus types
   // MUST be before safetyAssessment since it depends on this
