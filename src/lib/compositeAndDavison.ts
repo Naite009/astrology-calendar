@@ -1,17 +1,23 @@
 import { NatalChart } from '@/hooks/useNatalChart';
 
-export interface CompositeChart extends NatalChart {
+export interface CompositeChart {
   chartType: 'composite';
   person1Name?: string;
   person2Name?: string;
+  planets: Record<string, any>;
+  houseCusps?: Record<number, any>;
+  interceptedSigns?: any[];
 }
 
-export interface DavisonChart extends NatalChart {
+export interface DavisonChart {
   chartType: 'davison';
   person1Name?: string;
   person2Name?: string;
   relationshipBirthDate: Date;
   relationshipBirthLocation: string;
+  planets: Record<string, any>;
+  houseCusps?: Record<number, any>;
+  interceptedSigns?: any[];
 }
 
 export interface ChartComparisonGuide {
