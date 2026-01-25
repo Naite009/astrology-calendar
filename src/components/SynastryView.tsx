@@ -29,6 +29,7 @@ import { SafetyAssessmentCard, SafetyAssessment } from './SafetyAssessmentCard';
 import { KarmicAnalysisCard } from './KarmicAnalysisCard';
 import { RelationshipPotentialCard } from './RelationshipPotentialCard';
 import { PurposeAlignmentCard } from './PurposeAlignmentCard';
+import { RelationshipTimelineCard } from './RelationshipTimelineCard';
 import { format } from 'date-fns';
 
 interface SynastryViewProps {
@@ -1112,6 +1113,38 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                           </div>
                         </section>
                       )}
+                      
+                      {/* NEW: Relationship Potential Card */}
+                      {relationshipPotential && (
+                        <section>
+                          <RelationshipPotentialCard
+                            potential={relationshipPotential}
+                            chart1Name={chart1.name}
+                            chart2Name={chart2.name}
+                            focus={relationshipFocus}
+                          />
+                        </section>
+                      )}
+                      
+                      {/* NEW: Purpose Alignment Card */}
+                      {purposeAlignment && (
+                        <section>
+                          <PurposeAlignmentCard
+                            alignment={purposeAlignment}
+                            chart1Name={chart1.name}
+                            chart2Name={chart2.name}
+                          />
+                        </section>
+                      )}
+                      
+                      {/* NEW: 12-Month Relationship Timeline */}
+                      <section>
+                        <RelationshipTimelineCard
+                          chart1={chart1}
+                          chart2={chart2}
+                          months={12}
+                        />
+                      </section>
                       
                       {/* Transit Timeline */}
                       <section className="p-4 rounded-xl border bg-card">
