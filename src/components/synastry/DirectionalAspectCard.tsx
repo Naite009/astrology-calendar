@@ -124,35 +124,55 @@ export const DirectionalAspectCard: React.FC<DirectionalAspectCardProps> = ({
             <div className="relative">
               <div className="absolute left-[7px] top-3 bottom-3 w-0.5 bg-border" />
               <div className="space-y-4">
-                <div className="relative pl-6">
-                  <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-primary/20 border-2 border-primary" />
-                  <h5 className="font-medium text-sm text-foreground">
-                    {context === 'family' ? "Childhood & Early Years" : "First 1-3 Years Together"}
-                  </h5>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {interpretation.evolutionTimeline.year1_3}
-                  </p>
-                </div>
-                
-                <div className="relative pl-6">
-                  <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-primary/40 border-2 border-primary" />
-                  <h5 className="font-medium text-sm text-foreground">
-                    {context === 'family' ? "Adolescence & Young Adulthood" : "Years 4-7 Together"}
-                  </h5>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {interpretation.evolutionTimeline.year4_7}
-                  </p>
-                </div>
-                
-                <div className="relative pl-6">
-                  <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-primary border-2 border-primary" />
-                  <h5 className="font-medium text-sm text-foreground">
-                    {context === 'family' ? "Adult Relationship" : "7+ Years Together"}
-                  </h5>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {interpretation.evolutionTimeline.year7_plus}
-                  </p>
-                </div>
+                {context === 'family' ? (
+                  <>
+                    <div className="relative pl-6">
+                      <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-primary/20 border-2 border-primary" />
+                      <h5 className="font-medium text-sm text-foreground">Childhood & Early Years</h5>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {interpretation.evolutionTimeline.family.childhood}
+                      </p>
+                    </div>
+                    <div className="relative pl-6">
+                      <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-primary/40 border-2 border-primary" />
+                      <h5 className="font-medium text-sm text-foreground">Adolescence & Young Adulthood</h5>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {interpretation.evolutionTimeline.family.adolescence}
+                      </p>
+                    </div>
+                    <div className="relative pl-6">
+                      <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-primary border-2 border-primary" />
+                      <h5 className="font-medium text-sm text-foreground">Adult Relationship</h5>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {interpretation.evolutionTimeline.family.adulthood}
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="relative pl-6">
+                      <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-primary/20 border-2 border-primary" />
+                      <h5 className="font-medium text-sm text-foreground">First 1-3 Years Together</h5>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {interpretation.evolutionTimeline[context].year1_3}
+                      </p>
+                    </div>
+                    <div className="relative pl-6">
+                      <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-primary/40 border-2 border-primary" />
+                      <h5 className="font-medium text-sm text-foreground">Years 4-7 Together</h5>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {interpretation.evolutionTimeline[context].year4_7}
+                      </p>
+                    </div>
+                    <div className="relative pl-6">
+                      <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-primary border-2 border-primary" />
+                      <h5 className="font-medium text-sm text-foreground">7+ Years Together</h5>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {interpretation.evolutionTimeline[context].year7_plus}
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
