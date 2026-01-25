@@ -104,6 +104,40 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
   },
 
   {
+    aspectKey: "sun_opposite_pluto",
+    personARole: "Sun Person",
+    personBRole: "Pluto Person",
+    
+    personAExperience: {
+      romance: "You feel like they see straight through you—and it's both thrilling and terrifying. There's a magnetic pull, but also a sense of being consumed. You're drawn to their intensity yet may feel your identity is being challenged or threatened. Power dynamics are constant. You want their depth but fear losing yourself in it.",
+      friendship: "They fascinate and unsettle you. You sense they know things about you that you don't know yourself. The friendship forces honesty—you can't maintain facades. They push you to own your power, but their intensity can feel overwhelming.",
+      business: "They see your blind spots and aren't afraid to call them out. You may feel exposed or undermined, OR you recognize they're helping you grow. There's a tug-of-war over direction and control. Success requires learning to share power rather than compete for it.",
+      creative: "They bring depth and intensity to your creative vision. The collaboration can be transformative but also feels like a battle for creative control. Your light meets their shadow—the fusion can be brilliant or explosive.",
+      family: "Power struggles are likely. They may try to control or transform you in ways that feel threatening to your identity. Yet there's also profound potential for mutual growth if both parties respect boundaries."
+    },
+    
+    personBExperience: {
+      romance: "You're powerfully drawn to their light, their confidence, their presence. You want to merge with them—or possess them. The opposition creates magnetic attraction but also constant tension. You see their potential and want to unlock it, but must resist the urge to control or dominate.",
+      friendship: "You're the intense one in this dynamic. You see through their persona and may feel compelled to 'fix' or transform them. Your depth challenges their identity. Learn to empower rather than overpower.",
+      business: "You hold strategic insight they lack. The temptation is to control from behind the scenes. But the opposition means your power plays will be noticed and resisted. True success comes from transparent collaboration.",
+      creative: "You bring psychological depth and transformative vision. But the opposition means your intensity can overpower their contribution. Balance is key—let their light shine while you provide the shadow and depth.",
+      family: "You may unconsciously try to remake them. The opposition creates push-pull dynamics around control and identity. Your transformative energy can heal or wound—intention and awareness determine the outcome."
+    },
+    
+    mutualWork: "The opposition demands balance between identity (Sun) and transformation (Pluto). Sun must allow change without losing core self. Pluto must empower without controlling. This aspect creates powerful attraction AND powerful conflict—conscious work is essential for survival.",
+    
+    intensityLevel: 10,
+    growthPotential: 9,
+    challengeLevel: 10,
+    
+    evolutionTimeline: {
+      year1_3: "Intense attraction and equally intense power struggles. The magnetic pull is undeniable but so are the conflicts. Both feel simultaneously drawn together and pushed apart. Crisis moments test whether the connection can survive.",
+      year4_7: "Make or break period. Either both learn to balance power and respect autonomy, OR the relationship becomes a destructive cycle of control and rebellion. If surviving: deep mutual transformation is underway.",
+      year7_plus: "If both have done the work, this becomes an unshakeable bond. You've weathered the storms and emerged transformed. Mutual empowerment replaces power struggles. If not, the pattern of control and resistance continues."
+    }
+  },
+
+  {
     aspectKey: "moon_conjunct_moon",
     personARole: "Person A",
     personBRole: "Person B",
