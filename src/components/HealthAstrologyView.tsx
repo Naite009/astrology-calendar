@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Heart, Apple, Sparkles, Home, Clock, Leaf, AlertCircle } from "lucide-react";
+import { Heart, Apple, Sparkles, Home, Clock, Leaf, AlertCircle, AlertTriangle } from "lucide-react";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { HealthNatalBlueprint } from "./health/HealthNatalBlueprint";
 import { NutritionalAstrology } from "./health/NutritionalAstrology";
@@ -10,6 +9,7 @@ import { HealthAspectsCard } from "./health/HealthAspectsCard";
 import { HouseHealthSystem } from "./health/HouseHealthSystem";
 import { HealthTimingCard } from "./health/HealthTimingCard";
 import { HealingModalitiesCard } from "./health/HealingModalitiesCard";
+import { HealthTransitAlertsCard } from "./health/HealthTransitAlertsCard";
 
 interface HealthAstrologyViewProps {
   natalChart: NatalChart | null;
@@ -102,6 +102,10 @@ export const HealthAstrologyView = ({ natalChart, allCharts }: HealthAstrologyVi
             <Clock size={14} />
             Timing
           </TabsTrigger>
+          <TabsTrigger value="transits" className="flex items-center gap-1.5 text-xs">
+            <AlertTriangle size={14} />
+            Transits
+          </TabsTrigger>
           <TabsTrigger value="healing" className="flex items-center gap-1.5 text-xs">
             <Leaf size={14} />
             Healing
@@ -126,6 +130,10 @@ export const HealthAstrologyView = ({ natalChart, allCharts }: HealthAstrologyVi
 
         <TabsContent value="timing">
           <HealthTimingCard />
+        </TabsContent>
+
+        <TabsContent value="transits">
+          <HealthTransitAlertsCard natalChart={selectedChart} />
         </TabsContent>
 
         <TabsContent value="healing">
