@@ -278,9 +278,12 @@ export function calculateCompositeChart(chart1: NatalChart, chart2: NatalChart):
   };
 }
 
+import * as Astronomy from 'astronomy-engine';
+
 /**
  * Calculate Davison chart (averaged birth data method)
  * Unlike Composite (midpoints), Davison uses the actual midpoint in TIME and SPACE
+ * TRUE DAVISON: Uses astronomy-engine for precise ephemeris calculations
  */
 export interface DavisonChart {
   name: string;
@@ -304,10 +307,58 @@ function calculateAveragedDate(date1: Date, date2: Date): Date {
 }
 
 /**
- * Calculate Davison relationship chart
+ * Map planet names to astronomy-engine Body enum
+ */
+function getAstronomyBody(planetName: string): Astronomy.Body | null {
+  const bodyMap: Record<string, Astronomy.Body> = {
+    'Sun': Astronomy.Body.Sun,
+    'Moon': Astronomy.Body.Moon,
+    'Mercury': Astronomy.Body.Mercury,
+    'Venus': Astronomy.Body.Venus,
+    'Mars': Astronomy.Body.Mars,
+    'Jupiter': Astronomy.Body.Jupiter,
+    'Saturn': Astronomy.Body.Saturn,
+    'Uranus': Astronomy.Body.Uranus,
+    'Neptune': Astronomy.Body.Neptune,
+    'Pluto': Astronomy.Body.Pluto
+  };
+  return bodyMap[planetName] || null;
+}
+
+/**
+ * Get ecliptic longitude for a planet at a given date using astronomy-engine
+ */
+function getPlanetLongitudeAtDate(planetName: string, date: Date): number | null {
+  const body = getAstronomyBody(planetName);
+  if (!body) return null;
+  
+  try {
+    const astroDate = Astronomy.MakeTime(date);
+    
+    if (body === Astronomy.Body.Sun) {
+      // For Sun, use SunPosition which gives geocentric ecliptic coordinates
+      const sunPos = Astronomy.SunPosition(astroDate);
+      return sunPos.elon;
+    } else if (body === Astronomy.Body.Moon) {
+      // For Moon, use EclipticGeoMoon for precise geocentric ecliptic coordinates
+      const moonPos = Astronomy.EclipticGeoMoon(astroDate);
+      return moonPos.lon;
+    } else {
+      // For other planets, use GeoVector and convert to ecliptic
+      const geoVector = Astronomy.GeoVector(body, astroDate, true);
+      const ecliptic = Astronomy.Ecliptic(geoVector);
+      return ecliptic.elon;
+    }
+  } catch (error) {
+    console.error(`Error calculating ${planetName} position for Davison chart:`, error);
+    return null;
+  }
+}
+
+/**
+ * Calculate Davison relationship chart using TRUE EPHEMERIS
  * This creates a chart for the "birth moment" of the relationship itself
- * TRUE DAVISON: Calculates actual planetary positions for the averaged date
- * (approximated using the slow-moving planets' mean motion)
+ * Uses astronomy-engine for precise planetary positions at the averaged date
  */
 export function calculateDavisonChart(chart1: NatalChart, chart2: NatalChart): DavisonChart {
   // Calculate averaged birth date
@@ -318,49 +369,66 @@ export function calculateDavisonChart(chart1: NatalChart, chart2: NatalChart): D
   // For location, we note both locations (true Davison would need geocoding)
   const averagedLocation = `Between ${chart1.birthLocation} and ${chart2.birthLocation}`;
   
-  // TRUE DAVISON: Calculate planetary positions for the averaged date
-  // Use daily motion rates to approximate positions at the midpoint date
+  // TRUE DAVISON: Calculate actual planetary positions for the averaged date using ephemeris
   const davisonPlanets: Record<string, CompositePosition> = {};
   const planetNames = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
   
-  // Mean daily motion for each planet (degrees per day, approximate)
-  const dailyMotion: Record<string, number> = {
-    Sun: 0.9856,      // ~1° per day
-    Moon: 13.176,     // ~13° per day
-    Mercury: 1.383,   // variable, average
-    Venus: 1.2,       // variable, average
-    Mars: 0.524,      // ~0.5° per day
-    Jupiter: 0.083,   // ~5' per day
-    Saturn: 0.034,    // ~2' per day
-    Uranus: 0.012,    // very slow
-    Neptune: 0.006,   // very slow
-    Pluto: 0.004      // very slow
-  };
-  
-  // Calculate days from chart1 date to averaged date
-  const daysDiff = (averagedDate.getTime() - date1.getTime()) / (1000 * 60 * 60 * 24);
-  
   for (const planetName of planetNames) {
-    const pos1 = chart1.planets[planetName as keyof typeof chart1.planets];
-    const pos2 = chart2.planets[planetName as keyof typeof chart2.planets];
+    // Use astronomy-engine to get precise position at averaged date
+    const longitude = getPlanetLongitudeAtDate(planetName, averagedDate);
     
-    if (pos1 && pos2) {
-      // For Davison, we project forward from chart1's position by the appropriate motion
-      // This gives DIFFERENT results from composite midpoint method
-      const lon1 = toAbsoluteLongitude(pos1);
-      const motion = dailyMotion[planetName] || 0.5;
-      
-      // Project forward (or backward if averaged date is earlier)
-      let projectedLon = lon1 + (motion * daysDiff);
-      projectedLon = ((projectedLon % 360) + 360) % 360;
-      
-      davisonPlanets[planetName] = fromLongitude(projectedLon);
+    if (longitude !== null) {
+      davisonPlanets[planetName] = fromLongitude(longitude);
+    } else {
+      // Fallback to original projection method if ephemeris fails
+      const pos1 = chart1.planets[planetName as keyof typeof chart1.planets];
+      if (pos1) {
+        const dailyMotion: Record<string, number> = {
+          Sun: 0.9856, Moon: 13.176, Mercury: 1.383, Venus: 1.2, Mars: 0.524,
+          Jupiter: 0.083, Saturn: 0.034, Uranus: 0.012, Neptune: 0.006, Pluto: 0.004
+        };
+        const daysDiff = (averagedDate.getTime() - date1.getTime()) / (1000 * 60 * 60 * 24);
+        const lon1 = toAbsoluteLongitude(pos1);
+        const motion = dailyMotion[planetName] || 0.5;
+        let projectedLon = lon1 + (motion * daysDiff);
+        projectedLon = ((projectedLon % 360) + 360) % 360;
+        davisonPlanets[planetName] = fromLongitude(projectedLon);
+      }
     }
   }
   
-  // For Ascendant, use time-of-day midpoint logic (simplified)
+  // Calculate additional points: Chiron, North Node
+  try {
+    // Chiron - approximate using mean motion (~50.7 year orbit)
+    const pos1Chiron = chart1.planets.Chiron;
+    const pos2Chiron = chart2.planets.Chiron;
+    if (pos1Chiron && pos2Chiron) {
+      const daysDiff = (averagedDate.getTime() - date1.getTime()) / (1000 * 60 * 60 * 24);
+      const chironDailyMotion = 360 / (50.7 * 365.25); // ~0.019 degrees per day
+      const lon1 = toAbsoluteLongitude(pos1Chiron);
+      let projectedLon = lon1 + (chironDailyMotion * daysDiff);
+      projectedLon = ((projectedLon % 360) + 360) % 360;
+      davisonPlanets['Chiron'] = fromLongitude(projectedLon);
+    }
+    
+    // North Node - regresses about 19.3° per year
+    const pos1Node = chart1.planets.NorthNode;
+    const pos2Node = chart2.planets.NorthNode;
+    if (pos1Node && pos2Node) {
+      const daysDiff = (averagedDate.getTime() - date1.getTime()) / (1000 * 60 * 60 * 24);
+      const nodeDailyMotion = -19.3 / 365.25; // Retrograde motion
+      const lon1 = toAbsoluteLongitude(pos1Node);
+      let projectedLon = lon1 + (nodeDailyMotion * daysDiff);
+      projectedLon = ((projectedLon % 360) + 360) % 360;
+      davisonPlanets['NorthNode'] = fromLongitude(projectedLon);
+    }
+  } catch (error) {
+    console.error('Error calculating Davison additional points:', error);
+  }
+  
+  // For Ascendant, we'd need latitude/longitude for precise calculation
+  // Using midpoint method as fallback for angles
   if (chart1.planets.Ascendant && chart2.planets.Ascendant) {
-    // Ascendant moves ~1° every 4 minutes, so for averaged time we use midpoint
     const lon1 = toAbsoluteLongitude(chart1.planets.Ascendant);
     const lon2 = toAbsoluteLongitude(chart2.planets.Ascendant);
     davisonPlanets['Ascendant'] = fromLongitude(calculateMidpoint(lon1, lon2));

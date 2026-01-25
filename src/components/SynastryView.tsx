@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Heart, Users, Briefcase, GraduationCap, Sparkles, Palette, AlertTriangle, Flame, Moon, ChevronDown, ChevronUp, Info, Home, HelpCircle, Handshake, Lightbulb, CheckCircle2, XCircle, Circle, UserPlus, X, Calendar } from 'lucide-react';
+import { Heart, Users, Briefcase, GraduationCap, Sparkles, Palette, AlertTriangle, Flame, Moon, ChevronDown, ChevronUp, Info, Home, HelpCircle, Handshake, Lightbulb, CheckCircle2, XCircle, Circle, UserPlus, X, Calendar, TrendingUp, Compass } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { generateAdvancedSynastryReport, RelationshipTypeScore, HouseOverlay, KarmicIndicator } from '@/lib/synastryAdvanced';
 import { calculateCompositeChart, calculateDavisonChart, getPlanetSymbol } from '@/lib/compositeChart';
@@ -8,6 +8,7 @@ import { filterHouseOverlaysForFocus, filterKarmicIndicatorsForFocus, generateFo
 import { analyzeGroupDynamics, GroupDynamicsReport } from '@/lib/groupDynamicsAnalysis';
 import { analyzeShadowDynamics } from '@/lib/shadowIndicators';
 import calculateKarmicAnalysis from '@/lib/karmicAnalysis';
+import { calculateRelationshipPotential, calculatePurposeAlignment } from '@/lib/relationshipPotentialCalculator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -26,6 +27,8 @@ import { ScoringBreakdownView } from './ScoringBreakdownView';
 import { ShadowIndicatorsCard } from './ShadowIndicatorsCard';
 import { SafetyAssessmentCard, SafetyAssessment } from './SafetyAssessmentCard';
 import { KarmicAnalysisCard } from './KarmicAnalysisCard';
+import { RelationshipPotentialCard } from './RelationshipPotentialCard';
+import { PurposeAlignmentCard } from './PurposeAlignmentCard';
 import { format } from 'date-fns';
 
 interface SynastryViewProps {
@@ -624,6 +627,20 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
       professionalSupportRecommended: riskScore >= 50
     };
   }, [karmicAnalysis]);
+
+  // Calculate relationship potential (short-term vs long-term)
+  const relationshipPotential = useMemo(() => {
+    if (!chart1 || !chart2) return null;
+    const compositeData = calculateCompositeChart(chart1, chart2);
+    return calculateRelationshipPotential(chart1, chart2, karmicAnalysis || undefined, compositeData.interpretation);
+  }, [chart1, chart2, karmicAnalysis]);
+
+  // Calculate purpose alignment
+  const purposeAlignment = useMemo(() => {
+    if (!chart1 || !chart2) return null;
+    const compositeData = calculateCompositeChart(chart1, chart2);
+    return calculatePurposeAlignment(chart1, chart2, compositeData.interpretation);
+  }, [chart1, chart2]);
 
   // Calculate TRUE overall score as weighted average of all 5 focus types
   const trueOverallScore = useMemo(() => {
