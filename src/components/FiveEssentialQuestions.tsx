@@ -43,80 +43,219 @@ const ASPECT_SYMBOLS: Record<string, string> = {
   conjunction: '☌', opposition: '☍', trine: '△', square: '□', sextile: '⚹'
 };
 
-// Karmic type descriptions
-const KARMIC_TYPE_INFO: Record<string, { label: string; duration: string; description: string; thrivingIndicators: string[]; completionIndicators: string[] }> = {
+// Karmic type base info (descriptions only - indicators are generated dynamically)
+const KARMIC_TYPE_BASE: Record<string, { label: string; duration: string; description: string }> = {
   soul_family: {
     label: 'Soul Family Connection',
     duration: 'Potentially Lifetime',
-    description: 'Soul Family connections are supportive relationships without a specific karmic "completion" point. They grow and evolve naturally based on mutual choice, not karmic obligation.',
-    thrivingIndicators: [
-      'Continues to feel nourishing and supportive',
-      'Both people feel free to grow as individuals',
-      'Evolves naturally through life changes',
-      'No sense of being "stuck" or obligated'
-    ],
-    completionIndicators: [
-      'Growth feels complete',
-      'You\'ve both learned what you came to learn',
-      'Natural drift without drama or trauma',
-      'Gratitude for what was shared'
-    ]
+    description: 'Soul Family connections are supportive relationships without a specific karmic "completion" point. They grow and evolve naturally based on mutual choice, not karmic obligation.'
   },
   twin_flame: {
     label: 'Twin Flame Connection',
     duration: 'Cyclical - May reunite multiple times',
-    description: 'Twin Flame connections are intensely transformative. They often involve periods of separation and reunion as both souls integrate lessons.',
-    thrivingIndicators: [
-      'Intense growth through the relationship',
-      'Mutual transformation even when apart',
-      'Feeling of "home" despite challenges',
-      'Mirror-like recognition in each other'
-    ],
-    completionIndicators: [
-      'Integration of the lessons they brought',
-      'Capacity to hold intense love without attachment',
-      'Peace with cycles of closeness and distance',
-      'Both whole as individuals'
-    ]
+    description: 'Twin Flame connections are intensely transformative. They often involve periods of separation and reunion as both souls integrate lessons.'
   },
   catalyst: {
     label: 'Catalyst Connection',
     duration: 'Usually Short to Medium Term',
-    description: 'Catalyst connections arrive to shake things up and accelerate growth. They are intense but typically not meant to last forever.',
-    thrivingIndicators: [
-      'Rapid personal transformation',
-      'Breaking free from old patterns',
-      'Exciting and activating energy',
-      'Feeling alive and awake'
-    ],
-    completionIndicators: [
-      'The "shake-up" energy has settled',
-      'You\'ve integrated the changes',
-      'Less urgency in the connection',
-      'Gratitude for what they catalyzed'
-    ]
+    description: 'Catalyst connections arrive to shake things up and accelerate growth. They are intense but typically not meant to last forever.'
   },
   completion: {
     label: 'Karmic Completion',
     duration: 'Until karma is resolved',
-    description: 'Completion karma means unfinished business from past lives. This relationship is here to resolve old patterns and debts.',
-    thrivingIndicators: [
-      'Working through difficult patterns together',
-      'Feeling you "owe" each other something',
-      'Repeated themes that demand attention',
-      'Deep forgiveness and release'
-    ],
-    completionIndicators: [
-      'The "debt" feels repaid',
-      'Old patterns are resolved',
-      'Sense of closure and peace',
-      'Freedom from karmic obligation'
-    ]
+    description: 'Completion karma means unfinished business from past lives. This relationship is here to resolve old patterns and debts.'
   },
   new_contract: {
     label: 'New Soul Contract',
     duration: 'Variable - Based on soul agreement',
-    description: 'A New Contract means you\'re creating something fresh together, not repeating old patterns. This is forward-focused soul work.',
+    description: 'A New Contract means you\'re creating something fresh together, not repeating old patterns. This is forward-focused soul work.'
+  },
+  karmic_lesson: {
+    label: 'Karmic Lesson Connection',
+    duration: '1-5 years typically',
+    description: 'This connection is teaching you specific karmic lessons. Once integrated, the relationship may naturally transform or complete.'
+  }
+};
+
+/**
+ * Generate chart-specific thriving indicators based on actual karmic analysis
+ */
+function generateChartSpecificThrivingIndicators(
+  karmicAnalysis: KarmicAnalysis | null,
+  chart1Name: string,
+  chart2Name: string
+): string[] {
+  if (!karmicAnalysis || karmicAnalysis.indicators.length === 0) {
+    return ['The relationship continues to feel supportive', 'Both feel free to grow'];
+  }
+  
+  const indicators: string[] = [];
+  const { indicators: karmicIndicators, karmicType } = karmicAnalysis;
+  
+  // Find the most significant indicators by type/theme
+  const northNodeIndicators = karmicIndicators.filter(i => i.type === 'north_node');
+  const plutoIndicators = karmicIndicators.filter(i => i.type === 'pluto');
+  const saturnIndicators = karmicIndicators.filter(i => i.type === 'saturn');
+  const chironIndicators = karmicIndicators.filter(i => i.type === 'chiron');
+  const southNodeIndicators = karmicIndicators.filter(i => i.type === 'south_node');
+  
+  // Generate specific indicators based on what's in the chart
+  if (northNodeIndicators.length > 0) {
+    const topNorth = northNodeIndicators[0];
+    const planet = topNorth.planet2 || topNorth.planet1;
+    indicators.push(`${chart1Name} continues helping ${chart2Name} grow into their destiny (${planet} evolution)`);
+  }
+  
+  if (plutoIndicators.length > 0) {
+    const topPluto = plutoIndicators[0];
+    indicators.push(`The ${topPluto.aspect || 'Pluto'} intensity is transforming both of you consciously, not destructively`);
+  }
+  
+  if (saturnIndicators.length > 0) {
+    indicators.push(`The Saturn lessons feel like growth rather than restriction`);
+  }
+  
+  if (chironIndicators.length > 0) {
+    const topChiron = chironIndicators[0];
+    indicators.push(`${chart2Name}'s old wounds (${topChiron.planet2}) are healing rather than being triggered`);
+  }
+  
+  // Add type-specific thriving indicators
+  switch (karmicType) {
+    case 'twin_flame':
+      indicators.push(`Mirror-like recognition: you see yourself clearly through ${chart2Name}`);
+      if (plutoIndicators.length > 0) {
+        indicators.push(`Power struggles are becoming conscious co-creation`);
+      }
+      break;
+    case 'soul_family':
+      indicators.push(`Both ${chart1Name} and ${chart2Name} feel free to grow as individuals`);
+      if (northNodeIndicators.length > 0) {
+        indicators.push(`${chart2Name}'s North Node journey is supported, not controlled`);
+      }
+      break;
+    case 'catalyst':
+      indicators.push(`Rapid transformation is exciting, not destabilizing`);
+      if (saturnIndicators.length > 0) {
+        indicators.push(`Saturn's structure helps ground the catalytic energy`);
+      }
+      break;
+    case 'completion':
+      indicators.push(`Old patterns are being resolved, not repeated`);
+      if (southNodeIndicators.length > 0) {
+        indicators.push(`Past life karma is clearing - you feel "lighter" together`);
+      }
+      break;
+  }
+  
+  // Ensure we have at least 3 indicators
+  while (indicators.length < 3) {
+    indicators.push('The connection continues to evolve naturally');
+  }
+  
+  return indicators.slice(0, 5);
+}
+
+/**
+ * Generate chart-specific completion indicators based on actual karmic analysis
+ */
+function generateChartSpecificCompletionIndicators(
+  karmicAnalysis: KarmicAnalysis | null,
+  chart1Name: string,
+  chart2Name: string
+): string[] {
+  if (!karmicAnalysis || karmicAnalysis.indicators.length === 0) {
+    return ['The lessons feel complete', 'Natural gratitude for what was shared'];
+  }
+  
+  const indicators: string[] = [];
+  const { indicators: karmicIndicators, karmicType } = karmicAnalysis;
+  
+  // Find the most significant indicators by type
+  const northNodeIndicators = karmicIndicators.filter(i => i.type === 'north_node');
+  const plutoIndicators = karmicIndicators.filter(i => i.type === 'pluto');
+  const saturnIndicators = karmicIndicators.filter(i => i.type === 'saturn');
+  const chironIndicators = karmicIndicators.filter(i => i.type === 'chiron');
+  const southNodeIndicators = karmicIndicators.filter(i => i.type === 'south_node');
+  
+  // Generate specific completion indicators based on actual chart contacts
+  if (northNodeIndicators.length > 0) {
+    const topNorth = northNodeIndicators[0];
+    const planet = topNorth.planet2 || topNorth.planet1;
+    indicators.push(`${chart2Name} has integrated the ${planet} lessons ${chart1Name} brought`);
+    indicators.push(`${chart2Name}'s North Node growth no longer requires ${chart1Name}'s presence to progress`);
+  }
+  
+  if (plutoIndicators.length > 0) {
+    const topPluto = plutoIndicators[0];
+    indicators.push(`The ${topPluto.planet1}-${topPluto.planet2} intensity has transformed both - you're both different people now`);
+  }
+  
+  if (saturnIndicators.length > 0) {
+    indicators.push(`The Saturn tests are passed - you've earned what this relationship taught`);
+  }
+  
+  if (chironIndicators.length > 0) {
+    const topChiron = chironIndicators[0];
+    indicators.push(`${chart2Name}'s ${topChiron.planet2} wound is healed - the medicine has been delivered`);
+  }
+  
+  if (southNodeIndicators.length > 0) {
+    indicators.push(`Past life patterns are cleared - you feel "complete" rather than "stuck"`);
+  }
+  
+  // Add type-specific completion indicators
+  switch (karmicType) {
+    case 'twin_flame':
+      indicators.push(`You can love ${chart2Name} from a distance without longing`);
+      indicators.push(`The mirror has done its work - you see yourself clearly now`);
+      break;
+    case 'soul_family':
+      indicators.push(`Gratitude for what ${chart1Name} and ${chart2Name} shared`);
+      indicators.push(`Natural drift without drama - you wish each other well`);
+      break;
+    case 'catalyst':
+      indicators.push(`The "shake-up" energy has integrated - life is different now`);
+      indicators.push(`You appreciate what ${chart2Name} catalyzed without needing more`);
+      break;
+    case 'completion':
+      indicators.push(`The karmic debt between ${chart1Name} and ${chart2Name} feels repaid`);
+      indicators.push(`Freedom from obligation - you stay by choice, not karma`);
+      break;
+  }
+  
+  // Ensure we have at least 3 indicators
+  while (indicators.length < 3) {
+    indicators.push('Natural sense of completion without trauma');
+  }
+  
+  return indicators.slice(0, 5);
+}
+
+// Legacy fallback (kept for compatibility)
+const KARMIC_TYPE_INFO: Record<string, { label: string; duration: string; description: string; thrivingIndicators: string[]; completionIndicators: string[] }> = {
+  soul_family: {
+    ...KARMIC_TYPE_BASE.soul_family,
+    thrivingIndicators: ['Connection feels nourishing', 'Freedom to grow individually'],
+    completionIndicators: ['Growth feels complete', 'Natural gratitude']
+  },
+  twin_flame: {
+    ...KARMIC_TYPE_BASE.twin_flame,
+    thrivingIndicators: ['Intense growth', 'Mirror recognition'],
+    completionIndicators: ['Integration complete', 'Peace with cycles']
+  },
+  catalyst: {
+    ...KARMIC_TYPE_BASE.catalyst,
+    thrivingIndicators: ['Rapid transformation', 'Feeling alive'],
+    completionIndicators: ['Changes integrated', 'Less urgency']
+  },
+  completion: {
+    ...KARMIC_TYPE_BASE.completion,
+    thrivingIndicators: ['Working through patterns', 'Deep forgiveness'],
+    completionIndicators: ['Debt feels repaid', 'Closure achieved']
+  },
+  new_contract: {
+    ...KARMIC_TYPE_BASE.new_contract,
     thrivingIndicators: [
       'Building something new together',
       'Collaborative creation energy',
@@ -917,10 +1056,21 @@ export const FiveEssentialQuestions = ({
     [chart1, chart2, report, karmicAnalysis]
   );
 
-  // Get karmic type info
-  const karmicTypeInfo = karmicAnalysis 
-    ? KARMIC_TYPE_INFO[karmicAnalysis.karmicType] || KARMIC_TYPE_INFO.soul_family
-    : KARMIC_TYPE_INFO.new_contract;
+  // Get karmic type base info
+  const karmicTypeBase = karmicAnalysis 
+    ? KARMIC_TYPE_BASE[karmicAnalysis.karmicType] || KARMIC_TYPE_BASE.soul_family
+    : KARMIC_TYPE_BASE.new_contract;
+
+  // Generate chart-specific indicators
+  const chartSpecificThrivingIndicators = useMemo(() => 
+    generateChartSpecificThrivingIndicators(karmicAnalysis, chart1.name, chart2.name),
+    [karmicAnalysis, chart1.name, chart2.name]
+  );
+  
+  const chartSpecificCompletionIndicators = useMemo(() => 
+    generateChartSpecificCompletionIndicators(karmicAnalysis, chart1.name, chart2.name),
+    [karmicAnalysis, chart1.name, chart2.name]
+  );
 
   return (
     <div className="space-y-12">
@@ -980,7 +1130,7 @@ export const FiveEssentialQuestions = ({
             <div className="p-6 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/20 border border-purple-200 dark:border-purple-800">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-xl font-serif">{karmicTypeInfo.label}</h3>
+                  <h3 className="text-xl font-serif">{karmicTypeBase.label}</h3>
                   <p className="text-sm text-muted-foreground">
                     Past Life Probability: {karmicAnalysis.pastLifeProbability}% • 
                     Soul Growth Focus: {100 - karmicAnalysis.pastLifeProbability}%
@@ -1010,7 +1160,7 @@ export const FiveEssentialQuestions = ({
             {/* The Big Picture */}
             <div className="p-4 rounded-lg bg-secondary/30 border">
               <h4 className="font-medium mb-2">The Big Picture</h4>
-              <p className="text-sm text-muted-foreground">{karmicTypeInfo.description}</p>
+              <p className="text-sm text-muted-foreground">{karmicTypeBase.description}</p>
             </div>
 
             {/* Score Breakdown */}
@@ -1115,20 +1265,20 @@ export const FiveEssentialQuestions = ({
           <div className="flex items-center gap-3 mb-4">
             <Clock className="text-green-600 dark:text-green-400" size={24} />
             <div>
-              <h3 className="text-xl font-serif">{karmicTypeInfo.label} Timeline</h3>
-              <p className="text-sm text-green-700 dark:text-green-400">{karmicTypeInfo.duration}</p>
+              <h3 className="text-xl font-serif">{karmicTypeBase.label} Timeline</h3>
+              <p className="text-sm text-green-700 dark:text-green-400">{karmicTypeBase.duration}</p>
             </div>
           </div>
           
-          <p className="text-sm mb-4">{karmicTypeInfo.description}</p>
+          <p className="text-sm mb-4">{karmicTypeBase.description}</p>
 
           <div className="grid md:grid-cols-2 gap-4">
             <div className="p-3 rounded-lg bg-white/50 dark:bg-black/20">
               <h4 className="font-medium text-sm mb-2 text-green-700 dark:text-green-400">
-                What indicates it's thriving:
+                What indicates it's thriving (specific to {chart1.name} & {chart2.name}):
               </h4>
               <ul className="text-sm space-y-1">
-                {karmicTypeInfo.thrivingIndicators.map((ind, i) => (
+                {chartSpecificThrivingIndicators.map((ind, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <CheckCircle2 size={14} className="mt-0.5 text-green-600 flex-shrink-0" />
                     <span>{ind}</span>
@@ -1139,10 +1289,10 @@ export const FiveEssentialQuestions = ({
             
             <div className="p-3 rounded-lg bg-white/50 dark:bg-black/20">
               <h4 className="font-medium text-sm mb-2 text-amber-700 dark:text-amber-400">
-                What indicates natural completion:
+                What indicates natural completion (specific to this relationship):
               </h4>
               <ul className="text-sm space-y-1">
-                {karmicTypeInfo.completionIndicators.map((ind, i) => (
+                {chartSpecificCompletionIndicators.map((ind, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <Compass size={14} className="mt-0.5 text-amber-600 flex-shrink-0" />
                     <span>{ind}</span>
