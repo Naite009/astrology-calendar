@@ -20,20 +20,27 @@ interface RelationshipTimelineProps {
 const convertToBirthChart = (chart: any): BirthChart => {
   const planets: { name: string; longitude: number }[] = [];
   
-  const planetNames = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'North Node', 'Chiron'];
+  const planetNames = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'NorthNode', 'Chiron'];
   const signOrder = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
   
+  // Check if planets are nested under chart.planets (NatalChart format) or directly on chart
+  const planetSource = chart.planets || chart;
+  
   planetNames.forEach(name => {
-    const key = name.toLowerCase().replace(' ', '');
-    const planetData = chart[key] || chart[name.toLowerCase()];
+    // Try multiple key formats
+    const planetData = planetSource[name] || planetSource[name.toLowerCase()] || planetSource[name.replace(' ', '')];
     
-    if (planetData && planetData.sign !== undefined) {
+    if (planetData && planetData.sign !== undefined && planetData.sign !== '') {
       const signIndex = signOrder.indexOf(planetData.sign);
+      if (signIndex === -1) return; // Skip if sign not found
+      
       const degree = planetData.degree || 0;
       const minutes = planetData.minutes || 0;
       const longitude = signIndex * 30 + degree + minutes / 60;
       
-      planets.push({ name, longitude });
+      // Use display name with space for North Node
+      const displayName = name === 'NorthNode' ? 'North Node' : name;
+      planets.push({ name: displayName, longitude });
     }
   });
   
