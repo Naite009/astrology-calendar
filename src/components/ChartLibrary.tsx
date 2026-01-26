@@ -1294,7 +1294,7 @@ export const ChartLibrary = ({
                         <span className="text-[11px] uppercase tracking-widest text-foreground font-medium">
                           Upload Chart File
                         </span>
-                        <span className="text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded">AI-Powered</span>
+                        <span className="text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded">Auto-Extract</span>
                       </div>
                       <p className="text-xs text-muted-foreground">
                         Import only fills empty slots. Use "Clear All" above first if you want to fully replace your chart.
@@ -1332,7 +1332,7 @@ export const ChartLibrary = ({
                           <div className="flex flex-col items-center gap-3 text-primary">
                             <Loader2 size={32} className="animate-spin" />
                             <span className="text-sm font-medium">
-                              {imageImportStatus === 'uploading' ? 'Uploading...' : 'AI is analyzing your chart...'}
+                              {imageImportStatus === 'uploading' ? 'Uploading...' : 'Reading chart data...'}
                             </span>
                           </div>
                         ) : (
