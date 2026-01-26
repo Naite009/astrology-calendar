@@ -115,7 +115,6 @@ export const RelationshipTimelineView: React.FC<RelationshipTimelineViewProps> =
           person2Name={chart2.name}
           person1Chart={chart1}
           person2Chart={chart2}
-          synastryAspects={synastryAspects}
         />
       ) : (
         <Card>
