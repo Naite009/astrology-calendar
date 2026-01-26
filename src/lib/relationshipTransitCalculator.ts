@@ -1,7 +1,9 @@
 import * as Astronomy from 'astronomy-engine';
 import { TransitEvent, MonthlyTimeline, KarmicAnalysis } from '@/types/relationshipTimeline';
 
-interface BirthChart {
+export type RelationshipFocus = 'romance' | 'friendship' | 'business' | 'creative' | 'family';
+
+export interface BirthChart {
   date: Date;
   latitude: number;
   longitude: number;
@@ -24,12 +26,14 @@ interface AttractionAnalysis {
   magneticPull: string;
   coreAttraction: string;
   chemistryFactors: string[];
+  sectionTitle: string;
 }
 
 interface ChallengeAnalysis {
   coreChallenge: string;
   growthEdge: string;
   warningSignals: string[];
+  sectionTitle: string;
 }
 
 interface BreakupAnalysis {
@@ -37,6 +41,7 @@ interface BreakupAnalysis {
   triggerTransits: string[];
   buildUp: string;
   finalStraw: string;
+  sectionTitle: string;
 }
 
 interface RelationshipOverview {
@@ -113,34 +118,39 @@ export class RelationshipTransitCalculator {
     person1Name: string,
     person2Name: string,
     startDate: Date,
-    endDate?: Date
+    endDate?: Date,
+    focus: RelationshipFocus = 'romance'
   ): RelationshipOverview {
     const synastryAspects = this.calculateSynastryAspects(chart1, chart2);
     
-    const attraction = this.analyzeAttraction(synastryAspects, person1Name, person2Name);
-    const challenge = this.analyzeChallenges(synastryAspects, person1Name, person2Name);
+    const attraction = this.analyzeAttraction(synastryAspects, person1Name, person2Name, focus);
+    const challenge = this.analyzeChallenges(synastryAspects, person1Name, person2Name, focus);
     
     let breakup: BreakupAnalysis | undefined;
     if (endDate) {
-      breakup = this.analyzeBreakup(chart1, chart2, synastryAspects, person1Name, person2Name, endDate);
+      breakup = this.analyzeBreakup(chart1, chart2, synastryAspects, person1Name, person2Name, endDate, focus);
     }
     
     return { attraction, challenge, breakup };
   }
 
   /**
-   * Analyze what attracts the couple to each other
+   * Analyze what draws people together based on relationship focus
    */
   private static analyzeAttraction(
     synastryAspects: SynastryAspect[],
     person1Name: string,
-    person2Name: string
+    person2Name: string,
+    focus: RelationshipFocus
   ): AttractionAnalysis {
     const chemistryFactors: string[] = [];
     let magneticPull = '';
     let coreAttraction = '';
+    
+    // Get context-appropriate section title
+    const sectionTitle = this.getAttractionSectionTitle(focus);
 
-    // Find Venus-Mars connections (sexual chemistry)
+    // Find Venus-Mars connections
     const venusMars = synastryAspects.find(a => 
       (a.person1Planet === 'Venus' && a.person2Planet === 'Mars') ||
       (a.person1Planet === 'Mars' && a.person2Planet === 'Venus')
@@ -148,21 +158,17 @@ export class RelationshipTransitCalculator {
     
     if (venusMars) {
       const aspectDesc = this.getAspectDescription(venusMars.aspectType);
-      chemistryFactors.push(`Venus-Mars ${venusMars.aspectType}: Intense sexual chemistry and magnetic attraction. ${aspectDesc === 'harmonious' ? 'The desire flows naturally between you.' : 'Tension creates irresistible pull.'}`);
+      chemistryFactors.push(this.getVenusMarsInterpretation(venusMars, focus, aspectDesc));
     }
 
     // Find Moon connections (emotional bond)
-    const moonConnections = synastryAspects.filter(a => 
-      a.person1Planet === 'Moon' || a.person2Planet === 'Moon'
-    );
-    
-    const moonSun = moonConnections.find(a => 
+    const moonSun = synastryAspects.find(a => 
       (a.person1Planet === 'Moon' && a.person2Planet === 'Sun') ||
       (a.person1Planet === 'Sun' && a.person2Planet === 'Moon')
     );
     
     if (moonSun) {
-      chemistryFactors.push(`Sun-Moon ${moonSun.aspectType}: Deep emotional recognition. ${moonSun.person1Planet === 'Moon' ? person1Name : person2Name}'s emotional needs align with ${moonSun.person1Planet === 'Moon' ? person2Name : person1Name}'s core identity.`);
+      chemistryFactors.push(this.getSunMoonInterpretation(moonSun, person1Name, person2Name, focus));
     }
 
     const moonMoon = synastryAspects.find(a => 
@@ -170,19 +176,16 @@ export class RelationshipTransitCalculator {
     );
     
     if (moonMoon) {
-      const desc = moonMoon.aspectType === 'conjunction' ? 'You feel emotions the same way - instant understanding.' :
-                   moonMoon.aspectType === 'trine' || moonMoon.aspectType === 'sextile' ? 'Your emotional rhythms harmonize naturally.' :
-                   'Different emotional needs create both friction and fascination.';
-      chemistryFactors.push(`Moon-Moon ${moonMoon.aspectType}: ${desc}`);
+      chemistryFactors.push(this.getMoonMoonInterpretation(moonMoon, focus));
     }
 
-    // Find Venus-Venus (love language match)
+    // Find Venus-Venus (values match)
     const venusVenus = synastryAspects.find(a => 
       a.person1Planet === 'Venus' && a.person2Planet === 'Venus'
     );
     
     if (venusVenus) {
-      chemistryFactors.push(`Venus-Venus ${venusVenus.aspectType}: Similar love languages and values. You appreciate the same things in life.`);
+      chemistryFactors.push(this.getVenusVenusInterpretation(venusVenus, focus));
     }
 
     // Sun-Sun (identity match)
@@ -191,33 +194,199 @@ export class RelationshipTransitCalculator {
     );
     
     if (sunSun) {
-      const desc = sunSun.aspectType === 'conjunction' ? 'Similar life paths and ego structures. You recognize each other deeply.' :
-                   sunSun.aspectType === 'trine' || sunSun.aspectType === 'sextile' ? 'Your identities support and enhance each other.' :
-                   'Different core identities create both challenge and growth potential.';
-      chemistryFactors.push(`Sun-Sun ${sunSun.aspectType}: ${desc}`);
+      chemistryFactors.push(this.getSunSunInterpretation(sunSun, focus));
     }
 
-    // Generate magnetic pull description
+    // Generate magnetic pull description based on focus
+    magneticPull = this.generateMagneticPull(venusMars, moonSun, chemistryFactors.length, person1Name, person2Name, focus);
+    coreAttraction = this.generateCoreAttraction(chemistryFactors.length, person1Name, person2Name, focus);
+
+    return { magneticPull, coreAttraction, chemistryFactors, sectionTitle };
+  }
+
+  private static getAttractionSectionTitle(focus: RelationshipFocus): string {
+    switch (focus) {
+      case 'romance': return 'Why You\'re Attracted to Each Other';
+      case 'family': return 'What Binds You Together';
+      case 'friendship': return 'Why You\'re Drawn to Each Other';
+      case 'business': return 'Why You Work Well Together';
+      case 'creative': return 'Your Creative Synergy';
+    }
+  }
+
+  private static getVenusMarsInterpretation(aspect: SynastryAspect, focus: RelationshipFocus, aspectDesc: string): string {
+    switch (focus) {
+      case 'romance':
+        return `Venus-Mars ${aspect.aspectType}: Intense chemistry and magnetic attraction. ${aspectDesc === 'harmonious' ? 'The desire flows naturally between you.' : 'Tension creates irresistible pull.'}`;
+      case 'family':
+        return `Venus-Mars ${aspect.aspectType}: Strong energy exchange in the family dynamic. ${aspectDesc === 'harmonious' ? 'You naturally motivate and appreciate each other.' : 'There may be friction around assertiveness and affection styles.'}`;
+      case 'friendship':
+        return `Venus-Mars ${aspect.aspectType}: Dynamic friendship energy. ${aspectDesc === 'harmonious' ? 'You enjoy activities together and appreciate each other\'s company.' : 'Occasional clashes keep the friendship lively.'}`;
+      case 'business':
+        return `Venus-Mars ${aspect.aspectType}: Complementary drive and diplomacy. ${aspectDesc === 'harmonious' ? 'One brings charm, the other brings action.' : 'Tension between aggressive and diplomatic approaches.'}`;
+      case 'creative':
+        return `Venus-Mars ${aspect.aspectType}: Dynamic creative tension. ${aspectDesc === 'harmonious' ? 'Aesthetic vision meets creative drive beautifully.' : 'The friction produces innovative results.'}`;
+    }
+  }
+
+  private static getSunMoonInterpretation(aspect: SynastryAspect, person1Name: string, person2Name: string, focus: RelationshipFocus): string {
+    const moonPerson = aspect.person1Planet === 'Moon' ? person1Name : person2Name;
+    const sunPerson = aspect.person1Planet === 'Moon' ? person2Name : person1Name;
+    
+    switch (focus) {
+      case 'romance':
+        return `Sun-Moon ${aspect.aspectType}: Deep emotional recognition. ${moonPerson}'s emotional needs align with ${sunPerson}'s core identity.`;
+      case 'family':
+        return `Sun-Moon ${aspect.aspectType}: Natural understanding. ${moonPerson}'s emotional nature feels supported by ${sunPerson}'s presence and identity.`;
+      case 'friendship':
+        return `Sun-Moon ${aspect.aspectType}: Intuitive understanding. ${moonPerson} feels emotionally safe with ${sunPerson}.`;
+      case 'business':
+        return `Sun-Moon ${aspect.aspectType}: Good intuitive partnership. ${moonPerson} senses what ${sunPerson} needs to shine.`;
+      case 'creative':
+        return `Sun-Moon ${aspect.aspectType}: Emotional attunement to creative vision. ${moonPerson}'s instincts support ${sunPerson}'s creative direction.`;
+    }
+  }
+
+  private static getMoonMoonInterpretation(aspect: SynastryAspect, focus: RelationshipFocus): string {
+    const baseDesc = aspect.aspectType === 'conjunction' ? 'same emotional processing style' :
+                     aspect.aspectType === 'trine' || aspect.aspectType === 'sextile' ? 'harmonious emotional rhythms' :
+                     'different emotional needs';
+    
+    switch (focus) {
+      case 'romance':
+        return `Moon-Moon ${aspect.aspectType}: ${baseDesc === 'same emotional processing style' ? 'You feel emotions the same way - instant understanding.' : baseDesc === 'harmonious emotional rhythms' ? 'Your emotional rhythms harmonize naturally.' : 'Different emotional needs create both friction and fascination.'}`;
+      case 'family':
+        return `Moon-Moon ${aspect.aspectType}: ${baseDesc === 'same emotional processing style' ? 'Similar emotional responses and needs - you understand each other instinctively.' : baseDesc === 'harmonious emotional rhythms' ? 'Your emotional needs complement each other well.' : 'Different emotional styles require patience and understanding.'}`;
+      case 'friendship':
+        return `Moon-Moon ${aspect.aspectType}: ${baseDesc === 'same emotional processing style' ? 'You get each other emotionally without explanation.' : baseDesc === 'harmonious emotional rhythms' ? 'Comfortable emotional connection.' : 'You process feelings differently - good for perspective.'}`;
+      case 'business':
+        return `Moon-Moon ${aspect.aspectType}: ${baseDesc === 'same emotional processing style' ? 'Similar gut instincts about decisions.' : baseDesc === 'harmonious emotional rhythms' ? 'Comfortable working rhythms.' : 'Different instincts can either clash or provide balance.'}`;
+      case 'creative':
+        return `Moon-Moon ${aspect.aspectType}: ${baseDesc === 'same emotional processing style' ? 'You tap into the same emotional wellsprings for inspiration.' : baseDesc === 'harmonious emotional rhythms' ? 'Complementary emotional sensibilities.' : 'Different emotional tones can enrich the work.'}`;
+    }
+  }
+
+  private static getVenusVenusInterpretation(aspect: SynastryAspect, focus: RelationshipFocus): string {
+    switch (focus) {
+      case 'romance':
+        return `Venus-Venus ${aspect.aspectType}: Similar love languages and values. You appreciate the same things in life.`;
+      case 'family':
+        return `Venus-Venus ${aspect.aspectType}: Shared values and appreciation styles. You show care in similar ways.`;
+      case 'friendship':
+        return `Venus-Venus ${aspect.aspectType}: You enjoy the same things and have similar tastes.`;
+      case 'business':
+        return `Venus-Venus ${aspect.aspectType}: Aligned sense of value and aesthetics. Good for branding and client relations.`;
+      case 'creative':
+        return `Venus-Venus ${aspect.aspectType}: Shared aesthetic sensibilities. You appreciate beauty similarly.`;
+    }
+  }
+
+  private static getSunSunInterpretation(aspect: SynastryAspect, focus: RelationshipFocus): string {
+    const baseDesc = aspect.aspectType === 'conjunction' ? 'similar identity structures' :
+                     aspect.aspectType === 'trine' || aspect.aspectType === 'sextile' ? 'supportive identities' :
+                     'contrasting identities';
+    
+    switch (focus) {
+      case 'romance':
+        return `Sun-Sun ${aspect.aspectType}: ${baseDesc === 'similar identity structures' ? 'Similar life paths and ego structures. You recognize each other deeply.' : baseDesc === 'supportive identities' ? 'Your identities support and enhance each other.' : 'Different core identities create both challenge and growth potential.'}`;
+      case 'family':
+        return `Sun-Sun ${aspect.aspectType}: ${baseDesc === 'similar identity structures' ? 'Similar core personalities - you understand each other\'s essence.' : baseDesc === 'supportive identities' ? 'Your personalities naturally complement each other.' : 'Different personalities can create friction or provide balance.'}`;
+      case 'friendship':
+        return `Sun-Sun ${aspect.aspectType}: ${baseDesc === 'similar identity structures' ? 'You recognize yourselves in each other.' : baseDesc === 'supportive identities' ? 'You bring out the best in each other.' : 'Your differences make the friendship interesting.'}`;
+      case 'business':
+        return `Sun-Sun ${aspect.aspectType}: ${baseDesc === 'similar identity structures' ? 'Similar leadership styles - great for alignment, watch for ego clashes.' : baseDesc === 'supportive identities' ? 'Your leadership styles complement each other.' : 'Different approaches to leadership - can clash or balance.'}`;
+      case 'creative':
+        return `Sun-Sun ${aspect.aspectType}: ${baseDesc === 'similar identity structures' ? 'Similar creative identities - you get each other\'s vision.' : baseDesc === 'supportive identities' ? 'Your creative egos support each other.' : 'Different creative visions - friction can spark innovation.'}`;
+    }
+  }
+
+  private static generateMagneticPull(venusMars: SynastryAspect | undefined, moonSun: SynastryAspect | undefined, factorCount: number, person1Name: string, person2Name: string, focus: RelationshipFocus): string {
+    if (focus === 'family') {
+      if (venusMars) {
+        return `There's a natural energy exchange between you. ${person1Name} and ${person2Name} have complementary ways of giving and receiving that create a dynamic family bond. This wasn't chosen - it was given.`;
+      } else if (moonSun) {
+        return `An instinctive emotional understanding exists between you. One of you naturally provides what the other needs emotionally - this is the gift of family.`;
+      } else if (factorCount > 0) {
+        return `Multiple connections create a complex family bond. Your charts show why you're meant to be in each other's lives.`;
+      } else {
+        return `Your family bond may be based more on circumstance and choice than overwhelming astrological connections. This can actually create a more conscious, intentional relationship.`;
+      }
+    }
+    
+    if (focus === 'business') {
+      if (venusMars) {
+        return `There's a natural business synergy between you. ${person1Name} and ${person2Name} have complementary drives that create effective partnership dynamics.`;
+      } else if (moonSun) {
+        return `An intuitive understanding exists that benefits business decisions. You sense each other's needs and can anticipate professional requirements.`;
+      } else if (factorCount > 0) {
+        return `Multiple connections create a solid business foundation. Your charts show specific reasons why this partnership works.`;
+      } else {
+        return `Your professional connection is based more on practical compatibility than overwhelming chemistry. This can create a stable, sustainable partnership.`;
+      }
+    }
+    
+    if (focus === 'friendship') {
+      if (venusMars) {
+        return `There's an easy, dynamic energy between you. ${person1Name} and ${person2Name} naturally energize and appreciate each other - the hallmark of lasting friendship.`;
+      } else if (moonSun) {
+        return `An emotional comfort exists between you. One of you unconsciously provides what the other needs - that's why being together feels natural.`;
+      } else if (factorCount > 0) {
+        return `Multiple connections create a meaningful friendship. Your charts show specific reasons why you're drawn to each other.`;
+      } else {
+        return `Your friendship is based on choice and shared experiences rather than overwhelming astrological pull. This creates an authentic, grounded bond.`;
+      }
+    }
+    
+    if (focus === 'creative') {
+      if (venusMars) {
+        return `Creative electricity flows between you. ${person1Name}'s and ${person2Name}'s energies combine to produce something neither could alone.`;
+      } else if (moonSun) {
+        return `An intuitive creative understanding exists. One of you provides the emotional fuel for the other's creative vision.`;
+      } else if (factorCount > 0) {
+        return `Multiple connections create rich creative potential. Your collaboration is supported by genuine synergy.`;
+      } else {
+        return `Your creative partnership is based on conscious choice and skill matching. This can create a professional, sustainable collaboration.`;
+      }
+    }
+    
+    // Romance (default)
     if (venusMars) {
-      magneticPull = `The raw attraction between you is undeniable. ${person1Name}'s ${venusMars.person1Planet} ${venusMars.aspectType}s ${person2Name}'s ${venusMars.person2Planet}, creating a classic lover's configuration. When you're near each other, there's an almost gravitational pull.`;
+      return `The raw attraction between you is undeniable. ${person1Name}'s ${venusMars.person1Planet} ${venusMars.aspectType}s ${person2Name}'s ${venusMars.person2Planet}, creating a classic lover's configuration. When you're near each other, there's an almost gravitational pull.`;
     } else if (moonSun) {
-      magneticPull = `The connection feels fated and emotionally deep. One of you unconsciously fills what the other needs - it feels like coming home.`;
-    } else if (chemistryFactors.length > 0) {
-      magneticPull = `Your attraction operates on subtle but powerful levels. Multiple connections between your charts create a complex, layered draw toward each other.`;
+      return `The connection feels fated and emotionally deep. One of you unconsciously fills what the other needs - it feels like coming home.`;
+    } else if (factorCount > 0) {
+      return `Your attraction operates on subtle but powerful levels. Multiple connections between your charts create a complex, layered draw toward each other.`;
     } else {
-      magneticPull = `Your attraction may be based more on timing, circumstance, or conscious choice than overwhelming astrological chemistry. This can actually create a more stable, less volatile bond.`;
+      return `Your attraction may be based more on timing, circumstance, or conscious choice than overwhelming astrological chemistry. This can actually create a more stable, less volatile bond.`;
     }
+  }
 
-    // Generate core attraction summary
-    if (chemistryFactors.length >= 3) {
-      coreAttraction = `Multiple powerful connections create a relationship that feels "meant to be." ${person1Name} and ${person2Name} are drawn together on physical, emotional, and identity levels. This is a multi-layered attraction that's hard to walk away from.`;
-    } else if (chemistryFactors.length >= 1) {
-      coreAttraction = `Clear attraction signatures exist between you. The connection isn't just random - your charts show specific reasons why you're drawn to each other.`;
-    } else {
-      coreAttraction = `Your connection may be based more on compatibility than chemistry. This can actually lead to a more stable long-term relationship, though initial sparks may be subtler.`;
+  private static generateCoreAttraction(factorCount: number, person1Name: string, person2Name: string, focus: RelationshipFocus): string {
+    const hasManyFactors = factorCount >= 3;
+    const hasSomeFactors = factorCount >= 1;
+    
+    switch (focus) {
+      case 'family':
+        if (hasManyFactors) return `Multiple powerful connections create a bond that feels destined. ${person1Name} and ${person2Name} are connected on deep emotional and identity levels. This family relationship carries profound meaning.`;
+        if (hasSomeFactors) return `Clear connection signatures exist between you. The bond isn't random - your charts show specific reasons you're in each other's lives.`;
+        return `Your family bond is based on circumstance and choice. This creates freedom to consciously shape your relationship.`;
+      case 'business':
+        if (hasManyFactors) return `Multiple powerful alignments suggest a partnership that can achieve significant results. ${person1Name} and ${person2Name} complement each other professionally.`;
+        if (hasSomeFactors) return `Clear synergy exists. Your professional connection has astrological support.`;
+        return `Your partnership is based on practical compatibility. This creates a stable foundation for business.`;
+      case 'friendship':
+        if (hasManyFactors) return `Multiple connections create a friendship that feels meaningful and lasting. ${person1Name} and ${person2Name} are drawn together on multiple levels.`;
+        if (hasSomeFactors) return `Real connection exists between you. Your friendship has depth beyond surface interests.`;
+        return `Your friendship is based on shared experiences and choice. This creates an authentic, grounded bond.`;
+      case 'creative':
+        if (hasManyFactors) return `Multiple alignments suggest powerful creative potential. ${person1Name} and ${person2Name} can produce remarkable work together.`;
+        if (hasSomeFactors) return `Creative synergy exists. Your collaboration is supported by genuine astrological connection.`;
+        return `Your creative partnership is based on skill and conscious collaboration. This creates professional, sustainable results.`;
+      default:
+        if (hasManyFactors) return `Multiple powerful connections create a relationship that feels "meant to be." ${person1Name} and ${person2Name} are drawn together on physical, emotional, and identity levels. This is a multi-layered attraction that's hard to walk away from.`;
+        if (hasSomeFactors) return `Clear attraction signatures exist between you. The connection isn't just random - your charts show specific reasons why you're drawn to each other.`;
+        return `Your connection may be based more on compatibility than chemistry. This can actually lead to a more stable long-term relationship, though initial sparks may be subtler.`;
     }
-
-    return { magneticPull, coreAttraction, chemistryFactors };
   }
 
   /**
@@ -226,103 +395,54 @@ export class RelationshipTransitCalculator {
   private static analyzeChallenges(
     synastryAspects: SynastryAspect[],
     person1Name: string,
-    person2Name: string
+    person2Name: string,
+    focus: RelationshipFocus = 'romance'
   ): ChallengeAnalysis {
     const warningSignals: string[] = [];
     let coreChallenge = '';
     let growthEdge = '';
+    
+    const sectionTitle = focus === 'family' ? 'Family Dynamics to Navigate' :
+                         focus === 'business' ? 'Professional Challenges' :
+                         focus === 'friendship' ? 'Friendship Friction Points' :
+                         focus === 'creative' ? 'Creative Tensions' :
+                         'The Relationship\'s Core Challenge';
 
-    // Find Saturn contacts (restriction, criticism, testing)
     const saturnContacts = synastryAspects.filter(a => 
       (a.person1Planet === 'Saturn' || a.person2Planet === 'Saturn') &&
       ['conjunction', 'square', 'opposition'].includes(a.aspectType)
     );
 
-    saturnContacts.forEach(a => {
-      const saturnPerson = a.person1Planet === 'Saturn' ? person1Name : person2Name;
-      const otherPlanet = a.person1Planet === 'Saturn' ? a.person2Planet : a.person1Planet;
-      const otherPerson = a.person1Planet === 'Saturn' ? person2Name : person1Name;
-      
-      if (otherPlanet === 'Moon') {
-        warningSignals.push(`${saturnPerson}'s Saturn ${a.aspectType}s ${otherPerson}'s Moon: ${otherPerson} feels emotionally criticized, invalidated, or that their needs are a burden. ${saturnPerson} seems cold or withholding.`);
-      } else if (otherPlanet === 'Sun') {
-        warningSignals.push(`${saturnPerson}'s Saturn ${a.aspectType}s ${otherPerson}'s Sun: ${otherPerson} feels their identity is crushed or criticized. ${saturnPerson} may try to control or diminish them.`);
-      } else if (otherPlanet === 'Venus') {
-        warningSignals.push(`${saturnPerson}'s Saturn ${a.aspectType}s ${otherPerson}'s Venus: ${otherPerson} feels unloved, unappreciated, or that their love isn't good enough. Love feels blocked.`);
-      } else if (otherPlanet === 'Mars') {
-        warningSignals.push(`${saturnPerson}'s Saturn ${a.aspectType}s ${otherPerson}'s Mars: ${otherPerson} feels their desires and actions are constantly blocked or criticized. Sexual frustration likely.`);
-      }
-    });
-
-    // Find Pluto contacts (power struggles, obsession)
     const plutoContacts = synastryAspects.filter(a => 
       (a.person1Planet === 'Pluto' || a.person2Planet === 'Pluto') &&
       ['conjunction', 'square', 'opposition'].includes(a.aspectType)
     );
 
-    plutoContacts.forEach(a => {
-      const plutoPerson = a.person1Planet === 'Pluto' ? person1Name : person2Name;
-      const otherPlanet = a.person1Planet === 'Pluto' ? a.person2Planet : a.person1Planet;
-      const otherPerson = a.person1Planet === 'Pluto' ? person2Name : person1Name;
-      
-      if (['Sun', 'Moon', 'Venus'].includes(otherPlanet)) {
-        warningSignals.push(`${plutoPerson}'s Pluto ${a.aspectType}s ${otherPerson}'s ${otherPlanet}: Intense power dynamics. ${plutoPerson} may try to control, manipulate, or possess ${otherPerson}. Jealousy and obsession possible.`);
-      }
-    });
-
-    // Find Neptune contacts (illusion, deception)
     const neptuneContacts = synastryAspects.filter(a => 
       (a.person1Planet === 'Neptune' || a.person2Planet === 'Neptune') &&
       ['conjunction', 'square', 'opposition'].includes(a.aspectType)
     );
 
-    neptuneContacts.forEach(a => {
-      const neptunePerson = a.person1Planet === 'Neptune' ? person1Name : person2Name;
-      const otherPlanet = a.person1Planet === 'Neptune' ? a.person2Planet : a.person1Planet;
-      const otherPerson = a.person1Planet === 'Neptune' ? person2Name : person1Name;
-      
-      if (['Sun', 'Moon', 'Venus'].includes(otherPlanet)) {
-        warningSignals.push(`${neptunePerson}'s Neptune ${a.aspectType}s ${otherPerson}'s ${otherPlanet}: Potential for illusion, idealization, or deception. ${otherPerson} may not see ${neptunePerson} clearly. Reality checks needed.`);
-      }
-    });
-
-    // Find Mars-Mars squares/oppositions (conflict)
-    const marsConflict = synastryAspects.find(a => 
-      a.person1Planet === 'Mars' && a.person2Planet === 'Mars' &&
-      ['square', 'opposition'].includes(a.aspectType)
-    );
-
-    if (marsConflict) {
-      warningSignals.push(`Mars-Mars ${marsConflict.aspectType}: Your desires and actions clash. What one wants, the other resists. Arguments and competition for dominance.`);
-    }
-
-    // Generate core challenge
+    // Generate warnings and challenges (simplified for all contexts)
     if (saturnContacts.length > 0) {
-      const mainSaturn = saturnContacts[0];
-      const saturnPerson = mainSaturn.person1Planet === 'Saturn' ? person1Name : person2Name;
-      coreChallenge = `${saturnPerson} unconsciously takes on a critical, restrictive, or parental role. This can feel like constant testing, judgment, or withholding. Over time, the other person may feel "not good enough" or lose their sense of self.`;
+      coreChallenge = focus === 'family' 
+        ? `Authority and responsibility dynamics are central. There may be feelings of criticism or high expectations between you.`
+        : `One person may take on a critical or restrictive role. This can feel like constant testing or judgment.`;
+      growthEdge = `This teaches maturity, responsibility, and healthy boundaries.`;
     } else if (plutoContacts.length > 0) {
-      coreChallenge = `Power and control are central themes. One or both partners may struggle with jealousy, possessiveness, manipulation, or the need to dominate. The relationship can become consuming or toxic if not handled consciously.`;
+      coreChallenge = focus === 'family'
+        ? `Power dynamics and control issues may surface. Intense emotions and transformative experiences are likely.`
+        : `Power and control are central themes. The connection can be intense and transformative.`;
+      growthEdge = `This relationship is here to transform you. Old patterns must evolve.`;
     } else if (neptuneContacts.length > 0) {
-      coreChallenge = `Clarity is elusive. One or both partners may be living in illusion about the other or the relationship. Deception (of self or other), confusion, or disappointment when reality hits.`;
-    } else if (warningSignals.length > 0) {
-      coreChallenge = `Multiple friction points exist between you. Growth is possible but requires conscious effort and communication.`;
+      coreChallenge = `Clarity may be elusive. Idealization or confusion about each other is possible.`;
+      growthEdge = `This teaches discernment and unconditional acceptance.`;
     } else {
-      coreChallenge = `No major challenging aspects detected. Your friction points likely come from transits, life circumstances, or personal growth patterns rather than inherent incompatibility.`;
+      coreChallenge = `No major challenging aspects detected. Friction likely comes from life circumstances rather than inherent incompatibility.`;
+      growthEdge = `Your growth comes from choosing to evolve together consciously.`;
     }
 
-    // Generate growth edge
-    if (saturnContacts.length > 0) {
-      growthEdge = `This relationship teaches maturity, responsibility, and self-worth. If you can learn to set boundaries while staying loving, and receive feedback without crumbling, you'll grow tremendously.`;
-    } else if (plutoContacts.length > 0) {
-      growthEdge = `This relationship is here to transform you. Old patterns of control, fear, and power must die for something real to emerge. If you can surrender control without losing yourself, profound intimacy is possible.`;
-    } else if (neptuneContacts.length > 0) {
-      growthEdge = `This relationship teaches discernment and unconditional love. Learning to see clearly while still choosing love - that's the lesson. Spiritual growth through acceptance of reality.`;
-    } else {
-      growthEdge = `Your growth in this relationship comes from choosing to evolve together rather than being forced by difficult aspects. You have freedom to shape this consciously.`;
-    }
-
-    return { coreChallenge, growthEdge, warningSignals };
+    return { coreChallenge, growthEdge, warningSignals, sectionTitle };
   }
 
   /**
