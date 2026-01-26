@@ -51,9 +51,15 @@ export const RelationshipTimeline: React.FC<RelationshipTimelineProps> = ({
   person1Chart,
   person2Chart
 }) => {
-  const [startDate, setStartDate] = useState('');
+  const [metDate, setMetDate] = useState('');
+  const [startedDatingDate, setStartedDatingDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [showTimeline, setShowTimeline] = useState(false);
+
+  // Use the earlier of the two dates as the timeline start
+  const effectiveStartDate = metDate && startedDatingDate 
+    ? (new Date(metDate) < new Date(startedDatingDate) ? metDate : startedDatingDate)
+    : metDate || startedDatingDate;
 
   // Calculate karmic analysis
   const karmicAnalysis = useMemo(() => {
@@ -69,7 +75,7 @@ export const RelationshipTimeline: React.FC<RelationshipTimelineProps> = ({
 
   // Generate timeline
   const timeline = useMemo(() => {
-    if (!startDate || !showTimeline || !person1Chart || !person2Chart) return [];
+    if (!effectiveStartDate || !showTimeline || !person1Chart || !person2Chart) return [];
 
     const chart1 = convertToBirthChart(person1Chart);
     const chart2 = convertToBirthChart(person2Chart);
@@ -79,13 +85,13 @@ export const RelationshipTimeline: React.FC<RelationshipTimelineProps> = ({
       chart2,
       person1Name,
       person2Name,
-      new Date(startDate),
+      new Date(effectiveStartDate),
       endDate ? new Date(endDate) : undefined
     );
-  }, [startDate, endDate, showTimeline, person1Name, person2Name, person1Chart, person2Chart]);
+  }, [effectiveStartDate, endDate, showTimeline, person1Name, person2Name, person1Chart, person2Chart]);
 
   const handleGenerate = () => {
-    if (startDate) {
+    if (metDate || startedDatingDate) {
       setShowTimeline(true);
     }
   };
@@ -144,20 +150,30 @@ export const RelationshipTimeline: React.FC<RelationshipTimelineProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div className="space-y-2">
-              <Label htmlFor="startDate">When did you meet/start dating?</Label>
+              <Label htmlFor="metDate">When did you meet?</Label>
               <Input
-                id="startDate"
+                id="metDate"
                 type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                value={metDate}
+                onChange={(e) => setMetDate(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="startedDatingDate">When did you start dating?</Label>
+              <Input
+                id="startedDatingDate"
+                type="date"
+                value={startedDatingDate}
+                onChange={(e) => setStartedDatingDate(e.target.value)}
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="endDate">
-                When did it end? (leave blank if ongoing)
+                When did it end? (optional)
               </Label>
               <Input
                 id="endDate"
@@ -168,7 +184,7 @@ export const RelationshipTimeline: React.FC<RelationshipTimelineProps> = ({
             </div>
           </div>
 
-          <Button onClick={handleGenerate} disabled={!startDate} className="w-full">
+          <Button onClick={handleGenerate} disabled={!metDate && !startedDatingDate} className="w-full">
             Generate Month-by-Month Transit Analysis
           </Button>
           
