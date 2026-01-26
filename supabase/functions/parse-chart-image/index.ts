@@ -39,7 +39,12 @@ CRITICAL - READ THE TABLE, NOT THE WHEEL:
 - There is usually a PRINTED TABLE of planet positions below or beside the wheel. READ THAT TABLE EXACTLY.
 - The table shows each planet with its sign symbol, degree (°), and minutes ('). Copy these values EXACTLY as printed.
 - Pay close attention to the EXACT degree numbers - do not guess or approximate.
-- Look for retrograde markers: R, ℞, Rx, or (R) next to planets. If present, set isRetrograde: true.
+
+RETROGRADE DETECTION - BE VERY CAREFUL:
+- DEFAULT: Set isRetrograde: false for ALL planets UNLESS you see an explicit retrograde marker.
+- Only set isRetrograde: true if you see one of these markers DIRECTLY NEXT TO the planet symbol or name: R, ℞, Rx, (R), or the word "retrograde".
+- If there is NO marker next to a planet, it is DIRECT (isRetrograde: false).
+- DO NOT GUESS. If unsure, set isRetrograde: false.
 
 ASCENDANT (AC) - VERY IMPORTANT:
 - The Ascendant is often labeled "AC", "Asc", or "ASC" in the table or on the chart.
@@ -88,7 +93,7 @@ Return this exact JSON structure (no markdown, no commentary):
 Rules:
 - READ THE TABLE EXACTLY - do not approximate degrees.
 - Ascendant MUST be included in planets if visible anywhere on the chart.
-- Check EVERY planet for retrograde markers (R, ℞, Rx).
+- RETROGRADE DEFAULT IS FALSE - only true with explicit marker (R, ℞, Rx, (R)).
 - NorthNode and SouthNode degrees must match the table exactly.
 - birthDate: YYYY-MM-DD format.
 - birthTime: 24-hour HH:MM format.
@@ -265,6 +270,41 @@ Return ONLY the JSON object.`;
       // Attach if we have the 3 key printed cusps + MC.
       if (houseCusps.house1 && houseCusps.house2 && houseCusps.house3 && houseCusps.house10) {
         parsedData.houseCusps = houseCusps;
+        
+        // Detect intercepted signs by checking which signs are "skipped" between consecutive house cusps
+        const signOrder = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", 
+                          "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
+        const interceptedSigns: string[] = [];
+        
+        for (let h = 1; h <= 12; h++) {
+          const currentHouse = houseCusps[`house${h}`];
+          const nextHouse = houseCusps[`house${h === 12 ? 1 : h + 1}`];
+          
+          if (currentHouse?.sign && nextHouse?.sign) {
+            const currentIdx = signOrder.indexOf(currentHouse.sign);
+            const nextIdx = signOrder.indexOf(nextHouse.sign);
+            
+            if (currentIdx !== -1 && nextIdx !== -1) {
+              // Calculate how many signs between current and next cusp
+              let signsBetween = (nextIdx - currentIdx + 12) % 12;
+              
+              // If more than 1 sign between cusps, the skipped sign(s) are intercepted
+              if (signsBetween > 1) {
+                for (let s = 1; s < signsBetween; s++) {
+                  const interceptedIdx = (currentIdx + s) % 12;
+                  const interceptedSign = signOrder[interceptedIdx];
+                  if (!interceptedSigns.includes(interceptedSign)) {
+                    interceptedSigns.push(interceptedSign);
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+        if (interceptedSigns.length > 0) {
+          parsedData.interceptedSigns = interceptedSigns;
+        }
       }
     }
 
