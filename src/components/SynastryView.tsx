@@ -1175,7 +1175,6 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                           person2Name={chart2.name}
                           person1Chart={chart1}
                           person2Chart={chart2}
-                          synastryAspects={report.karmicIndicators || []}
                         />
                       </section>
                       
