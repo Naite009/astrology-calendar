@@ -1051,8 +1051,30 @@ export const ChartLibrary = ({
         </div>
       </div>
 
+      {/* Alphabetical Quick Navigation */}
+      {savedCharts.length > 5 && (() => {
+        const sortedCharts = [...savedCharts].sort((a, b) => a.name.localeCompare(b.name));
+        const availableLetters = Array.from(new Set(sortedCharts.map(c => c.name.charAt(0).toUpperCase()))).sort();
+        return (
+          <div className="flex flex-wrap gap-1.5 mb-4">
+            {availableLetters.map(letter => (
+              <button
+                key={letter}
+                onClick={() => {
+                  const el = document.getElementById(`chart-letter-${letter}`);
+                  el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }}
+                className="w-7 h-7 flex items-center justify-center text-xs font-medium border border-border rounded-sm hover:border-primary hover:bg-primary/10 transition-colors"
+              >
+                {letter}
+              </button>
+            ))}
+          </div>
+        );
+      })()}
+
       <div className="grid gap-4 md:grid-cols-2">
-        {/* User's Personal Chart */}
+        {/* User's Personal Chart - Always First */}
         <div 
           className={`rounded-sm border-2 bg-secondary p-5 transition-all cursor-pointer ${
             cardDragOver === 'user' 
@@ -1114,61 +1136,67 @@ export const ChartLibrary = ({
           )}
         </div>
 
-        {/* Saved Charts */}
-        {savedCharts.map(chart => (
-          <div 
-            key={chart.id} 
-            className={`rounded-sm border bg-secondary p-5 transition-all cursor-pointer ${
-              cardDragOver === chart.id 
-                ? 'border-primary bg-primary/10 ring-2 ring-primary/30' 
-                : 'border-border hover:border-primary/50'
-            }`}
-            onDragOver={(e) => handleCardDragOver(e, chart.id)}
-            onDragLeave={handleCardDragLeave}
-            onDrop={(e) => handleCardDrop(e, chart)}
-          >
-            <h3 className="font-serif text-lg font-medium text-foreground mb-2">{chart.name}</h3>
-            {cardDragOver === chart.id ? (
-              <div className="flex items-center justify-center py-4 text-primary">
-                <Upload size={24} className="mr-2" />
-                <span className="text-sm">Drop to update chart</span>
-              </div>
-            ) : (
-              <>
-                <div className="text-sm text-foreground mb-3 space-y-0.5">
-                  <p>☉ {chart.planets.Sun?.degree}° {chart.planets.Sun?.sign}</p>
-                  <p>☽ {chart.planets.Moon?.degree}° {chart.planets.Moon?.sign}</p>
-                  <p>
-                    ASC {(chart.houseCusps?.house1?.degree ?? chart.planets.Ascendant?.degree)}°{' '}
-                    {(chart.houseCusps?.house1?.sign ?? chart.planets.Ascendant?.sign)}
-                  </p>
+        {/* Saved Charts - Alphabetically Sorted */}
+        {[...savedCharts].sort((a, b) => a.name.localeCompare(b.name)).map((chart, index, sortedArr) => {
+          const currentLetter = chart.name.charAt(0).toUpperCase();
+          const isFirstOfLetter = index === 0 || sortedArr[index - 1].name.charAt(0).toUpperCase() !== currentLetter;
+          
+          return (
+            <div 
+              key={chart.id}
+              id={isFirstOfLetter ? `chart-letter-${currentLetter}` : undefined}
+              className={`rounded-sm border bg-secondary p-5 transition-all cursor-pointer ${
+                cardDragOver === chart.id 
+                  ? 'border-primary bg-primary/10 ring-2 ring-primary/30' 
+                  : 'border-border hover:border-primary/50'
+              }`}
+              onDragOver={(e) => handleCardDragOver(e, chart.id)}
+              onDragLeave={handleCardDragLeave}
+              onDrop={(e) => handleCardDrop(e, chart)}
+            >
+              <h3 className="font-serif text-lg font-medium text-foreground mb-2">{chart.name}</h3>
+              {cardDragOver === chart.id ? (
+                <div className="flex items-center justify-center py-4 text-primary">
+                  <Upload size={24} className="mr-2" />
+                  <span className="text-sm">Drop to update chart</span>
                 </div>
-                <p className="text-[10px] text-muted-foreground mb-2 italic">Drag chart image here to update</p>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setViewingChart(chart)}
-                    className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-primary hover:underline"
-                  >
-                    <Eye size={14} />
-                    View
-                  </button>
-                  <button
-                    onClick={() => openEditForm(chart)}
-                    className="text-[11px] uppercase tracking-widest text-primary hover:underline"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => onDeleteChart(chart.id)}
-                    className="text-[11px] uppercase tracking-widest text-destructive hover:underline"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        ))}
+              ) : (
+                <>
+                  <div className="text-sm text-foreground mb-3 space-y-0.5">
+                    <p>☉ {chart.planets.Sun?.degree}° {chart.planets.Sun?.sign}</p>
+                    <p>☽ {chart.planets.Moon?.degree}° {chart.planets.Moon?.sign}</p>
+                    <p>
+                      ASC {(chart.houseCusps?.house1?.degree ?? chart.planets.Ascendant?.degree)}°{' '}
+                      {(chart.houseCusps?.house1?.sign ?? chart.planets.Ascendant?.sign)}
+                    </p>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mb-2 italic">Drag chart image here to update</p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setViewingChart(chart)}
+                      className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-primary hover:underline"
+                    >
+                      <Eye size={14} />
+                      View
+                    </button>
+                    <button
+                      onClick={() => openEditForm(chart)}
+                      className="text-[11px] uppercase tracking-widest text-primary hover:underline"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => onDeleteChart(chart.id)}
+                      className="text-[11px] uppercase tracking-widest text-destructive hover:underline"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Edit Form Modal */}
