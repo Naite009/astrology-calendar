@@ -3,9 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Calendar, TrendingDown, TrendingUp, Zap, Heart, AlertTriangle, User } from 'lucide-react';
-import { RelationshipTimelineCalculator } from '@/lib/relationshipTimelineCalculator';
-import { RelationshipTimelineConfig, MonthlySnapshot } from '@/types/relationshipTimeline';
+import { Calendar, TrendingDown, TrendingUp, Zap, Heart, AlertTriangle, User, Skull } from 'lucide-react';
+import { RelationshipTransitCalculator, BirthChart } from '@/lib/relationshipTransitCalculator';
+import { MonthlyTimeline, TransitEvent, KarmicAnalysis } from '@/types/relationshipTimeline';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
@@ -16,6 +16,36 @@ interface RelationshipTimelineProps {
   person2Chart: any;
   synastryAspects: any[];
 }
+
+// Helper to convert natal chart format to BirthChart format
+const convertToBirthChart = (chart: any): BirthChart => {
+  const planets: { name: string; longitude: number }[] = [];
+  
+  // Convert each planet position to longitude
+  const planetNames = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'North Node', 'Chiron'];
+  const signOrder = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+  
+  planetNames.forEach(name => {
+    const key = name.toLowerCase().replace(' ', '');
+    const planetData = chart[key] || chart[name.toLowerCase()];
+    
+    if (planetData && planetData.sign !== undefined) {
+      const signIndex = signOrder.indexOf(planetData.sign);
+      const degree = planetData.degree || 0;
+      const minutes = planetData.minutes || 0;
+      const longitude = signIndex * 30 + degree + minutes / 60;
+      
+      planets.push({ name, longitude });
+    }
+  });
+  
+  return {
+    date: chart.birthDate ? new Date(chart.birthDate) : new Date(),
+    latitude: chart.latitude || 0,
+    longitude: chart.longitude || 0,
+    planets
+  };
+};
 
 export const RelationshipTimeline: React.FC<RelationshipTimelineProps> = ({
   person1Name,
@@ -34,22 +64,28 @@ export const RelationshipTimeline: React.FC<RelationshipTimelineProps> = ({
     ? (new Date(metDate) < new Date(startedDatingDate) ? metDate : startedDatingDate)
     : metDate || startedDatingDate;
 
-  const timeline = useMemo(() => {
-    if (!effectiveStartDate || !showTimeline) return [];
+  const { timeline, karmicAnalysis } = useMemo(() => {
+    if (!effectiveStartDate || !showTimeline) {
+      return { timeline: [], karmicAnalysis: null };
+    }
 
-    const config: RelationshipTimelineConfig = {
+    const chart1 = convertToBirthChart(person1Chart);
+    const chart2 = convertToBirthChart(person2Chart);
+    
+    const generatedTimeline = RelationshipTransitCalculator.generateTimeline(
+      chart1,
+      chart2,
       person1Name,
       person2Name,
-      person1Chart,
-      person2Chart,
-      relationshipStartDate: new Date(effectiveStartDate),
-      relationshipEndDate: endDate ? new Date(endDate) : undefined,
-      synastryAspects
-    };
-
-    const calculator = new RelationshipTimelineCalculator(config);
-    return calculator.generateTimeline();
-  }, [effectiveStartDate, endDate, showTimeline, person1Name, person2Name, person1Chart, person2Chart, synastryAspects]);
+      new Date(effectiveStartDate),
+      endDate ? new Date(endDate) : undefined
+    );
+    
+    const synastryAspects = RelationshipTransitCalculator.calculateSynastryAspects(chart1, chart2);
+    const karmic = RelationshipTransitCalculator.identifyKarmicPatterns(synastryAspects);
+    
+    return { timeline: generatedTimeline, karmicAnalysis: karmic };
+  }, [effectiveStartDate, endDate, showTimeline, person1Name, person2Name, person1Chart, person2Chart]);
 
   const handleGenerate = () => {
     if (metDate || startedDatingDate) {
@@ -57,25 +93,29 @@ export const RelationshipTimeline: React.FC<RelationshipTimelineProps> = ({
     }
   };
 
-  const getEmotionalWeatherIcon = (weather: string) => {
-    switch (weather) {
-      case 'calm': return <TrendingUp className="h-4 w-4 text-green-500" />;
-      case 'passionate': return <Heart className="h-4 w-4 text-pink-500" />;
-      case 'tense': return <Zap className="h-4 w-4 text-yellow-500" />;
-      case 'transformative': return <Zap className="h-4 w-4 text-purple-500" />;
-      case 'difficult': return <TrendingDown className="h-4 w-4 text-red-500" />;
-      default: return null;
-    }
+  const getIntensityLabel = (intensity: number): string => {
+    if (intensity >= 8) return 'Critical';
+    if (intensity >= 6) return 'High';
+    if (intensity >= 4) return 'Medium';
+    return 'Low';
   };
 
-  const getIntensityColor = (intensity: string) => {
-    switch (intensity) {
-      case 'critical': return 'bg-red-500';
-      case 'high': return 'bg-orange-500';
-      case 'medium': return 'bg-yellow-500';
-      case 'low': return 'bg-blue-500';
-      default: return 'bg-gray-500';
-    }
+  const getIntensityColor = (intensity: number): string => {
+    if (intensity >= 8) return 'bg-red-500';
+    if (intensity >= 6) return 'bg-orange-500';
+    if (intensity >= 4) return 'bg-yellow-500';
+    return 'bg-blue-500';
+  };
+
+  const getMonthIntensityIcon = (transits: TransitEvent[]) => {
+    if (transits.length === 0) return <TrendingUp className="h-4 w-4 text-green-500" />;
+    
+    const maxIntensity = Math.max(...transits.map(t => t.intensity));
+    
+    if (maxIntensity >= 8) return <AlertTriangle className="h-4 w-4 text-red-500" />;
+    if (maxIntensity >= 6) return <Zap className="h-4 w-4 text-orange-500" />;
+    if (maxIntensity >= 4) return <Heart className="h-4 w-4 text-pink-500" />;
+    return <TrendingUp className="h-4 w-4 text-green-500" />;
   };
 
   return (
@@ -134,6 +174,40 @@ export const RelationshipTimeline: React.FC<RelationshipTimelineProps> = ({
         </CardContent>
       </Card>
 
+      {/* Karmic Analysis Card */}
+      {showTimeline && karmicAnalysis && (
+        <Card className={karmicAnalysis.isKarmic ? 'border-purple-500/50' : ''}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Skull className="h-5 w-5" />
+              Karmic Analysis
+              {karmicAnalysis.isKarmic && (
+                <Badge variant="secondary" className="bg-purple-500/20 text-purple-300">
+                  Karmic Bond
+                </Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm mb-4">{karmicAnalysis.description}</p>
+            
+            {karmicAnalysis.karmicIndicators.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="font-medium text-sm">Karmic Indicators:</h4>
+                <ul className="space-y-1">
+                  {karmicAnalysis.karmicIndicators.map((indicator, i) => (
+                    <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
+                      <span className="text-purple-400">•</span>
+                      {indicator}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {showTimeline && timeline.length > 0 && (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">
@@ -146,9 +220,11 @@ export const RelationshipTimeline: React.FC<RelationshipTimelineProps> = ({
                 <AccordionTrigger className="px-4 hover:no-underline">
                   <div className="flex items-center justify-between w-full pr-4">
                     <div className="flex items-center gap-3">
-                      {getEmotionalWeatherIcon(snapshot.emotionalWeather)}
+                      {getMonthIntensityIcon(snapshot.transits)}
                       <span className="font-medium">{snapshot.month}</span>
-                      <Badge variant="outline">{snapshot.phase.phaseName}</Badge>
+                      <Badge variant="outline">
+                        {snapshot.transits.length} transits
+                      </Badge>
                     </div>
 
                     <div className="flex gap-1">
@@ -164,13 +240,10 @@ export const RelationshipTimeline: React.FC<RelationshipTimelineProps> = ({
                 
                 <AccordionContent className="px-4 pb-4">
                   <div className="space-y-4">
-                    {/* Phase Information */}
+                    {/* Monthly Summary */}
                     <div className="bg-muted/50 rounded-lg p-4">
-                      <h4 className="font-semibold mb-2">Relationship Phase</h4>
-                      <p className="text-sm text-muted-foreground">{snapshot.phase.description}</p>
-                      <p className="text-sm mt-2">
-                        <span className="font-medium">Overall Energy:</span> {snapshot.phase.overallEnergy}
-                      </p>
+                      <h4 className="font-semibold mb-2">Monthly Overview</h4>
+                      <p className="text-sm text-muted-foreground">{snapshot.summary}</p>
                     </div>
 
                     {/* Person Experiences */}
@@ -180,7 +253,7 @@ export const RelationshipTimeline: React.FC<RelationshipTimelineProps> = ({
                           <User className="h-4 w-4 text-primary" />
                           <span className="font-medium">{person1Name}'s Experience</span>
                         </div>
-                        <p className="text-sm text-muted-foreground">{snapshot.person1Feelings}</p>
+                        <p className="text-sm text-muted-foreground">{snapshot.person1Summary}</p>
                       </div>
                       
                       <div className="border rounded-lg p-4">
@@ -188,23 +261,47 @@ export const RelationshipTimeline: React.FC<RelationshipTimelineProps> = ({
                           <User className="h-4 w-4 text-primary" />
                           <span className="font-medium">{person2Name}'s Experience</span>
                         </div>
-                        <p className="text-sm text-muted-foreground">{snapshot.person2Feelings}</p>
+                        <p className="text-sm text-muted-foreground">{snapshot.person2Summary}</p>
                       </div>
                     </div>
 
-                    {/* Major Transits */}
+                    {/* Transit Events */}
                     {snapshot.transits.length > 0 && (
                       <div className="space-y-2">
                         <h4 className="font-semibold">Astrological Influences</h4>
                         <div className="space-y-2">
                           {snapshot.transits.map((transit, i) => (
-                            <div key={i} className="flex items-start gap-3 p-2 bg-muted/30 rounded">
-                              <span className={`w-2 h-2 rounded-full mt-2 ${getIntensityColor(transit.intensity)}`} />
-                              <div>
-                                <p className="text-sm font-medium">
-                                  {transit.transitingPlanet} {transit.transitAspect} {transit.natalPoint}
-                                </p>
-                                <p className="text-xs text-muted-foreground">{transit.interpretation}</p>
+                            <div key={i} className="flex items-start gap-3 p-3 bg-muted/30 rounded">
+                              <div className="flex flex-col items-center gap-1">
+                                <span className={`w-2 h-2 rounded-full ${getIntensityColor(transit.intensity)}`} />
+                                <span className="text-xs text-muted-foreground">
+                                  {getIntensityLabel(transit.intensity)}
+                                </span>
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <p className="text-sm font-medium">
+                                    {transit.transitPlanet} {transit.aspectType} {transit.synastryPoint.person1Planet}-{transit.synastryPoint.person2Planet}
+                                  </p>
+                                  {transit.isKarmic && (
+                                    <Badge variant="outline" className="text-xs border-purple-500/50 text-purple-400">
+                                      Karmic
+                                    </Badge>
+                                  )}
+                                </div>
+                                <p className="text-xs text-muted-foreground mb-2">{transit.interpretation}</p>
+                                
+                                {/* Who feels it more */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 pt-2 border-t border-border/50">
+                                  <div className="text-xs">
+                                    <span className="font-medium text-primary">{person1Name}:</span>{' '}
+                                    <span className="text-muted-foreground">{transit.person1Experience}</span>
+                                  </div>
+                                  <div className="text-xs">
+                                    <span className="font-medium text-primary">{person2Name}:</span>{' '}
+                                    <span className="text-muted-foreground">{transit.person2Experience}</span>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           ))}
@@ -212,62 +309,10 @@ export const RelationshipTimeline: React.FC<RelationshipTimelineProps> = ({
                       </div>
                     )}
 
-                    {/* Key Events */}
-                    {snapshot.keyEvents.length > 0 && (
-                      <div className="space-y-2">
-                        <h4 className="font-semibold">Key Dates</h4>
-                        <ul className="space-y-1">
-                          {snapshot.keyEvents.map((event, i) => (
-                            <li key={i} className="text-sm flex items-center gap-2">
-                              <AlertTriangle className="h-3 w-3 text-yellow-500" />
-                              {event}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {/* Best/Worst Days */}
-                    {(snapshot.bestDays.length > 0 || snapshot.worstDays.length > 0) && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {snapshot.bestDays.length > 0 && (
-                          <div className="bg-green-500/10 rounded-lg p-3">
-                            <div className="flex items-center gap-2 mb-2">
-                              <TrendingUp className="h-4 w-4 text-green-500" />
-                              <span className="font-medium text-sm">Best Days</span>
-                            </div>
-                            <div className="flex flex-wrap gap-1">
-                              {snapshot.bestDays.map((date, i) => (
-                                <Badge key={i} variant="secondary" className="text-xs">
-                                  {date.toLocaleDateString()}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {snapshot.worstDays.length > 0 && (
-                          <div className="bg-red-500/10 rounded-lg p-3">
-                            <div className="flex items-center gap-2 mb-2">
-                              <TrendingDown className="h-4 w-4 text-red-500" />
-                              <span className="font-medium text-sm">Challenging Days</span>
-                            </div>
-                            <div className="flex flex-wrap gap-1">
-                              {snapshot.worstDays.map((date, i) => (
-                                <Badge key={i} variant="secondary" className="text-xs">
-                                  {date.toLocaleDateString()}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
                     {/* Advice */}
                     <div className="bg-primary/5 rounded-lg p-4 border border-primary/20">
                       <h4 className="font-semibold mb-2">Guidance for This Month</h4>
-                      <p className="text-sm">{snapshot.phase.advice}</p>
+                      <p className="text-sm">{snapshot.advice}</p>
                     </div>
                   </div>
                 </AccordionContent>
