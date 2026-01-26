@@ -33,21 +33,35 @@ serve(async (req) => {
     const isWord = fileType === 'word' || imageBase64.includes('application/vnd.openxmlformats') || imageBase64.includes('application/msword');
     const isImage = !isPDF && !isWord;
 
-    const prompt = `Analyze this astrological chart ${isPDF || isWord ? 'document' : 'image'} and extract ONLY the NATAL (birth) chart placements.
+    const prompt = `Extract planetary positions from this astrological chart ${isPDF || isWord ? 'document' : 'image'}.
 
-CRITICAL INSTRUCTIONS (avoid wrong charts):
-- Many files include multiple charts/tables (natal + transits + progressions + synastry). You MUST select the NATAL chart only, typically labeled: "Natal", "Radix", "Birth Chart", "RASI" (if Vedic), or the one that contains the person's birth info.
-- Prefer reading the PRINTED TABLE of planet positions and house cusps (usually near the bottom or side). Do NOT infer placements from the wheel if a table is present.
-- Ignore transit/progression/aspect tables, "current" positions, and any additional charts.
-- If the table is blurry/partially cut off, return a best-effort JSON plus a "warnings" array describing what you could not read.
+CRITICAL - READ THE TABLE, NOT THE WHEEL:
+- There is usually a PRINTED TABLE of planet positions below or beside the wheel. READ THAT TABLE EXACTLY.
+- The table shows each planet with its sign symbol, degree (°), and minutes ('). Copy these values EXACTLY as printed.
+- Pay close attention to the EXACT degree numbers - do not guess or approximate.
+- Look for retrograde markers: R, ℞, Rx, or (R) next to planets. If present, set isRetrograde: true.
 
-Extract the person's birth information if visible on the chart. Look for:
-- Name (often at the top of the chart)
-- Birth date (may be formatted as "Jan 15, 1990" or "15.01.1990" or "1990-01-15")
-- Birth time (may be "2:30 PM" or "14:30")
-- Birth location/place (city, state/country)
+ASCENDANT (AC) - VERY IMPORTANT:
+- The Ascendant is often labeled "AC", "Asc", or "ASC" in the table or on the chart.
+- It may appear in the house cusps section as "I" or "1" for the 1st house cusp.
+- Include it in planets as "Ascendant" with sign, degree, minutes.
 
-Return data in this exact JSON shape (no extra commentary, no markdown):
+NODES - READ CAREFULLY:
+- North Node may be labeled: ☊, "True Node", "Mean Node", "North Node", or "Rahu"
+- South Node may be labeled: ☋, "South Node", or "Ketu" 
+- Read their degrees from the TABLE, not the wheel position.
+
+SELECTING THE RIGHT CHART:
+- Extract ONLY the NATAL/RADIX/BIRTH chart, not transits or progressions.
+- If multiple charts exist, use the one with birth info (date, time, place).
+
+Extract birth info if visible:
+- Name (usually at top)
+- Birth date (convert to YYYY-MM-DD format)
+- Birth time (convert to 24-hour HH:MM)
+- Birth location
+
+Return this exact JSON structure (no markdown, no commentary):
 {
   "birthInfo": {
     "name": "Person's Name",
@@ -57,7 +71,8 @@ Return data in this exact JSON shape (no extra commentary, no markdown):
   },
   "planets": {
     "Sun": { "sign": "Aries", "degree": 15, "minutes": 23, "isRetrograde": false },
-    "Moon": { "sign": "Cancer", "degree": 8, "minutes": 12, "isRetrograde": false }
+    "Moon": { "sign": "Cancer", "degree": 8, "minutes": 12, "isRetrograde": false },
+    "Ascendant": { "sign": "Leo", "degree": 5, "minutes": 30, "isRetrograde": false }
   },
   "astroComCusps": {
     "AC": { "sign": "Leo", "degree": 5, "minutes": 30 },
@@ -67,20 +82,20 @@ Return data in this exact JSON shape (no extra commentary, no markdown):
     "house11": { "sign": "Pisces", "degree": 2, "minutes": 15 },
     "house12": { "sign": "Aries", "degree": 1, "minutes": 0 }
   },
-  "warnings": ["optional human-readable issues"]
+  "warnings": ["optional issues encountered"]
 }
 
 Rules:
-- birthDate MUST be YYYY-MM-DD.
-- birthTime MUST be 24-hour HH:MM.
-- Omit any birthInfo field you cannot confidently read.
-- Planet names allowed: Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, Ascendant (or ASC), NorthNode, SouthNode, Chiron, Lilith, Ceres, Pallas, Juno, Vesta, PartOfFortune, Vertex, Eris, Sedna, Makemake, Haumea, Quaoar, Orcus, Ixion, Varuna.
-- Signs allowed: Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces.
-- Retrograde markers (R, ℞, Rx) => isRetrograde: true.
+- READ THE TABLE EXACTLY - do not approximate degrees.
+- Ascendant MUST be included in planets if visible anywhere on the chart.
+- Check EVERY planet for retrograde markers (R, ℞, Rx).
+- NorthNode and SouthNode degrees must match the table exactly.
+- birthDate: YYYY-MM-DD format.
+- birthTime: 24-hour HH:MM format.
+- Planet names: Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, Ascendant, NorthNode, SouthNode, Chiron, Lilith, Ceres, Pallas, Juno, Vesta, PartOfFortune, Vertex, Eris, Sedna, Makemake, Haumea, Quaoar, Orcus, Ixion, Varuna.
+- Signs: Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces.
 
-IMPORTANT - Astro.com House Cusp Format:
-- Astro.com prints 6 cusps: AC, 2, 3, MC, 11, 12.
-- Extract ONLY these 6 into astroComCusps. Do NOT output all 12 cusps here.
+For Astro.com charts: Extract 6 cusps (AC, 2, 3, MC, 11, 12) into astroComCusps.
 
 Return ONLY the JSON object.`;
 
