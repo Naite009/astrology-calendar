@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Calendar, TrendingDown, TrendingUp, Zap, Heart, AlertTriangle, Flame, User, Skull } from 'lucide-react';
+import { Calendar, TrendingUp, Zap, Heart, AlertTriangle, Flame, User, Skull, Sparkles, Shield, HeartCrack } from 'lucide-react';
 import { RelationshipTransitCalculator, BirthChart } from '@/lib/relationshipTransitCalculator';
 import { MonthlyTimeline, TransitEvent, KarmicAnalysis } from '@/types/relationshipTimeline';
 import { Badge } from '@/components/ui/badge';
@@ -61,6 +61,23 @@ export const RelationshipTimeline: React.FC<RelationshipTimelineProps> = ({
     ? (new Date(metDate) < new Date(startedDatingDate) ? metDate : startedDatingDate)
     : metDate || startedDatingDate;
 
+  // Calculate relationship overview (attraction, challenges, breakup)
+  const relationshipOverview = useMemo(() => {
+    if (!person1Chart || !person2Chart) return null;
+    
+    const chart1 = convertToBirthChart(person1Chart);
+    const chart2 = convertToBirthChart(person2Chart);
+    
+    return RelationshipTransitCalculator.analyzeRelationshipOverview(
+      chart1,
+      chart2,
+      person1Name,
+      person2Name,
+      effectiveStartDate ? new Date(effectiveStartDate) : new Date(),
+      endDate ? new Date(endDate) : undefined
+    );
+  }, [person1Chart, person2Chart, person1Name, person2Name, effectiveStartDate, endDate]);
+
   // Calculate karmic analysis
   const karmicAnalysis = useMemo(() => {
     if (!person1Chart || !person2Chart) return null;
@@ -112,6 +129,98 @@ export const RelationshipTimeline: React.FC<RelationshipTimelineProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Relationship Overview - Always show if charts exist */}
+      {relationshipOverview && (
+        <>
+          {/* The Attraction */}
+          <Card className="border-pink-500/30 bg-pink-500/5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-pink-400">
+                <Sparkles className="h-5 w-5" />
+                Why You're Attracted to Each Other
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm leading-relaxed">{relationshipOverview.attraction.magneticPull}</p>
+              <p className="text-sm text-muted-foreground">{relationshipOverview.attraction.coreAttraction}</p>
+              
+              {relationshipOverview.attraction.chemistryFactors.length > 0 && (
+                <div className="space-y-2 pt-2 border-t border-border/50">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Chemistry Factors</h4>
+                  <ul className="space-y-1">
+                    {relationshipOverview.attraction.chemistryFactors.map((factor, i) => (
+                      <li key={i} className="text-xs text-muted-foreground flex items-start gap-2">
+                        <Heart className="h-3 w-3 text-pink-400 mt-0.5 shrink-0" />
+                        {factor}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* The Core Challenge */}
+          <Card className="border-amber-500/30 bg-amber-500/5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-amber-400">
+                <Shield className="h-5 w-5" />
+                The Relationship's Core Challenge
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm leading-relaxed">{relationshipOverview.challenge.coreChallenge}</p>
+              <p className="text-sm text-muted-foreground italic">{relationshipOverview.challenge.growthEdge}</p>
+              
+              {relationshipOverview.challenge.warningSignals.length > 0 && (
+                <div className="space-y-2 pt-2 border-t border-border/50">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Watch For</h4>
+                  <ul className="space-y-1">
+                    {relationshipOverview.challenge.warningSignals.slice(0, 3).map((signal, i) => (
+                      <li key={i} className="text-xs text-muted-foreground flex items-start gap-2">
+                        <AlertTriangle className="h-3 w-3 text-amber-400 mt-0.5 shrink-0" />
+                        {signal}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* What Caused the Breakup - Only if endDate provided */}
+          {relationshipOverview.breakup && (
+            <Card className="border-destructive/30 bg-destructive/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-destructive">
+                  <HeartCrack className="h-5 w-5" />
+                  What Caused the Breakup
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm leading-relaxed font-medium">{relationshipOverview.breakup.primaryCause}</p>
+                <p className="text-sm text-muted-foreground">{relationshipOverview.breakup.buildUp}</p>
+                <p className="text-sm text-muted-foreground italic">{relationshipOverview.breakup.finalStraw}</p>
+                
+                {relationshipOverview.breakup.triggerTransits.length > 0 && (
+                  <div className="space-y-2 pt-2 border-t border-border/50">
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Trigger Transits</h4>
+                    <ul className="space-y-1">
+                      {relationshipOverview.breakup.triggerTransits.slice(0, 5).map((transit, i) => (
+                        <li key={i} className="text-xs text-muted-foreground flex items-start gap-2">
+                          <Zap className="h-3 w-3 text-destructive mt-0.5 shrink-0" />
+                          {transit}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </>
+      )}
+
       {/* Karmic Analysis Card */}
       {karmicAnalysis && (
         <Card className={karmicAnalysis.isKarmic ? 'border-purple-500/50' : ''}>
