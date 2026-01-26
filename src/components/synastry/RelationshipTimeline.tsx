@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Calendar, TrendingUp, Zap, Heart, AlertTriangle, Flame, User, Skull, Sparkles, Shield, HeartCrack } from 'lucide-react';
-import { RelationshipTransitCalculator, BirthChart } from '@/lib/relationshipTransitCalculator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar, TrendingUp, Zap, Heart, AlertTriangle, Flame, User, Skull, Sparkles, Shield, HeartCrack, Briefcase, Users, Palette, Home } from 'lucide-react';
+import { RelationshipTransitCalculator, BirthChart, RelationshipFocus } from '@/lib/relationshipTransitCalculator';
 import { MonthlyTimeline, TransitEvent, KarmicAnalysis } from '@/types/relationshipTimeline';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -62,11 +63,22 @@ export const RelationshipTimeline: React.FC<RelationshipTimelineProps> = ({
   const [startedDatingDate, setStartedDatingDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [showTimeline, setShowTimeline] = useState(false);
+  const [relationshipFocus, setRelationshipFocus] = useState<RelationshipFocus>('romance');
 
   // Use the earlier of the two dates as the timeline start
   const effectiveStartDate = metDate && startedDatingDate 
     ? (new Date(metDate) < new Date(startedDatingDate) ? metDate : startedDatingDate)
     : metDate || startedDatingDate;
+
+  const getFocusIcon = (focus: RelationshipFocus) => {
+    switch (focus) {
+      case 'romance': return <Heart className="h-4 w-4" />;
+      case 'business': return <Briefcase className="h-4 w-4" />;
+      case 'friendship': return <Users className="h-4 w-4" />;
+      case 'creative': return <Palette className="h-4 w-4" />;
+      case 'family': return <Home className="h-4 w-4" />;
+    }
+  };
 
   // Calculate relationship overview (attraction, challenges, breakup)
   const relationshipOverview = useMemo(() => {
@@ -81,9 +93,10 @@ export const RelationshipTimeline: React.FC<RelationshipTimelineProps> = ({
       person1Name,
       person2Name,
       effectiveStartDate ? new Date(effectiveStartDate) : new Date(),
-      endDate ? new Date(endDate) : undefined
+      endDate ? new Date(endDate) : undefined,
+      relationshipFocus
     );
-  }, [person1Chart, person2Chart, person1Name, person2Name, effectiveStartDate, endDate]);
+  }, [person1Chart, person2Chart, person1Name, person2Name, effectiveStartDate, endDate, relationshipFocus]);
 
   // Calculate karmic analysis
   const karmicAnalysis = useMemo(() => {
@@ -94,8 +107,8 @@ export const RelationshipTimeline: React.FC<RelationshipTimelineProps> = ({
     
     const synastryAspects = RelationshipTransitCalculator.calculateSynastryAspects(chart1, chart2);
     
-    return RelationshipTransitCalculator.identifyKarmicPatterns(synastryAspects);
-  }, [person1Chart, person2Chart]);
+    return RelationshipTransitCalculator.identifyKarmicPatterns(synastryAspects, relationshipFocus);
+  }, [person1Chart, person2Chart, relationshipFocus]);
 
   // Generate timeline
   const timeline = useMemo(() => {
