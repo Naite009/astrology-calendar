@@ -20,6 +20,7 @@ interface SynastryAnalysisCardProps {
   chart2: NatalChart | null;
   availableCharts?: NatalChart[];
   onChartSelect?: (chart1Id: string, chart2Id: string) => void;
+  focus?: RelationshipContext;
 }
 
 // Quick compare person - just birth date
@@ -137,7 +138,8 @@ export const SynastryAnalysisCard = ({
   chart1, 
   chart2, 
   availableCharts = [],
-  onChartSelect
+  onChartSelect,
+  focus = 'romance'
 }: SynastryAnalysisCardProps) => {
   const [showAllAspects, setShowAllAspects] = useState(false);
   const [showQuickCompare, setShowQuickCompare] = useState(false);
@@ -444,24 +446,24 @@ export const SynastryAnalysisCard = ({
           <div className="space-y-1">
             {/* Show passion aspects first */}
             {passionAspects.slice(0, showAllAspects ? undefined : 2).map((aspect, i) => (
-              <AspectRow key={`passion-${i}`} aspect={aspect} relationshipContext="romance" personAName={effectiveChart1?.name} personBName={effectiveChart2?.name} />
+              <AspectRow key={`passion-${i}`} aspect={aspect} relationshipContext={focus} personAName={effectiveChart1?.name} personBName={effectiveChart2?.name} />
             ))}
             
             {/* Emotional aspects */}
             {emotionalAspects.slice(0, showAllAspects ? undefined : 2).map((aspect, i) => (
-              <AspectRow key={`emotional-${i}`} aspect={aspect} relationshipContext="romance" personAName={effectiveChart1?.name} personBName={effectiveChart2?.name} />
+              <AspectRow key={`emotional-${i}`} aspect={aspect} relationshipContext={focus} personAName={effectiveChart1?.name} personBName={effectiveChart2?.name} />
             ))}
             
             {/* Karmic aspects */}
             {karmicAspects.slice(0, showAllAspects ? undefined : 1).map((aspect, i) => (
-              <AspectRow key={`karmic-${i}`} aspect={aspect} relationshipContext="romance" personAName={effectiveChart1?.name} personBName={effectiveChart2?.name} />
+              <AspectRow key={`karmic-${i}`} aspect={aspect} relationshipContext={focus} personAName={effectiveChart1?.name} personBName={effectiveChart2?.name} />
             ))}
             
             {/* Rest of aspects when expanded */}
             {showAllAspects && report.aspects
               .filter(a => !passionAspects.includes(a) && !emotionalAspects.includes(a) && !karmicAspects.includes(a))
               .map((aspect, i) => (
-                <AspectRow key={`other-${i}`} aspect={aspect} relationshipContext="romance" personAName={effectiveChart1?.name} personBName={effectiveChart2?.name} />
+                <AspectRow key={`other-${i}`} aspect={aspect} relationshipContext={focus} personAName={effectiveChart1?.name} personBName={effectiveChart2?.name} />
               ))}
           </div>
         </ScrollArea>
