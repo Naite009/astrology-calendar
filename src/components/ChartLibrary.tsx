@@ -1051,8 +1051,8 @@ export const ChartLibrary = ({
         </div>
       </div>
 
-      {/* Alphabetical Quick Navigation */}
-      {savedCharts.length > 5 && (() => {
+      {/* Alphabetical Quick Navigation - shows when 2+ saved charts */}
+      {savedCharts.length >= 2 && (() => {
         const sortedCharts = [...savedCharts].sort((a, b) => a.name.localeCompare(b.name));
         const availableLetters = Array.from(new Set(sortedCharts.map(c => c.name.charAt(0).toUpperCase()))).sort();
         return (
