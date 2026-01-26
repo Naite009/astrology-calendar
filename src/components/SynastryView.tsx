@@ -958,6 +958,7 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                         report={report}
                         karmicAnalysis={karmicAnalysis}
                         compositeInterpretation={compositeInterpretation}
+                        focus={relationshipFocus === 'romantic' ? 'romance' : relationshipFocus === 'all' ? 'romance' : relationshipFocus}
                       />
                       
                       {/* Additional Technical Views - Expandable */}

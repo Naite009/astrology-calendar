@@ -32,6 +32,7 @@ interface FiveEssentialQuestionsProps {
   report: AdvancedSynastryReport;
   karmicAnalysis: KarmicAnalysis | null;
   compositeInterpretation: CompositeInterpretation | null;
+  focus?: 'romance' | 'friendship' | 'business' | 'creative' | 'family';
 }
 
 // Planet symbols for display
@@ -866,7 +867,8 @@ const AspectCard = ({
   aspect, 
   personAName, 
   personBName,
-  orb
+  orb,
+  focus = 'romance'
 }: { 
   planet1: string; 
   planet2: string; 
@@ -874,14 +876,15 @@ const AspectCard = ({
   personAName: string; 
   personBName: string;
   orb?: number;
+  focus?: 'romance' | 'friendship' | 'business' | 'creative' | 'family';
 }) => {
   const [expanded, setExpanded] = useState(false);
   const expressions = generateAspectExpressions(planet1, planet2, aspect, personAName, personBName);
   
   // Get directional interpretation if available
   const directionalInterp = useMemo(() => {
-    return getDirectionalInterpretation(planet1, aspect, planet2, 'romance');
-  }, [planet1, aspect, planet2]);
+    return getDirectionalInterpretation(planet1, aspect, planet2, focus);
+  }, [planet1, aspect, planet2, focus]);
   
   const p1Symbol = PLANET_SYMBOLS[planet1] || planet1;
   const p2Symbol = PLANET_SYMBOLS[planet2] || planet2;
@@ -921,7 +924,7 @@ const AspectCard = ({
             {directionalInterp && (
               <DirectionalAspectCard
                 interpretation={directionalInterp}
-                context="romance"
+                context={focus}
                 personAName={personAName}
                 personBName={personBName}
               />
@@ -1002,7 +1005,8 @@ export const FiveEssentialQuestions = ({
   chart2,
   report,
   karmicAnalysis,
-  compositeInterpretation
+  compositeInterpretation,
+  focus = 'romance'
 }: FiveEssentialQuestionsProps) => {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     allAspects: false,
@@ -1130,6 +1134,7 @@ export const FiveEssentialQuestions = ({
                 personAName={asp.owner1}
                 personBName={asp.owner2}
                 orb={asp.orb}
+                focus={focus}
               />
             ))
           ) : (
