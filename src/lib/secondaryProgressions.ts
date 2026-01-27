@@ -780,6 +780,9 @@ export interface ProgressedMoonTransit {
   aspectType: string;
   aspectSymbol: string;
   orb: number;
+  motion: 'applying' | 'separating' | 'exact';
+  monthsUntilExact: number | null;
+  exactDate: Date | null;
   priority: 'critical' | 'high' | 'medium' | 'low';
   sign: string;
   house: number | null;
@@ -875,6 +878,28 @@ export const calculateProgressedMoonTransits = (
           priority = 'low';
         }
         
+        // Calculate motion and timing
+        // Progressed Moon moves ~1.08° per month
+        // Check if applying (getting closer) or separating (getting farther)
+        const isApplying = diff < aspectDef.angle;
+        const isExact = angleDiff <= 0.1;
+        let motion: 'applying' | 'separating' | 'exact' = isExact ? 'exact' : isApplying ? 'applying' : 'separating';
+        
+        // Calculate months until exact
+        let monthsUntilExact: number | null = null;
+        let exactDate: Date | null = null;
+        
+        if (isApplying && !isExact) {
+          // Degrees until exact = angleDiff
+          // Progressed Moon moves ~1.08° per month
+          monthsUntilExact = Math.round(angleDiff / 1.08);
+          exactDate = new Date(currentDate);
+          exactDate.setMonth(exactDate.getMonth() + monthsUntilExact);
+        } else if (isExact) {
+          monthsUntilExact = 0;
+          exactDate = currentDate;
+        }
+        
         transits.push({
           type: 'progressed-moon',
           title: `Progressed ☽ ${aspectDef.symbol} natal ${natalPlanetName}`,
@@ -884,6 +909,9 @@ export const calculateProgressedMoonTransits = (
           aspectType: aspectDef.name,
           aspectSymbol: aspectDef.symbol,
           orb: parseFloat(angleDiff.toFixed(2)),
+          motion,
+          monthsUntilExact,
+          exactDate,
           priority,
           sign: progMoon.sign,
           house,
@@ -905,7 +933,10 @@ export const calculateProgressedMoonTransits = (
     aspectType: 'position',
     aspectSymbol: '',
     orb: 0,
-    priority: 'high', // Always show progressed Moon position prominently
+    motion: 'exact',
+    monthsUntilExact: null,
+    exactDate: null,
+    priority: 'high',
     sign: progMoon.sign,
     house,
     signMeaning,

@@ -913,3 +913,280 @@ export const getGoddessDescription = (asteroidName: string, sign: string, house?
     houseInterpretation: house ? goddess.houseMeaning(house) : undefined
   };
 };
+
+// =====================================
+// PSYCHIC/MEDIUMSHIP INDICATORS
+// =====================================
+
+export interface PsychicIndicator {
+  name: string;
+  symbol: string;
+  description: string;
+  clientDescription: string;
+  strength: 'strong' | 'moderate' | 'subtle';
+  category: 'neptune' | 'twelfth-house' | 'water' | 'pluto-moon' | 'aspect';
+}
+
+// Detect psychic and mediumship indicators in a natal chart
+export const detectPsychicIndicators = (chart: NatalChart): PsychicIndicator[] => {
+  const indicators: PsychicIndicator[] = [];
+  
+  const waterSigns = ['Cancer', 'Scorpio', 'Pisces'];
+  const psychicHouses = [8, 12, 4]; // 8th (mediumship), 12th (spiritual), 4th (ancestral)
+  
+  // Helper to get planet house
+  const getPlanetHouse = (planet: NatalPlanetPosition): number | null => {
+    if (!chart.houseCusps) return null;
+    
+    const ZODIAC = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+    const planetLon = ZODIAC.indexOf(planet.sign) * 30 + planet.degree + planet.minutes / 60;
+    
+    const cusps: number[] = [];
+    for (let i = 1; i <= 12; i++) {
+      const cusp = chart.houseCusps[`house${i}` as keyof typeof chart.houseCusps];
+      if (cusp) {
+        cusps.push(ZODIAC.indexOf(cusp.sign) * 30 + cusp.degree + cusp.minutes / 60);
+      }
+    }
+    
+    if (cusps.length !== 12) return null;
+    
+    for (let i = 0; i < 12; i++) {
+      const start = cusps[i];
+      const end = cusps[(i + 1) % 12];
+      
+      if (end > start) {
+        if (planetLon >= start && planetLon < end) return i + 1;
+      } else {
+        if (planetLon >= start || planetLon < end) return i + 1;
+      }
+    }
+    return null;
+  };
+  
+  // Helper to calculate aspect
+  const hasAspect = (planet1: NatalPlanetPosition, planet2: NatalPlanetPosition, aspectAngle: number, orb: number = 8): boolean => {
+    const ZODIAC = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+    const lon1 = ZODIAC.indexOf(planet1.sign) * 30 + planet1.degree + planet1.minutes / 60;
+    const lon2 = ZODIAC.indexOf(planet2.sign) * 30 + planet2.degree + planet2.minutes / 60;
+    let diff = Math.abs(lon1 - lon2);
+    if (diff > 180) diff = 360 - diff;
+    return Math.abs(diff - aspectAngle) <= orb;
+  };
+  
+  // 1. NEPTUNE ASPECTS TO PERSONAL PLANETS
+  const neptune = chart.planets.Neptune;
+  const moon = chart.planets.Moon;
+  const sun = chart.planets.Sun;
+  const mercury = chart.planets.Mercury;
+  
+  if (neptune && moon) {
+    // Neptune conjunct Moon
+    if (hasAspect(neptune, moon, 0, 8)) {
+      indicators.push({
+        name: 'Neptune Conjunct Moon',
+        symbol: '♆☌☽',
+        description: 'The classic psychic signature. Emotional body is attuned to subtle realms. May receive impressions, dreams, or feelings from beyond the physical.',
+        clientDescription: 'You have a natural psychic sensitivity. Your emotional body picks up on energies, feelings, and impressions that others miss. Dreams are often prophetic or meaningful. You may sense spirits or the feelings of those who have passed.',
+        strength: 'strong',
+        category: 'neptune'
+      });
+    }
+    // Neptune opposite Moon
+    if (hasAspect(neptune, moon, 180, 8)) {
+      indicators.push({
+        name: 'Neptune Opposite Moon',
+        symbol: '♆☍☽',
+        description: 'Psychic sensitivity through relationships and projections. May absorb others\' emotions or experience mediumship through others.',
+        clientDescription: 'You are deeply empathic and may struggle to distinguish your own emotions from others\'. This is actually a psychic gift — you can sense what people are feeling, even what they\'re not saying. Learn to shield and ground.',
+        strength: 'strong',
+        category: 'neptune'
+      });
+    }
+    // Neptune square Moon
+    if (hasAspect(neptune, moon, 90, 6)) {
+      indicators.push({
+        name: 'Neptune Square Moon',
+        symbol: '♆□☽',
+        description: 'Friction between intuition and emotions creates heightened sensitivity but also confusion. Must learn to trust and refine psychic impressions.',
+        clientDescription: 'You have psychic sensitivity, but it may feel confusing or overwhelming. Your intuition is real, but you\'re still learning to trust it. Meditation and grounding practices help you refine this gift.',
+        strength: 'moderate',
+        category: 'neptune'
+      });
+    }
+    // Neptune trine/sextile Moon
+    if (hasAspect(neptune, moon, 120, 8) || hasAspect(neptune, moon, 60, 6)) {
+      indicators.push({
+        name: 'Neptune Harmonious to Moon',
+        symbol: '♆△☽',
+        description: 'Easy flow between intuition and emotional awareness. Natural psychic ability that feels comfortable.',
+        clientDescription: 'You have a natural, comfortable psychic sensitivity. Intuition flows easily. You may take this for granted because it\'s always been there. Trust those hunches — they\'re usually right.',
+        strength: 'moderate',
+        category: 'neptune'
+      });
+    }
+  }
+  
+  if (neptune && sun) {
+    if (hasAspect(neptune, sun, 0, 8)) {
+      indicators.push({
+        name: 'Neptune Conjunct Sun',
+        symbol: '♆☌☉',
+        description: 'Identity is merged with the spiritual and mystical. Natural channel for higher consciousness.',
+        clientDescription: 'You are naturally connected to spiritual realms. Your sense of self is permeable — you may feel like a channel or vessel. Creative and mystical abilities are core to who you are.',
+        strength: 'strong',
+        category: 'neptune'
+      });
+    }
+  }
+  
+  if (neptune && mercury) {
+    if (hasAspect(neptune, mercury, 0, 8) || hasAspect(neptune, mercury, 120, 8) || hasAspect(neptune, mercury, 60, 6)) {
+      indicators.push({
+        name: 'Neptune-Mercury Connection',
+        symbol: '♆-☿',
+        description: 'Clairaudient potential. May receive information through words, songs, or inner knowing.',
+        clientDescription: 'You may receive psychic information through words, thoughts, or "downloads." Clairaudience (clear hearing) is possible. Pay attention to songs that pop into your head or words that come unbidden.',
+        strength: 'moderate',
+        category: 'neptune'
+      });
+    }
+  }
+  
+  // 2. PLUTO-MOON ASPECTS (Mediumship, seeing the dead)
+  const pluto = chart.planets.Pluto;
+  
+  if (pluto && moon) {
+    if (hasAspect(pluto, moon, 0, 8)) {
+      indicators.push({
+        name: 'Pluto Conjunct Moon',
+        symbol: '♇☌☽',
+        description: 'Deep psychological attunement. Connection to the underworld and those who have passed. Classic mediumship indicator.',
+        clientDescription: 'You have a powerful connection to the realm of the dead and the depths of the psyche. You may sense spirits, have intense dreams about deceased loved ones, or be drawn to work with death and transformation.',
+        strength: 'strong',
+        category: 'pluto-moon'
+      });
+    }
+    if (hasAspect(pluto, moon, 180, 8) || hasAspect(pluto, moon, 90, 6)) {
+      indicators.push({
+        name: 'Pluto Hard Aspect to Moon',
+        symbol: '♇-☽',
+        description: 'Intense emotional depth that connects to hidden realms. May experience encounters with spirits or the dying.',
+        clientDescription: 'You have an intense emotional nature that can perceive what others cannot. You may have had experiences with spirits or the dying. This can be overwhelming until you learn to work with it.',
+        strength: 'strong',
+        category: 'pluto-moon'
+      });
+    }
+  }
+  
+  // 3. PLANETS IN 12TH HOUSE
+  const personalPlanets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars'];
+  personalPlanets.forEach(planetName => {
+    const planet = chart.planets[planetName as keyof typeof chart.planets];
+    if (planet) {
+      const house = getPlanetHouse(planet);
+      if (house === 12) {
+        const symbol = planetName === 'Sun' ? '☉' : planetName === 'Moon' ? '☽' : planetName === 'Mercury' ? '☿' : planetName === 'Venus' ? '♀' : '♂';
+        indicators.push({
+          name: `${planetName} in 12th House`,
+          symbol: `${symbol} in 12H`,
+          description: `${planetName} operates in the hidden, spiritual realm. Natural connection to the unconscious and unseen worlds.`,
+          clientDescription: `Your ${planetName} energy works behind the scenes, in dreams, and in spiritual dimensions. You may have psychic gifts related to ${planetName === 'Moon' ? 'emotions and clairsentience' : planetName === 'Mercury' ? 'clairaudience and channeling information' : planetName === 'Sun' ? 'spiritual identity and being a beacon for spirits' : planetName === 'Venus' ? 'sensing love and beauty from beyond' : 'taking action in dreams or astral realms'}.`,
+          strength: planetName === 'Moon' || planetName === 'Sun' ? 'strong' : 'moderate',
+          category: 'twelfth-house'
+        });
+      }
+      // Also check 8th house for mediumship
+      if (house === 8 && (planetName === 'Moon' || planetName === 'Sun')) {
+        const symbol = planetName === 'Sun' ? '☉' : '☽';
+        indicators.push({
+          name: `${planetName} in 8th House`,
+          symbol: `${symbol} in 8H`,
+          description: `${planetName} in the house of death, transformation, and the occult. Natural mediumship abilities.`,
+          clientDescription: `Your ${planetName === 'Moon' ? 'emotional nature' : 'core identity'} is attuned to death, transformation, and hidden realms. You may naturally sense spirits or be drawn to work with the dying. This is a classic mediumship placement.`,
+          strength: 'strong',
+          category: 'twelfth-house'
+        });
+      }
+    }
+  });
+  
+  // 4. WATER SIGN EMPHASIS (3+ planets)
+  let waterCount = 0;
+  Object.entries(chart.planets).forEach(([, planet]) => {
+    if (planet && planet.sign && waterSigns.includes(planet.sign)) {
+      waterCount++;
+    }
+  });
+  
+  if (waterCount >= 4) {
+    indicators.push({
+      name: 'Strong Water Emphasis',
+      symbol: '♋♏♓',
+      description: `${waterCount} planets in water signs. Highly intuitive and emotionally sensitive nature.`,
+      clientDescription: 'You have a very strong water element in your chart, making you naturally intuitive, empathic, and emotionally sensitive. You feel things deeply and may pick up on energies and emotions that others miss entirely.',
+      strength: 'strong',
+      category: 'water'
+    });
+  } else if (waterCount >= 3) {
+    indicators.push({
+      name: 'Water Emphasis',
+      symbol: '♋♏♓',
+      description: `${waterCount} planets in water signs. Intuitive and emotionally attuned.`,
+      clientDescription: 'You have significant water energy in your chart. You\'re naturally intuitive and emotionally aware. Trust your feelings — they often contain information your logical mind hasn\'t processed yet.',
+      strength: 'moderate',
+      category: 'water'
+    });
+  }
+  
+  // 5. PISCES PLACEMENTS (especially Moon, Ascendant, Sun)
+  if (moon && moon.sign === 'Pisces') {
+    indicators.push({
+      name: 'Moon in Pisces',
+      symbol: '☽♓',
+      description: 'Emotional nature is porous and psychically sensitive. Dreams are meaningful.',
+      clientDescription: 'Your Moon in Pisces makes you extremely sensitive to energies, emotions, and subtle impressions. You likely have vivid, meaningful dreams. You may absorb others\' feelings unconsciously.',
+      strength: 'strong',
+      category: 'water'
+    });
+  }
+  
+  if (sun && sun.sign === 'Pisces') {
+    indicators.push({
+      name: 'Sun in Pisces',
+      symbol: '☉♓',
+      description: 'Core identity is connected to the mystical and spiritual realms.',
+      clientDescription: 'As a Pisces Sun, you are naturally connected to spiritual and intuitive realms. Your identity includes a sense of connection to something larger than yourself.',
+      strength: 'moderate',
+      category: 'water'
+    });
+  }
+  
+  // Check Ascendant for Pisces
+  if (chart.houseCusps?.house1?.sign === 'Pisces') {
+    indicators.push({
+      name: 'Pisces Rising',
+      symbol: 'ASC♓',
+      description: 'Presents to the world with a mystical, permeable quality. Others may sense your psychic nature.',
+      clientDescription: 'With Pisces Rising, you appear to others as mystical, dreamy, and spiritually attuned. People may sense something otherworldly about you. You attract spiritual and creative experiences.',
+      strength: 'moderate',
+      category: 'water'
+    });
+  }
+  
+  // 6. SCORPIO PLACEMENTS (connection to the underworld)
+  if (moon && moon.sign === 'Scorpio') {
+    indicators.push({
+      name: 'Moon in Scorpio',
+      symbol: '☽♏',
+      description: 'Emotional nature is intense and penetrating. Natural ability to sense hidden truths and the presence of the dead.',
+      clientDescription: 'Your Moon in Scorpio gives you powerful emotional radar. You sense what others try to hide, including the presence of spirits. You may have had encounters with the deceased or intense psychic experiences.',
+      strength: 'strong',
+      category: 'water'
+    });
+  }
+  
+  // Sort by strength
+  const strengthOrder = { strong: 0, moderate: 1, subtle: 2 };
+  return indicators.sort((a, b) => strengthOrder[a.strength] - strengthOrder[b.strength]);
+};
