@@ -118,83 +118,74 @@ const findSaturnTransits = (
   const endDate = new Date(birthDate);
   endDate.setFullYear(endDate.getFullYear() + Math.ceil(endAge));
   
-  // Scan daily through the window to find crossings
-  const ORB_TOLERANCE = 1.5; // degrees - wider window to catch passes
-  const EXACT_ORB = 0.5; // degrees - for marking exact
-  
+  // Find exact crossings by detecting when Saturn crosses the target degree
+  // A crossing happens when Saturn moves from one side of targetDegree to the other
   let currentDate = new Date(startDate);
   let previousLongitude = getSaturnLongitude(currentDate);
-  let wasWithinOrb = false;
-  let passStartDate: Date | null = null;
-  let closestApproach = { date: new Date(), orb: 999 };
+  
+  // Track which side of targetDegree we're on (accounting for 360° wrap)
+  const getSide = (lon: number, target: number): number => {
+    let diff = lon - target;
+    if (diff > 180) diff -= 360;
+    if (diff < -180) diff += 360;
+    return diff;
+  };
+  
+  let previousSide = getSide(previousLongitude, targetDegree);
   
   while (currentDate <= endDate) {
     const currentLongitude = getSaturnLongitude(currentDate);
+    const currentSide = getSide(currentLongitude, targetDegree);
     
-    // Calculate orb to target (accounting for 360° wrap)
-    let orb = Math.abs(currentLongitude - targetDegree);
-    if (orb > 180) orb = 360 - orb;
-    
-    const isWithinOrb = orb <= ORB_TOLERANCE;
-    
-    // Detect direction (retrograde if longitude decreasing, accounting for wrap)
-    let longitudeDiff = currentLongitude - previousLongitude;
-    if (longitudeDiff > 180) longitudeDiff -= 360;
-    if (longitudeDiff < -180) longitudeDiff += 360;
-    const isRetrograde = longitudeDiff < -0.01; // Small threshold for noise
-    
-    if (isWithinOrb) {
-      if (!wasWithinOrb) {
-        // Entering orb - start tracking this pass
-        passStartDate = new Date(currentDate);
-        closestApproach = { date: new Date(currentDate), orb };
+    // Check if we crossed the target (sign change)
+    if (previousSide * currentSide < 0) {
+      // We crossed! Binary search for the exact date
+      let lowDate = new Date(currentDate.getTime() - 24 * 60 * 60 * 1000); // previous day
+      let highDate = new Date(currentDate);
+      
+      // Binary search to find exact crossing within 1 hour
+      for (let i = 0; i < 8; i++) {
+        const midTime = (lowDate.getTime() + highDate.getTime()) / 2;
+        const midDate = new Date(midTime);
+        const midLon = getSaturnLongitude(midDate);
+        const midSide = getSide(midLon, targetDegree);
+        
+        if (midSide * previousSide > 0) {
+          lowDate = midDate;
+        } else {
+          highDate = midDate;
+        }
       }
       
-      // Track closest approach within this pass
-      if (orb < closestApproach.orb) {
-        closestApproach = { date: new Date(currentDate), orb };
+      const exactDate = new Date((lowDate.getTime() + highDate.getTime()) / 2);
+      const age = Math.floor((exactDate.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+      
+      // Determine direction: moving towards higher or lower degrees
+      const isMovingForward = currentSide > previousSide;
+      
+      // Determine pass type based on direction and order
+      let type: 'exact' | 'retrograde_pass' | 'direct_pass';
+      if (events.length === 0) {
+        type = 'exact'; // First pass
+      } else if (!isMovingForward) {
+        type = 'retrograde_pass'; // Moving backwards (retrograde)
+      } else {
+        type = 'direct_pass'; // Third pass going forward again
       }
-    } else if (wasWithinOrb && passStartDate) {
-      // Exiting orb - record this pass
-      const age = Math.floor((closestApproach.date.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
-      
-      // Determine pass type based on Saturn's direction at closest approach
-      const prevDayLong = getSaturnLongitude(new Date(closestApproach.date.getTime() - 86400000));
-      let passDirection = currentLongitude - prevDayLong;
-      if (passDirection > 180) passDirection -= 360;
-      if (passDirection < -180) passDirection += 360;
-      
-      const type: 'exact' | 'retrograde_pass' | 'direct_pass' = 
-        passDirection < 0 ? 'retrograde_pass' : 
-        events.length === 0 ? 'exact' : 'direct_pass';
       
       events.push({
-        date: closestApproach.date,
+        date: exactDate,
         age,
         type,
-        transiting_degree: getSaturnLongitude(closestApproach.date)
+        transiting_degree: targetDegree
       });
-      
-      passStartDate = null;
-      closestApproach = { date: new Date(), orb: 999 };
     }
     
-    wasWithinOrb = isWithinOrb;
     previousLongitude = currentLongitude;
+    previousSide = currentSide;
     
-    // Step forward - use smaller steps for precision
-    currentDate = new Date(currentDate.getTime() + 3 * 24 * 60 * 60 * 1000); // 3 days
-  }
-  
-  // Handle case where we're still within orb at end
-  if (wasWithinOrb && passStartDate && closestApproach.orb < 999) {
-    const age = Math.floor((closestApproach.date.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
-    events.push({
-      date: closestApproach.date,
-      age,
-      type: 'exact',
-      transiting_degree: getSaturnLongitude(closestApproach.date)
-    });
+    // Step forward daily for accuracy
+    currentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
   }
   
   return events.sort((a, b) => a.date.getTime() - b.date.getTime());
