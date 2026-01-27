@@ -1,8 +1,9 @@
 // Saturn Cycle Calculator
-// Calculates precise Saturn transits over natal Saturn position including retrograde passes
-// Saturn's orbital period: ~29.46 years, average daily motion: ~0.034°/day
+// Calculates precise Saturn transits using astronomy-engine ephemeris
+// Saturn's orbital period: ~29.46 years
 
 import { NatalChart } from '@/hooks/useNatalChart';
+import * as Astronomy from 'astronomy-engine';
 
 const ZODIAC_SIGNS = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
@@ -92,7 +93,15 @@ export const formatDegreePosition = (absoluteDegree: number): string => {
   return `${degree}°${minutes.toString().padStart(2, '0')}' ${sign}`;
 };
 
-// Find when transiting Saturn hits a specific degree
+// Get Saturn's ecliptic longitude at a specific date using astronomy-engine
+const getSaturnLongitude = (date: Date): number => {
+  const astroDate = Astronomy.MakeTime(date);
+  const geo = Astronomy.GeoVector(Astronomy.Body.Saturn, astroDate, true);
+  const ecliptic = Astronomy.Ecliptic(geo);
+  return ecliptic.elon;
+};
+
+// Find when transiting Saturn hits a specific degree using actual ephemeris
 const findSaturnTransits = (
   targetDegree: number,
   birthDate: Date,
@@ -102,43 +111,90 @@ const findSaturnTransits = (
 ): SaturnEvent[] => {
   const events: SaturnEvent[] = [];
   
-  const degreeDiff = ((targetDegree - natalSaturnDegree) % 360 + 360) % 360;
-  const yearsToFirstHit = degreeDiff / 12.2;
+  // Calculate search window dates
+  const startDate = new Date(birthDate);
+  startDate.setFullYear(startDate.getFullYear() + Math.floor(startAge));
   
-  for (let cycle = 0; cycle < 4; cycle++) {
-    const baseYear = yearsToFirstHit + (cycle * 29.46);
+  const endDate = new Date(birthDate);
+  endDate.setFullYear(endDate.getFullYear() + Math.ceil(endAge));
+  
+  // Scan daily through the window to find crossings
+  const ORB_TOLERANCE = 1.5; // degrees - wider window to catch passes
+  const EXACT_ORB = 0.5; // degrees - for marking exact
+  
+  let currentDate = new Date(startDate);
+  let previousLongitude = getSaturnLongitude(currentDate);
+  let wasWithinOrb = false;
+  let passStartDate: Date | null = null;
+  let closestApproach = { date: new Date(), orb: 999 };
+  
+  while (currentDate <= endDate) {
+    const currentLongitude = getSaturnLongitude(currentDate);
     
-    if (baseYear < startAge || baseYear > endAge) continue;
+    // Calculate orb to target (accounting for 360° wrap)
+    let orb = Math.abs(currentLongitude - targetDegree);
+    if (orb > 180) orb = 360 - orb;
     
-    const centralDate = new Date(birthDate);
-    centralDate.setFullYear(centralDate.getFullYear() + Math.floor(baseYear));
-    centralDate.setMonth(centralDate.getMonth() + Math.floor((baseYear % 1) * 12));
+    const isWithinOrb = orb <= ORB_TOLERANCE;
     
-    const age = Math.floor(baseYear);
+    // Detect direction (retrograde if longitude decreasing, accounting for wrap)
+    let longitudeDiff = currentLongitude - previousLongitude;
+    if (longitudeDiff > 180) longitudeDiff -= 360;
+    if (longitudeDiff < -180) longitudeDiff += 360;
+    const isRetrograde = longitudeDiff < -0.01; // Small threshold for noise
     
-    events.push({
-      date: new Date(centralDate.getTime() - 90 * 24 * 60 * 60 * 1000),
-      age,
-      type: 'exact',
-      transiting_degree: targetDegree
-    });
-    
-    const monthOfTransit = centralDate.getMonth();
-    if (monthOfTransit >= 4 && monthOfTransit <= 9) {
-      events.push({
-        date: new Date(centralDate),
-        age,
-        type: 'retrograde_pass',
-        transiting_degree: targetDegree
-      });
+    if (isWithinOrb) {
+      if (!wasWithinOrb) {
+        // Entering orb - start tracking this pass
+        passStartDate = new Date(currentDate);
+        closestApproach = { date: new Date(currentDate), orb };
+      }
+      
+      // Track closest approach within this pass
+      if (orb < closestApproach.orb) {
+        closestApproach = { date: new Date(currentDate), orb };
+      }
+    } else if (wasWithinOrb && passStartDate) {
+      // Exiting orb - record this pass
+      const age = Math.floor((closestApproach.date.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+      
+      // Determine pass type based on Saturn's direction at closest approach
+      const prevDayLong = getSaturnLongitude(new Date(closestApproach.date.getTime() - 86400000));
+      let passDirection = currentLongitude - prevDayLong;
+      if (passDirection > 180) passDirection -= 360;
+      if (passDirection < -180) passDirection += 360;
+      
+      const type: 'exact' | 'retrograde_pass' | 'direct_pass' = 
+        passDirection < 0 ? 'retrograde_pass' : 
+        events.length === 0 ? 'exact' : 'direct_pass';
       
       events.push({
-        date: new Date(centralDate.getTime() + 90 * 24 * 60 * 60 * 1000),
+        date: closestApproach.date,
         age,
-        type: 'direct_pass',
-        transiting_degree: targetDegree
+        type,
+        transiting_degree: getSaturnLongitude(closestApproach.date)
       });
+      
+      passStartDate = null;
+      closestApproach = { date: new Date(), orb: 999 };
     }
+    
+    wasWithinOrb = isWithinOrb;
+    previousLongitude = currentLongitude;
+    
+    // Step forward - use smaller steps for precision
+    currentDate = new Date(currentDate.getTime() + 3 * 24 * 60 * 60 * 1000); // 3 days
+  }
+  
+  // Handle case where we're still within orb at end
+  if (wasWithinOrb && passStartDate && closestApproach.orb < 999) {
+    const age = Math.floor((closestApproach.date.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+    events.push({
+      date: closestApproach.date,
+      age,
+      type: 'exact',
+      transiting_degree: getSaturnLongitude(closestApproach.date)
+    });
   }
   
   return events.sort((a, b) => a.date.getTime() - b.date.getTime());
