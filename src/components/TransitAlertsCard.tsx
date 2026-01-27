@@ -106,6 +106,10 @@ ProgressedMoonItem.displayName = 'ProgressedMoonItem';
 const AlertItem = forwardRef<HTMLDivElement, { alert: TransitAlert }>(({ alert }, ref) => {
   const styles = getPriorityStyles(alert.priority);
   
+  // Motion indicator
+  const motionIndicator = alert.motion === 'exact' ? '⚡' : alert.motion === 'applying' ? '↗' : '↘';
+  const motionLabel = alert.motion === 'exact' ? 'Exact' : alert.motion === 'applying' ? 'Applying' : 'Separating';
+  
   return (
     <div ref={ref} className={`p-3 rounded-lg border ${styles.bg} ${styles.border}`}>
       <div className="flex items-start gap-3">
@@ -127,13 +131,31 @@ const AlertItem = forwardRef<HTMLDivElement, { alert: TransitAlert }>(({ alert }
           <p className="text-xs text-muted-foreground mb-2">
             {alert.transitPlanet} {alert.aspectSymbol} {alert.natalPlanet} 
             <span className="mx-1">•</span>
-            {alert.orb}° orb
+            <span className="font-medium">{alert.orb}°</span>
+            <span className="ml-1">({motionIndicator} {motionLabel})</span>
             {alert.daysUntilExact !== null && alert.daysUntilExact > 0 && (
               <span className="ml-2 text-primary">
                 → Exact in ~{alert.daysUntilExact} days
               </span>
             )}
           </p>
+          
+          {/* Show angle connections if any */}
+          {alert.angleAspects && alert.angleAspects.length > 0 && (
+            <div className="mb-2 p-2 rounded bg-primary/10 border border-primary/20">
+              <p className="text-xs font-medium text-primary mb-1">Also Hitting Angles:</p>
+              <div className="flex flex-wrap gap-2">
+                {alert.angleAspects.map((angleAsp, i) => (
+                  <span key={i} className="text-xs">
+                    <span className="font-medium">{angleAsp.aspectSymbol} {angleAsp.angle}</span>
+                    <span className="text-muted-foreground ml-1">
+                      ({angleAsp.orb}° {angleAsp.motion === 'exact' ? '⚡ Exact' : angleAsp.motion === 'applying' ? '↗ Applying' : '↘ Separating'})
+                    </span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
           
           <p className="text-sm text-foreground mb-2">{alert.description}</p>
           

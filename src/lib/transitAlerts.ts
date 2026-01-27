@@ -26,6 +26,15 @@ const FAST_TRANSIT_PLANETS = ['Mars', 'Venus', 'Mercury', 'Sun'];
 export type AlertPriority = 'critical' | 'high' | 'medium' | 'low';
 export type AlertType = 'exact' | 'approaching' | 'separating';
 
+export interface AngleAspect {
+  angle: 'AC' | 'IC' | 'DC' | 'MC';
+  aspectType: string;
+  aspectSymbol: string;
+  orb: number;
+  isExact: boolean;
+  motion: 'applying' | 'separating' | 'exact';
+}
+
 export interface TransitAlert {
   id: string;
   transitPlanet: string;
@@ -34,6 +43,7 @@ export interface TransitAlert {
   aspectSymbol: string;
   orb: number;
   alertType: AlertType;
+  motion: 'applying' | 'separating' | 'exact';
   priority: AlertPriority;
   exactDate: Date | null;
   daysUntilExact: number | null;
@@ -43,6 +53,7 @@ export interface TransitAlert {
   transitSign: string;
   natalSign: string;
   isOuterPlanet: boolean;
+  angleAspects: AngleAspect[]; // Also hitting these angles
 }
 
 // Aspect definitions
@@ -273,6 +284,77 @@ function getTransitMessage(transitPlanet: string, natalPlanet: string): { title:
 }
 
 /**
+ * Get angle longitude from house cusps
+ */
+function getAngleLongitude(
+  houseCusps: NatalChart['houseCusps'], 
+  angle: 'AC' | 'IC' | 'DC' | 'MC'
+): number | null {
+  if (!houseCusps) return null;
+  
+  const houseKey = angle === 'AC' ? 'house1' :
+                   angle === 'IC' ? 'house4' :
+                   angle === 'DC' ? 'house7' :
+                   angle === 'MC' ? 'house10' : null;
+  
+  if (!houseKey) return null;
+  
+  const cusp = houseCusps[houseKey as keyof typeof houseCusps];
+  if (!cusp) return null;
+  
+  const signIndex = ZODIAC_SIGNS.indexOf(cusp.sign);
+  if (signIndex === -1) return null;
+  
+  return signIndex * 30 + cusp.degree + (cusp.minutes || 0) / 60;
+}
+
+/**
+ * Find angle aspects for a transit planet
+ */
+function findAngleAspects(
+  transitLongitude: number,
+  futureTransitLongitude: number,
+  houseCusps: NatalChart['houseCusps']
+): AngleAspect[] {
+  const aspects: AngleAspect[] = [];
+  const angles: Array<'AC' | 'IC' | 'DC' | 'MC'> = ['AC', 'IC', 'DC', 'MC'];
+  
+  for (const angle of angles) {
+    const angleLon = getAngleLongitude(houseCusps, angle);
+    if (angleLon === null) continue;
+    
+    const currentDiff = angleDiff(transitLongitude, angleLon);
+    const futureDiff = angleDiff(futureTransitLongitude, angleLon);
+    
+    for (const aspectDef of ASPECT_DEFS) {
+      const currentOrb = Math.abs(currentDiff - aspectDef.angle);
+      const futureOrb = Math.abs(futureDiff - aspectDef.angle);
+      
+      // Wider orb for angles - they're important
+      if (currentOrb <= 3) {
+        const isExact = currentOrb <= 0.5;
+        const isApproaching = futureOrb < currentOrb;
+        
+        let motion: 'applying' | 'separating' | 'exact' = 'separating';
+        if (isExact) motion = 'exact';
+        else if (isApproaching) motion = 'applying';
+        
+        aspects.push({
+          angle,
+          aspectType: aspectDef.name,
+          aspectSymbol: aspectDef.symbol,
+          orb: Math.round(currentOrb * 100) / 100,
+          isExact,
+          motion
+        });
+      }
+    }
+  }
+  
+  return aspects;
+}
+
+/**
  * Calculate transit alerts for a natal chart
  */
 export function calculateTransitAlerts(
@@ -293,6 +375,13 @@ export function calculateTransitAlerts(
     const transitData = getTransitLongitude(positions, transitPlanet);
     const futureTransitData = getTransitLongitude(futurePositions, transitPlanet);
     if (!transitData || !futureTransitData) continue;
+    
+    // Find any angle aspects for this transit planet
+    const angleAspects = findAngleAspects(
+      transitData.longitude, 
+      futureTransitData.longitude, 
+      natalChart.houseCusps
+    );
     
     // Check against personal natal planets
     for (const natalPlanetName of PERSONAL_PLANETS) {
@@ -315,6 +404,7 @@ export function calculateTransitAlerts(
           const isSeparating = futureOrb > currentOrb;
           
           const alertType: AlertType = isExact ? 'exact' : isApproaching ? 'approaching' : 'separating';
+          const motion: 'applying' | 'separating' | 'exact' = isExact ? 'exact' : isApproaching ? 'applying' : 'separating';
           const isOuterPlanet = TRANSIT_PLANETS.includes(transitPlanet);
           
           // Skip separating aspects for fast planets
@@ -338,8 +428,9 @@ export function calculateTransitAlerts(
             natalPlanet: natalPlanetName,
             aspectType: aspectDef.name,
             aspectSymbol: aspectDef.symbol,
-            orb: Math.round(currentOrb * 10) / 10,
+            orb: Math.round(currentOrb * 100) / 100,
             alertType,
+            motion,
             priority,
             exactDate,
             daysUntilExact,
@@ -348,7 +439,8 @@ export function calculateTransitAlerts(
             advice: message.advice,
             transitSign: transitData.sign,
             natalSign: natalPos.sign,
-            isOuterPlanet
+            isOuterPlanet,
+            angleAspects // Include angle connections
           });
         }
       }
@@ -386,4 +478,16 @@ export function getPriorityLabel(priority: AlertPriority): string {
     low: 'Minor'
   };
   return labels[priority];
+}
+
+/**
+ * Get motion label
+ */
+export function getMotionLabel(motion: 'applying' | 'separating' | 'exact'): string {
+  const labels = {
+    applying: '↗ Applying',
+    separating: '↘ Separating',
+    exact: '⚡ Exact'
+  };
+  return labels[motion];
 }
