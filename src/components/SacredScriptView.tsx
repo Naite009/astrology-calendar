@@ -22,6 +22,10 @@ import {
   ModalityBalance,
   CharacterCard,
   getPlanetHouse,
+  detectNatalStelliums,
+  NatalStellium,
+  getGoddessDescription,
+  GODDESS_ASTEROIDS,
 } from '@/lib/sacredScriptHelpers';
 import { generateCharacterSynthesis, CharacterSynthesis, HOUSE_DEEP_MEANINGS } from '@/lib/characterSynthesis';
 import { getDecan } from '@/lib/decans';
@@ -197,6 +201,7 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
   const modalities = calculateModalityBalance(natalChart);
   const characterCards = getCharacterCards(natalChart);
   const patterns = detectChartPatterns(natalChart);
+  const stelliums = detectNatalStelliums(natalChart);
   const lifeLesson = getLifeLesson(natalChart);
   const finalDirective = generateFinalDirective(natalChart, elements);
   
@@ -858,46 +863,109 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
             </div>
           </div>
           
-          {/* Goddess Asteroids */}
+          {/* Goddess Asteroids - Enhanced with full descriptions */}
           {(natalChart.planets.Ceres || natalChart.planets.Pallas || natalChart.planets.Juno || natalChart.planets.Vesta) && (
             <div className="bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-950/40 dark:to-rose-950/40 p-4 rounded-lg border border-pink-200 dark:border-pink-800">
               <h4 className="font-medium mb-3 flex items-center gap-2">
                 <Sparkles className="text-pink-500" size={18} />
                 Goddess Asteroids — The Feminine Powers
               </h4>
-              <div className="grid grid-cols-2 gap-3">
-                {natalChart.planets.Ceres && (
-                  <div className="bg-background/50 p-3 rounded">
-                    <p className="text-xs font-medium text-green-600 dark:text-green-400">Ceres — The Great Mother</p>
-                    <p className="text-sm font-medium">{natalChart.planets.Ceres.sign} {natalChart.planets.Ceres.degree}°</p>
-                    <p className="text-xs text-muted-foreground">{getSignElement(natalChart.planets.Ceres.sign)} • {getSignModality(natalChart.planets.Ceres.sign)}</p>
-                    <p className="text-xs text-muted-foreground mt-1">How you nurture and need to be nurtured</p>
-                  </div>
-                )}
-                {natalChart.planets.Pallas && (
-                  <div className="bg-background/50 p-3 rounded">
-                    <p className="text-xs font-medium text-blue-600 dark:text-blue-400">Pallas Athena — The Strategist</p>
-                    <p className="text-sm font-medium">{natalChart.planets.Pallas.sign} {natalChart.planets.Pallas.degree}°</p>
-                    <p className="text-xs text-muted-foreground">{getSignElement(natalChart.planets.Pallas.sign)} • {getSignModality(natalChart.planets.Pallas.sign)}</p>
-                    <p className="text-xs text-muted-foreground mt-1">Your pattern recognition and creative intelligence</p>
-                  </div>
-                )}
-                {natalChart.planets.Juno && (
-                  <div className="bg-background/50 p-3 rounded">
-                    <p className="text-xs font-medium text-rose-600 dark:text-rose-400">Juno — The Sacred Partner</p>
-                    <p className="text-sm font-medium">{natalChart.planets.Juno.sign} {natalChart.planets.Juno.degree}°</p>
-                    <p className="text-xs text-muted-foreground">{getSignElement(natalChart.planets.Juno.sign)} • {getSignModality(natalChart.planets.Juno.sign)}</p>
-                    <p className="text-xs text-muted-foreground mt-1">What you need in committed partnership</p>
-                  </div>
-                )}
-                {natalChart.planets.Vesta && (
-                  <div className="bg-background/50 p-3 rounded">
-                    <p className="text-xs font-medium text-orange-600 dark:text-orange-400">Vesta — The Sacred Flame</p>
-                    <p className="text-sm font-medium">{natalChart.planets.Vesta.sign} {natalChart.planets.Vesta.degree}°</p>
-                    <p className="text-xs text-muted-foreground">{getSignElement(natalChart.planets.Vesta.sign)} • {getSignModality(natalChart.planets.Vesta.sign)}</p>
-                    <p className="text-xs text-muted-foreground mt-1">Where you devote yourself completely</p>
-                  </div>
-                )}
+              <p className="text-xs text-muted-foreground mb-4">
+                The asteroid goddesses represent aspects of the feminine principle that were missing from traditional astrology. They show how you nurture (Ceres), strategize (Pallas), partner (Juno), and devote (Vesta).
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {natalChart.planets.Ceres && (() => {
+                  const desc = getGoddessDescription('Ceres', natalChart.planets.Ceres.sign, getPlanetHouse(natalChart, 'Ceres'));
+                  return (
+                    <div className="bg-background/70 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xl">⚳</span>
+                        <div>
+                          <p className="font-medium text-green-700 dark:text-green-400">Ceres in {natalChart.planets.Ceres.sign}</p>
+                          <p className="text-xs text-muted-foreground">{desc?.archetype} • {natalChart.planets.Ceres.degree}°</p>
+                        </div>
+                      </div>
+                      <p className="text-sm leading-relaxed mb-2">{desc?.signInterpretation}</p>
+                      {desc?.houseInterpretation && (
+                        <p className="text-xs text-muted-foreground border-t border-border pt-2 mt-2">{desc.houseInterpretation}</p>
+                      )}
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {desc?.keywords.map((kw, i) => (
+                          <span key={i} className="text-xs bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded">{kw}</span>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+                {natalChart.planets.Pallas && (() => {
+                  const desc = getGoddessDescription('Pallas', natalChart.planets.Pallas.sign, getPlanetHouse(natalChart, 'Pallas'));
+                  return (
+                    <div className="bg-background/70 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xl">⚴</span>
+                        <div>
+                          <p className="font-medium text-blue-700 dark:text-blue-400">Pallas in {natalChart.planets.Pallas.sign}</p>
+                          <p className="text-xs text-muted-foreground">{desc?.archetype} • {natalChart.planets.Pallas.degree}°</p>
+                        </div>
+                      </div>
+                      <p className="text-sm leading-relaxed mb-2">{desc?.signInterpretation}</p>
+                      {desc?.houseInterpretation && (
+                        <p className="text-xs text-muted-foreground border-t border-border pt-2 mt-2">{desc.houseInterpretation}</p>
+                      )}
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {desc?.keywords.map((kw, i) => (
+                          <span key={i} className="text-xs bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 rounded">{kw}</span>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+                {natalChart.planets.Juno && (() => {
+                  const desc = getGoddessDescription('Juno', natalChart.planets.Juno.sign, getPlanetHouse(natalChart, 'Juno'));
+                  return (
+                    <div className="bg-background/70 p-4 rounded-lg border border-rose-200 dark:border-rose-800">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xl">⚵</span>
+                        <div>
+                          <p className="font-medium text-rose-700 dark:text-rose-400">Juno in {natalChart.planets.Juno.sign}</p>
+                          <p className="text-xs text-muted-foreground">{desc?.archetype} • {natalChart.planets.Juno.degree}°</p>
+                        </div>
+                      </div>
+                      <p className="text-sm leading-relaxed mb-2">{desc?.signInterpretation}</p>
+                      {desc?.houseInterpretation && (
+                        <p className="text-xs text-muted-foreground border-t border-border pt-2 mt-2">{desc.houseInterpretation}</p>
+                      )}
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {desc?.keywords.map((kw, i) => (
+                          <span key={i} className="text-xs bg-rose-100 dark:bg-rose-900/30 px-2 py-0.5 rounded">{kw}</span>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+                {natalChart.planets.Vesta && (() => {
+                  const desc = getGoddessDescription('Vesta', natalChart.planets.Vesta.sign, getPlanetHouse(natalChart, 'Vesta'));
+                  return (
+                    <div className="bg-background/70 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xl">⚶</span>
+                        <div>
+                          <p className="font-medium text-orange-700 dark:text-orange-400">Vesta in {natalChart.planets.Vesta.sign}</p>
+                          <p className="text-xs text-muted-foreground">{desc?.archetype} • {natalChart.planets.Vesta.degree}°</p>
+                        </div>
+                      </div>
+                      <p className="text-sm leading-relaxed mb-2">{desc?.signInterpretation}</p>
+                      {desc?.houseInterpretation && (
+                        <p className="text-xs text-muted-foreground border-t border-border pt-2 mt-2">{desc.houseInterpretation}</p>
+                      )}
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {desc?.keywords.map((kw, i) => (
+                          <span key={i} className="text-xs bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 rounded">{kw}</span>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           )}
@@ -1028,8 +1096,48 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
             "When you first look at the chart, what stands out for you and grabs your attention? Pay attention to that." — Debra Silverman
           </p>
           
+          {/* Stelliums - NEW */}
+          {stelliums.length > 0 && (
+            <div className="space-y-3">
+              <h4 className="font-medium text-amber-700 dark:text-amber-400 flex items-center gap-2">
+                <Sparkles size={18} className="text-amber-500" />
+                Stellium{stelliums.length > 1 ? 's' : ''} Detected
+              </h4>
+              {stelliums.map((stellium, idx) => (
+                <div key={idx} className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/40 dark:to-yellow-950/40 p-4 rounded-lg border border-amber-200 dark:border-amber-700">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="flex -space-x-1">
+                      {stellium.planets.map((p, i) => (
+                        <span key={i} className="text-lg" title={p.name}>{p.symbol}</span>
+                      ))}
+                    </div>
+                    <div>
+                      <p className="font-medium text-lg">
+                        {stellium.count}-Planet Stellium in {stellium.sign}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {stellium.element} Sign • {stellium.planets.map(p => p.name).join(', ')}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="bg-background/60 rounded p-3">
+                    <p className="text-sm leading-relaxed">{stellium.meaning}</p>
+                  </div>
+                  <div className="mt-3 text-xs text-muted-foreground">
+                    <strong>Degrees:</strong> {stellium.planets.map(p => `${p.symbol} ${p.degree}°`).join(' · ')}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {/* Major Patterns */}
           {patterns.length > 0 ? (
             <div className="space-y-3">
+              <h4 className="font-medium text-violet-700 dark:text-violet-400 flex items-center gap-2">
+                <Star size={18} className="text-violet-500" />
+                Chart Patterns
+              </h4>
               {patterns.map((pattern, i) => {
                 // Get Debra's interpretation for major configurations
                 const configKey = pattern.name === 'Grand Trine' ? 'GrandTrine' 
@@ -1051,9 +1159,9 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
                 );
               })}
             </div>
-          ) : (
+          ) : stelliums.length === 0 && (
             <p className="text-sm text-muted-foreground">
-              No major patterns (Grand Trine, T-Square, etc.) detected. Focus on individual planetary aspects.
+              No major patterns (Grand Trine, T-Square, etc.) or stelliums detected. Focus on individual planetary aspects.
             </p>
           )}
           
