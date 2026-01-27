@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Printer, ChevronDown, ChevronUp, Scroll, Star, Moon, Sun, Flame, Mountain, Wind, Droplets, Sparkles, BookOpen, Upload } from 'lucide-react';
+import { Printer, ChevronDown, ChevronUp, Scroll, Star, Moon, Sun, Flame, Mountain, Wind, Droplets, Sparkles, BookOpen, Upload, Zap } from 'lucide-react';
 import { DocumentUploader } from '@/components/DocumentUploader';
 import { 
   calculateElementalBalance,
@@ -58,12 +58,14 @@ import {
 } from '@/lib/elementTeachings';
 import { getPlanetaryPositions } from '@/lib/astrology';
 import { calculateTransitAspects, TransitAspect, getTransitPlanetSymbol } from '@/lib/transitAspects';
+import { detectBigThreeAspects, BigThreeAspect } from '@/lib/natalBigThreeAspects';
 
 // New Level 1 Handbook Components
 import { ElementSelfAssessment } from '@/components/sacredscript/ElementSelfAssessment';
 import { ElementStoryCard } from '@/components/sacredscript/ElementStoryCard';
 import { PermissionsCard } from '@/components/sacredscript/PermissionsCard';
 import { OppositionPairsCard } from '@/components/sacredscript/OppositionPairsCard';
+import { PsychicGiftsCard } from '@/components/sacredscript/PsychicGiftsCard';
 
 interface SacredScriptViewProps {
   natalChart: NatalChart;
@@ -205,6 +207,7 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
   const patterns = detectChartPatterns(natalChart);
   const stelliums = detectNatalStelliums(natalChart);
   const psychicIndicators = detectPsychicIndicators(natalChart);
+  const bigThreeAspects = detectBigThreeAspects(natalChart);
   const lifeLesson = getLifeLesson(natalChart);
   const finalDirective = generateFinalDirective(natalChart, elements);
   
@@ -710,6 +713,77 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
             )}
           </div>
           
+          {/* Natal Aspects to Sun, Moon, Rising */}
+          {bigThreeAspects.length > 0 && (
+            <div className="space-y-3">
+              <h4 className="font-medium text-rose-700 dark:text-rose-400 flex items-center gap-2">
+                <Zap size={18} className="text-rose-500" />
+                Natal Aspects to ☉ ☽ ASC — How They Feel
+              </h4>
+              <p className="text-xs text-muted-foreground italic">
+                These aspects shape the expression of your core identity, emotional nature, and outward presence.
+              </p>
+              
+              {/* Group by target */}
+              {(['Sun', 'Moon', 'Ascendant'] as const).map(target => {
+                const targetAspects = bigThreeAspects.filter(a => a.target === target);
+                if (targetAspects.length === 0) return null;
+                
+                const targetColor = target === 'Sun' 
+                  ? 'from-orange-50 to-amber-50 dark:from-orange-950/40 dark:to-amber-950/40 border-orange-200 dark:border-orange-800'
+                  : target === 'Moon'
+                  ? 'from-teal-50 to-cyan-50 dark:from-teal-950/40 dark:to-cyan-950/40 border-teal-200 dark:border-teal-800'
+                  : 'from-purple-50 to-violet-50 dark:from-purple-950/40 dark:to-violet-950/40 border-purple-200 dark:border-purple-800';
+                
+                const targetSymbol = target === 'Sun' ? '☉' : target === 'Moon' ? '☽' : 'ASC';
+                
+                return (
+                  <div key={target} className={`bg-gradient-to-r ${targetColor} p-4 rounded-lg border`}>
+                    <h5 className="font-medium mb-3 flex items-center gap-2">
+                      <span className="text-lg">{targetSymbol}</span>
+                      Aspects to {target}
+                    </h5>
+                    <div className="space-y-3">
+                      {targetAspects.map((aspect, idx) => (
+                        <div key={idx} className="bg-background/60 rounded-lg p-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm font-mono">
+                              {aspect.planetSymbol}{aspect.aspectSymbol}{aspect.targetSymbol}
+                            </span>
+                            <span className="text-sm font-medium">
+                              {aspect.planet} {aspect.aspectType} {target}
+                            </span>
+                            <span className="text-xs text-muted-foreground ml-auto">
+                              {aspect.orb}° orb
+                            </span>
+                          </div>
+                          
+                          {/* How it Feels */}
+                          <div className="mb-2">
+                            <p className="text-xs font-medium text-rose-600 dark:text-rose-400 mb-1">How This Feels:</p>
+                            <p className="text-sm">{aspect.feeling}</p>
+                          </div>
+                          
+                          {/* How it Shows Up */}
+                          <div className="mb-2">
+                            <p className="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">How It Manifests:</p>
+                            <p className="text-sm text-muted-foreground">{aspect.manifestation}</p>
+                          </div>
+                          
+                          {/* What to Tell Client */}
+                          <div className="bg-amber-100/50 dark:bg-amber-900/30 rounded p-2 border-l-2 border-amber-400">
+                            <p className="text-xs font-medium text-amber-700 dark:text-amber-400 mb-1">📋 What to Tell the Client:</p>
+                            <p className="text-sm italic">{aspect.clientDescription}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          
           {/* Element & Modality Dynamics */}
           {characterSynthesis && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1134,17 +1208,20 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
             </div>
           )}
           
-          {/* Psychic/Mediumship Indicators - NEW */}
+          {/* Psychic Gifts Summary Card */}
           {psychicIndicators.length > 0 && (
-            <div className="space-y-3">
-              <h4 className="font-medium text-indigo-700 dark:text-indigo-400 flex items-center gap-2">
-                <Sparkles size={18} className="text-indigo-500" />
-                Psychic & Intuitive Indicators
-              </h4>
-              <p className="text-xs text-muted-foreground italic mb-2">
-                These placements suggest natural intuitive, psychic, or mediumship abilities.
-              </p>
-              <div className="space-y-3">
+            <PsychicGiftsCard indicators={psychicIndicators} chartName={natalChart.name} />
+          )}
+          
+          {/* Psychic/Mediumship Indicators - Detailed List */}
+          {psychicIndicators.length > 0 && (
+            <details className="group">
+              <summary className="cursor-pointer text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-2">
+                <Sparkles size={16} />
+                View All {psychicIndicators.length} Psychic Indicators (Detailed)
+                <ChevronDown size={14} className="group-open:rotate-180 transition-transform ml-1" />
+              </summary>
+              <div className="mt-3 space-y-3">
                 {psychicIndicators.map((indicator, idx) => (
                   <div 
                     key={idx} 
@@ -1181,9 +1258,8 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
                   </div>
                 ))}
               </div>
-            </div>
+            </details>
           )}
-          {/* Major Patterns */}
           {patterns.length > 0 ? (
             <div className="space-y-3">
               <h4 className="font-medium text-violet-700 dark:text-violet-400 flex items-center gap-2">
