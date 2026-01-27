@@ -156,23 +156,35 @@ export const ProgressionsDisplay: React.FC<ProgressionsDisplayProps> = ({
               <p className="text-xs text-muted-foreground">{progressedMoonInfo.detailedPhase.timing}</p>
             </div>
 
-            {/* Current Experience */}
-            <div>
-              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                Current Theme: {progressedMoonInfo.signMeaning?.theme}
-              </h4>
-              <p className="text-sm">{progressedMoonInfo.currentExperience}</p>
-              
-              <div className="flex flex-wrap gap-1 mt-2">
-                {progressedMoonInfo.signMeaning?.keywords.map((kw, i) => (
-                  <Badge key={i} variant="outline" className="text-xs">
-                    {kw}
-                  </Badge>
-                ))}
+            {/* Client Summary — FOR READINGS */}
+            {progressedMoonInfo.signMeaning?.clientSummary && (
+              <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-md">
+                <h4 className="text-xs font-medium uppercase tracking-wide text-amber-700 dark:text-amber-400 mb-2">
+                  📋 What to Tell the Client
+                </h4>
+                <p className="text-sm leading-relaxed italic">{progressedMoonInfo.signMeaning.clientSummary}</p>
               </div>
-            </div>
+            )}
 
-            {/* Current House Activation */}
+            {/* Full Sign Description */}
+            {progressedMoonInfo.signMeaning?.fullDescription && (
+              <div>
+                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+                  Progressed ☽ in {progressedMoonInfo.sign} — Full Description
+                </h4>
+                <p className="text-sm leading-relaxed">{progressedMoonInfo.signMeaning.fullDescription}</p>
+                
+                <div className="flex flex-wrap gap-1 mt-3">
+                  {progressedMoonInfo.signMeaning?.keywords.map((kw, i) => (
+                    <Badge key={i} variant="outline" className="text-xs">
+                      {kw}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Current House Activation — WITH CLIENT FEEL */}
             {progressedMoonInfo.house && progressedMoonInfo.houseMeaning && (
               <>
                 <Separator />
@@ -180,7 +192,15 @@ export const ProgressionsDisplay: React.FC<ProgressionsDisplayProps> = ({
                   <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
                     Currently Activating House {progressedMoonInfo.house}: {progressedMoonInfo.houseMeaning.short}
                   </h4>
-                  <p className="text-sm">{progressedMoonInfo.houseMeaning.themes}</p>
+                  <p className="text-sm mb-3">{progressedMoonInfo.houseMeaning.themes}</p>
+                  
+                  {/* Client Feel for House */}
+                  {'clientFeel' in progressedMoonInfo.houseMeaning && progressedMoonInfo.houseMeaning.clientFeel && (
+                    <div className="bg-secondary/50 p-3 rounded-md">
+                      <p className="text-xs font-medium text-muted-foreground mb-1">How This Feels:</p>
+                      <p className="text-sm leading-relaxed">{progressedMoonInfo.houseMeaning.clientFeel}</p>
+                    </div>
+                  )}
                 </div>
               </>
             )}
