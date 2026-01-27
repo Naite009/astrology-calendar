@@ -1,13 +1,14 @@
 // BigThreeSynthesisCard - Unified display of Sun, Moon, Rising with aligned boxes
 // Shows decan, degree, house for each placement plus a final synthesis paragraph
 
-import { Sun, Moon, Star, Sunrise, Sunset, Sparkles } from 'lucide-react';
+import { Sun, Moon, Star, Sunrise, Sunset, Sparkles, HelpCircle, ChevronDown } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { getDecan, Decan } from '@/lib/decans';
 import { getSabianSymbol } from '@/lib/sabianSymbols';
 import { getPlanetHouse } from '@/lib/sacredScriptHelpers';
-
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useState } from 'react';
 interface BigThreeSynthesisCardProps {
   natalChart: NatalChart;
 }
@@ -81,6 +82,90 @@ const HOUSE_MEANINGS: Record<number, string> = {
   12: 'Spirituality, Unconscious, Retreat',
 };
 
+// Decan ruler interpretations for each sign's three decans
+// Based on triplicity: each element has 3 signs, and decans follow that order
+const DECAN_FLAVOR_DESCRIPTIONS: Record<string, Record<1 | 2 | 3, string>> = {
+  Libra: {
+    // Air triplicity: Libra → Aquarius → Gemini
+    1: `**Venus Decan (0°–9°):** This is Libra at its purest essence—Venus ruling Venus. You're the classic Libra archetype: aesthetically oriented, relationship-focused, naturally diplomatic. Beauty isn't optional; it's a spiritual need. You create harmony through charm, grace, and an almost supernatural ability to make others feel valued. Partnership feels like oxygen. Shadow: may over-compromise to keep peace, can lose yourself in others' preferences.`,
+    2: `**Uranus/Saturn Decan (10°–19°):** The Aquarian influence transforms Venus into something more detached and idealistic. You're the reformer Libra—seeking fairness not just in personal relationships but in systems, societies, structures. You may love humanity more easily than individuals. Saturn adds gravity; you take relationships seriously, may choose fewer but deeper bonds. Uranus adds the rebel—you might partner unconventionally or prioritize intellectual connection over romantic feeling.`,
+    3: `**Mercury Decan (20°–29°):** The Gemini influence brings intellectual restlessness to Venus's desire for connection. You're the analytical Libra—you need to *understand* balance, not just feel it. Language is your art form: writing, negotiating, articulating the nuances others miss. You may process relationships through conversation rather than pure emotion. Shadow: can overthink partnerships, may analyze love rather than surrender to it.`,
+  },
+  // Other signs follow their element's triplicity pattern
+  Aries: {
+    1: `**Mars Decan (0°–9°):** Pure, undiluted Aries fire. You're the warrior unfiltered—action-oriented, decisive, pioneering. Life is a series of beginnings, and you live for the adrenaline of the new.`,
+    2: `**Sun Decan (10°–19°):** Leo's warmth enters Mars territory. The warrior gains a heart—you fight for what you love, lead with creative courage, seek recognition for your bravery.`,
+    3: `**Jupiter Decan (20°–29°):** Sagittarian expansion transforms combat into crusade. You're the philosophical warrior—action serves a vision, courage has meaning beyond the moment.`,
+  },
+  Taurus: {
+    1: `**Venus Decan (0°–9°):** Pure Taurean sensuality. You're the embodiment of pleasure, patience, and material wisdom. Security isn't fear—it's love of the tangible.`,
+    2: `**Mercury Decan (10°–19°):** Virgo's discrimination enters Venus territory. You're discerning about pleasures, practical about beauty, skilled at turning values into useful systems.`,
+    3: `**Saturn Decan (20°–29°):** Capricorn's ambition grounds Venus. You build lasting structures from your values—patient, determined, viewing pleasure as something earned.`,
+  },
+  Gemini: {
+    1: `**Mercury Decan (0°–9°):** Pure mercurial energy. Your mind never stops, curiosity is endless, and learning is life's greatest pleasure.`,
+    2: `**Venus Decan (10°–19°):** Libra's grace enters Mercury's domain. Communication becomes art; you seek beautiful ideas, harmonious dialogues, intellectual partnerships.`,
+    3: `**Uranus/Saturn Decan (20°–29°):** Aquarian innovation electrifies your thinking. You're the futurist, the pattern-breaker, the mind that leaps ahead of convention.`,
+  },
+  Cancer: {
+    1: `**Moon Decan (0°–9°):** The Moon ruling itself—pure emotional depth. You feel everything, nurture instinctively, and create home wherever you are.`,
+    2: `**Pluto Decan (10°–19°):** Scorpio's intensity enters lunar territory. Your nurturing is transformative; your emotions run to the roots of the psyche.`,
+    3: `**Neptune Decan (20°–29°):** Pisces dissolves Cancer's shell. You're the mystic mother, the intuitive feeler, the one who senses what others cannot speak.`,
+  },
+  Leo: {
+    1: `**Sun Decan (0°–9°):** The Sun ruling itself—pure radiance. You exist to shine, create, and express. Visibility isn't ego; it's soul mandate.`,
+    2: `**Jupiter Decan (10°–19°):** Sagittarian wisdom enters solar territory. Your creativity serves teaching; your expression illuminates meaning.`,
+    3: `**Mars Decan (20°–29°):** Arian courage ignites Leo's fire. You're the bold performer, the creative warrior, the one who creates through action.`,
+  },
+  Virgo: {
+    1: `**Mercury Decan (0°–9°):** Pure Virgoan analysis. You see the details others miss, serve through precision, heal through discernment.`,
+    2: `**Saturn Decan (10°–19°):** Capricorn's mastery enters Virgo's laboratory. You're the expert, the craftsman, the one who perfects through discipline.`,
+    3: `**Venus Decan (20°–29°):** Taurus's pleasure softens Virgo's critique. You find beauty in usefulness, pleasure in service, sensuality in health.`,
+  },
+  Scorpio: {
+    1: `**Pluto Decan (0°–9°):** Pure Scorpionic depth. You see through everything, transform what you touch, and live in the realm of psychological truth.`,
+    2: `**Neptune Decan (10°–19°):** Pisces spiritualizes Scorpio's power. Transformation becomes transcendence; depth becomes surrender.`,
+    3: `**Moon Decan (20°–29°):** Cancer's nurturing enters the underworld. You protect through fierce love, transform through emotional bonding.`,
+  },
+  Sagittarius: {
+    1: `**Jupiter Decan (0°–9°):** Pure Sagittarian expansion. You live for meaning, travel (inner and outer), and the eternal quest for truth.`,
+    2: `**Mars Decan (10°–19°):** Arian action enters the temple. Your philosophy isn't passive—you pioneer new territories of thought and experience.`,
+    3: `**Sun Decan (20°–29°):** Leo's creative fire illuminates the journey. You teach through example, inspire through personal expression.`,
+  },
+  Capricorn: {
+    1: `**Saturn Decan (0°–9°):** Pure Capricornian mastery. You build, achieve, and endure. Time is your ally, patience your superpower.`,
+    2: `**Venus Decan (10°–19°):** Taurus's pleasure enters Saturn's realm. You earn your pleasures, build beautiful structures, find success sensual.`,
+    3: `**Mercury Decan (20°–29°):** Virgo's precision refines Capricorn's ambition. You're the strategist, the expert, the one who succeeds through analysis.`,
+  },
+  Aquarius: {
+    1: `**Uranus/Saturn Decan (0°–9°):** Pure Aquarian vision. You see the future others can't imagine, serve humanity through innovation.`,
+    2: `**Mercury Decan (10°–19°):** Gemini's curiosity enters the revolution. You spread ideas, network change-makers, communicate the vision.`,
+    3: `**Venus Decan (20°–29°):** Libra's harmony softens Aquarius's edge. You're the diplomat of progress, the one who makes change palatable.`,
+  },
+  Pisces: {
+    1: `**Neptune Decan (0°–9°):** Pure Piscean dissolution. You merge with the all, dream the world awake, and feel the cosmic ocean.`,
+    2: `**Moon Decan (10°–19°):** Cancer's nurturing enters the mystic waters. You heal through compassion, dream through feeling.`,
+    3: `**Pluto Decan (20°–29°):** Scorpio's power enters Pisces. The mystic becomes the healer-transformer, channeling depths into light.`,
+  },
+};
+
+// Night Chart Moon Lordship explanation
+const NIGHT_CHART_MOON_LORDSHIP_EXPLANATION = `
+**WHY THE MOON BECOMES CHART LORD AT NIGHT:**
+
+In Hellenistic astrology (Chris Brennan, Demetra George, Robert Schmidt), the concept of "Sect" divides all charts into two camps: Day (diurnal) and Night (nocturnal). The luminary that matches your sect becomes your **Chart Lord**—the planet most aligned with expressing your life purpose.
+
+**The Ancient Logic:** When the Sun is below the horizon, it's "out of office"—still powerful, but working through the subterranean, hidden realm. The Moon, which rules the night sky, takes over as the guiding light. In practical terms:
+
+• **Daily Life:** Night chart natives often feel more alive in the evening, do their best work after dark, need more sleep, and may resist early morning schedules. Your energy waxes and wanes with lunar cycles more noticeably than day chart people.
+
+• **Relationships:** You connect through emotional attunement rather than solar "will-to-will" contact. You read unspoken feelings, nurture instinctively, and may attract partners who need emotional care. Intimacy matters more than admiration.
+
+• **Career:** Your professional success comes through receptivity—listening, adapting, responding to what's needed rather than imposing vision. You may work better behind scenes than in spotlight, excel in fields requiring intuition (therapy, art, caregiving), or lead through emotional intelligence rather than authority.
+
+• **The Paradox of 1st House Sun in Night Chart:** You have the mark of visibility (1st house Sun) but the operating system of hiddenness (night sect). This creates a lifelong tension: moments when you're thrust into visibility but feel exposed, periods where you retreat and wonder if you're "doing life wrong." You're not. Your light emerges differently—through intimate impact, through written word, through influence that works best when you're not performing. Over time, the 1st house Sun will demand its due, but on YOUR terms—authentic, emotionally connected, not performing brightness you don't feel.
+`;
+
 // Generate the unified synthesis paragraph
 const generateUnifiedSynthesis = (
   natalChart: NatalChart,
@@ -99,70 +184,80 @@ const generateUnifiedSynthesis = (
   
   if (isTripleSign && sun.sign === 'Libra') {
     // Special case: Triple Libra with decan nuances
-    const sunDecanRuler = sun.decan.ruler;
-    const moonDecanRuler = moon.decan.ruler;
-    const risingDecanRuler = rising.decan.ruler;
+    synthesis = `You are Triple Libra—a unified field of Venusian energy seeking balance, beauty, and partnership in every domain.\n\n`;
     
-    synthesis = `You are Triple Libra—a unified field of Venusian energy seeking balance, beauty, and partnership in every domain. `;
+    // Show all three Libra decans for context
+    synthesis += `**THE THREE FACES OF LIBRA:**\n\n`;
+    synthesis += DECAN_FLAVOR_DESCRIPTIONS.Libra[1] + '\n\n';
+    synthesis += DECAN_FLAVOR_DESCRIPTIONS.Libra[2] + '\n\n';
+    synthesis += DECAN_FLAVOR_DESCRIPTIONS.Libra[3] + '\n\n';
     
-    // Decan rulers add texture
-    const decanRulers = [sunDecanRuler, moonDecanRuler, risingDecanRuler];
-    const uniqueDecanRulers = [...new Set(decanRulers)];
+    // Now show which decans THEY have
+    synthesis += `**YOUR SPECIFIC DECAN CONFIGURATION:**\n`;
+    synthesis += `• Sun at ${sun.degree.toFixed(1)}° = ${sun.decan.number === 1 ? 'Venus' : sun.decan.number === 2 ? 'Uranus/Saturn' : 'Mercury'} decan\n`;
+    synthesis += `• Moon at ${moon.degree.toFixed(1)}° = ${moon.decan.number === 1 ? 'Venus' : moon.decan.number === 2 ? 'Uranus/Saturn' : 'Mercury'} decan\n`;
+    synthesis += `• Rising at ${rising.degree.toFixed(1)}° = ${rising.decan.number === 1 ? 'Venus' : rising.decan.number === 2 ? 'Uranus/Saturn' : 'Mercury'} decan\n\n`;
     
-    if (uniqueDecanRulers.includes('Mercury')) {
-      synthesis += `But your ${decanRulers.filter(r => r === 'Mercury').length > 1 ? 'core decans are' : sun.decan.ruler === 'Mercury' ? 'Sun decan is' : moon.decan.ruler === 'Mercury' ? 'Moon decan is' : 'Rising decan is'} ruled by Mercury, which adds a different flavor to your Libra expression. `;
-      synthesis += `Mercury brings the Gemini quality into your Air sign—quick thinking, curiosity, restlessness, and the need to communicate and analyze rather than just harmonize. `;
-      synthesis += `Where pure Venus-Libra wants to create beauty and peace through relating, Mercury-ruled Libra needs to *understand* the balance, to *articulate* the fairness, to *learn* through partnership. `;
-      synthesis += `This is why you may feel less like "the diplomat in elegant attire" and more like the curious observer who sees all sides but struggles to land on one. `;
-    }
+    // Custom synthesis based on their specific decans
+    const sunIsVenus = sun.decan.number === 1;
+    const sunIsAquarian = sun.decan.number === 2;
+    const sunIsMercury = sun.decan.number === 3;
     
-    if (uniqueDecanRulers.includes('Saturn') || uniqueDecanRulers.includes('Uranus')) {
-      synthesis += `The Aquarian decan energy (Saturn/Uranus) brings detachment and idealism—you may relate better to humanity as a concept than to individuals in practice. `;
+    if (sunIsMercury) {
+      synthesis += `Your Sun is in the Mercury decan, which means your core identity is expressed through the 3rd face of Libra—the Gemini-influenced, intellectually restless version. You're not the "peaceful diplomat in elegant attire" stereotype. You're the Libra who needs to *understand* fairness, *analyze* relationship dynamics, *articulate* what others only feel. Your nervous system is calibrated to pick up on social nuances, power dynamics, unspoken tensions. This can feel exhausting—you see everything, including what people wish you wouldn't notice.\n\n`;
+    } else if (sunIsAquarian) {
+      synthesis += `Your Sun is in the Uranus/Saturn decan, bringing the Aquarian quality into your Libra core. You may relate better to humanity as a principle than to messy individual relationships. Partnership for you requires intellectual respect; you might prefer unconventional arrangements or prioritize mental connection over romantic chemistry. Saturn's influence makes you take relationships seriously—fewer but deeper.\n\n`;
+    } else if (sunIsVenus) {
+      synthesis += `Your Sun is in the Venus decan—pure, classic Libra. Beauty and partnership aren't preferences; they're soul needs. You create harmony naturally, make others feel seen and valued, and may struggle when forced to choose sides or assert yourself at the expense of relationship.\n\n`;
     }
     
     // Night chart interpretation for 1st house Sun
     if (sect.isNightChart && sun.house === 1) {
-      synthesis += `\n\nNow, here's the paradox you feel: Your Sun is in the 1st house—the house of self, visibility, personal presence. Traditionally, this is the placement of someone who IS meant to be seen, who shines through being themselves. `;
-      synthesis += `But you were born before sunrise, making this a Night Chart. In night charts, the Moon is the luminary "in charge," and the Sun operates more quietly—still powerful, but not in its most visible mode. `;
-      synthesis += `Chris Brennan and the Hellenistic tradition describe this as the Sun being "below the horizon"—your light exists, but it's working underground, internally, through the depths rather than through public display. `;
-      synthesis += `So you have this tension: 1st house Sun says "be seen" but Night Chart Sun says "your power is behind the scenes." `;
-      synthesis += `The result? You may feel exposed when you're visible, preferring to work through influence rather than spotlight. `;
-      synthesis += `Your gifts emerge in intimate settings, one-on-one conversations, written words rather than public speeches. `;
-      synthesis += `You're not meant to hide forever—that 1st house Sun WILL eventually demand expression—but your path to visibility is gradual, earned, and often happens when you're not trying. `;
-    } else if (sun.house === 1) {
-      synthesis += `\n\nYour Sun in the 1st house means your very existence is your purpose—you are meant to be seen. In a day chart, this is classic "leader" energy: naturally visible, naturally commanding attention. `;
+      synthesis += `**THE PARADOX YOU FEEL:**\n`;
+      synthesis += `Your Sun is in the 1st house—traditionally the placement of someone who IS meant to be seen. But you were born before sunrise, making this a **Night Chart**.\n\n`;
+      synthesis += `In night charts, the Moon becomes the "chart lord"—your emotional, receptive nature leads, while the Sun works more quietly, internally. So you have this tension: 1st house Sun says "be seen" but Night Chart Sun says "your power is behind the scenes."\n\n`;
+      synthesis += `This is why you feel like hiding despite being "supposed to" shine. You're not wrong or broken—you're a Night Chart person with a daytime placement. Your visibility will come on YOUR terms: gradual, earned, authentic rather than performed. Your gifts emerge in intimate settings, through written word, through influence that works best when you're not trying to be impressive.\n\n`;
     }
-    
-    synthesis += `\n\nThe Mercury decan gives you intellectual Libra rather than purely aesthetic Libra. You're the lawyer who understands both sides, the writer who articulates fairness, the networker who connects ideas. `;
-    synthesis += `Traditional astrologers like Demetra George note that Mercury-influenced Libra has a "nervous system calibrated to the collective"—you pick up on social currents, power dynamics, and unspoken tensions. This isn't the peaceful Libra stereotype; it's the Libra who can't stop analyzing until they understand the whole equation.`;
   } else {
     // General synthesis for non-triple or other triples
-    synthesis = `Your ${sun.sign} Sun in the ${sun.decan.number === 1 ? 'first' : sun.decan.number === 2 ? 'second' : 'third'} decan is colored by ${sun.decan.ruler}, which adds ${sun.decan.ruler === signRuler.ruler ? 'pure, undiluted' : 'a distinct flavor of'} ${sun.decan.ruler} energy to your core identity. `;
+    const decanFlavors = DECAN_FLAVOR_DESCRIPTIONS[sun.sign];
+    if (decanFlavors) {
+      synthesis += `${decanFlavors[sun.decan.number]}\n\n`;
+    }
+    
+    synthesis += `Your ${sun.sign} Sun in the ${sun.decan.number === 1 ? 'first' : sun.decan.number === 2 ? 'second' : 'third'} decan is colored by ${sun.decan.ruler} energy. `;
     
     if (sun.house) {
-      synthesis += `Placed in the ${sun.house}${sun.house === 1 ? 'st' : sun.house === 2 ? 'nd' : sun.house === 3 ? 'rd' : 'th'} house, your identity expresses through ${HOUSE_MEANINGS[sun.house]?.toLowerCase()}. `;
+      synthesis += `Placed in the ${sun.house}${sun.house === 1 ? 'st' : sun.house === 2 ? 'nd' : sun.house === 3 ? 'rd' : 'th'} house, your identity expresses through ${HOUSE_MEANINGS[sun.house]?.toLowerCase()}.\n\n`;
     }
     
     // Add Moon synthesis
-    synthesis += `\n\nYour ${moon.sign} Moon in the ${moon.decan.number === 1 ? 'first' : moon.decan.number === 2 ? 'second' : 'third'} decan draws on ${moon.decan.ruler}'s influence for emotional processing. `;
-    if (moon.house) {
-      synthesis += `In house ${moon.house}, you find emotional security through ${HOUSE_MEANINGS[moon.house]?.toLowerCase()}. `;
+    const moonDecanFlavors = DECAN_FLAVOR_DESCRIPTIONS[moon.sign];
+    if (moonDecanFlavors) {
+      synthesis += `Your Moon: ${moonDecanFlavors[moon.decan.number]}\n\n`;
     }
     
     // Add Rising synthesis
-    synthesis += `\n\nYour ${rising.sign} Rising (${rising.decan.ruler} decan) determines how others first experience you—the mask that eventually becomes the face. `;
+    const risingDecanFlavors = DECAN_FLAVOR_DESCRIPTIONS[rising.sign];
+    if (risingDecanFlavors) {
+      synthesis += `Your Rising: ${risingDecanFlavors[rising.decan.number]}\n\n`;
+    }
     
     // Sect interpretation
     if (sect.isNightChart) {
-      synthesis += `\n\nAs a Night Chart native, your Moon is the "chart lord"—your emotional, intuitive, receptive nature is emphasized over the solar, will-driven self. `;
-      synthesis += `You may feel more at home in your Moon sign than your Sun sign. Your gifts emerge in darkness, in reflection, in the interior world. `;
+      synthesis += `As a **Night Chart** native, your Moon is the "chart lord"—your emotional, intuitive, receptive nature is emphasized over the solar, will-driven self. You may feel more at home in your Moon sign than your Sun sign.`;
     }
   }
   
   return synthesis;
 };
 
+// Export for use in Guide section
+export { NIGHT_CHART_MOON_LORDSHIP_EXPLANATION };
+
 export const BigThreeSynthesisCard = ({ natalChart }: BigThreeSynthesisCardProps) => {
+  const [showMoonLordship, setShowMoonLordship] = useState(false);
+  
   const sunPos = natalChart.planets.Sun;
   const moonPos = natalChart.planets.Moon;
   const risingSign = natalChart.houseCusps?.house1?.sign || natalChart.planets.Ascendant?.sign;
@@ -263,49 +358,100 @@ export const BigThreeSynthesisCard = ({ natalChart }: BigThreeSynthesisCardProps
   };
   
   return (
-    <Card className="border-amber-200 dark:border-amber-800 bg-gradient-to-br from-amber-50/50 to-orange-50/30 dark:from-amber-950/30 dark:to-orange-950/20">
+    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-lg font-serif">
-          <Sparkles className="text-amber-500" size={20} />
+          <Sparkles className="text-primary" size={20} />
           The Big Three — Complete Picture
         </CardTitle>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           {sect.isNightChart ? (
-            <Sunset className="text-indigo-500" size={16} />
+            <Sunset className="text-primary" size={16} />
           ) : (
-            <Sunrise className="text-amber-500" size={16} />
+            <Sunrise className="text-accent" size={16} />
           )}
           <span>{sect.description}</span>
+          {sect.isNightChart && (
+            <button 
+              onClick={() => setShowMoonLordship(!showMoonLordship)}
+              className="text-xs text-primary hover:underline flex items-center gap-1"
+            >
+              <HelpCircle size={12} />
+              Why Moon becomes Chart Lord?
+            </button>
+          )}
         </div>
       </CardHeader>
       
       <CardContent className="space-y-4">
+        {/* Night Chart Moon Lordship Education (collapsible) */}
+        {sect.isNightChart && (
+          <Collapsible open={showMoonLordship} onOpenChange={setShowMoonLordship}>
+            <CollapsibleContent>
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-4 text-sm leading-relaxed">
+                <h4 className="font-serif font-medium mb-3 flex items-center gap-2">
+                  <Moon size={16} className="text-primary" />
+                  Understanding Night Chart Moon Lordship
+                </h4>
+                <div className="prose prose-sm dark:prose-invert max-w-none space-y-3">
+                  <p><strong>WHY THE MOON BECOMES CHART LORD AT NIGHT:</strong></p>
+                  <p>In Hellenistic astrology (Chris Brennan, Demetra George, Robert Schmidt), the concept of "Sect" divides all charts into two camps: Day (diurnal) and Night (nocturnal). The luminary that matches your sect becomes your <strong>Chart Lord</strong>—the planet most aligned with expressing your life purpose.</p>
+                  
+                  <p><strong>The Ancient Logic:</strong> When the Sun is below the horizon, it's "out of office"—still powerful, but working through the subterranean, hidden realm. The Moon, which rules the night sky, takes over as the guiding light.</p>
+                  
+                  <div className="bg-background/50 rounded p-3 space-y-2">
+                    <p><strong>🌙 Daily Life:</strong> Night chart natives often feel more alive in the evening, do their best work after dark, need more sleep, and may resist early morning schedules. Your energy waxes and wanes with lunar cycles more noticeably than day chart people.</p>
+                    
+                    <p><strong>💕 Relationships:</strong> You connect through emotional attunement rather than solar "will-to-will" contact. You read unspoken feelings, nurture instinctively, and may attract partners who need emotional care. Intimacy matters more than admiration.</p>
+                    
+                    <p><strong>💼 Career:</strong> Your professional success comes through receptivity—listening, adapting, responding to what's needed rather than imposing vision. You may work better behind scenes than in spotlight, excel in fields requiring intuition (therapy, art, caregiving), or lead through emotional intelligence rather than authority.</p>
+                  </div>
+                  
+                  {sun.house === 1 && (
+                    <div className="bg-accent/20 rounded p-3 mt-3">
+                      <p><strong>⚡ The Paradox of 1st House Sun in Night Chart:</strong></p>
+                      <p>You have the mark of visibility (1st house Sun) but the operating system of hiddenness (night sect). This creates a lifelong tension: moments when you're thrust into visibility but feel exposed, periods where you retreat and wonder if you're "doing life wrong."</p>
+                      <p className="mt-2">You're not. Your light emerges differently—through intimate impact, through written word, through influence that works best when you're not performing. Over time, the 1st house Sun will demand its due, but on YOUR terms—authentic, emotionally connected, not performing brightness you don't feel.</p>
+                    </div>
+                  )}
+                </div>
+                <button 
+                  onClick={() => setShowMoonLordship(false)}
+                  className="mt-3 text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+                >
+                  <ChevronDown size={12} className="rotate-180" /> Close
+                </button>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        )}
+        
         {/* Three placement boxes side by side */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <PlacementBox 
             detail={sun} 
-            color="bg-orange-100 dark:bg-orange-900/40" 
+            color="bg-primary/10" 
             icon={Sun}
           />
           <PlacementBox 
             detail={moon} 
-            color="bg-teal-100 dark:bg-teal-900/40" 
+            color="bg-accent/10" 
             icon={Moon}
           />
           <PlacementBox 
             detail={rising} 
-            color="bg-purple-100 dark:bg-purple-900/40" 
+            color="bg-secondary/50" 
             icon={Star}
           />
         </div>
         
         {/* Unified Synthesis */}
-        <div className="bg-slate-100 dark:bg-slate-800/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+        <div className="bg-muted rounded-lg p-4 border border-border">
           <h4 className="font-serif font-medium mb-3 flex items-center gap-2">
-            <Sparkles size={16} className="text-amber-500" />
+            <Sparkles size={16} className="text-primary" />
             How It All Comes Together
           </h4>
-          <div className="text-sm leading-relaxed whitespace-pre-line">
+          <div className="text-sm leading-relaxed whitespace-pre-line prose prose-sm dark:prose-invert max-w-none">
             {synthesis}
           </div>
         </div>
