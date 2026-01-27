@@ -1,15 +1,20 @@
-import { useMemo, forwardRef } from 'react';
-import { AlertTriangle, Bell, Clock, ChevronRight, Zap, Star } from 'lucide-react';
+import { useMemo, forwardRef, useState } from 'react';
+import { AlertTriangle, Bell, Clock, ChevronRight, Zap, Star, ChevronDown, Moon } from 'lucide-react';
 import { calculateTransitAlerts, getAlertEmoji, getPriorityLabel, TransitAlert, AlertPriority } from '@/lib/transitAlerts';
+import { calculateProgressedMoonTransits, ProgressedMoonTransit, calculateSecondaryProgressions, getProgressedMoonInfo } from '@/lib/secondaryProgressions';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface TransitAlertsCardProps {
   natalChart: NatalChart | null;
   maxAlerts?: number;
 }
+
+// Major planets for priority display
+const MAJOR_PLANETS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Chiron'];
 
 const getPriorityStyles = (priority: AlertPriority): { bg: string; border: string; text: string } => {
   switch (priority) {
@@ -39,6 +44,64 @@ const getPriorityStyles = (priority: AlertPriority): { bg: string; border: strin
       };
   }
 };
+
+// Progressed Moon Alert Item
+const ProgressedMoonItem = forwardRef<HTMLDivElement, { transit: ProgressedMoonTransit }>(({ transit }, ref) => {
+  const styles = getPriorityStyles(transit.priority);
+  
+  return (
+    <div ref={ref} className={`p-4 rounded-lg border-2 ${styles.bg} ${styles.border}`}>
+      <div className="flex items-start gap-3">
+        <div className="text-2xl flex-shrink-0">☽</div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap mb-1">
+            <span className="font-semibold text-sm">{transit.title}</span>
+            <Badge variant="outline" className={`text-xs ${styles.text}`}>
+              PROGRESSED
+            </Badge>
+            {transit.priority === 'critical' && (
+              <Badge className="text-xs bg-primary animate-pulse">
+                <Zap size={10} className="mr-1" />
+                MAJOR
+              </Badge>
+            )}
+          </div>
+          
+          {transit.aspectType !== 'position' && (
+            <p className="text-xs text-muted-foreground mb-2">
+              {transit.orb.toFixed(2)}° orb
+            </p>
+          )}
+          
+          <p className="text-sm text-foreground mb-2">{transit.description}</p>
+          
+          {transit.clientSummary && (
+            <div className="flex items-start gap-1.5 text-xs mt-2 p-2 rounded bg-primary/5">
+              <Star size={12} className="text-amber-500 flex-shrink-0 mt-0.5" />
+              <span className="text-muted-foreground italic">{transit.clientSummary}</span>
+            </div>
+          )}
+          
+          {transit.houseMeaning && transit.aspectType === 'position' && (
+            <div className="mt-2 p-2 rounded bg-secondary/30">
+              <p className="text-xs font-medium text-muted-foreground">House {transit.house} Focus:</p>
+              <p className="text-xs text-foreground">{transit.houseMeaning.clientFeel}</p>
+            </div>
+          )}
+          
+          {transit.phaseInfo && transit.aspectType === 'position' && (
+            <div className="mt-2 p-2 rounded bg-secondary/30">
+              <p className="text-xs font-medium text-muted-foreground">{transit.phaseInfo.phaseName}:</p>
+              <p className="text-xs text-foreground">{transit.phaseInfo.lifeTheme}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+});
+
+ProgressedMoonItem.displayName = 'ProgressedMoonItem';
 
 const AlertItem = forwardRef<HTMLDivElement, { alert: TransitAlert }>(({ alert }, ref) => {
   const styles = getPriorityStyles(alert.priority);
@@ -87,11 +150,67 @@ const AlertItem = forwardRef<HTMLDivElement, { alert: TransitAlert }>(({ alert }
 AlertItem.displayName = 'AlertItem';
 
 export const TransitAlertsCard = forwardRef<HTMLDivElement, TransitAlertsCardProps>(
-  ({ natalChart, maxAlerts = 5 }, ref) => {
+  ({ natalChart, maxAlerts = 10 }, ref) => {
+    const [isMinorOpen, setIsMinorOpen] = useState(false);
+    
+    // Calculate progressed Moon transits
+    const progressedMoonTransits = useMemo(() => {
+      if (!natalChart) return [];
+      return calculateProgressedMoonTransits(natalChart);
+    }, [natalChart]);
+    
+    // Calculate regular transit alerts
     const alerts = useMemo(() => {
       if (!natalChart) return [];
       return calculateTransitAlerts(natalChart);
     }, [natalChart]);
+    
+    // Separate major planet transits from minor ones
+    const { majorAlerts, minorAlerts } = useMemo(() => {
+      const major: TransitAlert[] = [];
+      const minor: TransitAlert[] = [];
+      
+      alerts.forEach(alert => {
+        // Check if transit planet is a major planet
+        const isMajorTransit = MAJOR_PLANETS.includes(alert.transitPlanet);
+        // Check if natal planet is personal/important
+        const isPersonalNatal = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Ascendant', 'MC'].includes(alert.natalPlanet);
+        
+        if (isMajorTransit && isPersonalNatal) {
+          major.push(alert);
+        } else if (alert.isOuterPlanet) {
+          major.push(alert);
+        } else {
+          minor.push(alert);
+        }
+      });
+      
+      // Sort major alerts: outer planets to personal points first
+      major.sort((a, b) => {
+        // Outer planets to personal planets get highest priority
+        const outerPlanets = ['Pluto', 'Neptune', 'Uranus', 'Saturn', 'Jupiter'];
+        const personalPlanets = ['Sun', 'Moon', 'Ascendant', 'MC'];
+        
+        const aIsOuter = outerPlanets.includes(a.transitPlanet);
+        const bIsOuter = outerPlanets.includes(b.transitPlanet);
+        const aIsPersonal = personalPlanets.includes(a.natalPlanet);
+        const bIsPersonal = personalPlanets.includes(b.natalPlanet);
+        
+        // Outer to personal first
+        if (aIsOuter && aIsPersonal && !(bIsOuter && bIsPersonal)) return -1;
+        if (bIsOuter && bIsPersonal && !(aIsOuter && aIsPersonal)) return 1;
+        
+        // Then by priority
+        const priorityOrder: Record<AlertPriority, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+        const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
+        if (priorityDiff !== 0) return priorityDiff;
+        
+        // Then by orb (tighter first)
+        return a.orb - b.orb;
+      });
+      
+      return { majorAlerts: major, minorAlerts: minor };
+    }, [alerts]);
     
     if (!natalChart) {
       return (
@@ -107,11 +226,9 @@ export const TransitAlertsCard = forwardRef<HTMLDivElement, TransitAlertsCardPro
       );
     }
     
-    const criticalAlerts = alerts.filter(a => a.priority === 'critical' || a.alertType === 'exact');
-    const otherAlerts = alerts.filter(a => a.priority !== 'critical' && a.alertType !== 'exact');
-    const displayAlerts = [...criticalAlerts, ...otherAlerts].slice(0, maxAlerts);
+    const totalAlerts = progressedMoonTransits.length + majorAlerts.length + minorAlerts.length;
     
-    if (displayAlerts.length === 0) {
+    if (totalAlerts === 0) {
       return (
         <div ref={ref} className="p-4 rounded-xl border border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/20">
           <div className="flex items-center gap-2 text-green-500 mb-2">
@@ -125,6 +242,10 @@ export const TransitAlertsCard = forwardRef<HTMLDivElement, TransitAlertsCardPro
       );
     }
     
+    const criticalCount = [...progressedMoonTransits, ...majorAlerts].filter(
+      a => a.priority === 'critical' || ('alertType' in a && a.alertType === 'exact')
+    ).length;
+    
     return (
       <div ref={ref} className="p-4 rounded-xl border border-amber-200 dark:border-amber-800 bg-gradient-to-br from-amber-50/50 to-orange-50/50 dark:from-amber-950/20 dark:to-orange-950/20">
         {/* Header */}
@@ -136,31 +257,70 @@ export const TransitAlertsCard = forwardRef<HTMLDivElement, TransitAlertsCardPro
             <div>
               <h3 className="font-semibold text-sm">Transit Alerts</h3>
               <p className="text-xs text-muted-foreground">
-                {alerts.length} active transit{alerts.length !== 1 ? 's' : ''} to your chart
+                {totalAlerts} active transit{totalAlerts !== 1 ? 's' : ''} to your chart
               </p>
             </div>
           </div>
-          {criticalAlerts.length > 0 && (
+          {criticalCount > 0 && (
             <Badge variant="destructive" className="animate-pulse">
-              {criticalAlerts.length} Critical
+              {criticalCount} Critical
             </Badge>
           )}
         </div>
         
-        {/* Alerts List */}
-        <ScrollArea className={displayAlerts.length > 3 ? 'h-80' : 'h-auto'}>
-          <div className="space-y-2">
-            {displayAlerts.map((alert, index) => (
-              <AlertItem key={`${alert.id}-${index}`} alert={alert} />
-            ))}
+        <ScrollArea className="max-h-[500px]">
+          <div className="space-y-3">
+            {/* PROGRESSED MOON — ALWAYS FIRST */}
+            {progressedMoonTransits.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <Moon size={14} className="text-primary" />
+                  <span className="text-xs font-medium uppercase tracking-wide text-primary">
+                    Progressed Moon (Emotional Weather)
+                  </span>
+                </div>
+                {progressedMoonTransits.map((transit, index) => (
+                  <ProgressedMoonItem key={`prog-${index}`} transit={transit} />
+                ))}
+              </div>
+            )}
+            
+            {/* MAJOR PLANET TRANSITS */}
+            {majorAlerts.length > 0 && (
+              <div className="space-y-2 mt-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Zap size={14} className="text-orange-500" />
+                  <span className="text-xs font-medium uppercase tracking-wide text-orange-600 dark:text-orange-400">
+                    Major Transits ({majorAlerts.length})
+                  </span>
+                </div>
+                {majorAlerts.slice(0, maxAlerts).map((alert, index) => (
+                  <AlertItem key={`major-${alert.id}-${index}`} alert={alert} />
+                ))}
+              </div>
+            )}
+            
+            {/* MINOR TRANSITS — COLLAPSIBLE */}
+            {minorAlerts.length > 0 && (
+              <Collapsible open={isMinorOpen} onOpenChange={setIsMinorOpen} className="mt-4">
+                <CollapsibleTrigger className="flex items-center gap-2 w-full p-2 rounded-md hover:bg-muted/50 transition-colors">
+                  <ChevronDown 
+                    size={14} 
+                    className={`text-muted-foreground transition-transform ${isMinorOpen ? 'rotate-180' : ''}`}
+                  />
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Minor Transits & Asteroids ({minorAlerts.length})
+                  </span>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-2 mt-2">
+                  {minorAlerts.map((alert, index) => (
+                    <AlertItem key={`minor-${alert.id}-${index}`} alert={alert} />
+                  ))}
+                </CollapsibleContent>
+              </Collapsible>
+            )}
           </div>
         </ScrollArea>
-        
-        {alerts.length > maxAlerts && (
-          <p className="text-xs text-center text-muted-foreground mt-3">
-            +{alerts.length - maxAlerts} more alerts
-          </p>
-        )}
       </div>
     );
   }

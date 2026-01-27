@@ -8,88 +8,162 @@ const ZODIAC_SIGNS = [
   'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
 ];
 
-// Sign meanings for progressed moon interpretation
+// Sign meanings for progressed moon interpretation - RICH CLIENT-READY DESCRIPTIONS
 const PROGRESSED_MOON_SIGN_MEANINGS: Record<string, {
   theme: string;
   focus: string;
   keywords: string[];
+  fullDescription: string;
+  clientSummary: string;
 }> = {
   Aries: {
     theme: "New beginnings and self-assertion",
     focus: "Taking initiative, independence, courage, starting fresh",
     keywords: ["independence", "courage", "new starts", "self-focus", "action"],
+    fullDescription: "This is a time of emotional rebirth. You're learning to put yourself first — not in a selfish way, but in the necessary way of someone who has been giving too much. Your feelings are fiery, immediate, and honest. You may feel impatient, restless, or ready to fight for what matters. New impulses emerge. You want to START something. Old emotional patterns that kept you passive or dependent are burning away.",
+    clientSummary: "Your emotional body is waking up. Expect strong impulses to take action, assert boundaries, and begin new chapters. You may feel more competitive, more easily frustrated, but also more ALIVE. Trust the urge to put yourself first right now."
   },
   Taurus: {
     theme: "Building security and comfort",
     focus: "Finances, physical comfort, stability, sensuality, values",
     keywords: ["stability", "finances", "comfort", "patience", "beauty"],
+    fullDescription: "After the fire of Aries, you're entering a phase of stabilization. Your emotional needs now center on SECURITY — financial, physical, and sensory. You crave what is reliable, beautiful, and nourishing. This is not a time for risk-taking but for building solid foundations. Your relationship to money, food, and physical pleasure is being emotionally processed.",
+    clientSummary: "Right now, your soul is asking for stability. You'll find yourself drawn to comfort, quality, and financial security. Don't rush — this phase teaches patience and the value of what you already have. Build slowly. Invest in quality. Enjoy your senses."
   },
   Gemini: {
     theme: "Communication and learning",
     focus: "Mental stimulation, siblings, short trips, networking, writing",
     keywords: ["communication", "learning", "curiosity", "versatility", "connections"],
+    fullDescription: "Your emotional life becomes more mental and social. You NEED to talk, learn, connect. Siblings, neighbors, and local community may feature prominently. You're emotionally restless — one thing isn't enough. You need variety, stimulation, and mental engagement. Writing, teaching, and short trips feed your soul.",
+    clientSummary: "You're emotionally hungry for ideas, conversation, and new experiences. This is a chatty, curious phase. Your nervous system is more active — you need mental stimulation but watch for scattered energy. Learning something new will nourish you deeply."
   },
   Cancer: {
     theme: "Home and emotional foundations",
     focus: "Family, home, nurturing, emotional security, ancestry",
     keywords: ["home", "family", "nurturing", "emotions", "security"],
+    fullDescription: "The Progressed Moon returns to its home sign. This is the most emotionally sensitive phase of the entire 28-year cycle. Home, family, parents, ancestry, and emotional foundations are paramount. You may move, renovate, reconnect with family, or deeply process childhood patterns. Your needs for safety and belonging are strong.",
+    clientSummary: "This is a deeply emotional time when family, home, and your sense of belonging matter most. You may feel more vulnerable, more connected to your roots, and more aware of what 'home' really means to you. Nurture yourself and your inner child."
   },
   Leo: {
     theme: "Creative self-expression",
     focus: "Romance, children, creativity, drama, leadership, joy",
     keywords: ["creativity", "romance", "children", "joy", "self-expression"],
+    fullDescription: "After the inward focus of Cancer, you emerge into the light wanting to SHINE. Romance, creative expression, children, and anything that makes you feel special and recognized become emotionally important. You need applause, play, and self-expression. There's a childlike quality to this phase — follow your joy.",
+    clientSummary: "Your heart wants to play, create, and be seen. Romance may flourish. Creative projects feed your soul. Don't be shy — this phase asks you to step into the spotlight and let your unique light shine. Joy is not optional; it's medicine."
   },
   Virgo: {
     theme: "Health and service",
     focus: "Work routines, health habits, analysis, improvement, service",
     keywords: ["health", "service", "details", "improvement", "work"],
+    fullDescription: "The party is over; now you organize what you've created. Your emotional needs shift toward usefulness, health, and practical improvement. You feel emotionally satisfied when being of service, when your daily routines are humming, when you're making something BETTER. Perfectionism may intensify — be gentle with yourself.",
+    clientSummary: "Right now, getting your life in order feeds your soul. Health routines, organizing your space, being useful to others — these bring deep emotional satisfaction. Watch for critical self-talk, but embrace the urge to improve and serve."
   },
   Libra: {
     theme: "Partnership and harmony",
     focus: "Relationships, balance, beauty, diplomacy, marriage",
     keywords: ["partnership", "balance", "beauty", "harmony", "relationships"],
+    fullDescription: "Relationship becomes the mirror for your emotional growth. You need partnership — romantic, business, creative. You're learning about balance, fairness, and the art of compromise. Beauty and aesthetics matter deeply. You may marry, commit, or deeply reconsider your approach to 'the other.'",
+    clientSummary: "Your emotional focus is on relationships now. Partnership matters. You're learning when to compromise and when to hold your ground. Beauty and harmony feed your soul — surround yourself with both. This is not the time to go it alone."
   },
   Scorpio: {
     theme: "Transformation and depth",
     focus: "Intensity, shared resources, intimacy, power, rebirth",
     keywords: ["transformation", "intensity", "depth", "power", "healing"],
+    fullDescription: "This is the INTENSE phase. Superficial emotional connections won't satisfy. You crave depth, truth, intimacy — even if it's uncomfortable. Power dynamics, sexuality, shared finances, and psychological undercurrents demand your attention. Old emotional patterns must die for new ones to be born. This is the 'death and rebirth' phase.",
+    clientSummary: "You're in a transformational period. Expect deep feelings, power dynamics surfacing, and a need for emotional truth. Nothing superficial will satisfy. This is psychological spring cleaning — painful but necessary. What dies now makes space for your next chapter."
   },
   Sagittarius: {
     theme: "Expansion and philosophy",
     focus: "Travel, higher learning, beliefs, adventure, optimism",
     keywords: ["adventure", "philosophy", "travel", "growth", "freedom"],
+    fullDescription: "After Scorpio's intensity, you need SPACE — physical, mental, spiritual. Travel calls. Higher learning beckons. Your beliefs and philosophy of life are being emotionally processed. You need adventure, meaning, and freedom. Stagnation feels intolerable. You're searching for the bigger picture.",
+    clientSummary: "Your soul is restless for adventure, meaning, and expansion. Travel, study, or exploring new belief systems will feed you deeply. You can't tolerate small thinking or confinement right now. Think bigger. Aim higher. The world is calling."
   },
   Capricorn: {
     theme: "Career and responsibility",
     focus: "Ambition, structure, achievement, authority, discipline",
     keywords: ["career", "ambition", "discipline", "structure", "achievement"],
+    fullDescription: "Time to get serious about your place in the world. Career, public reputation, and achievement become emotionally important. You need to BUILD something that matters. Authority figures and your relationship to authority come into focus. This is a maturing phase — less about feelings, more about results.",
+    clientSummary: "Career and public standing matter now. You're emotionally driven to achieve, to build something real, to be respected. Don't avoid ambition — embrace it. Structure and discipline feed your soul. This is a 'get serious' chapter."
   },
   Aquarius: {
     theme: "Community and innovation",
     focus: "Friends, groups, ideals, technology, humanitarian causes",
     keywords: ["community", "innovation", "ideals", "friendship", "uniqueness"],
+    fullDescription: "After Capricorn's traditional climb, you need to connect with YOUR PEOPLE — friends, groups, communities that share your ideals. Emotional satisfaction comes from contributing to something larger than yourself. Technology, innovation, and progressive ideas appeal. You may feel emotionally detached but deeply connected to humanity.",
+    clientSummary: "Community and friendship feed your soul now. You need to belong to groups that share your values. Don't isolate — connect with your 'tribe.' Progressive ideas and humanitarian causes may call strongly. Embrace your uniqueness."
   },
   Pisces: {
     theme: "Spirituality and transcendence",
     focus: "Dreams, intuition, compassion, creativity, spiritual growth",
     keywords: ["spirituality", "dreams", "compassion", "intuition", "creativity"],
+    fullDescription: "The final sign of the zodiac brings a culminating, transcendent phase. Boundaries dissolve. Intuition heightens. You may feel more emotionally permeable, picking up on others' feelings. Creativity, spirituality, and compassion become paramount. This is a 'letting go' phase before the next cycle begins in Aries.",
+    clientSummary: "You're in a deeply spiritual, intuitive phase. Boundaries may feel thin — you absorb others' feelings easily. Creativity and spirituality nourish you. Some confusion is normal; you're preparing for a new cycle. Trust your dreams and inner guidance."
   },
 };
 
-// House meanings for context
-const HOUSE_MEANINGS: Record<number, { short: string; themes: string }> = {
-  1: { short: "Self & Identity", themes: "personal appearance, self-image, new beginnings" },
-  2: { short: "Money & Values", themes: "income, possessions, self-worth, resources" },
-  3: { short: "Communication", themes: "siblings, short trips, learning, neighbors" },
-  4: { short: "Home & Family", themes: "roots, parents, emotional foundations, real estate" },
-  5: { short: "Creativity & Romance", themes: "children, dating, hobbies, self-expression" },
-  6: { short: "Health & Work", themes: "daily routines, service, pets, wellness" },
-  7: { short: "Partnership", themes: "marriage, business partners, contracts, open enemies" },
-  8: { short: "Transformation", themes: "shared resources, intimacy, death/rebirth, inheritance" },
-  9: { short: "Philosophy & Travel", themes: "higher education, beliefs, foreign lands, publishing" },
-  10: { short: "Career & Status", themes: "profession, reputation, public life, authority" },
-  11: { short: "Community", themes: "friends, groups, hopes, humanitarian causes" },
-  12: { short: "Spirituality", themes: "hidden matters, retreat, institutions, karma" },
+// House meanings for context - RICH CLIENT-READY DESCRIPTIONS
+const HOUSE_MEANINGS: Record<number, { short: string; themes: string; clientFeel: string }> = {
+  1: { 
+    short: "Self & Identity", 
+    themes: "personal appearance, self-image, new beginnings",
+    clientFeel: "When your progressed Moon is in the 1st house, YOU become the emotional focus. How you present yourself, your body, your persona — all these feel emotionally charged. New beginnings emerge naturally. You're more visible and personally sensitive. Others respond to your emotional state directly."
+  },
+  2: { 
+    short: "Money & Values", 
+    themes: "income, possessions, self-worth, resources",
+    clientFeel: "Your emotional security is tied to MONEY and resources during this phase. Financial concerns, income changes, and your relationship to material possessions become emotionally loaded. Self-worth issues may surface. What you own and earn reflects how you feel about yourself."
+  },
+  3: { 
+    short: "Communication", 
+    themes: "siblings, short trips, learning, neighbors",
+    clientFeel: "Your emotional life becomes busier, more connected, more verbal. Siblings, neighbors, and local community matter. You need to TALK about your feelings. Short trips, learning new skills, and constant communication feed your soul. The mind is active — perhaps too active. Journaling helps."
+  },
+  4: { 
+    short: "Home & Family", 
+    themes: "roots, parents, emotional foundations, real estate",
+    clientFeel: "This is the most DEEPLY PERSONAL house. Home, family, parents, and your emotional roots are paramount. You may move, renovate, or deal intensely with family dynamics. Childhood memories surface. You need a safe nest. This is the 'back to basics' emotional time."
+  },
+  5: { 
+    short: "Creativity & Romance", 
+    themes: "children, dating, hobbies, self-expression",
+    clientFeel: "JOY becomes your emotional priority. Romance, creativity, hobbies, and anything playful feed your soul. Children may be a focus — having them, relating to them, or reconnecting with your own inner child. You need to create and be seen. Fun is not optional."
+  },
+  6: { 
+    short: "Health & Work", 
+    themes: "daily routines, service, pets, wellness",
+    clientFeel: "Your emotional wellbeing is now tied to your DAILY LIFE — work routines, health habits, being useful. You feel emotionally satisfied when organized, productive, and of service. Health issues may demand attention. Pets can be emotionally significant. The devil is in the details."
+  },
+  7: { 
+    short: "Partnership", 
+    themes: "marriage, business partners, contracts, open enemies",
+    clientFeel: "ONE-ON-ONE RELATIONSHIPS become your emotional crucible. Marriage, committed partnership, or significant others dominate your emotional landscape. You may marry, partner, or fundamentally reconsider how you 'do' relationship. You learn about yourself through the mirror of the other."
+  },
+  8: { 
+    short: "Transformation", 
+    themes: "shared resources, intimacy, death/rebirth, inheritance",
+    clientFeel: "This is the INTENSE emotional house. Sexuality, shared money/resources, psychological depth, power dynamics, and death/rebirth themes are emotionally activated. Nothing superficial satisfies. You're processing deep, often hidden material. Therapy is powerful now. Trust the transformation."
+  },
+  9: { 
+    short: "Philosophy & Travel", 
+    themes: "higher education, beliefs, foreign lands, publishing",
+    clientFeel: "Your emotional needs EXPAND. Travel, higher education, philosophy, and exploring beliefs become emotionally important. You can't stay small or local — you need the big picture. Foreign cultures or people may feature. Publishing, teaching, or broadcasting can be emotionally fulfilling."
+  },
+  10: { 
+    short: "Career & Status", 
+    themes: "profession, reputation, public life, authority",
+    clientFeel: "Your CAREER and public standing become emotionally charged. How the world sees you matters deeply. Professional achievements bring emotional satisfaction; career setbacks hit harder. Your relationship with authority figures (or being one) is processed. Ambition drives you."
+  },
+  11: { 
+    short: "Community", 
+    themes: "friends, groups, hopes, humanitarian causes",
+    clientFeel: "FRIENDSHIP and group belonging become your emotional home. You need your tribe, your community, people who share your ideals. Causes larger than yourself call to you. Social networks matter. Your hopes and wishes for the future are emotionally activated."
+  },
+  12: { 
+    short: "Spirituality", 
+    themes: "hidden matters, retreat, institutions, karma",
+    clientFeel: "This is the most INWARD phase. You may need solitude, retreat, or spiritual practice. The unconscious speaks loudly through dreams. Old karmic patterns surface for release. Hospitals, prisons, or institutions may be significant. The veil is thin. This is the ending before a new beginning."
+  },
 };
 
 // Planet symbols
@@ -657,13 +731,35 @@ export const findProgressedAspects = (
   return aspects.sort((a, b) => a.orb - b.orb);
 };
 
-// Get interpretation for progressed aspect
+// Get interpretation for progressed aspect - RICH CLIENT-READY
 const getProgressedInterpretation = (progPlanet: string, natalPlanet: string, aspect: string): string => {
   const interpretations: Record<string, string> = {
-    'Moon-Sun-conjunction': "Progressed Moon conjunct natal Sun = Major new emotional chapter begins. Your feelings and core identity align. Important personal integration.",
-    'Moon-Venus-conjunction': "Progressed Moon conjunct natal Venus = Emotional focus on love, beauty, and values. Relationships deepen. Creative inspiration flows.",
-    'Moon-Mars-conjunction': "Progressed Moon conjunct natal Mars = Emotional energy and passion intensify. Assert your feelings. Take action on emotional needs.",
-    'Moon-Ascendant-conjunction': "Progressed Moon conjunct Ascendant = Major emotional visibility. Others see your feelings clearly. New emotional chapter begins.",
+    // Progressed Moon aspects - THE BIG ONES
+    'Moon-Sun-conjunction': "🔴 MAJOR: Progressed Moon conjunct natal Sun — This is one of the most significant transits of your entire life. Your emotional self and core identity merge. A new 28-year emotional cycle begins. Expect profound personal shifts, new beginnings, and a sense of starting fresh. You ARE your feelings right now.",
+    'Moon-Moon-conjunction': "🔴 MAJOR: Progressed Moon returns to natal Moon — Lunar Return in progressions. A complete emotional cycle has completed. Deep emotional reset. Themes from 28 years ago may resurface for integration.",
+    'Moon-Mercury-conjunction': "Progressed Moon conjunct natal Mercury — Your mind and emotions are speaking the same language. Important conversations, decisions, or communications. You're processing feelings through words and ideas.",
+    'Moon-Venus-conjunction': "🟠 IMPORTANT: Progressed Moon conjunct natal Venus — Emotional focus on love, beauty, relationships, and values. Romance may bloom. Creative inspiration flows. You feel more lovable and loving.",
+    'Moon-Mars-conjunction': "🟠 IMPORTANT: Progressed Moon conjunct natal Mars — Emotional energy intensifies. You may feel more assertive, passionate, or easily frustrated. Take action on emotional needs. Assert your feelings. Some conflict is productive.",
+    'Moon-Jupiter-conjunction': "Progressed Moon conjunct natal Jupiter — Emotional expansion and optimism. Opportunities feel especially lucky. Growth through nurturing. Family may expand. You feel emotionally generous.",
+    'Moon-Saturn-conjunction': "🟠 IMPORTANT: Progressed Moon conjunct natal Saturn — A serious, maturing emotional period. Responsibilities feel heavy. Emotional discipline required. You're building emotional structures that will last.",
+    'Moon-Uranus-conjunction': "🟠 IMPORTANT: Progressed Moon conjunct natal Uranus — Expect emotional surprises and sudden changes. Your feelings rebel against restriction. Liberation from old emotional patterns. Electric, unpredictable.",
+    'Moon-Neptune-conjunction': "Progressed Moon conjunct natal Neptune — Heightened intuition, sensitivity, and creativity. Boundaries dissolve. Dreams are powerful. Spiritual and artistic peak, but watch for confusion.",
+    'Moon-Pluto-conjunction': "🔴 MAJOR: Progressed Moon conjunct natal Pluto — Intense emotional transformation. Deep psychological material surfaces. Power dynamics activate. Emotional death and rebirth. Therapy is powerful.",
+    'Moon-Ascendant-conjunction': "🔴 MAJOR: Progressed Moon conjunct Ascendant — A peak emotional visibility moment. Your feelings are seen by everyone. Major new beginning in how you present yourself. Others respond directly to your emotional state.",
+    'Moon-MC-conjunction': "🔴 MAJOR: Progressed Moon conjunct Midheaven — Career and public life become emotionally significant. Your nurturing qualities are publicly visible. Professional decisions feel personal.",
+    'Moon-IC-conjunction': "🔴 MAJOR: Progressed Moon conjunct IC — The deepest point of the chart. Home, family, roots, and emotional foundations are paramount. Moving, family changes, or deep processing of early life.",
+    'Moon-Descendant-conjunction': "🔴 MAJOR: Progressed Moon conjunct Descendant — Relationships take center stage emotionally. Marriage, partnership, or major relationship developments. You meet yourself through the other.",
+    
+    // Oppositions
+    'Moon-Sun-opposition': "🟠 IMPORTANT: Progressed Moon opposite natal Sun — The Full Moon point of your progressed cycle. Maximum illumination. What you started 14 years ago culminates. Relationships reveal tensions between self and other.",
+    'Moon-Moon-opposition': "Progressed Moon opposite natal Moon — Emotional polarity. You're experiencing the opposite of your natural emotional nature. Integration required. Relationship themes emerge.",
+    'Moon-Ascendant-opposition': "Progressed Moon opposite Ascendant (conjunct Descendant) — Relationship focus peaks. Partnership matters dominate your emotional life.",
+    
+    // Squares
+    'Moon-Sun-square': "Progressed Moon square natal Sun — Friction between feelings and identity. A turning point requiring action. Inner tension demands resolution.",
+    'Moon-Moon-square': "Progressed Moon square natal Moon — Emotional crisis point. Your current emotional needs conflict with your natural patterns. Adjustment required.",
+    
+    // Other progressed planets
     'Sun-Moon-conjunction': "Progressed Sun conjunct natal Moon = Core identity touches emotional foundations. Major integration of self and feelings.",
     'Sun-Venus-conjunction': "Progressed Sun conjunct natal Venus = Core self aligns with love and creativity. Artistic expression or romantic highlight.",
     'Venus-Sun-conjunction': "Progressed Venus conjunct natal Sun = Love and beauty themes prominent. Relationships highlighted. Creative period.",
@@ -671,7 +767,153 @@ const getProgressedInterpretation = (progPlanet: string, natalPlanet: string, as
   };
   
   const key = `${progPlanet}-${natalPlanet}-${aspect}`;
-  return interpretations[key] || `Progressed ${progPlanet} ${ASPECT_SYMBOLS[aspect] || ''} natal ${natalPlanet}. Internal maturation brings this energy to consciousness.`;
+  return interpretations[key] || `Progressed ${progPlanet} ${ASPECT_SYMBOLS[aspect] || aspect} natal ${natalPlanet}. Internal maturation brings this energy to consciousness.`;
+};
+
+// Export interface for progressed Moon transit alert
+export interface ProgressedMoonTransit {
+  type: 'progressed-moon';
+  title: string;
+  description: string;
+  clientSummary: string;
+  natalPlanet: string;
+  aspectType: string;
+  aspectSymbol: string;
+  orb: number;
+  priority: 'critical' | 'high' | 'medium' | 'low';
+  sign: string;
+  house: number | null;
+  signMeaning: typeof PROGRESSED_MOON_SIGN_MEANINGS[string] | null;
+  houseMeaning: typeof HOUSE_MEANINGS[number] | null;
+  phaseInfo: ProgressedMoonPhase | null;
+}
+
+// Calculate progressed Moon transits for the transit alerts section
+export const calculateProgressedMoonTransits = (
+  natalChart: NatalChart,
+  currentDate: Date = new Date()
+): ProgressedMoonTransit[] => {
+  const transits: ProgressedMoonTransit[] = [];
+  
+  const progressions = calculateSecondaryProgressions(natalChart, currentDate);
+  if (!progressions) return transits;
+  
+  const progMoon = progressions.planets['Moon'];
+  const progSun = progressions.planets['Sun'];
+  if (!progMoon) return transits;
+  
+  // Get phase info
+  let phaseInfo: ProgressedMoonPhase | null = null;
+  if (progSun) {
+    phaseInfo = getDetailedProgressedMoonPhase(progMoon.longitude, progSun.longitude);
+  }
+  
+  // Get house
+  const house = getPlanetHouse(progMoon.longitude, natalChart.houseCusps);
+  const signMeaning = PROGRESSED_MOON_SIGN_MEANINGS[progMoon.sign] || null;
+  const houseMeaning = house ? HOUSE_MEANINGS[house] : null;
+  
+  // Check aspects to natal points
+  const natalPoints = [
+    'Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn',
+    'Uranus', 'Neptune', 'Pluto', 'Ascendant', 'MC', 'IC', 'Descendant'
+  ];
+  
+  const aspectTypes = [
+    { name: 'conjunction', angle: 0, orb: 2, symbol: '☌' },
+    { name: 'opposition', angle: 180, orb: 2, symbol: '☍' },
+    { name: 'square', angle: 90, orb: 1.5, symbol: '□' },
+    { name: 'trine', angle: 120, orb: 1.5, symbol: '△' },
+  ];
+  
+  // Priority planets for determining importance
+  const criticalPlanets = ['Sun', 'Moon', 'Ascendant', 'MC', 'IC', 'Descendant'];
+  const highPlanets = ['Venus', 'Mars', 'Pluto', 'Saturn', 'Uranus'];
+  
+  for (const natalPlanetName of natalPoints) {
+    let natalLongitude: number | null = null;
+    
+    // Get position from planets or calculate angles
+    if (['Ascendant', 'MC', 'IC', 'Descendant'].includes(natalPlanetName)) {
+      if (natalChart.houseCusps) {
+        const houseKey = natalPlanetName === 'Ascendant' ? 'house1' :
+                         natalPlanetName === 'IC' ? 'house4' :
+                         natalPlanetName === 'Descendant' ? 'house7' :
+                         natalPlanetName === 'MC' ? 'house10' : null;
+        if (houseKey) {
+          const cusp = natalChart.houseCusps[houseKey as keyof typeof natalChart.houseCusps];
+          if (cusp) {
+            const signIndex = ZODIAC_SIGNS.indexOf(cusp.sign);
+            natalLongitude = signIndex * 30 + cusp.degree + cusp.minutes / 60;
+          }
+        }
+      }
+    } else {
+      const natalPos = natalChart.planets[natalPlanetName as keyof typeof natalChart.planets];
+      if (natalPos) {
+        natalLongitude = natalPositionToLongitude(natalPos);
+      }
+    }
+    
+    if (natalLongitude === null) continue;
+    
+    for (const aspectDef of aspectTypes) {
+      let diff = Math.abs(progMoon.longitude - natalLongitude);
+      if (diff > 180) diff = 360 - diff;
+      
+      const angleDiff = Math.abs(diff - aspectDef.angle);
+      if (angleDiff <= aspectDef.orb) {
+        const interpretation = getProgressedInterpretation('Moon', natalPlanetName, aspectDef.name);
+        
+        // Determine priority
+        let priority: 'critical' | 'high' | 'medium' | 'low' = 'medium';
+        if (criticalPlanets.includes(natalPlanetName) && aspectDef.name === 'conjunction') {
+          priority = 'critical';
+        } else if (criticalPlanets.includes(natalPlanetName) || highPlanets.includes(natalPlanetName)) {
+          priority = 'high';
+        } else if (aspectDef.name === 'sextile') {
+          priority = 'low';
+        }
+        
+        transits.push({
+          type: 'progressed-moon',
+          title: `Progressed ☽ ${aspectDef.symbol} natal ${natalPlanetName}`,
+          description: interpretation,
+          clientSummary: signMeaning?.clientSummary || '',
+          natalPlanet: natalPlanetName,
+          aspectType: aspectDef.name,
+          aspectSymbol: aspectDef.symbol,
+          orb: parseFloat(angleDiff.toFixed(2)),
+          priority,
+          sign: progMoon.sign,
+          house,
+          signMeaning,
+          houseMeaning,
+          phaseInfo
+        });
+      }
+    }
+  }
+  
+  // Always add the general progressed Moon position as context
+  transits.unshift({
+    type: 'progressed-moon',
+    title: `Progressed ☽ in ${progMoon.sign} (House ${house || '?'})`,
+    description: signMeaning?.fullDescription || `Progressed Moon in ${progMoon.sign}`,
+    clientSummary: signMeaning?.clientSummary || '',
+    natalPlanet: 'Position',
+    aspectType: 'position',
+    aspectSymbol: '',
+    orb: 0,
+    priority: 'high', // Always show progressed Moon position prominently
+    sign: progMoon.sign,
+    house,
+    signMeaning,
+    houseMeaning,
+    phaseInfo
+  });
+  
+  return transits;
 };
 
 // Get planet symbol
