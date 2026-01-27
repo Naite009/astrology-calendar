@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles, Gauge, Globe, Heart, Activity } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles, Gauge, Globe, Heart, Activity, MessageCircleQuestion } from "lucide-react";
 import { ChartDecoderView } from "./ChartDecoderView";
+import { AskView } from "./AskView";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
 import { YearView } from "./YearView";
@@ -31,7 +32,7 @@ import { DayData, generateICalExport } from "@/lib/astrology";
 import { SynastryView } from "./SynastryView";
 import { RelationshipTimelineView } from "./RelationshipTimelineView";
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline";
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -152,6 +153,9 @@ export const AstroCalendar = () => {
     }
     if (viewMode === "timeline") {
       return "Relationship Timeline";
+    }
+    if (viewMode === "ask") {
+      return "Ask About Chart";
     }
     if (viewMode === "moon-phases") {
       return `${currentDate.getFullYear()} Moon Phases`;
@@ -470,6 +474,30 @@ export const AstroCalendar = () => {
                 <Activity size={14} />
                 Health
               </button>
+              <button
+                onClick={() => {
+                  if (userNatalChart || savedCharts.length > 0) {
+                    setViewMode("ask");
+                  } else {
+                    setViewMode("charts");
+                  }
+                }}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "ask"
+                    ? "bg-primary text-primary-foreground"
+                    : userNatalChart || savedCharts.length > 0
+                      ? "text-muted-foreground hover:text-foreground"
+                      : "text-muted-foreground/60 hover:text-muted-foreground"
+                }`}
+                title={
+                  userNatalChart || savedCharts.length > 0
+                    ? "Ask Questions"
+                    : "Add a chart to ask questions"
+                }
+              >
+                <MessageCircleQuestion size={14} />
+                Ask
+              </button>
             </div>
 
             {userData && (
@@ -679,6 +707,14 @@ export const AstroCalendar = () => {
               ...(userNatalChart ? [userNatalChart] : []),
               ...savedCharts
             ]}
+          />
+        )}
+
+        {viewMode === "ask" && (
+          <AskView
+            userNatalChart={userNatalChart}
+            savedCharts={savedCharts}
+            selectedChartId={selectedChartForTiming}
           />
         )}
       </div>
