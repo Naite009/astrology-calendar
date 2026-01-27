@@ -924,7 +924,7 @@ export interface PsychicIndicator {
   description: string;
   clientDescription: string;
   strength: 'strong' | 'moderate' | 'subtle';
-  category: 'neptune' | 'twelfth-house' | 'water' | 'pluto-moon' | 'aspect';
+  category: 'neptune' | 'twelfth-house' | 'eighth-house' | 'water' | 'pluto-moon' | 'aspect' | 'nodes' | 'chiron' | 'angular' | 'midpoint' | 'tno';
 }
 
 // Detect psychic and mediumship indicators in a natal chart
@@ -972,6 +972,12 @@ export const detectPsychicIndicators = (chart: NatalChart): PsychicIndicator[] =
     let diff = Math.abs(lon1 - lon2);
     if (diff > 180) diff = 360 - diff;
     return Math.abs(diff - aspectAngle) <= orb;
+  };
+  
+  // Helper to get absolute degree for midpoint calculations
+  const getAbsoluteDegree = (planet: NatalPlanetPosition): number => {
+    const ZODIAC = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+    return ZODIAC.indexOf(planet.sign) * 30 + planet.degree + (planet.minutes || 0) / 60;
   };
   
   // 1. NEPTUNE ASPECTS TO PERSONAL PLANETS
@@ -1105,7 +1111,7 @@ export const detectPsychicIndicators = (chart: NatalChart): PsychicIndicator[] =
           description: `${planetName} in the house of death, transformation, and the occult. Natural mediumship abilities.`,
           clientDescription: `Your ${planetName === 'Moon' ? 'emotional nature' : 'core identity'} is attuned to death, transformation, and hidden realms. You may naturally sense spirits or be drawn to work with the dying. This is a classic mediumship placement.`,
           strength: 'strong',
-          category: 'twelfth-house'
+          category: 'eighth-house'
         });
       }
     }
@@ -1184,6 +1190,231 @@ export const detectPsychicIndicators = (chart: NatalChart): PsychicIndicator[] =
       strength: 'strong',
       category: 'water'
     });
+  }
+  
+  // 7. NORTH NODE IN 12TH HOUSE
+  const northNode = chart.planets.NorthNode;
+  if (northNode) {
+    const nnHouse = getPlanetHouse(northNode);
+    if (nnHouse === 12) {
+      indicators.push({
+        name: 'North Node in 12th House',
+        symbol: '☊ in 12H',
+        description: 'Soul\'s direction points toward spiritual service, intuition, and transcendence. The psychic path IS the life path.',
+        clientDescription: 'Your soul\'s purpose in this lifetime involves developing your spiritual and intuitive gifts. You\'re meant to move beyond the material world toward transcendence, compassion, and connection to the divine. Trust your inner guidance—it\'s your destiny.',
+        strength: 'strong',
+        category: 'nodes'
+      });
+    }
+    // North Node in 8th also
+    if (nnHouse === 8) {
+      indicators.push({
+        name: 'North Node in 8th House',
+        symbol: '☊ in 8H',
+        description: 'Soul\'s direction involves transformation, depth psychology, and the mysteries of death/rebirth.',
+        clientDescription: 'Your path involves going deep—into psychology, into transformation, into the mysteries of death and rebirth. Mediumship, healing work with trauma, or working with the dying may be part of your purpose.',
+        strength: 'moderate',
+        category: 'nodes'
+      });
+    }
+  }
+  
+  // 8. CHIRON IN PISCES OR 12TH HOUSE
+  const chiron = chart.planets.Chiron;
+  if (chiron) {
+    if (chiron.sign === 'Pisces') {
+      indicators.push({
+        name: 'Chiron in Pisces',
+        symbol: '⚷♓',
+        description: 'The wound is spiritual: feeling disconnected from Source, boundaries too porous, or gifts feeling like burdens. Healing through embracing psychic sensitivity.',
+        clientDescription: 'Your deepest wound relates to feeling too sensitive for this world, or cut off from the spiritual connection you crave. Healing comes through accepting your psychic sensitivity as a gift, not a curse. You may be a powerful healer for others with similar wounds.',
+        strength: 'strong',
+        category: 'chiron'
+      });
+    }
+    const chironHouse = getPlanetHouse(chiron);
+    if (chironHouse === 12) {
+      indicators.push({
+        name: 'Chiron in 12th House',
+        symbol: '⚷ in 12H',
+        description: 'The wound is hidden, often from past lives or collective karma. Natural healer who works with the unconscious.',
+        clientDescription: 'You carry wounds that may feel inexplicable—from past lives, ancestors, or the collective unconscious. This makes you a natural healer for others\' hidden pain. Trust your ability to sense and heal what cannot be seen.',
+        strength: 'moderate',
+        category: 'chiron'
+      });
+    }
+  }
+  
+  // 9. NEPTUNE IN ANGULAR HOUSES (1, 4, 7, 10)
+  if (neptune) {
+    const neptuneHouse = getPlanetHouse(neptune);
+    if (neptuneHouse === 1) {
+      indicators.push({
+        name: 'Neptune in 1st House',
+        symbol: '♆ in 1H',
+        description: 'Psychic nature is part of the identity and visible to others. May appear otherworldly or mystical.',
+        clientDescription: 'Your psychic sensitivity is woven into who you ARE. People see you as mystical, dreamy, or otherworldly. You may seem to fade in and out, or be hard for others to pin down. This is your nature—embrace the mystery.',
+        strength: 'strong',
+        category: 'angular'
+      });
+    }
+    if (neptuneHouse === 10) {
+      indicators.push({
+        name: 'Neptune in 10th House',
+        symbol: '♆ in 10H',
+        description: 'Career and public role involve spirituality, intuition, or artistic/healing work. The mystic path IS the career path.',
+        clientDescription: 'You are meant to be publicly known for spiritual, intuitive, or artistic work. Your career path may involve healing, psychic work, art, music, or compassionate service. Don\'t try to fit into a "normal" career—your path is extraordinary.',
+        strength: 'strong',
+        category: 'angular'
+      });
+    }
+    if (neptuneHouse === 4) {
+      indicators.push({
+        name: 'Neptune in 4th House',
+        symbol: '♆ in 4H',
+        description: 'Home and family have mystical undertones. May have grown up with psychic family members or in a spiritually unusual environment.',
+        clientDescription: 'Your home life carries a mystical quality. You may have grown up with psychic family members, or in an environment where boundaries were unclear. Create a home that honors your spiritual needs—it\'s your sanctuary.',
+        strength: 'moderate',
+        category: 'angular'
+      });
+    }
+    if (neptuneHouse === 7) {
+      indicators.push({
+        name: 'Neptune in 7th House',
+        symbol: '♆ in 7H',
+        description: 'Psychic sensitivity operates through relationships. May attract spiritual partners or experience idealization/dissolution in partnership.',
+        clientDescription: 'Your psychic gifts activate through relationship. You may attract spiritual or artistic partners, or experience unusual psychic bonds. Be careful of idealization—see partners clearly while honoring the mystical connection.',
+        strength: 'moderate',
+        category: 'angular'
+      });
+    }
+  }
+  
+  // 10. MOON/NEPTUNE MIDPOINT ACTIVATIONS
+  if (moon && neptune) {
+    const moonDeg = getAbsoluteDegree(moon);
+    const neptuneDeg = getAbsoluteDegree(neptune);
+    const midpoint = ((moonDeg + neptuneDeg) / 2) % 360;
+    
+    // Check if Sun, Ascendant, MC, or Mercury activates this midpoint
+    const checkPoints = [
+      { name: 'Sun', pos: sun },
+      { name: 'Mercury', pos: mercury },
+    ];
+    
+    checkPoints.forEach(point => {
+      if (point.pos) {
+        const pointDeg = getAbsoluteDegree(point.pos);
+        const diff = Math.abs(pointDeg - midpoint);
+        const normalizedDiff = diff > 180 ? 360 - diff : diff;
+        
+        if (normalizedDiff <= 3) {
+          indicators.push({
+            name: `${point.name} on Moon/Neptune Midpoint`,
+            symbol: `${point.name === 'Sun' ? '☉' : '☿'}=☽/♆`,
+            description: `${point.name} activates the psychic midpoint. Deep integration of intuitive and conscious awareness.`,
+            clientDescription: `Your ${point.name === 'Sun' ? 'core identity' : 'thinking mind'} is directly connected to your psychic sensitivity. You naturally integrate intuition with ${point.name === 'Sun' ? 'who you are' : 'how you think and communicate'}. This is a powerful configuration for channeling or receiving guidance.`,
+            strength: 'strong',
+            category: 'midpoint'
+          });
+        }
+      }
+    });
+    
+    // Check Ascendant
+    if (chart.houseCusps?.house1) {
+      const ascDeg = ZODIAC_SIGNS.indexOf(chart.houseCusps.house1.sign) * 30 + chart.houseCusps.house1.degree + (chart.houseCusps.house1.minutes || 0) / 60;
+      const diff = Math.abs(ascDeg - midpoint);
+      const normalizedDiff = diff > 180 ? 360 - diff : diff;
+      
+      if (normalizedDiff <= 3) {
+        indicators.push({
+          name: 'Ascendant on Moon/Neptune Midpoint',
+          symbol: 'ASC=☽/♆',
+          description: 'The psychic midpoint is how you present to the world. Others immediately sense your intuitive nature.',
+          clientDescription: 'People see your psychic sensitivity immediately upon meeting you. You may appear dreamy, mystical, or otherworldly. This configuration makes you a natural channel—information flows through you to others.',
+          strength: 'strong',
+          category: 'midpoint'
+        });
+      }
+    }
+  }
+  
+  // 11. TRANS-NEPTUNIAN OBJECTS (TNOs) related to psychic gifts
+  // Sedna - connection to deep collective trauma and ancestral wisdom
+  const sedna = chart.planets.Sedna;
+  if (sedna) {
+    if (moon && hasAspect(sedna, moon, 0, 5)) {
+      indicators.push({
+        name: 'Sedna Conjunct Moon',
+        symbol: '⯲☌☽',
+        description: 'Deep connection to ancestral trauma and feminine wisdom from the collective unconscious.',
+        clientDescription: 'You have access to very deep, ancestral knowledge—particularly around feminine suffering and wisdom. You may channel information from the collective unconscious or have past-life recall related to trauma and healing.',
+        strength: 'moderate',
+        category: 'tno'
+      });
+    }
+  }
+  
+  // Orcus - underworld guide, death/rebirth
+  const orcus = chart.planets.Orcus;
+  if (orcus) {
+    if (moon && hasAspect(orcus, moon, 0, 5)) {
+      indicators.push({
+        name: 'Orcus Conjunct Moon',
+        symbol: '⯳☌☽',
+        description: 'Connection to the underworld through the emotional body. May sense the dying or deceased.',
+        clientDescription: 'You have a natural connection to the underworld and the realm of the dead through your emotions. You may sense when someone is dying, or feel the presence of those who have passed. This can make you an excellent death doula or grief counselor.',
+        strength: 'moderate',
+        category: 'tno'
+      });
+    }
+  }
+  
+  // Eris - feminine rage and shadow integration
+  const eris = chart.planets.Eris;
+  if (eris && moon && hasAspect(eris, moon, 0, 5)) {
+    indicators.push({
+      name: 'Eris Conjunct Moon',
+      symbol: '⯰☌☽',
+      description: 'Access to shadow feminine wisdom. May channel information about injustice or hidden truths.',
+      clientDescription: 'You have a gift for sensing hidden injustices and shadow truths, especially related to feminine power. You may channel information that disrupts comfortable illusions. Use this gift wisely—truth can be uncomfortable.',
+      strength: 'subtle',
+      category: 'tno'
+    });
+  }
+  
+  // 12. GODDESS ASTEROIDS for intuitive gifts
+  // Ceres in 12th or Pisces
+  const ceres = chart.planets.Ceres;
+  if (ceres) {
+    const ceresHouse = getPlanetHouse(ceres);
+    if (ceresHouse === 12 || ceres.sign === 'Pisces') {
+      indicators.push({
+        name: 'Ceres in 12th/Pisces',
+        symbol: '⚳♓',
+        description: 'Nurturing gifts work through the spiritual realm. May channel maternal energy or nurture through intuitive guidance.',
+        clientDescription: 'Your nurturing gifts are spiritual in nature. You may intuitively know what others need, or channel maternal/caring energy from beyond. You nurture best through acceptance, spiritual support, and unconditional love.',
+        strength: 'subtle',
+        category: 'tno'
+      });
+    }
+  }
+  
+  // Vesta in 12th or 8th (sacred flame keeper)
+  const vesta = chart.planets.Vesta;
+  if (vesta) {
+    const vestaHouse = getPlanetHouse(vesta);
+    if (vestaHouse === 12 || vestaHouse === 8) {
+      indicators.push({
+        name: `Vesta in ${vestaHouse === 12 ? '12th' : '8th'} House`,
+        symbol: `⚶ in ${vestaHouse}H`,
+        description: `Devotion to spiritual practice and sacred mysteries. The inner flame burns in the realm of the ${vestaHouse === 12 ? 'unconscious' : 'occult'}.`,
+        clientDescription: `You have a deep, devoted relationship with spiritual practice. Your sacred flame burns in the ${vestaHouse === 12 ? 'hidden, spiritual realms' : 'mysteries of death, sex, and transformation'}. Solitary spiritual practice feeds your soul.`,
+        strength: 'subtle',
+        category: 'tno'
+      });
+    }
   }
   
   // Sort by strength
