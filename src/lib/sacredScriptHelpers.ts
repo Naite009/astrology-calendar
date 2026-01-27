@@ -648,3 +648,268 @@ export const calculateAge = (birthDate: string): number => {
 export const formatDegree = (position: NatalPlanetPosition): string => {
   return `${position.degree}°${position.minutes}'`;
 };
+
+// Stellium detection for natal charts (3+ planets in same sign)
+export interface NatalStellium {
+  sign: string;
+  planets: { name: string; symbol: string; degree: number }[];
+  count: number;
+  element: string;
+  meaning: string;
+}
+
+const PLANET_SYMBOLS: Record<string, string> = {
+  Sun: '☉',
+  Moon: '☽',
+  Mercury: '☿',
+  Venus: '♀',
+  Mars: '♂',
+  Jupiter: '♃',
+  Saturn: '♄',
+  Uranus: '♅',
+  Neptune: '♆',
+  Pluto: '♇',
+  NorthNode: '☊',
+  Chiron: '⚷',
+};
+
+const STELLIUM_INTERPRETATIONS: Record<string, string> = {
+  Aries: 'A concentration of energy around identity, initiative, and independence. This person leads with boldness and needs to pioneer. Life lessons revolve around courage, self-assertion, and learning when to fight and when to yield.',
+  Taurus: 'A concentration of energy around stability, values, and sensuality. This person builds with patience and needs material security. Life lessons revolve around worth, pleasure, and learning the difference between having and being.',
+  Gemini: 'A concentration of energy around communication, learning, and connection. This person processes life through information and ideas. Life lessons revolve around curiosity, duality, and learning to focus scattered brilliance.',
+  Cancer: 'A concentration of energy around nurturing, belonging, and emotional security. This person leads from the heart and needs deep roots. Life lessons revolve around family, vulnerability, and learning to mother without smothering.',
+  Leo: 'A concentration of energy around self-expression, creativity, and recognition. This person radiates and needs to be seen. Life lessons revolve around pride, generosity, and learning the difference between attention and love.',
+  Virgo: 'A concentration of energy around service, improvement, and analysis. This person perfects and needs to be useful. Life lessons revolve around discernment, health, and learning that good enough is sometimes enough.',
+  Libra: 'A concentration of energy around relationships, balance, and beauty. This person harmonizes and needs partnership. Life lessons revolve around fairness, diplomacy, and learning to choose yourself sometimes.',
+  Scorpio: 'A concentration of energy around transformation, depth, and power. This person probes and needs intensity. Life lessons revolve around trust, control, and learning to let die what must die.',
+  Sagittarius: 'A concentration of energy around meaning, expansion, and truth. This person explores and needs freedom. Life lessons revolve around faith, excess, and learning that some questions have no answers.',
+  Capricorn: 'A concentration of energy around achievement, structure, and mastery. This person builds and needs respect. Life lessons revolve around ambition, responsibility, and learning that the summit is not the journey.',
+  Aquarius: 'A concentration of energy around innovation, community, and individuality. This person reforms and needs intellectual freedom. Life lessons revolve around belonging, detachment, and learning to be human, not just humane.',
+  Pisces: 'A concentration of energy around transcendence, compassion, and creativity. This person dissolves and needs spiritual meaning. Life lessons revolve around boundaries, surrender, and learning when to escape and when to stay.'
+};
+
+export const detectNatalStelliums = (chart: NatalChart): NatalStellium[] => {
+  const signGroups: Record<string, { name: string; symbol: string; degree: number }[]> = {};
+  
+  // Check each planet in the chart
+  const planetsToCheck = [
+    'Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn',
+    'Uranus', 'Neptune', 'Pluto', 'NorthNode', 'Chiron'
+  ];
+  
+  planetsToCheck.forEach(planetName => {
+    const planet = chart.planets[planetName as keyof typeof chart.planets];
+    if (planet && planet.sign) {
+      if (!signGroups[planet.sign]) {
+        signGroups[planet.sign] = [];
+      }
+      signGroups[planet.sign].push({
+        name: planetName,
+        symbol: PLANET_SYMBOLS[planetName] || planetName[0],
+        degree: planet.degree
+      });
+    }
+  });
+  
+  // Return signs with 3+ planets
+  return Object.entries(signGroups)
+    .filter(([, planets]) => planets.length >= 3)
+    .map(([sign, planets]) => ({
+      sign,
+      planets: planets.sort((a, b) => a.degree - b.degree),
+      count: planets.length,
+      element: getElement(sign),
+      meaning: STELLIUM_INTERPRETATIONS[sign] || `Concentrated energy in ${sign}.`
+    }))
+    .sort((a, b) => b.count - a.count); // Most planets first
+};
+
+// Goddess asteroid descriptions
+export interface GoddessDescription {
+  name: string;
+  symbol: string;
+  archetype: string;
+  keywords: string[];
+  signMeaning: (sign: string) => string;
+  houseMeaning: (house: number) => string;
+}
+
+export const GODDESS_ASTEROIDS: Record<string, GoddessDescription> = {
+  Ceres: {
+    name: 'Ceres',
+    symbol: '⚳',
+    archetype: 'The Great Mother',
+    keywords: ['nurturing', 'nourishment', 'loss', 'cycles', 'unconditional love'],
+    signMeaning: (sign: string) => {
+      const meanings: Record<string, string> = {
+        Aries: 'Nurtures through encouraging independence and initiative. May push loved ones to fight their own battles. Learns to soften the warrior approach to care.',
+        Taurus: 'Nurtures through physical comfort, good food, and material security. Creates sanctuary. May over-attach to loved ones as possessions.',
+        Gemini: 'Nurtures through communication, stories, and mental stimulation. Talks through problems. May intellectualize emotions instead of feeling them.',
+        Cancer: 'Nurtures in the most archetypal way—through food, home, and emotional attunement. Deep maternal instincts. May struggle with over-protectiveness.',
+        Leo: 'Nurtures through celebration, creativity, and making loved ones feel special. Generous and warm. May need recognition for caregiving efforts.',
+        Virgo: 'Nurtures through practical help, health awareness, and improvement. Shows love by fixing problems. May criticize when trying to help.',
+        Libra: 'Nurtures through creating harmony, beauty, and balanced relationships. Diplomatic caregiver. May avoid necessary confrontation in family matters.',
+        Scorpio: 'Nurtures through emotional depth, transformation, and fierce protection. Intense bonding. May struggle with control in nurturing relationships.',
+        Sagittarius: 'Nurtures through teaching, adventure, and expanding horizons. Encourages growth. May be physically or emotionally absent while exploring.',
+        Capricorn: 'Nurtures through structure, responsibility, and practical guidance. Teaches discipline. May withhold warmth while providing materially.',
+        Aquarius: 'Nurtures through acceptance, intellectual support, and freedom. Unconventional parenting. May seem emotionally detached while deeply caring.',
+        Pisces: 'Nurtures through compassion, spiritual connection, and unconditional acceptance. Deeply empathic. May sacrifice self or enable unhealthy patterns.'
+      };
+      return meanings[sign] || 'Expresses nurturing in unique ways aligned with this sign\'s energy.';
+    },
+    houseMeaning: (house: number) => {
+      const meanings: Record<number, string> = {
+        1: 'Your identity is tied to nurturing. You appear caring and maternal/paternal to others.',
+        2: 'You nurture through resources and material support. Self-worth tied to ability to provide.',
+        3: 'You nurture through communication and mental support. Caring siblings or neighbors.',
+        4: 'Strong need for home and family nurturing. Deep connection to mother or homeland.',
+        5: 'You nurture through creativity and play. Children are a significant life theme.',
+        6: 'You nurture through service and health support. May work in caregiving fields.',
+        7: 'You seek nurturing partnerships. Marriage has strong parental or caregiving themes.',
+        8: 'Deep transformation through nurturing losses. Inheritance or shared resources from caregivers.',
+        9: 'You nurture through teaching and philosophical guidance. Foreign mother figure possible.',
+        10: 'Career involves nurturing or care. Public image as a provider or mother figure.',
+        11: 'You nurture friends and communities. Group involvement has caring, supportive quality.',
+        12: 'Hidden or institutional nurturing. May have had absent mother or sacrificed for others.'
+      };
+      return meanings[house] || 'Ceres influences this life area with themes of nurturing and care.';
+    }
+  },
+  Pallas: {
+    name: 'Pallas Athena',
+    symbol: '⚴',
+    archetype: 'The Strategist & Creative Intelligence',
+    keywords: ['wisdom', 'pattern recognition', 'strategy', 'creative intelligence', 'healing'],
+    signMeaning: (sign: string) => {
+      const meanings: Record<string, string> = {
+        Aries: 'Strategic mind works through bold initiative. Sees patterns in competitive situations. Creative intelligence expressed through pioneering action.',
+        Taurus: 'Strategic mind works through patience and persistence. Sees patterns in material resources. Creative intelligence expressed through building and crafting.',
+        Gemini: 'Strategic mind works through communication and ideas. Sees patterns in information. Creative intelligence expressed through writing and speaking.',
+        Cancer: 'Strategic mind works through emotional intelligence. Sees patterns in family dynamics. Creative intelligence expressed through nurturing and home.',
+        Leo: 'Strategic mind works through creative expression. Sees patterns in performance. Creative intelligence expressed through drama and leadership.',
+        Virgo: 'Strategic mind works through analysis and refinement. Sees patterns in details others miss. Creative intelligence expressed through healing and service.',
+        Libra: 'Strategic mind works through diplomacy and balance. Sees patterns in relationships. Creative intelligence expressed through art and justice.',
+        Scorpio: 'Strategic mind works through depth and investigation. Sees patterns in hidden dynamics. Creative intelligence expressed through transformation.',
+        Sagittarius: 'Strategic mind works through philosophy and vision. Sees patterns in belief systems. Creative intelligence expressed through teaching and travel.',
+        Capricorn: 'Strategic mind works through structure and long-term planning. Sees patterns in systems. Creative intelligence expressed through achievement.',
+        Aquarius: 'Strategic mind works through innovation and reform. Sees patterns in social systems. Creative intelligence expressed through humanitarian efforts.',
+        Pisces: 'Strategic mind works through intuition and imagination. Sees patterns in the collective unconscious. Creative intelligence expressed through art and healing.'
+      };
+      return meanings[sign] || 'Expresses strategic wisdom in ways aligned with this sign\'s energy.';
+    },
+    houseMeaning: (house: number) => {
+      const meanings: Record<number, string> = {
+        1: 'You present as wise and strategic. Others see your intelligence immediately.',
+        2: 'Your wisdom applies to finances and values. Strategic approach to resources.',
+        3: 'Brilliant communicator and thinker. Strategic mind in daily interactions.',
+        4: 'Wisdom about home and family. Strategic approach to creating security.',
+        5: 'Creative intelligence in full bloom. Strategic in romance and with children.',
+        6: 'Wisdom in work and health matters. Strategic problem-solver in daily life.',
+        7: 'Seeks wise, strategic partners. Brings intelligence to all relationships.',
+        8: 'Deep strategic understanding of power and transformation. Investigative mind.',
+        9: 'Wisdom seeker through education and travel. Strategic philosopher.',
+        10: 'Career involves strategy and wisdom. Known publicly for intelligence.',
+        11: 'Strategic approach to groups and causes. Wise counselor to friends.',
+        12: 'Hidden wisdom. Intuitive strategic abilities. May work behind the scenes.'
+      };
+      return meanings[house] || 'Pallas influences this area with strategic wisdom and creative intelligence.';
+    }
+  },
+  Juno: {
+    name: 'Juno',
+    symbol: '⚵',
+    archetype: 'The Sacred Partner',
+    keywords: ['commitment', 'marriage', 'equality', 'jealousy', 'sacred union'],
+    signMeaning: (sign: string) => {
+      const meanings: Record<string, string> = {
+        Aries: 'Needs independence within partnership. Attracted to bold, assertive partners. Marriage must honor individual identity.',
+        Taurus: 'Needs stability and sensuality in partnership. Attracted to reliable, grounded partners. Marriage built on shared values and comfort.',
+        Gemini: 'Needs intellectual stimulation in partnership. Attracted to communicative, curious partners. Marriage requires constant conversation.',
+        Cancer: 'Needs emotional security in partnership. Attracted to nurturing, family-oriented partners. Marriage is about creating home together.',
+        Leo: 'Needs recognition and romance in partnership. Attracted to generous, expressive partners. Marriage must celebrate both people.',
+        Virgo: 'Needs practical support in partnership. Attracted to helpful, health-conscious partners. Marriage involves serving each other.',
+        Libra: 'Needs balance and beauty in partnership. Attracted to harmonious, aesthetic partners. Marriage as true equal partnership.',
+        Scorpio: 'Needs depth and intensity in partnership. Attracted to powerful, transformative partners. Marriage involves complete merging.',
+        Sagittarius: 'Needs freedom and growth in partnership. Attracted to adventurous, philosophical partners. Marriage must expand horizons.',
+        Capricorn: 'Needs structure and commitment in partnership. Attracted to ambitious, responsible partners. Marriage as a serious institution.',
+        Aquarius: 'Needs friendship and freedom in partnership. Attracted to unique, humanitarian partners. Unconventional approach to marriage.',
+        Pisces: 'Needs spiritual connection in partnership. Attracted to compassionate, artistic partners. Marriage as soul union.'
+      };
+      return meanings[sign] || 'Seeks partnership qualities aligned with this sign\'s energy.';
+    },
+    houseMeaning: (house: number) => {
+      const meanings: Record<number, string> = {
+        1: 'Identity strongly tied to partnership. May define self through relationships.',
+        2: 'Partnership tied to values and resources. May share finances deeply.',
+        3: 'Partnership involves communication and learning. Sibling-like bond with partner.',
+        4: 'Home and family central to partnership. Deep roots with committed partner.',
+        5: 'Romance and creativity important in partnership. Playful, dramatic relationships.',
+        6: 'Partnership involves daily work and service. May meet partner at work.',
+        7: 'Partnership is a central life theme. Strong marriage focus.',
+        8: 'Deep, transformative partnerships. Shared resources and sexuality central.',
+        9: 'Partnership involves growth and travel. May marry someone from different background.',
+        10: 'Partnership affects career and public image. Power couple potential.',
+        11: 'Partnership involves shared ideals and friendships. Community-oriented coupling.',
+        12: 'Hidden or karmic partnerships. May sacrifice for partner or experience loss.'
+      };
+      return meanings[house] || 'Juno influences this area with themes of committed partnership.';
+    }
+  },
+  Vesta: {
+    name: 'Vesta',
+    symbol: '⚶',
+    archetype: 'The Sacred Flame',
+    keywords: ['devotion', 'focus', 'sacred sexuality', 'self-sufficiency', 'ritual'],
+    signMeaning: (sign: string) => {
+      const meanings: Record<string, string> = {
+        Aries: 'Devoted to independence and personal projects. Sacred focus on self-development and pioneering work.',
+        Taurus: 'Devoted to material security and sensual pleasures. Sacred focus on building lasting value and comfort.',
+        Gemini: 'Devoted to learning and communication. Sacred focus on ideas, writing, and mental development.',
+        Cancer: 'Devoted to home and family. Sacred focus on nurturing, ancestry, and emotional security.',
+        Leo: 'Devoted to creative expression and children. Sacred focus on self-expression and being seen.',
+        Virgo: 'Devoted to service and improvement. Sacred focus on health, work, and perfecting skills.',
+        Libra: 'Devoted to relationships and beauty. Sacred focus on harmony, art, and partnership.',
+        Scorpio: 'Devoted to transformation and depth. Sacred focus on psychology, healing, and hidden truths.',
+        Sagittarius: 'Devoted to truth and exploration. Sacred focus on philosophy, travel, and meaning.',
+        Capricorn: 'Devoted to achievement and structure. Sacred focus on career, legacy, and mastery.',
+        Aquarius: 'Devoted to humanity and reform. Sacred focus on community, innovation, and ideals.',
+        Pisces: 'Devoted to spirituality and compassion. Sacred focus on transcendence, art, and healing.'
+      };
+      return meanings[sign] || 'Expresses sacred devotion in ways aligned with this sign\'s energy.';
+    },
+    houseMeaning: (house: number) => {
+      const meanings: Record<number, string> = {
+        1: 'Your identity is tied to sacred work. You appear focused and self-contained.',
+        2: 'Devoted focus on resources and values. May be self-sufficient financially.',
+        3: 'Devoted focus on communication and learning. Sacred relationship with siblings.',
+        4: 'Devoted focus on home and family. The home itself may be a sacred space.',
+        5: 'Devoted focus on creativity and children. Sacred approach to self-expression.',
+        6: 'Devoted focus on work and health. May have ritualistic daily practices.',
+        7: 'Devoted focus on partnerships. May alternate between solitude and deep relating.',
+        8: 'Devoted focus on transformation. Deep, sacred approach to intimacy and shared resources.',
+        9: 'Devoted focus on higher learning and travel. Sacred relationship with truth.',
+        10: 'Career is a sacred calling. Publicly devoted to work and achievement.',
+        11: 'Devoted focus on community and ideals. Sacred relationship with groups.',
+        12: 'Devoted focus on spiritual life. May need significant solitude and retreat time.'
+      };
+      return meanings[house] || 'Vesta influences this area with themes of sacred devotion and focus.';
+    }
+  }
+};
+
+export const getGoddessDescription = (asteroidName: string, sign: string, house?: number): {
+  archetype: string;
+  keywords: string[];
+  signInterpretation: string;
+  houseInterpretation?: string;
+} | null => {
+  const goddess = GODDESS_ASTEROIDS[asteroidName];
+  if (!goddess) return null;
+  
+  return {
+    archetype: goddess.archetype,
+    keywords: goddess.keywords,
+    signInterpretation: goddess.signMeaning(sign),
+    houseInterpretation: house ? goddess.houseMeaning(house) : undefined
+  };
+};
