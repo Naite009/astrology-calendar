@@ -66,6 +66,7 @@ import { ElementStoryCard } from '@/components/sacredscript/ElementStoryCard';
 import { PermissionsCard } from '@/components/sacredscript/PermissionsCard';
 import { OppositionPairsCard } from '@/components/sacredscript/OppositionPairsCard';
 import { PsychicGiftsCard } from '@/components/sacredscript/PsychicGiftsCard';
+import { BigThreeSynthesisCard } from '@/components/sacredscript/BigThreeSynthesisCard';
 
 interface SacredScriptViewProps {
   natalChart: NatalChart;
@@ -581,9 +582,17 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
             return null;
           })()}
           
+          {/* Big Three Complete Synthesis Card - NEW unified view */}
+          <BigThreeSynthesisCard natalChart={natalChart} />
+          
           {/* Detailed Cards with Decan, Degree, and House */}
-          <div className="space-y-4">
-            <h4 className="font-serif text-base font-medium">Detailed Breakdown</h4>
+          <details className="group">
+            <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground flex items-center gap-2">
+              <BookOpen size={16} />
+              <span>Detailed Individual Breakdowns</span>
+              <ChevronDown size={16} className="group-open:rotate-180 transition-transform ml-auto" />
+            </summary>
+            <div className="mt-4 space-y-4">
             
             {/* SUN DEEP DIVE */}
             {characterSynthesis?.sunDeep && (
@@ -711,7 +720,8 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
                 </div>
               </div>
             )}
-          </div>
+            </div>
+          </details>
           
           {/* Natal Aspects to Sun, Moon, Rising */}
           {bigThreeAspects.length > 0 && (
