@@ -454,8 +454,10 @@ export class RelationshipTransitCalculator {
     synastryAspects: SynastryAspect[],
     person1Name: string,
     person2Name: string,
-    endDate: Date
+    endDate: Date,
+    focus: RelationshipFocus = 'romance'
   ): BreakupAnalysis {
+    const sectionTitle = this.getBreakupSectionTitle(focus);
     const triggerTransits: string[] = [];
     
     // Scan 3 months before the breakup for major transits
@@ -543,7 +545,17 @@ export class RelationshipTransitCalculator {
       finalStraw = `Eventually, the accumulation of issues outweighed the reasons to stay.`;
     }
 
-    return { primaryCause, triggerTransits, buildUp, finalStraw };
+    return { primaryCause, triggerTransits, buildUp, finalStraw, sectionTitle };
+  }
+
+  private static getBreakupSectionTitle(focus: RelationshipFocus): string {
+    switch (focus) {
+      case 'romance': return 'What Caused the Breakup';
+      case 'family': return 'What Caused the Distance';
+      case 'friendship': return 'What Caused the Drift';
+      case 'business': return 'What Caused the Partnership to End';
+      case 'creative': return 'What Ended the Collaboration';
+    }
   }
 
   /**
@@ -1434,7 +1446,7 @@ export class RelationshipTransitCalculator {
   /**
    * Identify karmic patterns
    */
-  static identifyKarmicPatterns(synastryAspects: SynastryAspect[]): KarmicAnalysis {
+  static identifyKarmicPatterns(synastryAspects: SynastryAspect[], focus: RelationshipFocus = 'romance'): KarmicAnalysis {
     
     const indicators: string[] = [];
     
@@ -1478,4 +1490,4 @@ export class RelationshipTransitCalculator {
   }
 }
 
-export type { BirthChart, SynastryAspect, RelationshipOverview, AttractionAnalysis, ChallengeAnalysis, BreakupAnalysis };
+export type { SynastryAspect, RelationshipOverview, AttractionAnalysis, ChallengeAnalysis, BreakupAnalysis };
