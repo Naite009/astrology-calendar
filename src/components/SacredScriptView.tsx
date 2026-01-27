@@ -26,6 +26,8 @@ import {
   NatalStellium,
   getGoddessDescription,
   GODDESS_ASTEROIDS,
+  detectPsychicIndicators,
+  PsychicIndicator,
 } from '@/lib/sacredScriptHelpers';
 import { generateCharacterSynthesis, CharacterSynthesis, HOUSE_DEEP_MEANINGS } from '@/lib/characterSynthesis';
 import { getDecan } from '@/lib/decans';
@@ -202,6 +204,7 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
   const characterCards = getCharacterCards(natalChart);
   const patterns = detectChartPatterns(natalChart);
   const stelliums = detectNatalStelliums(natalChart);
+  const psychicIndicators = detectPsychicIndicators(natalChart);
   const lifeLesson = getLifeLesson(natalChart);
   const finalDirective = generateFinalDirective(natalChart, elements);
   
@@ -1131,6 +1134,55 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
             </div>
           )}
           
+          {/* Psychic/Mediumship Indicators - NEW */}
+          {psychicIndicators.length > 0 && (
+            <div className="space-y-3">
+              <h4 className="font-medium text-indigo-700 dark:text-indigo-400 flex items-center gap-2">
+                <Sparkles size={18} className="text-indigo-500" />
+                Psychic & Intuitive Indicators
+              </h4>
+              <p className="text-xs text-muted-foreground italic mb-2">
+                These placements suggest natural intuitive, psychic, or mediumship abilities.
+              </p>
+              <div className="space-y-3">
+                {psychicIndicators.map((indicator, idx) => (
+                  <div 
+                    key={idx} 
+                    className={`p-4 rounded-lg border ${
+                      indicator.strength === 'strong' 
+                        ? 'bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/40 dark:to-purple-950/40 border-indigo-300 dark:border-indigo-700' 
+                        : indicator.strength === 'moderate'
+                        ? 'bg-indigo-50/50 dark:bg-indigo-950/20 border-indigo-200 dark:border-indigo-800'
+                        : 'bg-secondary/30 border-border'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="text-lg font-mono">{indicator.symbol}</span>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-medium text-sm">{indicator.name}</span>
+                          <span className={`text-xs px-1.5 py-0.5 rounded ${
+                            indicator.strength === 'strong' 
+                              ? 'bg-indigo-500 text-white' 
+                              : indicator.strength === 'moderate'
+                              ? 'bg-indigo-200 dark:bg-indigo-800 text-indigo-700 dark:text-indigo-300'
+                              : 'bg-secondary text-muted-foreground'
+                          }`}>
+                            {indicator.strength.toUpperCase()}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-2">{indicator.description}</p>
+                        <div className="bg-background/60 rounded p-2 border-l-2 border-indigo-400">
+                          <p className="text-xs font-medium text-indigo-600 dark:text-indigo-400 mb-1">📋 What to Tell the Client:</p>
+                          <p className="text-sm italic">{indicator.clientDescription}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           {/* Major Patterns */}
           {patterns.length > 0 ? (
             <div className="space-y-3">

@@ -49,6 +49,10 @@ const getPriorityStyles = (priority: AlertPriority): { bg: string; border: strin
 const ProgressedMoonItem = forwardRef<HTMLDivElement, { transit: ProgressedMoonTransit }>(({ transit }, ref) => {
   const styles = getPriorityStyles(transit.priority);
   
+  // Motion indicator
+  const motionIndicator = transit.motion === 'exact' ? '⚡' : transit.motion === 'applying' ? '↗' : '↘';
+  const motionLabel = transit.motion === 'exact' ? 'Exact' : transit.motion === 'applying' ? 'Applying' : 'Separating';
+  
   return (
     <div ref={ref} className={`p-4 rounded-lg border-2 ${styles.bg} ${styles.border}`}>
       <div className="flex items-start gap-3">
@@ -65,11 +69,29 @@ const ProgressedMoonItem = forwardRef<HTMLDivElement, { transit: ProgressedMoonT
                 MAJOR
               </Badge>
             )}
+            {transit.motion === 'exact' && transit.aspectType !== 'position' && (
+              <Badge className="text-xs bg-primary animate-pulse">
+                <Zap size={10} className="mr-1" />
+                EXACT NOW
+              </Badge>
+            )}
           </div>
           
+          {/* Orb and Motion */}
           {transit.aspectType !== 'position' && (
             <p className="text-xs text-muted-foreground mb-2">
-              {transit.orb.toFixed(2)}° orb
+              <span className="font-medium">{transit.orb.toFixed(2)}°</span> orb
+              <span className="ml-2">({motionIndicator} {motionLabel})</span>
+              {transit.monthsUntilExact !== null && transit.monthsUntilExact > 0 && (
+                <span className="ml-2 text-primary font-medium">
+                  → Exact in ~{transit.monthsUntilExact} month{transit.monthsUntilExact !== 1 ? 's' : ''}
+                  {transit.exactDate && (
+                    <span className="text-muted-foreground ml-1">
+                      ({transit.exactDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })})
+                    </span>
+                  )}
+                </span>
+              )}
             </p>
           )}
           
