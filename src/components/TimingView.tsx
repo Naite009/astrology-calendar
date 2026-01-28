@@ -682,9 +682,9 @@ const TodaySection = ({
       <div className="mt-6 p-4 rounded-lg border border-border bg-card/50">
         <h4 className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Current Planet Positions</h4>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-          {transitPositions.slice(0, 8).map((planet) => (
+          {transitPositions.map((planet) => (
             <div key={planet.name} className="flex items-center gap-2">
-              <span className="text-primary">{PLANET_SYMBOLS[planet.name]}</span>
+              <span className="text-primary">{PLANET_SYMBOLS[planet.name] || '?'}</span>
               <span>{planet.name}</span>
               <span className="text-muted-foreground text-xs">{planet.degree}° {planet.sign?.slice(0, 3)}</span>
             </div>
