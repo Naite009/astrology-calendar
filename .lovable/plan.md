@@ -1,275 +1,162 @@
 
-# Plan: Structural Stress & Release Tab
 
-## Overview
-Create a new main navigation tab called "STRUCTURAL STRESS & RELEASE" that provides a trauma-informed, universal interpretation layer for major life transits. This feature explains "why periods felt binding" vs. "why periods enabled exit/rupture/closure" without predicting specific events.
+# Plan: Restructure Structural Stress & Release Tab
 
-## Core Concept
-Transits describe **pressure dynamics**, not destiny:
-- **Saturn** = containment, commitment pressure, responsibility, structures
-- **Pluto** = unsustainable power pressure, control dynamics, irreversible change  
-- **Uranus** = disruption, awakening, break conditions, liberation impulse
-- **Mars** = activation/incident triggers (events, conflicts)
-- **Nodes/Eclipses** = turning points, fated-feeling pivots
+## The Problem
+The current implementation doesn't match the ChatGPT conversation's vision:
+- Creates one giant 10-year timeline with massive clustered windows
+- Windows span many months because transit clustering logic is too aggressive
+- No way to explore specific life events or dates
+- Clicking anywhere opens a generic modal for the whole window
+- Missing the "story-based" approach (Saturn return in 2006 = relationship began, Dec 2020 = breaking point)
+
+## What You Actually Wanted (from the ChatGPT conversation)
+
+### Core Use Case
+- **Look at specific life events** (met husband during Saturn return, violent episode Dec 2020)
+- **See what transits were active** at that moment
+- **Understand the pressure dynamics** - why you entered, why you couldn't leave, what changed
+
+### The Real Flow
+1. Select a date range OR a specific life event
+2. See what Saturn/Pluto/Uranus/Mars/Nodes were doing to your chart during that time
+3. Get the "Containment vs Release vs Stress vs Trigger" breakdown
+4. Understand the pressure narrative without predicting events
 
 ---
 
-## Technical Implementation
+## Proposed Restructure
 
-### 1. Data Models (New File: `src/lib/structuralStressEngine.ts`)
+### 1. Change the Primary Interface
+**Current:** Timeline of auto-generated windows
+**New:** Two modes of exploration
 
-**transit_event interface**
-```typescript
-interface TransitEvent {
-  id: string;
-  start_date: Date;
-  end_date: Date;
-  exact_dates: Date[];
-  transiting_planet: 'Saturn' | 'Pluto' | 'Uranus' | 'Mars' | 'NorthNode' | 'SouthNode';
-  aspect_type: 'conjunction' | 'square' | 'opposition' | 'trine' | 'sextile';
-  natal_target: string; // planet or angle name
-  orb_max_used: number;
-  house_activated: { transit: number; natal: number };
-  axis_activated: string; // e.g., "10th↔4th"
-}
-```
+#### Mode A: Key Life Moments (Event Explorer)
+- User enters a date or selects a milestone (Saturn return, Saturn square, Uranus opposition, etc.)
+- App shows all transits active within +/- 6 weeks of that date
+- Displays the phase scores and narrative for that specific window
 
-**chart_signature interface**
-```typescript
-interface ChartSignature {
-  saturn_sign: string;
-  saturn_house: number;
-  saturn_dispositor: { planet: string; sign: string; house: number };
-  top_saturn_aspects: NatalAspect[];
-  libra_stellium_flag: boolean;
-  relationship_sensitivity_flag: boolean;
-  authority_axis_flag: boolean;
-}
-```
+#### Mode B: Major Transits Timeline
+- Show discrete, focused transit periods (not giant clusters)
+- Each card = ONE major transit (e.g., "Saturn conjunct Sun, Mar-Sep 2006")
+- Clicking shows the interpretation for that specific transit
+- Windows are 2-10 weeks around exact dates, not months of clustered events
 
-**structural_window interface**
-```typescript
-interface StructuralWindow {
-  window_id: string;
-  date_range: { start: Date; end: Date };
-  events: TransitEvent[];
-  phase_scores: {
-    containment_score: number;  // Saturn-dominant
-    stress_score: number;       // Pluto-dominant
-    release_score: number;      // Uranus-dominant
-    trigger_score: number;      // Mars/Eclipse activation
-  };
-  phase_label: 'Containment' | 'Structural Stress' | 'Release' | 'Activation' | 'Mixed';
-  theme_badges: string[];
-  axis_badge: string;
-  user_context_tags: string[];
-  meaning_dial_mode: 'Insight' | 'Practical' | 'Emotional Support' | 'Shadow Work';
-  output_copy: GeneratedCopy;
-  action_steps: string[];
-}
-```
+### 2. Add Life Event Input (as discussed in ChatGPT)
+Allow users to tag dates with context:
+- "Relationship began"
+- "Relationship ended"
+- "Marriage/commitment"
+- "Breakup/divorce"
+- "Parent death / grief"
+- "Job change"
+- "Move / housing"
+- "Health event"
+- "Identity shift"
+- "Safety boundary"
+- "Other"
 
-**cycle_summary interface**
-```typescript
-interface CycleSummary {
-  cycle_type: 'saturn_return' | 'saturn_opposition' | 'uranus_opposition' | 'pluto_square';
-  story_summary: string;
-  lessons: string[];
-  next_steps: string[];
-}
-```
+When tagged, the interpretation adjusts to speak to that context.
 
-### 2. Interpretation Engine (New File: `src/lib/structuralStressEngine.ts`)
+### 3. Fix Window Generation Logic
+**Current:** Clusters all events within 14 days of each other into giant windows
+**New:**
+- Create separate windows for each major outer planet transit
+- Only cluster if multiple planets hit the SAME natal point within 4 weeks
+- Result: Many small, focused windows instead of few massive ones
 
-**Phase Score Calculation:**
-- Containment score increases with: Saturn hard aspects to personal planets/angles, Saturn sign/house changes, Saturn transits to 4th/10th or 1st/7th axis
-- Stress score increases with: Pluto hard aspects to personal planets, Pluto-Saturn clustering, 2nd/8th axis activation
-- Release score increases with: Uranus hard aspects to personal planets, Uranus opposition/squares to 1st/7th or 4th/10th axis
-- Trigger score increases with: Mars aspects to Saturn/Pluto/Uranus, Node/Eclipse activation within +/- 7 days
+### 4. Add "Explore a Date" Feature
+- Date picker to enter a specific date (e.g., "Dec 20, 2020")
+- Shows all transits active on that exact date
+- Calculates orbs and shows applying/separating status
+- Generates the phase narrative for that moment
 
-**Axis Interpreter:**
-- 10th↔4th: Public role vs Private foundation/safety
-- 7th↔1st: Partnership vs Self-definition
-- 2nd↔8th: Self-worth/resources vs Shared power/intimacy
-- 6th↔12th: Health/service vs Rest/psyche
-- 9th↔3rd: Beliefs/meaning vs Daily mind/skills
-- 11th↔5th: Community goals vs Personal joy/creativity
+### 5. Integrate with Saturn Cycle Milestones
+Reference the Saturn returns, squares, and oppositions from Life Cycles Hub as anchor points the user can click to explore.
 
-**Saturn Lens Cards (universal):**
-- "Saturn in [SIGN] asks..." (sign meaning prompt)
-- "Saturn in the [HOUSE] asks..." (domain prompt)
-- "Saturn reports to [DISPOSITOR], so..." (how lesson travels)
+---
 
-**Copy Template System:**
-Each window generates:
-1. Structural Phase Summary (3-5 sentences)
-2. Chart-Specific Explanation (bulleted)
-3. Likely Manifestations (3-6 neutral examples)
-4. Actions (2-4 concrete steps)
-5. Meaning Dial Variants (tone adjustments)
+## Technical Changes
 
-### 3. UI Components
-
-**New Component: `src/components/StructuralStressView.tsx`**
-
-Structure:
+### File: `src/lib/structuralStressEngine.ts`
 ```text
-StructuralStressView
-├── IntroSection (explanatory paragraph)
-├── MeaningDial (mode selector)
-├── ContextTagsPanel (optional enrichment dropdown)
-├── TimelineView (scrollable window cards)
-│   └── WindowCard (for each structural_window)
-│       ├── DateRange + PhaseLabel
-│       ├── AxisBadge + ThemeBadges
-│       └── PhaseMeterBars (containment/stress/release/trigger)
-└── WindowDetailModal (3-layer output)
-    ├── Layer A: Universal Archetype
-    ├── Layer B: Chart-Specific Houses/Aspects
-    └── Layer C: Actions + Reflection Prompts
+Changes:
+1. Add getTransitsForDate(chart, date) - returns all active transits for a specific date
+2. Change clusterEventsIntoWindows() - create individual transit windows, only cluster same-target events
+3. Add generateEventWindow(chart, date, contextTag?) - creates a focused window for a specific moment
+4. Reduce default cluster threshold from 14 days to 4 weeks max per transit
 ```
 
-**Supporting Components:**
-- `src/components/structural/WindowCard.tsx` - Timeline card display
-- `src/components/structural/WindowDetailModal.tsx` - Detailed 3-layer view
-- `src/components/structural/SaturnLensCards.tsx` - Universal Saturn interpretation
-- `src/components/structural/MeaningDial.tsx` - Tone selector
-- `src/components/structural/ContextTagsPanel.tsx` - Optional enrichment tags
-- `src/components/structural/CycleSummaryCard.tsx` - End-of-cycle synthesis
-
-### 4. Copy Templates (New File: `src/lib/structuralStressCopy.ts`)
-
-**Saturn Sign Templates:**
-```typescript
-const SATURN_IN_SIGN: Record<string, { asks: string; quality: string; need: string }> = {
-  Aries: { 
-    asks: "Where are you seeking courage from others instead of building it in yourself?",
-    quality: "self-reliance",
-    need: "independence"
-  },
-  Libra: {
-    asks: "Where have you been confusing obligation with love?",
-    quality: "fairness",
-    need: "balance"
-  },
-  // ... all 12 signs
-};
-```
-
-**Saturn House Templates:**
-```typescript
-const SATURN_IN_HOUSE: Record<number, { asks: string; domain: string }> = {
-  7: {
-    asks: "What structures are you building in partnerships—and which ones are you maintaining out of obligation?",
-    domain: "relationships and commitments"
-  },
-  // ... all 12 houses
-};
-```
-
-**Phase Copy Templates:**
-- Containment: "Saturn is emphasizing structure, duty, and long-term consequences..."
-- Stress: "Pluto increases intensity and raises the cost of avoidance..."
-- Release: "Uranus agitates what's stuck. You may feel restless, awakened..."
-- Activation: "Mars and eclipse triggers tend to externalize what's been building internally..."
-
-**Axis Headline Templates:**
-```typescript
-const AXIS_HEADLINES: Record<string, { tension: string; question: string }> = {
-  "10th↔4th": {
-    tension: "Public role vs Private foundation",
-    question: "How do I balance career demands without sacrificing home safety?"
-  },
-  // ... all 6 axes
-};
-```
-
-**Safety Guardrail Copy:**
-If user selects "safety boundary" tag:
-> "If you feel unsafe, prioritize real-world support and safety planning."
-
-### 5. Integration Points
-
-**A. Navigation (AstroCalendar.tsx)**
-Add new ViewMode: `"structural"` 
-Add new tab button between "Timeline" and "Health":
-```tsx
-<button onClick={() => setViewMode("structural")}>
-  <Layers size={14} />
-  Structural
-</button>
-```
-
-**B. Saturn Cycle Integration**
-Reference existing `calculateDetailedSaturnCycles()` from `saturnCycleCalculator.ts` as "cycle anchors"
-Generate `cycle_summary` at the end of Saturn return/opposition windows
-
-**C. Transit Detection**
-Leverage existing `calculateTransitAlerts()` from `transitAlerts.ts`
-Extend to scan for Pluto, Uranus, and Mars with clustering detection
-
-### 6. Window Generation Algorithm
-
+### File: `src/components/StructuralStressView.tsx`
 ```text
-1. Scan user's birth date + 5 years backward and 5 years forward
-2. Find all Saturn, Pluto, Uranus, Mars, Node transits to personal points
-3. Cluster events within 2-10 week windows
-4. Calculate phase scores for each window
-5. Assign phase_label based on dominant score
-6. Generate axis_badge from primary house activation
-7. Generate theme_badges from house meanings
-8. Generate output_copy using templates + meaning_dial_mode
-9. Store as structural_window objects
+Changes:
+1. Add date picker component for "Explore a Date"
+2. Add major milestones section (Saturn return dates, Uranus opposition, etc.)
+3. Change timeline to show individual transits, not clusters
+4. Add life event tagging dropdown when exploring a date
+5. Remove the "click anywhere opens giant modal" behavior - each transit card is its own focused item
+```
+
+### File: `src/components/structural/WindowCard.tsx`
+```text
+Changes:
+1. Show single transit information (not cluster of 10)
+2. Display exact dates more prominently
+3. Show orb and applying/separating status
+```
+
+### File: `src/components/structural/WindowDetailModal.tsx`
+```text
+Changes:
+1. Show focused interpretation for ONE transit or one tight cluster
+2. Include the life event context if user provided it
+3. Add "story" framing: "During this [Saturn return], structures were forming..."
+```
+
+### New Component: `src/components/structural/DateExplorer.tsx`
+```text
+- Date picker input
+- "What was happening on this date?" button
+- Shows all active transits for that date
+- Phase score breakdown
+- Narrative interpretation
+```
+
+### New Component: `src/components/structural/LifeMilestones.tsx`
+```text
+- Shows calculated Saturn return, squares, oppositions
+- Shows Uranus opposition (if reached)
+- Each is clickable to explore that transit window
 ```
 
 ---
 
-## File Structure Summary
+## Example User Flow (What You Described)
 
-**New Files:**
-- `src/lib/structuralStressEngine.ts` - Core calculation logic + interfaces
-- `src/lib/structuralStressCopy.ts` - All copy templates
-- `src/components/StructuralStressView.tsx` - Main view component
-- `src/components/structural/WindowCard.tsx` - Timeline card
-- `src/components/structural/WindowDetailModal.tsx` - Detail view
-- `src/components/structural/SaturnLensCards.tsx` - Saturn interpretation cards
-- `src/components/structural/MeaningDial.tsx` - Tone selector
-- `src/components/structural/ContextTagsPanel.tsx` - Optional tags
-- `src/components/structural/CycleSummaryCard.tsx` - Cycle synthesis
+### Use Case 1: "I met my husband in April 2006"
+1. Open Structural Stress tab
+2. Click "Explore a Date" and enter April 2006
+3. See: "Saturn conjunct natal Saturn (Saturn Return) - exact Aug 2006, applying in April"
+4. See phase: "Containment" - high commitment pressure
+5. See narrative: "Saturn returns create commitment pressure. Structures feel serious and binding..."
+6. Optionally tag: "Relationship began"
+7. Get contextualized interpretation about Saturn relationship patterns
 
-**Modified Files:**
-- `src/components/AstroCalendar.tsx` - Add new tab + ViewMode
-
----
-
-## Language Guidelines (Trauma-Informed)
-
-**Use:**
-- "pressure," "intensity," "containment," "break conditions"
-- "cost," "boundary," "authority," "agency," "support"
-- "structure," "restructuring," "integration"
-
-**Avoid:**
-- "destiny," "meant to be," "soulmate," "required suffering"
-- "you attracted," "you manifested"
-- Any language implying obligation to endure harm
+### Use Case 2: "December 2020 something broke"
+1. Click "Explore a Date" and enter Dec 20, 2020
+2. See: "Uranus opposite natal Uranus (Uranus Opposition) - exact Dec 2020"
+3. See: "Pluto square natal Libra placements"
+4. See phase: "Release + Stress" - break conditions active
+5. Narrative: "When containment meets unsustainable pressure, structures reach breaking points..."
 
 ---
 
-## Test Scenario (Dec 2020 Example)
+## Summary of Deliverables
 
-Given: Uranus opposition + Pluto in Capricorn squaring Libra placements
+1. **Date Explorer** - Enter any date, see active transits
+2. **Life Event Tags** - Optionally enrich interpretation
+3. **Individual Transit Windows** - Not giant clusters
+4. **Milestone Integration** - Saturn return, Uranus opposition as clickable anchors
+5. **Focused Modals** - Show one transit's story, not 10 years of data
+6. **Story-Based Copy** - "During your Saturn return..." not just phase scores
 
-Expected Output:
-- High `release_score` (Uranus opposition)
-- High `stress_score` (Pluto square personal planets)
-- If Mars/Eclipse trigger nearby: elevated `trigger_score`
-- Narrative about "containment vs break conditions" without predicting harm
-- Axis badge: "7th↔1st" (Partnership vs Self-definition)
-- Theme badges: ["relationship", "authority", "identity"]
-
----
-
-## Intro Copy for Tab
-
-> "This view explains pressure cycles—when life is in 'hold it together' mode vs 'something must change' mode. It doesn't predict specific events. It helps you understand what themes are active and what choices support you."
