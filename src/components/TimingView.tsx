@@ -383,12 +383,15 @@ const RightNowSection = ({
         </div>
       )}
 
-      {/* Personal Transits to Natal Chart */}
+      {/* Personal Transits to Natal Chart - TODAY'S TRANSITS */}
       {activeChart && personalTransits.length > 0 && (
         <div className="mt-6 p-4 rounded-lg border-2 border-primary/30 bg-primary/5">
           <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
             <Star size={16} className="text-primary" />
-            Current Transits to {activeChart.name}'s Chart
+            Today's Transits to {activeChart.name}'s Chart
+            <span className="text-xs text-muted-foreground font-normal ml-2">
+              ({currentTime.toLocaleDateString()})
+            </span>
           </h4>
           <div className="grid gap-2">
             {personalTransits.slice(0, 6).map((transit, i) => (
