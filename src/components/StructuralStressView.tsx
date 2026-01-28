@@ -1,20 +1,20 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Layers, Info } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   generateStructuralAnalysis, 
-  StructuralWindow, 
-  MeaningDialMode,
-  generateWindowCopy,
-  extractChartSignature
+  extractChartSignature,
+  FocusedTransitWindow,
+  exploreDateWithContext,
+  DateExplorerResult
 } from '@/lib/structuralStressEngine';
-import { CONTEXT_TAG_LABELS, SAFETY_COPY } from '@/lib/structuralStressCopy';
-import { WindowCard } from './structural/WindowCard';
-import { WindowDetailModal } from './structural/WindowDetailModal';
+import { SAFETY_COPY } from '@/lib/structuralStressCopy';
 import { SaturnLensCards } from './structural/SaturnLensCards';
-import { MeaningDial } from './structural/MeaningDial';
-import { ContextTagsPanel } from './structural/ContextTagsPanel';
+import { DateExplorer } from './structural/DateExplorer';
+import { LifeMilestones } from './structural/LifeMilestones';
+import { FocusedTransitCard } from './structural/FocusedTransitCard';
 
 interface StructuralStressViewProps {
   userChart: NatalChart | null;
@@ -23,10 +23,10 @@ interface StructuralStressViewProps {
 
 export const StructuralStressView = ({ userChart, savedCharts }: StructuralStressViewProps) => {
   const [selectedChart, setSelectedChart] = useState<NatalChart | null>(userChart);
-  const [meaningMode, setMeaningMode] = useState<MeaningDialMode>('Insight');
-  const [selectedWindow, setSelectedWindow] = useState<StructuralWindow | null>(null);
-  const [contextTags, setContextTags] = useState<string[]>([]);
   const [showSaturnCards, setShowSaturnCards] = useState(true);
+  const [activeTab, setActiveTab] = useState<string>('explore');
+  const [exploredDate, setExploredDate] = useState<Date | null>(null);
+  const [exploredResult, setExploredResult] = useState<DateExplorerResult | null>(null);
 
   const allCharts = useMemo(() => {
     const charts: NatalChart[] = [];
@@ -37,26 +37,35 @@ export const StructuralStressView = ({ userChart, savedCharts }: StructuralStres
 
   const analysis = useMemo(() => {
     if (!selectedChart) return null;
-    return generateStructuralAnalysis(selectedChart);
+    return generateStructuralAnalysis(selectedChart, 5, 5);
   }, [selectedChart]);
 
-  const windowsWithMode = useMemo(() => {
-    if (!analysis || !selectedChart) return [];
+  // Separate focused windows by status
+  const { currentTransits, upcomingTransits, pastTransits } = useMemo(() => {
+    if (!analysis) return { currentTransits: [], upcomingTransits: [], pastTransits: [] };
     
-    const signature = extractChartSignature(selectedChart);
-    return analysis.windows.map(window => {
-      const updatedWindow = { ...window, meaning_dial_mode: meaningMode };
-      updatedWindow.output_copy = generateWindowCopy(updatedWindow, signature, meaningMode);
-      updatedWindow.user_context_tags = contextTags;
-      return updatedWindow;
-    });
-  }, [analysis, selectedChart, meaningMode, contextTags]);
+    const current = analysis.focusedWindows.filter(w => w.isCurrent);
+    const upcoming = analysis.focusedWindows.filter(w => w.isUpcoming).slice(0, 5);
+    const past = analysis.focusedWindows.filter(w => w.isPast).slice(-10).reverse();
+    
+    return { currentTransits: current, upcomingTransits: upcoming, pastTransits: past };
+  }, [analysis]);
 
-  const handleWindowClick = (window: StructuralWindow) => {
-    setSelectedWindow(window);
-  };
+  const handleMilestoneClick = useCallback((date: Date) => {
+    if (!selectedChart) return;
+    setExploredDate(date);
+    const result = exploreDateWithContext(selectedChart, date);
+    setExploredResult(result);
+    setActiveTab('explore');
+  }, [selectedChart]);
 
-  const hasSafetyTag = contextTags.includes('safety');
+  const handleTransitClick = useCallback((date: Date) => {
+    if (!selectedChart) return;
+    setExploredDate(date);
+    const result = exploreDateWithContext(selectedChart, date);
+    setExploredResult(result);
+    setActiveTab('explore');
+  }, [selectedChart]);
 
   if (allCharts.length === 0) {
     return (
@@ -76,15 +85,22 @@ export const StructuralStressView = ({ userChart, savedCharts }: StructuralStres
 
   return (
     <div className="space-y-6">
-      {/* Intro Section */}
+      {/* How to Use Section */}
       <Card className="bg-secondary/30 border-none">
         <CardContent className="py-6">
           <div className="flex items-start gap-3">
             <Info className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-            <p className="text-sm text-foreground/80 leading-relaxed">
-              This view explains pressure cycles—when life is in "hold it together" mode vs "something must change" mode. 
-              It doesn't predict specific events. It helps you understand what themes are active and what choices support you.
-            </p>
+            <div className="space-y-2">
+              <p className="text-sm text-foreground/80 leading-relaxed">
+                <strong>How to use this:</strong> Enter a specific date when something happened in your life 
+                (relationship started, job ended, move, crisis) to see what transits were active and understand 
+                the pressure dynamics at that moment.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Saturn = Containment (commitment pressure) • Pluto = Stress (power dynamics, transformation pressure) • 
+                Uranus = Release (awakening, break conditions) • Mars = Trigger (action, events)
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -97,6 +113,7 @@ export const StructuralStressView = ({ userChart, savedCharts }: StructuralStres
           onChange={(e) => {
             const chart = allCharts.find(c => c.id === e.target.value);
             setSelectedChart(chart || null);
+            setExploredResult(null);
           }}
           className="border border-border bg-background px-3 py-2 text-sm rounded-sm focus:border-primary focus:outline-none min-w-[200px]"
         >
@@ -108,81 +125,119 @@ export const StructuralStressView = ({ userChart, savedCharts }: StructuralStres
 
       {selectedChart && analysis && (
         <>
-          {/* Meaning Dial */}
-          <MeaningDial 
-            mode={meaningMode} 
-            onModeChange={setMeaningMode} 
-          />
+          {/* Main Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-flex">
+              <TabsTrigger value="explore">Explore Date</TabsTrigger>
+              <TabsTrigger value="transits">Transit Timeline</TabsTrigger>
+              <TabsTrigger value="saturn">Saturn Lens</TabsTrigger>
+            </TabsList>
 
-          {/* Context Tags (Optional) */}
-          <ContextTagsPanel
-            selectedTags={contextTags}
-            onTagsChange={setContextTags}
-            tagLabels={CONTEXT_TAG_LABELS}
-          />
+            {/* Date Explorer Tab */}
+            <TabsContent value="explore" className="space-y-6">
+              <DateExplorer chart={selectedChart} />
+              
+              {/* Life Milestones - clickable shortcuts */}
+              <LifeMilestones 
+                chart={selectedChart} 
+                onMilestoneClick={handleMilestoneClick}
+              />
+            </TabsContent>
 
-          {/* Safety Notice */}
-          {hasSafetyTag && (
-            <Card className="border-destructive/50 bg-destructive/5">
-              <CardContent className="py-4">
-                <p className="text-sm text-destructive">
-                  {SAFETY_COPY}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Saturn Lens Cards */}
-          <div className="space-y-3">
-            <button
-              onClick={() => setShowSaturnCards(!showSaturnCards)}
-              className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2"
-            >
-              <span className={`transform transition-transform ${showSaturnCards ? 'rotate-90' : ''}`}>▶</span>
-              Saturn Lens Cards
-            </button>
-            {showSaturnCards && (
-              <SaturnLensCards cards={analysis.saturnCards} />
-            )}
-          </div>
-
-          {/* Timeline View */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-serif text-xl flex items-center gap-2">
-                <Layers className="h-5 w-5" />
-                Structural Windows Timeline
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {windowsWithMode.length === 0 ? (
-                <p className="text-muted-foreground text-sm text-center py-8">
-                  No significant structural transits detected in the 10-year scan window.
-                </p>
-              ) : (
-                <div className="space-y-4">
-                  {windowsWithMode.map(window => (
-                    <WindowCard
-                      key={window.window_id}
-                      window={window}
-                      onClick={() => handleWindowClick(window)}
-                    />
-                  ))}
-                </div>
+            {/* Transit Timeline Tab */}
+            <TabsContent value="transits" className="space-y-6">
+              {/* Current Transits */}
+              {currentTransits.length > 0 && (
+                <Card className="border-amber-500/30">
+                  <CardHeader>
+                    <CardTitle className="font-serif text-lg flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                      Active Now
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {currentTransits.map(transit => (
+                      <FocusedTransitCard 
+                        key={transit.id} 
+                        transit={transit}
+                        onClick={handleTransitClick}
+                      />
+                    ))}
+                  </CardContent>
+                </Card>
               )}
-            </CardContent>
-          </Card>
-        </>
-      )}
 
-      {/* Detail Modal */}
-      {selectedWindow && selectedChart && (
-        <WindowDetailModal
-          window={selectedWindow}
-          chartSignature={extractChartSignature(selectedChart)}
-          onClose={() => setSelectedWindow(null)}
-          hasSafetyTag={hasSafetyTag}
-        />
+              {/* Upcoming Transits */}
+              {upcomingTransits.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="font-serif text-lg">Upcoming</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {upcomingTransits.map(transit => (
+                      <FocusedTransitCard 
+                        key={transit.id} 
+                        transit={transit}
+                        onClick={handleTransitClick}
+                      />
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Recent Past Transits */}
+              {pastTransits.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="font-serif text-lg">Recent Past</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {pastTransits.map(transit => (
+                      <FocusedTransitCard 
+                        key={transit.id} 
+                        transit={transit}
+                        onClick={handleTransitClick}
+                      />
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+
+              {currentTransits.length === 0 && upcomingTransits.length === 0 && pastTransits.length === 0 && (
+                <Card>
+                  <CardContent className="py-8 text-center text-muted-foreground">
+                    No major structural transits detected in the scan window.
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            {/* Saturn Lens Tab */}
+            <TabsContent value="saturn" className="space-y-6">
+              <div className="space-y-3">
+                <button
+                  onClick={() => setShowSaturnCards(!showSaturnCards)}
+                  className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2"
+                >
+                  <span className={`transform transition-transform ${showSaturnCards ? 'rotate-90' : ''}`}>▶</span>
+                  Saturn Lens Cards - Your Saturn placement shapes how you experience all structural transits
+                </button>
+                {showSaturnCards && (
+                  <SaturnLensCards cards={analysis.saturnCards} />
+                )}
+              </div>
+
+              {/* Safety Notice */}
+              <Card className="border-amber-500/30 bg-amber-500/5">
+                <CardContent className="py-4">
+                  <p className="text-sm text-amber-700 dark:text-amber-400">
+                    {SAFETY_COPY}
+                  </p>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </>
       )}
     </div>
   );
