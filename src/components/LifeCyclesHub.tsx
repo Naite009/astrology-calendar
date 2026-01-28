@@ -8,6 +8,7 @@ import { Clock, ChevronDown, ChevronUp, Target, Zap, Calendar, AlertCircle, Star
 import { NatalChart } from '@/hooks/useNatalChart';
 import { calculateDetailedSaturnCycles, DetailedSaturnCycles, formatDegreePosition } from '@/lib/saturnCycleCalculator';
 import { SaturnReturnCalculator } from './SaturnReturnCalculator';
+import { calculateSect } from '@/lib/birthConditions';
 import * as Astronomy from 'astronomy-engine';
 import { format, differenceInDays, differenceInMonths, addYears } from 'date-fns';
 
@@ -347,22 +348,9 @@ function calculateOuterPlanetTransits(chart: NatalChart, currentDate: Date): Out
 
 // Chart Lord Activation Component
 const ChartLordActivation: React.FC<{ chart: NatalChart; currentDate: Date }> = ({ chart, currentDate }) => {
-  // Determine if day or night chart
-  const sunHouse = useMemo(() => {
-    const sun = chart.planets.Sun;
-    if (!sun || !chart.houseCusps) return 1;
-    // Simplified - check if Sun is above or below horizon
-    return 1; // Would need full house calculation
-  }, [chart]);
-  
-  // For now, use birth time to determine sect
-  const isNightChart = useMemo(() => {
-    if (!chart.birthTime) return false;
-    const [hours] = chart.birthTime.split(':').map(Number);
-    // Rough estimate: if born before 6am or after 6pm, likely night chart
-    // This is simplified - real calculation uses Sun's position relative to horizon
-    return hours < 6 || hours >= 18;
-  }, [chart.birthTime]);
+  // Use proper sect calculation from birthConditions.ts
+  const sectData = useMemo(() => calculateSect(chart), [chart]);
+  const isNightChart = sectData.sect === 'Night';
   
   const sectLight = isNightChart ? 'Moon' : 'Sun';
   const sectLightSymbol = isNightChart ? '☽' : '☉';
