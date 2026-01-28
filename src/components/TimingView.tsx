@@ -18,10 +18,7 @@ import { BiorhythmCard } from '@/components/BiorhythmCard';
 import { BiorhythmForecast } from '@/components/BiorhythmForecast';
 import { LifeCyclesHub } from '@/components/LifeCyclesHub';
 import { DailySynthesisCard } from '@/components/DailySynthesisCard';
-import { BestRomanceDaysCard } from '@/components/BestRomanceDaysCard';
-import { SynastryAnalysisCard } from '@/components/SynastryAnalysisCard';
 import { TransitAlertsCard } from '@/components/TransitAlertsCard';
-import { CompositeChartCard } from '@/components/CompositeChartCard';
 import { BestDaysSummaryCard } from '@/components/BestDaysSummaryCard';
 import { MoonTransitCalendar } from '@/components/MoonTransitCalendar';
 interface TimingViewProps {
@@ -364,28 +361,6 @@ const RightNowSection = ({
         />
       </div>
 
-      {/* Best Romance Days Card */}
-      <div className="mt-6">
-        <BestRomanceDaysCard 
-          birthDate={activeChart ? new Date(activeChart.birthDate) : null}
-          partnerBirthDate={savedCharts.length > 0 && savedCharts[0].id !== activeChart?.id ? new Date(savedCharts[0].birthDate) : null}
-        />
-      </div>
-
-      {/* Synastry Analysis - always show with chart selector */}
-      {activeChart && (
-        <div className="mt-6">
-          <SynastryAnalysisCard 
-            chart1={activeChart}
-            chart2={savedCharts.find(c => c.id !== activeChart?.id) || null}
-            availableCharts={[
-              ...(userNatalChart ? [userNatalChart] : []),
-              ...savedCharts.filter(c => c.id !== userNatalChart?.id)
-            ]}
-          />
-        </div>
-      )}
-
       {/* Transit Alerts Card */}
       <div className="mt-6">
         <TransitAlertsCard natalChart={activeChart} />
@@ -401,13 +376,10 @@ const RightNowSection = ({
         <MoonTransitCalendar natalChart={activeChart} />
       </div>
 
-      {/* Composite Chart */}
-      {savedCharts.length >= 1 && activeChart && (
+      {/* Life Cycles Hub - Saturn Returns, Midlife Transits, Elder Initiations */}
+      {activeChart && (
         <div className="mt-6">
-          <CompositeChartCard 
-            chart1={activeChart}
-            chart2={savedCharts.find(c => c.id !== activeChart?.id) || null}
-          />
+          <LifeCyclesHub chart={activeChart} currentDate={currentTime} />
         </div>
       )}
 
@@ -420,8 +392,8 @@ const RightNowSection = ({
           </h4>
           <div className="grid gap-2">
             {personalTransits.slice(0, 6).map((transit, i) => (
-              <div key={i} className={`flex items-center gap-3 p-2 rounded ${transit.isHarmonious ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'}`}>
-                <span className={`text-lg ${transit.isHarmonious ? 'text-green-600' : 'text-red-600'}`}>
+              <div key={i} className={`flex items-center gap-3 p-2 rounded ${transit.isHarmonious ? 'bg-accent/50' : 'bg-destructive/10'}`}>
+                <span className={`text-lg ${transit.isHarmonious ? 'text-accent-foreground' : 'text-destructive'}`}>
                   {transit.isHarmonious ? '✨' : '⚡'}
                 </span>
                 <div className="flex-1">
@@ -1206,13 +1178,6 @@ const PlanAheadSection = ({
           </div>
         )}
       </div>
-      
-      {/* Life Cycles Hub - Saturn Returns, Midlife Transits, Elder Initiations */}
-      {activeChart && (
-        <div className="mt-8">
-          <LifeCyclesHub chart={activeChart} currentDate={new Date()} />
-        </div>
-      )}
     </div>
   );
 };
