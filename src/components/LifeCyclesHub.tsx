@@ -9,6 +9,7 @@ import { NatalChart } from '@/hooks/useNatalChart';
 import { calculateDetailedSaturnCycles, DetailedSaturnCycles, formatDegreePosition } from '@/lib/saturnCycleCalculator';
 import { SaturnReturnCalculator } from './SaturnReturnCalculator';
 import { calculateSect } from '@/lib/birthConditions';
+import { calculateSecondaryProgressions, getProgressedMoonInfo } from '@/lib/secondaryProgressions';
 import * as Astronomy from 'astronomy-engine';
 import { format, differenceInDays, differenceInMonths, addYears } from 'date-fns';
 
@@ -22,7 +23,7 @@ const PLANET_SYMBOLS: Record<string, string> = {
   Sun: '☉', Moon: '☽', Jupiter: '♃'
 };
 
-// Chiron wound interpretations by sign
+// Chiron wound interpretations by sign (GENERATIONAL - everyone born within ~8 years shares this)
 const CHIRON_WOUND_BY_SIGN: Record<string, {
   wound: string;
   gift: string;
@@ -90,6 +91,74 @@ const CHIRON_WOUND_BY_SIGN: Record<string, {
   }
 };
 
+// Chiron HOUSE interpretations (PERSONAL - this is what makes it unique to YOU)
+const CHIRON_WOUND_BY_HOUSE: Record<number, {
+  lifeArea: string;
+  personalWound: string;
+  personalGift: string;
+}> = {
+  1: {
+    lifeArea: "Self-Image & Identity",
+    personalWound: "Your wound manifests in how you see yourself and present to the world. You may struggle with self-doubt, feeling 'wrong' in your own skin, or difficulty asserting your authentic self.",
+    personalGift: "You become a model of authentic self-acceptance, helping others embrace who they really are."
+  },
+  2: {
+    lifeArea: "Self-Worth & Resources",
+    personalWound: "Your wound manifests through money, possessions, and self-worth. You may struggle to feel valuable, have complicated relationships with earning, or question what you deserve.",
+    personalGift: "You become a guide for others to discover their inherent worth beyond material measures."
+  },
+  3: {
+    lifeArea: "Communication & Learning",
+    personalWound: "Your wound manifests in how you think, speak, and learn. Early communication difficulties, sibling dynamics, or feeling 'stupid' may have shaped you. You might fear speaking up.",
+    personalGift: "You become a powerful communicator, teacher, or writer precisely because you know what it's like to struggle to be heard."
+  },
+  4: {
+    lifeArea: "Home & Family",
+    personalWound: "Your wound is deeply rooted in family, childhood, and home. You may have felt unsafe growing up, dealt with family dysfunction, or never felt like you belonged at 'home.'",
+    personalGift: "You become someone who creates true emotional safety for others, building the nurturing environment you needed."
+  },
+  5: {
+    lifeArea: "Creativity & Self-Expression",
+    personalWound: "Your wound manifests in creativity, romance, and joy. You may have been shamed for self-expression, had your creative spark diminished, or struggle to 'play.'",
+    personalGift: "You become a creative healer who helps others reclaim their joy and authentic self-expression."
+  },
+  6: {
+    lifeArea: "Health & Daily Work",
+    personalWound: "Your wound manifests through health, work routines, and service. You may struggle with chronic health issues, perfectionism at work, or feeling never 'good enough' at what you do.",
+    personalGift: "You become a healer, mentor, or guide who helps others integrate wellness and meaningful work."
+  },
+  7: {
+    lifeArea: "Relationships & Partnership",
+    personalWound: "Your wound manifests in one-on-one relationships. You may attract wounded partners, give too much, fear abandonment, or struggle to maintain healthy boundaries in love.",
+    personalGift: "You become a relationship healer who helps others navigate the depths of intimate connection."
+  },
+  8: {
+    lifeArea: "Intimacy & Transformation",
+    personalWound: "Your wound lives in the deepest, most intimate places — sexuality, shared resources, trust, death, and psychological depth. Betrayal or violation may have marked you.",
+    personalGift: "You become a guide through the underworld, helping others transform their deepest pain into power."
+  },
+  9: {
+    lifeArea: "Beliefs & Higher Meaning",
+    personalWound: "Your wound manifests through beliefs, faith, and the search for meaning. You may have had beliefs shattered, felt culturally displaced, or struggled to find your life's purpose.",
+    personalGift: "You become a wisdom teacher who helps others find meaning precisely because you know the pain of meaninglessness."
+  },
+  10: {
+    lifeArea: "Career & Public Role",
+    personalWound: "Your wound manifests in career, reputation, and public life. You may struggle with authority figures, imposter syndrome, or feel your achievements are never enough.",
+    personalGift: "You become a compassionate leader who guides others to authentic success, not success at the cost of soul."
+  },
+  11: {
+    lifeArea: "Community & Belonging",
+    personalWound: "Your wound manifests in groups, friendships, and feeling like you belong to humanity. You may feel like an outsider, rejected by groups, or unable to find 'your people.'",
+    personalGift: "You become a community builder who creates spaces where everyone — especially outsiders — belongs."
+  },
+  12: {
+    lifeArea: "Spirituality & The Unconscious",
+    personalWound: "Your wound lives in the hidden realm — dreams, spirituality, the unconscious, and what's unspoken. You may feel spiritually abandoned, absorb others' pain, or struggle with escapism.",
+    personalGift: "You become a spiritual guide, artist, or healer who connects others to the transcendent and helps them heal invisible wounds."
+  }
+};
+
 interface OuterPlanetTransit {
   planet: string;
   aspectType: 'square' | 'opposition' | 'return' | 'conjunction';
@@ -106,10 +175,16 @@ interface OuterPlanetTransit {
   natalSign?: string;
   natalDegree?: string;
   targetDegree?: string;
+  natalHouse?: number | null;
   woundData?: {
     wound: string;
     gift: string;
     healingPath: string;
+  };
+  houseWoundData?: {
+    lifeArea: string;
+    personalWound: string;
+    personalGift: string;
   };
 }
 
@@ -149,6 +224,55 @@ function getNatalPlanetLongitude(chart: NatalChart, planetName: string): number 
   if (signIndex === -1) return null;
   
   return signIndex * 30 + planet.degree + (planet.minutes || 0) / 60;
+}
+
+// Get planet's house placement (Whole Sign houses if cusps not provided)
+function getPlanetHouse(chart: NatalChart, planetLongitude: number): number | null {
+  if (!chart.houseCusps) {
+    // Fall back to Whole Sign houses using Ascendant
+    const ascendant = chart.planets.Ascendant;
+    if (!ascendant) return null;
+    const ascIndex = ZODIAC_SIGNS.indexOf(ascendant.sign);
+    if (ascIndex === -1) return null;
+    
+    const planetSignIndex = Math.floor(((planetLongitude % 360) + 360) % 360 / 30);
+    let house = planetSignIndex - ascIndex + 1;
+    if (house <= 0) house += 12;
+    return house;
+  }
+  
+  // Use provided house cusps
+  const cusps: number[] = [];
+  for (let i = 1; i <= 12; i++) {
+    const cusp = chart.houseCusps[`house${i}` as keyof typeof chart.houseCusps];
+    if (cusp) {
+      const signIndex = ZODIAC_SIGNS.indexOf(cusp.sign);
+      if (signIndex >= 0) {
+        cusps.push(signIndex * 30 + cusp.degree + cusp.minutes / 60);
+      }
+    }
+  }
+  
+  if (cusps.length !== 12) return null;
+  
+  const normalizedPlanet = ((planetLongitude % 360) + 360) % 360;
+  
+  for (let i = 0; i < 12; i++) {
+    const cuspStart = cusps[i];
+    const cuspEnd = cusps[(i + 1) % 12];
+    
+    if (cuspEnd > cuspStart) {
+      if (normalizedPlanet >= cuspStart && normalizedPlanet < cuspEnd) {
+        return i + 1;
+      }
+    } else {
+      if (normalizedPlanet >= cuspStart || normalizedPlanet < cuspEnd) {
+        return i + 1;
+      }
+    }
+  }
+  
+  return null;
 }
 
 // Find when a transiting planet hits a target degree (rough estimate)
@@ -259,6 +383,9 @@ function calculateOuterPlanetTransits(chart: NatalChart, currentDate: Date): Out
   const natalChiron = getNatalPlanetLongitude(chart, 'Chiron');
   const chironSign = chart.planets.Chiron?.sign || '';
   const chironWound = CHIRON_WOUND_BY_SIGN[chironSign];
+  const chironHouse = natalChiron !== null ? getPlanetHouse(chart, natalChiron) : null;
+  const chironHouseWound = chironHouse ? CHIRON_WOUND_BY_HOUSE[chironHouse] : null;
+  
   if (natalChiron !== null) {
     // Estimate Chiron return at age 50 (Chiron's orbital period is ~50.7 years)
     const estimatedDate = addYears(birthDate, 50);
@@ -272,15 +399,19 @@ function calculateOuterPlanetTransits(chart: NatalChart, currentDate: Date): Out
       isPast: estimatedDate < currentDate,
       isActive: Math.abs(50 - currentAge) < 2,
       daysUntil: estimatedDate > currentDate ? differenceInDays(estimatedDate, currentDate) : null,
-      description: `Chiron Return — The Wounded Healer (${chironSign})`,
-      lifeTheme: chironWound 
-        ? `YOUR WOUND: ${chironWound.wound.substring(0, 100)}...`
-        : 'Your core wound comes full circle. The pain you\'ve carried since childhood asks to be healed—or transformed into wisdom.',
+      description: `Chiron Return — The Wounded Healer (${chironSign} in House ${chironHouse || '?'})`,
+      lifeTheme: chironHouseWound 
+        ? `YOUR WOUND MANIFESTS IN: ${chironHouseWound.lifeArea}`
+        : (chironWound 
+          ? `YOUR WOUND: ${chironWound.wound.substring(0, 100)}...`
+          : 'Your core wound comes full circle. The pain you\'ve carried since childhood asks to be healed—or transformed into wisdom.'),
       intensity: 'major',
       natalSign: chironSign,
       natalDegree: formatDegree(natalChiron),
       targetDegree: formatDegree(natalChiron),
-      woundData: chironWound
+      natalHouse: chironHouse,
+      woundData: chironWound,
+      houseWoundData: chironHouseWound || undefined
     });
   }
   
@@ -454,6 +585,68 @@ const ChartLordActivation: React.FC<{ chart: NatalChart; currentDate: Date }> = 
   );
 };
 
+// Progressed Moon Card for Overview
+const ProgressedMoonCard: React.FC<{ chart: NatalChart; currentDate: Date }> = ({ chart, currentDate }) => {
+  const progressedMoonInfo = useMemo(() => {
+    const progressions = calculateSecondaryProgressions(chart, currentDate);
+    if (!progressions) return null;
+    return getProgressedMoonInfo(progressions, chart);
+  }, [chart, currentDate]);
+  
+  if (!progressedMoonInfo) {
+    return null;
+  }
+  
+  // Format the exact degree
+  const exactDeg = progressedMoonInfo.exactDegree;
+  const degrees = Math.floor(exactDeg);
+  const minutes = Math.round((exactDeg % 1) * 60);
+  const formattedDegree = `${degrees}°${minutes.toString().padStart(2, '0')}' ${progressedMoonInfo.sign}`;
+  
+  return (
+    <Card className="border-violet-500/30 bg-violet-500/5">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <Moon size={16} className="text-violet-500" />
+            ☽ Progressed Moon — Current Position
+          </CardTitle>
+          <Badge variant="outline" className="font-mono text-violet-600 bg-violet-500/20">
+            {formattedDegree}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="p-3 bg-secondary/30 rounded-lg">
+          <div className="text-sm font-medium mb-1">{progressedMoonInfo.detailedPhase.phaseName}</div>
+          <p className="text-xs text-muted-foreground">{progressedMoonInfo.detailedPhase.description}</p>
+        </div>
+        
+        <div className="text-xs space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground">House:</span>
+            <span className="font-medium">{progressedMoonInfo.house ? `House ${progressedMoonInfo.house} — ${progressedMoonInfo.houseMeaning?.short || ''}` : 'Unknown'}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground">Next sign change:</span>
+            <span className="font-medium">→ {progressedMoonInfo.nextSign} in ~{progressedMoonInfo.monthsUntilSignChange} months</span>
+          </div>
+        </div>
+        
+        <Collapsible>
+          <CollapsibleTrigger className="text-xs text-primary hover:underline cursor-pointer flex items-center gap-1">
+            <ChevronDown size={12} />
+            What does this mean for me?
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-2 p-3 bg-background/50 rounded border border-border text-xs">
+            <p className="text-muted-foreground">{progressedMoonInfo.signMeaning?.clientSummary || progressedMoonInfo.currentExperience}</p>
+          </CollapsibleContent>
+        </Collapsible>
+      </CardContent>
+    </Card>
+  );
+};
+
 // Midlife Window Component
 const MidlifeTransitWindow: React.FC<{ chart: NatalChart; currentDate: Date }> = ({ chart, currentDate }) => {
   const birthDate = new Date(chart.birthDate);
@@ -544,23 +737,43 @@ const MidlifeTransitWindow: React.FC<{ chart: NatalChart; currentDate: Date }> =
                   {transit.woundData ? 'See Your Wound & Gift' : 'Learn More'}
                 </CollapsibleTrigger>
                 
-                <CollapsibleContent className="mt-2 p-3 bg-background/50 rounded border border-border text-xs space-y-2">
-                  {transit.woundData ? (
-                    <>
-                      <div>
-                        <span className="font-semibold text-destructive">💔 YOUR WOUND ({transit.natalSign}):</span>
-                        <p className="text-muted-foreground mt-1">{transit.woundData.wound}</p>
+                <CollapsibleContent className="mt-2 p-3 bg-background/50 rounded border border-border text-xs space-y-3">
+                  {/* Personal House Interpretation (UNIQUE TO YOU) */}
+                  {transit.houseWoundData && (
+                    <div className="p-2 bg-primary/10 rounded border border-primary/20">
+                      <span className="font-bold text-primary">🏠 YOUR PERSONAL WOUND (House {transit.natalHouse}):</span>
+                      <p className="text-xs text-muted-foreground italic mb-1">{transit.houseWoundData.lifeArea}</p>
+                      <p className="text-muted-foreground mt-1">{transit.houseWoundData.personalWound}</p>
+                      <div className="mt-2">
+                        <span className="font-semibold text-primary">✨ YOUR PERSONAL GIFT:</span>
+                        <p className="text-muted-foreground mt-1">{transit.houseWoundData.personalGift}</p>
                       </div>
-                      <div>
-                        <span className="font-semibold text-primary">✨ YOUR GIFT:</span>
-                        <p className="text-muted-foreground mt-1">{transit.woundData.gift}</p>
-                      </div>
-                      <div>
-                        <span className="font-semibold text-accent-foreground">🌱 HEALING PATH:</span>
-                        <p className="text-muted-foreground mt-1">{transit.woundData.healingPath}</p>
-                      </div>
-                    </>
-                  ) : (
+                    </div>
+                  )}
+                  
+                  {/* Generational Sign Interpretation */}
+                  {transit.woundData && (
+                    <div className="p-2 bg-secondary/30 rounded border border-border">
+                      <span className="font-semibold text-muted-foreground">📜 GENERATIONAL THEME ({transit.natalSign} — shared by your age group):</span>
+                      <p className="text-muted-foreground mt-1 text-xs">{transit.woundData.wound}</p>
+                      <details className="mt-2">
+                        <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">See generational gift & healing path</summary>
+                        <div className="mt-2 space-y-2">
+                          <div>
+                            <span className="font-semibold text-primary">✨ GIFT:</span>
+                            <p className="text-muted-foreground mt-1">{transit.woundData.gift}</p>
+                          </div>
+                          <div>
+                            <span className="font-semibold text-accent-foreground">🌱 HEALING PATH:</span>
+                            <p className="text-muted-foreground mt-1">{transit.woundData.healingPath}</p>
+                          </div>
+                        </div>
+                      </details>
+                    </div>
+                  )}
+                  
+                  {/* Fallback for non-Chiron transits */}
+                  {!transit.woundData && !transit.houseWoundData && (
                     <p className="text-muted-foreground">{transit.lifeTheme}</p>
                   )}
                 </CollapsibleContent>
@@ -635,23 +848,43 @@ const Post50Transits: React.FC<{ chart: NatalChart; currentDate: Date }> = ({ ch
                 {transit.woundData ? 'See Your Wound & Gift' : 'Learn More'}
               </CollapsibleTrigger>
               
-              <CollapsibleContent className="mt-2 p-3 bg-background/50 rounded border border-border text-xs space-y-2">
-                {transit.woundData ? (
-                  <>
-                    <div>
-                      <span className="font-semibold text-destructive">💔 YOUR WOUND ({transit.natalSign}):</span>
-                      <p className="text-muted-foreground mt-1">{transit.woundData.wound}</p>
+              <CollapsibleContent className="mt-2 p-3 bg-background/50 rounded border border-border text-xs space-y-3">
+                {/* Personal House Interpretation (UNIQUE TO YOU) */}
+                {transit.houseWoundData && (
+                  <div className="p-2 bg-primary/10 rounded border border-primary/20">
+                    <span className="font-bold text-primary">🏠 YOUR PERSONAL WOUND (House {transit.natalHouse}):</span>
+                    <p className="text-xs text-muted-foreground italic mb-1">{transit.houseWoundData.lifeArea}</p>
+                    <p className="text-muted-foreground mt-1">{transit.houseWoundData.personalWound}</p>
+                    <div className="mt-2">
+                      <span className="font-semibold text-primary">✨ YOUR PERSONAL GIFT:</span>
+                      <p className="text-muted-foreground mt-1">{transit.houseWoundData.personalGift}</p>
                     </div>
-                    <div>
-                      <span className="font-semibold text-primary">✨ YOUR GIFT:</span>
-                      <p className="text-muted-foreground mt-1">{transit.woundData.gift}</p>
-                    </div>
-                    <div>
-                      <span className="font-semibold text-accent-foreground">🌱 HEALING PATH:</span>
-                      <p className="text-muted-foreground mt-1">{transit.woundData.healingPath}</p>
-                    </div>
-                  </>
-                ) : (
+                  </div>
+                )}
+                
+                {/* Generational Sign Interpretation */}
+                {transit.woundData && (
+                  <div className="p-2 bg-secondary/30 rounded border border-border">
+                    <span className="font-semibold text-muted-foreground">📜 GENERATIONAL THEME ({transit.natalSign} — shared by your age group):</span>
+                    <p className="text-muted-foreground mt-1 text-xs">{transit.woundData.wound}</p>
+                    <details className="mt-2">
+                      <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">See generational gift & healing path</summary>
+                      <div className="mt-2 space-y-2">
+                        <div>
+                          <span className="font-semibold text-primary">✨ GIFT:</span>
+                          <p className="text-muted-foreground mt-1">{transit.woundData.gift}</p>
+                        </div>
+                        <div>
+                          <span className="font-semibold text-accent-foreground">🌱 HEALING PATH:</span>
+                          <p className="text-muted-foreground mt-1">{transit.woundData.healingPath}</p>
+                        </div>
+                      </div>
+                    </details>
+                  </div>
+                )}
+                
+                {/* Fallback for non-Chiron transits */}
+                {!transit.woundData && !transit.houseWoundData && (
                   <p className="text-muted-foreground">{transit.lifeTheme}</p>
                 )}
               </CollapsibleContent>
@@ -697,6 +930,9 @@ export const LifeCyclesHub: React.FC<LifeCyclesHubProps> = ({ chart, currentDate
         <TabsContent value="overview" className="space-y-4 mt-4">
           {/* Chart Lord Activation */}
           <ChartLordActivation chart={chart} currentDate={currentDate} />
+          
+          {/* Progressed Moon Position */}
+          <ProgressedMoonCard chart={chart} currentDate={currentDate} />
           
           {/* Quick Summary of All Life Phases */}
           <Card>

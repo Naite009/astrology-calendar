@@ -145,6 +145,17 @@ const UranusOppositionCard = ({
     }
   }, [firstEvent, currentDate]);
   
+  // Format degree for display
+  const formatDegree = (absoluteDegree: number): string => {
+    const normalized = ((absoluteDegree % 360) + 360) % 360;
+    const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+                   'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+    const signIndex = Math.floor(normalized / 30);
+    const degree = Math.floor(normalized % 30);
+    const minutes = Math.round((normalized % 1) * 60);
+    return `${degree}°${minutes.toString().padStart(2, '0')}' ${signs[signIndex]}`;
+  };
+  
   return (
     <div className={`p-4 rounded-lg border-2 border-cyan-500 ${isActive ? 'bg-cyan-500/20 ring-2 ring-cyan-400/50' : opposition.isPast ? 'bg-cyan-950/30' : 'bg-cyan-500/10'}`}>
       <div className="flex items-start justify-between mb-3">
@@ -172,6 +183,20 @@ const UranusOppositionCard = ({
             PAST
           </span>
         )}
+      </div>
+      
+      {/* Exact Degrees Display */}
+      <div className="text-xs bg-secondary/50 p-2 rounded mb-3 font-mono">
+        <div className="flex flex-wrap gap-4">
+          <div>
+            <span className="text-muted-foreground">Natal ♅: </span>
+            <span className="text-foreground font-medium">{formatDegree(opposition.natalUranus.absoluteDegree)}</span>
+          </div>
+          <div>
+            <span className="text-muted-foreground">Opposition hits: </span>
+            <span className="text-cyan-400 font-medium">{formatDegree(opposition.oppositionDegree)}</span>
+          </div>
+        </div>
       </div>
       
       {/* All passes with exact dates */}
