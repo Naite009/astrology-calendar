@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon, Search, ChevronDown } from 'lucide-react';
+import { Calendar as CalendarIcon, Search, ChevronDown, Save, Loader2 } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
+import { LifeEvent } from '@/hooks/useLifeEvents';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { 
   exploreDateWithContext, 
@@ -17,6 +19,8 @@ import { LIFE_EVENT_LABELS } from '@/lib/structuralStressCopy';
 
 interface DateExplorerProps {
   chart: NatalChart;
+  onSaveEvent?: (event: { chartId: string; eventDate: Date; eventType: string; eventLabel?: string; notes?: string }) => Promise<LifeEvent | null>;
+  savingEvent?: boolean;
 }
 
 const PHASE_COLORS: Record<string, string> = {
@@ -33,9 +37,10 @@ const MOTION_COLORS: Record<string, string> = {
   separating: 'text-muted-foreground'
 };
 
-export const DateExplorer = ({ chart }: DateExplorerProps) => {
+export const DateExplorer = ({ chart, onSaveEvent, savingEvent }: DateExplorerProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [lifeEvent, setLifeEvent] = useState<LifeEventTag | undefined>();
+  const [notes, setNotes] = useState('');
   const [result, setResult] = useState<DateExplorerResult | null>(null);
   const [showEventDropdown, setShowEventDropdown] = useState(false);
 
@@ -43,6 +48,18 @@ export const DateExplorer = ({ chart }: DateExplorerProps) => {
     if (!selectedDate) return;
     const explorerResult = exploreDateWithContext(chart, selectedDate, lifeEvent);
     setResult(explorerResult);
+  };
+
+  const handleSaveEvent = async () => {
+    if (!selectedDate || !lifeEvent || !onSaveEvent) return;
+    
+    await onSaveEvent({
+      chartId: chart.id,
+      eventDate: selectedDate,
+      eventType: lifeEvent,
+      eventLabel: LIFE_EVENT_LABELS[lifeEvent],
+      notes: notes || undefined
+    });
   };
 
   const lifeEventOptions = Object.entries(LIFE_EVENT_LABELS) as [LifeEventTag, string][];
@@ -101,7 +118,7 @@ export const DateExplorer = ({ chart }: DateExplorerProps) => {
               <ChevronDown className="h-4 w-4 ml-2" />
             </Button>
             {showEventDropdown && (
-              <div className="absolute top-full left-0 mt-1 w-[220px] bg-background border border-border rounded-md shadow-lg z-50 py-1">
+              <div className="absolute top-full left-0 mt-1 w-[220px] bg-background border border-border rounded-md shadow-lg z-50 py-1 max-h-[300px] overflow-y-auto">
                 <button
                   className="w-full px-3 py-2 text-left text-sm hover:bg-secondary transition-colors text-muted-foreground"
                   onClick={() => { setLifeEvent(undefined); setShowEventDropdown(false); }}
@@ -134,6 +151,33 @@ export const DateExplorer = ({ chart }: DateExplorerProps) => {
             What was happening?
           </Button>
         </div>
+
+        {/* Notes Input (shown when event type selected) */}
+        {lifeEvent && (
+          <div className="flex gap-3 items-center animate-in fade-in-50 duration-200">
+            <Input
+              placeholder="Add notes about this event (optional)"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="flex-1"
+            />
+            {onSaveEvent && selectedDate && (
+              <Button 
+                variant="outline" 
+                onClick={handleSaveEvent}
+                disabled={savingEvent}
+                className="gap-2"
+              >
+                {savingEvent ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
+                Save Event
+              </Button>
+            )}
+          </div>
+        )}
 
         {/* Results */}
         {result && (

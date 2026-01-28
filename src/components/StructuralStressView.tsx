@@ -1,12 +1,11 @@
 import { useState, useMemo, useCallback } from 'react';
 import { Layers, Info } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
+import { useLifeEvents } from '@/hooks/useLifeEvents';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   generateStructuralAnalysis, 
-  extractChartSignature,
-  FocusedTransitWindow,
   exploreDateWithContext,
   DateExplorerResult
 } from '@/lib/structuralStressEngine';
@@ -15,6 +14,7 @@ import { SaturnLensCards } from './structural/SaturnLensCards';
 import { DateExplorer } from './structural/DateExplorer';
 import { LifeMilestones } from './structural/LifeMilestones';
 import { FocusedTransitCard } from './structural/FocusedTransitCard';
+import { PhaseTimeline } from './structural/PhaseTimeline';
 
 interface StructuralStressViewProps {
   userChart: NatalChart | null;
@@ -25,8 +25,9 @@ export const StructuralStressView = ({ userChart, savedCharts }: StructuralStres
   const [selectedChart, setSelectedChart] = useState<NatalChart | null>(userChart);
   const [showSaturnCards, setShowSaturnCards] = useState(true);
   const [activeTab, setActiveTab] = useState<string>('explore');
-  const [exploredDate, setExploredDate] = useState<Date | null>(null);
-  const [exploredResult, setExploredResult] = useState<DateExplorerResult | null>(null);
+  const [savingEvent, setSavingEvent] = useState(false);
+
+  const { events: lifeEvents, addEvent, getEventsForChart } = useLifeEvents();
 
   const allCharts = useMemo(() => {
     const charts: NatalChart[] = [];
@@ -40,6 +41,12 @@ export const StructuralStressView = ({ userChart, savedCharts }: StructuralStres
     return generateStructuralAnalysis(selectedChart, 5, 5);
   }, [selectedChart]);
 
+  // Get life events for selected chart
+  const chartLifeEvents = useMemo(() => {
+    if (!selectedChart) return [];
+    return getEventsForChart(selectedChart.id);
+  }, [selectedChart, getEventsForChart]);
+
   // Separate focused windows by status
   const { currentTransits, upcomingTransits, pastTransits } = useMemo(() => {
     if (!analysis) return { currentTransits: [], upcomingTransits: [], pastTransits: [] };
@@ -51,19 +58,20 @@ export const StructuralStressView = ({ userChart, savedCharts }: StructuralStres
     return { currentTransits: current, upcomingTransits: upcoming, pastTransits: past };
   }, [analysis]);
 
+  const handleSaveEvent = useCallback(async (event: { chartId: string; eventDate: Date; eventType: string; eventLabel?: string; notes?: string }) => {
+    setSavingEvent(true);
+    const result = await addEvent(event);
+    setSavingEvent(false);
+    return result;
+  }, [addEvent]);
+
   const handleMilestoneClick = useCallback((date: Date) => {
     if (!selectedChart) return;
-    setExploredDate(date);
-    const result = exploreDateWithContext(selectedChart, date);
-    setExploredResult(result);
     setActiveTab('explore');
   }, [selectedChart]);
 
   const handleTransitClick = useCallback((date: Date) => {
     if (!selectedChart) return;
-    setExploredDate(date);
-    const result = exploreDateWithContext(selectedChart, date);
-    setExploredResult(result);
     setActiveTab('explore');
   }, [selectedChart]);
 
@@ -113,7 +121,6 @@ export const StructuralStressView = ({ userChart, savedCharts }: StructuralStres
           onChange={(e) => {
             const chart = allCharts.find(c => c.id === e.target.value);
             setSelectedChart(chart || null);
-            setExploredResult(null);
           }}
           className="border border-border bg-background px-3 py-2 text-sm rounded-sm focus:border-primary focus:outline-none min-w-[200px]"
         >
@@ -127,20 +134,37 @@ export const StructuralStressView = ({ userChart, savedCharts }: StructuralStres
         <>
           {/* Main Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-flex">
+            <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-flex">
               <TabsTrigger value="explore">Explore Date</TabsTrigger>
-              <TabsTrigger value="transits">Transit Timeline</TabsTrigger>
+              <TabsTrigger value="timeline">Phase Timeline</TabsTrigger>
+              <TabsTrigger value="transits">Transit List</TabsTrigger>
               <TabsTrigger value="saturn">Saturn Lens</TabsTrigger>
             </TabsList>
 
             {/* Date Explorer Tab */}
             <TabsContent value="explore" className="space-y-6">
-              <DateExplorer chart={selectedChart} />
+              <DateExplorer 
+                chart={selectedChart} 
+                onSaveEvent={handleSaveEvent}
+                savingEvent={savingEvent}
+              />
               
               {/* Life Milestones - clickable shortcuts */}
               <LifeMilestones 
                 chart={selectedChart} 
                 onMilestoneClick={handleMilestoneClick}
+              />
+            </TabsContent>
+
+            {/* Phase Timeline Tab */}
+            <TabsContent value="timeline" className="space-y-6">
+              <PhaseTimeline
+                chart={selectedChart}
+                transitWindows={analysis.focusedWindows}
+                lifeEvents={chartLifeEvents}
+                onEventClick={(date) => {
+                  setActiveTab('explore');
+                }}
               />
             </TabsContent>
 
