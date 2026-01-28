@@ -31,6 +31,27 @@ export interface SaturnEvent {
   transiting_degree: number;
 }
 
+export interface UranusOppositionEvent {
+  date: Date;
+  age: number;
+  type: 'exact' | 'retrograde_pass' | 'direct_pass';
+  transiting_degree: number;
+}
+
+export interface UranusOpposition {
+  natalUranus: {
+    sign: string;
+    degree: number;
+    absoluteDegree: number;
+  };
+  oppositionDegree: number;
+  oppositionSign: string;
+  events: UranusOppositionEvent[];
+  isPast: boolean;
+  isUpcoming: boolean;
+  description: string;
+}
+
 export interface SaturnCyclePhase {
   phaseName: 'First Quarter' | 'Opposition' | 'Third Quarter' | 'Return';
   phaseSymbol: '□' | '☍' | '☌';
@@ -58,6 +79,7 @@ export interface DetailedSaturnCycles {
     element: 'Fire' | 'Earth' | 'Air' | 'Water';
   };
   cycles: SaturnCyclePhase[];
+  uranusOpposition?: UranusOpposition;
 }
 
 // Convert sign + degree to absolute degree (0-360)
@@ -437,6 +459,9 @@ export const calculateDetailedSaturnCycles = (
     return ageA - ageB;
   });
   
+  // Calculate Uranus Opposition
+  const uranusOpposition = calculateUranusOpposition(chart, currentDate);
+  
   return {
     natalSaturn: {
       sign: saturnPos.sign,
@@ -445,7 +470,8 @@ export const calculateDetailedSaturnCycles = (
       absoluteDegree: natalDegree,
       element: SIGN_ELEMENTS[saturnPos.sign]
     },
-    cycles
+    cycles,
+    uranusOpposition: uranusOpposition || undefined
   };
 };
 
@@ -461,4 +487,143 @@ export const calculateAgeAtDate = (birthDate: string, targetDate: Date): number 
   const birth = parseBirthDate(birthDate);
   const ageInMs = targetDate.getTime() - birth.getTime();
   return Math.floor(ageInMs / (1000 * 60 * 60 * 24 * 365.25));
+};
+
+// ============================================
+// URANUS OPPOSITION CALCULATION
+// ============================================
+// Uranus's orbital period: ~84 years
+// Opposition occurs at ~38-44 years old
+
+// Get Uranus's ecliptic longitude at a specific date
+const getUranusLongitude = (date: Date): number => {
+  const astroDate = Astronomy.MakeTime(date);
+  const geo = Astronomy.GeoVector(Astronomy.Body.Uranus, astroDate, true);
+  const ecliptic = Astronomy.Ecliptic(geo);
+  return ecliptic.elon;
+};
+
+// Find when transiting Uranus hits a specific degree
+const findUranusTransits = (
+  targetDegree: number,
+  birthDate: Date,
+  startAge: number,
+  endAge: number
+): UranusOppositionEvent[] => {
+  const events: UranusOppositionEvent[] = [];
+  
+  const startDate = new Date(birthDate);
+  startDate.setFullYear(startDate.getFullYear() + Math.floor(startAge));
+  
+  const endDate = new Date(birthDate);
+  endDate.setFullYear(endDate.getFullYear() + Math.ceil(endAge));
+  
+  let currentDate = new Date(startDate);
+  let previousLongitude = getUranusLongitude(currentDate);
+  
+  const getSide = (lon: number, target: number): number => {
+    let diff = lon - target;
+    if (diff > 180) diff -= 360;
+    if (diff < -180) diff += 360;
+    return diff;
+  };
+  
+  let previousSide = getSide(previousLongitude, targetDegree);
+  
+  while (currentDate <= endDate) {
+    const currentLongitude = getUranusLongitude(currentDate);
+    const currentSide = getSide(currentLongitude, targetDegree);
+    
+    if (previousSide * currentSide < 0) {
+      // Binary search for exact crossing
+      let lowDate = new Date(currentDate.getTime() - 24 * 60 * 60 * 1000);
+      let highDate = new Date(currentDate);
+      
+      for (let i = 0; i < 8; i++) {
+        const midTime = (lowDate.getTime() + highDate.getTime()) / 2;
+        const midDate = new Date(midTime);
+        const midLon = getUranusLongitude(midDate);
+        const midSide = getSide(midLon, targetDegree);
+        
+        if (midSide * previousSide > 0) {
+          lowDate = midDate;
+        } else {
+          highDate = midDate;
+        }
+      }
+      
+      const exactDate = new Date((lowDate.getTime() + highDate.getTime()) / 2);
+      const age = Math.floor((exactDate.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+      
+      const isMovingForward = currentSide > previousSide;
+      
+      let type: 'exact' | 'retrograde_pass' | 'direct_pass';
+      if (events.length === 0) {
+        type = 'exact';
+      } else if (!isMovingForward) {
+        type = 'retrograde_pass';
+      } else {
+        type = 'direct_pass';
+      }
+      
+      events.push({
+        date: exactDate,
+        age,
+        type,
+        transiting_degree: targetDegree
+      });
+    }
+    
+    previousLongitude = currentLongitude;
+    previousSide = currentSide;
+    
+    currentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
+  }
+  
+  return events.sort((a, b) => a.date.getTime() - b.date.getTime());
+};
+
+export const calculateUranusOpposition = (
+  chart: NatalChart,
+  currentDate: Date = new Date()
+): UranusOpposition | null => {
+  const uranusPos = chart.planets.Uranus;
+  if (!uranusPos) return null;
+  
+  const natalDegree = toAbsoluteDegree(uranusPos.sign, uranusPos.degree, uranusPos.minutes || 0);
+  const oppositionDegree = (natalDegree + 180) % 360;
+  const oppositionSign = getSignFromDegree(oppositionDegree);
+  const birthDate = parseBirthDate(chart.birthDate);
+  const currentAge = (currentDate.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+  
+  // Uranus opposition happens around ages 38-44
+  const events = findUranusTransits(oppositionDegree, birthDate, 36, 48);
+  
+  if (events.length === 0) {
+    // Fallback if no events found
+    const approxAge = 42;
+    events.push({
+      date: new Date(birthDate.getTime() + approxAge * 365.25 * 24 * 60 * 60 * 1000),
+      age: approxAge,
+      type: 'exact',
+      transiting_degree: oppositionDegree
+    });
+  }
+  
+  const firstEventAge = events[0]?.age || 42;
+  const lastEventAge = events[events.length - 1]?.age || 42;
+  
+  return {
+    natalUranus: {
+      sign: uranusPos.sign,
+      degree: uranusPos.degree,
+      absoluteDegree: natalDegree
+    },
+    oppositionDegree,
+    oppositionSign,
+    events,
+    isPast: lastEventAge < currentAge,
+    isUpcoming: firstEventAge >= currentAge - 1 && firstEventAge <= currentAge + 5,
+    description: `♅ URANUS OPPOSITION (Age ~${events[0]?.age || 42}): The "midlife awakening." Transiting Uranus opposes your natal Uranus, triggering a powerful urge for freedom, authenticity, and breaking from anything that feels stale or inauthentic. This is the cosmic wake-up call that asks: "Is this really MY life, or have I been living someone else's script?" Expect sudden changes, restlessness, and a deep need to reclaim your individuality. What you've suppressed or postponed demands attention now.`
+  };
 };
