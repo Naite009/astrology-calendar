@@ -26,7 +26,7 @@ export const HouseHealthSystem = ({ natalChart }: HouseHealthSystemProps) => {
     const planetsInHouse: string[] = [];
     const planetNames = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
     
-    // Simplified: just check if planet sign matches house cusp sign
+    // Using whole-sign house method: planet is in house if it shares the sign with house cusp
     planetNames.forEach(name => {
       const planet = planets[name];
       if (planet?.sign === houseCusp.sign) {

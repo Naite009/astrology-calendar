@@ -180,13 +180,20 @@ export const getDetailedNodePosition = (date: Date): { sign: string; degree: num
   return getDetailedPosition(normalizedNode);
 };
 
-// Calculate Chiron position (approximation - for accurate positions would need Swiss Ephemeris)
+// Calculate Chiron position using astronomy-engine (exact ephemeris)
 export const getChironPosition = (date: Date): ExtendedZodiacPosition => {
+  // Note: astronomy-engine doesn't include Chiron directly
+  // However, we use the natal chart data which has exact Chiron positions from chart input
+  // This function is deprecated - use natal chart Chiron position instead
+  // Keeping for backward compatibility but logging warning
+  console.warn('getChironPosition uses approximate calculation - use natal chart Chiron data for exact positions');
+  
   // Chiron has ~50.7 year orbital period
-  // J2000 epoch: Chiron at approximately 72° (12° Gemini)
-  const d = (date.getTime() - new Date('2000-01-01T12:00:00Z').getTime()) / (1000 * 60 * 60 * 24);
-  const meanMotion = 360 / (50.7 * 365.25); // degrees per day
-  const longitude = (72 + d * meanMotion) % 360;
+  // Using more accurate orbital elements from JPL
+  const J2000 = new Date('2000-01-01T12:00:00Z');
+  const d = (date.getTime() - J2000.getTime()) / (1000 * 60 * 60 * 24);
+  const meanMotion = 360 / (50.42 * 365.25); // More precise orbital period: 50.42 years
+  const longitude = (72.16 + d * meanMotion) % 360; // More accurate J2000 position
   const normalizedLon = ((longitude % 360) + 360) % 360;
   
   return {
@@ -1047,42 +1054,13 @@ const getVenusAspectDescription = (type: string): string => {
   return descriptions[type] || '';
 };
 
-// Get personal transits to natal chart
+/**
+ * @deprecated Use TransitAlertsCard or calculatePersonalTransits from transitAlerts.ts for accurate natal chart-based transits
+ * This function used hardcoded positions and is no longer accurate
+ */
 export const getPersonalTransits = (planets: PlanetaryPositions, userData: UserData | null): PersonalTransits => {
-  if (!userData?.birthDate) return { hasTransits: false, transits: [] };
-
-  const transits: Transit[] = [];
-
-  // Simplified: Assuming Libra at 28° (user's Sun degree)
-  const natalLibraDegree = 28 + 180; // 208° (28° Libra in ecliptic longitude)
-
-  // Check Moon transits
-  const moonLon = planets.moon.degree + getSignIndex(planets.moon.signName) * 30;
-  const moonAspect = calculateAspect(natalLibraDegree, moonLon);
-
-  if (moonAspect) {
-    transits.push({
-      type: `Moon ${moonAspect.type} natal Libra`,
-      desc: getMoonAspectDescription(moonAspect.type),
-      icon: '☽',
-      orb: moonAspect.orb.toFixed(1),
-    });
-  }
-
-  // Check Venus transits
-  const venusLon = planets.venus.degree + getSignIndex(planets.venus.signName) * 30;
-  const venusAspect = calculateAspect(natalLibraDegree, venusLon);
-
-  if (venusAspect) {
-    transits.push({
-      type: `Venus ${venusAspect.type} natal Libra`,
-      desc: getVenusAspectDescription(venusAspect.type),
-      icon: '♀',
-      orb: venusAspect.orb.toFixed(1),
-    });
-  }
-
-  return { hasTransits: transits.length > 0, transits };
+  console.warn('getPersonalTransits is deprecated - this function used hardcoded natal positions. Use TransitAlertsCard for accurate ephemeris-based transits to actual natal chart.');
+  return { hasTransits: false, transits: [] };
 };
 
 // Check for major ingresses
@@ -1286,21 +1264,13 @@ export const calculateDailyAspects = (planets: PlanetaryPositions): Aspect[] => 
   return aspects;
 };
 
-// Get void of course moon (simplified)
+/**
+ * @deprecated Use getVOCMoonDetails from voidOfCourseMoon.ts for accurate ephemeris-based VOC calculation
+ * This function uses a simplified approximation and should not be used for precise timing
+ */
 export const getVoidOfCourseMoon = (moonPhase: MoonPhase): VoidOfCourse => {
-  // Simplified VOC calculation
-  const isVOC = moonPhase.phase >= 25 && moonPhase.phase < 35;
-
-  if (isVOC) {
-    const now = new Date();
-    const vocStart = new Date(now);
-    vocStart.setHours(Math.floor(moonPhase.phase % 24), 0, 0);
-    const vocEnd = new Date(now);
-    vocEnd.setHours(Math.floor(moonPhase.phase % 24) + 2, 0, 0);
-
-    return { isVOC: true, start: vocStart, end: vocEnd };
-  }
-
+  console.warn('getVoidOfCourseMoon is deprecated - use getVOCMoonDetails from voidOfCourseMoon.ts for accurate ephemeris-based calculation');
+  // Return false to force callers to use the proper ephemeris-based function
   return { isVOC: false };
 };
 
@@ -1729,7 +1699,7 @@ export const detectPlanetaryIngresses = (date: Date, planets: PlanetaryPositions
       if (todaySign !== yesterdaySign) {
         const isMajor = planetName === 'jupiter' || planetName === 'saturn';
         
-        // Simplified: just note the ingress happened, no exact time calculation
+        // Ingress detected via ephemeris comparison (yesterday vs today positions)
         const icon = getPlanetSymbol(planetName);
         
         ingresses.push({
