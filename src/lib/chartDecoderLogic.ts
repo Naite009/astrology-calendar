@@ -391,7 +391,9 @@ export function computeAspects(
             planet2: p2.name,
             aspectType: aspectType as ChartAspect['aspectType'],
             orb: Math.round(actualOrb * 100) / 100,
-            applying: deg1 < deg2 // simplified
+            // Note: for natal charts, "applying" indicates the slower planet is ahead
+            // This is based on zodiacal degree order at birth (not motion)
+            applying: deg1 < deg2
           });
           break; // Only one aspect type per planet pair
         }

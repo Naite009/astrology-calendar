@@ -7,6 +7,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Calendar, ChevronDown, ChevronUp, Star, AlertTriangle, Heart, Briefcase, Sparkles, Clock, TrendingUp, TrendingDown, Minus, HelpCircle, BookOpen } from 'lucide-react';
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
 import { format, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth } from 'date-fns';
+import * as Astronomy from 'astronomy-engine';
 
 interface TimelineEvent {
   date: Date;
@@ -56,25 +57,33 @@ function toAbsoluteDegree(pos: NatalPlanetPosition): number {
   return signIndex * 30 + pos.degree + (pos.minutes || 0) / 60;
 }
 
-// Approximate daily motion for planets
-const DAILY_MOTION: Record<string, number> = {
-  Sun: 0.9856,
-  Moon: 13.176,
-  Mercury: 1.2,
-  Venus: 1.0,
-  Mars: 0.524,
-  Jupiter: 0.083,
-  Saturn: 0.034,
-  Uranus: 0.012,
-  Neptune: 0.006,
-  Pluto: 0.004
+// Map planet names to astronomy-engine bodies
+const PLANET_BODIES: Record<string, Astronomy.Body | null> = {
+  Sun: Astronomy.Body.Sun,
+  Moon: Astronomy.Body.Moon,
+  Mercury: Astronomy.Body.Mercury,
+  Venus: Astronomy.Body.Venus,
+  Mars: Astronomy.Body.Mars,
+  Jupiter: Astronomy.Body.Jupiter,
+  Saturn: Astronomy.Body.Saturn,
+  Uranus: Astronomy.Body.Uranus,
+  Neptune: Astronomy.Body.Neptune,
+  Pluto: Astronomy.Body.Pluto
 };
 
-function getTransitPosition(planet: string, baseDate: Date, targetDate: Date, baseLongitude: number): number {
-  const daysDiff = (targetDate.getTime() - baseDate.getTime()) / (1000 * 60 * 60 * 24);
-  const motion = DAILY_MOTION[planet] || 0.5;
-  let longitude = baseLongitude + (motion * daysDiff);
-  return ((longitude % 360) + 360) % 360;
+// Get REAL transit position using astronomy-engine ephemeris
+function getTransitPosition(planet: string, targetDate: Date): number | null {
+  const body = PLANET_BODIES[planet];
+  if (!body) return null;
+  
+  try {
+    const astroTime = new Astronomy.AstroTime(targetDate);
+    const geo = Astronomy.GeoVector(body, astroTime, true);
+    const ecliptic = Astronomy.Ecliptic(geo);
+    return ((ecliptic.elon % 360) + 360) % 360;
+  } catch {
+    return null;
+  }
 }
 
 function checkAspect(transitLon: number, natalLon: number): { type: string; orb: number } | null {
@@ -377,15 +386,9 @@ function generateTimelineEvents(
   
   for (const checkDate of sampleDays) {
     for (const transitPlanet of transitPlanets) {
-      const transitBase = chart1.planets[transitPlanet as keyof typeof chart1.planets];
-      if (!transitBase) continue;
-      
-      const transitLon = getTransitPosition(
-        transitPlanet,
-        new Date(chart1.birthDate),
-        checkDate,
-        toAbsoluteDegree(transitBase)
-      );
+      // Get REAL transit position from ephemeris
+      const transitLon = getTransitPosition(transitPlanet, checkDate);
+      if (transitLon === null) continue;
       
       // Check against both charts' natal positions
       for (const natalPlanet of natalTargets) {

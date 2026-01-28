@@ -63,6 +63,78 @@ function getPlanetLongitude(body: Astronomy.Body, date: Date): number {
   return normalizeAngle(ecliptic.elon);
 }
 
+// Binary search to find exact transit date using ephemeris
+function findExactTransitDate(body: Astronomy.Body, natalLongitude: number, aspectAngle: number, startDate: Date): number {
+  const targetAngle = normalizeAngle(natalLongitude + aspectAngle);
+  const targetAngle2 = normalizeAngle(natalLongitude - aspectAngle);
+  
+  // Search up to 365 days ahead
+  const maxDays = 365;
+  let bestDays = 0;
+  let bestOrb = 999;
+  
+  // Daily scan first to find approximate date
+  for (let day = 0; day <= maxDays; day++) {
+    const checkDate = new Date(startDate.getTime() + day * 24 * 60 * 60 * 1000);
+    const lon = getPlanetLongitude(body, checkDate);
+    
+    let diff1 = Math.abs(normalizeAngle(lon - targetAngle));
+    if (diff1 > 180) diff1 = 360 - diff1;
+    let diff2 = Math.abs(normalizeAngle(lon - targetAngle2));
+    if (diff2 > 180) diff2 = 360 - diff2;
+    
+    const orb = Math.min(diff1, diff2);
+    
+    if (orb < bestOrb) {
+      bestOrb = orb;
+      bestDays = day;
+    }
+    
+    // If exact (within 0.1 degree), we found it
+    if (orb < 0.1) break;
+  }
+  
+  // Binary search refinement for hourly precision
+  if (bestDays > 0 && bestOrb < 5) {
+    let lowHour = (bestDays - 1) * 24;
+    let highHour = (bestDays + 1) * 24;
+    
+    for (let i = 0; i < 10; i++) {
+      const midHour = (lowHour + highHour) / 2;
+      const checkDate = new Date(startDate.getTime() + midHour * 60 * 60 * 1000);
+      const lon = getPlanetLongitude(body, checkDate);
+      
+      let diff1 = Math.abs(normalizeAngle(lon - targetAngle));
+      if (diff1 > 180) diff1 = 360 - diff1;
+      let diff2 = Math.abs(normalizeAngle(lon - targetAngle2));
+      if (diff2 > 180) diff2 = 360 - diff2;
+      
+      const orb = Math.min(diff1, diff2);
+      if (orb < bestOrb) {
+        bestOrb = orb;
+        bestDays = midHour / 24;
+      }
+      
+      // Check direction
+      const checkDateNext = new Date(startDate.getTime() + (midHour + 1) * 60 * 60 * 1000);
+      const nextLon = getPlanetLongitude(body, checkDateNext);
+      let nextDiff1 = Math.abs(normalizeAngle(nextLon - targetAngle));
+      if (nextDiff1 > 180) nextDiff1 = 360 - nextDiff1;
+      let nextDiff2 = Math.abs(normalizeAngle(nextLon - targetAngle2));
+      if (nextDiff2 > 180) nextDiff2 = 360 - nextDiff2;
+      const nextOrb = Math.min(nextDiff1, nextDiff2);
+      
+      if (nextOrb < orb) {
+        lowHour = midHour;
+      } else {
+        highHour = midHour;
+      }
+    }
+  }
+  
+  return Math.round(bestDays);
+}
+
 // Convert sign + degree to absolute longitude
 function toAbsoluteLongitude(sign: string, degree: number, minutes: number = 0): number {
   const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
@@ -313,8 +385,8 @@ function calculateSectLightTransits(chart: NatalChart, isNightChart: boolean): S
       const orb = Math.min(diff1, diff2);
       
       if (orb <= aspect.orb) {
-        // Check if applying or separating (rough check)
-        const futureLon = getPlanetLongitude(transit.body, new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000));
+        // Check if applying or separating using ephemeris comparison
+        const futureLon = getPlanetLongitude(transit.body, new Date(now.getTime() + 24 * 60 * 60 * 1000));
         const futureOrb1 = Math.abs(normalizeAngle(futureLon - targetAngle));
         const futureOrb2 = Math.abs(normalizeAngle(futureLon - targetAngle2));
         const futureOrb = Math.min(
@@ -323,8 +395,8 @@ function calculateSectLightTransits(chart: NatalChart, isNightChart: boolean): S
         );
         const isApplying = futureOrb < orb;
         
-        // Estimate days until exact
-        const daysUntil = isApplying ? Math.round(orb * 5) : 0; // Rough estimate
+        // Calculate exact days until exact using binary search ephemeris
+        const daysUntil = isApplying ? findExactTransitDate(transit.body, natalLongitude, aspect.angle, now) : 0;
         
         // Determine intensity
         let intensity: 'critical' | 'major' | 'moderate' | 'minor' = 'minor';
