@@ -83,6 +83,45 @@ export type Database = {
         }
         Relationships: []
       }
+      life_events: {
+        Row: {
+          chart_id: string
+          created_at: string
+          device_id: string
+          event_date: string
+          event_label: string | null
+          event_type: string
+          id: string
+          notes: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          chart_id: string
+          created_at?: string
+          device_id: string
+          event_date: string
+          event_label?: string | null
+          event_type: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          chart_id?: string
+          created_at?: string
+          device_id?: string
+          event_date?: string
+          event_label?: string | null
+          event_type?: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
