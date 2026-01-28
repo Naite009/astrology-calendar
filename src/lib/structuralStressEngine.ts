@@ -1,5 +1,6 @@
 // Structural Stress & Release Engine
 // Provides trauma-informed interpretation of major life transits
+// Restructured for event-driven exploration with focused transit windows
 
 import { NatalChart } from "@/hooks/useNatalChart";
 import * as Astronomy from 'astronomy-engine';
@@ -9,17 +10,18 @@ import {
   PHASE_COPY, 
   AXIS_HEADLINES, 
   MEANING_DIAL_VARIANTS,
-  CONTEXT_TAG_LABELS,
   MANIFESTATION_BY_HOUSE,
-  ACTION_TEMPLATES
+  ACTION_TEMPLATES,
+  LIFE_EVENT_INTERPRETATIONS
 } from './structuralStressCopy';
 
 // ============== INTERFACES ==============
 
-export type TransitingPlanet = 'Saturn' | 'Pluto' | 'Uranus' | 'Mars' | 'NorthNode' | 'SouthNode';
+export type TransitingPlanet = 'Saturn' | 'Pluto' | 'Uranus' | 'Mars' | 'NorthNode' | 'SouthNode' | 'Neptune';
 export type AspectType = 'conjunction' | 'square' | 'opposition' | 'trine' | 'sextile';
 export type PhaseLabel = 'Containment' | 'Structural Stress' | 'Release' | 'Activation' | 'Mixed';
 export type MeaningDialMode = 'Insight' | 'Practical' | 'Emotional Support' | 'Shadow Work';
+export type LifeEventTag = 'relationship_began' | 'relationship_ended' | 'marriage' | 'breakup' | 'grief' | 'job_change' | 'relocation' | 'health_event' | 'identity_shift' | 'safety' | 'other';
 
 export interface TransitEvent {
   id: string;
@@ -32,6 +34,52 @@ export interface TransitEvent {
   orb_max_used: number;
   house_activated: { transit: number; natal: number };
   axis_activated: string;
+  motion?: 'applying' | 'exact' | 'separating';
+  orb_current?: number;
+}
+
+export interface ActiveTransit {
+  planet: TransitingPlanet;
+  aspectType: AspectType;
+  natalTarget: string;
+  exactDegree: number;
+  transitingDegree: number;
+  natalDegree: number;
+  orb: number;
+  motion: 'applying' | 'exact' | 'separating';
+  houseTransit: number;
+  houseNatal: number;
+  axis: string;
+  phaseContribution: 'containment' | 'stress' | 'release' | 'trigger';
+  narrative: string;
+}
+
+export interface DateExplorerResult {
+  date: Date;
+  activeTransits: ActiveTransit[];
+  phaseScores: PhaseScores;
+  phaseLabel: PhaseLabel;
+  summary: string;
+  lifeEventContext?: LifeEventTag;
+  contextualNarrative?: string;
+}
+
+export interface FocusedTransitWindow {
+  id: string;
+  transitPlanet: TransitingPlanet;
+  aspectType: AspectType;
+  natalTarget: string;
+  startDate: Date;
+  endDate: Date;
+  exactDates: Date[];
+  peakDate: Date;
+  houseNatal: number;
+  axis: string;
+  phaseType: 'containment' | 'stress' | 'release' | 'trigger';
+  narrative: string;
+  isPast: boolean;
+  isCurrent: boolean;
+  isUpcoming: boolean;
 }
 
 export interface NatalAspect {
@@ -97,7 +145,7 @@ export interface SaturnLensCard {
 
 const PERSONAL_PLANETS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars'];
 const ANGLES = ['Ascendant', 'MC', 'IC', 'Descendant'];
-const OUTER_PLANETS: TransitingPlanet[] = ['Saturn', 'Pluto', 'Uranus'];
+const OUTER_PLANETS: TransitingPlanet[] = ['Saturn', 'Pluto', 'Uranus', 'Neptune'];
 
 const SIGN_RULERS: Record<string, string> = {
   Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon',
@@ -129,6 +177,46 @@ const HOUSE_THEMES: Record<number, string[]> = {
   12: ['rest', 'spirituality', 'healing', 'unconscious']
 };
 
+const TRANSIT_NARRATIVES: Record<TransitingPlanet, { phase: 'containment' | 'stress' | 'release' | 'trigger'; narrative: (aspect: AspectType, target: string) => string }> = {
+  Saturn: {
+    phase: 'containment',
+    narrative: (aspect, target) => {
+      const aspectVerb = aspect === 'conjunction' ? 'meets' : aspect === 'opposition' ? 'confronts' : 'challenges';
+      return `Saturn ${aspectVerb} your natal ${target}. This is a period of commitment pressure, responsibility, and structural demands. What you build now must be sustainable. What isn't built properly will be tested.`;
+    }
+  },
+  Pluto: {
+    phase: 'stress',
+    narrative: (aspect, target) => {
+      const intensity = aspect === 'conjunction' ? 'total transformation' : aspect === 'opposition' ? 'power confrontation' : 'deep pressure';
+      return `Pluto brings ${intensity} to your ${target}. Power dynamics, control themes, or buried patterns surface. This isn't punishment—it's exposure. What's been unsustainable reveals itself.`;
+    }
+  },
+  Uranus: {
+    phase: 'release',
+    narrative: (aspect, target) => {
+      const action = aspect === 'conjunction' ? 'awakens' : aspect === 'opposition' ? 'liberates through confrontation' : 'disrupts';
+      return `Uranus ${action} your ${target}. Sudden clarity, restlessness, or a quiet internal switch: "I'm done." What's authentic pushes against what's merely habitual.`;
+    }
+  },
+  Neptune: {
+    phase: 'release',
+    narrative: (aspect, target) => `Neptune dissolves boundaries around your ${target}. Confusion, spiritual opening, or loss of previous certainties. What seemed solid becomes permeable.`
+  },
+  Mars: {
+    phase: 'trigger',
+    narrative: (aspect, target) => `Mars activates your ${target}. Events that force clarity, confrontation that was brewing, or energy that demands expression. This is about decisive action.`
+  },
+  NorthNode: {
+    phase: 'trigger',
+    narrative: (aspect, target) => `The North Node highlights your ${target} as part of your growth direction. Fated-feeling encounters or opportunities that align with your developmental path.`
+  },
+  SouthNode: {
+    phase: 'trigger',
+    narrative: (aspect, target) => `The South Node touches your ${target}. Patterns from the past resurface—sometimes as release, sometimes as regression. What are you ready to let go of?`
+  }
+};
+
 // ============== HELPER FUNCTIONS ==============
 
 function getHouseFromDegree(degree: number, houseCusps: Record<string, { sign: string; degree: number; minutes: number }>): number {
@@ -146,7 +234,6 @@ function getHouseFromDegree(degree: number, houseCusps: Record<string, { sign: s
     const nextCusp = cusps[(i + 1) % 12].degree;
     
     if (nextCusp < currentCusp) {
-      // Wraps around 360
       if (degree >= currentCusp || degree < nextCusp) {
         return cusps[i].house;
       }
@@ -166,21 +253,31 @@ function getPlanetAbsoluteDegree(planet: { sign: string; degree: number; minutes
   return signIndex * 30 + planet.degree + (planet.minutes || 0) / 60;
 }
 
-function calculateAspect(deg1: number, deg2: number): { type: AspectType | null; orb: number } {
+function calculateAspect(deg1: number, deg2: number, maxOrbs?: Partial<Record<AspectType, number>>): { type: AspectType | null; orb: number } {
   let diff = Math.abs(deg1 - deg2);
   if (diff > 180) diff = 360 - diff;
 
-  const aspects: { type: AspectType; angle: number; maxOrb: number }[] = [
-    { type: 'conjunction', angle: 0, maxOrb: 8 },
-    { type: 'opposition', angle: 180, maxOrb: 8 },
-    { type: 'square', angle: 90, maxOrb: 7 },
-    { type: 'trine', angle: 120, maxOrb: 7 },
-    { type: 'sextile', angle: 60, maxOrb: 5 }
+  const defaultOrbs = {
+    conjunction: 8,
+    opposition: 8,
+    square: 7,
+    trine: 7,
+    sextile: 5
+  };
+
+  const orbs = { ...defaultOrbs, ...maxOrbs };
+
+  const aspects: { type: AspectType; angle: number }[] = [
+    { type: 'conjunction', angle: 0 },
+    { type: 'opposition', angle: 180 },
+    { type: 'square', angle: 90 },
+    { type: 'trine', angle: 120 },
+    { type: 'sextile', angle: 60 }
   ];
 
   for (const aspect of aspects) {
     const orb = Math.abs(diff - aspect.angle);
-    if (orb <= aspect.maxOrb) {
+    if (orb <= orbs[aspect.type]) {
       return { type: aspect.type, orb };
     }
   }
@@ -192,101 +289,19 @@ function isHardAspect(type: AspectType): boolean {
   return type === 'conjunction' || type === 'square' || type === 'opposition';
 }
 
-// ============== CHART SIGNATURE EXTRACTION ==============
-
-export function extractChartSignature(chart: NatalChart): ChartSignature {
-  const saturn = chart.planets.Saturn;
-  const saturnSign = saturn?.sign || 'Unknown';
-  const saturnDegree = getPlanetAbsoluteDegree(saturn);
-  const saturnHouse = chart.houseCusps ? getHouseFromDegree(saturnDegree, chart.houseCusps) : 1;
-
-  // Find Saturn's dispositor
-  const dispositorPlanet = SIGN_RULERS[saturnSign] || 'Saturn';
-  const dispositorData = chart.planets[dispositorPlanet as keyof typeof chart.planets];
-  const dispositorSign = dispositorData?.sign || 'Unknown';
-  const dispositorDegree = getPlanetAbsoluteDegree(dispositorData);
-  const dispositorHouse = chart.houseCusps ? getHouseFromDegree(dispositorDegree, chart.houseCusps) : 1;
-
-  // Find top Saturn aspects
-  const saturnAspects: NatalAspect[] = [];
-  const targetPlanets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Ascendant'];
-  
-  for (const target of targetPlanets) {
-    const targetData = chart.planets[target as keyof typeof chart.planets];
-    if (!targetData || !targetData.sign) continue;
-    
-    const targetDeg = getPlanetAbsoluteDegree(targetData);
-    const { type, orb } = calculateAspect(saturnDegree, targetDeg);
-    
-    if (type) {
-      saturnAspects.push({
-        planet1: 'Saturn',
-        planet2: target,
-        aspect: type,
-        orb
-      });
-    }
-  }
-
-  // Sort by orb (tightest first)
-  saturnAspects.sort((a, b) => a.orb - b.orb);
-
-  // Check for Libra stellium (3+ planets in Libra)
-  let libraCount = 0;
-  for (const [, planet] of Object.entries(chart.planets)) {
-    if (planet && planet.sign === 'Libra') libraCount++;
-  }
-
-  // Check relationship sensitivity (7th house ruler, Venus, Moon emphasis)
-  const house7 = chart.houseCusps?.house7;
-  const h7Ruler = house7 ? SIGN_RULERS[house7.sign] : null;
-  const venus = chart.planets.Venus;
-  const moon = chart.planets.Moon;
-  
-  const relationshipSensitive = 
-    libraCount >= 2 ||
-    venus?.sign === 'Libra' ||
-    moon?.sign === 'Libra' ||
-    (h7Ruler && chart.planets[h7Ruler as keyof typeof chart.planets]);
-
-  // Check authority axis (Saturn in 10th, MC aspects, 4th/10th emphasis)
-  const authorityAxis = 
-    saturnHouse === 10 || saturnHouse === 4 ||
-    saturnAspects.some(a => a.planet2 === 'MC');
-
-  return {
-    saturn_sign: saturnSign,
-    saturn_house: saturnHouse,
-    saturn_dispositor: {
-      planet: dispositorPlanet,
-      sign: dispositorSign,
-      house: dispositorHouse
-    },
-    top_saturn_aspects: saturnAspects.slice(0, 5),
-    libra_stellium_flag: libraCount >= 3,
-    relationship_sensitivity_flag: !!relationshipSensitive,
-    authority_axis_flag: authorityAxis
-  };
-}
-
-// ============== TRANSIT DETECTION ==============
-
 function getTransitingPlanetPosition(planet: TransitingPlanet, date: Date): number {
-  const body = planet === 'NorthNode' || planet === 'SouthNode' 
-    ? null 
-    : Astronomy.Body[planet as keyof typeof Astronomy.Body];
-  
-  if (!body) {
-    // For nodes, approximate calculation
-    // North Node moves retrograde ~19.35° per year
+  if (planet === 'NorthNode' || planet === 'SouthNode') {
     const refDate = new Date('2020-01-01');
-    const refPosition = 98.68; // Cancer 8° = 98.68° absolute
+    const refPosition = 98.68;
     const daysSinceRef = (date.getTime() - refDate.getTime()) / (1000 * 60 * 60 * 24);
     const movement = (daysSinceRef / 365.25) * 19.35;
     let pos = (refPosition - movement) % 360;
     if (pos < 0) pos += 360;
     return planet === 'SouthNode' ? (pos + 180) % 360 : pos;
   }
+
+  const body = Astronomy.Body[planet as keyof typeof Astronomy.Body];
+  if (!body) return 0;
 
   try {
     const time = Astronomy.MakeTime(date);
@@ -300,6 +315,346 @@ function getTransitingPlanetPosition(planet: TransitingPlanet, date: Date): numb
     return 0;
   }
 }
+
+function determineMotion(transitDegree: number, natalDegree: number, aspectAngle: number): 'applying' | 'exact' | 'separating' {
+  let diff = transitDegree - natalDegree;
+  if (diff > 180) diff -= 360;
+  if (diff < -180) diff += 360;
+  
+  const targetDiff = aspectAngle;
+  const currentDiff = Math.abs(diff);
+  const orb = Math.abs(currentDiff - targetDiff);
+  
+  if (orb < 0.5) return 'exact';
+  
+  // For outer planets, if the current diff is less than target, we're applying
+  // This is simplified - full retrograde detection would require checking direction
+  return currentDiff < targetDiff ? 'applying' : 'separating';
+}
+
+// ============== CHART SIGNATURE EXTRACTION ==============
+
+export function extractChartSignature(chart: NatalChart): ChartSignature {
+  const saturn = chart.planets.Saturn;
+  const saturnSign = saturn?.sign || 'Unknown';
+  const saturnDegree = getPlanetAbsoluteDegree(saturn);
+  const saturnHouse = chart.houseCusps ? getHouseFromDegree(saturnDegree, chart.houseCusps) : 1;
+
+  const dispositorPlanet = SIGN_RULERS[saturnSign] || 'Saturn';
+  const dispositorData = chart.planets[dispositorPlanet as keyof typeof chart.planets];
+  const dispositorSign = dispositorData?.sign || 'Unknown';
+  const dispositorDegree = getPlanetAbsoluteDegree(dispositorData);
+  const dispositorHouse = chart.houseCusps ? getHouseFromDegree(dispositorDegree, chart.houseCusps) : 1;
+
+  const saturnAspects: NatalAspect[] = [];
+  const targetPlanets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Ascendant'];
+  
+  for (const target of targetPlanets) {
+    const targetData = chart.planets[target as keyof typeof chart.planets];
+    if (!targetData || !targetData.sign) continue;
+    
+    const targetDeg = getPlanetAbsoluteDegree(targetData);
+    const { type, orb } = calculateAspect(saturnDegree, targetDeg);
+    
+    if (type) {
+      saturnAspects.push({ planet1: 'Saturn', planet2: target, aspect: type, orb });
+    }
+  }
+
+  saturnAspects.sort((a, b) => a.orb - b.orb);
+
+  let libraCount = 0;
+  for (const [, planet] of Object.entries(chart.planets)) {
+    if (planet && planet.sign === 'Libra') libraCount++;
+  }
+
+  const house7 = chart.houseCusps?.house7;
+  const h7Ruler = house7 ? SIGN_RULERS[house7.sign] : null;
+  const venus = chart.planets.Venus;
+  const moon = chart.planets.Moon;
+  
+  const relationshipSensitive = 
+    libraCount >= 2 ||
+    venus?.sign === 'Libra' ||
+    moon?.sign === 'Libra' ||
+    (h7Ruler && chart.planets[h7Ruler as keyof typeof chart.planets]);
+
+  const authorityAxis = 
+    saturnHouse === 10 || saturnHouse === 4 ||
+    saturnAspects.some(a => a.planet2 === 'MC');
+
+  return {
+    saturn_sign: saturnSign,
+    saturn_house: saturnHouse,
+    saturn_dispositor: { planet: dispositorPlanet, sign: dispositorSign, house: dispositorHouse },
+    top_saturn_aspects: saturnAspects.slice(0, 5),
+    libra_stellium_flag: libraCount >= 3,
+    relationship_sensitivity_flag: !!relationshipSensitive,
+    authority_axis_flag: authorityAxis
+  };
+}
+
+// ============== DATE EXPLORER - Get transits for a specific date ==============
+
+export function getTransitsForDate(
+  chart: NatalChart,
+  targetDate: Date,
+  orbs: { outer: number; mars: number } = { outer: 5, mars: 3 }
+): ActiveTransit[] {
+  const activeTransits: ActiveTransit[] = [];
+  const transitPlanets: TransitingPlanet[] = ['Saturn', 'Pluto', 'Uranus', 'Neptune', 'Mars', 'NorthNode'];
+  const natalTargets = [...PERSONAL_PLANETS, 'Saturn', 'Ascendant', 'MC'];
+
+  for (const transitPlanet of transitPlanets) {
+    const transitDegree = getTransitingPlanetPosition(transitPlanet, targetDate);
+    const maxOrb = transitPlanet === 'Mars' ? orbs.mars : orbs.outer;
+
+    for (const natalTarget of natalTargets) {
+      const natalData = chart.planets[natalTarget as keyof typeof chart.planets];
+      if (!natalData || !natalData.sign) continue;
+
+      const natalDegree = getPlanetAbsoluteDegree(natalData);
+      const natalHouse = chart.houseCusps ? getHouseFromDegree(natalDegree, chart.houseCusps) : 1;
+      const transitHouse = chart.houseCusps ? getHouseFromDegree(transitDegree, chart.houseCusps) : 1;
+
+      const { type, orb } = calculateAspect(transitDegree, natalDegree, {
+        conjunction: maxOrb,
+        opposition: maxOrb,
+        square: maxOrb - 1,
+        trine: maxOrb - 2,
+        sextile: maxOrb - 2
+      });
+
+      if (type && isHardAspect(type)) {
+        const aspectAngle = type === 'conjunction' ? 0 : type === 'opposition' ? 180 : 90;
+        const motion = determineMotion(transitDegree, natalDegree, aspectAngle);
+        const transitInfo = TRANSIT_NARRATIVES[transitPlanet];
+
+        activeTransits.push({
+          planet: transitPlanet,
+          aspectType: type,
+          natalTarget,
+          exactDegree: natalDegree,
+          transitingDegree: transitDegree,
+          natalDegree,
+          orb,
+          motion,
+          houseTransit: transitHouse,
+          houseNatal: natalHouse,
+          axis: AXIS_MAP[natalHouse] || '1st↔7th',
+          phaseContribution: transitInfo.phase,
+          narrative: transitInfo.narrative(type, natalTarget)
+        });
+      }
+    }
+  }
+
+  // Sort by importance: tight orbs + outer planets to personal points
+  return activeTransits.sort((a, b) => {
+    const aWeight = (a.orb * -1) + (OUTER_PLANETS.includes(a.planet) ? 10 : 0) + (PERSONAL_PLANETS.includes(a.natalTarget) ? 5 : 0);
+    const bWeight = (b.orb * -1) + (OUTER_PLANETS.includes(b.planet) ? 10 : 0) + (PERSONAL_PLANETS.includes(b.natalTarget) ? 5 : 0);
+    return bWeight - aWeight;
+  });
+}
+
+// ============== EXPLORE A DATE - Full analysis for a specific moment ==============
+
+export function exploreDateWithContext(
+  chart: NatalChart,
+  targetDate: Date,
+  lifeEvent?: LifeEventTag
+): DateExplorerResult {
+  const activeTransits = getTransitsForDate(chart, targetDate);
+  const phaseScores = calculatePhaseScoresFromTransits(activeTransits);
+  const phaseLabel = determinePhaseLabel(phaseScores);
+
+  let summary = '';
+  if (activeTransits.length === 0) {
+    summary = 'No major structural transits are active on this date. Outer planets are not forming hard aspects to your personal points.';
+  } else {
+    const dominant = activeTransits[0];
+    const phaseWord = phaseLabel === 'Mixed' ? 'complex pressure' : phaseLabel.toLowerCase();
+    summary = `${dominant.planet} ${dominant.aspectType} your ${dominant.natalTarget} dominates this period. This creates ${phaseWord} dynamics—${dominant.motion === 'applying' ? 'building toward' : dominant.motion === 'exact' ? 'at peak intensity' : 'releasing from'} exactitude.`;
+  }
+
+  let contextualNarrative: string | undefined;
+  if (lifeEvent && activeTransits.length > 0) {
+    const eventInterpretation = LIFE_EVENT_INTERPRETATIONS[lifeEvent];
+    if (eventInterpretation) {
+      const dominantPhase = activeTransits[0].phaseContribution;
+      contextualNarrative = eventInterpretation[dominantPhase] || eventInterpretation.default;
+    }
+  }
+
+  return {
+    date: targetDate,
+    activeTransits,
+    phaseScores,
+    phaseLabel,
+    summary,
+    lifeEventContext: lifeEvent,
+    contextualNarrative
+  };
+}
+
+function calculatePhaseScoresFromTransits(transits: ActiveTransit[]): PhaseScores {
+  let containment = 0, stress = 0, release = 0, trigger = 0;
+
+  for (const transit of transits) {
+    const isPersonal = PERSONAL_PLANETS.includes(transit.natalTarget) || ANGLES.includes(transit.natalTarget);
+    const tightness = transit.orb < 2 ? 3 : transit.orb < 4 ? 2 : 1;
+    const personalBonus = isPersonal ? 2 : 0;
+
+    switch (transit.phaseContribution) {
+      case 'containment':
+        containment += tightness + personalBonus;
+        break;
+      case 'stress':
+        stress += tightness + personalBonus + 1; // Pluto gets extra weight
+        break;
+      case 'release':
+        release += tightness + personalBonus;
+        break;
+      case 'trigger':
+        trigger += tightness;
+        break;
+    }
+  }
+
+  return { containment_score: containment, stress_score: stress, release_score: release, trigger_score: trigger };
+}
+
+// ============== FOCUSED TRANSIT WINDOWS - Individual transits, not clusters ==============
+
+export function generateFocusedTransitWindows(
+  chart: NatalChart,
+  yearsBack: number = 3,
+  yearsForward: number = 3
+): FocusedTransitWindow[] {
+  const windows: FocusedTransitWindow[] = [];
+  const transitPlanets: TransitingPlanet[] = ['Saturn', 'Pluto', 'Uranus'];
+  const natalTargets = [...PERSONAL_PLANETS, 'Saturn', 'Ascendant'];
+
+  const today = new Date();
+  const startDate = new Date(today);
+  startDate.setFullYear(today.getFullYear() - yearsBack);
+  const endDate = new Date(today);
+  endDate.setFullYear(today.getFullYear() + yearsForward);
+
+  for (const transitPlanet of transitPlanets) {
+    for (const natalTarget of natalTargets) {
+      const natalData = chart.planets[natalTarget as keyof typeof chart.planets];
+      if (!natalData || !natalData.sign) continue;
+
+      const natalDegree = getPlanetAbsoluteDegree(natalData);
+      const natalHouse = chart.houseCusps ? getHouseFromDegree(natalDegree, chart.houseCusps) : 1;
+
+      // Scan for each aspect type
+      for (const aspectType of ['conjunction', 'opposition', 'square'] as AspectType[]) {
+        const aspectAngle = aspectType === 'conjunction' ? 0 : aspectType === 'opposition' ? 180 : 90;
+        const targetDegree = (natalDegree + aspectAngle) % 360;
+
+        // Find when this transit happens
+        const transitEvents = findTransitPasses(transitPlanet, targetDegree, startDate, endDate);
+        
+        if (transitEvents.length > 0) {
+          const firstPass = transitEvents[0];
+          const lastPass = transitEvents[transitEvents.length - 1];
+          const peakDate = transitEvents.find(e => e.type === 'exact')?.date || firstPass.date;
+          
+          const transitInfo = TRANSIT_NARRATIVES[transitPlanet];
+
+          windows.push({
+            id: `${transitPlanet}-${aspectType}-${natalTarget}-${firstPass.date.getTime()}`,
+            transitPlanet,
+            aspectType,
+            natalTarget,
+            startDate: firstPass.date,
+            endDate: lastPass.date,
+            exactDates: transitEvents.filter(e => e.type === 'exact').map(e => e.date),
+            peakDate,
+            houseNatal: natalHouse,
+            axis: AXIS_MAP[natalHouse] || '1st↔7th',
+            phaseType: transitInfo.phase,
+            narrative: transitInfo.narrative(aspectType, natalTarget),
+            isPast: lastPass.date < today,
+            isCurrent: firstPass.date <= today && lastPass.date >= today,
+            isUpcoming: firstPass.date > today
+          });
+        }
+      }
+    }
+  }
+
+  // Sort by date
+  return windows.sort((a, b) => a.peakDate.getTime() - b.peakDate.getTime());
+}
+
+function findTransitPasses(
+  planet: TransitingPlanet,
+  targetDegree: number,
+  startDate: Date,
+  endDate: Date
+): { date: Date; type: 'exact' | 'retrograde_pass' | 'direct_pass' }[] {
+  const events: { date: Date; type: 'exact' | 'retrograde_pass' | 'direct_pass' }[] = [];
+  
+  const getSide = (lon: number, target: number): number => {
+    let diff = lon - target;
+    if (diff > 180) diff -= 360;
+    if (diff < -180) diff += 360;
+    return diff;
+  };
+
+  let currentDate = new Date(startDate);
+  let previousLongitude = getTransitingPlanetPosition(planet, currentDate);
+  let previousSide = getSide(previousLongitude, targetDegree);
+
+  while (currentDate <= endDate) {
+    const currentLongitude = getTransitingPlanetPosition(planet, currentDate);
+    const currentSide = getSide(currentLongitude, targetDegree);
+
+    if (previousSide * currentSide < 0) {
+      // Binary search for exact crossing
+      let lowDate = new Date(currentDate.getTime() - 24 * 60 * 60 * 1000);
+      let highDate = new Date(currentDate);
+      
+      for (let i = 0; i < 8; i++) {
+        const midTime = (lowDate.getTime() + highDate.getTime()) / 2;
+        const midDate = new Date(midTime);
+        const midLon = getTransitingPlanetPosition(planet, midDate);
+        const midSide = getSide(midLon, targetDegree);
+        
+        if (midSide * previousSide > 0) {
+          lowDate = midDate;
+        } else {
+          highDate = midDate;
+        }
+      }
+
+      const exactDate = new Date((lowDate.getTime() + highDate.getTime()) / 2);
+      const isMovingForward = currentSide > previousSide;
+      
+      let type: 'exact' | 'retrograde_pass' | 'direct_pass';
+      if (events.length === 0) {
+        type = 'exact';
+      } else if (!isMovingForward) {
+        type = 'retrograde_pass';
+      } else {
+        type = 'direct_pass';
+      }
+
+      events.push({ date: exactDate, type });
+    }
+
+    previousLongitude = currentLongitude;
+    previousSide = currentSide;
+    currentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
+  }
+
+  return events;
+}
+
+// ============== LEGACY SUPPORT - clusterEventsIntoWindows (for backward compatibility) ==============
 
 export function detectTransitEvents(
   chart: NatalChart,
@@ -318,7 +673,6 @@ export function detectTransitEvents(
       const natalDegree = getPlanetAbsoluteDegree(natalData);
       const natalHouse = chart.houseCusps ? getHouseFromDegree(natalDegree, chart.houseCusps) : 1;
 
-      // Scan month by month
       const current = new Date(startDate);
       let inAspect = false;
       let aspectStart: Date | null = null;
@@ -343,7 +697,6 @@ export function detectTransitEvents(
           }
           if (orb > maxOrb) maxOrb = orb;
         } else if (inAspect && aspectStart && aspectType) {
-          // Aspect ended
           const transitHouse = chart.houseCusps 
             ? getHouseFromDegree(getTransitingPlanetPosition(transitPlanet, aspectStart), chart.houseCusps)
             : 1;
@@ -366,7 +719,6 @@ export function detectTransitEvents(
           aspectType = null;
         }
 
-        // Advance by 7 days for outer planets, 1 day for Mars
         current.setDate(current.getDate() + (transitPlanet === 'Mars' ? 1 : 7));
       }
     }
@@ -374,8 +726,6 @@ export function detectTransitEvents(
 
   return events.sort((a, b) => a.start_date.getTime() - b.start_date.getTime());
 }
-
-// ============== WINDOW CLUSTERING ==============
 
 export function clusterEventsIntoWindows(events: TransitEvent[]): StructuralWindow[] {
   if (events.length === 0) return [];
@@ -391,13 +741,11 @@ export function clusterEventsIntoWindows(events: TransitEvent[]): StructuralWind
       windowEnd = event.end_date;
       currentWindow = [event];
     } else if (windowEnd && event.start_date.getTime() - windowEnd.getTime() <= 14 * 24 * 60 * 60 * 1000) {
-      // Within 14 days of previous end - cluster together
       currentWindow.push(event);
       if (event.end_date > windowEnd) {
         windowEnd = event.end_date;
       }
     } else {
-      // Gap too large - close current window and start new one
       if (currentWindow.length > 0 && windowStart && windowEnd) {
         windows.push(createWindow(currentWindow, windowStart, windowEnd));
       }
@@ -407,7 +755,6 @@ export function clusterEventsIntoWindows(events: TransitEvent[]): StructuralWind
     }
   }
 
-  // Don't forget the last window
   if (currentWindow.length > 0 && windowStart && windowEnd) {
     windows.push(createWindow(currentWindow, windowStart, windowEnd));
   }
@@ -442,13 +789,8 @@ function createWindow(events: TransitEvent[], start: Date, end: Date): Structura
   };
 }
 
-// ============== PHASE SCORING ==============
-
 function calculatePhaseScores(events: TransitEvent[]): PhaseScores {
-  let containment = 0;
-  let stress = 0;
-  let release = 0;
-  let trigger = 0;
+  let containment = 0, stress = 0, release = 0, trigger = 0;
 
   for (const event of events) {
     const isHard = isHardAspect(event.aspect_type);
@@ -471,11 +813,14 @@ function calculatePhaseScores(events: TransitEvent[]): PhaseScores {
         if (isPersonal) release += 2;
         if (isAxisCritical) release += 1;
         break;
+      case 'Neptune':
+        release += isHard ? 2 : 1;
+        break;
       case 'Mars':
         trigger += 2;
         if (events.some(e => e.transiting_planet !== 'Mars' && 
-            Math.abs(e.exact_dates[0]?.getTime() - event.exact_dates[0]?.getTime()) < 7 * 24 * 60 * 60 * 1000)) {
-          trigger += 2; // Mars activating other transits
+            Math.abs((e.exact_dates[0]?.getTime() || 0) - (event.exact_dates[0]?.getTime() || 0)) < 7 * 24 * 60 * 60 * 1000)) {
+          trigger += 2;
         }
         break;
       case 'NorthNode':
@@ -485,12 +830,7 @@ function calculatePhaseScores(events: TransitEvent[]): PhaseScores {
     }
   }
 
-  return {
-    containment_score: containment,
-    stress_score: stress,
-    release_score: release,
-    trigger_score: trigger
-  };
+  return { containment_score: containment, stress_score: stress, release_score: release, trigger_score: trigger };
 }
 
 function determinePhaseLabel(scores: PhaseScores): PhaseLabel {
@@ -514,14 +854,12 @@ function determinePhaseLabel(scores: PhaseScores): PhaseLabel {
 
 function extractThemeBadges(events: TransitEvent[]): string[] {
   const themes = new Set<string>();
-
   for (const event of events) {
     const houseThemes = HOUSE_THEMES[event.house_activated.natal];
     if (houseThemes) {
       houseThemes.forEach(t => themes.add(t));
     }
   }
-
   return Array.from(themes);
 }
 
@@ -536,10 +874,8 @@ export function generateWindowCopy(
   const modeVariant = MEANING_DIAL_VARIANTS[mode];
   const axisHeadline = AXIS_HEADLINES[window.axis_badge];
 
-  // Phase summary
   const phaseSummary = `${phase.body} ${axisHeadline ? axisHeadline.question : ''} ${modeVariant.tone}`;
 
-  // Chart-specific explanation
   const chartExplanation: string[] = [];
   const uniqueAxes = new Set(window.events.map(e => e.axis_activated));
   const uniqueTargets = new Set(window.events.map(e => e.natal_target));
@@ -555,7 +891,6 @@ export function generateWindowCopy(
     chartExplanation.push(`• Your Saturn placement emphasizes authority dynamics - career/public role themes may be heightened`);
   }
 
-  // Manifestations
   const manifestations: string[] = [];
   for (const event of window.events.slice(0, 3)) {
     const houseMani = MANIFESTATION_BY_HOUSE[event.house_activated.natal];
@@ -564,10 +899,7 @@ export function generateWindowCopy(
     }
   }
 
-  // Actions
   const actions = [...ACTION_TEMPLATES[window.phase_label]];
-
-  // Reflection prompts based on mode
   const reflectionPrompts = modeVariant.prompts;
 
   return {
@@ -584,7 +916,6 @@ export function generateWindowCopy(
 export function generateSaturnLensCards(signature: ChartSignature): SaturnLensCard[] {
   const cards: SaturnLensCard[] = [];
 
-  // Sign card
   const signData = SATURN_IN_SIGN[signature.saturn_sign];
   if (signData) {
     cards.push({
@@ -598,7 +929,6 @@ export function generateSaturnLensCards(signature: ChartSignature): SaturnLensCa
     });
   }
 
-  // House card
   const houseData = SATURN_IN_HOUSE[signature.saturn_house];
   if (houseData) {
     cards.push({
@@ -612,7 +942,6 @@ export function generateSaturnLensCards(signature: ChartSignature): SaturnLensCa
     });
   }
 
-  // Dispositor card
   cards.push({
     title: `Saturn reports to ${signature.saturn_dispositor.planet}...`,
     body: [
@@ -632,73 +961,6 @@ function getOrdinalSuffix(n: number): string {
   return s[(v - 20) % 10] || s[v] || s[0];
 }
 
-// ============== CYCLE SUMMARY ==============
-
-export function generateCycleSummary(
-  windows: StructuralWindow[],
-  cycleType: CycleSummary['cycle_type']
-): CycleSummary {
-  const totalContainment = windows.reduce((sum, w) => sum + w.phase_scores.containment_score, 0);
-  const totalStress = windows.reduce((sum, w) => sum + w.phase_scores.stress_score, 0);
-  const totalRelease = windows.reduce((sum, w) => sum + w.phase_scores.release_score, 0);
-
-  let storyType = 'restructuring';
-  if (totalRelease > totalContainment && totalRelease > totalStress) {
-    storyType = 'liberation';
-  } else if (totalStress > totalContainment) {
-    storyType = 'transformation';
-  }
-
-  const stories: Record<string, string> = {
-    restructuring: `This cycle emphasized building sustainable structures and accepting necessary limits. The pressure came from commitment and duty themes.`,
-    liberation: `This cycle pushed toward freedom and authenticity. The pressure came from outgrown structures that could no longer contain your evolution.`,
-    transformation: `This cycle demanded deep change and release of control. The pressure came from unsustainable patterns reaching their natural end.`
-  };
-
-  const lessons: Record<string, string[]> = {
-    restructuring: [
-      'Commitment requires choice, not just obligation',
-      'Boundaries protect what matters most',
-      'Sustainable structures serve life, not constrain it'
-    ],
-    liberation: [
-      'Authenticity sometimes requires disruption',
-      'Freedom and responsibility are not opposites',
-      'Some structures must break for growth to happen'
-    ],
-    transformation: [
-      'What cannot be sustained will transform',
-      'Power shared is power increased',
-      'Endings enable beginnings'
-    ]
-  };
-
-  const nextSteps: Record<string, string[]> = {
-    restructuring: [
-      'Identify which structures serve you and which deplete you',
-      'Practice saying no without guilt',
-      'Build support systems before crisis demands them'
-    ],
-    liberation: [
-      'Notice where you still feel trapped and name it',
-      'Experiment with small freedoms before big changes',
-      'Trust your restlessness as information'
-    ],
-    transformation: [
-      'Allow grief for what has ended',
-      'Claim your power in one specific area',
-      'Build new foundations on cleared ground'
-    ]
-  };
-
-  return {
-    cycle_type: cycleType,
-    story_summary: stories[storyType],
-    lessons: lessons[storyType],
-    next_steps: nextSteps[storyType]
-  };
-}
-
 // ============== MAIN ENTRY POINT ==============
 
 export function generateStructuralAnalysis(
@@ -709,6 +971,7 @@ export function generateStructuralAnalysis(
   signature: ChartSignature;
   windows: StructuralWindow[];
   saturnCards: SaturnLensCard[];
+  focusedWindows: FocusedTransitWindow[];
 } {
   const signature = extractChartSignature(chart);
   
@@ -721,13 +984,13 @@ export function generateStructuralAnalysis(
   const events = detectTransitEvents(chart, startDate, endDate);
   const windows = clusterEventsIntoWindows(events);
 
-  // Generate copy for each window
   for (const window of windows) {
     window.output_copy = generateWindowCopy(window, signature, window.meaning_dial_mode);
     window.action_steps = window.output_copy.actions;
   }
 
   const saturnCards = generateSaturnLensCards(signature);
+  const focusedWindows = generateFocusedTransitWindows(chart, yearsBack, yearsForward);
 
-  return { signature, windows, saturnCards };
+  return { signature, windows, saturnCards, focusedWindows };
 }
