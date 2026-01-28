@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { Circle, ArrowRight, Star, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Circle, ArrowRight, Star, AlertTriangle, Zap } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
-import { calculateDetailedSaturnCycles, SaturnCyclePhase } from '@/lib/saturnCycleCalculator';
+import { calculateDetailedSaturnCycles, SaturnCyclePhase, UranusOpposition } from '@/lib/saturnCycleCalculator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { format, differenceInDays, differenceInMonths, differenceInYears } from 'date-fns';
 
@@ -118,6 +118,116 @@ const PhaseCard = ({ phase, currentDate }: { phase: SaturnCyclePhase; currentDat
   );
 };
 
+// Uranus Opposition Card - Distinct cyan/teal styling
+const UranusOppositionCard = ({ 
+  opposition, 
+  currentDate 
+}: { 
+  opposition: UranusOpposition; 
+  currentDate: Date 
+}) => {
+  const firstEvent = opposition.events[0];
+  const isActive = opposition.isUpcoming && !opposition.isPast;
+  
+  const timeDiff = useMemo(() => {
+    if (!firstEvent) return null;
+    const eventDate = new Date(firstEvent.date);
+    const daysDiff = differenceInDays(eventDate, currentDate);
+    const monthsDiff = differenceInMonths(eventDate, currentDate);
+    const yearsDiff = differenceInYears(eventDate, currentDate);
+    
+    if (Math.abs(yearsDiff) >= 2) {
+      return { value: Math.abs(yearsDiff), unit: 'years', isPast: yearsDiff < 0 };
+    } else if (Math.abs(monthsDiff) >= 2) {
+      return { value: Math.abs(monthsDiff), unit: 'months', isPast: monthsDiff < 0 };
+    } else {
+      return { value: Math.abs(daysDiff), unit: 'days', isPast: daysDiff < 0 };
+    }
+  }, [firstEvent, currentDate]);
+  
+  return (
+    <div className={`p-4 rounded-lg border-2 border-cyan-500 ${isActive ? 'bg-cyan-500/20 ring-2 ring-cyan-400/50' : opposition.isPast ? 'bg-cyan-950/30' : 'bg-cyan-500/10'}`}>
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <span className="text-xl">♅</span>
+          <div>
+            <div className="font-medium flex items-center gap-2">
+              Uranus Opposition
+              <span className="text-lg">☍</span>
+              <Zap size={14} className="text-cyan-400" fill="currentColor" />
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Midlife Awakening • {opposition.oppositionSign}
+            </div>
+          </div>
+        </div>
+        
+        {isActive && (
+          <span className="px-2 py-0.5 bg-cyan-500 text-white text-xs font-bold rounded animate-pulse">
+            ACTIVE
+          </span>
+        )}
+        {opposition.isPast && (
+          <span className="px-2 py-0.5 bg-muted text-muted-foreground text-xs rounded">
+            PAST
+          </span>
+        )}
+      </div>
+      
+      {/* All passes with exact dates */}
+      <div className="space-y-2 mb-3">
+        {opposition.events.map((event, idx) => (
+          <div 
+            key={idx} 
+            className={`flex items-center gap-3 p-2 rounded ${
+              event.type === 'exact' 
+                ? 'bg-cyan-500/30 border border-cyan-400' 
+                : 'bg-background/50'
+            }`}
+          >
+            <div className={`text-lg font-serif ${event.type === 'exact' ? 'text-cyan-300 font-bold' : ''}`}>
+              Age {event.age}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {format(new Date(event.date), 'MMM d, yyyy')}
+            </div>
+            <div className={`text-xs px-2 py-0.5 rounded ${
+              event.type === 'exact' 
+                ? 'bg-cyan-500 text-white font-bold' 
+                : event.type === 'retrograde_pass' 
+                  ? 'bg-amber-500/30 text-amber-200' 
+                  : 'bg-green-500/30 text-green-200'
+            }`}>
+              {event.type === 'exact' ? '★ EXACT HIT' : event.type === 'retrograde_pass' ? 'Retrograde' : 'Direct'}
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {timeDiff && (
+        <div className={`text-xs px-2 py-1 rounded inline-block mb-3 ${timeDiff.isPast ? 'bg-muted' : 'bg-cyan-500/20 text-cyan-300'}`}>
+          {timeDiff.isPast ? `${timeDiff.value} ${timeDiff.unit} ago` : `in ${timeDiff.value} ${timeDiff.unit}`}
+        </div>
+      )}
+      
+      {/* Description */}
+      <details className="text-xs">
+        <summary className="cursor-pointer text-cyan-400 hover:underline">
+          What is the Uranus Opposition?
+        </summary>
+        <div className="mt-2 p-3 bg-background/50 rounded border border-cyan-500/30">
+          <p className="whitespace-pre-line text-muted-foreground">{opposition.description}</p>
+          
+          <div className="mt-3 p-2 bg-cyan-500/10 rounded border-l-2 border-cyan-400">
+            <span className="font-medium">Reflection: </span>
+            Where have I been playing it safe? What authentic part of myself have I suppressed?
+          </div>
+        </div>
+      </details>
+    </div>
+  );
+};
+
 export const SaturnReturnCalculator = ({ chart, currentDate = new Date() }: SaturnReturnCalculatorProps) => {
   const saturnCycles = useMemo(() => {
     return calculateDetailedSaturnCycles(chart, currentDate);
@@ -220,6 +330,20 @@ export const SaturnReturnCalculator = ({ chart, currentDate = new Date() }: Satu
           </div>
         </div>
         
+        {/* Uranus Opposition - Distinct Section */}
+        {saturnCycles.uranusOpposition && (
+          <div>
+            <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+              <Zap size={16} className="text-cyan-400" />
+              Uranus Opposition (Age ~42) — Midlife Awakening
+            </h4>
+            <UranusOppositionCard 
+              opposition={saturnCycles.uranusOpposition} 
+              currentDate={currentDate} 
+            />
+          </div>
+        )}
+        
         {/* Other Key Phases */}
         {keyPhases.filter(p => p.phaseName !== 'Return').length > 0 && (
           <div>
@@ -245,13 +369,16 @@ export const SaturnReturnCalculator = ({ chart, currentDate = new Date() }: Satu
               <span className="w-3 h-3 rounded border-2 border-primary" /> Saturn Return
             </span>
             <span className="flex items-center gap-1">
-              <span className="w-3 h-3 rounded border-2 border-amber-400" /> Waxing Square (building)
+              <span className="w-3 h-3 rounded border-2 border-cyan-500" /> Uranus Opposition
             </span>
             <span className="flex items-center gap-1">
-              <span className="w-3 h-3 rounded border-2 border-purple-400" /> Waning Square (releasing)
+              <span className="w-3 h-3 rounded border-2 border-amber-400" /> Waxing Square
             </span>
             <span className="flex items-center gap-1">
-              <span className="w-3 h-3 rounded border-2 border-red-400" /> Opposition (culmination)
+              <span className="w-3 h-3 rounded border-2 border-purple-400" /> Waning Square
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 rounded border-2 border-red-400" /> Opposition
             </span>
           </div>
         </div>
