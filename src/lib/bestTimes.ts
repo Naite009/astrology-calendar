@@ -126,6 +126,10 @@ export const getTransitPositions = (date: Date): TransitPosition[] => {
     { name: 'Mars', longitude: ZODIAC_SIGNS.indexOf(planets.mars.signName) * 30 + planets.mars.degree, sign: planets.mars.signName, degree: planets.mars.degree },
     { name: 'Jupiter', longitude: ZODIAC_SIGNS.indexOf(planets.jupiter.signName) * 30 + planets.jupiter.degree, sign: planets.jupiter.signName, degree: planets.jupiter.degree },
     { name: 'Saturn', longitude: ZODIAC_SIGNS.indexOf(planets.saturn.signName) * 30 + planets.saturn.degree, sign: planets.saturn.signName, degree: planets.saturn.degree },
+    { name: 'Uranus', longitude: ZODIAC_SIGNS.indexOf(planets.uranus.signName) * 30 + planets.uranus.degree, sign: planets.uranus.signName, degree: planets.uranus.degree },
+    { name: 'Neptune', longitude: ZODIAC_SIGNS.indexOf(planets.neptune.signName) * 30 + planets.neptune.degree, sign: planets.neptune.signName, degree: planets.neptune.degree },
+    { name: 'Pluto', longitude: ZODIAC_SIGNS.indexOf(planets.pluto.signName) * 30 + planets.pluto.degree, sign: planets.pluto.signName, degree: planets.pluto.degree },
+    { name: 'Chiron', longitude: ZODIAC_SIGNS.indexOf(planets.chiron.signName) * 30 + planets.chiron.degree, sign: planets.chiron.signName, degree: planets.chiron.degree },
   ];
 };
 
