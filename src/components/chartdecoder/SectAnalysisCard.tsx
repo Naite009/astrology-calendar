@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -71,6 +71,8 @@ export const SectAnalysisCard: React.FC<SectAnalysisCardProps> = ({ analysis, co
   const jupiterCondition = conditions.find(c => c.planet === 'Jupiter');
   const marsCondition = conditions.find(c => c.planet === 'Mars');
   const saturnCondition = conditions.find(c => c.planet === 'Saturn');
+  const mercuryCondition = conditions.find(c => c.planet === 'Mercury');
+  const sunCondition = conditions.find(c => c.planet === 'Sun');
 
   // Sect benefic and malefic determination
   const sectBenefic = isNightChart ? 'Venus' : 'Jupiter';
@@ -78,12 +80,43 @@ export const SectAnalysisCard: React.FC<SectAnalysisCardProps> = ({ analysis, co
   const sectMalefic = isNightChart ? 'Mars' : 'Saturn';
   const outOfSectMalefic = isNightChart ? 'Saturn' : 'Mars';
 
+  // Mercury's sect - determined by whether it rises before or after the Sun
+  // If Mercury's longitude is less than Sun's (accounting for Aries wrap), Mercury rises before Sun = Morning Star = Day Team
+  // Otherwise, Mercury is Evening Star = Night Team
+  const mercurySect = useMemo(() => {
+    const mercuryDeg = mercuryCondition ? 
+      (['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']
+        .indexOf(mercuryCondition.sign) * 30 + (mercuryCondition.house || 0)) : 0;
+    const sunDeg = sunCondition ? 
+      (['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']
+        .indexOf(sunCondition.sign) * 30 + (sunCondition.house || 0)) : 0;
+    
+    // Calculate if Mercury is ahead of (morning star) or behind (evening star) the Sun
+    let diff = mercuryDeg - sunDeg;
+    if (diff > 180) diff -= 360;
+    if (diff < -180) diff += 360;
+    
+    // Mercury rises before Sun (morning star) when it's at a lower zodiacal degree
+    // This is a simplification - real calculation would check rising times
+    const isMorningStar = diff < 0;
+    
+    return {
+      isMorningStar,
+      team: isMorningStar ? 'Day' : 'Night',
+      matchesChartSect: isMorningStar ? !isNightChart : isNightChart,
+      description: isMorningStar 
+        ? 'Mercury rises before the Sun (Morning Star) — joins the Day team. Your mind works through conscious, logical analysis.'
+        : 'Mercury sets after the Sun (Evening Star) — joins the Night team. Your mind works through intuition and emotional intelligence.'
+    };
+  }, [mercuryCondition, sunCondition, isNightChart]);
+
   const getConditionFor = (planet: string) => {
     switch (planet) {
       case 'Venus': return venusCondition;
       case 'Jupiter': return jupiterCondition;
       case 'Mars': return marsCondition;
       case 'Saturn': return saturnCondition;
+      case 'Mercury': return mercuryCondition;
       default: return null;
     }
   };
@@ -220,6 +253,33 @@ export const SectAnalysisCard: React.FC<SectAnalysisCardProps> = ({ analysis, co
           </div>
         </div>
 
+        {/* Mercury - The Team Switcher */}
+        <div className="p-3 rounded-lg border border-sky-500/30 bg-sky-500/5">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">☿</span>
+              <div>
+                <div className="text-sm font-medium">Mercury — The Shape-Shifter</div>
+                <Badge variant="outline" className={mercurySect.matchesChartSect 
+                  ? 'text-[10px] bg-emerald-500/20 text-emerald-600 border-emerald-500/30'
+                  : 'text-[10px] bg-amber-500/20 text-amber-600 border-amber-500/30'
+                }>
+                  {mercurySect.isMorningStar ? '☉ Morning Star (Day)' : '☽ Evening Star (Night)'}
+                </Badge>
+              </div>
+            </div>
+            <div className={`text-lg font-bold ${getScoreColor(mercuryCondition?.totalScore || 0)}`}>
+              {(mercuryCondition?.totalScore || 0) > 0 ? '+' : ''}{mercuryCondition?.totalScore || 0}
+            </div>
+          </div>
+          <p className="text-xs text-foreground font-medium mb-1">{mercurySect.description}</p>
+          <p className="text-xs text-muted-foreground">
+            {mercuryCondition?.sign} • House {mercuryCondition?.house || '?'}
+            {mercurySect.matchesChartSect 
+              ? ' — Mercury matches your chart sect, supporting natural mental expression.'
+              : ' — Mercury is out of sect, requiring conscious mental effort.'}
+          </p>
+        </div>
         {/* Quick Summary */}
         <div className="p-3 bg-primary/5 rounded-md">
           <p className="text-xs text-foreground">

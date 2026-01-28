@@ -16,7 +16,7 @@ import { calculatePlanetaryHours } from '@/lib/planetaryHours';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { BiorhythmCard } from '@/components/BiorhythmCard';
 import { BiorhythmForecast } from '@/components/BiorhythmForecast';
-import { SaturnReturnCalculator } from '@/components/SaturnReturnCalculator';
+import { LifeCyclesHub } from '@/components/LifeCyclesHub';
 import { DailySynthesisCard } from '@/components/DailySynthesisCard';
 import { BestRomanceDaysCard } from '@/components/BestRomanceDaysCard';
 import { SynastryAnalysisCard } from '@/components/SynastryAnalysisCard';
@@ -1201,14 +1201,10 @@ const PlanAheadSection = ({
         )}
       </div>
       
-      {/* Saturn Return Calculator */}
+      {/* Life Cycles Hub - Saturn Returns, Midlife Transits, Elder Initiations */}
       {activeChart && (
         <div className="mt-8">
-          <h4 className="text-lg font-serif mb-4 flex items-center gap-2">
-            <span className="text-xl">♄</span>
-            Saturn Return Calculator
-          </h4>
-          <SaturnReturnCalculator chart={activeChart} currentDate={new Date()} />
+          <LifeCyclesHub chart={activeChart} currentDate={new Date()} />
         </div>
       )}
     </div>
