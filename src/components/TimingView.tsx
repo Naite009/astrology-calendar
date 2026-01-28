@@ -23,6 +23,7 @@ import { SynastryAnalysisCard } from '@/components/SynastryAnalysisCard';
 import { TransitAlertsCard } from '@/components/TransitAlertsCard';
 import { CompositeChartCard } from '@/components/CompositeChartCard';
 import { BestDaysSummaryCard } from '@/components/BestDaysSummaryCard';
+import { MoonTransitCalendar } from '@/components/MoonTransitCalendar';
 interface TimingViewProps {
   userNatalChart: NatalChart | null;
   savedCharts: NatalChart[];
@@ -393,6 +394,11 @@ const RightNowSection = ({
       {/* Best Days Summary Card */}
       <div className="mt-6">
         <BestDaysSummaryCard natalChart={activeChart} />
+      </div>
+
+      {/* Moon Transit Calendar */}
+      <div className="mt-6">
+        <MoonTransitCalendar natalChart={activeChart} />
       </div>
 
       {/* Composite Chart */}

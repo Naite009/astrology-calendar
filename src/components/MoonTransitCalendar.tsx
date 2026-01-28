@@ -1,0 +1,484 @@
+import { useState, useMemo } from 'react';
+import { Moon, ChevronLeft, ChevronRight, Calendar, Star } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { NatalChart } from '@/hooks/useNatalChart';
+import * as Astronomy from 'astronomy-engine';
+import { format, addDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from 'date-fns';
+
+interface MoonTransitCalendarProps {
+  natalChart: NatalChart | null;
+}
+
+interface MoonTransit {
+  date: Date;
+  natalPlanet: string;
+  aspectType: string;
+  aspectSymbol: string;
+  orb: number;
+  moonSign: string;
+  moonDegree: number;
+  isExact: boolean;
+  interpretation: string;
+}
+
+const PLANET_SYMBOLS: Record<string, string> = {
+  Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀', Mars: '♂',
+  Jupiter: '♃', Saturn: '♄', Uranus: '♅', Neptune: '♆', Pluto: '♇',
+  Ascendant: 'AC', Midheaven: 'MC', NorthNode: '☊', Chiron: '⚷'
+};
+
+const ZODIAC_SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+
+const ASPECT_TYPES = [
+  { name: 'conjunction', angle: 0, symbol: '☌', orb: 8, nature: 'major' },
+  { name: 'sextile', angle: 60, symbol: '⚹', orb: 4, nature: 'harmonious' },
+  { name: 'square', angle: 90, symbol: '□', orb: 6, nature: 'challenging' },
+  { name: 'trine', angle: 120, symbol: '△', orb: 6, nature: 'harmonious' },
+  { name: 'opposition', angle: 180, symbol: '☍', orb: 8, nature: 'major' },
+];
+
+const getMoonLongitude = (date: Date): number => {
+  try {
+    const vector = Astronomy.GeoVector(Astronomy.Body.Moon, date, false);
+    const ecliptic = Astronomy.Ecliptic(vector);
+    return ecliptic.elon;
+  } catch {
+    return 0;
+  }
+};
+
+const getMoonSign = (longitude: number): { sign: string; degree: number } => {
+  const signIndex = Math.floor(longitude / 30);
+  const degree = longitude % 30;
+  return { sign: ZODIAC_SIGNS[signIndex], degree };
+};
+
+const getNatalPlanetLongitude = (chart: NatalChart, planet: string): number | null => {
+  // For Ascendant (stored as planets.Ascendant in NatalChart)
+  if (planet === 'Ascendant') {
+    const asc = chart.planets.Ascendant;
+    if (!asc?.sign) return null;
+    const signIndex = ZODIAC_SIGNS.indexOf(asc.sign);
+    if (signIndex === -1) return null;
+    return signIndex * 30 + asc.degree + (asc.minutes || 0) / 60;
+  }
+  
+  // For Midheaven, check house10 cusp
+  if (planet === 'Midheaven') {
+    const mc = chart.houseCusps?.house10;
+    if (!mc?.sign) return null;
+    const signIndex = ZODIAC_SIGNS.indexOf(mc.sign);
+    if (signIndex === -1) return null;
+    return signIndex * 30 + mc.degree + (mc.minutes || 0) / 60;
+  }
+  
+  const planetData = chart.planets[planet as keyof typeof chart.planets];
+  if (!planetData?.sign) return null;
+  
+  const signIndex = ZODIAC_SIGNS.indexOf(planetData.sign);
+  if (signIndex === -1) return null;
+  
+  return signIndex * 30 + planetData.degree + (planetData.minutes || 0) / 60;
+};
+
+const getTransitInterpretation = (planet: string, aspect: string): string => {
+  const interpretations: Record<string, Record<string, string>> = {
+    Sun: {
+      conjunction: 'Emotional connection to identity and vitality. Good for self-expression.',
+      sextile: 'Easy flow between emotions and will. Creative opportunities.',
+      square: 'Internal tension between needs and goals. Emotional decisions.',
+      trine: 'Harmony between heart and head. Confidence flows naturally.',
+      opposition: 'Awareness of how emotions affect your sense of self.',
+    },
+    Moon: {
+      conjunction: 'Lunar Return - emotional reset. New emotional cycle begins.',
+      sextile: 'Emotional insights available. Connect with your feelings.',
+      square: 'Emotional tension or restlessness. Inner adjustments needed.',
+      trine: 'Deep emotional harmony. Trust your instincts.',
+      opposition: 'Full awareness of emotional patterns. Release what no longer serves.',
+    },
+    Mercury: {
+      conjunction: 'Mind and heart align. Good for emotional conversations.',
+      sextile: 'Easy communication of feelings. Write, journal, connect.',
+      square: 'Mental/emotional disconnect. Clarify before speaking.',
+      trine: 'Words flow from the heart. Intuitive understanding.',
+      opposition: 'Balance logic with intuition. Listen as much as speak.',
+    },
+    Venus: {
+      conjunction: 'Love and comfort highlighted. Good for relationships, beauty.',
+      sextile: 'Pleasant social interactions. Enjoy simple pleasures.',
+      square: 'Tension in relationships or values. Comfort-seeking.',
+      trine: 'Natural charm and warmth. Attract what you need.',
+      opposition: 'Relationship awareness. Balance giving and receiving.',
+    },
+    Mars: {
+      conjunction: 'Emotional energy intensifies. Channel into action.',
+      sextile: 'Motivation comes easily. Take initiative.',
+      square: 'Irritability or impatience. Pause before reacting.',
+      trine: 'Courage and emotional strength. Assert yourself.',
+      opposition: 'Others may trigger reactions. Choose your battles.',
+    },
+    Jupiter: {
+      conjunction: 'Emotional expansion and optimism. Growth feels natural.',
+      sextile: 'Opportunities for emotional healing. Generosity flows.',
+      square: 'Overindulgence or restlessness. Moderation is key.',
+      trine: 'Faith and hope amplified. Trust the process.',
+      opposition: 'Balance inner growth with outer expansion.',
+    },
+    Saturn: {
+      conjunction: 'Emotional seriousness. Face responsibilities with maturity.',
+      sextile: 'Steady emotional progress. Structure supports feelings.',
+      square: 'Emotional blocks or fears surface. Work through them.',
+      trine: 'Emotional stability and wisdom. Long-term commitments.',
+      opposition: 'Authority figures or limits test emotional security.',
+    },
+    Ascendant: {
+      conjunction: 'Emotions visible to others. Your mood sets the tone.',
+      sextile: 'Easy self-expression. Others respond to your vibe.',
+      square: 'Tension between inner feelings and outer image.',
+      trine: 'Natural authenticity. Be yourself comfortably.',
+      opposition: 'Relationships reflect your emotional state.',
+    },
+    Midheaven: {
+      conjunction: 'Public visibility of emotions. Career/reputation touched.',
+      sextile: 'Professional opportunities align with emotional needs.',
+      square: 'Work/life balance challenged. Prioritize wisely.',
+      trine: 'Success feels emotionally fulfilling. Recognition comes.',
+      opposition: 'Home and career seek balance. Nurture both.',
+    },
+  };
+  
+  return interpretations[planet]?.[aspect] || 'Lunar energy activates this natal point.';
+};
+
+const calculateMoonTransits = (chart: NatalChart, startDate: Date, days: number): MoonTransit[] => {
+  const transits: MoonTransit[] = [];
+  const planets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Ascendant', 'Midheaven'];
+  
+  // Check every 2 hours for 30 days (Moon moves ~13° per day)
+  for (let d = 0; d < days; d++) {
+    for (let h = 0; h < 24; h += 2) {
+      const checkDate = new Date(startDate);
+      checkDate.setDate(checkDate.getDate() + d);
+      checkDate.setHours(h, 0, 0, 0);
+      
+      const moonLon = getMoonLongitude(checkDate);
+      const { sign: moonSign, degree: moonDegree } = getMoonSign(moonLon);
+      
+      planets.forEach(planet => {
+        const natalLon = getNatalPlanetLongitude(chart, planet);
+        if (natalLon === null) return;
+        
+        ASPECT_TYPES.forEach(aspect => {
+          let diff = Math.abs(moonLon - natalLon);
+          if (diff > 180) diff = 360 - diff;
+          
+          const orb = Math.abs(diff - aspect.angle);
+          
+          if (orb <= 1.5) { // Tight orb for Moon transits
+            // Check if we already have this transit (within same day)
+            const existingIndex = transits.findIndex(t => 
+              isSameDay(t.date, checkDate) && 
+              t.natalPlanet === planet && 
+              t.aspectType === aspect.name
+            );
+            
+            if (existingIndex === -1 || transits[existingIndex].orb > orb) {
+              const transit: MoonTransit = {
+                date: checkDate,
+                natalPlanet: planet,
+                aspectType: aspect.name,
+                aspectSymbol: aspect.symbol,
+                orb: Math.round(orb * 10) / 10,
+                moonSign,
+                moonDegree: Math.round(moonDegree * 10) / 10,
+                isExact: orb < 0.5,
+                interpretation: getTransitInterpretation(planet, aspect.name),
+              };
+              
+              if (existingIndex === -1) {
+                transits.push(transit);
+              } else {
+                transits[existingIndex] = transit;
+              }
+            }
+          }
+        });
+      });
+    }
+  }
+  
+  return transits.sort((a, b) => a.date.getTime() - b.date.getTime());
+};
+
+const TransitDetailDialog = ({ transit }: { transit: MoonTransit }) => {
+  const aspectColors: Record<string, string> = {
+    conjunction: 'bg-primary/20 text-primary',
+    sextile: 'bg-secondary text-secondary-foreground',
+    square: 'bg-destructive/20 text-destructive',
+    trine: 'bg-accent text-accent-foreground',
+    opposition: 'bg-muted text-muted-foreground',
+  };
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <button className={`text-xs px-2 py-1 rounded-full hover:ring-2 hover:ring-primary/50 transition-all ${aspectColors[transit.aspectType]}`}>
+          {transit.aspectSymbol} {PLANET_SYMBOLS[transit.natalPlanet] || transit.natalPlanet}
+          {transit.isExact && <Star className="inline-block w-2 h-2 ml-0.5 fill-current" />}
+        </button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Moon className="h-5 w-5 text-primary" />
+            Moon {transit.aspectSymbol} {transit.natalPlanet}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-3 rounded-lg bg-secondary/50">
+              <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Date & Time</div>
+              <div className="font-medium">{format(transit.date, 'MMM d, yyyy')}</div>
+              <div className="text-sm text-muted-foreground">{format(transit.date, 'h:mm a')}</div>
+            </div>
+            <div className="p-3 rounded-lg bg-secondary/50">
+              <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Moon Position</div>
+              <div className="font-medium">{transit.moonDegree.toFixed(1)}° {transit.moonSign}</div>
+              <div className="text-sm text-muted-foreground">Orb: {transit.orb}°</div>
+            </div>
+          </div>
+          
+          <div className={`p-3 rounded-lg ${aspectColors[transit.aspectType]}`}>
+            <div className="text-xs uppercase tracking-wider mb-1 opacity-80">Aspect Type</div>
+            <div className="font-medium capitalize flex items-center gap-2">
+              <span className="text-xl">{transit.aspectSymbol}</span>
+              {transit.aspectType}
+              {transit.isExact && (
+                <Badge variant="secondary" className="ml-auto text-xs">
+                  ★ EXACT
+                </Badge>
+              )}
+            </div>
+          </div>
+          
+          <div className="p-3 rounded-lg bg-card border">
+            <div className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Interpretation</div>
+            <p className="text-sm leading-relaxed">{transit.interpretation}</p>
+          </div>
+          
+          <div className="text-xs text-muted-foreground text-center pt-2 border-t">
+            Transit ☽ {transit.aspectSymbol} Natal {PLANET_SYMBOLS[transit.natalPlanet] || transit.natalPlanet} {transit.natalPlanet}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export const MoonTransitCalendar = ({ natalChart }: MoonTransitCalendarProps) => {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  
+  const monthStart = startOfMonth(currentMonth);
+  const monthEnd = endOfMonth(currentMonth);
+  const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  
+  // Calculate transits for the month
+  const transits = useMemo(() => {
+    if (!natalChart) return [];
+    return calculateMoonTransits(natalChart, monthStart, 35);
+  }, [natalChart, monthStart]);
+  
+  // Group transits by date
+  const transitsByDate = useMemo(() => {
+    const grouped: Record<string, MoonTransit[]> = {};
+    transits.forEach(t => {
+      const key = format(t.date, 'yyyy-MM-dd');
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(t);
+    });
+    return grouped;
+  }, [transits]);
+  
+  const selectedDayTransits = selectedDate 
+    ? transitsByDate[format(selectedDate, 'yyyy-MM-dd')] || []
+    : [];
+  
+  const navigateMonth = (direction: number) => {
+    setCurrentMonth(prev => {
+      const newDate = new Date(prev);
+      newDate.setMonth(newDate.getMonth() + direction);
+      return newDate;
+    });
+    setSelectedDate(null);
+  };
+  
+  if (!natalChart) {
+    return (
+      <Card className="border-2 border-dashed border-muted-foreground/30">
+        <CardContent className="p-6 text-center text-muted-foreground">
+          <Moon className="h-8 w-8 mx-auto mb-2 opacity-50" />
+          <p>Select a natal chart to see Moon transits</p>
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  // Get first day of week offset
+  const firstDayOffset = monthStart.getDay();
+  
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Moon className="h-5 w-5 text-primary" />
+            Moon Transit Calendar
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={() => navigateMonth(-1)}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="font-medium min-w-[140px] text-center">
+              {format(currentMonth, 'MMMM yyyy')}
+            </span>
+            <Button variant="ghost" size="icon" onClick={() => navigateMonth(1)}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+        <p className="text-sm text-muted-foreground mt-1">
+          When the transiting Moon aspects your natal planets
+        </p>
+      </CardHeader>
+      <CardContent>
+        {/* Calendar Grid */}
+        <div className="grid grid-cols-7 gap-1 mb-4">
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+            <div key={day} className="text-center text-xs font-medium text-muted-foreground py-2">
+              {day}
+            </div>
+          ))}
+          
+          {/* Empty cells for offset */}
+          {Array.from({ length: firstDayOffset }).map((_, i) => (
+            <div key={`empty-${i}`} className="h-24" />
+          ))}
+          
+          {/* Day cells */}
+          {daysInMonth.map(day => {
+            const dateKey = format(day, 'yyyy-MM-dd');
+            const dayTransits = transitsByDate[dateKey] || [];
+            const isSelected = selectedDate && isSameDay(day, selectedDate);
+            const isToday = isSameDay(day, new Date());
+            const hasExact = dayTransits.some(t => t.isExact);
+            
+            return (
+              <button
+                key={dateKey}
+                onClick={() => setSelectedDate(isSelected ? null : day)}
+                className={`h-24 p-1 rounded-lg border text-left transition-all hover:border-primary/50 ${
+                  isSelected 
+                    ? 'border-primary bg-primary/10' 
+                    : isToday 
+                      ? 'border-primary/30 bg-primary/5' 
+                      : 'border-border/50'
+                } ${hasExact ? 'ring-2 ring-yellow-500/50' : ''}`}
+              >
+                <div className={`text-xs font-medium mb-1 ${isToday ? 'text-primary' : ''}`}>
+                  {format(day, 'd')}
+                </div>
+                <div className="flex flex-wrap gap-0.5">
+                  {dayTransits.slice(0, 4).map((transit, i) => (
+                    <TransitDetailDialog key={i} transit={transit} />
+                  ))}
+                  {dayTransits.length > 4 && (
+                    <span className="text-xs text-muted-foreground px-1">
+                      +{dayTransits.length - 4}
+                    </span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+        
+        {/* Selected Day Detail */}
+        {selectedDate && (
+          <div className="mt-4 p-4 rounded-lg border bg-secondary/30">
+            <h4 className="font-medium mb-3 flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              {format(selectedDate, 'EEEE, MMMM d, yyyy')}
+            </h4>
+            {selectedDayTransits.length > 0 ? (
+              <ScrollArea className="max-h-48">
+                <div className="space-y-2">
+                  {selectedDayTransits.map((transit, i) => (
+                    <div 
+                      key={i} 
+                      className={`p-3 rounded-lg border ${
+                        transit.isExact 
+                          ? 'bg-primary/10 border-primary/50' 
+                          : 'bg-card'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-medium">
+                          ☽ Moon {transit.aspectSymbol} {PLANET_SYMBOLS[transit.natalPlanet]} {transit.natalPlanet}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">
+                            {format(transit.date, 'h:mm a')}
+                          </span>
+                          {transit.isExact && (
+                            <Badge variant="secondary" className="text-xs bg-primary/20">
+                              ★ EXACT
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {transit.interpretation}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            ) : (
+              <p className="text-sm text-muted-foreground">No major Moon transits on this day</p>
+            )}
+          </div>
+        )}
+        
+        {/* Legend */}
+        <div className="mt-4 pt-4 border-t">
+          <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 rounded-full bg-primary/60" /> Conjunction
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 rounded-full bg-accent" /> Trine
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 rounded-full bg-secondary" /> Sextile
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 rounded-full bg-destructive/60" /> Square
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 rounded-full bg-muted-foreground" /> Opposition
+            </span>
+            <span className="flex items-center gap-1">
+              <Star className="w-3 h-3 fill-primary text-primary" /> Exact
+            </span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
