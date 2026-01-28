@@ -21,6 +21,74 @@ const PLANET_SYMBOLS: Record<string, string> = {
   Sun: '☉', Moon: '☽', Jupiter: '♃'
 };
 
+// Chiron wound interpretations by sign
+const CHIRON_WOUND_BY_SIGN: Record<string, {
+  wound: string;
+  gift: string;
+  healingPath: string;
+}> = {
+  Aries: {
+    wound: "The wound of SELF — feeling like you don't have the right to exist, assert yourself, or take up space. Fear of being too much or not enough.",
+    gift: "Becoming a champion for others' right to exist authentically. You help others find their courage because you know what it's like to feel invisible.",
+    healingPath: "Learning that your existence is not a burden. Taking action despite fear. Claiming your right to be HERE."
+  },
+  Taurus: {
+    wound: "The wound of WORTH — feeling fundamentally unworthy, insecure about money/resources, or disconnected from your body and senses.",
+    gift: "Becoming a guide for others to find their inherent value. You help people reconnect with their bodies and build real security.",
+    healingPath: "Discovering that you are valuable simply because you exist. Building security from within, not from possessions."
+  },
+  Gemini: {
+    wound: "The wound of COMMUNICATION — feeling unheard, misunderstood, or like your voice doesn't matter. Possible learning difficulties or sibling wounds.",
+    gift: "Becoming a translator, teacher, or writer who helps others find their voice. You understand what it means to struggle to be understood.",
+    healingPath: "Learning that your thoughts and words matter. Finding communities that hear you. Writing your truth."
+  },
+  Cancer: {
+    wound: "The wound of BELONGING — feeling homeless, motherless, or like you never had a safe emotional foundation. Family trauma or abandonment.",
+    gift: "Becoming a nurturer who creates safe spaces for others. You build the family and home you never had.",
+    healingPath: "Becoming your own mother. Creating emotional safety within. Healing ancestral patterns."
+  },
+  Leo: {
+    wound: "The wound of RECOGNITION — feeling unseen, uncelebrated, or like your creative self-expression was crushed. Shame about wanting attention.",
+    gift: "Becoming a mentor who celebrates others' unique gifts. You help people shine because you know the pain of being dimmed.",
+    healingPath: "Learning that wanting to be seen is not selfish. Creating for yourself first. Owning your light."
+  },
+  Virgo: {
+    wound: "The wound of IMPERFECTION — chronic self-criticism, feeling broken or flawed, health anxieties, never feeling 'good enough.'",
+    gift: "Becoming a healer or helper who accepts others' imperfections with compassion. You perfect the art of gentle improvement.",
+    healingPath: "Accepting that 'good enough' IS enough. Healing the inner critic. Finding perfection in imperfection."
+  },
+  Libra: {
+    wound: "The wound of RELATIONSHIP — feeling incomplete without a partner, losing yourself in relationships, or experiencing painful rejection/abandonment.",
+    gift: "Becoming a relationship healer, mediator, or counselor. You understand the depths of human connection and its challenges.",
+    healingPath: "Learning to be whole alone before partnering. Finding balance between self and other."
+  },
+  Scorpio: {
+    wound: "The wound of TRUST — betrayal, violation of boundaries, exposure to death/darkness too young, fear of intimacy and vulnerability.",
+    gift: "Becoming a transformer who helps others through their darkest passages. You are a guide through the underworld.",
+    healingPath: "Learning to trust again—carefully. Transforming pain into power. Reclaiming what was taken."
+  },
+  Sagittarius: {
+    wound: "The wound of MEANING — feeling like life has no purpose, crisis of faith, cultural displacement, or having your beliefs mocked/invalidated.",
+    gift: "Becoming a wisdom teacher who helps others find their own truth. You understand the journey of seeking meaning.",
+    healingPath: "Creating your own philosophy of life. Finding meaning in the search itself. Teaching what you needed to learn."
+  },
+  Capricorn: {
+    wound: "The wound of AUTHORITY — absent/harsh father figures, premature responsibility, feeling like you must earn love through achievement, imposter syndrome.",
+    gift: "Becoming a gentle authority who guides others without domination. You understand the loneliness of climbing.",
+    healingPath: "Separating your worth from your achievements. Becoming your own supportive father. Achieving for joy, not validation."
+  },
+  Aquarius: {
+    wound: "The wound of BELONGING TO HUMANITY — feeling like an alien, ostracized for being different, disconnected from groups while desperately wanting to belong.",
+    gift: "Becoming a bridge for other outsiders. You create communities where everyone's weirdness is welcome.",
+    healingPath: "Embracing that you're different AND you belong. Finding your tribe. Being the change you needed to see."
+  },
+  Pisces: {
+    wound: "The wound of SPIRITUAL ABANDONMENT — feeling forgotten by the divine, overwhelmed by universal suffering, escapism, or martyrdom patterns.",
+    gift: "Becoming a compassionate healer, artist, or spiritual guide. You feel everything, and you transmute pain into beauty.",
+    healingPath: "Learning healthy boundaries while staying connected. Creating art from suffering. Compassion without martyrdom."
+  }
+};
+
 interface OuterPlanetTransit {
   planet: string;
   aspectType: 'square' | 'opposition' | 'return' | 'conjunction';
@@ -34,6 +102,33 @@ interface OuterPlanetTransit {
   description: string;
   lifeTheme: string;
   intensity: 'critical' | 'major' | 'moderate';
+  natalSign?: string;
+  natalDegree?: string;
+  targetDegree?: string;
+  woundData?: {
+    wound: string;
+    gift: string;
+    healingPath: string;
+  };
+}
+
+const ZODIAC_SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+                      'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+
+// Format degree as "XX° Sign"
+function formatDegree(absoluteDegree: number): string {
+  const normalized = ((absoluteDegree % 360) + 360) % 360;
+  const signIndex = Math.floor(normalized / 30);
+  const degree = Math.floor(normalized % 30);
+  const minutes = Math.round((normalized % 1) * 60);
+  return `${degree}°${minutes.toString().padStart(2, '0')}' ${ZODIAC_SIGNS[signIndex]}`;
+}
+
+// Get sign from absolute degree
+function getSignFromDegree(absoluteDegree: number): string {
+  const normalized = ((absoluteDegree % 360) + 360) % 360;
+  const signIndex = Math.floor(normalized / 30);
+  return ZODIAC_SIGNS[signIndex];
 }
 
 // Get planet longitude at date
@@ -49,9 +144,7 @@ function getNatalPlanetLongitude(chart: NatalChart, planetName: string): number 
   const planet = chart.planets[planetName as keyof typeof chart.planets];
   if (!planet || !planet.sign) return null;
   
-  const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-                 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
-  const signIndex = signs.indexOf(planet.sign);
+  const signIndex = ZODIAC_SIGNS.indexOf(planet.sign);
   if (signIndex === -1) return null;
   
   return signIndex * 30 + planet.degree + (planet.minutes || 0) / 60;
@@ -107,6 +200,7 @@ function calculateOuterPlanetTransits(chart: NatalChart, currentDate: Date): Out
   
   // Neptune Square (natal Neptune) - typically age 40-42
   const natalNeptune = getNatalPlanetLongitude(chart, 'Neptune');
+  const neptuneSign = chart.planets.Neptune?.sign || '';
   if (natalNeptune !== null) {
     const squareDegree1 = (natalNeptune + 90) % 360;
     const result = findTransitDate(Astronomy.Body.Neptune, squareDegree1, birthDate, 38, 50);
@@ -123,13 +217,17 @@ function calculateOuterPlanetTransits(chart: NatalChart, currentDate: Date): Out
         daysUntil: result.date > currentDate ? differenceInDays(result.date, currentDate) : null,
         description: 'Neptune Square Neptune — The Fog of Midlife',
         lifeTheme: 'Spiritual disillusionment and re-enchantment. Old dreams dissolve to make way for deeper meaning. You may question what you\'ve been chasing.',
-        intensity: 'major'
+        intensity: 'major',
+        natalSign: neptuneSign,
+        natalDegree: formatDegree(natalNeptune),
+        targetDegree: formatDegree(squareDegree1)
       });
     }
   }
   
   // Pluto Square (natal Pluto) - varies HUGELY by generation
   const natalPluto = getNatalPlanetLongitude(chart, 'Pluto');
+  const plutoSign = chart.planets.Pluto?.sign || '';
   if (natalPluto !== null) {
     const squareDegree = (natalPluto + 90) % 360;
     // Pluto square can happen anywhere from 36-90 depending on Pluto's speed at birth
@@ -147,7 +245,10 @@ function calculateOuterPlanetTransits(chart: NatalChart, currentDate: Date): Out
         daysUntil: result.date > currentDate ? differenceInDays(result.date, currentDate) : null,
         description: 'Pluto Square Pluto — Power Transformation',
         lifeTheme: 'Deep power crisis. Everything you thought you controlled comes up for review. Death/rebirth of old identity structures. Shadow material demands integration.',
-        intensity: 'critical'
+        intensity: 'critical',
+        natalSign: plutoSign,
+        natalDegree: formatDegree(natalPluto),
+        targetDegree: formatDegree(squareDegree)
       });
     }
   }
@@ -155,6 +256,8 @@ function calculateOuterPlanetTransits(chart: NatalChart, currentDate: Date): Out
   // Chiron Return - age 49-51
   // Note: astronomy-engine doesn't have Chiron, so we estimate based on typical 50-year cycle
   const natalChiron = getNatalPlanetLongitude(chart, 'Chiron');
+  const chironSign = chart.planets.Chiron?.sign || '';
+  const chironWound = CHIRON_WOUND_BY_SIGN[chironSign];
   if (natalChiron !== null) {
     // Estimate Chiron return at age 50 (Chiron's orbital period is ~50.7 years)
     const estimatedDate = addYears(birthDate, 50);
@@ -168,9 +271,15 @@ function calculateOuterPlanetTransits(chart: NatalChart, currentDate: Date): Out
       isPast: estimatedDate < currentDate,
       isActive: Math.abs(50 - currentAge) < 2,
       daysUntil: estimatedDate > currentDate ? differenceInDays(estimatedDate, currentDate) : null,
-      description: 'Chiron Return — The Wounded Healer Returns',
-      lifeTheme: 'Your core wound comes full circle. The pain you\'ve carried since childhood asks to be healed—or transformed into wisdom. Many become healers/teachers after this.',
-      intensity: 'major'
+      description: `Chiron Return — The Wounded Healer (${chironSign})`,
+      lifeTheme: chironWound 
+        ? `YOUR WOUND: ${chironWound.wound.substring(0, 100)}...`
+        : 'Your core wound comes full circle. The pain you\'ve carried since childhood asks to be healed—or transformed into wisdom.',
+      intensity: 'major',
+      natalSign: chironSign,
+      natalDegree: formatDegree(natalChiron),
+      targetDegree: formatDegree(natalChiron),
+      woundData: chironWound
     });
   }
   
@@ -393,40 +502,82 @@ const MidlifeTransitWindow: React.FC<{ chart: NatalChart; currentDate: Date }> =
       <CardContent className="space-y-3">
         {midlifeTransits.length > 0 ? (
           midlifeTransits.map((transit, idx) => (
-            <div key={idx} className={`p-3 rounded-lg border ${getStatusColor(transit)}`}>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">{PLANET_SYMBOLS[transit.planet]}</span>
-                  <div>
-                    <div className="text-sm font-medium">
-                      {transit.planet} {transit.aspectSymbol} natal {transit.planet}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Age ~{transit.exactAge} • {transit.exactDate ? format(transit.exactDate, 'MMM yyyy') : transit.typicalAgeRange}
+            <Collapsible key={idx}>
+              <div className={`p-3 rounded-lg border ${getStatusColor(transit)}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{PLANET_SYMBOLS[transit.planet]}</span>
+                    <div>
+                      <div className="text-sm font-medium">
+                        {transit.planet} {transit.aspectSymbol} natal {transit.planet}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Age ~{transit.exactAge} • {transit.exactDate ? format(transit.exactDate, 'MMMM d, yyyy') : transit.typicalAgeRange}
+                      </div>
                     </div>
                   </div>
+                  <div className="text-right">
+                    {transit.isActive && (
+                      <Badge variant="outline" className="bg-destructive/20 text-destructive animate-pulse">
+                        ACTIVE NOW
+                      </Badge>
+                    )}
+                    {!transit.isPast && !transit.isActive && transit.daysUntil && (
+                      <Badge variant="outline" className="bg-accent/50 text-accent-foreground">
+                        in {Math.round(transit.daysUntil / 30)} months
+                      </Badge>
+                    )}
+                    {transit.isPast && (
+                      <Badge variant="outline" className="bg-muted">
+                        COMPLETE
+                      </Badge>
+                    )}
+                  </div>
                 </div>
-                <div className="text-right">
-                  {transit.isActive && (
-                    <Badge variant="outline" className="bg-rose-500/20 text-rose-600 animate-pulse">
-                      ACTIVE NOW
-                    </Badge>
+                
+                {/* Exact Degrees Display */}
+                {transit.natalDegree && (
+                  <div className="text-xs bg-secondary/50 p-2 rounded mb-2 font-mono">
+                    <span className="text-muted-foreground">Natal: </span>
+                    <span className="text-foreground font-medium">{transit.natalDegree}</span>
+                    {transit.targetDegree && transit.targetDegree !== transit.natalDegree && (
+                      <>
+                        <span className="text-muted-foreground"> → Transit hits: </span>
+                        <span className="text-foreground font-medium">{transit.targetDegree}</span>
+                      </>
+                    )}
+                  </div>
+                )}
+                
+                <p className="text-xs text-foreground font-medium mb-1">{transit.description}</p>
+                
+                <CollapsibleTrigger className="text-xs text-primary hover:underline cursor-pointer flex items-center gap-1">
+                  <ChevronDown size={12} />
+                  {transit.woundData ? 'See Your Wound & Gift' : 'Learn More'}
+                </CollapsibleTrigger>
+                
+                <CollapsibleContent className="mt-2 p-3 bg-background/50 rounded border border-border text-xs space-y-2">
+                  {transit.woundData ? (
+                    <>
+                      <div>
+                        <span className="font-semibold text-destructive">💔 YOUR WOUND ({transit.natalSign}):</span>
+                        <p className="text-muted-foreground mt-1">{transit.woundData.wound}</p>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-primary">✨ YOUR GIFT:</span>
+                        <p className="text-muted-foreground mt-1">{transit.woundData.gift}</p>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-accent-foreground">🌱 HEALING PATH:</span>
+                        <p className="text-muted-foreground mt-1">{transit.woundData.healingPath}</p>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-muted-foreground">{transit.lifeTheme}</p>
                   )}
-                  {!transit.isPast && !transit.isActive && transit.daysUntil && (
-                    <Badge variant="outline" className="bg-amber-500/20 text-amber-600">
-                      in {Math.round(transit.daysUntil / 30)} months
-                    </Badge>
-                  )}
-                  {transit.isPast && (
-                    <Badge variant="outline" className="bg-muted">
-                      COMPLETE
-                    </Badge>
-                  )}
-                </div>
+                </CollapsibleContent>
               </div>
-              <p className="text-xs text-foreground font-medium mb-1">{transit.description}</p>
-              <p className="text-xs text-muted-foreground">{transit.lifeTheme}</p>
-            </div>
+            </Collapsible>
           ))
         ) : (
           <p className="text-sm text-muted-foreground text-center py-4">
@@ -464,20 +615,60 @@ const Post50Transits: React.FC<{ chart: NatalChart; currentDate: Date }> = ({ ch
       </CardHeader>
       <CardContent className="space-y-3">
         {post50Transits.map((transit, idx) => (
-          <div key={idx} className={`p-3 rounded-lg border ${transit.isPast ? 'bg-muted/30' : 'bg-violet-500/5 border-violet-500/30'}`}>
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">{PLANET_SYMBOLS[transit.planet]}</span>
-                <div>
-                  <div className="text-sm font-medium">{transit.description}</div>
-                  <div className="text-xs text-muted-foreground">
-                    Age ~{transit.exactAge} • {transit.typicalAgeRange}
+          <Collapsible key={idx}>
+            <div className={`p-3 rounded-lg border ${transit.isPast ? 'bg-muted/30' : transit.isActive ? 'bg-primary/10 border-primary/30' : 'bg-secondary/30 border-border'}`}>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">{PLANET_SYMBOLS[transit.planet]}</span>
+                  <div>
+                    <div className="text-sm font-medium">{transit.description}</div>
+                    <div className="text-xs text-muted-foreground">
+                      Age ~{transit.exactAge} • {transit.exactDate ? format(transit.exactDate, 'MMMM d, yyyy') : transit.typicalAgeRange}
+                    </div>
                   </div>
                 </div>
+                {transit.isActive && (
+                  <Badge variant="outline" className="bg-primary/20 text-primary animate-pulse">
+                    APPROACHING
+                  </Badge>
+                )}
               </div>
+              
+              {/* Exact Degrees Display */}
+              {transit.natalDegree && (
+                <div className="text-xs bg-secondary/50 p-2 rounded mb-2 font-mono">
+                  <span className="text-muted-foreground">Natal: </span>
+                  <span className="text-foreground font-medium">{transit.natalDegree}</span>
+                </div>
+              )}
+              
+              <CollapsibleTrigger className="text-xs text-primary hover:underline cursor-pointer flex items-center gap-1">
+                <ChevronDown size={12} />
+                {transit.woundData ? 'See Your Wound & Gift' : 'Learn More'}
+              </CollapsibleTrigger>
+              
+              <CollapsibleContent className="mt-2 p-3 bg-background/50 rounded border border-border text-xs space-y-2">
+                {transit.woundData ? (
+                  <>
+                    <div>
+                      <span className="font-semibold text-destructive">💔 YOUR WOUND ({transit.natalSign}):</span>
+                      <p className="text-muted-foreground mt-1">{transit.woundData.wound}</p>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-primary">✨ YOUR GIFT:</span>
+                      <p className="text-muted-foreground mt-1">{transit.woundData.gift}</p>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-accent-foreground">🌱 HEALING PATH:</span>
+                      <p className="text-muted-foreground mt-1">{transit.woundData.healingPath}</p>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-muted-foreground">{transit.lifeTheme}</p>
+                )}
+              </CollapsibleContent>
             </div>
-            <p className="text-xs text-muted-foreground">{transit.lifeTheme}</p>
-          </div>
+          </Collapsible>
         ))}
         
         {post50Transits.length === 0 && (
@@ -510,7 +701,7 @@ export const LifeCyclesHub: React.FC<LifeCyclesHubProps> = ({ chart, currentDate
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="saturn">♄ Saturn</TabsTrigger>
+          <TabsTrigger value="cycles">Key Cycles</TabsTrigger>
           <TabsTrigger value="midlife">Midlife</TabsTrigger>
           <TabsTrigger value="elder">50+</TabsTrigger>
         </TabsList>
@@ -564,7 +755,7 @@ export const LifeCyclesHub: React.FC<LifeCyclesHubProps> = ({ chart, currentDate
           </Card>
         </TabsContent>
         
-        <TabsContent value="saturn" className="mt-4">
+        <TabsContent value="cycles" className="mt-4">
           <SaturnReturnCalculator chart={chart} currentDate={currentDate} />
         </TabsContent>
         
