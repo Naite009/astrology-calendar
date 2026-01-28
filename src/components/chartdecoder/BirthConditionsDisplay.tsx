@@ -16,6 +16,7 @@ import { MostPowerfulPlanetCard } from './MostPowerfulPlanetCard';
 import { PlanetPowerRanking } from './PlanetPowerRanking';
 import { DignityDistribution } from './DignityDistribution';
 import { SectAnalysisCard } from './SectAnalysisCard';
+import { SectLightActivationsCard } from './SectLightActivationsCard';
 import { ChartRulerDeepDive } from './ChartRulerDeepDive';
 import { HouseLordAnalysis } from './HouseLordAnalysis';
 import { NatalAspectsSummary } from './NatalAspectsSummary';
@@ -172,6 +173,12 @@ export const BirthConditionsDisplay: React.FC<BirthConditionsDisplayProps> = ({ 
 
       {/* Sect Analysis Card */}
       <SectAnalysisCard analysis={strengthsAnalysis} conditions={planetaryConditions} />
+
+      {/* Sect Light Activations - Transits to Moon (night) or Sun (day) */}
+      <SectLightActivationsCard 
+        chart={chart} 
+        isNightChart={strengthsAnalysis.sectLight.planet === 'Moon'} 
+      />
 
       {/* Natal Aspects Summary */}
       <NatalAspectsSummary aspects={aspects} />
