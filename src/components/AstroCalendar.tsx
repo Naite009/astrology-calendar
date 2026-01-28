@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles, Gauge, Globe, Heart, Activity, MessageCircleQuestion } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers } from "lucide-react";
 import { ChartDecoderView } from "./ChartDecoderView";
 import { AskView } from "./AskView";
 import { MonthView } from "./MonthView";
@@ -31,8 +31,9 @@ import { DayData, generateICalExport } from "@/lib/astrology";
 
 import { SynastryView } from "./SynastryView";
 import { RelationshipTimelineView } from "./RelationshipTimelineView";
+import { StructuralStressView } from "./StructuralStressView";
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask";
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -150,6 +151,9 @@ export const AstroCalendar = () => {
     }
     if (viewMode === "health") {
       return "Health Astrology";
+    }
+    if (viewMode === "structural") {
+      return "Structural Stress & Release";
     }
     if (viewMode === "timeline") {
       return "Relationship Timeline";
@@ -451,6 +455,17 @@ export const AstroCalendar = () => {
                 Timeline
               </button>
               <button
+                onClick={() => setViewMode("structural")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "structural"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Layers size={14} />
+                Structural
+              </button>
+              <button
                 onClick={() => {
                   if (userNatalChart || savedCharts.length > 0) {
                     setViewMode("health");
@@ -715,6 +730,13 @@ export const AstroCalendar = () => {
             userNatalChart={userNatalChart}
             savedCharts={savedCharts}
             selectedChartId={selectedChartForTiming}
+          />
+        )}
+
+        {viewMode === "structural" && (
+          <StructuralStressView
+            userChart={userNatalChart}
+            savedCharts={savedCharts}
           />
         )}
       </div>
