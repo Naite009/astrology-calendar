@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers, Combine } from "lucide-react";
 import { ChartDecoderView } from "./ChartDecoderView";
 import { AskView } from "./AskView";
 import { MonthView } from "./MonthView";
@@ -32,8 +32,9 @@ import { DayData, generateICalExport } from "@/lib/astrology";
 import { SynastryView } from "./SynastryView";
 import { RelationshipTimelineView } from "./RelationshipTimelineView";
 import { StructuralStressView } from "./StructuralStressView";
+import { CombosView } from "./CombosView";
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural";
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -154,6 +155,10 @@ export const AstroCalendar = () => {
     }
     if (viewMode === "structural") {
       return "Structural Stress & Release";
+    }
+    if (viewMode === "combos") {
+      return "Planetary Combinations";
+    }
     }
     if (viewMode === "timeline") {
       return "Relationship Timeline";
@@ -513,6 +518,17 @@ export const AstroCalendar = () => {
                 <MessageCircleQuestion size={14} />
                 Ask
               </button>
+              <button
+                onClick={() => setViewMode("combos")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "combos"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Combine size={14} />
+                Combos
+              </button>
             </div>
 
             {userData && (
@@ -738,6 +754,10 @@ export const AstroCalendar = () => {
             userChart={userNatalChart}
             savedCharts={savedCharts}
           />
+        )}
+
+        {viewMode === "combos" && (
+          <CombosView />
         )}
       </div>
 
