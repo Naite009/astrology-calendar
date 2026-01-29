@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Orbit, History, TrendingUp, AlertTriangle, Star, RefreshCw, Clock, MapPin } from 'lucide-react';
 import { PlanetDetailModal } from './PlanetDetailModal';
+import { InteractiveAspectExplorer } from './patterns/InteractiveAspectExplorer';
 import { 
   getPlanetaryPositions, 
   detectStelliums, 
@@ -661,9 +662,14 @@ export const PatternsView = ({ year }: PatternsViewProps) => {
         Track retrograde patterns, major planetary conjunctions, and current cosmic configurations.
       </p>
 
-      {/* Live Planetary Positions - NEW SECTION */}
+      {/* Live Planetary Positions */}
       <section className="rounded-lg border border-border bg-card p-6">
         <LivePlanetaryPositions userLocation={userData?.birthLocation} />
+      </section>
+
+      {/* Interactive Aspect Explorer - NEW */}
+      <section className="rounded-lg border border-border bg-card p-6">
+        <InteractiveAspectExplorer date={selectedDate} />
       </section>
 
       {/* Current Patterns */}
