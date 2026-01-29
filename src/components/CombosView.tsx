@@ -10,12 +10,14 @@ import {
   HOUSES, 
   ASPECTS,
   POINTS,
+  CATEGORIES,
   findCombinations, 
+  findByCategory,
   getAllCombinations,
   CombinationEntry 
 } from '@/lib/planetaryCombinations';
-import { Sun, Moon, X, Sparkles, AlertTriangle, Heart, Zap, BookOpen } from 'lucide-react';
-import { PlanetSymbol, getPlanetSymbol } from '@/components/PlanetSymbol';
+import { Sun, Moon, X, Sparkles, AlertTriangle, Heart, Zap, BookOpen, Filter } from 'lucide-react';
+import { getPlanetSymbol } from '@/components/PlanetSymbol';
 
 const SIGN_SYMBOLS: Record<string, string> = {
   'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊', 'Cancer': '♋',
@@ -29,6 +31,7 @@ interface CombosViewProps {
 
 export const CombosView = ({ className = '' }: CombosViewProps) => {
   const [selectedFactors, setSelectedFactors] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'explore' | 'browse'>('explore');
 
   const toggleFactor = (factor: string) => {
@@ -42,14 +45,32 @@ export const CombosView = ({ className = '' }: CombosViewProps) => {
       }
       return [...prev, factor];
     });
+    // Clear category when selecting factors
+    setSelectedCategory(null);
   };
 
-  const clearFactors = () => setSelectedFactors([]);
+  const toggleCategory = (category: string) => {
+    if (selectedCategory === category) {
+      setSelectedCategory(null);
+    } else {
+      setSelectedCategory(category);
+      // Clear factors when selecting category
+      setSelectedFactors([]);
+    }
+  };
+
+  const clearAll = () => {
+    setSelectedFactors([]);
+    setSelectedCategory(null);
+  };
 
   const matchingCombinations = useMemo(() => {
+    if (selectedCategory) {
+      return findByCategory(selectedCategory);
+    }
     if (selectedFactors.length === 0) return [];
     return findCombinations(selectedFactors);
-  }, [selectedFactors]);
+  }, [selectedFactors, selectedCategory]);
 
   const allCombinations = useMemo(() => getAllCombinations(), []);
 
@@ -186,8 +207,7 @@ export const CombosView = ({ className = '' }: CombosViewProps) => {
       <div className="text-center space-y-2 pb-4 border-b border-border">
         <h2 className="text-2xl font-serif text-foreground">Planetary Combinations</h2>
         <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-          Select up to 3 factors (planets, signs, houses) to discover their combined meaning. 
-          Each combination includes light expressions, shadow potentials, and core energies.
+          Select up to 3 factors (planets, signs, houses) or filter by category to discover their combined meaning.
         </p>
       </div>
 
@@ -204,22 +224,56 @@ export const CombosView = ({ className = '' }: CombosViewProps) => {
         </TabsList>
 
         <TabsContent value="explore" className="mt-6 space-y-6">
-          {/* Factor Selection */}
+          {/* Category Filter Chips */}
           <Card className="border-border">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base">Select Factors</CardTitle>
-                {selectedFactors.length > 0 && (
-                  <Button variant="ghost" size="sm" onClick={clearFactors} className="h-8">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Filter className="h-4 w-4" />
+                  Quick Filters
+                </CardTitle>
+                {(selectedFactors.length > 0 || selectedCategory) && (
+                  <Button variant="ghost" size="sm" onClick={clearAll} className="h-8">
                     <X className="h-4 w-4 mr-1" />
                     Clear
                   </Button>
                 )}
               </div>
-              {selectedFactors.length > 0 && (
-                <div className="flex items-center gap-2 flex-wrap mt-2">
-                  <span className="text-sm text-muted-foreground">Selected:</span>
-                  {selectedFactors.map((factor, i) => (
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Category Chips */}
+              <div className="flex flex-wrap gap-2">
+                {CATEGORIES.map(cat => (
+                  <button
+                    key={cat.id}
+                    onClick={() => toggleCategory(cat.id)}
+                    className={`px-3 py-1.5 text-sm rounded-full border transition-all flex items-center gap-1.5 ${
+                      selectedCategory === cat.id
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-background border-border hover:border-primary/50 hover:bg-secondary'
+                    }`}
+                  >
+                    <span>{cat.icon}</span>
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Active Selection Display */}
+              {(selectedFactors.length > 0 || selectedCategory) && (
+                <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-border">
+                  <span className="text-sm text-muted-foreground">Active:</span>
+                  {selectedCategory && (
+                    <Badge 
+                      className="cursor-pointer"
+                      onClick={() => setSelectedCategory(null)}
+                    >
+                      {CATEGORIES.find(c => c.id === selectedCategory)?.icon}{' '}
+                      {CATEGORIES.find(c => c.id === selectedCategory)?.label}
+                      <X className="h-3 w-3 ml-1" />
+                    </Badge>
+                  )}
+                  {selectedFactors.map((factor) => (
                     <Badge 
                       key={factor} 
                       className="cursor-pointer"
@@ -232,6 +286,13 @@ export const CombosView = ({ className = '' }: CombosViewProps) => {
                   ))}
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Factor Selection */}
+          <Card className="border-border">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Or Select Specific Factors</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Planets */}
@@ -277,7 +338,7 @@ export const CombosView = ({ className = '' }: CombosViewProps) => {
           </Card>
 
           {/* Results */}
-          {selectedFactors.length > 0 && (
+          {(selectedFactors.length > 0 || selectedCategory) && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-medium">
@@ -308,15 +369,15 @@ export const CombosView = ({ className = '' }: CombosViewProps) => {
           )}
 
           {/* Empty State */}
-          {selectedFactors.length === 0 && (
+          {selectedFactors.length === 0 && !selectedCategory && (
             <Card className="border-dashed">
               <CardContent className="py-12 text-center">
                 <Sparkles className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
                 <p className="text-muted-foreground">
-                  Select planets, signs, houses, or aspects above to discover their combined meanings
+                  Select a category filter or specific factors to discover planetary meanings
                 </p>
                 <p className="text-sm text-muted-foreground/70 mt-2">
-                  Example: Mercury + Taurus or Mars + Pluto + 8th House
+                  Example: Click "💰 Wealth" or select Mercury + Taurus
                 </p>
               </CardContent>
             </Card>
