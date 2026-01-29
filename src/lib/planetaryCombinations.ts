@@ -7,6 +7,31 @@
  * Each entry provides 1-10 "energies" - both light and shadow expressions.
  */
 
+// NOTE: keep imports at top-level (required by TS/ESM)
+import {
+  sunSignCombinations,
+  moonSignCombinations,
+  uranusSignCombinations,
+  neptuneSignCombinations,
+  plutoSignCombinations,
+  childrenLearningCombinations,
+  talentCombinations,
+  educationCombinations,
+  uranusAquariusCombinations,
+} from './planetaryCombinationsExpanded';
+
+export {
+  sunSignCombinations,
+  moonSignCombinations,
+  uranusSignCombinations,
+  neptuneSignCombinations,
+  plutoSignCombinations,
+  childrenLearningCombinations,
+  talentCombinations,
+  educationCombinations,
+  uranusAquariusCombinations,
+} from './planetaryCombinationsExpanded';
+
 export interface CombinationEntry {
   id: string;
   factors: string[]; // e.g., ['Mercury', 'Taurus'] or ['Mars', 'Pluto', '8th House']
@@ -2466,33 +2491,6 @@ export const luckCombinations: CombinationEntry[] = [
     tags: ['lucky', 'career', 'fame'],
   },
 ];
-
-// ============== IMPORTS FROM EXPANDED DATABASE ==============
-
-import {
-  sunSignCombinations,
-  moonSignCombinations,
-  uranusSignCombinations,
-  neptuneSignCombinations,
-  plutoSignCombinations,
-  childrenLearningCombinations,
-  talentCombinations,
-  educationCombinations,
-  uranusAquariusCombinations,
-} from './planetaryCombinationsExpanded';
-
-// Re-export for consumers
-export {
-  sunSignCombinations,
-  moonSignCombinations,
-  uranusSignCombinations,
-  neptuneSignCombinations,
-  plutoSignCombinations,
-  childrenLearningCombinations,
-  talentCombinations,
-  educationCombinations,
-  uranusAquariusCombinations,
-} from './planetaryCombinationsExpanded';
 
 // ============== MASTER COMBINATION FINDER ==============
 

@@ -14,6 +14,7 @@ import {
   findCombinations, 
   findByCategory,
   getAllCombinations,
+  findExactCombination,
   CombinationEntry 
 } from '@/lib/planetaryCombinations';
 import { Sun, Moon, X, Sparkles, AlertTriangle, Heart, Zap, BookOpen, Filter } from 'lucide-react';
@@ -34,19 +35,120 @@ export const CombosView = ({ className = '' }: CombosViewProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'explore' | 'browse'>('explore');
 
+  const TRANSIT_PREFIX = 'Transit ';
+  const transitPlanets = useMemo(() => PLANETS.map(p => `${TRANSIT_PREFIX}${p}`), []);
+
   const toggleFactor = (factor: string) => {
     setSelectedFactors(prev => {
       if (prev.includes(factor)) {
         return prev.filter(f => f !== factor);
       }
-      // Limit to 3 factors
-      if (prev.length >= 3) {
-        return [...prev.slice(1), factor];
-      }
       return [...prev, factor];
     });
     // Clear category when selecting factors
     setSelectedCategory(null);
+  };
+
+  const normalizeFactor = (factor: string) => {
+    if (factor.startsWith(TRANSIT_PREFIX)) return factor.slice(TRANSIT_PREFIX.length);
+    return factor;
+  };
+
+  const hasTransitContext = (factors: string[]) => factors.some(f => f.startsWith(TRANSIT_PREFIX));
+
+  const synthesizeInterpretation = (rawFactors: string[]): CombinationEntry | null => {
+    const factors = rawFactors.map(normalizeFactor);
+    const transit = hasTransitContext(rawFactors);
+
+    // If we can find an exact multi-factor entry, prefer that
+    const exact = findExactCombination(factors);
+    if (exact) return exact;
+
+    // Build smaller, known sub-combos (planet+sign, planet+house, planet+planet+aspect)
+    const planets = factors.filter(f => PLANETS.includes(f));
+    const signs = factors.filter(f => SIGNS.includes(f));
+    const houses = factors.filter(f => HOUSES.includes(f));
+    const aspects = factors.filter(f => ASPECTS.includes(f));
+
+    const subCombos: CombinationEntry[] = [];
+
+    // planet+sign
+    for (const p of planets) {
+      for (const s of signs) {
+        const c = findExactCombination([p, s]);
+        if (c) subCombos.push(c);
+      }
+    }
+
+    // planet+house
+    for (const p of planets) {
+      for (const h of houses) {
+        const c = findExactCombination([p, h]);
+        if (c) subCombos.push(c);
+      }
+    }
+
+    // planet-planet aspect
+    if (planets.length >= 2 && aspects.length >= 1) {
+      const [p1, p2] = planets;
+      const aspect = aspects[0];
+      const c = findExactCombination([p1, p2, aspect]) || findExactCombination([p2, p1, aspect]);
+      if (c) subCombos.push(c);
+    }
+
+    // If still nothing, give a generic but useful synthesis
+    if (subCombos.length === 0) {
+      if (planets.length === 0) return null;
+
+      const titleBits = [
+        transit ? 'Transit Synthesis' : 'Synthesis',
+        ...planets.slice(0, 3),
+        ...signs.slice(0, 2),
+        ...houses.slice(0, 1),
+        ...aspects.slice(0, 1),
+      ].filter(Boolean);
+
+      return {
+        id: `synth-${factors.join('-').toLowerCase().replace(/\s+/g, '-')}`,
+        factors,
+        title: titleBits.join(' • '),
+        summary: transit
+          ? 'No exact transit write-up exists yet for this full combination. Below is a synthesized reading using the closest matching building blocks from the library.'
+          : 'No exact write-up exists yet for this full combination. Below is a synthesized reading using the closest matching building blocks from the library.',
+        energies: [
+          { expression: 'Interpret as layers: planet(s) + sign tone + house context + aspect style.', polarity: 'neutral' },
+          { expression: 'If this is a child chart: prioritize regulation, learning style, and environment fit over labels.', polarity: 'light' },
+          { expression: 'If this is a transit: expect timing and mood shifts rather than fixed personality traits.', polarity: 'neutral' },
+        ],
+        tags: transit ? ['transit'] : ['neutral'],
+      };
+    }
+
+    // Merge sub-combos into a single card
+    const unique = (arr: string[]) => Array.from(new Set(arr));
+    const mergedEnergies = unique(
+      subCombos.flatMap(c => c.energies.map(e => `${e.polarity}::${e.expression}`))
+    )
+      .slice(0, 14)
+      .map(s => {
+        const [polarity, expression] = s.split('::') as [CombinationEntry['energies'][number]['polarity'], string];
+        return { polarity, expression };
+      });
+
+    const summaryParts = unique(subCombos.map(c => c.summary)).slice(0, 4);
+
+    return {
+      id: `synth-${factors.join('-').toLowerCase().replace(/\s+/g, '-')}`,
+      factors,
+      title: transit ? 'Transit Synthesis' : 'Synthesis',
+      summary:
+        (transit
+          ? 'Transit context: interpret this as a timing/seasonal influence. ' 
+          : '') +
+        summaryParts.join(' '),
+      energies: mergedEnergies,
+      tags: transit ? ['transit'] : undefined,
+    };
   };
 
   const toggleCategory = (category: string) => {
@@ -69,7 +171,12 @@ export const CombosView = ({ className = '' }: CombosViewProps) => {
       return findByCategory(selectedCategory);
     }
     if (selectedFactors.length === 0) return [];
-    return findCombinations(selectedFactors);
+    const normalized = selectedFactors.map(normalizeFactor);
+    const results = findCombinations(normalized);
+    if (results.length > 0) return results;
+
+    const synth = synthesizeInterpretation(selectedFactors);
+    return synth ? [synth] : [];
   }, [selectedFactors, selectedCategory]);
 
   const allCombinations = useMemo(() => getAllCombinations(), []);
@@ -207,7 +314,7 @@ export const CombosView = ({ className = '' }: CombosViewProps) => {
       <div className="text-center space-y-2 pb-4 border-b border-border">
         <h2 className="text-2xl font-serif text-foreground">Planetary Combinations</h2>
         <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-          Select up to 3 factors (planets, signs, houses) or filter by category to discover their combined meaning.
+          Select any number of factors (planets, signs, houses, aspects) or filter by category to discover their combined meaning.
         </p>
       </div>
 
@@ -333,6 +440,20 @@ export const CombosView = ({ className = '' }: CombosViewProps) => {
                 <div className="flex flex-wrap gap-2">
                   {POINTS.map(point => renderFactorButton(point))}
                 </div>
+              </div>
+
+              {/* Transits */}
+              <div>
+                <h4 className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Transits</h4>
+                <div className="flex flex-wrap gap-2">
+                  {transitPlanets.map(tp => {
+                    const basePlanet = tp.replace(TRANSIT_PREFIX, '');
+                    return renderFactorButton(tp, `T${getPlanetSymbol(basePlanet)}`);
+                  })}
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Tip: combine Transit planet + sign/house + an aspect to describe timing (e.g. Transit ☿ + 12th House + Conjunction).
+                </p>
               </div>
             </CardContent>
           </Card>
