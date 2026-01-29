@@ -34,6 +34,8 @@ export const CATEGORIES = [
   { id: 'career', label: 'Career', icon: '💼' },
   { id: 'emotional', label: 'Emotional', icon: '🌊' },
   { id: 'spiritual', label: 'Spiritual', icon: '✨' },
+  { id: 'children', label: 'Children/Learning', icon: '🧒' },
+  { id: 'talent', label: 'Natural Talent', icon: '🎯' },
   { id: 'warning', label: 'Challenging', icon: '⚠️' },
 ] as const;
 
@@ -2465,6 +2467,33 @@ export const luckCombinations: CombinationEntry[] = [
   },
 ];
 
+// ============== IMPORTS FROM EXPANDED DATABASE ==============
+
+import {
+  sunSignCombinations,
+  moonSignCombinations,
+  uranusSignCombinations,
+  neptuneSignCombinations,
+  plutoSignCombinations,
+  childrenLearningCombinations,
+  talentCombinations,
+  educationCombinations,
+  uranusAquariusCombinations,
+} from './planetaryCombinationsExpanded';
+
+// Re-export for consumers
+export {
+  sunSignCombinations,
+  moonSignCombinations,
+  uranusSignCombinations,
+  neptuneSignCombinations,
+  plutoSignCombinations,
+  childrenLearningCombinations,
+  talentCombinations,
+  educationCombinations,
+  uranusAquariusCombinations,
+} from './planetaryCombinationsExpanded';
+
 // ============== MASTER COMBINATION FINDER ==============
 
 export const getAllCombinations = (): CombinationEntry[] => {
@@ -2475,12 +2504,21 @@ export const getAllCombinations = (): CombinationEntry[] => {
     ...jupiterSignCombinations,
     ...saturnSignCombinations,
     ...chironSignCombinations,
+    ...sunSignCombinations,
+    ...moonSignCombinations,
+    ...uranusSignCombinations,
+    ...neptuneSignCombinations,
+    ...plutoSignCombinations,
     ...planetHouseCombinations,
     ...planetPlanetCombinations,
     ...specialDegreeCombinations,
     ...multiFactorCombinations,
     ...psychicCombinations,
     ...luckCombinations,
+    ...childrenLearningCombinations,
+    ...talentCombinations,
+    ...educationCombinations,
+    ...uranusAquariusCombinations,
   ];
 };
 
