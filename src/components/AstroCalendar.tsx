@@ -756,7 +756,10 @@ export const AstroCalendar = () => {
         )}
 
         {viewMode === "combos" && (
-          <CombosView />
+          <CombosView 
+            savedCharts={savedCharts}
+            userChart={userNatalChart}
+          />
         )}
       </div>
 

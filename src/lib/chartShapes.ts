@@ -15,6 +15,10 @@ export type ChartShapeType =
   | 'Seesaw'
   | 'Splash'
   | 'Splay'
+  | 'Tripod'
+  | 'Fan'
+  | 'GrandCross'
+  | 'Kite'
   | 'Unknown';
 
 export interface ChartShape {
@@ -74,6 +78,30 @@ const SHAPE_DATA: Record<ChartShapeType, Omit<ChartShape, 'type' | 'confidence' 
     personality: 'You are an INDIVIDUAL. You don\'t fit patterns. Your chart has distinct power centers (the clusters) and gaps. You are strong-willed, independent, and resist categorization. Your life has specific focal points of intensity.',
     gift: 'Individuality, strong will, ability to resist conformity, distinct power centers',
     challenge: 'Stubbornness, difficulty cooperating, uneven development, gaps in life experience'
+  },
+  Tripod: {
+    description: 'Three distinct planet clusters roughly 120° apart, forming a triangular distribution.',
+    personality: 'You are a THREE-LEGGED FOUNDATION. Your life rests on three distinct pillars of experience. You have natural balance through triangulation—when one leg falters, the other two compensate. You see life in threes: thesis, antithesis, synthesis.',
+    gift: 'Natural stability, ability to synthesize different areas of life, creative problem-solving through triangulation',
+    challenge: 'May compartmentalize life into separate "zones," difficulty integrating all three areas simultaneously'
+  },
+  Fan: {
+    description: 'Planets spread across about 180° with one planet at the focal point, creating a fan or wedge shape.',
+    personality: 'You are a FOCUSED BEAM. Your energy spreads out from a single focal point (the apex planet). Like a flashlight, you project concentrated energy outward. The apex planet is your antenna, your teacher, your point of life direction.',
+    gift: 'Directed purpose, ability to channel diverse energies through one point, clear life direction',
+    challenge: 'Pressure on the apex planet, if that planet is challenged the whole pattern destabilizes'
+  },
+  GrandCross: {
+    description: 'Four planets in a square pattern, forming two oppositions that cross each other at 90°.',
+    personality: 'You are a CRUCIBLE OF TENSION. Four corners of your chart pull in different directions, creating constant internal pressure. You are forged by friction, shaped by conflict, and driven by the need to resolve irreconcilable tensions.',
+    gift: 'Tremendous drive from inner tension, ability to handle pressure, dynamic energy that prevents stagnation',
+    challenge: 'Chronic stress, feeling pulled apart, tendency to create crisis, difficulty finding peace'
+  },
+  Kite: {
+    description: 'A Grand Trine with one planet opposing the apex, creating a kite-like shape with sextiles.',
+    personality: 'You are a GROUNDED GIFT. The Grand Trine provides natural talent and flow, while the opposing planet grounds this gift into practical expression. You have innate abilities that can actually be used in the real world.',
+    gift: 'Natural talents with a productive outlet, harmonious energy with direction, gifts that can manifest practically',
+    challenge: 'The opposition point creates tension that must be consciously integrated, lazy reliance on talents'
   },
   Unknown: {
     description: 'No clear pattern emerges from the planetary distribution.',
@@ -251,6 +279,172 @@ function countStelliums(positions: { name: string; degree: number }[]): number {
 }
 
 /**
+ * Check for Grand Cross pattern (4 planets in square formation)
+ */
+function detectGrandCross(positions: { name: string; degree: number }[]): { found: boolean; planets: string[] } {
+  const orb = 10; // degrees orb for aspect
+  
+  for (let i = 0; i < positions.length - 3; i++) {
+    for (let j = i + 1; j < positions.length - 2; j++) {
+      for (let k = j + 1; k < positions.length - 1; k++) {
+        for (let l = k + 1; l < positions.length; l++) {
+          const p1 = positions[i], p2 = positions[j], p3 = positions[k], p4 = positions[l];
+          
+          // Check if they form a cross pattern (each ~90° apart)
+          const angles = [p1, p2, p3, p4].sort((a, b) => a.degree - b.degree);
+          
+          const gap1 = angles[1].degree - angles[0].degree;
+          const gap2 = angles[2].degree - angles[1].degree;
+          const gap3 = angles[3].degree - angles[2].degree;
+          const gap4 = (360 - angles[3].degree) + angles[0].degree;
+          
+          const isSquareGap = (gap: number) => gap >= 90 - orb && gap <= 90 + orb;
+          
+          if (isSquareGap(gap1) && isSquareGap(gap2) && isSquareGap(gap3) && isSquareGap(gap4)) {
+            return { found: true, planets: [p1.name, p2.name, p3.name, p4.name] };
+          }
+        }
+      }
+    }
+  }
+  
+  return { found: false, planets: [] };
+}
+
+/**
+ * Check for Grand Trine pattern (3 planets ~120° apart)
+ */
+function detectGrandTrine(positions: { name: string; degree: number }[]): { found: boolean; planets: string[] } {
+  const orb = 8;
+  
+  for (let i = 0; i < positions.length - 2; i++) {
+    for (let j = i + 1; j < positions.length - 1; j++) {
+      for (let k = j + 1; k < positions.length; k++) {
+        const p1 = positions[i], p2 = positions[j], p3 = positions[k];
+        
+        let dist1 = Math.abs(p2.degree - p1.degree);
+        let dist2 = Math.abs(p3.degree - p2.degree);
+        let dist3 = Math.abs((360 + p1.degree) - p3.degree) % 360;
+        
+        if (dist3 > 180) dist3 = 360 - dist3;
+        if (dist1 > 180) dist1 = 360 - dist1;
+        if (dist2 > 180) dist2 = 360 - dist2;
+        
+        const isTrineAspect = (d: number) => d >= 120 - orb && d <= 120 + orb;
+        
+        if (isTrineAspect(dist1) && isTrineAspect(dist2) && isTrineAspect(dist3)) {
+          return { found: true, planets: [p1.name, p2.name, p3.name] };
+        }
+      }
+    }
+  }
+  
+  return { found: false, planets: [] };
+}
+
+/**
+ * Check for Kite pattern (Grand Trine + opposition to one point)
+ */
+function detectKite(positions: { name: string; degree: number }[]): { found: boolean; apex: string; trinePlanets: string[] } {
+  const grandTrine = detectGrandTrine(positions);
+  if (!grandTrine.found) return { found: false, apex: '', trinePlanets: [] };
+  
+  const orb = 8;
+  const trinePlanets = positions.filter(p => grandTrine.planets.includes(p.name));
+  
+  // Look for a planet opposing one of the trine planets
+  for (const tp of trinePlanets) {
+    for (const other of positions) {
+      if (grandTrine.planets.includes(other.name)) continue;
+      
+      let dist = Math.abs(other.degree - tp.degree);
+      if (dist > 180) dist = 360 - dist;
+      
+      if (dist >= 180 - orb && dist <= 180 + orb) {
+        return { found: true, apex: other.name, trinePlanets: grandTrine.planets };
+      }
+    }
+  }
+  
+  return { found: false, apex: '', trinePlanets: [] };
+}
+
+/**
+ * Check for Tripod pattern (3 clusters ~120° apart)
+ */
+function detectTripod(positions: { name: string; degree: number }[]): boolean {
+  // Group planets into clusters (within 30° of each other)
+  const clusters: { name: string; degree: number }[][] = [];
+  const assigned = new Set<string>();
+  
+  for (const planet of positions) {
+    if (assigned.has(planet.name)) continue;
+    
+    const cluster = [planet];
+    assigned.add(planet.name);
+    
+    for (const other of positions) {
+      if (assigned.has(other.name)) continue;
+      
+      let dist = Math.abs(other.degree - planet.degree);
+      if (dist > 180) dist = 360 - dist;
+      
+      if (dist <= 30) {
+        cluster.push(other);
+        assigned.add(other.name);
+      }
+    }
+    
+    clusters.push(cluster);
+  }
+  
+  if (clusters.length !== 3) return false;
+  
+  // Check if clusters are roughly 120° apart
+  const centers = clusters.map(c => {
+    const sum = c.reduce((acc, p) => acc + p.degree, 0);
+    return sum / c.length;
+  }).sort((a, b) => a - b);
+  
+  const gap1 = centers[1] - centers[0];
+  const gap2 = centers[2] - centers[1];
+  const gap3 = (360 - centers[2]) + centers[0];
+  
+  const isTrine = (g: number) => g >= 100 && g <= 140;
+  
+  return isTrine(gap1) && isTrine(gap2) && isTrine(gap3);
+}
+
+/**
+ * Check for Fan/Wedge pattern
+ */
+function detectFan(positions: { name: string; degree: number }[]): { found: boolean; apex: string } {
+  const { span, largestGap } = calculateSpan(positions);
+  
+  // Fan: span around 180° with planets spread from an apex
+  if (span >= 150 && span <= 200 && largestGap >= 160) {
+    // Find the apex (planet at the edge of the spread)
+    const sorted = [...positions].sort((a, b) => a.degree - b.degree);
+    
+    // The apex is typically the planet that's most isolated from the main group
+    // Check both ends of the planetary spread
+    const firstPlanet = sorted[0];
+    const lastPlanet = sorted[sorted.length - 1];
+    
+    // Determine which is more isolated
+    const firstGapToNext = sorted.length > 1 ? sorted[1].degree - sorted[0].degree : 0;
+    const lastGapToPrev = sorted.length > 1 ? sorted[sorted.length - 1].degree - sorted[sorted.length - 2].degree : 0;
+    
+    if (firstGapToNext > 40 || lastGapToPrev > 40) {
+      const apex = firstGapToNext > lastGapToPrev ? firstPlanet.name : lastPlanet.name;
+      return { found: true, apex };
+    }
+  }
+  
+  return { found: false, apex: '' };
+}
+
+/**
  * Detect the chart shape
  */
 export function detectChartShape(planets: ChartPlanet[]): ChartShape {
@@ -268,7 +462,54 @@ export function detectChartShape(planets: ChartPlanet[]): ChartShape {
   const significantGaps = countSignificantGaps(positions);
   const stelliums = countStelliums(positions);
   
-  // Determine shape based on span and gaps
+  // Check for aspect-based patterns first (higher priority)
+  
+  // GRAND CROSS: Four planets in square formation
+  const grandCross = detectGrandCross(positions);
+  if (grandCross.found) {
+    return {
+      type: 'GrandCross',
+      confidence: 90,
+      ...SHAPE_DATA.GrandCross,
+      emptyArea: `Your chart contains a Grand Cross involving ${grandCross.planets.join(', ')}—a powerful pattern of dynamic tension.`
+    };
+  }
+  
+  // KITE: Grand Trine with opposition
+  const kite = detectKite(positions);
+  if (kite.found) {
+    return {
+      type: 'Kite',
+      confidence: 88,
+      ...SHAPE_DATA.Kite,
+      leadPlanet: kite.apex,
+      emptyArea: `Your Grand Trine (${kite.trinePlanets.join(', ')}) has ${kite.apex} as the grounding apex, creating a Kite formation.`
+    };
+  }
+  
+  // TRIPOD: Three clusters 120° apart
+  if (detectTripod(positions)) {
+    return {
+      type: 'Tripod',
+      confidence: 82,
+      ...SHAPE_DATA.Tripod,
+      emptyArea: 'Your planets form three distinct clusters roughly 120° apart—a stable triangular foundation.'
+    };
+  }
+  
+  // FAN: Spread from apex
+  const fan = detectFan(positions);
+  if (fan.found) {
+    return {
+      type: 'Fan',
+      confidence: 78,
+      ...SHAPE_DATA.Fan,
+      leadPlanet: fan.apex,
+      emptyArea: `Your planets spread in a fan shape with ${fan.apex} as the focal apex.`
+    };
+  }
+  
+  // Determine shape based on span and gaps (original detection)
   
   // BUNDLE: Span 120° or less
   if (span <= 130) {
