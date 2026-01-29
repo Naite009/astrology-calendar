@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Orbit, History, TrendingUp, AlertTriangle, Star, RefreshCw, Clock, MapPin } from 'lucide-react';
 import { PlanetDetailModal } from './PlanetDetailModal';
 import { InteractiveAspectExplorer } from './patterns/InteractiveAspectExplorer';
+import { PhaseWheelPanel } from './chartdecoder/PhaseWheelPanel';
 import { 
   getPlanetaryPositions, 
   detectStelliums, 
@@ -29,6 +30,7 @@ import * as Astronomy from 'astronomy-engine';
 
 interface PatternsViewProps {
   year: number;
+  initialFocusPlanet?: string;
 }
 
 // Mercury retrograde data for 2024-2030
@@ -646,9 +648,51 @@ const CurrentPatternsPanel = ({ date }: { date: Date }) => {
   );
 };
 
-export const PatternsView = ({ year }: PatternsViewProps) => {
+export const PatternsView = ({ year, initialFocusPlanet }: PatternsViewProps) => {
   const [selectedDate] = useState(new Date());
   const { userData } = useUserData();
+  
+  // Get current planetary positions for the Phase Wheel
+  const planets = useMemo(() => {
+    const positions = getPlanetaryPositions(selectedDate);
+    const nodes = getNodePositions(selectedDate);
+    const chiron = getChironPosition(selectedDate);
+    
+    // Convert to the format PhaseWheelPanel expects
+    const result: Array<{ name: string; sign: string; degree: number }> = [
+      { name: 'Sun', sign: positions.sun.signName, degree: positions.sun.degree },
+      { name: 'Moon', sign: positions.moon.signName, degree: positions.moon.degree },
+      { name: 'Mercury', sign: positions.mercury.signName, degree: positions.mercury.degree },
+      { name: 'Venus', sign: positions.venus.signName, degree: positions.venus.degree },
+      { name: 'Mars', sign: positions.mars.signName, degree: positions.mars.degree },
+      { name: 'Jupiter', sign: positions.jupiter.signName, degree: positions.jupiter.degree },
+      { name: 'Saturn', sign: positions.saturn.signName, degree: positions.saturn.degree },
+      { name: 'Uranus', sign: positions.uranus.signName, degree: positions.uranus.degree },
+      { name: 'Neptune', sign: positions.neptune.signName, degree: positions.neptune.degree },
+      { name: 'Pluto', sign: positions.pluto.signName, degree: positions.pluto.degree },
+    ];
+    
+    if (nodes.north) {
+      result.push({ name: 'NorthNode', sign: nodes.north.signName, degree: nodes.north.degree });
+    }
+    if (chiron) {
+      result.push({ name: 'Chiron', sign: chiron.signName, degree: chiron.degree });
+    }
+    
+    return result;
+  }, [selectedDate]);
+  
+  // Scroll to phase wheel if initialFocusPlanet is provided
+  useEffect(() => {
+    if (initialFocusPlanet) {
+      const element = document.getElementById('phase-wheel');
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      }
+    }
+  }, [initialFocusPlanet]);
 
   return (
     <div className="max-w-4xl mx-auto space-y-12">
@@ -667,9 +711,17 @@ export const PatternsView = ({ year }: PatternsViewProps) => {
         <LivePlanetaryPositions userLocation={userData?.birthLocation} />
       </section>
 
-      {/* Interactive Aspect Explorer - NEW */}
+      {/* Interactive Aspect Explorer */}
       <section className="rounded-lg border border-border bg-card p-6">
         <InteractiveAspectExplorer date={selectedDate} />
+      </section>
+
+      {/* Phase Wheel Panel - NEW */}
+      <section className="rounded-lg border border-border bg-card p-6">
+        <PhaseWheelPanel 
+          planets={planets} 
+          initialFocusPlanet={initialFocusPlanet || 'Sun'}
+        />
       </section>
 
       {/* Current Patterns */}
@@ -697,6 +749,7 @@ export const PatternsView = ({ year }: PatternsViewProps) => {
           <li><strong>Rare Aspects</strong>: Quincunx (150°), Quintile (72°), Sesquiquadrate (135°) reveal subtle dynamics</li>
           <li><strong>Retrograde Patterns</strong>: Mercury retrogrades cycle through elements roughly every 7 years</li>
           <li><strong>Major Conjunctions</strong>: Outer planet conjunctions mark generational shifts</li>
+          <li><strong>Phase Wheels</strong>: Track waxing (building) vs waning (integrating) relationships between planets</li>
         </ul>
       </div>
     </div>

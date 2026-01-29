@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Orbit } from 'lucide-react';
 import {
   ChartPlanet,
   ChartAspect,
@@ -29,6 +30,7 @@ interface PlanetDetailCardProps {
   aspects: ChartAspect[];
   dispositorChain: DispositorChainResult;
   allPlanets: ChartPlanet[];
+  onViewInPhaseWheel?: (planetName: string) => void;
 }
 
 export const PlanetDetailCard: React.FC<PlanetDetailCardProps> = ({
@@ -36,7 +38,8 @@ export const PlanetDetailCard: React.FC<PlanetDetailCardProps> = ({
   dignity,
   aspects,
   dispositorChain,
-  allPlanets
+  allPlanets,
+  onViewInPhaseWheel
 }) => {
   const status = getDignityStatus(planet.name, planet.sign);
   const meaning = PLANET_MEANINGS[planet.name] || 'Symbolic point in the chart.';
@@ -310,6 +313,27 @@ export const PlanetDetailCard: React.FC<PlanetDetailCardProps> = ({
             ))}
           </ul>
         </section>
+
+        {/* View in Phase Wheel Button */}
+        {onViewInPhaseWheel && (
+          <>
+            <Separator />
+            <section>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-2"
+                onClick={() => onViewInPhaseWheel(planet.name)}
+              >
+                <Orbit className="h-4 w-4" />
+                View in Phase Wheel
+              </Button>
+              <p className="text-[10px] text-muted-foreground text-center mt-2">
+                See how every other planet relates to {planet.name} in the waxing/waning phase cycle
+              </p>
+            </section>
+          </>
+        )}
       </CardContent>
     </Card>
   );
