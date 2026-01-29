@@ -1,0 +1,324 @@
+{
+  "exportDate": "2026-01-29",
+  "description": "Complete Chart Decoder codebase export for external analysis",
+  "structure": {
+    "mainComponent": "src/components/ChartDecoderView.tsx",
+    "subComponents": "src/components/chartdecoder/*.tsx",
+    "coreLogic": "src/lib/chartDecoderLogic.ts",
+    "shapeDetection": "src/lib/chartShapes.ts",
+    "hemisphereAnalysis": "src/lib/hemisphereAnalysis.ts",
+    "cinematicNarrative": "src/lib/cinematicNarrative.ts",
+    "characterSynthesis": "src/lib/characterSynthesis.ts",
+    "planetaryCondition": "src/lib/planetaryCondition.ts",
+    "planetDignities": "src/lib/planetDignities.ts"
+  },
+  "files": {
+    "chartShapes": {
+      "path": "src/lib/chartShapes.ts",
+      "purpose": "Detects the overall shape/pattern formed by planetary distribution (Bowl, Bucket, Bundle, Locomotive, Seesaw, Splash, Splay)",
+      "exports": ["ChartShapeType", "ChartShape", "detectChartShape", "getShapeSummary"],
+      "shapeTypes": {
+        "Bowl": {
+          "description": "All planets occupy 180° or less of the zodiac, leaving half the chart empty.",
+          "personality": "You are a CONTAINER. Your energy is focused, directed, and purposeful. You carry a half of life within you that you've mastered, while perpetually gazing at the empty half—the unlived life, the unexplored territory.",
+          "gift": "Concentrated focus, clear purpose, ability to hold and contain energy, self-containment",
+          "challenge": "Obsession with what's missing, feeling incomplete, projection onto others who represent the empty half"
+        },
+        "Bucket": {
+          "description": "A Bowl pattern with one planet (the 'handle') isolated on the opposite side.",
+          "personality": "You have focused energy (the Bowl) with a SINGLE OUTLET (the handle planet). All your concentrated power flows through one channel. The handle planet is your point of release.",
+          "gift": "Powerful focus with a clear outlet, ability to channel concentrated energy, distinctive impact point",
+          "challenge": "Over-reliance on the handle planet, if that area is blocked you feel stuck"
+        },
+        "Bundle": {
+          "description": "All planets are concentrated within 120° or less (one-third of the zodiac).",
+          "personality": "You are INTENSELY SPECIALIZED. Your entire being is focused on one area of life. You have laser focus, deep expertise, and powerful concentration.",
+          "gift": "Extreme specialization, mastery of a focused area, powerful concentration of energy",
+          "challenge": "Lack of perspective, difficulty with areas outside your focus, potential for obsession"
+        },
+        "Locomotive": {
+          "description": "Planets span about 240° (two-thirds of zodiac), leaving one-third empty.",
+          "personality": "You are a TRAIN—powerful, driven, always moving toward the empty space. The leading planet drives the whole engine. You have momentum, purpose, and an endless drive to fill what's missing.",
+          "gift": "Tremendous drive, self-motivation, ability to pull others along, natural momentum",
+          "challenge": "Never satisfied, always chasing, difficulty resting, can run over obstacles (and people)"
+        },
+        "Seesaw": {
+          "description": "Planets form two groups roughly opposite each other, with two empty areas.",
+          "personality": "You live in POLARITIES. You see both sides of everything, swing between opposites, and seek balance through oscillation. You are the diplomat, the mediator.",
+          "gift": "Objectivity, ability to see all perspectives, diplomatic skills, balance through integration of opposites",
+          "challenge": "Indecision, feeling pulled apart, projection, difficulty committing to one path"
+        },
+        "Splash": {
+          "description": "Planets are scattered relatively evenly around the entire zodiac.",
+          "personality": "You are a RENAISSANCE SOUL. You have fingers in every pie, interests in every direction, and the ability to engage with all of life.",
+          "gift": "Versatility, adaptability, broad competence, ability to understand and engage with anything",
+          "challenge": "Scattered energy, jack of all trades/master of none, difficulty focusing"
+        },
+        "Splay": {
+          "description": "Planets form irregular clusters (stelliums) with uneven spacing.",
+          "personality": "You are an INDIVIDUAL. You don't fit patterns. Your chart has distinct power centers (the clusters) and gaps. You are strong-willed and independent.",
+          "gift": "Individuality, strong will, ability to resist conformity, distinct power centers",
+          "challenge": "Stubbornness, difficulty cooperating, uneven development, gaps in life experience"
+        }
+      },
+      "detectionLogic": {
+        "bundleThreshold": "span <= 130°",
+        "bowlThreshold": "span <= 190°",
+        "locomotiveThreshold": "span 200-270° with gap 90-160°",
+        "seesawCondition": "2 significant gaps, largest gap 60-150°",
+        "splashCondition": "largest gap < 90°, significant gaps <= 1",
+        "splayCondition": "2+ stelliums OR (1+ stellium AND 2+ significant gaps)"
+      }
+    },
+    "hemisphereAnalysis": {
+      "path": "src/lib/hemisphereAnalysis.ts",
+      "purpose": "Analyzes the distribution of planets across the chart's four quadrants and two hemispheres",
+      "exports": ["QuadrantData", "HemisphereData", "QuadrantAnalysis", "analyzeQuadrants", "getHemisphereSummary"],
+      "quadrants": {
+        "Q1": {
+          "houses": "1-3",
+          "theme": "Self-Development",
+          "description": "Houses 1-3: Personal identity, resources, and communication. This is the most PERSONAL quadrant—about discovering and expressing who YOU are.",
+          "heavyMeaning": "Your life journey centers on discovering your identity, building your resources, and finding your voice. You learn best through personal experience."
+        },
+        "Q2": {
+          "houses": "4-6",
+          "theme": "Security & Service",
+          "description": "Houses 4-6: Home, creativity, and daily work. This quadrant is about creating FOUNDATIONS—emotional security, creative expression, and meaningful work.",
+          "heavyMeaning": "Your life journey centers on building a home, expressing creativity, and perfecting your craft. You need solid foundations before you can expand outward."
+        },
+        "Q3": {
+          "houses": "7-9",
+          "theme": "Relationship & Expansion",
+          "description": "Houses 7-9: Partnership, transformation, and higher learning. This quadrant is about growing through OTHERS—relationships, depth work, and expanded horizons.",
+          "heavyMeaning": "Your life journey centers on partnerships, deep transformation, and discovering meaning through broader perspectives."
+        },
+        "Q4": {
+          "houses": "10-12",
+          "theme": "Career & Legacy",
+          "description": "Houses 10-12: Public role, community, and transcendence. This quadrant is about your CONTRIBUTION—what you leave behind, how you serve the collective.",
+          "heavyMeaning": "Your life journey centers on public achievement, community involvement, and spiritual transcendence."
+        }
+      },
+      "hemispheres": {
+        "upper": {
+          "houses": "7-12",
+          "theme": "Public & External",
+          "heavyMeaning": "You are meant to be visible, public-facing, and engaged with the outer world. Your purpose unfolds in relationships, career, and collective involvement."
+        },
+        "lower": {
+          "houses": "1-6",
+          "theme": "Private & Internal",
+          "heavyMeaning": "You are meant to be more private, internal, and focused on personal development. Your purpose unfolds through self-discovery, building foundations, and perfecting your craft."
+        },
+        "eastern": {
+          "houses": "10-12 & 1-3",
+          "theme": "Self-Initiated",
+          "heavyMeaning": "You are meant to INITIATE—to act from your own will, to start things, to lead. You don't wait for permission. Your life is self-directed."
+        },
+        "western": {
+          "houses": "4-9",
+          "theme": "Other-Oriented",
+          "heavyMeaning": "You are meant to RESPOND—to collaborate, to partner, to let others initiate. You find yourself through relationship and reaction."
+        }
+      }
+    },
+    "cinematicNarrative": {
+      "path": "src/lib/cinematicNarrative.ts",
+      "purpose": "Tells the story of planets as characters in your personal movie using WHO/HOW/WHERE framework",
+      "framework": {
+        "WHO": "The Planet - the character/actor",
+        "HOW": "The Sign - the costume/style",
+        "WHERE": "The House - the stage/setting"
+      },
+      "planetRoles": {
+        "Sun": { "role": "The Protagonist", "archetype": "The Hero on their journey—the main character whose growth IS the story", "importance": "lead" },
+        "Moon": { "role": "The Emotional Lead", "archetype": "The heart of the story—providing emotional depth, personal drama, and the internal world", "importance": "lead" },
+        "Mercury": { "role": "The Narrator", "archetype": "The voice that tells the story—how thoughts become words", "importance": "lead" },
+        "Venus": { "role": "The Heart & Beauty Director", "archetype": "What makes life beautiful and worth living—love, pleasure, aesthetics, values", "importance": "supporting" },
+        "Mars": { "role": "The Action Hero / Warrior", "archetype": "The drive, the fight scenes, the courage to act—where things get physical", "importance": "supporting" },
+        "Jupiter": { "role": "The Mentor / Wise Guide", "archetype": "The figure who expands horizons, offers wisdom, and represents growth and meaning", "importance": "supporting" },
+        "Saturn": { "role": "The Stern Teacher / Authority", "archetype": "The challenges that force growth—limitations, responsibilities, and hard-won mastery", "importance": "supporting" },
+        "Uranus": { "role": "The Revolutionary / Wild Card", "archetype": "The unexpected twist—rebellion, innovation, sudden change", "importance": "background" },
+        "Neptune": { "role": "The Dreamer / Mystic", "archetype": "The transcendent—dreams, imagination, spirituality", "importance": "background" },
+        "Pluto": { "role": "The Transformer / Shadow", "archetype": "The death and rebirth—power, intensity, what must be destroyed for new life", "importance": "background" },
+        "Chiron": { "role": "The Wounded Healer", "archetype": "The core wound that becomes wisdom—pain transformed into the ability to help others", "importance": "special_guest" },
+        "NorthNode": { "role": "The Destiny Marker", "archetype": "Where the story is GOING—the growth direction, the soul's purpose", "importance": "special_guest" }
+      },
+      "signCostumes": {
+        "Aries": { "costume": "an instinct to act before thinking", "energy": "bold, pioneering, impatient, direct" },
+        "Taurus": { "costume": "a need for stability before risk", "energy": "steady, sensual, stubborn, grounded" },
+        "Gemini": { "costume": "a mind that needs constant input", "energy": "curious, adaptable, scattered, witty" },
+        "Cancer": { "costume": "an emotional radar scanning for safety", "energy": "protective, intuitive, moody, nurturing" },
+        "Leo": { "costume": "a need to be seen and appreciated", "energy": "warm, dramatic, proud, generous" },
+        "Virgo": { "costume": "an eye that catches what others miss", "energy": "analytical, helpful, anxious, discerning" },
+        "Libra": { "costume": "a nervous system calibrated to other people", "energy": "relational, indecisive, aesthetic, peace-seeking" },
+        "Scorpio": { "costume": "a psychological x-ray that sees beneath surfaces", "energy": "intense, private, magnetic, probing" },
+        "Sagittarius": { "costume": "a restlessness that needs meaning", "energy": "adventurous, philosophical, blunt, optimistic" },
+        "Capricorn": { "costume": "an awareness of how you appear to authority", "energy": "ambitious, guarded, responsible, strategic" },
+        "Aquarius": { "costume": "a need to be different from the group", "energy": "detached, innovative, stubborn, humanitarian" },
+        "Pisces": { "costume": "permeable boundaries that absorb everything", "energy": "empathic, dreamy, escapist, intuitive" }
+      },
+      "houseStages": {
+        "1": { "stage": "Center Stage — The Mirror", "volume": "loud", "visibility": "Maximum visibility" },
+        "2": { "stage": "The Treasury / Resource Room", "volume": "medium", "visibility": "Grounded visibility" },
+        "3": { "stage": "The Communication Hub", "volume": "medium", "visibility": "Busy visibility" },
+        "4": { "stage": "The Private Home — Behind Closed Doors", "volume": "quiet", "visibility": "Hidden visibility" },
+        "5": { "stage": "The Creative Playground", "volume": "loud", "visibility": "Dramatic visibility" },
+        "6": { "stage": "The Workshop — Daily Labor", "volume": "medium", "visibility": "Practical visibility" },
+        "7": { "stage": "The Partnership Arena", "volume": "loud", "visibility": "Mirrored visibility" },
+        "8": { "stage": "The Underworld — Deep Waters", "volume": "quiet", "visibility": "Buried visibility" },
+        "9": { "stage": "The Temple / Far Horizon", "volume": "medium", "visibility": "Expansive visibility" },
+        "10": { "stage": "The World Stage — Peak Visibility", "volume": "loud", "visibility": "Maximum public visibility" },
+        "11": { "stage": "The Community Network", "volume": "medium", "visibility": "Collective visibility" },
+        "12": { "stage": "The Hidden Room — Behind the Veil", "volume": "quiet", "visibility": "Invisible visibility" }
+      }
+    },
+    "planetDignities": {
+      "path": "src/lib/planetDignities.ts",
+      "purpose": "Complete astrological reference data for dignities, terms, decans, and planetary speeds",
+      "exports": ["PLANET_DIGNITIES", "SIGN_PROPERTIES", "HOUSE_TYPES", "TRIPLICITY_RULERS", "DECAN_RULERS", "EGYPTIAN_TERMS", "CELESTIAL_BODY_SPEEDS"],
+      "dignities": {
+        "Sun": { "rulership": "Leo", "exaltation": "Aries (19°)", "detriment": "Aquarius", "fall": "Libra (19°)" },
+        "Moon": { "rulership": "Cancer", "exaltation": "Taurus (3°)", "detriment": "Capricorn", "fall": "Scorpio (3°)" },
+        "Mercury": { "rulership": ["Gemini", "Virgo"], "exaltation": "Virgo (15°)", "detriment": ["Sagittarius", "Pisces"], "fall": "Pisces (15°)" },
+        "Venus": { "rulership": ["Taurus", "Libra"], "exaltation": "Pisces (27°)", "detriment": ["Scorpio", "Aries"], "fall": "Virgo (27°)" },
+        "Mars": { "rulership": ["Aries", "Scorpio"], "exaltation": "Capricorn (28°)", "detriment": ["Libra", "Taurus"], "fall": "Cancer (28°)" },
+        "Jupiter": { "rulership": ["Sagittarius", "Pisces"], "exaltation": "Cancer (15°)", "detriment": ["Gemini", "Virgo"], "fall": "Capricorn (15°)" },
+        "Saturn": { "rulership": ["Capricorn", "Aquarius"], "exaltation": "Libra (21°)", "detriment": ["Cancer", "Leo"], "fall": "Aries (21°)" },
+        "Uranus": { "rulership": "Aquarius", "exaltation": "Scorpio", "detriment": "Leo", "fall": "Taurus" },
+        "Neptune": { "rulership": "Pisces", "exaltation": "Cancer", "detriment": "Virgo", "fall": "Capricorn" },
+        "Pluto": { "rulership": "Scorpio", "exaltation": "Aries", "detriment": "Taurus", "fall": "Libra" }
+      },
+      "triplicityRulers": {
+        "Fire": { "day": "Sun", "night": "Jupiter", "participating": "Saturn" },
+        "Earth": { "day": "Venus", "night": "Moon", "participating": "Mars" },
+        "Air": { "day": "Saturn", "night": "Mercury", "participating": "Jupiter" },
+        "Water": { "day": "Venus", "night": "Mars", "participating": "Moon" }
+      }
+    },
+    "planetaryCondition": {
+      "path": "src/lib/planetaryCondition.ts",
+      "purpose": "Traditional astrological techniques for assessing planetary strength and support",
+      "scoring": {
+        "essentialDignity": {
+          "rulership": "+5",
+          "exaltation": "+4",
+          "triplicity": "+3",
+          "terms": "+2",
+          "decan": "+1",
+          "detriment": "-2",
+          "fall": "-4"
+        },
+        "accidentalDignity": {
+          "angular": "+3",
+          "succedent": "+2",
+          "cadent": "+1",
+          "direct": "+1",
+          "retrograde": "-1"
+        },
+        "sect": {
+          "inSect": "+2",
+          "outOfSect": "0"
+        },
+        "qualityRatings": {
+          "8+": "Excellent",
+          "5-7": "Good",
+          "2-4": "Moderate",
+          "-2 to 1": "Challenged",
+          "below -2": "Difficult"
+        }
+      }
+    },
+    "characterSynthesis": {
+      "path": "src/lib/characterSynthesis.ts",
+      "purpose": "Deep analysis of Sun/Moon/Rising interaction with full decan, element, modality, and house integration",
+      "tripleElementCombinations": {
+        "Fire": "Triple Fire creates an unstoppable force of pure yang energy. Unstoppable inspiration, magnetic leadership.",
+        "Earth": "Triple Earth creates an unshakeable foundation. Incredible manifesting power, patience that outlasts everything.",
+        "Air": "Triple Air creates pure mind—a being of thoughts, connections, and endless intellectual curiosity.",
+        "Water": "Triple Water creates oceanic emotional depth. Profound empathy, artistic/healing genius, psychic sensitivity."
+      },
+      "tripleModalityCombinations": {
+        "Cardinal": "Triple Cardinal creates pure initiating force. Maximum action orientation—you ARE the spark.",
+        "Fixed": "Triple Fixed creates absolute determination incarnate. Maximum persistence—you ARE stability itself.",
+        "Mutable": "Triple Mutable creates pure adaptability—a shapeshifter who flows with every current."
+      }
+    },
+    "chartDecoderLogic": {
+      "path": "src/lib/chartDecoderLogic.ts",
+      "purpose": "Core logic for computing dignity, dispositor chains, aspects, and interpretations",
+      "exports": [
+        "ChartPlanet", "ChartAspect", "AspectOrbs", "DignityType", "DispositorChainResult",
+        "TRADITIONAL_RULERS", "MODERN_RULERS", "EXALTATIONS", "DETRIMENTS", "FALLS",
+        "ASPECT_ANGLES", "DEFAULT_ORBS", "PLANET_MEANINGS", "DIGNITY_EXPLAINERS",
+        "computeDignity", "getSignRuler", "computeDispositorChain", "toAbsoluteDegree",
+        "computeAspects", "getAspectsForPlanet", "getAspectSymbol", "getAspectNature",
+        "getAspectMeaning", "generatePlainEnglish", "generateRemedies", "generateDispositorExperience",
+        "generateSummaryNarrative", "getPlanetSymbol"
+      ],
+      "traditionalRulers": {
+        "Aries": "Mars", "Taurus": "Venus", "Gemini": "Mercury", "Cancer": "Moon",
+        "Leo": "Sun", "Virgo": "Mercury", "Libra": "Venus", "Scorpio": "Mars",
+        "Sagittarius": "Jupiter", "Capricorn": "Saturn", "Aquarius": "Saturn", "Pisces": "Jupiter"
+      },
+      "modernRulers": {
+        "Scorpio": "Pluto", "Aquarius": "Uranus", "Pisces": "Neptune"
+      },
+      "aspectAngles": {
+        "conjunction": 0, "sextile": 60, "square": 90, "trine": 120, "quincunx": 150, "opposition": 180
+      },
+      "defaultOrbs": {
+        "conjunction": 8, "opposition": 8, "trine": 7, "square": 7, "sextile": 5, "quincunx": 3
+      },
+      "planetMeanings": {
+        "Sun": "Identity, vitality, confidence, purpose, and how you lead with your will.",
+        "Moon": "Emotions, needs, nervous system comfort, attachment patterns, and what refuels you.",
+        "Mercury": "Thinking, learning style, communication, decision-making.",
+        "Venus": "Love style, values, aesthetics, money patterns, what you're drawn to.",
+        "Mars": "Drive, boundaries, anger, courage, how you initiate.",
+        "Jupiter": "Growth, faith, opportunity, meaning, mentors, expansion.",
+        "Saturn": "Discipline, fear, mastery, responsibility, long-term building.",
+        "Uranus": "Freedom, breakthroughs, shocks, individuality.",
+        "Neptune": "Intuition, ideals, imagination, spirituality, fog/escapism patterns.",
+        "Pluto": "Power, transformation, intensity, psychological depth.",
+        "Chiron": "Core wound and healing gift — where pain becomes wisdom.",
+        "NorthNode": "Soul direction, growth edge, what feels unfamiliar but calling."
+      }
+    }
+  },
+  "subComponents": [
+    "BirthConditionsDisplay.tsx - Shows lunar phase, sect, and planetary hours at birth",
+    "ChartCastOverview.tsx - Overview of all planetary characters with quick summaries",
+    "ChartInputSection.tsx - Input form for chart data",
+    "ChartRulerDeepDive.tsx - Deep analysis of the chart ruler",
+    "DignityDistribution.tsx - Visual distribution of dignities across the chart",
+    "DignityTable.tsx - Table showing all planets with their dignities",
+    "DispositorMap.tsx - Visual map showing who reports to whom",
+    "HighestPotentialSynthesis.tsx - Synthesis of chart's highest potentials",
+    "HouseLordAnalysis.tsx - Analysis of house lords and their placements",
+    "MostPowerfulPlanetCard.tsx - Card showing the most powerful planet",
+    "NatalAspectsSummary.tsx - Summary of all natal aspects",
+    "PlanetDetailCard.tsx - Detailed card for a selected planet",
+    "PlanetIconGrid.tsx - Grid of planet icons for selection",
+    "PlanetPowerRanking.tsx - Ranking of planets by power/condition",
+    "PlanetSpotlightModal.tsx - Modal for detailed planet spotlight",
+    "PlanetaryConditionDashboard.tsx - Dashboard showing all planetary conditions",
+    "ProgressedMoonTimeline.tsx - Timeline of progressed Moon through signs",
+    "ProgressionsDisplay.tsx - Display of secondary progressions",
+    "QuadrantAnalysisDisplay.tsx - Visual quadrant and hemisphere analysis",
+    "QuadrantSummaryBadge.tsx - Quick summary badge for quadrant distribution",
+    "ReadingScriptGenerator.tsx - Generates reading script for practitioners",
+    "SectAnalysisCard.tsx - Card showing sect analysis (day/night chart)",
+    "SectLightActivationsCard.tsx - Card showing sect light activations",
+    "WhereLifeHelpsCard.tsx - Card showing areas where life naturally supports"
+  ],
+  "tabs": {
+    "overview": "Birth conditions, cast overview, and quick summary narrative",
+    "characters": "Planet selection grid, detailed planet cards, dignity table",
+    "relationships": "Dispositor map, aspect chemistry (allies and rivals)",
+    "progressions": "Progressed Moon timeline, secondary progressions, chart ruler deep dive",
+    "patterns": "Quadrant analysis, hemisphere distribution, chart shape pattern",
+    "synthesis": "Highest potential synthesis, well-placed planets, contentment indicators"
+  }
+}
