@@ -26,6 +26,7 @@ export const StructuralStressView = ({ userChart, savedCharts }: StructuralStres
   const [showSaturnCards, setShowSaturnCards] = useState(true);
   const [activeTab, setActiveTab] = useState<string>('explore');
   const [savingEvent, setSavingEvent] = useState(false);
+  const [hasDateResult, setHasDateResult] = useState(false);
 
   const { events: lifeEvents, addEvent, getEventsForChart } = useLifeEvents();
 
@@ -147,13 +148,16 @@ export const StructuralStressView = ({ userChart, savedCharts }: StructuralStres
                 chart={selectedChart} 
                 onSaveEvent={handleSaveEvent}
                 savingEvent={savingEvent}
+                onDateExplored={setHasDateResult}
               />
               
-              {/* Life Milestones - clickable shortcuts */}
-              <LifeMilestones 
-                chart={selectedChart} 
-                onMilestoneClick={handleMilestoneClick}
-              />
+              {/* Life Milestones - only show when NOT viewing date results */}
+              {!hasDateResult && (
+                <LifeMilestones 
+                  chart={selectedChart} 
+                  onMilestoneClick={handleMilestoneClick}
+                />
+              )}
             </TabsContent>
 
             {/* Phase Timeline Tab */}
