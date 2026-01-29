@@ -159,7 +159,6 @@ export const AstroCalendar = () => {
     if (viewMode === "combos") {
       return "Planetary Combinations";
     }
-    }
     if (viewMode === "timeline") {
       return "Relationship Timeline";
     }
@@ -798,3 +797,5 @@ export const AstroCalendar = () => {
     </div>
   );
 };
+
+export default AstroCalendar;
