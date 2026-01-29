@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   PLANETS, 
   SIGNS, 
@@ -17,8 +18,9 @@ import {
   findExactCombination,
   CombinationEntry 
 } from '@/lib/planetaryCombinations';
-import { Sun, Moon, X, Sparkles, AlertTriangle, Heart, Zap, BookOpen, Filter } from 'lucide-react';
+import { Sun, Moon, X, Sparkles, AlertTriangle, Heart, Zap, BookOpen, Filter, User, Check } from 'lucide-react';
 import { getPlanetSymbol } from '@/components/PlanetSymbol';
+import { NatalChart } from '@/hooks/useNatalChart';
 
 const SIGN_SYMBOLS: Record<string, string> = {
   'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊', 'Cancer': '♋',
@@ -28,12 +30,69 @@ const SIGN_SYMBOLS: Record<string, string> = {
 
 interface CombosViewProps {
   className?: string;
+  savedCharts?: NatalChart[];
+  userChart?: NatalChart | null;
 }
 
-export const CombosView = ({ className = '' }: CombosViewProps) => {
+export const CombosView = ({ className = '', savedCharts = [], userChart = null }: CombosViewProps) => {
   const [selectedFactors, setSelectedFactors] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'explore' | 'browse'>('explore');
+  const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
+
+  // Combine all available charts
+  const allCharts = useMemo(() => {
+    const charts: NatalChart[] = [];
+    if (userChart) charts.push(userChart);
+    charts.push(...savedCharts);
+    return charts;
+  }, [userChart, savedCharts]);
+
+  // Get the selected chart
+  const selectedChart = useMemo(() => {
+    if (!selectedChartId) return null;
+    return allCharts.find(c => c.id === selectedChartId) || null;
+  }, [selectedChartId, allCharts]);
+
+  // Extract factors from the selected chart (planet-sign combinations)
+  const chartFactors = useMemo(() => {
+    if (!selectedChart?.planets) return new Set<string>();
+    
+    const factors = new Set<string>();
+    const planetEntries = Object.entries(selectedChart.planets) as [string, { sign: string } | undefined][];
+    
+    for (const [planet, data] of planetEntries) {
+      if (!data?.sign) continue;
+      // Add planet-sign combo identifier
+      factors.add(`${planet}|${data.sign}`);
+      // Also track individual factors
+      factors.add(planet);
+      factors.add(data.sign);
+    }
+    
+    return factors;
+  }, [selectedChart]);
+
+  // Check if a combination matches the selected chart
+  const doesComboMatchChart = (combo: CombinationEntry): boolean => {
+    if (!selectedChart || chartFactors.size === 0) return false;
+    
+    const comboPlanets = combo.factors.filter(f => PLANETS.includes(f));
+    const comboSigns = combo.factors.filter(f => SIGNS.includes(f));
+    
+    // For planet-sign combos, check if the chart has that planet in that sign
+    if (comboPlanets.length === 1 && comboSigns.length === 1) {
+      return chartFactors.has(`${comboPlanets[0]}|${comboSigns[0]}`);
+    }
+    
+    // For planet-only or multi-planet, check if all planets are present
+    if (comboPlanets.length > 0 && comboSigns.length === 0) {
+      return comboPlanets.every(p => chartFactors.has(p));
+    }
+    
+    // For other combinations, check if all factors are present
+    return combo.factors.every(f => chartFactors.has(f));
+  };
 
   const TRANSIT_PREFIX = 'Transit ';
   const transitPlanets = useMemo(() => PLANETS.map(p => `${TRANSIT_PREFIX}${p}`), []);
@@ -203,13 +262,20 @@ export const CombosView = ({ className = '' }: CombosViewProps) => {
     const lightEnergies = combo.energies.filter(e => e.polarity === 'light');
     const shadowEnergies = combo.energies.filter(e => e.polarity === 'shadow');
     const neutralEnergies = combo.energies.filter(e => e.polarity === 'neutral');
+    const isMatch = doesComboMatchChart(combo);
 
     return (
-      <Card key={combo.id} className="border-border">
+      <Card key={combo.id} className={`border-border ${isMatch ? 'ring-2 ring-primary/50 bg-primary/5' : ''}`}>
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between gap-3">
             <div>
               <div className="flex items-center gap-2 mb-2 flex-wrap">
+                {isMatch && (
+                  <Badge className="bg-primary text-primary-foreground text-xs gap-1">
+                    <Check className="h-3 w-3" />
+                    In Your Chart
+                  </Badge>
+                )}
                 {combo.factors.map((factor, i) => (
                   <Badge key={i} variant="outline" className="text-xs">
                     {PLANETS.includes(factor) ? getPlanetSymbol(factor) : SIGN_SYMBOLS[factor] || ''}{' '}
@@ -317,6 +383,41 @@ export const CombosView = ({ className = '' }: CombosViewProps) => {
           Select any number of factors (planets, signs, houses, aspects) or filter by category to discover their combined meaning.
         </p>
       </div>
+
+      {/* My Chart Matches Selector */}
+      {allCharts.length > 0 && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="py-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">My Chart Matches:</span>
+              </div>
+              <Select 
+                value={selectedChartId || ''} 
+                onValueChange={(v) => setSelectedChartId(v || null)}
+              >
+                <SelectTrigger className="w-[200px] bg-background">
+                  <SelectValue placeholder="Select a chart..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">None (show all)</SelectItem>
+                  {allCharts.map(chart => (
+                    <SelectItem key={chart.id} value={chart.id}>
+                      {chart.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedChart && (
+                <span className="text-xs text-muted-foreground">
+                  Combinations in {selectedChart.name}'s chart are highlighted
+                </span>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'explore' | 'browse')}>
         <TabsList className="grid w-full max-w-md mx-auto grid-cols-2">

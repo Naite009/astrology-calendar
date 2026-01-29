@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { format } from 'date-fns';
+import { useState, useMemo } from 'react';
+import { format, setMonth, setYear } from 'date-fns';
 import { Calendar as CalendarIcon, Search, ChevronDown, Save, Loader2 } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { LifeEvent } from '@/hooks/useLifeEvents';
@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { 
   exploreDateWithContext, 
@@ -37,12 +38,42 @@ const MOTION_COLORS: Record<string, string> = {
   separating: 'text-muted-foreground'
 };
 
+const MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+
 export const DateExplorer = ({ chart, onSaveEvent, savingEvent }: DateExplorerProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [lifeEvent, setLifeEvent] = useState<LifeEventTag | undefined>();
   const [notes, setNotes] = useState('');
   const [result, setResult] = useState<DateExplorerResult | null>(null);
   const [showEventDropdown, setShowEventDropdown] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+
+  // Generate year range based on chart birth date
+  const yearRange = useMemo(() => {
+    const birthYear = chart.birthDate ? new Date(chart.birthDate).getFullYear() : 1960;
+    const currentYear = new Date().getFullYear();
+    const years: number[] = [];
+    for (let y = birthYear; y <= currentYear + 10; y++) {
+      years.push(y);
+    }
+    return years;
+  }, [chart.birthDate]);
+
+  // Calendar display date (for month/year navigation)
+  const [displayMonth, setDisplayMonth] = useState<Date>(selectedDate || new Date());
+
+  const handleMonthChange = (monthIndex: string) => {
+    const newDate = setMonth(displayMonth, parseInt(monthIndex));
+    setDisplayMonth(newDate);
+  };
+
+  const handleYearChange = (year: string) => {
+    const newDate = setYear(displayMonth, parseInt(year));
+    setDisplayMonth(newDate);
+  };
 
   const handleExplore = () => {
     if (!selectedDate) return;
@@ -78,8 +109,8 @@ export const DateExplorer = ({ chart, onSaveEvent, savingEvent }: DateExplorerPr
       <CardContent className="space-y-4">
         {/* Date Picker and Life Event Selection */}
         <div className="flex flex-wrap gap-3">
-          {/* Date Picker */}
-          <Popover>
+          {/* Date Picker with Month/Year Dropdowns */}
+          <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
@@ -93,14 +124,50 @@ export const DateExplorer = ({ chart, onSaveEvent, savingEvent }: DateExplorerPr
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0 bg-background z-50" align="start">
+              {/* Month/Year Quick Navigation */}
+              <div className="flex gap-2 p-3 border-b border-border">
+                <Select 
+                  value={displayMonth.getMonth().toString()} 
+                  onValueChange={handleMonthChange}
+                >
+                  <SelectTrigger className="w-[130px] h-8 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[200px]">
+                    {MONTHS.map((month, idx) => (
+                      <SelectItem key={month} value={idx.toString()}>
+                        {month}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select 
+                  value={displayMonth.getFullYear().toString()} 
+                  onValueChange={handleYearChange}
+                >
+                  <SelectTrigger className="w-[90px] h-8 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[200px]">
+                    {yearRange.map((year) => (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <Calendar
                 mode="single"
                 selected={selectedDate}
-                onSelect={setSelectedDate}
+                onSelect={(date) => {
+                  setSelectedDate(date);
+                  if (date) setDisplayMonth(date);
+                }}
+                month={displayMonth}
+                onMonthChange={setDisplayMonth}
                 initialFocus
                 className="p-3 pointer-events-auto"
-                fromYear={1940}
-                toYear={2035}
               />
             </PopoverContent>
           </Popover>
