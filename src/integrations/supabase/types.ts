@@ -156,6 +156,13 @@ export type Database = {
           new_moon_house_themes: string | null
           new_moon_intentions: string | null
           new_moon_showing_up: string | null
+          oracle_ai_interpretation: string | null
+          oracle_card_name: string | null
+          oracle_card_notes: string | null
+          oracle_deck_name: string | null
+          tarot_ai_interpretation: string | null
+          tarot_card_name: string | null
+          tarot_card_notes: string | null
           updated_at: string
           user_id: string | null
         }
@@ -192,6 +199,13 @@ export type Database = {
           new_moon_house_themes?: string | null
           new_moon_intentions?: string | null
           new_moon_showing_up?: string | null
+          oracle_ai_interpretation?: string | null
+          oracle_card_name?: string | null
+          oracle_card_notes?: string | null
+          oracle_deck_name?: string | null
+          tarot_ai_interpretation?: string | null
+          tarot_card_name?: string | null
+          tarot_card_notes?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -228,6 +242,13 @@ export type Database = {
           new_moon_house_themes?: string | null
           new_moon_intentions?: string | null
           new_moon_showing_up?: string | null
+          oracle_ai_interpretation?: string | null
+          oracle_card_name?: string | null
+          oracle_card_notes?: string | null
+          oracle_deck_name?: string | null
+          tarot_ai_interpretation?: string | null
+          tarot_card_name?: string | null
+          tarot_card_notes?: string | null
           updated_at?: string
           user_id?: string | null
         }

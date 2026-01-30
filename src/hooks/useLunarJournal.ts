@@ -53,6 +53,17 @@ export interface LunarJournalEntry {
   // AI suggestions
   ai_suggested_intentions?: string;
   
+  // Tarot card
+  tarot_card_name?: string;
+  tarot_card_notes?: string;
+  tarot_ai_interpretation?: string;
+  
+  // Oracle card
+  oracle_card_name?: string;
+  oracle_deck_name?: string;
+  oracle_card_notes?: string;
+  oracle_ai_interpretation?: string;
+  
   created_at?: string;
   updated_at?: string;
 }
