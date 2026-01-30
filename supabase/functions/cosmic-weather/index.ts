@@ -90,12 +90,15 @@ FORMAT:
 [3-4 paragraphs weaving together the Moon sign/phase, major aspects, and practical implications. Write as prose, not bullet lists. Include psychological insights and how this might manifest emotionally and practically.]
 
 ## What to Focus On
-- [Specific, actionable suggestion #1]
-- [Specific, actionable suggestion #2]  
-- [Specific, actionable suggestion #3]
+- [Specific suggestion tied to the Moon sign/phase]
+- [Specific suggestion tied to the day's major aspects]  
+- [Specific suggestion tied to any retrogrades or notable transits]
 
-## Today's Invitation
-[Write 2-3 SPECIFIC, CONCRETE actions a person can take today. NOT abstract language like "let your heart expand" - instead say things like "Call someone you haven't spoken to in months" or "Write down 3 things you're grateful for before bed" or "Take a 10-minute walk outside without your phone". Make it so clear that anyone could follow the instructions.]
+## Planetary Day Practice
+Today is [DAY OF WEEK], ruled by [PLANET]. 
+**Color to wear/use:** [COLOR]
+**Activities favored:** [2-3 specific activities this planet supports - e.g., Mars days favor exercise, negotiations, confronting issues; Venus days favor art, beautifying spaces, connecting with loved ones]
+**Simple ritual:** [ONE concrete 5-minute practice - e.g., "Light a red candle and write down one thing you've been avoiding confronting" or "Arrange fresh flowers or tidy one corner of your space"]
 
 ## Cosmic Kitchen: Today's Menu
 Based on the Moon in [SIGN] and today's planetary weather, here's what to nourish yourself with:
