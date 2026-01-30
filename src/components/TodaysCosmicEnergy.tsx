@@ -671,7 +671,9 @@ Keep the tone professional, insightful, and practically applicable.`
                     variant={viewMode === 'lunar' ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setViewMode('lunar')}
-                    className="gap-2 bg-gradient-to-r from-primary/80 to-purple-600/80 hover:from-primary hover:to-purple-600 text-white border-0"
+                    className={`gap-2 ${viewMode === 'lunar' 
+                      ? 'bg-gradient-to-r from-primary to-purple-600 text-white border-0 ring-2 ring-white/50' 
+                      : 'bg-transparent border-primary/30 text-foreground hover:bg-primary/10'}`}
                   >
                     <Moon className="h-4 w-4" />
                     ☽ Lunar Cycle
