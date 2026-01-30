@@ -812,13 +812,21 @@ Keep the tone professional, insightful, and practically applicable.`
                             ),
                             a: ({ href, children }) => (
                               <button 
-                                onClick={(e) => {
+                                onClick={async (e) => {
                                   e.preventDefault();
-                                  if (href) window.open(href, '_blank', 'noopener,noreferrer');
+                                  if (href) {
+                                    try {
+                                      await navigator.clipboard.writeText(href);
+                                      toast({ title: "Recipe link copied!", description: "Paste in your browser to search for the recipe." });
+                                    } catch {
+                                      toast({ title: "Recipe link", description: href, duration: 10000 });
+                                    }
+                                  }
                                 }}
-                                className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors cursor-pointer bg-transparent border-none p-0 font-inherit text-inherit"
+                                className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors cursor-pointer bg-transparent border-none p-0 font-inherit text-inherit inline-flex items-center gap-1"
                               >
                                 {children}
+                                <span className="text-xs opacity-60">📋</span>
                               </button>
                             ),
                             ul: ({ children }) => (
@@ -887,13 +895,21 @@ Keep the tone professional, insightful, and practically applicable.`
                             ),
                             a: ({ href, children }) => (
                               <button 
-                                onClick={(e) => {
+                                onClick={async (e) => {
                                   e.preventDefault();
-                                  if (href) window.open(href, '_blank', 'noopener,noreferrer');
+                                  if (href) {
+                                    try {
+                                      await navigator.clipboard.writeText(href);
+                                      toast({ title: "Recipe link copied!", description: "Paste in your browser to search for the recipe." });
+                                    } catch {
+                                      toast({ title: "Recipe link", description: href, duration: 10000 });
+                                    }
+                                  }
                                 }}
-                                className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors cursor-pointer bg-transparent border-none p-0 font-inherit text-inherit"
+                                className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors cursor-pointer bg-transparent border-none p-0 font-inherit text-inherit inline-flex items-center gap-1"
                               >
                                 {children}
+                                <span className="text-xs opacity-60">📋</span>
                               </button>
                             ),
                             ul: ({ children }) => (
@@ -1003,13 +1019,21 @@ Keep the tone professional, insightful, and practically applicable.`
                             },
                             a: ({ href, children }) => (
                               <button 
-                                onClick={(e) => {
+                                onClick={async (e) => {
                                   e.preventDefault();
-                                  if (href) window.open(href, '_blank', 'noopener,noreferrer');
+                                  if (href) {
+                                    try {
+                                      await navigator.clipboard.writeText(href);
+                                      toast({ title: "Recipe link copied!", description: "Paste in your browser to search for the recipe." });
+                                    } catch {
+                                      toast({ title: "Recipe link", description: href, duration: 10000 });
+                                    }
+                                  }
                                 }}
-                                className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors cursor-pointer bg-transparent border-none p-0 font-inherit text-inherit"
+                                className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors cursor-pointer bg-transparent border-none p-0 font-inherit text-inherit inline-flex items-center gap-1"
                               >
                                 {children}
+                                <span className="text-xs opacity-60">📋</span>
                               </button>
                             ),
                             ul: ({ children }) => (
