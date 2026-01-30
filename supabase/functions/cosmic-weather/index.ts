@@ -101,39 +101,70 @@ Today is [DAY OF WEEK], ruled by [PLANET].
 **Simple ritual:** [ONE concrete 5-minute practice - e.g., "Light a red candle and write down one thing you've been avoiding confronting" or "Arrange fresh flowers or tidy one corner of your space"]
 
 ## Cosmic Kitchen: Today's Menu
-Based on the Moon in [SIGN] and today's planetary weather, here's what to nourish yourself with:
+Based on the Moon in [SIGN], today's planetary weather, AND Ayurvedic Ritucharya (seasonal wisdom), here's what to nourish yourself with:
 
 **🍳 Breakfast: [Dish Name](https://www.google.com/search?q=dish+name+recipe)**
-*Why:* [2-3 sentences explaining the astrological reasoning - connect it to the Moon sign energy, any morning aspects, or the overall day's theme. Be specific about WHY this food matches the cosmic weather.]
+*Why:* [2-3 sentences weaving BOTH astrological AND Ayurvedic reasoning. Consider: Moon sign element, current season's dosha, digestive fire (Agni) in the morning, and warming/cooling properties of foods.]
 
 **🥗 Lunch: [Dish Name](https://www.google.com/search?q=dish+name+recipe)**
-*Why:* [2-3 sentences explaining the astrological reasoning for this midday meal. How does it support the day's energy?]
+*Why:* [2-3 sentences explaining both cosmic and Ayurvedic alignment. Midday = strongest Agni, so heavier foods are appropriate. Connect to planetary hours if relevant.]
 
 **🍽️ Dinner: [Dish Name](https://www.google.com/search?q=dish+name+recipe)**
-*Why:* [2-3 sentences explaining why this evening meal complements the cosmic weather and helps integrate the day's themes.]
+*Why:* [2-3 sentences for evening meal. Ayurveda recommends lighter evening meals. How does this complement the day's cosmic themes while honoring digestion?]
 
 **🥜 Snacks:** [Snack 1](https://www.google.com/search?q=snack+recipe), [Snack 2](https://www.google.com/search?q=snack+recipe), [Snack 3](https://www.google.com/search?q=snack+recipe)
-*Why:* [Explain each snack choice - e.g., "Granola with yogurt provides the grounding Earth energy Taurus Moon craves, while the probiotics support the Virgo Sun's focus on digestive health. Dark chocolate honors Scorpio's intensity..."]
+*Why:* [Brief Ayurvedic + astrological reasoning for each snack choice]
 
 **🍵 Drink of the Day: [Beverage Name](https://www.google.com/search?q=beverage+recipe)**
-*Why:* [Why this drink matches the cosmic weather - connect to element, sign, or aspects]
+*Why:* [Why this drink matches cosmic weather AND current seasonal dosha needs]
 
 IMPORTANT: Make all dish/food names clickable markdown links using this format: [Dish Name](https://www.google.com/search?q=dish+name+recipe) - replace spaces with + in the URL.
 
-MEAL GUIDANCE BY MOON SIGN (use these themes but ALWAYS explain WHY):
-- Aries Moon: Spicy, energizing foods. Ginger, cayenne, protein-rich. Mars rules appetite and action.
-- Taurus Moon: Comfort classics, earthy flavors. Root vegetables, cheese, bread. Venus loves sensory pleasure.
-- Gemini Moon: Light, varied - tapas style. Multiple small dishes, finger foods. Mercury rules variety.
-- Cancer Moon: Soul food, home cooking. Soups, casseroles, nostalgic recipes. Moon rules nourishment itself.
-- Leo Moon: Bold, celebratory. Golden colors, honey, citrus, heart-healthy. Sun rules vitality.
-- Virgo Moon: Clean, whole foods. Grains, greens, herbal teas. Mercury rules digestion and discernment.
-- Libra Moon: Beautiful, balanced plates. Paired flavors, aesthetic presentation. Venus rules harmony.
-- Scorpio Moon: Rich, intense flavors. Dark chocolate, beets, fermented foods. Pluto rules transformation.
-- Sagittarius Moon: International cuisine, adventure. Try something new. Jupiter rules expansion.
-- Capricorn Moon: Traditional, substantial. Bone broth, slow-cooked, nourishing. Saturn rules structure.
-- Aquarius Moon: Unusual combinations, future foods. Plant-based, innovative. Uranus rules the unconventional.
-- Pisces Moon: Seafood, water-rich foods. Cucumber, melons, gentle flavors. Neptune rules the oceanic.`;
+INTEGRATED COSMIC-AYURVEDIC FOOD WISDOM:
 
+SEASONAL CONTEXT (Ritucharya) - ALWAYS CONSIDER:
+- WINTER (Nov-Feb, Hemanta/Shishira): Vata season. Agni is STRONG. Favor warm, oily, heavy, sweet, sour, salty foods. AVOID cold, raw, dry foods (no cold cucumber, raw salads, ice water). Ghee, soups, stews, root vegetables, warm spices (ginger, cinnamon, black pepper), sesame oil, nuts, whole grains.
+- SPRING (Mar-May, Vasanta): Kapha accumulates. Favor light, dry, warming, bitter, pungent, astringent. Reduce heavy, oily, sweet. Honey, barley, millet, leafy greens, ginger tea.
+- SUMMER (Jun-Aug, Grishma): Pitta season. Agni is WEAK. Favor cooling, sweet, light, liquid foods. Cucumber, melons, coconut, mint, coriander, sweet fruits, dairy (if tolerated). Avoid excess spicy, sour, salty.
+- AUTUMN (Sep-Oct, Sharad): Pitta releasing. Favor sweet, bitter, astringent, cooling. Ghee to balance accumulated heat. Pomegranates, grapes, rice, wheat.
+
+ZODIAC-DOSHA FOOD CORRESPONDENCES:
+- FIRE SIGNS (Aries, Leo, Sagittarius): Pitta constitution tendency. Cool the fire with sweet, bitter, astringent. Cooling spices (coriander, fennel, mint). BUT in winter, they still need warming base with cooling accents.
+- EARTH SIGNS (Taurus, Virgo, Capricorn): Kapha/Vata mix. Ground with warm, nourishing foods. Avoid excess heavy/oily if Kapha, avoid excess dry/cold if Vata. Root vegetables, grains, warming spices.
+- AIR SIGNS (Gemini, Libra, Aquarius): Vata constitution tendency. Ground and warm! Favor warm, moist, oily, grounding. Ghee, soups, stews, root vegetables, warm grains. AVOID cold, dry, raw, light foods.
+- WATER SIGNS (Cancer, Scorpio, Pisces): Kapha tendency with emotional depth. Balance with warming spices, light cooking. Avoid excess dairy, sweet, heavy. Ginger, turmeric, light proteins, cooked vegetables.
+
+MOON SIGN DAILY GUIDANCE (integrate with seasonal awareness):
+- Aries Moon: Pitta-activating day. In winter, warming proteins with cooling herbs (cilantro garnish). In summer, lighter fare.
+- Taurus Moon: Venus indulgence meets groundedness. Sensory-rich but seasonally appropriate. Winter: hearty comfort. Summer: sweet fruits.
+- Gemini Moon: Variable appetite, Vata energy. Multiple small warm meals. Avoid raw/cold regardless of season. Warming teas.
+- Cancer Moon: Deep nourishment, Kapha-Water. Warm soups, broths, comfort foods. In summer, lighter versions. Avoid cold despite water sign association.
+- Leo Moon: Heart-centered, Pitta. Golden foods (turmeric, saffron). In winter, warming with ghee. In summer, cooling with coconut.
+- Virgo Moon: Digestive focus, Mercury-ruled. Clean, easily digestible. Kitchari, steamed vegetables, cumin, fennel for digestion.
+- Libra Moon: Balance and beauty. Harmonious flavor combinations. Venus sweetness balanced with bitter greens.
+- Scorpio Moon: Transformation, detox-friendly. Bitter greens, fermented foods, warming spices. Supports release.
+- Sagittarius Moon: Expansive Jupiter. International flavors but grounded. Warming curries in winter, lighter global fare in summer.
+- Capricorn Moon: Structure and tradition. Bone broths, slow-cooked, deeply nourishing. Saturn builds with patience.
+- Aquarius Moon: Innovation meets Vata. Unusual combinations but ALWAYS warm and grounding. Avoid raw/cold.
+- Pisces Moon: Oceanic fluidity. Warm soups, gentle spices, easy-to-digest. Avoid heavy, favor warm liquids. Ginger-lemon tea.
+
+CRITICAL SEASONAL OVERRIDE:
+- In WINTER: Never recommend cold foods (cucumber, raw salads, cold smoothies, ice cream) even for water signs or "cooling" Moon signs. The body needs WARMTH.
+- In SUMMER: Fire sign Moons can have more cooling foods. Still avoid ice-cold.
+- ALWAYS honor Agni (digestive fire): warm breakfast to kindle it, largest meal at lunch when Agni peaks, lighter dinner.`;
+
+
+    // Determine Ayurvedic season based on date
+    const getAyurvedicSeason = (dateStr: string): string => {
+      const d = new Date(dateStr);
+      const month = d.getMonth(); // 0-indexed
+      if (month >= 10 || month <= 1) return "WINTER (Hemanta/Shishira) - Vata season, strong Agni. Favor warm, oily, heavy, nourishing foods. AVOID cold, raw, dry foods.";
+      if (month >= 2 && month <= 4) return "SPRING (Vasanta) - Kapha accumulating. Favor light, dry, warming, bitter, pungent. Reduce heavy/oily/sweet.";
+      if (month >= 5 && month <= 7) return "SUMMER (Grishma) - Pitta season, weak Agni. Favor cooling, sweet, light foods. Avoid excess spicy/sour.";
+      return "AUTUMN (Sharad) - Pitta releasing. Favor sweet, bitter, astringent, cooling. Ghee for balance.";
+    };
+    
+    const currentSeason = getAyurvedicSeason(date);
 
     // Use custom prompt if provided, otherwise use the default daily prompt
     const userPrompt = customPrompt ? `${customPrompt}
@@ -152,7 +183,9 @@ ${rareAspectText}
 ${nodeAspectText}
 ${aspectsText}
 
-CRITICAL: Use EXACT degrees provided. If a Full Moon is at 13° Cancer, say "Full Moon at 13° Cancer" - not 9° or any other number. Be direct and practical. No mystical fluff or greetings.`;
+AYURVEDIC SEASON: ${currentSeason}
+
+CRITICAL: Use EXACT degrees provided. If a Full Moon is at 13° Cancer, say "Full Moon at 13° Cancer" - not 9° or any other number. Be direct and practical. No mystical fluff or greetings. For Cosmic Kitchen, ALWAYS honor the current Ayurvedic season - in winter, NEVER suggest cold/raw foods like cucumber or cold smoothies.`;
 
     console.log("Sending prompt to AI:", userPrompt.substring(0, 500) + "...");
 
