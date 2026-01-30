@@ -4,11 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import * as Astronomy from 'astronomy-engine';
 import { getNewMoonInterpretation, NewMoonInterpretation } from "@/lib/newMoonInterpretations";
 import { getPlanetaryPositions, getMoonPhase } from "@/lib/astrology";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
+import { NatalChart } from "@/hooks/useNatalChart";
 
 const ZODIAC_SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
 
@@ -34,9 +36,51 @@ const ELEMENT_BG: Record<string, string> = {
 
 interface LunarCycleViewProps {
   onClose?: () => void;
-  natalChart?: {
-    planets: Record<string, { sign: string; degree: number; house?: number }>;
-    houses?: { sign: string; degree: number }[];
+  userNatalChart?: NatalChart | null;
+  savedCharts?: NatalChart[];
+  selectedChartId?: string;
+  onSelectChart?: (id: string) => void;
+}
+
+// Find key phase dates in a lunar cycle
+interface KeyPhaseDates {
+  firstQuarter: { date: Date; sign: string } | null;
+  fullMoon: { date: Date; sign: string } | null;
+  lastQuarter: { date: Date; sign: string } | null;
+}
+
+function findKeyPhaseDates(newMoonDate: Date): KeyPhaseDates {
+  // First Quarter = phase 90 (quarter moon)
+  const firstQuarterSearch = Astronomy.SearchMoonPhase(90, newMoonDate, 15);
+  // Full Moon = phase 180
+  const fullMoonSearch = Astronomy.SearchMoonPhase(180, newMoonDate, 20);
+  // Last Quarter = phase 270
+  const lastQuarterSearch = Astronomy.SearchMoonPhase(270, newMoonDate, 25);
+  
+  const getSignAtDate = (date: Date): string => {
+    try {
+      const vector = Astronomy.GeoVector(Astronomy.Body.Moon, date, false);
+      const ecliptic = Astronomy.Ecliptic(vector);
+      const signIndex = Math.floor(((ecliptic.elon % 360) + 360) % 360 / 30);
+      return ZODIAC_SIGNS[signIndex];
+    } catch {
+      return 'Unknown';
+    }
+  };
+  
+  return {
+    firstQuarter: firstQuarterSearch ? { 
+      date: firstQuarterSearch.date, 
+      sign: getSignAtDate(firstQuarterSearch.date) 
+    } : null,
+    fullMoon: fullMoonSearch ? { 
+      date: fullMoonSearch.date, 
+      sign: getSignAtDate(fullMoonSearch.date) 
+    } : null,
+    lastQuarter: lastQuarterSearch ? { 
+      date: lastQuarterSearch.date, 
+      sign: getSignAtDate(lastQuarterSearch.date) 
+    } : null,
   };
 }
 
@@ -146,12 +190,20 @@ const PHASE_GUIDANCE: Record<string, { theme: string; activities: string[]; avoi
   }
 };
 
-export const LunarCycleView = ({ onClose, natalChart }: LunarCycleViewProps) => {
+export const LunarCycleView = ({ 
+  onClose, 
+  userNatalChart, 
+  savedCharts = [], 
+  selectedChartId = 'general',
+  onSelectChart 
+}: LunarCycleViewProps) => {
   const [newMoons, setNewMoons] = useState<{ previous: { date: Date; longitude: number }; next: { date: Date; longitude: number } } | null>(null);
   const [interpretation, setInterpretation] = useState<NewMoonInterpretation | null>(null);
   const [cycleDays, setCycleDays] = useState<Array<{ date: Date; moonSign: string; moonPhase: string; dayNumber: number }>>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [aiInsight, setAiInsight] = useState<string | null>(null);
+  const [keyPhases, setKeyPhases] = useState<KeyPhaseDates | null>(null);
+  const [localSelectedChart, setLocalSelectedChart] = useState(selectedChartId);
   const [sectionsOpen, setSectionsOpen] = useState<Record<string, boolean>>({
     theme: true,
     intentions: true,
@@ -161,6 +213,20 @@ export const LunarCycleView = ({ onClose, natalChart }: LunarCycleViewProps) => 
   });
   
   const today = new Date();
+  
+  // Get the active chart based on selection
+  const getActiveChart = (): NatalChart | null => {
+    if (localSelectedChart === 'general') return null;
+    if (localSelectedChart === 'user') return userNatalChart || null;
+    return savedCharts.find(c => c.id === localSelectedChart) || null;
+  };
+  
+  const activeChart = getActiveChart();
+  
+  const handleChartChange = (value: string) => {
+    setLocalSelectedChart(value);
+    onSelectChart?.(value);
+  };
   
   useEffect(() => {
     const moons = findNewMoons(today);
@@ -173,6 +239,10 @@ export const LunarCycleView = ({ onClose, natalChart }: LunarCycleViewProps) => 
     // Get days in this cycle
     const days = getLunarCycleDays(moons.previous.date, moons.next.date);
     setCycleDays(days);
+    
+    // Get key phase dates
+    const phases = findKeyPhaseDates(moons.previous.date);
+    setKeyPhases(phases);
   }, []);
   
   const toggleSection = (section: string) => {
@@ -187,12 +257,37 @@ export const LunarCycleView = ({ onClose, natalChart }: LunarCycleViewProps) => 
   const currentPhase = getMoonPhase(today);
   const phaseGuidance = PHASE_GUIDANCE[currentPhase.phaseName] || PHASE_GUIDANCE['New Moon'];
   
+  // Format key phase dates for the AI prompt
+  const formatKeyPhasesForPrompt = (): string => {
+    if (!keyPhases) return '';
+    
+    const formatDate = (d: Date) => d.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    
+    let result = 'KEY PHASE DATES THIS CYCLE:\n';
+    if (keyPhases.firstQuarter) {
+      result += `- First Quarter Moon: ${formatDate(keyPhases.firstQuarter.date)} (Moon in ${keyPhases.firstQuarter.sign})\n`;
+    }
+    if (keyPhases.fullMoon) {
+      result += `- Full Moon: ${formatDate(keyPhases.fullMoon.date)} (Moon in ${keyPhases.fullMoon.sign})\n`;
+    }
+    if (keyPhases.lastQuarter) {
+      result += `- Last Quarter Moon: ${formatDate(keyPhases.lastQuarter.date)} (Moon in ${keyPhases.lastQuarter.sign})\n`;
+    }
+    return result;
+  };
+  
   // Fetch AI-enhanced lunar cycle insight
   const fetchLunarCycleInsight = async () => {
     if (!interpretation || aiInsight) return;
     
     setIsLoading(true);
     try {
+      const keyPhasesInfo = formatKeyPhasesForPrompt();
+      
       const { data, error } = await supabase.functions.invoke('cosmic-weather', {
         body: {
           date: newMoons?.previous.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
@@ -209,6 +304,8 @@ ${interpretation.hasStellium ? `- STELLIUM: ${interpretation.stelliumPlanets.joi
 ${interpretation.conjunctions.length > 0 ? `- Planets Conjunct New Moon: ${interpretation.conjunctions.map(c => c.name).join(', ')}` : ''}
 ${interpretation.aspects.length > 0 ? `- Major Aspects: ${interpretation.aspects.map(a => `${a.planet} ${a.aspectType}`).join(', ')}` : ''}
 
+${keyPhasesInfo}
+
 Write in a professional astrologer's voice with these sections:
 ## 🌑 This Lunar Cycle's Theme
 A 2-3 paragraph exploration of what this particular New Moon is initiating. Reference the sign, degree, and any powerful conjunctions or stelliums.
@@ -223,7 +320,7 @@ Bullet points of specific themes, projects, or inner work favored by this lunar 
 What needs to be let go of to make space for this new energy.
 
 ## 🌟 Power Days This Cycle
-Identify key moments: First Quarter (action), Full Moon (culmination), Last Quarter (release).
+Use the KEY PHASE DATES provided above. For each date, give the exact date, the Moon's sign at that time, and 1-2 sentences about how to use that energy. DO NOT use placeholders like [INSERT DATE] - use the actual dates provided.
 
 Keep the tone deep, insightful, and practically applicable.`
         }
@@ -241,15 +338,14 @@ Keep the tone deep, insightful, and practically applicable.`
   
   // Check for natal chart aspects to this new moon
   const getNatalAspects = () => {
-    if (!natalChart || !interpretation) return [];
+    if (!activeChart || !interpretation) return [];
     
     const newMoonDegree = interpretation.degree + (ZODIAC_SIGNS.indexOf(interpretation.sign) * 30);
     const aspects: Array<{ planet: string; aspect: string; orb: number }> = [];
     
-    
-    
-    Object.entries(natalChart.planets).forEach(([planet, data]) => {
-      const planetDegree = data.degree + (ZODIAC_SIGNS.indexOf(data.sign) * 30);
+    Object.entries(activeChart.planets).forEach(([planet, data]) => {
+      const planetData = data as { sign: string; degree: number; house?: number };
+      const planetDegree = planetData.degree + (ZODIAC_SIGNS.indexOf(planetData.sign) * 30);
       let diff = Math.abs(newMoonDegree - planetDegree);
       if (diff > 180) diff = 360 - diff;
       
@@ -282,6 +378,38 @@ Keep the tone deep, insightful, and practically applicable.`
   
   return (
     <div className="space-y-6">
+      {/* Chart Selector */}
+      {(userNatalChart || savedCharts.length > 0) && (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-muted-foreground">
+              Personalize for:
+            </label>
+            <Select value={localSelectedChart} onValueChange={handleChartChange}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select a chart" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="general">☽ General (Collective)</SelectItem>
+                {userNatalChart && (
+                  <SelectItem value="user">⭐ {userNatalChart.name || 'My Chart'}</SelectItem>
+                )}
+                {savedCharts.map((chart) => (
+                  <SelectItem key={chart.id} value={chart.id || ''}>
+                    {chart.name || 'Unnamed Chart'}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {activeChart && (
+            <Badge variant="secondary" className="self-start">
+              Personalized for {activeChart.name || 'Your Chart'}
+            </Badge>
+          )}
+        </div>
+      )}
+
       {/* Lunar Cycle Header */}
       <Card className={`${ELEMENT_BG[interpretation.element]} border-2`}>
         <CardHeader className="pb-2">
@@ -502,7 +630,7 @@ Keep the tone deep, insightful, and practically applicable.`
       )}
       
       {/* Collapsible: Your Chart & This New Moon */}
-      {natalChart && natalAspects.length > 0 && (
+      {activeChart && natalAspects.length > 0 && (
         <Collapsible open={sectionsOpen.chart} onOpenChange={() => toggleSection('chart')}>
           <Card className="border-primary/30">
             <CollapsibleTrigger asChild>
@@ -510,7 +638,7 @@ Keep the tone deep, insightful, and practically applicable.`
                 <CardTitle className="font-serif text-lg font-light flex items-center justify-between">
                   <span className="flex items-center gap-2">
                     <Sparkles className="h-5 w-5 text-primary" />
-                    This New Moon in YOUR Chart
+                    This New Moon in {activeChart.name ? `${activeChart.name}'s Chart` : 'YOUR Chart'}
                   </span>
                   <Badge variant="secondary">{natalAspects.length} aspects</Badge>
                 </CardTitle>
@@ -519,7 +647,7 @@ Keep the tone deep, insightful, and practically applicable.`
             <CollapsibleContent>
               <CardContent>
                 <p className="text-sm text-muted-foreground mb-4">
-                  The {interpretation.sign} New Moon at {interpretation.degree}° activates these points in your natal chart:
+                  The {interpretation.sign} New Moon at {interpretation.degree}° activates these points in the natal chart:
                 </p>
                 <div className="space-y-2">
                   {natalAspects.map((aspect, i) => (
