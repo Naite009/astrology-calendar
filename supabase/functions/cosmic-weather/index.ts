@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects, planetPositions } = await req.json();
+    const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects, planetPositions, customPrompt } = await req.json();
     
     console.log("Received cosmic weather request:", { date, moonPhase, moonSign, exactLunarPhase, planetPositions });
     
@@ -100,32 +100,44 @@ FORMAT:
 ## Cosmic Kitchen: Today's Menu
 Based on the Moon in [SIGN] and today's planetary weather, here's what to nourish yourself with:
 
-**Breakfast:** [Specific dish name] - [Brief 1-sentence description of why it fits the energy]
+**🍳 Breakfast: [Specific dish name]**
+*Why:* [2-3 sentences explaining the astrological reasoning - connect it to the Moon sign energy, any morning aspects, or the overall day's theme. Be specific about WHY this food matches the cosmic weather.]
+📖 [Recipe search link in format: Search "dish name recipe"]
 
-**Lunch:** [Specific dish name] - [Brief explanation]
+**🥗 Lunch: [Specific dish name]**
+*Why:* [2-3 sentences explaining the astrological reasoning for this midday meal. How does it support the day's energy?]
+📖 [Recipe search link]
 
-**Dinner:** [Specific dish name] - [Brief explanation]
+**🍽️ Dinner: [Specific dish name]**
+*Why:* [2-3 sentences explaining why this evening meal complements the cosmic weather and helps integrate the day's themes.]
+📖 [Recipe search link]
 
-**Snacks:** [2-3 specific snack ideas]
+**🥜 Snacks: [Specific snack #1], [Snack #2], [Snack #3]**
+*Why:* [Explain each snack choice - e.g., "Granola with yogurt provides the grounding Earth energy Taurus Moon craves, while the probiotics support the Virgo Sun's focus on digestive health. Dark chocolate honors Scorpio's intensity..."]
 
-**Drink of the Day:** [Specific beverage] - [Why it matches the cosmic weather]
+**🍵 Drink of the Day: [Specific beverage]**
+*Why:* [Why this drink matches the cosmic weather - connect to element, sign, or aspects]
 
-MEAL GUIDANCE BY MOON SIGN:
-- Aries Moon: Spicy, energizing foods. Ginger, cayenne, protein-rich
-- Taurus Moon: Comfort classics, earthy flavors. Root vegetables, cheese, bread
-- Gemini Moon: Light, varied - tapas style. Multiple small dishes, finger foods
-- Cancer Moon: Soul food, home cooking. Soups, casseroles, nostalgic recipes
-- Leo Moon: Bold, celebratory. Golden colors, honey, citrus, heart-healthy
-- Virgo Moon: Clean, whole foods. Grains, greens, herbal teas
-- Libra Moon: Beautiful, balanced plates. Paired flavors, aesthetic presentation
-- Scorpio Moon: Rich, intense flavors. Dark chocolate, beets, fermented foods
-- Sagittarius Moon: International cuisine, adventure. Try something new
-- Capricorn Moon: Traditional, substantial. Bone broth, slow-cooked, nourishing
-- Aquarius Moon: Unusual combinations, future foods. Plant-based, innovative
-- Pisces Moon: Seafood, water-rich foods. Cucumber, melons, gentle flavors`;
+MEAL GUIDANCE BY MOON SIGN (use these themes but ALWAYS explain WHY):
+- Aries Moon: Spicy, energizing foods. Ginger, cayenne, protein-rich. Mars rules appetite and action.
+- Taurus Moon: Comfort classics, earthy flavors. Root vegetables, cheese, bread. Venus loves sensory pleasure.
+- Gemini Moon: Light, varied - tapas style. Multiple small dishes, finger foods. Mercury rules variety.
+- Cancer Moon: Soul food, home cooking. Soups, casseroles, nostalgic recipes. Moon rules nourishment itself.
+- Leo Moon: Bold, celebratory. Golden colors, honey, citrus, heart-healthy. Sun rules vitality.
+- Virgo Moon: Clean, whole foods. Grains, greens, herbal teas. Mercury rules digestion and discernment.
+- Libra Moon: Beautiful, balanced plates. Paired flavors, aesthetic presentation. Venus rules harmony.
+- Scorpio Moon: Rich, intense flavors. Dark chocolate, beets, fermented foods. Pluto rules transformation.
+- Sagittarius Moon: International cuisine, adventure. Try something new. Jupiter rules expansion.
+- Capricorn Moon: Traditional, substantial. Bone broth, slow-cooked, nourishing. Saturn rules structure.
+- Aquarius Moon: Unusual combinations, future foods. Plant-based, innovative. Uranus rules the unconventional.
+- Pisces Moon: Seafood, water-rich foods. Cucumber, melons, gentle flavors. Neptune rules the oceanic.`;
 
 
-    const userPrompt = `Generate cosmic weather for ${date}.
+    // Use custom prompt if provided, otherwise use the default daily prompt
+    const userPrompt = customPrompt ? `${customPrompt}
+
+${planetText}
+${moonJupiterConjunction}` : `Generate cosmic weather for ${date}.
 
 ${planetText}
 
@@ -140,7 +152,7 @@ ${aspectsText}
 
 CRITICAL: Use EXACT degrees provided. If a Full Moon is at 13° Cancer, say "Full Moon at 13° Cancer" - not 9° or any other number. Be direct and practical. No mystical fluff or greetings.`;
 
-    console.log("Sending prompt to AI:", userPrompt);
+    console.log("Sending prompt to AI:", userPrompt.substring(0, 500) + "...");
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
