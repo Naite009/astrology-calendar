@@ -300,7 +300,7 @@ export const useCloudBackup = (
 
       if (restoredCount > 0 && !hasShownRestoreToastRef.current) {
         hasShownRestoreToastRef.current = true;
-        toast.success(`Restored ${restoredCount} chart${restoredCount > 1 ? 's' : ''} from cloud backup`);
+        // Silent restore - no toast needed
       }
 
       console.log('[CloudBackup] Restored', restoredCount, 'charts from cloud (deduped from', cloudCharts.length, ')');
