@@ -723,6 +723,27 @@ Keep the tone deep, insightful, and practically applicable.`
                     </div>
                   )}
                   
+                  {/* Balsamic Moon */}
+                  {newMoons?.next && (
+                    <div className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg">
+                      <span className="text-2xl">🌘</span>
+                      <div className="flex-1">
+                        <p className="font-medium">Balsamic ☽</p>
+                        <p className="text-sm text-muted-foreground">
+                          {(() => {
+                            // Balsamic phase is approximately 3-4 days before the new moon
+                            const balsamicStart = new Date(newMoons.next.date);
+                            balsamicStart.setDate(balsamicStart.getDate() - 4);
+                            const balsamicEnd = new Date(newMoons.next.date);
+                            balsamicEnd.setDate(balsamicEnd.getDate() - 1);
+                            return `${balsamicStart.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} – ${balsamicEnd.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
+                          })()}
+                        </p>
+                      </div>
+                      <Badge variant="secondary">Rest & Release</Badge>
+                    </div>
+                  )}
+                  
                   {/* Next New Moon */}
                   {newMoons?.next && (
                     <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg border border-primary/20">
