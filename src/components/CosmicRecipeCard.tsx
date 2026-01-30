@@ -23,6 +23,29 @@ interface CosmicRecipeCardProps {
   date: string;
 }
 
+function normalizeIngredientMeasurement(input: string): string {
+  let s = (input ?? "").trim();
+  if (!s) return s;
+
+  // Fix broken leading fractions like "/2" -> "1/2"
+  s = s.replace(/^\/(\d)\b/, "1/$1");
+
+  // If a line starts with a unit/descriptor but no number, default to 1.
+  // Examples from user report: "tablespoon ghee" -> "1 tablespoon ghee".
+  const startsWithUnit = /^(tablespoon|teaspoon|cup|cups|clove|cloves|pinch|dash)\b/i;
+  const startsWithSizeWord = /^(small|medium|large)\b/i;
+  const startsWithNumeric = /^\d+(?:[\s-]\d+)?(?:\/\d+)?\b/; // 1, 2-3, 1/2, 2 1/2
+
+  if (!startsWithNumeric.test(s) && (startsWithUnit.test(s) || startsWithSizeWord.test(s))) {
+    s = `1 ${s}`;
+  }
+
+  // If it starts with plural "cups" with no number, normalize to singular with 1.
+  s = s.replace(/^1\s+cups\b/i, "1 cup");
+
+  return s;
+}
+
 const ELEMENT_GRADIENTS: Record<string, string> = {
   Fire: "from-red-600 via-orange-500 to-amber-400",
   Earth: "from-emerald-700 via-green-600 to-lime-500",
@@ -163,7 +186,7 @@ export const CosmicRecipeCard = ({ recipe, date }: CosmicRecipeCardProps) => {
                 {recipe.ingredients.map((ing, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <span className={accent}>•</span>
-                    <span>{ing}</span>
+                    <span>{normalizeIngredientMeasurement(ing)}</span>
                   </li>
                 ))}
               </ul>
