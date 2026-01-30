@@ -1,15 +1,83 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { NatalChart } from '@/hooks/useNatalChart';
 import { PlanetaryPositions } from '@/lib/astrology';
 import { calculateTransitAspects, getTransitPlanetSymbol } from '@/lib/transitAspects';
-import { Sparkles, Heart, Zap } from 'lucide-react';
+import { Sparkles, Heart, Zap, ChevronDown, ChevronUp, Loader2, Info } from 'lucide-react';
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const ZODIAC_SYMBOLS: Record<string, string> = {
   Aries: "♈", Taurus: "♉", Gemini: "♊", Cancer: "♋",
   Leo: "♌", Virgo: "♍", Libra: "♎", Scorpio: "♏",
   Sagittarius: "♐", Capricorn: "♑", Aquarius: "♒", Pisces: "♓"
+};
+
+// Major planets and angles that users understand
+const MAJOR_BODIES = [
+  'Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 
+  'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto',
+  'Ascendant', 'Midheaven'
+];
+
+// Minor bodies (asteroids, nodes, etc.)
+const MINOR_BODIES = [
+  'NorthNode', 'SouthNode', 'Chiron', 'Ceres', 'Pallas', 'Juno', 'Vesta',
+  'Lilith', 'Pholus', 'Nessus', 'Orcus', 'Ixion', 'Varuna', 'Quaoar',
+  'Makemake', 'Haumea', 'Eris', 'Sedna', 'Gonggong'
+];
+
+// Descriptions for celestial bodies
+const BODY_DESCRIPTIONS: Record<string, { name: string; symbol: string; meaning: string }> = {
+  Sun: { name: 'Sun', symbol: '☉', meaning: 'Your core identity, ego, vitality, and life purpose. Where you shine.' },
+  Moon: { name: 'Moon', symbol: '☽', meaning: 'Your emotions, instincts, comfort needs, and inner world.' },
+  Mercury: { name: 'Mercury', symbol: '☿', meaning: 'How you think, communicate, learn, and process information.' },
+  Venus: { name: 'Venus', symbol: '♀', meaning: 'Love, beauty, values, pleasure, and what you attract.' },
+  Mars: { name: 'Mars', symbol: '♂', meaning: 'Action, drive, desire, anger, and how you assert yourself.' },
+  Jupiter: { name: 'Jupiter', symbol: '♃', meaning: 'Expansion, luck, wisdom, growth, and where you find meaning.' },
+  Saturn: { name: 'Saturn', symbol: '♄', meaning: 'Discipline, structure, limits, responsibility, and life lessons.' },
+  Uranus: { name: 'Uranus', symbol: '♅', meaning: 'Revolution, awakening, freedom, innovation, and sudden change.' },
+  Neptune: { name: 'Neptune', symbol: '♆', meaning: 'Dreams, intuition, spirituality, illusion, and transcendence.' },
+  Pluto: { name: 'Pluto', symbol: '♇', meaning: 'Transformation, power, death/rebirth, and deep psychology.' },
+  Ascendant: { name: 'Ascendant', symbol: 'AC', meaning: 'Your rising sign. How you appear to others and approach life.' },
+  Midheaven: { name: 'Midheaven', symbol: 'MC', meaning: 'Your public image, career, reputation, and life direction.' },
+  NorthNode: { name: 'North Node', symbol: '☊', meaning: 'Your soul\'s growth direction and life purpose in this lifetime.' },
+  SouthNode: { name: 'South Node', symbol: '☋', meaning: 'Past life gifts and patterns. Comfort zone to move beyond.' },
+  Chiron: { name: 'Chiron', symbol: '⚷', meaning: 'The Wounded Healer. Your deepest wound that becomes your gift to others.' },
+  Ceres: { name: 'Ceres', symbol: '⚳', meaning: 'Nurturing, food, mothering, loss/return cycles, and self-care.' },
+  Pallas: { name: 'Pallas Athena', symbol: '⚴', meaning: 'Wisdom, strategy, pattern recognition, and creative intelligence.' },
+  Juno: { name: 'Juno', symbol: '⚵', meaning: 'Partnership, marriage, commitment, and what you need in a mate.' },
+  Vesta: { name: 'Vesta', symbol: '⚶', meaning: 'Sacred devotion, focus, purity, and what you dedicate yourself to.' },
+  Lilith: { name: 'Black Moon Lilith', symbol: '⚸', meaning: 'Your wild, untamed feminine. Shadow desires and rejection wounds.' },
+  Pholus: { name: 'Pholus', symbol: '⯛', meaning: 'Small cause, big effect. Uncorking ancestral patterns. Catalyst energy.' },
+  Nessus: { name: 'Nessus', symbol: '⯜', meaning: 'Abuse cycles, karma, the poison and its cure. Accountability.' },
+  Orcus: { name: 'Orcus', symbol: '🜨', meaning: 'Oaths, promises, integrity. What you\'re bound to karmically.' },
+  Ixion: { name: 'Ixion', symbol: '⯝', meaning: 'Lawlessness, betrayal, testing boundaries. Where we repeat mistakes.' },
+  Varuna: { name: 'Varuna', symbol: '⯞', meaning: 'Fame, reputation, the all-seeing eye. Cosmic order and lies.' },
+  Quaoar: { name: 'Quaoar', symbol: '🝾', meaning: 'Creation, dance, the playful origins of existence.' },
+  Makemake: { name: 'Makemake', symbol: '🝻', meaning: 'Environmental awareness, fertility, connection to nature.' },
+  Haumea: { name: 'Haumea', symbol: '🝼', meaning: 'Rebirth, fertility, Hawaiian creation goddess energy.' },
+  Eris: { name: 'Eris', symbol: '⯙', meaning: 'Discord, awakening, the uninvited truth that disrupts.' },
+  Sedna: { name: 'Sedna', symbol: '⯲', meaning: 'Deep trauma, abandonment, victimization, and transcendence.' },
+  Gonggong: { name: 'Gonggong', symbol: '共', meaning: 'Chaos, climate, collective upheaval, the flood myth.' },
+};
+
+// Aspect descriptions
+const ASPECT_DESCRIPTIONS: Record<string, { name: string; symbol: string; meaning: string }> = {
+  conjunction: { name: 'Conjunction', symbol: '☌', meaning: 'Energies merge and intensify. Powerful blending of forces.' },
+  opposition: { name: 'Opposition', symbol: '☍', meaning: 'Tension and awareness. Two forces pulling you in different directions.' },
+  trine: { name: 'Trine', symbol: '△', meaning: 'Easy flow and harmony. Natural talents and gifts.' },
+  square: { name: 'Square', symbol: '□', meaning: 'Friction and challenge. Growth through tension and action.' },
+  sextile: { name: 'Sextile', symbol: '⚹', meaning: 'Opportunity and cooperation. Gentle support requiring effort to activate.' },
 };
 
 // Get interpretations for where Moon lands in natal houses
@@ -156,22 +224,42 @@ interface PersonalizedTransitsPanelProps {
   transitPositions: PlanetaryPositions;
   moonSign: string;
   moonDegree: number;
+  planetPositions?: Array<{ name: string; sign: string; degree: number }>;
 }
 
 export const PersonalizedTransitsPanel = ({ 
   chart, 
   transitPositions, 
   moonSign, 
-  moonDegree 
+  moonDegree,
+  planetPositions = []
 }: PersonalizedTransitsPanelProps) => {
+  const [showMinorBodies, setShowMinorBodies] = useState(false);
+  const [aiReading, setAiReading] = useState<string | null>(null);
+  const [isLoadingAI, setIsLoadingAI] = useState(false);
+
+  // Build planetPositions from transitPositions if not provided
+  const computedPlanetPositions = useMemo(() => {
+    if (planetPositions && planetPositions.length > 0) return planetPositions;
+    return Object.entries(transitPositions).map(([name, data]) => ({
+      name: name.charAt(0).toUpperCase() + name.slice(1),
+      sign: data?.sign || 'Unknown',
+      degree: data?.degree || 0
+    }));
+  }, [transitPositions, planetPositions]);
+
   // Calculate all transit aspects
   const transitAspects = useMemo(() => {
     return calculateTransitAspects(new Date(), transitPositions, chart);
   }, [transitPositions, chart]);
 
-  // Filter for Moon aspects specifically
-  const moonAspects = useMemo(() => {
-    return transitAspects.filter(a => a.transitPlanet === 'Moon');
+  // Filter for Moon aspects specifically - separated by major vs minor bodies
+  const { majorMoonAspects, minorMoonAspects } = useMemo(() => {
+    const moonAspects = transitAspects.filter(a => a.transitPlanet === 'Moon');
+    return {
+      majorMoonAspects: moonAspects.filter(a => MAJOR_BODIES.includes(a.natalPlanet)),
+      minorMoonAspects: moonAspects.filter(a => MINOR_BODIES.includes(a.natalPlanet)),
+    };
   }, [transitAspects]);
 
   // Filter for other significant transits (exact or tight orb)
@@ -185,8 +273,123 @@ export const PersonalizedTransitsPanel = ({
   const moonHouse = getSignHouse(moonSign, chart);
   const moonHouseInterpretation = getMoonInHouseInterpretation(moonHouse);
 
-  // Get where the current Moon sign is in their chart
-  const moonSignHouse = getSignHouse(moonSign, chart);
+  // Generate personalized AI reading
+  const generatePersonalizedReading = async () => {
+    setIsLoadingAI(true);
+    try {
+      // Build natal chart context
+      const natalPlanets = Object.entries(chart.planets)
+        .filter(([_, data]) => data?.sign && data?.degree !== undefined)
+        .map(([name, data]) => `${name}: ${data!.degree?.toFixed(1)}° ${data!.sign}`)
+        .join('\n');
+
+      const natalHouses = chart.houseCusps ? Object.entries(chart.houseCusps)
+        .filter(([key]) => key.startsWith('house'))
+        .map(([key, data]) => `${key}: ${data.sign}`)
+        .join('\n') : '';
+
+      const moonAspectsList = majorMoonAspects.map(a => 
+        `Moon ${a.aspect} natal ${a.natalPlanet} (${a.orb}° orb)`
+      ).join(', ');
+
+      const transitList = significantTransits.map(a =>
+        `Transit ${a.transitPlanet} ${a.aspect} natal ${a.natalPlanet}`
+      ).join(', ');
+
+      const customPrompt = `Generate a deeply personalized cosmic weather reading for ${chart.name}.
+
+THEIR NATAL CHART:
+${natalPlanets}
+
+Houses (Whole Sign from ${chart.planets.Ascendant?.sign || 'unknown'} Ascendant):
+${natalHouses}
+
+TODAY'S PERSONAL TRANSITS:
+- Moon is in their ${moonHouse}${moonHouse === 1 ? 'st' : moonHouse === 2 ? 'nd' : moonHouse === 3 ? 'rd' : 'th'} house (${moonSign})
+- Moon aspects to natal planets: ${moonAspectsList || 'none major'}
+- Other active transits: ${transitList || 'none significant'}
+
+Write a warm, personal reading that:
+1. Addresses ${chart.name} by name
+2. References SPECIFIC placements from their natal chart (e.g., "With your natal Venus in Scorpio...")
+3. Explains how today's Moon in ${moonSign} specifically affects THEIR chart
+4. Interprets the exact transit aspects listed above with psychological depth
+5. Gives practical guidance for navigating these energies
+6. Keep it warm and empowering, like a skilled astrologer speaking to a valued client
+
+Format with clear sections using ## headers. Be specific to their chart - no generic advice.`;
+
+      const { data, error } = await supabase.functions.invoke('cosmic-weather', {
+        body: {
+          date: new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
+          moonPhase: 'current',
+          moonSign,
+          planetPositions: computedPlanetPositions,
+          customPrompt,
+        }
+      });
+
+      if (error) {
+        console.error('Personalized reading error:', error);
+        toast.error('Could not generate personalized reading');
+        return;
+      }
+
+      setAiReading(data.insight);
+    } catch (err) {
+      console.error('Failed to generate personalized reading:', err);
+      toast.error('Failed to connect to cosmic wisdom');
+    } finally {
+      setIsLoadingAI(false);
+    }
+  };
+
+  // Simple markdown to HTML conversion
+  const formatReading = (text: string) => {
+    return text
+      .replace(/## (.*)/g, '<h3 class="text-lg font-semibold mt-4 mb-2 text-primary">$1</h3>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/- (.*)/g, '<li class="ml-4">$1</li>')
+      .replace(/\n/g, '<br/>');
+  };
+
+  const renderBodyDescription = (bodyName: string) => {
+    const body = BODY_DESCRIPTIONS[bodyName];
+    if (!body) return null;
+    
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Info className="h-3 w-3 text-muted-foreground cursor-help inline-block ml-1" />
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs">
+            <p className="font-medium">{body.symbol} {body.name}</p>
+            <p className="text-xs text-muted-foreground">{body.meaning}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  };
+
+  const renderAspectDescription = (aspectName: string) => {
+    const aspect = ASPECT_DESCRIPTIONS[aspectName];
+    if (!aspect) return null;
+    
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="cursor-help underline decoration-dotted">{aspect.symbol}</span>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs">
+            <p className="font-medium">{aspect.symbol} {aspect.name}</p>
+            <p className="text-xs text-muted-foreground">{aspect.meaning}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  };
 
   return (
     <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
@@ -200,6 +403,37 @@ export const PersonalizedTransitsPanel = ({
         </p>
       </CardHeader>
       <CardContent className="p-6 space-y-6">
+        {/* AI Personalized Reading Button */}
+        <div className="space-y-4">
+          <Button 
+            onClick={generatePersonalizedReading}
+            disabled={isLoadingAI}
+            className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+          >
+            {isLoadingAI ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Consulting the stars for {chart.name}...
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-4 w-4 mr-2" />
+                Get AI Personalized Reading
+              </>
+            )}
+          </Button>
+
+          {/* AI Reading Display */}
+          {aiReading && (
+            <div className="p-4 rounded-lg bg-background/50 border border-primary/20">
+              <div 
+                className="prose prose-sm max-w-none text-foreground"
+                dangerouslySetInnerHTML={{ __html: formatReading(aiReading) }}
+              />
+            </div>
+          )}
+        </div>
+
         {/* Moon in House */}
         {moonHouse && (
           <div className="space-y-2">
@@ -220,23 +454,24 @@ export const PersonalizedTransitsPanel = ({
           </div>
         )}
 
-        {/* Moon Aspects to Natal Planets */}
-        {moonAspects.length > 0 && (
+        {/* Major Moon Aspects to Natal Planets */}
+        {majorMoonAspects.length > 0 && (
           <div className="space-y-3">
             <h4 className="text-sm font-medium flex items-center gap-2">
               <Heart className="h-4 w-4 text-pink-500" />
-              Moon Touching Your Planets
+              Moon Touching Your Major Planets
             </h4>
             <div className="space-y-3">
-              {moonAspects.slice(0, 4).map((aspect, i) => (
+              {majorMoonAspects.map((aspect, i) => (
                 <div key={i} className="p-3 rounded-lg bg-background/50 border border-border/50">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <span className="text-lg">☽</span>
                     <span style={{ color: aspect.color }} className="font-medium">
-                      {aspect.symbol}
+                      {renderAspectDescription(aspect.aspect)}
                     </span>
                     <span className="text-sm">
                       {aspect.natalPlanet}
+                      {renderBodyDescription(aspect.natalPlanet)}
                     </span>
                     <Badge variant={aspect.isExact ? "default" : "outline"} className="text-xs">
                       {aspect.isExact ? 'EXACT!' : `${aspect.orb}° orb`}
@@ -249,6 +484,49 @@ export const PersonalizedTransitsPanel = ({
               ))}
             </div>
           </div>
+        )}
+
+        {/* Minor Body Moon Aspects (Collapsible) */}
+        {minorMoonAspects.length > 0 && (
+          <Collapsible open={showMinorBodies} onOpenChange={setShowMinorBodies}>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" className="w-full justify-between p-3 h-auto">
+                <span className="text-sm font-medium flex items-center gap-2">
+                  🌟 Moon Aspects to Asteroids & Minor Bodies ({minorMoonAspects.length})
+                </span>
+                {showMinorBodies ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-3 mt-2">
+              <p className="text-xs text-muted-foreground italic px-3">
+                Hover over body names and aspect symbols to learn what they mean
+              </p>
+              {minorMoonAspects.map((aspect, i) => (
+                <div key={i} className="p-3 rounded-lg bg-background/50 border border-border/50">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <span className="text-lg">☽</span>
+                    <span style={{ color: aspect.color }} className="font-medium">
+                      {renderAspectDescription(aspect.aspect)}
+                    </span>
+                    <span className="text-sm">
+                      {BODY_DESCRIPTIONS[aspect.natalPlanet]?.name || aspect.natalPlanet}
+                      {renderBodyDescription(aspect.natalPlanet)}
+                    </span>
+                    <Badge variant={aspect.isExact ? "default" : "outline"} className="text-xs">
+                      {aspect.isExact ? 'EXACT!' : `${aspect.orb}° orb`}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {getMoonToNatalInterpretation(aspect.natalPlanet, aspect.aspect, moonSign)}
+                  </p>
+                </div>
+              ))}
+            </CollapsibleContent>
+          </Collapsible>
         )}
 
         {/* Other Significant Transits */}
@@ -264,12 +542,14 @@ export const PersonalizedTransitsPanel = ({
                   <div className="flex items-center gap-2 flex-wrap mb-1">
                     <span className="font-medium text-sm">
                       {getTransitPlanetSymbol(aspect.transitPlanet)} {aspect.transitPlanet}
+                      {renderBodyDescription(aspect.transitPlanet)}
                     </span>
                     <span style={{ color: aspect.color }}>
-                      {aspect.symbol}
+                      {renderAspectDescription(aspect.aspect)}
                     </span>
                     <span className="text-sm">
                       your {aspect.natalPlanet}
+                      {renderBodyDescription(aspect.natalPlanet)}
                     </span>
                     <Badge 
                       variant={aspect.isExact ? "destructive" : "outline"} 
@@ -294,7 +574,7 @@ export const PersonalizedTransitsPanel = ({
         )}
 
         {/* No aspects message */}
-        {moonAspects.length === 0 && significantTransits.length === 0 && (
+        {majorMoonAspects.length === 0 && significantTransits.length === 0 && (
           <div className="text-center py-4 text-muted-foreground">
             <p>No major aspects to your natal planets right now.</p>
             <p className="text-sm">The cosmic energy is more general today.</p>
