@@ -1,0 +1,638 @@
+import { useState, useEffect } from "react";
+import { Moon, Sparkles, Calendar, Target, Eye, Heart, Briefcase, Zap, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import * as Astronomy from 'astronomy-engine';
+import { getNewMoonInterpretation, NewMoonInterpretation } from "@/lib/newMoonInterpretations";
+import { getPlanetaryPositions, getMoonPhase } from "@/lib/astrology";
+import { supabase } from "@/integrations/supabase/client";
+import ReactMarkdown from "react-markdown";
+
+const ZODIAC_SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+
+const ZODIAC_SYMBOLS: Record<string, string> = {
+  Aries: "♈", Taurus: "♉", Gemini: "♊", Cancer: "♋",
+  Leo: "♌", Virgo: "♍", Libra: "♎", Scorpio: "♏",
+  Sagittarius: "♐", Capricorn: "♑", Aquarius: "♒", Pisces: "♓"
+};
+
+const ELEMENT_COLORS: Record<string, string> = {
+  Fire: "text-red-500",
+  Earth: "text-emerald-600",
+  Air: "text-sky-500",
+  Water: "text-blue-500"
+};
+
+const ELEMENT_BG: Record<string, string> = {
+  Fire: "bg-red-500/10 border-red-500/30",
+  Earth: "bg-emerald-500/10 border-emerald-500/30",
+  Air: "bg-sky-500/10 border-sky-500/30",
+  Water: "bg-blue-500/10 border-blue-500/30"
+};
+
+interface LunarCycleViewProps {
+  onClose?: () => void;
+  natalChart?: {
+    planets: Record<string, { sign: string; degree: number; house?: number }>;
+    houses?: { sign: string; degree: number }[];
+  };
+}
+
+// Find the previous and next new moons
+function findNewMoons(referenceDate: Date): { previous: { date: Date; longitude: number }; next: { date: Date; longitude: number } } {
+  // Search backwards for previous new moon
+  const prevSearch = Astronomy.SearchMoonPhase(0, referenceDate, -30);
+  // Search forwards for next new moon
+  const nextSearch = Astronomy.SearchMoonPhase(0, referenceDate, 30);
+  
+  const prevDate = prevSearch?.date || new Date(referenceDate.getTime() - 29.5 * 24 * 60 * 60 * 1000);
+  const nextDate = nextSearch?.date || new Date(referenceDate.getTime() + 29.5 * 24 * 60 * 60 * 1000);
+  
+  // Get moon longitude at each new moon
+  const prevVector = Astronomy.GeoVector(Astronomy.Body.Moon, prevDate, false);
+  const prevEcliptic = Astronomy.Ecliptic(prevVector);
+  
+  const nextVector = Astronomy.GeoVector(Astronomy.Body.Moon, nextDate, false);
+  const nextEcliptic = Astronomy.Ecliptic(nextVector);
+  
+  return {
+    previous: { date: prevDate, longitude: prevEcliptic.elon },
+    next: { date: nextDate, longitude: nextEcliptic.elon }
+  };
+}
+
+// Get days in the current lunar cycle
+function getLunarCycleDays(start: Date, end: Date): Array<{ date: Date; moonSign: string; moonPhase: string; dayNumber: number }> {
+  const days: Array<{ date: Date; moonSign: string; moonPhase: string; dayNumber: number }> = [];
+  const current = new Date(start);
+  let dayNumber = 1;
+  
+  while (current < end && dayNumber <= 30) {
+    const planets = getPlanetaryPositions(current);
+    const phase = getMoonPhase(current);
+    
+    days.push({
+      date: new Date(current),
+      moonSign: planets.moon?.sign || 'Unknown',
+      moonPhase: phase.phaseName,
+      dayNumber
+    });
+    
+    current.setDate(current.getDate() + 1);
+    dayNumber++;
+  }
+  
+  return days;
+}
+
+// Get moon phase emoji
+function getMoonPhaseEmoji(phase: string): string {
+  const phaseMap: Record<string, string> = {
+    'New Moon': '🌑',
+    'Waxing Crescent': '🌒',
+    'First Quarter': '🌓',
+    'Waxing Gibbous': '🌔',
+    'Full Moon': '🌕',
+    'Waning Gibbous': '🌖',
+    'Last Quarter': '🌗',
+    'Waning Crescent': '🌘',
+  };
+  return phaseMap[phase] || '🌙';
+}
+
+// Lunar phase guidance
+const PHASE_GUIDANCE: Record<string, { theme: string; activities: string[]; avoid: string[] }> = {
+  'New Moon': {
+    theme: 'Planting seeds of intention',
+    activities: ['Set intentions', 'Journal goals', 'Start vision boards', 'Quiet reflection'],
+    avoid: ['Taking major action', 'Announcing plans publicly', 'Pushing hard']
+  },
+  'Waxing Crescent': {
+    theme: 'Building momentum',
+    activities: ['Take first steps', 'Gather resources', 'Make plans concrete', 'Research'],
+    avoid: ['Giving up too soon', 'Overcommitting', 'Second-guessing']
+  },
+  'First Quarter': {
+    theme: 'Taking action & overcoming obstacles',
+    activities: ['Push through challenges', 'Make decisions', 'Take bold action', 'Assert yourself'],
+    avoid: ['Avoiding conflict', 'Procrastinating', 'Being passive']
+  },
+  'Waxing Gibbous': {
+    theme: 'Refining and editing',
+    activities: ['Fine-tune projects', 'Seek feedback', 'Adjust course', 'Perfect details'],
+    avoid: ['Starting new things', 'Major pivots', 'Perfectionism paralysis']
+  },
+  'Full Moon': {
+    theme: 'Illumination & culmination',
+    activities: ['Celebrate achievements', 'Release what isn\'t working', 'Express gratitude', 'Social gatherings'],
+    avoid: ['Starting new projects', 'Making impulsive decisions', 'Overreacting emotionally']
+  },
+  'Waning Gibbous': {
+    theme: 'Sharing wisdom & gratitude',
+    activities: ['Teach others', 'Share knowledge', 'Express appreciation', 'Give back'],
+    avoid: ['Hoarding success', 'Being stingy', 'Ignoring lessons']
+  },
+  'Last Quarter': {
+    theme: 'Letting go & clearing',
+    activities: ['Declutter', 'End commitments', 'Forgive', 'Tie up loose ends'],
+    avoid: ['Clinging to the past', 'Starting new ventures', 'Resisting change']
+  },
+  'Waning Crescent': {
+    theme: 'Rest & renewal',
+    activities: ['Rest', 'Dream', 'Meditate', 'Prepare for the new cycle'],
+    avoid: ['Pushing hard', 'Overworking', 'Ignoring fatigue']
+  }
+};
+
+export const LunarCycleView = ({ onClose, natalChart }: LunarCycleViewProps) => {
+  const [newMoons, setNewMoons] = useState<{ previous: { date: Date; longitude: number }; next: { date: Date; longitude: number } } | null>(null);
+  const [interpretation, setInterpretation] = useState<NewMoonInterpretation | null>(null);
+  const [cycleDays, setCycleDays] = useState<Array<{ date: Date; moonSign: string; moonPhase: string; dayNumber: number }>>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [aiInsight, setAiInsight] = useState<string | null>(null);
+  const [sectionsOpen, setSectionsOpen] = useState<Record<string, boolean>>({
+    theme: true,
+    intentions: true,
+    aspects: false,
+    chart: false,
+    phases: false
+  });
+  
+  const today = new Date();
+  
+  useEffect(() => {
+    const moons = findNewMoons(today);
+    setNewMoons(moons);
+    
+    // Get the interpretation for the current/previous new moon
+    const interp = getNewMoonInterpretation(moons.previous.date, moons.previous.longitude);
+    setInterpretation(interp);
+    
+    // Get days in this cycle
+    const days = getLunarCycleDays(moons.previous.date, moons.next.date);
+    setCycleDays(days);
+  }, []);
+  
+  const toggleSection = (section: string) => {
+    setSectionsOpen(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+  
+  // Calculate days into the cycle
+  const daysIntoCycle = newMoons ? Math.floor((today.getTime() - newMoons.previous.date.getTime()) / (1000 * 60 * 60 * 24)) : 0;
+  const cycleProgress = newMoons ? Math.min(100, (daysIntoCycle / 29.5) * 100) : 0;
+  
+  // Get current moon phase
+  const currentPhase = getMoonPhase(today);
+  const phaseGuidance = PHASE_GUIDANCE[currentPhase.phaseName] || PHASE_GUIDANCE['New Moon'];
+  
+  // Fetch AI-enhanced lunar cycle insight
+  const fetchLunarCycleInsight = async () => {
+    if (!interpretation || aiInsight) return;
+    
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('cosmic-weather', {
+        body: {
+          date: newMoons?.previous.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
+          moonPhase: 'New Moon',
+          moonSign: interpretation.sign,
+          customPrompt: `Write a detailed NEW MOON CYCLE interpretation for the ${interpretation.sign} New Moon at ${interpretation.degree}°.
+
+LUNAR CYCLE CONTEXT:
+- Sign: ${interpretation.sign} (${interpretation.element} element, ${interpretation.modality} modality)
+- Degree: ${interpretation.degree}°
+- Ruler: ${interpretation.ruler} in ${interpretation.rulerSign}${interpretation.rulerRetrograde ? ' (Retrograde)' : ''}
+- Sign Theme: ${interpretation.signTheme}
+${interpretation.hasStellium ? `- STELLIUM: ${interpretation.stelliumPlanets.join(', ')} in ${interpretation.stelliumSign}` : ''}
+${interpretation.conjunctions.length > 0 ? `- Planets Conjunct New Moon: ${interpretation.conjunctions.map(c => c.name).join(', ')}` : ''}
+${interpretation.aspects.length > 0 ? `- Major Aspects: ${interpretation.aspects.map(a => `${a.planet} ${a.aspectType}`).join(', ')}` : ''}
+
+Write in a professional astrologer's voice with these sections:
+## 🌑 This Lunar Cycle's Theme
+A 2-3 paragraph exploration of what this particular New Moon is initiating. Reference the sign, degree, and any powerful conjunctions or stelliums.
+
+## ✨ Soul Intention for This Cycle
+What the soul is being asked to grow into during these 29 days. Be specific and psychological.
+
+## 🎯 What to Focus On
+Bullet points of specific themes, projects, or inner work favored by this lunar energy.
+
+## ⚠️ What to Release
+What needs to be let go of to make space for this new energy.
+
+## 🌟 Power Days This Cycle
+Identify key moments: First Quarter (action), Full Moon (culmination), Last Quarter (release).
+
+Keep the tone deep, insightful, and practically applicable.`
+        }
+      });
+      
+      if (data?.insight) {
+        setAiInsight(data.insight);
+      }
+    } catch (err) {
+      console.error('Failed to fetch lunar cycle insight:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Check for natal chart aspects to this new moon
+  const getNatalAspects = () => {
+    if (!natalChart || !interpretation) return [];
+    
+    const newMoonDegree = interpretation.degree + (ZODIAC_SIGNS.indexOf(interpretation.sign) * 30);
+    const aspects: Array<{ planet: string; aspect: string; orb: number }> = [];
+    
+    
+    
+    Object.entries(natalChart.planets).forEach(([planet, data]) => {
+      const planetDegree = data.degree + (ZODIAC_SIGNS.indexOf(data.sign) * 30);
+      let diff = Math.abs(newMoonDegree - planetDegree);
+      if (diff > 180) diff = 360 - diff;
+      
+      // Check for major aspects
+      if (diff < 8) {
+        aspects.push({ planet, aspect: 'Conjunction', orb: diff });
+      } else if (Math.abs(diff - 60) < 6) {
+        aspects.push({ planet, aspect: 'Sextile', orb: Math.abs(diff - 60) });
+      } else if (Math.abs(diff - 90) < 8) {
+        aspects.push({ planet, aspect: 'Square', orb: Math.abs(diff - 90) });
+      } else if (Math.abs(diff - 120) < 8) {
+        aspects.push({ planet, aspect: 'Trine', orb: Math.abs(diff - 120) });
+      } else if (Math.abs(diff - 180) < 8) {
+        aspects.push({ planet, aspect: 'Opposition', orb: Math.abs(diff - 180) });
+      }
+    });
+    
+    return aspects.sort((a, b) => a.orb - b.orb);
+  };
+  
+  if (!newMoons || !interpretation) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+  
+  const natalAspects = getNatalAspects();
+  
+  return (
+    <div className="space-y-6">
+      {/* Lunar Cycle Header */}
+      <Card className={`${ELEMENT_BG[interpretation.element]} border-2`}>
+        <CardHeader className="pb-2">
+          <CardTitle className="font-serif text-2xl font-light flex items-center gap-3">
+            <span className="text-4xl">🌑</span>
+            {ZODIAC_SYMBOLS[interpretation.sign]} {interpretation.sign} New Moon Cycle
+          </CardTitle>
+          <p className="text-muted-foreground">
+            {newMoons.previous.date.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} – {newMoons.next.date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Cycle Progress */}
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Day {daysIntoCycle + 1} of ~29</span>
+              <span className="font-medium">{getMoonPhaseEmoji(currentPhase.phaseName)} {currentPhase.phaseName}</span>
+            </div>
+            <div className="h-3 bg-secondary rounded-full overflow-hidden">
+              <div 
+                className={`h-full ${ELEMENT_COLORS[interpretation.element].replace('text-', 'bg-')} transition-all`}
+                style={{ width: `${cycleProgress}%` }}
+              />
+            </div>
+          </div>
+          
+          {/* Key Facts */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
+            <div className="text-center p-3 bg-background/50 rounded-lg">
+              <p className="text-xs text-muted-foreground uppercase">Degree</p>
+              <p className="text-lg font-bold">{interpretation.degree}° {interpretation.sign}</p>
+            </div>
+            <div className="text-center p-3 bg-background/50 rounded-lg">
+              <p className="text-xs text-muted-foreground uppercase">Element</p>
+              <p className={`text-lg font-bold ${ELEMENT_COLORS[interpretation.element]}`}>{interpretation.element}</p>
+            </div>
+            <div className="text-center p-3 bg-background/50 rounded-lg">
+              <p className="text-xs text-muted-foreground uppercase">Modality</p>
+              <p className="text-lg font-bold">{interpretation.modality}</p>
+            </div>
+            <div className="text-center p-3 bg-background/50 rounded-lg">
+              <p className="text-xs text-muted-foreground uppercase">Ruler</p>
+              <p className="text-lg font-bold">
+                {interpretation.rulerSymbol} {interpretation.ruler}
+                {interpretation.rulerRetrograde && <span className="text-amber-500 text-sm ml-1">℞</span>}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* Current Phase Guidance */}
+      <Card className="border-primary/20">
+        <CardHeader className="pb-2">
+          <CardTitle className="font-serif text-lg font-light flex items-center gap-2">
+            {getMoonPhaseEmoji(currentPhase.phaseName)} Current Phase: {currentPhase.phaseName}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground mb-3 italic">"{phaseGuidance.theme}"</p>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm font-medium text-emerald-600 mb-2 flex items-center gap-1">
+                <Target className="h-4 w-4" /> Favored Activities
+              </p>
+              <ul className="space-y-1">
+                {phaseGuidance.activities.map((activity, i) => (
+                  <li key={i} className="text-sm flex items-center gap-2">
+                    <span className="text-primary">•</span> {activity}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-amber-600 mb-2 flex items-center gap-1">
+                <Eye className="h-4 w-4" /> Avoid
+              </p>
+              <ul className="space-y-1">
+                {phaseGuidance.avoid.map((item, i) => (
+                  <li key={i} className="text-sm flex items-center gap-2">
+                    <span className="text-muted-foreground">○</span> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* Collapsible: Main Theme & Interpretation */}
+      <Collapsible open={sectionsOpen.theme} onOpenChange={() => toggleSection('theme')}>
+        <Card>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer hover:bg-secondary/30 transition-colors">
+              <CardTitle className="font-serif text-lg font-light flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  New Moon Theme & Energy
+                </span>
+                {sectionsOpen.theme ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+              </CardTitle>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="space-y-4">
+              <div className="prose prose-sm dark:prose-invert max-w-none">
+                <p className="text-foreground/90 leading-relaxed">{interpretation.mainTheme}</p>
+              </div>
+              
+              {interpretation.conjunctions.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-sm text-muted-foreground">Conjunct:</span>
+                  {interpretation.conjunctions.map((planet, i) => (
+                    <Badge key={i} variant="secondary">
+                      {planet.symbol} {planet.name}
+                      {planet.isRetrograde && <span className="ml-1 text-amber-500">℞</span>}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              
+              {interpretation.hasStellium && (
+                <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
+                  <p className="text-sm font-medium text-primary">⭐ {interpretation.stelliumPlanets.length}-Planet Stellium in {interpretation.stelliumSign}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Concentrated energy — this cycle carries extra weight in {interpretation.stelliumSign} themes.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+      
+      {/* Collapsible: Soul Intentions */}
+      <Collapsible open={sectionsOpen.intentions} onOpenChange={() => toggleSection('intentions')}>
+        <Card>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer hover:bg-secondary/30 transition-colors">
+              <CardTitle className="font-serif text-lg font-light flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <Heart className="h-5 w-5 text-rose-500" />
+                  Soul Intentions & Practical Guidance
+                </span>
+                {sectionsOpen.intentions ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+              </CardTitle>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="space-y-4">
+              <div>
+                <h4 className="font-medium mb-2 flex items-center gap-2">
+                  <Target className="h-4 w-4 text-primary" /> What to Set Intentions Around
+                </h4>
+                <p className="text-sm text-foreground/90">{interpretation.whatToSet}</p>
+              </div>
+              
+              <div>
+                <h4 className="font-medium mb-2 flex items-center gap-2">
+                  <Zap className="h-4 w-4 text-amber-500" /> How to Work This Energy
+                </h4>
+                <p className="text-sm text-foreground/90">{interpretation.howToWork}</p>
+              </div>
+              
+              <div>
+                <h4 className="font-medium mb-2 flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-purple-500" /> Soul-Level Message
+                </h4>
+                <p className="text-sm text-foreground/90 italic">{interpretation.soulLevel}</p>
+              </div>
+              
+              <div className="p-3 bg-secondary/50 rounded-lg">
+                <h4 className="font-medium mb-2 flex items-center gap-2">
+                  <Briefcase className="h-4 w-4" /> Practical Advice
+                </h4>
+                <p className="text-sm text-foreground/90">{interpretation.practicalAdvice}</p>
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+      
+      {/* Collapsible: Aspects to New Moon */}
+      {interpretation.aspects.length > 0 && (
+        <Collapsible open={sectionsOpen.aspects} onOpenChange={() => toggleSection('aspects')}>
+          <Card>
+            <CollapsibleTrigger asChild>
+              <CardHeader className="cursor-pointer hover:bg-secondary/30 transition-colors">
+                <CardTitle className="font-serif text-lg font-light flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Moon className="h-5 w-5 text-primary" />
+                    Planetary Aspects to This New Moon
+                  </span>
+                  {sectionsOpen.aspects ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                </CardTitle>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent>
+                <div className="space-y-3">
+                  {interpretation.aspects.map((aspect, i) => (
+                    <div key={i} className="flex items-start gap-3 p-3 bg-secondary/30 rounded-lg">
+                      <span className="text-xl">{aspect.symbol}</span>
+                      <div className="flex-1">
+                        <p className="font-medium">
+                          {aspect.aspectSymbol} {aspect.aspectType.charAt(0).toUpperCase() + aspect.aspectType.slice(1)} to {aspect.planet}
+                          <span className="text-muted-foreground text-sm ml-2">({aspect.orb.toFixed(1)}° orb)</span>
+                        </p>
+                        <p className="text-sm text-muted-foreground">{aspect.meaning}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+      )}
+      
+      {/* Collapsible: Your Chart & This New Moon */}
+      {natalChart && natalAspects.length > 0 && (
+        <Collapsible open={sectionsOpen.chart} onOpenChange={() => toggleSection('chart')}>
+          <Card className="border-primary/30">
+            <CollapsibleTrigger asChild>
+              <CardHeader className="cursor-pointer hover:bg-secondary/30 transition-colors">
+                <CardTitle className="font-serif text-lg font-light flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    This New Moon in YOUR Chart
+                  </span>
+                  <Badge variant="secondary">{natalAspects.length} aspects</Badge>
+                </CardTitle>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  The {interpretation.sign} New Moon at {interpretation.degree}° activates these points in your natal chart:
+                </p>
+                <div className="space-y-2">
+                  {natalAspects.map((aspect, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
+                      <span className="font-medium capitalize">{aspect.planet}</span>
+                      <Badge variant={aspect.aspect === 'Conjunction' || aspect.aspect === 'Trine' || aspect.aspect === 'Sextile' ? 'default' : 'secondary'}>
+                        {aspect.aspect} ({aspect.orb.toFixed(1)}°)
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+      )}
+      
+      {/* Collapsible: Full Cycle Overview */}
+      <Collapsible open={sectionsOpen.phases} onOpenChange={() => toggleSection('phases')}>
+        <Card>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer hover:bg-secondary/30 transition-colors">
+              <CardTitle className="font-serif text-lg font-light flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-primary" />
+                  Full Lunar Cycle: {cycleDays.length} Days
+                </span>
+                {sectionsOpen.phases ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+              </CardTitle>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent>
+              <div className="grid grid-cols-7 gap-1">
+                {cycleDays.map((day, idx) => {
+                  const isToday = day.date.toDateString() === today.toDateString();
+                  const isPast = day.date < today;
+                  
+                  return (
+                    <div 
+                      key={idx}
+                      className={`text-center p-2 rounded-lg text-xs transition-all ${
+                        isToday 
+                          ? 'bg-primary/20 border-2 border-primary' 
+                          : isPast 
+                            ? 'bg-muted/30 text-muted-foreground' 
+                            : 'bg-secondary/30'
+                      }`}
+                    >
+                      <p className="font-medium">{day.date.getDate()}</p>
+                      <p className="text-lg my-1">{getMoonPhaseEmoji(day.moonPhase)}</p>
+                      <p className="text-[10px] text-muted-foreground">{ZODIAC_SYMBOLS[day.moonSign]}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+      
+      {/* AI-Enhanced Insight Button */}
+      <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
+        <CardContent className="p-4">
+          {!aiInsight ? (
+            <Button 
+              onClick={fetchLunarCycleInsight} 
+              disabled={isLoading}
+              className="w-full"
+              variant="outline"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Generating deep insight...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Get AI-Enhanced Lunar Cycle Reading
+                </>
+              )}
+            </Button>
+          ) : (
+            <div className="prose prose-sm dark:prose-invert max-w-none">
+              <ReactMarkdown
+                components={{
+                  h2: ({ children }) => (
+                    <h2 className="font-serif text-lg font-medium text-foreground mt-4 mb-2 pb-1 border-b border-primary/10 first:mt-0">
+                      {children}
+                    </h2>
+                  ),
+                  ul: ({ children }) => (
+                    <ul className="space-y-1 my-2">{children}</ul>
+                  ),
+                  li: ({ children }) => (
+                    <li className="flex items-start gap-2 text-sm">
+                      <span className="text-primary mt-0.5">•</span>
+                      <span>{children}</span>
+                    </li>
+                  ),
+                  p: ({ children }) => (
+                    <p className="text-foreground/90 leading-relaxed my-2 text-sm">{children}</p>
+                  ),
+                }}
+              >
+                {aiInsight}
+              </ReactMarkdown>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Sparkles, Moon, Sun, Clock, Loader2, RefreshCw, X, Utensils, Download, Share2, ChevronRight, AlertTriangle } from "lucide-react";
+import { Sparkles, Moon, Sun, Clock, Loader2, RefreshCw, X, Utensils, Download, Share2, ChevronRight, AlertTriangle, Calendar, ArrowLeft } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +9,7 @@ import { getVOCMoonDetails } from "@/lib/voidOfCourseMoon";
 import ReactMarkdown from "react-markdown";
 import html2canvas from "html2canvas";
 import { toast } from "@/hooks/use-toast";
-
+import { LunarCycleView } from "./LunarCycleView";
 const ZODIAC_SYMBOLS: Record<string, string> = {
   Aries: "♈", Taurus: "♉", Gemini: "♊", Cancer: "♋",
   Leo: "♌", Virgo: "♍", Libra: "♎", Scorpio: "♏",
@@ -208,6 +208,10 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
   const [selectedWeekDay, setSelectedWeekDay] = useState<number>(0); // 0 = today
   const [weekDayLoading, setWeekDayLoading] = useState<number | null>(null);
   const [weekDayInsights, setWeekDayInsights] = useState<Record<number, string>>({});
+  const [viewMode, setViewMode] = useState<'daily' | 'week' | 'month' | 'lunar'>('daily');
+  const [weekSummary, setWeekSummary] = useState<string | null>(null);
+  const [monthSummary, setMonthSummary] = useState<string | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState<'week' | 'month' | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const today = new Date();
@@ -358,6 +362,132 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
     }
   };
 
+  // Fetch week summary
+  const fetchWeekSummary = async () => {
+    if (weekSummary) {
+      setViewMode('week');
+      return;
+    }
+    
+    setSummaryLoading('week');
+    setViewMode('week');
+    
+    try {
+      const weekData = getWeekForecast();
+      const weekMoonSigns = weekData.map(d => d.moonSign);
+      const weekMoonPhases = weekData.map(d => d.moonPhase);
+      
+      const { data, error } = await supabase.functions.invoke('cosmic-weather', {
+        body: {
+          date: today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
+          moonPhase: weekMoonPhases[0],
+          moonSign: weekMoonSigns[0],
+          customPrompt: `Write a comprehensive WEEKLY cosmic forecast for the next 7 days.
+
+WEEK OVERVIEW:
+- Moon signs this week: ${weekMoonSigns.join(' → ')}
+- Moon phases: ${[...new Set(weekMoonPhases)].join(', ')}
+
+Write in a professional astrologer's voice with these sections:
+
+## 🌙 Weekly Theme
+A 2-paragraph overview of the week's energy arc based on the moon's journey through the signs.
+
+## 📅 Day-by-Day Energy Flow
+Brief bullet points for each day highlighting the moon sign energy:
+${weekData.map((d, i) => `- **${d.dayName}** (${d.dateStr}): Moon in ${d.moonSign} - ${d.moonPhase}`).join('\n')}
+
+## ✨ Best Days This Week
+Identify 2-3 standout days and what they're best for (love, work, creativity, rest).
+
+## ⚠️ Watch Out For
+Any challenging moon sign transits or VOC periods to be mindful of.
+
+## 🎯 Weekly Focus
+3 practical things to prioritize this week based on the lunar energy.
+
+Keep the tone insightful, practical, and empowering.`
+        }
+      });
+      
+      if (data?.insight) {
+        setWeekSummary(data.insight);
+      }
+    } catch (err) {
+      console.error('Failed to fetch week summary:', err);
+      toast({ title: "Error", description: "Failed to generate week summary", variant: "destructive" });
+    } finally {
+      setSummaryLoading(null);
+    }
+  };
+
+  // Fetch month summary  
+  const fetchMonthSummary = async () => {
+    if (monthSummary) {
+      setViewMode('month');
+      return;
+    }
+    
+    setSummaryLoading('month');
+    setViewMode('month');
+    
+    try {
+      const currentMonth = today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      const planets = getPlanetaryPositions(today);
+      
+      const { data, error } = await supabase.functions.invoke('cosmic-weather', {
+        body: {
+          date: today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
+          moonPhase: getMoonPhase(today).phaseName,
+          moonSign: planets.moon?.sign || 'Unknown',
+          customPrompt: `Write a comprehensive MONTHLY cosmic forecast for ${currentMonth}.
+
+CURRENT POSITIONS:
+- Sun: ${planets.sun?.sign} at ${planets.sun?.degree}°
+- Mercury: ${planets.mercury?.sign}
+- Venus: ${planets.venus?.sign}
+- Mars: ${planets.mars?.sign}
+- Jupiter: ${planets.jupiter?.sign}
+- Saturn: ${planets.saturn?.sign}
+
+Write in a professional astrologer's voice with these sections:
+
+## 🌟 Monthly Overview
+A 2-3 paragraph overview of ${currentMonth}'s cosmic themes based on planetary positions and major transits.
+
+## 🌑 New Moon & 🌕 Full Moon
+Identify the key lunations this month and their significance.
+
+## 💫 Planetary Highlights
+Major planetary movements, retrogrades, or aspects to watch this month.
+
+## 💝 Love & Relationships
+How the month's energy affects partnerships and emotional connections.
+
+## 💼 Career & Goals
+Professional opportunities and timing for career moves.
+
+## ✨ Best Dates This Month
+5-7 standout dates and what they're optimal for.
+
+## 🎯 Monthly Intention
+A guiding theme or mantra for the month.
+
+Keep the tone professional, insightful, and practically applicable.`
+        }
+      });
+      
+      if (data?.insight) {
+        setMonthSummary(data.insight);
+      }
+    } catch (err) {
+      console.error('Failed to fetch month summary:', err);
+      toast({ title: "Error", description: "Failed to generate month summary", variant: "destructive" });
+    } finally {
+      setSummaryLoading(null);
+    }
+  };
+
   useEffect(() => {
     if (isOpen && !isLoading) {
       // Always update week forecast and moon position when opening
@@ -468,6 +598,48 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
                 <p className="text-lg text-muted-foreground">
                   {selectedWeekDay === 0 ? todayStr : weekForecast[selectedWeekDay]?.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                 </p>
+                
+                {/* View Mode Buttons */}
+                <div className="flex flex-wrap justify-center gap-2 mt-4">
+                  <Button
+                    variant={viewMode === 'daily' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewMode('daily')}
+                    className="gap-2"
+                  >
+                    <Sun className="h-4 w-4" />
+                    Daily
+                  </Button>
+                  <Button
+                    variant={viewMode === 'week' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={fetchWeekSummary}
+                    disabled={summaryLoading === 'week'}
+                    className="gap-2"
+                  >
+                    {summaryLoading === 'week' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Calendar className="h-4 w-4" />}
+                    Week
+                  </Button>
+                  <Button
+                    variant={viewMode === 'month' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={fetchMonthSummary}
+                    disabled={summaryLoading === 'month'}
+                    className="gap-2"
+                  >
+                    {summaryLoading === 'month' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Calendar className="h-4 w-4" />}
+                    Month
+                  </Button>
+                  <Button
+                    variant={viewMode === 'lunar' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewMode('lunar')}
+                    className="gap-2 bg-gradient-to-r from-primary/80 to-purple-600/80 hover:from-primary hover:to-purple-600 text-white border-0"
+                  >
+                    <Moon className="h-4 w-4" />
+                    ☽ Lunar Cycle
+                  </Button>
+                </div>
               </div>
 
               {/* Quick Stats Row */}
@@ -547,114 +719,257 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
                 </Card>
               )}
 
-              {/* Main Content Card */}
-              <Card className="border-primary/20 shadow-lg">
-                <CardHeader className="border-b border-primary/10 bg-gradient-to-r from-primary/5 to-transparent">
-                  <div className="flex items-center justify-between flex-wrap gap-2">
-                    <CardTitle className="font-serif text-2xl font-light flex items-center gap-3">
-                      <Sparkles className="h-6 w-6 text-primary" />
-                      Cosmic Weather
-                    </CardTitle>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleShare}
-                        disabled={!cosmicData}
-                        className="text-muted-foreground hover:text-foreground"
-                      >
-                        <Share2 className="h-4 w-4 mr-2" />
-                        Share
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleDownloadPDF}
-                        disabled={!cosmicData}
-                        className="text-muted-foreground hover:text-foreground"
-                      >
-                        <Download className="h-4 w-4 mr-2" />
-                        Save Image
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => fetchCosmicWeather(true)}
-                        disabled={isLoading}
-                        className="text-muted-foreground hover:text-foreground"
-                        title="Generate a new version of today's reading"
-                      >
-                        <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-                        Regenerate
-                      </Button>
-                    </div>
-                  </div>
-                  {lastFetched && selectedWeekDay === 0 && (
-                    <p className="text-xs text-muted-foreground">
-                      Today's reading generated at {lastFetched} • <span className="italic">Preserved for the day</span> • Moon position updates live
-                    </p>
-                  )}
-                </CardHeader>
-                <CardContent className="p-6 md:p-8">
-                  {(isLoading || weekDayLoading !== null) && (
-                    <div className="flex flex-col items-center justify-center py-12 gap-4">
-                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                      <p className="text-muted-foreground">Reading the cosmic weather...</p>
-                    </div>
-                  )}
+              {/* LUNAR CYCLE VIEW */}
+              {viewMode === 'lunar' && (
+                <div className="mb-6">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setViewMode('daily')}
+                    className="mb-4 gap-2"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Back to Daily
+                  </Button>
+                  <LunarCycleView onClose={() => setViewMode('daily')} />
+                </div>
+              )}
 
-                  {error && (
-                    <div className="text-center py-8">
-                      <p className="text-destructive mb-4">{error}</p>
-                      <Button variant="outline" onClick={() => fetchCosmicWeather(true)}>
-                        Try Again
+              {/* WEEK SUMMARY VIEW */}
+              {viewMode === 'week' && (
+                <Card className="border-primary/20 shadow-lg mb-6">
+                  <CardHeader className="border-b border-primary/10 bg-gradient-to-r from-blue-500/5 to-transparent">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <CardTitle className="font-serif text-2xl font-light flex items-center gap-3">
+                        <Calendar className="h-6 w-6 text-blue-500" />
+                        Weekly Cosmic Forecast
+                      </CardTitle>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => setViewMode('daily')}
+                        className="gap-2"
+                      >
+                        <ArrowLeft className="h-4 w-4" />
+                        Back to Daily
                       </Button>
                     </div>
-                  )}
-
-                  {!isLoading && weekDayLoading === null && !error && displayInsight && (
-                    <div className="prose prose-lg dark:prose-invert max-w-none">
-                      <ReactMarkdown
-                        components={{
-                          h2: ({ children }) => {
-                            const text = String(children);
-                            const isKitchen = text.toLowerCase().includes('kitchen') || text.toLowerCase().includes('menu');
-                            return (
-                              <h2 className={`font-serif text-xl font-medium text-foreground mt-6 mb-3 pb-2 border-b first:mt-0 ${isKitchen ? 'border-amber-500/30 flex items-center gap-2' : 'border-primary/10'}`}>
-                                {isKitchen && <Utensils className="h-5 w-5 text-amber-600" />}
+                  </CardHeader>
+                  <CardContent className="p-6 md:p-8">
+                    {summaryLoading === 'week' && (
+                      <div className="flex flex-col items-center justify-center py-12 gap-4">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        <p className="text-muted-foreground">Generating weekly forecast...</p>
+                      </div>
+                    )}
+                    {weekSummary && !summaryLoading && (
+                      <div className="prose prose-lg dark:prose-invert max-w-none">
+                        <ReactMarkdown
+                          components={{
+                            h2: ({ children }) => (
+                              <h2 className="font-serif text-xl font-medium text-foreground mt-6 mb-3 pb-2 border-b border-primary/10 first:mt-0">
                                 {children}
                               </h2>
-                            );
-                          },
-                          ul: ({ children }) => (
-                            <ul className="space-y-2 my-4">{children}</ul>
-                          ),
-                          li: ({ children }) => (
-                            <li className="flex items-start gap-2">
-                              <span className="text-primary mt-1.5">•</span>
-                              <span>{children}</span>
-                            </li>
-                          ),
-                          p: ({ children }) => (
-                            <p className="text-foreground/90 leading-relaxed my-3">{children}</p>
-                          ),
-                          strong: ({ children }) => (
-                            <strong className="font-semibold text-foreground">{children}</strong>
-                          ),
-                        }}
-                      >
-                        {displayInsight}
-                      </ReactMarkdown>
-                    </div>
-                  )}
+                            ),
+                            ul: ({ children }) => (
+                              <ul className="space-y-2 my-4">{children}</ul>
+                            ),
+                            li: ({ children }) => (
+                              <li className="flex items-start gap-2">
+                                <span className="text-primary mt-1.5">•</span>
+                                <span>{children}</span>
+                              </li>
+                            ),
+                            p: ({ children }) => (
+                              <p className="text-foreground/90 leading-relaxed my-3">{children}</p>
+                            ),
+                            strong: ({ children }) => (
+                              <strong className="font-semibold text-foreground">{children}</strong>
+                            ),
+                          }}
+                        >
+                          {weekSummary}
+                        </ReactMarkdown>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
 
-                  {!isLoading && weekDayLoading === null && !error && !displayInsight && selectedWeekDay !== 0 && (
-                    <div className="text-center py-8">
-                      <p className="text-muted-foreground">Click a day to load its cosmic weather</p>
+              {/* MONTH SUMMARY VIEW */}
+              {viewMode === 'month' && (
+                <Card className="border-primary/20 shadow-lg mb-6">
+                  <CardHeader className="border-b border-primary/10 bg-gradient-to-r from-purple-500/5 to-transparent">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <CardTitle className="font-serif text-2xl font-light flex items-center gap-3">
+                        <Calendar className="h-6 w-6 text-purple-500" />
+                        Monthly Cosmic Forecast
+                      </CardTitle>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => setViewMode('daily')}
+                        className="gap-2"
+                      >
+                        <ArrowLeft className="h-4 w-4" />
+                        Back to Daily
+                      </Button>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
+                    <p className="text-muted-foreground">
+                      {today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                    </p>
+                  </CardHeader>
+                  <CardContent className="p-6 md:p-8">
+                    {summaryLoading === 'month' && (
+                      <div className="flex flex-col items-center justify-center py-12 gap-4">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        <p className="text-muted-foreground">Generating monthly forecast...</p>
+                      </div>
+                    )}
+                    {monthSummary && !summaryLoading && (
+                      <div className="prose prose-lg dark:prose-invert max-w-none">
+                        <ReactMarkdown
+                          components={{
+                            h2: ({ children }) => (
+                              <h2 className="font-serif text-xl font-medium text-foreground mt-6 mb-3 pb-2 border-b border-primary/10 first:mt-0">
+                                {children}
+                              </h2>
+                            ),
+                            ul: ({ children }) => (
+                              <ul className="space-y-2 my-4">{children}</ul>
+                            ),
+                            li: ({ children }) => (
+                              <li className="flex items-start gap-2">
+                                <span className="text-primary mt-1.5">•</span>
+                                <span>{children}</span>
+                              </li>
+                            ),
+                            p: ({ children }) => (
+                              <p className="text-foreground/90 leading-relaxed my-3">{children}</p>
+                            ),
+                            strong: ({ children }) => (
+                              <strong className="font-semibold text-foreground">{children}</strong>
+                            ),
+                          }}
+                        >
+                          {monthSummary}
+                        </ReactMarkdown>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* DAILY VIEW - Main Content Card */}
+              {viewMode === 'daily' && (
+                <Card className="border-primary/20 shadow-lg">
+                  <CardHeader className="border-b border-primary/10 bg-gradient-to-r from-primary/5 to-transparent">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <CardTitle className="font-serif text-2xl font-light flex items-center gap-3">
+                        <Sparkles className="h-6 w-6 text-primary" />
+                        Cosmic Weather
+                      </CardTitle>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleShare}
+                          disabled={!cosmicData}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          <Share2 className="h-4 w-4 mr-2" />
+                          Share
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleDownloadPDF}
+                          disabled={!cosmicData}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          <Download className="h-4 w-4 mr-2" />
+                          Save Image
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => fetchCosmicWeather(true)}
+                          disabled={isLoading}
+                          className="text-muted-foreground hover:text-foreground"
+                          title="Generate a new version of today's reading"
+                        >
+                          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                          Regenerate
+                        </Button>
+                      </div>
+                    </div>
+                    {lastFetched && selectedWeekDay === 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        Today's reading generated at {lastFetched} • <span className="italic">Preserved for the day</span> • Moon position updates live
+                      </p>
+                    )}
+                  </CardHeader>
+                  <CardContent className="p-6 md:p-8">
+                    {(isLoading || weekDayLoading !== null) && (
+                      <div className="flex flex-col items-center justify-center py-12 gap-4">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        <p className="text-muted-foreground">Reading the cosmic weather...</p>
+                      </div>
+                    )}
+
+                    {error && (
+                      <div className="text-center py-8">
+                        <p className="text-destructive mb-4">{error}</p>
+                        <Button variant="outline" onClick={() => fetchCosmicWeather(true)}>
+                          Try Again
+                        </Button>
+                      </div>
+                    )}
+
+                    {!isLoading && weekDayLoading === null && !error && displayInsight && (
+                      <div className="prose prose-lg dark:prose-invert max-w-none">
+                        <ReactMarkdown
+                          components={{
+                            h2: ({ children }) => {
+                              const text = String(children);
+                              const isKitchen = text.toLowerCase().includes('kitchen') || text.toLowerCase().includes('menu');
+                              return (
+                                <h2 className={`font-serif text-xl font-medium text-foreground mt-6 mb-3 pb-2 border-b first:mt-0 ${isKitchen ? 'border-amber-500/30 flex items-center gap-2' : 'border-primary/10'}`}>
+                                  {isKitchen && <Utensils className="h-5 w-5 text-amber-600" />}
+                                  {children}
+                                </h2>
+                              );
+                            },
+                            ul: ({ children }) => (
+                              <ul className="space-y-2 my-4">{children}</ul>
+                            ),
+                            li: ({ children }) => (
+                              <li className="flex items-start gap-2">
+                                <span className="text-primary mt-1.5">•</span>
+                                <span>{children}</span>
+                              </li>
+                            ),
+                            p: ({ children }) => (
+                              <p className="text-foreground/90 leading-relaxed my-3">{children}</p>
+                            ),
+                            strong: ({ children }) => (
+                              <strong className="font-semibold text-foreground">{children}</strong>
+                            ),
+                          }}
+                        >
+                          {displayInsight}
+                        </ReactMarkdown>
+                      </div>
+                    )}
+
+                    {!isLoading && weekDayLoading === null && !error && !displayInsight && selectedWeekDay !== 0 && (
+                      <div className="text-center py-8">
+                        <p className="text-muted-foreground">Click a day to load its cosmic weather</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
 
               {/* 7-Day Forecast - Clickable */}
               {weekForecast.length > 0 && (
