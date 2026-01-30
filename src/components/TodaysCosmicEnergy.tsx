@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { getMoonPhase, getPlanetaryPositions, calculateDailyAspects, PlanetaryPositions } from "@/lib/astrology";
 import { getVOCMoonDetails } from "@/lib/voidOfCourseMoon";
+import { formatLocalDateKey } from "@/lib/localDate";
 import ReactMarkdown from "react-markdown";
 import html2canvas from "html2canvas";
 import { toast } from "@/hooks/use-toast";
@@ -179,7 +180,7 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
   const [cosmicData, setCosmicData] = useState<CosmicData | null>(() => {
     // Initialize from cache immediately
     const today = new Date();
-    const todayKey = today.toISOString().split('T')[0];
+    const todayKey = formatLocalDateKey(today);
     const cached = localStorage.getItem(`cosmic-weather-${todayKey}`);
     if (cached) {
       try {
@@ -194,7 +195,7 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
   const [lastFetched, setLastFetched] = useState<string | null>(() => {
     // Initialize from cache immediately
     const today = new Date();
-    const todayKey = today.toISOString().split('T')[0];
+    const todayKey = formatLocalDateKey(today);
     const cached = localStorage.getItem(`cosmic-weather-${todayKey}`);
     if (cached) {
       try {
@@ -236,7 +237,7 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
 
   const today = new Date();
   const todayStr = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-  const todayKey = today.toISOString().split('T')[0]; // YYYY-MM-DD for cache key
+  const todayKey = formatLocalDateKey(today); // YYYY-MM-DD (local) for cache key
 
   // Update moon position and VOC in real-time when modal is open
   useEffect(() => {

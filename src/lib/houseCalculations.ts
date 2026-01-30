@@ -10,7 +10,14 @@ const ZODIAC_SIGNS = [
 export const signDegreesToLongitude = (sign: string, degree: number, minutes: number = 0): number => {
   const signIndex = ZODIAC_SIGNS.indexOf(sign);
   if (signIndex === -1) return 0;
-  return signIndex * 30 + degree + (minutes / 60);
+
+  // Defensive coercion: some persisted chart data may have degree/minutes as strings.
+  const deg = typeof degree === 'number' ? degree : Number(degree);
+  const min = typeof minutes === 'number' ? minutes : Number(minutes);
+  if (!Number.isFinite(deg)) return signIndex * 30;
+  const safeMin = Number.isFinite(min) ? min : 0;
+
+  return signIndex * 30 + deg + (safeMin / 60);
 };
 
 // Get the house cusp longitude from a NatalChart
