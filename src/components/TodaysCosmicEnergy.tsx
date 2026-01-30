@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Sparkles, Moon, Sun, Clock, ArrowRight, Loader2, RefreshCw, X } from "lucide-react";
+import { Sparkles, Moon, Sun, Clock, ArrowRight, Loader2, RefreshCw, X, Utensils } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,7 @@ interface CosmicData {
   moonPhase: string;
   moonSign: string;
   moonDegrees: number;
+  moonExactTime: string;
   sunSign: string;
   sunDegrees: number;
   insight: string;
@@ -39,6 +40,15 @@ function findStelliums(planets: PlanetaryPositions): Array<{ sign: string; plane
   return Object.entries(signCounts)
     .filter(([_, names]) => names.length >= 3)
     .map(([sign, names]) => ({ sign, planets: names }));
+}
+
+// Calculate when moon was exact at this degree
+function getMoonExactTime(currentDegree: number): string {
+  const now = new Date();
+  // Moon moves ~0.5 degrees per hour, so find when it hit this exact degree
+  const minutesSinceExact = (currentDegree % 1) * 120; // fraction of degree * 2 hours in minutes
+  const exactTime = new Date(now.getTime() - minutesSinceExact * 60 * 1000);
+  return exactTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 }
 
 export const TodaysCosmicEnergy = () => {
@@ -94,11 +104,13 @@ export const TodaysCosmicEnergy = () => {
         throw new Error(fnError.message || 'Failed to fetch cosmic weather');
       }
 
+      const moonDeg = planets.moon?.degree || 0;
       setCosmicData({
         date: todayStr,
         moonPhase: moonPhase.phaseName,
         moonSign: planets.moon?.sign || 'Unknown',
-        moonDegrees: planets.moon?.degree || 0,
+        moonDegrees: moonDeg,
+        moonExactTime: getMoonExactTime(moonDeg),
         sunSign: planets.sun?.sign || 'Unknown',
         sunDegrees: planets.sun?.degree || 0,
         insight: data.insight
@@ -195,9 +207,14 @@ export const TodaysCosmicEnergy = () => {
                     <p className="font-medium">
                       {ZODIAC_SYMBOLS[planets.moon?.sign || '']} {planets.moon?.sign}
                       <span className="text-muted-foreground text-sm ml-1">
-                        ({planets.moon?.degree || 0}°)
+                        ({Math.floor(planets.moon?.degree || 0)}°)
                       </span>
                     </p>
+                    {cosmicData?.moonExactTime && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Exact at {cosmicData.moonExactTime}
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
                 <Card className="bg-amber-500/5 border-amber-500/20">
@@ -265,11 +282,16 @@ export const TodaysCosmicEnergy = () => {
                     <div className="prose prose-lg dark:prose-invert max-w-none">
                       <ReactMarkdown
                         components={{
-                          h2: ({ children }) => (
-                            <h2 className="font-serif text-xl font-medium text-foreground mt-6 mb-3 pb-2 border-b border-primary/10 first:mt-0">
-                              {children}
-                            </h2>
-                          ),
+                          h2: ({ children }) => {
+                            const text = String(children);
+                            const isKitchen = text.toLowerCase().includes('kitchen') || text.toLowerCase().includes('menu');
+                            return (
+                              <h2 className={`font-serif text-xl font-medium text-foreground mt-6 mb-3 pb-2 border-b first:mt-0 ${isKitchen ? 'border-amber-500/30 flex items-center gap-2' : 'border-primary/10'}`}>
+                                {isKitchen && <Utensils className="h-5 w-5 text-amber-600" />}
+                                {children}
+                              </h2>
+                            );
+                          },
                           ul: ({ children }) => (
                             <ul className="space-y-2 my-4">{children}</ul>
                           ),

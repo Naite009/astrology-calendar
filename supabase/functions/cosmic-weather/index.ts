@@ -94,8 +94,35 @@ FORMAT:
 - [Specific, actionable suggestion #2]  
 - [Specific, actionable suggestion #3]
 
-## The Invitation
-[A short, empowering closing thought - 2 sentences max]`;
+## Today's Invitation
+[Write 2-3 SPECIFIC, CONCRETE actions a person can take today. NOT abstract language like "let your heart expand" - instead say things like "Call someone you haven't spoken to in months" or "Write down 3 things you're grateful for before bed" or "Take a 10-minute walk outside without your phone". Make it so clear that anyone could follow the instructions.]
+
+## Cosmic Kitchen: Today's Menu
+Based on the Moon in [SIGN] and today's planetary weather, here's what to nourish yourself with:
+
+**Breakfast:** [Specific dish name] - [Brief 1-sentence description of why it fits the energy]
+
+**Lunch:** [Specific dish name] - [Brief explanation]
+
+**Dinner:** [Specific dish name] - [Brief explanation]
+
+**Snacks:** [2-3 specific snack ideas]
+
+**Drink of the Day:** [Specific beverage] - [Why it matches the cosmic weather]
+
+MEAL GUIDANCE BY MOON SIGN:
+- Aries Moon: Spicy, energizing foods. Ginger, cayenne, protein-rich
+- Taurus Moon: Comfort classics, earthy flavors. Root vegetables, cheese, bread
+- Gemini Moon: Light, varied - tapas style. Multiple small dishes, finger foods
+- Cancer Moon: Soul food, home cooking. Soups, casseroles, nostalgic recipes
+- Leo Moon: Bold, celebratory. Golden colors, honey, citrus, heart-healthy
+- Virgo Moon: Clean, whole foods. Grains, greens, herbal teas
+- Libra Moon: Beautiful, balanced plates. Paired flavors, aesthetic presentation
+- Scorpio Moon: Rich, intense flavors. Dark chocolate, beets, fermented foods
+- Sagittarius Moon: International cuisine, adventure. Try something new
+- Capricorn Moon: Traditional, substantial. Bone broth, slow-cooked, nourishing
+- Aquarius Moon: Unusual combinations, future foods. Plant-based, innovative
+- Pisces Moon: Seafood, water-rich foods. Cucumber, melons, gentle flavors`;
 
 
     const userPrompt = `Generate cosmic weather for ${date}.
