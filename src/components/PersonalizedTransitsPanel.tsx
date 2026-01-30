@@ -288,6 +288,45 @@ export const PersonalizedTransitsPanel = ({
         .map(([key, data]) => `${key}: ${data.sign}`)
         .join('\n') : '';
 
+      // Detect intercepted signs and double-signed houses
+      const interceptedSigns = chart.interceptedSigns || [];
+      
+      // Calculate double-signed houses (same sign on two consecutive house cusps)
+      const doubleSignedHouses: string[] = [];
+      if (chart.houseCusps) {
+        const houseKeys = ['house1', 'house2', 'house3', 'house4', 'house5', 'house6', 
+                          'house7', 'house8', 'house9', 'house10', 'house11', 'house12'] as const;
+        const signs = houseKeys.map(k => chart.houseCusps?.[k]?.sign).filter(Boolean);
+        
+        // Check for repeated signs (indicating a sign rules two houses)
+        const signCounts: Record<string, number[]> = {};
+        signs.forEach((sign, i) => {
+          if (sign) {
+            if (!signCounts[sign]) signCounts[sign] = [];
+            signCounts[sign].push(i + 1);
+          }
+        });
+        
+        Object.entries(signCounts).forEach(([sign, houses]) => {
+          if (houses.length >= 2) {
+            doubleSignedHouses.push(`${sign} rules houses ${houses.join(' and ')}`);
+          }
+        });
+      }
+
+      const interceptedInfo = interceptedSigns.length > 0 
+        ? `INTERCEPTED SIGNS: ${interceptedSigns.join(', ')}
+   - These signs are "trapped" within houses and their energy is harder to access
+   - Planets in intercepted signs may feel blocked or require extra effort to express
+   - Transits to intercepted areas can feel more intense when they finally activate`
+        : '';
+
+      const doubleSignedInfo = doubleSignedHouses.length > 0
+        ? `DOUBLE-SIGNED HOUSES: ${doubleSignedHouses.join('; ')}
+   - These signs have extra emphasis and influence in the chart
+   - The themes of these signs are expressed across multiple life areas`
+        : '';
+
       const moonAspectsList = majorMoonAspects.map(a => 
         `Moon ${a.aspect} natal ${a.natalPlanet} (${a.orb}° orb)`
       ).join(', ');
@@ -296,16 +335,23 @@ export const PersonalizedTransitsPanel = ({
         `Transit ${a.transitPlanet} ${a.aspect} natal ${a.natalPlanet}`
       ).join(', ');
 
+      // Check if Moon is transiting an intercepted sign in their chart
+      const moonInIntercepted = interceptedSigns.includes(moonSign);
+
       const customPrompt = `Generate a deeply personalized cosmic weather reading for ${chart.name}.
 
 THEIR NATAL CHART:
 ${natalPlanets}
 
-Houses (Whole Sign from ${chart.planets.Ascendant?.sign || 'unknown'} Ascendant):
+Houses (from ${chart.planets.Ascendant?.sign || 'unknown'} Ascendant):
 ${natalHouses}
 
+${interceptedInfo}
+
+${doubleSignedInfo}
+
 TODAY'S PERSONAL TRANSITS:
-- Moon is in their ${moonHouse}${moonHouse === 1 ? 'st' : moonHouse === 2 ? 'nd' : moonHouse === 3 ? 'rd' : 'th'} house (${moonSign})
+- Moon is in their ${moonHouse}${moonHouse === 1 ? 'st' : moonHouse === 2 ? 'nd' : moonHouse === 3 ? 'rd' : 'th'} house (${moonSign})${moonInIntercepted ? ' - THIS IS AN INTERCEPTED SIGN IN THEIR CHART - pay special attention!' : ''}
 - Moon aspects to natal planets: ${moonAspectsList || 'none major'}
 - Other active transits: ${transitList || 'none significant'}
 
@@ -313,9 +359,11 @@ Write a warm, personal reading that:
 1. Addresses ${chart.name} by name
 2. References SPECIFIC placements from their natal chart (e.g., "With your natal Venus in Scorpio...")
 3. Explains how today's Moon in ${moonSign} specifically affects THEIR chart
-4. Interprets the exact transit aspects listed above with psychological depth
-5. Gives practical guidance for navigating these energies
-6. Keep it warm and empowering, like a skilled astrologer speaking to a valued client
+4. If the Moon is transiting an intercepted sign, explain what this unlocking/activation feels like
+5. If any natal planets are in intercepted signs, note how transits to those planets feel more significant
+6. Interprets the exact transit aspects listed above with psychological depth
+7. Gives practical guidance for navigating these energies
+8. Keep it warm and empowering, like a skilled astrologer speaking to a valued client
 
 Format with clear sections using ## headers. Be specific to their chart - no generic advice.`;
 
