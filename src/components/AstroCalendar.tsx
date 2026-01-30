@@ -225,6 +225,7 @@ export const AstroCalendar = () => {
           </div>
           <div className="flex flex-wrap items-center gap-4">
             {/* View Toggle */}
+            {selectedChartForTiming === 'general' && (
             <div className="flex flex-wrap gap-1 rounded-sm bg-secondary p-1">
               <button
                 onClick={() => setViewMode("month")}
@@ -534,6 +535,7 @@ export const AstroCalendar = () => {
                 Combos
               </button>
             </div>
+            )}
 
             {userData && (
               <span className="hidden text-[11px] uppercase tracking-widest text-muted-foreground lg:block">
