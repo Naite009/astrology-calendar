@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers, Combine } from "lucide-react";
-import { TodaysCosmicEnergy } from "./TodaysCosmicEnergy";
+import { TodaysCosmicEnergy, CosmicEnergyButton } from "./TodaysCosmicEnergy";
+import { useState as useCosmicState } from "react";
 import { ChartDecoderView } from "./ChartDecoderView";
 import { AskView } from "./AskView";
 import { MonthView } from "./MonthView";
@@ -45,6 +46,7 @@ export const AstroCalendar = () => {
   const [selectedDay, setSelectedDay] = useState<DayData | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("month");
   const [showLegend, setShowLegend] = useState(false);
+  const [showCosmicEnergy, setShowCosmicEnergy] = useState(false);
   const { userData, saveUserData } = useUserData();
   const { weekNotes, dayNotes, saveWeekNotes, saveDayNotes } = useNotes();
   const {
@@ -540,6 +542,9 @@ export const AstroCalendar = () => {
             )}
 
             <nav className="print:hidden flex gap-3">
+              {/* Cosmic Weather Button */}
+              <CosmicEnergyButton onClick={() => setShowCosmicEnergy(true)} />
+              
               <button
                 onClick={() => setShowLegend(true)}
                 className="flex h-10 w-10 items-center justify-center border border-border bg-transparent text-muted-foreground transition-all duration-200 hover:border-primary hover:bg-secondary"
@@ -595,8 +600,10 @@ export const AstroCalendar = () => {
           </div>
         </header>
 
-        {/* Today's Cosmic Energy Button */}
-        <TodaysCosmicEnergy />
+        {/* Cosmic Energy Modal */}
+        {showCosmicEnergy && (
+          <TodaysCosmicEnergy onClose={() => setShowCosmicEnergy(false)} />
+        )}
 
         {/* Views */}
         {viewMode === "month" && (
