@@ -1,11 +1,13 @@
-import { useState, useEffect } from "react";
-import { Sparkles, Moon, Sun, Clock, ArrowRight, Loader2, RefreshCw, X, Utensils } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Sparkles, Moon, Sun, Clock, ArrowRight, Loader2, RefreshCw, X, Utensils, Download, Share2, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { getMoonPhase, getPlanetaryPositions, calculateDailyAspects, PlanetaryPositions } from "@/lib/astrology";
 import ReactMarkdown from "react-markdown";
+import html2canvas from "html2canvas";
+import { toast } from "@/hooks/use-toast";
 
 const ZODIAC_SYMBOLS: Record<string, string> = {
   Aries: "♈", Taurus: "♉", Gemini: "♊", Cancer: "♋",
@@ -18,10 +20,19 @@ interface CosmicData {
   moonPhase: string;
   moonSign: string;
   moonDegrees: number;
-  moonExactTime: string;
+  generatedAt: string;
   sunSign: string;
   sunDegrees: number;
   insight: string;
+}
+
+interface WeekDay {
+  date: Date;
+  dateStr: string;
+  dayName: string;
+  moonSign: string;
+  moonPhase: string;
+  sunSign: string;
 }
 
 // Simple stellium detection
@@ -42,13 +53,44 @@ function findStelliums(planets: PlanetaryPositions): Array<{ sign: string; plane
     .map(([sign, names]) => ({ sign, planets: names }));
 }
 
-// Calculate when moon was exact at this degree
-function getMoonExactTime(currentDegree: number): string {
-  const now = new Date();
-  // Moon moves ~0.5 degrees per hour, so find when it hit this exact degree
-  const minutesSinceExact = (currentDegree % 1) * 120; // fraction of degree * 2 hours in minutes
-  const exactTime = new Date(now.getTime() - minutesSinceExact * 60 * 1000);
-  return exactTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+// Get next 7 days forecast data
+function getWeekForecast(): WeekDay[] {
+  const days: WeekDay[] = [];
+  const today = new Date();
+  
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(today);
+    date.setDate(today.getDate() + i);
+    
+    const planets = getPlanetaryPositions(date);
+    const moonPhase = getMoonPhase(date);
+    
+    days.push({
+      date,
+      dateStr: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      dayName: i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : date.toLocaleDateString('en-US', { weekday: 'short' }),
+      moonSign: planets.moon?.sign || 'Unknown',
+      moonPhase: moonPhase.phaseName,
+      sunSign: planets.sun?.sign || 'Unknown',
+    });
+  }
+  
+  return days;
+}
+
+// Get moon phase emoji
+function getMoonPhaseEmoji(phase: string): string {
+  const phaseMap: Record<string, string> = {
+    'New Moon': '🌑',
+    'Waxing Crescent': '🌒',
+    'First Quarter': '🌓',
+    'Waxing Gibbous': '🌔',
+    'Full Moon': '🌕',
+    'Waning Gibbous': '🌖',
+    'Last Quarter': '🌗',
+    'Waning Crescent': '🌘',
+  };
+  return phaseMap[phase] || '🌙';
 }
 
 export const TodaysCosmicEnergy = () => {
@@ -57,20 +99,47 @@ export const TodaysCosmicEnergy = () => {
   const [cosmicData, setCosmicData] = useState<CosmicData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastFetched, setLastFetched] = useState<string | null>(null);
+  const [weekForecast, setWeekForecast] = useState<WeekDay[]>([]);
+  const [currentMoonDegree, setCurrentMoonDegree] = useState<number>(0);
+  const [currentMoonSign, setCurrentMoonSign] = useState<string>('');
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const today = new Date();
   const todayStr = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+
+  // Update moon position in real-time when modal is open
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const updateMoonPosition = () => {
+      const now = new Date();
+      const planets = getPlanetaryPositions(now);
+      setCurrentMoonDegree(planets.moon?.degree || 0);
+      setCurrentMoonSign(planets.moon?.sign || 'Unknown');
+    };
+    
+    updateMoonPosition();
+    // Update every minute since moon moves ~0.5° per hour
+    const interval = setInterval(updateMoonPosition, 60000);
+    
+    return () => clearInterval(interval);
+  }, [isOpen]);
 
   const fetchCosmicWeather = async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      // Get current astronomical data
-      const moonPhase = getMoonPhase(today);
-      const planets = getPlanetaryPositions(today);
+      const now = new Date();
+      // Get current astronomical data at the exact moment of request
+      const moonPhase = getMoonPhase(now);
+      const planets = getPlanetaryPositions(now);
       const aspects = calculateDailyAspects(planets);
       const stelliums = findStelliums(planets);
+
+      // Update current moon position
+      setCurrentMoonDegree(planets.moon?.degree || 0);
+      setCurrentMoonSign(planets.moon?.sign || 'Unknown');
 
       // Build planet positions array for the edge function
       const planetPositions = Object.entries(planets).map(([name, data]) => ({
@@ -104,18 +173,22 @@ export const TodaysCosmicEnergy = () => {
         throw new Error(fnError.message || 'Failed to fetch cosmic weather');
       }
 
-      const moonDeg = planets.moon?.degree || 0;
+      const generatedTime = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      
       setCosmicData({
         date: todayStr,
         moonPhase: moonPhase.phaseName,
         moonSign: planets.moon?.sign || 'Unknown',
-        moonDegrees: moonDeg,
-        moonExactTime: getMoonExactTime(moonDeg),
+        moonDegrees: planets.moon?.degree || 0,
+        generatedAt: generatedTime,
         sunSign: planets.sun?.sign || 'Unknown',
         sunDegrees: planets.sun?.degree || 0,
         insight: data.insight
       });
-      setLastFetched(new Date().toLocaleTimeString());
+      setLastFetched(generatedTime);
+      
+      // Generate week forecast
+      setWeekForecast(getWeekForecast());
     } catch (err) {
       console.error('Cosmic weather error:', err);
       setError(err instanceof Error ? err.message : 'Failed to load cosmic weather');
@@ -136,6 +209,53 @@ export const TodaysCosmicEnergy = () => {
 
   const handleClose = () => {
     setIsOpen(false);
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!contentRef.current) return;
+    
+    try {
+      toast({ title: "Generating image...", description: "Please wait a moment." });
+      
+      const canvas = await html2canvas(contentRef.current, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        logging: false,
+        useCORS: true,
+      });
+      
+      const link = document.createElement('a');
+      link.download = `cosmic-weather-${new Date().toISOString().split('T')[0]}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      
+      toast({ title: "Downloaded!", description: "Your cosmic weather has been saved." });
+    } catch (err) {
+      console.error('Download error:', err);
+      toast({ title: "Download failed", description: "Please try again.", variant: "destructive" });
+    }
+  };
+
+  const handleShare = async () => {
+    if (!cosmicData) return;
+    
+    const shareText = `✨ Today's Cosmic Energy - ${todayStr}\n\n☽ Moon in ${cosmicData.moonSign} (${currentMoonDegree.toFixed(1)}°)\n☉ Sun in ${cosmicData.sunSign}\n🌙 ${cosmicData.moonPhase}\n\n#astrology #cosmicweather`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Today's Cosmic Energy",
+          text: shareText,
+        });
+      } catch (err) {
+        // User cancelled or error
+        console.log('Share cancelled');
+      }
+    } else {
+      // Fallback: copy to clipboard
+      await navigator.clipboard.writeText(shareText);
+      toast({ title: "Copied to clipboard!", description: "Share text has been copied." });
+    }
   };
 
   // Get current moon phase quickly for the button
@@ -182,7 +302,7 @@ export const TodaysCosmicEnergy = () => {
               <X className="h-6 w-6" />
             </Button>
 
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-4xl mx-auto" ref={contentRef}>
               {/* Header */}
               <div className="text-center mb-8">
                 <h1 className="font-serif text-4xl md:text-5xl font-light tracking-wide text-foreground mb-4">
@@ -203,18 +323,16 @@ export const TodaysCosmicEnergy = () => {
                 <Card className="bg-primary/5 border-primary/20">
                   <CardContent className="p-4 text-center">
                     <Moon className="h-6 w-6 mx-auto mb-2 text-primary" />
-                    <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Moon Sign</p>
+                    <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Moon Position</p>
                     <p className="font-medium">
-                      {ZODIAC_SYMBOLS[planets.moon?.sign || '']} {planets.moon?.sign}
-                      <span className="text-muted-foreground text-sm ml-1">
-                        ({Math.floor(planets.moon?.degree || 0)}°)
-                      </span>
+                      {ZODIAC_SYMBOLS[currentMoonSign || planets.moon?.sign || '']} {currentMoonSign || planets.moon?.sign}
                     </p>
-                    {cosmicData?.moonExactTime && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Exact at {cosmicData.moonExactTime}
-                      </p>
-                    )}
+                    <p className="text-lg font-bold text-primary">
+                      {currentMoonDegree.toFixed(1)}°
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Updates in real-time
+                    </p>
                   </CardContent>
                 </Card>
                 <Card className="bg-amber-500/5 border-amber-500/20">
@@ -241,24 +359,48 @@ export const TodaysCosmicEnergy = () => {
               {/* Main Content Card */}
               <Card className="border-primary/20 shadow-lg">
                 <CardHeader className="border-b border-primary/10 bg-gradient-to-r from-primary/5 to-transparent">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
                     <CardTitle className="font-serif text-2xl font-light flex items-center gap-3">
                       <Sparkles className="h-6 w-6 text-primary" />
                       Cosmic Weather
                     </CardTitle>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={fetchCosmicWeather}
-                      disabled={isLoading}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-                      Refresh
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleShare}
+                        disabled={!cosmicData}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        <Share2 className="h-4 w-4 mr-2" />
+                        Share
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleDownloadPDF}
+                        disabled={!cosmicData}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Save Image
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={fetchCosmicWeather}
+                        disabled={isLoading}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                        Refresh
+                      </Button>
+                    </div>
                   </div>
                   {lastFetched && (
-                    <p className="text-xs text-muted-foreground">Last updated: {lastFetched}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Generated at {lastFetched} • Moon position updates live
+                    </p>
                   )}
                 </CardHeader>
                 <CardContent className="p-6 md:p-8">
@@ -315,6 +457,39 @@ export const TodaysCosmicEnergy = () => {
                   )}
                 </CardContent>
               </Card>
+
+              {/* 7-Day Forecast */}
+              {weekForecast.length > 0 && (
+                <Card className="mt-6 border-border">
+                  <CardHeader>
+                    <CardTitle className="font-serif text-lg font-light flex items-center gap-2">
+                      <ChevronRight className="h-5 w-5 text-primary" />
+                      7-Day Cosmic Forecast
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-7 gap-2">
+                      {weekForecast.map((day, idx) => (
+                        <div 
+                          key={idx} 
+                          className={`text-center p-3 rounded-lg ${idx === 0 ? 'bg-primary/10 border border-primary/30' : 'bg-secondary/50'}`}
+                        >
+                          <p className="text-xs font-medium text-muted-foreground mb-1">{day.dayName}</p>
+                          <p className="text-xs text-muted-foreground">{day.dateStr}</p>
+                          <div className="my-2 text-2xl">{getMoonPhaseEmoji(day.moonPhase)}</div>
+                          <p className="text-sm font-medium">
+                            {ZODIAC_SYMBOLS[day.moonSign]}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{day.moonSign}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground text-center mt-4">
+                      Moon sign shown for each day • Click refresh for updated readings
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Current Planetary Positions */}
               <Card className="mt-6 border-border">
