@@ -541,10 +541,12 @@ export const AstroCalendar = () => {
               </span>
             )}
 
-            <nav className="print:hidden flex gap-3">
-              {/* Cosmic Weather Button */}
+            {/* Cosmic Weather Button - Centered */}
+            <div className="print:hidden flex-1 flex justify-center">
               <CosmicEnergyButton onClick={() => setShowCosmicEnergy(true)} />
-              
+            </div>
+
+            <nav className="print:hidden flex gap-3">
               <button
                 onClick={() => setShowLegend(true)}
                 className="flex h-10 w-10 items-center justify-center border border-border bg-transparent text-muted-foreground transition-all duration-200 hover:border-primary hover:bg-secondary"
