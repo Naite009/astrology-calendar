@@ -394,15 +394,15 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                 <span className="text-sm font-medium">My Chart Matches:</span>
               </div>
               <Select 
-                value={selectedChartId || ''} 
-                onValueChange={(v) => setSelectedChartId(v || null)}
+                value={selectedChartId || 'none'} 
+                onValueChange={(v) => setSelectedChartId(v === 'none' ? null : v)}
               >
                 <SelectTrigger className="w-[200px] bg-background">
                   <SelectValue placeholder="Select a chart..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None (show all)</SelectItem>
-                  {allCharts.map(chart => (
+                  <SelectItem value="none">None (show all)</SelectItem>
+                  {allCharts.filter(chart => chart.id).map(chart => (
                     <SelectItem key={chart.id} value={chart.id}>
                       {chart.name}
                     </SelectItem>
