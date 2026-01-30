@@ -787,7 +787,7 @@ Keep the tone deep, insightful, and practically applicable.`
       </Collapsible>
       
       {/* AI-Enhanced Insight Button */}
-      <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
+      <Card className="bg-background border">
         <CardContent className="p-4">
           {!aiInsight ? (
             <Button 
