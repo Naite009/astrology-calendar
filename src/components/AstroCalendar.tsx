@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers, Combine } from "lucide-react";
+import { TodaysCosmicEnergy } from "./TodaysCosmicEnergy";
 import { ChartDecoderView } from "./ChartDecoderView";
 import { AskView } from "./AskView";
 import { MonthView } from "./MonthView";
@@ -593,6 +594,9 @@ export const AstroCalendar = () => {
             </nav>
           </div>
         </header>
+
+        {/* Today's Cosmic Energy Button */}
+        <TodaysCosmicEnergy />
 
         {/* Views */}
         {viewMode === "month" && (
