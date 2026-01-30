@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { getSignLunationData, SignLunationData } from "@/lib/signLunationData";
+import { LunarWorkbookSection } from "./LunarWorkbookSection";
 
 const ZODIAC_SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
 
@@ -769,7 +770,7 @@ Keep the tone deep, insightful, and practically applicable.`
       )}
       
       {/* Current Phase Guidance */}
-      <Card className="border-primary/20">
+      <Card className="bg-background border">
         <CardHeader className="pb-2">
           <CardTitle className="font-serif text-lg font-light flex items-center gap-2">
             {getMoonPhaseEmoji(currentPhase.phaseName)} Current Phase: {currentPhase.phaseName}
@@ -779,7 +780,7 @@ Keep the tone deep, insightful, and practically applicable.`
           <p className="text-muted-foreground mb-3 italic">"{phaseGuidance.theme}"</p>
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <p className="text-sm font-medium text-emerald-600 mb-2 flex items-center gap-1">
+              <p className="text-sm font-medium text-primary mb-2 flex items-center gap-1">
                 <Target className="h-4 w-4" /> Favored Activities
               </p>
               <ul className="space-y-1">
@@ -791,7 +792,7 @@ Keep the tone deep, insightful, and practically applicable.`
               </ul>
             </div>
             <div>
-              <p className="text-sm font-medium text-amber-600 mb-2 flex items-center gap-1">
+              <p className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-1">
                 <Eye className="h-4 w-4" /> Avoid
               </p>
               <ul className="space-y-1">
@@ -939,7 +940,7 @@ Keep the tone deep, insightful, and practically applicable.`
       {/* Collapsible: Your Chart & This New Moon */}
       {activeChart && natalAspects.length > 0 && (
         <Collapsible open={sectionsOpen.chart} onOpenChange={() => toggleSection('chart')}>
-          <Card className="border-primary/30">
+          <Card className="bg-background border">
             <CollapsibleTrigger asChild>
               <CardHeader className="cursor-pointer hover:bg-secondary/30 transition-colors">
                 <CardTitle className="font-serif text-lg font-light flex items-center justify-between">
@@ -1016,6 +1017,29 @@ Keep the tone deep, insightful, and practically applicable.`
         </Card>
       </Collapsible>
       
+      {/* Lunar Workbook Section - Only shows when a chart is selected */}
+      {activeChart && newMoons && keyPhases && (
+        <LunarWorkbookSection
+          chartId={activeChart.id || 'user'}
+          chartName={activeChart.name || 'Your Chart'}
+          cycleStartDate={newMoons.previous.date}
+          cycleSign={interpretation.sign}
+          cycleDegree={interpretation.degree}
+          keyPhases={keyPhases}
+          signData={signLunationData}
+          balsamicStart={(() => {
+            const start = new Date(newMoons.next.date);
+            start.setDate(start.getDate() - 4);
+            return start;
+          })()}
+          balsamicEnd={(() => {
+            const end = new Date(newMoons.next.date);
+            end.setDate(end.getDate() - 1);
+            return end;
+          })()}
+        />
+      )}
+      
       {/* AI-Enhanced Insight Button */}
       <Card className="bg-background border">
         <CardContent className="p-4">
@@ -1043,7 +1067,7 @@ Keep the tone deep, insightful, and practically applicable.`
               <ReactMarkdown
                 components={{
                   h2: ({ children }) => (
-                    <h2 className="font-serif text-lg font-medium text-foreground mt-4 mb-2 pb-1 border-b border-primary/10 first:mt-0">
+                    <h2 className="font-serif text-lg font-medium text-foreground mt-4 mb-2 pb-1 border-b border-border first:mt-0">
                       {children}
                     </h2>
                   ),

@@ -122,6 +122,117 @@ export type Database = {
         }
         Relationships: []
       }
+      lunar_cycle_journals: {
+        Row: {
+          ai_suggested_intentions: string | null
+          balsamic_date: string | null
+          balsamic_different: string | null
+          balsamic_evolved: string | null
+          balsamic_reflections: string | null
+          chart_id: string
+          created_at: string
+          cycle_degree: number | null
+          cycle_next_stirrings: string | null
+          cycle_sign: string
+          cycle_start_date: string
+          cycle_wisdom: string | null
+          device_id: string
+          first_quarter_adjustments: string | null
+          first_quarter_date: string | null
+          first_quarter_obstacles: string | null
+          first_quarter_showing_up: string | null
+          full_moon_date: string | null
+          full_moon_gratitude: string | null
+          full_moon_releasing: string | null
+          full_moon_showing_up: string | null
+          id: string
+          last_quarter_date: string | null
+          last_quarter_letting_go: string | null
+          last_quarter_patterns: string | null
+          last_quarter_showing_up: string | null
+          new_moon_body_sensations: string | null
+          new_moon_date: string | null
+          new_moon_feelings: string | null
+          new_moon_house_themes: string | null
+          new_moon_intentions: string | null
+          new_moon_showing_up: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          ai_suggested_intentions?: string | null
+          balsamic_date?: string | null
+          balsamic_different?: string | null
+          balsamic_evolved?: string | null
+          balsamic_reflections?: string | null
+          chart_id: string
+          created_at?: string
+          cycle_degree?: number | null
+          cycle_next_stirrings?: string | null
+          cycle_sign: string
+          cycle_start_date: string
+          cycle_wisdom?: string | null
+          device_id: string
+          first_quarter_adjustments?: string | null
+          first_quarter_date?: string | null
+          first_quarter_obstacles?: string | null
+          first_quarter_showing_up?: string | null
+          full_moon_date?: string | null
+          full_moon_gratitude?: string | null
+          full_moon_releasing?: string | null
+          full_moon_showing_up?: string | null
+          id?: string
+          last_quarter_date?: string | null
+          last_quarter_letting_go?: string | null
+          last_quarter_patterns?: string | null
+          last_quarter_showing_up?: string | null
+          new_moon_body_sensations?: string | null
+          new_moon_date?: string | null
+          new_moon_feelings?: string | null
+          new_moon_house_themes?: string | null
+          new_moon_intentions?: string | null
+          new_moon_showing_up?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          ai_suggested_intentions?: string | null
+          balsamic_date?: string | null
+          balsamic_different?: string | null
+          balsamic_evolved?: string | null
+          balsamic_reflections?: string | null
+          chart_id?: string
+          created_at?: string
+          cycle_degree?: number | null
+          cycle_next_stirrings?: string | null
+          cycle_sign?: string
+          cycle_start_date?: string
+          cycle_wisdom?: string | null
+          device_id?: string
+          first_quarter_adjustments?: string | null
+          first_quarter_date?: string | null
+          first_quarter_obstacles?: string | null
+          first_quarter_showing_up?: string | null
+          full_moon_date?: string | null
+          full_moon_gratitude?: string | null
+          full_moon_releasing?: string | null
+          full_moon_showing_up?: string | null
+          id?: string
+          last_quarter_date?: string | null
+          last_quarter_letting_go?: string | null
+          last_quarter_patterns?: string | null
+          last_quarter_showing_up?: string | null
+          new_moon_body_sensations?: string | null
+          new_moon_date?: string | null
+          new_moon_feelings?: string | null
+          new_moon_house_themes?: string | null
+          new_moon_intentions?: string | null
+          new_moon_showing_up?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
