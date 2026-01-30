@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { 
   PLANETS, 
   SIGNS, 
@@ -22,6 +23,11 @@ import { Sun, Moon, X, Sparkles, AlertTriangle, Heart, Zap, BookOpen, Filter, Us
 import { getPlanetSymbol } from '@/components/PlanetSymbol';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { getPlanetHouse } from '@/lib/sacredScriptHelpers';
+import { 
+  RETROGRADE_PLANET_MODIFIERS, 
+  getRetrogradeInterpretation,
+  RETROGRADE_SIGN_COMBOS 
+} from '@/lib/retrogradeSignCombinations';
 
 const SIGN_SYMBOLS: Record<string, string> = {
   'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊', 'Cancer': '♋',
@@ -35,62 +41,13 @@ interface CombosViewProps {
   userChart?: NatalChart | null;
 }
 
-// Retrograde interpretation modifiers - how retrograde energy manifests
-const RETROGRADE_MODIFIERS: Record<string, { internal: string; gifts: string[]; challenges: string[] }> = {
-  Mercury: {
-    internal: "Communication and thinking turn inward. Ideas percolate deeply before expression. Past conversations and connections may resurface for review.",
-    gifts: ["Deep introspection", "Reviewing and revising", "Reconnecting with past ideas", "Catching overlooked details", "Non-linear thinking"],
-    challenges: ["Misunderstandings", "Delayed messages", "Second-guessing decisions", "Mental fog or confusion"]
-  },
-  Venus: {
-    internal: "Love and values become introspective. Reevaluating what truly matters. Past relationships or creative projects may need closure.",
-    gifts: ["Deepening self-love", "Reassessing relationships", "Refined aesthetic sense", "Reconnecting with old loves (for closure)", "Internal beauty work"],
-    challenges: ["Unclear about desires", "Financial hesitation", "Relationship uncertainty", "Delayed romantic timing"]
-  },
-  Mars: {
-    internal: "Action and drive turn inward. Energy is processed internally before outward expression. Aggression becomes self-reflection.",
-    gifts: ["Strategic patience", "Internal motivation", "Reviewing goals", "Healing anger patterns", "Finishing rather than starting"],
-    challenges: ["Misdirected energy", "Suppressed frustration", "Delayed action", "Physical fatigue", "Past conflicts arising"]
-  },
-  Jupiter: {
-    internal: "Growth and expansion become internal journeys. Wisdom is sought within rather than through external adventure. Beliefs are questioned and refined.",
-    gifts: ["Inner wisdom cultivation", "Philosophical depth", "Reviewing life direction", "Internal abundance", "Spiritual growth over material"],
-    challenges: ["Delayed opportunities", "Overconfidence in wrong areas", "Missing external luck", "Questioning faith"]
-  },
-  Saturn: {
-    internal: "Responsibility and structure are internalized. Authority comes from within. Past karmic lessons resurface for mastery.",
-    gifts: ["Self-discipline", "Internal authority", "Karmic debt clearing", "Restructuring foundations", "Mastering past lessons"],
-    challenges: ["Self-criticism", "Delayed rewards", "Revisiting old fears", "Feeling blocked or tested"]
-  },
-  Uranus: {
-    internal: "Revolution happens within. Breaking free from internal limitations. Sudden insights rather than external disruptions.",
-    gifts: ["Internal liberation", "Freeing from old patterns", "Sudden insights", "Unconventional inner wisdom", "Authentic self-discovery"],
-    challenges: ["Inner restlessness", "Difficulty with change", "Unexpected internal shifts", "Feeling different but unable to express it"]
-  },
-  Neptune: {
-    internal: "Spirituality and intuition deepen inward. Dreams and visions become more vivid. Creative inspiration from the subconscious.",
-    gifts: ["Profound inner visions", "Deep spiritual practice", "Subconscious healing", "Artistic introspection", "Dissolving inner illusions"],
-    challenges: ["Confusion about reality", "Escapism tendencies", "Unclear boundaries internally", "Difficulty manifesting dreams"]
-  },
-  Pluto: {
-    internal: "Transformation is deeply personal and private. Power is found within. Psychological shadow work intensifies.",
-    gifts: ["Deep psychological insight", "Internal power reclamation", "Private transformation", "Releasing hidden fears", "Ancestral healing"],
-    challenges: ["Obsessive thoughts", "Power struggles with self", "Difficulty letting go", "Intense inner processing"]
-  },
-  Chiron: {
-    internal: "Healing focuses inward. Wounded healer energy becomes self-healing. Past wounds resurface for integration.",
-    gifts: ["Self-healing mastery", "Integrating old wounds", "Teaching from healed experience", "Compassion for self"],
-    challenges: ["Reopening old wounds", "Feeling unhealable temporarily", "Avoiding help from others"]
-  }
-};
-
 export const CombosView = ({ className = '', savedCharts = [], userChart = null }: CombosViewProps) => {
   const [selectedFactors, setSelectedFactors] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'explore' | 'browse'>('explore');
   const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
-  const [showRetrogrades, setShowRetrogrades] = useState(false);
-
+  // Individual retrograde checkboxes for each planet (manual selection)
+  const [manualRetrogrades, setManualRetrogrades] = useState<Set<string>>(new Set());
   // Combine all available charts
   const allCharts = useMemo(() => {
     const charts: NatalChart[] = [];
@@ -384,10 +341,12 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
     const neutralEnergies = combo.energies.filter(e => e.polarity === 'neutral');
     const isMatch = doesComboMatchChart(combo);
     
-    // Check if any planet in this combo is retrograde in the selected chart
+    // Check if any planet in this combo is retrograde (from chart OR manual selection)
     const comboPlanets = combo.factors.filter(f => PLANETS.includes(f));
-    const retrogradeInCombo = comboPlanets.filter(p => retrogradePlanets.has(p));
-    const hasRetrogradeContext = showRetrogrades && retrogradeInCombo.length > 0;
+    const chartRetroInCombo = comboPlanets.filter(p => retrogradePlanets.has(p));
+    const manualRetroInCombo = comboPlanets.filter(p => manualRetrogrades.has(p));
+    const retrogradeInCombo = [...new Set([...chartRetroInCombo, ...manualRetroInCombo])];
+    const hasRetrogradeContext = retrogradeInCombo.length > 0;
 
     return (
       <Card key={combo.id} className={`border-border ${isMatch ? 'ring-2 ring-primary/50 bg-primary/5' : ''}`}>
@@ -402,7 +361,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                   </Badge>
                 )}
                 {hasRetrogradeContext && (
-                  <Badge className="bg-amber-500/20 text-amber-700 dark:text-amber-400 text-xs gap-1">
+                  <Badge className="bg-warning/20 text-warning text-xs gap-1">
                     <RotateCcw className="h-3 w-3" />
                     Retrograde
                   </Badge>
@@ -411,14 +370,14 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                   <Badge key={i} variant="outline" className="text-xs">
                     {PLANETS.includes(factor) ? getPlanetSymbol(factor) : SIGN_SYMBOLS[factor] || ''}{' '}
                     {factor}
-                    {retrogradeInCombo.includes(factor) && showRetrogrades && ' ℞'}
+                    {retrogradeInCombo.includes(factor) && ' ℞'}
                   </Badge>
                 ))}
               </div>
               <CardTitle className="text-lg font-serif">{combo.title}</CardTitle>
             </div>
             {combo.tags?.includes('warning') && (
-              <AlertTriangle className="h-5 w-5 text-yellow-500 shrink-0" />
+              <AlertTriangle className="h-5 w-5 text-warning shrink-0" />
             )}
             {combo.tags?.includes('wealth') && (
               <Sparkles className="h-5 w-5 text-primary shrink-0" />
@@ -430,43 +389,125 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
             {combo.summary}
           </p>
           
-          {/* Retrograde Energy Section - only when retrograde toggle is on */}
+          {/* Retrograde Energy Section - show when planet has retrograde context */}
           {hasRetrogradeContext && retrogradeInCombo.map(planet => {
-            const retroData = RETROGRADE_MODIFIERS[planet];
-            if (!retroData) return null;
-            const planetInfo = retrogradePlanets.get(planet);
+            // Get sign context from chart or selected factors
+            const chartInfo = retrogradePlanets.get(planet);
+            const selectedSign = selectedFactors.find(f => SIGNS.includes(f));
+            const signForInterpretation = chartInfo?.sign || selectedSign || null;
             
-            return (
-              <div key={planet} className="space-y-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                <h4 className="text-xs font-medium text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
-                  <RotateCcw className="h-3.5 w-3.5" />
-                  {getPlanetSymbol(planet)} {planet} Retrograde in {planetInfo?.sign}
-                </h4>
-                <p className="text-sm text-foreground/80 italic">
-                  {retroData.internal}
-                </p>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  <div>
-                    <h5 className="text-xs font-medium text-primary mb-1">Retrograde Gifts:</h5>
-                    <ul className="space-y-0.5">
-                      {retroData.gifts.slice(0, 3).map((gift, i) => (
-                        <li key={i} className="text-xs text-foreground/70 flex items-start gap-1">
-                          <span className="text-primary">✦</span> {gift}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                    <h5 className="text-xs font-medium text-destructive mb-1">Challenges:</h5>
-                    <ul className="space-y-0.5">
-                      {retroData.challenges.slice(0, 3).map((challenge, i) => (
-                        <li key={i} className="text-xs text-foreground/70 flex items-start gap-1">
-                          <span className="text-destructive">•</span> {challenge}
-                        </li>
-                      ))}
-                    </ul>
+            if (!signForInterpretation) {
+              // Just show generic retrograde info without sign
+              const modifier = RETROGRADE_PLANET_MODIFIERS[planet];
+              if (!modifier) return null;
+              
+              return (
+                <div key={planet} className="space-y-2 p-3 rounded-lg bg-warning/10 border border-warning/20">
+                  <h4 className="text-xs font-medium text-warning flex items-center gap-1.5">
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    {getPlanetSymbol(planet)} {planet} Retrograde
+                  </h4>
+                  <p className="text-sm text-foreground/80 italic">
+                    {modifier.internal}
+                  </p>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <div>
+                      <h5 className="text-xs font-medium text-primary mb-1">Retrograde Gifts:</h5>
+                      <ul className="space-y-0.5">
+                        {modifier.coreGifts.slice(0, 3).map((gift, i) => (
+                          <li key={i} className="text-xs text-foreground/70 flex items-start gap-1">
+                            <span className="text-primary">✦</span> {gift}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-medium text-destructive mb-1">Challenges:</h5>
+                      <ul className="space-y-0.5">
+                        {modifier.coreChallenges.slice(0, 3).map((challenge, i) => (
+                          <li key={i} className="text-xs text-foreground/70 flex items-start gap-1">
+                            <span className="text-destructive">•</span> {challenge}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
                 </div>
+              );
+            }
+            
+            // Get specific retrograde+sign interpretation
+            const interpretation = getRetrogradeInterpretation(planet, signForInterpretation);
+            
+            return (
+              <div key={planet} className="space-y-2 p-3 rounded-lg bg-warning/10 border border-warning/20">
+                <h4 className="text-xs font-medium text-warning flex items-center gap-1.5">
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  {getPlanetSymbol(planet)} {planet} ℞ in {SIGN_SYMBOLS[signForInterpretation]} {signForInterpretation}
+                  {chartInfo?.house && ` (${chartInfo.house}${chartInfo.house === 1 ? 'st' : chartInfo.house === 2 ? 'nd' : chartInfo.house === 3 ? 'rd' : 'th'} House)`}
+                </h4>
+                
+                {interpretation.signCombo ? (
+                  <>
+                    <p className="text-sm font-medium text-foreground">{interpretation.signCombo.title}</p>
+                    <p className="text-sm text-foreground/80 italic">{interpretation.signCombo.internalExpression}</p>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <div>
+                        <h5 className="text-xs font-medium text-primary mb-1">Retrograde Gifts:</h5>
+                        <ul className="space-y-0.5">
+                          {interpretation.signCombo.gifts.slice(0, 4).map((gift, i) => (
+                            <li key={i} className="text-xs text-foreground/70 flex items-start gap-1">
+                              <span className="text-primary">✦</span> {gift}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div>
+                        <h5 className="text-xs font-medium text-destructive mb-1">Challenges:</h5>
+                        <ul className="space-y-0.5">
+                          {interpretation.signCombo.challenges.slice(0, 4).map((challenge, i) => (
+                            <li key={i} className="text-xs text-foreground/70 flex items-start gap-1">
+                              <span className="text-destructive">•</span> {challenge}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                    {interpretation.signCombo.sources && (
+                      <p className="text-[10px] text-muted-foreground pt-1 border-t border-border">
+                        Sources: {interpretation.signCombo.sources.join(', ')}
+                      </p>
+                    )}
+                  </>
+                ) : interpretation.modifier ? (
+                  <>
+                    <p className="text-sm text-foreground/80 italic">
+                      {interpretation.synthesizedInterpretation || interpretation.modifier.internal}
+                    </p>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <div>
+                        <h5 className="text-xs font-medium text-primary mb-1">Retrograde Gifts:</h5>
+                        <ul className="space-y-0.5">
+                          {interpretation.modifier.coreGifts.slice(0, 3).map((gift, i) => (
+                            <li key={i} className="text-xs text-foreground/70 flex items-start gap-1">
+                              <span className="text-primary">✦</span> {gift}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div>
+                        <h5 className="text-xs font-medium text-destructive mb-1">Challenges:</h5>
+                        <ul className="space-y-0.5">
+                          {interpretation.modifier.coreChallenges.slice(0, 3).map((challenge, i) => (
+                            <li key={i} className="text-xs text-foreground/70 flex items-start gap-1">
+                              <span className="text-destructive">•</span> {challenge}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </>
+                ) : null}
               </div>
             );
           })}
@@ -589,25 +630,17 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
               )}
             </div>
             
-            {/* Retrograde Toggle - only show when a chart is selected */}
+            {/* Chart Retrograde Planets Display - auto-detected from chart */}
             {selectedChart && retrogradePlanets.size > 0 && (
               <div className="mt-4 pt-4 border-t border-primary/20">
                 <div className="flex flex-wrap items-start gap-4">
-                  <Button
-                    variant={showRetrogrades ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setShowRetrogrades(!showRetrogrades)}
-                    className="gap-2"
-                  >
-                    <RotateCcw className={`h-4 w-4 ${showRetrogrades ? 'animate-spin' : ''}`} style={{ animationDuration: '3s' }} />
-                    Retrograde Energies {showRetrogrades ? 'ON' : 'OFF'}
-                  </Button>
+                  <span className="text-xs font-medium text-muted-foreground">Retrograde in chart:</span>
                   <div className="flex flex-wrap gap-2">
                     {Array.from(retrogradePlanets.entries()).map(([planet, data]) => (
                       <Badge 
                         key={planet} 
                         variant="secondary" 
-                        className={`text-xs ${showRetrogrades ? 'bg-amber-500/20 text-amber-700 dark:text-amber-400' : ''}`}
+                        className="text-xs bg-warning/20 text-warning"
                       >
                         <RotateCcw className="h-3 w-3 mr-1" />
                         {getPlanetSymbol(planet)} {planet} ℞ in {SIGN_SYMBOLS[data.sign]} {data.sign}
@@ -616,11 +649,9 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                     ))}
                   </div>
                 </div>
-                {showRetrogrades && (
-                  <p className="text-xs text-muted-foreground mt-2">
-                    ℞ Retrograde planets express their energy more internally. Their gifts manifest through introspection, review, and inner work.
-                  </p>
-                )}
+                <p className="text-xs text-muted-foreground mt-2">
+                  ℞ Retrograde planets express their energy more internally. Combos will show enhanced interpretations.
+                </p>
               </div>
             )}
           </CardContent>
@@ -711,11 +742,58 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
               <CardTitle className="text-base">Or Select Specific Factors</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Planets */}
+              {/* Planets with Retrograde Checkboxes */}
               <div>
                 <h4 className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Planets</h4>
-                <div className="flex flex-wrap gap-2">
-                  {PLANETS.map(planet => renderFactorButton(planet, getPlanetSymbol(planet)))}
+                <div className="flex flex-wrap gap-3">
+                  {PLANETS.map(planet => {
+                    const isSelected = selectedFactors.includes(planet);
+                    const isRetrograde = manualRetrogrades.has(planet) || retrogradePlanets.has(planet);
+                    const isChartRetro = retrogradePlanets.has(planet);
+                    
+                    return (
+                      <div key={planet} className="flex flex-col items-center gap-1">
+                        <button
+                          onClick={() => toggleFactor(planet)}
+                          className={`px-3 py-1.5 text-sm rounded-md border transition-all ${
+                            isSelected 
+                              ? 'bg-primary text-primary-foreground border-primary' 
+                              : 'bg-background border-border hover:border-primary/50 hover:bg-secondary'
+                          }`}
+                        >
+                          <span className="mr-1">{getPlanetSymbol(planet)}</span>
+                          {planet}
+                          {isRetrograde && ' ℞'}
+                        </button>
+                        <div className="flex items-center gap-1">
+                          <Checkbox
+                            id={`retro-${planet}`}
+                            checked={isRetrograde}
+                            disabled={isChartRetro} // Can't uncheck if it's from chart
+                            onCheckedChange={(checked) => {
+                              if (isChartRetro) return; // Don't allow unchecking chart retrogrades
+                              setManualRetrogrades(prev => {
+                                const next = new Set(prev);
+                                if (checked) {
+                                  next.add(planet);
+                                } else {
+                                  next.delete(planet);
+                                }
+                                return next;
+                              });
+                            }}
+                            className="h-3 w-3"
+                          />
+                          <label 
+                            htmlFor={`retro-${planet}`} 
+                            className={`text-[10px] cursor-pointer ${isChartRetro ? 'text-warning' : 'text-muted-foreground'}`}
+                          >
+                            ℞
+                          </label>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
