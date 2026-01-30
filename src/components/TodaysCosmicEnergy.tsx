@@ -171,9 +171,36 @@ interface TodaysCosmicEnergyProps {
 export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
   const [isOpen, setIsOpen] = useState(true); // Start open when rendered
   const [isLoading, setIsLoading] = useState(false);
-  const [cosmicData, setCosmicData] = useState<CosmicData | null>(null);
+  const [cosmicData, setCosmicData] = useState<CosmicData | null>(() => {
+    // Initialize from cache immediately
+    const today = new Date();
+    const todayKey = today.toISOString().split('T')[0];
+    const cached = localStorage.getItem(`cosmic-weather-${todayKey}`);
+    if (cached) {
+      try {
+        return JSON.parse(cached);
+      } catch (e) {
+        console.error('Failed to parse cached cosmic data:', e);
+      }
+    }
+    return null;
+  });
   const [error, setError] = useState<string | null>(null);
-  const [lastFetched, setLastFetched] = useState<string | null>(null);
+  const [lastFetched, setLastFetched] = useState<string | null>(() => {
+    // Initialize from cache immediately
+    const today = new Date();
+    const todayKey = today.toISOString().split('T')[0];
+    const cached = localStorage.getItem(`cosmic-weather-${todayKey}`);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        return parsed.generatedAt || null;
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  });
   const [weekForecast, setWeekForecast] = useState<WeekDay[]>([]);
   const [currentMoonDegree, setCurrentMoonDegree] = useState<number>(0);
   const [currentMoonSign, setCurrentMoonSign] = useState<string>('');
@@ -186,20 +213,6 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
   const today = new Date();
   const todayStr = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
   const todayKey = today.toISOString().split('T')[0]; // YYYY-MM-DD for cache key
-
-  // Load cached data on mount
-  useEffect(() => {
-    const cached = localStorage.getItem(`cosmic-weather-${todayKey}`);
-    if (cached) {
-      try {
-        const parsed = JSON.parse(cached);
-        setCosmicData(parsed);
-        setLastFetched(parsed.generatedAt);
-      } catch (e) {
-        console.error('Failed to parse cached cosmic data:', e);
-      }
-    }
-  }, [todayKey]);
 
   // Update moon position and VOC in real-time when modal is open
   useEffect(() => {
