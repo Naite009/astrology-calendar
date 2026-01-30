@@ -22,7 +22,7 @@ import {
 import { Sun, Moon, X, Sparkles, AlertTriangle, Heart, Zap, BookOpen, Filter, User, Check, RotateCcw } from 'lucide-react';
 import { getPlanetSymbol } from '@/components/PlanetSymbol';
 import { NatalChart } from '@/hooks/useNatalChart';
-import { getPlanetHouse } from '@/lib/sacredScriptHelpers';
+import { getNatalPlanetHouse } from '@/lib/houseCalculations';
 import { 
   RETROGRADE_PLANET_MODIFIERS, 
   getRetrogradeInterpretation,
@@ -62,16 +62,44 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
     return allCharts.find(c => c.id === selectedChartId) || null;
   }, [selectedChartId, allCharts]);
 
-  // Extract factors from the selected chart (planet-sign and planet-house combinations)
+  // Helper to calculate aspect between two planets
+  const calculateAspect = (
+    planet1Sign: string, planet1Degree: number,
+    planet2Sign: string, planet2Degree: number
+  ): string | null => {
+    const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+                   'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+    
+    const long1 = signs.indexOf(planet1Sign) * 30 + planet1Degree;
+    const long2 = signs.indexOf(planet2Sign) * 30 + planet2Degree;
+    
+    let diff = Math.abs(long1 - long2);
+    if (diff > 180) diff = 360 - diff;
+    
+    // Check aspects with standard orbs
+    if (diff <= 10) return 'Conjunction'; // 0° with 10° orb
+    if (diff >= 50 && diff <= 70) return 'Sextile'; // 60° with 6° orb
+    if (diff >= 82 && diff <= 98) return 'Square'; // 90° with 8° orb
+    if (diff >= 112 && diff <= 128) return 'Trine'; // 120° with 8° orb
+    if (diff >= 172 && diff <= 188) return 'Opposition'; // 180° with 8° orb
+    
+    return null;
+  };
+
+  // Extract factors from the selected chart (planet-sign, planet-house, and planet-planet aspects)
   const chartFactors = useMemo(() => {
     if (!selectedChart?.planets) return new Set<string>();
     
     const factors = new Set<string>();
     const planetNames = Object.keys(selectedChart.planets) as (keyof typeof selectedChart.planets)[];
+    const planetData: { name: string; sign: string; degree: number }[] = [];
     
     for (const planetName of planetNames) {
       const data = selectedChart.planets[planetName];
       if (!data?.sign) continue;
+      
+      // Store for aspect calculations
+      planetData.push({ name: planetName, sign: data.sign, degree: data.degree });
       
       // Add planet-sign combo identifier
       factors.add(`${planetName}|${data.sign}`);
@@ -80,11 +108,25 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
       factors.add(data.sign);
       
       // Calculate and add planet-house combo
-      const house = getPlanetHouse(selectedChart, planetName);
+      const house = getNatalPlanetHouse(planetName, selectedChart);
       if (house) {
         const houseLabel = `${house}${house === 1 ? 'st' : house === 2 ? 'nd' : house === 3 ? 'rd' : 'th'} House`;
         factors.add(`${planetName}|${houseLabel}`);
         factors.add(houseLabel);
+      }
+    }
+    
+    // Calculate actual aspects between planets
+    for (let i = 0; i < planetData.length; i++) {
+      for (let j = i + 1; j < planetData.length; j++) {
+        const p1 = planetData[i];
+        const p2 = planetData[j];
+        const aspect = calculateAspect(p1.sign, p1.degree, p2.sign, p2.degree);
+        if (aspect) {
+          // Add both orderings so matching works either way
+          factors.add(`${p1.name}|${p2.name}|${aspect}`);
+          factors.add(`${p2.name}|${p1.name}|${aspect}`);
+        }
       }
     }
     
@@ -102,7 +144,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
       const data = selectedChart.planets[planetName];
       if (!data?.sign || !data.isRetrograde) continue;
       
-      const house = getPlanetHouse(selectedChart, planetName);
+      const house = getNatalPlanetHouse(planetName, selectedChart);
       retros.set(planetName, { sign: data.sign, house: house || undefined });
     }
     
@@ -116,6 +158,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
     const comboPlanets = combo.factors.filter(f => PLANETS.includes(f));
     const comboSigns = combo.factors.filter(f => SIGNS.includes(f));
     const comboHouses = combo.factors.filter(f => HOUSES.includes(f));
+    const comboAspects = combo.factors.filter(f => ASPECTS.includes(f));
     
     // For planet-sign combos, check if the chart has that planet in that sign
     if (comboPlanets.length === 1 && comboSigns.length === 1 && comboHouses.length === 0) {
@@ -133,9 +176,26 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
              chartFactors.has(`${comboPlanets[0]}|${comboHouses[0]}`);
     }
     
-    // For planet-only or multi-planet, check if all planets are present
-    if (comboPlanets.length > 0 && comboSigns.length === 0 && comboHouses.length === 0) {
-      return comboPlanets.every(p => chartFactors.has(p));
+    // For planet-planet-aspect combos, check if that actual aspect exists
+    if (comboPlanets.length === 2 && comboAspects.length === 1) {
+      const [p1, p2] = comboPlanets;
+      const aspect = comboAspects[0];
+      return chartFactors.has(`${p1}|${p2}|${aspect}`) || chartFactors.has(`${p2}|${p1}|${aspect}`);
+    }
+    
+    // For planet-planet combos WITHOUT an aspect specified, 
+    // check if they form ANY major aspect (this is a match if they're actually aspected)
+    if (comboPlanets.length === 2 && comboAspects.length === 0 && comboSigns.length === 0 && comboHouses.length === 0) {
+      const [p1, p2] = comboPlanets;
+      // Check for any major aspect between these planets
+      return ['Conjunction', 'Sextile', 'Square', 'Trine', 'Opposition'].some(
+        aspect => chartFactors.has(`${p1}|${p2}|${aspect}`) || chartFactors.has(`${p2}|${p1}|${aspect}`)
+      );
+    }
+    
+    // For single planet entries (like "Saturn"), don't auto-match - too generic
+    if (comboPlanets.length === 1 && comboSigns.length === 0 && comboHouses.length === 0 && comboAspects.length === 0) {
+      return false; // Single planet entries are too generic to match
     }
     
     // For other combinations, check if all factors are present
