@@ -315,7 +315,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
               <CardTitle className="text-lg font-serif">{combo.title}</CardTitle>
             </div>
             {combo.tags?.includes('warning') && (
-              <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
+              <AlertTriangle className="h-5 w-5 text-yellow-500 shrink-0" />
             )}
             {combo.tags?.includes('wealth') && (
               <Sparkles className="h-5 w-5 text-primary shrink-0" />
