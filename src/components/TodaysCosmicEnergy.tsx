@@ -844,7 +844,13 @@ Keep the tone professional, insightful, and practically applicable.`
                     <ArrowLeft className="h-4 w-4" />
                     Back to Daily
                   </Button>
-                  <LunarCycleView onClose={() => setViewMode('daily')} />
+                  <LunarCycleView 
+                    onClose={() => setViewMode('daily')} 
+                    userNatalChart={userNatalChart}
+                    savedCharts={savedCharts}
+                    selectedChartId={selectedChartId || 'general'}
+                    onSelectChart={(id) => setSelectedChartId(id === 'general' ? null : id)}
+                  />
                 </div>
               )}
 
