@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { Sparkles, Moon, Sun, Clock, ArrowRight, Loader2, RefreshCw, X, Utensils, Download, Share2, ChevronRight } from "lucide-react";
+import { Sparkles, Moon, Sun, Clock, Loader2, RefreshCw, X, Utensils, Download, Share2, ChevronRight, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { getMoonPhase, getPlanetaryPositions, calculateDailyAspects, PlanetaryPositions } from "@/lib/astrology";
+import { getVOCMoonDetails } from "@/lib/voidOfCourseMoon";
 import ReactMarkdown from "react-markdown";
 import html2canvas from "html2canvas";
 import { toast } from "@/hooks/use-toast";
@@ -33,6 +34,18 @@ interface WeekDay {
   moonSign: string;
   moonPhase: string;
   sunSign: string;
+}
+
+interface VOCInfo {
+  isVOC: boolean;
+  isCurrentlyVOC?: boolean;
+  start?: Date;
+  end?: Date;
+  lastAspect?: {
+    planet: string;
+    symbol: string;
+  };
+  moonEntersSign?: string;
 }
 
 // Simple stellium detection
@@ -93,8 +106,34 @@ function getMoonPhaseEmoji(phase: string): string {
   return phaseMap[phase] || '🌙';
 }
 
-export const TodaysCosmicEnergy = () => {
-  const [isOpen, setIsOpen] = useState(false);
+// Format time for display
+function formatTime(date: Date): string {
+  return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+}
+
+// Component for the header button
+export const CosmicEnergyButton = ({ onClick }: { onClick: () => void }) => {
+  return (
+    <button
+      onClick={onClick}
+      className="flex h-10 items-center gap-2 px-3 border border-primary/50 bg-primary/10 text-primary transition-all duration-200 hover:border-primary hover:bg-primary/20 rounded-sm"
+      aria-label="Today's Cosmic Energy"
+      title="Click for Today's Cosmic Weather"
+    >
+      <Sparkles size={18} className="animate-pulse" />
+      <span className="text-[11px] uppercase tracking-widest font-medium hidden sm:inline">
+        Cosmic Weather
+      </span>
+    </button>
+  );
+};
+
+interface TodaysCosmicEnergyProps {
+  onClose?: () => void;
+}
+
+export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
+  const [isOpen, setIsOpen] = useState(true); // Start open when rendered
   const [isLoading, setIsLoading] = useState(false);
   const [cosmicData, setCosmicData] = useState<CosmicData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -102,6 +141,10 @@ export const TodaysCosmicEnergy = () => {
   const [weekForecast, setWeekForecast] = useState<WeekDay[]>([]);
   const [currentMoonDegree, setCurrentMoonDegree] = useState<number>(0);
   const [currentMoonSign, setCurrentMoonSign] = useState<string>('');
+  const [vocInfo, setVocInfo] = useState<VOCInfo>({ isVOC: false });
+  const [selectedWeekDay, setSelectedWeekDay] = useState<number>(0); // 0 = today
+  const [weekDayLoading, setWeekDayLoading] = useState<number | null>(null);
+  const [weekDayInsights, setWeekDayInsights] = useState<Record<number, string>>({});
   const contentRef = useRef<HTMLDivElement>(null);
 
   const today = new Date();
@@ -122,7 +165,7 @@ export const TodaysCosmicEnergy = () => {
     }
   }, [todayKey]);
 
-  // Update moon position in real-time when modal is open
+  // Update moon position and VOC in real-time when modal is open
   useEffect(() => {
     if (!isOpen) return;
     
@@ -131,18 +174,22 @@ export const TodaysCosmicEnergy = () => {
       const planets = getPlanetaryPositions(now);
       setCurrentMoonDegree(planets.moon?.degree || 0);
       setCurrentMoonSign(planets.moon?.sign || 'Unknown');
+      
+      // Get VOC info
+      const voc = getVOCMoonDetails(now);
+      setVocInfo(voc);
     };
     
     updateMoonPosition();
-    // Update every minute since moon moves ~0.5° per hour
+    // Update every minute
     const interval = setInterval(updateMoonPosition, 60000);
     
     return () => clearInterval(interval);
   }, [isOpen]);
 
-  const fetchCosmicWeather = async (forceRefresh = false) => {
-    // If we have cached data and not forcing refresh, don't fetch
-    if (cosmicData && !forceRefresh) {
+  const fetchCosmicWeather = async (forceRefresh = false, targetDate?: Date) => {
+    // If we have cached data and not forcing refresh and it's for today, don't fetch
+    if (cosmicData && !forceRefresh && !targetDate) {
       setWeekForecast(getWeekForecast());
       return;
     }
@@ -151,16 +198,22 @@ export const TodaysCosmicEnergy = () => {
     setError(null);
 
     try {
-      const now = new Date();
+      const now = targetDate || new Date();
+      const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+      
       // Get current astronomical data at the exact moment of request
       const moonPhase = getMoonPhase(now);
       const planets = getPlanetaryPositions(now);
       const aspects = calculateDailyAspects(planets);
       const stelliums = findStelliums(planets);
+      const voc = getVOCMoonDetails(now);
 
       // Update current moon position
-      setCurrentMoonDegree(planets.moon?.degree || 0);
-      setCurrentMoonSign(planets.moon?.sign || 'Unknown');
+      if (!targetDate) {
+        setCurrentMoonDegree(planets.moon?.degree || 0);
+        setCurrentMoonSign(planets.moon?.sign || 'Unknown');
+        setVocInfo(voc);
+      }
 
       // Build planet positions array for the edge function
       const planetPositions = Object.entries(planets).map(([name, data]) => ({
@@ -172,7 +225,7 @@ export const TodaysCosmicEnergy = () => {
       // Call edge function
       const { data, error: fnError } = await supabase.functions.invoke('cosmic-weather', {
         body: {
-          date: todayStr,
+          date: dateStr,
           moonPhase: moonPhase.phaseName,
           moonSign: planets.moon?.sign || 'Unknown',
           planetPositions,
@@ -194,10 +247,15 @@ export const TodaysCosmicEnergy = () => {
         throw new Error(fnError.message || 'Failed to fetch cosmic weather');
       }
 
-      const generatedTime = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      const generatedTime = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      
+      if (targetDate) {
+        // Store for the specific day
+        return data.insight;
+      }
       
       const newCosmicData: CosmicData = {
-        date: todayStr,
+        date: dateStr,
         moonPhase: moonPhase.phaseName,
         moonSign: planets.moon?.sign || 'Unknown',
         moonDegrees: planets.moon?.degree || 0,
@@ -223,6 +281,34 @@ export const TodaysCosmicEnergy = () => {
     }
   };
 
+  const fetchWeekDayWeather = async (dayIndex: number) => {
+    if (dayIndex === 0) {
+      setSelectedWeekDay(0);
+      return;
+    }
+    
+    // Check if we already have this day's insight
+    if (weekDayInsights[dayIndex]) {
+      setSelectedWeekDay(dayIndex);
+      return;
+    }
+    
+    setWeekDayLoading(dayIndex);
+    setSelectedWeekDay(dayIndex);
+    
+    try {
+      const targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() + dayIndex);
+      const insight = await fetchCosmicWeather(true, targetDate);
+      
+      setWeekDayInsights(prev => ({ ...prev, [dayIndex]: insight }));
+    } catch (err) {
+      console.error('Failed to fetch week day weather:', err);
+    } finally {
+      setWeekDayLoading(null);
+    }
+  };
+
   useEffect(() => {
     if (isOpen && !isLoading) {
       // Always update week forecast and moon position when opening
@@ -230,6 +316,8 @@ export const TodaysCosmicEnergy = () => {
       const planets = getPlanetaryPositions(new Date());
       setCurrentMoonDegree(planets.moon?.degree || 0);
       setCurrentMoonSign(planets.moon?.sign || 'Unknown');
+      const voc = getVOCMoonDetails(new Date());
+      setVocInfo(voc);
       
       // Only fetch if no cached data
       if (!cosmicData) {
@@ -244,6 +332,7 @@ export const TodaysCosmicEnergy = () => {
 
   const handleClose = () => {
     setIsOpen(false);
+    onClose?.();
   };
 
   const handleDownloadPDF = async () => {
@@ -297,31 +386,15 @@ export const TodaysCosmicEnergy = () => {
   const moonPhase = getMoonPhase(today);
   const planets = getPlanetaryPositions(today);
 
+  // Get the insight to display based on selected day
+  const displayInsight = selectedWeekDay === 0 
+    ? cosmicData?.insight 
+    : weekDayInsights[selectedWeekDay];
+
   return (
     <>
-      {/* Large Prominent Button */}
-      <div className="mb-6 print:hidden">
-        <Button
-          onClick={handleOpen}
-          size="lg"
-          className="w-full h-16 text-lg font-serif bg-gradient-to-r from-primary via-primary/90 to-primary hover:from-primary/90 hover:via-primary/80 hover:to-primary/90 shadow-lg hover:shadow-xl transition-all duration-300 group"
-        >
-          <div className="flex items-center justify-center gap-4 w-full">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 animate-pulse" />
-              <span className="tracking-wide">Today's Cosmic Energy</span>
-              <Sparkles className="h-5 w-5 animate-pulse" />
-            </div>
-            <div className="hidden sm:flex items-center gap-2 text-primary-foreground/80 text-sm font-sans">
-              <Moon className="h-4 w-4" />
-              <span>{moonPhase.phaseName}</span>
-              <span>in</span>
-              <span>{ZODIAC_SYMBOLS[planets.moon?.sign || ''] || ''} {planets.moon?.sign}</span>
-            </div>
-            <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
-          </div>
-        </Button>
-      </div>
+      {/* Icon Button for Header - exported separately */}
+      <CosmicEnergyButton onClick={handleOpen} />
 
       {/* Full-Screen Modal Overlay */}
       {isOpen && (
@@ -341,9 +414,11 @@ export const TodaysCosmicEnergy = () => {
               {/* Header */}
               <div className="text-center mb-8">
                 <h1 className="font-serif text-4xl md:text-5xl font-light tracking-wide text-foreground mb-4">
-                  Today's Cosmic Energy
+                  {selectedWeekDay === 0 ? "Today's Cosmic Energy" : weekForecast[selectedWeekDay]?.dayName + "'s Cosmic Energy"}
                 </h1>
-                <p className="text-lg text-muted-foreground">{todayStr}</p>
+                <p className="text-lg text-muted-foreground">
+                  {selectedWeekDay === 0 ? todayStr : weekForecast[selectedWeekDay]?.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                </p>
               </div>
 
               {/* Quick Stats Row */}
@@ -366,7 +441,7 @@ export const TodaysCosmicEnergy = () => {
                       {currentMoonDegree.toFixed(1)}°
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Updates in real-time
+                      Live position
                     </p>
                   </CardContent>
                 </Card>
@@ -390,6 +465,38 @@ export const TodaysCosmicEnergy = () => {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Void of Course Moon Alert */}
+              {vocInfo.isVOC && vocInfo.start && vocInfo.end && (
+                <Card className={`mb-6 ${vocInfo.isCurrentlyVOC ? 'bg-amber-500/10 border-amber-500/40' : 'bg-muted/50 border-border'}`}>
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className={`h-5 w-5 mt-0.5 ${vocInfo.isCurrentlyVOC ? 'text-amber-500' : 'text-muted-foreground'}`} />
+                      <div className="flex-1">
+                        <p className="font-medium text-sm">
+                          {vocInfo.isCurrentlyVOC ? '☽ Moon is Currently Void of Course' : '☽ Void of Course Moon Today'}
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {formatTime(vocInfo.start)} – {formatTime(vocInfo.end)}
+                          {vocInfo.lastAspect && (
+                            <span className="ml-2">
+                              (after {vocInfo.lastAspect.symbol} {vocInfo.lastAspect.planet})
+                            </span>
+                          )}
+                          {vocInfo.moonEntersSign && (
+                            <span className="ml-2">
+                              → Moon enters {ZODIAC_SYMBOLS[vocInfo.moonEntersSign]} {vocInfo.moonEntersSign}
+                            </span>
+                          )}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-2 italic">
+                          Avoid starting new projects, signing contracts, or making major purchases during VOC periods.
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Main Content Card */}
               <Card className="border-primary/20 shadow-lg">
@@ -433,14 +540,14 @@ export const TodaysCosmicEnergy = () => {
                       </Button>
                     </div>
                   </div>
-                  {lastFetched && (
+                  {lastFetched && selectedWeekDay === 0 && (
                     <p className="text-xs text-muted-foreground">
                       Today's reading generated at {lastFetched} • <span className="italic">Preserved for the day</span> • Moon position updates live
                     </p>
                   )}
                 </CardHeader>
                 <CardContent className="p-6 md:p-8">
-                  {isLoading && (
+                  {(isLoading || weekDayLoading !== null) && (
                     <div className="flex flex-col items-center justify-center py-12 gap-4">
                       <Loader2 className="h-8 w-8 animate-spin text-primary" />
                       <p className="text-muted-foreground">Reading the cosmic weather...</p>
@@ -456,7 +563,7 @@ export const TodaysCosmicEnergy = () => {
                     </div>
                   )}
 
-                  {!isLoading && !error && cosmicData && (
+                  {!isLoading && weekDayLoading === null && !error && displayInsight && (
                     <div className="prose prose-lg dark:prose-invert max-w-none">
                       <ReactMarkdown
                         components={{
@@ -487,28 +594,42 @@ export const TodaysCosmicEnergy = () => {
                           ),
                         }}
                       >
-                        {cosmicData.insight}
+                        {displayInsight}
                       </ReactMarkdown>
+                    </div>
+                  )}
+
+                  {!isLoading && weekDayLoading === null && !error && !displayInsight && selectedWeekDay !== 0 && (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground">Click a day to load its cosmic weather</p>
                     </div>
                   )}
                 </CardContent>
               </Card>
 
-              {/* 7-Day Forecast */}
+              {/* 7-Day Forecast - Clickable */}
               {weekForecast.length > 0 && (
                 <Card className="mt-6 border-border">
                   <CardHeader>
                     <CardTitle className="font-serif text-lg font-light flex items-center gap-2">
                       <ChevronRight className="h-5 w-5 text-primary" />
                       7-Day Cosmic Forecast
+                      <span className="text-xs font-normal text-muted-foreground ml-2">(click any day for details)</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-7 gap-2">
                       {weekForecast.map((day, idx) => (
-                        <div 
+                        <button 
                           key={idx} 
-                          className={`text-center p-3 rounded-lg ${idx === 0 ? 'bg-primary/10 border border-primary/30' : 'bg-secondary/50'}`}
+                          onClick={() => fetchWeekDayWeather(idx)}
+                          className={`text-center p-3 rounded-lg transition-all cursor-pointer hover:scale-105 ${
+                            selectedWeekDay === idx 
+                              ? 'bg-primary/20 border-2 border-primary shadow-md' 
+                              : idx === 0 
+                                ? 'bg-primary/10 border border-primary/30 hover:bg-primary/15' 
+                                : 'bg-secondary/50 hover:bg-secondary/80'
+                          }`}
                         >
                           <p className="text-xs font-medium text-muted-foreground mb-1">{day.dayName}</p>
                           <p className="text-xs text-muted-foreground">{day.dateStr}</p>
@@ -517,12 +638,12 @@ export const TodaysCosmicEnergy = () => {
                             {ZODIAC_SYMBOLS[day.moonSign]}
                           </p>
                           <p className="text-xs text-muted-foreground">{day.moonSign}</p>
-                        </div>
+                          {weekDayLoading === idx && (
+                            <Loader2 className="h-3 w-3 animate-spin mx-auto mt-1 text-primary" />
+                          )}
+                        </button>
                       ))}
                     </div>
-                    <p className="text-xs text-muted-foreground text-center mt-4">
-                      Moon sign shown for each day • Click refresh for updated readings
-                    </p>
                   </CardContent>
                 </Card>
               )}
