@@ -106,6 +106,21 @@ export const TodaysCosmicEnergy = () => {
 
   const today = new Date();
   const todayStr = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  const todayKey = today.toISOString().split('T')[0]; // YYYY-MM-DD for cache key
+
+  // Load cached data on mount
+  useEffect(() => {
+    const cached = localStorage.getItem(`cosmic-weather-${todayKey}`);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        setCosmicData(parsed);
+        setLastFetched(parsed.generatedAt);
+      } catch (e) {
+        console.error('Failed to parse cached cosmic data:', e);
+      }
+    }
+  }, [todayKey]);
 
   // Update moon position in real-time when modal is open
   useEffect(() => {
@@ -125,7 +140,13 @@ export const TodaysCosmicEnergy = () => {
     return () => clearInterval(interval);
   }, [isOpen]);
 
-  const fetchCosmicWeather = async () => {
+  const fetchCosmicWeather = async (forceRefresh = false) => {
+    // If we have cached data and not forcing refresh, don't fetch
+    if (cosmicData && !forceRefresh) {
+      setWeekForecast(getWeekForecast());
+      return;
+    }
+    
     setIsLoading(true);
     setError(null);
 
@@ -175,7 +196,7 @@ export const TodaysCosmicEnergy = () => {
 
       const generatedTime = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
       
-      setCosmicData({
+      const newCosmicData: CosmicData = {
         date: todayStr,
         moonPhase: moonPhase.phaseName,
         moonSign: planets.moon?.sign || 'Unknown',
@@ -184,7 +205,12 @@ export const TodaysCosmicEnergy = () => {
         sunSign: planets.sun?.sign || 'Unknown',
         sunDegrees: planets.sun?.degree || 0,
         insight: data.insight
-      });
+      };
+      
+      // Save to localStorage for the day
+      localStorage.setItem(`cosmic-weather-${todayKey}`, JSON.stringify(newCosmicData));
+      
+      setCosmicData(newCosmicData);
       setLastFetched(generatedTime);
       
       // Generate week forecast
@@ -198,8 +224,17 @@ export const TodaysCosmicEnergy = () => {
   };
 
   useEffect(() => {
-    if (isOpen && !cosmicData && !isLoading) {
-      fetchCosmicWeather();
+    if (isOpen && !isLoading) {
+      // Always update week forecast and moon position when opening
+      setWeekForecast(getWeekForecast());
+      const planets = getPlanetaryPositions(new Date());
+      setCurrentMoonDegree(planets.moon?.degree || 0);
+      setCurrentMoonSign(planets.moon?.sign || 'Unknown');
+      
+      // Only fetch if no cached data
+      if (!cosmicData) {
+        fetchCosmicWeather(false);
+      }
     }
   }, [isOpen]);
 
@@ -388,18 +423,19 @@ export const TodaysCosmicEnergy = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={fetchCosmicWeather}
+                        onClick={() => fetchCosmicWeather(true)}
                         disabled={isLoading}
                         className="text-muted-foreground hover:text-foreground"
+                        title="Generate a new version of today's reading"
                       >
                         <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-                        Refresh
+                        Regenerate
                       </Button>
                     </div>
                   </div>
                   {lastFetched && (
                     <p className="text-xs text-muted-foreground">
-                      Generated at {lastFetched} • Moon position updates live
+                      Today's reading generated at {lastFetched} • <span className="italic">Preserved for the day</span> • Moon position updates live
                     </p>
                   )}
                 </CardHeader>
@@ -414,7 +450,7 @@ export const TodaysCosmicEnergy = () => {
                   {error && (
                     <div className="text-center py-8">
                       <p className="text-destructive mb-4">{error}</p>
-                      <Button variant="outline" onClick={fetchCosmicWeather}>
+                      <Button variant="outline" onClick={() => fetchCosmicWeather(true)}>
                         Try Again
                       </Button>
                     </div>
