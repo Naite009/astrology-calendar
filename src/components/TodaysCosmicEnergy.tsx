@@ -111,18 +111,56 @@ function formatTime(date: Date): string {
   return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 }
 
-// Component for the header button
+// Component for the header button with hover preview
 export const CosmicEnergyButton = ({ onClick }: { onClick: () => void }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  
+  // Get current cosmic data for preview
+  const today = new Date();
+  const moonPhase = getMoonPhase(today);
+  const planets = getPlanetaryPositions(today);
+  
+  const moonSign = planets.moon?.sign || 'Unknown';
+  const sunSign = planets.sun?.sign || 'Unknown';
+  const phaseEmoji = getMoonPhaseEmoji(moonPhase.phaseName);
+  
   return (
-    <button
-      onClick={onClick}
-      className="flex h-10 items-center gap-2 px-4 border-2 border-primary bg-primary/10 text-primary font-medium transition-all duration-200 hover:bg-primary hover:text-primary-foreground rounded-sm"
-      aria-label="Today's Cosmic Energy"
-    >
-      <span className="text-sm">
-        Click for Today's Cosmic Weather
-      </span>
-    </button>
+    <div className="relative">
+      <button
+        onClick={onClick}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className="flex h-20 items-center gap-3 px-8 border-2 border-primary bg-primary/10 text-primary font-medium transition-all duration-200 hover:bg-primary hover:text-primary-foreground rounded-md shadow-md hover:shadow-lg"
+        aria-label="Today's Cosmic Energy"
+      >
+        <span className="text-lg">
+          Click for Today's Cosmic Weather
+        </span>
+      </button>
+      
+      {/* Hover Tooltip Preview */}
+      {isHovered && (
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 bg-background border border-border rounded-lg shadow-xl p-4 min-w-[200px] animate-in fade-in zoom-in-95 duration-200">
+          <div className="flex items-center justify-center gap-4">
+            <div className="text-center">
+              <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Sun</p>
+              <p className="text-lg font-medium">
+                {ZODIAC_SYMBOLS[sunSign]} {sunSign}
+              </p>
+            </div>
+            <div className="h-8 w-px bg-border" />
+            <div className="text-center">
+              <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Moon</p>
+              <p className="text-lg font-medium">
+                <span className="mr-1">{phaseEmoji}</span>
+                ☽ {ZODIAC_SYMBOLS[moonSign]} {moonSign}
+              </p>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground text-center mt-2">{moonPhase.phaseName}</p>
+        </div>
+      )}
+    </div>
   );
 };
 
