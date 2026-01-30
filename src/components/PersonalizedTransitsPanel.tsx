@@ -6,6 +6,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { NatalChart } from '@/hooks/useNatalChart';
 import { PlanetaryPositions } from '@/lib/astrology';
 import { calculateTransitAspects, getTransitPlanetSymbol } from '@/lib/transitAspects';
+import { getPlanetHouse } from '@/lib/sacredScriptHelpers';
 import { Sparkles, Heart, Zap, ChevronDown, ChevronUp, Loader2, Info } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -200,23 +201,60 @@ const getMoonToNatalInterpretation = (natalPlanet: string, aspect: string, moonS
     `The Moon's current position ${aspect}s your natal ${natalPlanet}. Notice how this affects your emotional state.`;
 };
 
-// Get where a sign falls in the natal chart
-const getSignHouse = (sign: string, chart: NatalChart): number | null => {
-  if (!chart.houseCusps?.house1?.sign) return null;
+// Get house for a transiting planet by its sign and degree (using actual house cusps)
+const getTransitHouse = (sign: string, degree: number, chart: NatalChart): number | null => {
+  if (!chart.houseCusps) return null;
   
   const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 
                  'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
   
-  const ascSign = chart.planets.Ascendant?.sign;
-  if (!ascSign) return null;
+  // Calculate transit planet's absolute longitude (0-360)
+  const signIndex = signs.indexOf(sign);
+  if (signIndex === -1) return null;
+  const transitLongitude = signIndex * 30 + degree;
   
-  const ascIndex = signs.indexOf(ascSign);
-  const targetIndex = signs.indexOf(sign);
-  if (ascIndex === -1 || targetIndex === -1) return null;
+  // Build array of house cusp longitudes
+  const cusps: number[] = [];
+  for (let i = 1; i <= 12; i++) {
+    const cusp = chart.houseCusps[`house${i}` as keyof typeof chart.houseCusps];
+    if (cusp) {
+      const cuspSignIndex = signs.indexOf(cusp.sign);
+      if (cuspSignIndex >= 0) {
+        cusps.push(cuspSignIndex * 30 + cusp.degree + (cusp.minutes || 0) / 60);
+      }
+    }
+  }
   
-  // Whole sign house: count from Ascendant sign
-  let house = ((targetIndex - ascIndex + 12) % 12) + 1;
-  return house;
+  if (cusps.length !== 12) {
+    // Fallback to Whole Sign houses if cusps not complete
+    const ascSign = chart.planets.Ascendant?.sign;
+    if (!ascSign) return null;
+    const ascIndex = signs.indexOf(ascSign);
+    if (ascIndex === -1) return null;
+    return ((signIndex - ascIndex + 12) % 12) + 1;
+  }
+  
+  // Normalize transit longitude to 0-360
+  const normalizedTransit = ((transitLongitude % 360) + 360) % 360;
+  
+  // Find which house the transit is in
+  for (let i = 0; i < 12; i++) {
+    const cuspStart = ((cusps[i] % 360) + 360) % 360;
+    const cuspEnd = ((cusps[(i + 1) % 12] % 360) + 360) % 360;
+    
+    // Handle wrap-around at 0°/360°
+    if (cuspEnd <= cuspStart) {
+      if (normalizedTransit >= cuspStart || normalizedTransit < cuspEnd) {
+        return i + 1;
+      }
+    } else {
+      if (normalizedTransit >= cuspStart && normalizedTransit < cuspEnd) {
+        return i + 1;
+      }
+    }
+  }
+  
+  return null;
 };
 
 interface PersonalizedTransitsPanelProps {
@@ -269,8 +307,8 @@ export const PersonalizedTransitsPanel = ({
       .slice(0, 5);
   }, [transitAspects]);
 
-  // Get where Moon currently falls in their houses
-  const moonHouse = getSignHouse(moonSign, chart);
+  // Get where Moon currently falls in their houses (using actual house cusps)
+  const moonHouse = getTransitHouse(moonSign, moonDegree, chart);
   const moonHouseInterpretation = getMoonInHouseInterpretation(moonHouse);
 
   // Generate personalized AI reading
