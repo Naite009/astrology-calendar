@@ -103,23 +103,22 @@ Today is [DAY OF WEEK], ruled by [PLANET].
 ## Cosmic Kitchen: Today's Menu
 Based on the Moon in [SIGN] and today's planetary weather, here's what to nourish yourself with:
 
-**🍳 Breakfast: [Specific dish name]**
+**🍳 Breakfast: [Dish Name](https://www.google.com/search?q=dish+name+recipe)**
 *Why:* [2-3 sentences explaining the astrological reasoning - connect it to the Moon sign energy, any morning aspects, or the overall day's theme. Be specific about WHY this food matches the cosmic weather.]
-📖 [Recipe search link in format: Search "dish name recipe"]
 
-**🥗 Lunch: [Specific dish name]**
+**🥗 Lunch: [Dish Name](https://www.google.com/search?q=dish+name+recipe)**
 *Why:* [2-3 sentences explaining the astrological reasoning for this midday meal. How does it support the day's energy?]
-📖 [Recipe search link]
 
-**🍽️ Dinner: [Specific dish name]**
+**🍽️ Dinner: [Dish Name](https://www.google.com/search?q=dish+name+recipe)**
 *Why:* [2-3 sentences explaining why this evening meal complements the cosmic weather and helps integrate the day's themes.]
-📖 [Recipe search link]
 
-**🥜 Snacks: [Specific snack #1], [Snack #2], [Snack #3]**
+**🥜 Snacks:** [Snack 1](https://www.google.com/search?q=snack+recipe), [Snack 2](https://www.google.com/search?q=snack+recipe), [Snack 3](https://www.google.com/search?q=snack+recipe)
 *Why:* [Explain each snack choice - e.g., "Granola with yogurt provides the grounding Earth energy Taurus Moon craves, while the probiotics support the Virgo Sun's focus on digestive health. Dark chocolate honors Scorpio's intensity..."]
 
-**🍵 Drink of the Day: [Specific beverage]**
+**🍵 Drink of the Day: [Beverage Name](https://www.google.com/search?q=beverage+recipe)**
 *Why:* [Why this drink matches the cosmic weather - connect to element, sign, or aspects]
+
+IMPORTANT: Make all dish/food names clickable markdown links using this format: [Dish Name](https://www.google.com/search?q=dish+name+recipe) - replace spaces with + in the URL.
 
 MEAL GUIDANCE BY MOON SIGN (use these themes but ALWAYS explain WHY):
 - Aries Moon: Spicy, energizing foods. Ginger, cayenne, protein-rich. Mars rules appetite and action.
