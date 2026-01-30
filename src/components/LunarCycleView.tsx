@@ -226,6 +226,8 @@ export const LunarCycleView = ({
   const handleChartChange = (value: string) => {
     setLocalSelectedChart(value);
     onSelectChart?.(value);
+    // Clear AI insight when chart changes so a new personalized reading can be generated
+    setAiInsight(null);
   };
   
   useEffect(() => {
@@ -281,20 +283,95 @@ export const LunarCycleView = ({
   };
   
   // Fetch AI-enhanced lunar cycle insight
+  // Build natal chart context for the AI prompt
+  const buildNatalChartContext = (): string => {
+    if (!activeChart || !interpretation) return '';
+    
+    const newMoonDegree = interpretation.degree + (ZODIAC_SIGNS.indexOf(interpretation.sign) * 30);
+    const natalAspectsForPrompt = getNatalAspects();
+    
+    // Get all natal planet positions
+    const natalPositions = Object.entries(activeChart.planets)
+      .filter(([_, data]) => data)
+      .map(([planet, data]) => {
+        const planetData = data as { sign: string; degree: number; minutes?: number; isRetrograde?: boolean };
+        return `${planet}: ${Math.floor(planetData.degree)}° ${planetData.sign}${planetData.isRetrograde ? ' ℞' : ''}`;
+      })
+      .join('\n');
+    
+    // Find which house the New Moon falls in
+    let newMoonHouse = 'unknown';
+    if (activeChart.houseCusps) {
+      const cusps = activeChart.houseCusps;
+      const cuspLongitudes: number[] = [];
+      for (let i = 1; i <= 12; i++) {
+        const cusp = cusps[`house${i}` as keyof typeof cusps];
+        if (cusp) {
+          const signIndex = ZODIAC_SIGNS.indexOf(cusp.sign);
+          cuspLongitudes.push(signIndex * 30 + cusp.degree + (cusp.minutes || 0) / 60);
+        }
+      }
+      if (cuspLongitudes.length === 12) {
+        for (let i = 0; i < 12; i++) {
+          const nextI = (i + 1) % 12;
+          let start = cuspLongitudes[i];
+          let end = cuspLongitudes[nextI];
+          if (end < start) end += 360;
+          let nmDeg = newMoonDegree;
+          if (nmDeg < start) nmDeg += 360;
+          if (nmDeg >= start && nmDeg < end) {
+            newMoonHouse = `${i + 1}`;
+            break;
+          }
+        }
+      }
+    }
+    
+    const aspectsText = natalAspectsForPrompt.length > 0
+      ? natalAspectsForPrompt.map(a => `- New Moon ${a.aspect} natal ${a.planet} (orb: ${a.orb.toFixed(1)}°)`).join('\n')
+      : 'No major aspects to natal planets';
+    
+    return `
+PERSONALIZED FOR: ${activeChart.name}
+Birth Date: ${activeChart.birthDate || 'Unknown'}
+Birth Location: ${activeChart.birthLocation || 'Unknown'}
+
+NATAL CHART POSITIONS:
+${natalPositions}
+
+NEW MOON HOUSE PLACEMENT: ${newMoonHouse !== 'unknown' ? `${newMoonHouse}th House` : 'Unknown'}
+
+ASPECTS TO NATAL CHART:
+${aspectsText}
+`;
+  };
+
   const fetchLunarCycleInsight = async () => {
     if (!interpretation || aiInsight) return;
     
     setIsLoading(true);
     try {
       const keyPhasesInfo = formatKeyPhasesForPrompt();
+      const natalContext = buildNatalChartContext();
+      const isPersonalized = !!activeChart;
       
+      const personalizedInstructions = isPersonalized ? `
+This is a PERSONALIZED reading for ${activeChart?.name}. Make the entire reading specific to their natal chart:
+- Reference their natal planets and the aspects the New Moon makes to them
+- Discuss which house this New Moon falls in and what that means for their specific life areas
+- Mention any natal planets that are activated by this lunation
+- Use their name throughout the reading
+- Make the guidance personal and specific, not generic
+
+${natalContext}` : '';
+
       const { data, error } = await supabase.functions.invoke('cosmic-weather', {
         body: {
           date: newMoons?.previous.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
           moonPhase: 'New Moon',
           moonSign: interpretation.sign,
-          customPrompt: `Write a detailed NEW MOON CYCLE interpretation for the ${interpretation.sign} New Moon at ${interpretation.degree}°.
-
+          customPrompt: `Write a detailed ${isPersonalized ? 'PERSONALIZED ' : ''}NEW MOON CYCLE interpretation for the ${interpretation.sign} New Moon at ${interpretation.degree}°.
+${personalizedInstructions}
 LUNAR CYCLE CONTEXT:
 - Sign: ${interpretation.sign} (${interpretation.element} element, ${interpretation.modality} modality)
 - Degree: ${interpretation.degree}°
@@ -307,20 +384,20 @@ ${interpretation.aspects.length > 0 ? `- Major Aspects: ${interpretation.aspects
 ${keyPhasesInfo}
 
 Write in a professional astrologer's voice with these sections:
-## 🌑 This Lunar Cycle's Theme
-A 2-3 paragraph exploration of what this particular New Moon is initiating. Reference the sign, degree, and any powerful conjunctions or stelliums.
+## 🌑 ${isPersonalized ? `This Lunar Cycle for ${activeChart?.name}` : 'This Lunar Cycle\'s Theme'}
+${isPersonalized ? `A 2-3 paragraph exploration of how this ${interpretation.sign} New Moon activates ${activeChart?.name}'s natal chart. Reference the house placement and any natal aspects.` : 'A 2-3 paragraph exploration of what this particular New Moon is initiating. Reference the sign, degree, and any powerful conjunctions or stelliums.'}
 
-## ✨ Soul Intention for This Cycle
-What the soul is being asked to grow into during these 29 days. Be specific and psychological.
+## ✨ ${isPersonalized ? `${activeChart?.name}'s Soul Intention` : 'Soul Intention for This Cycle'}
+${isPersonalized ? `What ${activeChart?.name}'s soul is being asked to grow into during these 29 days, based on their natal chart activation.` : 'What the soul is being asked to grow into during these 29 days. Be specific and psychological.'}
 
-## 🎯 What to Focus On
-Bullet points of specific themes, projects, or inner work favored by this lunar energy.
+## 🎯 ${isPersonalized ? `What ${activeChart?.name} Should Focus On` : 'What to Focus On'}
+${isPersonalized ? `Specific themes, projects, or inner work for ${activeChart?.name} based on which houses and planets are activated.` : 'Bullet points of specific themes, projects, or inner work favored by this lunar energy.'}
 
-## ⚠️ What to Release
-What needs to be let go of to make space for this new energy.
+## ⚠️ ${isPersonalized ? `What ${activeChart?.name} Should Release` : 'What to Release'}
+${isPersonalized ? `What ${activeChart?.name} needs to let go of to make space for this new energy, considering their natal patterns.` : 'What needs to be let go of to make space for this new energy.'}
 
-## 🌟 Power Days This Cycle
-Use the KEY PHASE DATES provided above. For each date, give the exact date, the Moon's sign at that time, and 1-2 sentences about how to use that energy. DO NOT use placeholders like [INSERT DATE] - use the actual dates provided.
+## 🌟 Power Days This Cycle${isPersonalized ? ` for ${activeChart?.name}` : ''}
+Use the KEY PHASE DATES provided above. For each date, give the exact date, the Moon's sign at that time, and 1-2 sentences about how to use that energy${isPersonalized ? ` specifically for ${activeChart?.name}` : ''}. DO NOT use placeholders like [INSERT DATE] - use the actual dates provided.
 
 Keep the tone deep, insightful, and practically applicable.`
         }
