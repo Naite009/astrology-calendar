@@ -124,23 +124,28 @@ Create ONE complete, original recipe that embodies today's cosmic and Ayurvedic 
 **RECIPE_START**
 RECIPE_NAME: [Creative name incorporating the Moon sign or planetary theme - e.g., "Cancer Moon Comfort Kitchari" or "Mars Day Warming Dal"]
 RECIPE_TAGLINE: [One poetic line about why this recipe aligns with today's energy]
-SERVINGS: [number]
-PREP_TIME: [time]
-COOK_TIME: [time]
+SERVINGS: [number like "4" or "2-4"]
+PREP_TIME: [time like "15 minutes"]
+COOK_TIME: [time like "30 minutes"]
 MOON_SIGN: [current Moon sign symbol and name]
 ELEMENT: [Fire/Earth/Air/Water]
 INGREDIENTS:
-- [ingredient 1 with amount]
-- [ingredient 2 with amount]
-- [ingredient 3 with amount]
-- [continue for all ingredients, typically 6-12 items]
+- [ALWAYS include FULL numeric quantities - e.g., "2 cups basmati rice", "1/2 teaspoon turmeric", "3 tablespoons olive oil", "1 medium onion, diced"]
+- [NEVER write "tbsp" alone - write "2 tablespoons" or "1 tablespoon"]
+- [NEVER write "/2" - write "1/2" for half quantities]
+- [Include 6-12 ingredients with complete measurements]
 INSTRUCTIONS:
-1. [Step 1]
-2. [Step 2]
-3. [Step 3]
-- [continue for all steps]
+1. [Clear step with specific times/temperatures where relevant - e.g., "Heat oil in a large pan over medium heat for 2 minutes"]
+2. [Continue with detailed steps]
+3. [Include all steps needed to complete the dish]
 COSMIC_NOTE: [2-3 sentences explaining the astrological and Ayurvedic significance of this dish]
 **RECIPE_END**
+
+CRITICAL RECIPE FORMATTING:
+- ALL measurements MUST include numbers: "2 cups", "1 tablespoon", "1/2 teaspoon", "1/4 cup"
+- Write out measurement units fully: "tablespoon" not "tbsp", "teaspoon" not "tsp", "ounces" not "oz"
+- Use proper fractions: "1/2", "1/4", "3/4" - never just "/2" or "/4"
+- Include quantity AND unit for every ingredient: "1 medium onion" not just "onion"
 
 IMPORTANT: Make all dish/food names clickable markdown links using this format: [Dish Name](https://www.google.com/search?q=dish+name+recipe) - replace spaces with + in the URL.
 
