@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { Download, Clock, Users, Sparkles } from "lucide-react";
+import { Download, Clock, Users, Sparkles, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import html2canvas from "html2canvas";
@@ -23,29 +23,6 @@ interface CosmicRecipeCardProps {
   date: string;
 }
 
-function normalizeIngredientMeasurement(input: string): string {
-  let s = (input ?? "").trim();
-  if (!s) return s;
-
-  // Fix broken leading fractions like "/2" -> "1/2"
-  s = s.replace(/^\/(\d)\b/, "1/$1");
-
-  // If a line starts with a unit/descriptor but no number, default to 1.
-  // Examples from user report: "tablespoon ghee" -> "1 tablespoon ghee".
-  const startsWithUnit = /^(tablespoon|teaspoon|cup|cups|clove|cloves|pinch|dash)\b/i;
-  const startsWithSizeWord = /^(small|medium|large)\b/i;
-  const startsWithNumeric = /^\d+(?:[\s-]\d+)?(?:\/\d+)?\b/; // 1, 2-3, 1/2, 2 1/2
-
-  if (!startsWithNumeric.test(s) && (startsWithUnit.test(s) || startsWithSizeWord.test(s))) {
-    s = `1 ${s}`;
-  }
-
-  // If it starts with plural "cups" with no number, normalize to singular with 1.
-  s = s.replace(/^1\s+cups\b/i, "1 cup");
-
-  return s;
-}
-
 const ELEMENT_GRADIENTS: Record<string, string> = {
   Fire: "from-red-600 via-orange-500 to-amber-400",
   Earth: "from-emerald-700 via-green-600 to-lime-500",
@@ -66,6 +43,36 @@ const ELEMENT_ACCENTS: Record<string, string> = {
   Air: "text-cyan-300",
   Water: "text-indigo-300",
 };
+
+// Print-friendly colors (darker for visibility on white background)
+const ELEMENT_PRINT_COLORS: Record<string, string> = {
+  Fire: "#c2410c", // orange-700
+  Earth: "#047857", // emerald-700
+  Air: "#0e7490", // cyan-700
+  Water: "#4338ca", // indigo-700
+};
+
+function normalizeIngredientMeasurement(input: string): string {
+  let s = (input ?? "").trim();
+  if (!s) return s;
+
+  // Fix broken leading fractions like "/2" -> "1/2"
+  s = s.replace(/^\/(\d)\b/, "1/$1");
+
+  // If a line starts with a unit/descriptor but no number, default to 1.
+  const startsWithUnit = /^(tablespoon|teaspoon|cup|cups|clove|cloves|pinch|dash)\b/i;
+  const startsWithSizeWord = /^(small|medium|large)\b/i;
+  const startsWithNumeric = /^\d+(?:[\s-]\d+)?(?:\/\d+)?\b/;
+
+  if (!startsWithNumeric.test(s) && (startsWithUnit.test(s) || startsWithSizeWord.test(s))) {
+    s = `1 ${s}`;
+  }
+
+  // If it starts with plural "cups" with no number, normalize to singular with 1.
+  s = s.replace(/^1\s+cups\b/i, "1 cup");
+
+  return s;
+}
 
 export function parseRecipeFromContent(content: string): RecipeData | null {
   const recipeMatch = content.match(/\*\*RECIPE_START\*\*([\s\S]*?)\*\*RECIPE_END\*\*/);
@@ -103,6 +110,7 @@ export function parseRecipeFromContent(content: string): RecipeData | null {
 
 export const CosmicRecipeCard = ({ recipe, date }: CosmicRecipeCardProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
+  const printRef = useRef<HTMLDivElement>(null);
 
   const handleDownload = async () => {
     if (!cardRef.current) return;
@@ -126,21 +134,182 @@ export const CosmicRecipeCard = ({ recipe, date }: CosmicRecipeCardProps) => {
     }
   };
 
+  const handlePrint = () => {
+    const printColor = ELEMENT_PRINT_COLORS[recipe.element] || ELEMENT_PRINT_COLORS.Water;
+    
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>${recipe.name} - Cosmic Recipe</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { 
+            font-family: Georgia, 'Times New Roman', serif; 
+            padding: 40px; 
+            color: #1f2937;
+            line-height: 1.6;
+          }
+          .header { 
+            border-bottom: 3px solid ${printColor}; 
+            padding-bottom: 16px; 
+            margin-bottom: 24px; 
+          }
+          .element-badge {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: ${printColor};
+            margin-bottom: 8px;
+          }
+          h1 { 
+            font-size: 28px; 
+            font-weight: 500; 
+            color: #111827;
+            margin-bottom: 8px;
+          }
+          .tagline { 
+            font-style: italic; 
+            color: #6b7280; 
+            font-size: 14px;
+          }
+          .meta { 
+            display: flex; 
+            gap: 24px; 
+            margin-top: 16px; 
+            font-size: 13px;
+            color: #4b5563;
+          }
+          .content { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 32px; 
+            margin-top: 24px;
+          }
+          h2 { 
+            font-size: 14px; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            color: ${printColor}; 
+            margin-bottom: 12px;
+            font-weight: 600;
+          }
+          ul, ol { 
+            padding-left: 0; 
+            list-style: none;
+          }
+          li { 
+            margin-bottom: 8px; 
+            font-size: 13px;
+            display: flex;
+            gap: 8px;
+          }
+          .bullet { color: ${printColor}; font-weight: bold; }
+          .step-num { 
+            color: ${printColor}; 
+            font-weight: bold; 
+            min-width: 24px;
+          }
+          .cosmic-note {
+            margin-top: 32px;
+            padding: 16px;
+            border: 1px solid ${printColor};
+            border-radius: 8px;
+            background: #f9fafb;
+          }
+          .cosmic-note-label {
+            color: ${printColor};
+            font-weight: 600;
+            font-size: 13px;
+          }
+          .cosmic-note p {
+            font-style: italic;
+            font-size: 13px;
+            color: #4b5563;
+            margin-top: 4px;
+          }
+          .watermark {
+            margin-top: 32px;
+            text-align: right;
+            font-size: 11px;
+            color: #9ca3af;
+          }
+          @media print {
+            body { padding: 20px; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="element-badge">${recipe.element} Element • ${recipe.moonSign}</div>
+          <h1>${recipe.name}</h1>
+          <div class="tagline">${recipe.tagline}</div>
+          <div class="meta">
+            <span>Serves: ${recipe.servings}</span>
+            <span>Prep: ${recipe.prepTime}</span>
+            <span>Cook: ${recipe.cookTime}</span>
+          </div>
+        </div>
+        
+        <div class="content">
+          <div>
+            <h2>Ingredients</h2>
+            <ul>
+              ${recipe.ingredients.map(ing => `<li><span class="bullet">•</span><span>${normalizeIngredientMeasurement(ing)}</span></li>`).join('')}
+            </ul>
+          </div>
+          
+          <div>
+            <h2>Instructions</h2>
+            <ol>
+              ${recipe.instructions.map((step, i) => `<li><span class="step-num">${i + 1}.</span><span>${step}</span></li>`).join('')}
+            </ol>
+          </div>
+        </div>
+        
+        <div class="cosmic-note">
+          <span class="cosmic-note-label">✨ Cosmic Note</span>
+          <p>${recipe.cosmicNote}</p>
+        </div>
+        
+        <div class="watermark">astro-calendar • ${date}</div>
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.onload = () => {
+        printWindow.print();
+      };
+    } else {
+      toast({ title: "Print blocked", description: "Please allow popups to print", variant: "destructive" });
+    }
+  };
+
   const gradient = ELEMENT_GRADIENTS[recipe.element] || ELEMENT_GRADIENTS.Water;
   const border = ELEMENT_BORDERS[recipe.element] || ELEMENT_BORDERS.Water;
   const accent = ELEMENT_ACCENTS[recipe.element] || ELEMENT_ACCENTS.Water;
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <h3 className="font-serif text-lg font-medium text-foreground flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-amber-500" />
           Featured Recipe of the Day
         </h3>
-        <Button variant="outline" size="sm" onClick={handleDownload} className="gap-2">
-          <Download className="h-4 w-4" />
-          Download Card
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={handlePrint} className="gap-2">
+            <Printer className="h-4 w-4" />
+            Print
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleDownload} className="gap-2">
+            <Download className="h-4 w-4" />
+            Download
+          </Button>
+        </div>
       </div>
 
       <div
