@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers, Combine } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers, Combine, RotateCcw } from "lucide-react";
 import { ChartDecoderView } from "./ChartDecoderView";
 import { AskView } from "./AskView";
 import { MonthView } from "./MonthView";
@@ -34,7 +34,9 @@ import { RelationshipTimelineView } from "./RelationshipTimelineView";
 import { StructuralStressView } from "./StructuralStressView";
 import { CombosView } from "./CombosView";
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos";
+import { RetrogradeActivationsCalendar } from "./RetrogradeActivationsCalendar";
+
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "retrogrades";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -528,6 +530,30 @@ export const AstroCalendar = () => {
                 <Combine size={14} />
                 Combos
               </button>
+              <button
+                onClick={() => {
+                  if (userNatalChart || savedCharts.length > 0) {
+                    setViewMode("retrogrades");
+                  } else {
+                    setViewMode("charts");
+                  }
+                }}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "retrogrades"
+                    ? "bg-primary text-primary-foreground"
+                    : userNatalChart || savedCharts.length > 0
+                      ? "text-muted-foreground hover:text-foreground"
+                      : "text-muted-foreground/60 hover:text-muted-foreground"
+                }`}
+                title={
+                  userNatalChart || savedCharts.length > 0
+                    ? "Retrograde Activations"
+                    : "Add a chart to view Retrograde Activations"
+                }
+              >
+                <RotateCcw size={14} />
+                ℞ Rx
+              </button>
             </div>
 
             {userData && (
@@ -759,6 +785,12 @@ export const AstroCalendar = () => {
           <CombosView 
             savedCharts={savedCharts}
             userChart={userNatalChart}
+          />
+        )}
+        {viewMode === "retrogrades" && (
+          <RetrogradeActivationsCalendar
+            userChart={userNatalChart}
+            savedCharts={savedCharts}
           />
         )}
       </div>

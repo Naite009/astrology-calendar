@@ -554,6 +554,429 @@ export const RETROGRADE_SIGN_COMBOS: RetrogradeSignCombo[] = [
     internalExpression: "You are liberating yourself from within. Your unique genius needs time to develop privately before it can change the outer world. Trust the strange insights that come through.",
     sources: ["Steven Forrest"],
   },
+
+  // ============================================
+  // MERCURY RETROGRADE IN ALL 12 SIGNS
+  // (Happens 3x per year - key natal signatures)
+  // ============================================
+  
+  // Mercury Rx in Aries
+  {
+    planet: "Mercury",
+    sign: "Aries",
+    title: "The Internal Pioneer",
+    summary: "Mercury retrograde in Aries creates a mind that must process bold ideas internally before speaking. First impulses are reviewed and refined. The pioneer's vision develops through inner fire before external action.",
+    gifts: [
+      "Ideas that mature into bold action",
+      "Courage to think independently",
+      "Quick mind that learns to pause",
+      "Leadership insights developed privately",
+      "Decisive after internal deliberation",
+    ],
+    challenges: [
+      "Impulsive speech may need revision",
+      "Frustration with slow mental processing",
+      "May seem hesitant despite inner certainty",
+      "Anger processed mentally before expressed",
+    ],
+    internalExpression: "Your pioneering mind works best when you give bold ideas time to develop. The warrior thinker within you needs space to strategize before the charge. Your best ideas come after you've sat with them.",
+    sources: ["Steven Forrest", "Erin Sullivan"],
+  },
+  
+  // Mercury Rx in Taurus
+  {
+    planet: "Mercury",
+    sign: "Taurus",
+    title: "The Deliberate Mind",
+    summary: "Mercury retrograde in Taurus creates a mind of profound patience and practical wisdom. Thoughts crystallize slowly into lasting insights. Financial and material thinking benefits from deep internal consideration.",
+    gifts: [
+      "Thoughts that become lasting wisdom",
+      "Practical mental gifts that mature",
+      "Patient processing of complex ideas",
+      "Values clarified through reflection",
+      "Building mental structures that last",
+    ],
+    challenges: [
+      "May seem mentally slow (but thorough)",
+      "Stubbornness about reconsidering ideas",
+      "Material worries processed internally",
+      "Difficulty changing mental positions",
+    ],
+    internalExpression: "Your mind works like nature—slowly, thoroughly, producing lasting growth. Don't rush your thoughts. The wisdom that emerges from your patient mental process is worth the wait.",
+    sources: ["Liz Greene"],
+  },
+  
+  // Mercury Rx in Cancer
+  {
+    planet: "Mercury",
+    sign: "Cancer",
+    title: "The Feeling Mind",
+    summary: "Mercury retrograde in Cancer creates thinking deeply influenced by emotion and memory. The mind processes through feeling-states. Past conversations and family communication patterns resurface for healing.",
+    gifts: [
+      "Intuitive understanding of emotional nuance",
+      "Memory that serves healing",
+      "Nurturing communication style",
+      "Thinking that honors the heart",
+      "Family wisdom processed and integrated",
+    ],
+    challenges: [
+      "Emotions may cloud mental clarity",
+      "Past hurts resurface mentally",
+      "Difficulty separating thoughts from feelings",
+      "Family communication patterns need review",
+    ],
+    internalExpression: "Your mind and heart are woven together. You think through feeling. Honor the emotional intelligence that underlies your mental process. Your thoughts carry ancestral wisdom.",
+    sources: ["Chani Nicholas", "Liz Greene"],
+  },
+  
+  // Mercury Rx in Leo
+  {
+    planet: "Mercury",
+    sign: "Leo",
+    title: "The Creative Mind",
+    summary: "Mercury retrograde in Leo creates a dramatic, creative mind that develops its brilliance through internal rehearsal. Self-expression requires inner preparation. The performer's mind perfects its material privately.",
+    gifts: [
+      "Creative ideas that develop into brilliance",
+      "Dramatic communication once ready",
+      "Leadership thinking refined internally",
+      "Children's minds understood intuitively",
+      "Generous expression after inner work",
+    ],
+    challenges: [
+      "May withhold ideas seeking perfection",
+      "Pride in mental abilities needs balancing",
+      "Creative blocks require internal work",
+      "Self-expression hesitancy",
+    ],
+    internalExpression: "Your brilliant mind needs time in the spotlight's wings before the grand entrance. Don't mistake preparation for hesitation. When you finally speak, your words carry the authority of deep internal work.",
+    sources: ["Steven Forrest"],
+  },
+  
+  // Mercury Rx in Libra
+  {
+    planet: "Mercury",
+    sign: "Libra",
+    title: "The Diplomatic Mind",
+    summary: "Mercury retrograde in Libra creates a mind seeking perfect balance before speaking. Every angle is considered internally. Relationship communication is processed deeply. Justice requires careful mental deliberation.",
+    gifts: [
+      "Balanced perspectives developed privately",
+      "Diplomatic words that emerge perfectly",
+      "Relationship wisdom through reflection",
+      "Aesthetic thinking refined over time",
+      "Fair-minded conclusions after consideration",
+    ],
+    challenges: [
+      "Indecision from seeing all sides",
+      "Over-deliberating relationship issues",
+      "People-pleasing in communication",
+      "Difficulty with direct confrontation",
+    ],
+    internalExpression: "Your mind seeks harmony before expression. This isn't indecision—it's wisdom. The balanced perspective you eventually share comes from genuine consideration of all viewpoints.",
+    sources: ["Liz Greene"],
+  },
+  
+  // Mercury Rx in Scorpio
+  {
+    planet: "Mercury",
+    sign: "Scorpio",
+    title: "The Investigative Mind",
+    summary: "Mercury retrograde in Scorpio creates a penetrating, private mind that processes secrets and depth before revelation. Psychological insight develops through intense internal investigation. Trust must be earned before thoughts are shared.",
+    gifts: [
+      "Psychological penetration and insight",
+      "Research abilities that go deep",
+      "Secrets kept and processed wisely",
+      "Transformative thinking patterns",
+      "Detecting hidden truths",
+    ],
+    challenges: [
+      "Suspicious thought patterns",
+      "Difficulty sharing mental process",
+      "Obsessive thinking when unbalanced",
+      "Trust issues in communication",
+    ],
+    internalExpression: "Your mind is a detective working the deep cases. You process psychological material that others avoid. Your insights into hidden dynamics are profound—share them with those who earn your trust.",
+    sources: ["Erin Sullivan", "Liz Greene"],
+  },
+  
+  // Mercury Rx in Sagittarius
+  {
+    planet: "Mercury",
+    sign: "Sagittarius",
+    title: "The Philosophical Mind",
+    summary: "Mercury retrograde in Sagittarius (its detriment) creates a mind seeking big-picture truth through internal exploration. Beliefs are questioned and refined privately. The teacher's wisdom develops through inner journeys.",
+    gifts: [
+      "Philosophical insights developed deeply",
+      "Teaching from genuine inner understanding",
+      "Cross-cultural wisdom synthesized internally",
+      "Optimistic thinking refined by reflection",
+      "Truth-seeking that questions everything",
+    ],
+    challenges: [
+      "May preach before processing",
+      "Restlessness with detailed thinking",
+      "Beliefs need constant inner review",
+      "Exaggeration when not grounded",
+    ],
+    internalExpression: "Your mind ranges far and wide on the inner planes. The greatest truths you teach come from journeys taken in contemplation. Question your beliefs internally before sharing them as wisdom.",
+    sources: ["Steven Forrest"],
+  },
+  
+  // Mercury Rx in Capricorn
+  {
+    planet: "Mercury",
+    sign: "Capricorn",
+    title: "The Strategic Mind",
+    summary: "Mercury retrograde in Capricorn creates a mind of long-term strategic thinking. Plans mature through patient internal development. Authority is earned through demonstrated mental mastery.",
+    gifts: [
+      "Strategic planning refined over time",
+      "Business acumen through reflection",
+      "Mental authority earned privately",
+      "Practical wisdom that matures",
+      "Long-term thinking abilities",
+    ],
+    challenges: [
+      "May seem mentally rigid",
+      "Pessimistic thought patterns",
+      "Difficulty with spontaneous expression",
+      "Self-criticism about mental abilities",
+    ],
+    internalExpression: "Your mind builds mental structures designed to last. Don't rush your strategic thinking. The plans you develop through patient internal work become lasting achievements.",
+    sources: ["Liz Greene"],
+  },
+  
+  // Mercury Rx in Aquarius
+  {
+    planet: "Mercury",
+    sign: "Aquarius",
+    title: "The Visionary Mind",
+    summary: "Mercury retrograde in Aquarius creates a mind processing revolutionary ideas internally before sharing with the collective. Original thinking develops through inner liberation from conventional thought.",
+    gifts: [
+      "Original ideas that develop privately",
+      "Humanitarian vision refined internally",
+      "Genius insights that emerge unexpectedly",
+      "Technology understanding through reflection",
+      "Future-oriented thinking",
+    ],
+    challenges: [
+      "Ideas may seem too radical",
+      "Difficulty with emotional communication",
+      "Detachment in mental processing",
+      "Rebellion against conventional thinking",
+    ],
+    internalExpression: "Your mind operates on frequencies others don't receive. The revolutionary ideas that come to you need time to develop before the world is ready. You are downloading the future privately.",
+    sources: ["Steven Forrest"],
+  },
+
+  // ============================================
+  // ADDITIONAL KEY RETROGRADE SIGNATURES
+  // ============================================
+
+  // Venus Rx in Taurus (home sign)
+  {
+    planet: "Venus",
+    sign: "Taurus",
+    title: "The Inner Sensualist",
+    summary: "Venus retrograde in its home sign of Taurus creates deep, internal cultivation of pleasure and value. Self-worth is built through patient internal work. Abundance consciousness develops from within.",
+    gifts: [
+      "Deep appreciation of physical beauty",
+      "Self-worth independent of possessions",
+      "Sensual wisdom through reflection",
+      "Values clarified by inner work",
+      "Lasting aesthetic sense",
+    ],
+    challenges: [
+      "May hoard pleasure or resources",
+      "Slow to share intimacy",
+      "Material security concerns internalized",
+      "Stubbornness about changing values",
+    ],
+    internalExpression: "Your relationship with pleasure, beauty, and abundance is an internal cultivation. You are building self-worth from the inside out. The security you seek must be found within before it manifests externally.",
+    sources: ["Erin Sullivan"],
+  },
+
+  // Venus Rx in Pisces (exalted)
+  {
+    planet: "Venus",
+    sign: "Pisces",
+    title: "The Divine Romantic",
+    summary: "Venus retrograde in its exaltation creates a soul seeking transcendent love through inner mystical experience. Romance becomes a spiritual path. Compassion and artistic vision develop through deep internal work.",
+    gifts: [
+      "Unconditional love capacity",
+      "Artistic vision from inner depths",
+      "Compassion developed through reflection",
+      "Romantic idealism tempered by wisdom",
+      "Healing presence in relationships",
+    ],
+    challenges: [
+      "Idealization of partners",
+      "Sacrifice patterns in love",
+      "Boundaries in relationships",
+      "Escapism through romance",
+    ],
+    internalExpression: "Love for you is a path to the divine. Your capacity for unconditional love develops through inner spiritual work. The partner you seek is partly a reflection of the beloved within.",
+    sources: ["Liz Greene", "Chani Nicholas"],
+  },
+
+  // Saturn Rx in Cancer (detriment)
+  {
+    planet: "Saturn",
+    sign: "Cancer",
+    title: "The Inner Parent",
+    summary: "Saturn retrograde in Cancer (its detriment) creates deep internal work around family, home, and emotional security. The inner parent must be healed and reconstructed. Emotional authority develops through private mastery.",
+    gifts: [
+      "Emotional wisdom through inner work",
+      "Creating home as sanctuary",
+      "Healing ancestral patterns",
+      "Nurturing authority",
+      "Emotional boundaries from inner knowing",
+    ],
+    challenges: [
+      "Difficulty feeling emotionally safe",
+      "Father/authority wounds internalized",
+      "Fear of vulnerability",
+      "Past family patterns resurface",
+    ],
+    internalExpression: "You are re-parenting yourself from the inside. The emotional security you seek cannot come from external family structures—it must be built within. You carry ancestral authority to heal.",
+    sources: ["Liz Greene", "Steven Forrest"],
+  },
+
+  // Saturn Rx in Libra (exalted)
+  {
+    planet: "Saturn",
+    sign: "Libra",
+    title: "The Relationship Master",
+    summary: "Saturn retrograde in its exaltation creates mastery of relationship dynamics through internal work. Commitment wisdom develops privately. Justice and fairness become internal principles before external action.",
+    gifts: [
+      "Relationship wisdom earned through reflection",
+      "Fair dealing as internal principle",
+      "Commitment after careful consideration",
+      "Diplomatic mastery through inner work",
+      "Partnership structures built to last",
+    ],
+    challenges: [
+      "May delay relationships seeking perfection",
+      "Judgment of partners and self",
+      "Fear of unfair treatment",
+      "Over-responsibility in partnerships",
+    ],
+    internalExpression: "You are mastering the art of relationship from within. The balance and fairness you seek in partnerships must first be found in your relationship with yourself. Your commitment is earned, not given lightly.",
+    sources: ["Erin Sullivan"],
+  },
+
+  // Mars Rx in Libra (detriment)
+  {
+    planet: "Mars",
+    sign: "Libra",
+    title: "The Peaceful Warrior",
+    summary: "Mars retrograde in Libra (its detriment) creates a soul learning to balance assertion with harmony. Anger is processed through relationship dynamics. The warrior must serve justice rather than personal victory.",
+    gifts: [
+      "Fighting for fairness, not ego",
+      "Strategic assertion through partnership",
+      "Anger channeled into advocacy",
+      "Diplomatic action",
+      "Relationship as path to strength",
+    ],
+    challenges: [
+      "Passive-aggressive tendencies",
+      "Difficulty with direct confrontation",
+      "Others' needs before own",
+      "Anger suppressed for harmony",
+    ],
+    internalExpression: "Your warrior energy serves balance and justice. You are learning that true strength includes knowing when NOT to fight. Your power develops through relationship rather than against it.",
+    sources: ["Liz Greene"],
+  },
+
+  // Mars Rx in Capricorn (exalted)
+  {
+    planet: "Mars",
+    sign: "Capricorn",
+    title: "The Strategic Warrior",
+    summary: "Mars retrograde in its exaltation creates strategic, patient power that builds through internal discipline. Ambition is refined through private mastery. Authority is earned through demonstrated internal strength.",
+    gifts: [
+      "Strategic patience and timing",
+      "Ambition refined by inner work",
+      "Physical discipline developed privately",
+      "Authority through demonstrated mastery",
+      "Endurance and perseverance",
+    ],
+    challenges: [
+      "May suppress anger for appearances",
+      "Workaholism as anger outlet",
+      "Fear of losing control",
+      "Delayed satisfaction in achievement",
+    ],
+    internalExpression: "Your power is strategic and patient. You are building strength through internal discipline before external demonstration. The achievements that come will be lasting because they're built on inner mastery.",
+    sources: ["Steven Forrest"],
+  },
+
+  // Jupiter Rx in Cancer (exalted)
+  {
+    planet: "Jupiter",
+    sign: "Cancer",
+    title: "The Nurturing Philosopher",
+    summary: "Jupiter retrograde in its exaltation creates abundant wisdom about home, family, and emotional security. Growth happens through nurturing and being nurtured. Faith develops through connection to ancestry.",
+    gifts: [
+      "Abundant home and family life",
+      "Emotional generosity",
+      "Wisdom about nurturing others",
+      "Connection to ancestral blessings",
+      "Faith rooted in belonging",
+    ],
+    challenges: [
+      "Over-attachment to family",
+      "Smothering with good intentions",
+      "Expecting too much from home life",
+      "Past family patterns to heal",
+    ],
+    internalExpression: "Your abundance flows through emotional connections. Growth comes through creating and receiving nurture. Your faith is connected to ancestral wisdom and the feeling of truly belonging.",
+    sources: ["Chani Nicholas"],
+  },
+
+  // Jupiter Rx in Leo
+  {
+    planet: "Jupiter",
+    sign: "Leo",
+    title: "The Inner King/Queen",
+    summary: "Jupiter retrograde in Leo creates magnificent inner confidence that develops before external recognition. Creative vision matures privately. Leadership and generosity emerge from genuine inner authority.",
+    gifts: [
+      "Creative confidence developed internally",
+      "Generous heart refined by reflection",
+      "Leadership from inner authority",
+      "Children and creativity blessed",
+      "Joy cultivated from within",
+    ],
+    challenges: [
+      "Pride needs internal balance",
+      "Creative vision may stay hidden",
+      "Recognition comes slowly",
+      "Drama around self-expression",
+    ],
+    internalExpression: "Your magnificence develops on the inner stage first. The creative confidence and generous leadership you're meant to express comes from genuine inner royalty, not external validation.",
+    sources: ["Steven Forrest"],
+  },
+
+  // Chiron Rx in Pisces
+  {
+    planet: "Chiron",
+    sign: "Pisces",
+    title: "The Spiritual Healer",
+    summary: "Chiron retrograde in Pisces creates a profound healer whose gifts develop through private spiritual suffering and transcendence. The wound becomes a portal to the divine. Compassion is earned through inner journey.",
+    gifts: [
+      "Healing through spiritual presence",
+      "Compassion without conditions",
+      "Artistic expression as healing",
+      "Dissolving boundaries that imprison",
+      "Serving the collective unconscious",
+    ],
+    challenges: [
+      "Absorbing collective pain",
+      "Spiritual bypassing the wound",
+      "Martyr patterns",
+      "Addiction as escape from pain",
+    ],
+    internalExpression: "Your wound is a doorway to the infinite. The healing you bring others comes from having navigated your own inner ocean of suffering. You are learning that the wound and the gift are one.",
+    sources: ["Liz Greene", "Erin Sullivan"],
+  }
 ];
 
 // Helper function to find retrograde combo by planet and sign
