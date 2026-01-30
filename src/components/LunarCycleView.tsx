@@ -488,7 +488,7 @@ Keep the tone deep, insightful, and practically applicable.`
       )}
 
       {/* Lunar Cycle Header */}
-      <Card className={`${ELEMENT_BG[interpretation.element]} border-2`}>
+      <Card className="bg-background border">
         <CardHeader className="pb-2">
           <CardTitle className="font-serif text-2xl font-light flex items-center gap-3">
             <span className="text-4xl">🌑</span>
