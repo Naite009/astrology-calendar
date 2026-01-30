@@ -99,9 +99,27 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
 
   const toggleFactor = (factor: string) => {
     setSelectedFactors(prev => {
+      // If clicking the same factor, remove it
       if (prev.includes(factor)) {
         return prev.filter(f => f !== factor);
       }
+      
+      // Check if this is a house - a planet can only be in one house at a time
+      const isHouse = HOUSES.includes(factor);
+      if (isHouse) {
+        // Remove any previously selected house before adding the new one
+        const withoutOtherHouses = prev.filter(f => !HOUSES.includes(f));
+        return [...withoutOtherHouses, factor];
+      }
+      
+      // Check if this is a sign - a planet can only be in one sign at a time
+      const isSign = SIGNS.includes(factor);
+      if (isSign) {
+        // Remove any previously selected sign before adding the new one
+        const withoutOtherSigns = prev.filter(f => !SIGNS.includes(f));
+        return [...withoutOtherSigns, factor];
+      }
+      
       return [...prev, factor];
     });
     // Clear category when selecting factors
