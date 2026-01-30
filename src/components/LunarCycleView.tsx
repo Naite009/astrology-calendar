@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Moon, Sparkles, Calendar, Target, Eye, Heart, Briefcase, Zap, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { Moon, Sparkles, Calendar, Target, Eye, Heart, Briefcase, Zap, ChevronDown, ChevronUp, Loader2, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { getPlanetaryPositions, getMoonPhase } from "@/lib/astrology";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import { NatalChart } from "@/hooks/useNatalChart";
+import { getSignLunationData, SignLunationData } from "@/lib/signLunationData";
 
 const ZODIAC_SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
 
@@ -205,8 +206,11 @@ export const LunarCycleView = ({
   const [keyPhases, setKeyPhases] = useState<KeyPhaseDates | null>(null);
   const [localSelectedChart, setLocalSelectedChart] = useState(selectedChartId);
   const [sectionsOpen, setSectionsOpen] = useState<Record<string, boolean>>({
-    theme: true,
-    intentions: true,
+    expressions: true,
+    themes: true,
+    cycleDates: true,
+    theme: false,
+    intentions: false,
     aspects: false,
     chart: false,
     phases: false
@@ -258,6 +262,9 @@ export const LunarCycleView = ({
   // Get current moon phase
   const currentPhase = getMoonPhase(today);
   const phaseGuidance = PHASE_GUIDANCE[currentPhase.phaseName] || PHASE_GUIDANCE['New Moon'];
+  
+  // Get sign-specific lunation data
+  const signLunationData = interpretation ? getSignLunationData(interpretation.sign) : null;
   
   // Format key phase dates for the AI prompt
   const formatKeyPhasesForPrompt = (): string => {
@@ -537,6 +544,208 @@ Keep the tone deep, insightful, and practically applicable.`
           </div>
         </CardContent>
       </Card>
+
+      {/* Sign Expressions & Shadow */}
+      {signLunationData && (
+        <Collapsible open={sectionsOpen.expressions} onOpenChange={() => toggleSection('expressions')}>
+          <Card className="bg-background border">
+            <CollapsibleTrigger asChild>
+              <CardHeader className="cursor-pointer hover:bg-secondary/30 transition-colors">
+                <CardTitle className="font-serif text-lg font-light flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <span className="text-xl">{ZODIAC_SYMBOLS[interpretation.sign]}</span>
+                    {interpretation.sign} Expressions
+                  </span>
+                  {sectionsOpen.expressions ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                </CardTitle>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="space-y-4">
+                {/* Overview */}
+                <p className="text-foreground/90 leading-relaxed">{signLunationData.overview}</p>
+                <p className="text-sm text-muted-foreground italic">{signLunationData.seedGuidance}</p>
+                
+                {/* Ruler Note if exists */}
+                {signLunationData.rulerNote && (
+                  <div className="p-3 bg-secondary/50 rounded-lg border border-border">
+                    <p className="text-sm text-foreground/90">{signLunationData.rulerNote}</p>
+                  </div>
+                )}
+                
+                {/* Expressions */}
+                <div>
+                  <h4 className="font-medium mb-2 flex items-center gap-2 text-sm">
+                    <Sparkles className="h-4 w-4 text-primary" /> {interpretation.sign} Qualities
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {signLunationData.expressions.map((word, i) => (
+                      <Badge key={i} variant="secondary" className="text-xs">
+                        {word}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Shadow */}
+                <div>
+                  <h4 className="font-medium mb-2 flex items-center gap-2 text-sm">
+                    <AlertTriangle className="h-4 w-4 text-muted-foreground" /> When Unbalanced
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {signLunationData.shadow.map((word, i) => (
+                      <Badge key={i} variant="outline" className="text-xs text-muted-foreground">
+                        {word}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Intention Words */}
+                <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
+                  <h4 className="font-medium mb-2 text-sm text-primary">
+                    ✍️ Use These Words When Writing Intentions
+                  </h4>
+                  <p className="text-sm text-foreground/80 italic">
+                    {signLunationData.intentionWords.join(' • ')}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {interpretation.sign} asks for clear language and practical support. Also saying "no" to what doesn't matter so you can say "yes" to what does.
+                  </p>
+                </div>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+      )}
+
+      {/* Themes of This Lunation */}
+      {signLunationData && signLunationData.themes.length > 0 && (
+        <Collapsible open={sectionsOpen.themes} onOpenChange={() => toggleSection('themes')}>
+          <Card className="bg-background border">
+            <CollapsibleTrigger asChild>
+              <CardHeader className="cursor-pointer hover:bg-secondary/30 transition-colors">
+                <CardTitle className="font-serif text-lg font-light flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Target className="h-5 w-5 text-primary" />
+                    Themes of This {interpretation.sign} New Moon
+                  </span>
+                  {sectionsOpen.themes ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                </CardTitle>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="space-y-4">
+                {signLunationData.themes.map((theme, i) => (
+                  <div key={i} className="p-4 bg-secondary/30 rounded-lg">
+                    <h4 className="font-medium text-foreground mb-2">{theme.title}</h4>
+                    <p className="text-sm text-foreground/80">{theme.description}</p>
+                  </div>
+                ))}
+                <p className="text-sm text-muted-foreground italic">
+                  Begin with integrity, plant seeds step by step, trust that you don't need to know the whole plan yet — what is no longer working is meant to dissolve.
+                </p>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+      )}
+
+      {/* Lunation Cycle Dates */}
+      {keyPhases && (
+        <Collapsible open={sectionsOpen.cycleDates} onOpenChange={() => toggleSection('cycleDates')}>
+          <Card className="bg-background border">
+            <CollapsibleTrigger asChild>
+              <CardHeader className="cursor-pointer hover:bg-secondary/30 transition-colors">
+                <CardTitle className="font-serif text-lg font-light flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-primary" />
+                    {interpretation.sign} Lunation Cycle
+                  </span>
+                  {sectionsOpen.cycleDates ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                </CardTitle>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent>
+                <div className="space-y-3">
+                  {/* New Moon */}
+                  <div className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg">
+                    <span className="text-2xl">🌑</span>
+                    <div className="flex-1">
+                      <p className="font-medium">New Moon</p>
+                      <p className="text-sm text-muted-foreground">
+                        {newMoons?.previous.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                      </p>
+                    </div>
+                    <Badge>{interpretation.degree}° {interpretation.sign}</Badge>
+                  </div>
+                  
+                  {/* First Quarter */}
+                  {keyPhases.firstQuarter && (
+                    <div className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg">
+                      <span className="text-2xl">🌓</span>
+                      <div className="flex-1">
+                        <p className="font-medium">First Quarter Moon</p>
+                        <p className="text-sm text-muted-foreground">
+                          {keyPhases.firstQuarter.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                        </p>
+                      </div>
+                      <Badge variant="secondary">{keyPhases.firstQuarter.sign}</Badge>
+                    </div>
+                  )}
+                  
+                  {/* Full Moon */}
+                  {keyPhases.fullMoon && (
+                    <div className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg">
+                      <span className="text-2xl">🌕</span>
+                      <div className="flex-1">
+                        <p className="font-medium">Full Moon</p>
+                        <p className="text-sm text-muted-foreground">
+                          {keyPhases.fullMoon.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                        </p>
+                      </div>
+                      <Badge variant="secondary">{keyPhases.fullMoon.sign}</Badge>
+                    </div>
+                  )}
+                  
+                  {/* Last Quarter */}
+                  {keyPhases.lastQuarter && (
+                    <div className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg">
+                      <span className="text-2xl">🌗</span>
+                      <div className="flex-1">
+                        <p className="font-medium">Last Quarter Moon</p>
+                        <p className="text-sm text-muted-foreground">
+                          {keyPhases.lastQuarter.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                        </p>
+                      </div>
+                      <Badge variant="secondary">{keyPhases.lastQuarter.sign}</Badge>
+                    </div>
+                  )}
+                  
+                  {/* Next New Moon */}
+                  {newMoons?.next && (
+                    <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg border border-primary/20">
+                      <span className="text-2xl">🌑</span>
+                      <div className="flex-1">
+                        <p className="font-medium">Next New Moon</p>
+                        <p className="text-sm text-muted-foreground">
+                          {newMoons.next.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                        </p>
+                      </div>
+                      <Badge variant="outline">{ZODIAC_SIGNS[Math.floor(((newMoons.next.longitude % 360) + 360) % 360 / 30)]}</Badge>
+                    </div>
+                  )}
+                </div>
+                
+                <p className="text-xs text-muted-foreground mt-4">
+                  Look to see which house contains {interpretation.degree}° {interpretation.sign} in your chart. This house shows where these themes surface for you.
+                </p>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+      )}
       
       {/* Current Phase Guidance */}
       <Card className="border-primary/20">
