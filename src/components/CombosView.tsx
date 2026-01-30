@@ -630,30 +630,42 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
               )}
             </div>
             
-            {/* Chart Retrograde Planets Display - auto-detected from chart */}
-            {selectedChart && retrogradePlanets.size > 0 && (
-              <div className="mt-4 pt-4 border-t border-primary/20">
-                <div className="flex flex-wrap items-start gap-4">
-                  <span className="text-xs font-medium text-muted-foreground">Retrograde in chart:</span>
-                  <div className="flex flex-wrap gap-2">
-                    {Array.from(retrogradePlanets.entries()).map(([planet, data]) => (
-                      <Badge 
-                        key={planet} 
-                        variant="secondary" 
-                        className="text-xs bg-warning/20 text-warning"
-                      >
-                        <RotateCcw className="h-3 w-3 mr-1" />
-                        {getPlanetSymbol(planet)} {planet} ℞ in {SIGN_SYMBOLS[data.sign]} {data.sign}
-                        {data.house && ` (${data.house}${data.house === 1 ? 'st' : data.house === 2 ? 'nd' : data.house === 3 ? 'rd' : 'th'} House)`}
-                      </Badge>
-                    ))}
+            {/* Chart Retrograde Planets Display - auto-detected from chart (major planets only) */}
+            {selectedChart && retrogradePlanets.size > 0 && (() => {
+              // Filter to only major planets, nodes, and Chiron
+              const MAJOR_RETROGRADE_BODIES = [
+                'Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 
+                'Uranus', 'Neptune', 'Pluto', 'North Node', 'South Node', 'Chiron'
+              ];
+              const filteredRetrogrades = Array.from(retrogradePlanets.entries())
+                .filter(([planet]) => MAJOR_RETROGRADE_BODIES.includes(planet));
+              
+              if (filteredRetrogrades.length === 0) return null;
+              
+              return (
+                <div className="mt-4 pt-4 border-t border-primary/20">
+                  <div className="flex flex-wrap items-start gap-4">
+                    <span className="text-xs font-medium text-muted-foreground">Retrograde in chart:</span>
+                    <div className="flex flex-wrap gap-2">
+                      {filteredRetrogrades.map(([planet, data]) => (
+                        <Badge 
+                          key={planet} 
+                          variant="secondary" 
+                          className="text-xs bg-warning/20 text-warning"
+                        >
+                          <RotateCcw className="h-3 w-3 mr-1" />
+                          {getPlanetSymbol(planet)} {planet} ℞ in {SIGN_SYMBOLS[data.sign]} {data.sign}
+                          {data.house && ` (${data.house}${data.house === 1 ? 'st' : data.house === 2 ? 'nd' : data.house === 3 ? 'rd' : 'th'} House)`}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    ℞ Retrograde planets express their energy more internally. Combos will show enhanced interpretations.
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  ℞ Retrograde planets express their energy more internally. Combos will show enhanced interpretations.
-                </p>
-              </div>
-            )}
+              );
+            })()}
           </CardContent>
         </Card>
       )}
