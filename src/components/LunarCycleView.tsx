@@ -1037,6 +1037,43 @@ Keep the tone deep, insightful, and practically applicable.`
             end.setDate(end.getDate() - 1);
             return end;
           })()}
+          natalContext={{
+            natalPlanets: Object.entries(activeChart.planets)
+              .filter(([_, data]) => data)
+              .map(([planet, data]) => {
+                const planetData = data as { sign: string; degree: number };
+                return `${planet}: ${Math.floor(planetData.degree)}° ${planetData.sign}`;
+              })
+              .join(', '),
+            newMoonHouse: (() => {
+              if (!activeChart.houseCusps) return undefined;
+              const newMoonDegree = interpretation.degree + (ZODIAC_SIGNS.indexOf(interpretation.sign) * 30);
+              const cusps = activeChart.houseCusps;
+              const cuspLongitudes: number[] = [];
+              for (let i = 1; i <= 12; i++) {
+                const cusp = cusps[`house${i}` as keyof typeof cusps];
+                if (cusp) {
+                  const signIndex = ZODIAC_SIGNS.indexOf(cusp.sign);
+                  cuspLongitudes.push(signIndex * 30 + cusp.degree + (cusp.minutes || 0) / 60);
+                }
+              }
+              if (cuspLongitudes.length === 12) {
+                for (let i = 0; i < 12; i++) {
+                  const nextI = (i + 1) % 12;
+                  let start = cuspLongitudes[i];
+                  let end = cuspLongitudes[nextI];
+                  if (end < start) end += 360;
+                  let nmDeg = newMoonDegree;
+                  if (nmDeg < start) nmDeg += 360;
+                  if (nmDeg >= start && nmDeg < end) return `${i + 1}`;
+                }
+              }
+              return undefined;
+            })(),
+            natalAspects: natalAspects.length > 0 
+              ? natalAspects.map(a => `${a.aspect} ${a.planet}`).join(', ') 
+              : undefined
+          }}
         />
       )}
       

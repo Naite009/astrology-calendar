@@ -1,9 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { 
   Moon, 
   Sparkles, 
-  ChevronDown, 
-  ChevronUp, 
   Save, 
   History, 
   Loader2,
@@ -11,17 +9,25 @@ import {
   Eye,
   Zap,
   Target,
-  RefreshCw
+  RefreshCw,
+  Wand2,
+  BookOpen,
+  ChevronRight,
+  ChevronLeft,
+  AlertCircle
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLunarJournal, LunarJournalEntry } from "@/hooks/useLunarJournal";
 import { SignLunationData } from "@/lib/signLunationData";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import ReactMarkdown from "react-markdown";
 
 interface KeyPhaseDates {
   firstQuarter: { date: Date; sign: string } | null;
@@ -39,45 +45,48 @@ interface LunarWorkbookSectionProps {
   signData: SignLunationData | null;
   balsamicStart: Date;
   balsamicEnd: Date;
+  natalContext?: {
+    natalPlanets?: string;
+    newMoonHouse?: string;
+    natalAspects?: string;
+  };
 }
 
-const PHASE_INFO = {
+const PHASE_CONFIG = {
   newMoon: {
     emoji: "🌑",
     title: "New Moon",
     subtitle: "Planting Seeds",
     description: "At the New Moon you are planting seeds in the dark, fertile soil. Your soul wants something to grow. It's a quiet, inward time when the sun (our divine masculine) and the moon (our divine feminine) come together to create new life.",
-    color: "text-primary"
   },
   firstQuarter: {
     emoji: "🌓",
     title: "First Quarter",
     subtitle: "Taking Action",
     description: "At the First Quarter Moon plans are underway. We feel the waxing/rising/yang energy. It's a busy time. We're feeling an internal PUSH to grow. You're getting feedback from the world and overcoming obstacles.",
-    color: "text-amber-500"
   },
   fullMoon: {
     emoji: "🌕",
     title: "Full Moon",
     subtitle: "Illumination",
     description: "At the Full Moon, the fruit is ripe. There's lots of LIGHT in the sky to see what's going on. The energy is moving quickly and things will naturally come to a head. It's the time for gratitude and releasing what's not needed.",
-    color: "text-yellow-400"
   },
   lastQuarter: {
     emoji: "🌗",
     title: "Last Quarter",
     subtitle: "Letting Go",
     description: "At the Last Quarter Moon you're tying up loose ends, finishing things, cleaning up 'energy leaks'. You're reflecting on the cycle and what was learned. It's a good time for letting go and breaking negative patterns.",
-    color: "text-purple-500"
   },
   balsamic: {
     emoji: "🌘",
     title: "Balsamic Moon",
     subtitle: "Rest & Renewal",
     description: "The Dark Moon/Balsamic Moon is a time for quiet, rest and contemplation. Empty your mind, slow down and open to guidance. Your energy is lower. Honor this dark time. We're moving back towards the regenerative dark.",
-    color: "text-muted-foreground"
   }
 };
+
+type PhaseKey = keyof typeof PHASE_CONFIG;
+const PHASE_ORDER: PhaseKey[] = ['newMoon', 'firstQuarter', 'fullMoon', 'lastQuarter', 'balsamic'];
 
 interface JournalFieldProps {
   label: string;
@@ -102,26 +111,402 @@ const JournalField = ({ label, placeholder, value, onChange, icon }: JournalFiel
   </div>
 );
 
-const PhaseSection = ({ 
-  phase, 
-  journal, 
-  updateField,
-  phaseDate,
-  signData
+// Guided mode step component
+const GuidedStep = ({ 
+  stepNumber, 
+  totalSteps, 
+  children, 
+  onNext, 
+  onPrev, 
+  isFirst, 
+  isLast 
 }: { 
-  phase: keyof typeof PHASE_INFO; 
-  journal: LunarJournalEntry | null;
-  updateField: (field: keyof LunarJournalEntry, value: string) => void;
-  phaseDate?: Date;
-  signData: SignLunationData | null;
-}) => {
-  const info = PHASE_INFO[phase];
+  stepNumber: number; 
+  totalSteps: number; 
+  children: React.ReactNode; 
+  onNext: () => void; 
+  onPrev: () => void; 
+  isFirst: boolean; 
+  isLast: boolean; 
+}) => (
+  <div className="space-y-4">
+    <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+      <span>Step {stepNumber} of {totalSteps}</span>
+      <div className="flex gap-1">
+        {Array.from({ length: totalSteps }).map((_, i) => (
+          <div 
+            key={i} 
+            className={`w-2 h-2 rounded-full ${i < stepNumber ? 'bg-primary' : 'bg-muted'}`} 
+          />
+        ))}
+      </div>
+    </div>
+    {children}
+    <div className="flex justify-between pt-4">
+      <Button variant="outline" onClick={onPrev} disabled={isFirst}>
+        <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+      </Button>
+      <Button onClick={onNext} disabled={isLast}>
+        {isLast ? 'Complete' : 'Next'} <ChevronRight className="h-4 w-4 ml-1" />
+      </Button>
+    </div>
+  </div>
+);
+
+// Card section for tarot/oracle
+const CardDrawSection = ({ 
+  cardType,
+  cardName,
+  deckName,
+  notes,
+  interpretation,
+  onCardNameChange,
+  onDeckNameChange,
+  onNotesChange,
+  onInterpret,
+  isInterpreting,
+  cycleSign,
+  phaseName
+}: {
+  cardType: 'tarot' | 'oracle';
+  cardName?: string;
+  deckName?: string;
+  notes?: string;
+  interpretation?: string;
+  onCardNameChange: (v: string) => void;
+  onDeckNameChange?: (v: string) => void;
+  onNotesChange: (v: string) => void;
+  onInterpret: () => void;
+  isInterpreting: boolean;
+  cycleSign: string;
+  phaseName: string;
+}) => (
+  <div className="space-y-4 p-4 bg-secondary/20 rounded-lg border border-border/50">
+    <div className="flex items-center gap-2">
+      <span className="text-2xl">{cardType === 'tarot' ? '🃏' : '✨'}</span>
+      <h4 className="font-medium">{cardType === 'tarot' ? 'Tarot Card' : 'Oracle Card'}</h4>
+    </div>
+    
+    <div className="grid gap-3">
+      <div className="space-y-1">
+        <label className="text-sm text-muted-foreground">Card Name</label>
+        <Input 
+          placeholder={cardType === 'tarot' ? "e.g., The Star, Three of Cups" : "e.g., Transformation, Inner Wisdom"}
+          value={cardName || ''}
+          onChange={(e) => onCardNameChange(e.target.value)}
+        />
+      </div>
+      
+      {cardType === 'oracle' && onDeckNameChange && (
+        <div className="space-y-1">
+          <label className="text-sm text-muted-foreground">Deck Name (optional)</label>
+          <Input 
+            placeholder="e.g., Moonology, Work Your Light"
+            value={deckName || ''}
+            onChange={(e) => onDeckNameChange(e.target.value)}
+          />
+        </div>
+      )}
+      
+      <div className="space-y-1">
+        <label className="text-sm text-muted-foreground">Your Initial Thoughts</label>
+        <Textarea 
+          placeholder="What did you feel when you drew this card? What stood out?"
+          value={notes || ''}
+          onChange={(e) => onNotesChange(e.target.value)}
+          className="min-h-[80px]"
+        />
+      </div>
+      
+      {cardName && (
+        <Button 
+          variant="outline" 
+          onClick={onInterpret}
+          disabled={isInterpreting || !cardName}
+          className="w-full"
+        >
+          {isInterpreting ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Interpreting...
+            </>
+          ) : (
+            <>
+              <Wand2 className="h-4 w-4 mr-2" />
+              Get AI Interpretation
+            </>
+          )}
+        </Button>
+      )}
+      
+      {interpretation && (
+        <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
+          <p className="text-sm font-medium text-primary mb-2">✨ Card Interpretation</p>
+          <div className="prose prose-sm dark:prose-invert">
+            <ReactMarkdown>{interpretation}</ReactMarkdown>
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+// Phase prompt banner
+const PhasePromptBanner = ({ phase, phaseDate, isActive }: { phase: PhaseKey; phaseDate?: Date; isActive: boolean }) => {
+  if (!isActive) return null;
   
-  const renderFields = () => {
+  const config = PHASE_CONFIG[phase];
+  const dateStr = phaseDate?.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  
+  return (
+    <div className="flex items-center gap-3 p-3 bg-primary/10 border border-primary/30 rounded-lg mb-4">
+      <AlertCircle className="h-5 w-5 text-primary flex-shrink-0" />
+      <div>
+        <p className="font-medium text-sm">It's time to journal for the {config.title}!</p>
+        <p className="text-xs text-muted-foreground">
+          {dateStr ? `${config.title} was ${dateStr}` : config.subtitle}
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// Past journal viewer
+const PastJournalCard = ({ journal, onSelect }: { journal: LunarJournalEntry; onSelect: () => void }) => {
+  const startDate = new Date(journal.cycle_start_date);
+  const hasContent = journal.new_moon_intentions || journal.balsamic_evolved || journal.tarot_card_name;
+  
+  return (
+    <Card 
+      className={`cursor-pointer hover:border-primary/50 transition-colors ${hasContent ? 'border-primary/20' : ''}`}
+      onClick={onSelect}
+    >
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🌑</span>
+            <div>
+              <p className="font-medium">{journal.cycle_sign} New Moon</p>
+              <p className="text-xs text-muted-foreground">
+                {startDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              </p>
+            </div>
+          </div>
+          {hasContent && (
+            <Badge variant="outline" className="text-xs">
+              Journaled
+            </Badge>
+          )}
+        </div>
+        {journal.new_moon_intentions && (
+          <p className="text-xs text-muted-foreground mt-2 line-clamp-2 italic">
+            "{journal.new_moon_intentions}"
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+export const LunarWorkbookSection = ({
+  chartId,
+  chartName,
+  cycleStartDate,
+  cycleSign,
+  cycleDegree,
+  keyPhases,
+  signData,
+  balsamicStart,
+  balsamicEnd,
+  natalContext
+}: LunarWorkbookSectionProps) => {
+  const [activePhase, setActivePhase] = useState<PhaseKey>('newMoon');
+  const [isGuidedMode, setIsGuidedMode] = useState(false);
+  const [guidedStep, setGuidedStep] = useState(0);
+  const [isGeneratingIntentions, setIsGeneratingIntentions] = useState(false);
+  const [isInterpretingTarot, setIsInterpretingTarot] = useState(false);
+  const [isInterpretingOracle, setIsInterpretingOracle] = useState(false);
+  const [selectedPastJournal, setSelectedPastJournal] = useState<LunarJournalEntry | null>(null);
+  
+  const { 
+    journal, 
+    isLoading, 
+    isSaving, 
+    pastJournals, 
+    updateField,
+    saveJournal
+  } = useLunarJournal(chartId, cycleStartDate, cycleSign);
+
+  // Determine which phase we're currently in based on dates
+  const currentPhase = useMemo((): PhaseKey => {
+    const now = new Date();
+    if (keyPhases?.lastQuarter && now >= keyPhases.lastQuarter.date) {
+      return now >= balsamicStart ? 'balsamic' : 'lastQuarter';
+    }
+    if (keyPhases?.fullMoon && now >= keyPhases.fullMoon.date) return 'fullMoon';
+    if (keyPhases?.firstQuarter && now >= keyPhases.firstQuarter.date) return 'firstQuarter';
+    return 'newMoon';
+  }, [keyPhases, balsamicStart]);
+
+  const getPhaseDate = (phase: PhaseKey): Date | undefined => {
+    switch (phase) {
+      case 'newMoon': return cycleStartDate;
+      case 'firstQuarter': return keyPhases?.firstQuarter?.date;
+      case 'fullMoon': return keyPhases?.fullMoon?.date;
+      case 'lastQuarter': return keyPhases?.lastQuarter?.date;
+      case 'balsamic': return balsamicStart;
+      default: return undefined;
+    }
+  };
+
+  // Guided mode steps for New Moon phase
+  const newMoonSteps = [
+    { field: 'new_moon_feelings', label: "What FEELS important right now?", placeholder: "What is my soul telling me is 'up' right now?", icon: <Heart className="h-4 w-4 text-rose-500" /> },
+    { field: 'new_moon_showing_up', label: "What's SHOWING UP in your life?", placeholder: "What issues have been at the forefront of your mind?", icon: <Eye className="h-4 w-4 text-amber-500" /> },
+    { field: 'new_moon_house_themes', label: "House Themes", placeholder: "What area of life is being illuminated?", icon: <Target className="h-4 w-4 text-primary" /> },
+    { field: 'new_moon_intentions', label: "My Intention(s) for this cycle", placeholder: "Write your intentions as a prayer, affirmation, or wish...", icon: <Sparkles className="h-4 w-4 text-primary" /> },
+    { field: 'new_moon_body_sensations', label: "How would I FEEL with this present?", placeholder: "Focus on sensations in your body...", icon: <Zap className="h-4 w-4 text-purple-500" /> },
+  ];
+
+  const handleGenerateIntentions = async () => {
+    setIsGeneratingIntentions(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-intentions', {
+        body: {
+          cycleSign,
+          cycleDegree,
+          chartName,
+          natalPlanets: natalContext?.natalPlanets,
+          newMoonHouse: natalContext?.newMoonHouse,
+          natalAspects: natalContext?.natalAspects,
+          intentionWords: signData?.intentionWords
+        }
+      });
+
+      if (error) throw error;
+      if (data?.suggestions) {
+        saveJournal({ ai_suggested_intentions: data.suggestions });
+        toast.success("AI intentions generated!");
+      }
+    } catch (err) {
+      console.error("Failed to generate intentions:", err);
+      toast.error("Failed to generate intentions");
+    } finally {
+      setIsGeneratingIntentions(false);
+    }
+  };
+
+  const handleInterpretCard = async (cardType: 'tarot' | 'oracle') => {
+    const setLoading = cardType === 'tarot' ? setIsInterpretingTarot : setIsInterpretingOracle;
+    const cardName = cardType === 'tarot' ? journal?.tarot_card_name : journal?.oracle_card_name;
+    const deckName = cardType === 'oracle' ? journal?.oracle_deck_name : undefined;
+    
+    if (!cardName) return;
+    
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('interpret-cards', {
+        body: {
+          cardType,
+          cardName,
+          deckName,
+          cycleSign,
+          phaseName: PHASE_CONFIG[activePhase].title,
+          chartName,
+          intentions: journal?.new_moon_intentions
+        }
+      });
+
+      if (error) throw error;
+      if (data?.interpretation) {
+        const field = cardType === 'tarot' ? 'tarot_ai_interpretation' : 'oracle_ai_interpretation';
+        saveJournal({ [field]: data.interpretation });
+        toast.success("Card interpreted!");
+      }
+    } catch (err) {
+      console.error("Failed to interpret card:", err);
+      toast.error("Failed to interpret card");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderPhaseContent = (phase: PhaseKey) => {
+    const config = PHASE_CONFIG[phase];
+    const phaseDate = getPhaseDate(phase);
+    const isCurrentPhase = phase === currentPhase;
+
+    return (
+      <div className="space-y-4">
+        <PhasePromptBanner phase={phase} phaseDate={phaseDate} isActive={isCurrentPhase} />
+        
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-3xl">{config.emoji}</span>
+          <div>
+            <h3 className="font-medium">{config.title}</h3>
+            <p className="text-sm text-muted-foreground">{config.subtitle}</p>
+          </div>
+          {phaseDate && (
+            <Badge variant="secondary" className="ml-auto">
+              {phaseDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            </Badge>
+          )}
+        </div>
+        
+        <p className="text-sm text-foreground/80 italic border-l-2 border-primary/30 pl-3 mb-4">
+          {config.description}
+        </p>
+
+        {renderPhaseFields(phase)}
+      </div>
+    );
+  };
+
+  const renderPhaseFields = (phase: PhaseKey) => {
     switch (phase) {
       case 'newMoon':
         return (
-          <>
+          <div className="space-y-4">
+            {/* AI Intentions */}
+            <div className="p-4 bg-secondary/30 rounded-lg border border-border/50 space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium flex items-center gap-2">
+                  <Wand2 className="h-4 w-4 text-primary" />
+                  AI Intention Suggestions
+                </h4>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={handleGenerateIntentions}
+                  disabled={isGeneratingIntentions}
+                >
+                  {isGeneratingIntentions ? (
+                    <><Loader2 className="h-3 w-3 mr-1 animate-spin" /> Generating...</>
+                  ) : (
+                    <><Sparkles className="h-3 w-3 mr-1" /> Generate</>
+                  )}
+                </Button>
+              </div>
+              {journal?.ai_suggested_intentions ? (
+                <div className="prose prose-sm dark:prose-invert bg-primary/5 p-3 rounded-lg">
+                  <ReactMarkdown>{journal.ai_suggested_intentions}</ReactMarkdown>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground italic">
+                  Click "Generate" to receive personalized intention suggestions based on this lunar cycle and your chart.
+                </p>
+              )}
+            </div>
+
+            {signData && (
+              <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
+                <p className="text-sm font-medium text-primary mb-2">✍️ Intention Words for {cycleSign}</p>
+                <p className="text-sm text-muted-foreground italic">
+                  {signData.intentionWords.join(' • ')}
+                </p>
+              </div>
+            )}
+
             <JournalField
               label="What FEELS important right now? (inside ☽)"
               placeholder="What is my soul telling me is 'up' right now? What's wanting to be conceived?"
@@ -130,42 +515,64 @@ const PhaseSection = ({
               icon={<Heart className="h-4 w-4 text-rose-500" />}
             />
             <JournalField
-              label="What's SHOWING UP right now in your life? (outside ☼)"
+              label="What's SHOWING UP in your life? (outside ☼)"
               placeholder="What issues have been at the forefront of your mind over the past few days/week?"
               value={journal?.new_moon_showing_up}
               onChange={(v) => updateField('new_moon_showing_up', v)}
               icon={<Eye className="h-4 w-4 text-amber-500" />}
             />
             <JournalField
-              label="House Themes (where this New Moon falls in your chart)"
+              label="House Themes"
               placeholder="What area of life is being illuminated for you? What are the themes of that house?"
               value={journal?.new_moon_house_themes}
               onChange={(v) => updateField('new_moon_house_themes', v)}
               icon={<Target className="h-4 w-4 text-primary" />}
             />
-            {signData && (
-              <div className="p-3 bg-primary/5 rounded-lg border border-primary/20 mb-4">
-                <p className="text-sm font-medium text-primary mb-2">✍️ Suggested Intention Words</p>
-                <p className="text-sm text-muted-foreground italic">
-                  {signData.intentionWords.join(' • ')}
-                </p>
-              </div>
-            )}
             <JournalField
               label="My Intention(s) for this cycle"
-              placeholder="Allow the intentions to come to you. Imagine opening up to them and receiving them. Write your intentions as a prayer, affirmation, or wish..."
+              placeholder="Allow the intentions to come to you. Write your intentions as a prayer, affirmation, or wish..."
               value={journal?.new_moon_intentions}
               onChange={(v) => updateField('new_moon_intentions', v)}
               icon={<Sparkles className="h-4 w-4 text-primary" />}
             />
             <JournalField
-              label="How would I FEEL with this present in my life?"
+              label="How would I FEEL with this present?"
               placeholder="Focus on the sensations in your body rather than emotions..."
               value={journal?.new_moon_body_sensations}
               onChange={(v) => updateField('new_moon_body_sensations', v)}
               icon={<Zap className="h-4 w-4 text-purple-500" />}
             />
-          </>
+
+            {/* Tarot Card */}
+            <CardDrawSection
+              cardType="tarot"
+              cardName={journal?.tarot_card_name}
+              notes={journal?.tarot_card_notes}
+              interpretation={journal?.tarot_ai_interpretation}
+              onCardNameChange={(v) => updateField('tarot_card_name', v)}
+              onNotesChange={(v) => updateField('tarot_card_notes', v)}
+              onInterpret={() => handleInterpretCard('tarot')}
+              isInterpreting={isInterpretingTarot}
+              cycleSign={cycleSign}
+              phaseName="New Moon"
+            />
+
+            {/* Oracle Card */}
+            <CardDrawSection
+              cardType="oracle"
+              cardName={journal?.oracle_card_name}
+              deckName={journal?.oracle_deck_name}
+              notes={journal?.oracle_card_notes}
+              interpretation={journal?.oracle_ai_interpretation}
+              onCardNameChange={(v) => updateField('oracle_card_name', v)}
+              onDeckNameChange={(v) => updateField('oracle_deck_name', v)}
+              onNotesChange={(v) => updateField('oracle_card_notes', v)}
+              onInterpret={() => handleInterpretCard('oracle')}
+              isInterpreting={isInterpretingOracle}
+              cycleSign={cycleSign}
+              phaseName="New Moon"
+            />
+          </div>
         );
       
       case 'firstQuarter':
@@ -282,7 +689,7 @@ const PhaseSection = ({
             />
             <JournalField
               label="What's stirring for the next cycle?"
-              placeholder="What are the inner stirrings inside of your being asking you to pay attention to? You may not be clear on this yet... that's okay."
+              placeholder="What are the inner stirrings inside of your being asking you to pay attention to?"
               value={journal?.cycle_next_stirrings}
               onChange={(v) => updateField('cycle_next_stirrings', v)}
               icon={<Zap className="h-4 w-4 text-purple-500" />}
@@ -294,95 +701,7 @@ const PhaseSection = ({
         return null;
     }
   };
-  
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3 mb-4">
-        <span className="text-3xl">{info.emoji}</span>
-        <div>
-          <h3 className={`font-medium ${info.color}`}>{info.title}</h3>
-          <p className="text-sm text-muted-foreground">{info.subtitle}</p>
-        </div>
-        {phaseDate && (
-          <Badge variant="secondary" className="ml-auto">
-            {phaseDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-          </Badge>
-        )}
-      </div>
-      
-      <p className="text-sm text-foreground/80 italic border-l-2 border-primary/30 pl-3 mb-4">
-        {info.description}
-      </p>
-      
-      <div className="space-y-4">
-        {renderFields()}
-      </div>
-    </div>
-  );
-};
 
-const PastJournalCard = ({ journal, onSelect }: { journal: LunarJournalEntry; onSelect: () => void }) => {
-  const startDate = new Date(journal.cycle_start_date);
-  const hasContent = journal.new_moon_intentions || journal.balsamic_evolved;
-  
-  return (
-    <Card 
-      className={`cursor-pointer hover:border-primary/50 transition-colors ${hasContent ? 'border-primary/20' : ''}`}
-      onClick={onSelect}
-    >
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">🌑</span>
-            <div>
-              <p className="font-medium">{journal.cycle_sign} New Moon</p>
-              <p className="text-xs text-muted-foreground">
-                {startDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-              </p>
-            </div>
-          </div>
-          {hasContent && (
-            <Badge variant="outline" className="text-xs">
-              Journaled
-            </Badge>
-          )}
-        </div>
-        {journal.new_moon_intentions && (
-          <p className="text-xs text-muted-foreground mt-2 line-clamp-2 italic">
-            "{journal.new_moon_intentions}"
-          </p>
-        )}
-      </CardContent>
-    </Card>
-  );
-};
-
-export const LunarWorkbookSection = ({
-  chartId,
-  chartName,
-  cycleStartDate,
-  cycleSign,
-  cycleDegree,
-  keyPhases,
-  signData,
-  balsamicStart,
-  balsamicEnd
-}: LunarWorkbookSectionProps) => {
-  const [isOpen, setIsOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState('current');
-  const [selectedPastJournal, setSelectedPastJournal] = useState<LunarJournalEntry | null>(null);
-  
-  const { 
-    journal, 
-    isLoading, 
-    isSaving, 
-    pastJournals, 
-    updateField 
-  } = useLunarJournal(chartId, cycleStartDate, cycleSign);
-  
-  const viewingJournal = selectedPastJournal || journal;
-  const isViewingPast = !!selectedPastJournal;
-  
   if (isLoading) {
     return (
       <Card className="bg-background border">
@@ -392,147 +711,171 @@ export const LunarWorkbookSection = ({
       </Card>
     );
   }
-  
+
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className="bg-background border">
-        <CollapsibleTrigger asChild>
-          <CardHeader className="cursor-pointer hover:bg-secondary/30 transition-colors">
-            <CardTitle className="font-serif text-lg font-light flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                <Moon className="h-5 w-5 text-primary" />
-                ☽ Cycle Workbook for {chartName}
-              </span>
-              <div className="flex items-center gap-2">
-                {isSaving && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-                {!isSaving && journal?.id && (
-                  <Badge variant="secondary" className="text-xs">
-                    <Save className="h-3 w-3 mr-1" /> Auto-saved
-                  </Badge>
-                )}
-                {isOpen ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+    <Card className="bg-background border">
+      <CardHeader className="pb-2">
+        <CardTitle className="font-serif text-xl font-light flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            <BookOpen className="h-5 w-5 text-primary" />
+            ☽ Cycle Workbook — {chartName}
+          </span>
+          <div className="flex items-center gap-2">
+            {isSaving && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+            {!isSaving && journal?.id && (
+              <Badge variant="secondary" className="text-xs">
+                <Save className="h-3 w-3 mr-1" /> Saved
+              </Badge>
+            )}
+          </div>
+        </CardTitle>
+        <p className="text-sm text-muted-foreground">
+          {cycleSign} New Moon at {cycleDegree}° • {cycleStartDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+        </p>
+      </CardHeader>
+
+      <CardContent className="space-y-4">
+        {/* Mode toggle */}
+        <div className="flex items-center gap-2 mb-4">
+          <Button
+            variant={!isGuidedMode ? "default" : "outline"}
+            size="sm"
+            onClick={() => setIsGuidedMode(false)}
+          >
+            Full View
+          </Button>
+          <Button
+            variant={isGuidedMode ? "default" : "outline"}
+            size="sm"
+            onClick={() => { setIsGuidedMode(true); setGuidedStep(0); }}
+          >
+            <Wand2 className="h-3 w-3 mr-1" />
+            Guided Mode
+          </Button>
+        </div>
+
+        {isGuidedMode ? (
+          <GuidedStep
+            stepNumber={guidedStep + 1}
+            totalSteps={newMoonSteps.length}
+            onNext={() => setGuidedStep(prev => Math.min(prev + 1, newMoonSteps.length - 1))}
+            onPrev={() => setGuidedStep(prev => Math.max(prev - 1, 0))}
+            isFirst={guidedStep === 0}
+            isLast={guidedStep === newMoonSteps.length - 1}
+          >
+            <JournalField
+              label={newMoonSteps[guidedStep].label}
+              placeholder={newMoonSteps[guidedStep].placeholder}
+              value={(journal as any)?.[newMoonSteps[guidedStep].field] || ''}
+              onChange={(v) => updateField(newMoonSteps[guidedStep].field as keyof LunarJournalEntry, v)}
+              icon={newMoonSteps[guidedStep].icon}
+            />
+          </GuidedStep>
+        ) : (
+          <Tabs value={activePhase} onValueChange={(v) => setActivePhase(v as PhaseKey)}>
+            <TabsList className="grid w-full grid-cols-5 mb-4">
+              {PHASE_ORDER.map((phase) => (
+                <TabsTrigger 
+                  key={phase} 
+                  value={phase} 
+                  className="text-xs px-1"
+                >
+                  <span className="mr-1">{PHASE_CONFIG[phase].emoji}</span>
+                  <span className="hidden sm:inline">{PHASE_CONFIG[phase].title.split(' ')[0]}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            {PHASE_ORDER.map((phase) => (
+              <TabsContent key={phase} value={phase}>
+                <ScrollArea className="h-[600px] pr-4">
+                  {renderPhaseContent(phase)}
+                </ScrollArea>
+              </TabsContent>
+            ))}
+          </Tabs>
+        )}
+
+        {/* Past Cycles */}
+        {pastJournals.length > 0 && (
+          <div className="border-t pt-4 mt-6">
+            <h4 className="font-medium flex items-center gap-2 mb-3">
+              <History className="h-4 w-4" />
+              Past Cycles ({pastJournals.length})
+            </h4>
+            <ScrollArea className="h-[200px]">
+              <div className="grid gap-2">
+                {pastJournals.map((pj) => (
+                  <PastJournalCard 
+                    key={pj.id} 
+                    journal={pj} 
+                    onSelect={() => setSelectedPastJournal(pj)} 
+                  />
+                ))}
               </div>
-            </CardTitle>
-          </CardHeader>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <CardContent className="space-y-4">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="current" className="gap-2">
-                  <Moon className="h-4 w-4" />
-                  Current Cycle
-                </TabsTrigger>
-                <TabsTrigger value="past" className="gap-2">
-                  <History className="h-4 w-4" />
-                  Past Cycles ({pastJournals.length})
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="current" className="mt-4">
-                {selectedPastJournal && (
-                  <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center justify-between">
-                    <p className="text-sm">
-                      Viewing: <strong>{selectedPastJournal.cycle_sign} New Moon</strong> (
-                      {new Date(selectedPastJournal.cycle_start_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })})
-                    </p>
-                    <Button size="sm" variant="outline" onClick={() => setSelectedPastJournal(null)}>
-                      Back to Current
-                    </Button>
+            </ScrollArea>
+          </div>
+        )}
+
+        {/* Past journal viewer modal/overlay */}
+        {selectedPastJournal && (
+          <div className="fixed inset-0 bg-background/95 z-50 flex items-center justify-center p-4">
+            <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>{selectedPastJournal.cycle_sign} New Moon Cycle</span>
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedPastJournal(null)}>
+                    ✕
+                  </Button>
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  {new Date(selectedPastJournal.cycle_start_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                </p>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[60vh]">
+                  <div className="space-y-4">
+                    {selectedPastJournal.new_moon_intentions && (
+                      <div>
+                        <h5 className="font-medium text-sm mb-1">Intentions</h5>
+                        <p className="text-sm text-muted-foreground">{selectedPastJournal.new_moon_intentions}</p>
+                      </div>
+                    )}
+                    {selectedPastJournal.tarot_card_name && (
+                      <div>
+                        <h5 className="font-medium text-sm mb-1">🃏 Tarot: {selectedPastJournal.tarot_card_name}</h5>
+                        {selectedPastJournal.tarot_ai_interpretation && (
+                          <p className="text-sm text-muted-foreground">{selectedPastJournal.tarot_ai_interpretation}</p>
+                        )}
+                      </div>
+                    )}
+                    {selectedPastJournal.oracle_card_name && (
+                      <div>
+                        <h5 className="font-medium text-sm mb-1">✨ Oracle: {selectedPastJournal.oracle_card_name}</h5>
+                        {selectedPastJournal.oracle_ai_interpretation && (
+                          <p className="text-sm text-muted-foreground">{selectedPastJournal.oracle_ai_interpretation}</p>
+                        )}
+                      </div>
+                    )}
+                    {selectedPastJournal.balsamic_evolved && (
+                      <div>
+                        <h5 className="font-medium text-sm mb-1">What Evolved</h5>
+                        <p className="text-sm text-muted-foreground">{selectedPastJournal.balsamic_evolved}</p>
+                      </div>
+                    )}
+                    {selectedPastJournal.cycle_wisdom && (
+                      <div>
+                        <h5 className="font-medium text-sm mb-1">Cycle Wisdom</h5>
+                        <p className="text-sm text-muted-foreground">{selectedPastJournal.cycle_wisdom}</p>
+                      </div>
+                    )}
                   </div>
-                )}
-                
-                <Tabs defaultValue="newMoon">
-                  <TabsList className="grid grid-cols-5 mb-4">
-                    <TabsTrigger value="newMoon" className="text-xs px-2">🌑 New</TabsTrigger>
-                    <TabsTrigger value="firstQuarter" className="text-xs px-2">🌓 1st Q</TabsTrigger>
-                    <TabsTrigger value="fullMoon" className="text-xs px-2">🌕 Full</TabsTrigger>
-                    <TabsTrigger value="lastQuarter" className="text-xs px-2">🌗 Last Q</TabsTrigger>
-                    <TabsTrigger value="balsamic" className="text-xs px-2">🌘 Balsamic</TabsTrigger>
-                  </TabsList>
-                  
-                  <ScrollArea className="h-[500px] pr-4">
-                    <TabsContent value="newMoon">
-                      <PhaseSection 
-                        phase="newMoon" 
-                        journal={viewingJournal}
-                        updateField={isViewingPast ? () => {} : updateField}
-                        phaseDate={cycleStartDate}
-                        signData={signData}
-                      />
-                    </TabsContent>
-                    
-                    <TabsContent value="firstQuarter">
-                      <PhaseSection 
-                        phase="firstQuarter" 
-                        journal={viewingJournal}
-                        updateField={isViewingPast ? () => {} : updateField}
-                        phaseDate={keyPhases?.firstQuarter?.date}
-                        signData={signData}
-                      />
-                    </TabsContent>
-                    
-                    <TabsContent value="fullMoon">
-                      <PhaseSection 
-                        phase="fullMoon" 
-                        journal={viewingJournal}
-                        updateField={isViewingPast ? () => {} : updateField}
-                        phaseDate={keyPhases?.fullMoon?.date}
-                        signData={signData}
-                      />
-                    </TabsContent>
-                    
-                    <TabsContent value="lastQuarter">
-                      <PhaseSection 
-                        phase="lastQuarter" 
-                        journal={viewingJournal}
-                        updateField={isViewingPast ? () => {} : updateField}
-                        phaseDate={keyPhases?.lastQuarter?.date}
-                        signData={signData}
-                      />
-                    </TabsContent>
-                    
-                    <TabsContent value="balsamic">
-                      <PhaseSection 
-                        phase="balsamic" 
-                        journal={viewingJournal}
-                        updateField={isViewingPast ? () => {} : updateField}
-                        phaseDate={balsamicStart}
-                        signData={signData}
-                      />
-                    </TabsContent>
-                  </ScrollArea>
-                </Tabs>
-              </TabsContent>
-              
-              <TabsContent value="past" className="mt-4">
-                {pastJournals.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <History className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                    <p>No past lunar cycle journals yet.</p>
-                    <p className="text-sm">Your journaled cycles will appear here over time.</p>
-                  </div>
-                ) : (
-                  <ScrollArea className="h-[400px]">
-                    <div className="space-y-3 pr-4">
-                      {pastJournals.map((pj) => (
-                        <PastJournalCard 
-                          key={pj.id}
-                          journal={pj}
-                          onSelect={() => {
-                            setSelectedPastJournal(pj);
-                            setActiveTab('current');
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </ScrollArea>
-                )}
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </CollapsibleContent>
-      </Card>
-    </Collapsible>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
