@@ -243,7 +243,20 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
     setSelectedCategory(null);
   };
 
+  const allCombinations = useMemo(() => getAllCombinations(), []);
+
+  // Get all combinations that match the selected chart
+  const chartMatchingCombinations = useMemo(() => {
+    if (!selectedChart || chartFactors.size === 0) return [];
+    return allCombinations.filter(combo => doesComboMatchChart(combo));
+  }, [selectedChart, chartFactors, allCombinations]);
+
   const matchingCombinations = useMemo(() => {
+    // If a chart is selected and no other filters, show all chart matches
+    if (selectedChartId && selectedFactors.length === 0 && !selectedCategory) {
+      return chartMatchingCombinations;
+    }
+    
     if (selectedCategory) {
       return findByCategory(selectedCategory);
     }
@@ -254,9 +267,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
 
     const synth = synthesizeInterpretation(selectedFactors);
     return synth ? [synth] : [];
-  }, [selectedFactors, selectedCategory]);
-
-  const allCombinations = useMemo(() => getAllCombinations(), []);
+  }, [selectedFactors, selectedCategory, selectedChartId, chartMatchingCombinations]);
 
   const renderFactorButton = (factor: string, symbol?: string) => {
     const isSelected = selectedFactors.includes(factor);
@@ -578,12 +589,14 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
           </Card>
 
           {/* Results */}
-          {(selectedFactors.length > 0 || selectedCategory) && (
+          {(selectedFactors.length > 0 || selectedCategory || selectedChartId) && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-medium">
                   {matchingCombinations.length > 0 
-                    ? `${matchingCombinations.length} Matching Combination${matchingCombinations.length > 1 ? 's' : ''}`
+                    ? selectedChartId && selectedFactors.length === 0 && !selectedCategory
+                      ? `${matchingCombinations.length} Combination${matchingCombinations.length > 1 ? 's' : ''} in ${selectedChart?.name}'s Chart`
+                      : `${matchingCombinations.length} Matching Combination${matchingCombinations.length > 1 ? 's' : ''}`
                     : 'No Exact Matches Found'
                   }
                 </h3>
@@ -609,7 +622,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
           )}
 
           {/* Empty State */}
-          {selectedFactors.length === 0 && !selectedCategory && (
+          {selectedFactors.length === 0 && !selectedCategory && !selectedChartId && (
             <Card className="border-dashed">
               <CardContent className="py-12 text-center">
                 <Sparkles className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
