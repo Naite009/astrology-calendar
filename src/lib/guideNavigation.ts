@@ -23,7 +23,8 @@ export type GuideSection =
   | "chartdecoder"
   | "sacredscript"
   | "dwarfplanets"
-  | "speeds";
+  | "speeds"
+  | "cosmickitchen";
 
 export type ViewMode = 
   | "month" 
@@ -67,6 +68,7 @@ export const SECTION_TO_VIEW: Record<GuideSection, ViewMode> = {
   sacredscript: "sacred-script",
   dwarfplanets: "dwarf-planets",
   speeds: "speeds",
+  cosmickitchen: "month",
 };
 
 // Maps view modes back to a relevant guide section
@@ -120,6 +122,7 @@ export const GUIDE_NAV_ITEMS: GuideNavItem[] = [
   { key: "sacredscript", label: "Sacred Script" },
   { key: "dwarfplanets", label: "Dwarf Planets" },
   { key: "speeds", label: "Planetary Speeds" },
+  { key: "cosmickitchen", label: "Cosmic Kitchen" },
 ];
 
 // Get the view mode to navigate to for a given guide section

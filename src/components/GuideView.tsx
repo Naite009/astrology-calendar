@@ -1714,6 +1714,126 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
       </>
     ),
   },
+  cosmickitchen: {
+    title: "Cosmic Kitchen: Astro-Ayurvedic Eating",
+    content: (
+      <>
+        <p>
+          The <strong>Cosmic Kitchen</strong> integrates two ancient wisdom systems—Western astrology 
+          and Ayurveda—to create meal recommendations aligned with both celestial and seasonal energies.
+        </p>
+        
+        <h3>🌙 The Astrological Layer</h3>
+        <p>
+          Each day, the Moon moves through a zodiac sign, influencing our emotional relationship 
+          with food and what types of nourishment our souls crave:
+        </p>
+        <div className="mt-4 grid gap-2">
+          <div className="p-3 rounded-sm border border-border bg-secondary">
+            <strong>Fire Signs (Aries, Leo, Sagittarius):</strong> Energizing, bold flavors. Protein-rich, 
+            spices that ignite metabolism. Ginger, cayenne, citrus, golden foods.
+          </div>
+          <div className="p-3 rounded-sm border border-border bg-secondary">
+            <strong>Earth Signs (Taurus, Virgo, Capricorn):</strong> Grounding, substantial meals. 
+            Root vegetables, whole grains, hearty comfort foods. Slow-cooked, nourishing.
+          </div>
+          <div className="p-3 rounded-sm border border-border bg-secondary">
+            <strong>Air Signs (Gemini, Libra, Aquarius):</strong> Light, varied—multiple small dishes. 
+            Beautiful presentation, balanced flavors, innovative combinations.
+          </div>
+          <div className="p-3 rounded-sm border border-border bg-secondary">
+            <strong>Water Signs (Cancer, Scorpio, Pisces):</strong> Soul food, emotional nourishment. 
+            Soups, broths, warm beverages, foods that comfort the heart.
+          </div>
+        </div>
+        
+        <h3>🍃 The Ayurvedic Layer (Ritucharya)</h3>
+        <p>
+          Ayurveda's <em>Ritucharya</em> (seasonal regimen) teaches that our digestive fire (Agni) 
+          and the dominant dosha change with the seasons:
+        </p>
+        <div className="mt-4 grid gap-3">
+          <div className="p-4 rounded-sm border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20">
+            <div className="font-semibold text-foreground mb-2">❄️ Winter (Hemanta/Shishira) — Nov-Feb</div>
+            <div className="text-sm text-muted-foreground">
+              <strong>Vata season with STRONG Agni.</strong> The body needs warmth and substance.<br/>
+              <strong>Favor:</strong> Warm, oily, heavy, sweet, sour, salty foods. Ghee, soups, stews, 
+              root vegetables, warm spices (ginger, cinnamon, black pepper), sesame oil, nuts, whole grains.<br/>
+              <strong>Avoid:</strong> Cold, raw, dry foods. <em>No cold cucumber, raw salads, cold smoothies, 
+              ice cream—even for "watery" Moon signs.</em>
+            </div>
+          </div>
+          <div className="p-4 rounded-sm border border-green-200 dark:border-green-700 bg-green-50 dark:bg-green-900/20">
+            <div className="font-semibold text-foreground mb-2">🌸 Spring (Vasanta) — Mar-May</div>
+            <div className="text-sm text-muted-foreground">
+              <strong>Kapha accumulates.</strong> Lighten up to prevent stagnation.<br/>
+              <strong>Favor:</strong> Light, dry, warming, bitter, pungent, astringent. Honey, barley, 
+              millet, leafy greens, ginger tea, lighter proteins.<br/>
+              <strong>Reduce:</strong> Heavy, oily, sweet, dairy-heavy foods.
+            </div>
+          </div>
+          <div className="p-4 rounded-sm border border-amber-200 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20">
+            <div className="font-semibold text-foreground mb-2">☀️ Summer (Grishma) — Jun-Aug</div>
+            <div className="text-sm text-muted-foreground">
+              <strong>Pitta season with WEAK Agni.</strong> Digestion is naturally lower.<br/>
+              <strong>Favor:</strong> Cooling, sweet, light, liquid foods. Cucumber (NOW it's appropriate!), 
+              melons, coconut, mint, coriander, sweet fruits, light dairy.<br/>
+              <strong>Avoid:</strong> Excess spicy, sour, salty, heavy foods.
+            </div>
+          </div>
+          <div className="p-4 rounded-sm border border-orange-200 dark:border-orange-700 bg-orange-50 dark:bg-orange-900/20">
+            <div className="font-semibold text-foreground mb-2">🍂 Autumn (Sharad) — Sep-Oct</div>
+            <div className="text-sm text-muted-foreground">
+              <strong>Pitta releasing.</strong> Transition period requiring balance.<br/>
+              <strong>Favor:</strong> Sweet, bitter, astringent, cooling. Ghee to balance accumulated heat. 
+              Pomegranates, grapes, rice, wheat, moderate spices.
+            </div>
+          </div>
+        </div>
+        
+        <h3>🔥 Honoring Agni (Digestive Fire)</h3>
+        <p>
+          Ayurveda teaches that <em>Agni</em>—our digestive fire—follows a daily rhythm:
+        </p>
+        <ul>
+          <li><strong>Morning:</strong> Agni is kindling. Start with warm foods to ignite digestion. 
+            Warm water with lemon, cooked grains, warm spices.</li>
+          <li><strong>Midday (10am-2pm):</strong> Agni peaks. This is when to eat your largest, 
+            most complex meal. Your body can handle heavier foods now.</li>
+          <li><strong>Evening:</strong> Agni decreases. Eat lighter, earlier. Heavy dinners burden 
+            digestion and disrupt sleep.</li>
+        </ul>
+        
+        <h3>🔮 Zodiac-Dosha Correspondences</h3>
+        <p>
+          The zodiac elements correlate loosely with Ayurvedic constitutions:
+        </p>
+        <ul>
+          <li><strong>Fire Signs → Pitta tendency:</strong> Need cooling, balancing foods to prevent 
+            excess heat. Bitter greens, sweet fruits, cooling herbs.</li>
+          <li><strong>Earth Signs → Kapha/Vata mix:</strong> Need warmth and grounding. 
+            Root vegetables, warm grains, moderate spices.</li>
+          <li><strong>Air Signs → Vata tendency:</strong> Need warmth, moisture, grounding. 
+            Ghee, soups, stews, root vegetables. AVOID cold, dry, raw.</li>
+          <li><strong>Water Signs → Kapha tendency:</strong> Need warming spices to prevent stagnation. 
+            Ginger, turmeric, light proteins. Don't over-emphasize cold/watery foods.</li>
+        </ul>
+        
+        <h3>Why This Matters</h3>
+        <p>
+          When you see a Cancer Moon in January and think "soul food, comfort," Ayurveda agrees—
+          but specifies WARM soups and stews, not cold dairy or raw cucumbers. The Cosmic Kitchen 
+          synthesizes both: honoring the emotional quality of the Moon sign while respecting the 
+          seasonal wisdom of your body's needs.
+        </p>
+        <p>
+          <em>This is why you won't see cold salads recommended in winter, even on Water sign days. 
+          The season always takes precedence over the sign for physical nourishment, while the sign 
+          guides the emotional quality of the meal.</em>
+        </p>
+      </>
+    ),
+  },
 };
 
 export const GuideView = ({ onNavigateToView }: GuideViewProps = {}) => {
