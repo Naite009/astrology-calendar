@@ -406,6 +406,43 @@ Any challenging moon sign transits or VOC periods to be mindful of.
 ## 🎯 Weekly Focus
 3 practical things to prioritize this week based on the lunar energy.
 
+## 🍽️ Cosmic Kitchen: Weekly Menu
+Generate a FULL 7-DAY MEAL PLAN based on each day's Moon sign. For EACH day, include:
+
+${weekData.map((d, i) => `### ${d.dayName} (${d.dateStr}) - Moon in ${d.moonSign}
+**🍳 Breakfast:** [Dish name]
+*Why:* [2-3 sentences explaining WHY this breakfast matches ${d.moonSign} Moon energy - connect to the element, ruling planet, and day's theme]
+📖 Search "[dish name] recipe"
+
+**🥗 Lunch:** [Dish name]  
+*Why:* [Explain the astrological reasoning]
+📖 Search "[dish name] recipe"
+
+**🍽️ Dinner:** [Dish name]
+*Why:* [Explain the astrological reasoning]
+📖 Search "[dish name] recipe"
+
+**🥜 Snacks:** [Snack 1], [Snack 2], [Snack 3]
+*Why:* [Explain EACH snack choice - e.g., "Granola with yogurt grounds the nervous Gemini energy while the probiotics support mental clarity. Dark chocolate honors the day's Venus aspect..."]
+
+**🍵 Drink:** [Beverage] - [Why it matches the day's energy]
+
+---`).join('\n\n')}
+
+MOON SIGN MEAL THEMES (use but always explain WHY):
+- Aries: Spicy, protein-rich, energizing (Mars = heat and action)
+- Taurus: Comfort food, earthy, sensory (Venus = pleasure)
+- Gemini: Light, varied, tapas-style (Mercury = variety)
+- Cancer: Soul food, soups, nostalgic (Moon = nourishment)
+- Leo: Bold, golden colors, celebratory (Sun = vitality)
+- Virgo: Clean, whole foods, herbal (Mercury = digestion)
+- Libra: Beautiful, balanced, paired flavors (Venus = harmony)
+- Scorpio: Rich, intense, fermented (Pluto = depth)
+- Sagittarius: International, adventurous (Jupiter = expansion)
+- Capricorn: Traditional, substantial, slow-cooked (Saturn = structure)
+- Aquarius: Innovative, plant-based, unusual (Uranus = unconventional)
+- Pisces: Seafood, water-rich, gentle (Neptune = oceanic)
+
 Keep the tone insightful, practical, and empowering.`
         }
       });
