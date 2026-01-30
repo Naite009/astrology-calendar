@@ -10,6 +10,7 @@ import ReactMarkdown from "react-markdown";
 import html2canvas from "html2canvas";
 import { toast } from "@/hooks/use-toast";
 import { LunarCycleView } from "./LunarCycleView";
+import { CosmicRecipeCard, parseRecipeFromContent } from "./CosmicRecipeCard";
 const ZODIAC_SYMBOLS: Record<string, string> = {
   Aries: "♈", Taurus: "♉", Gemini: "♊", Cancer: "♋",
   Leo: "♌", Virgo: "♍", Libra: "♎", Scorpio: "♏",
@@ -1053,8 +1054,18 @@ Keep the tone professional, insightful, and practically applicable.`
                             ),
                           }}
                         >
-                          {displayInsight}
+                          {displayInsight?.replace(/\*\*RECIPE_START\*\*[\s\S]*?\*\*RECIPE_END\*\*/, '')}
                         </ReactMarkdown>
+                        
+                        {/* Recipe Card */}
+                        {displayInsight && parseRecipeFromContent(displayInsight) && (
+                          <div className="mt-8 pt-6 border-t border-border">
+                            <CosmicRecipeCard 
+                              recipe={parseRecipeFromContent(displayInsight)!} 
+                              date={new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            />
+                          </div>
+                        )}
                       </div>
                     )}
 
