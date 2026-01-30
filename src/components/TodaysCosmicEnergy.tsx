@@ -810,6 +810,16 @@ Keep the tone professional, insightful, and practically applicable.`
                                 {children}
                               </h2>
                             ),
+                            a: ({ href, children }) => (
+                              <a 
+                                href={href} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors"
+                              >
+                                {children}
+                              </a>
+                            ),
                             ul: ({ children }) => (
                               <ul className="space-y-2 my-4">{children}</ul>
                             ),
@@ -873,6 +883,16 @@ Keep the tone professional, insightful, and practically applicable.`
                               <h2 className="font-serif text-xl font-medium text-foreground mt-6 mb-3 pb-2 border-b border-primary/10 first:mt-0">
                                 {children}
                               </h2>
+                            ),
+                            a: ({ href, children }) => (
+                              <a 
+                                href={href} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors"
+                              >
+                                {children}
+                              </a>
                             ),
                             ul: ({ children }) => (
                               <ul className="space-y-2 my-4">{children}</ul>
@@ -979,6 +999,16 @@ Keep the tone professional, insightful, and practically applicable.`
                                 </h2>
                               );
                             },
+                            a: ({ href, children }) => (
+                              <a 
+                                href={href} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors"
+                              >
+                                {children}
+                              </a>
+                            ),
                             ul: ({ children }) => (
                               <ul className="space-y-2 my-4">{children}</ul>
                             ),
