@@ -925,7 +925,7 @@ Keep the tone professional, insightful, and practically applicable.`
                           className="text-muted-foreground hover:text-foreground"
                         >
                           <Download className="h-4 w-4 mr-2" />
-                          Save Image
+                          Export
                         </Button>
                         <Button
                           variant="ghost"
