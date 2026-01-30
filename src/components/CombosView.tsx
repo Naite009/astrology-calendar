@@ -401,7 +401,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                   <SelectValue placeholder="Select a chart..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">None (show all)</SelectItem>
+                  <SelectItem value="none">✦ Collective Energies</SelectItem>
                   {allCharts.filter(chart => chart.id).map(chart => (
                     <SelectItem key={chart.id} value={chart.id}>
                       {chart.name}
