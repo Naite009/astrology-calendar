@@ -338,7 +338,14 @@ export const PersonalizedTransitsPanel = ({
       // Check if Moon is transiting an intercepted sign in their chart
       const moonInIntercepted = interceptedSigns.includes(moonSign);
 
-      const customPrompt = `Generate a deeply personalized cosmic weather reading for ${chart.name}.
+      const customPrompt = `Generate a personalized transit reading for ${chart.name}.
+
+CRITICAL STYLE RULES:
+- NO greetings, pleasantries, or flowery openings (NO "Hello", "What a lovely...", "Dear one")
+- NO mystical clichés ("the universe wants", "cosmic currents", "celestial dance")
+- Start IMMEDIATELY with the astrological substance
+- Write like a professional astrologer giving a consultation, not a greeting card
+- Be direct, specific, and psychologically insightful
 
 THEIR NATAL CHART:
 ${natalPlanets}
@@ -355,17 +362,17 @@ TODAY'S PERSONAL TRANSITS:
 - Moon aspects to natal planets: ${moonAspectsList || 'none major'}
 - Other active transits: ${transitList || 'none significant'}
 
-Write a warm, personal reading that:
-1. Addresses ${chart.name} by name
-2. References SPECIFIC placements from their natal chart (e.g., "With your natal Venus in Scorpio...")
-3. Explains how today's Moon in ${moonSign} specifically affects THEIR chart
-4. If the Moon is transiting an intercepted sign, explain what this unlocking/activation feels like
-5. If any natal planets are in intercepted signs, note how transits to those planets feel more significant
-6. Interprets the exact transit aspects listed above with psychological depth
-7. Gives practical guidance for navigating these energies
-8. Keep it warm and empowering, like a skilled astrologer speaking to a valued client
+Write a reading that:
+1. Opens with the most significant transit happening RIGHT NOW - no preamble
+2. References SPECIFIC placements (e.g., "Your natal Venus at 14° Scorpio in the 8th...")
+3. Explains how today's Moon in ${moonSign} activates specific houses and planets in THEIR chart
+4. If the Moon is transiting an intercepted sign, explain the unlocking/activation
+5. If any natal planets are in intercepted signs, note how transits there feel more significant
+6. Interprets aspects with psychological depth - what does it FEEL like internally?
+7. Gives ONE concrete, practical action or focus for the day
+8. End with the takeaway, not a blessing
 
-Format with clear sections using ## headers. Be specific to their chart - no generic advice.`;
+Format with ## headers. Be chart-specific - no generic advice that could apply to anyone.`;
 
       const { data, error } = await supabase.functions.invoke('cosmic-weather', {
         body: {
