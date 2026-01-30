@@ -811,14 +811,15 @@ Keep the tone professional, insightful, and practically applicable.`
                               </h2>
                             ),
                             a: ({ href, children }) => (
-                              <a 
-                                href={href} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors"
+                              <button 
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  if (href) window.open(href, '_blank', 'noopener,noreferrer');
+                                }}
+                                className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors cursor-pointer bg-transparent border-none p-0 font-inherit text-inherit"
                               >
                                 {children}
-                              </a>
+                              </button>
                             ),
                             ul: ({ children }) => (
                               <ul className="space-y-2 my-4">{children}</ul>
@@ -885,14 +886,15 @@ Keep the tone professional, insightful, and practically applicable.`
                               </h2>
                             ),
                             a: ({ href, children }) => (
-                              <a 
-                                href={href} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors"
+                              <button 
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  if (href) window.open(href, '_blank', 'noopener,noreferrer');
+                                }}
+                                className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors cursor-pointer bg-transparent border-none p-0 font-inherit text-inherit"
                               >
                                 {children}
-                              </a>
+                              </button>
                             ),
                             ul: ({ children }) => (
                               <ul className="space-y-2 my-4">{children}</ul>
@@ -1000,14 +1002,15 @@ Keep the tone professional, insightful, and practically applicable.`
                               );
                             },
                             a: ({ href, children }) => (
-                              <a 
-                                href={href} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors"
+                              <button 
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  if (href) window.open(href, '_blank', 'noopener,noreferrer');
+                                }}
+                                className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors cursor-pointer bg-transparent border-none p-0 font-inherit text-inherit"
                               >
                                 {children}
-                              </a>
+                              </button>
                             ),
                             ul: ({ children }) => (
                               <ul className="space-y-2 my-4">{children}</ul>
