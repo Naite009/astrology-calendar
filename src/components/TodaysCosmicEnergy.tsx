@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
-import { Sparkles, Moon, Sun, Clock, Loader2, RefreshCw, X, Utensils, Download, Share2, ChevronRight, AlertTriangle, Calendar, ArrowLeft } from "lucide-react";
+import { Sparkles, Moon, Sun, Clock, Loader2, RefreshCw, X, Utensils, Download, Share2, ChevronRight, AlertTriangle, Calendar, ArrowLeft, User } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { getMoonPhase, getPlanetaryPositions, calculateDailyAspects, PlanetaryPositions } from "@/lib/astrology";
 import { getVOCMoonDetails } from "@/lib/voidOfCourseMoon";
@@ -11,6 +12,9 @@ import html2canvas from "html2canvas";
 import { toast } from "@/hooks/use-toast";
 import { LunarCycleView } from "./LunarCycleView";
 import { CosmicRecipeCard, parseRecipeFromContent } from "./CosmicRecipeCard";
+import { useNatalChart, NatalChart } from "@/hooks/useNatalChart";
+import { PersonalizedTransitsPanel } from "./PersonalizedTransitsPanel";
+
 const ZODIAC_SYMBOLS: Record<string, string> = {
   Aries: "♈", Taurus: "♉", Gemini: "♊", Cancer: "♋",
   Leo: "♌", Virgo: "♍", Libra: "♎", Scorpio: "♏",
@@ -213,7 +217,22 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
   const [weekSummary, setWeekSummary] = useState<string | null>(null);
   const [monthSummary, setMonthSummary] = useState<string | null>(null);
   const [summaryLoading, setSummaryLoading] = useState<'week' | 'month' | null>(null);
+  const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  
+  // Get saved charts from the hook
+  const { userNatalChart, savedCharts } = useNatalChart();
+  
+  // Build list of available charts
+  const availableCharts: NatalChart[] = [
+    ...(userNatalChart ? [userNatalChart] : []),
+    ...savedCharts,
+  ];
+  
+  // Get selected chart object
+  const selectedChart = selectedChartId 
+    ? availableCharts.find(c => c.id === selectedChartId || c.name === selectedChartId) 
+    : null;
 
   const today = new Date();
   const todayStr = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
@@ -726,6 +745,59 @@ Keep the tone professional, insightful, and practically applicable.`
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Chart Selector for Personalization */}
+              {availableCharts.length > 0 && viewMode === 'daily' && (
+                <Card className="mb-6 border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
+                  <CardContent className="p-4">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                      <div className="flex items-center gap-2">
+                        <User className="h-5 w-5 text-primary" />
+                        <span className="text-sm font-medium">Personalize for:</span>
+                      </div>
+                      <Select
+                        value={selectedChartId || ''}
+                        onValueChange={(value) => setSelectedChartId(value || null)}
+                      >
+                        <SelectTrigger className="w-[200px] bg-background">
+                          <SelectValue placeholder="Select a chart..." />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border-border z-[100]">
+                          <SelectItem value="">None (General)</SelectItem>
+                          {availableCharts.map((chart) => (
+                            <SelectItem key={chart.id || chart.name} value={chart.id || chart.name}>
+                              {chart.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {selectedChart && (
+                        <Badge variant="outline" className="bg-primary/10">
+                          {selectedChart.planets.Sun?.sign && `☉ ${selectedChart.planets.Sun.sign}`}
+                          {selectedChart.planets.Ascendant?.sign && ` • ASC ${selectedChart.planets.Ascendant.sign}`}
+                        </Badge>
+                      )}
+                    </div>
+                    {!selectedChart && (
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Select a chart to see how today's transits affect you personally
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Personalized Transits Panel */}
+              {selectedChart && viewMode === 'daily' && (
+                <div className="mb-6">
+                  <PersonalizedTransitsPanel
+                    chart={selectedChart}
+                    transitPositions={planets}
+                    moonSign={currentMoonSign || planets.moon?.sign || 'Unknown'}
+                    moonDegree={currentMoonDegree || planets.moon?.degree || 0}
+                  />
+                </div>
+              )}
 
               {/* Void of Course Moon Alert */}
               {vocInfo.isVOC && vocInfo.start && vocInfo.end && (
