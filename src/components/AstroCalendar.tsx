@@ -272,7 +272,7 @@ export const AstroCalendar = () => {
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                Tables
+                ☽ Almanac
               </button>
               <button
                 onClick={() => setViewMode("guide")}
