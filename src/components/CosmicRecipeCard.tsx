@@ -110,24 +110,34 @@ export function parseRecipeFromContent(content: string): RecipeData | null {
 
 export const CosmicRecipeCard = ({ recipe, date }: CosmicRecipeCardProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
-  const printRef = useRef<HTMLDivElement>(null);
+  const printCardRef = useRef<HTMLDivElement>(null);
+
+  const printColor = ELEMENT_PRINT_COLORS[recipe.element] || ELEMENT_PRINT_COLORS.Water;
 
   const handleDownload = async () => {
-    if (!cardRef.current) return;
+    if (!printCardRef.current) return;
 
     try {
-      const canvas = await html2canvas(cardRef.current, {
+      // Temporarily show the print-friendly card for capture
+      printCardRef.current.style.position = 'absolute';
+      printCardRef.current.style.left = '-9999px';
+      printCardRef.current.style.display = 'block';
+
+      const canvas = await html2canvas(printCardRef.current, {
         scale: 2,
-        backgroundColor: null,
+        backgroundColor: '#ffffff',
         useCORS: true,
       });
+
+      // Hide it again
+      printCardRef.current.style.display = 'none';
 
       const link = document.createElement("a");
       link.download = `cosmic-recipe-${date.replace(/[^a-z0-9]/gi, '-')}.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
 
-      toast({ title: "Recipe card downloaded!", description: "Share your cosmic recipe ✨" });
+      toast({ title: "Recipe card downloaded!", description: "Printer-friendly version saved ✨" });
     } catch (error) {
       console.error("Download failed:", error);
       toast({ title: "Download failed", description: "Please try again", variant: "destructive" });
@@ -135,8 +145,6 @@ export const CosmicRecipeCard = ({ recipe, date }: CosmicRecipeCardProps) => {
   };
 
   const handlePrint = () => {
-    const printColor = ELEMENT_PRINT_COLORS[recipe.element] || ELEMENT_PRINT_COLORS.Water;
-    
     const printContent = `
       <!DOCTYPE html>
       <html>
@@ -389,6 +397,70 @@ export const CosmicRecipeCard = ({ recipe, date }: CosmicRecipeCardProps) => {
             astro-calendar • {date}
           </div>
         </Card>
+      </div>
+
+      {/* Hidden printer-friendly card for download */}
+      <div
+        ref={printCardRef}
+        style={{ display: 'none', width: '800px', padding: '40px', fontFamily: 'Georgia, serif' }}
+      >
+        <div style={{ borderBottom: `3px solid ${printColor}`, paddingBottom: '16px', marginBottom: '24px' }}>
+          <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '2px', color: printColor, marginBottom: '8px' }}>
+            {recipe.element} Element • {recipe.moonSign}
+          </div>
+          <h1 style={{ fontSize: '28px', fontWeight: 500, color: '#111827', marginBottom: '8px' }}>
+            {recipe.name}
+          </h1>
+          <div style={{ fontStyle: 'italic', color: '#6b7280', fontSize: '14px' }}>
+            {recipe.tagline}
+          </div>
+          <div style={{ display: 'flex', gap: '24px', marginTop: '16px', fontSize: '13px', color: '#4b5563' }}>
+            <span>Serves: {recipe.servings}</span>
+            <span>Prep: {recipe.prepTime}</span>
+            <span>Cook: {recipe.cookTime}</span>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+          <div>
+            <h2 style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px', color: printColor, marginBottom: '12px', fontWeight: 600 }}>
+              Ingredients
+            </h2>
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              {recipe.ingredients.map((ing, i) => (
+                <li key={i} style={{ marginBottom: '8px', fontSize: '13px', display: 'flex', gap: '8px' }}>
+                  <span style={{ color: printColor, fontWeight: 'bold' }}>•</span>
+                  <span>{normalizeIngredientMeasurement(ing)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h2 style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px', color: printColor, marginBottom: '12px', fontWeight: 600 }}>
+              Instructions
+            </h2>
+            <ol style={{ listStyle: 'none', padding: 0 }}>
+              {recipe.instructions.map((step, i) => (
+                <li key={i} style={{ marginBottom: '8px', fontSize: '13px', display: 'flex', gap: '8px' }}>
+                  <span style={{ color: printColor, fontWeight: 'bold', minWidth: '24px' }}>{i + 1}.</span>
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '32px', padding: '16px', border: `1px solid ${printColor}`, borderRadius: '8px', background: '#f9fafb' }}>
+          <span style={{ color: printColor, fontWeight: 600, fontSize: '13px' }}>✨ Cosmic Note</span>
+          <p style={{ fontStyle: 'italic', fontSize: '13px', color: '#4b5563', marginTop: '4px' }}>
+            {recipe.cosmicNote}
+          </p>
+        </div>
+
+        <div style={{ marginTop: '24px', textAlign: 'right', fontSize: '11px', color: '#9ca3af' }}>
+          astro-calendar • {date}
+        </div>
       </div>
     </div>
   );
