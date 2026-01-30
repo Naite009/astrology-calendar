@@ -21,6 +21,7 @@ import {
 import { Sun, Moon, X, Sparkles, AlertTriangle, Heart, Zap, BookOpen, Filter, User, Check } from 'lucide-react';
 import { getPlanetSymbol } from '@/components/PlanetSymbol';
 import { NatalChart } from '@/hooks/useNatalChart';
+import { getPlanetHouse } from '@/lib/sacredScriptHelpers';
 
 const SIGN_SYMBOLS: Record<string, string> = {
   'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊', 'Cancer': '♋',
@@ -54,20 +55,30 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
     return allCharts.find(c => c.id === selectedChartId) || null;
   }, [selectedChartId, allCharts]);
 
-  // Extract factors from the selected chart (planet-sign combinations)
+  // Extract factors from the selected chart (planet-sign and planet-house combinations)
   const chartFactors = useMemo(() => {
     if (!selectedChart?.planets) return new Set<string>();
     
     const factors = new Set<string>();
-    const planetEntries = Object.entries(selectedChart.planets) as [string, { sign: string } | undefined][];
+    const planetNames = Object.keys(selectedChart.planets) as (keyof typeof selectedChart.planets)[];
     
-    for (const [planet, data] of planetEntries) {
+    for (const planetName of planetNames) {
+      const data = selectedChart.planets[planetName];
       if (!data?.sign) continue;
+      
       // Add planet-sign combo identifier
-      factors.add(`${planet}|${data.sign}`);
+      factors.add(`${planetName}|${data.sign}`);
       // Also track individual factors
-      factors.add(planet);
+      factors.add(planetName);
       factors.add(data.sign);
+      
+      // Calculate and add planet-house combo
+      const house = getPlanetHouse(selectedChart, planetName);
+      if (house) {
+        const houseLabel = `${house}${house === 1 ? 'st' : house === 2 ? 'nd' : house === 3 ? 'rd' : 'th'} House`;
+        factors.add(`${planetName}|${houseLabel}`);
+        factors.add(houseLabel);
+      }
     }
     
     return factors;
@@ -79,14 +90,26 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
     
     const comboPlanets = combo.factors.filter(f => PLANETS.includes(f));
     const comboSigns = combo.factors.filter(f => SIGNS.includes(f));
+    const comboHouses = combo.factors.filter(f => HOUSES.includes(f));
     
     // For planet-sign combos, check if the chart has that planet in that sign
-    if (comboPlanets.length === 1 && comboSigns.length === 1) {
+    if (comboPlanets.length === 1 && comboSigns.length === 1 && comboHouses.length === 0) {
       return chartFactors.has(`${comboPlanets[0]}|${comboSigns[0]}`);
     }
     
+    // For planet-house combos, check if the chart has that planet in that house
+    if (comboPlanets.length === 1 && comboHouses.length === 1 && comboSigns.length === 0) {
+      return chartFactors.has(`${comboPlanets[0]}|${comboHouses[0]}`);
+    }
+    
+    // For planet-sign-house combos, check both
+    if (comboPlanets.length === 1 && comboSigns.length === 1 && comboHouses.length === 1) {
+      return chartFactors.has(`${comboPlanets[0]}|${comboSigns[0]}`) && 
+             chartFactors.has(`${comboPlanets[0]}|${comboHouses[0]}`);
+    }
+    
     // For planet-only or multi-planet, check if all planets are present
-    if (comboPlanets.length > 0 && comboSigns.length === 0) {
+    if (comboPlanets.length > 0 && comboSigns.length === 0 && comboHouses.length === 0) {
       return comboPlanets.every(p => chartFactors.has(p));
     }
     
