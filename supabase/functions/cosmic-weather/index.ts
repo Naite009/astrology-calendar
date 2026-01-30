@@ -118,6 +118,30 @@ Based on the Moon in [SIGN], today's planetary weather, AND Ayurvedic Ritucharya
 **🍵 Drink of the Day: [Beverage Name](https://www.google.com/search?q=beverage+recipe)**
 *Why:* [Why this drink matches cosmic weather AND current seasonal dosha needs]
 
+## ✨ Featured Recipe of the Day
+Create ONE complete, original recipe that embodies today's cosmic and Ayurvedic energy. This should be a simple, shareable recipe.
+
+**RECIPE_START**
+RECIPE_NAME: [Creative name incorporating the Moon sign or planetary theme - e.g., "Cancer Moon Comfort Kitchari" or "Mars Day Warming Dal"]
+RECIPE_TAGLINE: [One poetic line about why this recipe aligns with today's energy]
+SERVINGS: [number]
+PREP_TIME: [time]
+COOK_TIME: [time]
+MOON_SIGN: [current Moon sign symbol and name]
+ELEMENT: [Fire/Earth/Air/Water]
+INGREDIENTS:
+- [ingredient 1 with amount]
+- [ingredient 2 with amount]
+- [ingredient 3 with amount]
+- [continue for all ingredients, typically 6-12 items]
+INSTRUCTIONS:
+1. [Step 1]
+2. [Step 2]
+3. [Step 3]
+- [continue for all steps]
+COSMIC_NOTE: [2-3 sentences explaining the astrological and Ayurvedic significance of this dish]
+**RECIPE_END**
+
 IMPORTANT: Make all dish/food names clickable markdown links using this format: [Dish Name](https://www.google.com/search?q=dish+name+recipe) - replace spaces with + in the URL.
 
 INTEGRATED COSMIC-AYURVEDIC FOOD WISDOM:
