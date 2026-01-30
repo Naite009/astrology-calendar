@@ -756,14 +756,14 @@ Keep the tone professional, insightful, and practically applicable.`
                         <span className="text-sm font-medium">Personalize for:</span>
                       </div>
                       <Select
-                        value={selectedChartId || ''}
-                        onValueChange={(value) => setSelectedChartId(value || null)}
+                        value={selectedChartId || '__none__'}
+                        onValueChange={(value) => setSelectedChartId(value === '__none__' ? null : value)}
                       >
                         <SelectTrigger className="w-[200px] bg-background">
                           <SelectValue placeholder="Select a chart..." />
                         </SelectTrigger>
                         <SelectContent className="bg-background border-border z-[100]">
-                          <SelectItem value="">None (General)</SelectItem>
+                          <SelectItem value="__none__">None (General)</SelectItem>
                           {availableCharts.map((chart) => (
                             <SelectItem key={chart.id || chart.name} value={chart.id || chart.name}>
                               {chart.name}
