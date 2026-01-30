@@ -116,13 +116,11 @@ export const CosmicEnergyButton = ({ onClick }: { onClick: () => void }) => {
   return (
     <button
       onClick={onClick}
-      className="flex h-10 items-center gap-2 px-3 border border-primary/50 bg-primary/10 text-primary transition-all duration-200 hover:border-primary hover:bg-primary/20 rounded-sm"
+      className="flex h-10 items-center gap-2 px-4 border-2 border-primary bg-primary/10 text-primary font-medium transition-all duration-200 hover:bg-primary hover:text-primary-foreground rounded-sm"
       aria-label="Today's Cosmic Energy"
-      title="Click for Today's Cosmic Weather"
     >
-      <Sparkles size={18} className="animate-pulse" />
-      <span className="text-[11px] uppercase tracking-widest font-medium hidden sm:inline">
-        Cosmic Weather
+      <span className="text-sm">
+        Click for Today's Cosmic Weather
       </span>
     </button>
   );
