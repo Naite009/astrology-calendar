@@ -118,6 +118,13 @@ function formatTime(date: Date): string {
   return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 }
 
+// Format degrees with minutes (e.g., "24°32'")
+function formatDegreeMinutes(degree: number, minutes?: number): string {
+  const deg = Math.floor(degree);
+  const min = minutes !== undefined ? minutes : Math.floor((degree - deg) * 60);
+  return `${deg}°${min.toString().padStart(2, '0')}'`;
+}
+
 // Component for the header button with hover preview
 export const CosmicEnergyButton = ({ onClick }: { onClick: () => void }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -184,7 +191,9 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
   const [lastFetched, setLastFetched] = useState<string | null>(null);
   const [weekForecast, setWeekForecast] = useState<WeekDay[]>([]);
   const [currentMoonDegree, setCurrentMoonDegree] = useState<number>(0);
+  const [currentMoonMinutes, setCurrentMoonMinutes] = useState<number>(0);
   const [currentMoonSign, setCurrentMoonSign] = useState<string>('');
+  const [currentPlanets, setCurrentPlanets] = useState<PlanetaryPositions | null>(null);
   const [vocInfo, setVocInfo] = useState<VOCInfo>({ isVOC: false });
   const [selectedWeekDay, setSelectedWeekDay] = useState<number>(0); // 0 = today
   const [weekDayLoading, setWeekDayLoading] = useState<number | null>(null);
@@ -237,14 +246,16 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
     }
   }, [voiceStyle, todayKey, isLoading]);
 
-  // Update moon position and VOC in real-time when modal is open
+  // Update all planetary positions in real-time when modal is open
   useEffect(() => {
     if (!isOpen) return;
     
-    const updateMoonPosition = () => {
+    const updatePlanetaryPositions = () => {
       const now = new Date();
       const planets = getPlanetaryPositions(now);
-      setCurrentMoonDegree(planets.moon?.degree || 0);
+      setCurrentPlanets(planets);
+      setCurrentMoonDegree(planets.moon?.rawDegree || planets.moon?.degree || 0);
+      setCurrentMoonMinutes(planets.moon?.minutes || 0);
       setCurrentMoonSign(planets.moon?.sign || 'Unknown');
       
       // Get VOC info
@@ -252,9 +263,9 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
       setVocInfo(voc);
     };
     
-    updateMoonPosition();
-    // Update every minute
-    const interval = setInterval(updateMoonPosition, 60000);
+    updatePlanetaryPositions();
+    // Update every minute for real-time tracking
+    const interval = setInterval(updatePlanetaryPositions, 60000);
     
     return () => clearInterval(interval);
   }, [isOpen]);
@@ -280,9 +291,11 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
       const stelliums = findStelliums(planets);
       const voc = getVOCMoonDetails(now);
 
-      // Update current moon position
+      // Update current positions
       if (!targetDate) {
-        setCurrentMoonDegree(planets.moon?.degree || 0);
+        setCurrentPlanets(planets);
+        setCurrentMoonDegree(planets.moon?.rawDegree || planets.moon?.degree || 0);
+        setCurrentMoonMinutes(planets.moon?.minutes || 0);
         setCurrentMoonSign(planets.moon?.sign || 'Unknown');
         setVocInfo(voc);
       }
@@ -547,10 +560,12 @@ Keep the tone professional, insightful, and practically applicable.`
 
   useEffect(() => {
     if (isOpen && !isLoading) {
-      // Always update week forecast and moon position when opening
+      // Always update week forecast and planetary positions when opening
       setWeekForecast(getWeekForecast());
       const planets = getPlanetaryPositions(new Date());
-      setCurrentMoonDegree(planets.moon?.degree || 0);
+      setCurrentPlanets(planets);
+      setCurrentMoonDegree(planets.moon?.rawDegree || planets.moon?.degree || 0);
+      setCurrentMoonMinutes(planets.moon?.minutes || 0);
       setCurrentMoonSign(planets.moon?.sign || 'Unknown');
       const voc = getVOCMoonDetails(new Date());
       setVocInfo(voc);
@@ -602,7 +617,7 @@ Keep the tone professional, insightful, and practically applicable.`
   const handleShare = async () => {
     if (!cosmicData) return;
     
-    const shareText = `✨ Today's Cosmic Energy - ${todayStr}\n\n☽ Moon in ${cosmicData.moonSign} (${currentMoonDegree.toFixed(1)}°)\n☉ Sun in ${cosmicData.sunSign}\n🌙 ${cosmicData.moonPhase}\n\n#astrology #cosmicweather`;
+    const shareText = `✨ Today's Cosmic Energy - ${todayStr}\n\n☽ Moon in ${cosmicData.moonSign} (${formatDegreeMinutes(currentMoonDegree, currentMoonMinutes)})\n☉ Sun in ${cosmicData.sunSign}\n🌙 ${cosmicData.moonPhase}\n\n#astrology #cosmicweather`;
     
     if (navigator.share) {
       try {
@@ -721,22 +736,25 @@ Keep the tone professional, insightful, and practically applicable.`
                       {ZODIAC_SYMBOLS[currentMoonSign || planets.moon?.sign || '']} {currentMoonSign || planets.moon?.sign}
                     </p>
                     <p className="text-lg font-bold text-primary">
-                      {currentMoonDegree.toFixed(1)}°
+                      {formatDegreeMinutes(currentMoonDegree, currentMoonMinutes)}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Live position
+                      Live • Updates every minute
                     </p>
                   </CardContent>
                 </Card>
                 <Card className="bg-amber-500/5 border-amber-500/20">
                   <CardContent className="p-4 text-center">
                     <Sun className="h-6 w-6 mx-auto mb-2 text-amber-500" />
-                    <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Sun Sign</p>
+                    <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Sun Position</p>
                     <p className="font-medium">
-                      {ZODIAC_SYMBOLS[planets.sun?.sign || '']} {planets.sun?.sign}
-                      <span className="text-muted-foreground text-sm ml-1">
-                        ({planets.sun?.degree || 0}°)
-                      </span>
+                      {ZODIAC_SYMBOLS[(currentPlanets?.sun?.sign || planets.sun?.sign) || '']} {currentPlanets?.sun?.sign || planets.sun?.sign}
+                    </p>
+                    <p className="text-lg font-bold text-amber-600">
+                      {formatDegreeMinutes(currentPlanets?.sun?.rawDegree || currentPlanets?.sun?.degree || planets.sun?.degree || 0, currentPlanets?.sun?.minutes)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Live position
                     </p>
                   </CardContent>
                 </Card>

@@ -22,7 +22,9 @@ export interface ZodiacPosition {
   sign: string;
   signName: string;
   degree: number;
+  minutes: number; // 0-59 arc minutes
   fullDegree: string;
+  rawDegree: number; // Full degree with decimals within sign (0-30)
 }
 
 export interface ExtendedZodiacPosition extends ZodiacPosition {
@@ -140,13 +142,17 @@ export interface DayData {
 export const longitudeToZodiac = (longitude: number): ZodiacPosition => {
   const normalizedLon = ((longitude % 360) + 360) % 360;
   const signIndex = Math.floor(normalizedLon / 30);
-  const degree = Math.floor(normalizedLon % 30);
+  const rawDegree = normalizedLon % 30; // Full decimal degree within sign
+  const degree = Math.floor(rawDegree);
+  const minutes = Math.floor((rawDegree - degree) * 60);
 
   return {
     sign: ZODIAC_SIGNS[signIndex].symbol,
     signName: ZODIAC_SIGNS[signIndex].name,
     degree,
-    fullDegree: `${degree}° ${ZODIAC_SIGNS[signIndex].symbol}`,
+    minutes,
+    rawDegree,
+    fullDegree: `${degree}°${minutes.toString().padStart(2, '0')}' ${ZODIAC_SIGNS[signIndex].symbol}`,
   };
 };
 
@@ -805,7 +811,7 @@ export const getPlanetaryPositions = (date: Date): PlanetaryPositions => {
       const ecliptic = Astronomy.Ecliptic(vector);
       return longitudeToZodiac(ecliptic.elon);
     } catch {
-      return { sign: '♈', signName: 'Aries', degree: 0, fullDegree: '0° ♈' };
+      return { sign: '♈', signName: 'Aries', degree: 0, minutes: 0, rawDegree: 0, fullDegree: "0°00' ♈" };
     }
   };
 
