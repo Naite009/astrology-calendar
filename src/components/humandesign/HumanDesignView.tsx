@@ -26,7 +26,7 @@ export const HumanDesignView = () => {
   const { charts, selectedChart, addChart, deleteChart, selectChart } = useHumanDesignChart();
   const { userData: mainUserData } = useUserData();
   const [showForm, setShowForm] = useState(false);
-  const [activeTab, setActiveTab] = useState<'bodygraph' | 'overview' | 'activations' | 'centers'>('bodygraph');
+  const [activeTab, setActiveTab] = useState<'overview' | 'activations' | 'centers' | 'bodygraph'>('overview');
 
   const handleSaveChart = (chart: HumanDesignChart) => {
     const savedChart = addChart(chart);
@@ -125,9 +125,8 @@ export const HumanDesignView = () => {
             </div>
           </div>
 
-          {/* Tabs */}
           <div className="flex gap-1 border-b border-border">
-            {(['bodygraph', 'overview', 'activations', 'centers'] as const).map(tab => (
+            {(['overview', 'activations', 'centers', 'bodygraph'] as const).map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -137,22 +136,25 @@ export const HumanDesignView = () => {
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                {tab}
+                {tab === 'bodygraph' ? 'Bodygraph (Beta)' : tab}
               </button>
             ))}
           </div>
 
           {/* Tab Content */}
+          {activeTab === 'overview' && <HDChartSummary chart={selectedChart} />}
+
           {activeTab === 'bodygraph' && (
             <div className="rounded border border-border bg-card p-6">
+              <div className="mb-4 rounded border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm text-yellow-800 dark:text-yellow-200">
+                ⚠️ The bodygraph visual is in beta and may have layout issues. Use the Activations tab for accurate gate data.
+              </div>
               <h4 className="mb-4 text-[10px] uppercase tracking-widest text-muted-foreground">
                 Interactive Bodygraph
               </h4>
               <Bodygraph chart={selectedChart} />
             </div>
           )}
-
-          {activeTab === 'overview' && <HDChartSummary chart={selectedChart} />}
 
           {activeTab === 'activations' && (
             <div className="rounded border border-border bg-card p-6">
@@ -168,7 +170,7 @@ export const HumanDesignView = () => {
                   <span className="font-medium text-foreground">Personality (Black):</span> Birth moment
                 </span>
                 <span>
-                  <span className="font-medium text-red-400">Design (Red):</span> 88° before birth
+                  <span className="font-medium text-destructive">Design (Red):</span> 88° before birth
                 </span>
               </div>
             </div>

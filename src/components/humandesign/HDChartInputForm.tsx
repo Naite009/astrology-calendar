@@ -1,12 +1,14 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { X, Upload, FileImage, Loader2, UserCheck } from 'lucide-react';
+import { X, Upload, FileImage, Loader2, UserCheck, Edit3 } from 'lucide-react';
 import { calculateHumanDesignChart } from '@/lib/humanDesignCalculator';
-import { HumanDesignChart } from '@/types/humanDesign';
+import { HumanDesignChart, HDPlanetaryActivation } from '@/types/humanDesign';
 import { getTimezoneInfoForDate, lookupTimezone } from '@/lib/timezoneUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { UserData } from '@/hooks/useUserData';
 import { namesMatch } from '@/lib/nameMatching';
+import { HDGateEditor } from './HDGateEditor';
+import heic2any from 'heic2any';
 
 interface HDChartInputFormProps {
   onSave: (chart: HumanDesignChart) => void;
@@ -51,6 +53,23 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
   const [isDragging, setIsDragging] = useState(false);
   const [timezoneAutoDetected, setTimezoneAutoDetected] = useState(false);
   const [isMainUser, setIsMainUser] = useState(false);
+  
+  // Parsed HD data for editing
+  const [showGateEditor, setShowGateEditor] = useState(false);
+  const [parsedPersonality, setParsedPersonality] = useState<HDPlanetaryActivation[]>([]);
+  const [parsedDesign, setParsedDesign] = useState<HDPlanetaryActivation[]>([]);
+  const [parsedHDData, setParsedHDData] = useState<{
+    hdType?: string;
+    profile?: string;
+    strategy?: string;
+    authority?: string;
+    definition?: string;
+    incarnationCross?: string;
+    definedCenters?: string[];
+    definedChannels?: string[];
+  } | null>(null);
+  const [parseWarnings, setParseWarnings] = useState<string[]>([]);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const locationDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -141,11 +160,38 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
     setIsDragging(false);
   }, []);
 
+  const convertHeicToJpeg = async (file: File): Promise<File> => {
+    try {
+      const blob = await heic2any({
+        blob: file,
+        toType: 'image/jpeg',
+        quality: 0.9,
+      });
+      
+      const resultBlob = Array.isArray(blob) ? blob[0] : blob;
+      const newFileName = file.name.replace(/\.heic$/i, '.jpg');
+      return new File([resultBlob], newFileName, { type: 'image/jpeg' });
+    } catch (err) {
+      console.error('HEIC conversion failed:', err);
+      throw new Error('Failed to convert HEIC file. Please convert to JPG manually.');
+    }
+  };
+
   const parseHDChart = async (file: File) => {
     setIsParsing(true);
     setError(null);
+    setParseWarnings([]);
 
     try {
+      // Handle HEIC files - convert to JPEG first
+      let processedFile = file;
+      const isHeic = file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic');
+      
+      if (isHeic) {
+        toast.info('Converting HEIC to JPEG...');
+        processedFile = await convertHeicToJpeg(file);
+      }
+
       // Convert file to base64
       const reader = new FileReader();
       const base64Promise = new Promise<string>((resolve, reject) => {
@@ -155,14 +201,14 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
         };
         reader.onerror = reject;
       });
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(processedFile);
       const imageBase64 = await base64Promise;
 
       // Determine file type
       let fileType = 'image';
-      if (file.type === 'application/pdf') {
+      if (processedFile.type === 'application/pdf') {
         fileType = 'pdf';
-      } else if (file.type.includes('word') || file.name.endsWith('.docx') || file.name.endsWith('.doc')) {
+      } else if (processedFile.type.includes('word') || processedFile.name.endsWith('.docx') || processedFile.name.endsWith('.doc')) {
         fileType = 'word';
       }
 
@@ -171,7 +217,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
         body: {
           imageBase64,
           fileType,
-          fileName: file.name,
+          fileName: processedFile.name,
         },
       });
 
@@ -197,9 +243,52 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
           }));
         }
 
-        // If we got full HD data, we could create the chart directly
-        if (parsed.hdType && parsed.profile && parsed.designActivations && parsed.personalityActivations) {
-          toast.success('HD chart parsed successfully! Verify the data and click Generate Chart.');
+        // Store parsed HD data for display/editing
+        if (parsed.hdType || parsed.profile) {
+          setParsedHDData({
+            hdType: parsed.hdType,
+            profile: parsed.profile,
+            strategy: parsed.strategy,
+            authority: parsed.authority,
+            definition: parsed.definition,
+            incarnationCross: parsed.incarnationCross,
+            definedCenters: parsed.definedCenters,
+            definedChannels: parsed.definedChannels,
+          });
+        }
+
+        // Populate gate editor with parsed activations
+        if (parsed.personalityActivations && Array.isArray(parsed.personalityActivations)) {
+          const pActivations: HDPlanetaryActivation[] = parsed.personalityActivations.map((a: any) => ({
+            planet: a.planet,
+            gate: a.gate,
+            line: a.line,
+            longitude: 0,
+            isConscious: true,
+          }));
+          setParsedPersonality(pActivations);
+        }
+
+        if (parsed.designActivations && Array.isArray(parsed.designActivations)) {
+          const dActivations: HDPlanetaryActivation[] = parsed.designActivations.map((a: any) => ({
+            planet: a.planet,
+            gate: a.gate,
+            line: a.line,
+            longitude: 0,
+            isConscious: false,
+          }));
+          setParsedDesign(dActivations);
+        }
+
+        // Collect warnings
+        if (parsed.warnings && Array.isArray(parsed.warnings)) {
+          setParseWarnings(parsed.warnings);
+        }
+
+        // Show gate editor if we got activations
+        if ((parsed.personalityActivations?.length > 0) || (parsed.designActivations?.length > 0)) {
+          setShowGateEditor(true);
+          toast.success('Chart parsed! Review and correct the gates below, then click Generate Chart.');
         } else if (parsed.birthInfo) {
           toast.success('Birth data extracted. Fill in any missing fields.');
         } else {
@@ -224,9 +313,11 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
     const file = files[0];
 
     if (file) {
-      const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'];
-      if (!validTypes.includes(file.type) && !file.name.endsWith('.pdf')) {
-        setError('Please upload an image (JPG, PNG, WEBP) or PDF file.');
+      const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'application/pdf'];
+      const isHeic = file.name.toLowerCase().endsWith('.heic') || file.type === 'image/heic';
+      
+      if (!validTypes.includes(file.type) && !file.name.endsWith('.pdf') && !isHeic) {
+        setError('Please upload an image (JPG, PNG, HEIC) or PDF file.');
         return;
       }
       await parseHDChart(file);
@@ -276,7 +367,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*,.pdf"
+            accept="image/*,.pdf,.heic"
             onChange={handleFileSelect}
             className="hidden"
           />
@@ -295,11 +386,70 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
                 Drag & drop HD chart image or PDF
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                or click to browse • JPG, PNG, PDF supported
+                or click to browse • JPG, PNG, HEIC, PDF supported
               </p>
             </>
           )}
         </div>
+
+        {/* Parsed HD Data Summary */}
+        {parsedHDData && (parsedHDData.hdType || parsedHDData.profile) && (
+          <div className="mb-6 rounded border border-primary/30 bg-primary/5 p-4">
+            <h4 className="text-[10px] uppercase tracking-widest text-primary mb-3">Parsed Chart Data</h4>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              {parsedHDData.hdType && (
+                <div>
+                  <span className="text-muted-foreground">Type:</span>{' '}
+                  <span className="font-medium">{parsedHDData.hdType}</span>
+                </div>
+              )}
+              {parsedHDData.profile && (
+                <div>
+                  <span className="text-muted-foreground">Profile:</span>{' '}
+                  <span className="font-medium">{parsedHDData.profile}</span>
+                </div>
+              )}
+              {parsedHDData.authority && (
+                <div>
+                  <span className="text-muted-foreground">Authority:</span>{' '}
+                  <span className="font-medium">{parsedHDData.authority}</span>
+                </div>
+              )}
+              {parsedHDData.definition && (
+                <div>
+                  <span className="text-muted-foreground">Definition:</span>{' '}
+                  <span className="font-medium">{parsedHDData.definition}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Gate Editor Section */}
+        {showGateEditor && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <Edit3 size={12} />
+                Review & Edit Gates
+              </h4>
+              <button
+                type="button"
+                onClick={() => setShowGateEditor(false)}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                Hide
+              </button>
+            </div>
+            <HDGateEditor
+              personalityActivations={parsedPersonality}
+              designActivations={parsedDesign}
+              onPersonalityChange={setParsedPersonality}
+              onDesignChange={setParsedDesign}
+              warnings={parseWarnings}
+            />
+          </div>
+        )}
 
         <div className="flex items-center gap-4 mb-6">
           <div className="flex-1 h-px bg-border" />
