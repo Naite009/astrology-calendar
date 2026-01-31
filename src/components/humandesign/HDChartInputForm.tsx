@@ -160,7 +160,11 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
 
   // Save chart using the parsed gate data (not recalculating from birth data)
   const handleSaveFromParsedData = () => {
-    console.log('[HD] handleSaveFromParsedData called', { name: formData.name, personalityCount: parsedPersonality.length });
+    console.log('[HD] handleSaveFromParsedData called', { 
+      name: formData.name, 
+      personalityCount: parsedPersonality.length,
+      parsedHDData 
+    });
     
     if (!formData.name || parsedPersonality.length === 0) {
       toast.error('Name and gate data are required');
@@ -174,21 +178,28 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
 
       const definedChannels = calculateDefinedChannels(allGates);
       const definedCenters = calculateDefinedCenters(definedChannels);
-      const definitionType = calculateDefinitionType(definedCenters, definedChannels);
-      const hdType = determineType(definedCenters, definedChannels);
-      const authority = determineAuthority(definedCenters, hdType);
-      const strategy = determineStrategy(hdType);
       
-      console.log('[HD] Calculated:', { definedChannels, definedCenters, definitionType, hdType });
+      // Calculate fallbacks
+      const calculatedDefinitionType = calculateDefinitionType(definedCenters, definedChannels);
+      const calculatedHdType = determineType(definedCenters, definedChannels);
+      const calculatedAuthority = determineAuthority(definedCenters, calculatedHdType);
+      const strategy = determineStrategy(parsedHDData?.hdType as any || calculatedHdType);
+      
+      console.log('[HD] Calculated fallbacks:', { definedChannels, definedCenters, calculatedDefinitionType, calculatedHdType });
+      console.log('[HD] Parsed data (priority):', parsedHDData);
 
-      // Use parsed data for type/definition if available (more accurate than calculation)
-      const finalType = parsedHDData?.hdType || hdType;
-      const finalDefinition = parsedHDData?.definition || definitionType;
+      // PRIORITY: Use parsed data over calculations
+      const finalType = parsedHDData?.hdType || calculatedHdType;
+      const finalDefinition = parsedHDData?.definition || calculatedDefinitionType;
+      const finalAuthority = parsedHDData?.authority || calculatedAuthority;
 
-      // Get profile from Sun lines
+      // Get profile from parsed data FIRST, then fallback to Sun lines
       const pSun = parsedPersonality.find(a => a.planet === 'Sun');
       const dSun = parsedDesign.find(a => a.planet === 'Sun');
-      const profile = `${pSun?.line || 1}/${dSun?.line || 1}` as any;
+      const calculatedProfile = `${pSun?.line || 1}/${dSun?.line || 1}`;
+      const finalProfile = parsedHDData?.profile || calculatedProfile;
+      
+      console.log('[HD] Final values:', { finalType, finalProfile, finalAuthority, finalDefinition });
 
       // Build all centers list
       const allCenters = ['Head', 'Ajna', 'Throat', 'G', 'Heart', 'SolarPlexus', 'Sacral', 'Spleen', 'Root'] as const;
@@ -202,6 +213,9 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
         isConscious: a.isConscious,
       }));
 
+      // Build incarnation cross from parsed data or calculated
+      const incarnationCrossName = parsedHDData?.incarnationCross || `Cross of Gate ${pSun?.gate || 'Unknown'}`;
+
       const chart: HumanDesignChart = {
         id: crypto.randomUUID(),
         name: formData.name,
@@ -213,19 +227,20 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
         personalityDateTime: new Date(),
         designDateTime: new Date(),
         type: finalType as any,
-        profile: parsedHDData?.profile as any || profile,
-        authority: parsedHDData?.authority as any || authority,
+        profile: finalProfile as any,
+        authority: finalAuthority as any,
         strategy: strategy,
         definitionType: finalDefinition as any,
         personalityActivations: parsedPersonality,
         designActivations: parsedDesign,
-        definedCenters: definedCenters,
+        definedCenters: parsedHDData?.definedCenters as any || definedCenters,
         undefinedCenters: undefinedCenters as any[],
-        definedChannels: definedChannels,
+        definedChannels: parsedHDData?.definedChannels || definedChannels,
         activatedGates: activatedGates,
         incarnationCross: {
-          name: 'Cross of ' + (pSun?.gate || 'Unknown'),
-          type: 'Right Angle',
+          name: incarnationCrossName,
+          type: incarnationCrossName.includes('Left') ? 'Left Angle' : 
+                incarnationCrossName.includes('Juxta') ? 'Juxtaposition' : 'Right Angle',
           gates: {
             consciousSun: pSun?.gate || 1,
             consciousEarth: parsedPersonality.find(a => a.planet === 'Earth')?.gate || 2,
@@ -238,8 +253,9 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
         updatedAt: new Date().toISOString(),
       };
 
+      console.log('[HD] Final chart to save:', chart);
       onSave(chart);
-      toast.success('Chart saved from parsed data!');
+      toast.success(`Chart saved! Type: ${finalType}, Profile: ${finalProfile}`);
       onClose();
     } catch (err) {
       console.error('[HD] Save error:', err);
