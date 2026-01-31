@@ -1,19 +1,17 @@
 import { useState } from 'react';
-import { Plus, User, Trash2, ChevronDown } from 'lucide-react';
+import { Plus, User, Trash2 } from 'lucide-react';
 import { useHumanDesignChart } from '@/hooks/useHumanDesignChart';
 import { useUserData } from '@/hooks/useUserData';
 import { HDChartInputForm } from './HDChartInputForm';
 import { HDChartSummary } from './HDChartSummary';
 import { HDActivationsTable } from './HDActivationsTable';
 import { Bodygraph } from './Bodygraph';
+import { CentersAnalysis } from './CentersAnalysis';
+import { ProfileAnalysis } from './ProfileAnalysis';
+import { AuthorityGuide } from './AuthorityGuide';
+import { TypeAnalysis } from './TypeAnalysis';
 import { HumanDesignChart } from '@/types/humanDesign';
 import { formatLocalDateLong } from '@/lib/localDate';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
 import {
   Select,
   SelectContent,
@@ -22,11 +20,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
+type HDTab = 'overview' | 'type' | 'authority' | 'profile' | 'centers' | 'activations' | 'bodygraph';
+
 export const HumanDesignView = () => {
   const { charts, selectedChart, addChart, deleteChart, selectChart } = useHumanDesignChart();
   const { userData: mainUserData } = useUserData();
   const [showForm, setShowForm] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'activations' | 'centers' | 'bodygraph'>('overview');
+  const [activeTab, setActiveTab] = useState<HDTab>('overview');
 
   const handleSaveChart = (chart: HumanDesignChart) => {
     const savedChart = addChart(chart);
@@ -125,33 +125,34 @@ export const HumanDesignView = () => {
             </div>
           </div>
 
-          <div className="flex gap-1 border-b border-border">
-            {(['overview', 'activations', 'centers', 'bodygraph'] as const).map(tab => (
+          <div className="flex gap-1 border-b border-border overflow-x-auto">
+            {(['overview', 'type', 'authority', 'profile', 'centers', 'activations', 'bodygraph'] as const).map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 text-[11px] uppercase tracking-widest transition-colors ${
+                className={`px-3 py-2 text-[10px] uppercase tracking-widest transition-colors whitespace-nowrap ${
                   activeTab === tab
                     ? 'border-b-2 border-primary text-foreground'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                {tab === 'bodygraph' ? 'Bodygraph (Beta)' : tab}
+                {tab === 'bodygraph' ? 'Chart' : tab}
               </button>
             ))}
           </div>
 
           {/* Tab Content */}
           {activeTab === 'overview' && <HDChartSummary chart={selectedChart} />}
+          {activeTab === 'type' && <TypeAnalysis chart={selectedChart} />}
+          {activeTab === 'authority' && <AuthorityGuide chart={selectedChart} />}
+          {activeTab === 'profile' && <ProfileAnalysis chart={selectedChart} />}
+          {activeTab === 'centers' && <CentersAnalysis chart={selectedChart} />}
 
           {activeTab === 'bodygraph' && (
             <div className="rounded border border-border bg-card p-6">
               <div className="mb-4 rounded border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm text-yellow-800 dark:text-yellow-200">
-                ⚠️ The bodygraph visual is in beta and may have layout issues. Use the Activations tab for accurate gate data.
+                ⚠️ The bodygraph visual is in beta. Use other tabs for accurate data.
               </div>
-              <h4 className="mb-4 text-[10px] uppercase tracking-widest text-muted-foreground">
-                Interactive Bodygraph
-              </h4>
               <Bodygraph chart={selectedChart} />
             </div>
           )}
@@ -165,59 +166,6 @@ export const HumanDesignView = () => {
                 personalityActivations={selectedChart.personalityActivations}
                 designActivations={selectedChart.designActivations}
               />
-              <div className="mt-4 flex gap-4 text-xs text-muted-foreground">
-                <span>
-                  <span className="font-medium text-foreground">Personality (Black):</span> Birth moment
-                </span>
-                <span>
-                  <span className="font-medium text-destructive">Design (Red):</span> 88° before birth
-                </span>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'centers' && (
-            <div className="space-y-4">
-              <Accordion type="single" collapsible className="space-y-2">
-                {selectedChart.definedCenters.map(center => (
-                  <AccordionItem
-                    key={center}
-                    value={center}
-                    className="rounded border border-primary/30 bg-primary/5"
-                  >
-                    <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                      <div className="flex items-center gap-3">
-                        <div className="h-3 w-3 rounded-full bg-primary" />
-                        <span className="font-medium text-foreground">{center}</span>
-                        <span className="text-xs text-muted-foreground">Defined</span>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-4 pb-4 text-sm text-muted-foreground">
-                      This center is consistently defined in your chart, giving you reliable access
-                      to its energy.
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-                {selectedChart.undefinedCenters.map(center => (
-                  <AccordionItem
-                    key={center}
-                    value={center}
-                    className="rounded border border-border bg-card"
-                  >
-                    <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                      <div className="flex items-center gap-3">
-                        <div className="h-3 w-3 rounded-full border border-muted-foreground" />
-                        <span className="text-muted-foreground">{center}</span>
-                        <span className="text-xs text-muted-foreground">Open</span>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-4 pb-4 text-sm text-muted-foreground">
-                      This center is undefined, meaning you take in and amplify energy from others
-                      here. This is where you have wisdom potential through sampling others.
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
             </div>
           )}
         </div>
@@ -238,7 +186,6 @@ export const HumanDesignView = () => {
         </div>
       )}
 
-      {/* Form Modal */}
       {showForm && (
         <HDChartInputForm 
           onSave={handleSaveChart} 
