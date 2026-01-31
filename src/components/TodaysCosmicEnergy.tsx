@@ -1275,26 +1275,35 @@ Keep the tone professional, insightful, and practically applicable.`
                 </Card>
               )}
 
-              {/* Current Planetary Positions */}
+              {/* Current Planetary Positions - Live Dynamic */}
               <Card className="mt-6 border-border">
-                <CardHeader>
-                  <CardTitle className="font-serif text-lg font-light">Current Planetary Positions</CardTitle>
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="font-serif text-lg font-light">Current Planetary Positions</CardTitle>
+                    <span className="text-xs text-primary flex items-center gap-1">
+                      <span className="animate-pulse">●</span> Live
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Calculated for your local timezone • Updates every minute
+                  </p>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
-                    {Object.entries(planets).map(([planet, data]) => {
+                    {Object.entries(currentPlanets || planets).map(([planet, data]) => {
                       if (!data || !data.sign) return null;
+                      const displayMinutes = data.minutes !== undefined ? data.minutes : 0;
                       return (
                         <Badge 
                           key={planet} 
                           variant="secondary" 
                           className="text-sm py-1.5 px-3"
                         >
-                          <span className="mr-1">{ZODIAC_SYMBOLS[data.sign] || ''}</span>
                           <span className="capitalize">{planet}</span>
-                          <span className="text-muted-foreground ml-1">
-                            {data.degree}° {data.sign}
+                          <span className="text-primary font-medium ml-1">
+                            {data.degree}°{displayMinutes.toString().padStart(2, '0')}'
                           </span>
+                          <span className="ml-1 text-primary">{ZODIAC_SYMBOLS[data.sign] || ''}</span>
                         </Badge>
                       );
                     })}
