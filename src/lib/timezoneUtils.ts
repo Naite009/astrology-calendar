@@ -252,18 +252,24 @@ function getTimezoneOffset(timezone: string, date: Date): number {
 // Check if a date is in DST for a given timezone
 function isDST(timezone: string, date: Date): boolean {
   // Compare offset in January (winter) vs the given date
-  const january = new Date(date.getFullYear(), 0, 15);
-  const july = new Date(date.getFullYear(), 6, 15);
+  const january = new Date(date.getFullYear(), 0, 15, 12, 0, 0);
+  const july = new Date(date.getFullYear(), 6, 15, 12, 0, 0);
   
   const januaryOffset = getTimezoneOffset(timezone, january);
   const julyOffset = getTimezoneOffset(timezone, july);
   const dateOffset = getTimezoneOffset(timezone, date);
   
-  // In northern hemisphere, July has larger offset (more positive or less negative)
-  // In southern hemisphere, January has larger offset
-  const maxOffset = Math.max(januaryOffset, julyOffset);
+  // DST is when the offset matches the "summer" offset (larger offset = more hours ahead)
+  // For northern hemisphere (like US), July has DST
+  // For southern hemisphere (like Australia), January has DST
+  const summerOffset = Math.max(januaryOffset, julyOffset);
+  const winterOffset = Math.min(januaryOffset, julyOffset);
   
-  return dateOffset === maxOffset && januaryOffset !== julyOffset;
+  // If there's no difference, this timezone doesn't observe DST
+  if (januaryOffset === julyOffset) return false;
+  
+  // Check if current date's offset matches the summer (DST) offset
+  return dateOffset === summerOffset;
 }
 
 // Get a specific DST-aware label for display
@@ -332,9 +338,25 @@ export function lookupTimezone(location: string, birthDate?: string): TimezoneRe
   if (!match) return null;
   
   // Calculate the actual offset for the given date
-  const dateToCheck = birthDate ? new Date(birthDate + 'T12:00:00') : new Date();
+  // Parse the date string carefully to avoid timezone issues
+  let dateToCheck: Date;
+  if (birthDate) {
+    const [year, month, day] = birthDate.split('-').map(Number);
+    dateToCheck = new Date(year, month - 1, day, 12, 0, 0);
+  } else {
+    dateToCheck = new Date();
+  }
+  
   const offset = getTimezoneOffset(match.timezone, dateToCheck);
   const label = getDSTAwareLabel(match.timezone, dateToCheck);
+  
+  console.log('[Timezone Debug]', { 
+    birthDate, 
+    dateToCheck: dateToCheck.toISOString(), 
+    timezone: match.timezone, 
+    offset, 
+    label 
+  });
   
   return {
     timezone: match.timezone,
