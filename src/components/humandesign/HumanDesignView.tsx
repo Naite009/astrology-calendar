@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Plus, User, Trash2, ChevronDown } from 'lucide-react';
+import { Plus, User, Trash2 } from 'lucide-react';
 import { useHumanDesignChart } from '@/hooks/useHumanDesignChart';
 import { HDChartInputForm } from './HDChartInputForm';
 import { HDChartSummary } from './HDChartSummary';
 import { HDActivationsTable } from './HDActivationsTable';
+import { Bodygraph } from './Bodygraph';
 import { HumanDesignChart } from '@/types/humanDesign';
 import {
   Accordion,
@@ -15,7 +16,7 @@ import {
 export const HumanDesignView = () => {
   const { charts, selectedChart, addChart, deleteChart, selectChart } = useHumanDesignChart();
   const [showForm, setShowForm] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'activations' | 'centers'>('overview');
+  const [activeTab, setActiveTab] = useState<'bodygraph' | 'overview' | 'activations' | 'centers'>('bodygraph');
 
   const handleSaveChart = (chart: HumanDesignChart) => {
     const savedChart = addChart(chart);
@@ -111,7 +112,7 @@ export const HumanDesignView = () => {
 
           {/* Tabs */}
           <div className="flex gap-1 border-b border-border">
-            {(['overview', 'activations', 'centers'] as const).map(tab => (
+            {(['bodygraph', 'overview', 'activations', 'centers'] as const).map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -127,6 +128,15 @@ export const HumanDesignView = () => {
           </div>
 
           {/* Tab Content */}
+          {activeTab === 'bodygraph' && (
+            <div className="rounded border border-border bg-card p-6">
+              <h4 className="mb-4 text-[10px] uppercase tracking-widest text-muted-foreground">
+                Interactive Bodygraph
+              </h4>
+              <Bodygraph chart={selectedChart} />
+            </div>
+          )}
+
           {activeTab === 'overview' && <HDChartSummary chart={selectedChart} />}
 
           {activeTab === 'activations' && (
