@@ -7,6 +7,7 @@ import { getMoonPhase, getPlanetaryPositions } from '@/lib/astrology';
 import { toast } from '@/hooks/use-toast';
 import html2canvas from 'html2canvas';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const ZODIAC_SYMBOLS: Record<string, string> = {
   Aries: "♈", Taurus: "♉", Gemini: "♊", Cancer: "♋",
@@ -309,6 +310,7 @@ FORMAT:
           {mealPlan && (
             <div className="prose prose-sm dark:prose-invert max-w-none mb-6">
               <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
                 components={{
                   h1: ({ children }) => (
                     <h1 className="font-serif text-2xl font-medium text-foreground mb-4 flex items-center gap-2">
@@ -354,6 +356,7 @@ FORMAT:
           {weeklyRecipe && (
             <div className="prose prose-sm dark:prose-invert max-w-none">
               <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
                 components={{
                   h1: ({ children }) => (
                     <h1 className="font-serif text-2xl font-medium text-foreground mb-2 flex items-center gap-2">
