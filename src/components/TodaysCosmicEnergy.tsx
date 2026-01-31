@@ -177,36 +177,10 @@ interface TodaysCosmicEnergyProps {
 export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
   const [isOpen, setIsOpen] = useState(true); // Start open when rendered
   const [isLoading, setIsLoading] = useState(false);
-  const [cosmicData, setCosmicData] = useState<CosmicData | null>(() => {
-    // Initialize from cache immediately
-    const today = new Date();
-    const todayKey = formatLocalDateKey(today);
-    const cached = localStorage.getItem(`cosmic-weather-${todayKey}`);
-    if (cached) {
-      try {
-        return JSON.parse(cached);
-      } catch (e) {
-        console.error('Failed to parse cached cosmic data:', e);
-      }
-    }
-    return null;
-  });
+  const [cosmicData, setCosmicData] = useState<CosmicData | null>(null);
+  // Note: We'll load from cache in useEffect after voiceStyle is initialized
   const [error, setError] = useState<string | null>(null);
-  const [lastFetched, setLastFetched] = useState<string | null>(() => {
-    // Initialize from cache immediately
-    const today = new Date();
-    const todayKey = formatLocalDateKey(today);
-    const cached = localStorage.getItem(`cosmic-weather-${todayKey}`);
-    if (cached) {
-      try {
-        const parsed = JSON.parse(cached);
-        return parsed.generatedAt || null;
-      } catch (e) {
-        return null;
-      }
-    }
-    return null;
-  });
+  const [lastFetched, setLastFetched] = useState<string | null>(null);
   const [weekForecast, setWeekForecast] = useState<WeekDay[]>([]);
   const [currentMoonDegree, setCurrentMoonDegree] = useState<number>(0);
   const [currentMoonSign, setCurrentMoonSign] = useState<string>('');
@@ -219,6 +193,7 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
   const [monthSummary, setMonthSummary] = useState<string | null>(null);
   const [summaryLoading, setSummaryLoading] = useState<'week' | 'month' | null>(null);
   const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
+  const [voiceStyle, setVoiceStyle] = useState<'tara' | 'chris' | 'anne'>('tara');
   const contentRef = useRef<HTMLDivElement>(null);
   
   // Get saved charts from the hook
@@ -238,6 +213,25 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
   const today = new Date();
   const todayStr = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
   const todayKey = formatLocalDateKey(today); // YYYY-MM-DD (local) for cache key
+
+  // Load cached data when voice style changes
+  useEffect(() => {
+    const cacheKey = `cosmic-weather-${todayKey}-${voiceStyle}`;
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        setCosmicData(parsed);
+        setLastFetched(parsed.generatedAt || null);
+      } catch (e) {
+        console.error('Failed to parse cached cosmic data:', e);
+      }
+    } else {
+      // No cache for this voice, reset data
+      setCosmicData(null);
+      setLastFetched(null);
+    }
+  }, [voiceStyle, todayKey]);
 
   // Update moon position and VOC in real-time when modal is open
   useEffect(() => {
@@ -313,7 +307,8 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
             count: s.planets.length,
             planets: s.planets.map(p => ({ name: p }))
           })),
-          mercuryRetro: false
+          mercuryRetro: false,
+          voiceStyle: voiceStyle
         }
       });
 
@@ -339,8 +334,8 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
         insight: data.insight
       };
       
-      // Save to localStorage for the day
-      localStorage.setItem(`cosmic-weather-${todayKey}`, JSON.stringify(newCosmicData));
+      // Save to localStorage for the day (with voice style in key)
+      localStorage.setItem(`cosmic-weather-${todayKey}-${voiceStyle}`, JSON.stringify(newCosmicData));
       
       setCosmicData(newCosmicData);
       setLastFetched(generatedTime);
@@ -746,6 +741,63 @@ Keep the tone professional, insightful, and practically applicable.`
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Voice Style Selector */}
+              {viewMode === 'daily' && (
+                <Card className="mb-6 border-border bg-gradient-to-r from-secondary/50 to-transparent">
+                  <CardContent className="p-4">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="h-5 w-5 text-primary" />
+                        <span className="text-sm font-medium">Voice Style:</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          variant={voiceStyle === 'tara' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => {
+                            setVoiceStyle('tara');
+                            setCosmicData(null);
+                            fetchCosmicWeather(true);
+                          }}
+                          className="gap-1"
+                        >
+                          🌙 Tara Vogel
+                        </Button>
+                        <Button
+                          variant={voiceStyle === 'chris' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => {
+                            setVoiceStyle('chris');
+                            setCosmicData(null);
+                            fetchCosmicWeather(true);
+                          }}
+                          className="gap-1"
+                        >
+                          📚 Chris Brennan
+                        </Button>
+                        <Button
+                          variant={voiceStyle === 'anne' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => {
+                            setVoiceStyle('anne');
+                            setCosmicData(null);
+                            fetchCosmicWeather(true);
+                          }}
+                          className="gap-1"
+                        >
+                          ⚡ Anne Ortelee
+                        </Button>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {voiceStyle === 'tara' && 'Warm, nurturing mama energy - practical for everyday life and parenting'}
+                      {voiceStyle === 'chris' && 'Scholarly Hellenistic approach - technical depth and historical context'}
+                      {voiceStyle === 'anne' && 'Enthusiastic weekly weather - specific timing and practical action items'}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Chart Selector for Personalization */}
               {availableCharts.length > 0 && viewMode === 'daily' && (
