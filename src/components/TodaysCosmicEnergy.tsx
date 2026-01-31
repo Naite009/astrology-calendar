@@ -214,7 +214,7 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
   const todayStr = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
   const todayKey = formatLocalDateKey(today); // YYYY-MM-DD (local) for cache key
 
-  // Load cached data when voice style changes
+  // Load cached data when voice style changes - don't auto-fetch, just load from cache
   useEffect(() => {
     const cacheKey = `cosmic-weather-${todayKey}-${voiceStyle}`;
     const cached = localStorage.getItem(cacheKey);
@@ -227,11 +227,14 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
         console.error('Failed to parse cached cosmic data:', e);
       }
     } else {
-      // No cache for this voice, reset data
-      setCosmicData(null);
-      setLastFetched(null);
+      // No cache for this voice - but DON'T auto-fetch
+      // Only reset if we're not currently loading (to avoid race conditions)
+      if (!isLoading) {
+        setCosmicData(null);
+        setLastFetched(null);
+      }
     }
-  }, [voiceStyle, todayKey]);
+  }, [voiceStyle, todayKey, isLoading]);
 
   // Update moon position and VOC in real-time when modal is open
   useEffect(() => {
@@ -551,12 +554,15 @@ Keep the tone professional, insightful, and practically applicable.`
       const voc = getVOCMoonDetails(new Date());
       setVocInfo(voc);
       
-      // Only fetch if no cached data
-      if (!cosmicData) {
+      // Only auto-fetch on first open if no cache exists for the current voice
+      // This prevents auto-fetching when switching voices
+      const cacheKey = `cosmic-weather-${todayKey}-${voiceStyle}`;
+      const cached = localStorage.getItem(cacheKey);
+      if (!cosmicData && !cached) {
         fetchCosmicWeather(false);
       }
     }
-  }, [isOpen]);
+  }, [isOpen]); // Only depend on isOpen, not voiceStyle
 
   const handleOpen = () => {
     setIsOpen(true);
