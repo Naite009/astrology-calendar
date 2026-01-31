@@ -257,10 +257,31 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
           });
         }
 
+        // Normalize planet names to match our expected format
+        const normalizePlanetName = (name: string): string => {
+          const normalized = name.replace(/\s+/g, '').replace(/-/g, '');
+          const mapping: Record<string, string> = {
+            'northnode': 'NorthNode',
+            'southnode': 'SouthNode',
+            'sun': 'Sun',
+            'earth': 'Earth',
+            'moon': 'Moon',
+            'mercury': 'Mercury',
+            'venus': 'Venus',
+            'mars': 'Mars',
+            'jupiter': 'Jupiter',
+            'saturn': 'Saturn',
+            'uranus': 'Uranus',
+            'neptune': 'Neptune',
+            'pluto': 'Pluto',
+          };
+          return mapping[normalized.toLowerCase()] || name;
+        };
+
         // Populate gate editor with parsed activations
         if (parsed.personalityActivations && Array.isArray(parsed.personalityActivations)) {
           const pActivations: HDPlanetaryActivation[] = parsed.personalityActivations.map((a: any) => ({
-            planet: a.planet,
+            planet: normalizePlanetName(a.planet),
             gate: a.gate,
             line: a.line,
             longitude: 0,
@@ -271,7 +292,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
 
         if (parsed.designActivations && Array.isArray(parsed.designActivations)) {
           const dActivations: HDPlanetaryActivation[] = parsed.designActivations.map((a: any) => ({
-            planet: a.planet,
+            planet: normalizePlanetName(a.planet),
             gate: a.gate,
             line: a.line,
             longitude: 0,
