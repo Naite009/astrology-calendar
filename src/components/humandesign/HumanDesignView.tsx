@@ -7,6 +7,7 @@ import { HDChartSummary } from './HDChartSummary';
 import { HDActivationsTable } from './HDActivationsTable';
 import { Bodygraph } from './Bodygraph';
 import { HumanDesignChart } from '@/types/humanDesign';
+import { formatLocalDateLong } from '@/lib/localDate';
 import {
   Accordion,
   AccordionContent,
@@ -96,11 +97,7 @@ export const HumanDesignView = () => {
               <div>
                 <h3 className="font-serif text-xl text-foreground">{selectedChart.name}</h3>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {new Date(selectedChart.birthDate).toLocaleDateString('en-US', {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}{' '}
+                  {formatLocalDateLong(selectedChart.birthDate)}{' '}
                   at {selectedChart.birthTime}
                 </p>
                 <p className="text-sm text-muted-foreground">{selectedChart.birthLocation}</p>
