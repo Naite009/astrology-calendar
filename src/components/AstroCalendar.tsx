@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers, Combine } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers, Combine, Diamond } from "lucide-react";
 import { TodaysCosmicEnergy, CosmicEnergyButton } from "./TodaysCosmicEnergy";
 import { useState as useCosmicState } from "react";
 import { ChartDecoderView } from "./ChartDecoderView";
@@ -24,6 +24,7 @@ import { VoiceMemoLibrary } from "./VoiceMemoLibrary";
 import { PlanetarySpeedsView } from "./PlanetarySpeedsView";
 import { DwarfPlanetsGuide } from "./DwarfPlanetsGuide";
 import { HealthAstrologyView } from "./HealthAstrologyView";
+import { HumanDesignView } from "./humandesign/HumanDesignView";
 import { useUserData } from "@/hooks/useUserData";
 import { useNotes } from "@/hooks/useNotes";
 import { useNatalChart, NatalChart } from "@/hooks/useNatalChart";
@@ -38,7 +39,7 @@ import { CombosView } from "./CombosView";
 
 
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos";
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -533,6 +534,17 @@ export const AstroCalendar = () => {
                 <Combine size={14} />
                 Combos
               </button>
+              <button
+                onClick={() => setViewMode("human-design")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "human-design"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Diamond size={14} />
+                HD
+              </button>
             </div>
 
             {userData && (
@@ -775,6 +787,10 @@ export const AstroCalendar = () => {
             savedCharts={savedCharts}
             userChart={userNatalChart}
           />
+        )}
+
+        {viewMode === "human-design" && (
+          <HumanDesignView />
         )}
       </div>
 
