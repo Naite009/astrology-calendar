@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, User, Trash2 } from 'lucide-react';
+import { Plus, User, Trash2, ChevronDown } from 'lucide-react';
 import { useHumanDesignChart } from '@/hooks/useHumanDesignChart';
 import { useUserData } from '@/hooks/useUserData';
 import { HDChartInputForm } from './HDChartInputForm';
@@ -14,6 +14,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export const HumanDesignView = () => {
   const { charts, selectedChart, addChart, deleteChart, selectChart } = useHumanDesignChart();
@@ -53,40 +60,49 @@ export const HumanDesignView = () => {
         </button>
       </div>
 
-      {/* Chart Library */}
-      {charts.length > 0 && (
-        <div className="rounded border border-border bg-card p-4">
-          <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
-            Saved Charts
-          </span>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {charts.map(chart => (
-              <div
-                key={chart.id}
-                className={`group flex items-center gap-2 rounded border px-3 py-2 text-sm transition-colors cursor-pointer ${
-                  selectedChart?.id === chart.id
-                    ? 'border-primary bg-primary/10 text-foreground'
-                    : 'border-border hover:border-primary/50 text-muted-foreground hover:text-foreground'
-                }`}
-                onClick={() => selectChart(chart.id)}
-              >
-                <User size={14} />
-                <span>{chart.name}</span>
-                <span className="text-xs text-muted-foreground">({chart.type})</span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteChart(chart.id);
-                  }}
-                  className="ml-1 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity"
-                >
-                  <Trash2 size={12} />
-                </button>
-              </div>
-            ))}
-          </div>
+      {/* Chart Selector - Always Visible */}
+      <div className="rounded border border-border bg-card p-4">
+        <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+          Select Chart
+        </span>
+        <div className="mt-3 flex items-center gap-4">
+          <Select
+            value={selectedChart?.id || ''}
+            onValueChange={(value) => selectChart(value)}
+          >
+            <SelectTrigger className="w-64">
+              <SelectValue placeholder={charts.length > 0 ? "Choose a chart..." : "No charts saved yet"} />
+            </SelectTrigger>
+            <SelectContent>
+              {charts.map(chart => (
+                <SelectItem key={chart.id} value={chart.id}>
+                  <div className="flex items-center gap-2">
+                    <User size={14} />
+                    <span>{chart.name}</span>
+                    <span className="text-xs text-muted-foreground">({chart.type})</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          {selectedChart && (
+            <button
+              onClick={() => handleDeleteChart(selectedChart.id)}
+              className="flex items-center gap-1 px-3 py-2 text-xs text-muted-foreground hover:text-destructive transition-colors"
+            >
+              <Trash2 size={12} />
+              Delete
+            </button>
+          )}
         </div>
-      )}
+        
+        {charts.length === 0 && (
+          <p className="mt-2 text-sm text-muted-foreground">
+            Create your first Human Design chart to get started.
+          </p>
+        )}
+      </div>
 
       {/* Selected Chart Display */}
       {selectedChart ? (
