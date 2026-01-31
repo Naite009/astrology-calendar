@@ -330,6 +330,9 @@ FORMAT:
                   thead: ({ children }) => (
                     <thead className="bg-muted/50">{children}</thead>
                   ),
+                  tbody: ({ children }) => (
+                    <tbody className="[&>tr:nth-child(odd)]:bg-muted/30 [&>tr:nth-child(even)]:bg-background">{children}</tbody>
+                  ),
                   th: ({ children }) => (
                     <th className="text-left p-2 border border-border font-medium">{children}</th>
                   ),
