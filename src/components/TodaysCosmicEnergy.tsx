@@ -783,7 +783,7 @@ Keep the tone professional, insightful, and practically applicable.`
                       {voiceStyle === 'anne' && 'Enthusiastic weekly weather - specific timing and practical action items'}
                       {voiceStyle === 'kathy' && 'Rose Astrology - intuitive, spiritual, heart-centered guidance'}
                       {voiceStyle === 'krs' && 'Vedic perspective - karmic, fate-focused, direct communication'}
-                      {voiceStyle === 'malika' && 'Afro-cosmic wisdom - ancestral, liberation-focused, embodied'}
+                      {voiceStyle === 'malika' && 'Spiritual grounding - ancestral wisdom, embodied healing, liberation-focused'}
                       {voiceStyle === 'sarah' && 'Lunar Astro - moon-centered, feminine cyclical wisdom'}
                       {voiceStyle === 'astrodienst' && 'Technical precision - research-based, educational depth'}
                       {voiceStyle === 'cafe' && 'Straightforward, accessible - practical daily guidance'}
