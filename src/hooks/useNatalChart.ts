@@ -213,9 +213,7 @@ export const useNatalChart = () => {
   const [savedCharts, setSavedCharts] = useState<NatalChart[]>(() => {
     return readWithRollingBackups<NatalChart[]>('savedCharts', [], isValidChartArray);
   });
-  const [selectedChartForTiming, setSelectedChartForTiming] = useState<string>(() => {
-    return localStorage.getItem('selectedChartForTiming') || 'user';
-  });
+  const [selectedChartForTiming, setSelectedChartForTiming] = useState<string>('general');
 
   const saveUserNatalChart = (chart: NatalChart) => {
     // Prevent saving empty/invalid chart data
