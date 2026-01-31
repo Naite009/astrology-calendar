@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { X } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { X, Info } from 'lucide-react';
 import { UserData } from '@/hooks/useUserData';
+import { lookupTimezone } from '@/lib/timezoneUtils';
 
 interface UserFormProps {
   initialData: UserData | null;
@@ -8,15 +9,15 @@ interface UserFormProps {
   onClose: () => void;
 }
 
-const TIMEZONES = [
-  { value: 'America/New_York', label: 'Eastern (ET)' },
-  { value: 'America/Chicago', label: 'Central (CT)' },
-  { value: 'America/Denver', label: 'Mountain (MT)' },
-  { value: 'America/Los_Angeles', label: 'Pacific (PT)' },
-  { value: 'Europe/London', label: 'London (GMT)' },
-  { value: 'Europe/Paris', label: 'Paris (CET)' },
-  { value: 'Asia/Tokyo', label: 'Tokyo (JST)' },
-  { value: 'Australia/Sydney', label: 'Sydney (AEDT)' },
+const BASE_TIMEZONES = [
+  { value: 'America/New_York', label: 'Eastern Time' },
+  { value: 'America/Chicago', label: 'Central Time' },
+  { value: 'America/Denver', label: 'Mountain Time' },
+  { value: 'America/Los_Angeles', label: 'Pacific Time' },
+  { value: 'Europe/London', label: 'London' },
+  { value: 'Europe/Paris', label: 'Paris' },
+  { value: 'Asia/Tokyo', label: 'Tokyo' },
+  { value: 'Australia/Sydney', label: 'Sydney' },
 ];
 
 export const UserForm = ({ initialData, onSave, onClose }: UserFormProps) => {
@@ -29,6 +30,43 @@ export const UserForm = ({ initialData, onSave, onClose }: UserFormProps) => {
       timezone: 'America/New_York',
     }
   );
+  const [autoDetectedTz, setAutoDetectedTz] = useState<{ timezone: string; label: string } | null>(null);
+
+  // Auto-detect timezone when location OR date changes
+  useEffect(() => {
+    if (formData.birthLocation && formData.birthLocation.length > 2) {
+      const result = lookupTimezone(formData.birthLocation, formData.birthDate || undefined);
+      if (result) {
+        setAutoDetectedTz({ timezone: result.timezone, label: result.label });
+        setFormData(prev => ({ ...prev, timezone: result.timezone }));
+      } else {
+        setAutoDetectedTz(null);
+      }
+    }
+  }, [formData.birthLocation, formData.birthDate]);
+
+  // Get DST-aware label for selected timezone
+  const currentTzLabel = useMemo(() => {
+    if (autoDetectedTz) return autoDetectedTz.label;
+    const result = lookupTimezone('', formData.birthDate);
+    // For manual selection, compute the label based on the selected timezone
+    if (formData.timezone && formData.birthDate) {
+      // Create a temporary lookup to get the proper label
+      const tempDate = new Date(formData.birthDate + 'T12:00:00');
+      const offset = (() => {
+        try {
+          const utcDate = new Date(tempDate.toLocaleString('en-US', { timeZone: 'UTC' }));
+          const tzDate = new Date(tempDate.toLocaleString('en-US', { timeZone: formData.timezone }));
+          return (tzDate.getTime() - utcDate.getTime()) / (1000 * 60 * 60);
+        } catch {
+          return 0;
+        }
+      })();
+      const offsetStr = offset >= 0 ? `UTC+${offset}` : `UTC${offset}`;
+      return offsetStr;
+    }
+    return null;
+  }, [formData.timezone, formData.birthDate, autoDetectedTz]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,19 +151,39 @@ export const UserForm = ({ initialData, onSave, onClose }: UserFormProps) => {
 
           <div className="space-y-2">
             <label className="block text-[11px] uppercase tracking-widest text-muted-foreground">
-              Current Timezone
+              Birth Timezone
             </label>
-            <select
-              value={formData.timezone}
-              onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
-              className="w-full border border-border bg-background px-3 py-3 font-sans text-sm text-foreground transition-colors focus:border-primary focus:outline-none"
-            >
-              {TIMEZONES.map((tz) => (
-                <option key={tz.value} value={tz.value}>
-                  {tz.label}
-                </option>
-              ))}
-            </select>
+            {autoDetectedTz ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 rounded border border-primary/30 bg-primary/5 px-3 py-3">
+                  <span className="text-sm text-foreground">
+                    {autoDetectedTz.label}
+                  </span>
+                  <span className="text-xs text-muted-foreground">(auto-detected)</span>
+                </div>
+                <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                  <Info size={14} className="mt-0.5 shrink-0" />
+                  <span>
+                    {autoDetectedTz.label.includes('Daylight') 
+                      ? 'Daylight Saving Time was in effect on this date (+1 hour from standard).'
+                      : 'Standard time (no daylight saving) was in effect on this date.'}
+                    {' '}This affects planetary positions by ~1° for fast-moving planets.
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <select
+                value={formData.timezone}
+                onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
+                className="w-full border border-border bg-background px-3 py-3 font-sans text-sm text-foreground transition-colors focus:border-primary focus:outline-none"
+              >
+                {BASE_TIMEZONES.map((tz) => (
+                  <option key={tz.value} value={tz.value}>
+                    {tz.label} {currentTzLabel && formData.timezone === tz.value ? `(${currentTzLabel})` : ''}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div className="flex gap-3 pt-4">

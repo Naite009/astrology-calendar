@@ -249,6 +249,53 @@ function getTimezoneOffset(timezone: string, date: Date): number {
   }
 }
 
+// Check if a date is in DST for a given timezone
+function isDST(timezone: string, date: Date): boolean {
+  // Compare offset in January (winter) vs the given date
+  const january = new Date(date.getFullYear(), 0, 15);
+  const july = new Date(date.getFullYear(), 6, 15);
+  
+  const januaryOffset = getTimezoneOffset(timezone, january);
+  const julyOffset = getTimezoneOffset(timezone, july);
+  const dateOffset = getTimezoneOffset(timezone, date);
+  
+  // In northern hemisphere, July has larger offset (more positive or less negative)
+  // In southern hemisphere, January has larger offset
+  const maxOffset = Math.max(januaryOffset, julyOffset);
+  
+  return dateOffset === maxOffset && januaryOffset !== julyOffset;
+}
+
+// Get a specific DST-aware label for display
+function getDSTAwareLabel(timezone: string, date: Date): string {
+  const inDST = isDST(timezone, date);
+  const offset = getTimezoneOffset(timezone, date);
+  const offsetStr = offset >= 0 ? `UTC+${offset}` : `UTC${offset}`;
+  
+  // Map specific timezones to their standard/daylight names
+  const dstLabels: Record<string, { standard: string; daylight: string }> = {
+    'America/New_York': { standard: 'EST (Eastern Standard)', daylight: 'EDT (Eastern Daylight)' },
+    'America/Chicago': { standard: 'CST (Central Standard)', daylight: 'CDT (Central Daylight)' },
+    'America/Denver': { standard: 'MST (Mountain Standard)', daylight: 'MDT (Mountain Daylight)' },
+    'America/Los_Angeles': { standard: 'PST (Pacific Standard)', daylight: 'PDT (Pacific Daylight)' },
+    'America/Toronto': { standard: 'EST (Eastern Standard)', daylight: 'EDT (Eastern Daylight)' },
+    'America/Vancouver': { standard: 'PST (Pacific Standard)', daylight: 'PDT (Pacific Daylight)' },
+    'Europe/London': { standard: 'GMT (Greenwich Mean)', daylight: 'BST (British Summer)' },
+    'Europe/Paris': { standard: 'CET (Central European)', daylight: 'CEST (Central European Summer)' },
+    'Europe/Berlin': { standard: 'CET (Central European)', daylight: 'CEST (Central European Summer)' },
+    'Australia/Sydney': { standard: 'AEST (Eastern Standard)', daylight: 'AEDT (Eastern Daylight)' },
+    'Pacific/Auckland': { standard: 'NZST (NZ Standard)', daylight: 'NZDT (NZ Daylight)' },
+  };
+  
+  const labels = dstLabels[timezone];
+  if (labels) {
+    return inDST ? `${labels.daylight} ${offsetStr}` : `${labels.standard} ${offsetStr}`;
+  }
+  
+  // For timezones without DST or not in our map
+  return `${offsetStr}`;
+}
+
 export function lookupTimezone(location: string, birthDate?: string): TimezoneResult | null {
   if (!location) return null;
   
@@ -285,13 +332,14 @@ export function lookupTimezone(location: string, birthDate?: string): TimezoneRe
   if (!match) return null;
   
   // Calculate the actual offset for the given date
-  const dateToCheck = birthDate ? new Date(birthDate) : new Date();
+  const dateToCheck = birthDate ? new Date(birthDate + 'T12:00:00') : new Date();
   const offset = getTimezoneOffset(match.timezone, dateToCheck);
+  const label = getDSTAwareLabel(match.timezone, dateToCheck);
   
   return {
     timezone: match.timezone,
     offset,
-    label: match.label,
+    label,
   };
 }
 
