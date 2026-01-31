@@ -39,7 +39,8 @@ export const HDGateEditor = ({
   onDesignChange,
   warnings = [],
 }: HDGateEditorProps) => {
-  const [expandedSection, setExpandedSection] = useState<'personality' | 'design' | null>('personality');
+  const [personalityExpanded, setPersonalityExpanded] = useState(true);
+  const [designExpanded, setDesignExpanded] = useState(true);
 
   const updateActivation = (
     activations: HDPlanetaryActivation[],
@@ -154,7 +155,7 @@ export const HDGateEditor = ({
       {/* Personality (Conscious) Section */}
       <div className="border border-border rounded">
         <button
-          onClick={() => setExpandedSection(expandedSection === 'personality' ? null : 'personality')}
+          onClick={() => setPersonalityExpanded(!personalityExpanded)}
           className="w-full flex items-center justify-between p-3 hover:bg-muted/30 transition-colors"
         >
           <div className="flex items-center gap-2">
@@ -162,10 +163,10 @@ export const HDGateEditor = ({
             <span className="text-sm font-medium">Personality (Conscious)</span>
             <span className="text-xs text-muted-foreground">— Birth moment</span>
           </div>
-          {expandedSection === 'personality' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          {personalityExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </button>
         
-        {expandedSection === 'personality' && (
+        {personalityExpanded && (
           <div className="p-3 pt-0 border-t border-border">
             {PLANETS.map(planet => renderPlanetRow(planet, personalityActivations, onPersonalityChange, true))}
           </div>
@@ -175,7 +176,7 @@ export const HDGateEditor = ({
       {/* Design (Unconscious) Section */}
       <div className="border border-destructive/30 rounded">
         <button
-          onClick={() => setExpandedSection(expandedSection === 'design' ? null : 'design')}
+          onClick={() => setDesignExpanded(!designExpanded)}
           className="w-full flex items-center justify-between p-3 hover:bg-destructive/5 transition-colors"
         >
           <div className="flex items-center gap-2">
@@ -183,10 +184,10 @@ export const HDGateEditor = ({
             <span className="text-sm font-medium text-destructive">Design (Unconscious)</span>
             <span className="text-xs text-muted-foreground">— 88° before birth</span>
           </div>
-          {expandedSection === 'design' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          {designExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </button>
         
-        {expandedSection === 'design' && (
+        {designExpanded && (
           <div className="p-3 pt-0 border-t border-destructive/20">
             {PLANETS.map(planet => renderPlanetRow(planet, designActivations, onDesignChange, false))}
           </div>
