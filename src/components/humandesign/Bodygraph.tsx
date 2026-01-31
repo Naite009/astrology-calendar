@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { HumanDesignChart, HDCenterName } from '@/types/humanDesign';
 import { getGateByNumber } from '@/data/humanDesignGates';
-import { getChannelByGates, HUMAN_DESIGN_CHANNELS } from '@/data/humanDesignChannels';
+import { HUMAN_DESIGN_CHANNELS } from '@/data/humanDesignChannels';
 import {
   Tooltip,
   TooltipContent,
@@ -18,194 +18,194 @@ interface BodygraphProps {
 
 type CenterPositions = Record<HDCenterName, { x: number; y: number; shape: string }>;
 
-// Center positions for the bodygraph (relative to 400x600 viewBox)
+// Expanded viewBox (600x800) for better spacing
 const CENTER_POSITIONS: CenterPositions = {
-  Head: { x: 200, y: 50, shape: 'triangle' },
-  Ajna: { x: 200, y: 115, shape: 'triangle-down' },
-  Throat: { x: 200, y: 190, shape: 'square' },
-  G: { x: 200, y: 290, shape: 'diamond' },
-  Heart: { x: 280, y: 260, shape: 'triangle-small' },
-  Sacral: { x: 200, y: 400, shape: 'square' },
-  SolarPlexus: { x: 280, y: 360, shape: 'triangle-right' },
-  Spleen: { x: 120, y: 360, shape: 'triangle-left' },
-  Root: { x: 200, y: 510, shape: 'square' },
+  Head: { x: 300, y: 60, shape: 'triangle' },
+  Ajna: { x: 300, y: 150, shape: 'triangle-down' },
+  Throat: { x: 300, y: 260, shape: 'square' },
+  G: { x: 300, y: 400, shape: 'diamond' },
+  Heart: { x: 420, y: 355, shape: 'triangle-small' },
+  Sacral: { x: 300, y: 545, shape: 'square' },
+  SolarPlexus: { x: 420, y: 490, shape: 'triangle-right' },
+  Spleen: { x: 180, y: 490, shape: 'triangle-left' },
+  Root: { x: 300, y: 700, shape: 'square' },
 };
 
-// Gate positions on the bodygraph - arranged around their centers
-const GATE_POSITIONS: Record<number, { x: number; y: number; center: string }> = {
-  // Head Center gates
-  64: { x: 175, y: 25, center: 'Head' },
-  61: { x: 200, y: 25, center: 'Head' },
-  63: { x: 225, y: 25, center: 'Head' },
+// Gate positions - spread out to avoid overlapping
+const GATE_POSITIONS: Record<number, { x: number; y: number }> = {
+  // Head Center gates (top row)
+  64: { x: 255, y: 28 },
+  61: { x: 300, y: 28 },
+  63: { x: 345, y: 28 },
   
   // Ajna Center gates
-  47: { x: 175, y: 140, center: 'Ajna' },
-  24: { x: 188, y: 140, center: 'Ajna' },
-  4: { x: 200, y: 90, center: 'Ajna' },
-  17: { x: 225, y: 90, center: 'Ajna' },
-  43: { x: 200, y: 140, center: 'Ajna' },
-  11: { x: 213, y: 140, center: 'Ajna' },
+  47: { x: 255, y: 182 },
+  24: { x: 280, y: 182 },
+  4: { x: 300, y: 118 },
+  17: { x: 345, y: 118 },
+  43: { x: 300, y: 182 },
+  11: { x: 325, y: 182 },
   
-  // Throat Center gates
-  62: { x: 160, y: 175, center: 'Throat' },
-  23: { x: 175, y: 175, center: 'Throat' },
-  56: { x: 240, y: 175, center: 'Throat' },
-  35: { x: 255, y: 192, center: 'Throat' },
-  12: { x: 240, y: 210, center: 'Throat' },
-  45: { x: 225, y: 210, center: 'Throat' },
-  33: { x: 185, y: 165, center: 'Throat' },
-  8: { x: 190, y: 210, center: 'Throat' },
-  31: { x: 160, y: 195, center: 'Throat' },
-  16: { x: 145, y: 192, center: 'Throat' },
-  20: { x: 205, y: 165, center: 'Throat' },
+  // Throat Center gates - arranged in arc
+  62: { x: 220, y: 235 },
+  23: { x: 248, y: 235 },
+  56: { x: 352, y: 235 },
+  35: { x: 380, y: 255 },
+  12: { x: 352, y: 288 },
+  45: { x: 328, y: 288 },
+  33: { x: 268, y: 225 },
+  8: { x: 268, y: 288 },
+  31: { x: 220, y: 265 },
+  16: { x: 198, y: 255 },
+  20: { x: 318, y: 225 },
   
   // G Center gates
-  1: { x: 183, y: 265, center: 'G' },
-  13: { x: 195, y: 255, center: 'G' },
-  25: { x: 220, y: 265, center: 'G' },
-  46: { x: 210, y: 315, center: 'G' },
-  2: { x: 190, y: 315, center: 'G' },
-  15: { x: 200, y: 330, center: 'G' },
-  10: { x: 218, y: 280, center: 'G' },
-  7: { x: 183, y: 280, center: 'G' },
+  1: { x: 268, y: 365 },
+  13: { x: 285, y: 355 },
+  25: { x: 335, y: 365 },
+  46: { x: 318, y: 438 },
+  2: { x: 282, y: 438 },
+  15: { x: 300, y: 455 },
+  10: { x: 335, y: 388 },
+  7: { x: 265, y: 388 },
   
   // Heart/Ego Center gates
-  51: { x: 260, y: 240, center: 'Heart' },
-  21: { x: 275, y: 245, center: 'Heart' },
-  40: { x: 300, y: 270, center: 'Heart' },
-  26: { x: 295, y: 255, center: 'Heart' },
+  51: { x: 388, y: 325 },
+  21: { x: 410, y: 330 },
+  40: { x: 455, y: 365 },
+  26: { x: 448, y: 345 },
   
   // Sacral Center gates
-  5: { x: 175, y: 380, center: 'Sacral' },
-  14: { x: 185, y: 375, center: 'Sacral' },
-  29: { x: 195, y: 370, center: 'Sacral' },
-  59: { x: 230, y: 375, center: 'Sacral' },
-  9: { x: 180, y: 420, center: 'Sacral' },
-  3: { x: 200, y: 430, center: 'Sacral' },
-  42: { x: 215, y: 420, center: 'Sacral' },
-  27: { x: 165, y: 395, center: 'Sacral' },
-  34: { x: 220, y: 385, center: 'Sacral' },
+  5: { x: 258, y: 515 },
+  14: { x: 272, y: 508 },
+  29: { x: 288, y: 500 },
+  59: { x: 345, y: 515 },
+  9: { x: 265, y: 575 },
+  3: { x: 300, y: 585 },
+  42: { x: 335, y: 575 },
+  27: { x: 240, y: 540 },
+  34: { x: 338, y: 530 },
   
   // Solar Plexus gates
-  6: { x: 255, y: 375, center: 'Solar Plexus' },
-  37: { x: 305, y: 350, center: 'Solar Plexus' },
-  22: { x: 295, y: 340, center: 'Solar Plexus' },
-  36: { x: 280, y: 390, center: 'Solar Plexus' },
-  30: { x: 290, y: 400, center: 'Solar Plexus' },
-  55: { x: 265, y: 345, center: 'Solar Plexus' },
-  49: { x: 260, y: 385, center: 'Solar Plexus' },
+  6: { x: 378, y: 508 },
+  37: { x: 458, y: 470 },
+  22: { x: 448, y: 448 },
+  36: { x: 420, y: 530 },
+  30: { x: 438, y: 545 },
+  55: { x: 395, y: 458 },
+  49: { x: 388, y: 525 },
   
   // Spleen Center gates
-  48: { x: 100, y: 340, center: 'Spleen' },
-  57: { x: 110, y: 350, center: 'Spleen' },
-  44: { x: 130, y: 340, center: 'Spleen' },
-  50: { x: 140, y: 380, center: 'Spleen' },
-  32: { x: 120, y: 390, center: 'Spleen' },
-  28: { x: 100, y: 380, center: 'Spleen' },
-  18: { x: 95, y: 365, center: 'Spleen' },
+  48: { x: 148, y: 455 },
+  57: { x: 160, y: 475 },
+  44: { x: 188, y: 455 },
+  50: { x: 200, y: 525 },
+  32: { x: 172, y: 538 },
+  28: { x: 145, y: 515 },
+  18: { x: 138, y: 490 },
   
   // Root Center gates
-  53: { x: 165, y: 490, center: 'Root' },
-  60: { x: 180, y: 540, center: 'Root' },
-  52: { x: 195, y: 540, center: 'Root' },
-  19: { x: 235, y: 490, center: 'Root' },
-  39: { x: 245, y: 505, center: 'Root' },
-  41: { x: 255, y: 520, center: 'Root' },
-  38: { x: 150, y: 505, center: 'Root' },
-  54: { x: 225, y: 540, center: 'Root' },
-  58: { x: 170, y: 520, center: 'Root' },
+  53: { x: 245, y: 665 },
+  60: { x: 265, y: 738 },
+  52: { x: 295, y: 738 },
+  19: { x: 355, y: 665 },
+  39: { x: 372, y: 688 },
+  41: { x: 388, y: 712 },
+  38: { x: 218, y: 688 },
+  54: { x: 340, y: 738 },
+  58: { x: 245, y: 712 },
 };
 
-// Channel line paths (simplified - connecting centers)
+// Channel paths connecting centers
 const CHANNEL_PATHS: Record<string, { gates: [number, number]; path: string }> = {
   // Head to Ajna
-  '64-47': { gates: [64, 47], path: 'M175,50 L175,115' },
-  '61-24': { gates: [61, 24], path: 'M200,50 L200,115' },
-  '63-4': { gates: [63, 4], path: 'M225,50 L225,115' },
+  '64-47': { gates: [64, 47], path: 'M265,50 L265,145' },
+  '61-24': { gates: [61, 24], path: 'M300,50 L300,145' },
+  '63-4': { gates: [63, 4], path: 'M335,50 L335,145' },
   
   // Ajna to Throat
-  '17-62': { gates: [17, 62], path: 'M215,130 L170,175' },
-  '43-23': { gates: [43, 23], path: 'M200,140 L185,175' },
-  '11-56': { gates: [11, 56], path: 'M220,140 L235,175' },
+  '17-62': { gates: [17, 62], path: 'M330,165 L245,240' },
+  '43-23': { gates: [43, 23], path: 'M300,185 L268,240' },
+  '11-56': { gates: [11, 56], path: 'M325,185 L345,240' },
   
   // Throat to G
-  '31-7': { gates: [31, 7], path: 'M175,210 L190,265' },
-  '8-1': { gates: [8, 1], path: 'M200,210 L200,265' },
-  '33-13': { gates: [33, 13], path: 'M195,210 L205,265' },
-  '45-21': { gates: [45, 21], path: 'M230,210 L270,250' },
-  '20-10': { gates: [20, 10], path: 'M210,210 L215,265' },
-  '20-34': { gates: [20, 34], path: 'M205,210 L210,380' },
-  '20-57': { gates: [20, 57], path: 'M185,210 L120,350' },
-  '12-22': { gates: [12, 22], path: 'M245,210 L285,340' },
-  '35-36': { gates: [35, 36], path: 'M255,210 L280,350' },
-  '16-48': { gates: [16, 48], path: 'M155,200 L110,340' },
+  '31-7': { gates: [31, 7], path: 'M245,280 L275,375' },
+  '8-1': { gates: [8, 1], path: 'M280,290 L280,370' },
+  '33-13': { gates: [33, 13], path: 'M280,250 L295,370' },
+  '45-21': { gates: [45, 21], path: 'M345,290 L400,340' },
+  '20-10': { gates: [20, 10], path: 'M325,250 L330,375' },
+  '20-34': { gates: [20, 34], path: 'M315,280 L330,520' },
+  '20-57': { gates: [20, 57], path: 'M275,280 L170,475' },
+  '12-22': { gates: [12, 22], path: 'M360,290 L435,445' },
+  '35-36': { gates: [35, 36], path: 'M380,275 L415,520' },
+  '16-48': { gates: [16, 48], path: 'M220,270 L160,460' },
   
   // G to Sacral
-  '2-14': { gates: [2, 14], path: 'M200,315 L195,375' },
-  '15-5': { gates: [15, 5], path: 'M200,330 L185,380' },
-  '46-29': { gates: [46, 29], path: 'M210,315 L205,375' },
+  '2-14': { gates: [2, 14], path: 'M295,430 L280,510' },
+  '15-5': { gates: [15, 5], path: 'M295,455 L268,515' },
+  '46-29': { gates: [46, 29], path: 'M315,435 L300,505' },
   
   // G to Heart
-  '25-51': { gates: [25, 51], path: 'M225,280 L265,255' },
+  '25-51': { gates: [25, 51], path: 'M340,380 L395,340' },
   
   // G to Spleen
-  '10-57': { gates: [10, 57], path: 'M185,290 L120,350' },
+  '10-57': { gates: [10, 57], path: 'M275,400 L175,480' },
   
   // Heart to Throat
-  '21-45': { gates: [21, 45], path: 'M275,255 L230,210' },
+  '21-45': { gates: [21, 45], path: 'M410,340 L345,290' },
   
   // Heart to Solar Plexus
-  '40-37': { gates: [40, 37], path: 'M300,270 L305,350' },
+  '40-37': { gates: [40, 37], path: 'M450,370 L455,470' },
   
   // Heart to Spleen
-  '26-44': { gates: [26, 44], path: 'M280,260 L140,345' },
+  '26-44': { gates: [26, 44], path: 'M415,355 L200,465' },
   
   // Sacral to Root
-  '9-52': { gates: [9, 52], path: 'M190,430 L200,495' },
-  '3-60': { gates: [3, 60], path: 'M200,435 L190,490' },
-  '42-53': { gates: [42, 53], path: 'M210,430 L180,490' },
+  '9-52': { gates: [9, 52], path: 'M280,580 L300,670' },
+  '3-60': { gates: [3, 60], path: 'M300,590 L280,665' },
+  '42-53': { gates: [42, 53], path: 'M330,580 L260,665' },
   
   // Sacral to Solar Plexus
-  '59-6': { gates: [59, 6], path: 'M235,385 L260,375' },
+  '59-6': { gates: [59, 6], path: 'M355,520 L385,510' },
   
   // Sacral to Spleen
-  '27-50': { gates: [27, 50], path: 'M170,395 L145,380' },
-  '34-57': { gates: [34, 57], path: 'M200,385 L120,355' },
+  '27-50': { gates: [27, 50], path: 'M250,545 L210,530' },
+  '34-57': { gates: [34, 57], path: 'M315,540 L175,485' },
   
   // Solar Plexus to Root
-  '30-41': { gates: [30, 41], path: 'M285,395 L260,495' },
-  '49-19': { gates: [49, 19], path: 'M265,385 L240,495' },
-  '55-39': { gates: [55, 39], path: 'M275,365 L255,495' },
+  '30-41': { gates: [30, 41], path: 'M435,555 L390,700' },
+  '49-19': { gates: [49, 19], path: 'M395,530 L365,670' },
+  '55-39': { gates: [55, 39], path: 'M410,475 L380,680' },
   
   // Spleen to Root
-  '28-38': { gates: [28, 38], path: 'M110,385 L145,495' },
-  '32-54': { gates: [32, 54], path: 'M130,395 L210,495' },
-  '18-58': { gates: [18, 58], path: 'M105,380 L165,495' },
+  '28-38': { gates: [28, 38], path: 'M160,525 L220,680' },
+  '32-54': { gates: [32, 54], path: 'M190,545 L325,720' },
+  '18-58': { gates: [18, 58], path: 'M155,505 L245,700' },
   
-  // Root connections
-  '54-32': { gates: [54, 32], path: 'M225,520 L130,390' },
-  '58-18': { gates: [58, 18], path: 'M175,515 L105,375' },
-  '38-28': { gates: [38, 28], path: 'M155,505 L105,380' },
-  '53-42': { gates: [53, 42], path: 'M175,495 L210,425' },
-  '60-3': { gates: [60, 3], path: 'M185,530 L200,435' },
-  '52-9': { gates: [52, 9], path: 'M200,530 L190,425' },
-  '19-49': { gates: [19, 49], path: 'M240,500 L265,385' },
-  '39-55': { gates: [39, 55], path: 'M250,505 L270,360' },
-  '41-30': { gates: [41, 30], path: 'M260,515 L290,395' },
+  // Additional paths
+  '54-32': { gates: [54, 32], path: 'M340,720 L190,545' },
+  '58-18': { gates: [58, 18], path: 'M255,705 L155,505' },
+  '38-28': { gates: [38, 28], path: 'M230,690 L155,520' },
+  '53-42': { gates: [53, 42], path: 'M255,670 L330,580' },
+  '60-3': { gates: [60, 3], path: 'M275,730 L300,595' },
+  '52-9': { gates: [52, 9], path: 'M300,730 L280,585' },
+  '19-49': { gates: [19, 49], path: 'M365,675 L395,535' },
+  '39-55': { gates: [39, 55], path: 'M375,695 L405,480' },
+  '41-30': { gates: [41, 30], path: 'M390,715 L440,555' },
 };
 
-// Defined center colors
+// Center colors
 const CENTER_COLORS = {
   defined: {
     Head: '#F5A623',
-    Ajna: '#7ED321',
+    Ajna: '#50C878',
     Throat: '#B8860B',
-    G: '#F5D02F',
-    Heart: '#E74C3C',
-    Sacral: '#E67E22',
-    'Solar Plexus': '#B8860B',
-    Spleen: '#B8860B',
-    Root: '#B8860B',
+    G: '#FFD700',
+    Heart: '#DC143C',
+    Sacral: '#FF6B35',
+    SolarPlexus: '#DAA520',
+    Spleen: '#8B4513',
+    Root: '#A0522D',
   },
   undefined: '#ffffff',
 };
@@ -215,7 +215,7 @@ export const Bodygraph = ({ chart }: BodygraphProps) => {
   const [selectedChannel, setSelectedChannel] = useState<[number, number] | null>(null);
   const [selectedCenter, setSelectedCenter] = useState<HDCenterName | null>(null);
 
-  // Get all activated gates from chart
+  // Get all activated gates
   const activatedGates = new Set<number>();
   const consciousGates = new Set<number>();
   const unconsciousGates = new Set<number>();
@@ -229,22 +229,19 @@ export const Bodygraph = ({ chart }: BodygraphProps) => {
     unconsciousGates.add(a.gate);
   });
 
-  // Check if a channel is defined (both gates activated)
   const isChannelDefined = (gates: [number, number]) => {
     return activatedGates.has(gates[0]) && activatedGates.has(gates[1]);
   };
 
-  // Get gate color based on activation
   const getGateColor = (gateNum: number) => {
     const isConscious = consciousGates.has(gateNum);
     const isUnconscious = unconsciousGates.has(gateNum);
-    if (isConscious && isUnconscious) return 'harmonic'; // Both
-    if (isConscious) return 'conscious'; // Black
-    if (isUnconscious) return 'unconscious'; // Red
+    if (isConscious && isUnconscious) return 'harmonic';
+    if (isConscious) return 'conscious';
+    if (isUnconscious) return 'unconscious';
     return 'inactive';
   };
 
-  // Render center shape
   const renderCenter = (name: HDCenterName) => {
     const pos = CENTER_POSITIONS[name];
     if (!pos) return null;
@@ -253,20 +250,22 @@ export const Bodygraph = ({ chart }: BodygraphProps) => {
     const fillColor = isDefined 
       ? CENTER_COLORS.defined[name as keyof typeof CENTER_COLORS.defined] || '#F5A623'
       : CENTER_COLORS.undefined;
-    const strokeColor = isDefined ? 'none' : 'hsl(var(--muted-foreground))';
+    const strokeColor = isDefined ? 'rgba(0,0,0,0.3)' : 'hsl(var(--muted-foreground))';
+    const strokeWidth = isDefined ? 2 : 1.5;
 
     const handleClick = () => setSelectedCenter(name);
 
+    // Increased sizes for better visibility
     switch (pos.shape) {
       case 'triangle':
         return (
           <TooltipTrigger asChild>
             <polygon
-              points={`${pos.x},${pos.y - 25} ${pos.x - 30},${pos.y + 20} ${pos.x + 30},${pos.y + 20}`}
+              points={`${pos.x},${pos.y - 35} ${pos.x - 42},${pos.y + 28} ${pos.x + 42},${pos.y + 28}`}
               fill={fillColor}
               stroke={strokeColor}
-              strokeWidth="1"
-              className="cursor-pointer hover:opacity-80 transition-opacity"
+              strokeWidth={strokeWidth}
+              className="cursor-pointer hover:opacity-80 transition-opacity drop-shadow-md"
               onClick={handleClick}
             />
           </TooltipTrigger>
@@ -275,11 +274,11 @@ export const Bodygraph = ({ chart }: BodygraphProps) => {
         return (
           <TooltipTrigger asChild>
             <polygon
-              points={`${pos.x - 30},${pos.y - 15} ${pos.x + 30},${pos.y - 15} ${pos.x},${pos.y + 25}`}
+              points={`${pos.x - 42},${pos.y - 20} ${pos.x + 42},${pos.y - 20} ${pos.x},${pos.y + 35}`}
               fill={fillColor}
               stroke={strokeColor}
-              strokeWidth="1"
-              className="cursor-pointer hover:opacity-80 transition-opacity"
+              strokeWidth={strokeWidth}
+              className="cursor-pointer hover:opacity-80 transition-opacity drop-shadow-md"
               onClick={handleClick}
             />
           </TooltipTrigger>
@@ -288,11 +287,11 @@ export const Bodygraph = ({ chart }: BodygraphProps) => {
         return (
           <TooltipTrigger asChild>
             <polygon
-              points={`${pos.x},${pos.y - 30} ${pos.x + 35},${pos.y} ${pos.x},${pos.y + 30} ${pos.x - 35},${pos.y}`}
+              points={`${pos.x},${pos.y - 42} ${pos.x + 48},${pos.y} ${pos.x},${pos.y + 42} ${pos.x - 48},${pos.y}`}
               fill={fillColor}
               stroke={strokeColor}
-              strokeWidth="1"
-              className="cursor-pointer hover:opacity-80 transition-opacity"
+              strokeWidth={strokeWidth}
+              className="cursor-pointer hover:opacity-80 transition-opacity drop-shadow-md"
               onClick={handleClick}
             />
           </TooltipTrigger>
@@ -301,14 +300,15 @@ export const Bodygraph = ({ chart }: BodygraphProps) => {
         return (
           <TooltipTrigger asChild>
             <rect
-              x={pos.x - 30}
-              y={pos.y - 25}
-              width="60"
-              height="50"
+              x={pos.x - 42}
+              y={pos.y - 35}
+              width="84"
+              height="70"
+              rx="4"
               fill={fillColor}
               stroke={strokeColor}
-              strokeWidth="1"
-              className="cursor-pointer hover:opacity-80 transition-opacity"
+              strokeWidth={strokeWidth}
+              className="cursor-pointer hover:opacity-80 transition-opacity drop-shadow-md"
               onClick={handleClick}
             />
           </TooltipTrigger>
@@ -317,11 +317,11 @@ export const Bodygraph = ({ chart }: BodygraphProps) => {
         return (
           <TooltipTrigger asChild>
             <polygon
-              points={`${pos.x},${pos.y - 15} ${pos.x - 20},${pos.y + 15} ${pos.x + 20},${pos.y + 15}`}
+              points={`${pos.x},${pos.y - 22} ${pos.x - 28},${pos.y + 22} ${pos.x + 28},${pos.y + 22}`}
               fill={fillColor}
               stroke={strokeColor}
-              strokeWidth="1"
-              className="cursor-pointer hover:opacity-80 transition-opacity"
+              strokeWidth={strokeWidth}
+              className="cursor-pointer hover:opacity-80 transition-opacity drop-shadow-md"
               onClick={handleClick}
             />
           </TooltipTrigger>
@@ -330,11 +330,11 @@ export const Bodygraph = ({ chart }: BodygraphProps) => {
         return (
           <TooltipTrigger asChild>
             <polygon
-              points={`${pos.x - 20},${pos.y - 25} ${pos.x + 25},${pos.y} ${pos.x - 20},${pos.y + 25}`}
+              points={`${pos.x - 28},${pos.y - 35} ${pos.x + 35},${pos.y} ${pos.x - 28},${pos.y + 35}`}
               fill={fillColor}
               stroke={strokeColor}
-              strokeWidth="1"
-              className="cursor-pointer hover:opacity-80 transition-opacity"
+              strokeWidth={strokeWidth}
+              className="cursor-pointer hover:opacity-80 transition-opacity drop-shadow-md"
               onClick={handleClick}
             />
           </TooltipTrigger>
@@ -343,11 +343,11 @@ export const Bodygraph = ({ chart }: BodygraphProps) => {
         return (
           <TooltipTrigger asChild>
             <polygon
-              points={`${pos.x + 20},${pos.y - 25} ${pos.x - 25},${pos.y} ${pos.x + 20},${pos.y + 25}`}
+              points={`${pos.x + 28},${pos.y - 35} ${pos.x - 35},${pos.y} ${pos.x + 28},${pos.y + 35}`}
               fill={fillColor}
               stroke={strokeColor}
-              strokeWidth="1"
-              className="cursor-pointer hover:opacity-80 transition-opacity"
+              strokeWidth={strokeWidth}
+              className="cursor-pointer hover:opacity-80 transition-opacity drop-shadow-md"
               onClick={handleClick}
             />
           </TooltipTrigger>
@@ -359,10 +359,24 @@ export const Bodygraph = ({ chart }: BodygraphProps) => {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="relative w-full max-w-md mx-auto">
-        <svg viewBox="0 0 400 580" className="w-full h-auto">
-          {/* Background */}
-          <rect width="400" height="580" fill="transparent" />
+      <div className="relative w-full max-w-lg mx-auto">
+        <svg viewBox="0 0 600 800" className="w-full h-auto" style={{ minHeight: '500px' }}>
+          {/* Subtle background gradient */}
+          <defs>
+            <linearGradient id="bgGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="hsl(var(--card))" />
+              <stop offset="100%" stopColor="hsl(var(--muted))" />
+            </linearGradient>
+            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+          
+          <rect width="600" height="800" fill="url(#bgGradient)" rx="8" />
 
           {/* Channel lines */}
           {HUMAN_DESIGN_CHANNELS.map((channel) => {
@@ -380,11 +394,13 @@ export const Bodygraph = ({ chart }: BodygraphProps) => {
                   <path
                     d={pathData.path}
                     fill="none"
-                    stroke={defined ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground) / 0.3)'}
-                    strokeWidth={defined ? 3 : 1}
-                    strokeDasharray={defined ? 'none' : '4,4'}
+                    stroke={defined ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground) / 0.25)'}
+                    strokeWidth={defined ? 4 : 2}
+                    strokeDasharray={defined ? 'none' : '6,4'}
+                    strokeLinecap="round"
                     className="cursor-pointer hover:stroke-primary/70 transition-colors"
                     onClick={() => setSelectedChannel(channel.gates)}
+                    filter={defined ? 'url(#glow)' : undefined}
                   />
                 </TooltipTrigger>
                 <TooltipContent side="right" className="max-w-xs">
@@ -410,42 +426,63 @@ export const Bodygraph = ({ chart }: BodygraphProps) => {
             </Tooltip>
           ))}
 
-          {/* Gate numbers */}
+          {/* Gate numbers with backgrounds for readability */}
           {Object.entries(GATE_POSITIONS).map(([gateStr, pos]) => {
             const gateNum = parseInt(gateStr);
             const colorType = getGateColor(gateNum);
             const isActive = colorType !== 'inactive';
             
-            let textColor = 'hsl(var(--muted-foreground) / 0.4)';
-            let fontWeight = 'normal';
+            let textColor = 'hsl(var(--muted-foreground))';
+            let bgColor = 'transparent';
+            let fontWeight = '400';
+            let fontSize = '11';
             
             if (colorType === 'conscious') {
-              textColor = 'hsl(var(--foreground))';
-              fontWeight = 'bold';
+              textColor = '#ffffff';
+              bgColor = 'hsl(var(--foreground))';
+              fontWeight = '600';
+              fontSize = '12';
             } else if (colorType === 'unconscious') {
-              textColor = '#dc2626';
-              fontWeight = 'bold';
+              textColor = '#ffffff';
+              bgColor = '#dc2626';
+              fontWeight = '600';
+              fontSize = '12';
             } else if (colorType === 'harmonic') {
-              textColor = 'hsl(var(--primary))';
-              fontWeight = 'bold';
+              textColor = '#ffffff';
+              bgColor = 'hsl(var(--primary))';
+              fontWeight = '700';
+              fontSize = '12';
             }
 
             return (
               <Tooltip key={gateNum}>
                 <TooltipTrigger asChild>
-                  <text
-                    x={pos.x}
-                    y={pos.y}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fontSize="10"
-                    fill={textColor}
-                    fontWeight={fontWeight}
-                    className="cursor-pointer hover:opacity-70 transition-opacity"
+                  <g
+                    className="cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={() => setSelectedGate(gateNum)}
                   >
-                    {gateNum}
-                  </text>
+                    {isActive && (
+                      <circle
+                        cx={pos.x}
+                        cy={pos.y}
+                        r="12"
+                        fill={bgColor}
+                        className="drop-shadow-sm"
+                      />
+                    )}
+                    <text
+                      x={pos.x}
+                      y={pos.y}
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fontSize={fontSize}
+                      fill={textColor}
+                      fontWeight={fontWeight}
+                      fontFamily="system-ui, -apple-system, sans-serif"
+                    >
+                      {gateNum}
+                    </text>
+                  </g>
                 </TooltipTrigger>
                 <TooltipContent>
                   <p className="font-medium">Gate {gateNum}</p>
@@ -458,36 +495,42 @@ export const Bodygraph = ({ chart }: BodygraphProps) => {
           })}
 
           {/* Legend */}
-          <g transform="translate(10, 550)">
-            <circle cx="10" cy="0" r="5" fill="hsl(var(--foreground))" />
-            <text x="20" y="4" fontSize="8" fill="hsl(var(--muted-foreground))">Conscious</text>
+          <g transform="translate(20, 760)">
+            <rect x="0" y="-10" width="560" height="35" rx="6" fill="hsl(var(--card))" fillOpacity="0.9" />
             
-            <circle cx="80" cy="0" r="5" fill="#dc2626" />
-            <text x="90" y="4" fontSize="8" fill="hsl(var(--muted-foreground))">Unconscious</text>
+            <circle cx="30" cy="7" r="8" fill="hsl(var(--foreground))" />
+            <text x="45" y="12" fontSize="11" fill="hsl(var(--foreground))" fontWeight="500">Conscious</text>
             
-            <circle cx="165" cy="0" r="5" fill="hsl(var(--primary))" />
-            <text x="175" y="4" fontSize="8" fill="hsl(var(--muted-foreground))">Harmonic</text>
+            <circle cx="145" cy="7" r="8" fill="#dc2626" />
+            <text x="160" y="12" fontSize="11" fill="hsl(var(--foreground))" fontWeight="500">Unconscious</text>
+            
+            <circle cx="275" cy="7" r="8" fill="hsl(var(--primary))" />
+            <text x="290" y="12" fontSize="11" fill="hsl(var(--foreground))" fontWeight="500">Harmonic</text>
+            
+            <rect x="385" y="-1" width="16" height="16" rx="2" fill="#FFD700" stroke="rgba(0,0,0,0.2)" />
+            <text x="408" y="12" fontSize="11" fill="hsl(var(--foreground))" fontWeight="500">Defined</text>
+            
+            <rect x="485" y="-1" width="16" height="16" rx="2" fill="#ffffff" stroke="hsl(var(--muted-foreground))" />
+            <text x="508" y="12" fontSize="11" fill="hsl(var(--foreground))" fontWeight="500">Open</text>
           </g>
         </svg>
 
-        {/* Modals */}
-        {selectedGate && (
+        {/* Modals - conditionally rendered */}
+        {selectedGate !== null && (
           <GateDetailModal
             gateNumber={selectedGate}
             chart={chart}
             onClose={() => setSelectedGate(null)}
           />
         )}
-
-        {selectedChannel && (
+        {selectedChannel !== null && (
           <ChannelDetailModal
             gates={selectedChannel}
             chart={chart}
             onClose={() => setSelectedChannel(null)}
           />
         )}
-
-        {selectedCenter && (
+        {selectedCenter !== null && (
           <CenterDetailModal
             centerName={selectedCenter}
             chart={chart}
