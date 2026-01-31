@@ -193,7 +193,7 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
   const [monthSummary, setMonthSummary] = useState<string | null>(null);
   const [summaryLoading, setSummaryLoading] = useState<'week' | 'month' | null>(null);
   const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
-  const [voiceStyle, setVoiceStyle] = useState<'tara' | 'chris' | 'anne'>('tara');
+  const [voiceStyle, setVoiceStyle] = useState<'tara' | 'chris' | 'anne' | 'kathy' | 'krs' | 'malika' | 'sarah' | 'astrodienst' | 'cafe' | 'astrotwins' | 'chani'>('tara');
   const contentRef = useRef<HTMLDivElement>(null);
   
   // Get saved charts from the hook
@@ -751,49 +751,44 @@ Keep the tone professional, insightful, and practically applicable.`
                         <Sparkles className="h-5 w-5 text-primary" />
                         <span className="text-sm font-medium">Voice Style:</span>
                       </div>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          variant={voiceStyle === 'tara' ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => {
-                            setVoiceStyle('tara');
-                            setCosmicData(null);
-                            fetchCosmicWeather(true);
-                          }}
-                          className="gap-1"
-                        >
-                          🌙 Tara Vogel
-                        </Button>
-                        <Button
-                          variant={voiceStyle === 'chris' ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => {
-                            setVoiceStyle('chris');
-                            setCosmicData(null);
-                            fetchCosmicWeather(true);
-                          }}
-                          className="gap-1"
-                        >
-                          📚 Chris Brennan
-                        </Button>
-                        <Button
-                          variant={voiceStyle === 'anne' ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => {
-                            setVoiceStyle('anne');
-                            setCosmicData(null);
-                            fetchCosmicWeather(true);
-                          }}
-                          className="gap-1"
-                        >
-                          ⚡ Anne Ortelee
-                        </Button>
-                      </div>
+                      <Select
+                        value={voiceStyle}
+                        onValueChange={(value: typeof voiceStyle) => {
+                          setVoiceStyle(value);
+                          setCosmicData(null);
+                          fetchCosmicWeather(true);
+                        }}
+                      >
+                        <SelectTrigger className="w-[220px] bg-background">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border-border z-[100]">
+                          <SelectItem value="tara">🌙 Tara Vogel</SelectItem>
+                          <SelectItem value="chris">📚 Chris Brennan</SelectItem>
+                          <SelectItem value="anne">⚡ Anne Ortelee</SelectItem>
+                          <SelectItem value="kathy">🌹 Kathy Rose</SelectItem>
+                          <SelectItem value="krs">🕉️ KRS Channel</SelectItem>
+                          <SelectItem value="malika">✊ Malika Siemper</SelectItem>
+                          <SelectItem value="sarah">🌕 Sarah L'Harar</SelectItem>
+                          <SelectItem value="astrodienst">🔬 Astrodienst</SelectItem>
+                          <SelectItem value="cafe">☕ Cafe Astrology</SelectItem>
+                          <SelectItem value="astrotwins">♊ AstroTwins</SelectItem>
+                          <SelectItem value="chani">🦋 CHANI</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     <p className="text-xs text-muted-foreground mt-2">
                       {voiceStyle === 'tara' && 'Warm, nurturing mama energy - practical for everyday life and parenting'}
                       {voiceStyle === 'chris' && 'Scholarly Hellenistic approach - technical depth and historical context'}
                       {voiceStyle === 'anne' && 'Enthusiastic weekly weather - specific timing and practical action items'}
+                      {voiceStyle === 'kathy' && 'Rose Astrology - intuitive, spiritual, heart-centered guidance'}
+                      {voiceStyle === 'krs' && 'Vedic perspective - karmic, fate-focused, direct communication'}
+                      {voiceStyle === 'malika' && 'Afro-cosmic wisdom - ancestral, liberation-focused, embodied'}
+                      {voiceStyle === 'sarah' && 'Lunar Astro - moon-centered, feminine cyclical wisdom'}
+                      {voiceStyle === 'astrodienst' && 'Technical precision - research-based, educational depth'}
+                      {voiceStyle === 'cafe' && 'Straightforward, accessible - practical daily guidance'}
+                      {voiceStyle === 'astrotwins' && 'Modern lifestyle - warm, hip, culturally current'}
+                      {voiceStyle === 'chani' && 'Poetic and contemplative - therapeutic, socially conscious'}
                     </p>
                   </CardContent>
                 </Card>
