@@ -15,6 +15,7 @@ import { LunarCycleView } from "./LunarCycleView";
 import { CosmicRecipeCard, parseRecipeFromContent } from "./CosmicRecipeCard";
 import { useNatalChart, NatalChart } from "@/hooks/useNatalChart";
 import { PersonalizedTransitsPanel } from "./PersonalizedTransitsPanel";
+import { WeeklyMealPlanCard } from "./WeeklyMealPlanCard";
 
 const ZODIAC_SYMBOLS: Record<string, string> = {
   Aries: "♈", Taurus: "♉", Gemini: "♊", Cancer: "♋",
@@ -909,82 +910,87 @@ Keep the tone professional, insightful, and practically applicable.`
 
               {/* WEEK SUMMARY VIEW */}
               {viewMode === 'week' && (
-                <Card className="border-primary/20 shadow-lg mb-6">
-                  <CardHeader className="border-b border-primary/10 bg-gradient-to-r from-blue-500/5 to-transparent">
-                    <div className="flex items-center justify-between flex-wrap gap-2">
-                      <CardTitle className="font-serif text-2xl font-light flex items-center gap-3">
-                        <Calendar className="h-6 w-6 text-blue-500" />
-                        Weekly Cosmic Forecast
-                      </CardTitle>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => setViewMode('daily')}
-                        className="gap-2"
-                      >
-                        <ArrowLeft className="h-4 w-4" />
-                        Back to Daily
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-6 md:p-8">
-                    {summaryLoading === 'week' && (
-                      <div className="flex flex-col items-center justify-center py-12 gap-4">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                        <p className="text-muted-foreground">Generating weekly forecast...</p>
-                      </div>
-                    )}
-                    {weekSummary && !summaryLoading && (
-                      <div className="prose prose-lg dark:prose-invert max-w-none">
-                        <ReactMarkdown
-                          components={{
-                            h2: ({ children }) => (
-                              <h2 className="font-serif text-xl font-medium text-foreground mt-6 mb-3 pb-2 border-b border-primary/10 first:mt-0">
-                                {children}
-                              </h2>
-                            ),
-                            a: ({ href, children }) => (
-                              <button 
-                                onClick={async (e) => {
-                                  e.preventDefault();
-                                  if (href) {
-                                    try {
-                                      await navigator.clipboard.writeText(href);
-                                      toast({ title: "Recipe link copied!", description: "Paste in your browser to search for the recipe." });
-                                    } catch {
-                                      toast({ title: "Recipe link", description: href, duration: 10000 });
-                                    }
-                                  }
-                                }}
-                                className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors cursor-pointer bg-transparent border-none p-0 font-inherit text-inherit inline-flex items-center gap-1"
-                              >
-                                {children}
-                                <span className="text-xs opacity-60">📋</span>
-                              </button>
-                            ),
-                            ul: ({ children }) => (
-                              <ul className="space-y-2 my-4">{children}</ul>
-                            ),
-                            li: ({ children }) => (
-                              <li className="flex items-start gap-2">
-                                <span className="text-primary mt-1.5">•</span>
-                                <span>{children}</span>
-                              </li>
-                            ),
-                            p: ({ children }) => (
-                              <p className="text-foreground/90 leading-relaxed my-3">{children}</p>
-                            ),
-                            strong: ({ children }) => (
-                              <strong className="font-semibold text-foreground">{children}</strong>
-                            ),
-                          }}
+                <>
+                  <Card className="border-primary/20 shadow-lg mb-6">
+                    <CardHeader className="border-b border-primary/10 bg-gradient-to-r from-blue-500/5 to-transparent">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <CardTitle className="font-serif text-2xl font-light flex items-center gap-3">
+                          <Calendar className="h-6 w-6 text-blue-500" />
+                          Weekly Cosmic Forecast
+                        </CardTitle>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => setViewMode('daily')}
+                          className="gap-2"
                         >
-                          {weekSummary}
-                        </ReactMarkdown>
+                          <ArrowLeft className="h-4 w-4" />
+                          Back to Daily
+                        </Button>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
+                    </CardHeader>
+                    <CardContent className="p-6 md:p-8">
+                      {summaryLoading === 'week' && (
+                        <div className="flex flex-col items-center justify-center py-12 gap-4">
+                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                          <p className="text-muted-foreground">Generating weekly forecast...</p>
+                        </div>
+                      )}
+                      {weekSummary && !summaryLoading && (
+                        <div className="prose prose-lg dark:prose-invert max-w-none">
+                          <ReactMarkdown
+                            components={{
+                              h2: ({ children }) => (
+                                <h2 className="font-serif text-xl font-medium text-foreground mt-6 mb-3 pb-2 border-b border-primary/10 first:mt-0">
+                                  {children}
+                                </h2>
+                              ),
+                              a: ({ href, children }) => (
+                                <button 
+                                  onClick={async (e) => {
+                                    e.preventDefault();
+                                    if (href) {
+                                      try {
+                                        await navigator.clipboard.writeText(href);
+                                        toast({ title: "Recipe link copied!", description: "Paste in your browser to search for the recipe." });
+                                      } catch {
+                                        toast({ title: "Recipe link", description: href, duration: 10000 });
+                                      }
+                                    }
+                                  }}
+                                  className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors cursor-pointer bg-transparent border-none p-0 font-inherit text-inherit inline-flex items-center gap-1"
+                                >
+                                  {children}
+                                  <span className="text-xs opacity-60">📋</span>
+                                </button>
+                              ),
+                              ul: ({ children }) => (
+                                <ul className="space-y-2 my-4">{children}</ul>
+                              ),
+                              li: ({ children }) => (
+                                <li className="flex items-start gap-2">
+                                  <span className="text-primary mt-1.5">•</span>
+                                  <span>{children}</span>
+                                </li>
+                              ),
+                              p: ({ children }) => (
+                                <p className="text-foreground/90 leading-relaxed my-3">{children}</p>
+                              ),
+                              strong: ({ children }) => (
+                                <strong className="font-semibold text-foreground">{children}</strong>
+                              ),
+                            }}
+                          >
+                            {weekSummary}
+                          </ReactMarkdown>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Weekly Meal Plan Card */}
+                  <WeeklyMealPlanCard />
+                </>
               )}
 
               {/* MONTH SUMMARY VIEW */}
