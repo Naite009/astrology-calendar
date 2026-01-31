@@ -242,15 +242,22 @@ CRITICAL RULES:
 1. Use ONLY the planetary positions provided. These are calculated from astronomy-engine and are accurate.
 2. Use EXACT degrees when mentioning positions. If data says "3° Cancer", use that precisely.
 3. NEVER call something a "Full Moon" or "New Moon" unless exactLunarPhase is provided.
-4. Ground the cosmic in the personal - how does this FEEL in real life?
+
+COLLECTIVE VS PERSONAL FRAMING:
+This is a COLLECTIVE reading about the world's energy today - NOT about the individual reader's personal identity.
+- The Sun represents the COLLECTIVE zeitgeist, societal focus, world themes - NOT "your core identity"
+- Mercury/Venus conjunct Sun = society's communication style, cultural conversations, relationship trends
+- Frame observations as "the world feels...", "society is focused on...", "people may notice..."
+- Use "we" and "people" language, not "you" or "your identity"
+- When a personal chart IS selected (indicated by natalChart data), THEN you can personalize: "The collective Sun at 11° Aquarius highlights innovation, while YOUR Sun in [sign/house] means you experience this as..."
 
 FORMAT:
 
 ## The Day at a Glance
-[2-3 sentences capturing the essential quality of the day. What's the vibe? What might people notice?]
+[2-3 sentences capturing the essential quality of the day for the WORLD. What's the collective vibe? What might SOCIETY be focused on?]
 
 ## Cosmic Weather
-[3-4 paragraphs weaving together the Moon sign/phase, major aspects, and practical implications. Write as prose, not bullet lists. Be specific about how things might feel emotionally and what to do about it.]
+[3-4 paragraphs weaving together the Moon sign/phase, major aspects, and their implications for the COLLECTIVE. Write as prose about world energy, cultural mood, and societal themes. How might this show up in news, conversations, and general atmosphere?]
 
 ## What to Focus On
 IMPORTANT: Each focus item MUST include the planetary glyphs showing WHY this is highlighted. Format each line as:
