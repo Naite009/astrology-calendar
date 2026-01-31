@@ -1,15 +1,18 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { X, Upload, FileImage, Loader2 } from 'lucide-react';
+import { X, Upload, FileImage, Loader2, UserCheck } from 'lucide-react';
 import { calculateHumanDesignChart } from '@/lib/humanDesignCalculator';
 import { HumanDesignChart } from '@/types/humanDesign';
 import { lookupTimezone } from '@/lib/timezoneUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { UserData } from '@/hooks/useUserData';
+import { namesMatch } from '@/lib/nameMatching';
 
 interface HDChartInputFormProps {
   onSave: (chart: HumanDesignChart) => void;
   onClose: () => void;
   initialData?: Partial<HumanDesignChart>;
+  mainUserData?: UserData | null;
 }
 
 const TIMEZONES = [
@@ -33,7 +36,7 @@ const TIMEZONES = [
   { value: 'Pacific/Auckland', label: 'Auckland (NZST)', offset: 12 },
 ];
 
-export const HDChartInputForm = ({ onSave, onClose, initialData }: HDChartInputFormProps) => {
+export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }: HDChartInputFormProps) => {
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     birthDate: initialData?.birthDate || '',
@@ -47,8 +50,36 @@ export const HDChartInputForm = ({ onSave, onClose, initialData }: HDChartInputF
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [timezoneAutoDetected, setTimezoneAutoDetected] = useState(false);
+  const [isMainUser, setIsMainUser] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const locationDebounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Check if main user data is available and can be used
+  const canUseMainUserData = mainUserData && mainUserData.name && mainUserData.birthDate && mainUserData.birthTime;
+
+  // Auto-detect if this is the main user based on name match
+  useEffect(() => {
+    if (mainUserData?.name && formData.name) {
+      setIsMainUser(namesMatch(formData.name, mainUserData.name));
+    } else {
+      setIsMainUser(false);
+    }
+  }, [formData.name, mainUserData?.name]);
+
+  // Fill form with main user data
+  const useMainUserData = () => {
+    if (!mainUserData) return;
+    
+    setFormData({
+      name: mainUserData.name,
+      birthDate: mainUserData.birthDate,
+      birthTime: mainUserData.birthTime,
+      birthLocation: mainUserData.birthLocation,
+      timezone: mainUserData.timezone || '',
+    });
+    setIsMainUser(true);
+    toast.success('Filled with your profile data');
+  };
 
   // Auto-detect timezone when location or birth date changes
   useEffect(() => {
@@ -289,6 +320,25 @@ export const HDChartInputForm = ({ onSave, onClose, initialData }: HDChartInputF
           <span className="text-xs text-muted-foreground uppercase tracking-widest">or enter manually</span>
           <div className="flex-1 h-px bg-border" />
         </div>
+
+        {/* Use My Data Button */}
+        {canUseMainUserData && !isMainUser && (
+          <button
+            type="button"
+            onClick={useMainUserData}
+            className="mb-4 w-full flex items-center justify-center gap-2 rounded border border-primary/50 bg-primary/5 px-4 py-3 text-sm text-primary transition-colors hover:bg-primary/10"
+          >
+            <UserCheck size={16} />
+            Use my profile data ({mainUserData?.name})
+          </button>
+        )}
+
+        {isMainUser && (
+          <div className="mb-4 flex items-center gap-2 rounded border border-primary/30 bg-primary/5 px-3 py-2 text-xs text-primary">
+            <UserCheck size={14} />
+            Using your main profile data
+          </div>
+        )}
 
         {error && (
           <div className="mb-4 rounded border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
