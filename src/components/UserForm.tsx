@@ -31,6 +31,7 @@ export const UserForm = ({ initialData, onSave, onClose }: UserFormProps) => {
     }
   );
   const [autoDetectedTz, setAutoDetectedTz] = useState<{ timezone: string; label: string } | null>(null);
+  const [tzKey, setTzKey] = useState(0); // Force re-render on tz changes
 
   // Auto-detect timezone when location OR date changes
   useEffect(() => {
@@ -39,9 +40,12 @@ export const UserForm = ({ initialData, onSave, onClose }: UserFormProps) => {
       if (result) {
         setAutoDetectedTz({ timezone: result.timezone, label: result.label });
         setFormData(prev => ({ ...prev, timezone: result.timezone }));
+        setTzKey(k => k + 1); // Force UI update
       } else {
         setAutoDetectedTz(null);
       }
+    } else {
+      setAutoDetectedTz(null);
     }
   }, [formData.birthLocation, formData.birthDate]);
 
@@ -154,12 +158,12 @@ export const UserForm = ({ initialData, onSave, onClose }: UserFormProps) => {
               Birth Timezone
             </label>
             {autoDetectedTz ? (
-              <div className="space-y-2">
+              <div className="space-y-2" key={tzKey}>
                 <div className="flex items-center gap-2 rounded border border-primary/30 bg-primary/5 px-3 py-3">
-                  <span className="text-sm text-foreground">
+                  <span className="text-sm font-medium text-foreground">
                     {autoDetectedTz.label}
                   </span>
-                  <span className="text-xs text-muted-foreground">(auto-detected)</span>
+                  <span className="text-xs text-muted-foreground">(auto-detected for {formData.birthDate})</span>
                 </div>
                 <div className="flex items-start gap-2 text-xs text-muted-foreground">
                   <Info size={14} className="mt-0.5 shrink-0" />
