@@ -302,8 +302,7 @@ Based on the Moon in [SIGN] and today's planetary weather, here's what will feel
 **🍵 Drink of the Day: [Beverage Name](https://www.google.com/search?q=beverage+recipe)**
 *Why:* [Why this drink fits today]
 
-## ✨ Featured Recipe of the Day
-Create ONE complete, original recipe that embodies today's energy.
+DO NOT include a "Featured Recipe" heading - the UI handles this. Just output the recipe block:
 
 **RECIPE_START**
 RECIPE_NAME: [Creative but practical name]
