@@ -2,7 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { X, Upload, FileImage, Loader2, UserCheck } from 'lucide-react';
 import { calculateHumanDesignChart } from '@/lib/humanDesignCalculator';
 import { HumanDesignChart } from '@/types/humanDesign';
-import { lookupTimezone } from '@/lib/timezoneUtils';
+import { getTimezoneInfoForDate, lookupTimezone } from '@/lib/timezoneUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { UserData } from '@/hooks/useUserData';
@@ -16,24 +16,24 @@ interface HDChartInputFormProps {
 }
 
 const TIMEZONES = [
-  { value: 'America/New_York', label: 'Eastern (ET)', offset: -5 },
-  { value: 'America/Chicago', label: 'Central (CT)', offset: -6 },
-  { value: 'America/Denver', label: 'Mountain (MT)', offset: -7 },
-  { value: 'America/Los_Angeles', label: 'Pacific (PT)', offset: -8 },
-  { value: 'America/Phoenix', label: 'Arizona (MST)', offset: -7 },
-  { value: 'America/Anchorage', label: 'Alaska (AKT)', offset: -9 },
-  { value: 'Pacific/Honolulu', label: 'Hawaii (HST)', offset: -10 },
-  { value: 'Europe/London', label: 'London (GMT/BST)', offset: 0 },
-  { value: 'Europe/Paris', label: 'Paris (CET)', offset: 1 },
-  { value: 'Europe/Berlin', label: 'Berlin (CET)', offset: 1 },
-  { value: 'Europe/Moscow', label: 'Moscow (MSK)', offset: 3 },
-  { value: 'Asia/Dubai', label: 'Dubai (GST)', offset: 4 },
-  { value: 'Asia/Kolkata', label: 'India (IST)', offset: 5.5 },
-  { value: 'Asia/Bangkok', label: 'Bangkok (ICT)', offset: 7 },
-  { value: 'Asia/Shanghai', label: 'China (CST)', offset: 8 },
-  { value: 'Asia/Tokyo', label: 'Tokyo (JST)', offset: 9 },
-  { value: 'Australia/Sydney', label: 'Sydney (AEST)', offset: 10 },
-  { value: 'Pacific/Auckland', label: 'Auckland (NZST)', offset: 12 },
+  { value: 'America/New_York', label: 'Eastern (ET)' },
+  { value: 'America/Chicago', label: 'Central (CT)' },
+  { value: 'America/Denver', label: 'Mountain (MT)' },
+  { value: 'America/Los_Angeles', label: 'Pacific (PT)' },
+  { value: 'America/Phoenix', label: 'Arizona (MST)' },
+  { value: 'America/Anchorage', label: 'Alaska (AKT)' },
+  { value: 'Pacific/Honolulu', label: 'Hawaii (HST)' },
+  { value: 'Europe/London', label: 'London (GMT/BST)' },
+  { value: 'Europe/Paris', label: 'Paris (CET/CEST)' },
+  { value: 'Europe/Berlin', label: 'Berlin (CET/CEST)' },
+  { value: 'Europe/Moscow', label: 'Moscow (MSK)' },
+  { value: 'Asia/Dubai', label: 'Dubai (GST)' },
+  { value: 'Asia/Kolkata', label: 'India (IST)' },
+  { value: 'Asia/Bangkok', label: 'Bangkok (ICT)' },
+  { value: 'Asia/Shanghai', label: 'China (CST)' },
+  { value: 'Asia/Tokyo', label: 'Tokyo (JST)' },
+  { value: 'Australia/Sydney', label: 'Sydney (AEST/AEDT)' },
+  { value: 'Pacific/Auckland', label: 'Auckland (NZST/NZDT)' },
 ];
 
 export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }: HDChartInputFormProps) => {
@@ -110,21 +110,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
     setIsCalculating(true);
 
     try {
-      const selectedTz = TIMEZONES.find(tz => tz.value === formData.timezone);
-      // Calculate the actual offset for the birth date
-      let offset = selectedTz?.offset ?? -5;
-      
-      // Try to get accurate offset for the timezone and date
-      if (formData.timezone && formData.birthDate) {
-        try {
-          const birthDateTime = new Date(formData.birthDate);
-          const utcDate = new Date(birthDateTime.toLocaleString('en-US', { timeZone: 'UTC' }));
-          const tzDate = new Date(birthDateTime.toLocaleString('en-US', { timeZone: formData.timezone }));
-          offset = (tzDate.getTime() - utcDate.getTime()) / (1000 * 60 * 60);
-        } catch {
-          // Fall back to default offset
-        }
-      }
+      const offset = getTimezoneInfoForDate(formData.timezone || 'America/New_York', formData.birthDate).offset;
 
       const chart = calculateHumanDesignChart(
         formData.name,
@@ -418,6 +404,12 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
                 <span className="ml-2 text-primary normal-case">✓ Auto-detected</span>
               )}
             </label>
+
+            {timezoneAutoDetected && formData.timezone && formData.birthDate && (
+              <div className="rounded border border-primary/30 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
+                Using <span className="font-medium text-foreground">{getTimezoneInfoForDate(formData.timezone, formData.birthDate).label}</span> for {formData.birthDate}
+              </div>
+            )}
             <select
               value={formData.timezone}
               onChange={(e) => {
@@ -430,7 +422,12 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
               <option value="">Select timezone...</option>
               {TIMEZONES.map((tz) => (
                 <option key={tz.value} value={tz.value}>
-                  {tz.label} (UTC{tz.offset >= 0 ? '+' : ''}{tz.offset})
+                  {(() => {
+                    const info = formData.birthDate
+                      ? getTimezoneInfoForDate(tz.value, formData.birthDate)
+                      : getTimezoneInfoForDate(tz.value);
+                    return `${tz.label} (${info.label})`;
+                  })()}
                 </option>
               ))}
             </select>

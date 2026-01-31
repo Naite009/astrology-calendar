@@ -302,6 +302,25 @@ function getDSTAwareLabel(timezone: string, date: Date): string {
   return `${offsetStr}`;
 }
 
+// Public helper: get DST-aware label/offset for a timezone on a specific birth date.
+// This is used by forms to display the correct "EDT UTC-4" vs "EST UTC-5".
+export function getTimezoneInfoForDate(
+  timezone: string,
+  birthDate?: string
+): { offset: number; label: string } {
+  let dateToCheck: Date;
+  if (birthDate) {
+    const [year, month, day] = birthDate.split('-').map(Number);
+    dateToCheck = new Date(year, month - 1, day, 12, 0, 0);
+  } else {
+    dateToCheck = new Date();
+  }
+
+  const offset = getTimezoneOffset(timezone, dateToCheck);
+  const label = getDSTAwareLabel(timezone, dateToCheck);
+  return { offset, label };
+}
+
 export function lookupTimezone(location: string, birthDate?: string): TimezoneResult | null {
   if (!location) return null;
   
@@ -349,14 +368,6 @@ export function lookupTimezone(location: string, birthDate?: string): TimezoneRe
   
   const offset = getTimezoneOffset(match.timezone, dateToCheck);
   const label = getDSTAwareLabel(match.timezone, dateToCheck);
-  
-  console.log('[Timezone Debug]', { 
-    birthDate, 
-    dateToCheck: dateToCheck.toISOString(), 
-    timezone: match.timezone, 
-    offset, 
-    label 
-  });
   
   return {
     timezone: match.timezone,
