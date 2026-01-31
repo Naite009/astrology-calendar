@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Plus, User, Trash2 } from 'lucide-react';
 import { useHumanDesignChart } from '@/hooks/useHumanDesignChart';
+import { useUserData } from '@/hooks/useUserData';
 import { HDChartInputForm } from './HDChartInputForm';
 import { HDChartSummary } from './HDChartSummary';
 import { HDActivationsTable } from './HDActivationsTable';
@@ -15,6 +16,7 @@ import {
 
 export const HumanDesignView = () => {
   const { charts, selectedChart, addChart, deleteChart, selectChart } = useHumanDesignChart();
+  const { userData: mainUserData } = useUserData();
   const [showForm, setShowForm] = useState(false);
   const [activeTab, setActiveTab] = useState<'bodygraph' | 'overview' | 'activations' | 'centers'>('bodygraph');
 
@@ -223,7 +225,11 @@ export const HumanDesignView = () => {
 
       {/* Form Modal */}
       {showForm && (
-        <HDChartInputForm onSave={handleSaveChart} onClose={() => setShowForm(false)} />
+        <HDChartInputForm 
+          onSave={handleSaveChart} 
+          onClose={() => setShowForm(false)} 
+          mainUserData={mainUserData}
+        />
       )}
     </div>
   );
