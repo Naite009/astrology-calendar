@@ -354,10 +354,11 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/80 p-5 overflow-y-auto"
+      className="fixed inset-0 z-50 bg-foreground/80 overflow-y-auto"
       onClick={onClose}
     >
-      <div
+      <div className="min-h-full flex items-start justify-center p-5 py-10">
+        <div
         className="w-full max-w-lg rounded-sm bg-background p-8 shadow-xl md:p-12 my-8"
         onClick={(e) => e.stopPropagation()}
       >
@@ -621,6 +622,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
             </button>
           </div>
         </form>
+      </div>
       </div>
     </div>
   );
