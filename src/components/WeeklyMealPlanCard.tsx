@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { Loader2, Download, Utensils, ChefHat, Sparkles } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Loader2, Download, Utensils, ChefHat, Sparkles, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -40,6 +40,18 @@ interface WeekDay {
   moonPhase: string;
 }
 
+// Get ISO week number for cache key
+function getWeekKey(): string {
+  const now = new Date();
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
+  const days = Math.floor((now.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000));
+  const weekNumber = Math.ceil((days + startOfYear.getDay() + 1) / 7);
+  return `${now.getFullYear()}-W${weekNumber.toString().padStart(2, '0')}`;
+}
+
+const MEAL_PLAN_CACHE_KEY = 'cosmic-meal-plan';
+const RECIPE_CACHE_KEY = 'cosmic-weekly-recipe';
+
 function getWeekForecast(): WeekDay[] {
   const days: WeekDay[] = [];
   const today = new Date();
@@ -68,9 +80,23 @@ export const WeeklyMealPlanCard = () => {
   const [loading, setLoading] = useState(false);
   const [weeklyRecipe, setWeeklyRecipe] = useState<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const weekKey = getWeekKey();
 
-  const fetchWeeklyMealPlan = async () => {
-    if (mealPlan) return; // Already have it
+  // Load cached data on mount
+  useEffect(() => {
+    const cachedMealPlan = localStorage.getItem(`${MEAL_PLAN_CACHE_KEY}-${weekKey}`);
+    const cachedRecipe = localStorage.getItem(`${RECIPE_CACHE_KEY}-${weekKey}`);
+    
+    if (cachedMealPlan) {
+      setMealPlan(cachedMealPlan);
+    }
+    if (cachedRecipe) {
+      setWeeklyRecipe(cachedRecipe);
+    }
+  }, [weekKey]);
+
+  const fetchWeeklyMealPlan = async (forceRegenerate = false) => {
+    if (mealPlan && !forceRegenerate) return; // Already have it and not forcing
     
     setLoading(true);
     
@@ -117,6 +143,8 @@ Keep descriptions SHORT and punchy. Make it scannable.`
 
       if (error) throw error;
       setMealPlan(data.insight);
+      // Cache the result
+      localStorage.setItem(`${MEAL_PLAN_CACHE_KEY}-${weekKey}`, data.insight);
       
     } catch (err) {
       console.error('Failed to fetch meal plan:', err);
@@ -126,8 +154,8 @@ Keep descriptions SHORT and punchy. Make it scannable.`
     }
   };
 
-  const fetchWeeklyRecipe = async () => {
-    if (weeklyRecipe) return;
+  const fetchWeeklyRecipe = async (forceRegenerate = false) => {
+    if (weeklyRecipe && !forceRegenerate) return;
     
     setLoading(true);
     
@@ -182,6 +210,8 @@ FORMAT:
 
       if (error) throw error;
       setWeeklyRecipe(data.insight);
+      // Cache the result
+      localStorage.setItem(`${RECIPE_CACHE_KEY}-${weekKey}`, data.insight);
       
     } catch (err) {
       console.error('Failed to fetch weekly recipe:', err);
@@ -239,7 +269,7 @@ FORMAT:
             <Button
               variant="outline"
               size="sm"
-              onClick={fetchWeeklyMealPlan}
+              onClick={() => fetchWeeklyMealPlan(false)}
               disabled={loading}
               className="gap-2"
             >
@@ -250,7 +280,7 @@ FORMAT:
             <Button
               variant="outline"
               size="sm"
-              onClick={fetchWeeklyRecipe}
+              onClick={() => fetchWeeklyRecipe(false)}
               disabled={loading}
               className="gap-2"
             >
@@ -259,15 +289,30 @@ FORMAT:
             </Button>
             
             {(mealPlan || weeklyRecipe) && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleDownload}
-                className="gap-2"
-              >
-                <Download className="h-4 w-4" />
-                Download
-              </Button>
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    if (mealPlan) fetchWeeklyMealPlan(true);
+                    if (weeklyRecipe) fetchWeeklyRecipe(true);
+                  }}
+                  disabled={loading}
+                  className="gap-2"
+                >
+                  <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                  Regenerate
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDownload}
+                  className="gap-2"
+                >
+                  <Download className="h-4 w-4" />
+                  Download
+                </Button>
+              </>
             )}
           </div>
         </div>
