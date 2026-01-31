@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { X, Upload, FileImage, Loader2, UserCheck, Edit3 } from 'lucide-react';
 import { calculateHumanDesignChart } from '@/lib/humanDesignCalculator';
-import { HumanDesignChart, HDPlanetaryActivation } from '@/types/humanDesign';
+import { HumanDesignChart, HDPlanetaryActivation, HDGateActivation } from '@/types/humanDesign';
 import { getTimezoneInfoForDate, lookupTimezone } from '@/lib/timezoneUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -148,6 +148,85 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
     } finally {
       setIsCalculating(false);
     }
+  };
+
+  // Save chart using the parsed gate data (not recalculating from birth data)
+  const handleSaveFromParsedData = () => {
+    if (!formData.name || parsedPersonality.length === 0) {
+      toast.error('Name and gate data are required');
+      return;
+    }
+
+    // Build chart from parsed data
+    const allGates = new Set<number>();
+    [...parsedPersonality, ...parsedDesign].forEach(a => allGates.add(a.gate));
+
+    // Import the calculation helpers
+    const { calculateDefinedChannels, calculateDefinedCenters, calculateDefinitionType, determineType, determineAuthority, determineStrategy } = require('@/lib/humanDesignCalculator');
+
+    const definedChannels = calculateDefinedChannels(allGates);
+    const definedCenters = calculateDefinedCenters(definedChannels);
+    const definitionType = calculateDefinitionType(definedCenters, definedChannels);
+    const hdType = determineType(definedCenters, definedChannels);
+    const authority = determineAuthority(definedCenters, hdType);
+    const strategy = determineStrategy(hdType);
+
+    // Get profile from Sun lines
+    const pSun = parsedPersonality.find(a => a.planet === 'Sun');
+    const dSun = parsedDesign.find(a => a.planet === 'Sun');
+    const profile = `${pSun?.line || 1}/${dSun?.line || 1}` as any;
+
+    // Build all centers list
+    const allCenters = ['Head', 'Ajna', 'Throat', 'G', 'Heart', 'SolarPlexus', 'Sacral', 'Spleen', 'Root'] as const;
+    const undefinedCenters = allCenters.filter(c => !definedCenters.includes(c as any));
+
+    // Build activated gates array with proper type
+    const activatedGates: HDGateActivation[] = [...parsedPersonality, ...parsedDesign].map(a => ({
+      gate: a.gate,
+      line: a.line,
+      planet: a.planet,
+      isConscious: a.isConscious,
+    }));
+
+    const chart: HumanDesignChart = {
+      id: crypto.randomUUID(),
+      name: formData.name,
+      birthDate: formData.birthDate || '',
+      birthTime: formData.birthTime || '',
+      birthLocation: formData.birthLocation || '',
+      timezone: formData.timezone || 'America/New_York',
+      timezoneOffset: 0,
+      personalityDateTime: new Date(),
+      designDateTime: new Date(),
+      type: parsedHDData?.hdType as any || hdType,
+      profile: parsedHDData?.profile as any || profile,
+      authority: parsedHDData?.authority as any || authority,
+      strategy: strategy,
+      definitionType: definitionType,
+      personalityActivations: parsedPersonality,
+      designActivations: parsedDesign,
+      definedCenters: definedCenters,
+      undefinedCenters: undefinedCenters as any[],
+      definedChannels: definedChannels,
+      activatedGates: activatedGates,
+      incarnationCross: {
+        name: 'Cross of ' + (pSun?.gate || 'Unknown'),
+        type: 'Right Angle',
+        gates: {
+          consciousSun: pSun?.gate || 1,
+          consciousEarth: parsedPersonality.find(a => a.planet === 'Earth')?.gate || 2,
+          unconsciousSun: dSun?.gate || 1,
+          unconsciousEarth: parsedDesign.find(a => a.planet === 'Earth')?.gate || 2,
+        },
+        quarter: 'Initiation',
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    onSave(chart);
+    toast.success('Chart saved from parsed data!');
+    onClose();
   };
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -470,6 +549,19 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
               onDesignChange={setParsedDesign}
               warnings={parseWarnings}
             />
+            
+            {/* Save from Parsed Data Button */}
+            <button
+              type="button"
+              onClick={() => handleSaveFromParsedData()}
+              disabled={!formData.name || parsedPersonality.length === 0}
+              className="mt-4 w-full border-2 border-primary bg-primary px-5 py-4 text-sm font-medium uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+            >
+              ✓ Save This Chart
+            </button>
+            <p className="mt-2 text-xs text-center text-muted-foreground">
+              Uses the parsed gate data above (not birth data calculation)
+            </p>
           </div>
         )}
 

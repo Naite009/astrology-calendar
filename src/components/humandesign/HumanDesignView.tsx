@@ -89,10 +89,10 @@ export const HumanDesignView = () => {
           {selectedChart && (
             <button
               onClick={() => handleDeleteChart(selectedChart.id)}
-              className="flex items-center gap-1 px-3 py-2 text-xs text-muted-foreground hover:text-destructive transition-colors"
+              className="flex items-center gap-1 px-3 py-2 text-xs border border-destructive/50 text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors rounded"
             >
-              <Trash2 size={12} />
-              Delete
+              <Trash2 size={14} />
+              Delete Chart
             </button>
           )}
         </div>
