@@ -204,15 +204,25 @@ export function determineType(definedCenters: HDCenterName[], definedChannels: s
   const hasThroat = definedCenters.includes('Throat');
   const hasSpleen = definedCenters.includes('Spleen');
   
+  console.log('[HD Type Detection] Starting...');
+  console.log('[HD Type Detection] Defined Centers:', definedCenters);
+  console.log('[HD Type Detection] Defined Channels:', definedChannels);
+  console.log('[HD Type Detection] Has Sacral:', hasSacral, '| Has Throat:', hasThroat, '| Has Spleen:', hasSpleen);
+  
   // Reflector: No defined centers
   if (definedCenters.length === 0) {
+    console.log('[HD Type Detection] Result: Reflector (no defined centers)');
     return 'Reflector';
   }
   
   // Normalize channel IDs for lookup (handle both "34-57" and "57-34" formats)
   const hasChannel = (gate1: number, gate2: number): boolean => {
-    return definedChannels.includes(`${gate1}-${gate2}`) || 
+    const result = definedChannels.includes(`${gate1}-${gate2}`) || 
            definedChannels.includes(`${gate2}-${gate1}`);
+    if (result) {
+      console.log(`[HD Type Detection] Found channel: ${gate1}-${gate2}`);
+    }
+    return result;
   };
   
   // Check for specific Sacral-to-Throat pathways
@@ -220,7 +230,9 @@ export function determineType(definedCenters: HDCenterName[], definedChannels: s
   
   if (hasSacral && hasThroat) {
     // Direct Sacral to Throat: Channel 34-20 (Channel of Charisma)
-    if (hasChannel(34, 20)) {
+    const hasDirect34_20 = hasChannel(34, 20);
+    console.log('[HD Type Detection] Direct 34-20 (Charisma):', hasDirect34_20);
+    if (hasDirect34_20) {
       hasSacralToThroat = true;
     }
     
@@ -228,13 +240,18 @@ export function determineType(definedCenters: HDCenterName[], definedChannels: s
     if (hasSpleen) {
       // Check Sacral to Spleen connections
       const hasSacralToSpleen = hasChannel(34, 57); // Channel of Power
+      console.log('[HD Type Detection] Sacral-Spleen (34-57):', hasSacralToSpleen);
       
       // Check Spleen to Throat connections
-      const hasSpleenToThroat = hasChannel(48, 16) || // Channel of the Wavelength
-                                 hasChannel(57, 20) || // Channel of the Brainwave
-                                 hasChannel(44, 26);   // Channel of Surrender (Spleen to Heart, but check anyway)
+      const has48_16 = hasChannel(48, 16); // Channel of the Wavelength
+      const has57_20 = hasChannel(57, 20); // Channel of the Brainwave
+      const has44_26 = hasChannel(44, 26); // Channel of Surrender
+      console.log('[HD Type Detection] Spleen-Throat: 48-16:', has48_16, '| 57-20:', has57_20, '| 44-26:', has44_26);
+      
+      const hasSpleenToThroat = has48_16 || has57_20 || has44_26;
       
       if (hasSacralToSpleen && hasSpleenToThroat) {
+        console.log('[HD Type Detection] ✓ Sacral-Spleen-Throat pathway FOUND!');
         hasSacralToThroat = true;
       }
     }
@@ -247,20 +264,24 @@ export function determineType(definedCenters: HDCenterName[], definedChannels: s
                            hasChannel(14, 2) ||  // Channel of the Beat
                            hasChannel(29, 46) || // Channel of Discovery
                            hasChannel(59, 6);    // Channel of Mating (Sacral to Solar Plexus, but 6 connects)
+      console.log('[HD Type Detection] Sacral-G connection:', hasSacralToG);
       
       // G to Throat connections
       const hasGToThroat = hasChannel(1, 8) ||   // Channel of Inspiration
                            hasChannel(7, 31) ||  // Channel of the Alpha
                            hasChannel(13, 33) || // Channel of the Prodigal
                            hasChannel(10, 20);   // Channel of Awakening
+      console.log('[HD Type Detection] G-Throat connection:', hasGToThroat);
       
       if (hasSacralToG && hasGToThroat) {
+        console.log('[HD Type Detection] ✓ Sacral-G-Throat pathway FOUND!');
         hasSacralToThroat = true;
       }
     }
     
     // If specific checks didn't find it, fall back to graph traversal
     if (!hasSacralToThroat) {
+      console.log('[HD Type Detection] No direct pathway found, using BFS graph traversal...');
       // Build a graph of center connections from defined channels
       const connections = new Map<HDCenterName, Set<HDCenterName>>();
       for (const center of definedCenters) {
@@ -277,6 +298,8 @@ export function determineType(definedCenters: HDCenterName[], definedChannels: s
         }
       }
       
+      console.log('[HD Type Detection] Center connections map:', Array.from(connections.entries()).map(([k, v]) => `${k}: [${Array.from(v).join(', ')}]`));
+      
       // BFS to check if a path exists from Sacral to Throat
       const visited = new Set<HDCenterName>();
       const queue: HDCenterName[] = ['Sacral'];
@@ -284,6 +307,7 @@ export function determineType(definedCenters: HDCenterName[], definedChannels: s
       while (queue.length > 0) {
         const current = queue.shift()!;
         if (current === 'Throat') {
+          console.log('[HD Type Detection] ✓ BFS found path to Throat!');
           hasSacralToThroat = true;
           break;
         }
@@ -299,16 +323,22 @@ export function determineType(definedCenters: HDCenterName[], definedChannels: s
           }
         }
       }
+      
+      if (!hasSacralToThroat) {
+        console.log('[HD Type Detection] BFS did NOT find path from Sacral to Throat');
+      }
     }
   }
   
   // Manifesting Generator: Sacral defined AND connected to Throat (directly or indirectly)
   if (hasSacral && hasSacralToThroat) {
+    console.log('[HD Type Detection] ★ RESULT: Manifesting Generator');
     return 'Manifesting Generator';
   }
   
   // Generator: Sacral defined but NOT connected to Throat
   if (hasSacral && !hasSacralToThroat) {
+    console.log('[HD Type Detection] ★ RESULT: Generator (Sacral defined, no throat connection)');
     return 'Generator';
   }
   
