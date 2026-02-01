@@ -196,7 +196,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
       // Calculate fallbacks
       const calculatedDefinitionType = calculateDefinitionType(definedCenters, definedChannels);
       const calculatedHdType = determineType(definedCenters, definedChannels);
-      const calculatedAuthority = determineAuthority(definedCenters, calculatedHdType);
+      const calculatedAuthority = determineAuthority(definedCenters, calculatedHdType, definedChannels);
       const strategy = determineStrategy(parsedHDData?.hdType as any || calculatedHdType);
       
       console.log('[HD] Calculated fallbacks:', { definedChannels, definedCenters, calculatedDefinitionType, calculatedHdType });
