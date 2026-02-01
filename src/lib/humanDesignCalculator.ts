@@ -202,62 +202,105 @@ export function calculateActivations(date: Date, isConscious: boolean): HDPlanet
 export function determineType(definedCenters: HDCenterName[], definedChannels: string[]): HDType {
   const hasSacral = definedCenters.includes('Sacral');
   const hasThroat = definedCenters.includes('Throat');
+  const hasSpleen = definedCenters.includes('Spleen');
   
   // Reflector: No defined centers
   if (definedCenters.length === 0) {
     return 'Reflector';
   }
   
-  // Build a graph of center connections from defined channels
-  const connections = new Map<HDCenterName, Set<HDCenterName>>();
-  for (const center of definedCenters) {
-    connections.set(center, new Set());
-  }
+  // Normalize channel IDs for lookup (handle both "34-57" and "57-34" formats)
+  const hasChannel = (gate1: number, gate2: number): boolean => {
+    return definedChannels.includes(`${gate1}-${gate2}`) || 
+           definedChannels.includes(`${gate2}-${gate1}`);
+  };
   
-  for (const channelId of definedChannels) {
-    const channel = CHANNELS.find(c => c.id === channelId);
-    if (channel) {
-      const center1 = GATE_TO_CENTER[channel.gate1];
-      const center2 = GATE_TO_CENTER[channel.gate2];
-      connections.get(center1)?.add(center2);
-      connections.get(center2)?.add(center1);
+  // Check for specific Sacral-to-Throat pathways
+  let hasSacralToThroat = false;
+  
+  if (hasSacral && hasThroat) {
+    // Direct Sacral to Throat: Channel 34-20 (Channel of Charisma)
+    if (hasChannel(34, 20)) {
+      hasSacralToThroat = true;
     }
-  }
-  
-  // BFS to check if a path exists from source to target through defined channels
-  const hasPathBetween = (source: HDCenterName, target: HDCenterName): boolean => {
-    if (!connections.has(source) || !connections.has(target)) return false;
-    if (source === target) return true;
     
-    const visited = new Set<HDCenterName>();
-    const queue: HDCenterName[] = [source];
-    
-    while (queue.length > 0) {
-      const current = queue.shift()!;
-      if (current === target) return true;
-      if (visited.has(current)) continue;
-      visited.add(current);
+    // Sacral-Spleen-Throat pathway
+    if (hasSpleen) {
+      // Check Sacral to Spleen connections
+      const hasSacralToSpleen = hasChannel(34, 57); // Channel of Power
       
-      const neighbors = connections.get(current);
-      if (neighbors) {
-        for (const neighbor of neighbors) {
-          if (!visited.has(neighbor)) {
-            queue.push(neighbor);
+      // Check Spleen to Throat connections
+      const hasSpleenToThroat = hasChannel(48, 16) || // Channel of the Wavelength
+                                 hasChannel(57, 20) || // Channel of the Brainwave
+                                 hasChannel(44, 26);   // Channel of Surrender (Spleen to Heart, but check anyway)
+      
+      if (hasSacralToSpleen && hasSpleenToThroat) {
+        hasSacralToThroat = true;
+      }
+    }
+    
+    // Sacral-G-Throat pathway
+    const hasG = definedCenters.includes('G');
+    if (hasG) {
+      // Sacral to G connections
+      const hasSacralToG = hasChannel(5, 15) ||  // Channel of Rhythm
+                           hasChannel(14, 2) ||  // Channel of the Beat
+                           hasChannel(29, 46) || // Channel of Discovery
+                           hasChannel(59, 6);    // Channel of Mating (Sacral to Solar Plexus, but 6 connects)
+      
+      // G to Throat connections
+      const hasGToThroat = hasChannel(1, 8) ||   // Channel of Inspiration
+                           hasChannel(7, 31) ||  // Channel of the Alpha
+                           hasChannel(13, 33) || // Channel of the Prodigal
+                           hasChannel(10, 20);   // Channel of Awakening
+      
+      if (hasSacralToG && hasGToThroat) {
+        hasSacralToThroat = true;
+      }
+    }
+    
+    // If specific checks didn't find it, fall back to graph traversal
+    if (!hasSacralToThroat) {
+      // Build a graph of center connections from defined channels
+      const connections = new Map<HDCenterName, Set<HDCenterName>>();
+      for (const center of definedCenters) {
+        connections.set(center, new Set());
+      }
+      
+      for (const channelId of definedChannels) {
+        const channel = CHANNELS.find(c => c.id === channelId);
+        if (channel) {
+          const center1 = GATE_TO_CENTER[channel.gate1];
+          const center2 = GATE_TO_CENTER[channel.gate2];
+          connections.get(center1)?.add(center2);
+          connections.get(center2)?.add(center1);
+        }
+      }
+      
+      // BFS to check if a path exists from Sacral to Throat
+      const visited = new Set<HDCenterName>();
+      const queue: HDCenterName[] = ['Sacral'];
+      
+      while (queue.length > 0) {
+        const current = queue.shift()!;
+        if (current === 'Throat') {
+          hasSacralToThroat = true;
+          break;
+        }
+        if (visited.has(current)) continue;
+        visited.add(current);
+        
+        const neighbors = connections.get(current);
+        if (neighbors) {
+          for (const neighbor of neighbors) {
+            if (!visited.has(neighbor)) {
+              queue.push(neighbor);
+            }
           }
         }
       }
     }
-    return false;
-  };
-  
-  // Check if Sacral is connected to Throat through any path (direct or indirect)
-  const hasSacralToThroat = hasSacral && hasThroat && hasPathBetween('Sacral', 'Throat');
-  
-  // Check for non-Sacral motor to Throat connections
-  const nonSacralMotors: HDCenterName[] = ['SolarPlexus', 'Heart', 'Root'];
-  const hasNonSacralMotorToThroat = hasThroat && nonSacralMotors.some(motor => 
-    definedCenters.includes(motor) && hasPathBetween(motor, 'Throat')
-  );
+  }
   
   // Manifesting Generator: Sacral defined AND connected to Throat (directly or indirectly)
   if (hasSacral && hasSacralToThroat) {
@@ -267,6 +310,56 @@ export function determineType(definedCenters: HDCenterName[], definedChannels: s
   // Generator: Sacral defined but NOT connected to Throat
   if (hasSacral && !hasSacralToThroat) {
     return 'Generator';
+  }
+  
+  // Check for non-Sacral motor to Throat connections for Manifestor
+  const nonSacralMotors: HDCenterName[] = ['SolarPlexus', 'Heart', 'Root'];
+  let hasNonSacralMotorToThroat = false;
+  
+  if (hasThroat) {
+    // Build graph for motor-to-throat check
+    const connections = new Map<HDCenterName, Set<HDCenterName>>();
+    for (const center of definedCenters) {
+      connections.set(center, new Set());
+    }
+    
+    for (const channelId of definedChannels) {
+      const channel = CHANNELS.find(c => c.id === channelId);
+      if (channel) {
+        const center1 = GATE_TO_CENTER[channel.gate1];
+        const center2 = GATE_TO_CENTER[channel.gate2];
+        connections.get(center1)?.add(center2);
+        connections.get(center2)?.add(center1);
+      }
+    }
+    
+    // Check each non-sacral motor
+    for (const motor of nonSacralMotors) {
+      if (!definedCenters.includes(motor)) continue;
+      
+      const visited = new Set<HDCenterName>();
+      const queue: HDCenterName[] = [motor];
+      
+      while (queue.length > 0) {
+        const current = queue.shift()!;
+        if (current === 'Throat') {
+          hasNonSacralMotorToThroat = true;
+          break;
+        }
+        if (visited.has(current)) continue;
+        visited.add(current);
+        
+        const neighbors = connections.get(current);
+        if (neighbors) {
+          for (const neighbor of neighbors) {
+            if (!visited.has(neighbor)) {
+              queue.push(neighbor);
+            }
+          }
+        }
+      }
+      if (hasNonSacralMotorToThroat) break;
+    }
   }
   
   // Manifestor: Non-Sacral Motor to Throat (no Sacral defined)
