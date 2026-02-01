@@ -17,6 +17,7 @@ import { UserData } from '@/hooks/useUserData';
 import { namesMatch } from '@/lib/nameMatching';
 import { HDGateEditor } from './HDGateEditor';
 import { BirthMomentPreview } from './BirthMomentPreview';
+import { IncarnationCrossCombobox } from './IncarnationCrossCombobox';
 import heic2any from 'heic2any';
 
 interface HDChartInputFormProps {
@@ -607,14 +608,14 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
                   className="w-full border border-border bg-background px-2 py-1.5 text-sm rounded"
                 >
                   <option value="">Select...</option>
-                  <option value="Emotional">Emotional</option>
+                  <option value="Emotional">Emotional (Solar Plexus)</option>
                   <option value="Sacral">Sacral</option>
                   <option value="Splenic">Splenic</option>
                   <option value="Ego Manifested">Ego Manifested</option>
                   <option value="Ego Projected">Ego Projected</option>
                   <option value="Self-Projected">Self-Projected</option>
-                  <option value="Mental">Mental</option>
-                  <option value="Lunar">Lunar</option>
+                  <option value="Mental">Mental/Environmental</option>
+                  <option value="Lunar">Lunar (None)</option>
                 </select>
               </div>
               <div className="space-y-1">
@@ -635,18 +636,54 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
             </div>
             
             {/* Incarnation Cross Name */}
-            <div className="mt-3 space-y-1">
-              <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Incarnation Cross</label>
-              <input
-                type="text"
+            <div className="mt-3">
+              <label className="text-[10px] uppercase tracking-widest text-muted-foreground block mb-1">Incarnation Cross</label>
+              <IncarnationCrossCombobox
                 value={parsedHDData?.incarnationCross || ''}
-                onChange={(e) => setParsedHDData(prev => ({ ...(prev || {}), incarnationCross: e.target.value }))}
-                placeholder="e.g., Right Angle Cross of Laws"
-                className="w-full border border-border bg-background px-3 py-2 text-sm rounded focus:border-primary focus:outline-none"
+                onChange={(crossName, gates) => {
+                  setParsedHDData(prev => ({ 
+                    ...(prev || {}), 
+                    incarnationCross: crossName 
+                  }));
+                  
+                  // If gates are provided from database selection, update the relevant gate activations
+                  if (gates) {
+                    console.log('[HD Cross Selected] Updating gates:', gates);
+                    
+                    // Update personality Sun and Earth gates
+                    setParsedPersonality(prev => {
+                      const updated = [...prev];
+                      const sunIdx = updated.findIndex(a => a.planet === 'Sun');
+                      const earthIdx = updated.findIndex(a => a.planet === 'Earth');
+                      
+                      if (sunIdx >= 0) {
+                        updated[sunIdx] = { ...updated[sunIdx], gate: gates.consciousSun };
+                      }
+                      if (earthIdx >= 0) {
+                        updated[earthIdx] = { ...updated[earthIdx], gate: gates.consciousEarth };
+                      }
+                      return updated;
+                    });
+                    
+                    // Update design Sun and Earth gates
+                    setParsedDesign(prev => {
+                      const updated = [...prev];
+                      const sunIdx = updated.findIndex(a => a.planet === 'Sun');
+                      const earthIdx = updated.findIndex(a => a.planet === 'Earth');
+                      
+                      if (sunIdx >= 0) {
+                        updated[sunIdx] = { ...updated[sunIdx], gate: gates.unconsciousSun };
+                      }
+                      if (earthIdx >= 0) {
+                        updated[earthIdx] = { ...updated[earthIdx], gate: gates.unconsciousEarth };
+                      }
+                      return updated;
+                    });
+                    
+                    toast.success('Cross selected - Sun/Earth gates updated');
+                  }
+                }}
               />
-              <p className="text-[9px] text-muted-foreground">
-                Enter full cross name (e.g., "Right Angle Cross of Laws 1")
-              </p>
             </div>
           </div>
         )}
