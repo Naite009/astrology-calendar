@@ -540,18 +540,32 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
           )}
         </div>
 
-        {/* Editable HD Core Data */}
-        {(parsedHDData || isEditMode) && (
+        {/* Editable HD Core Data - show when we have parsed activations, parsed data, or in edit mode */}
+        {(parsedHDData || isEditMode || parsedPersonality.length > 0) && (
           <div className="mb-6 rounded border border-primary/30 bg-primary/5 p-4">
             <h4 className="text-[10px] uppercase tracking-widest text-primary mb-3">
-              {isEditMode ? 'Chart Core Data (Editable)' : 'Parsed Chart Data'}
+              {isEditMode ? 'Edit Chart Info' : 'Chart Info'}
             </h4>
+            
+            {/* Name field prominently at top */}
+            <div className="mb-4">
+              <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Name *</label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Enter chart name"
+                className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm rounded focus:border-primary focus:outline-none"
+                required
+              />
+            </div>
+            
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="space-y-1">
                 <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Type</label>
                 <select
                   value={parsedHDData?.hdType || ''}
-                  onChange={(e) => setParsedHDData(prev => ({ ...prev, hdType: e.target.value }))}
+                  onChange={(e) => setParsedHDData(prev => ({ ...(prev || {}), hdType: e.target.value }))}
                   className="w-full border border-border bg-background px-2 py-1.5 text-sm rounded"
                 >
                   <option value="">Select...</option>
@@ -566,7 +580,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
                 <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Profile</label>
                 <select
                   value={parsedHDData?.profile || ''}
-                  onChange={(e) => setParsedHDData(prev => ({ ...prev, profile: e.target.value }))}
+                  onChange={(e) => setParsedHDData(prev => ({ ...(prev || {}), profile: e.target.value }))}
                   className="w-full border border-border bg-background px-2 py-1.5 text-sm rounded"
                 >
                   <option value="">Select...</option>
@@ -588,7 +602,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
                 <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Authority</label>
                 <select
                   value={parsedHDData?.authority || ''}
-                  onChange={(e) => setParsedHDData(prev => ({ ...prev, authority: e.target.value }))}
+                  onChange={(e) => setParsedHDData(prev => ({ ...(prev || {}), authority: e.target.value }))}
                   className="w-full border border-border bg-background px-2 py-1.5 text-sm rounded"
                 >
                   <option value="">Select...</option>
@@ -606,7 +620,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
                 <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Definition</label>
                 <select
                   value={parsedHDData?.definition || ''}
-                  onChange={(e) => setParsedHDData(prev => ({ ...prev, definition: e.target.value }))}
+                  onChange={(e) => setParsedHDData(prev => ({ ...(prev || {}), definition: e.target.value }))}
                   className="w-full border border-border bg-background px-2 py-1.5 text-sm rounded"
                 >
                   <option value="">Select...</option>
