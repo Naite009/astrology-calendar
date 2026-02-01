@@ -18,6 +18,40 @@ export interface IncarnationCross {
 
 export const incarnationCrosses: IncarnationCross[] = [
   {
+    name: "Right Angle Cross of Laws 1",
+    type: "Right Angle",
+    gates: {
+      consciousSun: 3,
+      consciousEarth: 50,
+      unconsciousSun: 60,
+      unconsciousEarth: 56
+    },
+    quarter: "Mutation",
+    theme: "Establishing order through embracing chaos and mutation",
+    description: "This cross carries the energy of bringing order out of chaos through accepting limitation and then transcending it. You are here to establish new laws and patterns that emerge from mutation and transformation.",
+    lifeWork: "To embody the transition from chaos to order, establishing laws and patterns that support evolution while honoring the need for limitation and structure.",
+    collectiveContribution: "Brings wisdom about how to navigate change and mutation, establishing new norms and structures that emerge from transformative experiences.",
+    gateIntegration: "Gate 3 (Ordering/Difficulty at the Beginning) initiates new patterns. Gate 50 (Values/Laws) establishes what is correct for the tribe. Gate 60 (Limitation/Acceptance) embraces constraints as creative fuel. Gate 56 (Stimulation/Storytelling) shares the wisdom of the journey.",
+    livingYourCross: "Trust the chaos before the clarity. Your role is to go through difficulty and mutation yourself, then establish the laws and values that emerge from your transformation. Share your stories of overcoming limitation."
+  },
+  {
+    name: "Right Angle Cross of Laws 2",
+    type: "Right Angle",
+    gates: {
+      consciousSun: 50,
+      consciousEarth: 3,
+      unconsciousSun: 56,
+      unconsciousEarth: 60
+    },
+    quarter: "Civilization",
+    theme: "Guardian of tribal values and laws",
+    description: "This cross carries the energy of preserving and upholding what is correct for the community. You are here to be a guardian of laws and values that protect and nurture the tribe.",
+    lifeWork: "To establish and uphold values that serve the wellbeing of your community, taking responsibility for what is correct and healthy for the collective.",
+    collectiveContribution: "Provides moral and ethical guidance, establishing and maintaining the laws that keep the community safe, healthy, and functioning properly.",
+    gateIntegration: "Gate 50 (Values/Laws) leads with responsibility for what is correct. Gate 3 (Ordering) brings new order when needed. Gate 56 (Storytelling) conveys wisdom through narrative. Gate 60 (Limitation) accepts necessary boundaries.",
+    livingYourCross: "Take your role as a guardian of values seriously. Your responsibility is to know what is correct for your community and to maintain those standards. Share your wisdom through stories and accept the limitations inherent in this protective role."
+  },
+  {
     name: "Right Angle Cross of The Sphinx 1",
     type: "Right Angle",
     gates: {
