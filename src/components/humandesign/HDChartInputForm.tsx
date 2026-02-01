@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { UserData } from '@/hooks/useUserData';
 import { namesMatch } from '@/lib/nameMatching';
 import { HDGateEditor } from './HDGateEditor';
+import { BirthMomentPreview } from './BirthMomentPreview';
 import heic2any from 'heic2any';
 
 interface HDChartInputFormProps {
@@ -834,6 +835,15 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
               ))}
             </select>
           </div>
+
+          {/* Birth Moment Preview - shows computed UTC timestamp before saving */}
+          {formData.birthDate && formData.birthTime && formData.timezone && (
+            <BirthMomentPreview
+              birthDate={formData.birthDate}
+              birthTime={formData.birthTime}
+              timezone={formData.timezone}
+            />
+          )}
 
           <div className="flex gap-3 pt-4">
             <button
