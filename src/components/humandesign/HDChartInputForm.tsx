@@ -191,42 +191,33 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
       const allGates = new Set<number>();
       [...parsedPersonality, ...parsedDesign].forEach(a => allGates.add(a.gate));
 
+      // ALWAYS calculate from gates for accuracy
       const definedChannels = calculateDefinedChannels(allGates);
       const definedCenters = calculateDefinedCenters(definedChannels);
       
-      // Calculate fallbacks
+      console.log('[HD Authority Debug] All gates:', Array.from(allGates));
+      console.log('[HD Authority Debug] Defined channels:', definedChannels);
+      console.log('[HD Authority Debug] Defined centers:', definedCenters);
+      console.log('[HD Authority Debug] Has SolarPlexus:', definedCenters.includes('SolarPlexus'));
+      
+      // Calculate type and authority from calculated centers (not parsed)
       const calculatedDefinitionType = calculateDefinitionType(definedCenters, definedChannels);
       const calculatedHdType = determineType(definedCenters, definedChannels);
       const calculatedAuthority = determineAuthority(definedCenters, calculatedHdType, definedChannels);
       const strategy = determineStrategy(parsedHDData?.hdType as any || calculatedHdType);
       
-      console.log('[HD] Calculated fallbacks:', { definedChannels, definedCenters, calculatedDefinitionType, calculatedHdType });
-      console.log('[HD] Parsed data (priority):', parsedHDData);
+      console.log('[HD Authority Debug] Calculated type:', calculatedHdType);
+      console.log('[HD Authority Debug] Calculated authority:', calculatedAuthority);
+      console.log('[HD Authority Debug] Parsed authority (ignored if centers exist):', parsedHDData?.authority);
 
-      // PRIORITY: Use parsed data over calculations
+      // PRIORITY: Use parsed data for type/definition, but ALWAYS use calculated authority
       const finalType = parsedHDData?.hdType || calculatedHdType;
       const finalDefinition = parsedHDData?.definition || calculatedDefinitionType;
       
-      // Normalize authority - map display labels to storage values
-      const normalizeAuthority = (auth: string | undefined): string => {
-        if (!auth) return calculatedAuthority;
-        const authLower = auth.toLowerCase();
-        if (authLower.includes('emotional') || authLower.includes('solar plexus')) return 'Emotional';
-        if (authLower.includes('sacral')) return 'Sacral';
-        if (authLower.includes('splenic') || authLower.includes('spleen')) return 'Splenic';
-        if (authLower.includes('ego manifested')) return 'Ego Manifested';
-        if (authLower.includes('ego projected')) return 'Ego Projected';
-        if (authLower.includes('self-projected') || authLower.includes('self projected')) return 'Self-Projected';
-        if (authLower.includes('mental') || authLower.includes('environmental')) return 'Mental';
-        if (authLower.includes('lunar') || authLower.includes('none')) return 'Lunar';
-        return auth;
-      };
+      // ALWAYS use calculated authority - it's more reliable than parsed text
+      const finalAuthority = calculatedAuthority;
       
-      // Always calculate authority from defined centers for accuracy
-      // Only use parsed authority if centers aren't available
-      const finalAuthority = definedCenters.length > 0 
-        ? calculatedAuthority 
-        : normalizeAuthority(parsedHDData?.authority);
+      console.log('[HD Authority Debug] FINAL authority being saved:', finalAuthority);
 
       // Get profile from parsed data FIRST, then fallback to Sun lines
       const pSun = parsedPersonality.find(a => a.planet === 'Sun');
@@ -297,9 +288,9 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
         definitionType: finalDefinition as any,
         personalityActivations: parsedPersonality,
         designActivations: parsedDesign,
-        definedCenters: parsedHDData?.definedCenters as any || definedCenters,
+        definedCenters: definedCenters, // Always use calculated centers (proper HDCenterName format)
         undefinedCenters: undefinedCenters as any[],
-        definedChannels: parsedHDData?.definedChannels || definedChannels,
+        definedChannels: definedChannels, // Always use calculated channels
         activatedGates: activatedGates,
         incarnationCross: {
           name: incarnationCrossName,
