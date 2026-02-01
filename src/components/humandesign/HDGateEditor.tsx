@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { useState } from 'react';
 import { HDPlanetaryActivation } from '@/types/humanDesign';
 import { ChevronDown, ChevronUp, AlertCircle, Check } from 'lucide-react';
@@ -32,13 +33,13 @@ const PLANET_SYMBOLS: Record<string, string> = {
   Pluto: '♇',
 };
 
-export const HDGateEditor = ({
+export const HDGateEditor = React.forwardRef<HTMLDivElement, HDGateEditorProps>(({
   personalityActivations,
   designActivations,
   onPersonalityChange,
   onDesignChange,
   warnings = [],
-}: HDGateEditorProps) => {
+}, ref) => {
   const [personalityExpanded, setPersonalityExpanded] = useState(true);
   const [designExpanded, setDesignExpanded] = useState(true);
 
@@ -199,4 +200,6 @@ export const HDGateEditor = ({
       </p>
     </div>
   );
-};
+});
+
+HDGateEditor.displayName = 'HDGateEditor';
