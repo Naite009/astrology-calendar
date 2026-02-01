@@ -80,85 +80,146 @@ export function IncarnationCrossAnalysis({ chart }: IncarnationCrossAnalysisProp
 
           <TabsContent value="overview" className="space-y-4">
             {cross ? (
-              <div className="space-y-4">
-                <p className="text-muted-foreground leading-relaxed">
-                  {cross.description}
-                </p>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 bg-muted/30 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Sun className="h-4 w-4 text-primary" />
-                      <span className="text-sm font-medium">Conscious Sun</span>
-                    </div>
-                    <p className="text-lg font-semibold">Gate {chart.incarnationCross.gates.consciousSun}</p>
-                    <p className="text-xs text-muted-foreground">{consciousSunGate?.name}</p>
-                  </div>
-                  <div className="p-3 bg-muted/30 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Globe className="h-4 w-4 text-secondary-foreground" />
-                      <span className="text-sm font-medium">Conscious Earth</span>
-                    </div>
-                    <p className="text-lg font-semibold">Gate {chart.incarnationCross.gates.consciousEarth}</p>
-                    <p className="text-xs text-muted-foreground">{consciousEarthGate?.name}</p>
-                  </div>
-                  <div className="p-3 bg-muted/30 rounded-lg border-l-2 border-destructive/50">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Sun className="h-4 w-4 text-destructive" />
-                      <span className="text-sm font-medium">Unconscious Sun</span>
-                    </div>
-                    <p className="text-lg font-semibold">Gate {chart.incarnationCross.gates.unconsciousSun}</p>
-                    <p className="text-xs text-muted-foreground">{unconsciousSunGate?.name}</p>
-                  </div>
-                  <div className="p-3 bg-muted/30 rounded-lg border-l-2 border-destructive/50">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Globe className="h-4 w-4 text-destructive" />
-                      <span className="text-sm font-medium">Unconscious Earth</span>
-                    </div>
-                    <p className="text-lg font-semibold">Gate {chart.incarnationCross.gates.unconsciousEarth}</p>
-                    <p className="text-xs text-muted-foreground">{unconsciousEarthGate?.name}</p>
-                  </div>
-                </div>
-              </div>
+              <>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Description</CardTitle>
+                  </CardHeader>
+                  <CardContent className="prose prose-sm max-w-none">
+                    <p>{cross.description}</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Your Life Work</CardTitle>
+                  </CardHeader>
+                  <CardContent className="prose prose-sm max-w-none">
+                    <p>{cross.lifeWork}</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Collective Contribution</CardTitle>
+                  </CardHeader>
+                  <CardContent className="prose prose-sm max-w-none">
+                    <p>{cross.collectiveContribution}</p>
+                  </CardContent>
+                </Card>
+              </>
             ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <p>Detailed interpretation for this specific cross combination is being developed.</p>
-                <p className="text-sm mt-2">Your cross gates are: {chart.incarnationCross.gates.consciousSun}/{chart.incarnationCross.gates.consciousEarth} | {chart.incarnationCross.gates.unconsciousSun}/{chart.incarnationCross.gates.unconsciousEarth}</p>
-              </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Your Incarnation Cross</CardTitle>
+                </CardHeader>
+                <CardContent className="prose prose-sm max-w-none">
+                  <p>
+                    Your Incarnation Cross is determined by the position of the Sun and Earth 
+                    at both your birth moment (Personality/Conscious) and 88 degrees before 
+                    (Design/Unconscious). This cross represents your life purpose and the theme 
+                    you're here to explore and express.
+                  </p>
+                  <p className="mt-4">
+                    Your cross is composed of Gates {chart.incarnationCross.gates.consciousSun}, 
+                    {chart.incarnationCross.gates.consciousEarth}, {chart.incarnationCross.gates.unconsciousSun}, 
+                    and {chart.incarnationCross.gates.unconsciousEarth}.
+                  </p>
+                </CardContent>
+              </Card>
             )}
           </TabsContent>
 
           <TabsContent value="gates" className="space-y-4">
-            <div className="grid gap-4">
-              {[
-                { label: 'Conscious Sun', gate: consciousSunGate, gateNum: chart.incarnationCross.gates.consciousSun, icon: Sun, color: 'text-primary', desc: 'Your conscious expression and life theme' },
-                { label: 'Conscious Earth', gate: consciousEarthGate, gateNum: chart.incarnationCross.gates.consciousEarth, icon: Globe, color: 'text-secondary-foreground', desc: 'Your grounding and balance point' },
-                { label: 'Unconscious Sun', gate: unconsciousSunGate, gateNum: chart.incarnationCross.gates.unconsciousSun, icon: Sun, color: 'text-destructive', desc: 'Your unconscious drive and deeper purpose' },
-                { label: 'Unconscious Earth', gate: unconsciousEarthGate, gateNum: chart.incarnationCross.gates.unconsciousEarth, icon: Globe, color: 'text-destructive', desc: 'Your unconscious grounding and body wisdom' }
-              ].map(({ label, gate, gateNum, icon: Icon, color, desc }) => (
-                <div key={label} className="p-4 bg-muted/30 rounded-lg">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Icon className={`h-5 w-5 ${color}`} />
-                    <div>
-                      <span className="font-medium">{label}</span>
-                      <span className="text-muted-foreground ml-2">Gate {gateNum}</span>
-                    </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>The Four Gates of Your Cross</CardTitle>
+                <CardDescription>
+                  70% from Conscious Sun/Earth, 30% from Unconscious Sun/Earth
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="border-l-4 border-foreground pl-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge>Conscious Sun</Badge>
+                    <span className="font-semibold">
+                      Gate {chart.incarnationCross.gates.consciousSun}
+                    </span>
                   </div>
-                  <p className="text-lg font-semibold mb-1">{gate?.name || 'Unknown Gate'}</p>
-                  <p className="text-sm text-muted-foreground mb-2">{desc}</p>
-                  {gate && (
-                    <p className="text-sm">{gate.keynotes?.[0]}</p>
+                  {consciousSunGate && (
+                    <div>
+                      <p className="font-medium">{consciousSunGate.name}</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {consciousSunGate.keynotes.join(' • ')}
+                      </p>
+                      <p className="text-sm mt-2">{consciousSunGate.description}</p>
+                    </div>
                   )}
                 </div>
-              ))}
-            </div>
+
+                <div className="border-l-4 border-foreground pl-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge>Conscious Earth</Badge>
+                    <span className="font-semibold">
+                      Gate {chart.incarnationCross.gates.consciousEarth}
+                    </span>
+                  </div>
+                  {consciousEarthGate && (
+                    <div>
+                      <p className="font-medium">{consciousEarthGate.name}</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {consciousEarthGate.keynotes.join(' • ')}
+                      </p>
+                      <p className="text-sm mt-2">{consciousEarthGate.description}</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="border-l-4 border-destructive pl-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant="destructive">Unconscious Sun</Badge>
+                    <span className="font-semibold">
+                      Gate {chart.incarnationCross.gates.unconsciousSun}
+                    </span>
+                  </div>
+                  {unconsciousSunGate && (
+                    <div>
+                      <p className="font-medium">{unconsciousSunGate.name}</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {unconsciousSunGate.keynotes.join(' • ')}
+                      </p>
+                      <p className="text-sm mt-2">{unconsciousSunGate.description}</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="border-l-4 border-destructive pl-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant="destructive">Unconscious Earth</Badge>
+                    <span className="font-semibold">
+                      Gate {chart.incarnationCross.gates.unconsciousEarth}
+                    </span>
+                  </div>
+                  {unconsciousEarthGate && (
+                    <div>
+                      <p className="font-medium">{unconsciousEarthGate.name}</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {unconsciousEarthGate.keynotes.join(' • ')}
+                      </p>
+                      <p className="text-sm mt-2">{unconsciousEarthGate.description}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
             {cross && (
-              <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
-                <h4 className="font-medium mb-2 flex items-center gap-2">
-                  <Target className="h-4 w-4 text-primary" />
-                  Gate Integration
-                </h4>
-                <p className="text-sm text-muted-foreground">{cross.gateIntegration}</p>
-              </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>How These Gates Work Together</CardTitle>
+                </CardHeader>
+                <CardContent className="prose prose-sm max-w-none">
+                  <p>{cross.gateIntegration}</p>
+                </CardContent>
+              </Card>
             )}
           </TabsContent>
 
