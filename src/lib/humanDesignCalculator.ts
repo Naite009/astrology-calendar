@@ -18,6 +18,11 @@ import {
   GATE_TO_CENTER,
   CHANNELS,
 } from '@/types/humanDesign';
+import { 
+  determineIncarnationCross as lookupIncarnationCross,
+  incarnationCrosses,
+  determineQuarter 
+} from '@/data/incarnationCrosses';
 
 // I-Ching Wheel mapping: 64 gates distributed around the zodiac
 // Each gate occupies 5.625° (360° / 64 = 5.625°)
@@ -407,44 +412,94 @@ export function determineType(definedCenters: HDCenterName[], definedChannels: s
   return 'Projector';
 }
 
-// Determine Authority based on defined centers and type
-export function determineAuthority(definedCenters: HDCenterName[], type: HDType): HDAuthority {
-  // Reflector always has Lunar authority
-  if (type === 'Reflector') {
+// Determine Authority based on defined centers, type, and channel connections
+export function determineAuthority(
+  definedCenters: HDCenterName[], 
+  type: HDType,
+  definedChannels?: string[]
+): HDAuthority {
+  console.log('[HD Authority] Checking authority for type:', type);
+  console.log('[HD Authority] Defined centers:', definedCenters);
+  console.log('[HD Authority] Defined channels:', definedChannels);
+  
+  // 1. Reflector: All centers undefined → Lunar Authority
+  if (type === 'Reflector' || definedCenters.length === 0) {
+    console.log('[HD Authority] Result: Lunar (Reflector)');
     return 'Lunar';
   }
   
-  // Emotional authority (Solar Plexus defined) takes precedence
+  // 2. Emotional Authority: Solar Plexus defined (takes precedence over everything)
   if (definedCenters.includes('SolarPlexus')) {
+    console.log('[HD Authority] Result: Emotional (Solar Plexus defined)');
     return 'Emotional';
   }
   
-  // Sacral authority (for Generators/MGs without emotional)
+  // 3. Sacral Authority: Sacral defined (only for Generators/MGs without Emotional)
   if (definedCenters.includes('Sacral')) {
+    console.log('[HD Authority] Result: Sacral (Sacral defined, no Emotional)');
     return 'Sacral';
   }
   
-  // Splenic authority
+  // 4. Splenic Authority: Spleen defined (no Emotional, no Sacral)
   if (definedCenters.includes('Spleen')) {
+    console.log('[HD Authority] Result: Splenic (Spleen defined)');
     return 'Splenic';
   }
   
-  // Ego authority (for Manifestors/Projectors)
+  // 5. Ego Authority: Heart/Will defined and connected to Throat or G
   if (definedCenters.includes('Heart')) {
-    // Check if connected to Throat or G center for the distinction
-    // Simplified: just return Ego Manifested for Manifestors, Ego Projected for Projectors
-    if (type === 'Manifestor') {
+    // Check if Heart is connected to Throat or G
+    const hasHeartToThroat = definedChannels?.some(ch => 
+      ch === '21-45' || ch === '45-21' || // Channel of Money
+      ch === '25-51' || ch === '51-25'    // Channel of Initiation (Heart to G)
+    );
+    const hasHeartToG = definedChannels?.some(ch => 
+      ch === '25-51' || ch === '51-25' || // Heart gates connect via other paths
+      ch === '10-57' || ch === '57-10'    // G center connection through Spleen
+    );
+    
+    if (hasHeartToThroat || definedCenters.includes('Throat')) {
+      console.log('[HD Authority] Result: Ego Manifested (Heart connected to Throat)');
       return 'Ego Manifested';
     }
-    return 'Ego Projected';
+    if (hasHeartToG || definedCenters.includes('G')) {
+      console.log('[HD Authority] Result: Ego Projected (Heart connected to G)');
+      return 'Ego Projected';
+    }
+    // Default Ego based on type
+    console.log('[HD Authority] Result: Ego based on type');
+    return type === 'Manifestor' ? 'Ego Manifested' : 'Ego Projected';
   }
   
-  // Self-Projected (G to Throat connection without other authorities)
-  if (definedCenters.includes('G')) {
-    return 'Self-Projected';
+  // 6. Self-Projected Authority: G center connected to Throat (Projectors only)
+  if (definedCenters.includes('G') && definedCenters.includes('Throat')) {
+    // Check if G is actually connected to Throat via channel
+    const hasGToThroat = definedChannels?.some(ch => 
+      ch === '1-8' || ch === '8-1' ||     // Channel of Inspiration
+      ch === '7-31' || ch === '31-7' ||   // Channel of the Alpha
+      ch === '13-33' || ch === '33-13' || // Channel of the Prodigal
+      ch === '10-20' || ch === '20-10'    // Channel of Awakening
+    );
+    
+    if (hasGToThroat) {
+      console.log('[HD Authority] Result: Self-Projected (G connected to Throat)');
+      return 'Self-Projected';
+    }
   }
   
-  // Mental/None Authority (Projector with only Head/Ajna/Throat defined)
+  // 7. Mental/Environmental Authority: No inner authority centers defined
+  // Only Head, Ajna, Throat (or no definition below Throat)
+  const hasDefinitionBelowThroat = definedCenters.some(c => 
+    ['G', 'Heart', 'SolarPlexus', 'Sacral', 'Spleen', 'Root'].includes(c)
+  );
+  
+  if (!hasDefinitionBelowThroat) {
+    console.log('[HD Authority] Result: Mental (no definition below Throat)');
+    return 'Mental';
+  }
+  
+  // Fallback for edge cases
+  console.log('[HD Authority] Result: Mental (fallback)');
   return 'Mental';
 }
 
@@ -559,6 +614,7 @@ export function calculateDefinitionType(definedCenters: HDCenterName[], definedC
   }
 }
 
+
 // Calculate Incarnation Cross
 export function calculateIncarnationCross(
   personalityActivations: HDPlanetaryActivation[],
@@ -570,6 +626,41 @@ export function calculateIncarnationCross(
   const dSun = designActivations.find(a => a.planet === 'Sun');
   const dEarth = designActivations.find(a => a.planet === 'Earth');
   
+  const consciousSun = pSun?.gate || 1;
+  const consciousEarth = pEarth?.gate || 2;
+  const unconsciousSun = dSun?.gate || 1;
+  const unconsciousEarth = dEarth?.gate || 2;
+  
+  console.log('[HD Cross] Looking up cross for gates:', {
+    consciousSun, consciousEarth, unconsciousSun, unconsciousEarth
+  });
+  
+  // Try to find exact match in database
+  const foundCross = lookupIncarnationCross(
+    consciousSun, 
+    consciousEarth, 
+    unconsciousSun, 
+    unconsciousEarth
+  );
+  
+  if (foundCross) {
+    console.log('[HD Cross] Found exact match:', foundCross.name);
+    return {
+      name: foundCross.name,
+      type: foundCross.type,
+      gates: {
+        consciousSun,
+        consciousEarth,
+        unconsciousSun,
+        unconsciousEarth,
+      },
+      quarter: foundCross.quarter,
+    };
+  }
+  
+  // No exact match found - generate a descriptive name
+  console.log('[HD Cross] No exact match, generating name from gates');
+  
   // Determine cross type based on profile
   const [consciousLine] = profile.split('/').map(Number);
   let crossType: 'Right Angle' | 'Left Angle' | 'Juxtaposition';
@@ -577,76 +668,120 @@ export function calculateIncarnationCross(
   if (consciousLine <= 3) {
     crossType = 'Right Angle';
   } else if (consciousLine === 4) {
-    // 4/1 and 4/6 are typically Juxtaposition
     crossType = 'Juxtaposition';
   } else {
     crossType = 'Left Angle';
   }
   
-  // Determine quarter based on conscious Sun gate
-  const sunGate = pSun?.gate || 1;
-  let quarter: 'Initiation' | 'Civilization' | 'Duality' | 'Mutation';
+  // Determine quarter using improved logic
+  const quarter = determineQuarterFromGate(consciousSun);
   
-  // Quarters are defined by gate ranges in the I-Ching wheel
-  // Quarter of Initiation: Gates 13-24 area
-  // Quarter of Civilization: Gates 2-33 area
-  // Quarter of Duality: Gates 7-44 area
-  // Quarter of Mutation: Gates 1-19 area
-  // This is simplified - actual quarter determination is more complex
-  if ([13, 49, 30, 55, 37, 63, 22, 36, 25, 17, 21, 51, 42, 3, 27, 24].includes(sunGate)) {
-    quarter = 'Initiation';
-  } else if ([2, 23, 8, 20, 16, 35, 45, 12, 15, 52, 39, 53, 62, 56, 31, 33].includes(sunGate)) {
-    quarter = 'Civilization';
-  } else if ([7, 4, 29, 59, 40, 64, 47, 6, 46, 18, 48, 57, 32, 50, 28, 44].includes(sunGate)) {
-    quarter = 'Duality';
-  } else {
-    quarter = 'Mutation';
-  }
+  // Generate cross name based on conscious Sun gate
+  const gateName = getGateKeyword(consciousSun);
+  const crossName = `${crossType} Cross of ${gateName}`;
+  
+  console.log('[HD Cross] Generated name:', crossName);
   
   return {
-    name: `Cross of ${getCrossName(pSun?.gate || 1)}`, // Simplified naming
+    name: crossName,
     type: crossType,
     gates: {
-      consciousSun: pSun?.gate || 1,
-      consciousEarth: pEarth?.gate || 2,
-      unconsciousSun: dSun?.gate || 1,
-      unconsciousEarth: dEarth?.gate || 2,
+      consciousSun,
+      consciousEarth,
+      unconsciousSun,
+      unconsciousEarth,
     },
     quarter,
   };
 }
 
-// Helper to get cross name (simplified - would need full database)
-function getCrossName(sunGate: number): string {
-  const crossNames: Record<number, string> = {
-    1: 'the Sphinx',
-    2: 'the Sphinx',
-    7: 'the Sphinx',
-    13: 'the Sphinx',
-    3: 'Laws',
-    50: 'Laws',
-    60: 'Laws',
-    27: 'Laws',
-    4: 'Explanation',
-    49: 'Explanation',
-    43: 'Explanation',
-    23: 'Explanation',
-    5: 'Consciousness',
-    35: 'Consciousness',
-    6: 'Eden',
-    36: 'Eden',
-    8: 'Contagion',
-    14: 'Contagion',
-    9: 'Planning',
-    16: 'Planning',
-    10: 'the Vessel of Love',
-    15: 'the Vessel of Love',
-    11: 'Education',
-    12: 'Education',
-    // ... more would be added
+// Get quarter from gate position on the wheel
+function determineQuarterFromGate(sunGate: number): 'Initiation' | 'Civilization' | 'Duality' | 'Mutation' {
+  // Quarter of Initiation (Mind): Gates related to awareness and initiating consciousness
+  const initiationGates = [13, 49, 30, 55, 37, 63, 22, 36, 25, 17, 21, 51, 42, 3, 27, 24];
+  // Quarter of Civilization (Form): Gates related to building and structure
+  const civilizationGates = [2, 23, 8, 20, 16, 35, 45, 12, 15, 52, 39, 53, 62, 56, 31, 33];
+  // Quarter of Duality (Bonding): Gates related to relationships
+  const dualityGates = [7, 4, 29, 59, 40, 64, 47, 6, 46, 18, 48, 57, 32, 50, 28, 44];
+  // Quarter of Mutation (Transformation): Remaining gates
+  const mutationGates = [1, 43, 14, 34, 9, 5, 26, 11, 10, 58, 38, 54, 61, 60, 41, 19];
+  
+  if (initiationGates.includes(sunGate)) return 'Initiation';
+  if (civilizationGates.includes(sunGate)) return 'Civilization';
+  if (dualityGates.includes(sunGate)) return 'Duality';
+  return 'Mutation';
+}
+
+// Get human-readable keyword for a gate
+function getGateKeyword(gate: number): string {
+  const gateKeywords: Record<number, string> = {
+    1: 'Self-Expression',
+    2: 'the Receptive',
+    3: 'Ordering',
+    4: 'Formulization',
+    5: 'Fixed Rhythms',
+    6: 'Friction',
+    7: 'the Role of Self',
+    8: 'Contribution',
+    9: 'Focus',
+    10: 'Behavior of Self',
+    11: 'Ideas',
+    12: 'Caution',
+    13: 'the Listener',
+    14: 'Power Skills',
+    15: 'Extremes',
+    16: 'Skills',
+    17: 'Opinions',
+    18: 'Correction',
+    19: 'Wanting',
+    20: 'the Now',
+    21: 'the Hunter',
+    22: 'Openness',
+    23: 'Assimilation',
+    24: 'Rationalization',
+    25: 'Innocence',
+    26: 'the Egoist',
+    27: 'Caring',
+    28: 'the Game Player',
+    29: 'Perseverance',
+    30: 'Feelings',
+    31: 'Leadership',
+    32: 'Continuity',
+    33: 'Privacy',
+    34: 'Power',
+    35: 'Change',
+    36: 'Crisis',
+    37: 'Friendship',
+    38: 'the Fighter',
+    39: 'Provocation',
+    40: 'Aloneness',
+    41: 'Contraction',
+    42: 'Growth',
+    43: 'Insight',
+    44: 'Alertness',
+    45: 'the Gatherer',
+    46: 'the Determination of Self',
+    47: 'Realization',
+    48: 'Depth',
+    49: 'Principles',
+    50: 'Values',
+    51: 'Shock',
+    52: 'Stillness',
+    53: 'Beginnings',
+    54: 'Ambition',
+    55: 'Spirit',
+    56: 'Stimulation',
+    57: 'Intuition',
+    58: 'Vitality',
+    59: 'Sexuality',
+    60: 'Limitation',
+    61: 'Mystery',
+    62: 'Detail',
+    63: 'Doubt',
+    64: 'Confusion',
   };
   
-  return crossNames[sunGate] || `Gate ${sunGate}`;
+  return gateKeywords[gate] || `Gate ${gate}`;
 }
 
 // Calculate Variables (PHS) from Design activations
@@ -793,7 +928,7 @@ export function calculateHumanDesignChart(
   
   // Determine type, authority, strategy
   const type = determineType(definedCenters, definedChannels);
-  const authority = determineAuthority(definedCenters, type);
+  const authority = determineAuthority(definedCenters, type, definedChannels);
   const strategy = determineStrategy(type);
   
   // Calculate profile from Sun lines
