@@ -224,85 +224,119 @@ export function IncarnationCrossAnalysis({ chart }: IncarnationCrossAnalysisProp
           </TabsContent>
 
           <TabsContent value="purpose" className="space-y-4">
-            {cross ? (
-              <div className="space-y-4">
-                <div className="p-4 bg-muted/30 rounded-lg">
-                  <h4 className="font-medium mb-2 flex items-center gap-2">
-                    <Target className="h-4 w-4 text-primary" />
-                    Your Life Work
-                  </h4>
-                  <p className="text-muted-foreground">{cross.lifeWork}</p>
-                </div>
-                <div className="p-4 bg-muted/30 rounded-lg">
-                  <h4 className="font-medium mb-2 flex items-center gap-2">
-                    <Star className="h-4 w-4 text-primary" />
-                    Collective Contribution
-                  </h4>
-                  <p className="text-muted-foreground">{cross.collectiveContribution}</p>
-                </div>
-                <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
-                  <h4 className="font-medium mb-2 flex items-center gap-2">
-                    <BookOpen className="h-4 w-4 text-primary" />
-                    Living Your Cross
-                  </h4>
-                  <p className="text-sm text-muted-foreground">{cross.livingYourCross}</p>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <p>Detailed life purpose interpretation for this cross is being developed.</p>
-              </div>
+            {cross && (
+              <>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Living Your Cross</CardTitle>
+                  </CardHeader>
+                  <CardContent className="prose prose-sm max-w-none">
+                    <p>{cross.livingYourCross}</p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Cross vs Conditioning</CardTitle>
+                  </CardHeader>
+                  <CardContent className="prose prose-sm max-w-none">
+                    <p>
+                      Your Incarnation Cross is not something you DO - it's something you ARE 
+                      when you're living correctly according to your Strategy and Authority. 
+                      The cross emerges naturally when you're being yourself authentically.
+                    </p>
+                    <p className="mt-4">
+                      Conditioning often tries to tell you what your purpose "should" be or 
+                      how you "should" contribute. Your cross unfolds organically when you 
+                      honor your design and make decisions correctly. Don't try to force your 
+                      cross - let it emerge through correct living.
+                    </p>
+                  </CardContent>
+                </Card>
+              </>
             )}
           </TabsContent>
 
           <TabsContent value="quarter" className="space-y-4">
-            <div className="p-4 bg-muted/30 rounded-lg">
-              <h4 className="font-medium mb-2">Quarter of {chart.incarnationCross.quarter}</h4>
-              <Badge variant="outline" className="mb-3">{quarter.theme}</Badge>
-              <p className="text-muted-foreground">{quarter.description}</p>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {Object.entries(quarterDescriptions).map(([name, q]) => (
-                <div 
-                  key={name}
-                  className={`p-3 rounded-lg text-center ${
-                    name === chart.incarnationCross.quarter 
-                      ? 'bg-primary/10 border border-primary/30' 
-                      : 'bg-muted/20'
-                  }`}
-                >
-                  <p className="font-medium text-sm">{name}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{q.theme}</p>
-                </div>
-              ))}
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Quarter of {chart.incarnationCross.quarter}</CardTitle>
+                <CardDescription>{quarter.theme}</CardDescription>
+              </CardHeader>
+              <CardContent className="prose prose-sm max-w-none">
+                <p>{quarter.description}</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>The Four Quarters</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {Object.entries(quarterDescriptions).map(([name, info]) => (
+                  <div 
+                    key={name}
+                    className={`p-4 rounded-lg border ${
+                      name === chart.incarnationCross.quarter 
+                        ? 'bg-primary/5 border-primary' 
+                        : 'bg-muted/30'
+                    }`}
+                  >
+                    <h4 className="font-semibold mb-1">
+                      Quarter of {name}
+                      {name === chart.incarnationCross.quarter && (
+                        <Badge className="ml-2" variant="default">Your Quarter</Badge>
+                      )}
+                    </h4>
+                    <p className="text-sm text-muted-foreground mb-2">{info.theme}</p>
+                    <p className="text-sm">{info.description}</p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="type" className="space-y-4">
-            <div className="p-4 bg-muted/30 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium">{chart.incarnationCross.type}</h4>
-                <Badge variant="secondary">{crossType.percentage}% of population</Badge>
-              </div>
-              <Badge variant="outline" className="mb-3">{crossType.theme}</Badge>
-              <p className="text-muted-foreground">{crossType.description}</p>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              {Object.entries(crossTypeDescriptions).map(([type, info]) => (
-                <div 
-                  key={type}
-                  className={`p-3 rounded-lg ${
-                    type === chart.incarnationCross.type 
-                      ? 'bg-primary/10 border border-primary/30' 
-                      : 'bg-muted/20'
-                  }`}
-                >
-                  <p className="font-medium text-sm">{type}</p>
-                  <p className="text-xs text-muted-foreground">{info.percentage}%</p>
-                  <p className="text-xs text-muted-foreground mt-1">{info.theme}</p>
-                </div>
-              ))}
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>{chart.incarnationCross.type} Cross</CardTitle>
+                <CardDescription>
+                  {crossType.percentage}% of population • {crossType.theme}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="prose prose-sm max-w-none">
+                <p>{crossType.description}</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>The Three Cross Types</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {Object.entries(crossTypeDescriptions).map(([type, info]) => (
+                  <div 
+                    key={type}
+                    className={`p-4 rounded-lg border ${
+                      type === chart.incarnationCross.type 
+                        ? 'bg-primary/5 border-primary' 
+                        : 'bg-muted/30'
+                    }`}
+                  >
+                    <h4 className="font-semibold mb-1">
+                      {type}
+                      {type === chart.incarnationCross.type && (
+                        <Badge className="ml-2" variant="default">Your Type</Badge>
+                      )}
+                    </h4>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {info.percentage}% • {info.theme}
+                    </p>
+                    <p className="text-sm">{info.description}</p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </CardContent>
