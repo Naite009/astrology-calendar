@@ -206,7 +206,27 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
       // PRIORITY: Use parsed data over calculations
       const finalType = parsedHDData?.hdType || calculatedHdType;
       const finalDefinition = parsedHDData?.definition || calculatedDefinitionType;
-      const finalAuthority = parsedHDData?.authority || calculatedAuthority;
+      
+      // Normalize authority - map display labels to storage values
+      const normalizeAuthority = (auth: string | undefined): string => {
+        if (!auth) return calculatedAuthority;
+        const authLower = auth.toLowerCase();
+        if (authLower.includes('emotional') || authLower.includes('solar plexus')) return 'Emotional';
+        if (authLower.includes('sacral')) return 'Sacral';
+        if (authLower.includes('splenic') || authLower.includes('spleen')) return 'Splenic';
+        if (authLower.includes('ego manifested')) return 'Ego Manifested';
+        if (authLower.includes('ego projected')) return 'Ego Projected';
+        if (authLower.includes('self-projected') || authLower.includes('self projected')) return 'Self-Projected';
+        if (authLower.includes('mental') || authLower.includes('environmental')) return 'Mental';
+        if (authLower.includes('lunar') || authLower.includes('none')) return 'Lunar';
+        return auth;
+      };
+      
+      // Always calculate authority from defined centers for accuracy
+      // Only use parsed authority if centers aren't available
+      const finalAuthority = definedCenters.length > 0 
+        ? calculatedAuthority 
+        : normalizeAuthority(parsedHDData?.authority);
 
       // Get profile from parsed data FIRST, then fallback to Sun lines
       const pSun = parsedPersonality.find(a => a.planet === 'Sun');
@@ -228,8 +248,37 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
         isConscious: a.isConscious,
       }));
 
-      // Build incarnation cross from parsed data or calculated
-      const incarnationCrossName = parsedHDData?.incarnationCross || `Cross of Gate ${pSun?.gate || 'Unknown'}`;
+      // Determine cross type based on profile (conscious line)
+      // Lines 1-3 = Right Angle, Line 4 = Juxtaposition, Lines 5-6 = Left Angle
+      const consciousLine = parseInt(finalProfile.split('/')[0]) || 1;
+      let crossType: 'Right Angle' | 'Left Angle' | 'Juxtaposition';
+      if (consciousLine <= 3) {
+        crossType = 'Right Angle';
+      } else if (consciousLine === 4) {
+        crossType = 'Juxtaposition';
+      } else {
+        crossType = 'Left Angle';
+      }
+      
+      // Build incarnation cross - use parsed name if available, otherwise generate
+      const crossGates = {
+        consciousSun: pSun?.gate || 1,
+        consciousEarth: parsedPersonality.find(a => a.planet === 'Earth')?.gate || 2,
+        unconsciousSun: dSun?.gate || 1,
+        unconsciousEarth: parsedDesign.find(a => a.planet === 'Earth')?.gate || 2,
+      };
+      
+      // If we have a parsed cross name, use it but fix the type based on profile
+      let incarnationCrossName = parsedHDData?.incarnationCross;
+      if (incarnationCrossName) {
+        // Replace incorrect angle type in parsed name with correct one based on profile
+        incarnationCrossName = incarnationCrossName
+          .replace(/^(Right Angle|Left Angle|Juxtaposition)\s+/i, '')
+          .replace(/^Cross of\s+/i, '');
+        incarnationCrossName = `${crossType} Cross of ${incarnationCrossName}`;
+      } else {
+        incarnationCrossName = `${crossType} Cross of Gate ${pSun?.gate || 'Unknown'}`;
+      }
 
       const chart: HumanDesignChart = {
         id: crypto.randomUUID(),
@@ -254,14 +303,8 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
         activatedGates: activatedGates,
         incarnationCross: {
           name: incarnationCrossName,
-          type: incarnationCrossName.includes('Left') ? 'Left Angle' : 
-                incarnationCrossName.includes('Juxta') ? 'Juxtaposition' : 'Right Angle',
-          gates: {
-            consciousSun: pSun?.gate || 1,
-            consciousEarth: parsedPersonality.find(a => a.planet === 'Earth')?.gate || 2,
-            unconsciousSun: dSun?.gate || 1,
-            unconsciousEarth: parsedDesign.find(a => a.planet === 'Earth')?.gate || 2,
-          },
+          type: crossType,
+          gates: crossGates,
           quarter: 'Initiation',
         },
         createdAt: new Date().toISOString(),
