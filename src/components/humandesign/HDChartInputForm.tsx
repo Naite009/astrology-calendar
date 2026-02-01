@@ -210,14 +210,15 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
       console.log('[HD Authority Debug] Calculated authority:', calculatedAuthority);
       console.log('[HD Authority Debug] Parsed authority (ignored if centers exist):', parsedHDData?.authority);
 
-      // PRIORITY: Use parsed data for type/definition, but ALWAYS use calculated authority
-      const finalType = parsedHDData?.hdType || calculatedHdType;
-      const finalDefinition = parsedHDData?.definition || calculatedDefinitionType;
-      
-      // ALWAYS use calculated authority - it's more reliable than parsed text
+      // ALWAYS use calculated values - they're computed from gate data which is accurate
+      // The parsed text labels from AI can be wrong (e.g., "Split" instead of "Triple Split")
+      const finalType = calculatedHdType;
+      const finalDefinition = calculatedDefinitionType;
       const finalAuthority = calculatedAuthority;
       
-      console.log('[HD Authority Debug] FINAL authority being saved:', finalAuthority);
+      console.log('[HD Definition Debug] Calculated definition:', calculatedDefinitionType);
+      console.log('[HD Definition Debug] Parsed definition (ignored):', parsedHDData?.definition);
+      console.log('[HD Definition Debug] FINAL definition being saved:', finalDefinition);
 
       // Get profile from parsed data FIRST, then fallback to Sun lines
       const pSun = parsedPersonality.find(a => a.planet === 'Sun');
