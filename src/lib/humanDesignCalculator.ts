@@ -196,53 +196,80 @@ export function calculateActivations(date: Date, isConscious: boolean): HDPlanet
 }
 
 // Determine HD Type based on defined centers
+// Uses graph traversal to find if Sacral is connected to Throat through any path
 export function determineType(definedCenters: HDCenterName[], definedChannels: string[]): HDType {
   const hasSacral = definedCenters.includes('Sacral');
   const hasThroat = definedCenters.includes('Throat');
-  
-  // Check for motor to throat connection
-  const motorCenters: HDCenterName[] = ['Sacral', 'SolarPlexus', 'Heart', 'Root'];
-  const hasMotorToThroat = hasThroat && definedChannels.some(channelId => {
-    const channel = CHANNELS.find(c => c.id === channelId);
-    if (!channel) return false;
-    
-    const gate1Center = GATE_TO_CENTER[channel.gate1];
-    const gate2Center = GATE_TO_CENTER[channel.gate2];
-    
-    return (gate1Center === 'Throat' && motorCenters.includes(gate2Center)) ||
-           (gate2Center === 'Throat' && motorCenters.includes(gate1Center));
-  });
-  
-  // Check for sacral to throat connection specifically
-  const hasSacralToThroat = hasSacral && hasThroat && definedChannels.some(channelId => {
-    const channel = CHANNELS.find(c => c.id === channelId);
-    if (!channel) return false;
-    
-    const gate1Center = GATE_TO_CENTER[channel.gate1];
-    const gate2Center = GATE_TO_CENTER[channel.gate2];
-    
-    return (gate1Center === 'Throat' && gate2Center === 'Sacral') ||
-           (gate2Center === 'Throat' && gate1Center === 'Sacral');
-  });
   
   // Reflector: No defined centers
   if (definedCenters.length === 0) {
     return 'Reflector';
   }
   
-  // Manifestor: Motor to Throat but NO Sacral defined
-  if (!hasSacral && hasMotorToThroat) {
-    return 'Manifestor';
+  // Build a graph of center connections from defined channels
+  const connections = new Map<HDCenterName, Set<HDCenterName>>();
+  for (const center of definedCenters) {
+    connections.set(center, new Set());
   }
   
-  // Manifesting Generator: Sacral defined AND motor to throat
-  if (hasSacral && (hasSacralToThroat || hasMotorToThroat)) {
+  for (const channelId of definedChannels) {
+    const channel = CHANNELS.find(c => c.id === channelId);
+    if (channel) {
+      const center1 = GATE_TO_CENTER[channel.gate1];
+      const center2 = GATE_TO_CENTER[channel.gate2];
+      connections.get(center1)?.add(center2);
+      connections.get(center2)?.add(center1);
+    }
+  }
+  
+  // BFS to check if a path exists from source to target through defined channels
+  const hasPathBetween = (source: HDCenterName, target: HDCenterName): boolean => {
+    if (!connections.has(source) || !connections.has(target)) return false;
+    if (source === target) return true;
+    
+    const visited = new Set<HDCenterName>();
+    const queue: HDCenterName[] = [source];
+    
+    while (queue.length > 0) {
+      const current = queue.shift()!;
+      if (current === target) return true;
+      if (visited.has(current)) continue;
+      visited.add(current);
+      
+      const neighbors = connections.get(current);
+      if (neighbors) {
+        for (const neighbor of neighbors) {
+          if (!visited.has(neighbor)) {
+            queue.push(neighbor);
+          }
+        }
+      }
+    }
+    return false;
+  };
+  
+  // Check if Sacral is connected to Throat through any path (direct or indirect)
+  const hasSacralToThroat = hasSacral && hasThroat && hasPathBetween('Sacral', 'Throat');
+  
+  // Check for non-Sacral motor to Throat connections
+  const nonSacralMotors: HDCenterName[] = ['SolarPlexus', 'Heart', 'Root'];
+  const hasNonSacralMotorToThroat = hasThroat && nonSacralMotors.some(motor => 
+    definedCenters.includes(motor) && hasPathBetween(motor, 'Throat')
+  );
+  
+  // Manifesting Generator: Sacral defined AND connected to Throat (directly or indirectly)
+  if (hasSacral && hasSacralToThroat) {
     return 'Manifesting Generator';
   }
   
-  // Generator: Sacral defined but no motor to throat
-  if (hasSacral) {
+  // Generator: Sacral defined but NOT connected to Throat
+  if (hasSacral && !hasSacralToThroat) {
     return 'Generator';
+  }
+  
+  // Manifestor: Non-Sacral Motor to Throat (no Sacral defined)
+  if (!hasSacral && hasNonSacralMotorToThroat) {
+    return 'Manifestor';
   }
   
   // Projector: No Sacral, no motor to throat
