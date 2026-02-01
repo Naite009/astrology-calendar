@@ -632,6 +632,21 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
                 </select>
               </div>
             </div>
+            
+            {/* Incarnation Cross Name */}
+            <div className="mt-3 space-y-1">
+              <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Incarnation Cross</label>
+              <input
+                type="text"
+                value={parsedHDData?.incarnationCross || ''}
+                onChange={(e) => setParsedHDData(prev => ({ ...(prev || {}), incarnationCross: e.target.value }))}
+                placeholder="e.g., Right Angle Cross of Laws"
+                className="w-full border border-border bg-background px-3 py-2 text-sm rounded focus:border-primary focus:outline-none"
+              />
+              <p className="text-[9px] text-muted-foreground">
+                Enter full cross name (e.g., "Right Angle Cross of Laws 1")
+              </p>
+            </div>
           </div>
         )}
 
