@@ -340,6 +340,61 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
     }
   };
 
+  const computeDerivedHDFromActivations = (
+    personality: HDPlanetaryActivation[],
+    design: HDPlanetaryActivation[],
+    existing: {
+      hdType?: string;
+      profile?: string;
+      strategy?: string;
+      authority?: string;
+      definition?: string;
+      incarnationCross?: string;
+      definedCenters?: string[];
+      definedChannels?: string[];
+    } | null
+  ) => {
+    const allGates = new Set<number>();
+    [...personality, ...design].forEach(a => allGates.add(a.gate));
+
+    const definedChannels = calculateDefinedChannels(allGates);
+    const definedCenters = calculateDefinedCenters(definedChannels);
+    const calculatedDefinitionType = calculateDefinitionType(definedCenters, definedChannels);
+    const calculatedHdType = determineType(definedCenters, definedChannels);
+    const calculatedAuthority = determineAuthority(definedCenters, calculatedHdType, definedChannels);
+    const calculatedStrategy = determineStrategy(calculatedHdType);
+
+    // Derive a profile if missing (conscious Sun line / design Sun line)
+    const pSun = personality.find(a => a.planet === 'Sun');
+    const dSun = design.find(a => a.planet === 'Sun');
+    const derivedProfile = `${pSun?.line || 1}/${dSun?.line || 1}`;
+    const profile = existing?.profile || derivedProfile;
+
+    // Ensure Incarnation Cross label always has the correct angle prefix based on conscious line.
+    // Lines 1-3 = Right Angle, 4 = Juxtaposition, 5-6 = Left Angle
+    const consciousLine = parseInt(profile.split('/')[0]) || 1;
+    const crossType = consciousLine <= 3 ? 'Right Angle' : consciousLine === 4 ? 'Juxtaposition' : 'Left Angle';
+
+    const normalizeCrossName = (name?: string) => {
+      if (!name) return undefined;
+      const stripped = name
+        .replace(/^(Right Angle|Left Angle|Juxtaposition)\s+/i, '')
+        .replace(/^Cross of\s+/i, '');
+      return `${crossType} Cross of ${stripped}`;
+    };
+
+    return {
+      hdType: calculatedHdType,
+      profile,
+      strategy: existing?.strategy || calculatedStrategy,
+      authority: calculatedAuthority,
+      definition: calculatedDefinitionType,
+      incarnationCross: normalizeCrossName(existing?.incarnationCross),
+      definedCenters: definedCenters as unknown as string[],
+      definedChannels: definedChannels,
+    };
+  };
+
   const parseHDChart = async (file: File) => {
     setIsParsing(true);
     setError(null);
@@ -406,19 +461,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
           }));
         }
 
-        // Store parsed HD data for display/editing
-        if (parsed.hdType || parsed.profile) {
-          setParsedHDData({
-            hdType: parsed.hdType,
-            profile: parsed.profile,
-            strategy: parsed.strategy,
-            authority: parsed.authority,
-            definition: parsed.definition,
-            incarnationCross: parsed.incarnationCross,
-            definedCenters: parsed.definedCenters,
-            definedChannels: parsed.definedChannels,
-          });
-        }
+        // We'll set parsedHDData after we normalize activations so we can compute reliable derived values.
 
         // Normalize planet names to match our expected format
         const normalizePlanetName = (name: string): string => {
@@ -442,26 +485,50 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
         };
 
         // Populate gate editor with parsed activations
-        if (parsed.personalityActivations && Array.isArray(parsed.personalityActivations)) {
-          const pActivations: HDPlanetaryActivation[] = parsed.personalityActivations.map((a: any) => ({
-            planet: normalizePlanetName(a.planet),
-            gate: a.gate,
-            line: a.line,
-            longitude: 0,
-            isConscious: true,
-          }));
-          setParsedPersonality(pActivations);
-        }
+        const pActivations: HDPlanetaryActivation[] = Array.isArray(parsed.personalityActivations)
+          ? parsed.personalityActivations.map((a: any) => ({
+              planet: normalizePlanetName(a.planet),
+              gate: a.gate,
+              line: a.line,
+              longitude: 0,
+              isConscious: true,
+            }))
+          : [];
 
-        if (parsed.designActivations && Array.isArray(parsed.designActivations)) {
-          const dActivations: HDPlanetaryActivation[] = parsed.designActivations.map((a: any) => ({
-            planet: normalizePlanetName(a.planet),
-            gate: a.gate,
-            line: a.line,
-            longitude: 0,
-            isConscious: false,
-          }));
-          setParsedDesign(dActivations);
+        const dActivations: HDPlanetaryActivation[] = Array.isArray(parsed.designActivations)
+          ? parsed.designActivations.map((a: any) => ({
+              planet: normalizePlanetName(a.planet),
+              gate: a.gate,
+              line: a.line,
+              longitude: 0,
+              isConscious: false,
+            }))
+          : [];
+
+        if (pActivations.length) setParsedPersonality(pActivations);
+        if (dActivations.length) setParsedDesign(dActivations);
+
+        // Store parsed HD data for display/editing, but override authority/definition/type/etc.
+        // with calculated values from the parsed gates (this prevents regressions like missing Emotional authority).
+        const baseParsed: NonNullable<typeof parsedHDData> = {
+          hdType: parsed.hdType,
+          profile: parsed.profile,
+          strategy: parsed.strategy,
+          authority: parsed.authority,
+          definition: parsed.definition,
+          incarnationCross: parsed.incarnationCross,
+          definedCenters: parsed.definedCenters,
+          definedChannels: parsed.definedChannels,
+        };
+
+        if (pActivations.length || dActivations.length) {
+          const derived = computeDerivedHDFromActivations(pActivations, dActivations, baseParsed);
+          setParsedHDData({
+            ...baseParsed,
+            ...derived,
+          });
+        } else if (parsed.hdType || parsed.profile || parsed.authority || parsed.definition || parsed.incarnationCross) {
+          setParsedHDData(baseParsed);
         }
 
         // Collect warnings
