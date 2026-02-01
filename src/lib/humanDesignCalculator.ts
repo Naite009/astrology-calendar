@@ -247,11 +247,17 @@ export function determineType(definedCenters: HDCenterName[], definedChannels: s
       const has57_20 = hasChannel(57, 20); // Channel of the Brainwave
       const has44_26 = hasChannel(44, 26); // Channel of Surrender
       console.log('[HD Type Detection] Spleen-Throat: 48-16:', has48_16, '| 57-20:', has57_20, '| 44-26:', has44_26);
-      
-      const hasSpleenToThroat = has48_16 || has57_20 || has44_26;
-      
-      if (hasSacralToSpleen && hasSpleenToThroat) {
-        console.log('[HD Type Detection] ✓ Sacral-Spleen-Throat pathway FOUND!');
+
+      // Explicitly support the Sacral→Spleen→Throat path the user called out:
+      // 34-57 AND 48-16 (Sacral→Spleen and Spleen→Throat)
+      if (hasSacralToSpleen && has48_16) {
+        console.log('[HD Type Detection] ✓ Sacral-Spleen-Throat pathway FOUND (34-57 + 48-16)!');
+        hasSacralToThroat = true;
+      }
+
+      // Keep other valid Spleen→Throat variants too (e.g., 34-57 + 57-20)
+      if (!hasSacralToThroat && hasSacralToSpleen && (has57_20 || has44_26)) {
+        console.log('[HD Type Detection] ✓ Sacral-Spleen-Throat pathway FOUND (34-57 + other Spleen→Throat)!');
         hasSacralToThroat = true;
       }
     }
