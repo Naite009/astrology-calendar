@@ -13,6 +13,8 @@ import {
   HDIncarnationCross,
   HDGateActivation,
   HDCenterName,
+  HDVariables,
+  HDVariable,
   GATE_TO_CENTER,
   CHANNELS,
 } from '@/types/humanDesign';
@@ -518,6 +520,94 @@ function getCrossName(sunGate: number): string {
   return crossNames[sunGate] || `Gate ${sunGate}`;
 }
 
+// Calculate Variables (PHS) from Design activations
+// Variables are determined by the color, tone, and base of Design Sun and Nodes
+export function calculateVariables(
+  designSun: HDPlanetaryActivation | undefined,
+  designNorthNode: HDPlanetaryActivation | undefined,
+  designSouthNode: HDPlanetaryActivation | undefined
+): HDVariables {
+  // Calculate color, tone, base from the line position
+  // Each line (1-6) has 6 colors, each color has 6 tones, each tone has 5 bases
+  const calculateSubLineValues = (activation: HDPlanetaryActivation | undefined): { color: number; tone: number; base: number; arrow: 'Left' | 'Right' } => {
+    if (!activation) {
+      return { color: 1, tone: 1, base: 1, arrow: 'Right' };
+    }
+    
+    // Get the precise position within the line
+    const longitude = activation.longitude;
+    const lineSpan = 5.625 / 6; // Each line is 0.9375°
+    const colorSpan = lineSpan / 6; // Each color spans 0.15625°
+    const toneSpan = colorSpan / 6; // Each tone spans ~0.026°
+    
+    // Calculate position within gate (0 to 5.625°)
+    const wheelStart = 268 + (58 / 60);
+    let relativePosition = longitude - wheelStart;
+    if (relativePosition < 0) relativePosition += 360;
+    const positionInGate = relativePosition % 5.625;
+    
+    // Calculate position within line
+    const positionInLine = positionInGate % lineSpan;
+    
+    // Calculate color (1-6)
+    const color = Math.floor(positionInLine / colorSpan) + 1;
+    
+    // Calculate position within color for tone
+    const positionInColor = positionInLine % colorSpan;
+    const tone = Math.floor(positionInColor / toneSpan) + 1;
+    
+    // Calculate base (1-5)
+    const positionInTone = positionInColor % toneSpan;
+    const baseSpan = toneSpan / 5;
+    const base = Math.floor(positionInTone / baseSpan) + 1;
+    
+    // Arrow direction: Colors 1-3 = Left, Colors 4-6 = Right
+    const arrow: 'Left' | 'Right' = color <= 3 ? 'Left' : 'Right';
+    
+    return {
+      color: Math.min(Math.max(color, 1), 6),
+      tone: Math.min(Math.max(tone, 1), 6),
+      base: Math.min(Math.max(base, 1), 5),
+      arrow
+    };
+  };
+  
+  const sunValues = calculateSubLineValues(designSun);
+  const northNodeValues = calculateSubLineValues(designNorthNode);
+  const southNodeValues = calculateSubLineValues(designSouthNode);
+  
+  return {
+    // Determination (Top Right) - from Design Sun
+    determination: {
+      arrow: sunValues.arrow,
+      color: sunValues.color,
+      tone: sunValues.tone,
+      base: sunValues.base
+    },
+    // Environment (Top Left) - from Design Sun (same source, opposite arrow perspective)
+    environment: {
+      arrow: sunValues.arrow === 'Left' ? 'Right' : 'Left',
+      color: sunValues.color,
+      tone: sunValues.tone,
+      base: sunValues.base
+    },
+    // Perspective (Bottom Right) - from Design North Node
+    perspective: {
+      arrow: northNodeValues.arrow,
+      color: northNodeValues.color,
+      tone: northNodeValues.tone,
+      base: northNodeValues.base
+    },
+    // Motivation (Bottom Left) - from Design South Node
+    motivation: {
+      arrow: southNodeValues.arrow,
+      color: southNodeValues.color,
+      tone: southNodeValues.tone,
+      base: southNodeValues.base
+    }
+  };
+}
+
 // Main calculation function
 export function calculateHumanDesignChart(
   name: string,
@@ -587,6 +677,11 @@ export function calculateHumanDesignChart(
     profile
   );
   
+  // Calculate variables (PHS) from Design activations
+  const designNorthNode = designActivations.find(a => a.planet === 'NorthNode');
+  const designSouthNode = designActivations.find(a => a.planet === 'SouthNode');
+  const variables = calculateVariables(designSun, designNorthNode, designSouthNode);
+  
   const now = new Date().toISOString();
   
   return {
@@ -611,6 +706,7 @@ export function calculateHumanDesignChart(
     definedCenters,
     undefinedCenters,
     definedChannels,
+    variables,
     createdAt: now,
     updatedAt: now,
   };
