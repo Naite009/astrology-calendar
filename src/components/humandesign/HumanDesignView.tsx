@@ -11,6 +11,7 @@ import { ProfileAnalysis } from './ProfileAnalysis';
 import { AuthorityGuide } from './AuthorityGuide';
 import { TypeAnalysis } from './TypeAnalysis';
 import { IncarnationCrossAnalysis } from './IncarnationCrossAnalysis';
+import { VariablesAnalysis } from './VariablesAnalysis';
 import { HumanDesignChart } from '@/types/humanDesign';
 import { formatLocalDateLong } from '@/lib/localDate';
 import {
@@ -21,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-type HDTab = 'overview' | 'type' | 'authority' | 'profile' | 'centers' | 'cross' | 'activations' | 'bodygraph';
+type HDTab = 'overview' | 'type' | 'authority' | 'profile' | 'centers' | 'cross' | 'variables' | 'activations' | 'bodygraph';
 
 export const HumanDesignView = () => {
   const { charts, selectedChart, addChart, deleteChart, selectChart } = useHumanDesignChart();
@@ -127,7 +128,7 @@ export const HumanDesignView = () => {
           </div>
 
           <div className="flex gap-1 border-b border-border overflow-x-auto">
-            {(['overview', 'type', 'authority', 'profile', 'centers', 'cross', 'activations', 'bodygraph'] as const).map(tab => (
+            {(['overview', 'type', 'authority', 'profile', 'centers', 'cross', 'variables', 'activations', 'bodygraph'] as const).map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -137,7 +138,7 @@ export const HumanDesignView = () => {
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                {tab === 'bodygraph' ? 'Chart' : tab === 'cross' ? 'Incarnation Cross' : tab}
+                {tab === 'bodygraph' ? 'Chart' : tab === 'cross' ? 'Incarnation Cross' : tab === 'variables' ? 'Variables (PHS)' : tab}
               </button>
             ))}
           </div>
@@ -149,6 +150,7 @@ export const HumanDesignView = () => {
           {activeTab === 'profile' && <ProfileAnalysis chart={selectedChart} />}
           {activeTab === 'centers' && <CentersAnalysis chart={selectedChart} />}
           {activeTab === 'cross' && <IncarnationCrossAnalysis chart={selectedChart} />}
+          {activeTab === 'variables' && <VariablesAnalysis chart={selectedChart} />}
 
           {activeTab === 'bodygraph' && (
             <div className="rounded border border-border bg-card p-6">
