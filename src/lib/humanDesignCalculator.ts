@@ -740,13 +740,21 @@ export function calculateHumanDesignChart(
   timezone: string,
   timezoneOffset: number
 ): HumanDesignChart {
-  // Parse birth date and time
+  // Parse birth date and time (these represent a *local clock time* in the selected birth timezone)
   const [year, month, day] = birthDate.split('-').map(Number);
   const [hours, minutes] = birthTime.split(':').map(Number);
-  
-  // Create UTC date from local time
-  const localDate = new Date(year, month - 1, day, hours, minutes);
-  const utcDate = new Date(localDate.getTime() - timezoneOffset * 60 * 60 * 1000);
+
+  // IMPORTANT: do NOT use `new Date(year, ...)` here.
+  // That constructor interprets the parts in the *browser's* timezone, which will shift results
+  // for users calculating a chart in a different timezone than their current device.
+  //
+  // Instead, treat the input as a timezone-naive timestamp and convert to UTC using the
+  // precomputed timezone offset (DST-aware) for the *birth location/timezone*.
+  //
+  // offset is hours from UTC for the birth timezone (e.g., New York in EDT = -4).
+  // local = UTC + offset  =>  UTC = local - offset
+  const utcMs = Date.UTC(year, month - 1, day, hours, minutes) - timezoneOffset * 60 * 60 * 1000;
+  const utcDate = new Date(utcMs);
   
   // Calculate Design date (88° before birth)
   const designDate = calculateDesignDate(utcDate);
