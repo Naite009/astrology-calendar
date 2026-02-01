@@ -63,9 +63,13 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
   const [isMainUser, setIsMainUser] = useState(false);
   
   // Parsed HD data for editing
-  const [showGateEditor, setShowGateEditor] = useState(false);
-  const [parsedPersonality, setParsedPersonality] = useState<HDPlanetaryActivation[]>([]);
-  const [parsedDesign, setParsedDesign] = useState<HDPlanetaryActivation[]>([]);
+  const [showGateEditor, setShowGateEditor] = useState(!!initialData?.personalityActivations?.length);
+  const [parsedPersonality, setParsedPersonality] = useState<HDPlanetaryActivation[]>(
+    initialData?.personalityActivations || []
+  );
+  const [parsedDesign, setParsedDesign] = useState<HDPlanetaryActivation[]>(
+    initialData?.designActivations || []
+  );
   const [parsedHDData, setParsedHDData] = useState<{
     hdType?: string;
     profile?: string;
@@ -75,8 +79,17 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
     incarnationCross?: string;
     definedCenters?: string[];
     definedChannels?: string[];
-  } | null>(null);
+  } | null>(initialData ? {
+    hdType: initialData.type,
+    profile: initialData.profile,
+    authority: initialData.authority,
+    definition: initialData.definitionType,
+    incarnationCross: initialData.incarnationCross?.name,
+    definedCenters: initialData.definedCenters,
+    definedChannels: initialData.definedChannels,
+  } : null);
   const [parseWarnings, setParseWarnings] = useState<string[]>([]);
+  const isEditMode = !!initialData?.id;
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const locationDebounceRef = useRef<NodeJS.Timeout | null>(null);
@@ -477,7 +490,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
       >
         <div className="mb-6 flex items-center justify-between">
           <h2 className="font-serif text-2xl font-light text-foreground md:text-3xl">
-            Human Design Chart
+            {isEditMode ? 'Edit Chart' : 'Human Design Chart'}
           </h2>
           <button
             onClick={onClose}
@@ -527,36 +540,98 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
           )}
         </div>
 
-        {/* Parsed HD Data Summary */}
-        {parsedHDData && (parsedHDData.hdType || parsedHDData.profile) && (
+        {/* Editable HD Core Data */}
+        {(parsedHDData || isEditMode) && (
           <div className="mb-6 rounded border border-primary/30 bg-primary/5 p-4">
-            <h4 className="text-[10px] uppercase tracking-widest text-primary mb-3">Parsed Chart Data</h4>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              {parsedHDData.hdType && (
-                <div>
-                  <span className="text-muted-foreground">Type:</span>{' '}
-                  <span className="font-medium">{parsedHDData.hdType}</span>
-                </div>
-              )}
-              {parsedHDData.profile && (
-                <div>
-                  <span className="text-muted-foreground">Profile:</span>{' '}
-                  <span className="font-medium">{parsedHDData.profile}</span>
-                </div>
-              )}
-              {parsedHDData.authority && (
-                <div>
-                  <span className="text-muted-foreground">Authority:</span>{' '}
-                  <span className="font-medium">{parsedHDData.authority}</span>
-                </div>
-              )}
-              {parsedHDData.definition && (
-                <div>
-                  <span className="text-muted-foreground">Definition:</span>{' '}
-                  <span className="font-medium">{parsedHDData.definition}</span>
-                </div>
-              )}
+            <h4 className="text-[10px] uppercase tracking-widest text-primary mb-3">
+              {isEditMode ? 'Chart Core Data (Editable)' : 'Parsed Chart Data'}
+            </h4>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Type</label>
+                <select
+                  value={parsedHDData?.hdType || ''}
+                  onChange={(e) => setParsedHDData(prev => ({ ...prev, hdType: e.target.value }))}
+                  className="w-full border border-border bg-background px-2 py-1.5 text-sm rounded"
+                >
+                  <option value="">Select...</option>
+                  <option value="Generator">Generator</option>
+                  <option value="Manifesting Generator">Manifesting Generator</option>
+                  <option value="Projector">Projector</option>
+                  <option value="Manifestor">Manifestor</option>
+                  <option value="Reflector">Reflector</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Profile</label>
+                <select
+                  value={parsedHDData?.profile || ''}
+                  onChange={(e) => setParsedHDData(prev => ({ ...prev, profile: e.target.value }))}
+                  className="w-full border border-border bg-background px-2 py-1.5 text-sm rounded"
+                >
+                  <option value="">Select...</option>
+                  <option value="1/3">1/3</option>
+                  <option value="1/4">1/4</option>
+                  <option value="2/4">2/4</option>
+                  <option value="2/5">2/5</option>
+                  <option value="3/5">3/5</option>
+                  <option value="3/6">3/6</option>
+                  <option value="4/6">4/6</option>
+                  <option value="4/1">4/1</option>
+                  <option value="5/1">5/1</option>
+                  <option value="5/2">5/2</option>
+                  <option value="6/2">6/2</option>
+                  <option value="6/3">6/3</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Authority</label>
+                <select
+                  value={parsedHDData?.authority || ''}
+                  onChange={(e) => setParsedHDData(prev => ({ ...prev, authority: e.target.value }))}
+                  className="w-full border border-border bg-background px-2 py-1.5 text-sm rounded"
+                >
+                  <option value="">Select...</option>
+                  <option value="Emotional">Emotional</option>
+                  <option value="Sacral">Sacral</option>
+                  <option value="Splenic">Splenic</option>
+                  <option value="Ego Manifested">Ego Manifested</option>
+                  <option value="Ego Projected">Ego Projected</option>
+                  <option value="Self-Projected">Self-Projected</option>
+                  <option value="Mental">Mental</option>
+                  <option value="Lunar">Lunar</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Definition</label>
+                <select
+                  value={parsedHDData?.definition || ''}
+                  onChange={(e) => setParsedHDData(prev => ({ ...prev, definition: e.target.value }))}
+                  className="w-full border border-border bg-background px-2 py-1.5 text-sm rounded"
+                >
+                  <option value="">Select...</option>
+                  <option value="Single">Single Definition</option>
+                  <option value="Split">Split Definition</option>
+                  <option value="Triple Split">Triple Split</option>
+                  <option value="Quadruple Split">Quadruple Split</option>
+                  <option value="None">No Definition</option>
+                </select>
+              </div>
             </div>
+          </div>
+        )}
+
+        {/* Button to show gate editor in edit mode if hidden */}
+        {!showGateEditor && (isEditMode || parsedPersonality.length > 0) && (
+          <div className="mb-6">
+            <button
+              type="button"
+              onClick={() => setShowGateEditor(true)}
+              className="w-full flex items-center justify-center gap-2 border border-border px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:border-primary transition-colors rounded"
+            >
+              <Edit3 size={14} />
+              {isEditMode ? 'Edit Gate Activations' : 'Show Gate Editor'}
+            </button>
           </div>
         )}
 
@@ -591,10 +666,10 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
               disabled={!formData.name || parsedPersonality.length === 0}
               className="mt-4 w-full border-2 border-primary bg-primary px-5 py-4 text-sm font-medium uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
             >
-              ✓ Save This Chart
+              ✓ {isEditMode ? 'Update Chart' : 'Save This Chart'}
             </button>
             <p className="mt-2 text-xs text-center text-muted-foreground">
-              Uses the parsed gate data above (not birth data calculation)
+              {isEditMode ? 'Updates the chart with edited data' : 'Uses the parsed gate data above (not birth data calculation)'}
             </p>
           </div>
         )}

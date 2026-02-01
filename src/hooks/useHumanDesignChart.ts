@@ -17,11 +17,11 @@ const safeParseJSON = <T,>(key: string, fallback: T): T => {
   return fallback;
 };
 
-// Validate chart data
+// Validate chart data - more permissive to allow partial charts
 const isValidChart = (chart: HumanDesignChart | null): boolean => {
   if (!chart) return false;
   if (!chart.name || chart.name.trim() === '') return false;
-  if (!chart.birthDate || !chart.birthTime) return false;
+  // Allow charts without full birth data if they have gate activations
   if (!chart.type) return false;
   return true;
 };

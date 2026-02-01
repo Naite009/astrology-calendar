@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, User, Trash2 } from 'lucide-react';
+import { Plus, User, Trash2, Edit3 } from 'lucide-react';
 import { useHumanDesignChart } from '@/hooks/useHumanDesignChart';
 import { useUserData } from '@/hooks/useUserData';
 import { HDChartInputForm } from './HDChartInputForm';
@@ -25,15 +25,33 @@ import {
 type HDTab = 'overview' | 'type' | 'authority' | 'profile' | 'centers' | 'cross' | 'variables' | 'activations' | 'bodygraph';
 
 export const HumanDesignView = () => {
-  const { charts, selectedChart, addChart, deleteChart, selectChart } = useHumanDesignChart();
+  const { charts, selectedChart, addChart, updateChart, deleteChart, selectChart } = useHumanDesignChart();
   const { userData: mainUserData } = useUserData();
   const [showForm, setShowForm] = useState(false);
+  const [editingChart, setEditingChart] = useState<HumanDesignChart | null>(null);
   const [activeTab, setActiveTab] = useState<HDTab>('overview');
 
   const handleSaveChart = (chart: HumanDesignChart) => {
-    const savedChart = addChart(chart);
-    if (savedChart) {
-      selectChart(savedChart.id);
+    console.log('[HumanDesignView] handleSaveChart called with:', chart.name, chart.type);
+    if (editingChart) {
+      // Update existing chart
+      updateChart(editingChart.id, chart);
+      selectChart(editingChart.id);
+      setEditingChart(null);
+    } else {
+      // Add new chart
+      const savedChart = addChart(chart);
+      console.log('[HumanDesignView] addChart result:', savedChart);
+      if (savedChart) {
+        selectChart(savedChart.id);
+      }
+    }
+  };
+
+  const handleEditChart = () => {
+    if (selectedChart) {
+      setEditingChart(selectedChart);
+      setShowForm(true);
     }
   };
 
@@ -89,13 +107,22 @@ export const HumanDesignView = () => {
           </Select>
           
           {selectedChart && (
-            <button
-              onClick={() => handleDeleteChart(selectedChart.id)}
-              className="flex items-center gap-1 px-3 py-2 text-xs border border-destructive/50 text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors rounded"
-            >
-              <Trash2 size={14} />
-              Delete Chart
-            </button>
+            <>
+              <button
+                onClick={handleEditChart}
+                className="flex items-center gap-1 px-3 py-2 text-xs border border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground transition-colors rounded"
+              >
+                <Edit3 size={14} />
+                Edit
+              </button>
+              <button
+                onClick={() => handleDeleteChart(selectedChart.id)}
+                className="flex items-center gap-1 px-3 py-2 text-xs border border-destructive/50 text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors rounded"
+              >
+                <Trash2 size={14} />
+                Delete
+              </button>
+            </>
           )}
         </div>
         
@@ -193,7 +220,11 @@ export const HumanDesignView = () => {
       {showForm && (
         <HDChartInputForm 
           onSave={handleSaveChart} 
-          onClose={() => setShowForm(false)} 
+          onClose={() => {
+            setShowForm(false);
+            setEditingChart(null);
+          }} 
+          initialData={editingChart || undefined}
           mainUserData={mainUserData}
         />
       )}
