@@ -516,7 +516,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*,.pdf,.heic"
+            accept="image/*,.pdf,.heic,.webp"
             onChange={handleFileSelect}
             className="hidden"
           />
@@ -535,7 +535,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
                 Drag & drop HD chart image or PDF
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                or click to browse • JPG, PNG, HEIC, PDF supported
+                or click to browse • JPG, PNG, WebP, HEIC, PDF supported
               </p>
             </>
           )}
