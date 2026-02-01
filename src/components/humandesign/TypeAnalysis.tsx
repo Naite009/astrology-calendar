@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { HumanDesignChart } from '@/types/humanDesign';
 import { TYPE_DATA, getTypeData } from '@/data/humanDesignTypes';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -103,9 +104,12 @@ export const TypeAnalysis = ({ chart }: TypeAnalysisProps) => {
   );
 };
 
-const Section = ({ title, content }: { title: string; content: string }) => (
-  <div className="rounded border border-border p-4">
-    <h4 className="font-medium mb-2">{title}</h4>
-    <p className="text-sm text-muted-foreground">{content}</p>
-  </div>
+const Section = React.forwardRef<HTMLDivElement, { title: string; content: string }>(
+  ({ title, content }, ref) => (
+    <div ref={ref} className="rounded border border-border p-4">
+      <h4 className="font-medium mb-2">{title}</h4>
+      <p className="text-sm text-muted-foreground">{content}</p>
+    </div>
+  ),
 );
+Section.displayName = 'Section';

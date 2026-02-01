@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers, Combine, Diamond } from "lucide-react";
 import { TodaysCosmicEnergy, CosmicEnergyButton } from "./TodaysCosmicEnergy";
 import { useState as useCosmicState } from "react";
