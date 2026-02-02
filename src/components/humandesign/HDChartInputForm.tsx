@@ -368,7 +368,9 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
     const pSun = personality.find(a => a.planet === 'Sun');
     const dSun = design.find(a => a.planet === 'Sun');
     const derivedProfile = `${pSun?.line || 1}/${dSun?.line || 1}`;
-    const profile = existing?.profile || derivedProfile;
+    // IMPORTANT: Always trust the Sun lines derived from activations over any parsed text.
+    // Parsed profile strings are a common failure mode when columns get swapped.
+    const profile = derivedProfile;
 
     // Ensure Incarnation Cross label always has the correct angle prefix based on conscious line.
     // Lines 1-3 = Right Angle, 4 = Juxtaposition, 5-6 = Left Angle
@@ -392,6 +394,28 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
       incarnationCross: normalizeCrossName(existing?.incarnationCross),
       definedCenters: definedCenters as unknown as string[],
       definedChannels: definedChannels,
+    };
+  };
+
+  const parseIncarnationCrossGatesFromLabel = (label?: string): {
+    consciousSun: number;
+    consciousEarth: number;
+    unconsciousSun: number;
+    unconsciousEarth: number;
+  } | null => {
+    if (!label) return null;
+    // Expected patterns like:
+    // "Left Angle Cross of Dominion (63/64 | 13/33)"
+    // "Right Angle Cross of Planning (37/40 | 9/16)"
+    const match = label.match(/\(\s*(\d{1,2})\s*\/\s*(\d{1,2})\s*\|\s*(\d{1,2})\s*\/\s*(\d{1,2})\s*\)/);
+    if (!match) return null;
+    const nums = match.slice(1, 5).map(n => parseInt(n, 10));
+    if (nums.some(n => Number.isNaN(n))) return null;
+    return {
+      consciousSun: nums[0],
+      consciousEarth: nums[1],
+      unconsciousSun: nums[2],
+      unconsciousEarth: nums[3],
     };
   };
 
@@ -465,27 +489,46 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
 
         // Normalize planet names to match our expected format
         const normalizePlanetName = (name: string): string => {
-          const normalized = name.replace(/\s+/g, '').replace(/-/g, '');
+          // Remove spaces/dashes and also common column prefixes like "Design"/"Personality".
+          // The parser sometimes returns "Personality Sun" or "Design Earth".
+          const normalized = name.replace(/\s+/g, '').replace(/-/g, '').toLowerCase();
+
+          // Fast path: detect by substring, regardless of prefix.
+          if (normalized.includes('northnode')) return 'NorthNode';
+          if (normalized.includes('southnode')) return 'SouthNode';
+          if (normalized.includes('sun')) return 'Sun';
+          if (normalized.includes('earth')) return 'Earth';
+          if (normalized.includes('moon')) return 'Moon';
+          if (normalized.includes('mercury')) return 'Mercury';
+          if (normalized.includes('venus')) return 'Venus';
+          if (normalized.includes('mars')) return 'Mars';
+          if (normalized.includes('jupiter')) return 'Jupiter';
+          if (normalized.includes('saturn')) return 'Saturn';
+          if (normalized.includes('uranus')) return 'Uranus';
+          if (normalized.includes('neptune')) return 'Neptune';
+          if (normalized.includes('pluto')) return 'Pluto';
+
+          // Fallback mapping for exact normalized keys
           const mapping: Record<string, string> = {
-            'northnode': 'NorthNode',
-            'southnode': 'SouthNode',
-            'sun': 'Sun',
-            'earth': 'Earth',
-            'moon': 'Moon',
-            'mercury': 'Mercury',
-            'venus': 'Venus',
-            'mars': 'Mars',
-            'jupiter': 'Jupiter',
-            'saturn': 'Saturn',
-            'uranus': 'Uranus',
-            'neptune': 'Neptune',
-            'pluto': 'Pluto',
+            northnode: 'NorthNode',
+            southnode: 'SouthNode',
+            sun: 'Sun',
+            earth: 'Earth',
+            moon: 'Moon',
+            mercury: 'Mercury',
+            venus: 'Venus',
+            mars: 'Mars',
+            jupiter: 'Jupiter',
+            saturn: 'Saturn',
+            uranus: 'Uranus',
+            neptune: 'Neptune',
+            pluto: 'Pluto',
           };
-          return mapping[normalized.toLowerCase()] || name;
+          return mapping[normalized] || name;
         };
 
         // Populate gate editor with parsed activations
-        const pActivations: HDPlanetaryActivation[] = Array.isArray(parsed.personalityActivations)
+        let pActivations: HDPlanetaryActivation[] = Array.isArray(parsed.personalityActivations)
           ? parsed.personalityActivations.map((a: any) => ({
               planet: normalizePlanetName(a.planet),
               gate: a.gate,
@@ -495,7 +538,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
             }))
           : [];
 
-        const dActivations: HDPlanetaryActivation[] = Array.isArray(parsed.designActivations)
+        let dActivations: HDPlanetaryActivation[] = Array.isArray(parsed.designActivations)
           ? parsed.designActivations.map((a: any) => ({
               planet: normalizePlanetName(a.planet),
               gate: a.gate,
@@ -504,6 +547,23 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
               isConscious: false,
             }))
           : [];
+
+        // If the AI gave us an Incarnation Cross label with explicit gate numbers,
+        // use it to detect whether it accidentally swapped Personality vs Design columns.
+        const crossFromLabel = parseIncarnationCrossGatesFromLabel(parsed.incarnationCross);
+        if (crossFromLabel && pActivations.length && dActivations.length) {
+          const pSunGate = pActivations.find(a => a.planet === 'Sun')?.gate;
+          const dSunGate = dActivations.find(a => a.planet === 'Sun')?.gate;
+
+          // If Personality Sun doesn't match the first number in the cross label, but Design Sun does,
+          // the columns are swapped → swap them back.
+          if (pSunGate !== crossFromLabel.consciousSun && dSunGate === crossFromLabel.consciousSun) {
+            console.warn('[HD Parse] Detected swapped Personality/Design columns from cross label; swapping activations.');
+            const tmp = pActivations;
+            pActivations = dActivations.map(a => ({ ...a, isConscious: true }));
+            dActivations = tmp.map(a => ({ ...a, isConscious: false }));
+          }
+        }
 
         if (pActivations.length) setParsedPersonality(pActivations);
         if (dActivations.length) setParsedDesign(dActivations);
