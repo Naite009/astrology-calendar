@@ -89,22 +89,26 @@ export function IncarnationCrossAnalysis({ chart }: IncarnationCrossAnalysisProp
                     <p>{cross.description}</p>
                   </CardContent>
                 </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Your Life Work</CardTitle>
-                  </CardHeader>
-                  <CardContent className="prose prose-sm max-w-none">
-                    <p>{cross.lifeWork}</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Collective Contribution</CardTitle>
-                  </CardHeader>
-                  <CardContent className="prose prose-sm max-w-none">
-                    <p>{cross.collectiveContribution}</p>
-                  </CardContent>
-                </Card>
+                {cross.lifeWork && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Your Life Work</CardTitle>
+                    </CardHeader>
+                    <CardContent className="prose prose-sm max-w-none">
+                      <p>{cross.lifeWork}</p>
+                    </CardContent>
+                  </Card>
+                )}
+                {cross.collectiveContribution && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Collective Contribution</CardTitle>
+                    </CardHeader>
+                    <CardContent className="prose prose-sm max-w-none">
+                      <p>{cross.collectiveContribution}</p>
+                    </CardContent>
+                  </Card>
+                )}
               </>
             ) : (
               <Card>
@@ -211,7 +215,7 @@ export function IncarnationCrossAnalysis({ chart }: IncarnationCrossAnalysisProp
               </CardContent>
             </Card>
 
-            {cross && (
+            {cross?.gateIntegration && (
               <Card>
                 <CardHeader>
                   <CardTitle>How These Gates Work Together</CardTitle>
@@ -224,37 +228,35 @@ export function IncarnationCrossAnalysis({ chart }: IncarnationCrossAnalysisProp
           </TabsContent>
 
           <TabsContent value="purpose" className="space-y-4">
-            {cross && (
-              <>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Living Your Cross</CardTitle>
-                  </CardHeader>
-                  <CardContent className="prose prose-sm max-w-none">
-                    <p>{cross.livingYourCross}</p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Cross vs Conditioning</CardTitle>
-                  </CardHeader>
-                  <CardContent className="prose prose-sm max-w-none">
-                    <p>
-                      Your Incarnation Cross is not something you DO - it's something you ARE 
-                      when you're living correctly according to your Strategy and Authority. 
-                      The cross emerges naturally when you're being yourself authentically.
-                    </p>
-                    <p className="mt-4">
-                      Conditioning often tries to tell you what your purpose "should" be or 
-                      how you "should" contribute. Your cross unfolds organically when you 
-                      honor your design and make decisions correctly. Don't try to force your 
-                      cross - let it emerge through correct living.
-                    </p>
-                  </CardContent>
-                </Card>
-              </>
+            {cross?.livingYourCross && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Living Your Cross</CardTitle>
+                </CardHeader>
+                <CardContent className="prose prose-sm max-w-none">
+                  <p>{cross.livingYourCross}</p>
+                </CardContent>
+              </Card>
             )}
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Cross vs Conditioning</CardTitle>
+              </CardHeader>
+              <CardContent className="prose prose-sm max-w-none">
+                <p>
+                  Your Incarnation Cross is not something you DO - it's something you ARE 
+                  when you're living correctly according to your Strategy and Authority. 
+                  The cross emerges naturally when you're being yourself authentically.
+                </p>
+                <p className="mt-4">
+                  Conditioning often tries to tell you what your purpose "should" be or 
+                  how you "should" contribute. Your cross unfolds organically when you 
+                  honor your design and make decisions correctly. Don't try to force your 
+                  cross - let it emerge through correct living.
+                </p>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="quarter" className="space-y-4">
