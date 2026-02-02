@@ -79,6 +79,12 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
     authority?: string;
     definition?: string;
     incarnationCross?: string;
+    crossGates?: {
+      consciousSun: number;
+      consciousEarth: number;
+      unconsciousSun: number;
+      unconsciousEarth: number;
+    };
     definedCenters?: string[];
     definedChannels?: string[];
   } | null>(initialData ? {
@@ -87,6 +93,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
     authority: initialData.authority,
     definition: initialData.definitionType,
     incarnationCross: initialData.incarnationCross?.name,
+    crossGates: initialData.incarnationCross?.gates,
     definedCenters: initialData.definedCenters,
     definedChannels: initialData.definedChannels,
   } : null);
@@ -252,25 +259,29 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
         crossType = 'Left Angle';
       }
       
-      // Build incarnation cross - use parsed name if available, otherwise generate
-      const crossGates = {
+      // Build incarnation cross gates from Personality/Design Sun/Earth
+      const pEarth = parsedPersonality.find(a => a.planet === 'Earth');
+      const dEarth = parsedDesign.find(a => a.planet === 'Earth');
+      const crossGates = parsedHDData?.crossGates ?? {
         consciousSun: pSun?.gate || 1,
-        consciousEarth: parsedPersonality.find(a => a.planet === 'Earth')?.gate || 2,
+        consciousEarth: pEarth?.gate || 2,
         unconsciousSun: dSun?.gate || 1,
-        unconsciousEarth: parsedDesign.find(a => a.planet === 'Earth')?.gate || 2,
+        unconsciousEarth: dEarth?.gate || 2,
       };
       
-      // If we have a parsed cross name, use it but fix the type based on profile
-      let incarnationCrossName = parsedHDData?.incarnationCross;
-      if (incarnationCrossName) {
-        // Replace incorrect angle type in parsed name with correct one based on profile
-        incarnationCrossName = incarnationCrossName
-          .replace(/^(Right Angle|Left Angle|Juxtaposition)\s+/i, '')
-          .replace(/^Cross of\s+/i, '');
-        incarnationCrossName = `${crossType} Cross of ${incarnationCrossName}`;
-      } else {
-        incarnationCrossName = `${crossType} Cross of Gate ${pSun?.gate || 'Unknown'}`;
+      // Clean the cross name: remove any prefix and embedded gate numbers
+      let baseCrossName = parsedHDData?.incarnationCross || '';
+      baseCrossName = baseCrossName
+        .replace(/^(Right Angle|Left Angle|Juxtaposition)\s+/i, '')
+        .replace(/^Cross of\s+/i, '')
+        .replace(/\s*\(\s*\d{1,2}[\/|]\d{1,2}[^)]*\)\s*/g, '') // remove (A/B | C/D)
+        .trim();
+      
+      if (!baseCrossName) {
+        baseCrossName = `Gate ${crossGates.consciousSun}`;
       }
+
+      const incarnationCrossName = `${crossType} Cross of ${baseCrossName}`;
 
       const chart: HumanDesignChart = {
         id: crypto.randomUUID(),
@@ -377,12 +388,33 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
     const consciousLine = parseInt(profile.split('/')[0]) || 1;
     const crossType = consciousLine <= 3 ? 'Right Angle' : consciousLine === 4 ? 'Juxtaposition' : 'Left Angle';
 
-    const normalizeCrossName = (name?: string) => {
-      if (!name) return undefined;
-      const stripped = name
+    // Get cross gates from Personality/Design Sun/Earth activations
+    const pEarth = personality.find(a => a.planet === 'Earth');
+    const dEarth = design.find(a => a.planet === 'Earth');
+
+    const crossGates = {
+      consciousSun: pSun?.gate || 0,
+      consciousEarth: pEarth?.gate || 0,
+      unconsciousSun: dSun?.gate || 0,
+      unconsciousEarth: dEarth?.gate || 0,
+    };
+
+    // Rebuild the cross label from the gates, ignoring any AI-parsed order issues
+    const buildCrossLabel = (name?: string) => {
+      // Strip existing prefix/gate annotations from the parsed name
+      let baseName = name || '';
+      baseName = baseName
         .replace(/^(Right Angle|Left Angle|Juxtaposition)\s+/i, '')
-        .replace(/^Cross of\s+/i, '');
-      return `${crossType} Cross of ${stripped}`;
+        .replace(/^Cross of\s+/i, '')
+        .replace(/\s*\(\s*\d{1,2}[\/|]\d{1,2}[^)]*\)\s*/g, '') // remove embedded gate numbers
+        .trim();
+      
+      if (!baseName) {
+        baseName = `Gate ${crossGates.consciousSun}`;
+      }
+
+      // Build the label with correct gate order: Personality Sun/Earth | Design Sun/Earth
+      return `${crossType} Cross of ${baseName} (${crossGates.consciousSun}/${crossGates.consciousEarth} | ${crossGates.unconsciousSun}/${crossGates.unconsciousEarth})`;
     };
 
     return {
@@ -391,7 +423,8 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
       strategy: existing?.strategy || calculatedStrategy,
       authority: calculatedAuthority,
       definition: calculatedDefinitionType,
-      incarnationCross: normalizeCrossName(existing?.incarnationCross),
+      incarnationCross: buildCrossLabel(existing?.incarnationCross),
+      crossGates, // Include the gates for easier access
       definedCenters: definedCenters as unknown as string[],
       definedChannels: definedChannels,
     };
