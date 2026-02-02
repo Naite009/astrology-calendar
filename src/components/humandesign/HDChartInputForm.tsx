@@ -228,11 +228,12 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
       console.log('[HD Definition Debug] Parsed definition (ignored):', parsedHDData?.definition);
       console.log('[HD Definition Debug] FINAL definition being saved:', finalDefinition);
 
-      // Get profile from parsed data FIRST, then fallback to Sun lines
+      // Profile MUST be derived from Sun lines for correctness.
+      // Parsed profile strings are a common failure mode when columns are swapped or OCR is noisy.
       const pSun = parsedPersonality.find(a => a.planet === 'Sun');
       const dSun = parsedDesign.find(a => a.planet === 'Sun');
       const calculatedProfile = `${pSun?.line || 1}/${dSun?.line || 1}`;
-      const finalProfile = parsedHDData?.profile || calculatedProfile;
+      const finalProfile = calculatedProfile;
       
       console.log('[HD] Final values:', { finalType, finalProfile, finalAuthority, finalDefinition });
 
@@ -250,6 +251,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
 
       // Determine cross type based on profile (conscious line)
       // Lines 1-3 = Right Angle, Line 4 = Juxtaposition, Lines 5-6 = Left Angle
+      // IMPORTANT: A 6/x profile can NEVER be Juxtaposition.
       const consciousLine = parseInt(finalProfile.split('/')[0]) || 1;
       let crossType: 'Right Angle' | 'Left Angle' | 'Juxtaposition';
       if (consciousLine <= 3) {
@@ -304,7 +306,8 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
       const incarnationCrossName = `${crossType} Cross of ${baseCrossName}`;
 
       const chart: HumanDesignChart = {
-        id: crypto.randomUUID(),
+        // Preserve the existing chart id when editing so we don't create a new identity on update.
+        id: (initialData?.id as string) || crypto.randomUUID(),
         name: formData.name,
         birthDate: formData.birthDate || '',
         birthTime: formData.birthTime || '',
