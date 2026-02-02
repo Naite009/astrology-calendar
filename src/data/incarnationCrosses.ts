@@ -85,6 +85,24 @@ export const incarnationCrosses: IncarnationCross[] = [
     gateIntegration: "Gate 16 (Skills/Enthusiasm) with Gate 9 (Focus/Detail) creates mastery through enthusiastic attention to detail. Gate 37 (Family/Community) and Gate 40 (Aloneness/Restoration) balance community contribution with necessary alone time for restoration and planning.",
     livingYourCross: "Embrace the joy of practice and skill development. Plan strategically while maintaining enthusiasm. Balance community contribution with restorative alone time. Trust that mastery comes through dedicated repetition."
   }
+  ,
+  {
+    name: "Left Angle Cross of Dominion",
+    type: "Left Angle",
+    gates: {
+      consciousSun: 63,
+      consciousEarth: 64,
+      unconsciousSun: 26,
+      unconsciousEarth: 45
+    },
+    quarter: "Mutation",
+    theme: "Transforming collective direction through pressure to prove and lead",
+    description: "This cross carries a transformative drive to question, test, and refine what can be trusted, then translate that insight into influence and stewardship of resources. Your purpose unfolds through challenging assumptions and shaping how leadership and material support are organized.",
+    lifeWork: "To apply discerning pressure (Gate 63/64) to ideas and narratives, then use willpower and persuasion (Gate 26) in service of responsible stewardship and leadership (Gate 45).",
+    collectiveContribution: "Brings the gift of critical inquiry and visionary insight, helping communities reorganize authority, resources, and trust through more honest leadership structures.",
+    gateIntegration: "Gate 63 (Doubt) and Gate 64 (Confusion) generate pressure to find truth and clarity. Gate 26 (Egoist/Trickster) provides the capacity to persuade and transmit value. Gate 45 (Gatherer/King/Queen) anchors leadership and the management of collective resources.",
+    livingYourCross: "Let doubt and confusion do their job: pressure creates clarity. Share only what you can stand behind. Use persuasion ethically, and lead by organizing resources in ways that build trust. Your impact is transpersonal—your questions and stewardship change others’ direction."
+  }
 ];
 
 export function determineIncarnationCross(
