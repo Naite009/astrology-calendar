@@ -635,7 +635,14 @@ export function calculateIncarnationCross(
     consciousSun, consciousEarth, unconsciousSun, unconsciousEarth
   });
   
-  // Try to find exact match in database
+  // Cross ANGLE (Right/Left/Juxtaposition) MUST come from the conscious profile line.
+  // Even with a database match, we never trust a stored angle label because it can be
+  // wrong/incomplete and would create impossible combos (e.g., 6/x saved as Juxtaposition).
+  const [consciousLine] = profile.split('/').map(Number);
+  const derivedCrossType: 'Right Angle' | 'Left Angle' | 'Juxtaposition' =
+    consciousLine <= 3 ? 'Right Angle' : consciousLine === 4 ? 'Juxtaposition' : 'Left Angle';
+
+  // Try to find exact match in database (for the *base name* + theme text)
   const foundCross = lookupIncarnationCross(
     consciousSun, 
     consciousEarth, 
@@ -645,16 +652,26 @@ export function calculateIncarnationCross(
   
   if (foundCross) {
     console.log('[HD Cross] Found exact match:', foundCross.name);
+
+    // Normalize the name so the prefix always matches the derived cross type
+    const baseName = foundCross.name
+      .replace(/^(Right Angle|Left Angle|Juxtaposition)\s+/i, '')
+      .replace(/^Cross of\s+/i, '')
+      .trim();
+
+    const normalizedName = `${derivedCrossType} Cross of ${baseName || `Gate ${consciousSun}`}`;
+
     return {
-      name: foundCross.name,
-      type: foundCross.type,
+      name: normalizedName,
+      type: derivedCrossType,
       gates: {
         consciousSun,
         consciousEarth,
         unconsciousSun,
         unconsciousEarth,
       },
-      quarter: foundCross.quarter,
+      // Quarter is deterministically derived from the Sun gate; keep DB value if present.
+      quarter: foundCross.quarter || determineQuarterFromGate(consciousSun),
     };
   }
   
@@ -662,16 +679,7 @@ export function calculateIncarnationCross(
   console.log('[HD Cross] No exact match, generating name from gates');
   
   // Determine cross type based on profile
-  const [consciousLine] = profile.split('/').map(Number);
-  let crossType: 'Right Angle' | 'Left Angle' | 'Juxtaposition';
-  
-  if (consciousLine <= 3) {
-    crossType = 'Right Angle';
-  } else if (consciousLine === 4) {
-    crossType = 'Juxtaposition';
-  } else {
-    crossType = 'Left Angle';
-  }
+  const crossType = derivedCrossType;
   
   // Determine quarter using improved logic
   const quarter = determineQuarterFromGate(consciousSun);
