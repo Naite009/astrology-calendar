@@ -9,6 +9,7 @@ import {
   determineAuthority,
   determineStrategy
 } from '@/lib/humanDesignCalculator';
+import { determineIncarnationCross as lookupIncarnationCross, determineQuarter } from '@/data/incarnationCrosses';
 import { HumanDesignChart, HDPlanetaryActivation, HDGateActivation } from '@/types/humanDesign';
 import { getTimezoneInfoForDate, lookupTimezone } from '@/lib/timezoneUtils';
 import { supabase } from '@/integrations/supabase/client';
@@ -262,7 +263,9 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
       // Build incarnation cross gates from Personality/Design Sun/Earth
       const pEarth = parsedPersonality.find(a => a.planet === 'Earth');
       const dEarth = parsedDesign.find(a => a.planet === 'Earth');
-      const crossGates = parsedHDData?.crossGates ?? {
+      // IMPORTANT: gates are ALWAYS derived from Personality Sun/Earth + Design Sun/Earth.
+      // Never prefer parsed/previously-selected crossGates here (that is the source of gate-order mixups).
+      const crossGates = {
         consciousSun: pSun?.gate || 1,
         consciousEarth: pEarth?.gate || 2,
         unconsciousSun: dSun?.gate || 1,
@@ -276,6 +279,23 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
         .replace(/^Cross of\s+/i, '')
         .replace(/\s*\(\s*\d{1,2}[\/|]\d{1,2}[^)]*\)\s*/g, '') // remove (A/B | C/D)
         .trim();
+
+      // If the user didn't type/select a usable name, try to resolve it from our cross database
+      // using the *derived* gates.
+      if (!baseCrossName) {
+        const matched = lookupIncarnationCross(
+          crossGates.consciousSun,
+          crossGates.consciousEarth,
+          crossGates.unconsciousSun,
+          crossGates.unconsciousEarth
+        );
+        if (matched?.name) {
+          baseCrossName = matched.name
+            .replace(/^(Right Angle|Left Angle|Juxtaposition)\s+/i, '')
+            .replace(/^Cross of\s+/i, '')
+            .trim();
+        }
+      }
       
       if (!baseCrossName) {
         baseCrossName = `Gate ${crossGates.consciousSun}`;
@@ -308,7 +328,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
           name: incarnationCrossName,
           type: crossType,
           gates: crossGates,
-          quarter: 'Initiation',
+           quarter: determineQuarter(crossGates.consciousSun),
         },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
