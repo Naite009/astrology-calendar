@@ -27,10 +27,26 @@ interface IncarnationCrossComboboxProps {
   }) => void;
 }
 
-// Helper to format cross display with gates
+// Helper to format cross display with gates - gate numbers FIRST for easier matching
 const formatCrossLabel = (cross: IncarnationCross): string => {
   const { consciousSun, consciousEarth, unconsciousSun, unconsciousEarth } = cross.gates;
   return `${cross.name} (${consciousSun}/${consciousEarth} | ${unconsciousSun}/${unconsciousEarth})`;
+};
+
+// Helper to find cross by gates (exact match)
+export const findCrossByGates = (
+  consciousSun: number,
+  consciousEarth: number,
+  unconsciousSun: number,
+  unconsciousEarth: number
+): IncarnationCross | undefined => {
+  return incarnationCrosses.find(
+    cross =>
+      cross.gates.consciousSun === consciousSun &&
+      cross.gates.consciousEarth === consciousEarth &&
+      cross.gates.unconsciousSun === unconsciousSun &&
+      cross.gates.unconsciousEarth === unconsciousEarth
+  );
 };
 
 export const IncarnationCrossCombobox = ({ value, onChange }: IncarnationCrossComboboxProps) => {
@@ -38,14 +54,42 @@ export const IncarnationCrossCombobox = ({ value, onChange }: IncarnationCrossCo
   const [searchQuery, setSearchQuery] = useState('');
   const [manualInput, setManualInput] = useState(false);
 
-  // Filter crosses based on search
+  // Filter and sort crosses based on search - prioritize exact gate matches
   const filteredCrosses = useMemo(() => {
     if (!searchQuery) return incarnationCrosses;
-    const query = searchQuery.toLowerCase();
-    return incarnationCrosses.filter(cross => 
-      cross.name.toLowerCase().includes(query) ||
-      formatCrossLabel(cross).toLowerCase().includes(query)
-    );
+    const query = searchQuery.toLowerCase().trim();
+    
+    // Check if query contains gate numbers (e.g., "63/64" or "63 64" or just "63")
+    const gateNumbers = query.match(/\d+/g)?.map(Number) || [];
+    
+    const filtered = incarnationCrosses.filter(cross => {
+      const nameMatch = cross.name.toLowerCase().includes(query);
+      const labelMatch = formatCrossLabel(cross).toLowerCase().includes(query);
+      
+      // Gate number matching
+      const crossGates = [
+        cross.gates.consciousSun,
+        cross.gates.consciousEarth,
+        cross.gates.unconsciousSun,
+        cross.gates.unconsciousEarth
+      ];
+      const gateMatch = gateNumbers.length > 0 && gateNumbers.every(g => crossGates.includes(g));
+      
+      return nameMatch || labelMatch || gateMatch;
+    });
+    
+    // Sort: exact gate matches first, then alphabetical
+    return filtered.sort((a, b) => {
+      const aGates = [a.gates.consciousSun, a.gates.consciousEarth, a.gates.unconsciousSun, a.gates.unconsciousEarth];
+      const bGates = [b.gates.consciousSun, b.gates.consciousEarth, b.gates.unconsciousSun, b.gates.unconsciousEarth];
+      
+      const aGateMatch = gateNumbers.length > 0 && gateNumbers.every(g => aGates.includes(g));
+      const bGateMatch = gateNumbers.length > 0 && gateNumbers.every(g => bGates.includes(g));
+      
+      if (aGateMatch && !bGateMatch) return -1;
+      if (!aGateMatch && bGateMatch) return 1;
+      return a.name.localeCompare(b.name);
+    });
   }, [searchQuery]);
 
   // Find selected cross from database
