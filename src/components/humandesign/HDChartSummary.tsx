@@ -32,6 +32,14 @@ const AUTHORITY_DESCRIPTIONS: Record<string, string> = {
 };
 
 export const HDChartSummary = ({ chart }: HDChartSummaryProps) => {
+  const crossDisplayName = (() => {
+    const typePrefix = `${chart.incarnationCross.type} `;
+    // Some saved cross names already include the type (e.g., "Left Angle Cross of Dominion").
+    // Avoid rendering "Left Angle Left Angle ...".
+    if (chart.incarnationCross.name?.startsWith(typePrefix)) return chart.incarnationCross.name;
+    return `${chart.incarnationCross.type} ${chart.incarnationCross.name}`;
+  })();
+
   return (
     <div className="space-y-6">
       {/* Type Card */}
@@ -90,7 +98,7 @@ export const HDChartSummary = ({ chart }: HDChartSummaryProps) => {
           Incarnation Cross
         </span>
         <p className="mt-2 text-sm font-medium text-foreground">
-          {chart.incarnationCross.type} {chart.incarnationCross.name}
+          {crossDisplayName}
         </p>
         <div className="mt-2 flex gap-2 text-xs text-muted-foreground">
           <span>☉ {chart.incarnationCross.gates.consciousSun}</span>
