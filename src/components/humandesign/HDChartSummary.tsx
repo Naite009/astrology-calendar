@@ -103,8 +103,8 @@ export const HDChartSummary = ({ chart }: HDChartSummaryProps) => {
         <div className="mt-2 flex gap-2 text-xs text-muted-foreground">
           <span>☉ {chart.incarnationCross.gates.consciousSun}</span>
           <span>⊕ {chart.incarnationCross.gates.consciousEarth}</span>
-          <span className="text-red-400">☉ {chart.incarnationCross.gates.unconsciousSun}</span>
-          <span className="text-red-400">⊕ {chart.incarnationCross.gates.unconsciousEarth}</span>
+          <span className="text-destructive">☉ {chart.incarnationCross.gates.unconsciousSun}</span>
+          <span className="text-destructive">⊕ {chart.incarnationCross.gates.unconsciousEarth}</span>
         </div>
       </div>
 
