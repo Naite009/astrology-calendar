@@ -20,7 +20,8 @@ export function IncarnationCrossAnalysis({ chart }: IncarnationCrossAnalysisProp
     chart.incarnationCross.gates.consciousSun,
     chart.incarnationCross.gates.consciousEarth,
     chart.incarnationCross.gates.unconsciousSun,
-    chart.incarnationCross.gates.unconsciousEarth
+    chart.incarnationCross.gates.unconsciousEarth,
+    chart.incarnationCross.type
   );
 
   const quarter = quarterDescriptions[chart.incarnationCross.quarter];

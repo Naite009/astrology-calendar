@@ -647,7 +647,8 @@ export function calculateIncarnationCross(
     consciousSun, 
     consciousEarth, 
     unconsciousSun, 
-    unconsciousEarth
+    unconsciousEarth,
+    derivedCrossType
   );
   
   if (foundCross) {
