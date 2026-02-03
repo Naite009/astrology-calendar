@@ -274,29 +274,29 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
         unconsciousEarth: dEarth?.gate || 2,
       };
       
-      // Clean the cross name: remove any prefix and embedded gate numbers
-      let baseCrossName = parsedHDData?.incarnationCross || '';
-      baseCrossName = baseCrossName
-        .replace(/^(Right Angle|Left Angle|Juxtaposition)\s+/i, '')
+      // Always resolve the cross name from our database using the derived Sun/Earth gates.
+      // The image parser's cross name text is a frequent failure mode (OCR noise, swapped columns,
+      // or incomplete naming) and should never override the canonical gate-based match.
+      const matched = lookupIncarnationCross(
+        crossGates.consciousSun,
+        crossGates.consciousEarth,
+        crossGates.unconsciousSun,
+        crossGates.unconsciousEarth,
+        crossType
+      );
+
+      let baseCrossName = matched?.name
+        ?.replace(/^(Right Angle|Left Angle|Juxtaposition)\s+/i, '')
         .replace(/^Cross of\s+/i, '')
-        .replace(/\s*\(\s*\d{1,2}[\/|]\d{1,2}[^)]*\)\s*/g, '') // remove (A/B | C/D)
         .trim();
 
-      // If the user didn't type/select a usable name, try to resolve it from our cross database
-      // using the *derived* gates.
+      // Fallback: if no canonical match exists, use a cleaned parsed value (if present).
       if (!baseCrossName) {
-        const matched = lookupIncarnationCross(
-          crossGates.consciousSun,
-          crossGates.consciousEarth,
-          crossGates.unconsciousSun,
-          crossGates.unconsciousEarth
-        );
-        if (matched?.name) {
-          baseCrossName = matched.name
-            .replace(/^(Right Angle|Left Angle|Juxtaposition)\s+/i, '')
-            .replace(/^Cross of\s+/i, '')
-            .trim();
-        }
+        baseCrossName = (parsedHDData?.incarnationCross || '')
+          .replace(/^(Right Angle|Left Angle|Juxtaposition)\s+/i, '')
+          .replace(/^Cross of\s+/i, '')
+          .replace(/\s*\(\s*\d{1,2}[\/|]\d{1,2}[^)]*\)\s*/g, '') // remove (A/B | C/D)
+          .trim();
       }
       
       if (!baseCrossName) {

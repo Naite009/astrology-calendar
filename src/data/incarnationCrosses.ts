@@ -1451,15 +1451,25 @@ export function determineIncarnationCross(
   consciousSun: number,
   consciousEarth: number,
   unconsciousSun: number,
-  unconsciousEarth: number
+  unconsciousEarth: number,
+  preferredType?: IncarnationCross['type']
 ): IncarnationCross | undefined {
-  return incarnationCrosses.find(
-    cross =>
+  // Some datasets may include multiple entries with identical gate sets but different
+  // cross geometries (Right/Left/Juxtaposition). When we *know* the geometry from the
+  // profile line, prefer an entry that matches that type.
+  const matches = incarnationCrosses.filter(
+    (cross) =>
       cross.gates.consciousSun === consciousSun &&
       cross.gates.consciousEarth === consciousEarth &&
       cross.gates.unconsciousSun === unconsciousSun &&
       cross.gates.unconsciousEarth === unconsciousEarth
   );
+
+  if (!matches.length) return undefined;
+  if (preferredType) {
+    return matches.find((m) => m.type === preferredType) ?? matches[0];
+  }
+  return matches[0];
 }
 
 export function determineQuarter(sunGate: number): 'Initiation' | 'Civilization' | 'Duality' | 'Mutation' {
