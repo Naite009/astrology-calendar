@@ -422,14 +422,22 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
       unconsciousEarth: dEarth?.gate || 0,
     };
 
-    // Rebuild the cross label from the gates, ignoring any AI-parsed order issues
-    const buildCrossLabel = (name?: string) => {
-      // Strip existing prefix/gate annotations from the parsed name
-      let baseName = name || '';
+    // CRITICAL: Always look up the canonical cross name from the database using the derived gates.
+    // The AI-parsed cross name is a frequent failure mode (OCR noise, wrong cross entirely).
+    const matchedCross = lookupIncarnationCross(
+      crossGates.consciousSun,
+      crossGates.consciousEarth,
+      crossGates.unconsciousSun,
+      crossGates.unconsciousEarth,
+      crossType
+    );
+
+    const buildCrossLabel = () => {
+      // Use the database-matched cross name, stripped of any prefix
+      let baseName = matchedCross?.name || '';
       baseName = baseName
         .replace(/^(Right Angle|Left Angle|Juxtaposition)\s+/i, '')
         .replace(/^Cross of\s+/i, '')
-        .replace(/\s*\(\s*\d{1,2}[\/|]\d{1,2}[^)]*\)\s*/g, '') // remove embedded gate numbers
         .trim();
       
       if (!baseName) {
@@ -446,7 +454,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
       strategy: existing?.strategy || calculatedStrategy,
       authority: calculatedAuthority,
       definition: calculatedDefinitionType,
-      incarnationCross: buildCrossLabel(existing?.incarnationCross),
+      incarnationCross: buildCrossLabel(),
       crossGates, // Include the gates for easier access
       definedCenters: definedCenters as unknown as string[],
       definedChannels: definedChannels,
