@@ -733,18 +733,19 @@ Keep the tone professional, insightful, and practically applicable.`
                     <Moon className="h-6 w-6 mx-auto mb-2 text-primary" />
                     <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Moon Position</p>
                     {(() => {
-                      const moonSignLabel = (currentMoonSign || planets.moon?.sign || "").toString();
+                      const moonSignLabel = (currentMoonSign || planets.moon?.sign || "Unknown").toString();
                       return (
                         <>
                           <p className="text-3xl leading-none">
                             {ZODIAC_SYMBOLS[moonSignLabel] || ""}
                           </p>
 
-                          {/* Sign name directly under glyph, above degrees */}
+                          {/* Sign name clearly visible under glyph */}
+                          <p className="mt-1 font-medium text-foreground">
+                            {moonSignLabel}
+                          </p>
+
                           <p className="text-lg font-bold text-primary mt-1">
-                            <span className="block text-sm font-medium text-foreground">
-                              {moonSignLabel}
-                            </span>
                             {formatDegreeMinutes(currentMoonDegree, currentMoonMinutes)}
                           </p>
                         </>
@@ -760,7 +761,7 @@ Keep the tone professional, insightful, and practically applicable.`
                     <Sun className="h-6 w-6 mx-auto mb-2 text-amber-500" />
                     <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Sun Position</p>
                     {(() => {
-                      const sunSignLabel = ((currentPlanets?.sun?.sign || planets.sun?.sign) || "").toString();
+                      const sunSignLabel = ((currentPlanets?.sun?.sign || planets.sun?.sign) || "Unknown").toString();
                       const sunDegrees = currentPlanets?.sun?.rawDegree || currentPlanets?.sun?.degree || planets.sun?.degree || 0;
                       return (
                         <>
@@ -768,11 +769,12 @@ Keep the tone professional, insightful, and practically applicable.`
                             {ZODIAC_SYMBOLS[sunSignLabel] || ""}
                           </p>
 
-                          {/* Sign name directly under glyph, above degrees */}
+                          {/* Sign name clearly visible under glyph */}
+                          <p className="mt-1 font-medium text-foreground">
+                            {sunSignLabel}
+                          </p>
+
                           <p className="text-lg font-bold text-amber-600 mt-1">
-                            <span className="block text-sm font-medium text-foreground">
-                              {sunSignLabel}
-                            </span>
                             {formatDegreeMinutes(sunDegrees, currentPlanets?.sun?.minutes)}
                           </p>
                         </>
