@@ -1288,10 +1288,10 @@ Keep the tone professional, insightful, and practically applicable.`
                           <p className="text-xs font-medium text-muted-foreground mb-1">{day.dayName}</p>
                           <p className="text-xs text-muted-foreground">{day.dateStr}</p>
                           <div className="my-2 text-2xl">{getMoonPhaseEmoji(day.moonPhase)}</div>
-                          <p className="text-sm font-medium">
-                            {ZODIAC_SYMBOLS[day.moonSign]}
+                          <p className="text-3xl font-medium flex items-center justify-center gap-1">
+                            <span>{ZODIAC_SYMBOLS[day.moonSign]}</span>
+                            <span className="text-sm">{day.moonSign}</span>
                           </p>
-                          <p className="text-xs text-muted-foreground">{day.moonSign}</p>
                           {weekDayLoading === idx && (
                             <Loader2 className="h-3 w-3 animate-spin mx-auto mt-1 text-primary" />
                           )}
@@ -1342,9 +1342,9 @@ Keep the tone professional, insightful, and practically applicable.`
                             <span className="text-4xl">{planetGlyph}</span>
                             <span className="text-sm font-medium text-foreground">{displayName}</span>
                           </span>
-                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <span className="text-base">{ZODIAC_SYMBOLS[data.sign] || ''}</span>
-                            <span>{data.sign}</span>
+                          <span className="flex items-center gap-1.5">
+                            <span className="text-3xl">{ZODIAC_SYMBOLS[data.sign] || ''}</span>
+                            <span className="text-sm">{data.sign}</span>
                           </span>
                           <span className="text-primary font-medium text-xs">
                             {data.degree}°{displayMinutes.toString().padStart(2, '0')}'
