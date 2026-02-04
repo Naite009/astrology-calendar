@@ -60,6 +60,10 @@ export const CosmicWeatherBanner = ({
   const [loading, setLoading] = useState(false);
   const hasFetched = useRef(false);
 
+  // Create a stable cache key based on the date
+  const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  const cacheKey = `cosmic-day-weather-${dateKey}`;
+
   // Determine the correct moon sign to use:
   // - For an exact lunar event, use exactLunarPhase.sign
   // - Otherwise use the current transiting moon sign
@@ -83,6 +87,20 @@ export const CosmicWeatherBanner = ({
 
   const fetchInsights = async () => {
     if (loading || hasFetched.current) return;
+    
+    // Check localStorage cache first
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        setAiInsights(parsed.insight);
+        hasFetched.current = true;
+        return;
+      } catch (e) {
+        console.error('Failed to parse cached day weather:', e);
+        // Continue to fetch fresh data
+      }
+    }
     
     setLoading(true);
     hasFetched.current = true;
@@ -120,6 +138,12 @@ export const CosmicWeatherBanner = ({
         hasFetched.current = false;
         return;
       }
+
+      // Save to localStorage cache
+      localStorage.setItem(cacheKey, JSON.stringify({
+        insight: data.insight,
+        generatedAt: new Date().toISOString()
+      }));
 
       setAiInsights(data.insight);
     } catch (err) {
