@@ -139,9 +139,10 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
 
   // Extract aspects with planet pairs for the aspect filter UI
   const chartAspects = useMemo(() => {
-    if (!selectedChart?.planets) return { byType: new Map<string, string[]>(), allAspectTypes: [] as string[] };
+    if (!selectedChart?.planets) return { byType: new Map<string, string[]>(), allAspectTypes: [] as string[], allPairs: [] as { p1: string; p2: string; aspect: string }[] };
     
     const byType = new Map<string, string[]>();
+    const allPairs: { p1: string; p2: string; aspect: string }[] = [];
     const planetNames = Object.keys(selectedChart.planets) as (keyof typeof selectedChart.planets)[];
     const planetData: { name: string; sign: string; degree: number }[] = [];
     
@@ -159,13 +160,37 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
         if (aspect) {
           if (!byType.has(aspect)) byType.set(aspect, []);
           byType.get(aspect)!.push(`${p1.name}-${p2.name}`);
+          allPairs.push({ p1: p1.name, p2: p2.name, aspect });
         }
       }
     }
     
     const allAspectTypes = ['Conjunction', 'Sextile', 'Square', 'Trine', 'Opposition'].filter(a => byType.has(a));
-    return { byType, allAspectTypes };
+    return { byType, allAspectTypes, allPairs };
   }, [selectedChart]);
+
+  // Calculate aspect modifier coverage for the chart
+  const aspectCoverage = useMemo(() => {
+    if (!chartAspects.allPairs.length) return { withModifiers: [], universal: [] };
+    
+    const withModifiers: { p1: string; p2: string; aspect: string; modifierName: string }[] = [];
+    const universal: { p1: string; p2: string; aspect: string }[] = [];
+    
+    for (const pair of chartAspects.allPairs) {
+      const modifier = findAspectModifiers(pair.p1, pair.p2);
+      if (modifier) {
+        const specificAspect = modifier.aspects.find(a => a.aspectType === pair.aspect);
+        withModifiers.push({
+          ...pair,
+          modifierName: specificAspect?.name || modifier.coreSignature
+        });
+      } else {
+        universal.push(pair);
+      }
+    }
+    
+    return { withModifiers, universal };
+  }, [chartAspects.allPairs]);
 
 
   const retrogradePlanets = useMemo(() => {
@@ -992,6 +1017,61 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                     {chartAspects.byType.get(selectedAspectFilter)!.slice(0, 8).join(', ')}
                     {(chartAspects.byType.get(selectedAspectFilter)!.length > 8) && 
                       ` +${chartAspects.byType.get(selectedAspectFilter)!.length - 8} more`}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Aspect Modifier Coverage Display */}
+            {selectedChart && chartAspects.allPairs.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-primary/20">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <span className="text-xs font-medium text-foreground">Your Aspect Interpretation Coverage</span>
+                  <Badge variant="outline" className="text-[10px] bg-primary/10 border-primary/30">
+                    {aspectCoverage.withModifiers.length}/{chartAspects.allPairs.length} detailed
+                  </Badge>
+                </div>
+                
+                {/* Detailed modifiers available */}
+                {aspectCoverage.withModifiers.length > 0 && (
+                  <div className="mb-3">
+                    <p className="text-[10px] text-muted-foreground mb-1.5 uppercase tracking-wide">✦ With Detailed Aspect-Specific Interpretations:</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {aspectCoverage.withModifiers.map((pair, i) => {
+                        const aspectSymbol = ASPECT_SYMBOLS[pair.aspect] || '';
+                        return (
+                          <Badge 
+                            key={i} 
+                            className="text-[10px] bg-primary/20 text-primary border-primary/30 hover:bg-primary/30 cursor-default"
+                          >
+                            {getPlanetSymbol(pair.p1)} {aspectSymbol} {getPlanetSymbol(pair.p2)}
+                            <span className="ml-1 opacity-70">{pair.modifierName}</span>
+                          </Badge>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Universal only */}
+                {aspectCoverage.universal.length > 0 && (
+                  <div>
+                    <p className="text-[10px] text-muted-foreground mb-1.5 uppercase tracking-wide">○ Universal Energy (No Aspect-Specific Data Yet):</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {aspectCoverage.universal.map((pair, i) => {
+                        const aspectSymbol = ASPECT_SYMBOLS[pair.aspect] || '';
+                        return (
+                          <Badge 
+                            key={i} 
+                            variant="outline"
+                            className="text-[10px] opacity-60 cursor-default"
+                          >
+                            {getPlanetSymbol(pair.p1)} {aspectSymbol} {getPlanetSymbol(pair.p2)}
+                          </Badge>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>
