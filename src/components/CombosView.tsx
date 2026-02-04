@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { 
   PLANETS, 
   SIGNS, 
@@ -19,7 +20,7 @@ import {
   findExactCombination,
   CombinationEntry 
 } from '@/lib/planetaryCombinations';
-import { Sun, Moon, X, Sparkles, AlertTriangle, Heart, Zap, BookOpen, Filter, User, Check, RotateCcw } from 'lucide-react';
+import { Sun, Moon, X, Sparkles, AlertTriangle, Heart, Zap, BookOpen, Filter, User, Check, RotateCcw, ChevronDown } from 'lucide-react';
 import { getPlanetSymbol } from '@/components/PlanetSymbol';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { getNatalPlanetHouse } from '@/lib/houseCalculations';
@@ -28,6 +29,7 @@ import {
   getRetrogradeInterpretation,
   RETROGRADE_SIGN_COMBOS 
 } from '@/lib/retrogradeSignCombinations';
+import { findAspectModifiers, ASPECT_SYMBOLS, AspectModifier } from '@/lib/aspectModifiers';
 
 const SIGN_SYMBOLS: Record<string, string> = {
   'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊', 'Cancer': '♋',
@@ -509,6 +511,36 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
     const retrogradeInCombo = [...new Set([...chartRetroInCombo, ...manualRetroInCombo])];
     const hasRetrogradeContext = retrogradeInCombo.length > 0;
 
+    // Check for aspect modifiers for planet-planet combos
+    const getAspectModifierData = () => {
+      if (comboPlanets.length !== 2) return null;
+      
+      const [p1, p2] = comboPlanets;
+      const modifierPair = findAspectModifiers(p1, p2);
+      if (!modifierPair) return null;
+      
+      // Find what aspect this pair has in the selected chart
+      let userAspectType: string | null = null;
+      if (selectedChart && chartFactors.size > 0) {
+        for (const aspectType of ['Conjunction', 'Sextile', 'Square', 'Trine', 'Opposition']) {
+          if (chartFactors.has(`${p1}|${p2}|${aspectType}`) || chartFactors.has(`${p2}|${p1}|${aspectType}`)) {
+            userAspectType = aspectType;
+            break;
+          }
+        }
+      }
+      
+      return {
+        pair: modifierPair,
+        userAspect: userAspectType,
+        userModifier: userAspectType 
+          ? modifierPair.aspects.find(a => a.aspectType === userAspectType) || null
+          : null
+      };
+    };
+    
+    const aspectModifierData = getAspectModifierData();
+
     return (
       <Card key={combo.id} className={`border-border ${isMatch ? 'ring-2 ring-primary/50 bg-primary/5' : ''}`}>
         <CardHeader className="pb-3">
@@ -547,8 +579,91 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground leading-relaxed">
-            {combo.summary}
+            {aspectModifierData ? aspectModifierData.pair.coreDescription : combo.summary}
           </p>
+
+          {/* Aspect-Specific Expression - Show when we have aspect modifier data */}
+          {aspectModifierData && (
+            <div className="space-y-3">
+              {/* User's specific aspect */}
+              {aspectModifierData.userModifier && selectedChart && (
+                <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge className="bg-primary text-primary-foreground text-xs">
+                      {ASPECT_SYMBOLS[aspectModifierData.userAspect!]} {aspectModifierData.userAspect} in Your Chart
+                    </Badge>
+                  </div>
+                  <h4 className="font-medium text-sm mb-1">{aspectModifierData.userModifier.name}</h4>
+                  <p className="text-xs text-primary italic mb-2">{aspectModifierData.userModifier.tone}</p>
+                  <p className="text-sm text-foreground/80 mb-3">{aspectModifierData.userModifier.description}</p>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <div>
+                      <h5 className="text-xs font-medium text-primary mb-1">Your Gifts:</h5>
+                      <ul className="space-y-0.5">
+                        {aspectModifierData.userModifier.gifts.map((gift, i) => (
+                          <li key={i} className="text-xs text-foreground/70 flex items-start gap-1">
+                            <span className="text-primary">✦</span> {gift}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-medium text-destructive mb-1">Your Challenges:</h5>
+                      <ul className="space-y-0.5">
+                        {aspectModifierData.userModifier.challenges.map((challenge, i) => (
+                          <li key={i} className="text-xs text-foreground/70 flex items-start gap-1">
+                            <span className="text-destructive">•</span> {challenge}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* All aspects dropdown */}
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="aspects" className="border-border">
+                  <AccordionTrigger className="text-xs font-medium text-muted-foreground hover:text-foreground py-2">
+                    <span className="flex items-center gap-2">
+                      <span>View all aspect expressions</span>
+                      <span className="text-[10px] text-muted-foreground">
+                        ☌ ⚹ □ △ ☍
+                      </span>
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="space-y-3 pt-2">
+                      {aspectModifierData.pair.aspects.map((aspect) => (
+                        <div 
+                          key={aspect.aspectType} 
+                          className={`p-3 rounded-lg border ${
+                            aspectModifierData.userAspect === aspect.aspectType 
+                              ? 'bg-primary/5 border-primary/30' 
+                              : 'bg-muted/30 border-border'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <h5 className="text-sm font-medium flex items-center gap-2">
+                              <span className="text-lg">{aspect.symbol}</span>
+                              {aspect.name}
+                              {aspectModifierData.userAspect === aspect.aspectType && (
+                                <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-primary/10 border-primary/30">
+                                  Your Aspect
+                                </Badge>
+                              )}
+                            </h5>
+                          </div>
+                          <p className="text-xs italic text-muted-foreground mb-2">{aspect.tone}</p>
+                          <p className="text-xs text-foreground/70">{aspect.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </div>
+          )}
           
           {/* Retrograde Energy Section - show when planet has retrograde context */}
           {hasRetrogradeContext && retrogradeInCombo.map(planet => {
