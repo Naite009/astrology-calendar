@@ -5,6 +5,8 @@ import { useUserData } from '@/hooks/useUserData';
 import { HDChartInputForm } from './HDChartInputForm';
 import { HDChartSummary } from './HDChartSummary';
 import { HDActivationsTable } from './HDActivationsTable';
+import { HDGatesTab } from './HDGatesTab';
+import { HDChannelsTab } from './HDChannelsTab';
 import { Bodygraph } from './Bodygraph';
 import { CentersAnalysis } from './CentersAnalysis';
 import { ProfileAnalysis } from './ProfileAnalysis';
@@ -22,7 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-type HDTab = 'overview' | 'type' | 'authority' | 'profile' | 'centers' | 'cross' | 'variables' | 'activations' | 'bodygraph';
+type HDTab = 'overview' | 'type' | 'authority' | 'profile' | 'centers' | 'gates' | 'channels' | 'cross' | 'variables' | 'activations' | 'bodygraph';
 
 export const HumanDesignView = () => {
   const { charts, selectedChart, addChart, updateChart, deleteChart, selectChart } = useHumanDesignChart();
@@ -155,7 +157,7 @@ export const HumanDesignView = () => {
           </div>
 
           <div className="flex gap-1 border-b border-border overflow-x-auto">
-            {(['overview', 'type', 'authority', 'profile', 'centers', 'cross', 'variables', 'activations', 'bodygraph'] as const).map(tab => (
+            {(['overview', 'type', 'authority', 'profile', 'centers', 'gates', 'channels', 'cross', 'variables', 'activations', 'bodygraph'] as const).map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -165,7 +167,10 @@ export const HumanDesignView = () => {
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                {tab === 'bodygraph' ? 'Chart' : tab === 'cross' ? 'Incarnation Cross' : tab === 'variables' ? 'Variables (PHS)' : tab}
+                {tab === 'bodygraph' ? 'Chart' : 
+                 tab === 'cross' ? 'Incarnation Cross' : 
+                 tab === 'variables' ? 'Variables (PHS)' : 
+                 tab}
               </button>
             ))}
           </div>
@@ -176,6 +181,8 @@ export const HumanDesignView = () => {
           {activeTab === 'authority' && <AuthorityGuide chart={selectedChart} />}
           {activeTab === 'profile' && <ProfileAnalysis chart={selectedChart} />}
           {activeTab === 'centers' && <CentersAnalysis chart={selectedChart} />}
+          {activeTab === 'gates' && <HDGatesTab chart={selectedChart} />}
+          {activeTab === 'channels' && <HDChannelsTab chart={selectedChart} />}
           {activeTab === 'cross' && <IncarnationCrossAnalysis chart={selectedChart} />}
           {activeTab === 'variables' && <VariablesAnalysis chart={selectedChart} />}
 
