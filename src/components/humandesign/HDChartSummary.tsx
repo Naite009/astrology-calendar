@@ -31,6 +31,18 @@ const AUTHORITY_DESCRIPTIONS: Record<string, string> = {
   'Lunar': 'Wait 29 days for major decisions',
 };
 
+// Show fuller authority labels for display
+const AUTHORITY_DISPLAY_LABELS: Record<string, string> = {
+  'Emotional': 'Emotional (Solar Plexus)',
+  'Sacral': 'Sacral',
+  'Splenic': 'Splenic',
+  'Ego Manifested': 'Ego Manifested',
+  'Ego Projected': 'Ego Projected',
+  'Self-Projected': 'Self-Projected',
+  'Mental': 'Mental/Environmental',
+  'Lunar': 'Lunar',
+};
+
 export const HDChartSummary = ({ chart }: HDChartSummaryProps) => {
   const crossDisplayName = (() => {
     const typePrefix = `${chart.incarnationCross.type} `;
@@ -66,7 +78,9 @@ export const HDChartSummary = ({ chart }: HDChartSummaryProps) => {
         {/* Authority */}
         <div className="rounded border border-border bg-card p-4">
           <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Authority</span>
-          <p className="mt-2 text-sm font-medium text-foreground">{chart.authority}</p>
+          <p className="mt-2 text-sm font-medium text-foreground">
+            {AUTHORITY_DISPLAY_LABELS[chart.authority] || chart.authority}
+          </p>
         </div>
 
         {/* Profile */}
