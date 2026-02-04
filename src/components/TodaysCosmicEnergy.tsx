@@ -16,7 +16,6 @@ import { CosmicRecipeCard, parseRecipeFromContent } from "./CosmicRecipeCard";
 import { useNatalChart, NatalChart } from "@/hooks/useNatalChart";
 import { PersonalizedTransitsPanel } from "./PersonalizedTransitsPanel";
 import { WeeklyMealPlanCard } from "./WeeklyMealPlanCard";
-import { getPlanetSymbol } from "./PlanetSymbol";
 
 const ZODIAC_SYMBOLS: Record<string, string> = {
   Aries: "♈", Taurus: "♉", Gemini: "♊", Cancer: "♋",
@@ -1288,10 +1287,10 @@ Keep the tone professional, insightful, and practically applicable.`
                           <p className="text-xs font-medium text-muted-foreground mb-1">{day.dayName}</p>
                           <p className="text-xs text-muted-foreground">{day.dateStr}</p>
                           <div className="my-2 text-2xl">{getMoonPhaseEmoji(day.moonPhase)}</div>
-                          <p className="text-3xl font-medium flex items-center justify-center gap-1">
-                            <span>{ZODIAC_SYMBOLS[day.moonSign]}</span>
-                            <span className="text-sm">{day.moonSign}</span>
+                          <p className="text-sm font-medium">
+                            {ZODIAC_SYMBOLS[day.moonSign]}
                           </p>
+                          <p className="text-xs text-muted-foreground">{day.moonSign}</p>
                           {weekDayLoading === idx && (
                             <Loader2 className="h-3 w-3 animate-spin mx-auto mt-1 text-primary" />
                           )}
@@ -1331,21 +1330,15 @@ Keep the tone professional, insightful, and practically applicable.`
                       const displayName = planet === 'northnode' ? 'North Node' : 
                                           planet === 'southnode' ? 'South Node' :
                                           planet.charAt(0).toUpperCase() + planet.slice(1);
-                      const planetGlyph = getPlanetSymbol(planet);
                       return (
                         <Badge 
                           key={planet} 
                           variant="secondary" 
                           className="text-sm py-3 px-4 flex flex-col items-center gap-1"
                         >
-                          <span className="flex items-center gap-1.5">
-                            <span className="text-4xl">{planetGlyph}</span>
-                            <span className="text-sm font-medium text-foreground">{displayName}</span>
-                          </span>
-                          <span className="flex items-center gap-1.5">
-                            <span className="text-3xl">{ZODIAC_SYMBOLS[data.sign] || ''}</span>
-                            <span className="text-sm">{data.sign}</span>
-                          </span>
+                          <span className="text-3xl">{ZODIAC_SYMBOLS[data.sign] || ''}</span>
+                          <span className="text-xs text-muted-foreground">{data.sign}</span>
+                          <span className="capitalize text-xs font-medium text-foreground">{displayName}</span>
                           <span className="text-primary font-medium text-xs">
                             {data.degree}°{displayMinutes.toString().padStart(2, '0')}'
                           </span>
