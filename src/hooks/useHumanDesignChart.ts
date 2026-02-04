@@ -89,7 +89,9 @@ export const useHumanDesignChart = () => {
       return null;
     }
 
-    const newChart = { ...chart, id: Date.now().toString() };
+    // Preserve a provided id (e.g. when coming from the HD image parser flow)
+    // so downstream references remain stable. Fall back to a timestamp id.
+    const newChart = { ...chart, id: chart.id || Date.now().toString() };
     const updated = [...charts, newChart];
 
     saveWithRollingBackups(STORAGE_KEY, updated);
@@ -98,8 +100,11 @@ export const useHumanDesignChart = () => {
   }, [charts]);
 
   const updateChart = useCallback((id: string, updates: Partial<HumanDesignChart>) => {
-    const updated = charts.map(c => 
-      c.id === id ? { ...c, ...updates, updatedAt: new Date().toISOString() } : c
+    // Never allow updates to mutate the chart's identity.
+    const { id: _ignoredId, ...safeUpdates } = updates;
+
+    const updated = charts.map(c =>
+      c.id === id ? { ...c, ...safeUpdates, updatedAt: new Date().toISOString() } : c
     );
 
     saveWithRollingBackups(STORAGE_KEY, updated);
