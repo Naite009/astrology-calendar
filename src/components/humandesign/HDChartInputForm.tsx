@@ -67,6 +67,9 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
   
   // Parsed HD data for editing
   const [showGateEditor, setShowGateEditor] = useState(!!initialData?.personalityActivations?.length);
+  // When we have parsed/edited gate data, the safe default is to save from gates.
+  // Manual birth-data calculation remains available, but only when explicitly toggled.
+  const [showManualEntry, setShowManualEntry] = useState(!initialData?.personalityActivations?.length);
   const [parsedPersonality, setParsedPersonality] = useState<HDPlanetaryActivation[]>(
     initialData?.personalityActivations || []
   );
@@ -967,14 +970,33 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
           </div>
         )}
 
-        <div className="flex items-center gap-4 mb-6">
-          <div className="flex-1 h-px bg-border" />
-          <span className="text-xs text-muted-foreground uppercase tracking-widest">or enter manually</span>
-          <div className="flex-1 h-px bg-border" />
-        </div>
+        {/* Manual entry is intentionally hidden by default when parsed gate data exists,
+            to prevent saving a different (recalculated) chart by mistake. */}
+        {parsedPersonality.length > 0 ? (
+          <div className="mb-6">
+            <button
+              type="button"
+              onClick={() => setShowManualEntry(v => !v)}
+              className="w-full border border-border bg-transparent px-4 py-3 text-[11px] uppercase tracking-widest text-muted-foreground transition-colors hover:bg-secondary"
+            >
+              {showManualEntry ? 'Hide manual entry' : 'Enter manually instead'}
+            </button>
+            {!showManualEntry && (
+              <p className="mt-2 text-xs text-muted-foreground text-center">
+                Tip: after an image import, use “Save This Chart” above to persist the same gates and derived results.
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="flex items-center gap-4 mb-6">
+            <div className="flex-1 h-px bg-border" />
+            <span className="text-xs text-muted-foreground uppercase tracking-widest">or enter manually</span>
+            <div className="flex-1 h-px bg-border" />
+          </div>
+        )}
 
         {/* Use My Data Button */}
-        {canUseMainUserData && !isMainUser && (
+        {showManualEntry && canUseMainUserData && !isMainUser && (
           <button
             type="button"
             onClick={useMainUserData}
@@ -985,7 +1007,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
           </button>
         )}
 
-        {isMainUser && (
+        {showManualEntry && isMainUser && (
           <div className="mb-4 flex items-center gap-2 rounded border border-primary/30 bg-primary/5 px-3 py-2 text-xs text-primary">
             <UserCheck size={14} />
             Using your main profile data
@@ -998,6 +1020,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
           </div>
         )}
 
+        {showManualEntry && (
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
             <label className="block text-[11px] uppercase tracking-widest text-muted-foreground">
@@ -1125,6 +1148,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
             </button>
           </div>
         </form>
+        )}
       </div>
       </div>
     </div>
