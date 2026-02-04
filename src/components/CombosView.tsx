@@ -610,6 +610,23 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
           {/* Aspect-Specific Expression - Show when we have aspect modifier data */}
           {aspectModifierData && (
             <div className="space-y-3">
+              {/* Universal Learning Traits - show if available */}
+              {aspectModifierData.pair.universalLearningTraits && aspectModifierData.pair.universalLearningTraits.length > 0 && (
+                <div className="p-3 rounded-lg bg-secondary/50 border border-border">
+                  <div className="flex items-center gap-2 mb-2">
+                    <BookOpen className="h-4 w-4 text-primary" />
+                    <h4 className="text-xs font-medium text-primary uppercase tracking-wide">Universal Learning Traits</h4>
+                  </div>
+                  <ul className="space-y-1">
+                    {aspectModifierData.pair.universalLearningTraits.map((trait, i) => (
+                      <li key={i} className="text-xs text-foreground/80 flex items-start gap-1.5">
+                        <span className="text-primary mt-0.5">•</span> {trait}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {/* User's specific aspect */}
               {aspectModifierData.userModifier && selectedChart && (
                 <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
@@ -643,6 +660,43 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                       </ul>
                     </div>
                   </div>
+                  
+                  {/* Learning Style for this aspect */}
+                  {aspectModifierData.userModifier.learningStyle && (
+                    <div className="mt-4 pt-3 border-t border-primary/20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <BookOpen className="h-3.5 w-3.5 text-primary" />
+                        <h5 className="text-xs font-medium text-primary">
+                          Your Learning Style: {aspectModifierData.userModifier.learningStyle.name}
+                        </h5>
+                      </div>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div>
+                          <h6 className="text-[10px] font-medium text-muted-foreground mb-1 uppercase tracking-wide">Best Methods:</h6>
+                          <ul className="space-y-0.5">
+                            {aspectModifierData.userModifier.learningStyle.bestMethods.map((method, i) => (
+                              <li key={i} className="text-xs text-foreground/70 flex items-start gap-1">
+                                <span className="text-primary">✓</span> {method}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div>
+                          <h6 className="text-[10px] font-medium text-muted-foreground mb-1 uppercase tracking-wide">Avoid:</h6>
+                          <ul className="space-y-0.5">
+                            {aspectModifierData.userModifier.learningStyle.avoid.map((item, i) => (
+                              <li key={i} className="text-xs text-foreground/70 flex items-start gap-1">
+                                <span className="text-destructive">✕</span> {item}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2 italic border-l-2 border-primary/30 pl-2">
+                        💡 {aspectModifierData.userModifier.learningStyle.designNote}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -680,7 +734,19 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                             </h5>
                           </div>
                           <p className="text-xs italic text-muted-foreground mb-2">{aspect.tone}</p>
-                          <p className="text-xs text-foreground/70">{aspect.description}</p>
+                          <p className="text-xs text-foreground/70 mb-2">{aspect.description}</p>
+                          
+                          {/* Learning style in accordion - show for each aspect */}
+                          {aspect.learningStyle && (
+                            <div className="mt-2 pt-2 border-t border-border/50">
+                              <p className="text-[10px] font-medium text-primary mb-1">
+                                📚 {aspect.learningStyle.name}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground italic">
+                                {aspect.learningStyle.designNote}
+                              </p>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
