@@ -33,6 +33,7 @@ import { calculatePlanetaryHours, getDayRuler, formatPlanetaryHourTime, Planetar
 import { calculateSolarArcChart, findSolarArcAspects, getExactSolarArcAspects, getUpcomingSolarArcAspects, getSolarArcPlanetSymbol, formatSolarArcAge } from '@/lib/solarArcDirections';
 import { calculateSecondaryProgressions, getProgressedMoonInfo, findProgressedAspects, getProgressedPlanetSymbol, formatSignChangeDate } from '@/lib/secondaryProgressions';
 import { getRetrogradeDisplay, getRetrogradeChartActivation, MARS_RETROGRADE_GUIDANCE, MERCURY_RETROGRADE_GUIDANCE, formatRetrogradeDate } from '@/lib/retrogradePatterns';
+import { DATES_TO_AVOID_2026, BEST_DAYS_2026 } from '@/lib/electional2026Database';
 
 // Sign-specific energies for daily guidance
 const SIGN_ENERGIES: Record<string, { action: string; focus: string; avoid: string }> = {
@@ -317,6 +318,44 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
   const rareAspects = detectRareAspects(planets);
   const nodeAspects = detectNodeAspects(planets);
 
+  // Calculate upcoming events for the next 7 days for AI context
+  const getUpcomingEvents = () => {
+    const events: { date: string; type: string; description: string; daysAway: number }[] = [];
+    const today = new Date(date);
+    
+    for (let i = 1; i <= 10; i++) {
+      const futureDate = new Date(today);
+      futureDate.setDate(today.getDate() + i);
+      const dateKey = futureDate.toISOString().split('T')[0];
+      
+      // Check RED/YELLOW dates (eclipses, major aspects)
+      const avoidData = DATES_TO_AVOID_2026.find(d => d.date === dateKey);
+      if (avoidData && (avoidData.warning === 'RED' || avoidData.warning === 'PURPLE')) {
+        events.push({
+          date: futureDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
+          type: avoidData.reason.includes('Eclipse') ? 'Eclipse' : 'Major Transit',
+          description: avoidData.reason,
+          daysAway: i
+        });
+      }
+      
+      // Check best days (rare conjunctions, etc.)
+      const bestData = BEST_DAYS_2026.find(d => d.date === dateKey);
+      if (bestData && bestData.rating === 'PURPLE') {
+        events.push({
+          date: futureDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
+          type: 'Auspicious',
+          description: bestData.reason,
+          daysAway: i
+        });
+      }
+    }
+    
+    return events.slice(0, 5); // Max 5 upcoming events
+  };
+  
+  const upcomingEvents = getUpcomingEvents();
+
   // Calculate personal transit aspects if chart is active
   // Use same categorization as calendar for consistent ordering
   const OUTER_PLANETS = ['Saturn', 'Jupiter', 'Neptune', 'Pluto', 'Uranus'];
@@ -550,6 +589,7 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
             { name: 'Neptune', sign: planets.neptune.signName, degree: planets.neptune.degree },
             { name: 'Pluto', sign: planets.pluto.signName, degree: planets.pluto.degree },
           ]}
+          upcomingEvents={upcomingEvents}
         />
 
         {/* Fixed Star Conjunctions */}

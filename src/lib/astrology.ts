@@ -96,6 +96,7 @@ export interface Aspect {
   type: string;
   symbol: string;
   orb: string;
+  applying?: boolean; // true = aspect is building/exact soon, false = separating
 }
 
 export interface VoidOfCourse {
@@ -1236,7 +1237,11 @@ export const calculateDailyAspects = (planets: PlanetaryPositions): Aspect[] => 
     { angle: 180, name: 'opposition', symbol: '☍', orb: 8 },
   ];
 
-  const planetList: (keyof PlanetaryPositions)[] = ['moon', 'sun', 'mercury', 'venus', 'mars'];
+  // Include ALL planets for comprehensive aspect detection
+  const planetList: (keyof PlanetaryPositions)[] = [
+    'moon', 'sun', 'mercury', 'venus', 'mars', 
+    'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'
+  ];
 
   const getLongitude = (position: ZodiacPosition) => {
     const signIndex = getSignIndex(position.signName);
@@ -1254,18 +1259,31 @@ export const calculateDailyAspects = (planets: PlanetaryPositions): Aspect[] => 
 
       for (const aspectType of aspectTypes) {
         const orb = Math.abs(diff - aspectType.angle);
-        if (orb < aspectType.orb) {
+        // Use tighter orbs for outer planet aspects (more significant when exact)
+        const effectiveOrb = (p1 === 'moon' || p2 === 'moon') ? aspectType.orb : 
+                            (['jupiter', 'saturn', 'uranus', 'neptune', 'pluto'].includes(p1) && 
+                             ['jupiter', 'saturn', 'uranus', 'neptune', 'pluto'].includes(p2)) ? 3 : 
+                            aspectType.orb;
+        
+        if (orb < effectiveOrb) {
+          // Calculate if applying or separating
+          const isApplying = determineApplying(p1, p2, planets[p1], planets[p2], aspectType.name);
+          
           aspects.push({
             planet1: p1,
             planet2: p2,
             type: aspectType.name,
             symbol: aspectType.symbol,
             orb: orb.toFixed(1),
+            applying: isApplying,
           });
         }
       }
     }
   }
+
+  // Sort by orb (tightest first) to prioritize near-exact aspects
+  aspects.sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb));
 
   return aspects;
 };

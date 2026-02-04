@@ -31,6 +31,13 @@ interface PlanetPositionForAI {
   degree: number;
 }
 
+interface UpcomingEvent {
+  date: string;
+  type: string;
+  description: string;
+  daysAway: number;
+}
+
 interface CosmicWeatherBannerProps {
   date: Date;
   moonPhase: MoonPhase;
@@ -42,6 +49,7 @@ interface CosmicWeatherBannerProps {
   mercuryRetro: boolean;
   aspects: Aspect[];
   planetPositions: PlanetPositionForAI[];
+  upcomingEvents?: UpcomingEvent[];
 }
 
 export const CosmicWeatherBanner = ({ 
@@ -54,7 +62,8 @@ export const CosmicWeatherBanner = ({
   nodeAspects,
   mercuryRetro,
   aspects,
-  planetPositions
+  planetPositions,
+  upcomingEvents = []
 }: CosmicWeatherBannerProps) => {
   const [aiInsights, setAiInsights] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -127,8 +136,12 @@ export const CosmicWeatherBanner = ({
           rareAspects,
           nodeAspects,
           mercuryRetro,
-          aspects,
+          aspects: aspects.map(a => ({
+            ...a,
+            applyingSeparating: a.applying ? 'APPLYING (building toward exact)' : 'SEPARATING (moving apart)'
+          })),
           planetPositions,
+          upcomingEvents: upcomingEvents.length > 0 ? upcomingEvents : undefined,
         }
       });
 
