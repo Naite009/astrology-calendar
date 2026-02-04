@@ -254,7 +254,18 @@ export const PersonalizedTransitsPanel = ({
   }, [transitAspects]);
 
   // Get where Moon currently falls in their houses (using actual house cusps)
-  const moonHouse = getTransitPlanetHouse(moonSign, moonDegree, chart);
+  const moonHouse = useMemo(() => {
+    const house = getTransitPlanetHouse(moonSign, moonDegree, chart);
+    // Debug logging
+    console.log('[TransitPanel] Moon house calculation:', {
+      moonSign,
+      moonDegree,
+      calculatedHouse: house,
+      hasHouseCusps: !!chart.houseCusps,
+      chartName: chart.name
+    });
+    return house;
+  }, [moonSign, moonDegree, chart]);
   const moonHouseInterpretation = getMoonInHouseInterpretation(moonHouse);
 
   // Generate personalized AI reading
