@@ -732,14 +732,19 @@ Keep the tone professional, insightful, and practically applicable.`
                   <CardContent className="p-4 text-center">
                     <Moon className="h-6 w-6 mx-auto mb-2 text-primary" />
                     <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Moon Position</p>
-                    <div className="flex flex-col items-center gap-1">
-                      <p className="text-3xl leading-none">
-                        {ZODIAC_SYMBOLS[currentMoonSign || planets.moon?.sign || '']}
-                      </p>
-                      <p className="text-sm font-semibold text-foreground leading-none bg-muted/60 border border-border px-2 py-0.5 rounded-full">
-                        {(currentMoonSign || planets.moon?.sign || '').toString()}
-                      </p>
-                    </div>
+                    {(() => {
+                      const moonSignLabel = (currentMoonSign || planets.moon?.sign || "").toString();
+                      return (
+                        <>
+                          <p className="text-sm font-semibold text-foreground leading-none">
+                            {moonSignLabel}
+                          </p>
+                          <p className="text-3xl leading-none mt-1">
+                            {ZODIAC_SYMBOLS[moonSignLabel] || ""}
+                          </p>
+                        </>
+                      );
+                    })()}
                     <p className="text-lg font-bold text-primary mt-1">
                       {formatDegreeMinutes(currentMoonDegree, currentMoonMinutes)}
                     </p>
@@ -752,14 +757,19 @@ Keep the tone professional, insightful, and practically applicable.`
                   <CardContent className="p-4 text-center">
                     <Sun className="h-6 w-6 mx-auto mb-2 text-amber-500" />
                     <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Sun Position</p>
-                    <div className="flex flex-col items-center gap-1">
-                      <p className="text-3xl leading-none">
-                        {ZODIAC_SYMBOLS[(currentPlanets?.sun?.sign || planets.sun?.sign) || '']}
-                      </p>
-                      <p className="text-sm font-semibold text-foreground leading-none bg-muted/60 border border-border px-2 py-0.5 rounded-full">
-                        {((currentPlanets?.sun?.sign || planets.sun?.sign) || '').toString()}
-                      </p>
-                    </div>
+                    {(() => {
+                      const sunSignLabel = ((currentPlanets?.sun?.sign || planets.sun?.sign) || "").toString();
+                      return (
+                        <>
+                          <p className="text-sm font-semibold text-foreground leading-none">
+                            {sunSignLabel}
+                          </p>
+                          <p className="text-3xl leading-none mt-1">
+                            {ZODIAC_SYMBOLS[sunSignLabel] || ""}
+                          </p>
+                        </>
+                      );
+                    })()}
                     <p className="text-lg font-bold text-amber-600 mt-1">
                       {formatDegreeMinutes(currentPlanets?.sun?.rawDegree || currentPlanets?.sun?.degree || planets.sun?.degree || 0, currentPlanets?.sun?.minutes)}
                     </p>
