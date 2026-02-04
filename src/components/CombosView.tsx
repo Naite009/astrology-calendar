@@ -48,6 +48,8 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
   const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
   // Individual retrograde checkboxes for each planet (manual selection)
   const [manualRetrogrades, setManualRetrogrades] = useState<Set<string>>(new Set());
+  // Aspect type filter
+  const [selectedAspectFilter, setSelectedAspectFilter] = useState<string | null>(null);
   // Combine all available charts
   const allCharts = useMemo(() => {
     const charts: NatalChart[] = [];
@@ -133,7 +135,37 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
     return factors;
   }, [selectedChart]);
 
-  // Extract retrograde planets from selected chart
+  // Extract aspects with planet pairs for the aspect filter UI
+  const chartAspects = useMemo(() => {
+    if (!selectedChart?.planets) return { byType: new Map<string, string[]>(), allAspectTypes: [] as string[] };
+    
+    const byType = new Map<string, string[]>();
+    const planetNames = Object.keys(selectedChart.planets) as (keyof typeof selectedChart.planets)[];
+    const planetData: { name: string; sign: string; degree: number }[] = [];
+    
+    for (const planetName of planetNames) {
+      const data = selectedChart.planets[planetName];
+      if (!data?.sign) continue;
+      planetData.push({ name: planetName, sign: data.sign, degree: data.degree });
+    }
+    
+    for (let i = 0; i < planetData.length; i++) {
+      for (let j = i + 1; j < planetData.length; j++) {
+        const p1 = planetData[i];
+        const p2 = planetData[j];
+        const aspect = calculateAspect(p1.sign, p1.degree, p2.sign, p2.degree);
+        if (aspect) {
+          if (!byType.has(aspect)) byType.set(aspect, []);
+          byType.get(aspect)!.push(`${p1.name}-${p2.name}`);
+        }
+      }
+    }
+    
+    const allAspectTypes = ['Conjunction', 'Sextile', 'Square', 'Trine', 'Opposition'].filter(a => byType.has(a));
+    return { byType, allAspectTypes };
+  }, [selectedChart]);
+
+
   const retrogradePlanets = useMemo(() => {
     if (!selectedChart?.planets) return new Map<string, { sign: string; house?: number }>();
     
@@ -392,6 +424,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
   const clearAll = () => {
     setSelectedFactors([]);
     setSelectedCategory(null);
+    setSelectedAspectFilter(null);
   };
 
   const allCombinations = useMemo(() => getAllCombinations(), []);
@@ -402,23 +435,48 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
     return allCombinations.filter(combo => doesComboMatchChart(combo));
   }, [selectedChart, chartFactors, allCombinations]);
 
+  // Helper to check if combo involves a specific aspect type
+  const comboHasAspectType = (combo: CombinationEntry, aspectType: string): boolean => {
+    // Check if the combo factors directly include the aspect
+    if (combo.factors.includes(aspectType)) return true;
+    
+    // For 2-planet combos without explicit aspect, check if they form that aspect in the chart
+    const comboPlanets = combo.factors.filter(f => PLANETS.includes(f));
+    if (comboPlanets.length === 2) {
+      const [p1, p2] = comboPlanets;
+      return chartFactors.has(`${p1}|${p2}|${aspectType}`) || chartFactors.has(`${p2}|${p1}|${aspectType}`);
+    }
+    return false;
+  };
+
   const matchingCombinations = useMemo(() => {
+    let results: CombinationEntry[] = [];
+    
     // If a chart is selected and no other filters, show all chart matches
     if (selectedChartId && selectedFactors.length === 0 && !selectedCategory) {
-      return chartMatchingCombinations;
+      results = chartMatchingCombinations;
+    } else if (selectedCategory) {
+      results = findByCategory(selectedCategory);
+    } else if (selectedFactors.length === 0) {
+      return [];
+    } else {
+      const normalized = selectedFactors.map(normalizeFactor);
+      const found = findCombinations(normalized);
+      if (found.length > 0) {
+        results = found;
+      } else {
+        const synth = synthesizeInterpretation(selectedFactors);
+        return synth ? [synth] : [];
+      }
     }
     
-    if (selectedCategory) {
-      return findByCategory(selectedCategory);
+    // Apply aspect type filter if selected
+    if (selectedAspectFilter && results.length > 0) {
+      results = results.filter(combo => comboHasAspectType(combo, selectedAspectFilter));
     }
-    if (selectedFactors.length === 0) return [];
-    const normalized = selectedFactors.map(normalizeFactor);
-    const results = findCombinations(normalized);
-    if (results.length > 0) return results;
-
-    const synth = synthesizeInterpretation(selectedFactors);
-    return synth ? [synth] : [];
-  }, [selectedFactors, selectedCategory, selectedChartId, chartMatchingCombinations]);
+    
+    return results;
+  }, [selectedFactors, selectedCategory, selectedChartId, chartMatchingCombinations, selectedAspectFilter, chartFactors]);
 
   const renderFactorButton = (factor: string, symbol?: string) => {
     const isSelected = selectedFactors.includes(factor);
@@ -769,6 +827,60 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                 </div>
               );
             })()}
+
+            {/* Aspect Type Filter - only show when chart is selected */}
+            {selectedChart && chartAspects.allAspectTypes.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-primary/20">
+                <div className="flex flex-wrap items-start gap-3">
+                  <span className="text-xs font-medium text-muted-foreground">Filter by aspect:</span>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => setSelectedAspectFilter(null)}
+                      className={`px-2.5 py-1 text-xs rounded-md border transition-all ${
+                        !selectedAspectFilter 
+                          ? 'bg-primary text-primary-foreground border-primary' 
+                          : 'bg-background border-border hover:border-primary/50'
+                      }`}
+                    >
+                      All Aspects
+                    </button>
+                    {chartAspects.allAspectTypes.map(aspectType => {
+                      const count = chartAspects.byType.get(aspectType)?.length || 0;
+                      const aspectSymbol = aspectType === 'Conjunction' ? '☌' :
+                                           aspectType === 'Sextile' ? '⚹' :
+                                           aspectType === 'Square' ? '□' :
+                                           aspectType === 'Trine' ? '△' :
+                                           aspectType === 'Opposition' ? '☍' : '';
+                      return (
+                        <button
+                          key={aspectType}
+                          onClick={() => setSelectedAspectFilter(selectedAspectFilter === aspectType ? null : aspectType)}
+                          className={`px-2.5 py-1 text-xs rounded-md border transition-all flex items-center gap-1.5 ${
+                            selectedAspectFilter === aspectType 
+                              ? 'bg-primary text-primary-foreground border-primary' 
+                              : 'bg-background border-border hover:border-primary/50'
+                          }`}
+                        >
+                          <span>{aspectSymbol}</span>
+                          {aspectType}
+                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-secondary/50">
+                            {count}
+                          </Badge>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                {selectedAspectFilter && chartAspects.byType.get(selectedAspectFilter) && (
+                  <div className="mt-2 text-xs text-muted-foreground">
+                    <span className="font-medium">{selectedAspectFilter}s in chart: </span>
+                    {chartAspects.byType.get(selectedAspectFilter)!.slice(0, 8).join(', ')}
+                    {(chartAspects.byType.get(selectedAspectFilter)!.length > 8) && 
+                      ` +${chartAspects.byType.get(selectedAspectFilter)!.length - 8} more`}
+                  </div>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
