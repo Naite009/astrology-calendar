@@ -736,10 +736,8 @@ Keep the tone professional, insightful, and practically applicable.`
                       const moonSignLabel = (currentMoonSign || planets.moon?.sign || "Unknown").toString();
                       return (
                         <>
-                          <p className="text-3xl leading-none">
-                            {ZODIAC_SYMBOLS[moonSignLabel] || ""}
-                          </p>
-                          <p className="text-sm font-medium text-foreground mt-1">
+                          {/* Use sign NAME instead of glyph for clarity */}
+                          <p className="font-medium">
                             {moonSignLabel}
                           </p>
                           <p className="text-lg font-bold text-primary">
@@ -762,10 +760,8 @@ Keep the tone professional, insightful, and practically applicable.`
                       const sunDegrees = currentPlanets?.sun?.rawDegree || currentPlanets?.sun?.degree || planets.sun?.degree || 0;
                       return (
                         <>
-                          <p className="text-3xl leading-none">
-                            {ZODIAC_SYMBOLS[sunSignLabel] || ""}
-                          </p>
-                          <p className="text-sm font-medium text-foreground mt-1">
+                          {/* Use sign NAME instead of glyph for clarity */}
+                          <p className="font-medium">
                             {sunSignLabel}
                           </p>
                           <p className="text-lg font-bold text-amber-600">
