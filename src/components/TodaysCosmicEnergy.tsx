@@ -739,10 +739,11 @@ Keep the tone professional, insightful, and practically applicable.`
                           <p className="text-3xl leading-none">
                             {ZODIAC_SYMBOLS[moonSignLabel] || ""}
                           </p>
-
-                          {/* Sign name included explicitly so it can't disappear */}
-                          <p className="text-lg font-bold text-primary mt-1">
-                            {moonSignLabel} {formatDegreeMinutes(currentMoonDegree, currentMoonMinutes)}
+                          <p className="text-sm font-medium text-foreground mt-1">
+                            {moonSignLabel}
+                          </p>
+                          <p className="text-lg font-bold text-primary">
+                            {formatDegreeMinutes(currentMoonDegree, currentMoonMinutes)}
                           </p>
                         </>
                       );
@@ -764,10 +765,11 @@ Keep the tone professional, insightful, and practically applicable.`
                           <p className="text-3xl leading-none">
                             {ZODIAC_SYMBOLS[sunSignLabel] || ""}
                           </p>
-
-                          {/* Sign name included explicitly so it can't disappear */}
-                          <p className="text-lg font-bold text-amber-600 mt-1">
-                            {sunSignLabel} {formatDegreeMinutes(sunDegrees, currentPlanets?.sun?.minutes)}
+                          <p className="text-sm font-medium text-foreground mt-1">
+                            {sunSignLabel}
+                          </p>
+                          <p className="text-lg font-bold text-amber-600">
+                            {formatDegreeMinutes(sunDegrees, currentPlanets?.sun?.minutes)}
                           </p>
                         </>
                       );
