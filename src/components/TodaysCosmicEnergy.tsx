@@ -740,13 +740,9 @@ Keep the tone professional, insightful, and practically applicable.`
                             {ZODIAC_SYMBOLS[moonSignLabel] || ""}
                           </p>
 
-                          {/* Sign name clearly visible under glyph */}
-                          <p className="mt-1 font-medium text-foreground">
-                            {moonSignLabel}
-                          </p>
-
+                          {/* Sign name included explicitly so it can't disappear */}
                           <p className="text-lg font-bold text-primary mt-1">
-                            {formatDegreeMinutes(currentMoonDegree, currentMoonMinutes)}
+                            {moonSignLabel} {formatDegreeMinutes(currentMoonDegree, currentMoonMinutes)}
                           </p>
                         </>
                       );
@@ -769,13 +765,9 @@ Keep the tone professional, insightful, and practically applicable.`
                             {ZODIAC_SYMBOLS[sunSignLabel] || ""}
                           </p>
 
-                          {/* Sign name clearly visible under glyph */}
-                          <p className="mt-1 font-medium text-foreground">
-                            {sunSignLabel}
-                          </p>
-
+                          {/* Sign name included explicitly so it can't disappear */}
                           <p className="text-lg font-bold text-amber-600 mt-1">
-                            {formatDegreeMinutes(sunDegrees, currentPlanets?.sun?.minutes)}
+                            {sunSignLabel} {formatDegreeMinutes(sunDegrees, currentPlanets?.sun?.minutes)}
                           </p>
                         </>
                       );
