@@ -1315,26 +1315,45 @@ Keep the tone professional, insightful, and practically applicable.`
                   </p>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {Object.entries(currentPlanets || planets).map(([planet, data]) => {
+                  {(() => {
+                    const allEntries = Object.entries(currentPlanets || planets).filter(([, data]) => data && data.sign);
+                    // Separate North Node to second row
+                    const firstRow = allEntries.filter(([planet]) => planet.toLowerCase() !== 'northnode');
+                    const secondRow = allEntries.filter(([planet]) => planet.toLowerCase() === 'northnode');
+                    
+                    const renderPlanetBadge = ([planet, data]: [string, typeof planets.sun]) => {
                       if (!data || !data.sign) return null;
                       const displayMinutes = data.minutes !== undefined ? data.minutes : 0;
+                      const displayName = planet === 'northnode' ? 'North Node' : planet.charAt(0).toUpperCase() + planet.slice(1);
                       return (
                         <Badge 
                           key={planet} 
                           variant="secondary" 
-                          className="text-sm py-2 px-3 flex flex-col items-center gap-0.5"
+                          className="text-sm py-3 px-4 flex flex-col items-center gap-1"
                         >
-                          <span className="capitalize text-xs text-muted-foreground">{planet}</span>
-                          <span className="text-primary font-medium">
+                          <span className="text-3xl">{ZODIAC_SYMBOLS[data.sign] || ''}</span>
+                          <span className="text-xs text-muted-foreground">{data.sign}</span>
+                          <span className="capitalize text-xs font-medium text-foreground">{displayName}</span>
+                          <span className="text-primary font-medium text-xs">
                             {data.degree}°{displayMinutes.toString().padStart(2, '0')}'
                           </span>
-                          <span className="text-lg text-primary">{ZODIAC_SYMBOLS[data.sign] || ''}</span>
-                          <span className="text-[10px] text-muted-foreground">{data.sign}</span>
                         </Badge>
                       );
-                    })}
-                  </div>
+                    };
+                    
+                    return (
+                      <div className="space-y-3">
+                        <div className="flex flex-wrap gap-2 justify-center">
+                          {firstRow.map(renderPlanetBadge)}
+                        </div>
+                        {secondRow.length > 0 && (
+                          <div className="flex flex-wrap gap-2 justify-center">
+                            {secondRow.map(renderPlanetBadge)}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </CardContent>
               </Card>
 
