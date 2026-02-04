@@ -381,23 +381,30 @@ export const useCloudBackup = (
       // Check if local storage is empty
       const hasLocalUser = userNatalChart && userNatalChart.name;
       const hasLocalSaved = savedCharts.length > 0;
+      const localSavedCount = savedCharts.length;
       
-      if (!hasLocalUser && !hasLocalSaved) {
-        // Local is empty, check cloud
-        console.log('[CloudBackup] Local storage empty, checking cloud...');
-        const cloudCharts = await fetchCloudCharts();
-        
-        if (cloudCharts.length > 0) {
-          console.log('[CloudBackup] Found', cloudCharts.length, 'charts in cloud, restoring...');
-          await restoreFromCloud();
-        } else {
-          setState(prev => ({ ...prev, isLoading: false }));
-        }
-      } else {
-        // Local has data, sync to cloud
+      // Always check cloud to see if there are more charts than local
+      console.log('[CloudBackup] Checking cloud for charts...');
+      const cloudCharts = await fetchCloudCharts();
+      
+      // Count non-user charts in cloud
+      const cloudSavedCount = cloudCharts.filter(c => c.chart_id !== 'user').length;
+      
+      if (!hasLocalUser && !hasLocalSaved && cloudCharts.length > 0) {
+        // Local is completely empty, restore everything from cloud
+        console.log('[CloudBackup] Local storage empty, restoring', cloudCharts.length, 'charts from cloud...');
+        await restoreFromCloud();
+      } else if (cloudSavedCount > localSavedCount) {
+        // Cloud has more saved charts than local - merge them in
+        console.log('[CloudBackup] Cloud has more charts (' + cloudSavedCount + ') than local (' + localSavedCount + '), restoring...');
+        await restoreFromCloud();
+      } else if (hasLocalUser || hasLocalSaved) {
+        // Local has data and cloud doesn't have more, sync local to cloud
         console.log('[CloudBackup] Local has data, syncing to cloud...');
         setState(prev => ({ ...prev, isLoading: false }));
         triggerSync();
+      } else {
+        setState(prev => ({ ...prev, isLoading: false }));
       }
     };
 
