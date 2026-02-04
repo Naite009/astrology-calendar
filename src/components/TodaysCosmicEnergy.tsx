@@ -736,18 +736,20 @@ Keep the tone professional, insightful, and practically applicable.`
                       const moonSignLabel = (currentMoonSign || planets.moon?.sign || "").toString();
                       return (
                         <>
-                          <p className="text-sm font-semibold text-foreground leading-none">
-                            {moonSignLabel}
-                          </p>
-                          <p className="text-3xl leading-none mt-1">
+                          <p className="text-3xl leading-none">
                             {ZODIAC_SYMBOLS[moonSignLabel] || ""}
+                          </p>
+
+                          {/* Sign name directly under glyph, above degrees */}
+                          <p className="text-lg font-bold text-primary mt-1">
+                            <span className="block text-sm font-medium text-foreground">
+                              {moonSignLabel}
+                            </span>
+                            {formatDegreeMinutes(currentMoonDegree, currentMoonMinutes)}
                           </p>
                         </>
                       );
                     })()}
-                    <p className="text-lg font-bold text-primary mt-1">
-                      {formatDegreeMinutes(currentMoonDegree, currentMoonMinutes)}
-                    </p>
                     <p className="text-xs text-muted-foreground">
                       Live • Updates every minute
                     </p>
@@ -759,20 +761,23 @@ Keep the tone professional, insightful, and practically applicable.`
                     <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Sun Position</p>
                     {(() => {
                       const sunSignLabel = ((currentPlanets?.sun?.sign || planets.sun?.sign) || "").toString();
+                      const sunDegrees = currentPlanets?.sun?.rawDegree || currentPlanets?.sun?.degree || planets.sun?.degree || 0;
                       return (
                         <>
-                          <p className="text-sm font-semibold text-foreground leading-none">
-                            {sunSignLabel}
-                          </p>
-                          <p className="text-3xl leading-none mt-1">
+                          <p className="text-3xl leading-none">
                             {ZODIAC_SYMBOLS[sunSignLabel] || ""}
+                          </p>
+
+                          {/* Sign name directly under glyph, above degrees */}
+                          <p className="text-lg font-bold text-amber-600 mt-1">
+                            <span className="block text-sm font-medium text-foreground">
+                              {sunSignLabel}
+                            </span>
+                            {formatDegreeMinutes(sunDegrees, currentPlanets?.sun?.minutes)}
                           </p>
                         </>
                       );
                     })()}
-                    <p className="text-lg font-bold text-amber-600 mt-1">
-                      {formatDegreeMinutes(currentPlanets?.sun?.rawDegree || currentPlanets?.sun?.degree || planets.sun?.degree || 0, currentPlanets?.sun?.minutes)}
-                    </p>
                     <p className="text-xs text-muted-foreground">
                       Live position
                     </p>
