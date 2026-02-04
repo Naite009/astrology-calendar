@@ -419,19 +419,19 @@ BUT HERE'S WHAT'S ACTUALLY HAPPENING IN THE SKY TODAY that modifies this energy:
 ## Cosmic Kitchen: Today's Menu
 Based on the Moon in [SIGN] and today's planetary weather, here's what will feel nourishing:
 
-**🍳 Breakfast: [Dish Name](https://www.google.com/search?q=dish+name+recipe)**
+**🍳 Breakfast:** [Dish Name]
 *Why:* [2-3 sentences in plain language connecting to Moon sign and season.]
 
-**🥗 Lunch: [Dish Name](https://www.google.com/search?q=dish+name+recipe)**
+**🥗 Lunch:** [Dish Name]
 *Why:* [2-3 sentences. Midday = strongest digestion.]
 
-**🍽️ Dinner: [Dish Name](https://www.google.com/search?q=dish+name+recipe)**
+**🍽️ Dinner:** [Dish Name]
 *Why:* [2-3 sentences. Lighter evening meals.]
 
-**🥜 Snacks:** [Snack 1](https://www.google.com/search?q=snack+recipe), [Snack 2](https://www.google.com/search?q=snack+recipe), [Snack 3](https://www.google.com/search?q=snack+recipe)
+**🥜 Snacks:** [Snack 1], [Snack 2], [Snack 3]
 *Why:* [Brief reasoning]
 
-**🍵 Drink of the Day: [Beverage Name](https://www.google.com/search?q=beverage+recipe)**
+**🍵 Drink of the Day:** [Beverage Name]
 *Why:* [Why this drink fits today]
 
 DO NOT include a "Featured Recipe" heading - the UI handles this. Just output the recipe block:
