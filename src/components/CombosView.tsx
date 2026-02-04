@@ -90,12 +90,20 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
     return null;
   };
 
+  const getChartPos = (planetName: string) => {
+    const pos = selectedChart?.planets?.[planetName as keyof NatalChart['planets']];
+    if (!pos?.sign) return null;
+    const deg = pos.degree + (pos.minutes || 0) / 60 + (pos.seconds || 0) / 3600;
+    return { sign: pos.sign, degree: deg };
+  };
+
   // Extract factors from the selected chart (planet-sign, planet-house, and planet-planet aspects)
   const chartFactors = useMemo(() => {
     if (!selectedChart?.planets) return new Set<string>();
     
     const factors = new Set<string>();
-    const planetNames = Object.keys(selectedChart.planets) as (keyof typeof selectedChart.planets)[];
+    const planetNames = Object.keys(selectedChart.planets)
+      .filter((k) => [...PLANETS, ...POINTS].includes(k)) as (keyof typeof selectedChart.planets)[];
     const planetData: { name: string; sign: string; degree: number }[] = [];
     
     for (const planetName of planetNames) {
@@ -103,7 +111,8 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
       if (!data?.sign) continue;
       
       // Store for aspect calculations
-      planetData.push({ name: planetName, sign: data.sign, degree: data.degree });
+      const deg = data.degree + (data.minutes || 0) / 60 + (data.seconds || 0) / 3600;
+      planetData.push({ name: planetName, sign: data.sign, degree: deg });
       
       // Add planet-sign combo identifier
       factors.add(`${planetName}|${data.sign}`);
@@ -143,13 +152,15 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
     
     const byType = new Map<string, string[]>();
     const allPairs: { p1: string; p2: string; aspect: string }[] = [];
-    const planetNames = Object.keys(selectedChart.planets) as (keyof typeof selectedChart.planets)[];
+    const planetNames = Object.keys(selectedChart.planets)
+      .filter((k) => [...PLANETS, ...POINTS].includes(k)) as (keyof typeof selectedChart.planets)[];
     const planetData: { name: string; sign: string; degree: number }[] = [];
     
     for (const planetName of planetNames) {
       const data = selectedChart.planets[planetName];
       if (!data?.sign) continue;
-      planetData.push({ name: planetName, sign: data.sign, degree: data.degree });
+      const deg = data.degree + (data.minutes || 0) / 60 + (data.seconds || 0) / 3600;
+      planetData.push({ name: planetName, sign: data.sign, degree: deg });
     }
     
     for (let i = 0; i < planetData.length; i++) {
@@ -544,21 +555,20 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
       const modifierPair = findAspectModifiers(p1, p2);
       if (!modifierPair) return null;
       
-      // Find what aspect this pair has in the selected chart
+      // Find what aspect this pair has in the selected chart (compute directly so the label never goes missing)
       let userAspectType: string | null = null;
-      if (selectedChart && chartFactors.size > 0) {
-        for (const aspectType of ['Conjunction', 'Sextile', 'Square', 'Trine', 'Opposition']) {
-          if (chartFactors.has(`${p1}|${p2}|${aspectType}`) || chartFactors.has(`${p2}|${p1}|${aspectType}`)) {
-            userAspectType = aspectType;
-            break;
-          }
+      if (selectedChart) {
+        const p1Pos = getChartPos(p1);
+        const p2Pos = getChartPos(p2);
+        if (p1Pos && p2Pos) {
+          userAspectType = calculateAspect(p1Pos.sign, p1Pos.degree, p2Pos.sign, p2Pos.degree);
         }
       }
       
       return {
         pair: modifierPair,
         userAspect: userAspectType,
-        userModifier: userAspectType 
+        userModifier: userAspectType && modifierPair
           ? modifierPair.aspects.find(a => a.aspectType === userAspectType) || null
           : null
       };
@@ -607,8 +617,8 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
             {aspectModifierData ? aspectModifierData.pair.coreDescription : combo.summary}
           </p>
 
-          {/* Aspect-Specific Expression - Show when we have aspect modifier data */}
-          {aspectModifierData && (
+           {/* Aspect-Specific Expression - Show when we have aspect modifier data */}
+           {aspectModifierData?.pair && (
             <div className="space-y-3">
               {/* Universal Learning Traits - show if available */}
               {aspectModifierData.pair.universalLearningTraits && aspectModifierData.pair.universalLearningTraits.length > 0 && (
@@ -627,22 +637,31 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                 </div>
               )}
 
-              {/* User's specific aspect */}
-              {aspectModifierData.userModifier && selectedChart && (
+               {/* User's specific aspect (always show the aspect identifier when we can compute it) */}
+               {selectedChart && aspectModifierData.userAspect && (
                 <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
                   <div className="flex items-center gap-2 mb-2">
                     <Badge className="bg-primary text-primary-foreground text-xs">
-                      {ASPECT_SYMBOLS[aspectModifierData.userAspect!]} {aspectModifierData.userAspect} in Your Chart
+                       {ASPECT_SYMBOLS[aspectModifierData.userAspect]} {aspectModifierData.userAspect} in Your Chart
                     </Badge>
                   </div>
-                  <h4 className="font-medium text-sm mb-1">{aspectModifierData.userModifier.name}</h4>
-                  <p className="text-xs text-primary italic mb-2">{aspectModifierData.userModifier.tone}</p>
-                  <p className="text-sm text-foreground/80 mb-3">{aspectModifierData.userModifier.description}</p>
+                   {aspectModifierData.userModifier ? (
+                     <>
+                       <h4 className="font-medium text-sm mb-1">{aspectModifierData.userModifier.name}</h4>
+                       <p className="text-xs text-primary italic mb-2">{aspectModifierData.userModifier.tone}</p>
+                       <p className="text-sm text-foreground/80 mb-3">{aspectModifierData.userModifier.description}</p>
+                     </>
+                   ) : (
+                     <p className="text-xs text-muted-foreground">
+                       This aspect exists in your chart, but we don’t have an aspect-specific writeup for this exact angle yet.
+                       You’re seeing the universal signature above.
+                     </p>
+                   )}
                   <div className="grid gap-2 sm:grid-cols-2">
                     <div>
                       <h5 className="text-xs font-medium text-primary mb-1">Your Gifts:</h5>
                       <ul className="space-y-0.5">
-                        {aspectModifierData.userModifier.gifts.map((gift, i) => (
+                         {(aspectModifierData.userModifier?.gifts || []).map((gift, i) => (
                           <li key={i} className="text-xs text-foreground/70 flex items-start gap-1">
                             <span className="text-primary">✦</span> {gift}
                           </li>
@@ -652,7 +671,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                     <div>
                       <h5 className="text-xs font-medium text-destructive mb-1">Your Challenges:</h5>
                       <ul className="space-y-0.5">
-                        {aspectModifierData.userModifier.challenges.map((challenge, i) => (
+                         {(aspectModifierData.userModifier?.challenges || []).map((challenge, i) => (
                           <li key={i} className="text-xs text-foreground/70 flex items-start gap-1">
                             <span className="text-destructive">•</span> {challenge}
                           </li>
@@ -662,7 +681,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                   </div>
                   
                   {/* Learning Style for this aspect */}
-                  {aspectModifierData.userModifier.learningStyle && (
+                   {aspectModifierData.userModifier?.learningStyle && (
                     <div className="mt-4 pt-3 border-t border-primary/20">
                       <div className="flex items-center gap-2 mb-2">
                         <BookOpen className="h-3.5 w-3.5 text-primary" />
@@ -1098,6 +1117,17 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                     {aspectCoverage.withModifiers.length}/{chartAspects.allPairs.length} detailed
                   </Badge>
                 </div>
+
+                <p className="text-[11px] text-muted-foreground mb-3">
+                  <span className="font-medium">{aspectCoverage.withModifiers.length}/{chartAspects.allPairs.length}</span> means:
+                  we detected <span className="font-medium">{chartAspects.allPairs.length}</span> major aspects between your core planets/points,
+                  and <span className="font-medium">{aspectCoverage.withModifiers.length}</span> of those currently have a fully customized, aspect-specific writeup.
+                </p>
+
+                <p className="text-[11px] text-muted-foreground mb-3">
+                  Glyph key: ☉ Sun, ☽ Moon, ☿ Mercury, ♀ Venus, ♂ Mars, ♃ Jupiter, ♄ Saturn, ♅ Uranus, ♆ Neptune, ♇ Pluto, AC Ascendant.
+                  Aspect key: ☌ Conjunction, ⚹ Sextile, □ Square, △ Trine, ☍ Opposition.
+                </p>
                 
                 {/* Detailed modifiers available */}
                 {aspectCoverage.withModifiers.length > 0 && (
