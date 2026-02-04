@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects, planetPositions, customPrompt, voiceStyle } = await req.json();
+    const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects, planetPositions, customPrompt, voiceStyle, upcomingEvents } = await req.json();
     
     console.log("Received cosmic weather request:", { date, moonPhase, moonSign, exactLunarPhase, voiceStyle, planetPositions });
     
@@ -39,8 +39,16 @@ ${planetPositions.map((p: any) => `- ${p.name}: ${p.degree}° ${p.sign}`).join('
       ? `Destiny Aspects: ${nodeAspects.map((a: any) => `${a.planet} ${a.type} ${a.node} Node`).join('; ')}`
       : '';
 
+    // Enhanced aspects text with applying/separating status
     const aspectsText = aspects?.length > 0
-      ? `Major Aspects: ${aspects.slice(0, 5).map((a: any) => `${a.planet1} ${a.symbol} ${a.planet2}`).join('; ')}`
+      ? `Major Aspects Today:
+${aspects.slice(0, 10).map((a: any) => `- ${a.planet1} ${a.symbol} ${a.planet2} (orb: ${a.orb}°, ${a.applyingSeparating || 'status unknown'})`).join('\n')}`
+      : '';
+
+    // Upcoming events text
+    const upcomingEventsText = upcomingEvents?.length > 0
+      ? `UPCOMING MAJOR EVENTS (MENTION THESE!):
+${upcomingEvents.map((e: any) => `- ${e.date} (${e.daysAway} days away): ${e.type} - ${e.description}`).join('\n')}`
       : '';
 
     // Find significant conjunctions (Moon with outer planets)
@@ -374,6 +382,32 @@ CRITICAL RULES:
 1. Use ONLY the planetary positions provided. These are calculated from astronomy-engine and are accurate.
 2. Use EXACT degrees when mentioning positions. If data says "3° Cancer", use that precisely.
 3. NEVER call something a "Full Moon" or "New Moon" unless exactLunarPhase is provided.
+4. ALWAYS mention APPLYING aspects as building/intensifying and SEPARATING aspects as releasing/completing.
+
+PLANETARY ENERGY GUIDE - USE THESE MEANINGS:
+☿ Mercury: Mind, communication, details, thinking patterns, learning, daily routines, siblings, neighbors
+♅ Uranus: Awakening, breakthrough, breaking free, liberation, sudden insight, questioning everything, revolutionary thinking
+  - ☿ □ ♅ (Mercury square Uranus): Mental breakthroughs wanting to happen. Repetitive thoughts indicate stuck energy needing to move. Ask: "Is there a way to look at this situation differently?" Great for questioning assumptions. Expect unexpected information or conversations.
+♄ Saturn: Structure, discipline, responsibility, limits, karma, authority, time, maturity
+♃ Jupiter: Expansion, optimism, growth, abundance, wisdom, faith, opportunities
+♂ Mars: Action, energy, drive, assertion, conflict, courage, physical vitality
+♀ Venus: Love, beauty, values, relationships, pleasure, money, harmony
+♆ Neptune: Dreams, intuition, spirituality, imagination, confusion, dissolution, compassion
+♇ Pluto: Transformation, power, rebirth, depth, shadows, intensity, evolution
+
+MOON SIGN DEPTH GUIDE:
+Moon in Virgo: Health consciousness heightened. Tendency toward criticism (self and others) - watch the inner critic. Good for organizing, cleaning, health routines. The mind wants to analyze and fix things. Ask: "What house does Virgo rule in YOUR chart?" - that's where you'll feel this focus. Be open to unexpected insights (especially with Uranus active). Can go down rabbit holes of perfectionism.
+Moon in Aries: Initiative, impatience, need for action. New beginnings.
+Moon in Taurus: Comfort-seeking, stability, sensual pleasures, stubbornness.
+Moon in Gemini: Mental restlessness, need for variety, communication, curiosity.
+Moon in Cancer: Emotional depth, nurturing, home focus, sensitivity.
+Moon in Leo: Self-expression, creativity, need for recognition, warmth.
+Moon in Libra: Relationship focus, seeking balance, diplomacy, indecision.
+Moon in Scorpio: Emotional intensity, transformation, secrets, power dynamics.
+Moon in Sagittarius: Optimism, adventure, philosophy, restlessness.
+Moon in Capricorn: Discipline, ambition, emotional reserve, productivity.
+Moon in Aquarius: Detachment, innovation, humanitarian concerns, independence.
+Moon in Pisces: Sensitivity, intuition, compassion, escapism, creativity.
 
 COLLECTIVE VS PERSONAL FRAMING:
 This is a COLLECTIVE reading about the world's energy today - NOT about the individual reader's personal identity.
@@ -389,7 +423,22 @@ FORMAT:
 [2-3 sentences capturing the essential quality of the day for the WORLD. What's the collective vibe? What might SOCIETY be focused on?]
 
 ## Cosmic Weather
-[3-4 paragraphs weaving together the Moon sign/phase, major aspects, and their implications for the COLLECTIVE. Write as prose about world energy, cultural mood, and societal themes. How might this show up in news, conversations, and general atmosphere?]
+[3-4 paragraphs weaving together the Moon sign/phase, major aspects (especially applying ones!), and their implications for the COLLECTIVE. 
+
+CRITICAL FOR ASPECTS:
+- If an aspect is APPLYING, emphasize that energy is BUILDING - "Mercury is moving toward a square with Uranus, intensifying mental restlessness"
+- For tight orbs (<2°), call it "nearly exact" or "almost exact"
+- Explain WHAT the aspect means psychologically, not just that it exists
+- For squares: What's the tension? What wants to break through? What repetitive pattern needs examining?
+- For trines/sextiles: What's flowing easily? What opportunities are available?
+
+Write as prose about world energy, cultural mood, and societal themes. How might this show up in news, conversations, and general atmosphere?]
+
+## Coming Up (CRITICAL - ALWAYS INCLUDE)
+[If upcoming events are provided, mention them! Examples:
+- "Looking ahead: Solar eclipse in Aquarius on February 17th - major reset energy approaching"
+- "Mercury perfects its square to Uranus tomorrow - expect surprising news"
+This helps people prepare and understand the larger arc.]
 
 ## What to Focus On
 IMPORTANT: Each focus item MUST include the planetary glyphs showing WHY this is highlighted. Format each line as:
@@ -531,10 +580,19 @@ ${stelliumText}
 ${rareAspectText}
 ${nodeAspectText}
 ${aspectsText}
+${upcomingEventsText}
 
 AYURVEDIC SEASON: ${currentSeason}
 
-CRITICAL: Use EXACT degrees provided. If a Full Moon is at 13° Cancer, say "Full Moon at 13° Cancer" - not 9° or any other number. Be direct and practical. No mystical fluff or greetings. For Cosmic Kitchen, ALWAYS honor the current Ayurvedic season - in winter, NEVER suggest cold/raw foods like cucumber or cold smoothies.`;
+CRITICAL INSTRUCTIONS:
+1. Use EXACT degrees provided. If a Full Moon is at 13° Cancer, say "Full Moon at 13° Cancer" - not 9° or any other number.
+2. Be direct and practical. No mystical fluff or greetings.
+3. For Cosmic Kitchen, ALWAYS honor the current Ayurvedic season - in winter, NEVER suggest cold/raw foods.
+4. PAY SPECIAL ATTENTION to tight aspects (orb < 2°) - these are the most powerful influences today.
+5. If an aspect is APPLYING, emphasize it's building/intensifying. If SEPARATING, it's releasing/completing.
+6. ALWAYS include the "Coming Up" section if upcoming events are provided!
+7. For squares: Explain the tension and what wants to break through. What's stuck that wants to move?
+8. Mention the Moon sign's influence on the emotional atmosphere and suggest finding where that sign falls in their own chart.`;
 
     console.log("Sending prompt to AI:", userPrompt.substring(0, 500) + "...");
 
