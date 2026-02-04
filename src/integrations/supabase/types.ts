@@ -50,6 +50,45 @@ export type Database = {
         }
         Relationships: []
       }
+      cosmic_weather_cache: {
+        Row: {
+          chart_id: string
+          content: string
+          created_at: string
+          date_key: string
+          device_id: string
+          expires_at: string
+          id: string
+          updated_at: string
+          user_id: string | null
+          voice_style: string
+        }
+        Insert: {
+          chart_id?: string
+          content: string
+          created_at?: string
+          date_key: string
+          device_id?: string
+          expires_at: string
+          id?: string
+          updated_at?: string
+          user_id?: string | null
+          voice_style?: string
+        }
+        Update: {
+          chart_id?: string
+          content?: string
+          created_at?: string
+          date_key?: string
+          device_id?: string
+          expires_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string | null
+          voice_style?: string
+        }
+        Relationships: []
+      }
       device_charts: {
         Row: {
           chart_data: Json

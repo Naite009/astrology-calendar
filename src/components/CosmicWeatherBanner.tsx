@@ -95,26 +95,38 @@ export const CosmicWeatherBanner = ({
   })();
 
   const fetchInsights = async () => {
-    if (loading || hasFetched.current) return;
+    if (loading) return;
     
-    // Check localStorage cache first
+    // Check localStorage cache first (this is the primary cache)
     const cached = localStorage.getItem(cacheKey);
     if (cached) {
       try {
         const parsed = JSON.parse(cached);
-        setAiInsights(parsed.insight);
-        hasFetched.current = true;
-        return;
+        // Check if cache is still valid (less than 20 hours old)
+        const generatedAt = new Date(parsed.generatedAt);
+        const ageHours = (Date.now() - generatedAt.getTime()) / (1000 * 60 * 60);
+        if (ageHours < 20 && parsed.insight) {
+          console.log(`Using cached cosmic weather for ${dateKey} (${ageHours.toFixed(1)}h old)`);
+          setAiInsights(parsed.insight);
+          hasFetched.current = true;
+          return;
+        }
       } catch (e) {
         console.error('Failed to parse cached day weather:', e);
         // Continue to fetch fresh data
       }
     }
     
+    // Already fetched this session, don't re-fetch
+    if (hasFetched.current) return;
+    
     setLoading(true);
     hasFetched.current = true;
     
     try {
+      // Get device ID for server-side caching
+      const deviceId = localStorage.getItem('astro-device-id') || 'default';
+      
       const { data, error } = await supabase.functions.invoke('cosmic-weather', {
         body: {
           date: date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
@@ -142,6 +154,7 @@ export const CosmicWeatherBanner = ({
           })),
           planetPositions,
           upcomingEvents: upcomingEvents.length > 0 ? upcomingEvents : undefined,
+          deviceId,
         }
       });
 
@@ -152,12 +165,14 @@ export const CosmicWeatherBanner = ({
         return;
       }
 
-      // Save to localStorage cache
+      // Save to localStorage cache (this is the primary client-side cache)
       localStorage.setItem(cacheKey, JSON.stringify({
         insight: data.insight,
-        generatedAt: new Date().toISOString()
+        generatedAt: new Date().toISOString(),
+        cached: data.cached || false
       }));
 
+      console.log(`Cosmic weather for ${dateKey}: ${data.cached ? 'from server cache' : 'freshly generated'}`);
       setAiInsights(data.insight);
     } catch (err) {
       console.error('Failed to fetch insights:', err);
@@ -170,8 +185,11 @@ export const CosmicWeatherBanner = ({
 
   // Auto-fetch insights when component mounts
   useEffect(() => {
+    // Reset hasFetched when date changes
+    hasFetched.current = false;
+    setAiInsights(null);
     fetchInsights();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [dateKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Simple markdown to HTML conversion for the insights
   const formatInsights = (text: string) => {
