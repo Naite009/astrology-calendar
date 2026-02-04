@@ -745,9 +745,8 @@ Keep the tone professional, insightful, and practically applicable.`
                       );
                       return (
                         <>
-                          {/* Use sign NAME instead of glyph for clarity */}
                           <p className="font-medium">
-                            {moonSignLabel}
+                            {ZODIAC_SYMBOLS[moonSignLabel as keyof typeof ZODIAC_SYMBOLS] || ''} {moonSignLabel}
                           </p>
                           <p className="text-lg font-bold text-primary">
                             {formatDegreeMinutes(currentMoonDegree, currentMoonMinutes)}
@@ -771,9 +770,8 @@ Keep the tone professional, insightful, and practically applicable.`
                       const sunDegrees = currentPlanets?.sun?.rawDegree || currentPlanets?.sun?.degree || planets.sun?.degree || 0;
                       return (
                         <>
-                          {/* Use sign NAME instead of glyph for clarity */}
                           <p className="font-medium">
-                            {sunSignLabel}
+                            {ZODIAC_SYMBOLS[sunSignLabel as keyof typeof ZODIAC_SYMBOLS] || ''} {sunSignLabel}
                           </p>
                           <p className="text-lg font-bold text-amber-600">
                             {formatDegreeMinutes(sunDegrees, currentPlanets?.sun?.minutes)}
