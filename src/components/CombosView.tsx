@@ -91,9 +91,31 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
   };
 
   const getChartPos = (planetName: string) => {
-    const pos = selectedChart?.planets?.[planetName as keyof NatalChart['planets']];
+    if (!selectedChart) return null;
+
+    // IMPORTANT: For angles/points, prefer house cusp data when present.
+    // This avoids mismatches when a chart import/OCR captured the DC instead of AC.
+    if (planetName === 'Ascendant') {
+      const cusp1 = selectedChart.houseCusps?.house1;
+      if (cusp1?.sign) {
+        const degNum = typeof cusp1.degree === 'number' ? cusp1.degree : Number(cusp1.degree);
+        const minNum = typeof cusp1.minutes === 'number' ? cusp1.minutes : Number(cusp1.minutes);
+        const safeDeg = Number.isFinite(degNum) ? degNum : 0;
+        const safeMin = Number.isFinite(minNum) ? minNum : 0;
+        return { sign: cusp1.sign, degree: safeDeg + safeMin / 60 };
+      }
+    }
+
+    const pos = selectedChart.planets?.[planetName as keyof NatalChart['planets']];
     if (!pos?.sign) return null;
-    const deg = pos.degree + (pos.minutes || 0) / 60 + (pos.seconds || 0) / 3600;
+    const degNum = typeof pos.degree === 'number' ? pos.degree : Number(pos.degree);
+    const minNum = typeof pos.minutes === 'number' ? pos.minutes : Number(pos.minutes);
+    const secNum = typeof pos.seconds === 'number' ? pos.seconds : Number(pos.seconds);
+    const safeDeg = Number.isFinite(degNum) ? degNum : 0;
+    const safeMin = Number.isFinite(minNum) ? minNum : 0;
+    const safeSec = Number.isFinite(secNum) ? secNum : 0;
+
+    const deg = safeDeg + safeMin / 60 + safeSec / 3600;
     return { sign: pos.sign, degree: deg };
   };
 
