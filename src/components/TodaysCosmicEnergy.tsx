@@ -1297,13 +1297,14 @@ Keep the tone professional, insightful, and practically applicable.`
                         <Badge 
                           key={planet} 
                           variant="secondary" 
-                          className="text-sm py-1.5 px-3"
+                          className="text-sm py-2 px-3 flex flex-col items-center gap-0.5"
                         >
-                          <span className="capitalize">{planet}</span>
-                          <span className="text-primary font-medium ml-1">
+                          <span className="capitalize text-xs text-muted-foreground">{planet}</span>
+                          <span className="text-primary font-medium">
                             {data.degree}°{displayMinutes.toString().padStart(2, '0')}'
                           </span>
-                          <span className="ml-1 text-primary">{ZODIAC_SYMBOLS[data.sign] || ''}</span>
+                          <span className="text-lg text-primary">{ZODIAC_SYMBOLS[data.sign] || ''}</span>
+                          <span className="text-[10px] text-muted-foreground">{data.sign}</span>
                         </Badge>
                       );
                     })}
