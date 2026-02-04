@@ -1317,14 +1317,19 @@ Keep the tone professional, insightful, and practically applicable.`
                 <CardContent>
                   {(() => {
                     const allEntries = Object.entries(currentPlanets || planets).filter(([, data]) => data && data.sign);
-                    // Separate North Node to second row
-                    const firstRow = allEntries.filter(([planet]) => planet.toLowerCase() !== 'northnode');
-                    const secondRow = allEntries.filter(([planet]) => planet.toLowerCase() === 'northnode');
+                    // Major planets on first row, nodes on second row (North Node before South Node)
+                    const nodeKeys = ['northnode', 'southnode'];
+                    const majorPlanets = allEntries.filter(([planet]) => !nodeKeys.includes(planet.toLowerCase()));
+                    const nodes = allEntries
+                      .filter(([planet]) => nodeKeys.includes(planet.toLowerCase()))
+                      .sort((a, b) => nodeKeys.indexOf(a[0].toLowerCase()) - nodeKeys.indexOf(b[0].toLowerCase()));
                     
                     const renderPlanetBadge = ([planet, data]: [string, typeof planets.sun]) => {
                       if (!data || !data.sign) return null;
                       const displayMinutes = data.minutes !== undefined ? data.minutes : 0;
-                      const displayName = planet === 'northnode' ? 'North Node' : planet.charAt(0).toUpperCase() + planet.slice(1);
+                      const displayName = planet === 'northnode' ? 'North Node' : 
+                                          planet === 'southnode' ? 'South Node' :
+                                          planet.charAt(0).toUpperCase() + planet.slice(1);
                       return (
                         <Badge 
                           key={planet} 
@@ -1344,11 +1349,11 @@ Keep the tone professional, insightful, and practically applicable.`
                     return (
                       <div className="space-y-3">
                         <div className="flex flex-wrap gap-2 justify-center">
-                          {firstRow.map(renderPlanetBadge)}
+                          {majorPlanets.map(renderPlanetBadge)}
                         </div>
-                        {secondRow.length > 0 && (
+                        {nodes.length > 0 && (
                           <div className="flex flex-wrap gap-2 justify-center">
-                            {secondRow.map(renderPlanetBadge)}
+                            {nodes.map(renderPlanetBadge)}
                           </div>
                         )}
                       </div>
