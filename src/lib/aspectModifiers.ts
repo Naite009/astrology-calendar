@@ -1103,6 +1103,969 @@ const MOON_NEPTUNE: PlanetPairAspects = {
   ]
 };
 
+/**
+ * Venus-Saturn: The Serious Heart
+ */
+const VENUS_SATURN: PlanetPairAspects = {
+  planet1: 'Venus',
+  planet2: 'Saturn',
+  coreSignature: 'The Committed Lover',
+  coreDescription: 'Venus + Saturn = love that takes time, commitment, and maturity. This combination delays gratification in love but builds lasting bonds. May experience early rejection or limitation around love, beauty, or money. Eventually develops deep loyalty and enduring relationships.',
+  aspects: [
+    {
+      aspectType: 'Conjunction',
+      symbol: '☌',
+      name: 'The Devoted One',
+      tone: '"Love is serious business."',
+      description: 'Love and responsibility are fused. Takes relationships extremely seriously. May have felt unloved or unworthy early in life. Develops deep capacity for commitment. Often attracts or is attracted to older partners.',
+      gifts: [
+        'Profound loyalty and commitment',
+        'Love that endures time',
+        'Values quality over quantity',
+        'Builds lasting partnerships'
+      ],
+      challenges: [
+        'May feel unlovable',
+        'Early experiences of rejection',
+        'Difficulty expressing affection',
+        'Fear of intimacy or vulnerability'
+      ]
+    },
+    {
+      aspectType: 'Square',
+      symbol: '□',
+      name: 'The Love Lesson',
+      tone: '"I must earn love."',
+      description: 'Friction between desire for love and fear of rejection. May have experienced coldness from parents. Creates depth through romantic struggle. Eventually learns self-worth is not dependent on others\' approval.',
+      gifts: [
+        'Develops self-worth through struggle',
+        'Learns to love unconditionally',
+        'Builds character through rejection',
+        'Eventually becomes deeply loyal partner'
+      ],
+      challenges: [
+        'Fear of rejection creates walls',
+        'May choose unavailable partners',
+        'Self-worth tied to relationships',
+        'Can become cold or withholding'
+      ]
+    },
+    {
+      aspectType: 'Opposition',
+      symbol: '☍',
+      name: 'The Relationship Mirror',
+      tone: '"Partners teach me about commitment."',
+      description: 'Projects either coldness or neediness onto partners. May attract older, more serious, or unavailable partners. Through relationships, learns to balance affection with appropriate boundaries.',
+      gifts: [
+        'Learns commitment through others',
+        'Develops healthy boundaries',
+        'Grows into mature love',
+        'Understands relationship dynamics'
+      ],
+      challenges: [
+        'Attracts cold or distant partners',
+        'May project own fears onto beloved',
+        'Relationships feel like tests',
+        'Must own capacity for commitment'
+      ]
+    },
+    {
+      aspectType: 'Trine',
+      symbol: '△',
+      name: 'The Natural Loyalist',
+      tone: '"Commitment comes easily."',
+      description: 'Easy integration of love and responsibility. Natural maturity in relationships. May not struggle with commitment the way others do. Values substance over surface.',
+      gifts: [
+        'Natural relationship maturity',
+        'Easy commitment',
+        'Stable love nature',
+        'Values depth in relationships'
+      ],
+      challenges: [
+        'May take loyalty for granted',
+        'Could become too serious',
+        'Less growth through romantic struggle',
+        'Comfort can become routine'
+      ]
+    },
+    {
+      aspectType: 'Sextile',
+      symbol: '⚹',
+      name: 'The Developing Commitment',
+      tone: '"I can learn to build lasting love."',
+      description: 'Opportunity to develop mature love that needs conscious effort. Can build lasting relationships with practice. Good at practical aspects of partnership.',
+      gifts: [
+        'Can develop commitment skills',
+        'Learns relationship maturity',
+        'Practical approach to love',
+        'Grows loyalty over time'
+      ],
+      challenges: [
+        'Commitment requires effort',
+        'May avoid depth initially',
+        'Could settle for convenience',
+        'Needs conscious relationship work'
+      ]
+    }
+  ]
+};
+
+/**
+ * Mars-Neptune: The Spiritual Warrior
+ */
+const MARS_NEPTUNE: PlanetPairAspects = {
+  planet1: 'Mars',
+  planet2: 'Neptune',
+  coreSignature: 'The Inspired Actor',
+  coreDescription: 'Mars + Neptune = action guided by vision, imagination, or spiritual purpose. This combination can be the artist, the healer, the spiritual warrior—or the escapist who can\'t follow through. Drive is tied to dreams. When aligned, accomplishes the impossible through inspiration. When misaligned, energy dissipates into fantasy.',
+  aspects: [
+    {
+      aspectType: 'Conjunction',
+      symbol: '☌',
+      name: 'The Dream Warrior',
+      tone: '"I act on inspiration."',
+      description: 'Action and imagination are fused. Can accomplish seemingly impossible things when inspired. May struggle with consistent energy or clear direction. Exceptional for artists, healers, and spiritual practitioners.',
+      gifts: [
+        'Action guided by vision',
+        'Artistic and healing abilities',
+        'Fights for the underdog',
+        'Inspired creative drive'
+      ],
+      challenges: [
+        'Energy fluctuates mysteriously',
+        'May lack clear direction',
+        'Escapism through action or inaction',
+        'Confusion about what you really want'
+      ]
+    },
+    {
+      aspectType: 'Square',
+      symbol: '□',
+      name: 'The Frustrated Idealist',
+      tone: '"My dreams and my actions don\'t align."',
+      description: 'Friction between what you want and what you imagine. May start projects that never finish. Creates depth through struggle to align vision with action. Eventually learns to ground inspiration in practical steps.',
+      gifts: [
+        'Learns to ground visions',
+        'Develops discernment about action',
+        'Creates through frustration',
+        'Eventually bridges dream and reality'
+      ],
+      challenges: [
+        'Starts but doesn\'t finish',
+        'Energy leaks into fantasy',
+        'May feel victimized or weak',
+        'Addiction or escapism potential'
+      ]
+    },
+    {
+      aspectType: 'Opposition',
+      symbol: '☍',
+      name: 'The Action Mirror',
+      tone: '"Others inspire or drain my energy."',
+      description: 'Projects either the warrior or the victim onto others. May attract charismatic but unreliable partners. Through relationships, learns to own inspired action and set boundaries.',
+      gifts: [
+        'Learns action through others',
+        'Develops inspired boundaries',
+        'Grows through collaboration',
+        'Understands motivation dynamics'
+      ],
+      challenges: [
+        'May attract energy vampires',
+        'Projects weakness onto others',
+        'Confused about own desires',
+        'Must own inner warrior'
+      ]
+    },
+    {
+      aspectType: 'Trine',
+      symbol: '△',
+      name: 'The Natural Healer',
+      tone: '"Inspired action flows naturally."',
+      description: 'Easy access to inspired action. Natural healer or artist. Energy flows when connected to meaningful purpose. May not recognize gift as unusual.',
+      gifts: [
+        'Natural healing presence',
+        'Effortless inspired action',
+        'Creative flow states',
+        'Compassionate strength'
+      ],
+      challenges: [
+        'May take gifts for granted',
+        'Could avoid necessary conflict',
+        'Less clarity from struggle',
+        'Gifts may remain passive'
+      ]
+    },
+    {
+      aspectType: 'Sextile',
+      symbol: '⚹',
+      name: 'The Developing Visionary',
+      tone: '"I can learn to act on inspiration."',
+      description: 'Opportunity for inspired action that needs cultivation. Can develop healing or artistic abilities with practice. Good at occasional acts of inspired service.',
+      gifts: [
+        'Can develop inspired action',
+        'Learns healing abilities',
+        'Grows visionary capacity',
+        'Activated compassion'
+      ],
+      challenges: [
+        'Inspiration requires activation',
+        'May not naturally flow',
+        'Could stay practical only',
+        'Needs spiritual practice'
+      ]
+    }
+  ]
+};
+
+/**
+ * Sun-Uranus: The Individualist
+ */
+const SUN_URANUS: PlanetPairAspects = {
+  planet1: 'Sun',
+  planet2: 'Uranus',
+  coreSignature: 'The Awakener',
+  coreDescription: 'Sun + Uranus = identity that demands freedom and authenticity. This combination cannot conform. The self is linked to originality, rebellion, and sudden changes. May have had disrupted relationship with father or experienced sudden life changes. Becomes the agent of awakening for others.',
+  aspects: [
+    {
+      aspectType: 'Conjunction',
+      symbol: '☌',
+      name: 'The Revolutionary Self',
+      tone: '"I am here to break the mold."',
+      description: 'Identity and freedom are fused. Cannot be conventional. May have experienced sudden disruptions or unusual father. Natural innovator who awakens others. Lives on the edge of the new.',
+      gifts: [
+        'Powerfully original',
+        'Awakens others naturally',
+        'Pioneering vision',
+        'Authentic no matter the cost'
+      ],
+      challenges: [
+        'Cannot commit to convention',
+        'Disruptive life changes',
+        'May have had absent or unusual father',
+        'Difficulty with stability'
+      ]
+    },
+    {
+      aspectType: 'Square',
+      symbol: '□',
+      name: 'The Inner Rebel',
+      tone: '"I fight for my right to be different."',
+      description: 'Friction between identity and need for freedom. May rebel against self or authority. Creates breakthroughs through tension. Eventually integrates individuality with functional life.',
+      gifts: [
+        'Breakthroughs through tension',
+        'Cannot be suppressed',
+        'Develops resilient individuality',
+        'Eventually owns uniqueness'
+      ],
+      challenges: [
+        'Self-sabotage through rebellion',
+        'Nervous system tension',
+        'Fights authority reflexively',
+        'Disrupts own success'
+      ]
+    },
+    {
+      aspectType: 'Opposition',
+      symbol: '☍',
+      name: 'The Freedom Mirror',
+      tone: '"Others awaken or disrupt me."',
+      description: 'Projects originality or chaos onto others. May attract unusual or unstable partners. Through relationships, learns to own inner genius and need for independence.',
+      gifts: [
+        'Learns freedom through others',
+        'Develops balanced independence',
+        'Grows through relationship disruption',
+        'Understands awakening dynamics'
+      ],
+      challenges: [
+        'Attracts unstable partners',
+        'Projects genius onto others',
+        'Relationships disrupt identity',
+        'Must own inner revolutionary'
+      ]
+    },
+    {
+      aspectType: 'Trine',
+      symbol: '△',
+      name: 'The Natural Original',
+      tone: '"Being different comes easily."',
+      description: 'Easy access to originality. Natural innovator without the drama. Comfortable being different. May not recognize uniqueness as unusual.',
+      gifts: [
+        'Effortless originality',
+        'Natural innovator',
+        'Comfortable with change',
+        'Unique without trying'
+      ],
+      challenges: [
+        'May take genius for granted',
+        'Could avoid necessary stability',
+        'Less growth through disruption',
+        'Originality can become superficial'
+      ]
+    },
+    {
+      aspectType: 'Sextile',
+      symbol: '⚹',
+      name: 'The Developing Innovator',
+      tone: '"I can learn to embrace my uniqueness."',
+      description: 'Opportunity for originality that needs activation. Can develop innovative abilities with practice. Good at occasional acts of breakthrough.',
+      gifts: [
+        'Can develop uniqueness',
+        'Learns innovation skills',
+        'Grows individuality consciously',
+        'Activated originality'
+      ],
+      challenges: [
+        'Genius requires activation',
+        'May default to convention',
+        'Could avoid necessary change',
+        'Needs stimulating environment'
+      ]
+    }
+  ]
+};
+
+/**
+ * Mercury-Saturn: The Serious Mind
+ */
+const MERCURY_SATURN: PlanetPairAspects = {
+  planet1: 'Mercury',
+  planet2: 'Saturn',
+  coreSignature: 'The Disciplined Thinker',
+  coreDescription: 'Mercury + Saturn = the mind shaped by structure, limitation, and the need for authority. This combination thinks carefully and speaks with weight. May have experienced early criticism or learning difficulties. Eventually becomes the expert, the author, the respected voice.',
+  aspects: [
+    {
+      aspectType: 'Conjunction',
+      symbol: '☌',
+      name: 'The Authority Mind',
+      tone: '"My words carry weight."',
+      description: 'Thinking and responsibility are fused. Takes communication seriously. May have felt stupid or been criticized early. Develops authoritative expertise over time.',
+      gifts: [
+        'Authoritative communication',
+        'Disciplined thinking',
+        'Becomes respected expert',
+        'Words carry lasting weight'
+      ],
+      challenges: [
+        'Fear of speaking or writing',
+        'May have felt intellectually inadequate',
+        'Worry and negative thinking',
+        'Harsh inner critic'
+      ]
+    },
+    {
+      aspectType: 'Square',
+      symbol: '□',
+      name: 'The Mental Struggle',
+      tone: '"I must prove my intelligence."',
+      description: 'Friction between thoughts and self-doubt. May have experienced learning challenges or criticism. Creates depth through mental struggle. Eventually becomes the one who teaches what was hardest to learn.',
+      gifts: [
+        'Teaches what was hard to learn',
+        'Develops mental discipline',
+        'Builds expertise through struggle',
+        'Eventually trusted authority'
+      ],
+      challenges: [
+        'Learning difficulties possible',
+        'Speech anxiety or blocks',
+        'Negative thought patterns',
+        'Harsh self-criticism'
+      ]
+    },
+    {
+      aspectType: 'Opposition',
+      symbol: '☍',
+      name: 'The Communication Mirror',
+      tone: '"Others judge or validate my thinking."',
+      description: 'Projects intellectual authority onto others. May attract critical or knowledgeable partners. Through relationships, learns to own mental authority.',
+      gifts: [
+        'Learns authority through dialogue',
+        'Develops balanced confidence',
+        'Grows through intellectual exchange',
+        'Understands communication dynamics'
+      ],
+      challenges: [
+        'May feel intellectually inferior',
+        'Attracts critical partners',
+        'Projects authority onto others',
+        'Must own inner expert'
+      ]
+    },
+    {
+      aspectType: 'Trine',
+      symbol: '△',
+      name: 'The Natural Scholar',
+      tone: '"Structured thinking comes easily."',
+      description: 'Easy access to disciplined thought. Natural student and teacher. Mental organization comes naturally. May not recognize gift for serious thinking.',
+      gifts: [
+        'Natural mental discipline',
+        'Easy learning and teaching',
+        'Comfortable with complexity',
+        'Authoritative without effort'
+      ],
+      challenges: [
+        'May take intellect for granted',
+        'Could become too serious',
+        'Less growth through mental struggle',
+        'Discipline can become rigidity'
+      ]
+    },
+    {
+      aspectType: 'Sextile',
+      symbol: '⚹',
+      name: 'The Developing Authority',
+      tone: '"I can build mental discipline."',
+      description: 'Opportunity for structured thinking that needs cultivation. Can develop expertise with practice. Good at focused study when motivated.',
+      gifts: [
+        'Can develop expertise',
+        'Learns mental discipline',
+        'Grows authority over time',
+        'Activated scholarship'
+      ],
+      challenges: [
+        'Discipline requires effort',
+        'May avoid serious study',
+        'Could stay superficial',
+        'Needs structured environment'
+      ]
+    }
+  ]
+};
+
+/**
+ * Sun-Neptune: The Mystic Identity
+ */
+const SUN_NEPTUNE: PlanetPairAspects = {
+  planet1: 'Sun',
+  planet2: 'Neptune',
+  coreSignature: 'The Dreamer',
+  coreDescription: 'Sun + Neptune = identity infused with imagination, spirituality, and longing. This combination may struggle to know who they truly are, but has exceptional capacity for compassion, artistry, and spiritual connection. Often associated with absent or idealized fathers. Becomes the artist, healer, or mystic.',
+  aspects: [
+    {
+      aspectType: 'Conjunction',
+      symbol: '☌',
+      name: 'The Mystic Self',
+      tone: '"I am connected to something greater."',
+      description: 'Identity and spirituality are fused. May have difficulty with ego boundaries. Exceptional artistic and spiritual sensitivity. Often had absent, addicted, or idealized father.',
+      gifts: [
+        'Deep spiritual connection',
+        'Exceptional artistic gifts',
+        'Compassionate presence',
+        'Channels higher inspiration'
+      ],
+      challenges: [
+        'Unclear sense of self',
+        'Father absent or idealized',
+        'Escapism and addiction potential',
+        'Difficulty with practical life'
+      ]
+    },
+    {
+      aspectType: 'Square',
+      symbol: '□',
+      name: 'The Identity Confusion',
+      tone: '"I struggle to know who I am."',
+      description: 'Friction between ego and dissolution. May feel lost or undefined. Creates depth through spiritual struggle. Eventually finds identity through surrendering the need for fixed identity.',
+      gifts: [
+        'Develops through spiritual crisis',
+        'Learns ego flexibility',
+        'Creates from confusion',
+        'Eventually finds transcendent identity'
+      ],
+      challenges: [
+        'Identity confusion and crisis',
+        'Deception or self-deception',
+        'May feel like a fraud',
+        'Escapism under stress'
+      ]
+    },
+    {
+      aspectType: 'Opposition',
+      symbol: '☍',
+      name: 'The Spiritual Mirror',
+      tone: '"Others reflect my spirituality or confusion."',
+      description: 'Projects spiritual nature onto others. May attract artists, healers, or lost souls. Through relationships, learns to own inner mystic.',
+      gifts: [
+        'Learns spirituality through others',
+        'Develops discernment',
+        'Grows through relationship mirrors',
+        'Understands projection'
+      ],
+      challenges: [
+        'Attracts confusing partners',
+        'May be deceived by others',
+        'Projects idealism onto beloved',
+        'Must own inner mystic'
+      ]
+    },
+    {
+      aspectType: 'Trine',
+      symbol: '△',
+      name: 'The Natural Mystic',
+      tone: '"Spiritual connection comes easily."',
+      description: 'Easy access to spiritual and artistic realms. Natural compassion without overwhelm. May not recognize gifts as unusual.',
+      gifts: [
+        'Effortless spiritual connection',
+        'Natural artistic gifts',
+        'Comfortable with mystery',
+        'Compassionate without losing self'
+      ],
+      challenges: [
+        'May take gifts for granted',
+        'Could avoid necessary definition',
+        'Less growth through struggle',
+        'Gifts may remain unconscious'
+      ]
+    },
+    {
+      aspectType: 'Sextile',
+      symbol: '⚹',
+      name: 'The Developing Mystic',
+      tone: '"I can learn to trust my spiritual nature."',
+      description: 'Opportunity for spiritual and artistic development that needs cultivation. Can develop intuitive abilities with practice.',
+      gifts: [
+        'Can develop spiritual gifts',
+        'Learns artistic expression',
+        'Grows intuitive capacity',
+        'Activated imagination'
+      ],
+      challenges: [
+        'Gifts require development',
+        'May stay too practical',
+        'Could avoid spiritual path',
+        'Needs creative practice'
+      ]
+    }
+  ]
+};
+
+/**
+ * Mars-Saturn: The Disciplined Warrior
+ */
+const MARS_SATURN: PlanetPairAspects = {
+  planet1: 'Mars',
+  planet2: 'Saturn',
+  coreSignature: 'The Controlled Force',
+  coreDescription: 'Mars + Saturn = action that is controlled, disciplined, and often delayed. This combination builds endurance and persistence. May experience frustration, blocked anger, or conflict with authority. Eventually develops iron will and lasting achievement.',
+  aspects: [
+    {
+      aspectType: 'Conjunction',
+      symbol: '☌',
+      name: 'The Iron Will',
+      tone: '"I achieve through persistence."',
+      description: 'Action and discipline are fused. Exceptional endurance and determination. May suppress anger or face authority conflicts. Accomplishes through sheer persistence.',
+      gifts: [
+        'Iron determination',
+        'Exceptional endurance',
+        'Controlled strength',
+        'Achieves long-term goals'
+      ],
+      challenges: [
+        'Suppressed anger',
+        'Conflict with authority',
+        'May feel blocked or frustrated',
+        'Cold or harsh expression'
+      ]
+    },
+    {
+      aspectType: 'Square',
+      symbol: '□',
+      name: 'The Frustrated Will',
+      tone: '"I fight against limitation."',
+      description: 'Friction between desire and restriction. May experience blocked action or anger issues. Creates strength through frustration. Eventually learns to channel force productively.',
+      gifts: [
+        'Builds strength through resistance',
+        'Cannot be stopped when determined',
+        'Develops exceptional discipline',
+        'Eventually channels force wisely'
+      ],
+      challenges: [
+        'Anger and frustration issues',
+        'May feel constantly blocked',
+        'Conflict with authority figures',
+        'Physical tension and stress'
+      ]
+    },
+    {
+      aspectType: 'Opposition',
+      symbol: '☍',
+      name: 'The Authority Conflict',
+      tone: '"Others block or challenge my will."',
+      description: 'Projects either aggression or limitation onto others. May attract controlling partners or battles with authority. Through conflict, learns to own inner discipline.',
+      gifts: [
+        'Learns discipline through others',
+        'Develops balanced assertion',
+        'Grows through conflict',
+        'Understands power dynamics'
+      ],
+      challenges: [
+        'Attracts controlling figures',
+        'Battles with authority',
+        'Projects anger onto others',
+        'Must own inner discipline'
+      ]
+    },
+    {
+      aspectType: 'Trine',
+      symbol: '△',
+      name: 'The Natural Disciplinarian',
+      tone: '"Controlled action comes easily."',
+      description: 'Easy integration of action and discipline. Natural endurance. Accomplishes without excessive friction. May not recognize gift for controlled force.',
+      gifts: [
+        'Natural discipline in action',
+        'Easy endurance',
+        'Comfortable with hard work',
+        'Achieves without drama'
+      ],
+      challenges: [
+        'May take discipline for granted',
+        'Could become rigid',
+        'Less growth through friction',
+        'Discipline can become cold'
+      ]
+    },
+    {
+      aspectType: 'Sextile',
+      symbol: '⚹',
+      name: 'The Developing Discipline',
+      tone: '"I can learn to channel my force."',
+      description: 'Opportunity for disciplined action that needs cultivation. Can develop endurance and persistence with practice.',
+      gifts: [
+        'Can develop discipline',
+        'Learns controlled action',
+        'Grows persistence',
+        'Activated endurance'
+      ],
+      challenges: [
+        'Discipline requires effort',
+        'May avoid hard work',
+        'Could stay impulsive',
+        'Needs structured challenges'
+      ]
+    }
+  ]
+};
+
+/**
+ * Jupiter-Uranus: The Breakthrough
+ */
+const JUPITER_URANUS: PlanetPairAspects = {
+  planet1: 'Jupiter',
+  planet2: 'Uranus',
+  coreSignature: 'The Lucky Rebel',
+  coreDescription: 'Jupiter + Uranus = expansion through breakthrough and innovation. This combination brings sudden luck, unexpected opportunities, and liberation. Cannot be contained by convention. Often experiences dramatic reversals of fortune—both up and down.',
+  aspects: [
+    {
+      aspectType: 'Conjunction',
+      symbol: '☌',
+      name: 'The Breakthrough Moment',
+      tone: '"I am here for the breakthrough."',
+      description: 'Expansion and liberation are fused. Born during times of major collective breakthrough. Experiences sudden luck and opportunities. Natural innovator and freedom-seeker.',
+      gifts: [
+        'Sudden luck and opportunity',
+        'Natural innovator',
+        'Born during breakthrough times',
+        'Cannot be contained'
+      ],
+      challenges: [
+        'Restless and never satisfied',
+        'Over-promises liberation',
+        'May not follow through',
+        'Luck can reverse suddenly'
+      ]
+    },
+    {
+      aspectType: 'Square',
+      symbol: '□',
+      name: 'The Restless Expansion',
+      tone: '"I fight for freedom to grow."',
+      description: 'Friction between expansion and liberation. May experience sudden ups and downs. Creates breakthroughs through tension. Eventually learns to stabilize innovation.',
+      gifts: [
+        'Breakthroughs through tension',
+        'Cannot be suppressed',
+        'Develops resilient optimism',
+        'Eventually grounds innovation'
+      ],
+      challenges: [
+        'Wild fluctuations in fortune',
+        'Restless and scattered',
+        'Over-extends then crashes',
+        'Difficulty with stability'
+      ]
+    },
+    {
+      aspectType: 'Opposition',
+      symbol: '☍',
+      name: 'The Freedom-Growth Balance',
+      tone: '"Others bring breakthrough or chaos."',
+      description: 'Projects either expansion or liberation onto others. May attract adventurous but unreliable partners. Through relationships, learns to balance growth with stability.',
+      gifts: [
+        'Learns balance through others',
+        'Develops grounded freedom',
+        'Grows through partnership adventures',
+        'Understands breakthrough dynamics'
+      ],
+      challenges: [
+        'Attracts unreliable types',
+        'Projects restlessness onto others',
+        'Relationships disrupt growth',
+        'Must own inner innovator'
+      ]
+    },
+    {
+      aspectType: 'Trine',
+      symbol: '△',
+      name: 'The Natural Lucky Rebel',
+      tone: '"Breakthrough comes easily."',
+      description: 'Easy access to sudden opportunity. Natural innovator without the chaos. Lucky in unconventional pursuits.',
+      gifts: [
+        'Effortless breakthrough',
+        'Lucky in innovation',
+        'Comfortable with change',
+        'Natural rebel with results'
+      ],
+      challenges: [
+        'May take luck for granted',
+        'Could avoid necessary commitment',
+        'Less growth through struggle',
+        'Luck can create complacency'
+      ]
+    },
+    {
+      aspectType: 'Sextile',
+      symbol: '⚹',
+      name: 'The Developing Innovator',
+      tone: '"I can learn to create breakthrough."',
+      description: 'Opportunity for breakthrough that needs activation. Can develop innovative abilities with practice.',
+      gifts: [
+        'Can develop breakthrough skills',
+        'Learns to innovate',
+        'Grows through calculated risks',
+        'Activated luck'
+      ],
+      challenges: [
+        'Luck requires activation',
+        'May default to safety',
+        'Could avoid necessary risks',
+        'Needs stimulating environment'
+      ]
+    }
+  ]
+};
+
+/**
+ * Venus-Pluto: The Obsessive Heart
+ */
+const VENUS_PLUTO: PlanetPairAspects = {
+  planet1: 'Venus',
+  planet2: 'Pluto',
+  coreSignature: 'The Transformative Lover',
+  coreDescription: 'Venus + Pluto = love that transforms, obsesses, and regenerates. This combination experiences love at extremes—passionate, possessive, healing, or destructive. Relationships serve as vehicles for profound transformation. May have experienced early loss or betrayal in love.',
+  aspects: [
+    {
+      aspectType: 'Conjunction',
+      symbol: '☌',
+      name: 'The Magnetic Heart',
+      tone: '"Love transforms me utterly."',
+      description: 'Love and transformation are fused. Powerfully magnetic. Experiences intense, all-consuming attractions. May have experienced betrayal or loss. Loves heal or destroy—no middle ground.',
+      gifts: [
+        'Profoundly transformative love',
+        'Magnetic attraction',
+        'Heals through intimacy',
+        'Intensity creates depth'
+      ],
+      challenges: [
+        'Obsessive attachments',
+        'May have experienced betrayal',
+        'Jealousy and possession',
+        'All-or-nothing in love'
+      ]
+    },
+    {
+      aspectType: 'Square',
+      symbol: '□',
+      name: 'The Love Crisis',
+      tone: '"Love brings me to my knees."',
+      description: 'Friction between love and power. Relationships trigger deep transformation. May experience painful endings that lead to rebirth. Eventually learns healthy intimacy through crisis.',
+      gifts: [
+        'Transformed through love\'s fire',
+        'Develops authentic intimacy',
+        'Cannot do superficial love',
+        'Eventually becomes powerful healer'
+      ],
+      challenges: [
+        'Painful relationship patterns',
+        'Jealousy and power struggles',
+        'May attract or become controlling',
+        'Trust issues in love'
+      ]
+    },
+    {
+      aspectType: 'Opposition',
+      symbol: '☍',
+      name: 'The Intensity Mirror',
+      tone: '"Partners transform or destroy me."',
+      description: 'Projects intensity or obsession onto partners. May attract powerful, controlling, or transformative lovers. Through relationships, learns to own inner power.',
+      gifts: [
+        'Transformed through partnership',
+        'Develops balanced power in love',
+        'Grows through intense relating',
+        'Understands intimacy dynamics'
+      ],
+      challenges: [
+        'Attracts controlling partners',
+        'Power dynamics in relationships',
+        'Projects obsession onto others',
+        'Must own inner intensity'
+      ]
+    },
+    {
+      aspectType: 'Trine',
+      symbol: '△',
+      name: 'The Natural Transformer',
+      tone: '"Deep love comes naturally."',
+      description: 'Easy access to transformative love. Natural depth in relationships without the drama. Comfortable with intimacy and intensity.',
+      gifts: [
+        'Natural depth in love',
+        'Easy intimacy',
+        'Comfortable with intensity',
+        'Transforms without crisis'
+      ],
+      challenges: [
+        'May take depth for granted',
+        'Could avoid necessary growth',
+        'Less transformation through struggle',
+        'Intensity can become comfortable rut'
+      ]
+    },
+    {
+      aspectType: 'Sextile',
+      symbol: '⚹',
+      name: 'The Developing Depth',
+      tone: '"I can learn to love deeply."',
+      description: 'Opportunity for transformative love that needs cultivation. Can develop depth and intimacy with practice.',
+      gifts: [
+        'Can develop love\'s depth',
+        'Learns transformative intimacy',
+        'Grows through conscious relating',
+        'Activated passion'
+      ],
+      challenges: [
+        'Depth requires effort',
+        'May stay on surface',
+        'Could avoid intensity',
+        'Needs committed practice'
+      ]
+    }
+  ]
+};
+
+/**
+ * Jupiter-Neptune: The Visionary Faith
+ */
+const JUPITER_NEPTUNE: PlanetPairAspects = {
+  planet1: 'Jupiter',
+  planet2: 'Neptune',
+  coreSignature: 'The Spiritual Expansion',
+  coreDescription: 'Jupiter + Neptune = faith and imagination combined. This combination dreams big and believes deeply. May struggle with discernment between inspiration and delusion. Exceptional for spiritual teachers, artists, and visionaries. Can achieve the impossible through faith—or lose everything through misplaced trust.',
+  aspects: [
+    {
+      aspectType: 'Conjunction',
+      symbol: '☌',
+      name: 'The Infinite Dreamer',
+      tone: '"I believe in the impossible."',
+      description: 'Faith and imagination are fused. Born during times of collective spiritual awakening. Exceptional visionary capacity. May struggle to distinguish hope from delusion.',
+      gifts: [
+        'Infinite imagination',
+        'Profound spiritual faith',
+        'Visionary capacity',
+        'Believes miracles into being'
+      ],
+      challenges: [
+        'May believe anything',
+        'Lack of discernment',
+        'Over-idealistic promises',
+        'Can be deceived or deceive'
+      ]
+    },
+    {
+      aspectType: 'Square',
+      symbol: '□',
+      name: 'The Faith Crisis',
+      tone: '"My beliefs are tested by reality."',
+      description: 'Friction between hope and confusion. May experience spiritual crisis or disillusionment. Creates wisdom through spiritual struggle. Eventually develops discerning faith.',
+      gifts: [
+        'Wisdom through spiritual testing',
+        'Develops discerning faith',
+        'Learns from disappointment',
+        'Eventually becomes grounded mystic'
+      ],
+      challenges: [
+        'Spiritual confusion',
+        'Over-promises and under-delivers',
+        'May be victim of spiritual fraud',
+        'Faith tested repeatedly'
+      ]
+    },
+    {
+      aspectType: 'Opposition',
+      symbol: '☍',
+      name: 'The Belief Mirror',
+      tone: '"Others reflect my faith or confusion."',
+      description: 'Projects spiritual nature onto others. May attract inspiring or deluded partners. Through relationships, develops balanced faith.',
+      gifts: [
+        'Learns spirituality through others',
+        'Develops balanced belief',
+        'Grows through shared vision',
+        'Understands faith dynamics'
+      ],
+      challenges: [
+        'Attracts spiritual charlatans',
+        'Projects idealism onto partners',
+        'May enable others\' delusions',
+        'Must own inner visionary'
+      ]
+    },
+    {
+      aspectType: 'Trine',
+      symbol: '△',
+      name: 'The Natural Visionary',
+      tone: '"Faith and imagination flow together."',
+      description: 'Easy access to spiritual vision. Natural faith without excessive confusion. Comfortable with the unseen.',
+      gifts: [
+        'Effortless spiritual vision',
+        'Natural faith',
+        'Comfortable with mystery',
+        'Inspires without overwhelming'
+      ],
+      challenges: [
+        'May take faith for granted',
+        'Could avoid discernment',
+        'Less wisdom from spiritual struggle',
+        'Vision can remain unfocused'
+      ]
+    },
+    {
+      aspectType: 'Sextile',
+      symbol: '⚹',
+      name: 'The Developing Visionary',
+      tone: '"I can learn to trust my vision."',
+      description: 'Opportunity for spiritual development that needs cultivation. Can develop visionary abilities with practice.',
+      gifts: [
+        'Can develop spiritual vision',
+        'Learns balanced faith',
+        'Grows intuitive capacity',
+        'Activated imagination'
+      ],
+      challenges: [
+        'Vision requires development',
+        'May stay too practical',
+        'Could avoid spiritual path',
+        'Needs faith practice'
+      ]
+    }
+  ]
+};
+
 // ============== COLLECTION ==============
 
 export const ALL_ASPECT_MODIFIERS: PlanetPairAspects[] = [
@@ -1116,6 +2079,16 @@ export const ALL_ASPECT_MODIFIERS: PlanetPairAspects[] = [
   MARS_PLUTO,
   JUPITER_SATURN,
   MOON_NEPTUNE,
+  // New additions
+  VENUS_SATURN,
+  MARS_NEPTUNE,
+  SUN_URANUS,
+  MERCURY_SATURN,
+  SUN_NEPTUNE,
+  MARS_SATURN,
+  JUPITER_URANUS,
+  VENUS_PLUTO,
+  JUPITER_NEPTUNE,
 ];
 
 /**
