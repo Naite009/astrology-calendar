@@ -732,11 +732,11 @@ Keep the tone professional, insightful, and practically applicable.`
                   <CardContent className="p-4 text-center">
                     <Moon className="h-6 w-6 mx-auto mb-2 text-primary" />
                     <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Moon Position</p>
-                    <div className="flex flex-col items-center">
-                      <span className="text-2xl">{ZODIAC_SYMBOLS[currentMoonSign || planets.moon?.sign || '']}</span>
-                      <span className="text-xs text-muted-foreground">{currentMoonSign || planets.moon?.sign}</span>
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-3xl">{ZODIAC_SYMBOLS[currentMoonSign || planets.moon?.sign || '']}</span>
+                      <span className="text-sm font-semibold text-foreground">{currentMoonSign || planets.moon?.sign}</span>
                     </div>
-                    <p className="text-lg font-bold text-primary">
+                    <p className="text-lg font-bold text-primary mt-1">
                       {formatDegreeMinutes(currentMoonDegree, currentMoonMinutes)}
                     </p>
                     <p className="text-xs text-muted-foreground">
@@ -748,11 +748,11 @@ Keep the tone professional, insightful, and practically applicable.`
                   <CardContent className="p-4 text-center">
                     <Sun className="h-6 w-6 mx-auto mb-2 text-amber-500" />
                     <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Sun Position</p>
-                    <div className="flex flex-col items-center">
-                      <span className="text-2xl">{ZODIAC_SYMBOLS[(currentPlanets?.sun?.sign || planets.sun?.sign) || '']}</span>
-                      <span className="text-xs text-muted-foreground">{currentPlanets?.sun?.sign || planets.sun?.sign}</span>
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-3xl">{ZODIAC_SYMBOLS[(currentPlanets?.sun?.sign || planets.sun?.sign) || '']}</span>
+                      <span className="text-sm font-semibold text-foreground">{currentPlanets?.sun?.sign || planets.sun?.sign}</span>
                     </div>
-                    <p className="text-lg font-bold text-amber-600">
+                    <p className="text-lg font-bold text-amber-600 mt-1">
                       {formatDegreeMinutes(currentPlanets?.sun?.rawDegree || currentPlanets?.sun?.degree || planets.sun?.degree || 0, currentPlanets?.sun?.minutes)}
                     </p>
                     <p className="text-xs text-muted-foreground">
