@@ -332,7 +332,41 @@ MOON SIGN FOOD GUIDANCE:
 - Fire Moons (Aries/Leo/Sag): Warming proteins, bold flavors
 - Earth Moons (Taurus/Virgo/Cap): Grounding, substantial, comfort foods
 - Air Moons (Gemini/Libra/Aqua): Variety, interesting combinations, but still warm in winter
-- Water Moons (Cancer/Scorpio/Pisces): Soups, broths, emotionally comforting foods`;
+- Water Moons (Cancer/Scorpio/Pisces): Soups, broths, emotionally comforting foods
+
+CRITICAL RECIPE VARIETY: You MUST select from this database. DO NOT repeat the same recipes. Track what you've suggested recently:
+
+WINTER BREAKFAST OPTIONS (rotate through these):
+Savory: Shakshuka, Congee with ginger, Migas, Cheese grits with bacon, Khichdi, Oatmeal with tahini and dates, Savory oatmeal with fried egg, Polenta with mushrooms, Masala dosa, Chilaquiles, Breakfast fried rice, Turkish menemen, Persian herb frittata, Huevos rancheros, Egyptian ful medames, Japanese tamago gohan
+Sweet: Steel-cut oats with cardamom and almonds, Buckwheat pancakes with warm berries, French toast with cinnamon apples, Banana bread oatmeal, Sweet potato hash, Warm quinoa porridge, Date and walnut muffins
+
+WINTER LUNCH OPTIONS (rotate through these):
+Soups: Tom yum, Mulligatawny, Minestrone, Roasted tomato basil, Corn chowder, Broccoli cheddar, Tuscan white bean, Split pea with ham, Carrot ginger, Roasted butternut squash, Borscht, Pho, Hot and sour soup, Pozole, Laksa, Scotch broth, Ribollita, Zuppa toscana, Avgolemono, Caldo verde
+Hearty: Buddha bowl with tahini, Falafel plate, Grain bowl with roasted vegetables, Stuffed bell peppers, Shepherd's pie, Pot pie, Chicken tikka masala, Pasta e fagioli, Bean and cheese burrito, Quesadilla with black beans
+
+WINTER DINNER OPTIONS (rotate through these):
+Main Dishes: Beef bourguignon, Chicken cacciatore, Lamb tagine, Coq au vin, Short ribs braised in red wine, Osso buco, Pot roast, Chicken adobo, Beef rendang, Massaman curry, Japanese curry, Korean bibimbap, Lamb shanks, Braised pork shoulder, Cassoulet, Duck confit, Moroccan chicken with preserved lemons, Ethiopian doro wat
+Vegetarian: Mushroom risotto, Eggplant parmesan, Ratatouille, Vegetable biryani, Chana masala, Palak paneer, Stuffed acorn squash, White bean cassoulet, Mushroom stroganoff, Vegetable lasagna, Cauliflower steaks with romesco
+Pasta: Cacio e pepe, Carbonara, Puttanesca, Bolognese, Pasta primavera (with roasted winter veg), Baked ziti, Lasagna, Orecchiette with sausage and broccoli rabe
+
+FIRE MOON RECIPES (Aries/Leo/Sagittarius):
+Spicy: Szechuan mapo tofu, Nashville hot chicken, Jerk chicken, Vindaloo, Arrabiata, Thai basil stir-fry, Kung pao chicken, Cajun jambalaya, Buffalo cauliflower, Harissa roasted chicken
+Bold: Chimichurri steak, Korean BBQ, Tandoori chicken, Blackened fish, Carne asada, Lamb kofta
+
+EARTH MOON RECIPES (Taurus/Virgo/Capricorn):
+Grounding: Roast chicken with root vegetables, Beef stew, Mashed potatoes with gravy, Meatloaf, Pot pie, Mac and cheese, Gratin dauphinois, Cottage pie, Toad in the hole, Bangers and mash
+Nurturing: Chicken soup, Bone broth ramen, Matzo ball soup, Wonton soup, Udon noodles in broth
+
+AIR MOON RECIPES (Gemini/Libra/Aquarius):
+Varied: Mezze platter, Tapas selection, Dim sum, Korean banchan spread, Mediterranean grain bowl, Poke bowl (warm version in winter), Bento box, Sushi (hot rolls in winter)
+Social: Fondue, Hot pot, Raclette, Communal paella
+
+WATER MOON RECIPES (Cancer/Scorpio/Pisces):
+Comforting: Chicken pot pie, Beef and vegetable soup, Clam chowder, Seafood bisque, Bouillabaisse, Cioppino, Gumbo, She-crab soup
+Nourishing: Miso soup, Dashi-based dishes, Fish stew, Poached salmon, Steamed fish with ginger
+
+NEVER REPEAT: Lentil soup, butternut squash soup, or any dish more than once per week. CHECK the current date and vary your selections.`;
+
 
     const systemPrompt = selectedVoice + "\n\n" + formatInstructions;
 
