@@ -452,15 +452,12 @@ Generate a FULL 7-DAY MEAL PLAN based on each day's Moon sign. For EACH day, inc
 ${weekData.map((d, i) => `### ${d.dayName} (${d.dateStr}) - Moon in ${d.moonSign}
 **🍳 Breakfast:** [Dish name]
 *Why:* [2-3 sentences explaining WHY this breakfast matches ${d.moonSign} Moon energy - connect to the element, ruling planet, and day's theme]
-📖 Search "[dish name] recipe"
 
 **🥗 Lunch:** [Dish name]  
 *Why:* [Explain the astrological reasoning]
-📖 Search "[dish name] recipe"
 
 **🍽️ Dinner:** [Dish name]
 *Why:* [Explain the astrological reasoning]
-📖 Search "[dish name] recipe"
 
 **🥜 Snacks:** [Snack 1], [Snack 2], [Snack 3]
 *Why:* [Explain EACH snack choice - e.g., "Granola with yogurt grounds the nervous Gemini energy while the probiotics support mental clarity. Dark chocolate honors the day's Venus aspect..."]
