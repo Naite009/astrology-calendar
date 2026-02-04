@@ -327,6 +327,26 @@ export const CalendarDay = memo(({ date, day, isToday, userData, onDayClick, act
           <span className="text-base">♂</span>
           <span>{planets.mars.fullDegree}</span>
         </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-base">♃</span>
+          <span>{planets.jupiter.fullDegree}</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-base">♄</span>
+          <span>{planets.saturn.fullDegree}</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-base">♅</span>
+          <span>{planets.uranus.fullDegree}</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-base">♆</span>
+          <span>{planets.neptune.fullDegree}</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-base">♇</span>
+          <span>{planets.pluto.fullDegree}</span>
+        </div>
       </div>
 
       {/* Personal Transit Aspects to YOUR natal chart (only if chart selected) */}
