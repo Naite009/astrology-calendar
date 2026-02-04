@@ -193,12 +193,55 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
       );
     }
     
+    // For multi-planet + house combos (e.g., Mars-Pluto in 8th House):
+    // EACH planet must be in that house AND they must aspect each other
+    if (comboPlanets.length >= 2 && comboHouses.length === 1) {
+      const house = comboHouses[0];
+      // Check that ALL planets in the combo are actually in that house
+      const allPlanetsInHouse = comboPlanets.every(p => chartFactors.has(`${p}|${house}`));
+      if (!allPlanetsInHouse) return false;
+      
+      // Also check for aspect between the planets
+      const [p1, p2] = comboPlanets;
+      const hasAspect = ['Conjunction', 'Sextile', 'Square', 'Trine', 'Opposition'].some(
+        aspect => chartFactors.has(`${p1}|${p2}|${aspect}`) || chartFactors.has(`${p2}|${p1}|${aspect}`)
+      );
+      return hasAspect;
+    }
+    
+    // For multi-planet + sign combos (e.g., Venus-Jupiter in 2nd House equivalent in sign):
+    // EACH planet must be in that sign AND they must aspect each other
+    if (comboPlanets.length >= 2 && comboSigns.length === 1 && comboHouses.length === 0) {
+      const sign = comboSigns[0];
+      // Check that ALL planets in the combo are in that sign
+      const allPlanetsInSign = comboPlanets.every(p => chartFactors.has(`${p}|${sign}`));
+      if (!allPlanetsInSign) return false;
+      
+      // Also check for aspect between the planets
+      const [p1, p2] = comboPlanets;
+      const hasAspect = ['Conjunction', 'Sextile', 'Square', 'Trine', 'Opposition'].some(
+        aspect => chartFactors.has(`${p1}|${p2}|${aspect}`) || chartFactors.has(`${p2}|${p1}|${aspect}`)
+      );
+      return hasAspect;
+    }
+    
     // For single planet entries (like "Saturn"), don't auto-match - too generic
     if (comboPlanets.length === 1 && comboSigns.length === 0 && comboHouses.length === 0 && comboAspects.length === 0) {
       return false; // Single planet entries are too generic to match
     }
     
-    // For other combinations, check if all factors are present
+    // For other combinations (e.g., planet+aspect only, or complex multi-factor),
+    // require EACH planet to be individually validated for any sign/house claims
+    // Don't blindly match if we can't verify properly
+    if (comboPlanets.length >= 2) {
+      // For multi-planet combos with no house/sign, just check aspect exists
+      const [p1, p2] = comboPlanets;
+      return ['Conjunction', 'Sextile', 'Square', 'Trine', 'Opposition'].some(
+        aspect => chartFactors.has(`${p1}|${p2}|${aspect}`) || chartFactors.has(`${p2}|${p1}|${aspect}`)
+      );
+    }
+    
+    // For remaining single-planet combos with multiple factors, check all
     return combo.factors.every(f => chartFactors.has(f));
   };
 
