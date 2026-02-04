@@ -6,6 +6,13 @@
  * and the aspect determines HOW that energy manifests.
  */
 
+export interface LearningStyle {
+  name: string;
+  bestMethods: string[];
+  avoid: string[];
+  designNote: string;
+}
+
 export interface AspectModifier {
   aspectType: 'Conjunction' | 'Sextile' | 'Square' | 'Trine' | 'Opposition';
   symbol: string;
@@ -14,6 +21,7 @@ export interface AspectModifier {
   description: string;
   gifts: string[];
   challenges: string[];
+  learningStyle?: LearningStyle; // Optional learning style for educational aspects
 }
 
 export interface PlanetPairAspects {
@@ -21,6 +29,7 @@ export interface PlanetPairAspects {
   planet2: string;
   coreSignature: string; // Universal energy regardless of aspect
   coreDescription: string;
+  universalLearningTraits?: string[]; // Universal learning traits for this combo
   aspects: AspectModifier[];
 }
 
@@ -41,6 +50,13 @@ const MERCURY_NEPTUNE: PlanetPairAspects = {
   planet2: 'Neptune',
   coreSignature: 'The Symbol Reader',
   coreDescription: 'Mercury + Neptune = thinking in images, metaphors, vibes, and impressions. This combination processes language non-linearly, thinking in symbols, feelings, and pattern clouds. Meaning is translated before words. Porous to tone, mood, myth, music, and subtext. Linked to dyslexia/atypical reading paths, poetry, music, astrology, tarot, and visual thinking. Intuitive "knowing" without being able to explain how.',
+  universalLearningTraits: [
+    'Learns top-down, not step-by-step',
+    'Needs context before details',
+    'Thrives with imagery, story, music, metaphor',
+    'Struggles with rote memorization or phonics-first teaching',
+    'Processes: Meaning → pattern → words (not the other way around)'
+  ],
   aspects: [
     {
       aspectType: 'Conjunction',
@@ -59,7 +75,22 @@ const MERCURY_NEPTUNE: PlanetPairAspects = {
         'Losing the thread of logic',
         'Difficulty with linear instruction',
         'Rigid language systems feel foreign'
-      ]
+      ],
+      learningStyle: {
+        name: 'Immersive Learning',
+        bestMethods: [
+          'Audio and guided imagery',
+          'Storytelling and narrative',
+          'Learning by being inside the material',
+          'Vibes over outlines'
+        ],
+        avoid: [
+          'Cold instruction manuals',
+          'Over-structuring too early',
+          'Phonics-first approaches'
+        ],
+        designNote: 'Use "enter the experience" language. Let them feel it before naming it.'
+      }
     },
     {
       aspectType: 'Square',
@@ -78,7 +109,22 @@ const MERCURY_NEPTUNE: PlanetPairAspects = {
         'Friction between logic and intuition',
         'Meaning arrives faster than words',
         'Must build structure to channel gifts'
-      ]
+      ],
+      learningStyle: {
+        name: 'Gestalt Learning',
+        bestMethods: [
+          'Big-picture first, details later',
+          'Color-coding and diagrams',
+          'Mind maps and visual organizers',
+          'Repetition with variation'
+        ],
+        avoid: [
+          'Phonics-only or linear drills',
+          '"Just follow these steps" teaching',
+          'Sequential instruction without context'
+        ],
+        designNote: 'Offer reassurance: confusion ≠ failure. The fog is part of the process.'
+      }
     },
     {
       aspectType: 'Opposition',
@@ -97,7 +143,22 @@ const MERCURY_NEPTUNE: PlanetPairAspects = {
         'Misunderstandings in early life',
         'Communication feels like a mirror',
         'Must learn to own their own knowing'
-      ]
+      ],
+      learningStyle: {
+        name: 'Dialogic Learning',
+        bestMethods: [
+          'Discussion and teaching others',
+          'Socratic questioning',
+          'Reflective journaling',
+          'Study groups and verbal processing'
+        ],
+        avoid: [
+          'Isolated, silent learning environments',
+          'Learning in complete solitude',
+          'No-feedback situations'
+        ],
+        designNote: 'Build "talk it out" or "mirror back" prompts. They learn by hearing it reflected.'
+      }
     },
     {
       aspectType: 'Trine',
@@ -116,7 +177,22 @@ const MERCURY_NEPTUNE: PlanetPairAspects = {
         'Could avoid developing structure',
         'Needs activation to fully use',
         'Can drift without focus'
-      ]
+      ],
+      learningStyle: {
+        name: 'Creative Flow Learning',
+        bestMethods: [
+          'Writing, music, and art integration',
+          'Gentle structure with creative freedom',
+          'Learning through beauty and aesthetics',
+          'Poetic or musical mnemonics'
+        ],
+        avoid: [
+          'Excessive rigidity or time pressure',
+          'Purely functional instruction',
+          'Stripping beauty from learning'
+        ],
+        designNote: 'Let elegance be the teacher. They absorb what feels beautiful.'
+      }
     },
     {
       aspectType: 'Sextile',
@@ -135,7 +211,22 @@ const MERCURY_NEPTUNE: PlanetPairAspects = {
         'May not naturally develop gift',
         'Can stay in either mode too long',
         'Needs practice to master translation'
-      ]
+      ],
+      learningStyle: {
+        name: 'Bilingual Learning',
+        bestMethods: [
+          'Switching modes: logic ↔ intuition',
+          'Translating concepts into images',
+          'Applying knowledge creatively',
+          'Multi-modal instruction'
+        ],
+        avoid: [
+          'Staying only in one mode',
+          'Purely linear OR purely intuitive approaches',
+          'Neglecting either hemisphere'
+        ],
+        designNote: 'Offer "translate this" or "reframe symbolically" exercises. They thrive on switching.'
+      }
     }
   ]
 };
