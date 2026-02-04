@@ -733,8 +733,12 @@ Keep the tone professional, insightful, and practically applicable.`
                     <Moon className="h-6 w-6 mx-auto mb-2 text-primary" />
                     <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Moon Position</p>
                     <div className="flex flex-col items-center gap-1">
-                      <span className="text-3xl">{ZODIAC_SYMBOLS[currentMoonSign || planets.moon?.sign || '']}</span>
-                      <span className="text-sm font-semibold text-foreground">{currentMoonSign || planets.moon?.sign}</span>
+                      <p className="text-3xl leading-none">
+                        {ZODIAC_SYMBOLS[currentMoonSign || planets.moon?.sign || '']}
+                      </p>
+                      <p className="text-sm font-semibold text-foreground leading-none bg-muted/60 border border-border px-2 py-0.5 rounded-full">
+                        {(currentMoonSign || planets.moon?.sign || '').toString()}
+                      </p>
                     </div>
                     <p className="text-lg font-bold text-primary mt-1">
                       {formatDegreeMinutes(currentMoonDegree, currentMoonMinutes)}
@@ -749,8 +753,12 @@ Keep the tone professional, insightful, and practically applicable.`
                     <Sun className="h-6 w-6 mx-auto mb-2 text-amber-500" />
                     <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Sun Position</p>
                     <div className="flex flex-col items-center gap-1">
-                      <span className="text-3xl">{ZODIAC_SYMBOLS[(currentPlanets?.sun?.sign || planets.sun?.sign) || '']}</span>
-                      <span className="text-sm font-semibold text-foreground">{currentPlanets?.sun?.sign || planets.sun?.sign}</span>
+                      <p className="text-3xl leading-none">
+                        {ZODIAC_SYMBOLS[(currentPlanets?.sun?.sign || planets.sun?.sign) || '']}
+                      </p>
+                      <p className="text-sm font-semibold text-foreground leading-none bg-muted/60 border border-border px-2 py-0.5 rounded-full">
+                        {((currentPlanets?.sun?.sign || planets.sun?.sign) || '').toString()}
+                      </p>
                     </div>
                     <p className="text-lg font-bold text-amber-600 mt-1">
                       {formatDegreeMinutes(currentPlanets?.sun?.rawDegree || currentPlanets?.sun?.degree || planets.sun?.degree || 0, currentPlanets?.sun?.minutes)}
