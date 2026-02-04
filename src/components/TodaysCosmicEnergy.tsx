@@ -849,7 +849,7 @@ Keep the tone professional, insightful, and practically applicable.`
                       {selectedChart && (
                         <Badge variant="outline" className="bg-primary/10">
                           {selectedChart.planets.Sun?.sign && `☉ ${selectedChart.planets.Sun.sign}`}
-                          {selectedChart.planets.Ascendant?.sign && ` • ASC ${selectedChart.planets.Ascendant.sign}`}
+                          {(selectedChart.houseCusps?.house1?.sign || selectedChart.planets.Ascendant?.sign) && ` • ASC ${selectedChart.houseCusps?.house1?.sign || selectedChart.planets.Ascendant?.sign}`}
                         </Badge>
                       )}
                     </div>

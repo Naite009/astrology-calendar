@@ -345,7 +345,7 @@ CRITICAL STYLE RULES:
 THEIR NATAL CHART:
 ${natalPlanets}
 
-Houses (from ${chart.planets.Ascendant?.sign || 'unknown'} Ascendant):
+Houses (from ${chart.houseCusps?.house1?.sign || chart.planets.Ascendant?.sign || 'unknown'} Ascendant):
 ${natalHouses}
 
 ${interceptedInfo}
@@ -499,7 +499,7 @@ Format with ## headers. Be chart-specific - no generic advice that could apply t
             <p className="text-xs text-muted-foreground italic">
               {moonSign} is in your {moonHouse}
               {moonHouse === 1 ? 'st' : moonHouse === 2 ? 'nd' : moonHouse === 3 ? 'rd' : 'th'} house
-              {chart.planets.Ascendant?.sign && ` (you have ${chart.planets.Ascendant.sign} rising)`}
+              {(chart.houseCusps?.house1?.sign || chart.planets.Ascendant?.sign) && ` (you have ${chart.houseCusps?.house1?.sign || chart.planets.Ascendant?.sign} rising)`}
             </p>
           </div>
         )}
