@@ -1255,7 +1255,12 @@ export const calculateDailyAspects = (planets: PlanetaryPositions): Aspect[] => 
       const lon1 = getLongitude(planets[p1]);
       const lon2 = getLongitude(planets[p2]);
 
-      const diff = Math.abs(((lon2 - lon1 + 180) % 360) - 180);
+      // Correctly calculate the shortest angular distance between two longitudes
+      let rawDiff = lon2 - lon1;
+      // Normalize to -180 to +180 range
+      while (rawDiff > 180) rawDiff -= 360;
+      while (rawDiff < -180) rawDiff += 360;
+      const diff = Math.abs(rawDiff);
 
       for (const aspectType of aspectTypes) {
         const orb = Math.abs(diff - aspectType.angle);

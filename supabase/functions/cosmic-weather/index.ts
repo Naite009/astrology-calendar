@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,13 +12,49 @@ serve(async (req) => {
   }
 
   try {
-    const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects, planetPositions, customPrompt, voiceStyle, upcomingEvents } = await req.json();
+    const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects, planetPositions, customPrompt, voiceStyle, upcomingEvents, deviceId, forceRegenerate } = await req.json();
     
     console.log("Received cosmic weather request:", { date, moonPhase, moonSign, exactLunarPhase, voiceStyle, planetPositions });
+    console.log("Aspects received:", aspects?.slice(0, 15));
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
+    }
+
+    // Extract just the date portion (YYYY-MM-DD) for cache key
+    const dateMatch = date?.match(/(\w+),\s+(\w+)\s+(\d+),\s+(\d+)/);
+    let dateKey = '';
+    if (dateMatch) {
+      const months: Record<string, string> = { January: '01', February: '02', March: '03', April: '04', May: '05', June: '06', July: '07', August: '08', September: '09', October: '10', November: '11', December: '12' };
+      dateKey = `${dateMatch[4]}-${months[dateMatch[2]] || '01'}-${dateMatch[3].padStart(2, '0')}`;
+    }
+
+    // Check DB cache first (unless force regenerate)
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    const cacheDeviceId = deviceId || 'default';
+    const cacheVoiceStyle = voiceStyle || '';
+    const cacheChartId = '';
+
+    if (dateKey && !forceRegenerate && !customPrompt) {
+      const { data: cached } = await supabase
+        .from('cosmic_weather_cache')
+        .select('content, expires_at')
+        .eq('date_key', dateKey)
+        .eq('device_id', cacheDeviceId)
+        .eq('voice_style', cacheVoiceStyle)
+        .eq('chart_id', cacheChartId)
+        .single();
+
+      if (cached && new Date(cached.expires_at) > new Date()) {
+        console.log("Returning cached cosmic weather for", dateKey);
+        return new Response(JSON.stringify({ insight: cached.content, cached: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // Build planetary positions text - this is the ground truth
@@ -635,7 +672,25 @@ CRITICAL INSTRUCTIONS:
     const data = await response.json();
     const insight = data.choices?.[0]?.message?.content || "Unable to generate insights at this time.";
 
-    return new Response(JSON.stringify({ insight }), {
+    // Save to DB cache (expires at end of day in user's timezone, approximated as 24h)
+    if (dateKey && !customPrompt) {
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+      await supabase.from('cosmic_weather_cache').upsert({
+        date_key: dateKey,
+        device_id: cacheDeviceId,
+        voice_style: cacheVoiceStyle,
+        chart_id: cacheChartId,
+        content: insight,
+        expires_at: expiresAt,
+      }, {
+        onConflict: 'date_key,device_id,voice_style,chart_id'
+      }).then(({ error }) => {
+        if (error) console.error("Failed to cache cosmic weather:", error);
+        else console.log("Cached cosmic weather for", dateKey);
+      });
+    }
+
+    return new Response(JSON.stringify({ insight, cached: false }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
