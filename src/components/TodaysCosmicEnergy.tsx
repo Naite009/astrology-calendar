@@ -23,6 +23,13 @@ const ZODIAC_SYMBOLS: Record<string, string> = {
   Sagittarius: "♐", Capricorn: "♑", Aquarius: "♒", Pisces: "♓"
 };
 
+function normalizeSignLabel(sign: string): string {
+  // Sometimes upstream may provide a glyph instead of a name.
+  const trimmed = (sign || "").trim();
+  const byGlyph = Object.entries(ZODIAC_SYMBOLS).find(([, glyph]) => glyph === trimmed)?.[0];
+  return byGlyph || trimmed || "Unknown";
+}
+
 interface CosmicData {
   date: string;
   moonPhase: string;
@@ -733,7 +740,9 @@ Keep the tone professional, insightful, and practically applicable.`
                     <Moon className="h-6 w-6 mx-auto mb-2 text-primary" />
                     <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Moon Position</p>
                     {(() => {
-                      const moonSignLabel = (currentMoonSign || planets.moon?.sign || "Unknown").toString();
+                      const moonSignLabel = normalizeSignLabel(
+                        (currentMoonSign || planets.moon?.sign || "Unknown").toString()
+                      );
                       return (
                         <>
                           {/* Use sign NAME instead of glyph for clarity */}
@@ -756,7 +765,9 @@ Keep the tone professional, insightful, and practically applicable.`
                     <Sun className="h-6 w-6 mx-auto mb-2 text-amber-500" />
                     <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Sun Position</p>
                     {(() => {
-                      const sunSignLabel = ((currentPlanets?.sun?.sign || planets.sun?.sign) || "Unknown").toString();
+                      const sunSignLabel = normalizeSignLabel(
+                        ((currentPlanets?.sun?.sign || planets.sun?.sign) || "Unknown").toString()
+                      );
                       const sunDegrees = currentPlanets?.sun?.rawDegree || currentPlanets?.sun?.degree || planets.sun?.degree || 0;
                       return (
                         <>
