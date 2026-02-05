@@ -54,6 +54,19 @@ export interface NatalAspect {
   isOutOfSign: boolean;
 }
 
+export interface MidheavenAnalysis {
+  sign: string;
+  degree: number;
+  ruler: string;
+  rulerSign: string;
+  rulerHouse: number;
+  rulerIsAngular: boolean;
+  rulerIsRetrograde: boolean;
+  tenthHousePlanets: string[];
+  mcAspects: NatalAspect[];
+  careerThemes: string[];
+}
+
 export interface SignalsData {
   operatingMode: OperatingModeScores;
   pressurePointsRanked: PressurePoint[];
@@ -63,6 +76,7 @@ export interface SignalsData {
   angularPlanets: string[];
   dominantElement: string;
   dominantModality: string;
+  midheaven: MidheavenAnalysis | null;
 }
 
 export interface SourceMapEntry {
@@ -663,12 +677,101 @@ function getDominantModality(planetHouses: PlanetHouseInfo[]): string {
 }
 
 /**
+ * MC Career Themes based on sign
+ */
+const MC_THEMES: Record<string, string[]> = {
+  Aries: ['leadership', 'pioneering', 'athletics', 'entrepreneurship', 'military', 'competition'],
+  Taurus: ['finance', 'beauty', 'agriculture', 'real estate', 'arts', 'luxury goods'],
+  Gemini: ['communication', 'writing', 'teaching', 'media', 'sales', 'networking'],
+  Cancer: ['nurturing professions', 'hospitality', 'real estate', 'family business', 'counseling'],
+  Leo: ['entertainment', 'leadership', 'creative arts', 'children', 'performance', 'branding'],
+  Virgo: ['health', 'service', 'analysis', 'editing', 'craftsmanship', 'research'],
+  Libra: ['law', 'diplomacy', 'arts', 'partnerships', 'beauty', 'mediation'],
+  Scorpio: ['psychology', 'investigation', 'finance', 'medicine', 'research', 'transformation'],
+  Sagittarius: ['education', 'publishing', 'travel', 'philosophy', 'law', 'international'],
+  Capricorn: ['business', 'management', 'government', 'architecture', 'tradition', 'authority'],
+  Aquarius: ['technology', 'innovation', 'humanitarian', 'science', 'community', 'reform'],
+  Pisces: ['healing', 'spirituality', 'arts', 'music', 'film', 'compassion work'],
+};
+
+/**
+ * Compute Midheaven (MC) analysis
+ */
+function computeMidheavenAnalysis(chart: NatalChart, planetHouses: PlanetHouseInfo[], aspects: NatalAspect[]): MidheavenAnalysis | null {
+  // Try to get MC from house cusps (house 10)
+  const house10Cusp = chart.houseCusps?.house10;
+  
+  // Also check if there's an MC in planets (some charts may store it in a special field)
+  const planets = chart.planets as Record<string, NatalPlanetPosition | undefined>;
+  const mcFromPlanets = planets['MC'];
+  
+  if (!house10Cusp && !mcFromPlanets) return null;
+  
+  const mcSign = house10Cusp?.sign || mcFromPlanets?.sign || '';
+  const mcDegree = house10Cusp?.degree || mcFromPlanets?.degree || 0;
+  
+  if (!mcSign) return null;
+  
+  // Get MC ruler
+  const mcRuler = getSignRuler(mcSign);
+  const mcRulerInfo = planetHouses.find(p => p.planet === mcRuler);
+  
+  // Get planets in 10th house
+  const tenthHousePlanets = planetHouses.filter(p => p.house === 10).map(p => p.planet);
+  
+  // Get aspects to MC (calculated by position)
+  // MC longitude
+  const mcIndex = ZODIAC_ORDER.indexOf(mcSign);
+  const mcLongitude = mcIndex * 30 + mcDegree;
+  
+  // Find aspects from planets to MC
+  const mcAspects: NatalAspect[] = [];
+  for (const ph of planetHouses) {
+    const planetPos = chart.planets?.[ph.planet as keyof typeof chart.planets];
+    if (!planetPos) continue;
+    
+    const planetLon = positionToAbsoluteDegree(planetPos);
+    let diff = Math.abs(planetLon - mcLongitude);
+    if (diff > 180) diff = 360 - diff;
+    
+    for (const [aspectName, config] of Object.entries(ASPECT_ORBS)) {
+      const orb = Math.abs(diff - config.angle);
+      if (orb <= config.orb) {
+        mcAspects.push({
+          planet1: ph.planet,
+          planet2: 'MC',
+          type: aspectName as NatalAspect['type'],
+          orb: Math.round(orb * 10) / 10,
+          isApplying: false,
+          isOutOfSign: false
+        });
+        break;
+      }
+    }
+  }
+  
+  return {
+    sign: mcSign,
+    degree: mcDegree,
+    ruler: mcRuler,
+    rulerSign: mcRulerInfo?.sign || '',
+    rulerHouse: mcRulerInfo?.house || 0,
+    rulerIsAngular: mcRulerInfo?.isAngular || false,
+    rulerIsRetrograde: mcRulerInfo?.isRetrograde || false,
+    tenthHousePlanets,
+    mcAspects,
+    careerThemes: MC_THEMES[mcSign] || []
+  };
+}
+
+/**
  * Compute all signals from chart
  */
 export function computeAllSignals(chart: NatalChart): SignalsData {
   const planetHouses = computePlanetHouses(chart);
   const natalAspects = computeNatalAspects(chart);
   const angularPlanets = planetHouses.filter(p => p.isAngular).map(p => p.planet);
+  const midheaven = computeMidheavenAnalysis(chart, planetHouses, natalAspects);
   
   return {
     operatingMode: computeOperatingModeScores(chart, planetHouses),
@@ -679,5 +782,6 @@ export function computeAllSignals(chart: NatalChart): SignalsData {
     angularPlanets,
     dominantElement: getDominantElement(planetHouses),
     dominantModality: getDominantModality(planetHouses),
+    midheaven,
   };
 }

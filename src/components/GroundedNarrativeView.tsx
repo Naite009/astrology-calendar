@@ -283,84 +283,157 @@
                </TabsContent>
  
                {/* Signals Tab */}
-               <TabsContent value="signals" className="mt-4">
-                 {!signals && (
-                   <div className="text-center py-12 text-muted-foreground">
-                     <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                     <p>Generate a narrative to see chart signals.</p>
-                   </div>
-                 )}
-                 {signals && (
-                   <ScrollArea className="h-[500px] pr-4">
-                     <div className="space-y-6">
-                       {/* Operating Mode Scores */}
-                       <div>
-                         <h3 className="font-medium mb-3">Operating Mode Scores</h3>
-                         <div className="space-y-3">
-                           {Object.entries(signals.operatingMode).map(([key, value]) => (
-                             <div key={key} className="space-y-1">
-                               <div className="flex justify-between text-sm">
-                                 <span className="capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
-                                 <span className="text-muted-foreground">{value}</span>
-                               </div>
-                               <Progress value={value} className="h-2" />
-                             </div>
-                           ))}
-                         </div>
-                       </div>
- 
-                       {/* Pressure Points */}
-                       <div>
-                         <h3 className="font-medium mb-3">Pressure Points (Top 8)</h3>
-                         <div className="space-y-2">
-                           {signals.pressurePointsRanked.map((pp, i) => (
-                             <div key={i} className="p-3 bg-muted/50 rounded-lg">
-                               <div className="flex items-center justify-between mb-1">
-                                 <span className="font-medium text-sm">{pp.description}</span>
-                                 <Badge variant="outline" className="text-xs">{pp.weight}</Badge>
-                               </div>
-                               <p className="text-xs text-muted-foreground">{pp.details}</p>
-                             </div>
-                           ))}
-                           {signals.pressurePointsRanked.length === 0 && (
-                             <p className="text-sm text-muted-foreground">No major pressure points detected.</p>
-                           )}
-                         </div>
-                       </div>
- 
-                       {/* Absence Signals */}
-                       <div>
-                         <h3 className="font-medium mb-3">Absence Signals</h3>
-                         <div className="space-y-2 text-sm">
-                           {signals.absenceSignals.missingElements.length > 0 && (
-                             <p>
-                               <span className="text-muted-foreground">Missing elements:</span>{' '}
-                               {signals.absenceSignals.missingElements.join(', ')}
-                             </p>
-                           )}
-                           {signals.absenceSignals.missingModalities.length > 0 && (
-                             <p>
-                               <span className="text-muted-foreground">Missing modalities:</span>{' '}
-                               {signals.absenceSignals.missingModalities.join(', ')}
-                             </p>
-                           )}
-                           {signals.absenceSignals.fewAngularPlanets && (
-                             <p>
-                               <span className="text-muted-foreground">Angular planets:</span>{' '}
-                               Only {signals.absenceSignals.angularPlanetCount} (few)
-                             </p>
-                           )}
-                           {signals.absenceSignals.missingElements.length === 0 && 
-                            signals.absenceSignals.missingModalities.length === 0 && 
-                            !signals.absenceSignals.fewAngularPlanets && (
-                             <p className="text-muted-foreground">No notable absences.</p>
-                           )}
-                         </div>
-                       </div>
-                     </div>
-                   </ScrollArea>
-                 )}
-               </TabsContent>
+                <TabsContent value="signals" className="mt-4">
+                  {!signals && (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                      <p>Generate a narrative to see chart signals.</p>
+                    </div>
+                  )}
+                  {signals && (
+                    <ScrollArea className="h-[500px] pr-4">
+                      <div className="space-y-6">
+                        {/* Operating Mode Scores */}
+                        <div>
+                          <h3 className="font-medium mb-3">Operating Mode Scores</h3>
+                          <div className="space-y-3">
+                            {Object.entries(signals.operatingMode).map(([key, value]) => (
+                              <div key={key} className="space-y-1">
+                                <div className="flex justify-between text-sm">
+                                  <span className="capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                                  <span className="text-muted-foreground">{value as number}</span>
+                                </div>
+                                <Progress value={value as number} className="h-2" />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Midheaven (MC) Analysis */}
+                        {signals.midheaven && (
+                          <div>
+                            <h3 className="font-medium mb-3">Midheaven (MC) Analysis</h3>
+                            <div className="p-4 bg-muted/50 rounded-lg space-y-3">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm font-medium">MC in {signals.midheaven.sign}</span>
+                                <Badge variant="outline">{signals.midheaven.degree}°</Badge>
+                              </div>
+                              <div className="text-sm space-y-1">
+                                <p>
+                                  <span className="text-muted-foreground">MC Ruler:</span>{' '}
+                                  {signals.midheaven.ruler} in {signals.midheaven.rulerSign} (house {signals.midheaven.rulerHouse})
+                                  {signals.midheaven.rulerIsAngular && <Badge className="ml-2 text-[10px]" variant="secondary">Angular</Badge>}
+                                  {signals.midheaven.rulerIsRetrograde && <span className="ml-1 text-amber-600">℞</span>}
+                                </p>
+                                {signals.midheaven.tenthHousePlanets.length > 0 && (
+                                  <p>
+                                    <span className="text-muted-foreground">10th House Planets:</span>{' '}
+                                    {signals.midheaven.tenthHousePlanets.join(', ')}
+                                  </p>
+                                )}
+                                {signals.midheaven.mcAspects.length > 0 && (
+                                  <div>
+                                    <span className="text-muted-foreground">Aspects to MC:</span>
+                                    <div className="mt-1 flex flex-wrap gap-1">
+                                      {signals.midheaven.mcAspects.map((a, i) => (
+                                        <Badge key={i} variant="outline" className="text-[10px]">
+                                          {a.planet1} {a.type} ({a.orb}°)
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                              <div>
+                                <span className="text-xs text-muted-foreground">Career Themes:</span>
+                                <div className="mt-1 flex flex-wrap gap-1">
+                                  {signals.midheaven.careerThemes.map((theme, i) => (
+                                    <Badge key={i} variant="secondary" className="text-[10px]">{theme}</Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Verified Natal Aspects */}
+                        <div>
+                          <h3 className="font-medium mb-3">Verified Natal Aspects ({signals.natalAspects?.length || 0})</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            {signals.natalAspects?.slice(0, 12).map((asp, i) => (
+                              <div key={i} className="flex items-center justify-between p-2 bg-muted/30 rounded text-sm">
+                                <span>
+                                  {asp.planet1} <span className="text-muted-foreground">{asp.type}</span> {asp.planet2}
+                                </span>
+                                <div className="flex items-center gap-1">
+                                  <Badge variant="outline" className="text-[10px]">{asp.orb}°</Badge>
+                                  {asp.isOutOfSign && <Badge variant="destructive" className="text-[9px]">OOS</Badge>}
+                                </div>
+                              </div>
+                            ))}
+                            {(!signals.natalAspects || signals.natalAspects.length === 0) && (
+                              <p className="text-sm text-muted-foreground col-span-2">No natal aspects detected.</p>
+                            )}
+                          </div>
+                          {signals.natalAspects && signals.natalAspects.length > 12 && (
+                            <p className="text-xs text-muted-foreground mt-2">
+                              + {signals.natalAspects.length - 12} more aspects
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Pressure Points */}
+                        <div>
+                          <h3 className="font-medium mb-3">Pressure Points (Top 8)</h3>
+                          <div className="space-y-2">
+                            {signals.pressurePointsRanked.map((pp, i) => (
+                              <div key={i} className="p-3 bg-muted/50 rounded-lg">
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="font-medium text-sm">{pp.description}</span>
+                                  <Badge variant="outline" className="text-xs">{pp.weight}</Badge>
+                                </div>
+                                <p className="text-xs text-muted-foreground">{pp.details}</p>
+                              </div>
+                            ))}
+                            {signals.pressurePointsRanked.length === 0 && (
+                              <p className="text-sm text-muted-foreground">No major pressure points detected.</p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Absence Signals */}
+                        <div>
+                          <h3 className="font-medium mb-3">Absence Signals</h3>
+                          <div className="space-y-2 text-sm">
+                            {signals.absenceSignals.missingElements.length > 0 && (
+                              <p>
+                                <span className="text-muted-foreground">Missing elements:</span>{' '}
+                                {signals.absenceSignals.missingElements.join(', ')}
+                              </p>
+                            )}
+                            {signals.absenceSignals.missingModalities.length > 0 && (
+                              <p>
+                                <span className="text-muted-foreground">Missing modalities:</span>{' '}
+                                {signals.absenceSignals.missingModalities.join(', ')}
+                              </p>
+                            )}
+                            {signals.absenceSignals.fewAngularPlanets && (
+                              <p>
+                                <span className="text-muted-foreground">Angular planets:</span>{' '}
+                                Only {signals.absenceSignals.angularPlanetCount} (few)
+                              </p>
+                            )}
+                            {signals.absenceSignals.missingElements.length === 0 && 
+                             signals.absenceSignals.missingModalities.length === 0 && 
+                             !signals.absenceSignals.fewAngularPlanets && (
+                              <p className="text-muted-foreground">No notable absences.</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </ScrollArea>
+                  )}
+                </TabsContent>
  
                {/* Source Map Tab */}
                <TabsContent value="source-map" className="mt-4">
