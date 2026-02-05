@@ -571,7 +571,14 @@ export const ChartLibrary = ({
     }
   };
 
-  const processUploadedFile = async (file: File) => {
+  const processUploadedFile = async (
+    file: File,
+    options?: {
+      overwriteExisting?: boolean;
+    }
+  ) => {
+    const overwriteExisting = options?.overwriteExisting === true;
+
     // Reset states
     setImageImportStatus('uploading');
     setImageImportError(null);
@@ -592,18 +599,18 @@ export const ChartLibrary = ({
       // Determine file type and call appropriate handler
       const fileType = file.type;
       const fileName = file.name.toLowerCase();
-      
+
       // Check if it's a PDF or document
       const isPDF = fileType === 'application/pdf' || fileName.endsWith('.pdf');
       const isWord = fileType.includes('word') || fileName.endsWith('.docx') || fileName.endsWith('.doc');
       const isImage = fileType.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|bmp|heic|heif)$/i.test(fileName);
 
-      // Call the edge function with file info
+      // Call the backend function with file info
       const { data, error } = await supabase.functions.invoke('parse-chart-image', {
-        body: { 
+        body: {
           imageBase64: fileBase64,
           fileType: isPDF ? 'pdf' : isWord ? 'word' : 'image',
-          fileName: file.name
+          fileName: file.name,
         },
       });
 
@@ -622,7 +629,7 @@ export const ChartLibrary = ({
       // Extract birth info if available
       const birthInfo = parsedData.birthInfo;
       const birthInfoUpdates: Partial<ChartFormData> = {};
-      
+
       if (birthInfo) {
         if (birthInfo.name && typeof birthInfo.name === 'string') {
           birthInfoUpdates.name = birthInfo.name;
@@ -644,25 +651,22 @@ export const ChartLibrary = ({
         }
       }
 
-      // Import planets - ONLY fill in empty slots, don't overwrite existing data
+      // Import planets
       if (parsedData.planets && typeof parsedData.planets === 'object') {
         const validPlanets: Record<string, NatalPlanetPosition> = {};
         let newPlanetsAdded = 0;
         let planetsSkipped = 0;
-        
+
         for (const [planet, position] of Object.entries(parsedData.planets)) {
           const pos = position as any;
           if (pos?.sign && ZODIAC_SIGNS.includes(pos.sign)) {
-            // Check if this planet already has data in the form
             const existingPlanet = formData.planets[planet];
             const hasExistingData = existingPlanet?.sign && existingPlanet.sign !== '';
-            
-            if (hasExistingData) {
-              // Skip - don't overwrite existing data
+
+            if (hasExistingData && !overwriteExisting) {
               planetsSkipped++;
               console.log(`[Import] Skipping ${planet} - already has data (${existingPlanet.degree}° ${existingPlanet.sign})`);
             } else {
-              // Fill in this empty slot
               validPlanets[planet] = {
                 sign: pos.sign,
                 degree: Math.min(29, Math.max(0, parseInt(pos.degree) || 0)),
@@ -672,7 +676,7 @@ export const ChartLibrary = ({
               };
               newPlanetsAdded++;
               planetsImported++;
-              console.log(`[Import] Adding ${planet}: ${pos.degree}° ${pos.sign}`);
+              console.log(`[Import] ${overwriteExisting ? 'Overwriting' : 'Adding'} ${planet}: ${pos.degree}° ${pos.sign}`);
             }
           }
         }
@@ -691,9 +695,11 @@ export const ChartLibrary = ({
               ...validPlanets,
             },
           }));
-          
+
           if (planetsSkipped > 0) {
             toast.info(`Added ${newPlanetsAdded} new positions, kept ${planetsSkipped} existing positions unchanged.`);
+          } else if (overwriteExisting && newPlanetsAdded > 0) {
+            toast.info(`Updated ${newPlanetsAdded} planet positions from the uploaded chart.`);
           }
         } else if (isImage) {
           setFormData(prev => ({
@@ -713,25 +719,28 @@ export const ChartLibrary = ({
         }));
       }
 
-      // Import house cusps - ONLY fill in empty slots
+      // Import house cusps
       if (parsedData.houseCusps && typeof parsedData.houseCusps === 'object') {
         const validCusps: Record<string, HouseCusp> = {};
-        
+        let housesSkipped = 0;
+
         for (const [house, cusp] of Object.entries(parsedData.houseCusps)) {
           const c = cusp as any;
           if (c?.sign && ZODIAC_SIGNS.includes(c.sign)) {
-            // Check if this house already has data
             const existingCusp = formData.houseCusps[house];
             const hasExistingData = existingCusp?.sign && existingCusp.sign !== '';
-            
-            if (!hasExistingData) {
-              validCusps[house] = {
-                sign: c.sign,
-                degree: Math.min(29, Math.max(0, parseInt(c.degree) || 0)),
-                minutes: Math.min(59, Math.max(0, parseInt(c.minutes) || 0)),
-              };
-              housesImported++;
+
+            if (hasExistingData && !overwriteExisting) {
+              housesSkipped++;
+              continue;
             }
+
+            validCusps[house] = {
+              sign: c.sign,
+              degree: Math.min(29, Math.max(0, parseInt(c.degree) || 0)),
+              minutes: Math.min(59, Math.max(0, parseInt(c.minutes) || 0)),
+            };
+            housesImported++;
           }
         }
 
@@ -743,11 +752,17 @@ export const ChartLibrary = ({
               ...validCusps,
             },
           }));
+
+          if (overwriteExisting) {
+            toast.info(`Updated ${housesImported} house cusps from the uploaded chart.`);
+          } else if (housesSkipped > 0) {
+            toast.info(`Added ${housesImported} house cusps, kept ${housesSkipped} existing cusps unchanged.`);
+          }
         }
       }
 
       if (planetsImported === 0 && housesImported === 0) {
-        throw new Error('Could not extract any positions. Try a file with clear planet positions listed.');
+        throw new Error('Could not extract any positions. Try a file with clear tables (planet positions / house cusps) visible.');
       }
 
       setImageImportResult({ planets: planetsImported, houses: housesImported });
@@ -830,7 +845,8 @@ export const ChartLibrary = ({
     if (editingChart && pendingFileRef.current) {
       const file = pendingFileRef.current;
       pendingFileRef.current = null;
-      processUploadedFile(file);
+      // When dropping onto a specific chart card, treat it as a re-upload intended to correct data.
+      processUploadedFile(file, { overwriteExisting: true });
     }
   }, [editingChart]);
 

@@ -33,12 +33,17 @@ serve(async (req) => {
     const isWord = fileType === 'word' || imageBase64.includes('application/vnd.openxmlformats') || imageBase64.includes('application/msword');
     const isImage = !isPDF && !isWord;
 
-    const prompt = `Extract planetary positions from this astrological chart ${isPDF || isWord ? 'document' : 'image'}.
+    const prompt = `Extract planetary positions and house cusps from this astrological chart ${isPDF || isWord ? 'document' : 'image'}.
 
-CRITICAL - READ THE TABLE, NOT THE WHEEL:
+CRITICAL - READ THE PRINTED TABLE(S), NOT THE WHEEL:
 - There is usually a PRINTED TABLE of planet positions below or beside the wheel. READ THAT TABLE EXACTLY.
-- The table shows each planet with its sign symbol, degree (°), and minutes ('). Copy these values EXACTLY as printed.
-- Pay close attention to the EXACT degree numbers - do not guess or approximate.
+- Many charts also include a PRINTED TABLE of HOUSE CUSPS (1..12 or AC/MC/11/12). READ THAT TABLE EXACTLY.
+- Copy values EXACTLY as printed. Do not guess or approximate.
+
+DEGREE / MINUTES - DO NOT SWAP:
+- Degrees are 0..29 and minutes are 0..59.
+- Example: "21°47' Aries" must be degree=21, minutes=47.
+- If you are unsure, prefer returning null/omitting that cusp rather than guessing.
 
 RETROGRADE DETECTION - BE VERY CAREFUL:
 - DEFAULT: Set isRetrograde: false for ALL planets UNLESS you see an explicit retrograde marker.
@@ -79,6 +84,20 @@ Return this exact JSON structure (no markdown, no commentary):
     "Moon": { "sign": "Cancer", "degree": 8, "minutes": 12, "isRetrograde": false },
     "Ascendant": { "sign": "Leo", "degree": 5, "minutes": 30, "isRetrograde": false }
   },
+  "houseCusps": {
+    "house1": { "sign": "Leo", "degree": 5, "minutes": 30 },
+    "house2": { "sign": "Virgo", "degree": 2, "minutes": 15 },
+    "house3": { "sign": "Libra", "degree": 1, "minutes": 0 },
+    "house4": { "sign": "Scorpio", "degree": 1, "minutes": 0 },
+    "house5": { "sign": "Sagittarius", "degree": 25, "minutes": 0 },
+    "house6": { "sign": "Aries", "degree": 21, "minutes": 47 },
+    "house7": { "sign": "Aquarius", "degree": 5, "minutes": 30 },
+    "house8": { "sign": "Pisces", "degree": 2, "minutes": 15 },
+    "house9": { "sign": "Aries", "degree": 1, "minutes": 0 },
+    "house10": { "sign": "Aquarius", "degree": 5, "minutes": 30 },
+    "house11": { "sign": "Pisces", "degree": 2, "minutes": 15 },
+    "house12": { "sign": "Aries", "degree": 1, "minutes": 0 }
+  },
   "astroComCusps": {
     "AC": { "sign": "Leo", "degree": 5, "minutes": 30 },
     "house2": { "sign": "Virgo", "degree": 2, "minutes": 15 },
@@ -100,7 +119,7 @@ Rules:
 - Planet names: Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, Ascendant, NorthNode, SouthNode, Chiron, Lilith, Ceres, Pallas, Juno, Vesta, PartOfFortune, Vertex, Eris, Sedna, Makemake, Haumea, Quaoar, Orcus, Ixion, Varuna.
 - Signs: Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces.
 
-For Astro.com charts: Extract 6 cusps (AC, 2, 3, MC, 11, 12) into astroComCusps.
+For Astro.com charts: if you only see 6 cusps printed (AC, 2, 3, MC, 11, 12), extract those into astroComCusps. If you see all 12 printed, prefer filling houseCusps directly.
 
 Return ONLY the JSON object.`;
 
@@ -233,10 +252,20 @@ Return ONLY the JSON object.`;
       console.error("Failed to parse AI response as JSON:", content);
     }
 
-    // Deterministically derive ALL 12 house cusps from Astro.com's printed 6-cusp format.
+    // If the model already returned full houseCusps, keep them as-is.
+    // Otherwise, deterministically derive ALL 12 house cusps from Astro.com's printed 6-cusp format.
     // Printed: AC=1, 2=2, 3=3, MC=10, 11=11, 12=12.
     // Derived by opposites: 4↔10, 5↔11, 6↔12, 7↔1, 8↔2, 9↔3.
-    if (parsedData?.astroComCusps && typeof parsedData.astroComCusps === "object") {
+    const hasFullHouseCusps = (hc: any): boolean => {
+      if (!hc || typeof hc !== 'object') return false;
+      for (let i = 1; i <= 12; i++) {
+        const c = hc[`house${i}`];
+        if (!c?.sign) return false;
+      }
+      return true;
+    };
+
+    if (!hasFullHouseCusps(parsedData?.houseCusps) && parsedData?.astroComCusps && typeof parsedData.astroComCusps === "object") {
       const c = parsedData.astroComCusps;
       const cusp1 = c.AC;
       const cusp2 = c.house2;
@@ -270,24 +299,24 @@ Return ONLY the JSON object.`;
       // Attach if we have the 3 key printed cusps + MC.
       if (houseCusps.house1 && houseCusps.house2 && houseCusps.house3 && houseCusps.house10) {
         parsedData.houseCusps = houseCusps;
-        
+
         // Detect intercepted signs by checking which signs are "skipped" between consecutive house cusps
-        const signOrder = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", 
+        const signOrder = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
                           "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
         const interceptedSigns: string[] = [];
-        
+
         for (let h = 1; h <= 12; h++) {
           const currentHouse = houseCusps[`house${h}`];
           const nextHouse = houseCusps[`house${h === 12 ? 1 : h + 1}`];
-          
+
           if (currentHouse?.sign && nextHouse?.sign) {
             const currentIdx = signOrder.indexOf(currentHouse.sign);
             const nextIdx = signOrder.indexOf(nextHouse.sign);
-            
+
             if (currentIdx !== -1 && nextIdx !== -1) {
               // Calculate how many signs between current and next cusp
-              let signsBetween = (nextIdx - currentIdx + 12) % 12;
-              
+              const signsBetween = (nextIdx - currentIdx + 12) % 12;
+
               // If more than 1 sign between cusps, the skipped sign(s) are intercepted
               if (signsBetween > 1) {
                 for (let s = 1; s < signsBetween; s++) {
@@ -301,7 +330,7 @@ Return ONLY the JSON object.`;
             }
           }
         }
-        
+
         if (interceptedSigns.length > 0) {
           parsedData.interceptedSigns = interceptedSigns;
         }
