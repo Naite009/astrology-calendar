@@ -215,6 +215,7 @@ Write the narrative now as flowing prose paragraphs. Remember: always include ho
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
+        temperature: 0.3, // Lower temperature for more consistent narratives
         stream: false,
       }),
     });
