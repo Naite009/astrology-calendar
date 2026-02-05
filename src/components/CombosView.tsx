@@ -80,12 +80,12 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
     let diff = Math.abs(long1 - long2);
     if (diff > 180) diff = 360 - diff;
     
-    // Check aspects with standard orbs
-    if (diff <= 10) return 'Conjunction'; // 0° with 10° orb
-    if (diff >= 50 && diff <= 70) return 'Sextile'; // 60° with 6° orb
-    if (diff >= 82 && diff <= 98) return 'Square'; // 90° with 8° orb
-    if (diff >= 112 && diff <= 128) return 'Trine'; // 120° with 8° orb
-    if (diff >= 172 && diff <= 188) return 'Opposition'; // 180° with 8° orb
+   // Check aspects with wider orbs (10° for major aspects to catch outer planet aspects)
+   if (diff <= 10) return 'Conjunction'; // 0° with 10° orb
+   if (diff >= 54 && diff <= 66) return 'Sextile'; // 60° with 6° orb
+   if (diff >= 80 && diff <= 100) return 'Square'; // 90° with 10° orb
+   if (diff >= 110 && diff <= 130) return 'Trine'; // 120° with 10° orb
+   if (diff >= 170 && diff <= 190) return 'Opposition'; // 180° with 10° orb
     
     return null;
   };
