@@ -295,31 +295,69 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                  </TabsTrigger>
                </TabsList>
  
-               {/* Narrative Tab */}
-               <TabsContent value="narrative" className="mt-4">
-                 {!narrativeText && !isGenerating && (
-                   <div className="text-center py-12 text-muted-foreground">
-                     <FileText className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                     <p>No narrative generated yet.</p>
-                     <p className="text-sm">Select a chart and click Generate to create your narrative.</p>
-                   </div>
-                 )}
-                 {isGenerating && (
-                   <div className="text-center py-12">
-                     <Loader2 className="h-12 w-12 mx-auto mb-4 animate-spin text-primary" />
-                     <p>Generating your grounded narrative...</p>
-                   </div>
-                 )}
-                 {narrativeText && !isGenerating && (
-                   <ScrollArea className="h-[500px] pr-4">
-                     <div className="prose prose-sm dark:prose-invert max-w-none">
-                       {narrativeText.split('\n\n').map((para, i) => (
-                         <p key={i} className="leading-relaxed mb-4">{para}</p>
-                       ))}
-                     </div>
-                   </ScrollArea>
-                 )}
-               </TabsContent>
+                {/* Narrative Tab */}
+                <TabsContent value="narrative" className="mt-4">
+                  {!narrativeText && !isGenerating && (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <FileText className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                      <p>No narrative generated yet.</p>
+                      <p className="text-sm">Select a chart and click Generate to create your narrative.</p>
+                    </div>
+                  )}
+                  {isGenerating && (
+                    <div className="text-center py-12">
+                      <Loader2 className="h-12 w-12 mx-auto mb-4 animate-spin text-primary" />
+                      <p>Generating your grounded narrative...</p>
+                    </div>
+                  )}
+                  {narrativeText && !isGenerating && (
+                    <ScrollArea className="h-[500px] pr-4">
+                      <p className="text-xs text-muted-foreground mb-3 italic">💡 Click any sentence to see the astrological triggers behind it</p>
+                      <div className="space-y-1">
+                        {sourceMap && sourceMap.length > 0 ? (
+                          sourceMap.map((entry, i) => (
+                            <span
+                              key={i}
+                              onClick={() => setSelectedSentenceIndex(selectedSentenceIndex === i ? null : i)}
+                              className={`cursor-pointer transition-all inline ${
+                                selectedSentenceIndex === i 
+                                  ? 'bg-primary/20 rounded px-1' 
+                                  : 'hover:bg-muted/50 hover:rounded hover:px-1'
+                              }`}
+                            >
+                              {entry.sentence}{' '}
+                              {selectedSentenceIndex === i && (
+                                <span className="block my-2 p-3 bg-muted/70 rounded-lg border-l-4 border-primary text-sm">
+                                  {entry.triggers.length > 0 ? (
+                                    <span className="space-y-1.5 block">
+                                      <span className="text-xs text-muted-foreground font-medium block mb-2">Astrological Triggers:</span>
+                                      {entry.triggers.map((t, j) => (
+                                        <span key={j} className="block text-xs">
+                                          <Badge variant="secondary" className="mr-2">{t.type}</Badge>
+                                          <span className="text-foreground">{t.object}:</span>{' '}
+                                          <span className="text-muted-foreground">{t.details}</span>
+                                        </span>
+                                      ))}
+                                    </span>
+                                  ) : (
+                                    <span className="text-xs text-muted-foreground italic">This is transitional/stylistic prose without a specific chart trigger.</span>
+                                  )}
+                                </span>
+                              )}
+                            </span>
+                          ))
+                        ) : (
+                          // Fallback if no source map
+                          <div className="prose prose-sm dark:prose-invert max-w-none">
+                            {narrativeText.split('\n\n').map((para, i) => (
+                              <p key={i} className="leading-relaxed mb-4">{para}</p>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </ScrollArea>
+                  )}
+                </TabsContent>
  
                {/* Signals Tab */}
                 <TabsContent value="signals" className="mt-4">
