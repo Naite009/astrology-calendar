@@ -2729,7 +2729,288 @@ const SUN_VENUS: PlanetPairAspects = {
   ]
 };
 
+/**
+ * Sun-Mercury: The Conscious Mind
+ */
+const SUN_MERCURY: PlanetPairAspects = {
+  planet1: 'Sun',
+  planet2: 'Mercury',
+  coreSignature: 'The Conscious Mind',
+  coreDescription: 'Sun + Mercury = the integration of identity and intellect. How one thinks about who they are. The capacity for self-expression through words, ideas, and communication. When closely conjunct, Mercury is "combust" and thought processes are deeply personal.',
+  aspects: [
+    {
+      aspectType: 'Conjunction',
+      symbol: '☌',
+      name: 'The Fused Mind',
+      tone: '"My thoughts are who I am."',
+      description: 'Mind and identity merge completely. Thinks constantly about self and purpose. Strong mental presence. When within 17 minutes, Mercury is "cazimi" - exceptional clarity. Further away: "combust" - thoughts colored by ego.',
+      gifts: ['Strong self-expression', 'Clear personal philosophy', 'Articulate about identity', 'Mentally present'],
+      challenges: ['Subjectivity in thinking', 'May not hear others', 'Ego colors perception', 'Difficulty with objectivity']
+    },
+    { aspectType: 'Square', symbol: '□', name: 'N/A', tone: 'Not possible', description: 'Sun-Mercury can only be 28° apart maximum.', gifts: [], challenges: [] },
+    { aspectType: 'Opposition', symbol: '☍', name: 'N/A', tone: 'Not possible', description: 'Sun-Mercury can only be 28° apart maximum.', gifts: [], challenges: [] },
+    { aspectType: 'Trine', symbol: '△', name: 'N/A', tone: 'Not possible', description: 'Sun-Mercury can only be 28° apart maximum.', gifts: [], challenges: [] },
+    { aspectType: 'Sextile', symbol: '⚹', name: 'N/A', tone: 'Not possible', description: 'Sun-Mercury can only be 28° apart maximum.', gifts: [], challenges: [] }
+  ]
+};
+
+/**
+ * Sun-Jupiter: The Optimist
+ */
+const SUN_JUPITER: PlanetPairAspects = {
+  planet1: 'Sun',
+  planet2: 'Jupiter',
+  coreSignature: 'The Optimist',
+  coreDescription: 'Sun + Jupiter = identity infused with faith, expansion, and meaning. The ego believes in something larger. Associated with natural luck, generosity, and the capacity to see the big picture.',
+  aspects: [
+    { aspectType: 'Conjunction', symbol: '☌', name: 'The Blessed Self', tone: '"I believe in myself and life."', description: 'Identity and expansion are fused. Natural optimism and faith. Often feels protected or lucky.', gifts: ['Natural optimism', 'Generous nature', 'Faith in life', 'Sense of being blessed'], challenges: ['Over-confidence', 'Excess and indulgence', 'Difficulty with limits', 'May promise too much'] },
+    { aspectType: 'Square', symbol: '□', name: 'The Restless Seeker', tone: '"I push against limits to grow."', description: 'Friction between identity and expansion. May over-extend or promise more than can deliver.', gifts: ['Learns through over-reaching', 'Develops genuine wisdom', 'Grows through challenge'], challenges: ['Over-promises', 'Restless with limitations', 'May be preachy', 'Must learn moderation'] },
+    { aspectType: 'Opposition', symbol: '☍', name: 'The Philosophical Mirror', tone: '"Others teach me about faith."', description: 'Projects beliefs onto others. Relationships involve philosophical exchange.', gifts: ['Learns faith through others', 'Attracts teachers', 'Balanced philosophy'], challenges: ['May project beliefs onto partners', 'Attracts excess in others', 'Must own inner teacher'] },
+    { aspectType: 'Trine', symbol: '△', name: 'The Natural Believer', tone: '"Faith comes naturally."', description: 'Easy integration of identity and meaning. Natural confidence and good fortune.', gifts: ['Natural good fortune', 'Effortless faith', 'Comfortable with growth'], challenges: ['May take luck for granted', 'Could be complacent', 'Less growth through struggle'] },
+    { aspectType: 'Sextile', symbol: '⚹', name: 'The Developing Philosopher', tone: '"I can cultivate wisdom."', description: 'Opportunity to develop optimism with conscious effort.', gifts: ['Develops wisdom over time', 'Learns to see big picture', 'Builds faith through effort'], challenges: ['Faith requires cultivation', 'May miss opportunities', 'Wisdom needs development'] }
+  ]
+};
+
+/**
+ * Moon-Mercury: The Emotional Mind
+ */
+const MOON_MERCURY: PlanetPairAspects = {
+  planet1: 'Moon',
+  planet2: 'Mercury',
+  coreSignature: 'The Emotional Mind',
+  coreDescription: 'Moon + Mercury = thinking infused with feeling. The mind processes through emotion, memory, and intuition. Natural storyteller, diarist, and memory-keeper.',
+  aspects: [
+    { aspectType: 'Conjunction', symbol: '☌', name: 'The Feeling Thinker', tone: '"I think what I feel."', description: 'Mind and emotions are inseparable. Natural at expressing feelings verbally.', gifts: ['Emotionally articulate', 'Strong memory', 'Natural storyteller', 'Intuitive communication'], challenges: ['Difficulty separating thoughts from feelings', 'Subjective thinking', 'Moods affect logic'] },
+    { aspectType: 'Square', symbol: '□', name: 'The Conflicted Communicator', tone: '"My heart and mind argue."', description: 'Tension between emotional needs and intellectual expression.', gifts: ['Develops emotional intelligence', 'Learns to bridge heart and mind', 'Becomes skilled at nuance'], challenges: ['Says what doesn\'t match feeling', 'Nervous or anxious', 'Mind races with emotion'] },
+    { aspectType: 'Opposition', symbol: '☍', name: 'The Relational Communicator', tone: '"Others help me understand."', description: 'Projects emotional expression onto others. Communicates through relationship.', gifts: ['Learns through conversation', 'Develops through feedback', 'Skilled at understanding others'], challenges: ['Needs others to understand self', 'May project feelings onto words', 'Difficulty with solo processing'] },
+    { aspectType: 'Trine', symbol: '△', name: 'The Intuitive Communicator', tone: '"I naturally express what I feel."', description: 'Easy flow between emotions and thoughts. Natural emotional intelligence.', gifts: ['Natural emotional articulation', 'Effortless memory', 'Easy storytelling'], challenges: ['May not develop deeper processing', 'Could take for granted', 'May stay on surface'] },
+    { aspectType: 'Sextile', symbol: '⚹', name: 'The Developing Storyteller', tone: '"I can learn to express my inner world."', description: 'Opportunity to develop emotional-mental integration.', gifts: ['Develops emotional expression', 'Learns to articulate feelings', 'Builds memory skills'], challenges: ['Must make effort to express', 'Could avoid emotional topics', 'Integration requires work'] }
+  ]
+};
+
+/**
+ * Moon-Venus: The Tender Heart
+ */
+const MOON_VENUS: PlanetPairAspects = {
+  planet1: 'Moon',
+  planet2: 'Venus',
+  coreSignature: 'The Tender Heart',
+  coreDescription: 'Moon + Venus = emotional needs centered on love, beauty, and connection. The heart craves harmony and affection. Natural appreciation for beauty and gentle relating.',
+  aspects: [
+    { aspectType: 'Conjunction', symbol: '☌', name: 'The Loving Soul', tone: '"Love is home to me."', description: 'Emotional needs and love nature are fused. Deep need for affection and beauty.', gifts: ['Natural warmth', 'Strong aesthetic sense', 'Nurturing love', 'Comfortable with affection'], challenges: ['Needs constant affection', 'May avoid conflict for peace', 'Can be too dependent'] },
+    { aspectType: 'Square', symbol: '□', name: 'The Love Struggle', tone: '"I crave love but it doesn\'t come easy."', description: 'Friction between emotional needs and love expression.', gifts: ['Develops genuine self-worth', 'Learns unconditional love', 'Grows through challenge'], challenges: ['Love feels conditional', 'Emotional-relational tension', 'Must work on self-worth'] },
+    { aspectType: 'Opposition', symbol: '☍', name: 'The Relationship Mirror', tone: '"Others show me how to love."', description: 'Projects love needs onto partners. Relationships are the teacher.', gifts: ['Learns love through partnership', 'Develops through relating', 'Understands emotional dynamics'], challenges: ['Projects needs onto partners', 'May attract high-maintenance loves', 'Must balance give and take'] },
+    { aspectType: 'Trine', symbol: '△', name: 'The Natural Sweetheart', tone: '"Love flows naturally."', description: 'Easy flow between emotional needs and love expression. Natural charm.', gifts: ['Natural warmth', 'Effortless charm', 'Comfortable with love', 'Easy beauty appreciation'], challenges: ['May take love for granted', 'Could avoid growth', 'May stay comfortable'] },
+    { aspectType: 'Sextile', symbol: '⚹', name: 'The Developing Heart', tone: '"I can cultivate love and beauty."', description: 'Opportunity to develop emotional-romantic integration.', gifts: ['Develops loving capacity', 'Learns to receive', 'Builds aesthetic sense'], challenges: ['Must work on openness', 'Could close heart', 'Love requires cultivation'] }
+  ]
+};
+
+/**
+ * Moon-Mars: The Emotional Warrior
+ */
+const MOON_MARS: PlanetPairAspects = {
+  planet1: 'Moon',
+  planet2: 'Mars',
+  coreSignature: 'The Emotional Warrior',
+  coreDescription: 'Moon + Mars = emotions charged with passion and courage. Feelings are acted upon quickly. Strong protective instincts. The "mama bear" aspect.',
+  aspects: [
+    { aspectType: 'Conjunction', symbol: '☌', name: 'The Fierce Protector', tone: '"I feel passionately and act on it."', description: 'Emotions and actions are fused. Quick to feel and quick to respond.', gifts: ['Passionate feeling', 'Quick protective response', 'Emotional courage', 'Action-oriented nurturing'], challenges: ['Emotional impulsivity', 'Quick temper', 'May act before thinking', 'Volatility in moods'] },
+    { aspectType: 'Square', symbol: '□', name: 'The Inner Battle', tone: '"My feelings and actions clash."', description: 'Friction between emotional needs and assertive drive.', gifts: ['Develops emotional strength', 'Learns healthy assertion', 'Grows through challenge'], challenges: ['Anger and moodiness', 'Conflict between needs and wants', 'May attract fights'] },
+    { aspectType: 'Opposition', symbol: '☍', name: 'The Relational Warrior', tone: '"Others trigger my reactions."', description: 'Projects assertion or anger onto partners. Relationships involve passion.', gifts: ['Learns through confrontation', 'Develops balanced passion', 'Understands emotional dynamics'], challenges: ['Attracts conflict in relationships', 'Projects anger onto others', 'Must own inner warrior'] },
+    { aspectType: 'Trine', symbol: '△', name: 'The Natural Defender', tone: '"I act naturally on what I feel."', description: 'Easy flow between emotions and action. Natural emotional courage.', gifts: ['Natural emotional courage', 'Effortless action on feelings', 'Comfortable with passion'], challenges: ['May act without reflection', 'Could take courage for granted', 'May not develop patience'] },
+    { aspectType: 'Sextile', symbol: '⚹', name: 'The Developing Fighter', tone: '"I can learn to act appropriately."', description: 'Opportunity to develop healthy emotional assertion.', gifts: ['Develops healthy assertion', 'Learns emotional courage', 'Builds protective skills'], challenges: ['Must work on assertion', 'Could suppress feelings', 'May stay too passive'] }
+  ]
+};
+
+/**
+ * Moon-Jupiter: The Generous Heart
+ */
+const MOON_JUPITER: PlanetPairAspects = {
+  planet1: 'Moon',
+  planet2: 'Jupiter',
+  coreSignature: 'The Generous Heart',
+  coreDescription: 'Moon + Jupiter = emotional nature infused with optimism and generosity. Feelings are expansive and abundant. Natural emotional support giver.',
+  aspects: [
+    { aspectType: 'Conjunction', symbol: '☌', name: 'The Abundant Soul', tone: '"My feelings are vast and generous."', description: 'Emotions and faith are fused. Naturally optimistic emotional nature.', gifts: ['Generous emotions', 'Natural optimism', 'Faith in feelings', 'Abundant nurturing'], challenges: ['Emotional excess', 'Over-giving', 'May promise too much care', 'Difficulty with limits'] },
+    { aspectType: 'Square', symbol: '□', name: 'The Emotional Seeker', tone: '"My need for growth conflicts with security."', description: 'Friction between emotional security and expansion.', gifts: ['Develops emotional wisdom', 'Learns balanced growth', 'Grows through restlessness'], challenges: ['Restless emotions', 'Conflict between security and freedom', 'May overdo emotionally'] },
+    { aspectType: 'Opposition', symbol: '☍', name: 'The Philosophical Nurturer', tone: '"Others teach me about emotional growth."', description: 'Projects faith onto loved ones. Relationships involve expansion.', gifts: ['Learns faith through others', 'Attracts generous souls', 'Develops through relationship'], challenges: ['May give too much to others', 'Attracts emotional excess', 'Must balance giving/receiving'] },
+    { aspectType: 'Trine', symbol: '△', name: 'The Natural Optimist', tone: '"I naturally feel positive and generous."', description: 'Easy flow between emotions and faith. Natural emotional generosity.', gifts: ['Natural emotional optimism', 'Effortless generosity', 'Comfortable with abundance'], challenges: ['May take positivity for granted', 'Could over-give', 'May not develop boundaries'] },
+    { aspectType: 'Sextile', symbol: '⚹', name: 'The Developing Believer', tone: '"I can cultivate emotional faith."', description: 'Opportunity to develop emotional wisdom and generosity.', gifts: ['Develops emotional wisdom', 'Learns generous nurturing', 'Builds faith in feelings'], challenges: ['Must work on faith', 'Could stay emotionally small', 'Generosity requires effort'] }
+  ]
+};
+
+/**
+ * Mercury-Jupiter: The Big Thinker
+ */
+const MERCURY_JUPITER: PlanetPairAspects = {
+  planet1: 'Mercury',
+  planet2: 'Jupiter',
+  coreSignature: 'The Big Thinker',
+  coreDescription: 'Mercury + Jupiter = mind oriented toward the big picture and philosophy. Natural teacher, writer, or communicator. Thinking is optimistic and expansive.',
+  aspects: [
+    { aspectType: 'Conjunction', symbol: '☌', name: 'The Philosophical Mind', tone: '"I think in big pictures."', description: 'Mind and meaning are fused. Natural philosopher and teacher.', gifts: ['Big-picture thinking', 'Natural teaching ability', 'Philosophical mind', 'Optimistic communication'], challenges: ['Overlooks details', 'May exaggerate', 'Over-promises', 'Difficulty with focus'] },
+    { aspectType: 'Square', symbol: '□', name: 'The Restless Mind', tone: '"My ideas are too big."', description: 'Friction between practical thinking and philosophical vision.', gifts: ['Develops practical wisdom', 'Learns to ground ideas', 'Grows through mental challenge'], challenges: ['Mental restlessness', 'Ideas exceed capacity', 'May overcommit mentally'] },
+    { aspectType: 'Opposition', symbol: '☍', name: 'The Dialogue Teacher', tone: '"Others help me develop my ideas."', description: 'Projects philosophical thinking onto others. Communication involves teaching.', gifts: ['Learns through dialogue', 'Attracts teachers', 'Develops through exchange'], challenges: ['May project beliefs onto others', 'Attracts know-it-alls', 'Can be preachy'] },
+    { aspectType: 'Trine', symbol: '△', name: 'The Natural Teacher', tone: '"Ideas and meaning flow naturally."', description: 'Easy flow between practical and philosophical thinking.', gifts: ['Natural teaching ability', 'Effortless big-picture thinking', 'Comfortable with ideas'], challenges: ['May take gifts for granted', 'Could be intellectually lazy', 'May not develop rigor'] },
+    { aspectType: 'Sextile', symbol: '⚹', name: 'The Developing Philosopher', tone: '"I can cultivate wisdom."', description: 'Opportunity to develop philosophical thinking with effort.', gifts: ['Develops teaching skills', 'Learns philosophical thinking', 'Builds wisdom through effort'], challenges: ['Must work on depth', 'Could stay too practical', 'May avoid big questions'] }
+  ]
+};
+
+/**
+ * Venus-Jupiter: The Abundant Heart
+ */
+const VENUS_JUPITER: PlanetPairAspects = {
+  planet1: 'Venus',
+  planet2: 'Jupiter',
+  coreSignature: 'The Abundant Heart',
+  coreDescription: 'Venus + Jupiter = love oriented toward abundance and generosity. Natural appreciation for the good life. Relationships are expansive. May indicate luck in love.',
+  aspects: [
+    { aspectType: 'Conjunction', symbol: '☌', name: 'The Blessed Lover', tone: '"Love is abundant and generous."', description: 'Love and meaning are fused. Natural generosity in relationships.', gifts: ['Generous in love', 'Lucky in relationships', 'Abundant appreciation', 'Joyful relating'], challenges: ['Excess in pleasure', 'May over-indulge', 'Difficulty with moderation'] },
+    { aspectType: 'Square', symbol: '□', name: 'The Restless Heart', tone: '"I want more from love."', description: 'Friction between love and expansion. May have unrealistic expectations.', gifts: ['Develops realistic love', 'Learns true value', 'Grows through excess'], challenges: ['Unrealistic expectations', 'May want too much', 'Restless in relationships'] },
+    { aspectType: 'Opposition', symbol: '☍', name: 'The Generous Partner', tone: '"Others teach me about abundant love."', description: 'Projects generosity onto partners. Relationships involve abundance.', gifts: ['Learns love through others', 'Attracts generous partners', 'Develops through relationship'], challenges: ['May over-give to partners', 'Attracts excess in others', 'Must balance abundance'] },
+    { aspectType: 'Trine', symbol: '△', name: 'The Natural Benefactor', tone: '"Love and luck flow together."', description: 'Easy flow between love and abundance. Natural good fortune in relationships.', gifts: ['Natural luck in love', 'Effortless generosity', 'Comfortable with abundance'], challenges: ['May take love for granted', 'Could be indulgent', 'May not develop depth'] },
+    { aspectType: 'Sextile', symbol: '⚹', name: 'The Developing Appreciator', tone: '"I can cultivate generous love."', description: 'Opportunity to develop abundant relating with effort.', gifts: ['Develops generous love', 'Learns appreciation', 'Builds abundant relationships'], challenges: ['Must work on generosity', 'Could hold back love', 'May stay too cautious'] }
+  ]
+};
+
+/**
+ * Venus-Uranus: The Freedom Lover
+ */
+const VENUS_URANUS: PlanetPairAspects = {
+  planet1: 'Venus',
+  planet2: 'Uranus',
+  coreSignature: 'The Freedom Lover',
+  coreDescription: 'Venus + Uranus = love infused with freedom and uniqueness. Relationships are unconventional. Attracted to what is different. May indicate sudden attractions or departures.',
+  aspects: [
+    { aspectType: 'Conjunction', symbol: '☌', name: 'The Revolutionary Heart', tone: '"I love differently and freely."', description: 'Love and freedom are fused. Attracted to the unique and unconventional.', gifts: ['Unique love style', 'Attracts interesting people', 'Freedom in relationship'], challenges: ['Difficulty with commitment', 'Sudden changes in love', 'May seem cold or detached'] },
+    { aspectType: 'Square', symbol: '□', name: 'The Love Rebel', tone: '"I fight between stability and freedom."', description: 'Friction between love and freedom. May experience sudden breakups.', gifts: ['Develops authentic love style', 'Learns balance', 'Grows through disruption'], challenges: ['Sudden romantic changes', 'Conflict between closeness and space', 'May sabotage stability'] },
+    { aspectType: 'Opposition', symbol: '☍', name: 'The Exciting Partner', tone: '"Others bring excitement to love."', description: 'Projects freedom onto partners. Relationships involve excitement.', gifts: ['Learns freedom through others', 'Attracts exciting people', 'Develops through change'], challenges: ['Attracts unstable partners', 'Projects restlessness onto love', 'Relationships feel volatile'] },
+    { aspectType: 'Trine', symbol: '△', name: 'The Natural Free Spirit', tone: '"Love and freedom flow together."', description: 'Easy flow between love and independence. Natural ability for close yet free relationships.', gifts: ['Natural relationship freedom', 'Effortless uniqueness', 'Comfortable with change'], challenges: ['May not develop depth', 'Could avoid commitment', 'May stay detached'] },
+    { aspectType: 'Sextile', symbol: '⚹', name: 'The Developing Original', tone: '"I can cultivate authentic freedom in love."', description: 'Opportunity to develop independent relating with effort.', gifts: ['Develops relationship freedom', 'Learns authentic uniqueness', 'Builds healthy independence'], challenges: ['Must work on authenticity', 'Could stay too conventional', 'May fear uniqueness'] }
+  ]
+};
+
+/**
+ * Mars-Jupiter: The Crusader
+ */
+const MARS_JUPITER: PlanetPairAspects = {
+  planet1: 'Mars',
+  planet2: 'Jupiter',
+  coreSignature: 'The Crusader',
+  coreDescription: 'Mars + Jupiter = action fueled by faith and meaning. The warrior for a cause. Associated with adventure, risk-taking, and acting on beliefs.',
+  aspects: [
+    { aspectType: 'Conjunction', symbol: '☌', name: 'The Faithful Warrior', tone: '"I act on my beliefs with passion."', description: 'Action and faith are fused. Natural crusader for what they believe in.', gifts: ['Acts on faith', 'Lucky in action', 'Natural adventurer', 'Passionate about beliefs'], challenges: ['Reckless action', 'Over-extends in pursuit', 'Difficulty with patience'] },
+    { aspectType: 'Square', symbol: '□', name: 'The Restless Actor', tone: '"My drive exceeds my capacity."', description: 'Friction between action and expansion. May over-commit or act rashly.', gifts: ['Develops strategic action', 'Learns from excess', 'Grows through challenge'], challenges: ['Over-commits in action', 'Restless drive', 'May be reckless'] },
+    { aspectType: 'Opposition', symbol: '☍', name: 'The Adventurous Partner', tone: '"Others inspire me to act on faith."', description: 'Projects adventure onto partners. Relationships involve expansion.', gifts: ['Learns action through others', 'Attracts adventurers', 'Develops through partnership'], challenges: ['Attracts reckless types', 'Projects drive onto others', 'Relationships feel excessive'] },
+    { aspectType: 'Trine', symbol: '△', name: 'The Natural Adventurer', tone: '"Action and luck flow together."', description: 'Easy flow between action and faith. Natural good fortune in pursuit.', gifts: ['Natural luck in action', 'Effortless adventure', 'Comfortable with risk'], challenges: ['May take luck for granted', 'Could be reckless', 'May not develop caution'] },
+    { aspectType: 'Sextile', symbol: '⚹', name: 'The Developing Champion', tone: '"I can cultivate purposeful action."', description: 'Opportunity to develop meaningful action with effort.', gifts: ['Develops purposeful action', 'Learns strategic risk', 'Builds meaningful pursuit'], challenges: ['Must work on purpose', 'Could stay too cautious', 'May fear expansion'] }
+  ]
+};
+
+/**
+ * Mars-Uranus: The Revolutionary
+ */
+const MARS_URANUS: PlanetPairAspects = {
+  planet1: 'Mars',
+  planet2: 'Uranus',
+  coreSignature: 'The Revolutionary',
+  coreDescription: 'Mars + Uranus = action that breaks patterns and creates change. The rebel or inventor. Associated with sudden action and breakthrough capacity.',
+  aspects: [
+    { aspectType: 'Conjunction', symbol: '☌', name: 'The Lightning Striker', tone: '"I act suddenly and break patterns."', description: 'Action and breakthrough are fused. Acts in flashes and surprises.', gifts: ['Breakthrough action', 'Revolutionary capacity', 'Inventive drive', 'Pattern-breaking ability'], challenges: ['Accident-prone', 'Impulsive action', 'Difficulty with patience'] },
+    { aspectType: 'Square', symbol: '□', name: 'The Explosive Actor', tone: '"My drive for change creates conflict."', description: 'Friction between action and revolution. May experience sudden accidents or breakthroughs.', gifts: ['Develops channeled rebellion', 'Learns timing', 'Grows through disruption'], challenges: ['Explosive temper', 'Accident-prone', 'Conflicts with authority'] },
+    { aspectType: 'Opposition', symbol: '☍', name: 'The Revolutionary Partner', tone: '"Others bring sudden change."', description: 'Projects rebellion onto partners. Relationships involve sudden changes.', gifts: ['Learns change through others', 'Attracts revolutionaries', 'Develops through disruption'], challenges: ['Attracts unstable types', 'Projects rebellion onto others', 'Relationships feel explosive'] },
+    { aspectType: 'Trine', symbol: '△', name: 'The Natural Innovator', tone: '"Change and action flow together."', description: 'Easy flow between action and breakthrough. Natural capacity for innovation.', gifts: ['Natural innovation', 'Effortless breakthrough', 'Comfortable with change'], challenges: ['May not develop follow-through', 'Could be restless', 'May avoid commitment'] },
+    { aspectType: 'Sextile', symbol: '⚹', name: 'The Developing Innovator', tone: '"I can cultivate breakthrough action."', description: 'Opportunity to develop innovative action with effort.', gifts: ['Develops innovation', 'Learns to channel rebellion', 'Builds breakthrough capacity'], challenges: ['Must work on innovation', 'Could stay too conventional', 'May fear disruption'] }
+  ]
+};
+
+/**
+ * Jupiter-Pluto: The Power Magnifier
+ */
+const JUPITER_PLUTO: PlanetPairAspects = {
+  planet1: 'Jupiter',
+  planet2: 'Pluto',
+  coreSignature: 'The Power Magnifier',
+  coreDescription: 'Jupiter + Pluto = expansion and transformation combined. Massive growth through intensity. The capacity to influence masses or achieve significant power.',
+  aspects: [
+    { aspectType: 'Conjunction', symbol: '☌', name: 'The Transformative Expander', tone: '"My growth is profound and total."', description: 'Expansion and transformation are fused. Massive capacity for influence and wealth.', gifts: ['Profound growth capacity', 'Natural influence', 'Wealth potential', 'Transformative faith'], challenges: ['Obsessive ambition', 'May seek too much power', 'Difficulty with moderation'] },
+    { aspectType: 'Square', symbol: '□', name: 'The Power Struggler', tone: '"My expansion meets resistance."', description: 'Friction between expansion and power. May experience power struggles.', gifts: ['Develops authentic power', 'Learns from intensity', 'Grows through challenge'], challenges: ['Power struggles', 'May over-reach', 'Conflicts over beliefs'] },
+    { aspectType: 'Opposition', symbol: '☍', name: 'The Powerful Partner', tone: '"Others bring transformation."', description: 'Projects power onto others. Relationships involve intense growth.', gifts: ['Learns power through others', 'Attracts transformers', 'Develops through intensity'], challenges: ['Attracts controlling types', 'Projects power onto others', 'Relationships feel intense'] },
+    { aspectType: 'Trine', symbol: '△', name: 'The Natural Magnate', tone: '"Growth and power flow together."', description: 'Easy flow between expansion and transformation. Natural capacity for wealth.', gifts: ['Natural power and wealth', 'Effortless influence', 'Comfortable with depth'], challenges: ['May take power for granted', 'Could become complacent', 'May not examine motives'] },
+    { aspectType: 'Sextile', symbol: '⚹', name: 'The Developing Power', tone: '"I can cultivate transformative growth."', description: 'Opportunity to develop powerful expansion with effort.', gifts: ['Develops authentic power', 'Learns transformative growth', 'Builds genuine influence'], challenges: ['Must work on power', 'Could avoid intensity', 'May fear own depth'] }
+  ]
+};
+
+/**
+ * Saturn-Neptune: The Dream Builder
+ */
+const SATURN_NEPTUNE: PlanetPairAspects = {
+  planet1: 'Saturn',
+  planet2: 'Neptune',
+  coreSignature: 'The Dream Builder',
+  coreDescription: 'Saturn + Neptune = the challenge of manifesting dreams. Structure meets dissolution. The capacity to give form to the formless.',
+  aspects: [
+    { aspectType: 'Conjunction', symbol: '☌', name: 'The Manifest Dreamer', tone: '"I build my dreams into reality."', description: 'Structure and imagination are fused. Natural ability to manifest visions.', gifts: ['Manifests imagination', 'Structured creativity', 'Spiritual discipline', 'Dream realization'], challenges: ['Confusion about reality', 'Depression or escapism', 'May dissolve boundaries'] },
+    { aspectType: 'Square', symbol: '□', name: 'The Reality-Dream Tension', tone: '"My dreams clash with reality."', description: 'Friction between structure and imagination. May experience disillusionment.', gifts: ['Develops grounded spirituality', 'Learns realistic idealism', 'Grows through disappointment'], challenges: ['Dreams meet reality harshly', 'Disillusionment', 'May give up on ideals'] },
+    { aspectType: 'Opposition', symbol: '☍', name: 'The Spiritual-Material Balance', tone: '"Others represent my spiritual side."', description: 'Projects structure or dreams onto others. Relationships involve spiritual-material exchange.', gifts: ['Learns balance through others', 'Attracts spiritual teachers', 'Develops through relating'], challenges: ['Projects dreams or fears onto others', 'May attract unstable types', 'Relationships involve rescue'] },
+    { aspectType: 'Trine', symbol: '△', name: 'The Natural Visionary', tone: '"Dreams and reality flow together."', description: 'Easy flow between structure and imagination. Natural artistic discipline.', gifts: ['Natural artistic discipline', 'Effortless spiritual form', 'Comfortable with mystery'], challenges: ['May not develop depth', 'Could take gifts for granted', 'May coast on talent'] },
+    { aspectType: 'Sextile', symbol: '⚹', name: 'The Developing Mystic', tone: '"I can cultivate practical spirituality."', description: 'Opportunity to develop grounded imagination with effort.', gifts: ['Develops spiritual practice', 'Learns artistic discipline', 'Builds practical vision'], challenges: ['Must work on integration', 'Could stay too practical or dreamy', 'May avoid either realm'] }
+  ]
+};
+
+/**
+ * Uranus-Neptune: The Collective Visionary
+ */
+const URANUS_NEPTUNE: PlanetPairAspects = {
+  planet1: 'Uranus',
+  planet2: 'Neptune',
+  coreSignature: 'The Collective Visionary',
+  coreDescription: 'Uranus + Neptune = fusion of revolution and transcendence. Generational aspect shaping cultural imagination. Those born during the 1993 conjunction are especially marked.',
+  aspects: [
+    { aspectType: 'Conjunction', symbol: '☌', name: 'The Generational Visionary', tone: '"I dream new worlds into being."', description: 'Revolution and transcendence are fused. Born at a time of collective awakening (1993).', gifts: ['Visionary imagination', 'Collective awareness', 'New paradigm thinking', 'Spiritual innovation'], challenges: ['Too ungrounded', 'May lose touch with reality', 'Difficulty with mundane'] },
+    { aspectType: 'Square', symbol: '□', name: 'The Paradigm Shifter', tone: '"I feel tension between old and new visions."', description: 'Friction between breakthrough and transcendence. May experience generational conflicts.', gifts: ['Develops grounded vision', 'Learns to bridge paradigms', 'Grows through confusion'], challenges: ['Generational conflicts', 'May feel caught between worlds', 'Spiritual restlessness'] },
+    { aspectType: 'Opposition', symbol: '☍', name: 'The Awakening Partner', tone: '"Others represent breakthrough or transcendence."', description: 'Projects innovation or spirituality onto others. Relationships involve awakening.', gifts: ['Learns vision through others', 'Attracts awakeners', 'Develops through collective'], challenges: ['Projects idealism onto others', 'May attract unstable types', 'Relationships involve awakening'] },
+    { aspectType: 'Trine', symbol: '△', name: 'The Natural Dreamer', tone: '"Innovation and transcendence flow together."', description: 'Easy flow between revolution and imagination. Natural visionary capacity.', gifts: ['Natural visionary flow', 'Effortless innovation', 'Comfortable with collective'], challenges: ['May take vision for granted', 'Could be ungrounded', 'May not develop practical skills'] },
+    { aspectType: 'Sextile', symbol: '⚹', name: 'The Developing Awakener', tone: '"I can cultivate visionary innovation."', description: 'Opportunity to develop visionary capacity with effort.', gifts: ['Develops grounded vision', 'Learns practical innovation', 'Builds visionary skills'], challenges: ['Must work on grounding', 'Could stay too conventional', 'May fear the unknown'] }
+  ]
+};
+
+/**
+ * Uranus-Pluto: The Revolutionary Transformer
+ */
+const URANUS_PLUTO: PlanetPairAspects = {
+  planet1: 'Uranus',
+  planet2: 'Pluto',
+  coreSignature: 'The Revolutionary Transformer',
+  coreDescription: 'Uranus + Pluto = radical change and deep transformation. Major generational aspect. Those born during the 1960s conjunction are especially marked.',
+  aspects: [
+    { aspectType: 'Conjunction', symbol: '☌', name: 'The Revolutionary Soul', tone: '"I am built to break and rebuild."', description: 'Revolution and transformation are fused. Born at a time of radical cultural change (1960s).', gifts: ['Profound capacity for change', 'Revolutionary power', 'Regenerative ability', 'Breaks old structures'], challenges: ['May be destructive', 'Difficulty with stability', 'Intense energy'] },
+    { aspectType: 'Square', symbol: '□', name: 'The Intense Transformer', tone: '"My drive for change meets deep resistance."', description: 'Friction between breakthrough and transformation. May experience power struggles.', gifts: ['Develops authentic change', 'Learns from power struggle', 'Grows through intensity'], challenges: ['Power struggles', 'May be too intense', 'Conflicts over change'] },
+    { aspectType: 'Opposition', symbol: '☍', name: 'The Transforming Partner', tone: '"Others represent breakthrough or destruction."', description: 'Projects revolution or power onto others. Relationships involve intense transformation.', gifts: ['Learns transformation through others', 'Attracts powerful transformers', 'Develops through relating'], challenges: ['Attracts controlling or volatile types', 'Projects power onto others', 'Relationships feel explosive'] },
+    { aspectType: 'Trine', symbol: '△', name: 'The Natural Transformer', tone: '"Revolution and depth flow together."', description: 'Easy flow between breakthrough and transformation. Natural capacity for profound change.', gifts: ['Natural transformative power', 'Effortless revolution', 'Comfortable with depth'], challenges: ['May take power for granted', 'Could be complacent', 'May not examine destructive tendencies'] },
+    { aspectType: 'Sextile', symbol: '⚹', name: 'The Developing Revolutionary', tone: '"I can cultivate transformative breakthrough."', description: 'Opportunity to develop revolutionary capacity with effort.', gifts: ['Develops authentic change', 'Learns deep transformation', 'Builds revolutionary skills'], challenges: ['Must work on change', 'Could avoid intensity', 'May fear own power'] }
+  ]
+};
+
+/**
+ * Neptune-Pluto: The Soul Evolver
+ */
+const NEPTUNE_PLUTO: PlanetPairAspects = {
+  planet1: 'Neptune',
+  planet2: 'Pluto',
+  coreSignature: 'The Soul Evolver',
+  coreDescription: 'Neptune + Pluto = the deepest collective transformation. The slowest aspect cycle (~492 years). Since the 1940s, these planets have been in sextile for all living generations.',
+  aspects: [
+    { aspectType: 'Conjunction', symbol: '☌', name: 'The Collective Soul Birth', tone: '"A new collective soul emerges."', description: 'Last occurred 1891-1892. Marks the beginning of a new collective spiritual cycle.', gifts: ['Collective spiritual pioneers', 'New consciousness carriers', 'Soul evolution agents'], challenges: ['May be overwhelmed by collective energies', 'Loss of individual boundaries', 'Carries heavy collective karma'] },
+    { aspectType: 'Square', symbol: '□', name: 'The Collective Crisis', tone: '"Spirit and power clash collectively."', description: 'Last occurred in the 1500s. Marks times of collective spiritual crisis. Not active in living memory.', gifts: ['Forces spiritual growth', 'Purifies collective consciousness', 'Breaks corrupt structures'], challenges: ['Collective upheaval', 'Spiritual wars', 'Destruction of belief systems'] },
+    { aspectType: 'Opposition', symbol: '☍', name: 'The Spirit-Power Balance', tone: '"Transcendence and power face each other."', description: 'Last occurred around 1800. Marks periods of intense spiritual-material tension.', gifts: ['Balances spiritual and material', 'Creates conscious transformation', 'Integrates light and shadow'], challenges: ['Extreme polarization', 'Light vs dark battles', 'Spiritual-material splits'] },
+    { aspectType: 'Trine', symbol: '△', name: 'The Flowing Evolution', tone: '"Spirit and depth flow together."', description: 'Last occurred in the 1700s. Marks periods of relatively harmonious spiritual evolution.', gifts: ['Natural spiritual depth', 'Effortless evolution', 'Comfortable with mystery'], challenges: ['May miss opportunities for growth', 'Could be spiritually complacent', 'May drift without direction'] },
+    { aspectType: 'Sextile', symbol: '⚹', name: 'The Opportunity for Soul Growth', tone: '"We can evolve if we choose."', description: 'Active since the 1940s for all living generations. A persistent invitation for spiritual evolution.', gifts: ['Available spiritual depth', 'Opportunity for evolution', 'Can access collective unconscious'], challenges: ['Requires conscious effort', 'Easy to ignore', 'Must choose to evolve'] }
+  ]
+};
+
 export const ALL_ASPECT_MODIFIERS: PlanetPairAspects[] = [
+  // Original pairs
   MERCURY_NEPTUNE,
   SUN_MOON,
   VENUS_MARS,
@@ -2761,6 +3042,23 @@ export const ALL_ASPECT_MODIFIERS: PlanetPairAspects[] = [
   MERCURY_VENUS,
   SUN_MARS,
   SUN_VENUS,
+  // 16 new pairs for 100% coverage
+  SUN_MERCURY,
+  SUN_JUPITER,
+  MOON_MERCURY,
+  MOON_VENUS,
+  MOON_MARS,
+  MOON_JUPITER,
+  MERCURY_JUPITER,
+  VENUS_JUPITER,
+  VENUS_URANUS,
+  MARS_JUPITER,
+  MARS_URANUS,
+  JUPITER_PLUTO,
+  SATURN_NEPTUNE,
+  URANUS_NEPTUNE,
+  URANUS_PLUTO,
+  NEPTUNE_PLUTO,
 ];
 
 /**
