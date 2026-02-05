@@ -376,9 +376,9 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                         </div>
                       </ScrollArea>
                       {/* Life Styles Section */}
-                      {signals && selectedChart && (
+                      {signals && (
                         <div className="mt-6">
-                          <LifeStylesSection chart={selectedChart} signals={signals} />
+                          <LifeStylesSection signals={signals} />
                         </div>
                       )}
                     </>
