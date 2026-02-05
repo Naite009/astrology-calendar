@@ -372,26 +372,83 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                           <h3 className="font-medium mb-2">Operating Mode Scores</h3>
                           <p className="text-xs text-muted-foreground mb-4">
                             These scores measure how your chart's placements distribute energy across key life dimensions. 
-                            Higher = more emphasis in that area.
+                            They reveal your natural tendencies—not limitations, but starting points for self-awareness.
                           </p>
-                          <div className="space-y-3">
+                          <div className="space-y-4">
                             {Object.entries(signals.operatingMode).map(([key, value]) => {
-                              const explanations: Record<string, string> = {
-                                visibility: 'How prominently your energy shows to the world (angular planets, Leo/Aries emphasis)',
-                                functionality: 'Preference for practical output vs. inner processing (earth/air vs. water signs)',
-                                expressive: 'Tendency to externalize emotions and identity (fire/air, planets in 1st/5th/9th)',
-                                contained: 'Tendency to internalize and process privately (water/earth, 4th/8th/12th houses)',
-                                relational: 'Energy directed toward partnerships and others (7th house, Venus/Libra emphasis)',
-                                selfDirected: 'Energy directed toward individual pursuits (1st house, Mars/Aries emphasis)',
+                              const numValue = value as number;
+                              const explanations: Record<string, { 
+                                what: string; 
+                                sources: string;
+                                highMeaning: string; 
+                                lowMeaning: string;
+                                whyMatters: string;
+                              }> = {
+                                visibility: {
+                                  what: 'How naturally your presence registers to others without effort',
+                                  sources: 'Calculated from: planets in angular houses (1st, 4th, 7th, 10th), Sun/Moon prominence, Leo/Aries placements',
+                                  highMeaning: 'You naturally command attention. People notice when you enter a room. Your actions have public impact.',
+                                  lowMeaning: 'You operate behind the scenes. Your influence is subtle, working through private channels rather than spotlight.',
+                                  whyMatters: 'Understanding this helps you choose environments where you thrive—leadership roles vs. advisory positions.'
+                                },
+                                functionality: {
+                                  what: 'Your orientation toward practical output versus inner reflection',
+                                  sources: 'Calculated from: earth/air sign emphasis, 2nd/6th/10th house placements, Saturn/Mercury strength',
+                                  highMeaning: 'You need tangible results. Abstract ideas frustrate you unless they produce real-world outcomes.',
+                                  lowMeaning: 'You value process over product. Meaning and experience matter more than measurable achievements.',
+                                  whyMatters: 'This shapes career satisfaction—do you need to see concrete results, or find fulfillment in the journey?'
+                                },
+                                expressive: {
+                                  what: 'Your tendency to externalize emotions, thoughts, and identity',
+                                  sources: 'Calculated from: fire/air signs, planets in 1st/5th/9th houses, Sun/Mars aspects',
+                                  highMeaning: 'You process by sharing. Talking, creating, and performing help you understand yourself.',
+                                  lowMeaning: 'You process internally first. You may seem reserved until you\'ve worked things through privately.',
+                                  whyMatters: 'This affects relationships—expressive types need outlets; contained types need space before sharing.'
+                                },
+                                contained: {
+                                  what: 'Your tendency to internalize and process privately before acting',
+                                  sources: 'Calculated from: water/earth signs, planets in 4th/8th/12th houses, Moon/Pluto aspects',
+                                  highMeaning: 'You have a rich inner world. Solitude recharges you. You observe before participating.',
+                                  lowMeaning: 'You prefer immediate engagement. Too much alone time feels stagnant.',
+                                  whyMatters: 'This determines your recharge needs—introverted processing vs. extroverted engagement.'
+                                },
+                                relational: {
+                                  what: 'Energy naturally directed toward partnerships, collaboration, and others',
+                                  sources: 'Calculated from: 7th house planets, Venus/Libra emphasis, aspects to Descendant',
+                                  highMeaning: 'You come alive through connection. Partnerships amplify your capabilities.',
+                                  lowMeaning: 'You operate independently. Collaboration can feel like compromise of your vision.',
+                                  whyMatters: 'This affects work style and relationships—some thrive in teams, others need autonomy.'
+                                },
+                                selfDirected: {
+                                  what: 'Energy naturally directed toward individual pursuits and self-development',
+                                  sources: 'Calculated from: 1st house planets, Mars/Aries emphasis, aspects to Ascendant',
+                                  highMeaning: 'You have strong self-initiative. Personal goals drive you more than group approval.',
+                                  lowMeaning: 'You are motivated by others\' needs. Service and responsiveness feel more natural than self-promotion.',
+                                  whyMatters: 'This shapes motivation—do you set your own goals, or respond to what others need?'
+                                },
                               };
+                              const info = explanations[key];
+                              const scoreLabel = numValue >= 70 ? 'High' : numValue >= 40 ? 'Moderate' : 'Low';
+                              const interpretation = numValue >= 60 ? info?.highMeaning : info?.lowMeaning;
+                              
                               return (
-                                <div key={key} className="space-y-1">
+                                <div key={key} className="p-3 bg-muted/30 rounded-lg space-y-2">
                                   <div className="flex justify-between text-sm">
-                                    <span className="capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
-                                    <span className="text-muted-foreground">{value as number}/100</span>
+                                    <span className="font-medium capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                                    <span className="text-muted-foreground font-medium">{numValue}/100 <span className="text-[10px]">({scoreLabel})</span></span>
                                   </div>
-                                  <Progress value={value as number} className="h-2" />
-                                  <p className="text-[10px] text-muted-foreground">{explanations[key] || ''}</p>
+                                  <Progress value={numValue} className="h-2" />
+                                  
+                                  {info && (
+                                    <div className="space-y-2 pt-1">
+                                      <p className="text-xs text-foreground"><span className="font-medium">What this measures:</span> {info.what}</p>
+                                      <p className="text-[10px] text-muted-foreground italic">{info.sources}</p>
+                                      <div className="p-2 bg-primary/5 rounded border-l-2 border-primary">
+                                        <p className="text-xs text-foreground"><span className="font-medium">Your score means:</span> {interpretation}</p>
+                                      </div>
+                                      <p className="text-[10px] text-muted-foreground">💡 {info.whyMatters}</p>
+                                    </div>
+                                  )}
                                 </div>
                               );
                             })}
