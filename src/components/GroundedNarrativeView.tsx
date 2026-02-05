@@ -139,36 +139,45 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
      }
    };
  
-   // Load previous narrative on chart change
-   useEffect(() => {
-     if (!selectedChartId) return;
-     
-     const loadPrevious = async () => {
-       const deviceId = localStorage.getItem('deviceId');
-       if (!deviceId) return;
- 
-       const { data } = await supabase
-         .from('chart_narratives')
-         .select('*')
-         .eq('chart_id', selectedChartId)
-         .eq('device_id', deviceId)
-         .order('created_at', { ascending: false })
-         .limit(1);
- 
-       if (data && data.length > 0) {
-         const record = data[0];
-         setNarrativeText(record.narrative_text);
-         setSignals(record.signals_json as unknown as SignalsData);
-         setSourceMap(record.source_map_json as unknown as SourceMapEntry[]);
-       } else {
-         setNarrativeText(null);
-         setSignals(null);
-         setSourceMap(null);
-       }
-     };
- 
-     loadPrevious();
-   }, [selectedChartId]);
+    // Load previous narrative on chart change
+    useEffect(() => {
+      if (!selectedChartId) return;
+      // Don't load/clear if currently generating
+      if (isGenerating) return;
+      
+      const loadPrevious = async () => {
+        const deviceId = localStorage.getItem('deviceId');
+        if (!deviceId) {
+          // No device ID yet - clear state for fresh start
+          setNarrativeText(null);
+          setSignals(null);
+          setSourceMap(null);
+          return;
+        }
+
+        const { data } = await supabase
+          .from('chart_narratives')
+          .select('*')
+          .eq('chart_id', selectedChartId)
+          .eq('device_id', deviceId)
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        // Only update if we're still on the same chart and not generating
+        if (data && data.length > 0) {
+          const record = data[0];
+          setNarrativeText(record.narrative_text);
+          setSignals(record.signals_json as unknown as SignalsData);
+          setSourceMap(record.source_map_json as unknown as SourceMapEntry[]);
+        } else {
+          setNarrativeText(null);
+          setSignals(null);
+          setSourceMap(null);
+        }
+      };
+
+      loadPrevious();
+    }, [selectedChartId, isGenerating]);
  
    return (
      <div className="space-y-6">
