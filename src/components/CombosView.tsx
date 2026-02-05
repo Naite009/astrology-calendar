@@ -120,38 +120,36 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
   };
 
   // Extract factors from the selected chart (planet-sign, planet-house, and planet-planet aspects)
+  // IMPORTANT: Use getChartPos() for ALL points so AC always comes from house cusps (house1) when present.
   const chartFactors = useMemo(() => {
-    if (!selectedChart?.planets) return new Set<string>();
-    
+    if (!selectedChart) return new Set<string>();
+
     const factors = new Set<string>();
-    const planetNames = Object.keys(selectedChart.planets)
-      .filter((k) => [...PLANETS, ...POINTS].includes(k)) as (keyof typeof selectedChart.planets)[];
+    const names = [...PLANETS, ...POINTS];
     const planetData: { name: string; sign: string; degree: number }[] = [];
-    
-    for (const planetName of planetNames) {
-      const data = selectedChart.planets[planetName];
-      if (!data?.sign) continue;
-      
-      // Store for aspect calculations
-      const deg = data.degree + (data.minutes || 0) / 60 + (data.seconds || 0) / 3600;
-      planetData.push({ name: planetName, sign: data.sign, degree: deg });
-      
+
+    for (const name of names) {
+      const pos = getChartPos(name);
+      if (!pos?.sign) continue;
+
+      planetData.push({ name, sign: pos.sign, degree: pos.degree });
+
       // Add planet-sign combo identifier
-      factors.add(`${planetName}|${data.sign}`);
+      factors.add(`${name}|${pos.sign}`);
       // Also track individual factors
-      factors.add(planetName);
-      factors.add(data.sign);
-      
-      // Calculate and add planet-house combo
-      const house = getNatalPlanetHouse(planetName, selectedChart);
+      factors.add(name);
+      factors.add(pos.sign);
+
+      // Calculate and add planet-house combo (for points like Ascendant this should still work)
+      const house = getNatalPlanetHouse(name, selectedChart);
       if (house) {
         const houseLabel = `${house}${house === 1 ? 'st' : house === 2 ? 'nd' : house === 3 ? 'rd' : 'th'} House`;
-        factors.add(`${planetName}|${houseLabel}`);
+        factors.add(`${name}|${houseLabel}`);
         factors.add(houseLabel);
       }
     }
-    
-    // Calculate actual aspects between planets
+
+    // Calculate actual aspects between planets/points
     for (let i = 0; i < planetData.length; i++) {
       for (let j = i + 1; j < planetData.length; j++) {
         const p1 = planetData[i];
@@ -164,27 +162,31 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
         }
       }
     }
-    
+
     return factors;
   }, [selectedChart]);
 
   // Extract aspects with planet pairs for the aspect filter UI
   const chartAspects = useMemo(() => {
-    if (!selectedChart?.planets) return { byType: new Map<string, string[]>(), allAspectTypes: [] as string[], allPairs: [] as { p1: string; p2: string; aspect: string }[] };
-    
+    if (!selectedChart) {
+      return {
+        byType: new Map<string, string[]>(),
+        allAspectTypes: [] as string[],
+        allPairs: [] as { p1: string; p2: string; aspect: string }[],
+      };
+    }
+
     const byType = new Map<string, string[]>();
     const allPairs: { p1: string; p2: string; aspect: string }[] = [];
-    const planetNames = Object.keys(selectedChart.planets)
-      .filter((k) => [...PLANETS, ...POINTS].includes(k)) as (keyof typeof selectedChart.planets)[];
+    const names = [...PLANETS, ...POINTS];
     const planetData: { name: string; sign: string; degree: number }[] = [];
-    
-    for (const planetName of planetNames) {
-      const data = selectedChart.planets[planetName];
-      if (!data?.sign) continue;
-      const deg = data.degree + (data.minutes || 0) / 60 + (data.seconds || 0) / 3600;
-      planetData.push({ name: planetName, sign: data.sign, degree: deg });
+
+    for (const name of names) {
+      const pos = getChartPos(name);
+      if (!pos?.sign) continue;
+      planetData.push({ name, sign: pos.sign, degree: pos.degree });
     }
-    
+
     for (let i = 0; i < planetData.length; i++) {
       for (let j = i + 1; j < planetData.length; j++) {
         const p1 = planetData[i];
@@ -197,8 +199,8 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
         }
       }
     }
-    
-    const allAspectTypes = ['Conjunction', 'Sextile', 'Square', 'Trine', 'Opposition'].filter(a => byType.has(a));
+
+    const allAspectTypes = ['Conjunction', 'Sextile', 'Square', 'Trine', 'Opposition'].filter((a) => byType.has(a));
     return { byType, allAspectTypes, allPairs };
   }, [selectedChart]);
 
