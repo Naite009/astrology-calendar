@@ -168,9 +168,11 @@ serve(async (req) => {
 
     const systemPrompt = `${selectedVoice}
 
-CRITICAL RULES:
-- Write in flowing prose paragraphs, NOT bullet lists
-- Every statement MUST be traceable to specific placements with HOUSES included
+CRITICAL RULES - EVERY SENTENCE MUST BE SOURCED:
+- EVERY sentence you write MUST reference a specific placement, aspect, house, or score from the chart data
+- DO NOT write generic opening sentences like "You navigate the world as a quiet force" without citing WHY (e.g., "With your Moon in Scorpio in the 12th house...")
+- Start every paragraph with a specific placement or aspect, then interpret
+- Format: "[Placement/Aspect] → [Interpretation]" logic, even if prose flows naturally
 - ALWAYS mention house placements when discussing planets (e.g., "Moon in the 12th house" not just "Moon in Pisces")
 - Use verbs and functions, not just adjectives (e.g., "stabilizes, regulates" not just "stable")
 - Discuss angular planets prominently - they are CENTRAL to identity
@@ -180,19 +182,19 @@ CRITICAL RULES:
 - Do not predict specific life events or claim certainty
 - Keep shadow content (if enabled) compassionate and framed as protection${!includeShadow ? '\n- Do not include shadow/wound content in this narrative' : ''}
 
-STRUCTURE (follow this order):
-1. Hook line: One sentence archetype label (calm, non-dramatic)
-2. Core identity paragraph: Discuss the Ascendant, chart ruler condition, and angular planets. These are the MOST visible parts of the chart.
-3. Operating mode paragraph: How visible vs. functional they tend to be and why, referencing HOUSE placements
-4. Emotional style paragraph: Moon placement WITH its house, any aspects Moon makes to other planets (ONLY if in the aspects list), emotional processing style
-5. Mind/communication paragraph: Mercury condition with house placement
-6. Drive/work paragraph: Mars with house, and any Saturn themes
+STRUCTURE (follow this order - every section MUST cite specific chart factors):
+1. Hook line: MUST cite the most prominent placement (e.g., "With Sun conjunct Pluto in your 10th house, you...")
+2. Core identity paragraph: Discuss the Ascendant sign + degree, chart ruler condition, and angular planets. These are the MOST visible parts.
+3. Operating mode paragraph: Reference specific house placements that create the visibility/functionality balance
+4. Emotional style paragraph: Moon placement WITH its house AND any aspects Moon makes (ONLY if in the aspects list)
+5. Mind/communication paragraph: Mercury condition with house placement and any aspects
+6. Drive/work paragraph: Mars with house, and any Saturn themes (cite the aspects)
 7. Bonding paragraph: Venus with house and relational/self-directed balance
-8. **Midheaven & Career paragraph**: MC sign, MC ruler's condition, planets in 10th house, aspects to MC. Discuss public role, career direction, and what they're building toward.
-9. Pressure/wound paragraph: Only discuss Saturn patterns or hard aspects that ACTUALLY appear in the pressure points list (only if shadow enabled)
-10. Closing: 2-3 sentences with a gentle growth lever
+8. **Midheaven & Career paragraph**: MC sign, MC ruler's condition, planets in 10th house, aspects to MC
+9. Pressure/wound paragraph: Only discuss patterns that ACTUALLY appear in the pressure points list (only if shadow enabled)
+10. Closing: 2-3 sentences with a gentle growth lever, citing a specific placement as the "leverage point"
 
-Write approximately ${wordCount} words.`;
+Write approximately ${wordCount} words. Remember: NO sentence without a chart citation.`;
 
     const userPrompt = `Generate a grounded therapist narrative for this natal chart. Be SPECIFIC about houses and only mention aspects that are verified in the data.
 
