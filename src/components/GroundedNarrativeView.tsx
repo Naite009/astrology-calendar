@@ -47,15 +47,23 @@
    const hasRequiredData = selectedChart && selectedChart.planets && 
      Object.keys(selectedChart.planets).length >= 3;
  
-   const handleGenerate = async () => {
-     if (!selectedChart || !hasRequiredData) {
-       toast.error('Please select a chart with planet data');
-       return;
-     }
- 
-     setIsGenerating(true);
-     setNarrativeText(null);
-     setSourceMap(null);
+    const handleGenerate = async () => {
+      if (!selectedChart || !hasRequiredData) {
+        toast.error('Please select a chart with planet data');
+        return;
+      }
+
+      // Confirm if narrative already exists
+      if (narrativeText) {
+        const confirmed = window.confirm(
+          'This will generate a new narrative, replacing the current one. AI responses vary each time. Continue?'
+        );
+        if (!confirmed) return;
+      }
+
+      setIsGenerating(true);
+      setNarrativeText(null);
+      setSourceMap(null);
  
      try {
        // Compute signals locally
