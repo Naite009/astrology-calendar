@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Sun, Zap, Moon, Check } from 'lucide-react';
+import { Sun, Zap, Moon, Check, Info } from 'lucide-react';
 import { PatternMirrorCombo, THEMATIC_CATEGORIES } from '@/lib/patternMirrorCombos';
 import { getPlanetSymbol } from '@/components/PlanetSymbol';
 import { ASPECT_SYMBOLS } from '@/lib/aspectModifiers';
@@ -19,9 +19,16 @@ interface PatternMirrorCardProps {
     sign?: string;
     house?: number;
   };
+  // New: partial match info - what parts of the pattern the user HAS
+  partialMatchInfo?: {
+    hasHouse?: { planet: string; house: number };
+    hasSign?: { planet: string; sign: string };
+    missingPlanet?: string;
+    missingAspect?: boolean;
+  };
 }
 
-export const PatternMirrorCard = ({ combo, isMatch = false, matchDetails }: PatternMirrorCardProps) => {
+export const PatternMirrorCard = ({ combo, isMatch = false, matchDetails, partialMatchInfo }: PatternMirrorCardProps) => {
   // Build the pattern identifier display
   const getPatternIdentifier = () => {
     const parts: string[] = [];
@@ -61,6 +68,62 @@ export const PatternMirrorCard = ({ combo, isMatch = false, matchDetails }: Patt
     }).filter(Boolean);
   };
 
+  // Build personalized explanation for full matches
+  const getPersonalizedExplanation = (): string | null => {
+    if (!isMatch) return null;
+
+    if (matchDetails?.aspectType && combo.planets) {
+      const [p1, p2] = combo.planets;
+      return `Your ${p1} and ${p2} form a ${matchDetails.aspectType} in your natal chart. This means the themes of this pattern actively shape how you experience and express these energies.`;
+    }
+
+    if (matchDetails?.house && combo.planets) {
+      const planet = combo.planets[0];
+      const houseOrdinal = matchDetails.house === 1 ? '1st' : matchDetails.house === 2 ? '2nd' : matchDetails.house === 3 ? '3rd' : `${matchDetails.house}th`;
+      return `Your ${planet} is placed in your ${houseOrdinal} house. This house placement directly activates the emotional patterns described here.`;
+    }
+
+    if (matchDetails?.sign && combo.planets) {
+      const planet = combo.planets[0];
+      return `Your ${planet} is in ${matchDetails.sign}. This sign placement colors how you experience and express these patterns.`;
+    }
+
+    return null;
+  };
+
+  // Build partial match explanation (when user has some but not all elements)
+  const getPartialMatchExplanation = (): string | null => {
+    if (isMatch || !partialMatchInfo) return null;
+
+    const parts: string[] = [];
+
+    if (partialMatchInfo.hasHouse) {
+      const { planet, house } = partialMatchInfo.hasHouse;
+      const houseOrdinal = house === 1 ? '1st' : house === 2 ? '2nd' : house === 3 ? '3rd' : `${house}th`;
+      parts.push(`You have ${planet} in the ${houseOrdinal} house`);
+    }
+
+    if (partialMatchInfo.hasSign) {
+      const { planet, sign } = partialMatchInfo.hasSign;
+      parts.push(`${planet} in ${sign}`);
+    }
+
+    if (parts.length === 0) return null;
+
+    let explanation = parts.join(', ') + '.';
+
+    if (partialMatchInfo.missingPlanet) {
+      explanation += ` You don't have ${partialMatchInfo.missingPlanet} in this position, so this isn't a full pattern match.`;
+    } else if (partialMatchInfo.missingAspect) {
+      explanation += ` These planets don't form the required aspect in your chart, so this is a partial resonance.`;
+    }
+
+    return explanation;
+  };
+
+  const personalizedExplanation = getPersonalizedExplanation();
+  const partialExplanation = getPartialMatchExplanation();
+
   return (
     <Card className={`border-border transition-all ${isMatch ? 'ring-2 ring-primary/50 bg-primary/5' : ''}`}>
       <CardHeader className="pb-3">
@@ -84,6 +147,32 @@ export const PatternMirrorCard = ({ combo, isMatch = false, matchDetails }: Patt
       </CardHeader>
       
       <CardContent className="space-y-4">
+        {/* Personalized "In Your Chart" Explanation Box */}
+        {personalizedExplanation && (
+          <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
+            <div className="flex items-start gap-2">
+              <Info className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-xs font-medium text-primary mb-1">Why This Applies to You</p>
+                <p className="text-sm text-foreground/90">{personalizedExplanation}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Partial Match Explanation Box */}
+        {partialExplanation && (
+          <div className="p-3 bg-muted/50 border border-border rounded-lg">
+            <div className="flex items-start gap-2">
+              <Info className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-xs font-medium text-muted-foreground mb-1">Partial Match in Your Chart</p>
+                <p className="text-sm text-foreground/70">{partialExplanation}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Summary - the felt experience */}
         <p className="text-sm text-muted-foreground leading-relaxed">
           {combo.summary}
