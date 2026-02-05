@@ -18,6 +18,7 @@ import { HighestPotentialSynthesis } from './chartdecoder/HighestPotentialSynthe
 import { ProgressionsDisplay } from './chartdecoder/ProgressionsDisplay';
 import { ChartRulerDeepDive } from './chartdecoder/ChartRulerDeepDive';
 import { ProgressedMoonTimeline } from './chartdecoder/ProgressedMoonTimeline';
+import { ChartSelector } from './ChartSelector';
 
 import { NatalChart } from '@/hooks/useNatalChart';
 import {
@@ -244,20 +245,13 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
 
         {/* Chart Selector */}
         <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-2">
-            <label className="text-[11px] uppercase tracking-widest text-muted-foreground">
-              Decoding:
-            </label>
-            <select
-              value={localSelectedChart}
-              onChange={(e) => setLocalSelectedChart(e.target.value)}
-              className="border border-border bg-background px-3 py-2 text-sm rounded-sm focus:border-primary focus:outline-none"
-            >
-              {allCharts.map(chart => (
-                <option key={chart.id} value={chart.id}>{chart.name}</option>
-              ))}
-            </select>
-          </div>
+          <ChartSelector
+            userNatalChart={natalChart}
+            savedCharts={allCharts.filter(c => c.id !== natalChart?.id)}
+            selectedChartId={localSelectedChart}
+            onSelect={setLocalSelectedChart}
+            label="Decoding:"
+          />
           
           {/* Age Input */}
           <div className="flex items-center gap-2">

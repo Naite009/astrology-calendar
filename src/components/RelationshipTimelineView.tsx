@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Users, Heart } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { RelationshipTimeline } from './synastry/RelationshipTimeline';
 import { calculateSynastryAspects } from '@/lib/synastry';
+import { ChartSelector } from './ChartSelector';
 
 interface RelationshipTimelineViewProps {
   userNatalChart: NatalChart | null;
@@ -18,10 +18,16 @@ export const RelationshipTimelineView: React.FC<RelationshipTimelineViewProps> =
   const [selectedChart1Id, setSelectedChart1Id] = useState<string>('');
   const [selectedChart2Id, setSelectedChart2Id] = useState<string>('');
 
-  const allCharts = [
-    ...(userNatalChart ? [userNatalChart] : []),
-    ...savedCharts
-  ];
+  // Build sorted charts list: user first, then alphabetically sorted
+  const allCharts = useMemo(() => {
+    const sorted = [...savedCharts]
+      .filter(c => c.id !== userNatalChart?.id)
+      .sort((a, b) => a.name.localeCompare(b.name));
+    return [
+      ...(userNatalChart ? [userNatalChart] : []),
+      ...sorted
+    ];
+  }, [userNatalChart, savedCharts]);
 
   const chart1 = allCharts.find(c => c.id === selectedChart1Id);
   const chart2 = allCharts.find(c => c.id === selectedChart2Id);
@@ -66,43 +72,23 @@ export const RelationshipTimelineView: React.FC<RelationshipTimelineViewProps> =
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Person 1</label>
-              <Select value={selectedChart1Id} onValueChange={setSelectedChart1Id}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select first person" />
-                </SelectTrigger>
-                <SelectContent>
-                  {allCharts.map(chart => (
-                    <SelectItem 
-                      key={chart.id} 
-                      value={chart.id}
-                      disabled={chart.id === selectedChart2Id}
-                    >
-                      {chart.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <ChartSelector
+                userNatalChart={userNatalChart}
+                savedCharts={savedCharts.filter(c => c.id !== selectedChart2Id)}
+                selectedChartId={selectedChart1Id}
+                onSelect={setSelectedChart1Id}
+                label="Person 1"
+              />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Person 2</label>
-              <Select value={selectedChart2Id} onValueChange={setSelectedChart2Id}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select second person" />
-                </SelectTrigger>
-                <SelectContent>
-                  {allCharts.map(chart => (
-                    <SelectItem 
-                      key={chart.id} 
-                      value={chart.id}
-                      disabled={chart.id === selectedChart1Id}
-                    >
-                      {chart.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <ChartSelector
+                userNatalChart={selectedChart1Id === (userNatalChart?.id || 'user') ? null : userNatalChart}
+                savedCharts={savedCharts.filter(c => c.id !== selectedChart1Id)}
+                selectedChartId={selectedChart2Id}
+                onSelect={setSelectedChart2Id}
+                label="Person 2"
+              />
             </div>
           </div>
         </CardContent>

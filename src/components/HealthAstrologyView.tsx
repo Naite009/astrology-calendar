@@ -10,6 +10,7 @@ import { HouseHealthSystem } from "./health/HouseHealthSystem";
 import { HealthTimingCard } from "./health/HealthTimingCard";
 import { HealingModalitiesCard } from "./health/HealingModalitiesCard";
 import { HealthTransitAlertsCard } from "./health/HealthTransitAlertsCard";
+import { ChartSelector } from "./ChartSelector";
 
 interface HealthAstrologyViewProps {
   natalChart: NatalChart | null;
@@ -51,20 +52,13 @@ export const HealthAstrologyView = ({ natalChart, allCharts }: HealthAstrologyVi
 
         {/* Chart Selector */}
         {allCharts.length > 1 && (
-          <div className="flex items-center gap-2">
-            <label className="text-xs uppercase tracking-widest text-muted-foreground">
-              Analyzing:
-            </label>
-            <select
-              value={selectedChartId}
-              onChange={(e) => setSelectedChartId(e.target.value)}
-              className="border border-border bg-background px-3 py-2 text-sm rounded-sm focus:border-primary focus:outline-none"
-            >
-              {allCharts.map(chart => (
-                <option key={chart.id} value={chart.id}>{chart.name}</option>
-              ))}
-            </select>
-          </div>
+          <ChartSelector
+            userNatalChart={natalChart}
+            savedCharts={allCharts.filter(c => c.id !== natalChart?.id)}
+            selectedChartId={selectedChartId}
+            onSelect={setSelectedChartId}
+            label="Analyzing:"
+          />
         )}
       </div>
 

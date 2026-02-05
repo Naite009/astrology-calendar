@@ -4,6 +4,7 @@ import { TodaysCosmicEnergy, CosmicEnergyButton } from "./TodaysCosmicEnergy";
 import { useState as useCosmicState } from "react";
 import { ChartDecoderView } from "./ChartDecoderView";
 import { AskView } from "./AskView";
+import { ChartSelector } from "./ChartSelector";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
 import { YearView } from "./YearView";
@@ -201,22 +202,15 @@ export const AstroCalendar = () => {
             {/* Chart Selector Dropdown */}
             {(viewMode === "month" || viewMode === "week") && (
               <div className="flex items-center gap-2">
-                <label className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                  View as:
-                </label>
-                <select
-                  value={selectedChartForTiming}
-                  onChange={(e) => selectChartForTiming(e.target.value)}
-                  className="border border-border bg-background px-3 py-2 text-sm rounded-sm focus:border-primary focus:outline-none"
-                >
-                  <option value="general">General Calendar</option>
-                  {userNatalChart && (
-                    <option value="user">{userNatalChart.name}&apos;s Chart</option>
-                  )}
-                  {savedCharts.map(chart => (
-                    <option key={chart.id} value={chart.id}>{chart.name}</option>
-                  ))}
-                </select>
+                <ChartSelector
+                  userNatalChart={userNatalChart}
+                  savedCharts={savedCharts}
+                  selectedChartId={selectedChartForTiming}
+                  onSelect={selectChartForTiming}
+                  includeGeneral={true}
+                  generalLabel="General Calendar"
+                  label="View as:"
+                />
                 {activeChart && (
                   <span className="text-[10px] text-primary bg-primary/10 px-2 py-1 rounded-sm">
                     Personal Transits Active
