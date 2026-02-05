@@ -50,6 +50,51 @@ export type Database = {
         }
         Relationships: []
       }
+      chart_narratives: {
+        Row: {
+          chart_id: string
+          created_at: string
+          device_id: string
+          engine_version: string
+          id: string
+          include_shadow: boolean
+          length_preset: string
+          narrative_text: string
+          signals_json: Json
+          source_map_json: Json
+          user_id: string | null
+          voice_preset: string
+        }
+        Insert: {
+          chart_id: string
+          created_at?: string
+          device_id?: string
+          engine_version?: string
+          id?: string
+          include_shadow?: boolean
+          length_preset?: string
+          narrative_text: string
+          signals_json: Json
+          source_map_json: Json
+          user_id?: string | null
+          voice_preset?: string
+        }
+        Update: {
+          chart_id?: string
+          created_at?: string
+          device_id?: string
+          engine_version?: string
+          id?: string
+          include_shadow?: boolean
+          length_preset?: string
+          narrative_text?: string
+          signals_json?: Json
+          source_map_json?: Json
+          user_id?: string | null
+          voice_preset?: string
+        }
+        Relationships: []
+      }
       cosmic_weather_cache: {
         Row: {
           chart_id: string
