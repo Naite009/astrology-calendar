@@ -19,17 +19,35 @@
    userNatalChart: NatalChart | null;
  }
  
- export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
-   const [selectedChartId, setSelectedChartId] = useState<string>('');
-   const [lengthPreset, setLengthPreset] = useState<'short_250' | 'full_800'>('full_800');
-   const [includeShadow, setIncludeShadow] = useState(true);
-   const [activeTab, setActiveTab] = useState<'narrative' | 'signals' | 'source-map'>('narrative');
-   
-   const [isGenerating, setIsGenerating] = useState(false);
-   const [narrativeText, setNarrativeText] = useState<string | null>(null);
-   const [signals, setSignals] = useState<SignalsData | null>(null);
-   const [sourceMap, setSourceMap] = useState<SourceMapEntry[] | null>(null);
-   const [selectedSentenceIndex, setSelectedSentenceIndex] = useState<number | null>(null);
+export type VoiceStyle = 
+  | 'grounded_therapist' 
+  | 'spiritual_guide' 
+  | 'motherly_supportive' 
+  | 'direct_practical' 
+  | 'mystical_poetic'
+  | 'analytical_technical';
+
+const VOICE_OPTIONS: { value: VoiceStyle; label: string; description: string }[] = [
+  { value: 'grounded_therapist', label: 'Grounded Therapist', description: 'Warm, steady, emotionally intelligent' },
+  { value: 'spiritual_guide', label: 'Spiritual Guide', description: 'Soul-centered, ancestral wisdom, divine timing' },
+  { value: 'motherly_supportive', label: 'Nurturing & Practical', description: 'Gentle encouragement, actionable advice' },
+  { value: 'direct_practical', label: 'Direct & Clear', description: 'Straightforward, no fluff, action-oriented' },
+  { value: 'mystical_poetic', label: 'Mystical & Poetic', description: 'Evocative imagery, archetypal depth' },
+  { value: 'analytical_technical', label: 'Technical Astrologer', description: 'Traditional dignities, precise language' },
+];
+
+export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
+  const [selectedChartId, setSelectedChartId] = useState<string>('');
+  const [lengthPreset, setLengthPreset] = useState<'short_250' | 'full_800'>('full_800');
+  const [includeShadow, setIncludeShadow] = useState(true);
+  const [voiceStyle, setVoiceStyle] = useState<VoiceStyle>('grounded_therapist');
+  const [activeTab, setActiveTab] = useState<'narrative' | 'signals' | 'source-map'>('narrative');
+  
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [narrativeText, setNarrativeText] = useState<string | null>(null);
+  const [signals, setSignals] = useState<SignalsData | null>(null);
+  const [sourceMap, setSourceMap] = useState<SourceMapEntry[] | null>(null);
+  const [selectedSentenceIndex, setSelectedSentenceIndex] = useState<number | null>(null);
  
    // Build chart options
    const allCharts = userNatalChart ? [userNatalChart, ...savedCharts] : savedCharts;
@@ -70,15 +88,16 @@
        const computedSignals = computeAllSignals(selectedChart);
        setSignals(computedSignals);
  
-       // Call edge function
-       const { data, error } = await supabase.functions.invoke('generate-narrative', {
-         body: {
-           signals: computedSignals,
-           chartName: selectedChart.name,
-           planets: selectedChart.planets,
-           lengthPreset,
-           includeShadow
-         }
+        // Call edge function
+        const { data, error } = await supabase.functions.invoke('generate-narrative', {
+          body: {
+            signals: computedSignals,
+            chartName: selectedChart.name,
+            planets: selectedChart.planets,
+            lengthPreset,
+            includeShadow,
+            voiceStyle
+          }
        });
  
        if (error) {
@@ -97,10 +116,10 @@
        const deviceId = localStorage.getItem('deviceId') || crypto.randomUUID();
        localStorage.setItem('deviceId', deviceId);
  
-      await supabase.from('chart_narratives').insert([{
-         chart_id: selectedChart.id,
-         voice_preset: 'grounded_therapist',
-         length_preset: lengthPreset,
+       await supabase.from('chart_narratives').insert([{
+          chart_id: selectedChart.id,
+          voice_preset: voiceStyle,
+          length_preset: lengthPreset,
          include_shadow: includeShadow,
          engine_version: 'narrative_v1.0.0',
          narrative_text: data.narrativeText,
@@ -209,13 +228,25 @@
                />
              </div>
  
-             {/* Voice Preset (locked) */}
-             <div className="space-y-2">
-               <Label className="text-xs text-muted-foreground">Voice</Label>
-               <div className="text-sm px-3 py-2 bg-muted rounded-md">
-                 Grounded Therapist
-               </div>
-             </div>
+              {/* Voice Style */}
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">Voice Style</Label>
+                <Select value={voiceStyle} onValueChange={(v) => setVoiceStyle(v as VoiceStyle)}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border z-50">
+                    {VOICE_OPTIONS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        <div className="flex flex-col">
+                          <span>{opt.label}</span>
+                          <span className="text-[10px] text-muted-foreground">{opt.description}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
  
              {/* Generate Button */}
              <Button 
