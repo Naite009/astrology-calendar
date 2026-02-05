@@ -1,17 +1,18 @@
- import { useState, useEffect } from 'react';
- import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
- import { Button } from '@/components/ui/button';
- import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
- import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
- import { Switch } from '@/components/ui/switch';
- import { Label } from '@/components/ui/label';
- import { Progress } from '@/components/ui/progress';
- import { ScrollArea } from '@/components/ui/scroll-area';
- import { Badge } from '@/components/ui/badge';
- import { Sparkles, FileText, BarChart3, Map, Loader2, AlertCircle, ChevronRight } from 'lucide-react';
- import { NatalChart } from '@/hooks/useNatalChart';
- import { computeAllSignals, SignalsData, SourceMapEntry } from '@/lib/narrativeAnalysisEngine';
- import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
+import { Sparkles, FileText, BarChart3, Map, Loader2, AlertCircle, ChevronRight } from 'lucide-react';
+import { NatalChart } from '@/hooks/useNatalChart';
+import { computeAllSignals, SignalsData, SourceMapEntry } from '@/lib/narrativeAnalysisEngine';
+import { supabase } from '@/integrations/supabase/client';
+import { ChartSelector } from './ChartSelector';
  import { toast } from 'sonner';
  
  interface Props {
@@ -182,22 +183,16 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
              <CardTitle className="text-sm font-medium">Settings</CardTitle>
            </CardHeader>
            <CardContent className="space-y-4">
-             {/* Chart Selection */}
-             <div className="space-y-2">
-               <Label className="text-xs text-muted-foreground">Chart</Label>
-               <Select value={selectedChartId} onValueChange={setSelectedChartId}>
-                 <SelectTrigger className="w-full">
-                   <SelectValue placeholder="Select a chart" />
-                 </SelectTrigger>
-                 <SelectContent className="bg-background border z-50">
-                   {allCharts.map(chart => (
-                     <SelectItem key={chart.id} value={chart.id}>
-                       {chart.name}
-                     </SelectItem>
-                   ))}
-                 </SelectContent>
-               </Select>
-             </div>
+            {/* Chart Selection */}
+            <div className="space-y-2">
+              <ChartSelector
+                userNatalChart={userNatalChart}
+                savedCharts={savedCharts}
+                selectedChartId={selectedChartId}
+                onSelect={setSelectedChartId}
+                label="Chart"
+              />
+            </div>
  
              {/* Length Toggle */}
              <div className="space-y-2">

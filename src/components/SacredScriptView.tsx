@@ -193,8 +193,11 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
   const currentDate = new Date();
   const [selectedChartId, setSelectedChartId] = useState<string>(initialChart?.id || '');
   
-  // Get sorted charts alphabetically
-  const sortedCharts = [...allCharts].sort((a, b) => a.name.localeCompare(b.name));
+  // Get sorted charts: user (initialChart) first, then alphabetically
+  const sortedCharts = (() => {
+    const others = allCharts.filter(c => c.id !== initialChart?.id).sort((a, b) => a.name.localeCompare(b.name));
+    return initialChart ? [initialChart, ...others] : others;
+  })();
   
   // Get the selected chart
   const natalChart = sortedCharts.find(c => c.id === selectedChartId) || initialChart;
@@ -238,9 +241,9 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
             onChange={(e) => setSelectedChartId(e.target.value)}
             className="flex-1 max-w-xs border border-border bg-background px-3 py-2 text-sm rounded-sm focus:border-primary focus:outline-none"
           >
-            {sortedCharts.map(chart => (
+            {sortedCharts.map((chart, i) => (
               <option key={chart.id} value={chart.id}>
-                {chart.name}
+                {i === 0 && chart.id === initialChart?.id ? `★ ${chart.name}` : chart.name}
               </option>
             ))}
           </select>

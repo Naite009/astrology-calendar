@@ -484,10 +484,14 @@ const RelationshipChartDisplay = ({
 };
 
 export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps) => {
+  // Build allCharts: user first, then alphabetically sorted saved charts
   const allCharts = useMemo(() => {
+    const sortedSaved = [...savedCharts]
+      .filter(c => c.id !== userNatalChart?.id)
+      .sort((a, b) => a.name.localeCompare(b.name));
     const charts: NatalChart[] = [];
     if (userNatalChart) charts.push(userNatalChart);
-    charts.push(...savedCharts.filter(c => c.id !== userNatalChart?.id));
+    charts.push(...sortedSaved);
     return charts;
   }, [userNatalChart, savedCharts]);
   

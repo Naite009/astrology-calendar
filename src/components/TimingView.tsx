@@ -21,6 +21,8 @@ import { DailySynthesisCard } from '@/components/DailySynthesisCard';
 import { TransitAlertsCard } from '@/components/TransitAlertsCard';
 import { BestDaysSummaryCard } from '@/components/BestDaysSummaryCard';
 import { MoonTransitCalendar } from '@/components/MoonTransitCalendar';
+import { ChartSelector } from '@/components/ChartSelector';
+
 interface TimingViewProps {
   userNatalChart: NatalChart | null;
   savedCharts: NatalChart[];
@@ -227,27 +229,20 @@ const RightNowSection = ({
     Saturn: { bestFor: 'Discipline, structure, long-term planning', avoid: 'Quick wins' }
   };
 
-  const allCharts = [
-    { id: 'general', name: 'Collective Only' },
-    ...(userNatalChart ? [{ id: 'user', name: userNatalChart.name }] : []),
-    ...savedCharts.map(c => ({ id: c.id, name: c.name }))
-  ];
-
   return (
     <div className="space-y-4">
       {/* Chart Selector */}
       <div className="p-4 rounded-lg border border-border bg-secondary/30">
         <div className="flex items-center gap-3 flex-wrap">
-          <label className="text-xs uppercase tracking-widest text-muted-foreground">View transits for:</label>
-          <select
-            value={selectedChart}
-            onChange={(e) => setSelectedChart(e.target.value)}
-            className="border border-border bg-background px-3 py-2 text-sm rounded-sm focus:border-primary focus:outline-none"
-          >
-            {allCharts.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
+          <ChartSelector
+            userNatalChart={userNatalChart}
+            savedCharts={savedCharts}
+            selectedChartId={selectedChart}
+            onSelect={setSelectedChart}
+            includeGeneral={true}
+            generalLabel="Collective Only"
+            label="View transits for:"
+          />
           {activeChart && (
             <span className="text-xs text-primary bg-primary/10 px-2 py-1 rounded-sm">
               Personal transits active for {activeChart.name}

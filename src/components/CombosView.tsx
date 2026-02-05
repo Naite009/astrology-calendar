@@ -4,7 +4,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { 
@@ -32,6 +31,7 @@ import {
 import { findAspectModifiers, ASPECT_SYMBOLS, AspectModifier } from '@/lib/aspectModifiers';
 import { patternMirrorCombos, THEMATIC_CATEGORIES, PatternMirrorCombo } from '@/lib/patternMirrorCombos';
 import { PatternMirrorCard } from '@/components/PatternMirrorCard';
+import { ChartSelector } from '@/components/ChartSelector';
 
 const SIGN_SYMBOLS: Record<string, string> = {
   'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊', 'Cancer': '♋',
@@ -1020,22 +1020,14 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                 <User className="h-4 w-4 text-primary" />
                 <span className="text-sm font-medium">My Chart Matches:</span>
               </div>
-              <Select 
-                value={selectedChartId || 'none'} 
-                onValueChange={(v) => setSelectedChartId(v === 'none' ? null : v)}
-              >
-                <SelectTrigger className="w-[200px] bg-background">
-                  <SelectValue placeholder="Select a chart..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">✦ Collective Energies</SelectItem>
-                  {allCharts.filter(chart => chart.id).map(chart => (
-                    <SelectItem key={chart.id} value={chart.id}>
-                      {chart.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <ChartSelector
+                userNatalChart={userChart}
+                savedCharts={savedCharts}
+                selectedChartId={selectedChartId || 'general'}
+                onSelect={(v) => setSelectedChartId(v === 'general' ? null : v)}
+                includeGeneral={true}
+                generalLabel="✦ Collective Energies"
+              />
               {selectedChart && (
                 <span className="text-xs text-muted-foreground">
                   Combinations in {selectedChart.name}'s chart are highlighted

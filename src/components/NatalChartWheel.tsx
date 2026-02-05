@@ -1,10 +1,11 @@
 // Natal Chart Wheel Visualization
 // Displays the uploaded chart image or a drag-and-drop area to upload one
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { ZoomIn, ZoomOut, RotateCcw, Download, Upload, CheckCircle, XCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { ChartSelector as ChartSelectorDropdown } from './ChartSelector';
 
 interface NatalChartWheelProps {
   natalChart: NatalChart | null;
@@ -13,8 +14,16 @@ interface NatalChartWheelProps {
 }
 
 export const NatalChartWheel = ({ natalChart: initialChart, allCharts = [], onChartImageUpload }: NatalChartWheelProps) => {
-  // Get all charts sorted alphabetically
-  const allSortedCharts = [...allCharts].sort((a, b) => a.name.localeCompare(b.name));
+  // Get the user chart (first one passed in if available)
+  const userChart = initialChart || allCharts[0] || null;
+  
+  // Get all charts sorted: user first, then alphabetically
+  const allSortedCharts = useMemo(() => {
+    const sorted = [...allCharts]
+      .filter(c => c.id !== userChart?.id)
+      .sort((a, b) => a.name.localeCompare(b.name));
+    return userChart ? [userChart, ...sorted] : sorted;
+  }, [allCharts, userChart]);
   
   // Initialize selected chart: prefer initialChart, then first chart with image, then first chart
   const [selectedChartId, setSelectedChartId] = useState<string>(() => {
