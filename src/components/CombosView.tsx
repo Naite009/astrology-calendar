@@ -1177,7 +1177,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                 {/* Universal only */}
                 {aspectCoverage.universal.length > 0 && (
                   <div>
-                    <p className="text-[10px] text-muted-foreground mb-1.5 uppercase tracking-wide">○ Universal Energy (No Aspect-Specific Data Yet):</p>
+                    <p className="text-[10px] text-muted-foreground mb-1.5 uppercase tracking-wide">○ Your Aspects (detailed writeup coming soon):</p>
                     <div className="flex flex-wrap gap-1.5">
                       {aspectCoverage.universal.map((pair, i) => {
                         const aspectSymbol = ASPECT_SYMBOLS[pair.aspect] || '';
