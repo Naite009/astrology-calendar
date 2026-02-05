@@ -291,19 +291,23 @@ function computeNatalAspects(chart: NatalChart): NatalAspect[] {
 
 /**
  * Compute Operating Mode Scores (0-100 scale)
+ * Uses weighted scoring with diminishing returns to prevent all scores hitting 100
  */
 export function computeOperatingModeScores(chart: NatalChart, planetHouses: PlanetHouseInfo[]): OperatingModeScores {
   const planets = chart.planets;
-  let visibility = 50;
-  let functionality = 50;
-  let expressive = 50;
-  let contained = 50;
-  let relational = 50;
-  let selfDirected = 50;
+  const totalPlanets = planetHouses.length || 10; // Normalize by planet count
+  
+  // Raw scores that will be normalized
+  let visibilityRaw = 0;
+  let functionalityRaw = 0;
+  let expressiveRaw = 0;
+  let containedRaw = 0;
+  let relationalRaw = 0;
+  let selfDirectedRaw = 0;
 
   // Count elements and modalities
   let fireCount = 0, earthCount = 0, airCount = 0, waterCount = 0;
-  let fixedCount = 0, cardinalCount = 0;
+  let fixedCount = 0, cardinalCount = 0, mutableCount = 0;
   let retrogrades = 0;
   let angularCount = 0;
 
@@ -317,65 +321,104 @@ export function computeOperatingModeScores(chart: NatalChart, planetHouses: Plan
     const modality = getModality(ph.sign);
     if (modality === 'Fixed') fixedCount++;
     if (modality === 'Cardinal') cardinalCount++;
+    if (modality === 'Mutable') mutableCount++;
 
     if (ph.isAngular) angularCount++;
     if (ph.isRetrograde) retrogrades++;
-
-    // Specific sign/house bonuses
-    if (ph.sign === 'Leo' || ph.sign === 'Aries') visibility += 3;
-    if (ph.sign === 'Virgo' || ph.sign === 'Capricorn') functionality += 3;
-    if (ph.sign === 'Libra') relational += 5;
-    if (ph.sign === 'Aries') selfDirected += 5;
-    
-    // House-based scoring
-    if (ph.house === 1 || ph.house === 10) visibility += 5;
-    if (ph.house === 6 || ph.house === 10) functionality += 4;
-    if (ph.house === 7) relational += 8;
-    if (ph.house === 1) selfDirected += 6;
-    if (ph.house === 5 || ph.house === 11) expressive += 4;
-    if (ph.house === 8 || ph.house === 12) contained += 5;
   }
 
-  // Visibility: angular planets, Leo/Aries, Sun/Moon in 1/10
-  visibility += angularCount * 5;
-  if (planets.Sun?.sign === 'Leo') visibility += 10;
-  if (planets.Moon?.sign === 'Leo') visibility += 5;
+  // Visibility: angular emphasis, fire/Leo placements, 1st/10th house
+  // Score based on proportion of chart showing "visible" qualities
+  const visibilityPlanets = planetHouses.filter(ph => 
+    ph.isAngular || 
+    ph.sign === 'Leo' || 
+    ph.sign === 'Aries' ||
+    ph.house === 1 || 
+    ph.house === 10
+  ).length;
+  visibilityRaw = (visibilityPlanets / totalPlanets) * 60;
+  visibilityRaw += angularCount >= 4 ? 20 : angularCount >= 2 ? 10 : 0;
+  if (planets.Sun?.sign === 'Leo') visibilityRaw += 10;
+  if (planets.Moon?.sign === 'Leo' || planets.Moon?.sign === 'Aries') visibilityRaw += 5;
+  // Reduce visibility for water/12th house emphasis
+  const hiddenPlanets = planetHouses.filter(ph => ph.house === 12 || ph.sign === 'Pisces' || ph.sign === 'Scorpio').length;
+  visibilityRaw -= (hiddenPlanets / totalPlanets) * 20;
 
-  // Functionality: Saturn emphasis, earth dominance
+  // Functionality: earth emphasis, Saturn strength, 6th/10th house
+  const functionalPlanets = planetHouses.filter(ph =>
+    getElement(ph.sign) === 'Earth' ||
+    ph.house === 6 ||
+    ph.house === 10 ||
+    ph.house === 2
+  ).length;
+  functionalityRaw = (functionalPlanets / totalPlanets) * 50;
+  functionalityRaw += (earthCount / totalPlanets) * 25;
   const saturnInfo = planetHouses.find(p => p.planet === 'Saturn');
-  if (saturnInfo?.isAngular) functionality += 15;
-  if (planets.Saturn?.sign === 'Capricorn' || planets.Saturn?.sign === 'Aquarius') functionality += 10;
-  functionality += earthCount * 4;
+  if (saturnInfo?.isAngular) functionalityRaw += 15;
+  if (planets.Saturn?.sign === 'Capricorn' || planets.Saturn?.sign === 'Aquarius') functionalityRaw += 10;
+  // Reduce for Neptune/Pisces emphasis
+  if (planets.Sun?.sign === 'Pisces' || planets.Moon?.sign === 'Pisces') functionalityRaw -= 10;
 
-  // Expressive: fire + air, Jupiter in 5/11
-  expressive += (fireCount + airCount) * 3;
+  // Expressive: fire + air, 1st/3rd/5th/9th houses
+  expressiveRaw = ((fireCount + airCount) / totalPlanets) * 50;
+  const expressiveHouses = planetHouses.filter(ph => [1, 3, 5, 9].includes(ph.house)).length;
+  expressiveRaw += (expressiveHouses / totalPlanets) * 30;
   const jupiterInfo = planetHouses.find(p => p.planet === 'Jupiter');
-  if (jupiterInfo && (jupiterInfo.house === 5 || jupiterInfo.house === 11)) expressive += 10;
+  if (jupiterInfo && (jupiterInfo.house === 5 || jupiterInfo.house === 9)) expressiveRaw += 10;
+  if (planets.Sun?.sign === 'Sagittarius' || planets.Sun?.sign === 'Leo') expressiveRaw += 8;
 
-  // Contained: earth + water, Saturn, fixed, retrogrades, 8th/12th
-  contained += (earthCount + waterCount) * 3;
-  contained += fixedCount * 2;
-  contained += retrogrades * 5;
+  // Contained: earth + water, fixed signs, retrogrades, 4th/8th/12th
+  containedRaw = ((earthCount + waterCount) / totalPlanets) * 40;
+  containedRaw += (fixedCount / totalPlanets) * 25;
+  containedRaw += Math.min(retrogrades * 6, 20); // Cap retrograde bonus
+  const containedHouses = planetHouses.filter(ph => [4, 8, 12].includes(ph.house)).length;
+  containedRaw += (containedHouses / totalPlanets) * 25;
+  // Reduce for fire/air dominance
+  if (fireCount + airCount > earthCount + waterCount + 3) containedRaw -= 15;
 
-  // Relational: Libra/7th emphasis, Venus strong
+  // Relational: Libra/7th, Venus emphasis, air signs
+  const relationalPlanets = planetHouses.filter(ph =>
+    ph.sign === 'Libra' ||
+    ph.house === 7 ||
+    getElement(ph.sign) === 'Air'
+  ).length;
+  relationalRaw = (relationalPlanets / totalPlanets) * 50;
   const venusInfo = planetHouses.find(p => p.planet === 'Venus');
-  if (venusInfo?.house === 7) relational += 15;
-  if (planets.Venus?.sign === 'Libra' || planets.Venus?.sign === 'Taurus') relational += 10;
+  if (venusInfo?.house === 7) relationalRaw += 20;
+  if (planets.Venus?.sign === 'Libra' || planets.Venus?.sign === 'Taurus') relationalRaw += 10;
+  if (planets.Sun?.sign === 'Libra' || planets.Moon?.sign === 'Libra') relationalRaw += 8;
+  // Reduce for strong 1st house / Aries
+  const firstHousePlanets = planetHouses.filter(ph => ph.house === 1).length;
+  if (firstHousePlanets >= 3) relationalRaw -= 10;
 
-  // Self-directed: Aries/1st, Mars in 1st
+  // Self-directed: Aries/1st, Mars emphasis, fire signs, cardinal
+  const selfDirectedPlanets = planetHouses.filter(ph =>
+    ph.sign === 'Aries' ||
+    ph.house === 1 ||
+    getElement(ph.sign) === 'Fire'
+  ).length;
+  selfDirectedRaw = (selfDirectedPlanets / totalPlanets) * 45;
+  selfDirectedRaw += (cardinalCount / totalPlanets) * 20;
   const marsInfo = planetHouses.find(p => p.planet === 'Mars');
-  if (marsInfo?.house === 1) selfDirected += 15;
-  if (planets.Mars?.sign === 'Aries' || planets.Mars?.sign === 'Scorpio') selfDirected += 10;
+  if (marsInfo?.house === 1) selfDirectedRaw += 15;
+  if (planets.Mars?.sign === 'Aries' || planets.Mars?.sign === 'Capricorn') selfDirectedRaw += 10;
+  // Reduce for 7th house / Libra emphasis
+  const seventhHousePlanets = planetHouses.filter(ph => ph.house === 7).length;
+  if (seventhHousePlanets >= 2) selfDirectedRaw -= 10;
 
-  const clamp = (v: number) => Math.max(0, Math.min(100, Math.round(v)));
+  // Normalize to 0-100 scale with a baseline of 30
+  const normalize = (raw: number) => {
+    const baselined = 30 + raw;
+    return Math.max(10, Math.min(95, Math.round(baselined)));
+  };
 
   return {
-    visibility: clamp(visibility),
-    functionality: clamp(functionality),
-    expressive: clamp(expressive),
-    contained: clamp(contained),
-    relational: clamp(relational),
-    selfDirected: clamp(selfDirected),
+    visibility: normalize(visibilityRaw),
+    functionality: normalize(functionalityRaw),
+    expressive: normalize(expressiveRaw),
+    contained: normalize(containedRaw),
+    relational: normalize(relationalRaw),
+    selfDirected: normalize(selfDirectedRaw),
   };
 }
 
