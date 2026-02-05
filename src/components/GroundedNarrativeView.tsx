@@ -171,12 +171,9 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
  
    return (
      <div className="space-y-6">
-       <div className="text-center space-y-2">
-         <h1 className="text-2xl font-serif">Grounded Narrative</h1>
-         <p className="text-muted-foreground text-sm">
-           A cohesive, therapist-style write-up of your natal chart with transparent sourcing
-         </p>
-       </div>
+        <div className="text-center space-y-2">
+          <h1 className="text-2xl font-serif">Grounded Narrative</h1>
+        </div>
  
        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
          {/* Left Panel - Controls */}
@@ -372,17 +369,32 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                       <div className="space-y-6">
                         {/* Operating Mode Scores */}
                         <div>
-                          <h3 className="font-medium mb-3">Operating Mode Scores</h3>
+                          <h3 className="font-medium mb-2">Operating Mode Scores</h3>
+                          <p className="text-xs text-muted-foreground mb-4">
+                            These scores measure how your chart's placements distribute energy across key life dimensions. 
+                            Higher = more emphasis in that area.
+                          </p>
                           <div className="space-y-3">
-                            {Object.entries(signals.operatingMode).map(([key, value]) => (
-                              <div key={key} className="space-y-1">
-                                <div className="flex justify-between text-sm">
-                                  <span className="capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
-                                  <span className="text-muted-foreground">{value as number}</span>
+                            {Object.entries(signals.operatingMode).map(([key, value]) => {
+                              const explanations: Record<string, string> = {
+                                visibility: 'How prominently your energy shows to the world (angular planets, Leo/Aries emphasis)',
+                                functionality: 'Preference for practical output vs. inner processing (earth/air vs. water signs)',
+                                expressive: 'Tendency to externalize emotions and identity (fire/air, planets in 1st/5th/9th)',
+                                contained: 'Tendency to internalize and process privately (water/earth, 4th/8th/12th houses)',
+                                relational: 'Energy directed toward partnerships and others (7th house, Venus/Libra emphasis)',
+                                selfDirected: 'Energy directed toward individual pursuits (1st house, Mars/Aries emphasis)',
+                              };
+                              return (
+                                <div key={key} className="space-y-1">
+                                  <div className="flex justify-between text-sm">
+                                    <span className="capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                                    <span className="text-muted-foreground">{value as number}/100</span>
+                                  </div>
+                                  <Progress value={value as number} className="h-2" />
+                                  <p className="text-[10px] text-muted-foreground">{explanations[key] || ''}</p>
                                 </div>
-                                <Progress value={value as number} className="h-2" />
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         </div>
 
