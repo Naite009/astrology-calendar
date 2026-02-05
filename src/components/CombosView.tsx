@@ -1498,6 +1498,12 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                 // Check if this pattern matches the selected chart
                 let isMatch = false;
                 let matchDetails: { aspectType?: string; sign?: string; house?: number } = {};
+                let partialMatchInfo: { 
+                  hasHouse?: { planet: string; house: number }; 
+                  hasSign?: { planet: string; sign: string };
+                  missingPlanet?: string;
+                  missingAspect?: boolean;
+                } | undefined = undefined;
 
                 if (selectedChart) {
                   // Check aspect patterns
@@ -1510,6 +1516,18 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                       if (aspect && combo.aspectTypes.includes(aspect)) {
                         isMatch = true;
                         matchDetails.aspectType = aspect;
+                      } else if (!aspect) {
+                        // Partial match: have both planets but no aspect
+                        partialMatchInfo = {
+                          missingAspect: true,
+                        };
+                      }
+                    } else {
+                      // Check if we have one planet but not the other
+                      if (p1Pos && !p2Pos) {
+                        partialMatchInfo = { missingPlanet: p2 };
+                      } else if (p2Pos && !p1Pos) {
+                        partialMatchInfo = { missingPlanet: p1 };
                       }
                     }
                   }
@@ -1521,6 +1539,11 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                     if (house === combo.house) {
                       isMatch = true;
                       matchDetails.house = house;
+                    } else if (house) {
+                      // User has this planet in a DIFFERENT house - show partial info
+                      partialMatchInfo = {
+                        hasHouse: { planet, house },
+                      };
                     }
                   }
 
@@ -1531,6 +1554,11 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                     if (pos && combo.signs.includes(pos.sign)) {
                       isMatch = true;
                       matchDetails.sign = pos.sign;
+                    } else if (pos) {
+                      // User has this planet in a different sign
+                      partialMatchInfo = {
+                        hasSign: { planet, sign: pos.sign },
+                      };
                     }
                   }
 
@@ -1568,6 +1596,11 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                           isMatch = true;
                           matchDetails.house = house;
                           break;
+                        } else if (house && !partialMatchInfo) {
+                          // Partial: planet is in chart but different house
+                          partialMatchInfo = {
+                            hasHouse: { planet, house },
+                          };
                         }
                       }
                     }
@@ -1580,6 +1613,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                     combo={combo}
                     isMatch={isMatch}
                     matchDetails={matchDetails}
+                    partialMatchInfo={partialMatchInfo}
                   />
                 );
               })}
