@@ -2159,6 +2159,576 @@ const JUPITER_NEPTUNE: PlanetPairAspects = {
 
 // ============== COLLECTION ==============
 
+/**
+ * Moon-Saturn: The Weight of Feeling
+ */
+const MOON_SATURN: PlanetPairAspects = {
+  planet1: 'Moon',
+  planet2: 'Saturn',
+  coreSignature: 'The Weight of Feeling',
+  coreDescription: 'Moon + Saturn = emotional seriousness and responsibility. Feelings are real but often experienced as something to manage, contain, or earn rather than freely express. Early emotional conditioning plays a lasting role.',
+  aspects: [
+    {
+      aspectType: 'Conjunction',
+      symbol: '☌',
+      name: 'The Stoic Heart',
+      tone: '"Feelings are facts to be managed."',
+      description: 'Emotions and responsibility are fused. Natural emotional maturity but may have felt old as a child. Capacity to hold others emotionally. Security comes from structure and reliability.',
+      gifts: ['Deep emotional maturity', 'Reliable and loyal', 'Natural counselor', 'Emotional endurance'],
+      challenges: ['Emotional inhibition', 'Difficulty with vulnerability', 'May feel emotionally alone', 'Self-denial patterns']
+    },
+    {
+      aspectType: 'Square',
+      symbol: '□',
+      name: 'The Inner Critic',
+      tone: '"I fight to feel worthy of love."',
+      description: 'Friction between emotional needs and sense of duty. May have experienced cold or critical early environment. Develops strength through emotional challenges. Must learn self-compassion.',
+      gifts: ['Builds emotional resilience', 'Develops through hardship', 'Strong inner discipline', 'Earns self-respect'],
+      challenges: ['Inner critical voice', 'Fear of emotional rejection', 'Difficulty asking for support', 'May attract cold partners']
+    },
+    {
+      aspectType: 'Opposition',
+      symbol: '☍',
+      name: 'The Duty-Care Balance',
+      tone: '"I see my emotional limits through others."',
+      description: 'Projects either emotional neediness or cold authority onto partners. Relationships teach the balance between nurturing and responsibility. May attract parental figures or become one.',
+      gifts: ['Learns balance through relationships', 'Understands authority dynamics', 'Develops healthy boundaries', 'Matures through partnership'],
+      challenges: ['Attracts cold or critical partners', 'May parent partners', 'Relationships feel heavy', 'Must own both nurturing and authority']
+    },
+    {
+      aspectType: 'Trine',
+      symbol: '△',
+      name: 'The Grounded Heart',
+      tone: '"Emotional security comes naturally."',
+      description: 'Easy integration of feelings and responsibility. Natural emotional stability. Comfortable with commitment and long-term bonds. May take emotional steadiness for granted.',
+      gifts: ['Natural emotional stability', 'Comfortable with commitment', 'Grounded and reliable', 'Healthy emotional boundaries'],
+      challenges: ['May avoid emotional risks', 'Could become too cautious', 'Less growth through challenge', 'May settle for security over passion']
+    },
+    {
+      aspectType: 'Sextile',
+      symbol: '⚹',
+      name: 'The Developing Anchor',
+      tone: '"I can learn to trust my emotional foundation."',
+      description: 'Opportunity to build emotional security through conscious effort. Can develop healthy boundaries and self-discipline with practice.',
+      gifts: ['Builds emotional security over time', 'Develops healthy structures', 'Learns from elders', 'Creates lasting bonds'],
+      challenges: ['Requires effort to feel secure', 'May avoid emotional work', 'Stability needs cultivation', 'Could miss grounding opportunities']
+    }
+  ]
+};
+
+/**
+ * Moon-Uranus: Lunar Voltage
+ */
+const MOON_URANUS: PlanetPairAspects = {
+  planet1: 'Moon',
+  planet2: 'Uranus',
+  coreSignature: 'Lunar Voltage',
+  coreDescription: 'Moon + Uranus = a highly responsive emotional system. Feelings arrive suddenly, often without a clear narrative, and can shift just as quickly. Emotional awareness is instantaneous rather than linear. Needs freedom and space to process.',
+  aspects: [
+    {
+      aspectType: 'Conjunction',
+      symbol: '☌',
+      name: 'The Electric Heart',
+      tone: '"I feel everything at once."',
+      description: 'Emotions and intuition are fused into one electric current. Highly sensitive to environments and unspoken dynamics. Needs unusual amount of emotional freedom. May have had unconventional early home life.',
+      gifts: ['Rapid emotional insight', 'Strong intuitive flashes', 'Emotional originality', 'Comfortable with change'],
+      challenges: ['Emotional nervousness', 'Difficulty settling', 'Sudden withdrawal when overwhelmed', 'Sleep or nervous system issues']
+    },
+    {
+      aspectType: 'Square',
+      symbol: '□',
+      name: 'The Restless Heart',
+      tone: '"My feelings want freedom but my needs want safety."',
+      description: 'Friction between need for security and need for independence. Emotions can be erratic or surprising. May have experienced disruptions in early life. Learns to honor both stability and change.',
+      gifts: ['Breakthrough emotional insights', 'Develops unique self-care', 'Learns emotional flexibility', 'Creates innovative support systems'],
+      challenges: ['Emotional unpredictability', 'Relationship instability', 'Fight or flight responses', 'Difficulty with routine nurturing']
+    },
+    {
+      aspectType: 'Opposition',
+      symbol: '☍',
+      name: 'The Freedom-Security Dance',
+      tone: '"Others awaken my emotional independence."',
+      description: 'Projects either emotional neediness or detachment onto partners. Relationships teach the balance between closeness and space. May attract unconventional or unreliable partners until lesson is learned.',
+      gifts: ['Learns freedom through relationship', 'Develops emotional independence', 'Understands attachment patterns', 'Grows through awakening partners'],
+      challenges: ['Attracts emotionally unavailable types', 'Push-pull dynamics', 'Fear of engulfment', 'Must own need for both closeness and space']
+    },
+    {
+      aspectType: 'Trine',
+      symbol: '△',
+      name: 'The Intuitive Heart',
+      tone: '"Emotional freedom comes naturally."',
+      description: 'Easy integration of intuition and emotional needs. Natural comfort with change and unconventional feelings. Strong psychic or intuitive gifts. May take emotional flexibility for granted.',
+      gifts: ['Natural intuitive gifts', 'Comfortable with change', 'Emotional originality flows', 'Adapts easily'],
+      challenges: ['May avoid deep emotional work', 'Could be too detached', 'Takes intuition for granted', 'May not develop stability']
+    },
+    {
+      aspectType: 'Sextile',
+      symbol: '⚹',
+      name: 'The Awakening Heart',
+      tone: '"I can learn to trust my emotional insights."',
+      description: 'Opportunity to develop intuitive emotional awareness with conscious effort. Can cultivate unique self-care practices and emotional independence.',
+      gifts: ['Develops intuition over time', 'Learns emotional independence', 'Creates unique support systems', 'Grows through change'],
+      challenges: ['Intuition needs development', 'May avoid emotional innovation', 'Requires effort to trust insights', 'Could stay too conventional']
+    }
+  ]
+};
+
+/**
+ * Saturn-Uranus: The Revolutionary Structure
+ */
+const SATURN_URANUS: PlanetPairAspects = {
+  planet1: 'Saturn',
+  planet2: 'Uranus',
+  coreSignature: 'The Revolutionary Structure',
+  coreDescription: 'Saturn + Uranus = tension between tradition and innovation, old and new, structure and freedom. This combination must learn to honor both stability and change, building new structures that allow for evolution.',
+  aspects: [
+    {
+      aspectType: 'Conjunction',
+      symbol: '☌',
+      name: 'The Architect of Change',
+      tone: '"I build the new within the old."',
+      description: 'Structure and revolution are fused. Natural ability to innovate within systems. May feel torn between tradition and progress. Generational marker for systemic change.',
+      gifts: ['Builds lasting innovations', 'Bridges old and new', 'Practical revolutionary', 'Structural genius'],
+      challenges: ['Internal tension between freedom and duty', 'May feel stuck between generations', 'Difficulty with pure tradition OR pure rebellion', 'Must integrate opposing forces']
+    },
+    {
+      aspectType: 'Square',
+      symbol: '□',
+      name: 'The Tension of Progress',
+      tone: '"The old and new fight within me."',
+      description: 'Strong friction between need for security and need for change. Life may alternate between restriction and breakthrough. Develops strength through integrating opposing forces.',
+      gifts: ['Powerful drive for meaningful change', 'Breaks through limitations', 'Develops innovative solutions', 'Learns from both stability and chaos'],
+      challenges: ['Life feels like a series of upheavals', 'Authority conflicts', 'Difficulty with both tradition and rebellion', 'Must consciously integrate']
+    },
+    {
+      aspectType: 'Opposition',
+      symbol: '☍',
+      name: 'The Authority-Freedom Mirror',
+      tone: '"Others reflect my relationship with rules."',
+      description: 'Projects either rigid authority or chaotic rebellion onto others. Relationships teach the balance between structure and freedom. May attract controlling or unreliable partners.',
+      gifts: ['Learns balance through relationships', 'Understands authority dynamics', 'Develops healthy autonomy', 'Grows through partnership challenges'],
+      challenges: ['Attracts controlling or chaotic partners', 'Relationships test freedom vs commitment', 'May rebel against or submit to partners', 'Must own both inner authority and freedom']
+    },
+    {
+      aspectType: 'Trine',
+      symbol: '△',
+      name: 'The Natural Innovator',
+      tone: '"Change and stability work together for me."',
+      description: 'Easy integration of tradition and innovation. Natural ability to update systems without destroying them. Comfortable with gradual evolution.',
+      gifts: ['Effortless innovation', 'Updates tradition naturally', 'Comfortable with change', 'Bridges generations'],
+      challenges: ['May not push hard enough for change', 'Could accept inadequate structures', 'Less drive from friction', 'May not fully develop either quality']
+    },
+    {
+      aspectType: 'Sextile',
+      symbol: '⚹',
+      name: 'The Developing Reformer',
+      tone: '"I can learn to build better systems."',
+      description: 'Opportunity to develop innovative approaches to structure with conscious effort. Can become skilled at reform and gradual change.',
+      gifts: ['Develops reform skills', 'Learns to innovate within systems', 'Builds bridges between old and new', 'Grows through structured change'],
+      challenges: ['Reform requires effort', 'May avoid either tradition or innovation', 'Needs conscious development', 'Could stay too comfortable']
+    }
+  ]
+};
+
+/**
+ * Saturn-Pluto: The Power Structure
+ */
+const SATURN_PLUTO: PlanetPairAspects = {
+  planet1: 'Saturn',
+  planet2: 'Pluto',
+  coreSignature: 'The Power Structure',
+  coreDescription: 'Saturn + Pluto = confrontation with power, authority, and deep structural transformation. This combination deals with control, survival, and the complete rebuilding of foundations. Associated with generational trauma, institutional power, and phoenix-like rebirth.',
+  aspects: [
+    {
+      aspectType: 'Conjunction',
+      symbol: '☌',
+      name: 'The Transformer',
+      tone: '"I am forged in the fire of necessity."',
+      description: 'Structure and transformation are fused. Natural ability to endure and rebuild. May carry ancestral or generational weight. Immense capacity for lasting change.',
+      gifts: ['Immense endurance', 'Rebuilds from destruction', 'Natural authority', 'Transforms systems'],
+      challenges: ['May carry heavy burdens', 'Control issues', 'Fear of powerlessness', 'Difficulty trusting']
+    },
+    {
+      aspectType: 'Square',
+      symbol: '□',
+      name: 'The Power Struggle',
+      tone: '"I fight for control of my own destiny."',
+      description: 'Friction between need for security and forces of transformation. Life may involve power struggles with authority. Develops strength through confronting shadow.',
+      gifts: ['Develops through crisis', 'Learns to reclaim power', 'Builds unshakeable foundations', 'Transforms through challenge'],
+      challenges: ['Power struggles with authority', 'May attract controlling situations', 'Fear of losing control', 'Must learn healthy power use']
+    },
+    {
+      aspectType: 'Opposition',
+      symbol: '☍',
+      name: 'The Authority-Power Mirror',
+      tone: '"Others reflect my relationship with power."',
+      description: 'Projects either controlling authority or victimhood onto partners. Relationships teach the balance between power and surrender. May attract powerful or manipulative partners.',
+      gifts: ['Learns power dynamics through relationship', 'Develops healthy authority', 'Understands shadow projection', 'Transforms through partnership'],
+      challenges: ['Attracts controlling partners', 'Power struggles in relationships', 'May dominate or submit', 'Must own inner power']
+    },
+    {
+      aspectType: 'Trine',
+      symbol: '△',
+      name: 'The Natural Authority',
+      tone: '"Power and structure work together for me."',
+      description: 'Easy integration of authority and transformation. Natural ability to navigate power dynamics. Comfortable with deep structural change.',
+      gifts: ['Natural authority', 'Navigates power easily', 'Transforms without drama', 'Enduring strength'],
+      challenges: ['May not question power enough', 'Could enable unhealthy structures', 'Less growth through crisis', 'May avoid necessary confrontation']
+    },
+    {
+      aspectType: 'Sextile',
+      symbol: '⚹',
+      name: 'The Developing Power',
+      tone: '"I can learn to wield power wisely."',
+      description: 'Opportunity to develop healthy relationship with power and authority with conscious effort. Can become skilled at deep structural transformation.',
+      gifts: ['Develops healthy authority', 'Learns power dynamics', 'Builds transformative skills', 'Grows through structure'],
+      challenges: ['Power requires development', 'May avoid transformation', 'Needs conscious effort', 'Could stay surface-level']
+    }
+  ]
+};
+
+/**
+ * Sun-Pluto: The Phoenix Identity
+ */
+const SUN_PLUTO: PlanetPairAspects = {
+  planet1: 'Sun',
+  planet2: 'Pluto',
+  coreSignature: 'The Phoenix Identity',
+  coreDescription: 'Sun + Pluto = identity forged through transformation, crisis, and rebirth. The ego must die and be reborn multiple times. Associated with intensity, charisma, power dynamics, and the capacity to completely reinvent oneself.',
+  aspects: [
+    {
+      aspectType: 'Conjunction',
+      symbol: '☌',
+      name: 'The Intense Self',
+      tone: '"I am transformation itself."',
+      description: 'Identity and transformation are fused. Magnetic, intense presence. May have experienced early crisis that shaped identity. Capacity for complete self-reinvention.',
+      gifts: ['Magnetic charisma', 'Transformative presence', 'Natural depth', 'Regenerative power'],
+      challenges: ['Intensity can overwhelm', 'Control issues with identity', 'May dominate without realizing', 'Fear of powerlessness']
+    },
+    {
+      aspectType: 'Square',
+      symbol: '□',
+      name: 'The Crisis Identity',
+      tone: '"I am forged through fire."',
+      description: 'Friction between ego and forces of transformation. Life may involve power struggles and identity crises. Develops strength through confronting shadow aspects of self.',
+      gifts: ['Develops through crisis', 'Builds unshakeable identity', 'Learns power through challenge', 'Transforms limitations'],
+      challenges: ['Power struggles', 'Identity crises', 'May attract intense situations', 'Must integrate shadow']
+    },
+    {
+      aspectType: 'Opposition',
+      symbol: '☍',
+      name: 'The Power Mirror',
+      tone: '"Others reflect my hidden power."',
+      description: 'Projects intensity or power onto partners. Relationships involve transformation and power dynamics. May attract intense, controlling, or transformative partners.',
+      gifts: ['Transforms through relationship', 'Develops power through others', 'Understands projection', 'Grows through intensity'],
+      challenges: ['Attracts intense partners', 'Power struggles in relationships', 'May project shadow', 'Must own inner power']
+    },
+    {
+      aspectType: 'Trine',
+      symbol: '△',
+      name: 'The Natural Depth',
+      tone: '"Transformation comes naturally."',
+      description: 'Easy integration of identity and transformative power. Natural charisma and depth. Comfortable with intensity and change.',
+      gifts: ['Natural magnetism', 'Effortless depth', 'Comfortable with power', 'Transforms easily'],
+      challenges: ['May not develop power consciously', 'Could take intensity for granted', 'Less growth through crisis', 'May avoid necessary struggle']
+    },
+    {
+      aspectType: 'Sextile',
+      symbol: '⚹',
+      name: 'The Developing Phoenix',
+      tone: '"I can learn to rise from the ashes."',
+      description: 'Opportunity to develop transformative power with conscious effort. Can cultivate depth, charisma, and regenerative capacity.',
+      gifts: ['Develops transformative power', 'Learns to use intensity', 'Builds depth over time', 'Grows through conscious shadow work'],
+      challenges: ['Transformation requires effort', 'May avoid intensity', 'Power needs cultivation', 'Could stay surface-level']
+    }
+  ]
+};
+
+/**
+ * Mercury-Pluto: The Depth Thinker
+ */
+const MERCURY_PLUTO: PlanetPairAspects = {
+  planet1: 'Mercury',
+  planet2: 'Pluto',
+  coreSignature: 'The Depth Thinker',
+  coreDescription: 'Mercury + Pluto = mind that penetrates to the core. Thinking is investigative, obsessive, and transformative. Associated with research, psychology, detective work, and the capacity to uncover hidden truths.',
+  aspects: [
+    {
+      aspectType: 'Conjunction',
+      symbol: '☌',
+      name: 'The Mind Detective',
+      tone: '"I think in depths."',
+      description: 'Mind and transformative power are fused. Natural investigator who uncovers hidden truths. Thoughts are intense and penetrating. May have experienced early mental pressure or secrets.',
+      gifts: ['Penetrating insight', 'Natural researcher', 'Uncovers hidden truths', 'Transformative communication'],
+      challenges: ['Obsessive thinking', 'Difficulty with light topics', 'May intimidate with intensity', 'Mental control issues']
+    },
+    {
+      aspectType: 'Square',
+      symbol: '□',
+      name: 'The Mental Transformer',
+      tone: '"My thoughts must go deep or nowhere."',
+      description: 'Friction between surface communication and need for depth. May experience power struggles around ideas or information. Develops profound insight through mental challenges.',
+      gifts: ['Develops profound insight', 'Transforms through understanding', 'Breaks through mental barriers', 'Powerful persuasion'],
+      challenges: ['Mental power struggles', 'Obsessive thought patterns', 'Difficulty trusting information', 'May manipulate with words']
+    },
+    {
+      aspectType: 'Opposition',
+      symbol: '☍',
+      name: 'The Truth Mirror',
+      tone: '"Others reveal what I hide from myself."',
+      description: 'Projects mental intensity or hidden agendas onto others. Relationships teach about power dynamics in communication. May attract secretive or manipulative communicators.',
+      gifts: ['Learns depth through dialogue', 'Develops truth-seeking', 'Understands hidden motivations', 'Transforms through conversation'],
+      challenges: ['Projects mental intensity onto others', 'May attract manipulative communicators', 'Trust issues in communication', 'Must own inner detective']
+    },
+    {
+      aspectType: 'Trine',
+      symbol: '△',
+      name: 'The Natural Investigator',
+      tone: '"Deep thinking comes naturally."',
+      description: 'Easy integration of mind and transformative depth. Natural researcher and psychologist. Comfortable with hidden or taboo subjects.',
+      gifts: ['Natural depth of thought', 'Effortless investigation', 'Comfortable with taboo topics', 'Transforms easily through understanding'],
+      challenges: ['May not develop insight consciously', 'Could take depth for granted', 'Less mental growth through challenge', 'May avoid necessary confrontation']
+    },
+    {
+      aspectType: 'Sextile',
+      symbol: '⚹',
+      name: 'The Developing Analyst',
+      tone: '"I can learn to think with power."',
+      description: 'Opportunity to develop penetrating insight with conscious effort. Can cultivate research skills, psychological understanding, and transformative communication.',
+      gifts: ['Develops investigative skills', 'Learns psychological insight', 'Builds depth over time', 'Grows through mental challenges'],
+      challenges: ['Depth requires effort', 'May avoid intense topics', 'Insight needs cultivation', 'Could stay surface-level']
+    }
+  ]
+};
+
+/**
+ * Mercury-Mars: The Sharp Mind
+ */
+const MERCURY_MARS: PlanetPairAspects = {
+  planet1: 'Mercury',
+  planet2: 'Mars',
+  coreSignature: 'The Sharp Mind',
+  coreDescription: 'Mercury + Mars = quick, assertive, competitive thinking. The mind is sharp, direct, and action-oriented. Associated with debate, strategy, quick wit, and the capacity to think on one\'s feet.',
+  aspects: [
+    {
+      aspectType: 'Conjunction',
+      symbol: '☌',
+      name: 'The Mental Warrior',
+      tone: '"I think fast and speak direct."',
+      description: 'Mind and action are fused. Thinks quickly and speaks directly. Natural debater and strategist. May speak before thinking.',
+      gifts: ['Quick thinking', 'Direct communication', 'Strategic mind', 'Mental courage'],
+      challenges: ['Speaks before thinking', 'Argumentative', 'Mental impatience', 'May wound with words']
+    },
+    {
+      aspectType: 'Square',
+      symbol: '□',
+      name: 'The Mental Fighter',
+      tone: '"My thoughts battle for expression."',
+      description: 'Friction between thinking and acting. May experience conflict around communication. Develops sharp intellect through mental challenges.',
+      gifts: ['Develops sharp wit', 'Learns strategic thinking', 'Builds mental courage', 'Fights for ideas'],
+      challenges: ['Mental conflicts', 'Argumentative tendencies', 'Frustration in communication', 'Must learn diplomacy']
+    },
+    {
+      aspectType: 'Opposition',
+      symbol: '☍',
+      name: 'The Debate Mirror',
+      tone: '"Others sharpen my thinking."',
+      description: 'Projects mental aggression or sharpness onto others. Relationships involve intellectual sparring. May attract argumentative or direct communicators.',
+      gifts: ['Learns through debate', 'Develops balanced assertion', 'Understands mental dynamics', 'Grows through intellectual challenge'],
+      challenges: ['Attracts arguments', 'Relationships involve mental conflict', 'May project aggression', 'Must own inner warrior']
+    },
+    {
+      aspectType: 'Trine',
+      symbol: '△',
+      name: 'The Natural Strategist',
+      tone: '"Quick thinking comes naturally."',
+      description: 'Easy integration of mind and action. Natural strategist and quick thinker. Comfortable with direct communication.',
+      gifts: ['Natural quick wit', 'Effortless strategy', 'Comfortable with directness', 'Mental agility'],
+      challenges: ['May not develop diplomacy', 'Could take sharpness for granted', 'Less growth through mental challenge', 'May avoid necessary patience']
+    },
+    {
+      aspectType: 'Sextile',
+      symbol: '⚹',
+      name: 'The Developing Strategist',
+      tone: '"I can learn to think and act together."',
+      description: 'Opportunity to develop quick thinking and strategic communication with conscious effort.',
+      gifts: ['Develops strategic thinking', 'Learns assertive communication', 'Builds mental courage', 'Grows through action'],
+      challenges: ['Sharpness requires development', 'May avoid directness', 'Strategy needs cultivation', 'Could stay too passive']
+    }
+  ]
+};
+
+/**
+ * Mercury-Venus: The Charming Mind
+ */
+const MERCURY_VENUS: PlanetPairAspects = {
+  planet1: 'Mercury',
+  planet2: 'Venus',
+  coreSignature: 'The Charming Mind',
+  coreDescription: 'Mercury + Venus = thinking oriented toward harmony, beauty, and connection. The mind seeks balance, artistic expression, and pleasant communication. Associated with diplomacy, art, writing, and social grace.',
+  aspects: [
+    {
+      aspectType: 'Conjunction',
+      symbol: '☌',
+      name: 'The Graceful Communicator',
+      tone: '"I think in beauty."',
+      description: 'Mind and aesthetic sense are fused. Natural charm in communication. Thinks about relationships, art, and harmony. May avoid conflict in communication.',
+      gifts: ['Natural charm', 'Beautiful expression', 'Diplomatic thinking', 'Artistic mind'],
+      challenges: ['May avoid difficult truths', 'Could prioritize pleasantness over honesty', 'Conflict avoidance', 'Surface-level communication']
+    },
+    {
+      aspectType: 'Square',
+      symbol: '□',
+      name: 'The Harmony Seeker',
+      tone: '"I struggle to balance truth and tact."',
+      description: 'Friction between honest expression and desire for harmony. May experience tension in relationships around communication. Develops diplomatic skills through challenge.',
+      gifts: ['Develops true diplomacy', 'Learns balanced communication', 'Builds social skills', 'Finds beauty through struggle'],
+      challenges: ['Tension between truth and tact', 'Social anxiety', 'Difficulty with direct communication', 'Must learn authentic charm']
+    },
+    {
+      aspectType: 'Opposition',
+      symbol: '☍',
+      name: 'The Relationship Mirror',
+      tone: '"Others teach me about connection."',
+      description: 'Projects charm or social needs onto others. Relationships teach about balanced communication. May attract charming or superficial communicators.',
+      gifts: ['Learns diplomacy through others', 'Develops relationship skills', 'Understands social dynamics', 'Grows through partnership'],
+      challenges: ['Projects social needs', 'May attract superficial connections', 'Relationships involve communication lessons', 'Must own inner charm']
+    },
+    {
+      aspectType: 'Trine',
+      symbol: '△',
+      name: 'The Natural Diplomat',
+      tone: '"Charm comes naturally."',
+      description: 'Easy integration of mind and social grace. Natural diplomat and artist. Comfortable with beautiful expression.',
+      gifts: ['Natural social grace', 'Effortless charm', 'Artistic communication', 'Harmonious thinking'],
+      challenges: ['May avoid depth', 'Could take charm for granted', 'Less growth through social challenge', 'May prioritize form over substance']
+    },
+    {
+      aspectType: 'Sextile',
+      symbol: '⚹',
+      name: 'The Developing Charmer',
+      tone: '"I can learn to communicate with grace."',
+      description: 'Opportunity to develop diplomatic and artistic communication with conscious effort.',
+      gifts: ['Develops social skills', 'Learns artistic expression', 'Builds diplomatic capacity', 'Grows through connection'],
+      challenges: ['Charm requires development', 'May avoid social situations', 'Grace needs cultivation', 'Could stay too blunt']
+    }
+  ]
+};
+
+/**
+ * Sun-Mars: The Warrior Spirit
+ */
+const SUN_MARS: PlanetPairAspects = {
+  planet1: 'Sun',
+  planet2: 'Mars',
+  coreSignature: 'The Warrior Spirit',
+  coreDescription: 'Sun + Mars = identity fueled by action, courage, and assertion. The ego is active, competitive, and willing to fight for what it believes. Associated with leadership, athleticism, and the capacity to take initiative.',
+  aspects: [
+    {
+      aspectType: 'Conjunction',
+      symbol: '☌',
+      name: 'The Natural Leader',
+      tone: '"I am what I do."',
+      description: 'Identity and action are fused. Natural leader who leads from the front. High energy and competitive drive. May struggle with patience or receiving.',
+      gifts: ['Natural leadership', 'High energy', 'Courage and initiative', 'Competitive strength'],
+      challenges: ['Impatience', 'May dominate without realizing', 'Difficulty receiving', 'Anger issues']
+    },
+    {
+      aspectType: 'Square',
+      symbol: '□',
+      name: 'The Driven Identity',
+      tone: '"I fight to become myself."',
+      description: 'Friction between identity and assertion. May experience conflicts with male figures or authority. Develops strength and courage through challenges.',
+      gifts: ['Develops through challenge', 'Builds courage', 'Learns healthy assertion', 'Grows stronger through conflict'],
+      challenges: ['Conflicts with authority', 'May attract fights', 'Anger management', 'Must learn strategic action']
+    },
+    {
+      aspectType: 'Opposition',
+      symbol: '☍',
+      name: 'The Action Mirror',
+      tone: '"Others reflect my warrior self."',
+      description: 'Projects assertion or aggression onto others. Relationships involve competition or conflict. May attract aggressive or assertive partners.',
+      gifts: ['Learns assertion through others', 'Develops balanced action', 'Understands competition', 'Grows through partnership challenge'],
+      challenges: ['Attracts conflict', 'Competitive relationships', 'May project aggression', 'Must own inner warrior']
+    },
+    {
+      aspectType: 'Trine',
+      symbol: '△',
+      name: 'The Easy Warrior',
+      tone: '"Action comes naturally."',
+      description: 'Easy integration of identity and action. Natural confidence and initiative. Comfortable with competition and assertion.',
+      gifts: ['Natural confidence', 'Effortless initiative', 'Comfortable with action', 'Easy leadership'],
+      challenges: ['May not develop patience', 'Could take courage for granted', 'Less growth through conflict', 'May avoid necessary struggle']
+    },
+    {
+      aspectType: 'Sextile',
+      symbol: '⚹',
+      name: 'The Developing Warrior',
+      tone: '"I can learn to act with courage."',
+      description: 'Opportunity to develop leadership and assertive capacity with conscious effort.',
+      gifts: ['Develops courage over time', 'Learns healthy assertion', 'Builds initiative', 'Grows through action'],
+      challenges: ['Courage requires development', 'May avoid conflict', 'Assertion needs cultivation', 'Could stay too passive']
+    }
+  ]
+};
+
+/**
+ * Sun-Venus: The Loving Heart
+ */
+const SUN_VENUS: PlanetPairAspects = {
+  planet1: 'Sun',
+  planet2: 'Venus',
+  coreSignature: 'The Loving Heart',
+  coreDescription: 'Sun + Venus = identity centered on love, beauty, and connection. The ego seeks harmony, appreciation, and aesthetic expression. Associated with charm, artistry, and the capacity to attract what one values.',
+  aspects: [
+    {
+      aspectType: 'Conjunction',
+      symbol: '☌',
+      name: 'The Magnetic Self',
+      tone: '"I am what I love."',
+      description: 'Identity and values are fused. Natural charm and attractiveness. Draws what they value toward them. May over-identify with being loved or appreciated.',
+      gifts: ['Natural magnetism', 'Strong sense of values', 'Artistic identity', 'Attracts what they value'],
+      challenges: ['May need constant appreciation', 'Could be vain or superficial', 'Over-identifies with being loved', 'Difficulty with rejection']
+    },
+    {
+      aspectType: 'Square',
+      symbol: '□',
+      name: 'The Value Struggle',
+      tone: '"I fight for what I love."',
+      description: 'Friction between identity and values. May experience challenges in love or around self-worth. Develops true values through struggle.',
+      gifts: ['Develops authentic values', 'Learns self-worth through challenge', 'Builds genuine charm', 'Finds true love after struggle'],
+      challenges: ['Self-worth challenges', 'Love life difficulties', 'May attract value conflicts', 'Must learn true appreciation']
+    },
+    {
+      aspectType: 'Opposition',
+      symbol: '☍',
+      name: 'The Love Mirror',
+      tone: '"Others reflect my capacity to love."',
+      description: 'Projects charm or value needs onto partners. Relationships teach about self-worth and love. May attract beautiful or vain partners.',
+      gifts: ['Learns love through relationship', 'Develops balanced values', 'Understands attraction', 'Grows through partnership'],
+      challenges: ['Projects value needs onto others', 'May attract superficial partners', 'Relationships involve worth lessons', 'Must own inner beauty']
+    },
+    {
+      aspectType: 'Trine',
+      symbol: '△',
+      name: 'The Natural Charmer',
+      tone: '"Love comes naturally."',
+      description: 'Easy integration of identity and love. Natural charm and artistic sensibility. Comfortable with beauty and appreciation.',
+      gifts: ['Natural attractiveness', 'Effortless charm', 'Comfortable with love', 'Artistic ease'],
+      challenges: ['May take love for granted', 'Could be lazy in relationships', 'Less growth through love challenges', 'May not develop depth']
+    },
+    {
+      aspectType: 'Sextile',
+      symbol: '⚹',
+      name: 'The Developing Heart',
+      tone: '"I can learn to love and be loved."',
+      description: 'Opportunity to develop charm, artistry, and loving capacity with conscious effort.',
+      gifts: ['Develops charm over time', 'Learns artistic expression', 'Builds loving capacity', 'Grows through appreciation'],
+      challenges: ['Love requires development', 'May avoid vulnerability', 'Charm needs cultivation', 'Could stay too independent']
+    }
+  ]
+};
+
 export const ALL_ASPECT_MODIFIERS: PlanetPairAspects[] = [
   MERCURY_NEPTUNE,
   SUN_MOON,
@@ -2180,6 +2750,17 @@ export const ALL_ASPECT_MODIFIERS: PlanetPairAspects[] = [
   JUPITER_URANUS,
   VENUS_PLUTO,
   JUPITER_NEPTUNE,
+  // Additional coverage
+  MOON_SATURN,
+  MOON_URANUS,
+  SATURN_URANUS,
+  SATURN_PLUTO,
+  SUN_PLUTO,
+  MERCURY_PLUTO,
+  MERCURY_MARS,
+  MERCURY_VENUS,
+  SUN_MARS,
+  SUN_VENUS,
 ];
 
 /**
