@@ -9,6 +9,7 @@
  */
 
 import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChart';
+import { signDegreesToLongitude, getHouseForLongitude } from '@/lib/houseCalculations';
 
 // Types for the analysis engine
 export interface OperatingModeScores {
@@ -149,43 +150,12 @@ const getSignRuler = (sign: string): string => {
 };
 
 /**
- * Calculate which house a planet is in using actual house cusps
+ * Calculate which house a planet is in using actual house cusps.
+ * Uses the proven getHouseForLongitude from houseCalculations.ts
  */
-function calculatePlanetHouse(planetDegree: number, houseCusps: NatalChart['houseCusps']): number {
-  if (!houseCusps) return 1;
-  
-  const cusps: number[] = [];
-  for (let i = 1; i <= 12; i++) {
-    const cusp = houseCusps[`house${i}` as keyof typeof houseCusps];
-    if (cusp) {
-      const cuspIndex = ZODIAC_ORDER.indexOf(cusp.sign);
-      if (cuspIndex !== -1) {
-        cusps.push((cuspIndex * 30) + cusp.degree + (cusp.minutes / 60));
-      } else {
-        cusps.push((i - 1) * 30);
-      }
-    } else {
-      cusps.push((i - 1) * 30);
-    }
-  }
-  
-  // Find which house the planet is in
-  for (let i = 0; i < 12; i++) {
-    const nextHouse = (i + 1) % 12;
-    let start = cusps[i];
-    let end = cusps[nextHouse];
-    
-    // Handle wrap-around (e.g., house 12 to house 1)
-    if (end < start) end += 360;
-    let checkDegree = planetDegree;
-    if (checkDegree < start && end > 360) checkDegree += 360;
-    
-    if (checkDegree >= start && checkDegree < end) {
-      return i + 1;
-    }
-  }
-  
-  return 1;
+function calculatePlanetHouse(planetDegree: number, chart: NatalChart): number {
+  const house = getHouseForLongitude(planetDegree, chart);
+  return house || 1;
 }
 
 /**
@@ -211,7 +181,7 @@ function computePlanetHouses(chart: NatalChart): PlanetHouseInfo[] {
     
     const absDegree = positionToAbsoluteDegree(pos);
     const house = chart.houseCusps 
-      ? calculatePlanetHouse(absDegree, chart.houseCusps)
+      ? calculatePlanetHouse(absDegree, chart)
       : estimateHouseWholeSign(absDegree, ascDegree);
     
     result.push({
