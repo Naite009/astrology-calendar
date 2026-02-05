@@ -30,6 +30,8 @@ import {
   RETROGRADE_SIGN_COMBOS 
 } from '@/lib/retrogradeSignCombinations';
 import { findAspectModifiers, ASPECT_SYMBOLS, AspectModifier } from '@/lib/aspectModifiers';
+import { patternMirrorCombos, THEMATIC_CATEGORIES, PatternMirrorCombo } from '@/lib/patternMirrorCombos';
+import { PatternMirrorCard } from '@/components/PatternMirrorCard';
 
 const SIGN_SYMBOLS: Record<string, string> = {
   'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊', 'Cancer': '♋',
@@ -46,7 +48,8 @@ interface CombosViewProps {
 export const CombosView = ({ className = '', savedCharts = [], userChart = null }: CombosViewProps) => {
   const [selectedFactors, setSelectedFactors] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'explore' | 'browse'>('explore');
+  const [activeTab, setActiveTab] = useState<'explore' | 'browse' | 'patterns'>('explore');
+  const [selectedThematicTag, setSelectedThematicTag] = useState<string | null>(null);
   const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
   // Individual retrograde checkboxes for each planet (manual selection)
   const [manualRetrogrades, setManualRetrogrades] = useState<Set<string>>(new Set());
@@ -1200,11 +1203,15 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
         </Card>
       )}
 
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'explore' | 'browse')}>
-        <TabsList className="grid w-full max-w-md mx-auto grid-cols-2">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'explore' | 'browse' | 'patterns')}>
+        <TabsList className="grid w-full max-w-lg mx-auto grid-cols-3">
           <TabsTrigger value="explore" className="flex items-center gap-2">
             <Sparkles className="h-4 w-4" />
             Explore Combos
+          </TabsTrigger>
+          <TabsTrigger value="patterns" className="flex items-center gap-2">
+            <Moon className="h-4 w-4" />
+            Pattern Mirror
           </TabsTrigger>
           <TabsTrigger value="browse" className="flex items-center gap-2">
             <BookOpen className="h-4 w-4" />
@@ -1430,6 +1437,153 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                 </p>
                 <p className="text-sm text-muted-foreground/70 mt-2">
                   Example: Click "💰 Wealth" or select Mercury + Taurus
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        {/* Pattern Mirror Tab */}
+        <TabsContent value="patterns" className="mt-6 space-y-6">
+          {/* Thematic Tag Filter */}
+          <Card className="border-border">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                Filter by Theme
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setSelectedThematicTag(null)}
+                  className={`px-3 py-1.5 text-sm rounded-full border transition-all ${
+                    !selectedThematicTag
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-background border-border hover:border-primary/50 hover:bg-secondary'
+                  }`}
+                >
+                  All Patterns
+                </button>
+                {THEMATIC_CATEGORIES.map(cat => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedThematicTag(selectedThematicTag === cat.id ? null : cat.id)}
+                    className={`px-3 py-1.5 text-sm rounded-full border transition-all flex items-center gap-1.5 ${
+                      selectedThematicTag === cat.id
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-background border-border hover:border-primary/50 hover:bg-secondary'
+                    }`}
+                  >
+                    <span>{cat.icon}</span>
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Pattern Mirror Cards */}
+          <div className="grid gap-4 md:grid-cols-2">
+            {patternMirrorCombos
+              .filter(combo => !selectedThematicTag || combo.thematicTags.includes(selectedThematicTag))
+              .map(combo => {
+                // Check if this pattern matches the selected chart
+                let isMatch = false;
+                let matchDetails: { aspectType?: string; sign?: string; house?: number } = {};
+
+                if (selectedChart) {
+                  // Check aspect patterns
+                  if (combo.patternType === 'aspect' && combo.planets && combo.aspectTypes) {
+                    const [p1, p2] = combo.planets;
+                    const p1Pos = getChartPos(p1);
+                    const p2Pos = getChartPos(p2);
+                    if (p1Pos && p2Pos) {
+                      const aspect = calculateAspect(p1Pos.sign, p1Pos.degree, p2Pos.sign, p2Pos.degree);
+                      if (aspect && combo.aspectTypes.includes(aspect)) {
+                        isMatch = true;
+                        matchDetails.aspectType = aspect;
+                      }
+                    }
+                  }
+
+                  // Check house placement patterns
+                  if (combo.patternType === 'house-placement' && combo.planets && combo.house) {
+                    const planet = combo.planets[0];
+                    const house = getNatalPlanetHouse(planet, selectedChart);
+                    if (house === combo.house) {
+                      isMatch = true;
+                      matchDetails.house = house;
+                    }
+                  }
+
+                  // Check sign placement patterns
+                  if (combo.patternType === 'sign-placement' && combo.planets && combo.signs) {
+                    const planet = combo.planets[0];
+                    const pos = getChartPos(planet);
+                    if (pos && combo.signs.includes(pos.sign)) {
+                      isMatch = true;
+                      matchDetails.sign = pos.sign;
+                    }
+                  }
+
+                  // Check combined patterns
+                  if (combo.patternType === 'combined' && combo.planets) {
+                    // Check aspects
+                    if (combo.aspectTypes && combo.planets.length >= 2) {
+                      const [p1, p2] = combo.planets;
+                      const p1Pos = getChartPos(p1);
+                      const p2Pos = getChartPos(p2);
+                      if (p1Pos && p2Pos) {
+                        const aspect = calculateAspect(p1Pos.sign, p1Pos.degree, p2Pos.sign, p2Pos.degree);
+                        if (aspect && combo.aspectTypes.includes(aspect)) {
+                          isMatch = true;
+                          matchDetails.aspectType = aspect;
+                        }
+                      }
+                    }
+                    // Check signs
+                    if (!isMatch && combo.signs) {
+                      for (const planet of combo.planets) {
+                        const pos = getChartPos(planet);
+                        if (pos && combo.signs.includes(pos.sign)) {
+                          isMatch = true;
+                          matchDetails.sign = pos.sign;
+                          break;
+                        }
+                      }
+                    }
+                    // Check house
+                    if (!isMatch && combo.house) {
+                      for (const planet of combo.planets) {
+                        const house = getNatalPlanetHouse(planet, selectedChart);
+                        if (house === combo.house) {
+                          isMatch = true;
+                          matchDetails.house = house;
+                          break;
+                        }
+                      }
+                    }
+                  }
+                }
+
+                return (
+                  <PatternMirrorCard
+                    key={combo.id}
+                    combo={combo}
+                    isMatch={isMatch}
+                    matchDetails={matchDetails}
+                  />
+                );
+              })}
+          </div>
+
+          {/* Empty state */}
+          {patternMirrorCombos.filter(combo => !selectedThematicTag || combo.thematicTags.includes(selectedThematicTag)).length === 0 && (
+            <Card className="border-dashed">
+              <CardContent className="py-8 text-center">
+                <p className="text-muted-foreground text-sm">
+                  No patterns found for this theme.
                 </p>
               </CardContent>
             </Card>
