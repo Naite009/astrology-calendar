@@ -545,29 +545,78 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                         {/* Absence Signals */}
                         <div>
                           <h3 className="font-medium mb-3">Absence Signals</h3>
-                          <div className="space-y-2 text-sm">
+                          <p className="text-xs text-muted-foreground mb-4">
+                            What's missing from your chart can be as revealing as what's present. 
+                            Absences point to areas where energy may feel unfamiliar, borrowed from others, 
+                            or require conscious development.
+                          </p>
+                          <div className="space-y-3 text-sm">
                             {signals.absenceSignals.missingElements.length > 0 && (
-                              <p>
-                                <span className="text-muted-foreground">Missing elements:</span>{' '}
-                                {signals.absenceSignals.missingElements.join(', ')}
-                              </p>
+                              <div className="p-3 bg-muted/30 rounded-lg">
+                                <p className="font-medium mb-1">
+                                  Missing Element{signals.absenceSignals.missingElements.length > 1 ? 's' : ''}: {signals.absenceSignals.missingElements.join(', ')}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {signals.absenceSignals.missingElements.includes('Fire') && 
+                                    'No Fire: You may feel you lack spontaneity or self-promotion instincts. Initiative can feel forced rather than natural. '}
+                                  {signals.absenceSignals.missingElements.includes('Earth') && 
+                                    'No Earth: Practical matters, routines, and material security may feel like foreign territory you have to consciously learn. '}
+                                  {signals.absenceSignals.missingElements.includes('Air') && 
+                                    'No Air: Abstract thinking or social networking might not come naturally; you process through feeling or action rather than ideas. '}
+                                  {signals.absenceSignals.missingElements.includes('Water') && 
+                                    'No Water: Emotional attunement and intuitive knowing may feel elusive; you might intellectualize feelings instead of flowing with them. '}
+                                </p>
+                              </div>
                             )}
                             {signals.absenceSignals.missingModalities.length > 0 && (
-                              <p>
-                                <span className="text-muted-foreground">Missing modalities:</span>{' '}
-                                {signals.absenceSignals.missingModalities.join(', ')}
-                              </p>
+                              <div className="p-3 bg-muted/30 rounded-lg">
+                                <p className="font-medium mb-1">
+                                  Missing Modality: {signals.absenceSignals.missingModalities.join(', ')}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {signals.absenceSignals.missingModalities.includes('Cardinal') && 
+                                    'No Cardinal: Starting new things or taking initiative might feel unnatural. You may wait for situations to develop before acting. '}
+                                  {signals.absenceSignals.missingModalities.includes('Fixed') && 
+                                    'No Fixed: Sustained effort, persistence, and seeing things through to completion can require extra conscious focus. '}
+                                  {signals.absenceSignals.missingModalities.includes('Mutable') && 
+                                    'No Mutable: Adapting to change or shifting perspective might feel challenging; you prefer stability over flexibility. '}
+                                </p>
+                              </div>
                             )}
                             {signals.absenceSignals.fewAngularPlanets && (
-                              <p>
-                                <span className="text-muted-foreground">Angular planets:</span>{' '}
-                                Only {signals.absenceSignals.angularPlanetCount} (few)
-                              </p>
+                              <div className="p-3 bg-muted/30 rounded-lg">
+                                <p className="font-medium mb-1">
+                                  Few Angular Planets ({signals.absenceSignals.angularPlanetCount})
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  Angular houses (1st, 4th, 7th, 10th) are the most visible positions. 
+                                  With few planets here, your impact may be more subtle—working behind the scenes 
+                                  or through indirect influence rather than commanding immediate attention.
+                                </p>
+                              </div>
+                            )}
+                            {signals.absenceSignals.fewOuterPersonalLinks && (
+                              <div className="p-3 bg-muted/30 rounded-lg">
+                                <p className="font-medium mb-1">
+                                  Few Outer-Personal Planet Links
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  Uranus, Neptune, and Pluto don't strongly aspect your personal planets. 
+                                  Your sense of self may feel less buffeted by generational or transpersonal forces, 
+                                  giving you a more grounded (but potentially less transformative) baseline.
+                                </p>
+                              </div>
                             )}
                             {signals.absenceSignals.missingElements.length === 0 && 
                              signals.absenceSignals.missingModalities.length === 0 && 
-                             !signals.absenceSignals.fewAngularPlanets && (
-                              <p className="text-muted-foreground">No notable absences.</p>
+                             !signals.absenceSignals.fewAngularPlanets &&
+                             !signals.absenceSignals.fewOuterPersonalLinks && (
+                              <div className="p-3 bg-primary/5 rounded-lg border-l-2 border-primary">
+                                <p className="text-muted-foreground">
+                                  ✓ Your chart has good elemental and modal balance with no significant absences. 
+                                  This suggests access to a full range of energetic modes.
+                                </p>
+                              </div>
                             )}
                           </div>
                         </div>
