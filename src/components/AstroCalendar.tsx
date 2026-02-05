@@ -173,6 +173,9 @@ export const AstroCalendar = () => {
     if (viewMode === "ask") {
       return "Ask About Chart";
     }
+    if (viewMode === "narrative") {
+      return "Narrative";
+    }
     if (viewMode === "moon-phases") {
       return `${currentDate.getFullYear()} Moon Phases`;
     }

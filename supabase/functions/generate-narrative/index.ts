@@ -196,7 +196,7 @@ STRUCTURE (follow this order - every section MUST cite specific chart factors):
 
 Write approximately ${wordCount} words. Remember: NO sentence without a chart citation.`;
 
-    const userPrompt = `Generate a grounded therapist narrative for this natal chart. Be SPECIFIC about houses and only mention aspects that are verified in the data.
+    const userPrompt = `Generate a narrative for this natal chart. Be SPECIFIC about houses and only mention aspects that are verified in the data.
 
 CHART: ${chartName}
 

@@ -29,7 +29,7 @@ export type VoiceStyle =
   | 'analytical_technical';
 
 const VOICE_OPTIONS: { value: VoiceStyle; label: string; description: string }[] = [
-  { value: 'grounded_therapist', label: 'Grounded Therapist', description: 'Warm, steady, emotionally intelligent' },
+  { value: 'grounded_therapist', label: 'Therapist', description: 'Warm, steady, emotionally intelligent' },
   { value: 'spiritual_guide', label: 'Spiritual Guide', description: 'Soul-centered, ancestral wisdom, divine timing' },
   { value: 'motherly_supportive', label: 'Nurturing & Practical', description: 'Gentle encouragement, actionable advice' },
   { value: 'direct_practical', label: 'Direct & Clear', description: 'Straightforward, no fluff, action-oriented' },
@@ -66,124 +66,140 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
    const hasRequiredData = selectedChart && selectedChart.planets && 
      Object.keys(selectedChart.planets).length >= 3;
  
-    const handleGenerate = async () => {
-      if (!selectedChart || !hasRequiredData) {
-        toast.error('Please select a chart with planet data');
+  const handleGenerate = async () => {
+    if (!selectedChart || !hasRequiredData) {
+      toast.error('Please select a chart with planet data');
+      return;
+    }
+
+    // Confirm if narrative already exists
+    if (narrativeText) {
+      const confirmed = window.confirm(
+        'This will generate a new narrative, replacing the current one. AI responses vary each time. Continue?'
+      );
+      if (!confirmed) return;
+    }
+
+    setIsGenerating(true);
+    setNarrativeText(null);
+    setSourceMap(null);
+
+    try {
+      // Compute signals locally
+      const computedSignals = computeAllSignals(selectedChart);
+      setSignals(computedSignals);
+
+      // Call backend function
+      const { data, error } = await supabase.functions.invoke('generate-narrative', {
+        body: {
+          signals: computedSignals,
+          chartName: selectedChart.name,
+          planets: selectedChart.planets,
+          lengthPreset,
+          includeShadow,
+          voiceStyle,
+        },
+      });
+
+      if (error) throw error;
+      if (data?.error) {
+        toast.error(data.error);
         return;
       }
 
-      // Confirm if narrative already exists
-      if (narrativeText) {
-        const confirmed = window.confirm(
-          'This will generate a new narrative, replacing the current one. AI responses vary each time. Continue?'
-        );
-        if (!confirmed) return;
-      }
+      const generatedNarrativeText = (data?.narrativeText as string | undefined) || null;
+      const generatedSourceMap = (data?.sourceMap as SourceMapEntry[] | undefined) || [];
 
-      setIsGenerating(true);
-      setNarrativeText(null);
-      setSourceMap(null);
- 
-     try {
-       // Compute signals locally
-       const computedSignals = computeAllSignals(selectedChart);
-       setSignals(computedSignals);
- 
-        // Call edge function
-        const { data, error } = await supabase.functions.invoke('generate-narrative', {
-          body: {
-            signals: computedSignals,
-            chartName: selectedChart.name,
-            planets: selectedChart.planets,
-            lengthPreset,
-            includeShadow,
-            voiceStyle
-          }
-       });
- 
-       if (error) {
-         throw error;
-       }
- 
-       if (data.error) {
-         toast.error(data.error);
-         return;
-       }
- 
-       setNarrativeText(data.narrativeText);
-       setSourceMap(data.sourceMap || []);
- 
-       // Save to database
-       const deviceId = localStorage.getItem('deviceId') || crypto.randomUUID();
-       localStorage.setItem('deviceId', deviceId);
- 
-       await supabase.from('chart_narratives').insert([{
+      setNarrativeText(generatedNarrativeText);
+      setSourceMap(generatedSourceMap);
+
+      // Save to database (best-effort). If this fails, keep UI populated.
+      const deviceId = localStorage.getItem('deviceId') || crypto.randomUUID();
+      localStorage.setItem('deviceId', deviceId);
+
+      const { error: insertError } = await supabase.from('chart_narratives').insert([
+        {
           chart_id: selectedChart.id,
           voice_preset: voiceStyle,
           length_preset: lengthPreset,
-         include_shadow: includeShadow,
-         engine_version: 'narrative_v1.0.0',
-         narrative_text: data.narrativeText,
-        signals_json: JSON.parse(JSON.stringify(computedSignals)),
-        source_map_json: JSON.parse(JSON.stringify(data.sourceMap || [])),
-         device_id: deviceId
-      }]);
- 
-       toast.success('Narrative generated successfully');
- 
-     } catch (err) {
-       console.error('Generate narrative error:', err);
-       toast.error('Failed to generate narrative. Please try again.');
-     } finally {
-       setIsGenerating(false);
-     }
-   };
- 
-    // Load previous narrative on chart change
-    useEffect(() => {
-      if (!selectedChartId) return;
-      // Don't load/clear if currently generating
-      if (isGenerating) return;
-      
-      const loadPrevious = async () => {
-        const deviceId = localStorage.getItem('deviceId');
-        if (!deviceId) {
-          // No device ID yet - clear state for fresh start
-          setNarrativeText(null);
-          setSignals(null);
-          setSourceMap(null);
-          return;
-        }
+          include_shadow: includeShadow,
+          engine_version: 'narrative_v1.0.0',
+          narrative_text: generatedNarrativeText || '',
+          signals_json: JSON.parse(JSON.stringify(computedSignals)),
+          source_map_json: JSON.parse(JSON.stringify(generatedSourceMap)),
+          device_id: deviceId,
+        },
+      ]);
 
-        const { data } = await supabase
-          .from('chart_narratives')
-          .select('*')
-          .eq('chart_id', selectedChartId)
-          .eq('device_id', deviceId)
-          .order('created_at', { ascending: false })
-          .limit(1);
-
-        // Only update if we're still on the same chart and not generating
-        if (data && data.length > 0) {
-          const record = data[0];
-          setNarrativeText(record.narrative_text);
-          setSignals(record.signals_json as unknown as SignalsData);
-          setSourceMap(record.source_map_json as unknown as SourceMapEntry[]);
-        } else {
-          setNarrativeText(null);
-          setSignals(null);
-          setSourceMap(null);
-        }
-      };
-
-      loadPrevious();
-    }, [selectedChartId, isGenerating]);
+      if (insertError) {
+        console.warn('Failed to persist narrative:', insertError);
+        toast.error('Generated, but failed to save. Please try again.');
+      } else {
+        toast.success('Narrative generated successfully');
+      }
+    } catch (err) {
+      console.error('Generate narrative error:', err);
+      toast.error('Failed to generate narrative. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
  
-   return (
-     <div className="space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl font-serif">Grounded Narrative</h1>
-        </div>
+  // Load previous narrative on chart change
+  useEffect(() => {
+    if (!selectedChartId) return;
+    // Don't load/clear if currently generating
+    if (isGenerating) return;
+
+    let cancelled = false;
+
+    const loadPrevious = async () => {
+      const deviceId = localStorage.getItem('deviceId');
+      if (!deviceId) {
+        setNarrativeText(null);
+        setSignals(null);
+        setSourceMap(null);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('chart_narratives')
+        .select('*')
+        .eq('chart_id', selectedChartId)
+        .eq('device_id', deviceId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (cancelled) return;
+      if (error) {
+        console.warn('Failed to load previous narrative:', error);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        const record = data[0];
+        setNarrativeText(record.narrative_text);
+        setSignals(record.signals_json as unknown as SignalsData);
+        setSourceMap(record.source_map_json as unknown as SourceMapEntry[]);
+      } else {
+        setNarrativeText(null);
+        setSignals(null);
+        setSourceMap(null);
+      }
+    };
+
+    loadPrevious();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedChartId]);
+ 
+  return (
+    <div className="space-y-6">
+      <div className="text-center space-y-2">
+        <h1 className="text-2xl font-serif">Narrative</h1>
+      </div>
  
        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
          {/* Left Panel - Controls */}
@@ -308,7 +324,7 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                   {isGenerating && (
                     <div className="text-center py-12">
                       <Loader2 className="h-12 w-12 mx-auto mb-4 animate-spin text-primary" />
-                      <p>Generating your grounded narrative...</p>
+                      <p>Generating your narrative...</p>
                     </div>
                   )}
                   {narrativeText && !isGenerating && (
