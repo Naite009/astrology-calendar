@@ -1139,16 +1139,16 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
               <div className="mt-4 pt-4 border-t border-primary/20">
                 <div className="flex items-center gap-2 mb-3">
                   <Sparkles className="h-4 w-4 text-primary" />
-                  <span className="text-xs font-medium text-foreground">Your Aspect Interpretation Coverage</span>
+                  <span className="text-xs font-medium text-foreground">Your {chartAspects.allPairs.length} Natal Aspects</span>
                   <Badge variant="outline" className="text-[10px] bg-primary/10 border-primary/30">
                     {aspectCoverage.withModifiers.length}/{chartAspects.allPairs.length} detailed
                   </Badge>
                 </div>
 
                 <p className="text-[11px] text-muted-foreground mb-3">
-                  <span className="font-medium">{aspectCoverage.withModifiers.length}/{chartAspects.allPairs.length}</span> means:
-                  we detected <span className="font-medium">{chartAspects.allPairs.length}</span> major aspects between your core planets/points,
-                  and <span className="font-medium">{aspectCoverage.withModifiers.length}</span> of those currently have a fully customized, aspect-specific writeup.
+                  All <span className="font-medium">{chartAspects.allPairs.length}</span> major aspects in your chart are shown below.
+                  <span className="font-medium text-primary"> {aspectCoverage.withModifiers.length}</span> have detailed writeups (✦),
+                  <span className="font-medium"> {aspectCoverage.universal.length}</span> show core signatures only (○).
                 </p>
 
                 <p className="text-[11px] text-muted-foreground mb-3">
@@ -1156,47 +1156,54 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                   Aspect key: ☌ Conjunction, ⚹ Sextile, □ Square, △ Trine, ☍ Opposition.
                 </p>
                 
-                {/* Detailed modifiers available */}
-                {aspectCoverage.withModifiers.length > 0 && (
-                  <div className="mb-3">
-                    <p className="text-[10px] text-muted-foreground mb-1.5 uppercase tracking-wide">✦ With Detailed Aspect-Specific Interpretations:</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {aspectCoverage.withModifiers.map((pair, i) => {
-                        const aspectSymbol = ASPECT_SYMBOLS[pair.aspect] || '';
-                        return (
-                          <Badge 
-                            key={i} 
-                            className="text-[10px] bg-primary/20 text-primary border-primary/30 hover:bg-primary/30 cursor-default"
-                          >
-                            {getPlanetSymbol(pair.p1)} {aspectSymbol} {getPlanetSymbol(pair.p2)}
-                            <span className="ml-1 opacity-70">{pair.modifierName}</span>
-                          </Badge>
-                        );
-                      })}
+                {/* All aspects combined - with detailed first, then universal */}
+                <div className="space-y-3">
+                  {/* Detailed modifiers available */}
+                  {aspectCoverage.withModifiers.length > 0 && (
+                    <div>
+                      <p className="text-[10px] text-muted-foreground mb-1.5 uppercase tracking-wide">
+                        ✦ Detailed Writeups ({aspectCoverage.withModifiers.length}):
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {aspectCoverage.withModifiers.map((pair, i) => {
+                          const aspectSymbol = ASPECT_SYMBOLS[pair.aspect] || '';
+                          return (
+                            <Badge 
+                              key={i} 
+                              className="text-[10px] bg-primary/20 text-primary border-primary/30 hover:bg-primary/30 cursor-default"
+                            >
+                              {getPlanetSymbol(pair.p1)} {aspectSymbol} {getPlanetSymbol(pair.p2)}
+                              <span className="ml-1 opacity-70">{pair.modifierName}</span>
+                            </Badge>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                )}
-                
-                {/* Universal only */}
-                {aspectCoverage.universal.length > 0 && (
-                  <div>
-                    <p className="text-[10px] text-muted-foreground mb-1.5 uppercase tracking-wide">○ Your Aspects (detailed writeup coming soon):</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {aspectCoverage.universal.map((pair, i) => {
-                        const aspectSymbol = ASPECT_SYMBOLS[pair.aspect] || '';
-                        return (
-                          <Badge 
-                            key={i} 
-                            variant="outline"
-                            className="text-[10px] opacity-60 cursor-default"
-                          >
-                            {getPlanetSymbol(pair.p1)} {aspectSymbol} {getPlanetSymbol(pair.p2)}
-                          </Badge>
-                        );
-                      })}
+                  )}
+                  
+                  {/* Universal/core signature only */}
+                  {aspectCoverage.universal.length > 0 && (
+                    <div>
+                      <p className="text-[10px] text-muted-foreground mb-1.5 uppercase tracking-wide">
+                        ○ Core Signature Only ({aspectCoverage.universal.length}):
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {aspectCoverage.universal.map((pair, i) => {
+                          const aspectSymbol = ASPECT_SYMBOLS[pair.aspect] || '';
+                          return (
+                            <Badge 
+                              key={i} 
+                              variant="outline"
+                              className="text-[10px] opacity-70 cursor-default"
+                            >
+                              {getPlanetSymbol(pair.p1)} {aspectSymbol} {getPlanetSymbol(pair.p2)}
+                            </Badge>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             )}
           </CardContent>
