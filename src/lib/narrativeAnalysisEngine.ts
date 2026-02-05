@@ -134,10 +134,12 @@ const getModality = (sign: string): string => {
   return 'Unknown';
 };
 
+// Robust absolute longitude (0–360) using the shared, defensive converter.
 const positionToAbsoluteDegree = (position: NatalPlanetPosition): number => {
-  const signIndex = ZODIAC_ORDER.indexOf(position.sign);
-  if (signIndex === -1) return 0;
-  return (signIndex * 30) + position.degree + (position.minutes / 60);
+  // Some stored charts may have degree/minutes as strings or missing minutes.
+  const deg = (position as any).degree;
+  const min = (position as any).minutes ?? 0;
+  return signDegreesToLongitude(position.sign, deg, min);
 };
 
 const getSignRuler = (sign: string): string => {
@@ -168,32 +170,41 @@ function estimateHouseWholeSign(planetDegree: number, ascDegree: number): number
 
 /**
  * Calculate all planet house placements
+ * IMPORTANT: Only include the core bodies we actually interpret to avoid "extra" keys from OCR/import.
  */
 function computePlanetHouses(chart: NatalChart): PlanetHouseInfo[] {
   const result: PlanetHouseInfo[] = [];
   const planets = chart.planets;
-  const ascDegree = planets.Ascendant ? positionToAbsoluteDegree(planets.Ascendant) : 0;
-  
-  const planetEntries = Object.entries(planets) as [string, NatalPlanetPosition | undefined][];
-  
-  for (const [name, pos] of planetEntries) {
-    if (!pos || name === 'Ascendant' || name === 'Vertex' || name === 'PartOfFortune') continue;
-    
+
+  // Prefer houseCusps.house1 as the definitive Ascendant source (prevents AC/DC flips).
+  const ascSource = chart.houseCusps?.house1 || planets.Ascendant;
+  const ascDegree = ascSource ? positionToAbsoluteDegree(ascSource as NatalPlanetPosition) : 0;
+
+  const CORE_BODIES: Array<keyof typeof planets> = [
+    'Sun', 'Moon', 'Mercury', 'Venus', 'Mars',
+    'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto',
+    'Chiron', 'NorthNode'
+  ];
+
+  for (const name of CORE_BODIES) {
+    const pos = planets[name];
+    if (!pos) continue;
+
     const absDegree = positionToAbsoluteDegree(pos);
-    const house = chart.houseCusps 
+    const house = chart.houseCusps
       ? calculatePlanetHouse(absDegree, chart)
       : estimateHouseWholeSign(absDegree, ascDegree);
-    
+
     result.push({
-      planet: name,
+      planet: String(name),
       sign: pos.sign,
-      degree: pos.degree,
+      degree: (pos as any).degree,
       house,
       isAngular: ANGULAR_HOUSES.includes(house),
-      isRetrograde: pos.isRetrograde || false
+      isRetrograde: pos.isRetrograde || false,
     });
   }
-  
+
   return result;
 }
 
