@@ -391,6 +391,7 @@ export const ChartLibrary = ({
         progressionDate: undefined,
       });
     } else if (chart === 'user' && userNatalChart) {
+      // Merge stored planets with emptyPlanets() to ensure all keys (including TNOs) exist
       setFormData({
         name: userNatalChart.name,
         birthDate: userNatalChart.birthDate,
@@ -398,7 +399,7 @@ export const ChartLibrary = ({
         birthLocation: userNatalChart.birthLocation,
         timezoneOffset: userNatalChart.timezoneOffset ?? -5,
         chartImageBase64: userNatalChart.chartImageBase64,
-        planets: userNatalChart.planets as Record<string, NatalPlanetPosition>,
+        planets: { ...emptyPlanets(), ...(userNatalChart.planets as Record<string, NatalPlanetPosition>) },
         houseCusps: (userNatalChart.houseCusps as Record<string, HouseCusp>) || emptyHouseCusps(),
         interceptedSigns: userNatalChart.interceptedSigns || [],
         progressions: userNatalChart.progressions,
@@ -406,6 +407,7 @@ export const ChartLibrary = ({
         progressionDate: userNatalChart.progressionDate,
       });
     } else if (typeof chart === 'object') {
+      // Merge stored planets with emptyPlanets() to ensure all keys (including TNOs) exist
       setFormData({
         name: chart.name,
         birthDate: chart.birthDate,
@@ -413,7 +415,7 @@ export const ChartLibrary = ({
         birthLocation: chart.birthLocation,
         timezoneOffset: chart.timezoneOffset ?? -5,
         chartImageBase64: chart.chartImageBase64,
-        planets: chart.planets as Record<string, NatalPlanetPosition>,
+        planets: { ...emptyPlanets(), ...(chart.planets as Record<string, NatalPlanetPosition>) },
         houseCusps: (chart.houseCusps as Record<string, HouseCusp>) || emptyHouseCusps(),
         interceptedSigns: chart.interceptedSigns || [],
         progressions: chart.progressions,
