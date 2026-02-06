@@ -7,6 +7,7 @@ import {
 } from '@/lib/astrology';
 import { calculateTransitAspects, TransitAspect } from '@/lib/transitAspects';
 import { PLANET_ESSENCES, HOUSE_MEANINGS, ASPECT_MEANINGS } from '@/lib/detailedInterpretations';
+import { signDegreesToLongitude } from '@/lib/houseCalculations';
 import { EnhancedPlanetDetails } from './EnhancedPlanetDetails';
 
 // ============================================================================
@@ -47,41 +48,42 @@ const getPlanetFullName = (planet: string): string => {
   return names[planet.toLowerCase()] || planet;
 };
 
-// Convert sign + degree to longitude for house calculation
-const signToLongitude = (sign: string, degree: number): number => {
-  const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 
-                 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
-  const signIndex = signs.indexOf(sign);
-  if (signIndex === -1) return 0;
-  return signIndex * 30 + degree;
+// Convert sign + degree (+ minutes) to longitude for house calculation
+// NOTE: Minutes matter for accurate house placement near cusps.
+
+const signToLongitude = (sign: string, degree: number, minutes: number = 0): number => {
+  return signDegreesToLongitude(sign, degree, minutes);
 };
 
 const getPlanetHouse = (planetLon: number, houseCusps?: NatalChart['houseCusps']): number | null => {
   if (!houseCusps) return null;
-  
+
   // Build array of house cusps with longitudes
   const cusps: { house: number; longitude: number }[] = [];
   for (let i = 1; i <= 12; i++) {
     const key = `house${i}` as keyof typeof houseCusps;
     const cusp = houseCusps[key];
-    if (cusp) {
-      cusps.push({ house: i, longitude: signToLongitude(cusp.sign, cusp.degree) });
+    if (cusp?.sign) {
+      cusps.push({
+        house: i,
+        longitude: signToLongitude(cusp.sign, cusp.degree, cusp.minutes ?? 0),
+      });
     }
   }
-  
+
   if (cusps.length < 12) return null;
-  
+
   for (let i = 0; i < 12; i++) {
     const currentCusp = cusps[i].longitude;
     const nextCusp = cusps[(i + 1) % 12].longitude;
-    
+
     let inHouse = false;
     if (nextCusp > currentCusp) {
       inHouse = planetLon >= currentCusp && planetLon < nextCusp;
     } else {
       inHouse = planetLon >= currentCusp || planetLon < nextCusp;
     }
-    
+
     if (inHouse) return cusps[i].house;
   }
   return 1;
@@ -304,8 +306,11 @@ const NatalPlanetsSummary = ({
   
   // Calculate sun house for sect determination
   const sunData = planets.Sun;
-  const sunHouse = sunData?.sign 
-    ? getPlanetHouse(signToLongitude(sunData.sign, sunData.degree), houseCusps)
+  const sunHouse = sunData?.sign
+    ? getPlanetHouse(
+        signToLongitude(sunData.sign, sunData.degree, sunData.minutes ?? 0),
+        houseCusps
+      )
     : null;
 
   // Core planets that have dignities (exclude points/asteroids)
@@ -322,11 +327,14 @@ const NatalPlanetsSummary = ({
           const planetData = planets[planetKey as keyof typeof planets];
           if (!planetData?.sign) return null;
           
-          const planetLon = signToLongitude(planetData.sign, planetData.degree);
+          const planetLon = signToLongitude(
+            planetData.sign,
+            planetData.degree,
+            planetData.minutes ?? 0
+          );
           const house = getPlanetHouse(planetLon, houseCusps);
           const planetInfo = PLANET_ESSENCES[planetKey.toLowerCase()];
           const showTechnicalDetails = planetsWithDignities.includes(planetKey);
-          
           return (
             <div key={planetKey} className="p-4 bg-background rounded border-l-4 border-primary/60">
               <div className="flex justify-between items-start mb-2">
