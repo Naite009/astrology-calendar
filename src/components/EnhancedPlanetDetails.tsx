@@ -148,51 +148,64 @@ const getPositionInterpretation = (planet: string, degree: number, sign: string)
 };
 
 const getElementInterpretation = (planet: string, element: string, sign: string): string => {
+  // First, explain what the element IS
+  const elementExplanations: Record<string, string> = {
+    Fire: `**What is Fire element?** Fire signs (Aries, Leo, Sagittarius) are about ENERGY, ACTION, and INSPIRATION. Fire needs to move, create, and express. It's the spark that starts things, the enthusiasm that drives action, the passion that makes life feel meaningful. Fire doesn't think first—it acts. It doesn't wait—it initiates.`,
+    Earth: `**What is Earth element?** Earth signs (Taurus, Virgo, Capricorn) are about PRACTICAL REALITY, MATERIAL WORLD, and TANGIBLE RESULTS. Earth needs to see, touch, and USE things. It's the builder, the craftsperson, the one who makes ideas real. Earth doesn't dream—it works. It doesn't hope—it plans and executes.`,
+    Air: `**What is Air element?** Air signs (Gemini, Libra, Aquarius) are about THOUGHT, COMMUNICATION, and SOCIAL CONNECTION. Air needs to understand, discuss, and connect ideas. It's the thinker, the communicator, the one who sees patterns and relationships. Air doesn't feel first—it analyzes. It doesn't act—it considers.`,
+    Water: `**What is Water element?** Water signs (Cancer, Scorpio, Pisces) are about EMOTION, INTUITION, and DEEP CONNECTION. Water needs to feel, merge, and understand at a soul level. It's the empath, the healer, the one who senses what's beneath the surface. Water doesn't think—it feels. It doesn't observe—it absorbs.`
+  };
+
   const elementFeelings: Record<string, Record<string, string>> = {
     Fire: {
-      Sun: `**How you FEEL this:** Your identity burns bright—you need action, movement, and creative expression to feel alive. Sitting still for too long makes you restless. You feel most yourself when taking initiative, leading, or doing something bold. Boredom is your enemy; passion is your fuel.`,
-      Moon: `**How you FEEL this:** Your emotions are quick, hot, and dramatic. You process feelings through action—you might need to move, exercise, or DO something when upset. Emotional stagnation feels suffocating. You crave excitement and can get moody when life feels too routine.`,
-      Mercury: `**How you FEEL this:** Your mind is fast, enthusiastic, and impatient. You think by talking, often figuring things out mid-sentence. Slow, detailed explanations bore you—you want the big picture NOW. Ideas excite you physically; you might gesture wildly when inspired.`,
-      Venus: `**How you FEEL this:** In love and pleasure, you want intensity, adventure, and passion. Lukewarm relationships bore you. You're attracted to confidence, boldness, and people who can match your energy. You show love through grand gestures and spontaneous acts.`,
-      Mars: `**How you FEEL this:** Your drive is pure and direct. When you want something, you GO for it—hesitation feels foreign. Anger comes fast but usually burns out quickly. Physical activity is essential; you might feel anxious or irritable without it.`,
-      Jupiter: `**How you FEEL this:** Your optimism is active and infectious. You believe through DOING—faith means taking leaps. You grow through adventure, risk-taking, and bold expansion. Playing it safe feels like a slow death.`,
-      Saturn: `**How you FEEL this:** Responsibility and structure are things you want to conquer actively. You approach discipline like a warrior—attacking goals head-on. Delays frustrate you more than most; you want to BUILD and see results NOW.`
+      Sun: `**How this shows up in YOUR life:** Your core identity needs action and expression. You feel most "yourself" when you're actively doing something—leading a project, starting a new venture, competing, or creating. Sitting still for too long makes you restless or irritable. Examples: You might feel depressed during periods of inactivity, come alive when given a challenge, or define yourself through your accomplishments and courage.`,
+      Moon: `**How this shows up in YOUR life:** Your emotional needs are tied to excitement and movement. When you're sad or upset, you don't want to sit and process—you want to DO something about it. Examples: Going for a run when stressed, getting impatient with people who want to "talk about feelings" endlessly, needing new experiences to feel emotionally alive, getting moody when bored.`,
+      Mercury: `**How this shows up in YOUR life:** Your mind works fast and impatiently. You want the point NOW, not a slow buildup. You might interrupt, finish people's sentences, or think out loud. Examples: Getting frustrated with detailed explanations, being the person who says "just tell me the bottom line," learning best through active participation rather than reading.`,
+      Venus: `**How this shows up in YOUR life:** In relationships, you need passion and adventure. A comfortable, quiet relationship bores you—you want intensity, surprises, and someone who challenges you. Examples: Being attracted to confident, bold people, needing excitement to stay interested in a relationship, showing love through spontaneous adventures rather than routine gestures.`,
+      Mars: `**How this shows up in YOUR life:** When you want something, you go get it directly. Hesitation feels wrong. Your anger is quick and hot but usually passes fast. Examples: Confronting problems immediately rather than letting them fester, needing regular physical activity or you get edgy, being the person who takes action while others are still discussing.`,
+      Jupiter: `**How this shows up in YOUR life:** You grow through bold action and risk-taking. Playing it safe feels like dying slowly. Examples: Saying yes to opportunities before you feel "ready," believing that things will work out if you just GO for it, inspiring others with your enthusiasm, learning through adventure rather than study.`,
+      Saturn: `**How this shows up in YOUR life:** You approach responsibilities like battles to win. Discipline is about conquering goals, not patient endurance. Examples: Getting frustrated with slow progress, wanting to see immediate results from your hard work, being competitive about achievements, approaching challenges as things to attack head-on.`
     },
     Earth: {
-      Sun: `**How you FEEL this:** You feel most yourself when grounded, productive, and building something tangible. Abstract identity doesn't appeal—you ARE what you DO and CREATE. Security matters. You need to see, touch, and use results to feel real accomplishment.`,
-      Moon: `**How you FEEL this:** Emotional security comes through physical comfort, routine, and material stability. When stressed, you might eat, organize, or work with your hands. You process feelings slowly and need time to digest experiences. Chaos is deeply unsettling.`,
-      Mercury: `**How you FEEL this:** Your thinking is methodical and practical—you want to APPLY knowledge, not just discuss it. Abstract theories frustrate you unless they lead somewhere useful. You learn by doing and remember through physical or sensory experience.`,
-      Venus: `**How you FEEL this:** Love needs to be reliable, sensual, and demonstrated through consistent actions. Grand words mean little without follow-through. You appreciate quality—fine textures, good food, beautiful objects. You show love through practical care and physical presence.`,
-      Mars: `**How you FEEL this:** Your drive is steady and persistent rather than explosive. You build momentum over time. Once committed, you're nearly unstoppable, but starting requires clear purpose. You prefer working toward concrete, measurable goals.`,
-      Jupiter: `**How you FEEL this:** Growth and opportunity feel real when they produce tangible results—money, resources, skills you can use. Philosophical expansion for its own sake doesn't excite you; you want wisdom that WORKS.`,
-      Saturn: `**How you FEEL this:** Structure and discipline come naturally—you understand that slow, steady effort builds empires. You're patient with long-term goals but might struggle with abstract ambitions. You need to see the practical path.`
+      Sun: `**How this shows up in YOUR life:** Your core identity is tied to what you BUILD and PRODUCE. Abstract self-expression means little—you ARE what you create, earn, and accomplish tangibly. Examples: Feeling most yourself when working with your hands, needing to see concrete results to feel accomplished, valuing practical skills over theoretical knowledge, defining success in measurable terms.`,
+      Moon: `**How this shows up in YOUR life:** Emotional security comes through physical comfort and material stability. When stressed, you seek comfort in tangible things. Examples: Stress-eating or cleaning when upset, needing a stable routine to feel emotionally grounded, feeling anxious when finances are uncertain, finding comfort in quality food, nice textures, a well-organized home.`,
+      Mercury: `**How this shows up in YOUR life:** Your mind wants USEFUL knowledge. Theory without application frustrates you. Examples: Asking "what's the practical use of this?" when learning, remembering things better when you can physically interact with them, preferring step-by-step instructions over concepts, being the person who says "that's interesting, but how does it work?"`,
+      Venus: `**How this shows up in YOUR life:** Love needs to be demonstrated through consistent actions, not just words. You appreciate quality and reliability. Examples: Judging partners by whether they show up consistently, appreciating gifts that are well-made over flashy, showing love through practical acts of service (cooking, fixing things), valuing financial stability in relationships.`,
+      Mars: `**How this shows up in YOUR life:** Your drive is steady and persistent rather than explosive. You build momentum over time and don't give up. Examples: Preferring to work toward concrete goals with measurable milestones, being nearly unstoppable once you've committed, taking longer to start but following through completely, valuing endurance over speed.`,
+      Jupiter: `**How this shows up in YOUR life:** Growth feels real when it produces tangible results—more money, better skills, real-world capabilities. Examples: Preferring practical education over theoretical, measuring success in concrete terms, building wealth steadily, being skeptical of "pie in the sky" optimism without a plan.`,
+      Saturn: `**How this shows up in YOUR life:** Discipline feels natural because you understand that real things take time to build. Examples: Being comfortable with long-term projects, understanding that patience and persistence beat quick schemes, building structures (businesses, assets, skills) that last, valuing proven methods over trendy approaches.`
     },
     Air: {
-      Sun: `**How you FEEL this:** You feel most alive in your MIND. Ideas, conversations, and intellectual connections define you more than emotional intensity or physical achievements. You might feel detached from your body or emotions—identity lives in your thoughts and social connections.`,
-      Moon: `**How you FEEL this:** You intellectualize emotions rather than drowning in them. When upset, you analyze WHY you feel that way. Raw emotional expression might feel uncomfortable or embarrassing. You process feelings through talking, writing, or thinking them through. People might say you're "in your head"—and you are. That's where you feel safe.`,
-      Mercury: `**How you FEEL this:** This is your natural element! Your mind is quick, curious, and constantly making connections. Ideas excite you viscerally. You might think in multiple streams simultaneously, enjoy wordplay, and feel genuinely energized by good conversation.`,
-      Venus: `**How you FEEL this:** Attraction starts in the mind. Intellectual connection is foreplay. You need someone you can TALK to, who stimulates your thinking. Purely physical or emotional relationships feel shallow. You show love through communication and shared ideas.`,
-      Mars: `**How you FEEL this:** You fight with words and strategy, not fists. Your drive is mental—you attack problems intellectually. Anger often manifests as sharp words or cutting logic. You're motivated by ideas, causes, and mental challenges rather than purely physical goals.`,
-      Jupiter: `**How you FEEL this:** Your growth comes through learning, connecting with diverse people, and spreading ideas. You're optimistic about humanity's potential for reason. Knowledge feels like wealth; a good library feels like a treasure chest.`,
-      Saturn: `**How you FEEL this:** You take ideas seriously. Mental discipline, structured thinking, and intellectual rigor matter to you. You might fear being seen as stupid or uninformed. Your greatest achievements likely involve communication, teaching, or sharing knowledge.`
+      Sun: `**How this shows up in YOUR life:** Your identity lives in your MIND and your CONNECTIONS. You feel most yourself when thinking, talking, and connecting with others intellectually. Examples: Defining yourself through your ideas and beliefs, feeling alive in good conversation, possibly feeling disconnected from your body or emotions, needing intellectual stimulation to feel engaged with life.`,
+      Moon: `**How this shows up in YOUR life:** You process emotions by THINKING about them rather than drowning in them. When upset, you analyze WHY. Examples: Talking through feelings rather than just crying, feeling uncomfortable with raw emotional displays (yours or others'), using journaling or therapy to "understand" emotions, being told you're "in your head" when you should "just feel."`,
+      Mercury: `**How this shows up in YOUR life:** This is your natural element—your mind is quick, curious, and always making connections. Examples: Thinking about multiple things at once, enjoying wordplay and intellectual puzzles, feeling genuinely energized by learning new things, being the person who reads the room and connects different people's ideas.`,
+      Venus: `**How this shows up in YOUR life:** Attraction starts in the mind. You need intellectual connection to feel romantic interest. Examples: Being attracted to someone's intelligence before their looks, needing deep conversations to feel intimate, getting bored with partners who can't keep up mentally, showing love through communication and shared ideas.`,
+      Mars: `**How this shows up in YOUR life:** You fight with words and strategy rather than force. Your drive is mental. Examples: Using logic and debate to win arguments, being motivated by ideas and causes rather than purely physical goals, channeling anger into sharp words or strategic action, preferring to outsmart rather than overpower.`,
+      Jupiter: `**How this shows up in YOUR life:** Growth comes through learning, meeting diverse people, and spreading ideas. Examples: Feeling rich when you have knowledge, loving libraries and learning environments, being optimistic about humanity's potential for progress, growing through travel that expands your perspective rather than just pleasure trips.`,
+      Saturn: `**How this shows up in YOUR life:** You take ideas and knowledge SERIOUSLY. Mental discipline matters. Examples: Fearing being seen as stupid or uninformed, working hard to master intellectual domains, being precise with words and logic, building your reputation through what you know and can communicate.`
     },
     Water: {
-      Sun: `**How you FEEL this:** You feel most yourself when emotionally connected and intuitively tuned in. Pure logic without feeling seems hollow. You might struggle to articulate who you ARE because identity feels fluid—you sense yourself more than define yourself.`,
-      Moon: `**How you FEEL this:** This is your natural element! Emotions are powerful, deep, and often overwhelming. You absorb others' feelings like a sponge. You need solitude to process and discharge what you've absorbed. Intuition is strong—you know things without knowing how you know.`,
-      Mercury: `**How you FEEL this:** You think with your feelings. Logic follows intuition, not the other way around. You might struggle to explain HOW you arrived at conclusions because the knowing came through sensing, not reasoning. You remember how things FELT, not just what happened.`,
-      Venus: `**How you FEEL this:** Love is deep, merging, and all-consuming. You don't do shallow connections. Intimacy means emotional nakedness—knowing someone's soul. You're attracted to emotional depth and can sense when someone is hiding their true self.`,
-      Mars: `**How you FEEL this:** Your drive is connected to emotional motivation. You fight for what you CARE about. Anger can be passive-aggressive or explosive depending on how long it's been building. You're motivated by protecting those you love and pursuing what moves you.`,
-      Jupiter: `**How you FEEL this:** Growth comes through emotional and spiritual experiences. Travel or education mean nothing without FEELING the expansion. You grow through love, healing, and deep connection. Compassion is your philosophy.`,
-      Saturn: `**How you FEEL this:** Emotional boundaries are your life lesson. You might fear vulnerability or have experienced early emotional hardship that taught you to protect yourself. Your greatest mastery involves learning to feel deeply while staying boundaried.`
+      Sun: `**How this shows up in YOUR life:** Your identity is felt rather than defined. You might struggle to articulate who you ARE because your sense of self is fluid and intuitive. Examples: Feeling like you "absorb" aspects of people around you, having a strong inner life that's hard to express, needing emotional connection to feel alive, defining yourself through your empathy and intuition.`,
+      Moon: `**How this shows up in YOUR life:** This is your natural element—emotions are powerful, deep, and often overwhelming. You absorb feelings from your environment. Examples: Crying easily (at movies, music, others' pain), needing solitude to "discharge" emotions you've absorbed, having strong intuitions that prove accurate, feeling drained by emotionally chaotic environments.`,
+      Mercury: `**How this shows up in YOUR life:** You think with your feelings. Logic follows intuition. Examples: "Just knowing" things without being able to explain how, remembering how things FELT more than what happened factually, struggling to explain your thought process because it wasn't linear, being persuaded by emotion more than argument.`,
+      Venus: `**How this shows up in YOUR life:** Love is deep, merging, and all-consuming. Shallow connections feel meaningless. Examples: Wanting to know someone's SOUL, not just their surface, being attracted to emotional depth and mystery, forming intense bonds that others might find "too much," sensing when someone is hiding their true feelings.`,
+      Mars: `**How this shows up in YOUR life:** Your drive is connected to emotional motivation. You fight for what you CARE about. Examples: Being fiercely protective of loved ones, having anger that builds slowly then explodes, being motivated by emotional meaning rather than abstract goals, needing to feel connected to WHY you're doing something.`,
+      Jupiter: `**How this shows up in YOUR life:** Growth comes through emotional and spiritual experiences. Examples: Transformative experiences mattering more than achievements, learning through healing and deep connection, having compassion as your guiding philosophy, feeling expanded by love and spiritual practice rather than external success.`,
+      Saturn: `**How this shows up in YOUR life:** Your life lesson involves emotional boundaries—learning to feel deeply without being overwhelmed or merged. Examples: Having experienced early emotional hardship that taught self-protection, struggling to let people in OR struggling to keep them out, needing to develop healthy ways to process intense feelings, mastering the balance between empathy and self-protection.`
     }
   };
 
+  const elementExplanation = elementExplanations[element] || "";
   const planetFeeling = elementFeelings[element]?.[planet];
   if (!planetFeeling) {
-    return `Your ${planet} in ${sign} operates through the ${element} element. This colors how you experience ${planet} themes—through ${element === 'Fire' ? 'action and inspiration' : element === 'Earth' ? 'practical, tangible experience' : element === 'Air' ? 'thought and communication' : 'feeling and intuition'}.`;
+    return `Your ${planet} in ${sign} operates through the ${element} element.
+
+${elementExplanation}`;
   }
 
   return `Your ${planet} in ${sign} operates through the ${element} element.
+
+${elementExplanation}
 
 ${planetFeeling}`;
 };
@@ -803,23 +816,40 @@ const getDeclinationInterpretation = (planet: string, declination: string): stri
   const degreeValue = degreeMatch ? parseInt(degreeMatch[1]) : 0;
   const isOutOfBounds = degreeValue > 23;
   
-  let oobFeeling = "";
+  // Educational explanation of what declination IS and HOW it's calculated
+  const educationalBase = `**What is declination?** While zodiac signs measure a planet's position along the ecliptic (the Sun's path), declination measures how far north or south of the celestial equator a planet sits. Think of it like latitude on Earth—the equator is 0°, the tropics are at 23.5°.
+
+**How is ${declination} calculated?** This comes from the planet's actual position in 3D space relative to Earth's equator. The Sun reaches maximum declination (~23.5°) at the solstices. Most planets stay within this range, but sometimes they venture beyond—called "out of bounds."
+
+**Why does this matter?** Planets with similar declinations (within 1°) form a "parallel"—a hidden connection as powerful as a conjunction, even if they're in unrelated signs. Opposite declinations (one N, one S) form a "contraparallel"—like an opposition.`;
+
+  // Direction-specific meaning
+  const directionMeaning = isNorth 
+    ? `**North declination:** Your ${planet} is "above" the celestial equator—symbolically associated with visibility, external expression, and engagement with the outer world. Northern placements tend toward active, manifest expression.`
+    : `**South declination:** Your ${planet} is "below" the celestial equator—symbolically associated with internalization, the unconscious, and inner work. Southern placements work more subtly, often manifesting in private or internal ways.`;
+
+  let oobSection = "";
   if (isOutOfBounds) {
     const oobFeelings: Record<string, string> = {
-      Sun: `Your identity operates outside normal bounds—you might feel like you don't fit conventional molds, and your self-expression is amplified, unique, or extreme in some way.`,
-      Moon: `Your emotions go to extremes that others don't experience. You might feel things more intensely than those around you, for better and worse.`,
-      Mercury: `Your thinking goes places others' minds don't reach. Genius-level insights are possible, but you might also struggle to communicate in "normal" ways.`,
-      Venus: `Your desires and values are unconventional or extreme. What you love, you LOVE. What you find beautiful might confuse others.`,
-      Mars: `Your drive and assertiveness operate beyond normal limits. You might have extraordinary energy or struggle to keep it within acceptable bounds.`,
-      Jupiter: `Your optimism and growth instincts go to extremes. Huge faith, huge risks, huge possibilities—but also potential for overreach.`,
-      Saturn: `Your relationship with structure and authority is extreme—either hypercontrolled or completely rejecting of limits.`
+      Sun: `Your identity operates outside normal bounds—you might feel like you don't fit conventional molds. You may be exceptionally creative, unconventional in how you express yourself, or simply feel "different" from others in a fundamental way. This can manifest as genius, eccentricity, or feeling like an outsider who eventually finds their unique path.`,
+      Moon: `Your emotions go to extremes that others don't experience. You might feel things more intensely—profound joy, deep sorrow, overwhelming love. This can be overwhelming but also gives you emotional depth and artistic sensitivity that others lack. You may need to develop practices to regulate intense feelings.`,
+      Mercury: `Your thinking goes places others' minds don't reach. This can manifest as genius-level insights, unconventional learning styles, or ideas that seem "too much" for normal conversation. You might have been labeled as "too smart," "weird," or struggled to communicate in standard ways. Your mind works outside the box—embrace it.`,
+      Venus: `Your desires and values are unconventional or extreme. What you love, you LOVE—obsessively, completely. What you find beautiful might confuse others or seem "too much." Relationships may be intense or unconventional. You have refined taste that doesn't follow trends.`,
+      Mars: `Your drive and assertiveness operate beyond normal limits. You might have extraordinary energy, extreme ambition, or struggle to keep your intensity within socially acceptable bounds. This can manifest as athletic excellence, workaholism, or anger that surprises people. Channel it consciously.`,
+      Jupiter: `Your optimism and growth instincts go to extremes. Huge faith, huge risks, huge possibilities—but also potential for overreach. You might believe in things others find outlandish, take risks that seem crazy, or achieve beyond what anyone expected. Temper with realism when needed.`,
+      Saturn: `Your relationship with structure and authority is extreme—either hypercontrolled (rigidly disciplined) or completely rejecting of limits (allergic to rules). You might set impossibly high standards for yourself or rebel against all external structure. Find your own authentic relationship with discipline.`
     };
-    oobFeeling = `
+    oobSection = `
 
-**OUT OF BOUNDS! How you FEEL this:** ${oobFeelings[planet] || 'This planet operates outside normal limits, expressing in amplified or unusual ways.'}`;
+**⚠️ OUT OF BOUNDS (${degreeValue}° exceeds 23.5°)!** 
+Your ${planet} has ventured beyond the Sun's normal range. This is rare and significant—it means this planet operates outside normal parameters.
+
+**How you might experience this:** ${oobFeelings[planet] || 'This planet expresses in amplified, unusual, or unconventional ways that don\'t fit normal expectations.'}`;
   }
   
-  return `Your ${planet} has a declination of ${declination}, meaning it sits ${direction} of the celestial equator. ${isOutOfBounds ? '⚠️ This is OUT OF BOUNDS (beyond 23°)!' : ''}${oobFeeling}`;
+  return `${educationalBase}
+
+${directionMeaning}${oobSection}`;
 };
 
 const getSaturnSymbolInterpretation = (sign: string, symbol: { symbol: string; meaning: string }): string => {
