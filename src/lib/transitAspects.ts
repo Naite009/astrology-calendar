@@ -446,94 +446,134 @@ export const getPersonalizedJournalPrompt = (
     `${mainAspect.interpretation} How did you experience this today?`;
 };
 
-// Priority score for natal planets - personal points and luminaries are MOST important
+// Priority score for natal planets (higher = more significant)
+// Personal points and luminaries are what we FEEL most when aspected
 const NATAL_PLANET_PRIORITY: Record<string, number> = {
-  Sun: 100,        // Sun is THE most important - identity, vitality
-  Moon: 95,        // Moon - emotions, instincts, equally vital
-  Ascendant: 90,   // ASC - how you meet the world
-  MC: 85,          // MC - career, public life
-  IC: 80,          // IC - home, roots
-  Descendant: 80,  // DSC - relationships
-  Mercury: 60,
-  Venus: 60,
-  Mars: 60,
-  Jupiter: 50,
-  Saturn: 50,
-  Uranus: 40,
-  Neptune: 40,
-  Pluto: 40,
-  NorthNode: 35,
-  Chiron: 30,
+  Sun: 100,        // Identity, vitality - you FEEL this
+  Moon: 98,        // Emotions, instincts - equally vital
+  Ascendant: 95,   // How you meet the world - physical experience
+  MC: 90,          // Career, public life - visible impact
+  IC: 85,          // Home, roots - private foundation
+  Descendant: 80,  // Relationships - felt through others
+  Mercury: 55,     // Mind, communication
+  Venus: 55,       // Love, values, pleasure
+  Mars: 55,        // Action, drive
+  Jupiter: 40,
+  Saturn: 40,
+  Uranus: 30,
+  Neptune: 30,
+  Pluto: 30,
+  NorthNode: 25,
+  Chiron: 35,      // Wounds are felt!
+  Lilith: 25,
+  Ceres: 20,
+  Pallas: 15,
+  Juno: 15,
+  Vesta: 15,
 };
 
-// Priority score for transit planets
+// Priority score for TRANSIT planets
+// Outer planets = slower = longer-lasting = MOST FELT in daily life
+// Research shows: outer planet transits to personal points are life-defining
 const TRANSIT_PLANET_PRIORITY: Record<string, number> = {
-  Sun: 90,         // Transit Sun conjunct natal Sun = Solar Return energy!
-  Moon: 85,        // Transit Moon (especially New/Full) hitting natal points
-  Pluto: 80,       // Outer planets = longer, more transformative
-  Neptune: 75,
-  Uranus: 70,
-  Saturn: 65,
-  Jupiter: 60,
-  Mars: 50,
-  Venus: 45,
-  Mercury: 40,
+  Pluto: 100,      // Transformation - years-long, life-altering
+  Neptune: 95,     // Dissolution/dreams - multi-year impact
+  Uranus: 90,      // Revolution/awakening - sudden, lasting change
+  Saturn: 85,      // Responsibility/structure - 2-3 year themes
+  Jupiter: 75,     // Expansion/opportunity - ~1 year themes
+  Mars: 50,        // Action/conflict - weeks
+  Sun: 40,         // Illumination - daily (but Solar Return is special)
+  Venus: 35,       // Love/pleasure - days
+  Mercury: 30,     // Communication - fast-moving
+  Moon: 20,        // Emotions - hours (fleeting but frequent)
 };
 
-// Aspect priority - conjunctions are THE most powerful
+// Aspect priority - conjunctions and hard aspects are most felt
 const ASPECT_PRIORITY: Record<string, number> = {
-  conjunction: 100,  // Conjunctions are the MOST significant - merging of energies
-  opposition: 70,
-  square: 60,
-  trine: 50,
-  sextile: 40,
+  conjunction: 100,  // Merging - MOST powerful
+  opposition: 75,    // Awareness, polarity
+  square: 70,        // Friction, action-requiring
+  trine: 45,         // Easy flow (often unnoticed!)
+  sextile: 35,       // Gentle opportunity
 };
 
 // Get top transit aspects for calendar display (limit to most significant)
+// Priority: Outer planets to personal points, exact orbs first
 export const getTopTransitAspects = (aspects: TransitAspect[], limit: number = 3): TransitAspect[] => {
   // Calculate significance score for each aspect
   const withScores = aspects.map(asp => {
     let score = 0;
-    
-    // EXACT aspects get a MASSIVE bonus
-    if (asp.isExact) score += 200;
-    
-    // Very tight orbs (under 0.5°) also get bonus
     const orb = parseFloat(asp.orb);
-    if (orb < 0.5) score += 100;
-    else if (orb < 1) score += 50;
-    else if (orb < 2) score += 25;
     
-    // Natal planet priority - hitting Sun/Moon/Angles is HUGE
-    score += NATAL_PLANET_PRIORITY[asp.natalPlanet] || 30;
+    // ========================================
+    // TIER 1: EXACTNESS (most visually impactful)
+    // ========================================
+    if (asp.isExact) score += 300;           // EXACT = top priority
+    else if (orb < 0.5) score += 200;        // Near-exact
+    else if (orb < 1) score += 150;          // Very tight
+    else if (orb < 2) score += 100;          // Tight
+    else if (orb < 3) score += 50;           // Moderate
+    // Wide orbs get no bonus
     
-    // Transit planet priority
-    score += TRANSIT_PLANET_PRIORITY[asp.transitPlanet] || 30;
+    // ========================================
+    // TIER 2: OUTER PLANET TRANSITS (most felt)
+    // Pluto/Neptune/Uranus transits are LIFE-DEFINING
+    // ========================================
+    score += TRANSIT_PLANET_PRIORITY[asp.transitPlanet] || 15;
     
-    // Aspect type priority - conjunctions are most significant
-    score += ASPECT_PRIORITY[asp.aspect] || 30;
+    // ========================================
+    // TIER 3: PERSONAL NATAL POINTS (Sun/Moon/Asc/MC)
+    // These are what you FEEL in your body/life
+    // ========================================
+    score += NATAL_PLANET_PRIORITY[asp.natalPlanet] || 10;
     
-    // Special case: Luminary conjunctions to personal points are PEAK significance
-    // New Moon (Sun+Moon conjunct) hitting natal Sun = life-changing!
-    if (asp.aspect === 'conjunction') {
-      if ((asp.transitPlanet === 'Sun' || asp.transitPlanet === 'Moon') && 
-          (asp.natalPlanet === 'Sun' || asp.natalPlanet === 'Moon')) {
-        score += 150; // Huge bonus for luminary-to-luminary conjunctions
-      }
-      // Conjunctions to Ascendant/MC are career/identity defining
-      if (asp.natalPlanet === 'Ascendant' || asp.natalPlanet === 'MC') {
+    // ========================================
+    // TIER 4: ASPECT TYPE
+    // ========================================
+    score += ASPECT_PRIORITY[asp.aspect] || 20;
+    
+    // ========================================
+    // SPECIAL BONUSES
+    // ========================================
+    
+    // Outer planet to personal point = THE most significant transits
+    const isOuterTransit = ['Pluto', 'Neptune', 'Uranus', 'Saturn', 'Jupiter'].includes(asp.transitPlanet);
+    const isPersonalNatal = ['Sun', 'Moon', 'Ascendant', 'MC'].includes(asp.natalPlanet);
+    
+    if (isOuterTransit && isPersonalNatal) {
+      score += 150; // Major life transit bonus
+      
+      // Extra bonus for hard aspects to personal points (these DEMAND attention)
+      if (['conjunction', 'opposition', 'square'].includes(asp.aspect)) {
         score += 75;
       }
     }
     
-    // Penalize very wide orbs
-    if (orb > 4) score -= 20;
-    if (orb > 6) score -= 30;
+    // Luminary conjunctions (New Moon on natal Sun, etc.) = peak moments
+    if (asp.aspect === 'conjunction') {
+      if ((asp.transitPlanet === 'Sun' || asp.transitPlanet === 'Moon') && 
+          (asp.natalPlanet === 'Sun' || asp.natalPlanet === 'Moon')) {
+        score += 125;
+      }
+    }
+    
+    // ========================================
+    // PENALTIES for low-impact aspects
+    // ========================================
+    // Wide orbs to minor bodies = barely noticeable
+    if (orb > 5 && !isPersonalNatal) score -= 50;
+    if (orb > 6) score -= 40;
+    if (orb > 7) score -= 30;
+    
+    // Fast-moving transit to outer natal = fleeting, less felt
+    const isFastTransit = ['Moon', 'Mercury', 'Venus'].includes(asp.transitPlanet);
+    const isOuterNatal = ['Uranus', 'Neptune', 'Pluto'].includes(asp.natalPlanet);
+    if (isFastTransit && isOuterNatal) score -= 25;
     
     return { aspect: asp, score };
   });
   
-  // Sort by score (highest first), then by orb for tiebreaker
+  // Sort by score (highest first), then by tighter orb as tiebreaker
   const prioritized = withScores
     .sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
