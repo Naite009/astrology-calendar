@@ -665,6 +665,85 @@ const getDecanInterpretation = (
 **How you FEEL this:** The decan ruler adds a secondary "flavor" to your ${planet}. With ${decanRuler} ruling this decan, you experience ${feeling}.${rulerAnalysis}`;
 };
 
+// ============================================================================
+// DEGREE LAYERS SYNTHESIS — THE MAGIC
+// ============================================================================
+
+const SIGN_MEANINGS: Record<string, string> = {
+  Aries: "initiating, pioneering, courageous, direct",
+  Taurus: "stable, sensual, persistent, grounded",
+  Gemini: "curious, communicative, versatile, quick",
+  Cancer: "nurturing, protective, intuitive, sensitive",
+  Leo: "expressive, confident, creative, generous",
+  Virgo: "analytical, practical, discerning, helpful",
+  Libra: "relational, fair, aesthetic, diplomatic",
+  Scorpio: "transformative, deep, powerful, perceptive",
+  Sagittarius: "expansive, philosophical, adventurous, optimistic",
+  Capricorn: "ambitious, structured, disciplined, authoritative",
+  Aquarius: "innovative, humanitarian, independent, visionary",
+  Pisces: "compassionate, imaginative, spiritual, flowing"
+};
+
+const RULER_VIBES: Record<string, string> = {
+  Sun: "through visibility, confidence, and shining authentically",
+  Moon: "through emotional attunement, nurturing, and intuitive flow",
+  Mercury: "through curiosity, communication, and mental agility",
+  Venus: "through harmony, beauty, pleasure, and connection",
+  Mars: "through action, assertion, courage, and direct pursuit",
+  Jupiter: "through growth, meaning, teaching, and expanded perspective",
+  Saturn: "through discipline, structure, patience, and earned mastery"
+};
+
+const TERM_TOOLS: Record<string, string> = {
+  Jupiter: "optimism, opportunity-finding, and faith as tools",
+  Venus: "charm, diplomacy, and relational finesse as tools",
+  Mercury: "wit, adaptability, and verbal skill as tools",
+  Mars: "directness, decisive action, and protective assertion as tools",
+  Saturn: "patience, discipline, and strategic restraint as tools"
+};
+
+const getDegreeLayersSynthesis = (
+  planet: string,
+  sign: string,
+  degree: number,
+  decanRuler: string,
+  termRuler: string
+): string => {
+  const signRuler = SIGN_PROPERTIES[sign]?.ruler || 'Unknown';
+  const signMeaning = SIGN_MEANINGS[sign] || sign;
+  const decanVibe = RULER_VIBES[decanRuler] || `with ${decanRuler} qualities`;
+  const termTools = TERM_TOOLS[termRuler] || `using ${termRuler}'s approach`;
+
+  return `**🔮 THE THREE LAYERS OF YOUR ${planet.toUpperCase()} AT ${degree}° ${sign.toUpperCase()}**
+
+**1. Sign Ruler (${signRuler}) = THE LANGUAGE**
+Your ${planet} "speaks" ${sign}: ${signMeaning}. This is the fundamental nature, the core vocabulary. Everything your ${planet} does gets filtered through ${sign} themes.
+
+**2. Decan Ruler (${decanRuler}) = THE ACCENT/VIBE**
+Within ${sign}, your ${planet} expresses ${decanVibe}. This is the sub-flavor—the particular "accent" your ${sign} ${planet} has that distinguishes it from others in different decans.
+
+**3. Term Ruler (${termRuler}) = THE SURVIVAL TOOLS**
+At ${degree}° specifically, your ${planet} operates with ${termTools}. This is HOW your ${planet} copes, functions, and gets things done day-to-day.
+
+---
+
+**✨ HOW TO READ THEM TOGETHER (This is the magic!):**
+
+Your **${planet} in ${sign}** (${signRuler} language), **${decanRuler} decan** (the vibe), **${termRuler} terms** (the tools).
+
+This reads like:
+• **${sign}** = ${signMeaning}
+• **${decanRuler} decan** = ${decanVibe.replace('through ', '')}
+• **${termRuler} terms** = ${termTools.replace('as tools', '')}
+
+**The synthesis:** Your ${planet} expresses ${signMeaning} energy, colored by ${decanRuler}'s influence, and survives/functions using ${termRuler}'s toolkit.
+
+${planet === 'Sun' ? `So your identity SHINES ${decanVibe.replace('through', 'with')}, and you navigate the world using ${termTools.replace(' as tools', '')}.` : 
+  planet === 'Moon' ? `So your emotions FLOW ${decanVibe.replace('through', 'with')}, and you find security using ${termTools.replace(' as tools', '')}.` :
+  planet === 'Ascendant' ? `So you APPEAR to others ${decanVibe.replace('through', 'with')}, and you navigate new situations using ${termTools.replace(' as tools', '')}.` :
+  `So your ${planet} energy operates ${decanVibe.replace('through', 'with')}, and it functions using ${termTools.replace(' as tools', '')}.`}`;
+};
+
 const getHouseRulershipInterpretation = (planet: string, housesRuled: string, interceptedSigns?: string[]): string => {
   if (housesRuled === 'None' || housesRuled === 'Unknown') {
     // Determine which sign this planet rules
@@ -1117,6 +1196,47 @@ const DetailRow = ({ label, value, description, interpretation }: DetailRowProps
   );
 };
 
+// Degree Layers Detail - expandable synthesis interpretation
+const DegreeLayersDetail = ({ 
+  planet, 
+  sign, 
+  degree, 
+  decanRuler, 
+  termRuler 
+}: { 
+  planet: string; 
+  sign: string; 
+  degree: number; 
+  decanRuler: string; 
+  termRuler: string; 
+}) => {
+  const [showMore, setShowMore] = useState(false);
+  const interpretation = getDegreeLayersSynthesis(planet, sign, degree, decanRuler, termRuler);
+
+  return (
+    <div className="mt-3">
+      <button
+        onClick={() => setShowMore(!showMore)}
+        className="text-xs text-primary hover:underline flex items-center gap-1"
+      >
+        <Info size={10} />
+        {showMore ? 'Hide deep interpretation' : 'How to read these together ✨'}
+      </button>
+      {showMore && (
+        <div className="mt-3 p-4 bg-secondary/50 rounded-lg text-xs leading-relaxed border border-border/50">
+          <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border/30">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Synthesis guide</span>
+            <span className="text-[10px] px-2 py-0.5 bg-primary/20 text-primary rounded-full uppercase tracking-wider font-medium">Your chart</span>
+          </div>
+          <div className="space-y-1 text-foreground/80">
+            {renderMarkdown(interpretation)}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 interface EnhancedPlanetDetailsProps {
   planetName: string;
   planetData: NatalPlanetPosition;
@@ -1288,6 +1408,55 @@ export const EnhancedPlanetDetails = ({
               interpretation={getTriplicityInterpretation(planetName, signProps.element, triplicityRulers, isDayChart, allPlanets)}
             />
           )}
+
+          {/* Degree Layers Box - THE MAGIC SYNTHESIS */}
+          <div className="my-4 p-4 bg-gradient-to-br from-primary/10 to-primary/5 border-2 border-primary/30 rounded-lg">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-lg">✨</span>
+              <h4 className="text-sm font-bold text-primary">Degree Layers (The Magic)</h4>
+            </div>
+            
+            {/* Visual Breakdown */}
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              <div className="text-center p-2 bg-background/50 rounded border border-border/50">
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Sign Ruler</div>
+                <div className="text-lg font-bold text-foreground">{dispositor}</div>
+                <div className="text-[10px] text-muted-foreground italic">The Language</div>
+              </div>
+              <div className="text-center p-2 bg-background/50 rounded border border-border/50">
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Decan Ruler</div>
+                <div className="text-lg font-bold text-foreground">{decanRuler}</div>
+                <div className="text-[10px] text-muted-foreground italic">The Accent/Vibe</div>
+              </div>
+              <div className="text-center p-2 bg-background/50 rounded border border-border/50">
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Term Ruler</div>
+                <div className="text-lg font-bold text-foreground">{termRuler}</div>
+                <div className="text-[10px] text-muted-foreground italic">Survival Tools</div>
+              </div>
+            </div>
+            
+            {/* Quick Synthesis */}
+            <div className="p-3 bg-primary/10 rounded-lg border-l-4 border-primary">
+              <p className="text-sm text-foreground font-medium">
+                {planetName} in {sign} ({dispositor}) → {decanRuler} decan → {termRuler} terms
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {planetName === 'Sun' ? `Your identity shines through ${decanRuler}'s energy, surviving with ${termRuler}'s toolkit.` :
+                 planetName === 'Moon' ? `Your emotions flow through ${decanRuler}'s energy, finding security with ${termRuler}'s toolkit.` :
+                 planetName === 'Ascendant' ? `You appear through ${decanRuler}'s energy, navigating life with ${termRuler}'s toolkit.` :
+                 `${planetName} expresses through ${decanRuler}'s energy, functioning with ${termRuler}'s approach.`}
+              </p>
+            </div>
+            
+            {/* Expandable Deep Interpretation */}
+            <DegreeLayersDetail 
+              planet={planetName}
+              sign={sign}
+              degree={degree}
+              decanRuler={decanRuler}
+              termRuler={termRuler}
+            />
+          </div>
 
           <DetailRow
             label="Term Ruler"
