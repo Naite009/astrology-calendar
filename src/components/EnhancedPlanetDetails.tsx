@@ -15,12 +15,35 @@ import {
   getDignityStatus,
   getSectStatus,
   getHousesRuled,
-  calculateDeclination
+  calculateDeclination,
+  EGYPTIAN_TERMS,
+  DECAN_RULERS
 } from '@/lib/planetDignities';
+import { SABIAN_SYMBOLS } from '@/lib/sabianSymbols';
 
 // ============================================================================
 // PERSONALIZED INTERPRETATION GENERATORS
 // ============================================================================
+
+// Term ruler interpretations - how the bound ruler colors a planet's expression
+const TERM_FLAVOR: Record<string, string> = {
+  Jupiter: "expansive optimism and a natural sense of opportunity",
+  Venus: "social grace, aesthetic sensitivity, and relational warmth",
+  Mercury: "intellectual curiosity, adaptability, and communicative flair",
+  Mars: "assertive drive, competitive edge, and decisive action",
+  Saturn: "disciplined focus, mature restraint, and lasting endurance"
+};
+
+// Decan ruler interpretations - the sub-ruler's influence
+const DECAN_RULER_FLAVOR: Record<string, string> = {
+  Sun: "creative confidence, leadership presence, and radiant self-expression",
+  Moon: "emotional attunement, instinctual responses, and nurturing awareness",
+  Mercury: "mental agility, curious exploration, and verbal skill",
+  Venus: "harmony-seeking, aesthetic appreciation, and diplomatic charm",
+  Mars: "bold initiative, courageous action, and competitive spirit",
+  Jupiter: "philosophical breadth, generous outlook, and faith-driven expansion",
+  Saturn: "serious responsibility, patient building, and structured discipline"
+};
 
 const getPositionInterpretation = (planet: string, degree: number, sign: string): string => {
   const decanNum = Math.floor(degree / 10) + 1;
@@ -89,7 +112,39 @@ const getPositionInterpretation = (planet: string, degree: number, sign: string)
 
   const decanQuality = decanDescriptions[sign]?.[decanNum] || "unique expression";
   
-  return `Your ${planet} at ${degree}° ${sign} sits in the ${decanNum === 1 ? 'first' : decanNum === 2 ? 'second' : 'third'} decan, expressing through ${decanQuality}. This specific degree gives your ${planet} a particular flavor within ${sign}'s broader themes.`;
+  // Get term (bound) ruler for this degree
+  const termRuler = getTermRuler(sign, degree);
+  const termFlavor = termRuler ? TERM_FLAVOR[termRuler] : null;
+  
+  // Get decan ruler
+  const decanRulers = DECAN_RULERS[sign];
+  const decanRuler = decanRulers ? decanRulers[decanNum - 1] : null;
+  const decanRulerFlavor = decanRuler ? DECAN_RULER_FLAVOR[decanRuler] : null;
+  
+  // Get Sabian symbol for this degree (Sabian uses degree + 1)
+  const sabianDegree = Math.floor(degree) + 1;
+  const sabianKey = `${sabianDegree}-${sign}`;
+  const sabian = SABIAN_SYMBOLS[sabianKey];
+  
+  // Build the interpretation with actual degree-specific meaning
+  let interpretation = `Your ${planet} at ${degree}° ${sign} sits in the ${decanNum === 1 ? 'first' : decanNum === 2 ? 'second' : 'third'} decan, expressing through ${decanQuality}.`;
+  
+  // Add Term influence
+  if (termRuler && termFlavor) {
+    interpretation += ` At this specific degree, your ${planet} operates within ${termRuler}'s term (bound), adding a layer of ${termFlavor}.`;
+  }
+  
+  // Add Decan ruler influence
+  if (decanRuler && decanRulerFlavor && decanRuler !== termRuler) {
+    interpretation += ` The ${decanRuler}-ruled decan brings ${decanRulerFlavor}.`;
+  }
+  
+  // Add Sabian Symbol meaning
+  if (sabian) {
+    interpretation += `\n\n**Sabian Symbol (${sabianDegree}° ${sign}):** "${sabian.symbol}" — ${sabian.meaning}`;
+  }
+  
+  return interpretation;
 };
 
 const getElementInterpretation = (planet: string, element: string, sign: string): string => {
