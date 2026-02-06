@@ -146,5 +146,24 @@ export const PLANET_IN_SIGN: Record<string, Record<string, string>> = {
 // Get detailed planet-in-sign expression
 export const getPlanetInSignExpression = (planet: string, sign: string): string => {
   const normalizedPlanet = planet.charAt(0).toUpperCase() + planet.slice(1).toLowerCase();
-  return PLANET_IN_SIGN[normalizedPlanet]?.[sign] || `${planet} operates through ${sign}'s qualities, coloring its expression with ${sign} themes.`;
+  if (PLANET_IN_SIGN[normalizedPlanet]?.[sign]) {
+    return PLANET_IN_SIGN[normalizedPlanet][sign];
+  }
+  
+  // Generate meaningful fallback instead of vague generic phrase
+  const signBehaviors: Record<string, string> = {
+    'Aries': 'acts with bold initiative and pioneering courage—quick to start, impatient with delays, needs independence.',
+    'Taurus': 'moves with patient determination and sensual groundedness—slow but unstoppable, values stability and pleasure.',
+    'Gemini': 'operates through curiosity and communication—mentally agile, versatile, needs variety and mental stimulation.',
+    'Cancer': 'functions through emotional depth and protective instinct—nurturing, security-seeking, deeply intuitive.',
+    'Leo': 'expresses with dramatic confidence and creative flair—needs recognition, generous, heart-centered.',
+    'Virgo': 'works through careful analysis and practical service—detail-oriented, helpful, improvement-focused.',
+    'Libra': 'operates through balance and partnership—diplomatic, aesthetic, relationship-oriented.',
+    'Scorpio': 'functions with intense focus and transformative power—penetrating, strategic, all-or-nothing.',
+    'Sagittarius': 'moves through adventure and meaning-seeking—optimistic, philosophical, freedom-loving.',
+    'Capricorn': 'operates with disciplined ambition and strategic patience—goal-oriented, responsible, mastery-focused.',
+    'Aquarius': 'functions through innovation and humanitarian vision—unconventional, future-oriented, group-conscious.',
+    'Pisces': 'moves with compassionate sensitivity and spiritual openness—imaginative, empathic, boundary-dissolving.'
+  };
+  return `${normalizedPlanet} in ${sign} ${signBehaviors[sign] || 'takes on this sign\'s qualities in its expression.'}`;
 };

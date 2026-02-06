@@ -434,7 +434,24 @@ const SIGN_EXPRESSIONS: Record<string, string> = {
 
 const getSignExpression = (planet: string, sign: string): string => {
   const key = `${planet}-${sign}`;
-  return SIGN_EXPRESSIONS[key] || `expresses through ${sign}'s energy.`;
+  if (SIGN_EXPRESSIONS[key]) return SIGN_EXPRESSIONS[key];
+  
+  // Generate meaningful fallback instead of vague "expresses through X's energy"
+  const signQualities: Record<string, string> = {
+    'Aries': 'with bold initiative—acting first, asking questions later. Impatient but courageous.',
+    'Taurus': 'with steady persistence—slowly, sensually, and with stubborn determination.',
+    'Gemini': 'through communication and curiosity—quick, adaptable, and mentally restless.',
+    'Cancer': 'through emotional depth and protective care—sensitive, nurturing, and security-seeking.',
+    'Leo': 'with dramatic confidence—creatively, generously, and with need for recognition.',
+    'Virgo': 'through careful analysis and practical service—precisely, helpfully, and critically.',
+    'Libra': 'through balance and partnership—diplomatically, aesthetically, and relationally.',
+    'Scorpio': 'with intense focus and transformative power—deeply, obsessively, and regeneratively.',
+    'Sagittarius': 'through adventure and meaning-seeking—expansively, philosophically, and restlessly.',
+    'Capricorn': 'with disciplined ambition—strategically, patiently, and with long-term vision.',
+    'Aquarius': 'through innovation and independence—unconventionally, collectively, and futuristically.',
+    'Pisces': 'with compassionate sensitivity—imaginatively, spiritually, and with boundary dissolution.'
+  };
+  return signQualities[sign] || `operates through ${sign}'s themes.`;
 };
 
 // ============================================================================
