@@ -277,7 +277,10 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
     return () => clearInterval(interval);
   }, [isOpen]);
 
-  const fetchCosmicWeather = async (forceRefresh = false, targetDate?: Date) => {
+  const fetchCosmicWeather = async (forceRefresh = false, targetDate?: Date, overrideVoiceStyle?: typeof voiceStyle) => {
+    // Use override voice if provided (fixes race condition when voice just changed)
+    const effectiveVoiceStyle = overrideVoiceStyle || voiceStyle;
+    
     // If we have cached data and not forcing refresh and it's for today, don't fetch
     if (cosmicData && !forceRefresh && !targetDate) {
       setWeekForecast(getWeekForecast());
@@ -354,7 +357,7 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
             planets: s.planets.map(p => ({ name: p }))
           })),
           mercuryRetro: false,
-          voiceStyle: voiceStyle
+          voiceStyle: effectiveVoiceStyle
         }
       });
 
@@ -826,7 +829,8 @@ Keep the tone professional, insightful, and practically applicable.`
                         onValueChange={(value: typeof voiceStyle) => {
                           setVoiceStyle(value);
                           setCosmicData(null);
-                          fetchCosmicWeather(true);
+                          // Pass the new voice directly to avoid race condition
+                          fetchCosmicWeather(true, undefined, value);
                         }}
                       >
                         <SelectTrigger className="w-[220px] bg-background">
