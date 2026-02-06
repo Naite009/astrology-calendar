@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, Plus, Users, RefreshCw, Check, Eye, ChevronDown, ChevronUp, ClipboardPaste, Upload, Image, Loader2, Download, CloudOff, Cloud, LogIn, LogOut, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChart';
+import { NatalChart, NatalPlanetPosition, HouseCusp, ProgressedChart, TransitChart, ProgressedPosition } from '@/hooks/useNatalChart';
 import { getPlanetSymbol, calculateNatalChart, detectTimezoneFromLocation, calculatePlacidusHouseCusps } from '@/lib/astrology';
 import { getCoordinatesFromLocation } from '@/lib/placidusHouses';
 import { NatalChartNarrative } from './NatalChartNarrative';
@@ -252,6 +252,9 @@ interface ChartFormData {
   planets: Record<string, NatalPlanetPosition>;
   houseCusps: Record<string, HouseCusp>;
   interceptedSigns: string[];
+  progressions?: ProgressedChart;
+  transits?: TransitChart;
+  progressionDate?: string;
 }
 
 const emptyPlanets = (): Record<string, NatalPlanetPosition> => {
@@ -383,6 +386,9 @@ export const ChartLibrary = ({
         planets: emptyPlanets(),
         houseCusps: emptyHouseCusps(),
         interceptedSigns: [],
+        progressions: undefined,
+        transits: undefined,
+        progressionDate: undefined,
       });
     } else if (chart === 'user' && userNatalChart) {
       setFormData({
@@ -395,6 +401,9 @@ export const ChartLibrary = ({
         planets: userNatalChart.planets as Record<string, NatalPlanetPosition>,
         houseCusps: (userNatalChart.houseCusps as Record<string, HouseCusp>) || emptyHouseCusps(),
         interceptedSigns: userNatalChart.interceptedSigns || [],
+        progressions: userNatalChart.progressions,
+        transits: userNatalChart.transits,
+        progressionDate: userNatalChart.progressionDate,
       });
     } else if (typeof chart === 'object') {
       setFormData({
@@ -407,6 +416,9 @@ export const ChartLibrary = ({
         planets: chart.planets as Record<string, NatalPlanetPosition>,
         houseCusps: (chart.houseCusps as Record<string, HouseCusp>) || emptyHouseCusps(),
         interceptedSigns: chart.interceptedSigns || [],
+        progressions: chart.progressions,
+        transits: chart.transits,
+        progressionDate: chart.progressionDate,
       });
     }
     setEditingChart(chart);
@@ -761,8 +773,70 @@ export const ChartLibrary = ({
         }
       }
 
-      if (planetsImported === 0 && housesImported === 0) {
-        throw new Error('Could not extract any positions. Try a file with clear tables (planet positions / house cusps) visible.');
+      // Import progressions (AC pr, MC pr, progressed planets)
+      let progressionsImported = 0;
+      if (parsedData.progressions && typeof parsedData.progressions === 'object') {
+        const validProgressions: ProgressedChart = {};
+        
+        for (const [key, position] of Object.entries(parsedData.progressions)) {
+          const pos = position as any;
+          if (pos?.sign && ZODIAC_SIGNS.includes(pos.sign)) {
+            validProgressions[key as keyof ProgressedChart] = {
+              sign: pos.sign,
+              degree: Math.min(29, Math.max(0, parseInt(pos.degree) || 0)),
+              minutes: Math.min(59, Math.max(0, parseInt(pos.minutes) || 0)),
+            };
+            progressionsImported++;
+            console.log(`[Import] Progression ${key}: ${pos.degree}° ${pos.sign}`);
+          }
+        }
+
+        if (progressionsImported > 0) {
+          setFormData(prev => ({
+            ...prev,
+            progressions: {
+              ...prev.progressions,
+              ...validProgressions,
+            },
+            // Also capture the progression date if available
+            progressionDate: parsedData.birthInfo?.progressionDate || prev.progressionDate,
+          }));
+          toast.info(`Imported ${progressionsImported} progressed positions (including AC pr/MC pr).`);
+        }
+      }
+
+      // Import transits
+      let transitsImported = 0;
+      if (parsedData.transits && typeof parsedData.transits === 'object') {
+        const validTransits: TransitChart = {};
+        
+        for (const [planet, position] of Object.entries(parsedData.transits)) {
+          const pos = position as any;
+          if (pos?.sign && ZODIAC_SIGNS.includes(pos.sign)) {
+            validTransits[planet as keyof TransitChart] = {
+              sign: pos.sign,
+              degree: Math.min(29, Math.max(0, parseInt(pos.degree) || 0)),
+              minutes: Math.min(59, Math.max(0, parseInt(pos.minutes) || 0)),
+            };
+            transitsImported++;
+            console.log(`[Import] Transit ${planet}: ${pos.degree}° ${pos.sign}`);
+          }
+        }
+
+        if (transitsImported > 0) {
+          setFormData(prev => ({
+            ...prev,
+            transits: {
+              ...prev.transits,
+              ...validTransits,
+            },
+          }));
+          toast.info(`Imported ${transitsImported} transit positions.`);
+        }
+      }
+
+      if (planetsImported === 0 && housesImported === 0 && progressionsImported === 0 && transitsImported === 0) {
+        throw new Error('Could not extract any positions. Try a file with clear tables (planet positions / house cusps / progressions) visible.');
       }
 
       setImageImportResult({ planets: planetsImported, houses: housesImported });

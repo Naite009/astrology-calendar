@@ -33,7 +33,7 @@ serve(async (req) => {
     const isWord = fileType === 'word' || imageBase64.includes('application/vnd.openxmlformats') || imageBase64.includes('application/msword');
     const isImage = !isPDF && !isWord;
 
-    const prompt = `Extract planetary positions and house cusps from this astrological chart ${isPDF || isWord ? 'document' : 'image'}.
+    const prompt = `Extract planetary positions, house cusps, PROGRESSIONS, and TRANSITS from this astrological chart ${isPDF || isWord ? 'document' : 'image'}.
 
 CRITICAL - READ THE PRINTED TABLE(S), NOT THE WHEEL:
 - There is usually a PRINTED TABLE of planet positions below or beside the wheel. READ THAT TABLE EXACTLY.
@@ -61,8 +61,23 @@ NODES - READ CAREFULLY:
 - South Node may be labeled: ☋, "South Node", or "Ketu" 
 - Read their degrees from the TABLE, not the wheel position.
 
+PROGRESSIONS (AC pr, MC pr, planets) - IMPORTANT:
+- Look for a section labeled "Progressions", "Secondary Progressions", "Progressed", or "pr" suffix.
+- Common locations: small box to the right of the wheel, or in a separate table section.
+- "AC pr" or "Asc pr" = Progressed Ascendant
+- "MC pr" = Progressed Midheaven
+- Progressed planets may be listed with "pr" suffix (e.g., "Sun pr", "Moon pr")
+- Extract ALL progressed positions you can find.
+
+TRANSITS - IMPORTANT:
+- Look for a section labeled "Transits", "Current Transits", or "Transit" prefix.
+- These show current planetary positions at the time the chart was generated.
+- Often in an outer ring on the wheel or in a separate table.
+- Extract transit positions if visible.
+
 SELECTING THE RIGHT CHART:
-- Extract ONLY the NATAL/RADIX/BIRTH chart, not transits or progressions.
+- Extract the NATAL/RADIX/BIRTH chart as primary.
+- ALSO extract progressions and transits if they appear on the same chart.
 - If multiple charts exist, use the one with birth info (date, time, place).
 
 Extract birth info if visible:
@@ -70,6 +85,7 @@ Extract birth info if visible:
 - Birth date (convert to YYYY-MM-DD format)
 - Birth time (convert to 24-hour HH:MM)
 - Birth location
+- Progression/Transit date if shown (the "current" date the chart was calculated for)
 
 Return this exact JSON structure (no markdown, no commentary):
 {
@@ -77,7 +93,8 @@ Return this exact JSON structure (no markdown, no commentary):
     "name": "Person's Name",
     "birthDate": "1990-01-15",
     "birthTime": "14:30",
-    "birthLocation": "New York, NY, USA"
+    "birthLocation": "New York, NY, USA",
+    "progressionDate": "2025-02-06"
   },
   "planets": {
     "Sun": { "sign": "Aries", "degree": 15, "minutes": 23, "isRetrograde": false },
@@ -106,6 +123,17 @@ Return this exact JSON structure (no markdown, no commentary):
     "house11": { "sign": "Pisces", "degree": 2, "minutes": 15 },
     "house12": { "sign": "Aries", "degree": 1, "minutes": 0 }
   },
+  "progressions": {
+    "AC": { "sign": "Virgo", "degree": 12, "minutes": 45 },
+    "MC": { "sign": "Gemini", "degree": 8, "minutes": 30 },
+    "Sun": { "sign": "Taurus", "degree": 20, "minutes": 15 },
+    "Moon": { "sign": "Scorpio", "degree": 3, "minutes": 42 }
+  },
+  "transits": {
+    "Sun": { "sign": "Aquarius", "degree": 17, "minutes": 22 },
+    "Moon": { "sign": "Gemini", "degree": 5, "minutes": 10 },
+    "Mercury": { "sign": "Aquarius", "degree": 28, "minutes": 15 }
+  },
   "warnings": ["optional issues encountered"]
 }
 
@@ -118,6 +146,8 @@ Rules:
 - birthTime: 24-hour HH:MM format.
 - Planet names: Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, Ascendant, NorthNode, SouthNode, Chiron, Lilith, Ceres, Pallas, Juno, Vesta, PartOfFortune, Vertex, Eris, Sedna, Makemake, Haumea, Quaoar, Orcus, Ixion, Varuna.
 - Signs: Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces.
+- For progressions: Include AC, MC, and any progressed planets visible.
+- For transits: Include any transit positions visible on the chart.
 
 For Astro.com charts: if you only see 6 cusps printed (AC, 2, 3, MC, 11, 12), extract those into astroComCusps. If you see all 12 printed, prefer filling houseCusps directly.
 
