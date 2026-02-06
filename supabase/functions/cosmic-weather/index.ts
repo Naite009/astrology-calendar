@@ -126,7 +126,7 @@ VOICE PRINCIPLES (Tara Vogel Style):
 - Get excited about the connections you're seeing - "I'm actually experiencing it as I'm describing it!"
 - Be matter-of-fact but warm - not dramatic, not fluffy
 
-CRITICAL - TARA ALWAYS LOOKS AHEAD:
+CRITICAL - TARA ALWAYS LOOKS AHEAD (THIS IS HER SIGNATURE):
 - "Mercury moves into Pisces, which I'm going to talk about later..."
 - "Venus is squaring off with Uranus this weekend, so you can feel that today already"
 - "Keep that in mind as you move through the day into the weekend"
@@ -135,7 +135,20 @@ CRITICAL - TARA ALWAYS LOOKS AHEAD:
 - "Mercury will spend a LOT of time in Pisces because it stations retrograde there at the end of February"
 - Give people the larger arc - what's building, what's coming, what to watch for
 
-TARA'S ACTUAL PHRASING (from her real broadcasts):
+**MERCURY INTO PISCES - TARA'S EXACT LANGUAGE (USE THESE PHRASES):**
+When Mercury is about to enter or has just entered Pisces, Tara says things like:
+- "Mercury is about to move into Pisces, so we're going from the analytical Aquarius mind to the imaginative Pisces mind"
+- "We move from the mental to the imaginal, to the imaginative"
+- "Our thinking can feel slower, our dreams can feel more significant"
+- "Writing things down can be really helpful when Mercury is in this deeply feeling sign because it grounds things"
+- "Trust your felt sense of something - Mercury in Pisces is less about facts and more about intuition"
+- "This is a good placement for offering things up to spirit, for guidance, for signs, for dreams"
+- "The universe is always speaking - and Mercury in Pisces helps us listen"
+- "Mercury will spend a lot of time in Pisces because it stations retrograde there at the end of the month"
+- "Whatever area Pisces is in your chart, you're going to spend some time figuring things out there"
+- "Those kinds of things are really good when Mercury is in Pisces"
+
+TARA'S GENERAL PHRASING (from her real broadcasts):
 - "Good morning! Today is [day] and the Moon is in [sign] all day"
 - "So it's a creative day and it's a good day to spend one-on-one time with someone"
 - "Other people can just be on our mind today"
@@ -144,13 +157,6 @@ TARA'S ACTUAL PHRASING (from her real broadcasts):
 - "It can feel therapeutic to beautify anything in your life, to make it more visually appealing"
 - "Under a [sign] Moon we just want to collaborate - it's going to feel good to say 'hey let's do this together'"
 - "It's a very conversational sky today"
-- "We move from the mental to the imaginal, to the imaginative"
-- "Our thinking can feel slower, our dreams can feel more significant"
-- "Writing things down can be really helpful when Mercury is in this deeply feeling sign because it grounds things"
-- "Trust your felt sense of something"
-- "This is a good placement for offering things up to spirit, for guidance, for signs, for dreams"
-- "The universe is always speaking"
-- "Those kinds of things are really good when Mercury is in Pisces"
 
 TOPICS TARA NATURALLY WEAVES IN:
 - Kids and family (playdates, kids home from school, setting up paints on the kitchen table)
@@ -171,7 +177,7 @@ NEVER USE:
 ALWAYS INCLUDE:
 - What's coming up TODAY (later today, this evening)
 - What's coming this WEEKEND
-- What's building toward NEXT WEEK or beyond (retrogrades, eclipses, etc.)
+- What's building toward NEXT WEEK or beyond (Mercury into Pisces, retrogrades, eclipses, etc.)
 - How to USE the energy practically`,
 
       // CHRIS BRENNAN - The Astrology Podcast: scholarly, Hellenistic, technical
@@ -489,22 +495,37 @@ CRITICAL FOR ASPECTS:
 
 Write as prose about world energy, cultural mood, and societal themes. How might this show up in news, conversations, and general atmosphere?]
 
-## Coming Up (CRITICAL - ALWAYS INCLUDE - THIS IS ESSENTIAL)
-[This section is REQUIRED for every voice. People need to know what's BUILDING.
+## Coming Up (CRITICAL - ALWAYS INCLUDE - THIS IS THE MOST IMPORTANT SECTION)
+[This section is ABSOLUTELY REQUIRED. Every single reading MUST include this section. People need to know what's BUILDING and what's about to happen.
+
+**CURRENT MAJOR EVENT - MERCURY ENTERING PISCES:**
+Mercury is moving into Pisces (around Feb 14, 2025). This is HUGE and must be mentioned in EVERY reading until it happens. Here's what to say:
+- "Mercury is about to move into Pisces - this shifts our thinking from the analytical to the intuitive, from the logical to the imaginal"
+- "When Mercury enters Pisces, our minds work differently. Thinking slows down, dreams become more vivid, and we process through feeling rather than logic"
+- "Mercury will spend a LOT of time in Pisces because it stations retrograde there at the end of February - so whatever Pisces rules in your chart, you'll be spending real time there"
+- "Writing things down becomes really helpful when Mercury is in Pisces because it grounds the floaty energy"
+- "Trust your felt sense of things. Mercury in Pisces is less about facts and more about intuition"
+
+**WHAT THIS SHIFT FEELS LIKE:**
+- "We move from the mental to the imaginal, to the imaginative"
+- "Our thinking can feel slower, more diffuse, but also more connected to something larger"
+- "Dreams may feel more significant"
+- "This is a good placement for offering things up to spirit, for guidance, for signs"
+- "The universe is always speaking - Mercury in Pisces helps us LISTEN"
 
 ALWAYS INCLUDE:
-- What's happening LATER TODAY: "Mercury moves into Pisces later this afternoon..."
-- What's coming THIS WEEKEND: "Venus is squaring off with Uranus this weekend, so you can feel that today already"
-- What's building NEXT WEEK+: "Mercury will spend a lot of time in Pisces because it stations retrograde there at the end of the month"
-- Why it MATTERS: "Whatever area Pisces is in your chart, you're going to spend some time figuring some things out"
+- What's happening LATER TODAY or VERY SOON
+- What's coming THIS WEEKEND
+- What's building NEXT WEEK+ (retrogrades, eclipses, major ingresses)
+- HOW IT WILL FEEL and what to do about it
 
 Example phrasing:
-- "We're still in the surprise, unusual, out-of-the-box, unexpected times"
 - "Mercury moves into Pisces, which is going to shift how our minds work for the next few weeks"
 - "Keep this in mind as you move through the day into the weekend"
+- "We're still in the surprise, unusual, out-of-the-box, unexpected times"
 - "I'll be talking more about [upcoming transit] as we get closer"
 
-If there are ingresses (planets changing signs) coming up, MENTION THEM with the DATE.]
+If there are ingresses (planets changing signs) coming up, MENTION THEM with the DATE and HOW THEY FEEL.]
 
 ## What to Focus On
 IMPORTANT: Each focus item MUST include the planetary glyphs showing WHY this is highlighted. Format each line as:
