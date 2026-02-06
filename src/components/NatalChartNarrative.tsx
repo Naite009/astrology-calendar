@@ -353,8 +353,18 @@ const NatalPlanetsSummary = ({
               <div className="text-sm leading-relaxed text-foreground/80">
                 {getSignExpression(planetInfo?.name || planetKey, planetData.sign)}
                 {house && HOUSE_MEANINGS[house as keyof typeof HOUSE_MEANINGS] && (
-                  <div className="mt-1 italic text-muted-foreground">
-                    Expresses through: {HOUSE_MEANINGS[house as keyof typeof HOUSE_MEANINGS].short}
+                  <div className="mt-3 p-3 bg-secondary/30 rounded-md border-l-2 border-primary/30">
+                    <div className="font-medium text-foreground mb-1">
+                      📍 House {house}: {HOUSE_MEANINGS[house as keyof typeof HOUSE_MEANINGS].short}
+                    </div>
+                    <div className="text-xs text-muted-foreground mb-2">
+                      {HOUSE_MEANINGS[house as keyof typeof HOUSE_MEANINGS].whatThisMeans || HOUSE_MEANINGS[house as keyof typeof HOUSE_MEANINGS].full}
+                    </div>
+                    <div className="text-xs text-foreground/70">
+                      <span className="font-medium">How {planetInfo?.name || planetKey} works here:</span>{' '}
+                      {HOUSE_MEANINGS[house as keyof typeof HOUSE_MEANINGS].howItShowsUp || 
+                       `This planet expresses through ${HOUSE_MEANINGS[house as keyof typeof HOUSE_MEANINGS].keywords || HOUSE_MEANINGS[house as keyof typeof HOUSE_MEANINGS].short} themes.`}
+                    </div>
                   </div>
                 )}
               </div>
