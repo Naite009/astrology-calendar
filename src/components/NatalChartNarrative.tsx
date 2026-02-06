@@ -298,10 +298,12 @@ interface NatalChartNarrativeProps {
 
 const NatalPlanetsSummary = ({ 
   planets, 
-  houseCusps 
+  houseCusps,
+  interceptedSigns
 }: { 
   planets: NatalChart['planets']; 
   houseCusps?: NatalChart['houseCusps'];
+  interceptedSigns?: string[];
 }) => {
   const planetOrder = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Chiron', 'NorthNode', 'Lilith'];
   
@@ -379,6 +381,7 @@ const NatalPlanetsSummary = ({
                   sunHouse={sunHouse}
                   houseCusps={houseCusps}
                   allPlanets={planets as Record<string, import('@/hooks/useNatalChart').NatalPlanetPosition>}
+                  interceptedSigns={interceptedSigns}
                 />
               )}
             </div>
@@ -1509,7 +1512,7 @@ export const NatalChartNarrative = ({ natalChart, currentDate = new Date() }: Na
       <ChartRulerSection natalChart={natalChart} />
       
       {/* Natal Planets Summary */}
-      <NatalPlanetsSummary planets={natalChart.planets} houseCusps={natalChart.houseCusps} />
+      <NatalPlanetsSummary planets={natalChart.planets} houseCusps={natalChart.houseCusps} interceptedSigns={natalChart.interceptedSigns} />
       
       {/* Natal Aspects */}
       <NatalAspectsSection natalChart={natalChart} />

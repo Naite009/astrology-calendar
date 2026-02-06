@@ -665,9 +665,56 @@ const getDecanInterpretation = (
 **How you FEEL this:** The decan ruler adds a secondary "flavor" to your ${planet}. With ${decanRuler} ruling this decan, you experience ${feeling}.${rulerAnalysis}`;
 };
 
-const getHouseRulershipInterpretation = (planet: string, housesRuled: string): string => {
+const getHouseRulershipInterpretation = (planet: string, housesRuled: string, interceptedSigns?: string[]): string => {
   if (housesRuled === 'None' || housesRuled === 'Unknown') {
-    return `Your ${planet} doesn't rule any house cusps in your chart (based on traditional rulership). Its influence flows through aspects and its house placement rather than through house lordship.`;
+    // Determine which sign this planet rules
+    const ruledSigns: Record<string, string> = {
+      Sun: 'Leo', Moon: 'Cancer', Mercury: 'Gemini/Virgo', Venus: 'Taurus/Libra',
+      Mars: 'Aries/Scorpio', Jupiter: 'Sagittarius/Pisces', Saturn: 'Capricorn/Aquarius'
+    };
+    const signRuled = ruledSigns[planet];
+    
+    // Check if any of the planet's signs are intercepted
+    const planetSigns = signRuled?.split('/') || [];
+    const interceptedPlanetSigns = planetSigns.filter(s => interceptedSigns?.includes(s));
+    const hasInterceptedSign = interceptedPlanetSigns.length > 0;
+    
+    if (hasInterceptedSign) {
+      const interceptedSign = interceptedPlanetSigns[0];
+      return `**Why your ${planet} doesn't rule any house cusps:** ${interceptedSign} is INTERCEPTED in your chart—meaning it's fully contained within a house and doesn't appear on any cusp.
+
+**What is an intercepted sign?** In most house systems (like Placidus), houses near the MC/IC can span more than 30°, "swallowing" an entire sign. That sign never touches a cusp, so no house has it as its doorway.
+
+**What this means for your ${planet}:**
+• ${planet}'s "management responsibilities" operate INSIDE that house rather than at its entrance
+• The ${interceptedSign} themes don't announce themselves obviously—they're hidden, internalized, slower to develop
+• You may have felt like ${planet} themes (${planet === 'Sun' ? 'identity, recognition, creative self-expression' : planet === 'Moon' ? 'emotional needs, nurturing, security' : `${planet} qualities`}) were harder to access or express naturally
+• These energies often emerge more powerfully in the second half of life
+
+**How you FEEL this:**
+• ${interceptedSign} qualities may feel "locked" or unavailable to you, especially early in life
+• You might over-rely on the sign OPPOSITE ${interceptedSign} (which is also intercepted) for compensation
+• Transits through ${interceptedSign} can feel like unlocking hidden potential—sudden breakthroughs
+• You're developing these qualities more consciously than people who have them on cusps
+
+**The gift:** Intercepted ${planet} energy often becomes exceptionally refined once accessed. You don't take these qualities for granted—you've had to consciously cultivate them, making your expression more intentional and profound.
+
+**To access this energy:** Watch for transits through your intercepted ${interceptedSign} house—planets transiting there "unlock" the trapped energy. Also, any aspect to your natal ${planet} activates its themes regardless of house rulership.`;
+    }
+    
+    return `Your ${planet} doesn't rule any house cusps in your chart (based on traditional rulership). 
+
+**Why this might happen:**
+1. **Intercepted sign:** If ${signRuled || 'the sign your planet rules'} is fully contained within a house (doesn't touch any cusp), your ${planet} won't have a house to "manage"
+2. **Chart shape:** Some charts have signs appearing on multiple house cusps (double-signed houses) while others are skipped entirely
+
+**What this means practically:**
+Your ${planet} still influences your life through:
+• **Its house placement** — where it sits shows where you EXPERIENCE ${planet} themes
+• **Aspects** — connections to other planets activate ${planet} regardless of rulership
+• **Transits** — planets aspecting your ${planet} bring its themes into focus
+
+**The difference from house rulership:** A planet ruling a house is "responsible for" that life domain—it's the manager. Your ${planet} is more like a free agent: powerful in its own right, but not tied to managing a specific department of life. Its influence is more personal and less tied to external circumstances.`;
   }
 
   // What each planet actually represents (core themes)
@@ -990,6 +1037,7 @@ interface EnhancedPlanetDetailsProps {
   sunHouse?: number | null;
   houseCusps?: Record<string, { sign: string; degree: number; minutes?: number }>;
   allPlanets?: Record<string, NatalPlanetPosition>;
+  interceptedSigns?: string[];
 }
 
 export const EnhancedPlanetDetails = ({
@@ -998,7 +1046,8 @@ export const EnhancedPlanetDetails = ({
   house,
   sunHouse,
   houseCusps,
-  allPlanets
+  allPlanets,
+  interceptedSigns
 }: EnhancedPlanetDetailsProps) => {
   const [expanded, setExpanded] = useState(false);
 
@@ -1171,7 +1220,7 @@ export const EnhancedPlanetDetails = ({
             label="Houses Ruled"
             value={housesRuled}
             description="Houses where this planet is the traditional ruler"
-            interpretation={getHouseRulershipInterpretation(planetName, housesRuled)}
+            interpretation={getHouseRulershipInterpretation(planetName, housesRuled, interceptedSigns)}
           />
 
           {/* Condition Section */}
