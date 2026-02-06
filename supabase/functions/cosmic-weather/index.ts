@@ -37,7 +37,7 @@ serve(async (req) => {
     
     // Cache key versioning: bump this when prompt/format changes so users don't get stale cached text.
     // This intentionally changes the cache key without requiring any DB schema changes.
-    const PROMPT_VERSION = "2026-02-06-v2-mercury-pisces-exact-time";
+    const PROMPT_VERSION = "2026-02-06-v3-no-fake-houses";
 
     const cacheDeviceId = deviceId || 'default';
     const cacheVoiceStyle = `${voiceStyle || ''}@${PROMPT_VERSION}`;
@@ -483,7 +483,18 @@ This is a COLLECTIVE reading about the world's energy today - NOT about the indi
 - Mercury/Venus conjunct Sun = society's communication style, cultural conversations, relationship trends
 - Frame observations as "the world feels...", "society is focused on...", "people may notice..."
 - Use "we" and "people" language, not "you" or "your identity"
-- When a personal chart IS selected (indicated by natalChart data), THEN you can personalize: "The collective Sun at 11° Aquarius highlights innovation, while YOUR Sun in [sign/house] means you experience this as..."
+
+CRITICAL - NEVER FABRICATE HOUSE PLACEMENTS:
+You do NOT have access to the user's natal chart house cusps. NEVER say things like:
+- "The Moon is in YOUR 5th house" (YOU DON'T KNOW THIS)
+- "placing it in your Xth house of..." (YOU DON'T KNOW THEIR HOUSES)
+
+Instead, when mentioning how today's energy lands personally, say:
+- "Find where [Sign] falls in YOUR chart - that's where you'll feel this energy"
+- "Whatever house [Sign] rules in your chart, that's the life area activated"
+- "Check which house has [Sign] on the cusp in your chart"
+
+For example: "The Moon is in Libra today. Whatever house Libra occupies in your chart - that's where emotional focus lands. For Libra risings, it's your 1st house. For Aries risings, your 7th."
 
 FORMAT:
 
