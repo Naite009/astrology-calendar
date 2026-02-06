@@ -15,7 +15,7 @@ export const SABIAN_SYMBOLS: Record<string, { symbol: string; meaning: string }>
   '10-Aries': { symbol: 'A teacher gives new symbolic forms to traditional images', meaning: 'Revitalizing old wisdom. Making ancient truths relevant.' },
   '11-Aries': { symbol: 'The president of the country', meaning: 'Social responsibility. Leadership through embodying collective ideals.' },
   '12-Aries': { symbol: 'A flock of wild geese', meaning: 'Cosmic order in nature. Following instinctual patterns of migration.' },
-  '13-Aries': { symbol: 'An unexploded bomb reveals an unsuccessful social protest', meaning: 'Frustrated rebellion. Tension between individual will and social norms.' },
+  '13-Aries': { symbol: 'An unexploded bomb reveals an unsuccessful social protest', meaning: 'Unreleased potential energy waiting for the right moment. This degree speaks to passion held in reserve—the wisdom to know that timing matters as much as intention. Rather than forcing change prematurely, there is power in strategic patience and choosing your battles wisely.' },
   '14-Aries': { symbol: 'A serpent coiling near a man and a woman', meaning: 'Temptation and wisdom. Kundalini energy in relationships.' },
   '15-Aries': { symbol: 'An Indian weaving a blanket', meaning: 'Creative self-expression. Weaving one\'s life pattern with skill.' },
   '16-Aries': { symbol: 'Nature spirits are seen at work in the light of sunset', meaning: 'Awareness of subtle forces. Seeing the magical in twilight consciousness.' },
