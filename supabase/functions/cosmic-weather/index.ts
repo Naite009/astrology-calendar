@@ -451,6 +451,12 @@ CRITICAL RULES:
 2. Use EXACT degrees when mentioning positions. If data says "3° Cancer", use that precisely.
 3. NEVER call something a "Full Moon" or "New Moon" unless exactLunarPhase is provided.
 4. ALWAYS mention APPLYING aspects as building/intensifying and SEPARATING aspects as releasing/completing.
+5. **ABSOLUTELY CRITICAL - NEVER INVENT ASPECTS**: ONLY mention aspects that are EXPLICITLY listed in the "aspects" data provided. 
+   - If two planets are NOT listed as having an aspect, DO NOT claim they have one.
+   - A conjunction requires planets to be within 8° of each other. 19° apart is NOT a conjunction!
+   - If you see Saturn at 29° and North Node at 10°, that is a 19° gap = NO ASPECT. Do not mention it.
+   - Check the orb value provided - if it's over 10°, it's not a valid major aspect.
+6. Each aspect in the data includes "orb" and "motion" fields - USE them to describe tightness and direction.
 
 PLANETARY ENERGY GUIDE - USE THESE MEANINGS:
 ☿ Mercury: Mind, communication, details, thinking patterns, learning, daily routines, siblings, neighbors

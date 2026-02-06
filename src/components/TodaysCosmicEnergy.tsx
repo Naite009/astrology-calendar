@@ -307,25 +307,40 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
         setVocInfo(voc);
       }
 
-      // Build planet positions array for the edge function
+      // Build planet positions array for the edge function - use sign NAMES not glyphs
+      const signGlyphToName: Record<string, string> = {
+        '♈': 'Aries', '♉': 'Taurus', '♊': 'Gemini', '♋': 'Cancer',
+        '♌': 'Leo', '♍': 'Virgo', '♎': 'Libra', '♏': 'Scorpio',
+        '♐': 'Sagittarius', '♑': 'Capricorn', '♒': 'Aquarius', '♓': 'Pisces'
+      };
+      
       const planetPositions = Object.entries(planets).map(([name, data]) => ({
         name: name.charAt(0).toUpperCase() + name.slice(1),
-        sign: data?.sign || 'Unknown',
-        degree: data?.degree || 0
+        sign: signGlyphToName[data?.sign] || data?.signName || data?.sign || 'Unknown',
+        degree: data?.rawDegree?.toFixed(1) || data?.degree || 0
       }));
+
+      // Send MORE aspects with FULL data including orbs - this prevents AI hallucination
+      const aspectsWithDetails = aspects.slice(0, 15).map(a => {
+        const orbValue = 'orb' in a && a.orb != null ? a.orb : 0;
+        return {
+          planet1: a.planet1,
+          planet2: a.planet2,
+          type: a.type,
+          orb: typeof orbValue === 'number' ? orbValue.toFixed(1) : String(orbValue),
+          motion: 'motion' in a ? (a as Record<string, unknown>).motion as string : 'unknown',
+          symbol: a.type === 'Conjunction' ? '☌' : a.type === 'Trine' ? '△' : a.type === 'Square' ? '□' : a.type === 'Opposition' ? '☍' : a.type === 'Sextile' ? '⚹' : '●'
+        };
+      });
 
       // Call edge function
       const { data, error: fnError } = await supabase.functions.invoke('cosmic-weather', {
         body: {
           date: dateStr,
           moonPhase: moonPhase.phaseName,
-          moonSign: planets.moon?.sign || 'Unknown',
+          moonSign: planets.moon?.signName || signGlyphToName[planets.moon?.sign] || 'Unknown',
           planetPositions,
-          aspects: aspects.slice(0, 5).map(a => ({
-            planet1: a.planet1.toLowerCase(),
-            planet2: a.planet2.toLowerCase(),
-            symbol: a.type === 'Conjunction' ? '☌' : a.type === 'Trine' ? '△' : a.type === 'Square' ? '□' : a.type === 'Opposition' ? '☍' : a.type === 'Sextile' ? '⚹' : '●'
-          })),
+          aspects: aspectsWithDetails,
           stelliums: stelliums.map(s => ({
             sign: s.sign,
             count: s.planets.length,
