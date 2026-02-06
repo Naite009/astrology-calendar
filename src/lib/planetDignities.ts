@@ -161,9 +161,9 @@ export const EGYPTIAN_TERMS: Record<string, Array<{ ruler: string; end: number }
   ],
   Libra: [
     { ruler: 'Saturn', end: 6 },
-    { ruler: 'Mercury', end: 14 },
+    { ruler: 'Venus', end: 14 },
     { ruler: 'Jupiter', end: 21 },
-    { ruler: 'Venus', end: 28 },
+    { ruler: 'Mercury', end: 28 },
     { ruler: 'Mars', end: 30 }
   ],
   Scorpio: [
