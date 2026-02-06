@@ -15,6 +15,47 @@ export interface HouseCusp {
   minutes: number;
 }
 
+// Progressed position (simpler - no seconds, no retrograde needed typically)
+export interface ProgressedPosition {
+  sign: string;
+  degree: number;
+  minutes: number;
+}
+
+// Progressed chart data extracted from chart images
+export interface ProgressedChart {
+  // Progressed planets
+  Sun?: ProgressedPosition;
+  Moon?: ProgressedPosition;
+  Mercury?: ProgressedPosition;
+  Venus?: ProgressedPosition;
+  Mars?: ProgressedPosition;
+  Jupiter?: ProgressedPosition;
+  Saturn?: ProgressedPosition;
+  Uranus?: ProgressedPosition;
+  Neptune?: ProgressedPosition;
+  Pluto?: ProgressedPosition;
+  // Progressed angles
+  AC?: ProgressedPosition; // AC pr - Progressed Ascendant
+  MC?: ProgressedPosition; // MC pr - Progressed Midheaven
+}
+
+// Transit positions at time of chart creation
+export interface TransitChart {
+  Sun?: ProgressedPosition;
+  Moon?: ProgressedPosition;
+  Mercury?: ProgressedPosition;
+  Venus?: ProgressedPosition;
+  Mars?: ProgressedPosition;
+  Jupiter?: ProgressedPosition;
+  Saturn?: ProgressedPosition;
+  Uranus?: ProgressedPosition;
+  Neptune?: ProgressedPosition;
+  Pluto?: ProgressedPosition;
+  NorthNode?: ProgressedPosition;
+  Chiron?: ProgressedPosition;
+}
+
 export interface NatalChart {
   id: string;
   name: string;
@@ -71,6 +112,12 @@ export interface NatalChart {
   };
   // Signs that are intercepted (contained entirely within a house)
   interceptedSigns?: string[];
+  // Progressions extracted from chart image
+  progressions?: ProgressedChart;
+  // Transits at time of chart creation (extracted from chart image)
+  transits?: TransitChart;
+  // Date the progressions/transits were calculated for (if visible on chart)
+  progressionDate?: string;
 }
 
 // Versioned backup keys
