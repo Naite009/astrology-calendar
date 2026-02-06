@@ -134,6 +134,13 @@ Return this exact JSON structure (no markdown, no commentary):
     "Moon": { "sign": "Gemini", "degree": 5, "minutes": 10 },
     "Mercury": { "sign": "Aquarius", "degree": 28, "minutes": 15 }
   },
+
+  // OPTIONAL BUT STRONGLY PREFERRED (for accuracy):
+  // Provide the exact cusp lines you read, verbatim, so the system can re-parse degrees/minutes deterministically.
+  // Examples of acceptable lines:
+  // "5  Sagittarius 25°04'"  or  "11  Gemini 25 04"  or  "MC  Taurus 25°19'"
+  "rawCuspLines": ["..."] ,
+
   "warnings": ["optional issues encountered"]
 }
 
@@ -271,6 +278,66 @@ Return ONLY the JSON object.`;
       return map[sign] ?? null;
     };
 
+    const SIGN_SET = new Set([
+      "Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces",
+    ]);
+
+    const coerceInt = (v: unknown): number | null => {
+      if (typeof v === 'number' && Number.isFinite(v)) return Math.trunc(v);
+      if (typeof v === 'string') {
+        const m = v.match(/-?\d+/);
+        if (!m) return null;
+        const n = parseInt(m[0], 10);
+        return Number.isFinite(n) ? n : null;
+      }
+      return null;
+    };
+
+    const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
+
+    const parseCuspLine = (line: string): { key: string; sign: string; degree: number; minutes: number } | null => {
+      // Expected examples:
+      // "5 Sagittarius 25°04'" | "11 Gemini 25 04" | "MC Taurus 25°19'" | "AC Virgo 00°32'"
+      const clean = line.replace(/\s+/g, ' ').trim();
+      if (!clean) return null;
+
+      const upper = clean.toUpperCase();
+      let key: string | null = null;
+      if (/\bAC\b|\bASC\b/.test(upper)) key = 'house1';
+      else if (/\bMC\b/.test(upper)) key = 'house10';
+      else {
+        const m = clean.match(/\b(1[0-2]|[1-9])\b/);
+        if (m) key = `house${m[1]}`;
+      }
+      if (!key) return null;
+
+      const sign = Array.from(SIGN_SET).find(s => new RegExp(`\\b${s}\\b`, 'i').test(clean));
+      if (!sign) return null;
+
+      // Prefer degree/minute patterns with explicit symbols, but fall back to two numbers.
+      // 25°04' OR 25° 4' OR 25 04
+      let degree: number | null = null;
+      let minutes: number | null = null;
+
+      const sym = clean.match(/(\d{1,2})\s*°\s*(\d{1,2})\s*['′]/);
+      if (sym) {
+        degree = coerceInt(sym[1]);
+        minutes = coerceInt(sym[2]);
+      } else {
+        const two = clean.match(/\b(\d{1,2})\b[^\d]+\b(\d{1,2})\b/);
+        if (two) {
+          degree = coerceInt(two[1]);
+          minutes = coerceInt(two[2]);
+        }
+      }
+
+      if (degree === null || minutes === null) return null;
+      if (degree < 0 || degree > 29) return null;
+      if (minutes < 0 || minutes > 59) return null;
+
+      return { key, sign, degree, minutes };
+    };
+
     // Try to extract JSON from the response
     let parsedData: any = null;
     try {
@@ -280,6 +347,20 @@ Return ONLY the JSON object.`;
       }
     } catch {
       console.error("Failed to parse AI response as JSON:", content);
+    }
+
+    // If provided, deterministically re-parse cusps from rawCuspLines to avoid degree/minute swaps.
+    if (parsedData?.rawCuspLines && Array.isArray(parsedData.rawCuspLines)) {
+      const derivedCusps: any = {};
+      for (const line of parsedData.rawCuspLines) {
+        if (typeof line !== 'string') continue;
+        const parsed = parseCuspLine(line);
+        if (!parsed) continue;
+        derivedCusps[parsed.key] = { sign: parsed.sign, degree: parsed.degree, minutes: parsed.minutes };
+      }
+      if (Object.keys(derivedCusps).length > 0) {
+        parsedData.houseCusps = { ...(parsedData.houseCusps || {}), ...derivedCusps };
+      }
     }
 
     // If the model already returned full houseCusps, keep them as-is.
