@@ -9,6 +9,7 @@ import { calculateTransitAspects, TransitAspect } from '@/lib/transitAspects';
 import { PLANET_ESSENCES, HOUSE_MEANINGS, ASPECT_MEANINGS } from '@/lib/detailedInterpretations';
 import { signDegreesToLongitude } from '@/lib/houseCalculations';
 import { EnhancedPlanetDetails } from './EnhancedPlanetDetails';
+import { getDeepAspectInterpretation, getFormattedAspectNarrative } from '@/lib/aspectInterpretationsDeep';
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -659,6 +660,7 @@ interface NatalAspect {
   sign2: string;
   color: string;
   interpretation: string;
+  hasDeepInterp?: boolean; // Indicates rich teaching interpretation available
 }
 
 const NATAL_ASPECT_INTERPRETATIONS: Record<string, Record<string, string>> = {
@@ -932,11 +934,21 @@ const calculateNatalAspects = (planets: NatalChart['planets']): NatalAspect[] =>
       for (const aspectType of aspectTypes) {
         const orbValue = Math.abs(diff - aspectType.angle);
         if (orbValue <= aspectType.orb) {
-          const pairKey = `${planet1Key}-${planet2Key}`;
-          const reversePairKey = `${planet2Key}-${planet1Key}`;
-          const interps = NATAL_ASPECT_INTERPRETATIONS[pairKey] || NATAL_ASPECT_INTERPRETATIONS[reversePairKey] || {};
-          const interpretation = interps[aspectType.name] || 
-            `${planet1Key} ${aspectType.name} ${planet2Key}: These planetary energies ${aspectType.name === 'conjunction' ? 'merge and amplify each other' : aspectType.name === 'opposition' ? 'create tension and awareness' : aspectType.name === 'trine' ? 'flow harmoniously together' : aspectType.name === 'square' ? 'create friction that drives growth' : 'offer opportunities when engaged'}.`;
+          // Try deep interpretation first, then fall back to original
+          const deepInterp = getDeepAspectInterpretation(planet1Key, planet2Key, aspectType.name);
+          
+          let interpretation: string;
+          if (deepInterp) {
+            // Use the rich, teaching-quality interpretation
+            interpretation = getFormattedAspectNarrative(planet1Key, planet2Key, aspectType.name, planet1.sign, planet2.sign);
+          } else {
+            // Fall back to original interpretations
+            const pairKey = `${planet1Key}-${planet2Key}`;
+            const reversePairKey = `${planet2Key}-${planet1Key}`;
+            const interps = NATAL_ASPECT_INTERPRETATIONS[pairKey] || NATAL_ASPECT_INTERPRETATIONS[reversePairKey] || {};
+            interpretation = interps[aspectType.name] || 
+              `${planet1Key} ${aspectType.name} ${planet2Key}: These planetary energies ${aspectType.name === 'conjunction' ? 'merge and amplify each other' : aspectType.name === 'opposition' ? 'create tension and awareness' : aspectType.name === 'trine' ? 'flow harmoniously together' : aspectType.name === 'square' ? 'create friction that drives growth' : 'offer opportunities when engaged'}.`;
+          }
           
           aspects.push({
             planet1: planet1Key,
@@ -950,6 +962,7 @@ const calculateNatalAspects = (planets: NatalChart['planets']): NatalAspect[] =>
             sign2: planet2.sign,
             color: aspectType.color,
             interpretation,
+            hasDeepInterp: !!deepInterp, // Track if we have a deep interpretation
           });
           break;
         }
@@ -989,7 +1002,7 @@ const NatalAspectsSection = ({
         {aspects.map((aspect, i) => (
           <div 
             key={i} 
-            className="p-4 bg-background/95 rounded-lg"
+            className={`p-4 bg-background/95 rounded-lg ${aspect.hasDeepInterp ? 'ring-1 ring-primary/20' : ''}`}
             style={{ borderLeft: `4px solid ${aspect.color}` }}
           >
             <div 
@@ -1001,11 +1014,38 @@ const NatalAspectsSection = ({
               <span className="text-foreground capitalize">{aspect.aspect}</span>
               <span>{aspect.planet2} ({aspect.degree2}° {aspect.sign2})</span>
               <span className="text-xs text-muted-foreground">Orb: {aspect.orb}°</span>
+              {aspect.hasDeepInterp && (
+                <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-sm uppercase tracking-wider">
+                  Deep Analysis
+                </span>
+              )}
             </div>
             
-            <div className="text-sm leading-relaxed text-foreground/80">
-              {aspect.interpretation}
-            </div>
+            {aspect.hasDeepInterp ? (
+              <div className="text-sm leading-relaxed space-y-3 text-foreground/90">
+                {aspect.interpretation.split('\n\n').map((paragraph, pi) => (
+                  <div key={pi}>
+                    {paragraph.startsWith('**') ? (
+                      <div className="space-y-1">
+                        {paragraph.split('**').map((part, partIdx) => {
+                          if (partIdx % 2 === 1) {
+                            // Bold header
+                            return <span key={partIdx} className="font-semibold text-foreground">{part}</span>;
+                          }
+                          return <span key={partIdx}>{part}</span>;
+                        })}
+                      </div>
+                    ) : (
+                      <p>{paragraph}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-sm leading-relaxed text-foreground/80">
+                {aspect.interpretation}
+              </div>
+            )}
           </div>
         ))}
       </div>
