@@ -656,7 +656,67 @@ const getHouseRulershipInterpretation = (planet: string, housesRuled: string): s
   if (housesRuled === 'None' || housesRuled === 'Unknown') {
     return `Your ${planet} doesn't rule any house cusps in your chart (based on traditional rulership). Its influence flows through aspects and its house placement rather than through house lordship.`;
   }
-  return `Your ${planet} rules the ${housesRuled} house${housesRuled.includes(',') ? 's' : ''} in your chart. This means ${planet} themes directly connect to those life areas. When ${planet} is activated by transit or progression, those house matters come into focus. ${planet} is a "lord" of those domains.`;
+
+  // What each planet actually represents (core themes)
+  const planetThemes: Record<string, string> = {
+    Sun: "your identity, vitality, life purpose, and what makes you feel alive and authentic",
+    Moon: "your emotional needs, instincts, comfort patterns, and what makes you feel safe",
+    Mercury: "how you think, communicate, learn, and process information",
+    Venus: "what you value, find beautiful, how you relate to others, and what brings you pleasure",
+    Mars: "your drive, ambition, how you take action, assert yourself, and pursue what you want",
+    Jupiter: "where you seek growth, meaning, abundance, and what you have faith in",
+    Saturn: "where you face challenges that build mastery, your responsibilities, and long-term commitments"
+  };
+
+  // What each house actually represents (life areas)
+  const houseThemes: Record<string, { area: string; examples: string }> = {
+    "1st": { area: "Self & Identity", examples: "how others first see you, your physical presence, personal brand, first impressions" },
+    "2nd": { area: "Money & Values", examples: "income you earn, possessions, self-worth, what you find valuable" },
+    "3rd": { area: "Communication & Learning", examples: "siblings, neighbors, short trips, writing, everyday conversations, early education" },
+    "4th": { area: "Home & Roots", examples: "family of origin, your living space, emotional foundation, private life, one parent" },
+    "5th": { area: "Creativity & Joy", examples: "romance, dating, children, creative projects, hobbies, fun, self-expression" },
+    "6th": { area: "Work & Health", examples: "daily routines, job (not career), health habits, service to others, pets" },
+    "7th": { area: "Partnerships", examples: "marriage, business partners, one-on-one relationships, open enemies, contracts" },
+    "8th": { area: "Transformation & Shared Resources", examples: "other people's money, inheritance, taxes, intimacy, psychological depth, endings" },
+    "9th": { area: "Expansion & Meaning", examples: "higher education, travel abroad, philosophy, religion, publishing, legal matters" },
+    "10th": { area: "Career & Public Image", examples: "profession, reputation, achievements, authority figures, life direction, one parent" },
+    "11th": { area: "Community & Future", examples: "friends, groups, organizations, hopes and wishes, social causes, networks" },
+    "12th": { area: "Hidden Life & Spirituality", examples: "solitude, unconscious patterns, hidden enemies, institutions, self-undoing, spiritual practice" }
+  };
+
+  // Parse which houses are ruled
+  const houseNumbers = housesRuled.match(/\d+/g) || [];
+  const planetTheme = planetThemes[planet] || `${planet}'s core energy`;
+  
+  if (houseNumbers.length === 0) {
+    return `Your ${planet} rules the ${housesRuled} house in your chart.`;
+  }
+
+  // Build specific interpretation for each house
+  const houseInterpretations = houseNumbers.map(num => {
+    const houseInfo = houseThemes[`${num}${num === '1' ? 'st' : num === '2' ? 'nd' : num === '3' ? 'rd' : 'th'}`] || 
+                      houseThemes[num + (num === '1' ? 'st' : num === '2' ? 'nd' : num === '3' ? 'rd' : 'th')];
+    
+    // Try alternate format
+    const altKey = num === '1' ? '1st' : num === '2' ? '2nd' : num === '3' ? '3rd' : `${num}th`;
+    const info = houseInfo || houseThemes[altKey];
+    
+    if (info) {
+      return `**${altKey} House (${info.area}):** ${info.examples}`;
+    }
+    return `**House ${num}**`;
+  });
+
+  const multipleHouses = houseNumbers.length > 1;
+  
+  return `**What ${planet} represents:** ${planetTheme}.
+
+**What your ${planet} RULES in your chart:**
+${houseInterpretations.join('\n')}
+
+**What this means practically:** ${planet} is the "manager" of ${multipleHouses ? 'these areas' : 'this area'} of your life. When ${planet} is doing well (strong aspects, good transits), ${multipleHouses ? 'these life areas' : 'this life area'} tends to flow more easily. When ${planet} is stressed, ${multipleHouses ? 'those areas' : 'that area'} may need more attention.
+
+**Transit tip:** Watch for when planets transit ${multipleHouses ? 'these houses' : 'this house'} OR when planets aspect your natal ${planet}—both activate ${multipleHouses ? 'these domains' : 'this domain'} of life.`;
 };
 
 const getSectInterpretation = (planet: string, sectStatus: string, isDayChart: boolean | null): string => {
