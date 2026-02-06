@@ -383,8 +383,8 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
         insight: data.insight
       };
       
-      // Save to localStorage for the day (with voice style in key)
-      localStorage.setItem(`cosmic-weather-${todayKey}-${voiceStyle}`, JSON.stringify(newCosmicData));
+      // Save to localStorage for the day (with voice style in key) - use effectiveVoiceStyle not state
+      localStorage.setItem(`cosmic-weather-${todayKey}-${effectiveVoiceStyle}`, JSON.stringify(newCosmicData));
       
       setCosmicData(newCosmicData);
       setLastFetched(generatedTime);
