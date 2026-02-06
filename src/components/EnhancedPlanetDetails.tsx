@@ -398,7 +398,12 @@ const getDignityInterpretation = (planet: string, sign: string, dignityType: str
 ${planetFeeling}`;
 };
 
-const getDispositorInterpretation = (planet: string, sign: string, dispositor: string): string => {
+const getDispositorInterpretation = (
+  planet: string, 
+  sign: string, 
+  dispositor: string,
+  allPlanets?: Record<string, NatalPlanetPosition>
+): string => {
   if (planet === dispositor) {
     return `Your ${planet} is in its own sign, so it "disposes itself"—no other planet is its boss. 
 
@@ -417,11 +422,39 @@ const getDispositorInterpretation = (planet: string, sign: string, dispositor: s
 
   const feeling = dispositorFeelings[dispositor] || `${dispositor} colors and directs how your ${planet} expresses.`;
 
+  // Analyze the actual dispositor's condition in the chart
+  let dispositorAnalysis = "";
+  
+  if (allPlanets && dispositor) {
+    const dispositorData = allPlanets[dispositor];
+    if (dispositorData?.sign) {
+      const dispositorDignity = getDignityStatus(dispositor, dispositorData.sign);
+      const isStrong = dispositorDignity.type === 'Ruler' || dispositorDignity.type === 'Exaltation';
+      const isWeak = dispositorDignity.type === 'Detriment' || dispositorDignity.type === 'Fall';
+      const isRetrograde = dispositorData.isRetrograde;
+      
+      let strengthDesc = "";
+      if (isStrong) {
+        strengthDesc = `**Your ${dispositor} is STRONG** — it's in ${dispositorData.sign} (${dispositorDignity.type}). This means excellent support for your ${planet}! ${dispositor} is well-positioned and can fully "back up" your ${planet}'s expression. You likely experience ${planet} themes flowing naturally, with ${dispositor}'s energy readily available when needed.`;
+      } else if (isWeak) {
+        strengthDesc = `**Your ${dispositor} is CHALLENGED** — it's in ${dispositorData.sign} (${dispositorDignity.type}). This means your ${planet} has to work through ${dispositor}'s struggles first. You may notice ${planet} themes feeling blocked until you consciously develop your ${dispositor} expression. The good news: this often builds unique strength and depth.`;
+      } else {
+        strengthDesc = `**Your ${dispositor} is NEUTRAL** — it's in ${dispositorData.sign} (no major dignity or debility). ${dispositor}'s support for your ${planet} is moderate and depends more on aspects and house placement. Neither especially helped nor hindered by sign placement.`;
+      }
+      
+      if (isRetrograde) {
+        strengthDesc += ` Note: ${dispositor} is retrograde (℞), which can internalize or delay its support—your ${planet} may need more inner work to access ${dispositor}'s backing.`;
+      }
+      
+      dispositorAnalysis = `
+
+${strengthDesc}`;
+    }
+  }
+
   return `Your ${planet} in ${sign} is "disposed" by ${dispositor} (${sign}'s ruler). Think of ${dispositor} as the landlord of the house where your ${planet} lives.
 
-**How you FEEL this:** ${feeling}
-
-**Practical tip:** Check where ${dispositor} is in your chart. If it's strong, your ${planet} has good support. If challenged, your ${planet} has to work through ${dispositor}'s issues first.`;
+**How you FEEL this:** ${feeling}${dispositorAnalysis}`;
 };
 
 const getTriplicityInterpretation = (planet: string, element: string, rulers: { day: string; night: string; participating: string }, isDayChart: boolean | null): string => {
@@ -885,7 +918,7 @@ export const EnhancedPlanetDetails = ({
             label="Dispositor"
             value={dispositor}
             description={`${sign} is ruled by ${dispositor}`}
-            interpretation={getDispositorInterpretation(planetName, sign, dispositor)}
+            interpretation={getDispositorInterpretation(planetName, sign, dispositor, allPlanets)}
           />
 
           {triplicityRulers && (
