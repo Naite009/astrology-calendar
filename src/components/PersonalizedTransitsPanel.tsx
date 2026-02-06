@@ -237,20 +237,67 @@ export const PersonalizedTransitsPanel = ({
     return calculateTransitAspects(new Date(), transitPositions, chart);
   }, [transitPositions, chart]);
 
+  // Priority scoring for natal planets (what we FEEL when aspected)
+  const NATAL_PRIORITY: Record<string, number> = {
+    Sun: 100, Moon: 98, Ascendant: 95, MC: 90, IC: 85, Descendant: 80,
+    Mercury: 55, Venus: 55, Mars: 55, Jupiter: 40, Saturn: 40,
+    Uranus: 30, Neptune: 30, Pluto: 30, NorthNode: 25, Chiron: 35,
+    Lilith: 25, Ceres: 20, Pallas: 15, Juno: 15, Vesta: 15,
+  };
+
+  // Sort function: exact first, then by tighter orb, then by natal planet importance
+  const sortByImpact = (aspects: typeof transitAspects) => {
+    return [...aspects].sort((a, b) => {
+      // Exact aspects always first
+      if (a.isExact && !b.isExact) return -1;
+      if (!a.isExact && b.isExact) return 1;
+      
+      // Then by natal planet priority (personal points first)
+      const natalDiff = (NATAL_PRIORITY[b.natalPlanet] || 10) - (NATAL_PRIORITY[a.natalPlanet] || 10);
+      if (natalDiff !== 0) return natalDiff;
+      
+      // Finally by orb (tighter first)
+      return parseFloat(a.orb) - parseFloat(b.orb);
+    });
+  };
+
   // Filter for Moon aspects specifically - separated by major vs minor bodies
   const { majorMoonAspects, minorMoonAspects } = useMemo(() => {
     const moonAspects = transitAspects.filter(a => a.transitPlanet === 'Moon');
     return {
-      majorMoonAspects: moonAspects.filter(a => MAJOR_BODIES.includes(a.natalPlanet)),
-      minorMoonAspects: moonAspects.filter(a => MINOR_BODIES.includes(a.natalPlanet)),
+      majorMoonAspects: sortByImpact(moonAspects.filter(a => MAJOR_BODIES.includes(a.natalPlanet))),
+      minorMoonAspects: sortByImpact(moonAspects.filter(a => MINOR_BODIES.includes(a.natalPlanet))),
     };
   }, [transitAspects]);
 
-  // Filter for other significant transits (exact or tight orb)
+  // Priority for TRANSIT planets (outer = slower = more impactful)
+  const TRANSIT_PRIORITY: Record<string, number> = {
+    Pluto: 100, Neptune: 95, Uranus: 90, Saturn: 85, Jupiter: 75,
+    Mars: 50, Sun: 40, Venus: 35, Mercury: 30, Moon: 20,
+  };
+
+  // Filter and sort other significant transits (outer planets to personal points first)
   const significantTransits = useMemo(() => {
-    return transitAspects
-      .filter(a => a.transitPlanet !== 'Moon' && parseFloat(a.orb) < 3)
-      .slice(0, 5);
+    const filtered = transitAspects
+      .filter(a => a.transitPlanet !== 'Moon' && parseFloat(a.orb) < 5);
+    
+    // Sort: outer planet transits to personal points first, exact first, tight orbs first
+    return filtered.sort((a, b) => {
+      // Exact always first
+      if (a.isExact && !b.isExact) return -1;
+      if (!a.isExact && b.isExact) return 1;
+      
+      // Transit planet priority (outer planets first)
+      const transitDiff = (TRANSIT_PRIORITY[b.transitPlanet] || 15) - (TRANSIT_PRIORITY[a.transitPlanet] || 15);
+      if (transitDiff !== 0) return transitDiff;
+      
+      // Natal planet priority (personal points first)
+      const natalDiff = (NATAL_PRIORITY[b.natalPlanet] || 10) - (NATAL_PRIORITY[a.natalPlanet] || 10);
+      if (natalDiff !== 0) return natalDiff;
+      
+      // Finally by orb (tighter first)
+      return parseFloat(a.orb) - parseFloat(b.orb);
+    }).slice(0, 8); // Show more since they're better prioritized now
   }, [transitAspects]);
 
   // Get where Moon currently falls in their houses (using actual house cusps)
