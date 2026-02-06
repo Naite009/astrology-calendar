@@ -992,6 +992,87 @@ interface DetailRowProps {
   interpretation?: string;
 }
 
+// Simple markdown renderer that handles bold, italic, and sections
+const renderMarkdown = (text: string) => {
+  // Split by double newlines to get paragraphs
+  const paragraphs = text.split(/\n\n+/);
+  
+  return paragraphs.map((para, pIndex) => {
+    // Check if this paragraph starts with personal content markers
+    const isPersonalSection = para.includes('Your ') || 
+                              para.includes('At ') && para.includes('°') ||
+                              para.includes('YOUR ') ||
+                              para.startsWith('**Your ') ||
+                              para.startsWith('**At ') ||
+                              para.startsWith('**How you') ||
+                              para.startsWith('**The gift');
+    
+    // Check if it's a "FOR YOU" highlighted section
+    const isForYouSection = para.includes('FOR YOU:') || 
+                            para.includes('⭐') ||
+                            para.startsWith('**⚠️');
+    
+    // Split paragraph into lines
+    const lines = para.split('\n');
+    
+    const renderedLines = lines.map((line, lIndex) => {
+      // Replace **text** with bold spans
+      let processed = line.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      // Replace *text* with italic spans
+      processed = processed.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+      
+      // Check if line is a bullet point
+      const isBullet = line.trim().startsWith('•') || line.trim().startsWith('-');
+      
+      // Check if this specific line is personal
+      const isPersonalLine = line.includes('Your ') || 
+                             line.includes('YOUR ') ||
+                             (line.includes('At ') && line.includes('°') && line.includes('your'));
+      
+      if (isBullet) {
+        return (
+          <div 
+            key={lIndex} 
+            className={`pl-3 py-0.5 ${isPersonalLine ? 'bg-primary/10 border-l-2 border-primary rounded-r' : ''}`}
+            dangerouslySetInnerHTML={{ __html: processed }}
+          />
+        );
+      }
+      
+      return (
+        <span 
+          key={lIndex} 
+          className={isPersonalLine ? 'bg-primary/10 px-1 rounded' : ''}
+          dangerouslySetInnerHTML={{ __html: processed + (lIndex < lines.length - 1 ? '<br/>' : '') }}
+        />
+      );
+    });
+    
+    // Wrap in appropriate container with visual distinction
+    if (isForYouSection) {
+      return (
+        <div key={pIndex} className="my-3 p-3 bg-primary/15 border border-primary/30 rounded-lg">
+          {renderedLines}
+        </div>
+      );
+    }
+    
+    if (isPersonalSection) {
+      return (
+        <div key={pIndex} className="my-2 p-2 bg-primary/8 border-l-3 border-primary rounded-r">
+          {renderedLines}
+        </div>
+      );
+    }
+    
+    return (
+      <p key={pIndex} className="my-2 text-muted-foreground">
+        {renderedLines}
+      </p>
+    );
+  });
+};
+
 const DetailRow = ({ label, value, description, interpretation }: DetailRowProps) => {
   const [showMore, setShowMore] = useState(false);
 
@@ -1022,8 +1103,14 @@ const DetailRow = ({ label, value, description, interpretation }: DetailRowProps
         )}
       </div>
       {showMore && interpretation && (
-        <div className="mt-2 p-3 bg-primary/5 rounded text-xs text-foreground/80 leading-relaxed border-l-2 border-primary/30">
-          {interpretation}
+        <div className="mt-3 p-4 bg-secondary/50 rounded-lg text-xs leading-relaxed border border-border/50">
+          <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border/30">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Educational context</span>
+            <span className="text-[10px] px-2 py-0.5 bg-primary/20 text-primary rounded-full uppercase tracking-wider font-medium">Your chart highlighted</span>
+          </div>
+          <div className="space-y-1 text-foreground/80">
+            {renderMarkdown(interpretation)}
+          </div>
         </div>
       )}
     </div>
