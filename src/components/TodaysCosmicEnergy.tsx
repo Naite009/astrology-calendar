@@ -263,7 +263,7 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
       setCurrentPlanets(planets);
       setCurrentMoonDegree(planets.moon?.rawDegree || planets.moon?.degree || 0);
       setCurrentMoonMinutes(planets.moon?.minutes || 0);
-      setCurrentMoonSign(planets.moon?.sign || 'Unknown');
+      setCurrentMoonSign(planets.moon?.signName || planets.moon?.sign || 'Unknown');
       
       // Get VOC info
       const voc = getVOCMoonDetails(now);
@@ -303,7 +303,7 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
         setCurrentPlanets(planets);
         setCurrentMoonDegree(planets.moon?.rawDegree || planets.moon?.degree || 0);
         setCurrentMoonMinutes(planets.moon?.minutes || 0);
-        setCurrentMoonSign(planets.moon?.sign || 'Unknown');
+        setCurrentMoonSign(planets.moon?.signName || planets.moon?.sign || 'Unknown');
         setVocInfo(voc);
       }
 
@@ -889,7 +889,7 @@ Keep the tone professional, insightful, and practically applicable.`
                   <PersonalizedTransitsPanel
                     chart={selectedChart}
                     transitPositions={planets}
-                    moonSign={currentMoonSign || planets.moon?.sign || 'Unknown'}
+                    moonSign={currentMoonSign || planets.moon?.signName || 'Unknown'}
                     moonDegree={currentMoonDegree || planets.moon?.degree || 0}
                   />
                 </div>
