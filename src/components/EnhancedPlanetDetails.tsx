@@ -420,6 +420,17 @@ const getDispositorInterpretation = (
     Saturn: `You experience your ${planet} through structure, discipline, and responsibility. Your ${planet} is shaped by what you're building, your ambitions, and the rules you follow.`
   };
 
+  // Concrete development practices for each planet when challenged
+  const developmentPractices: Record<string, string> = {
+    Sun: `**How to strengthen Sun support:** Practice visible self-expression — share your work publicly, take leadership roles even in small ways, do one thing daily that makes you feel proud of who you are. Ask yourself: "Where am I hiding when I could be seen?"`,
+    Moon: `**How to strengthen Moon support:** Build emotional awareness — journal your feelings daily, create reliable self-care rituals, notice what makes you feel safe vs. anxious. Practice saying "I need..." out loud to trusted people.`,
+    Mercury: `**How to strengthen Mercury support:** Exercise your communication — write daily (even just 5 minutes), read widely, practice explaining complex ideas simply. Take a class, learn a new skill, or start conversations with curious questions instead of statements.`,
+    Venus: `**How to strengthen Venus support:** Cultivate beauty and connection — spend time on aesthetics that please YOU, practice receiving compliments without deflecting, invest in relationships that feel reciprocal. Ask: "What do I actually find beautiful/valuable?"`,
+    Mars: `**How to strengthen Mars support:** Build your action muscle — exercise regularly, practice saying no, take on competitive or physical challenges. When you want something, practice asking for it directly instead of hinting or waiting.`,
+    Jupiter: `**How to strengthen Jupiter support:** Expand your perspective — travel (even locally), study philosophy or religion, seek mentors, practice optimism by listing 3 possibilities in any difficult situation. Ask: "What could this mean?"`,
+    Saturn: `**How to strengthen Saturn support:** Build sustainable structure — create routines and stick to them, set realistic long-term goals, practice delayed gratification. Take responsibility for one area of life you've been avoiding.`
+  };
+
   const feeling = dispositorFeelings[dispositor] || `${dispositor} colors and directs how your ${planet} expresses.`;
 
   // Analyze the actual dispositor's condition in the chart
@@ -437,13 +448,18 @@ const getDispositorInterpretation = (
       if (isStrong) {
         strengthDesc = `**Your ${dispositor} is STRONG** — it's in ${dispositorData.sign} (${dispositorDignity.type}). This means excellent support for your ${planet}! ${dispositor} is well-positioned and can fully "back up" your ${planet}'s expression. You likely experience ${planet} themes flowing naturally, with ${dispositor}'s energy readily available when needed.`;
       } else if (isWeak) {
-        strengthDesc = `**Your ${dispositor} is CHALLENGED** — it's in ${dispositorData.sign} (${dispositorDignity.type}). This means your ${planet} has to work through ${dispositor}'s struggles first. You may notice ${planet} themes feeling blocked until you consciously develop your ${dispositor} expression. The good news: this often builds unique strength and depth.`;
+        const practice = developmentPractices[dispositor] || "";
+        strengthDesc = `**Your ${dispositor} is CHALLENGED** — it's in ${dispositorData.sign} (${dispositorDignity.type}). This means your ${planet} needs you to consciously develop ${dispositor}'s expression first.
+
+${practice}
+
+The good news: working on a challenged dispositor often builds unique strength and depth that others with "easy" placements never develop.`;
       } else {
-        strengthDesc = `**Your ${dispositor} is NEUTRAL** — it's in ${dispositorData.sign} (no major dignity or debility). ${dispositor}'s support for your ${planet} is moderate and depends more on aspects and house placement. Neither especially helped nor hindered by sign placement.`;
+        strengthDesc = `**Your ${dispositor} is NEUTRAL** — it's in ${dispositorData.sign} (no major dignity or debility). ${dispositor}'s support for your ${planet} is moderate and depends more on aspects and house placement.`;
       }
       
       if (isRetrograde) {
-        strengthDesc += ` Note: ${dispositor} is retrograde (℞), which can internalize or delay its support—your ${planet} may need more inner work to access ${dispositor}'s backing.`;
+        strengthDesc += `\n\n*${dispositor} is retrograde (℞):* Its support works more internally — you may need to reflect, journal, or process privately before ${dispositor}'s backing becomes available externally.`;
       }
       
       dispositorAnalysis = `
@@ -475,8 +491,19 @@ const getTriplicityInterpretation = (
     Saturn: "brings structure, discipline, endurance, and long-term planning"
   };
 
+  // Development practices for challenged rulers
+  const developmentPractices: Record<string, string> = {
+    Sun: "Practice visible self-expression, take small leadership roles, share your work publicly.",
+    Moon: "Build emotional awareness through journaling, create reliable self-care rituals, practice asking for what you need.",
+    Mercury: "Write daily, read widely, take courses, practice explaining ideas clearly to others.",
+    Venus: "Cultivate beauty in your environment, practice receiving gracefully, invest in reciprocal relationships.",
+    Mars: "Exercise regularly, practice direct communication, take on physical or competitive challenges.",
+    Jupiter: "Travel or explore new perspectives, study philosophy, seek mentors, practice optimistic reframing.",
+    Saturn: "Create routines and stick to them, set long-term goals, take responsibility in one area you've been avoiding."
+  };
+
   // Helper to analyze a ruler's condition
-  const analyzeRuler = (rulerName: string): string => {
+  const analyzeRuler = (rulerName: string, isPrimary: boolean = false): string => {
     if (!allPlanets || !rulerName) return "";
     const rulerData = allPlanets[rulerName];
     if (!rulerData?.sign) return "";
@@ -484,14 +511,15 @@ const getTriplicityInterpretation = (
     const dignity = getDignityStatus(rulerName, rulerData.sign);
     const isStrong = dignity.type === 'Ruler' || dignity.type === 'Exaltation';
     const isWeak = dignity.type === 'Detriment' || dignity.type === 'Fall';
-    const retrograde = rulerData.isRetrograde ? " (℞ retrograde)" : "";
+    const retrograde = rulerData.isRetrograde ? " (℞)" : "";
     
     if (isStrong) {
       return `**${rulerName} is STRONG** in ${rulerData.sign} (${dignity.type})${retrograde} — excellent support for your ${planet}!`;
     } else if (isWeak) {
-      return `**${rulerName} is CHALLENGED** in ${rulerData.sign} (${dignity.type})${retrograde} — its support requires more conscious effort.`;
+      const practice = isPrimary ? `\n*To strengthen:* ${developmentPractices[rulerName] || "Work consciously with this energy."}` : "";
+      return `**${rulerName} is CHALLENGED** in ${rulerData.sign} (${dignity.type})${retrograde} — needs conscious development.${practice}`;
     } else {
-      return `**${rulerName} is NEUTRAL** in ${rulerData.sign}${retrograde} — moderate support based on aspects/house.`;
+      return `**${rulerName} is NEUTRAL** in ${rulerData.sign}${retrograde} — moderate support.`;
     }
   };
 
@@ -505,10 +533,10 @@ const getTriplicityInterpretation = (
   const secondaryMeaning = planetMeanings[secondaryRuler] || "offers secondary support";
   const partMeaning = planetMeanings[rulers.participating] || "provides backup";
   
-  // Analyze all three rulers
-  const primaryAnalysis = analyzeRuler(primaryRuler);
-  const secondaryAnalysis = analyzeRuler(secondaryRuler);
-  const partAnalysis = analyzeRuler(rulers.participating);
+  // Analyze all three rulers (primary gets development tips if challenged)
+  const primaryAnalysis = analyzeRuler(primaryRuler, true);
+  const secondaryAnalysis = analyzeRuler(secondaryRuler, false);
+  const partAnalysis = analyzeRuler(rulers.participating, false);
   
   const chartType = isDayChart ? "DAY" : "NIGHT";
   const sunPosition = isDayChart ? "above" : "below";
@@ -532,6 +560,17 @@ const getTermInterpretation = (
   sign: string,
   allPlanets?: Record<string, NatalPlanetPosition>
 ): string => {
+  // Development practices for challenged term rulers
+  const developmentPractices: Record<string, string> = {
+    Sun: "Practice visible self-expression, take small leadership roles, share your work publicly.",
+    Moon: "Build emotional awareness through journaling, create reliable self-care rituals.",
+    Mercury: "Write daily, read widely, take courses, practice explaining ideas clearly.",
+    Venus: "Cultivate beauty in your environment, practice receiving gracefully.",
+    Mars: "Exercise regularly, practice direct communication, take on challenges.",
+    Jupiter: "Explore new perspectives, study philosophy, seek mentors.",
+    Saturn: "Create routines, set long-term goals, take responsibility in avoided areas."
+  };
+
   let termRulerAnalysis = "";
   
   if (allPlanets && termRuler) {
@@ -544,15 +583,17 @@ const getTermInterpretation = (
       if (isStrong) {
         termRulerAnalysis = `
 
-**Looking at YOUR ${termRuler}:** It's in ${rulerData.sign} (${rulerDignity.type}) — this is STRONG placement! Your ${termRuler} is well-positioned, which means it CAN effectively support your ${planet}. You likely feel this as: ${planet} matters flowing more smoothly, ${termRuler} themes naturally enhancing your ${planet} expression.`;
+**Your ${termRuler}:** In ${rulerData.sign} (${rulerDignity.type}) — STRONG! This term ruler effectively supports your ${planet}. You likely experience ${planet} themes flowing smoothly with ${termRuler}'s energy naturally available.`;
       } else if (isWeak) {
+        const practice = developmentPractices[termRuler] || "";
         termRulerAnalysis = `
 
-**Looking at YOUR ${termRuler}:** It's in ${rulerData.sign} (${rulerDignity.type}) — this is a CHALLENGED placement. Your ${termRuler} has to work harder, which means its support for your ${planet} may feel inconsistent or require more effort. You might notice: needing to consciously develop ${termRuler} skills to help your ${planet} shine.`;
+**Your ${termRuler}:** In ${rulerData.sign} (${rulerDignity.type}) — CHALLENGED. Its support for your ${planet} needs conscious development.
+*To strengthen:* ${practice}`;
       } else {
         termRulerAnalysis = `
 
-**Looking at YOUR ${termRuler}:** It's in ${rulerData.sign} (Peregrine/neutral). This is neither especially strong nor weak—${termRuler}'s support for your ${planet} depends more on aspects and house placement than sign dignity.`;
+**Your ${termRuler}:** In ${rulerData.sign} (neutral). Moderate support — depends more on aspects and house placement.`;
       }
     }
   }
