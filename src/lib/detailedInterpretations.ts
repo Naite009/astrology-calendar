@@ -16,68 +16,93 @@ const getOrdinal = (num: number): string => {
 
 // ============================================================================
 // HOUSE MEANINGS DATABASE
+// Each house now has educational content explaining WHAT, WHY, and HOW
 // ============================================================================
 
 export const HOUSE_MEANINGS = {
   1: {
     short: "Self & Identity",
     full: "Self, identity, appearance, first impressions, how you meet the world, personal style",
-    keywords: "I AM, beginnings, body, personality, outlook"
+    keywords: "I AM, beginnings, body, personality, outlook",
+    whatThisMeans: "The 1st house is YOUR BODY and YOUR PERSONA—the 'you' that walks into a room. It's the mask you wear (not fake, just your interface with the world). Planets here are VISIBLE. Everyone sees them. They're part of your immediate identity.",
+    howItShowsUp: "A planet in the 1st house colors your appearance, your first impression, and how you instinctively approach life. It's always 'on.' You can't hide it—it's the first thing people notice about you. It affects your physical vitality and how you initiate anything."
   },
   2: {
     short: "Money & Values",
     full: "Money, possessions, values, self-worth, resources, what you own, earning capacity",
-    keywords: "I HAVE, security, material world, talents, priorities"
+    keywords: "I HAVE, security, material world, talents, priorities",
+    whatThisMeans: "The 2nd house is WHAT YOU OWN and WHAT YOU VALUE—including your sense of self-worth. It's not just money, but your relationship with money, possessions, and material security. It's also your talents—the resources you were born with.",
+    howItShowsUp: "A planet in the 2nd house channels its energy through earning, spending, and valuing. It shapes what you think is worth pursuing, how you make money, and what gives you a sense of security. Financial and material matters become a vehicle for that planet's expression."
   },
   3: {
     short: "Communication",
     full: "Communication, siblings, short trips, learning, writing, daily interactions, neighbors",
-    keywords: "I THINK, mind, speech, curiosity, early education"
+    keywords: "I THINK, mind, speech, curiosity, early education",
+    whatThisMeans: "The 3rd house is your EVERYDAY MIND—how you think, speak, learn, and connect with your immediate environment. It's siblings, neighbors, short trips, and daily communication. It's not deep philosophy (that's 9th); it's practical thinking and information exchange.",
+    howItShowsUp: "A planet in the 3rd house expresses through conversation, writing, learning, and local connections. It shows up in how you communicate, what you're curious about, your relationship with siblings, and your daily mental activity. It makes that planet's themes a topic of conversation and thought."
   },
   4: {
     short: "Home & Family",
     full: "Home, family, roots, emotional foundation, where you come from, private life (IC)",
-    keywords: "I FEEL, ancestry, nurturing, emotional security, endings"
+    keywords: "I FEEL, ancestry, nurturing, emotional security, endings",
+    whatThisMeans: "The 4th house is your ROOTS and PRIVATE SANCTUARY—your childhood home, your family of origin, your emotional foundation, and eventually the home you create. It's the IC (Imum Coeli), the bottom of the chart, representing your most private self.",
+    howItShowsUp: "A planet in the 4th house is deeply personal and often hidden from public view. It shapes your family dynamics, your relationship with parents (especially the nurturing parent), what 'home' means to you, and your emotional baseline. This planet operates in your most intimate sphere."
   },
   5: {
     short: "Creativity & Joy",
     full: "Creativity, romance, children, play, self-expression, what brings joy, hobbies",
-    keywords: "I CREATE, pleasure, drama, risk, fun, heart"
+    keywords: "I CREATE, pleasure, drama, risk, fun, heart",
+    whatThisMeans: "The 5th house is CREATIVE SELF-EXPRESSION and JOY—what you create (art, children, projects), what you do for fun, romance (the exciting dating phase, not marriage), and where you take risks for pleasure. It's your inner child and what makes your heart sing.",
+    howItShowsUp: "A planet in the 5th house wants to be EXPRESSED and ENJOYED. It channels through creativity, romance, recreation, and anything that brings you alive. It shapes your hobbies, your dating style, your creative output, and your relationship with children or childlike joy."
   },
   6: {
     short: "Work & Health",
     full: "Work, health, daily routines, service, pets, self-improvement, duty, habits",
-    keywords: "I SERVE, wellness, analysis, efficiency, practical matters"
+    keywords: "I SERVE, wellness, analysis, efficiency, practical matters",
+    whatThisMeans: "The 6th house is DAILY WORK and HEALTH ROUTINES—your job (not career/10th), your body maintenance, your habits, how you serve others, and your relationship with pets. It's about improvement, refinement, and practical service.",
+    howItShowsUp: "A planet in the 6th house expresses through work duties, health practices, and service to others. It shapes your daily routines, what kind of work feels meaningful, your health vulnerabilities and strengths, and how you improve and refine things. It operates in the mundane details of life."
   },
   7: {
     short: "Partnerships",
     full: "Partnerships, marriage, contracts, others, what you attract, open enemies (DSC)",
-    keywords: "I RELATE, balance, cooperation, projection, legal bonds"
+    keywords: "I RELATE, balance, cooperation, projection, legal bonds",
+    whatThisMeans: "The 7th house is YOUR 'OTHER'—your committed partners, your shadow side projected onto others, and what you attract in 1-on-1 relationships. It's the Descendant, opposite your rising sign, representing qualities you seek in others (and often disown in yourself).",
+    howItShowsUp: "A planet in the 7th house expresses through relationships. You might attract partners with that planet's qualities, or you project it onto significant others. Marriage, business partnerships, and close collaborations become the stage for this planet's themes. You develop this planet through relationship."
   },
   8: {
     short: "Transformation",
     full: "Shared resources, intimacy, transformation, death/rebirth, other people's money, psychology",
-    keywords: "I TRANSFORM, depth, power, sex, inheritance, crisis"
+    keywords: "I TRANSFORM, depth, power, sex, inheritance, crisis",
+    whatThisMeans: "The 8th house is SHARED POWER and DEEP TRANSFORMATION—other people's money, inheritance, taxes, debt, intimacy, sex, death, and psychological depth. It's where we merge with others and go through death/rebirth cycles. Not casual—INTENSE.",
+    howItShowsUp: "A planet in the 8th house operates in the realm of intimacy, shared resources, and transformation. It shapes how you handle power dynamics, joint finances, psychological depth, and crisis. This planet gets 'cooked' through intensity—nothing superficial. It often brings gifts through difficult passages."
   },
   9: {
     short: "Expansion",
     full: "Higher learning, travel, philosophy, spirituality, expansion, meaning, publishing",
-    keywords: "I UNDERSTAND, wisdom, faith, adventure, worldview"
+    keywords: "I UNDERSTAND, wisdom, faith, adventure, worldview",
+    whatThisMeans: "The 9th house is BIG-PICTURE MEANING—philosophy, religion, higher education, foreign travel, publishing, and your worldview. Opposite the 3rd house's everyday thinking, this is WISDOM and long-distance exploration of truth.",
+    howItShowsUp: "A planet in the 9th house expands through seeking meaning, traveling far (physically or mentally), studying big ideas, and developing beliefs. It shapes your philosophy of life, your relationship with education and religion, and what you preach/teach. This planet wants EXPANSION."
   },
   10: {
     short: "Career & Status",
     full: "Career, public life, reputation, authority, what you're known for, ambition (MC)",
-    keywords: "I ACHIEVE, status, vocation, legacy, contribution"
+    keywords: "I ACHIEVE, status, vocation, legacy, contribution",
+    whatThisMeans: "The 10th house is your PUBLIC ROLE and CAREER—what you're known for, your reputation, your ambitions, and your relationship with authority. It's the MC (Midheaven), the highest point of the chart, representing your most visible achievements and public face.",
+    howItShowsUp: "A planet in the 10th house is ON DISPLAY to the world. It shapes your career path, what you're publicly recognized for, your ambitions, and how you relate to authority. This planet's themes become part of your professional identity and public reputation. Everyone can see it."
   },
   11: {
     short: "Community",
     full: "Community, friendships, groups, hopes, social networks, collective work, ideals",
-    keywords: "I UNITE, innovation, humanity, dreams, tribe"
+    keywords: "I UNITE, innovation, humanity, dreams, tribe",
+    whatThisMeans: "The 11th house is YOUR TRIBE and YOUR VISION—friendships, groups, social causes, collective goals, and hopes for the future. It's not intimate 1-on-1 (that's 7th); it's your place in the collective and what you contribute to humanity.",
+    howItShowsUp: "A planet in the 11th house expresses through friendships, group involvement, and social ideals. It shapes what kind of friends you attract, what groups you join, your hopes and dreams, and how you contribute to collective causes. This planet operates in the social sphere."
   },
   12: {
     short: "Spirituality",
     full: "Spirituality, unconscious, hidden enemies, self-undoing, dreams, transcendence, karma",
-    keywords: "I SURRENDER, compassion, mysticism, solitude, sacrifice"
+    keywords: "I SURRENDER, compassion, mysticism, solitude, sacrifice",
+    whatThisMeans: "The 12th house is THE HIDDEN REALM—your unconscious, your connection to the divine, your self-undoing patterns, karma, isolation, and transcendence. It's where the ego dissolves. Planets here operate behind the scenes, often unconsciously.",
+    howItShowsUp: "A planet in the 12th house is often hidden, even from yourself. It may manifest in dreams, solitude, spiritual practice, or as patterns you can't quite see. It can indicate hidden strengths, unconscious patterns, or things that only emerge in private or spiritual settings. This planet works in the unseen."
   }
 };
 
@@ -322,19 +347,19 @@ const SIGN_EXPRESSIONS: Record<string, string> = {
   'Sun-Aquarius': "= Innovative identity. You shine through uniqueness, community, and revolution.",
   'Sun-Pisces': "= Mystical identity. You shine through compassion, dreams, and transcendence.",
   
-  // MOON IN SIGNS
-  'Moon-Aries': "= Impulsive emotions. You feel through instinct and need freedom to react.",
-  'Moon-Taurus': "= Stable emotions. You feel through body and need physical comfort.",
-  'Moon-Gemini': "= Curious emotions. You feel through words and need mental stimulation.",
-  'Moon-Cancer': "= Deep emotions. You feel through intuition and need emotional safety.",
-  'Moon-Leo': "= Dramatic emotions. You feel through heart and need to be seen.",
-  'Moon-Virgo': "= Analytical emotions. You feel through service and need order.",
-  'Moon-Libra': "= Harmonious emotions. You feel through others and need balance.",
-  'Moon-Scorpio': "= Intense emotions. You feel through depth and need transformation.",
-  'Moon-Sagittarius': "= Free emotions. You feel through philosophy and need adventure.",
-  'Moon-Capricorn': "= Disciplined emotions. You feel through structure and need control.",
-  'Moon-Aquarius': "= Detached emotions. You feel through ideals and need space.",
-  'Moon-Pisces': "= Mystical emotions. You feel through empathy and need transcendence.",
+  // MOON IN SIGNS - Now with concrete behavioral examples
+  'Moon-Aries': "= Quick-to-react emotions. When you feel something, you need to DO something about it immediately—waiting or processing makes you restless. Examples: exercise when upset, speak before thinking, need action to feel better.",
+  'Moon-Taurus': "= Steady, body-based emotions. You feel safe through physical comfort—good food, soft textures, familiar routines. Change is stressful; you need time to adjust. Examples: stress-eating, organizing when upset, needing cozy spaces.",
+  'Moon-Gemini': "= Emotions that need words. You process feelings by TALKING about them, not sitting in silence. Examples: calling a friend when upset, journaling feelings, needing to understand WHY you feel something before it settles.",
+  'Moon-Cancer': "= Deep, protective emotions. You absorb others' feelings like a sponge. Home and family are where you feel safest. Examples: retreating into your shell when threatened, remembering emotional experiences for decades.",
+  'Moon-Leo': "= Emotions that need an audience. You feel things dramatically and need others to acknowledge your feelings. Examples: expressing openly, feeling hurt if dismissed, needing validation of your emotional experience.",
+  'Moon-Virgo': "= Emotions that seek order. You calm anxiety by organizing, cleaning, or problem-solving. Messy environments make you emotionally unsettled. Examples: tidying when stressed, analyzing feelings instead of just feeling them.",
+  'Moon-Libra': "= Emotions filtered through others. You often don't know how YOU feel until you talk to someone else. Conflict makes you emotionally uncomfortable. Examples: suppressing feelings for peace, then feeling resentful later.",
+  'Moon-Scorpio': "= Intense, all-or-nothing emotions. You feel things at maximum depth—there's no 'sort of' upset for you. Examples: hiding how much you feel while inside it's volcanic, trust being everything, betrayal being devastating.",
+  'Moon-Sagittarius': "= Emotions that need freedom and meaning. You feel restless when stuck in emotional heaviness—you want to find the lesson, see the bigger picture, and MOVE ON. Examples: needing adventure as emotional reset, feeling suffocated by too much processing.",
+  'Moon-Capricorn': "= Controlled, private emotions. You might have learned early that feelings are inconvenient or need to be managed. Examples: processing internally, rarely breaking down in public, needing achievement for emotional security.",
+  'Moon-Aquarius': "= Emotions observed from a distance. You might analyze your feelings rather than drowning in them. Examples: 'just knowing' without explaining, needing space to emotionally recalibrate, being seen as 'detached.'",
+  'Moon-Pisces': "= Boundless, absorbing emotions. You feel EVERYTHING—your feelings, others' feelings, the mood of the room. Examples: escaping through fantasy or sleep when overwhelmed, difficulty with boundaries.",
   
   // MERCURY IN SIGNS
   'Mercury-Aries': "= Direct communication. You think fast and speak boldly.",
@@ -350,33 +375,33 @@ const SIGN_EXPRESSIONS: Record<string, string> = {
   'Mercury-Aquarius': "= Innovative communication. You think uniquely and speak unconventionally.",
   'Mercury-Pisces': "= Intuitive communication. You think symbolically and speak poetically.",
   
-  // VENUS IN SIGNS
-  'Venus-Aries': "= Passionate love. You value independence and are attracted to boldness.",
-  'Venus-Taurus': "= Sensual love. You value stability and are attracted to beauty.",
-  'Venus-Gemini': "= Playful love. You value variety and are attracted to wit.",
-  'Venus-Cancer': "= Nurturing love. You value security and are attracted to care.",
-  'Venus-Leo': "= Romantic love. You value admiration and are attracted to drama.",
-  'Venus-Virgo': "= Practical love. You value service and are attracted to competence.",
-  'Venus-Libra': "= Harmonious love. You value partnership and are attracted to grace.",
-  'Venus-Scorpio': "= Intense love. You value depth and are attracted to power.",
-  'Venus-Sagittarius': "= Free love. You value adventure and are attracted to wisdom.",
-  'Venus-Capricorn': "= Committed love. You value loyalty and are attracted to success.",
-  'Venus-Aquarius': "= Unconventional love. You value friendship and are attracted to uniqueness.",
-  'Venus-Pisces': "= Mystical love. You value compassion and are attracted to spirituality.",
+  // VENUS IN SIGNS - Now with concrete relationship/value examples
+  'Venus-Aries': "= Passionate love. You pursue what you want actively and fall fast. Examples: being attracted to confident, bold people, getting bored if someone plays hard to get, preferring directness over romantic games.",
+  'Venus-Taurus': "= Sensual love. You fall slowly but deeply. Examples: valuing physical affection and quality time, appreciating expensive or well-made gifts, needing consistency to feel loved, not rushing relationships.",
+  'Venus-Gemini': "= Playful love. You need mental stimulation to stay interested. Examples: flirting through wit and banter, needing variety in dates and conversations, losing interest if someone is predictable.",
+  'Venus-Cancer': "= Nurturing love. You show love through care and need to feel emotionally safe. Examples: cooking for loved ones, remembering sentimental details, taking rejection very personally, needing to know you're needed.",
+  'Venus-Leo': "= Romantic love. You want to be adored and give grand gestures. Examples: appreciating public displays of affection, needing compliments, giving lavish gifts, wanting romance like in movies.",
+  'Venus-Virgo': "= Practical love. You show love through acts of service. Examples: noticing and fixing things for partners, being critical when stressed, showing love by improving someone's life rather than saying sweet words.",
+  'Venus-Libra': "= Harmonious love. You need partnership to feel complete. Examples: being uncomfortable alone for long, compromising to keep peace, having refined taste, wanting fairness and equality in relationships.",
+  'Venus-Scorpio': "= Intense love. You love obsessively and need complete loyalty. Examples: being all-in or all-out, sensing when partners aren't honest, jealousy issues, transformative relationships that change you.",
+  'Venus-Sagittarius': "= Free love. You need adventure and space in relationships. Examples: being attracted to people from different backgrounds, needing a partner who doesn't cling, valuing shared adventures over routine.",
+  'Venus-Capricorn': "= Committed love. You take love seriously and want long-term stability. Examples: being attracted to successful/ambitious people, not rushing into relationships, wanting partners who add to your status.",
+  'Venus-Aquarius': "= Unconventional love. You need friendship first and value independence. Examples: being attracted to unique or unusual people, needing space in relationships, valuing intellectual connection over romance.",
+  'Venus-Pisces': "= Mystical love. You idealize partners and merge completely. Examples: seeing potential rather than reality, sacrificing too much for love, needing spiritual or artistic connection, savior/victim patterns.",
   
-  // MARS IN SIGNS
-  'Mars-Aries': "= Direct action. You assert yourself boldly and fight courageously.",
-  'Mars-Taurus': "= Steady action. You assert yourself slowly and fight stubbornly.",
-  'Mars-Gemini': "= Quick action. You assert yourself verbally and fight with words.",
-  'Mars-Cancer': "= Emotional action. You assert yourself defensively and fight for family.",
-  'Mars-Leo': "= Dramatic action. You assert yourself proudly and fight for recognition.",
-  'Mars-Virgo': "= Precise action. You assert yourself efficiently and fight for perfection.",
-  'Mars-Libra': "= Balanced action. You assert yourself diplomatically and fight for justice.",
-  'Mars-Scorpio': "= Intense action. You assert yourself powerfully and fight to win.",
-  'Mars-Sagittarius': "= Free action. You assert yourself freely and fight for truth.",
-  'Mars-Capricorn': "= Controlled action. You assert yourself strategically and fight for goals.",
-  'Mars-Aquarius': "= Revolutionary action. You assert yourself uniquely and fight for ideals.",
-  'Mars-Pisces': "= Intuitive action. You assert yourself gently and fight for compassion.",
+  // MARS IN SIGNS - Now with concrete action/anger examples
+  'Mars-Aries': "= Direct action. You go after what you want immediately. Examples: quick temper that passes fast, starting things impulsively, being competitive, needing physical activity to burn off energy.",
+  'Mars-Taurus': "= Steady action. You're slow to start but unstoppable once committed. Examples: not giving up ever, slow-building anger that explodes, working steadily toward material goals, stubborn persistence.",
+  'Mars-Gemini': "= Quick action. You fight with words and multitask your ambitions. Examples: debating to win, starting multiple projects, getting scattered, using wit as a weapon, needing mental stimulation to stay motivated.",
+  'Mars-Cancer': "= Emotional action. You fight for family and respond to emotional motivation. Examples: becoming fierce when loved ones are threatened, passive-aggressive anger, protective instincts, mood affecting energy.",
+  'Mars-Leo': "= Dramatic action. You need recognition for your efforts. Examples: taking pride in accomplishments, dramatic when angry, needing applause as motivation, fighting for creative vision.",
+  'Mars-Virgo': "= Precise action. You work hard on details and criticize when frustrated. Examples: perfectionism driving you, anger expressed as criticism, health-focused fitness, being helpful to prove yourself.",
+  'Mars-Libra': "= Balanced action. You act to create fairness and may avoid confrontation. Examples: fighting for justice, passive-aggression instead of direct anger, needing a partner to motivate action, diplomatic assertion.",
+  'Mars-Scorpio': "= Intense action. You never give up and anger goes deep. Examples: holding grudges, strategic pursuit of goals, all-or-nothing energy, using intensity to dominate, sexual magnetism.",
+  'Mars-Sagittarius': "= Free action. You're motivated by meaning and adventure. Examples: crusading for beliefs, restlessness if stuck, anger that blows over quickly, being motivated by big-picture goals.",
+  'Mars-Capricorn': "= Controlled action. You're strategic, patient, and climb steadily. Examples: long-term ambition, calculating before acting, anger expressed coldly or suppressed, working harder than anyone.",
+  'Mars-Aquarius': "= Revolutionary action. You fight for ideals and hate being controlled. Examples: rebellious when restricted, motivated by causes, unconventional approach to goals, intellectual rather than physical aggression.",
+  'Mars-Pisces': "= Intuitive action. You're motivated by compassion and may struggle with direction. Examples: fighting for the underdog, anger dissolving into sadness, needing inspiration to act, passive approaches.",
   
   // VESTA IN SIGNS
   'Vesta-Aries': "= Sacred independence. Your devotion is to courage and pioneering.",

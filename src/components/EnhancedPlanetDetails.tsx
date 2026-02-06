@@ -811,45 +811,112 @@ const getDeclinationInterpretation = (planet: string, declination: string): stri
   const isNorth = declination.includes('N');
   const direction = isNorth ? "north" : "south";
   
-  // Extract numeric value
-  const degreeMatch = declination.match(/(\d+)/);
-  const degreeValue = degreeMatch ? parseInt(degreeMatch[1]) : 0;
-  const isOutOfBounds = degreeValue > 23;
+  // Extract the full degree value including minutes
+  const match = declination.match(/(\d+)°\s*(\d+)?[′']?/);
+  const degreeValue = match ? parseInt(match[1]) : 0;
+  const minuteValue = match && match[2] ? parseInt(match[2]) : 0;
+  const totalDegrees = degreeValue + (minuteValue / 60);
+  const isOutOfBounds = totalDegrees > 23.5;
+  
+  // Determine intensity level based on actual degree value
+  const getIntensityLevel = (deg: number): { level: string; description: string; howItFeels: string } => {
+    if (deg < 5) {
+      return {
+        level: "LOW (0-5°)",
+        description: "barely above/below the celestial equator",
+        howItFeels: `At only ${degreeValue}°, your ${planet} sits almost ON the celestial equator—this is a **balanced, neutral position**. Neither strongly externalized nor internalized, it can express either way depending on context. Think of it like being near the Earth's equator—neither clearly "northern" nor "southern" in character.`
+      };
+    } else if (deg < 12) {
+      return {
+        level: "MODERATE (5-12°)",
+        description: "moderately north/south of the equator",
+        howItFeels: `At ${degreeValue}°, your ${planet} has a **clear but moderate** ${direction}ern quality. The ${isNorth ? 'externalization and visibility' : 'internalization and subtlety'} tendencies are present but not extreme. This is enough declination to notice the direction's influence without it dominating.`
+      };
+    } else if (deg < 18) {
+      return {
+        level: "STRONG (12-18°)",
+        description: "significantly north/south of the equator",
+        howItFeels: `At ${degreeValue}°, your ${planet} has a **pronounced** ${direction}ern quality. This is getting close to the maximum normal range, so you'll feel the ${isNorth ? 'external expression, visibility, and manifest action' : 'internal processing, subtlety, and private nature'} quite strongly. ${isNorth ? 'Others notice this planet\'s expression in you.' : 'This planet works behind the scenes in your psyche.'}`
+      };
+    } else if (deg <= 23.5) {
+      return {
+        level: "EXTREME (18-23.5°)",
+        description: "near the maximum range (solstice point)",
+        howItFeels: `At ${degreeValue}°, your ${planet} is at **extreme** ${direction}ern declination—near the limit of the Sun's own range! This is the equivalent of the tropics on Earth. ${isNorth ? 'Maximum visibility, external manifestation, and conscious expression—this planet WANTS to be seen and used actively.' : 'Maximum depth, unconscious processing, and subtle influence—this planet works profoundly but often invisibly, even to you.'}`
+      };
+    } else {
+      return {
+        level: "OUT OF BOUNDS (>23.5°)",
+        description: "beyond the Sun's maximum range",
+        howItFeels: `At ${degreeValue}°, your ${planet} has **exceeded the Sun's boundary**—it's operating outside normal parameters entirely. See the special section below.`
+      };
+    }
+  };
+  
+  const intensity = getIntensityLevel(totalDegrees);
   
   // Educational explanation of what declination IS and HOW it's calculated
-  const educationalBase = `**What is declination?** While zodiac signs measure a planet's position along the ecliptic (the Sun's path), declination measures how far north or south of the celestial equator a planet sits. Think of it like latitude on Earth—the equator is 0°, the tropics are at 23.5°.
+  const educationalBase = `**What is declination?** While zodiac signs measure a planet's position along the ecliptic (the Sun's path around Earth), declination measures how far NORTH or SOUTH of the celestial equator a planet sits—think of it like celestial latitude.
 
-**How is ${declination} calculated?** This comes from the planet's actual position in 3D space relative to Earth's equator. The Sun reaches maximum declination (~23.5°) at the solstices. Most planets stay within this range, but sometimes they venture beyond—called "out of bounds."
+**How is ${declination} calculated?** 
+1. The celestial equator is Earth's equator projected into space (0° declination)
+2. The ecliptic (zodiac) is tilted 23.5° relative to this equator
+3. As planets move through signs, they swing north and south of the equator
+4. A planet at 0° Aries or Libra is near 0° declination (on the equator)
+5. A planet at 0° Cancer (summer solstice point) reaches ~23.5° NORTH
+6. A planet at 0° Capricorn (winter solstice point) reaches ~23.5° SOUTH
+7. Your ${planet} at ${declination} has swung ${intensity.description}
 
-**Why does this matter?** Planets with similar declinations (within 1°) form a "parallel"—a hidden connection as powerful as a conjunction, even if they're in unrelated signs. Opposite declinations (one N, one S) form a "contraparallel"—like an opposition.`;
+**Why does the DEGREE matter?**
+• **0-5° declination:** Almost neutral—balanced between external/internal
+• **5-12°:** Moderate directional influence
+• **12-18°:** Strong directional character
+• **18-23.5°:** Extreme—maximal expression of that direction
+• **>23.5°:** OUT OF BOUNDS—beyond normal limits entirely`;
 
-  // Direction-specific meaning
-  const directionMeaning = isNorth 
-    ? `**North declination:** Your ${planet} is "above" the celestial equator—symbolically associated with visibility, external expression, and engagement with the outer world. Northern placements tend toward active, manifest expression.`
-    : `**South declination:** Your ${planet} is "below" the celestial equator—symbolically associated with internalization, the unconscious, and inner work. Southern placements work more subtly, often manifesting in private or internal ways.`;
+  // Direction-specific meaning with degree context
+  const directionMeaning = `**Your ${planet} at ${declination}:** ${intensity.level}
+
+${isNorth 
+    ? `**North declination = External/Visible/Manifest.** Northern planets tend to express OUTWARDLY—in your actions, how others see you, in the visible parts of your life. The further north, the more pronounced this external expression.`
+    : `**South declination = Internal/Hidden/Subtle.** Southern planets tend to work INWARDLY—in your psychology, unconscious patterns, and private experiences. The further south, the more this planet operates beneath the surface.`}
+
+**At ${degreeValue}° specifically:** ${intensity.howItFeels}`;
+
+  // Aspect connections via declination (parallels/contraparallels)
+  const aspectNote = `
+**Hidden Connections (Parallels):** 
+Planets within 1° of the SAME declination (both N or both S) form a "parallel"—as powerful as a conjunction but invisible in the zodiac. Check if other planets share similar declination to your ${planet}.
+
+If a planet has the OPPOSITE declination (e.g., one at 15°N and another at 15°S), that's a "contraparallel"—similar to an opposition, creating tension or awareness between those planets.`;
 
   let oobSection = "";
   if (isOutOfBounds) {
     const oobFeelings: Record<string, string> = {
-      Sun: `Your identity operates outside normal bounds—you might feel like you don't fit conventional molds. You may be exceptionally creative, unconventional in how you express yourself, or simply feel "different" from others in a fundamental way. This can manifest as genius, eccentricity, or feeling like an outsider who eventually finds their unique path.`,
-      Moon: `Your emotions go to extremes that others don't experience. You might feel things more intensely—profound joy, deep sorrow, overwhelming love. This can be overwhelming but also gives you emotional depth and artistic sensitivity that others lack. You may need to develop practices to regulate intense feelings.`,
-      Mercury: `Your thinking goes places others' minds don't reach. This can manifest as genius-level insights, unconventional learning styles, or ideas that seem "too much" for normal conversation. You might have been labeled as "too smart," "weird," or struggled to communicate in standard ways. Your mind works outside the box—embrace it.`,
-      Venus: `Your desires and values are unconventional or extreme. What you love, you LOVE—obsessively, completely. What you find beautiful might confuse others or seem "too much." Relationships may be intense or unconventional. You have refined taste that doesn't follow trends.`,
-      Mars: `Your drive and assertiveness operate beyond normal limits. You might have extraordinary energy, extreme ambition, or struggle to keep your intensity within socially acceptable bounds. This can manifest as athletic excellence, workaholism, or anger that surprises people. Channel it consciously.`,
-      Jupiter: `Your optimism and growth instincts go to extremes. Huge faith, huge risks, huge possibilities—but also potential for overreach. You might believe in things others find outlandish, take risks that seem crazy, or achieve beyond what anyone expected. Temper with realism when needed.`,
-      Saturn: `Your relationship with structure and authority is extreme—either hypercontrolled (rigidly disciplined) or completely rejecting of limits (allergic to rules). You might set impossibly high standards for yourself or rebel against all external structure. Find your own authentic relationship with discipline.`
+      Sun: `Your identity operates outside normal bounds—you might feel like you don't fit conventional molds. You may be exceptionally creative, unconventional in how you express yourself, or simply feel "different" from others in a fundamental way. This can manifest as genius, eccentricity, or feeling like an outsider who eventually finds their unique path. **At ${degreeValue}°, you're ${degreeValue - 23.5}° beyond normal limits—the higher this number, the more pronounced the effect.**`,
+      Moon: `Your emotions go to extremes that others don't experience. You might feel things more intensely—profound joy, deep sorrow, overwhelming love. This can be overwhelming but also gives you emotional depth and artistic sensitivity that others lack. You may need to develop practices to regulate intense feelings. **At ${degreeValue}°, you're ${(totalDegrees - 23.5).toFixed(1)}° beyond normal limits—the further OOB, the more extreme your emotional range.**`,
+      Mercury: `Your thinking goes places others' minds don't reach. This can manifest as genius-level insights, unconventional learning styles, or ideas that seem "too much" for normal conversation. You might have been labeled as "too smart," "weird," or struggled to communicate in standard ways. Your mind works outside the box—embrace it. **At ${degreeValue}°, you're ${(totalDegrees - 23.5).toFixed(1)}° beyond normal—the higher, the more unconventional your cognition.**`,
+      Venus: `Your desires and values are unconventional or extreme. What you love, you LOVE—obsessively, completely. What you find beautiful might confuse others or seem "too much." Relationships may be intense or unconventional. You have refined taste that doesn't follow trends. **At ${degreeValue}°, the further beyond 23.5°, the more your aesthetic and relational needs diverge from the mainstream.**`,
+      Mars: `Your drive and assertiveness operate beyond normal limits. You might have extraordinary energy, extreme ambition, or struggle to keep your intensity within socially acceptable bounds. This can manifest as athletic excellence, workaholism, or anger that surprises people. Channel it consciously. **At ${degreeValue}°, you're ${(totalDegrees - 23.5).toFixed(1)}° past normal—the higher, the more raw power you need to manage.**`,
+      Jupiter: `Your optimism and growth instincts go to extremes. Huge faith, huge risks, huge possibilities—but also potential for overreach. You might believe in things others find outlandish, take risks that seem crazy, or achieve beyond what anyone expected. Temper with realism when needed. **At ${degreeValue}°, the higher you go, the bigger your dreams—and the bigger the possible fall if unchecked.**`,
+      Saturn: `Your relationship with structure and authority is extreme—either hypercontrolled (rigidly disciplined) or completely rejecting of limits (allergic to rules). You might set impossibly high standards for yourself or rebel against all external structure. Find your own authentic relationship with discipline. **At ${degreeValue}°, the further OOB, the more extreme your relationship with rules and reality.**`
     };
     oobSection = `
 
-**⚠️ OUT OF BOUNDS (${degreeValue}° exceeds 23.5°)!** 
-Your ${planet} has ventured beyond the Sun's normal range. This is rare and significant—it means this planet operates outside normal parameters.
+**⚠️ OUT OF BOUNDS at ${degreeValue}°${minuteValue ? ` ${minuteValue}'` : ''} (exceeds 23.5°)!** 
+Your ${planet} has ventured beyond the Sun's maximum range. This is RARE and significant—this planet operates outside normal parameters.
 
-**How you might experience this:** ${oobFeelings[planet] || 'This planet expresses in amplified, unusual, or unconventional ways that don\'t fit normal expectations.'}`;
+**What "Out of Bounds" means technically:** The Sun never exceeds 23.5° declination (it reaches this at the solstices). When a planet goes further than the Sun can go, it's literally "out of bounds"—beyond the normal playing field.
+
+**How you might experience this:** ${oobFeelings[planet] || `This planet expresses in amplified, unusual, or unconventional ways that don't fit normal expectations. The further beyond 23.5°, the more extreme.`}
+
+**Famous OOB examples:** Many visionaries, artists, and unconventional achievers have out-of-bounds planets. It's not "bad"—it's unusual, requiring conscious management.`;
   }
   
   return `${educationalBase}
 
-${directionMeaning}${oobSection}`;
+${directionMeaning}
+${aspectNote}${oobSection}`;
 };
 
 const getSaturnSymbolInterpretation = (sign: string, symbol: { symbol: string; meaning: string }): string => {
