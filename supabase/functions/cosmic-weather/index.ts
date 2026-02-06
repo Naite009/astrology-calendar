@@ -35,8 +35,12 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
     
+    // Cache key versioning: bump this when prompt/format changes so users don't get stale cached text.
+    // This intentionally changes the cache key without requiring any DB schema changes.
+    const PROMPT_VERSION = "2026-02-06-mercury-into-pisces";
+
     const cacheDeviceId = deviceId || 'default';
-    const cacheVoiceStyle = voiceStyle || '';
+    const cacheVoiceStyle = `${voiceStyle || ''}@${PROMPT_VERSION}`;
     const cacheChartId = '';
 
     if (dateKey && !forceRegenerate && !customPrompt) {
