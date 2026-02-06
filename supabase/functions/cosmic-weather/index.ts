@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects, planetPositions, customPrompt, voiceStyle, upcomingEvents, deviceId, forceRegenerate } = await req.json();
+    const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects, planetPositions, customPrompt, voiceStyle, upcomingEvents, deviceId, forceRegenerate, greeting: reqGreeting, timeOfDay: reqTimeOfDay } = await req.json();
     
     console.log("Received cosmic weather request:", { date, moonPhase, moonSign, exactLunarPhase, voiceStyle, planetPositions });
     console.log("Aspects received:", aspects?.slice(0, 15));
@@ -118,8 +118,8 @@ ${upcomingEvents.map((e: any) => `- ${e.date} (${e.daysAway} days away): ${e.typ
     // =========================================================================
     
     // Get the greeting from the request (falls back to generic if not provided)
-    const greeting = body.greeting || 'Hello';
-    const timeOfDay = body.timeOfDay || 'day';
+    const greeting = reqGreeting || 'Hello';
+    const timeOfDay = reqTimeOfDay || 'day';
     
     const voicePrompts: Record<string, string> = {
       // TARA VOGEL - Luminary Parenting style: warm, conversational, always looking ahead
