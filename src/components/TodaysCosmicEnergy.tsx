@@ -333,10 +333,17 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
         };
       });
 
+      // Determine time of day using LOCAL time (not UTC)
+      const localHour = now.getHours();
+      const timeOfDay = localHour < 12 ? 'morning' : localHour < 17 ? 'afternoon' : 'evening';
+      const greeting = localHour < 12 ? 'Good morning' : localHour < 17 ? 'Good afternoon' : 'Good evening';
+
       // Call edge function
       const { data, error: fnError } = await supabase.functions.invoke('cosmic-weather', {
         body: {
           date: dateStr,
+          timeOfDay,
+          greeting,
           moonPhase: moonPhase.phaseName,
           moonSign: planets.moon?.signName || signGlyphToName[planets.moon?.sign] || 'Unknown',
           planetPositions,
