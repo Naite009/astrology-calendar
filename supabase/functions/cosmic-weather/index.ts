@@ -457,9 +457,14 @@ CRITICAL RULES:
 2. Use EXACT degrees when mentioning positions. If data says "3° Cancer", use that precisely.
 3. NEVER call something a "Full Moon" or "New Moon" unless exactLunarPhase is provided.
 4. ALWAYS mention APPLYING aspects as building/intensifying and SEPARATING aspects as releasing/completing.
-5. **ABSOLUTELY CRITICAL - NEVER INVENT ASPECTS**: ONLY mention aspects that are EXPLICITLY listed in the "aspects" data provided. 
+5. **ABSOLUTELY CRITICAL - NEVER INVENT OR RELABEL ASPECTS**: ONLY mention aspects that are EXPLICITLY listed in the "aspects" data provided.
    - If two planets are NOT listed as having an aspect, DO NOT claim they have one.
-   - A conjunction requires planets to be within 8° of each other. 19° apart is NOT a conjunction!
+   - When you mention an aspect, you MUST use the provided aspect "type" and/or "symbol" EXACTLY.
+     - If the symbol is "□" or the type is "square", you MUST say "square" (not "conjunct").
+     - If the symbol is "☌" or the type is "conjunction", you may say "conjunct".
+     - Do NOT infer aspects from signs. Signs do NOT determine aspect type.
+   - A conjunction requires planets to be within 8° of each other. 19° apart is NOT a conjunction.
+   - Example sanity check: Moon 0° Scorpio and Pluto 3° Aquarius are ~94° apart (a square), not a conjunction.
    - If you see Saturn at 29° and North Node at 10°, that is a 19° gap = NO ASPECT. Do not mention it.
    - Check the orb value provided - if it's over 10°, it's not a valid major aspect.
 6. Each aspect in the data includes "orb" and "motion" fields - USE them to describe tightness and direction.
@@ -474,6 +479,7 @@ PLANETARY ENERGY GUIDE - USE THESE MEANINGS:
 ♀ Venus: Love, beauty, values, relationships, pleasure, money, harmony
 ♆ Neptune: Dreams, intuition, spirituality, imagination, confusion, dissolution, compassion
 ♇ Pluto: Transformation, power, rebirth, depth, shadows, intensity, evolution
+
 
 MOON SIGN DEPTH GUIDE:
 Moon in Virgo: Health consciousness heightened. Tendency toward criticism (self and others) - watch the inner critic. Good for organizing, cleaning, health routines. The mind wants to analyze and fix things. Ask: "What house does Virgo rule in YOUR chart?" - that's where you'll feel this focus. Be open to unexpected insights (especially with Uranus active). Can go down rabbit holes of perfectionism.
