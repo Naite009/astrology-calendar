@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { getMoonPhase, getPlanetaryPositions, calculateDailyAspects, PlanetaryPositions } from "@/lib/astrology";
+import { getMoonPhase, getPlanetaryPositions, calculateDailyAspects, PlanetaryPositions, getPlanetSymbol } from "@/lib/astrology";
 import { getVOCMoonDetails } from "@/lib/voidOfCourseMoon";
 import { formatLocalDateKey } from "@/lib/localDate";
 import ReactMarkdown from "react-markdown";
@@ -23,11 +23,64 @@ const ZODIAC_SYMBOLS: Record<string, string> = {
   Sagittarius: "♐", Capricorn: "♑", Aquarius: "♒", Pisces: "♓"
 };
 
+const PLANET_SYMBOLS: Record<string, string> = {
+  sun: "☉", moon: "☽", mercury: "☿", venus: "♀", mars: "♂",
+  jupiter: "♃", saturn: "♄", uranus: "♅", neptune: "♆", pluto: "♇"
+};
+
 function normalizeSignLabel(sign: string): string {
   // Sometimes upstream may provide a glyph instead of a name.
   const trimmed = (sign || "").trim();
   const byGlyph = Object.entries(ZODIAC_SYMBOLS).find(([, glyph]) => glyph === trimmed)?.[0];
   return byGlyph || trimmed || "Unknown";
+}
+
+// Helper to interpret the last aspect's meaning for VOC periods
+function getLastAspectMeaning(planet: string, aspectName: string): string {
+  const planetMeanings: Record<string, string> = {
+    'Sun': 'ego, identity, and creative expression',
+    'Mercury': 'thoughts, communication, and mental activity',
+    'Venus': 'love, relationships, beauty, and values',
+    'Mars': 'action, drive, passion, and energy',
+    'Jupiter': 'expansion, optimism, and opportunities',
+    'Saturn': 'responsibility, structure, and discipline',
+    'Uranus': 'change, innovation, and unexpected events',
+    'Neptune': 'dreams, intuition, and spirituality',
+    'Pluto': 'transformation, power, and deep processes'
+  };
+  
+  const aspectTones: Record<string, string> = {
+    'conjunction': 'merging with',
+    'sextile': 'harmoniously flowing with',
+    'square': 'challenging growth around',
+    'trine': 'easy alignment with',
+    'opposition': 'awareness and balance of'
+  };
+  
+  const planetTheme = planetMeanings[planet] || 'various themes';
+  const aspectTone = aspectTones[aspectName] || 'connecting with';
+  
+  return `The void period carries ${aspectTone} ${planetTheme}. This energy lingers as the Moon rests.`;
+}
+
+// Helper to describe what it means when Moon enters a new sign
+function getSignTransitionMeaning(sign: string): string {
+  const signMeanings: Record<string, string> = {
+    'Aries': ', bringing fresh initiating energy and a desire to act.',
+    'Taurus': ', grounding the mood with comfort, stability, and sensory pleasures.',
+    'Gemini': ', shifting energy toward curiosity, conversation, and mental stimulation.',
+    'Cancer': ', inviting nurturing feelings and emotional sensitivity.',
+    'Leo': ', warming the atmosphere with creativity, confidence, and heart-centered expression.',
+    'Virgo': ', focusing attention on details, health, and practical service.',
+    'Libra': ', balancing toward harmony, partnership, and aesthetic appreciation.',
+    'Scorpio': ', deepening emotions and inviting introspection and transformation.',
+    'Sagittarius': ', expanding the mood with optimism, adventure, and big-picture thinking.',
+    'Capricorn': ', grounding into ambition, discipline, and practical goals.',
+    'Aquarius': ', electrifying the atmosphere with innovation and humanitarian concerns.',
+    'Pisces': ', dissolving boundaries and inviting compassion, dreams, and intuition.'
+  };
+  
+  return signMeanings[sign] || '.';
 }
 
 interface CosmicData {
@@ -57,7 +110,9 @@ interface VOCInfo {
   end?: Date;
   lastAspect?: {
     planet: string;
+    aspectName: string;
     symbol: string;
+    time: Date;
   };
   moonEntersSign?: string;
 }
@@ -933,20 +988,33 @@ Keep the tone professional, insightful, and practically applicable.`
                         </p>
                         <p className="text-sm text-muted-foreground mt-1">
                           {formatTime(vocInfo.start)} – {formatTime(vocInfo.end)}
-                          {vocInfo.lastAspect && (
-                            <span className="ml-2">
-                              (after {vocInfo.lastAspect.symbol} {vocInfo.lastAspect.planet})
-                            </span>
-                          )}
-                          {vocInfo.moonEntersSign && (
-                            <span className="ml-2">
-                              → Moon enters {ZODIAC_SYMBOLS[vocInfo.moonEntersSign]} {vocInfo.moonEntersSign}
-                            </span>
-                          )}
                         </p>
-                        <p className="text-xs text-muted-foreground mt-2 italic">
-                          Avoid starting new projects, signing contracts, or making major purchases during VOC periods.
+                        
+                        {/* Last Aspect Made */}
+                        {vocInfo.lastAspect && (
+                          <div className="mt-2 p-2 rounded bg-muted/50">
+                            <p className="text-sm font-medium">
+                              Last Aspect: ☽ {vocInfo.lastAspect.symbol} {getPlanetSymbol(vocInfo.lastAspect.planet.toLowerCase())} {vocInfo.lastAspect.planet}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {getLastAspectMeaning(vocInfo.lastAspect.planet, vocInfo.lastAspect.aspectName)}
+                            </p>
+                          </div>
+                        )}
+                        
+                        <p className="text-xs text-muted-foreground mt-2">
+                          The VOC Moon is ideal for rest, napping, meditation, and completing routine tasks. 
+                          Avoid initiating new ventures or important decisions.
                         </p>
+                        
+                        {/* Moon Entering Next Sign */}
+                        {vocInfo.moonEntersSign && (
+                          <p className="text-xs mt-2">
+                            <span className="text-muted-foreground">Then the Moon enters </span>
+                            <span className="font-medium">{ZODIAC_SYMBOLS[vocInfo.moonEntersSign]} {vocInfo.moonEntersSign}</span>
+                            <span className="text-muted-foreground">{getSignTransitionMeaning(vocInfo.moonEntersSign)}</span>
+                          </p>
+                        )}
                       </div>
                     </div>
                   </CardContent>
