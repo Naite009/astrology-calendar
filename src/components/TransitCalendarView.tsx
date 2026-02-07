@@ -55,9 +55,9 @@ export const TransitCalendarView = ({
   const [selectedTransit, setSelectedTransit] = useState<YearlyTransitEvent | null>(null);
   const [viewTab, setViewTab] = useState<'calendar' | 'timeline' | 'list'>('calendar');
   const [includePersonal, setIncludePersonal] = useState(false);
-  // Default to the user's chart (first saved chart or natal chart) instead of 'general'
-  // since 'general' can't show transits without a natal chart to reference
-  const defaultChartId = natalChart?.id || savedCharts[0]?.id || 'general';
+  // Default to 'user' if userNatalChart exists, otherwise first saved chart
+  // 'user' represents the primary user chart (Lauren Newman)
+  const defaultChartId = natalChart ? 'user' : savedCharts[0]?.id || 'general';
   const [selectedChartId, setSelectedChartId] = useState<string>(defaultChartId);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -67,13 +67,16 @@ export const TransitCalendarView = ({
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
   
   // Determine which chart to use for calculations
-  // For 'general', we fall back to the user's natal chart to still show meaningful transits
   const activeChart = useMemo(() => {
     if (selectedChartId === 'general') {
       // Fall back to natal chart for transit calculations even in "collective" mode
       return natalChart || savedCharts[0] || null;
     }
-    return natalChart;
+    if (selectedChartId === 'user') {
+      return natalChart;
+    }
+    // Find the selected chart from savedCharts
+    return savedCharts.find(c => c.id === selectedChartId) || natalChart || savedCharts[0] || null;
   }, [selectedChartId, natalChart, savedCharts]);
   
   const yearTransits = useMemo(() => {
