@@ -851,7 +851,7 @@ export const AstroCalendar = () => {
 
         {viewMode === "transit-calendar" && (
           <TransitCalendarView 
-            natalChart={userNatalChart || savedCharts[0]} 
+            natalChart={userNatalChart} 
             savedCharts={savedCharts}
             onSelectChart={(chartId) => {
               const chart = savedCharts.find(c => c.id === chartId);
