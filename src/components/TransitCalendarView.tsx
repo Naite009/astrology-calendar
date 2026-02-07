@@ -324,15 +324,7 @@ export const TransitCalendarView = ({
                   <ChevronRight className="h-5 w-5" />
                 </button>
               </div>
-              {monthThemes.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {monthThemes.map((theme, i) => (
-                    <Badge key={i} variant="secondary" className="text-xs">
-                      {theme}
-                    </Badge>
-                  ))}
-                </div>
-              )}
+              {/* Theme badges removed - they were confusing without context */}
             </CardHeader>
             <CardContent>
               {/* Day headers */}

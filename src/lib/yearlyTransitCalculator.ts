@@ -143,13 +143,18 @@ export const calculateYearTransits = (
   const transits: YearlyTransitEvent[] = [];
   const { includePersonal = false, transitPlanets } = options || {};
   
-  // Default: outer and social planets for yearly overview
+  // Default: outer and social planets for yearly overview (these are what's TRANSITING)
   const planetsToCheck = transitPlanets || (includePersonal 
     ? ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto']
     : ['Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto']);
   
-  // Natal planets to check aspects against
-  const natalPlanets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Ascendant', 'Midheaven', 'Chiron'];
+  // Natal planets to check aspects against - PERSONAL POINTS ONLY for meaningful transits
+  // We want outer planets transiting TO personal planets, not outer-to-outer
+  const personalNatalPlanets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Ascendant', 'Midheaven'];
+  const allNatalPlanets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Ascendant', 'Midheaven', 'Chiron'];
+  
+  // Use personal points for outer planet transits, all planets if including personal transits
+  const natalPlanets = includePersonal ? allNatalPlanets : personalNatalPlanets;
   
   // Get all natal longitudes
   const natalLongitudes: Record<string, number> = {};
