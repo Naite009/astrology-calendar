@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers, Combine, Diamond, FileText, CalendarClock } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers, Combine, Diamond, FileText, CalendarClock, Utensils } from "lucide-react";
 import { TodaysCosmicEnergy, CosmicEnergyButton } from "./TodaysCosmicEnergy";
 import { useState as useCosmicState } from "react";
 import { ChartDecoderView } from "./ChartDecoderView";
@@ -39,10 +39,11 @@ import { StructuralStressView } from "./StructuralStressView";
 import { CombosView } from "./CombosView";
 import { GroundedNarrativeView } from "./GroundedNarrativeView";
 import { TransitCalendarView } from "./TransitCalendarView";
+import { WeeklyMealPlanCard } from "./WeeklyMealPlanCard";
 
 
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar";
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -582,6 +583,17 @@ export const AstroCalendar = () => {
                 <CalendarClock size={14} />
                 Transits
               </button>
+              <button
+                onClick={() => setViewMode("cosmic-kitchen")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "cosmic-kitchen"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Utensils size={14} />
+                Kitchen
+              </button>
             </div>
 
             {userData && (
@@ -848,6 +860,12 @@ export const AstroCalendar = () => {
               }
             }}
           />
+        )}
+
+        {viewMode === "cosmic-kitchen" && (
+          <div className="max-w-4xl mx-auto">
+            <WeeklyMealPlanCard />
+          </div>
         )}
       </div>
 
