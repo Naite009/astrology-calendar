@@ -1,16 +1,16 @@
 import { useState, useMemo } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ChevronLeft, ChevronRight, Star, Calendar, TrendingUp, Zap, Heart } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Star, Calendar, TrendingUp, Zap } from 'lucide-react';
+import { NatalChart } from '@/hooks/useNatalChart';
 import {
   majorTransits2026,
   keyDates2026,
   monthlyTransitSummary,
-  natalPositions,
   getTransitsForMonth,
   getMajorTransits,
   TransitEvent
@@ -20,7 +20,7 @@ import {
 const planetSymbols: Record<string, string> = {
   'Sun': '☉', 'Moon': '☽', 'Mercury': '☿', 'Venus': '♀', 'Mars': '♂',
   'Jupiter': '♃', 'Saturn': '♄', 'Uranus': '♅', 'Neptune': '♆', 'Pluto': '♇',
-  'Chiron': '⚷', 'Ascendant': 'AC', 'Midheaven': 'MC'
+  'Chiron': '⚷', 'Ascendant': 'AC', 'Midheaven': 'MC', 'NorthNode': '☊'
 };
 
 // Category colors
@@ -36,7 +36,11 @@ const significanceStyles = {
   minor: ''
 };
 
-export const TransitCalendarView = () => {
+interface TransitCalendarViewProps {
+  natalChart?: NatalChart | null;
+}
+
+export const TransitCalendarView = ({ natalChart }: TransitCalendarViewProps) => {
   const [currentMonth, setCurrentMonth] = useState(new Date(2026, 0, 1));
   const [selectedTransit, setSelectedTransit] = useState<TransitEvent | null>(null);
   const [viewTab, setViewTab] = useState<'calendar' | 'timeline' | 'list'>('calendar');
@@ -67,6 +71,22 @@ export const TransitCalendarView = () => {
   }, []);
   
   const majorTransitsList = getMajorTransits();
+
+  // Get natal positions from the user's chart
+  const natalPositionsDisplay = useMemo(() => {
+    if (!natalChart?.planets) return [];
+    
+    const planets = ['Sun', 'Moon', 'Ascendant', 'Mercury', 'Venus', 'Mars'] as const;
+    return planets
+      .filter(p => natalChart.planets[p])
+      .map(p => {
+        const pos = natalChart.planets[p]!;
+        return {
+          planet: p,
+          display: `${pos.degree}° ${pos.sign}`
+        };
+      });
+  }, [natalChart]);
   
   return (
     <div className="space-y-6">
@@ -75,23 +95,28 @@ export const TransitCalendarView = () => {
         <CardHeader className="pb-2">
           <CardTitle className="font-serif text-xl flex items-center gap-2">
             <Star className="h-5 w-5 text-primary" />
-            Lauren's 2026 Transit Calendar
+            {natalChart?.name ? `${natalChart.name}'s` : 'Your'} 2026 Transit Calendar
           </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Born October 21, 1976 · Washington, DC · 7:12 AM
-          </p>
+          {natalChart && (
+            <p className="text-sm text-muted-foreground">
+              Born {natalChart.birthDate} · {natalChart.birthLocation} · {natalChart.birthTime}
+            </p>
+          )}
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-2 text-xs">
-            {Object.entries(natalPositions).slice(0, 5).map(([planet, pos]) => (
-              <Badge key={planet} variant="outline" className="font-mono">
-                {planetSymbols[planet]} {planet}: {pos.degree.toFixed(0)}° {pos.sign}
-              </Badge>
-            ))}
-            <Badge variant="outline" className="font-mono opacity-60">
-              +{Object.keys(natalPositions).length - 5} more
-            </Badge>
-          </div>
+          {natalPositionsDisplay.length > 0 ? (
+            <div className="flex flex-wrap gap-2 text-xs">
+              {natalPositionsDisplay.map(({ planet, display }) => (
+                <Badge key={planet} variant="outline" className="font-mono">
+                  {planetSymbols[planet] || planet} {planet}: {display}
+                </Badge>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              No natal chart loaded. Add a chart in the Charts tab to see personalized positions.
+            </p>
+          )}
         </CardContent>
       </Card>
       
