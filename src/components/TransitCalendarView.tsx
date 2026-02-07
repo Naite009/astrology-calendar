@@ -8,8 +8,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { ChevronLeft, ChevronRight, Star, Calendar, TrendingUp, Zap, User } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Star, Calendar, TrendingUp, Zap, Globe } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
+import { ChartSelector } from './ChartSelector';
 import {
   calculateYearTransits,
   getTransitsForMonth,
@@ -50,16 +51,20 @@ export const TransitCalendarView = ({
   const [selectedTransit, setSelectedTransit] = useState<YearlyTransitEvent | null>(null);
   const [viewTab, setViewTab] = useState<'calendar' | 'timeline' | 'list'>('calendar');
   const [includePersonal, setIncludePersonal] = useState(false);
+  const [selectedChartId, setSelectedChartId] = useState<string>('general');
   
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
   
   // Calculate transits dynamically from ephemeris
+  // Only calculate if a specific chart is selected (not 'general')
+  const activeChart = selectedChartId === 'general' ? null : natalChart;
+  
   const yearTransits = useMemo(() => {
-    if (!natalChart?.planets) return [];
-    return calculateYearTransits(natalChart, selectedYear, { includePersonal });
-  }, [natalChart, selectedYear, includePersonal]);
+    if (!activeChart?.planets) return [];
+    return calculateYearTransits(activeChart, selectedYear, { includePersonal });
+  }, [activeChart, selectedYear, includePersonal]);
   
   const monthTransits = useMemo(() => 
     getTransitsForMonth(yearTransits, currentMonth.getMonth(), selectedYear),
@@ -95,19 +100,19 @@ export const TransitCalendarView = ({
   
   // Get natal positions from the user's chart
   const natalPositionsDisplay = useMemo(() => {
-    if (!natalChart?.planets) return [];
+    if (!activeChart?.planets) return [];
     
     const planets = ['Sun', 'Moon', 'Ascendant', 'Mercury', 'Venus', 'Mars'] as const;
     return planets
-      .filter(p => natalChart.planets[p])
+      .filter(p => activeChart.planets[p])
       .map(p => {
-        const pos = natalChart.planets[p]!;
+        const pos = activeChart.planets[p]!;
         return {
           planet: p,
           display: `${pos.degree}° ${pos.sign}`
         };
       });
-  }, [natalChart]);
+  }, [activeChart]);
 
   // Get major transits for the list view
   const majorTransits = useMemo(() => 
@@ -126,36 +131,43 @@ export const TransitCalendarView = ({
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <CardTitle className="font-serif text-xl flex items-center gap-2">
-                <Star className="h-5 w-5 text-primary" />
-                {natalChart?.name ? `${natalChart.name}'s` : 'Your'} Transit Calendar
+                {selectedChartId === 'general' ? (
+                  <Globe className="h-5 w-5 text-primary" />
+                ) : (
+                  <Star className="h-5 w-5 text-primary" />
+                )}
+                {selectedChartId === 'general' 
+                  ? 'Collective Transit Calendar' 
+                  : `${natalChart?.name || 'Your'}'s Transit Calendar`}
               </CardTitle>
-              {natalChart && (
+              {selectedChartId !== 'general' && natalChart && (
                 <p className="text-sm text-muted-foreground mt-1">
                   Born {natalChart.birthDate} · {natalChart.birthLocation}
+                </p>
+              )}
+              {selectedChartId === 'general' && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Viewing planetary transits for everyone
                 </p>
               )}
             </div>
             
             <div className="flex flex-wrap items-center gap-3">
               {/* Chart Selector */}
-              {savedCharts.length > 1 && onSelectChart && (
-                <Select
-                  value={natalChart?.id || ''}
-                  onValueChange={onSelectChart}
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <User className="h-4 w-4 mr-2" />
-                    <SelectValue placeholder="Select chart" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {savedCharts.map(chart => (
-                      <SelectItem key={chart.id} value={chart.id}>
-                        {chart.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+              <ChartSelector
+                userNatalChart={natalChart || null}
+                savedCharts={savedCharts}
+                selectedChartId={selectedChartId}
+                onSelect={(id) => {
+                  setSelectedChartId(id);
+                  if (onSelectChart && id !== 'general') {
+                    onSelectChart(id);
+                  }
+                }}
+                includeGeneral={true}
+                generalLabel="✦ Collective Energy"
+                label="View for"
+              />
               
               {/* Year Selector */}
               <Select
@@ -181,7 +193,11 @@ export const TransitCalendarView = ({
           </div>
         </CardHeader>
         <CardContent>
-          {natalPositionsDisplay.length > 0 ? (
+          {selectedChartId === 'general' ? (
+            <p className="text-xs text-muted-foreground">
+              Select a chart above to view personalized transits with natal positions.
+            </p>
+          ) : natalPositionsDisplay.length > 0 ? (
             <div className="space-y-3">
               <div className="flex flex-wrap gap-2 text-xs">
                 {natalPositionsDisplay.map(({ planet, display }) => (
