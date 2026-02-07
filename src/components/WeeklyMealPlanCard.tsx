@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { Loader2, Download, Utensils, ChefHat, Sparkles, RefreshCw, Printer, Star } from 'lucide-react';
+import { Loader2, Download, Utensils, ChefHat, Sparkles, RefreshCw, Printer, Star, Settings2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,6 +8,18 @@ import { toast } from '@/hooks/use-toast';
 import html2canvas from 'html2canvas';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
 const ZODIAC_SYMBOLS: Record<string, string> = {
   Aries: "♈", Taurus: "♉", Gemini: "♊", Cancer: "♋",
@@ -23,6 +35,26 @@ const ELEMENT_COLORS: Record<string, { bg: string; border: string; text: string 
   Air: { bg: 'bg-sky-500/10', border: 'border-sky-500/30', text: 'text-sky-600' },
   Water: { bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-600' },
 };
+
+// Dietary preference options - HD PHS Determination types + Ayurvedic
+const DIETARY_PREFERENCES = [
+  { value: 'default', label: 'Standard', description: 'General cosmic recommendations' },
+  { value: 'consecutive', label: 'Consecutive (HD)', description: 'One food at a time, simple meals' },
+  { value: 'alternating', label: 'Alternating (HD)', description: 'Variety, rotating ingredients' },
+  { value: 'open', label: 'Open Taste (HD)', description: 'Mild flavors, calming foods' },
+  { value: 'closed', label: 'Closed Taste (HD)', description: 'Strong, bold flavors' },
+  { value: 'hot', label: 'Hot Thirst (HD)', description: 'Warm/hot foods and drinks' },
+  { value: 'cold', label: 'Cold Thirst (HD)', description: 'Cool/cold foods and drinks' },
+  { value: 'high-sound', label: 'High Sound (HD)', description: 'Crunchy, noisy textures' },
+  { value: 'low-sound', label: 'Low Sound (HD)', description: 'Soft, quiet textures' },
+  { value: 'direct-light', label: 'Direct Light (HD)', description: 'Eat in bright light/outdoors' },
+  { value: 'indirect-light', label: 'Indirect Light (HD)', description: 'Eat in dim/soft lighting' },
+  { value: 'calm', label: 'Calm (HD)', description: 'Peaceful eating environment' },
+  { value: 'nervous', label: 'Nervous (HD)', description: 'Active environment while eating' },
+  { value: 'vata', label: 'Vata (Ayurveda)', description: 'Grounding, warm, oily foods' },
+  { value: 'pitta', label: 'Pitta (Ayurveda)', description: 'Cooling, sweet, bitter foods' },
+  { value: 'kapha', label: 'Kapha (Ayurveda)', description: 'Light, dry, spicy foods' },
+];
 
 const getElementFromSign = (sign: string): string => {
   const fireSign = ['Aries', 'Leo', 'Sagittarius'];
@@ -55,6 +87,7 @@ function getWeekKey(): string {
 
 const MEAL_PLAN_CACHE_KEY = 'cosmic-meal-plan';
 const RECIPE_CACHE_KEY = 'cosmic-weekly-recipe';
+const DIETARY_PREF_KEY = 'cosmic-dietary-preference';
 
 // Get week starting from the most recent Sunday
 function getWeekForecast(): WeekDay[] {
@@ -93,11 +126,29 @@ export const WeeklyMealPlanCard = () => {
   const [loading, setLoading] = useState(false);
   const [weeklyRecipe, setWeeklyRecipe] = useState<string | null>(null);
   const [selectedDayIndex, setSelectedDayIndex] = useState<number>(() => new Date().getDay());
+  const [dietaryPreference, setDietaryPreference] = useState<string>(() => 
+    localStorage.getItem(DIETARY_PREF_KEY) || 'default'
+  );
   const contentRef = useRef<HTMLDivElement>(null);
   const weekKey = getWeekKey();
 
   const weekData = useMemo(() => getWeekForecast(), []);
   const selectedDay = weekData[selectedDayIndex];
+  const todayData = weekData.find(d => d.isToday) || weekData[new Date().getDay()];
+
+  // Save dietary preference when changed
+  const handleDietaryChange = (value: string) => {
+    setDietaryPreference(value);
+    localStorage.setItem(DIETARY_PREF_KEY, value);
+    // Clear cache when preference changes
+    localStorage.removeItem(`${MEAL_PLAN_CACHE_KEY}-${weekKey}`);
+    localStorage.removeItem(`${RECIPE_CACHE_KEY}-${weekKey}`);
+    setMealPlan(null);
+    setWeeklyRecipe(null);
+    // Auto-regenerate with new preference
+    fetchWeeklyMealPlan(true);
+    fetchWeeklyRecipe(true);
+  };
 
   // Load cached data and auto-fetch if not cached
   useEffect(() => {
@@ -107,33 +158,62 @@ export const WeeklyMealPlanCard = () => {
     if (cachedMealPlan) {
       setMealPlan(cachedMealPlan);
     } else {
-      // Auto-fetch if not cached
       fetchWeeklyMealPlan(false);
     }
     
     if (cachedRecipe) {
       setWeeklyRecipe(cachedRecipe);
     } else {
-      // Auto-fetch recipe if not cached
       fetchWeeklyRecipe(false);
     }
   }, [weekKey]);
+
+  const getDietaryPromptAddition = (): string => {
+    const pref = DIETARY_PREFERENCES.find(p => p.value === dietaryPreference);
+    if (!pref || dietaryPreference === 'default') return '';
+    
+    const hdPrefs: Record<string, string> = {
+      consecutive: 'HUMAN DESIGN DIETARY PREFERENCE: The person needs CONSECUTIVE/SINGLE FOODS - simple meals with one main ingredient at a time, not complex combinations. Think single-ingredient focus, easy to digest, minimal mixing.',
+      alternating: 'HUMAN DESIGN DIETARY PREFERENCE: The person needs ALTERNATING variety - rotating ingredients, different foods each meal, sampling multiple dishes rather than one big plate.',
+      open: 'HUMAN DESIGN DIETARY PREFERENCE: The person needs OPEN TASTE - mild, gentle flavors that calm the nervous system. Avoid bold spices or overwhelming tastes.',
+      closed: 'HUMAN DESIGN DIETARY PREFERENCE: The person needs CLOSED TASTE - strong, bold, intense flavors. They digest better with spicy, rich, or potent tastes.',
+      hot: 'HUMAN DESIGN DIETARY PREFERENCE: The person needs HOT THIRST - warm and hot foods/drinks aid their digestion. Avoid cold or iced items.',
+      cold: 'HUMAN DESIGN DIETARY PREFERENCE: The person needs COLD THIRST - cool and cold foods/drinks work best. Room temp or chilled is ideal.',
+      'high-sound': 'HUMAN DESIGN DIETARY PREFERENCE: The person needs HIGH SOUND foods - crunchy, crispy textures that make noise when eaten. Think raw veggies, nuts, crackers.',
+      'low-sound': 'HUMAN DESIGN DIETARY PREFERENCE: The person needs LOW SOUND foods - soft, quiet textures. Soups, stews, smoothies, soft-cooked foods.',
+      'direct-light': 'HUMAN DESIGN DIETARY PREFERENCE: The person digests best with DIRECT LIGHT - eating outdoors, by a window, or in bright lighting.',
+      'indirect-light': 'HUMAN DESIGN DIETARY PREFERENCE: The person digests best with INDIRECT LIGHT - eating in dim, soft, or candlelit environments.',
+      calm: 'HUMAN DESIGN DIETARY PREFERENCE: The person needs a CALM environment to eat - peaceful, quiet, no distractions, focused eating.',
+      nervous: 'HUMAN DESIGN DIETARY PREFERENCE: The person needs a NERVOUS/ACTIVE environment - eating while doing something else, background activity, not isolated meals.',
+      vata: 'AYURVEDIC DOSHA: The person is VATA dominant - prioritize warm, grounding, oily, nourishing foods. Avoid cold, dry, raw foods. Root vegetables, warm soups, healthy fats.',
+      pitta: 'AYURVEDIC DOSHA: The person is PITTA dominant - prioritize cooling, sweet, bitter foods. Avoid spicy, sour, salty. Fresh fruits, leafy greens, cooling herbs.',
+      kapha: 'AYURVEDIC DOSHA: The person is KAPHA dominant - prioritize light, dry, warming, spicy foods. Avoid heavy, oily, cold. Legumes, steamed veggies, warming spices.',
+    };
+    
+    return hdPrefs[dietaryPreference] || '';
+  };
 
   const fetchWeeklyMealPlan = async (forceRegenerate = false) => {
     if (mealPlan && !forceRegenerate) return;
     
     setLoading(true);
     
+    const dietaryAddition = getDietaryPromptAddition();
+    
     try {
       const { data, error } = await supabase.functions.invoke('cosmic-weather', {
         body: {
           date: new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
-          moonPhase: weekData[new Date().getDay()].moonPhase,
-          moonSign: weekData[new Date().getDay()].moonSign,
+          moonPhase: todayData.moonPhase,
+          moonSign: todayData.moonSign,
           customPrompt: `Create a WEEKLY COSMIC MEAL PLAN for this week (Sunday through Saturday).
 
-MOON SIGNS THIS WEEK:
-${weekData.map((d) => `- ${d.dayName} (${d.dateStr}): Moon in ${d.moonSign}`).join('\n')}
+TODAY IS: ${todayData.dayName}, ${todayData.dateStr} - Moon in ${todayData.moonSign} ${ZODIAC_SYMBOLS[todayData.moonSign] || ''}
+
+MOON SIGNS THIS WEEK (calculated from astronomical ephemeris):
+${weekData.map((d) => `- ${d.dayName} (${d.dateStr}): Moon in ${d.moonSign} ${ZODIAC_SYMBOLS[d.moonSign] || ''}`).join('\n')}
+
+${dietaryAddition ? `\n${dietaryAddition}\n` : ''}
 
 FORMAT - Make this EASY TO READ with clear structure:
 
@@ -146,7 +226,7 @@ ${weekData.map((d) => `
 
 | Meal | Dish | Why It Works |
 |------|------|--------------|
-| 🍳 Breakfast | [Dish name] | [Brief reason tied to ${d.moonSign} energy] |
+| 🍳 Breakfast | [Dish name] | [Brief reason tied to ${d.moonSign} energy${dietaryAddition ? ' + dietary preference' : ''}] |
 | 🥗 Lunch | [Dish name] | [Brief reason] |
 | 🍽️ Dinner | [Dish name] | [Brief reason] |
 | 🥜 Snacks | [2-3 snacks] | [Brief reason] |
@@ -158,6 +238,8 @@ MOON SIGN FOOD THEMES:
 - Earth Moons (Taurus/Virgo/Cap): Grounding, comfort, substantial
 - Air Moons (Gemini/Libra/Aqua): Light, varied, interesting combos
 - Water Moons (Cancer/Scorpio/Pisces): Soul food, soups, nourishing
+
+SEASONAL CONSIDERATION: It's currently winter - favor warming, hearty, seasonal foods.
 
 Keep descriptions SHORT and punchy. Make it scannable.`
         }
@@ -180,30 +262,37 @@ Keep descriptions SHORT and punchy. Make it scannable.`
     
     setLoading(true);
     
+    const dietaryAddition = getDietaryPromptAddition();
+    
     try {
       const dominantElement = getMostCommonElement(weekData.map(d => d.moonSign));
       
       const { data, error } = await supabase.functions.invoke('cosmic-weather', {
         body: {
           date: new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
-          moonPhase: weekData[new Date().getDay()].moonPhase,
-          moonSign: weekData[new Date().getDay()].moonSign,
+          moonPhase: todayData.moonPhase,
+          moonSign: todayData.moonSign,
           customPrompt: `Create ONE special "Recipe of the Week" that captures this week's lunar journey.
 
-MOON SIGNS THIS WEEK: ${weekData.map(d => d.moonSign).join(' → ')}
+TODAY IS: ${todayData.dayName}, ${todayData.dateStr}
+MOON SIGNS THIS WEEK: ${weekData.map(d => `${d.moonSign} ${ZODIAC_SYMBOLS[d.moonSign]}`).join(' → ')}
 DOMINANT ELEMENT: ${dominantElement}
+
+${dietaryAddition ? `\n${dietaryAddition}\n` : ''}
 
 Create a BATCH-PREP or MEAL-PREP friendly recipe that:
 1. Can be made on the weekend and enjoyed throughout the week
 2. Captures the energy of the Moon's journey through these signs
 3. Is practical and family-friendly
+4. Considers it's currently WINTER - warming, seasonal ingredients
+${dietaryAddition ? '5. Honors the specific dietary preference noted above' : ''}
 
 FORMAT:
 
 # ✨ Recipe of the Week
 **[Creative Recipe Name]**
 
-*This dish captures the ${dominantElement} energy dominant in this week's lunar cycle, traveling through ${[...new Set(weekData.map(d => d.moonSign))].join(', ')}.*
+*This dish captures the ${dominantElement} energy dominant in this week's lunar cycle, traveling through ${[...new Set(weekData.map(d => d.moonSign))].map(s => `${s} ${ZODIAC_SYMBOLS[s]}`).join(', ')}.*
 
 ## At a Glance
 - **Servings:** [number]
@@ -221,7 +310,7 @@ FORMAT:
 2. [Continue...]
 
 ## Cosmic Connection
-[2-3 sentences about why this recipe matches the week's energy]
+[2-3 sentences about why this recipe matches the week's energy${dietaryAddition ? ' and the dietary preference' : ''}]
 
 ## Weekly Tip
 [One sentence about when during the week this dish will taste best based on Moon signs]`
@@ -290,16 +379,49 @@ FORMAT:
 
   const selectedDayContent = getSelectedDayContent();
 
+  const selectedPref = DIETARY_PREFERENCES.find(p => p.value === dietaryPreference);
+
   return (
     <Card className="border-primary/20 shadow-lg print:shadow-none print:border-0">
-      <CardHeader className="border-b border-primary/10 bg-gradient-to-r from-amber-500/10 to-orange-500/5 print:bg-transparent">
+      <CardHeader className="border-b border-primary/10 bg-gradient-to-r from-primary/5 to-primary/10 print:bg-transparent">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <CardTitle className="font-serif text-xl font-light flex items-center gap-2">
-            <Utensils className="h-5 w-5 text-amber-600" />
+            <Utensils className="h-5 w-5 text-primary" />
             Cosmic Kitchen
           </CardTitle>
           
-          <div className="flex gap-2 flex-wrap print:hidden">
+          <div className="flex gap-2 flex-wrap print:hidden items-center">
+            {/* Dietary Preferences Dropdown */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Settings2 className="h-4 w-4" />
+                  <span className="hidden sm:inline">{selectedPref?.label || 'Diet'}</span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-72 p-2 bg-popover border border-border shadow-lg z-50" align="end">
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground px-2 py-1">Dietary Preference</p>
+                  {DIETARY_PREFERENCES.map((pref) => (
+                    <button
+                      key={pref.value}
+                      onClick={() => handleDietaryChange(pref.value)}
+                      className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                        dietaryPreference === pref.value 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'hover:bg-muted'
+                      }`}
+                    >
+                      <div className="font-medium">{pref.label}</div>
+                      <div className={`text-xs ${dietaryPreference === pref.value ? 'opacity-80' : 'text-muted-foreground'}`}>
+                        {pref.description}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+            
             <Button
               variant="ghost"
               size="sm"
@@ -311,7 +433,7 @@ FORMAT:
               className="gap-2"
             >
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-              Regenerate
+              <span className="hidden sm:inline">Regenerate</span>
             </Button>
             <Button
               variant="ghost"
@@ -320,7 +442,7 @@ FORMAT:
               className="gap-2"
             >
               <Printer className="h-4 w-4" />
-              Print
+              <span className="hidden sm:inline">Print</span>
             </Button>
             <Button
               variant="ghost"
@@ -329,7 +451,7 @@ FORMAT:
               className="gap-2"
             >
               <Download className="h-4 w-4" />
-              Download
+              <span className="hidden sm:inline">Download</span>
             </Button>
           </div>
         </div>
@@ -384,7 +506,7 @@ FORMAT:
           {selectedDayContent && (
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <ChefHat className="h-5 w-5 text-amber-600" />
+                <ChefHat className="h-5 w-5 text-primary" />
                 <h2 className="font-serif text-lg font-medium">
                   {selectedDay.dayName}'s Menu
                 </h2>
@@ -433,7 +555,7 @@ FORMAT:
           {weeklyRecipe && (
             <div className="border-t border-border pt-6">
               <div className="flex items-center gap-2 mb-4">
-                <Sparkles className="h-5 w-5 text-amber-600" />
+                <Sparkles className="h-5 w-5 text-primary" />
                 <h2 className="font-serif text-lg font-medium">Recipe of the Week</h2>
               </div>
               
