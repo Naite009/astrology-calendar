@@ -55,7 +55,10 @@ export const TransitCalendarView = ({
   const [selectedTransit, setSelectedTransit] = useState<YearlyTransitEvent | null>(null);
   const [viewTab, setViewTab] = useState<'calendar' | 'timeline' | 'list'>('calendar');
   const [includePersonal, setIncludePersonal] = useState(false);
-  const [selectedChartId, setSelectedChartId] = useState<string>('general');
+  // Default to the user's chart (first saved chart or natal chart) instead of 'general'
+  // since 'general' can't show transits without a natal chart to reference
+  const defaultChartId = natalChart?.id || savedCharts[0]?.id || 'general';
+  const [selectedChartId, setSelectedChartId] = useState<string>(defaultChartId);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   
@@ -63,9 +66,15 @@ export const TransitCalendarView = ({
   const monthEnd = endOfMonth(currentMonth);
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
   
-  // Calculate transits dynamically from ephemeris
-  // Only calculate if a specific chart is selected (not 'general')
-  const activeChart = selectedChartId === 'general' ? null : natalChart;
+  // Determine which chart to use for calculations
+  // For 'general', we fall back to the user's natal chart to still show meaningful transits
+  const activeChart = useMemo(() => {
+    if (selectedChartId === 'general') {
+      // Fall back to natal chart for transit calculations even in "collective" mode
+      return natalChart || savedCharts[0] || null;
+    }
+    return natalChart;
+  }, [selectedChartId, natalChart, savedCharts]);
   
   const yearTransits = useMemo(() => {
     if (!activeChart?.planets) return [];
@@ -137,23 +146,17 @@ export const TransitCalendarView = ({
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <CardTitle className="font-serif text-xl flex items-center gap-2">
-                {selectedChartId === 'general' ? (
-                  <Globe className="h-5 w-5 text-primary" />
-                ) : (
-                  <Star className="h-5 w-5 text-primary" />
-                )}
-                {selectedChartId === 'general' 
-                  ? 'Collective Transit Calendar' 
-                  : `${natalChart?.name || 'Your'}'s Transit Calendar`}
+                <Star className="h-5 w-5 text-primary" />
+                {activeChart?.name ? `${activeChart.name}'s Transit Calendar` : 'Transit Calendar'}
               </CardTitle>
-              {selectedChartId !== 'general' && natalChart && (
+              {activeChart && (
                 <p className="text-sm text-muted-foreground mt-1">
-                  Born {natalChart.birthDate} · {natalChart.birthLocation}
+                  Born {activeChart.birthDate} · {activeChart.birthLocation}
                 </p>
               )}
-              {selectedChartId === 'general' && (
+              {!activeChart && (
                 <p className="text-sm text-muted-foreground mt-1">
-                  Viewing planetary transits for everyone
+                  Add a chart in the Charts tab to view transits
                 </p>
               )}
             </div>
@@ -170,8 +173,7 @@ export const TransitCalendarView = ({
                     onSelectChart(id);
                   }
                 }}
-                includeGeneral={true}
-                generalLabel="✦ Collective Energy"
+                includeGeneral={false}
                 label="View for"
               />
               
@@ -226,11 +228,7 @@ export const TransitCalendarView = ({
           </div>
         </CardHeader>
         <CardContent>
-          {selectedChartId === 'general' ? (
-            <p className="text-xs text-muted-foreground">
-              Select a chart above to view personalized transits with natal positions.
-            </p>
-          ) : natalPositionsDisplay.length > 0 ? (
+          {activeChart && natalPositionsDisplay.length > 0 ? (
             <div className="space-y-3">
               <div className="flex flex-wrap gap-2 text-xs">
                 {natalPositionsDisplay.map(({ planet, display }) => (

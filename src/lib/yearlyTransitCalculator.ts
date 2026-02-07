@@ -24,13 +24,14 @@ const PLANET_BODIES: Record<string, Astronomy.Body> = {
   Pluto: Astronomy.Body.Pluto,
 };
 
-// Aspect definitions
+// Aspect definitions - wider orbs for outer planet transits
+// Outer planets move slowly, so they stay in orb for extended periods
 const ASPECTS = [
-  { name: 'conjunction', angle: 0, orb: 1.5, symbol: '☌' },
-  { name: 'opposition', angle: 180, orb: 1.5, symbol: '☍' },
-  { name: 'trine', angle: 120, orb: 1.5, symbol: '△' },
-  { name: 'square', angle: 90, orb: 1.5, symbol: '□' },
-  { name: 'sextile', angle: 60, orb: 1.5, symbol: '⚹' },
+  { name: 'conjunction', angle: 0, orb: 5, symbol: '☌' },
+  { name: 'opposition', angle: 180, orb: 5, symbol: '☍' },
+  { name: 'trine', angle: 120, orb: 4, symbol: '△' },
+  { name: 'square', angle: 90, orb: 5, symbol: '□' },
+  { name: 'sextile', angle: 60, orb: 3, symbol: '⚹' },
 ] as const;
 
 export interface YearlyTransitEvent {
