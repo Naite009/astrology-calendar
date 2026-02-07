@@ -379,15 +379,20 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
       }));
 
       // Send MORE aspects with FULL data including orbs - this prevents AI hallucination
+      // Use the symbol from calculateDailyAspects directly (already includes correct glyph)
       const aspectsWithDetails = aspects.slice(0, 15).map(a => {
         const orbValue = 'orb' in a && a.orb != null ? a.orb : 0;
+        // Map lowercase type names to symbols (calculateDailyAspects returns lowercase)
+        const typeToSymbol: Record<string, string> = {
+          'conjunction': '☌', 'sextile': '⚹', 'square': '□', 'trine': '△', 'opposition': '☍'
+        };
         return {
           planet1: a.planet1,
           planet2: a.planet2,
           type: a.type,
           orb: typeof orbValue === 'number' ? orbValue.toFixed(1) : String(orbValue),
-          motion: 'motion' in a ? (a as Record<string, unknown>).motion as string : 'unknown',
-          symbol: a.type === 'Conjunction' ? '☌' : a.type === 'Trine' ? '△' : a.type === 'Square' ? '□' : a.type === 'Opposition' ? '☍' : a.type === 'Sextile' ? '⚹' : '●'
+          motion: 'motion' in a ? (a as Record<string, unknown>).motion as string : (a.applying ? 'applying' : 'separating'),
+          symbol: a.symbol || typeToSymbol[a.type.toLowerCase()] || '●'
         };
       });
 
