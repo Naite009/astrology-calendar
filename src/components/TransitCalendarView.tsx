@@ -8,7 +8,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { ChevronLeft, ChevronRight, Star, Calendar, TrendingUp, Zap, Globe } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ChevronLeft, ChevronRight, Star, Calendar, TrendingUp, Zap, Globe, CalendarDays } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { ChartSelector } from './ChartSelector';
 import {
@@ -52,6 +56,8 @@ export const TransitCalendarView = ({
   const [viewTab, setViewTab] = useState<'calendar' | 'timeline' | 'list'>('calendar');
   const [includePersonal, setIncludePersonal] = useState(false);
   const [selectedChartId, setSelectedChartId] = useState<string>('general');
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
   
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -169,26 +175,53 @@ export const TransitCalendarView = ({
                 label="View for"
               />
               
-              {/* Year Selector */}
-              <Select
-                value={selectedYear.toString()}
-                onValueChange={(v) => {
-                  const year = parseInt(v);
-                  setSelectedYear(year);
-                  setCurrentMonth(new Date(year, currentMonth.getMonth(), 1));
-                }}
-              >
-                <SelectTrigger className="w-[100px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {yearOptions.map(year => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {/* Date Picker - Jump to any date */}
+              <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-[160px] justify-start text-left font-normal",
+                      !selectedDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarDays className="mr-2 h-4 w-4" />
+                    {selectedDate ? format(selectedDate, "MMM d, yyyy") : "Jump to date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <CalendarComponent
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => {
+                      if (date) {
+                        setSelectedDate(date);
+                        setSelectedYear(date.getFullYear());
+                        setCurrentMonth(new Date(date.getFullYear(), date.getMonth(), 1));
+                        setDatePickerOpen(false);
+                      }
+                    }}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                    defaultMonth={selectedDate || currentMonth}
+                  />
+                </PopoverContent>
+              </Popover>
+              
+              {selectedDate && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedDate(undefined);
+                    setSelectedYear(new Date().getFullYear());
+                    setCurrentMonth(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+                  }}
+                  className="text-xs"
+                >
+                  Clear
+                </Button>
+              )}
             </div>
           </div>
         </CardHeader>
@@ -327,6 +360,7 @@ export const TransitCalendarView = ({
                     const dayTransits = transitsByDate[dateKey] || [];
                     const hasMajor = dayTransits.some(t => t.significance === 'major');
                     const hasModerate = dayTransits.some(t => t.significance === 'moderate');
+                    const isSelected = selectedDate && isSameDay(day, selectedDate);
                     
                     return (
                       <Tooltip key={dateKey}>
@@ -336,9 +370,15 @@ export const TransitCalendarView = ({
                               aspect-square p-1 rounded-md text-sm relative
                               hover:bg-muted transition-colors
                               ${isToday(day) ? 'bg-primary/20 font-bold' : ''}
-                              ${hasMajor ? 'bg-primary/30 ring-2 ring-primary' : hasModerate ? 'bg-primary/10' : ''}
+                              ${isSelected ? 'ring-2 ring-primary bg-primary/40' : ''}
+                              ${!isSelected && hasMajor ? 'bg-primary/30 ring-2 ring-primary/50' : !isSelected && hasModerate ? 'bg-primary/10' : ''}
                             `}
-                            onClick={() => dayTransits.length > 0 && setSelectedTransit(dayTransits[0])}
+                            onClick={() => {
+                              setSelectedDate(day);
+                              if (dayTransits.length > 0) {
+                                setSelectedTransit(dayTransits[0]);
+                              }
+                            }}
                           >
                             <span className="text-xs">{format(day, 'd')}</span>
                             {dayTransits.length > 0 && (
@@ -402,25 +442,46 @@ export const TransitCalendarView = ({
             </CardContent>
           </Card>
           
-          {/* Month's transits list */}
+          {/* Selected day or Month's transits list */}
           <Card className="mt-4">
             <CardHeader className="pb-2">
               <CardTitle className="text-base font-medium">
-                {format(currentMonth, 'MMMM')} Transits ({monthTransits.length})
+                {selectedDate 
+                  ? `${format(selectedDate, 'EEEE, MMMM d, yyyy')} Transits`
+                  : `${format(currentMonth, 'MMMM')} Transits (${monthTransits.length})`
+                }
               </CardTitle>
+              {selectedDate && (
+                <p className="text-xs text-muted-foreground">
+                  Showing transits for selected date
+                </p>
+              )}
             </CardHeader>
             <CardContent>
               <ScrollArea className="h-[300px]">
                 <div className="space-y-2">
-                  {monthTransits.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                      {natalChart ? 'No major transits this month' : 'Select a chart to view transits'}
-                    </p>
-                  ) : (
-                    monthTransits.map(t => (
+                  {(() => {
+                    const transitsToShow = selectedDate 
+                      ? transitsByDate[format(selectedDate, 'yyyy-MM-dd')] || []
+                      : monthTransits;
+                    
+                    if (transitsToShow.length === 0) {
+                      return (
+                        <p className="text-sm text-muted-foreground">
+                          {selectedChartId === 'general' 
+                            ? 'Select a chart to view personalized transits'
+                            : selectedDate 
+                              ? 'No transits on this date'
+                              : 'No major transits this month'
+                          }
+                        </p>
+                      );
+                    }
+                    
+                    return transitsToShow.map(t => (
                       <TransitCard key={t.id} transit={t} compact />
-                    ))
-                  )}
+                    ));
+                  })()}
                 </div>
               </ScrollArea>
             </CardContent>
