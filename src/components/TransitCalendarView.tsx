@@ -1,20 +1,23 @@
 import { useState, useMemo } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, isSameDay } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ChevronLeft, ChevronRight, Star, Calendar, TrendingUp, Zap } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { ChevronLeft, ChevronRight, Star, Calendar, TrendingUp, Zap, User } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import {
-  majorTransits2026,
-  keyDates2026,
-  monthlyTransitSummary,
+  calculateYearTransits,
   getTransitsForMonth,
-  getMajorTransits,
-  TransitEvent
-} from '@/data/laurenTransits2026';
+  generateMonthThemes,
+  getTransitPlanetSymbol,
+  getYearMilestones,
+  YearlyTransitEvent
+} from '@/lib/yearlyTransitCalculator';
 
 // Planet symbols
 const planetSymbols: Record<string, string> = {
@@ -30,48 +33,66 @@ const categoryColors = {
   personal: 'bg-green-500/20 text-green-300 border-green-500/30'
 };
 
-const significanceStyles = {
-  major: 'ring-2 ring-primary shadow-lg',
-  moderate: 'ring-1 ring-primary/50',
-  minor: ''
-};
-
 interface TransitCalendarViewProps {
   natalChart?: NatalChart | null;
+  savedCharts?: NatalChart[];
+  onSelectChart?: (chartId: string) => void;
 }
 
-export const TransitCalendarView = ({ natalChart }: TransitCalendarViewProps) => {
-  const [currentMonth, setCurrentMonth] = useState(new Date(2026, 0, 1));
-  const [selectedTransit, setSelectedTransit] = useState<TransitEvent | null>(null);
+export const TransitCalendarView = ({ 
+  natalChart, 
+  savedCharts = [],
+  onSelectChart 
+}: TransitCalendarViewProps) => {
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const [currentMonth, setCurrentMonth] = useState(new Date(selectedYear, new Date().getMonth(), 1));
+  const [selectedTransit, setSelectedTransit] = useState<YearlyTransitEvent | null>(null);
   const [viewTab, setViewTab] = useState<'calendar' | 'timeline' | 'list'>('calendar');
+  const [includePersonal, setIncludePersonal] = useState(false);
   
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
   
-  const monthTransits = useMemo(() => getTransitsForMonth(currentMonth.getMonth(), 2026), [currentMonth]);
+  // Calculate transits dynamically from ephemeris
+  const yearTransits = useMemo(() => {
+    if (!natalChart?.planets) return [];
+    return calculateYearTransits(natalChart, selectedYear, { includePersonal });
+  }, [natalChart, selectedYear, includePersonal]);
   
-  const navigateMonth = (direction: number) => {
-    setCurrentMonth(prev => {
-      const newDate = new Date(prev);
-      newDate.setMonth(prev.getMonth() + direction);
-      return newDate;
-    });
-  };
+  const monthTransits = useMemo(() => 
+    getTransitsForMonth(yearTransits, currentMonth.getMonth(), selectedYear),
+    [yearTransits, currentMonth, selectedYear]
+  );
+  
+  const monthThemes = useMemo(() => generateMonthThemes(monthTransits), [monthTransits]);
+  
+  const yearMilestones = useMemo(() => getYearMilestones(yearTransits), [yearTransits]);
   
   // Group transits by date for calendar view
   const transitsByDate = useMemo(() => {
-    const grouped: Record<string, TransitEvent[]> = {};
-    majorTransits2026.forEach(t => {
+    const grouped: Record<string, YearlyTransitEvent[]> = {};
+    yearTransits.forEach(t => {
       const key = format(t.date, 'yyyy-MM-dd');
       if (!grouped[key]) grouped[key] = [];
       grouped[key].push(t);
     });
     return grouped;
-  }, []);
+  }, [yearTransits]);
   
-  const majorTransitsList = getMajorTransits();
-
+  const navigateMonth = (direction: number) => {
+    setCurrentMonth(prev => {
+      const newDate = new Date(prev);
+      newDate.setMonth(prev.getMonth() + direction);
+      // Update year if crossing year boundary
+      if (newDate.getFullYear() !== selectedYear) {
+        setSelectedYear(newDate.getFullYear());
+      }
+      return newDate;
+    });
+  };
+  
   // Get natal positions from the user's chart
   const natalPositionsDisplay = useMemo(() => {
     if (!natalChart?.planets) return [];
@@ -87,38 +108,136 @@ export const TransitCalendarView = ({ natalChart }: TransitCalendarViewProps) =>
         };
       });
   }, [natalChart]);
+
+  // Get major transits for the list view
+  const majorTransits = useMemo(() => 
+    yearTransits.filter(t => t.significance === 'major' || t.significance === 'moderate'),
+    [yearTransits]
+  );
+  
+  // Available years for selection
+  const yearOptions = [currentYear - 1, currentYear, currentYear + 1, currentYear + 2];
   
   return (
     <div className="space-y-6">
-      {/* Header with natal positions summary */}
+      {/* Header with chart selector and options */}
       <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
         <CardHeader className="pb-2">
-          <CardTitle className="font-serif text-xl flex items-center gap-2">
-            <Star className="h-5 w-5 text-primary" />
-            {natalChart?.name ? `${natalChart.name}'s` : 'Your'} 2026 Transit Calendar
-          </CardTitle>
-          {natalChart && (
-            <p className="text-sm text-muted-foreground">
-              Born {natalChart.birthDate} · {natalChart.birthLocation} · {natalChart.birthTime}
-            </p>
-          )}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <CardTitle className="font-serif text-xl flex items-center gap-2">
+                <Star className="h-5 w-5 text-primary" />
+                {natalChart?.name ? `${natalChart.name}'s` : 'Your'} Transit Calendar
+              </CardTitle>
+              {natalChart && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Born {natalChart.birthDate} · {natalChart.birthLocation}
+                </p>
+              )}
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Chart Selector */}
+              {savedCharts.length > 1 && onSelectChart && (
+                <Select
+                  value={natalChart?.id || ''}
+                  onValueChange={onSelectChart}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <User className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder="Select chart" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {savedCharts.map(chart => (
+                      <SelectItem key={chart.id} value={chart.id}>
+                        {chart.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              
+              {/* Year Selector */}
+              <Select
+                value={selectedYear.toString()}
+                onValueChange={(v) => {
+                  const year = parseInt(v);
+                  setSelectedYear(year);
+                  setCurrentMonth(new Date(year, currentMonth.getMonth(), 1));
+                }}
+              >
+                <SelectTrigger className="w-[100px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {yearOptions.map(year => (
+                    <SelectItem key={year} value={year.toString()}>
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {natalPositionsDisplay.length > 0 ? (
-            <div className="flex flex-wrap gap-2 text-xs">
-              {natalPositionsDisplay.map(({ planet, display }) => (
-                <Badge key={planet} variant="outline" className="font-mono">
-                  {planetSymbols[planet] || planet} {planet}: {display}
-                </Badge>
-              ))}
+            <div className="space-y-3">
+              <div className="flex flex-wrap gap-2 text-xs">
+                {natalPositionsDisplay.map(({ planet, display }) => (
+                  <Badge key={planet} variant="outline" className="font-mono">
+                    {planetSymbols[planet] || planet} {planet}: {display}
+                  </Badge>
+                ))}
+              </div>
+              
+              {/* Options */}
+              <div className="flex items-center gap-2 pt-2 border-t border-border/50">
+                <Switch
+                  id="include-personal"
+                  checked={includePersonal}
+                  onCheckedChange={setIncludePersonal}
+                />
+                <Label htmlFor="include-personal" className="text-xs text-muted-foreground">
+                  Include personal planet transits (Sun, Moon, Mercury, Venus, Mars)
+                </Label>
+              </div>
             </div>
           ) : (
             <p className="text-xs text-muted-foreground">
-              No natal chart loaded. Add a chart in the Charts tab to see personalized positions.
+              No natal chart loaded. Add a chart in the Charts tab to see personalized transits.
             </p>
           )}
         </CardContent>
       </Card>
+      
+      {/* Stats summary */}
+      {yearTransits.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <Card className="p-3">
+            <div className="text-2xl font-bold text-primary">{yearTransits.length}</div>
+            <div className="text-xs text-muted-foreground">Total Transits</div>
+          </Card>
+          <Card className="p-3">
+            <div className="text-2xl font-bold text-purple-400">
+              {yearTransits.filter(t => t.category === 'outer').length}
+            </div>
+            <div className="text-xs text-muted-foreground">Outer Planet</div>
+          </Card>
+          <Card className="p-3">
+            <div className="text-2xl font-bold text-blue-400">
+              {yearTransits.filter(t => t.category === 'social').length}
+            </div>
+            <div className="text-xs text-muted-foreground">Social Planet</div>
+          </Card>
+          <Card className="p-3">
+            <div className="text-2xl font-bold text-amber-400">
+              {yearTransits.filter(t => t.significance === 'major').length}
+            </div>
+            <div className="text-xs text-muted-foreground">Major Transits</div>
+          </Card>
+        </div>
+      )}
       
       {/* View Tabs */}
       <Tabs value={viewTab} onValueChange={(v) => setViewTab(v as typeof viewTab)}>
@@ -158,9 +277,9 @@ export const TransitCalendarView = ({ natalChart }: TransitCalendarViewProps) =>
                   <ChevronRight className="h-5 w-5" />
                 </button>
               </div>
-              {monthlyTransitSummary[format(currentMonth, 'MMMM yyyy')] && (
+              {monthThemes.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1">
-                  {monthlyTransitSummary[format(currentMonth, 'MMMM yyyy')].themes.map((theme, i) => (
+                  {monthThemes.map((theme, i) => (
                     <Badge key={i} variant="secondary" className="text-xs">
                       {theme}
                     </Badge>
@@ -233,9 +352,9 @@ export const TransitCalendarView = ({ natalChart }: TransitCalendarViewProps) =>
                                   <span className="text-muted-foreground">
                                     {t.transitPlanet} {t.aspect} {t.natalPlanet}
                                   </span>
-                                  {t.time && t.time !== 'ongoing' && (
-                                    <span className="text-muted-foreground"> @ {t.time}</span>
-                                  )}
+                                  <span className="text-muted-foreground/70">
+                                    {' '}({t.orb.toFixed(1)}°)
+                                  </span>
                                 </div>
                               ))}
                             </div>
@@ -255,12 +374,14 @@ export const TransitCalendarView = ({ natalChart }: TransitCalendarViewProps) =>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full bg-blue-500" />
-                  Social (Saturn/Jupiter/Chiron)
+                  Social (Saturn/Jupiter)
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-green-500" />
-                  Personal
-                </div>
+                {includePersonal && (
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full bg-green-500" />
+                    Personal
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -276,7 +397,9 @@ export const TransitCalendarView = ({ natalChart }: TransitCalendarViewProps) =>
               <ScrollArea className="h-[300px]">
                 <div className="space-y-2">
                   {monthTransits.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No major transits this month</p>
+                    <p className="text-sm text-muted-foreground">
+                      {natalChart ? 'No major transits this month' : 'Select a chart to view transits'}
+                    </p>
                   ) : (
                     monthTransits.map(t => (
                       <TransitCard key={t.id} transit={t} compact />
@@ -292,40 +415,41 @@ export const TransitCalendarView = ({ natalChart }: TransitCalendarViewProps) =>
         <TabsContent value="timeline" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="font-serif text-lg">2026 Key Dates Timeline</CardTitle>
+              <CardTitle className="font-serif text-lg">{selectedYear} Key Milestones</CardTitle>
               <p className="text-sm text-muted-foreground">
                 Major transits and turning points throughout the year
               </p>
             </CardHeader>
             <CardContent>
-              <div className="relative">
-                {/* Timeline line */}
-                <div className="absolute left-4 top-0 bottom-0 w-px bg-border" />
-                
-                <div className="space-y-6 pl-10">
-                  {keyDates2026.map((item, i) => (
-                    <div key={i} className="relative">
-                      {/* Dot */}
-                      <div className={`
-                        absolute -left-10 top-1 w-3 h-3 rounded-full
-                        ${item.significance === 'major' ? 'bg-primary ring-2 ring-primary/30' : 'bg-muted-foreground'}
-                      `} />
-                      
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">
-                            {format(item.date, 'MMMM d, yyyy')}
-                          </span>
-                          {item.significance === 'major' && (
+              {yearMilestones.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  {natalChart ? 'No major milestones detected' : 'Select a chart to view milestones'}
+                </p>
+              ) : (
+                <div className="relative">
+                  {/* Timeline line */}
+                  <div className="absolute left-4 top-0 bottom-0 w-px bg-border" />
+                  
+                  <div className="space-y-6 pl-10">
+                    {yearMilestones.map((item, i) => (
+                      <div key={i} className="relative">
+                        {/* Dot */}
+                        <div className="absolute -left-10 top-1 w-3 h-3 rounded-full bg-primary ring-2 ring-primary/30" />
+                        
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium">
+                              {format(item.date, 'MMMM d, yyyy')}
+                            </span>
                             <Badge className="bg-primary/20 text-primary text-xs">Major</Badge>
-                          )}
+                          </div>
+                          <p className="text-sm text-muted-foreground">{item.event}</p>
                         </div>
-                        <p className="text-sm text-muted-foreground">{item.event}</p>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -338,15 +462,21 @@ export const TransitCalendarView = ({ natalChart }: TransitCalendarViewProps) =>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base font-medium flex items-center gap-2">
                   <Star className="h-4 w-4 text-primary" />
-                  Major Transits ({majorTransitsList.length})
+                  Major Transits ({majorTransits.length})
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <ScrollArea className="h-[400px]">
                   <div className="space-y-2">
-                    {majorTransitsList.map(t => (
-                      <TransitCard key={t.id} transit={t} />
-                    ))}
+                    {majorTransits.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">
+                        {natalChart ? 'No major transits found' : 'Select a chart to view transits'}
+                      </p>
+                    ) : (
+                      majorTransits.map(t => (
+                        <TransitCard key={t.id} transit={t} />
+                      ))
+                    )}
                   </div>
                 </ScrollArea>
               </CardContent>
@@ -359,8 +489,8 @@ export const TransitCalendarView = ({ natalChart }: TransitCalendarViewProps) =>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {['Pluto', 'Neptune', 'Uranus', 'Saturn', 'Jupiter', 'Chiron'].map(planet => {
-                    const planetTransits = majorTransits2026.filter(t => t.transitPlanet === planet);
+                  {['Pluto', 'Neptune', 'Uranus', 'Saturn', 'Jupiter'].map(planet => {
+                    const planetTransits = yearTransits.filter(t => t.transitPlanet === planet);
                     return (
                       <div key={planet} className="space-y-2">
                         <div className="flex items-center gap-2">
@@ -417,88 +547,68 @@ export const TransitCalendarView = ({ natalChart }: TransitCalendarViewProps) =>
 
 // Transit Card Component
 interface TransitCardProps {
-  transit: TransitEvent;
+  transit: YearlyTransitEvent;
   compact?: boolean;
   expanded?: boolean;
 }
 
-const TransitCard = ({ transit, compact = false, expanded = false }: TransitCardProps) => {
-  const interpretations: Record<string, string> = {
-    'Pluto-Moon': 'Deep emotional transformation. Old patterns surface for healing. Intense but ultimately empowering.',
-    'Neptune-Chiron': 'Spiritual healing opportunity. Dreams may hold messages. Creative expression as therapy.',
-    'Neptune-Ascendant': 'Identity boundaries soften. Increased sensitivity. Time for spiritual exploration.',
-    'Uranus-Uranus': 'Uranus opposition marks midlife awakening. Time to honor your authentic self.',
-    'Uranus-Venus': 'Relationship revolution. Unexpected romantic developments. Freedom vs. connection themes.',
-    'Uranus-Jupiter': 'Sudden expansion opportunities. Lucky breaks. Be ready to leap when doors open.',
-    'Saturn-Moon': 'Emotional maturity test. Setting boundaries. Responsibility around home/family.',
-    'Saturn-Pluto': 'Power structures transform. Old controls release. Building lasting foundations.',
-    'Jupiter-Midheaven': 'Career expansion peak. Recognition comes. Time to aim higher professionally.',
-    'Jupiter-Sun': 'Confidence surge. Opportunities align with identity. Growth feels natural.',
-    'Chiron-Chiron': 'Chiron return! Major healing cycle. Past wounds can finally resolve.',
-    'default': 'This transit activates themes of change and growth in your life.'
-  };
-  
-  const getInterpretation = () => {
-    const key = `${transit.transitPlanet}-${transit.natalPlanet}`;
-    return interpretations[key] || interpretations['default'];
-  };
+const TransitCard = ({ transit, compact, expanded }: TransitCardProps) => {
+  const categoryColor = categoryColors[transit.category];
   
   if (compact) {
     return (
-      <div className={`p-2 rounded-md border ${categoryColors[transit.category]} ${significanceStyles[transit.significance]}`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-sm">
-              {planetSymbols[transit.transitPlanet]} {transit.aspectSymbol} {planetSymbols[transit.natalPlanet]}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              {transit.transitPlanet} {transit.aspect} {transit.natalPlanet}
-            </span>
-          </div>
-          <span className="text-xs">
-            {format(transit.date, 'MMM d')}
-            {transit.time && transit.time !== 'ongoing' && ` @ ${transit.time}`}
+      <div className={`p-2 rounded-md border ${categoryColor} flex items-center justify-between`}>
+        <div className="flex items-center gap-2">
+          <span className="text-lg">
+            {planetSymbols[transit.transitPlanet]} {transit.aspectSymbol} {planetSymbols[transit.natalPlanet]}
           </span>
+          <div className="text-xs">
+            <span className="font-medium">{transit.transitPlanet} {transit.aspect} {transit.natalPlanet}</span>
+          </div>
+        </div>
+        <div className="text-xs text-muted-foreground">
+          {format(transit.date, 'MMM d')}
         </div>
       </div>
     );
   }
   
   return (
-    <div className={`p-3 rounded-md border ${categoryColors[transit.category]} ${significanceStyles[transit.significance]}`}>
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-lg">
-              {planetSymbols[transit.transitPlanet]} {transit.aspectSymbol} {planetSymbols[transit.natalPlanet]}
-            </span>
-            {transit.significance === 'major' && (
-              <Star className="h-3 w-3 text-primary fill-primary" />
-            )}
-          </div>
-          <Badge variant="outline" className="text-xs">
-            {transit.transitSign}
-          </Badge>
+    <div className={`p-3 rounded-md border ${categoryColor} ${transit.significance === 'major' ? 'ring-2 ring-primary shadow-lg' : ''}`}>
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xl">
+          {planetSymbols[transit.transitPlanet]} {transit.aspectSymbol} {planetSymbols[transit.natalPlanet]}
+        </span>
+        <Badge variant="outline" className="text-xs">
+          {transit.orb.toFixed(1)}° orb
+        </Badge>
+      </div>
+      
+      <div className="space-y-1">
+        <div className="font-medium">
+          {transit.transitPlanet} {transit.aspect} {transit.natalPlanet}
         </div>
-        
-        <div className="text-sm">
-          <span className="font-medium">{transit.transitPlanet}</span>
-          {' '}{transit.aspect}{' '}
-          <span className="font-medium">{transit.natalPlanet}</span>
-        </div>
-        
         <div className="text-xs text-muted-foreground">
           {format(transit.date, 'EEEE, MMMM d, yyyy')}
-          {transit.time && transit.time !== 'ongoing' && ` at ${transit.time}`}
-          {transit.isExact && ' (exact)'}
         </div>
-        
-        {expanded && (
-          <div className="mt-2 pt-2 border-t border-border/50">
-            <p className="text-xs leading-relaxed">{getInterpretation()}</p>
-          </div>
-        )}
+        <div className="text-xs">
+          <span className="text-muted-foreground">Transit: </span>
+          {transit.transitDegree}° {transit.transitSign}
+          <span className="mx-2">→</span>
+          <span className="text-muted-foreground">Natal: </span>
+          {transit.natalDegree}° {transit.natalSign}
+        </div>
       </div>
+      
+      {expanded && (
+        <div className="mt-3 pt-3 border-t border-border/50 text-xs text-muted-foreground">
+          <p>
+            This {transit.category} planet transit {transit.significance === 'major' ? 'is a major life event' : 'influences your experience'} as {transit.transitPlanet} forms a {transit.aspect} to your natal {transit.natalPlanet}.
+          </p>
+        </div>
+      )}
     </div>
   );
 };
+
+export default TransitCalendarView;
