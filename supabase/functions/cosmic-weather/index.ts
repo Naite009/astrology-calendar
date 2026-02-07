@@ -37,7 +37,7 @@ serve(async (req) => {
     
     // Cache key versioning: bump this when prompt/format changes so users don't get stale cached text.
     // This intentionally changes the cache key without requiring any DB schema changes.
-    const PROMPT_VERSION = "2026-02-06-v3-no-fake-houses";
+    const PROMPT_VERSION = "2026-02-08-v4-integrative-day-ruler";
 
     const cacheDeviceId = deviceId || 'default';
     const cacheVoiceStyle = `${voiceStyle || ''}@${PROMPT_VERSION}`;
@@ -574,8 +574,8 @@ Aspects: ☌=conjunction, ⚹=sextile, □=square, △=trine, ☍=opposition
 ## Planetary Day Practice
 Today is [DAY OF WEEK], traditionally ruled by [PLANET GLYPH] [PLANET NAME]. 
 
-BUT HERE'S WHAT'S ACTUALLY HAPPENING IN THE SKY TODAY that modifies this energy:
-[Describe 1-2 key transits or aspects that blend with or modify the planetary day ruler. Be specific about how this week's planetary weather makes today different from the same weekday last week.]
+Here's how the planetary day ruler integrates with today's sky:
+[Describe 1-2 key transits or aspects that blend with the planetary day ruler. How does the day ruler's energy express itself given today's specific cosmic weather? Be specific about how to work with BOTH energies together.]
 
 **Color to wear/use:** [COLOR] (because [brief reason tied to day ruler AND current transits])
 **What to actually do today:** 
