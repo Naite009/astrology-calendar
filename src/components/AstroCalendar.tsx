@@ -838,7 +838,7 @@ export const AstroCalendar = () => {
         )}
 
         {viewMode === "transit-calendar" && (
-          <TransitCalendarView />
+          <TransitCalendarView natalChart={userNatalChart || savedCharts[0]} />
         )}
       </div>
 
