@@ -838,7 +838,16 @@ export const AstroCalendar = () => {
         )}
 
         {viewMode === "transit-calendar" && (
-          <TransitCalendarView natalChart={userNatalChart || savedCharts[0]} />
+          <TransitCalendarView 
+            natalChart={userNatalChart || savedCharts[0]} 
+            savedCharts={savedCharts}
+            onSelectChart={(chartId) => {
+              const chart = savedCharts.find(c => c.id === chartId);
+              if (chart) {
+                saveUserNatalChart(chart);
+              }
+            }}
+          />
         )}
       </div>
 
