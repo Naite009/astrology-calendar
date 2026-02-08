@@ -16,6 +16,7 @@ import { CosmicRecipeCard, parseRecipeFromContent } from "./CosmicRecipeCard";
 import { useNatalChart, NatalChart } from "@/hooks/useNatalChart";
 import { PersonalizedTransitsPanel } from "./PersonalizedTransitsPanel";
 import { WeeklyMealPlanCard } from "./WeeklyMealPlanCard";
+import { ChartSelector } from "./ChartSelector";
 
 const ZODIAC_SYMBOLS: Record<string, string> = {
   Aries: "♈", Taurus: "♉", Gemini: "♊", Cancer: "♋",
@@ -277,9 +278,11 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
     ...savedCharts,
   ];
   
-  // Get selected chart object
+  // Get selected chart object - handle 'user' ID from ChartSelector
   const selectedChart = selectedChartId 
-    ? availableCharts.find(c => c.id === selectedChartId || c.name === selectedChartId) 
+    ? selectedChartId === 'user' 
+      ? userNatalChart 
+      : availableCharts.find(c => c.id === selectedChartId || c.name === selectedChartId) 
     : null;
 
   const today = new Date();
@@ -937,22 +940,15 @@ Keep the tone professional, insightful, and practically applicable.`
                         <User className="h-5 w-5 text-primary" />
                         <span className="text-sm font-medium">Personalize for:</span>
                       </div>
-                      <Select
-                        value={selectedChartId || '__none__'}
-                        onValueChange={(value) => setSelectedChartId(value === '__none__' ? null : value)}
-                      >
-                        <SelectTrigger className="w-[200px] bg-background">
-                          <SelectValue placeholder="Select a chart..." />
-                        </SelectTrigger>
-                        <SelectContent className="bg-background border-border z-[100]">
-                          <SelectItem value="__none__">None (General)</SelectItem>
-                          {availableCharts.map((chart) => (
-                            <SelectItem key={chart.id || chart.name} value={chart.id || chart.name}>
-                              {chart.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <ChartSelector
+                        userNatalChart={userNatalChart}
+                        savedCharts={savedCharts}
+                        selectedChartId={selectedChartId || 'general'}
+                        onSelect={(id) => setSelectedChartId(id === 'general' ? null : id)}
+                        includeGeneral={true}
+                        generalLabel="None (General)"
+                        className="min-w-[200px]"
+                      />
                       {selectedChart && (
                         <Badge variant="outline" className="bg-primary/10">
                           {selectedChart.planets.Sun?.sign && `☉ ${selectedChart.planets.Sun.sign}`}
