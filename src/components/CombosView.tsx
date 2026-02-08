@@ -252,14 +252,17 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
   const doesComboMatchChart = (combo: CombinationEntry): boolean => {
     if (!selectedChart || chartFactors.size === 0) return false;
     
+    // Include POINTS (Ascendant, Midheaven, etc.) along with planets for matching
+    const comboBodies = combo.factors.filter(f => PLANETS.includes(f) || POINTS.includes(f));
     const comboPlanets = combo.factors.filter(f => PLANETS.includes(f));
     const comboSigns = combo.factors.filter(f => SIGNS.includes(f));
     const comboHouses = combo.factors.filter(f => HOUSES.includes(f));
     const comboAspects = combo.factors.filter(f => ASPECTS.includes(f));
     
-    // For planet-sign combos, check if the chart has that planet in that sign
-    if (comboPlanets.length === 1 && comboSigns.length === 1 && comboHouses.length === 0) {
-      return chartFactors.has(`${comboPlanets[0]}|${comboSigns[0]}`);
+    // For body-sign combos (planet OR point in sign), check if the chart has that body in that sign
+    // This handles cases like ['Ascendant', 'Virgo'] or ['Mercury', 'Aquarius']
+    if (comboBodies.length === 1 && comboSigns.length === 1 && comboHouses.length === 0) {
+      return chartFactors.has(`${comboBodies[0]}|${comboSigns[0]}`);
     }
     
     // For planet-house combos, check if the chart has that planet in that house
@@ -322,9 +325,9 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
       return hasAspect;
     }
     
-    // For single planet entries (like "Saturn"), don't auto-match - too generic
-    if (comboPlanets.length === 1 && comboSigns.length === 0 && comboHouses.length === 0 && comboAspects.length === 0) {
-      return false; // Single planet entries are too generic to match
+    // For single planet/body entries (like "Saturn"), don't auto-match - too generic
+    if (comboBodies.length === 1 && comboSigns.length === 0 && comboHouses.length === 0 && comboAspects.length === 0) {
+      return false; // Single body entries are too generic to match
     }
     
     // For other combinations (e.g., planet+aspect only, or complex multi-factor),
@@ -338,7 +341,14 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
       );
     }
     
-    // For remaining single-planet combos with multiple factors, check all
+    // For remaining combos with bodies + factors, check the body-sign/house relationship exists
+    // This should NOT fall through to matching individual factors separately
+    if (comboBodies.length === 1 && (comboSigns.length === 1 || comboHouses.length === 1)) {
+      // Already handled above - if we got here, it means the pattern didn't match
+      return false;
+    }
+    
+    // For other multi-factor combos without clear body, be conservative - require all factors
     return combo.factors.every(f => chartFactors.has(f));
   };
 

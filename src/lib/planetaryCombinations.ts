@@ -2495,15 +2495,16 @@ export const luckCombinations: CombinationEntry[] = [
 // ============== MASTER COMBINATION FINDER ==============
 
 export const getAllCombinations = (): CombinationEntry[] => {
-  return [
+  // Order: Sun, Moon first (luminaries), then personal planets, then outer planets
+  const allCombos = [
+    ...sunSignCombinations,
+    ...moonSignCombinations,
     ...mercurySignCombinations,
     ...venusSignCombinations,
     ...marsSignCombinations,
     ...jupiterSignCombinations,
     ...saturnSignCombinations,
     ...chironSignCombinations,
-    ...sunSignCombinations,
-    ...moonSignCombinations,
     ...uranusSignCombinations,
     ...neptuneSignCombinations,
     ...plutoSignCombinations,
@@ -2518,6 +2519,14 @@ export const getAllCombinations = (): CombinationEntry[] => {
     ...educationCombinations,
     ...uranusAquariusCombinations,
   ];
+  
+  // Deduplicate by ID to prevent repetition
+  const seen = new Set<string>();
+  return allCombos.filter(combo => {
+    if (seen.has(combo.id)) return false;
+    seen.add(combo.id);
+    return true;
+  });
 };
 
 /**
