@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { Loader2, Download, Utensils, ChefHat, Sparkles, RefreshCw, Printer, Star, Settings2 } from 'lucide-react';
+import { Loader2, Download, Utensils, ChefHat, Sparkles, RefreshCw, Printer, Star, Settings2, User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,6 +20,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { useNatalChart, NatalChart } from '@/hooks/useNatalChart';
+import { ChartSelector } from './ChartSelector';
 
 const ZODIAC_SYMBOLS: Record<string, string> = {
   Aries: "♈", Taurus: "♉", Gemini: "♊", Cancer: "♋",
@@ -129,8 +131,22 @@ export const WeeklyMealPlanCard = () => {
   const [dietaryPreference, setDietaryPreference] = useState<string>(() => 
     localStorage.getItem(DIETARY_PREF_KEY) || 'default'
   );
+  const [selectedChartId, setSelectedChartId] = useState<string>('general');
   const contentRef = useRef<HTMLDivElement>(null);
   const weekKey = getWeekKey();
+
+  // Get charts for person selector
+  const { userNatalChart, savedCharts } = useNatalChart();
+  
+  // Get selected person's name for personalization
+  const getSelectedPersonName = (): string | null => {
+    if (selectedChartId === 'general') return null;
+    if (selectedChartId === 'user' && userNatalChart) return userNatalChart.name;
+    const chart = savedCharts.find(c => c.id === selectedChartId);
+    return chart?.name || null;
+  };
+  
+  const selectedPersonName = getSelectedPersonName();
 
   const weekData = useMemo(() => getWeekForecast(), []);
   const selectedDay = weekData[selectedDayIndex];
@@ -141,19 +157,29 @@ export const WeeklyMealPlanCard = () => {
     setDietaryPreference(value);
     localStorage.setItem(DIETARY_PREF_KEY, value);
     // Clear cache when preference changes
-    localStorage.removeItem(`${MEAL_PLAN_CACHE_KEY}-${weekKey}`);
-    localStorage.removeItem(`${RECIPE_CACHE_KEY}-${weekKey}`);
+    localStorage.removeItem(`${MEAL_PLAN_CACHE_KEY}-${weekKey}-${selectedChartId}`);
+    localStorage.removeItem(`${RECIPE_CACHE_KEY}-${weekKey}-${selectedChartId}`);
     setMealPlan(null);
     setWeeklyRecipe(null);
     // Auto-regenerate with new preference
     fetchWeeklyMealPlan(true);
     fetchWeeklyRecipe(true);
   };
+  
+  // Handle chart/person change
+  const handleChartChange = (chartId: string) => {
+    setSelectedChartId(chartId);
+    setMealPlan(null);
+    setWeeklyRecipe(null);
+  };
 
   // Load cached data and auto-fetch if not cached
   useEffect(() => {
-    const cachedMealPlan = localStorage.getItem(`${MEAL_PLAN_CACHE_KEY}-${weekKey}`);
-    const cachedRecipe = localStorage.getItem(`${RECIPE_CACHE_KEY}-${weekKey}`);
+    const cacheKey = `${MEAL_PLAN_CACHE_KEY}-${weekKey}-${selectedChartId}`;
+    const recipeCacheKey = `${RECIPE_CACHE_KEY}-${weekKey}-${selectedChartId}`;
+    
+    const cachedMealPlan = localStorage.getItem(cacheKey);
+    const cachedRecipe = localStorage.getItem(recipeCacheKey);
     
     if (cachedMealPlan) {
       setMealPlan(cachedMealPlan);
@@ -166,7 +192,7 @@ export const WeeklyMealPlanCard = () => {
     } else {
       fetchWeeklyRecipe(false);
     }
-  }, [weekKey]);
+  }, [weekKey, selectedChartId]);
 
   const getDietaryPromptAddition = (): string => {
     const pref = DIETARY_PREFERENCES.find(p => p.value === dietaryPreference);
@@ -206,7 +232,9 @@ export const WeeklyMealPlanCard = () => {
           date: new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
           moonPhase: todayData.moonPhase,
           moonSign: todayData.moonSign,
-          customPrompt: `Create a WEEKLY COSMIC MEAL PLAN for this week (Sunday through Saturday).
+          customPrompt: `Create a WEEKLY COSMIC MEAL PLAN for this week (Sunday through Saturday)${selectedPersonName ? ` for ${selectedPersonName}` : ''}.
+
+${selectedPersonName ? `PERSONALIZED FOR: ${selectedPersonName}` : 'GENERAL COSMIC GUIDANCE'}
 
 TODAY IS: ${todayData.dayName}, ${todayData.dateStr} - Moon in ${todayData.moonSign} ${ZODIAC_SYMBOLS[todayData.moonSign] || ''}
 
@@ -247,7 +275,7 @@ Keep descriptions SHORT and punchy. Make it scannable.`
 
       if (error) throw error;
       setMealPlan(data.insight);
-      localStorage.setItem(`${MEAL_PLAN_CACHE_KEY}-${weekKey}`, data.insight);
+      localStorage.setItem(`${MEAL_PLAN_CACHE_KEY}-${weekKey}-${selectedChartId}`, data.insight);
       
     } catch (err) {
       console.error('Failed to fetch meal plan:', err);
@@ -272,7 +300,9 @@ Keep descriptions SHORT and punchy. Make it scannable.`
           date: new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
           moonPhase: todayData.moonPhase,
           moonSign: todayData.moonSign,
-          customPrompt: `Create ONE special "Recipe of the Week" that captures this week's lunar journey.
+          customPrompt: `Create ONE special "Recipe of the Week" that captures this week's lunar journey${selectedPersonName ? ` for ${selectedPersonName}` : ''}.
+
+${selectedPersonName ? `PERSONALIZED FOR: ${selectedPersonName}` : 'GENERAL COSMIC GUIDANCE'}
 
 TODAY IS: ${todayData.dayName}, ${todayData.dateStr}
 MOON SIGNS THIS WEEK: ${weekData.map(d => `${d.moonSign} ${ZODIAC_SYMBOLS[d.moonSign]}`).join(' → ')}
@@ -319,7 +349,7 @@ FORMAT:
 
       if (error) throw error;
       setWeeklyRecipe(data.insight);
-      localStorage.setItem(`${RECIPE_CACHE_KEY}-${weekKey}`, data.insight);
+      localStorage.setItem(`${RECIPE_CACHE_KEY}-${weekKey}-${selectedChartId}`, data.insight);
       
     } catch (err) {
       console.error('Failed to fetch weekly recipe:', err);
@@ -391,6 +421,17 @@ FORMAT:
           </CardTitle>
           
           <div className="flex gap-2 flex-wrap print:hidden items-center">
+            {/* Person Selector */}
+            <ChartSelector
+              userNatalChart={userNatalChart}
+              savedCharts={savedCharts}
+              selectedChartId={selectedChartId}
+              onSelect={handleChartChange}
+              includeGeneral={true}
+              generalLabel="General (Anyone)"
+              className="min-w-[140px]"
+            />
+            
             {/* Dietary Preferences Dropdown */}
             <Popover>
               <PopoverTrigger asChild>
