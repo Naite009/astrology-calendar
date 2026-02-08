@@ -155,7 +155,8 @@ export const HealthAstrologyView = ({ natalChart, allCharts }: HealthAstrologyVi
               <span className="block text-muted-foreground">Daily health</span>
             </div>
             <div className="p-2 bg-muted/50 rounded-sm">
-              <span className="font-medium">Ascendant:</span> {selectedChart.planets.Ascendant?.sign || 'Unknown'}
+              {/* CRITICAL: Use house1 as definitive Ascendant source, not planets.Ascendant */}
+              <span className="font-medium">Ascendant:</span> {selectedChart.houseCusps?.house1?.sign || selectedChart.planets.Ascendant?.sign || 'Unknown'}
               <span className="block text-muted-foreground">Constitution</span>
             </div>
           </div>
