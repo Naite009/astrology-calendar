@@ -69,14 +69,14 @@ export const TransitCalendarView = ({
   // Determine which chart to use for calculations
   const activeChart = useMemo(() => {
     if (selectedChartId === 'general') {
-      // Fall back to natal chart for transit calculations even in "collective" mode
-      return natalChart || savedCharts[0] || null;
+      // "General" should never silently fall back to someone else's saved chart
+      return natalChart || null;
     }
     if (selectedChartId === 'user') {
-      return natalChart;
+      return natalChart || null;
     }
     // Find the selected chart from savedCharts
-    return savedCharts.find(c => c.id === selectedChartId) || natalChart || savedCharts[0] || null;
+    return savedCharts.find(c => c.id === selectedChartId) || natalChart || null;
   }, [selectedChartId, natalChart, savedCharts]);
   
   const yearTransits = useMemo(() => {
@@ -172,9 +172,7 @@ export const TransitCalendarView = ({
                 selectedChartId={selectedChartId}
                 onSelect={(id) => {
                   setSelectedChartId(id);
-                  if (onSelectChart && id !== 'general') {
-                    onSelectChart(id);
-                  }
+                  onSelectChart?.(id);
                 }}
                 includeGeneral={false}
                 label="View for"
