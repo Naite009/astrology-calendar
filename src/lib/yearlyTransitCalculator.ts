@@ -107,6 +107,60 @@ const angularDistance = (lon1: number, lon2: number): number => {
   return diff;
 };
 
+// Get element for a zodiac sign
+const getElement = (sign: string): 'fire' | 'earth' | 'air' | 'water' => {
+  const fire = ['Aries', 'Leo', 'Sagittarius'];
+  const earth = ['Taurus', 'Virgo', 'Capricorn'];
+  const air = ['Gemini', 'Libra', 'Aquarius'];
+  // const water = ['Cancer', 'Scorpio', 'Pisces'];
+  if (fire.includes(sign)) return 'fire';
+  if (earth.includes(sign)) return 'earth';
+  if (air.includes(sign)) return 'air';
+  return 'water';
+};
+
+// Validate that aspect makes sense based on element/modality rules
+// This prevents false positives where orb math passes but signs don't geometrically align
+const isValidAspectBySign = (
+  transitSign: string, 
+  natalSign: string, 
+  aspectName: string
+): boolean => {
+  const signs = ZODIAC_SIGNS;
+  const transitIdx = signs.indexOf(transitSign);
+  const natalIdx = signs.indexOf(natalSign);
+  if (transitIdx === -1 || natalIdx === -1) return true; // Can't validate, allow
+  
+  // Calculate sign distance (how many signs apart, shortest path)
+  let signDiff = Math.abs(transitIdx - natalIdx);
+  if (signDiff > 6) signDiff = 12 - signDiff;
+  
+  // Strict validation: aspects must match their geometric sign distance
+  // Out-of-sign aspects (e.g., 29° Pisces to 1° Aries) are rare and require 
+  // very tight orbs - we're stricter here to prevent false positives
+  switch (aspectName) {
+    case 'conjunction':
+      // Conjunction: same sign, or adjacent with very tight orb (out-of-sign)
+      return signDiff === 0 || signDiff === 1;
+    case 'opposition':
+      // Opposition: exactly 6 signs apart
+      return signDiff === 6 || signDiff === 5; // Allow 5 for late/early degree situations
+    case 'trine':
+      // Trine: exactly 4 signs apart (same element: Fire-Fire, Earth-Earth, etc.)
+      // Pisces (11) to Sagittarius (8) = 3 signs = NOT a trine
+      // Aries (0) to Sagittarius (8) = 4 signs = IS a trine
+      return signDiff === 4;
+    case 'square':
+      // Square: exactly 3 signs apart (same modality)
+      return signDiff === 3;
+    case 'sextile':
+      // Sextile: exactly 2 signs apart
+      return signDiff === 2;
+    default:
+      return true;
+  }
+};
+
 // Determine transit planet category
 const getTransitCategory = (planet: string): 'outer' | 'social' | 'personal' => {
   if (['Pluto', 'Neptune', 'Uranus'].includes(planet)) return 'outer';
@@ -200,6 +254,15 @@ export const calculateYearTransits = (
           
           // For exact pass detection, use tighter orb
           if (diff <= aspectDef.orb) {
+            const natalSignDegree = longitudeToSignDegree(natalLon);
+            
+            // CRITICAL: Validate that the aspect makes geometric sense
+            // e.g., Neptune at 29° Pisces cannot trine Venus at 0° Sagittarius
+            // (Pisces and Sagittarius are 3 signs apart = square, not 4 = trine)
+            if (!isValidAspectBySign(transitSignDegree.sign, natalSignDegree.sign, aspectDef.name)) {
+              return; // Skip this false positive
+            }
+            
             const aspectKey = `${transitPlanet}-${aspectDef.name}-${natalPlanet}-${date.getMonth()}`;
             
             // Check if this is closer than any previous detection this month
@@ -209,7 +272,6 @@ export const calculateYearTransits = (
             
             if (!existingKey || diff < 0.5) {
               const isExact = diff < 0.5;
-              const natalSignDegree = longitudeToSignDegree(natalLon);
               
               transits.push({
                 id: `${transitPlanet}-${natalPlanet}-${aspectDef.name}-${date.toISOString()}`,
