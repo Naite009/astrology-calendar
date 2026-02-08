@@ -361,7 +361,7 @@ export const PersonalizedTransitsPanel = ({
    - These signs are "trapped" within houses and their energy is harder to access
    - Planets in intercepted signs may feel blocked or require extra effort to express
    - Transits to intercepted areas can feel more intense when they finally activate`
-        : '';
+        : 'INTERCEPTED SIGNS: NONE (this chart has no intercepted signs - do NOT mention interceptions)';
 
       const doubleSignedInfo = doubleSignedHouses.length > 0
         ? `DOUBLE-SIGNED HOUSES: ${doubleSignedHouses.join('; ')}
@@ -408,11 +408,14 @@ Write a reading that:
 1. Opens with the most significant transit happening RIGHT NOW - no preamble
 2. References SPECIFIC placements (e.g., "Your natal Venus at 14° Scorpio in the 8th...")
 3. Explains how today's Moon in ${moonSign} activates specific houses and planets in THEIR chart
-4. If the Moon is transiting an intercepted sign, explain the unlocking/activation
-5. If any natal planets are in intercepted signs, note how transits there feel more significant
+${interceptedSigns.length > 0 ? `4. If the Moon is transiting an intercepted sign, explain the unlocking/activation
+5. If any natal planets are in intercepted signs, note how transits there feel more significant` : `4. DO NOT mention "intercepted" signs - this chart has NO interceptions
+5. DO NOT invent or hallucinate interceptions - stick to the data provided`}
 6. Interprets aspects with psychological depth - what does it FEEL like internally?
 7. Gives ONE concrete, practical action or focus for the day
 8. End with the takeaway, not a blessing
+
+CRITICAL: Only reference interceptions if INTERCEPTED SIGNS data above is non-empty. If empty, do NOT mention interceptions at all.
 
 Format with ## headers. Be chart-specific - no generic advice that could apply to anyone.`;
 
