@@ -681,6 +681,18 @@ NEVER REPEAT: Lentil soup, butternut squash soup, or any dish more than once per
     
     const currentSeason = getAyurvedicSeason(date);
 
+    // For custom prompts (personalized readings), add strict anti-hallucination enforcement
+    const personalizedSystemAddendum = customPrompt ? `
+
+CRITICAL ANTI-HALLUCINATION RULES FOR PERSONALIZED READINGS:
+1. **HOUSE PLACEMENTS ARE PRE-CALCULATED** - If the prompt includes [HOUSE X] tags next to planets, USE THESE EXACT NUMBERS. Do NOT calculate or infer houses yourself.
+2. **DO NOT infer house from sign!** Example: Moon in Libra does NOT automatically mean 1st house. Only use the [HOUSE X] label provided.
+3. **DEGREE PRECISION** - Use the exact degrees and minutes provided. If it says "3°33' Libra", say that - not "3° Libra" or any rounded number.
+4. **If the prompt explicitly states a planet is in a specific house number, you MUST use that exact number** - saying any other house is a hallucination.
+5. **INTERCEPTED SIGNS** - Only mention interceptions if explicitly listed. If it says "INTERCEPTED SIGNS: NONE", do NOT mention interceptions.
+6. **NEVER override provided data** - The user's natal chart has been calculated precisely. Trust the data given, do not recalculate.
+` : '';
+
     // Use custom prompt if provided, otherwise use the default daily prompt
     const userPrompt = customPrompt ? `${customPrompt}
 
@@ -722,7 +734,7 @@ CRITICAL INSTRUCTIONS:
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: systemPrompt + personalizedSystemAddendum },
           { role: "user", content: userPrompt },
         ],
       }),
