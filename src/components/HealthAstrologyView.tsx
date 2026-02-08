@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart, Apple, Sparkles, Home, Clock, Leaf, AlertCircle, AlertTriangle } from "lucide-react";
@@ -11,6 +11,7 @@ import { HealthTimingCard } from "./health/HealthTimingCard";
 import { HealingModalitiesCard } from "./health/HealingModalitiesCard";
 import { HealthTransitAlertsCard } from "./health/HealthTransitAlertsCard";
 import { ChartSelector } from "./ChartSelector";
+import { getValidatedAscendant, validateChartData } from "@/lib/chartDataValidation";
 
 interface HealthAstrologyViewProps {
   natalChart: NatalChart | null;
@@ -24,6 +25,16 @@ export const HealthAstrologyView = ({ natalChart, allCharts }: HealthAstrologyVi
   const [activeTab, setActiveTab] = useState<string>('blueprint');
 
   const selectedChart = allCharts.find(c => c.id === selectedChartId) || natalChart;
+
+  // Run validation on chart change and log any issues
+  useEffect(() => {
+    if (selectedChart) {
+      const validation = validateChartData(selectedChart);
+      if (validation.hasIssues) {
+        console.warn('[HealthAstrologyView] Chart validation issues:', validation.issues);
+      }
+    }
+  }, [selectedChart]);
 
   if (!selectedChart) {
     return (
@@ -155,8 +166,8 @@ export const HealthAstrologyView = ({ natalChart, allCharts }: HealthAstrologyVi
               <span className="block text-muted-foreground">Daily health</span>
             </div>
             <div className="p-2 bg-muted/50 rounded-sm">
-              {/* CRITICAL: Use house1 as definitive Ascendant source, not planets.Ascendant */}
-              <span className="font-medium">Ascendant:</span> {selectedChart.houseCusps?.house1?.sign || selectedChart.planets.Ascendant?.sign || 'Unknown'}
+              {/* Use validated Ascendant with cross-checks */}
+              <span className="font-medium">Ascendant:</span> {getValidatedAscendant(selectedChart).correctedValue}
               <span className="block text-muted-foreground">Constitution</span>
             </div>
           </div>
