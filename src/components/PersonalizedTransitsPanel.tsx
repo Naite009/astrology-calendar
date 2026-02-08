@@ -319,15 +319,30 @@ export const PersonalizedTransitsPanel = ({
   const generatePersonalizedReading = async () => {
     setIsLoadingAI(true);
     try {
-      // Build natal chart context
-      const natalPlanets = Object.entries(chart.planets)
+      // Build natal chart context WITH calculated house positions (not inferred from sign!)
+      const natalPlanetsWithHouses = Object.entries(chart.planets)
         .filter(([_, data]) => data?.sign && data?.degree !== undefined)
-        .map(([name, data]) => `${name}: ${data!.degree?.toFixed(1)}° ${data!.sign}`)
+        .map(([name, data]) => {
+          const house = getNatalPlanetHouse(name, chart);
+          const houseLabel = house ? ` [HOUSE ${house}]` : '';
+          const deg = data!.degree ?? 0;
+          const min = data!.minutes ?? 0;
+          return `${name}: ${deg}°${min > 0 ? min.toString().padStart(2, '0') + "'" : ''} ${data!.sign}${houseLabel}`;
+        })
         .join('\n');
 
-      const natalHouses = chart.houseCusps ? Object.entries(chart.houseCusps)
+      // Build house cusps with EXACT degrees for reference
+      const natalHouseCusps = chart.houseCusps ? Object.entries(chart.houseCusps)
         .filter(([key]) => key.startsWith('house'))
-        .map(([key, data]) => `${key}: ${data.sign}`)
+        .sort((a, b) => {
+          const numA = parseInt(a[0].replace('house', ''));
+          const numB = parseInt(b[0].replace('house', ''));
+          return numA - numB;
+        })
+        .map(([key, data]) => {
+          const houseNum = key.replace('house', '');
+          return `House ${houseNum} cusp: ${data.degree}°${data.minutes ? data.minutes.toString().padStart(2, '0') + "'" : ''} ${data.sign}`;
+        })
         .join('\n') : '';
 
       // Detect intercepted signs and double-signed houses
@@ -369,13 +384,17 @@ export const PersonalizedTransitsPanel = ({
    - The themes of these signs are expressed across multiple life areas`
         : '';
 
-      const moonAspectsList = majorMoonAspects.map(a => 
-        `Moon ${a.aspect} natal ${a.natalPlanet} (${a.orb}° orb)`
-      ).join(', ');
+      const moonAspectsList = majorMoonAspects.map(a => {
+        const natalHouse = getNatalPlanetHouse(a.natalPlanet, chart);
+        const houseLabel = natalHouse ? ` in H${natalHouse}` : '';
+        return `Moon ${a.aspect} natal ${a.natalPlanet}${houseLabel} (${a.orb}° orb)`;
+      }).join(', ');
 
-      const transitList = significantTransits.map(a =>
-        `Transit ${a.transitPlanet} ${a.aspect} natal ${a.natalPlanet}`
-      ).join(', ');
+      const transitList = significantTransits.map(a => {
+        const natalHouse = getNatalPlanetHouse(a.natalPlanet, chart);
+        const houseLabel = natalHouse ? ` in H${natalHouse}` : '';
+        return `Transit ${a.transitPlanet} ${a.aspect} natal ${a.natalPlanet}${houseLabel}`;
+      }).join(', ');
 
       // Check if Moon is transiting an intercepted sign in their chart
       const moonInIntercepted = interceptedSigns.includes(moonSign);
@@ -389,11 +408,11 @@ CRITICAL STYLE RULES:
 - Write like a professional astrologer giving a consultation, not a greeting card
 - Be direct, specific, and psychologically insightful
 
-THEIR NATAL CHART:
-${natalPlanets}
+THEIR NATAL CHART (with CALCULATED house positions - use these, do NOT infer from sign):
+${natalPlanetsWithHouses}
 
-Houses (from ${chart.houseCusps?.house1?.sign || chart.planets.Ascendant?.sign || 'unknown'} Ascendant):
-${natalHouses}
+HOUSE CUSPS (for reference - these determine house placement):
+${natalHouseCusps}
 
 ${interceptedInfo}
 
@@ -420,9 +439,11 @@ ${interceptedSigns.length > 0 ? `4. If the Moon is transiting an intercepted sig
 8. End with the takeaway, not a blessing
 
 CRITICAL ANTI-HALLUCINATION RULES:
-- The Moon is in the ${moonHouse}${moonHouse === 1 ? 'ST' : moonHouse === 2 ? 'ND' : moonHouse === 3 ? 'RD' : 'TH'} house. If you say ANY other house number, you are hallucinating.
+- **HOUSE PLACEMENTS ARE PRE-CALCULATED** - Each natal planet above has [HOUSE X] next to it. USE THESE EXACT HOUSE NUMBERS.
+- DO NOT infer house from sign! Example: Moon in Libra does NOT mean 1st house. Check the [HOUSE X] tag.
+- The transiting Moon is in the ${moonHouse}${moonHouse === 1 ? 'ST' : moonHouse === 2 ? 'ND' : moonHouse === 3 ? 'RD' : 'TH'} house. If you say ANY other house number for the Moon, you are hallucinating.
 - Only reference interceptions if INTERCEPTED SIGNS data above is non-empty. If empty, do NOT mention interceptions.
-- Use ONLY the data provided. Do not infer or assume house placements.
+- Use ONLY the data provided. Do not infer, assume, or calculate house placements yourself.
 
 Format with ## headers. Be chart-specific - no generic advice that could apply to anyone.`;
 
