@@ -2520,11 +2520,15 @@ export const getAllCombinations = (): CombinationEntry[] => {
     ...uranusAquariusCombinations,
   ];
   
-  // Deduplicate by ID to prevent repetition
-  const seen = new Set<string>();
+  // Deduplicate by FACTORS (not just ID) to prevent showing multiple entries
+  // for the same placement (e.g., Mercury in Aquarius appears as "Genius", "Genius Mind", "Scattered Genius")
+  // Keep only the FIRST entry for each unique factor combination
+  const seenFactors = new Set<string>();
   return allCombos.filter(combo => {
-    if (seen.has(combo.id)) return false;
-    seen.add(combo.id);
+    // Create a normalized key from sorted factors
+    const factorKey = [...combo.factors].sort().join('|');
+    if (seenFactors.has(factorKey)) return false;
+    seenFactors.add(factorKey);
     return true;
   });
 };
