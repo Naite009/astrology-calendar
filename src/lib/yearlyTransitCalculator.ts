@@ -431,9 +431,11 @@ export const getTransitPlanetSymbol = (planet: string): string => {
 };
 
 // Get key milestones for the year
+// Include all major transits, not just exact passes - users want to see
+// when transits occur even if the algorithm didn't flag them as "exact"
 export const getYearMilestones = (transits: YearlyTransitEvent[]): { date: Date; event: string; significance: string }[] => {
   return transits
-    .filter(t => t.significance === 'major' && t.isExact)
+    .filter(t => t.significance === 'major')
     .map(t => ({
       date: t.date,
       event: `${t.transitPlanet} ${t.aspect} natal ${t.natalPlanet}`,
