@@ -416,24 +416,23 @@ export const MoonTransitCalendar = ({ natalChart }: MoonTransitCalendarProps) =>
               List
             </TabsTrigger>
           </TabsList>
-        </Tabs>
 
-        {viewMode === 'list' ? (
-          /* List View - Shows all transits with exact times */
-          <ScrollArea className="h-[500px] pr-4">
-            <div className="space-y-2">
-              {monthTransits.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">No Moon transits this month</p>
-              ) : (
-                monthTransits.map((transit, i) => (
-                  <TransitListRow key={i} transit={transit} />
-                ))
-              )}
-            </div>
-          </ScrollArea>
-        ) : (
-          /* Calendar View */
-          <>
+          <TabsContent value="list" className="mt-4">
+            {/* List View - Shows all transits with exact times */}
+            <ScrollArea className="h-[500px] pr-4">
+              <div className="space-y-2">
+                {monthTransits.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">No Moon transits this month</p>
+                ) : (
+                  monthTransits.map((transit, i) => (
+                    <TransitListRow key={i} transit={transit} />
+                  ))
+                )}
+              </div>
+            </ScrollArea>
+          </TabsContent>
+
+          <TabsContent value="calendar" className="mt-4">
             <div className="grid grid-cols-7 gap-1 mb-4">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
                 <div key={day} className="text-center text-xs font-medium text-muted-foreground py-2">
@@ -554,8 +553,8 @@ export const MoonTransitCalendar = ({ natalChart }: MoonTransitCalendarProps) =>
                 </span>
               </div>
             </div>
-          </>
-        )}
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );
