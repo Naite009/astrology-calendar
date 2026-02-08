@@ -4,6 +4,7 @@
 import * as Astronomy from 'astronomy-engine';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { signDegreesToLongitude } from './houseCalculations';
+import { refineExactAspectTime } from './transitMath';
 
 const ZODIAC_SIGNS = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
@@ -239,8 +240,48 @@ export const calculateYearTransits = (
   
   // Deduplicate by finding the closest pass for each unique aspect
   const deduped = deduplicateTransits(transits);
-  
-  return deduped.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+  // Refine each pass to an exact timestamp (not just the closest day)
+  const refined = deduped.map((t) => {
+    // Recompute natal longitude precisely (includes minutes when present)
+    const natalLon = natalLongitudes[t.natalPlanet];
+    if (typeof natalLon !== 'number') return t;
+
+    const aspectDef = ASPECTS.find(a => a.name === t.aspect);
+    if (!aspectDef) return t;
+
+    const transitLongitudeAt = (date: Date) => {
+      if (t.transitPlanet === 'Chiron') {
+        return getChironLongitude(date);
+      }
+      const body = PLANET_BODIES[t.transitPlanet];
+      if (!body) return 0;
+      return getPlanetLongitude(t.transitPlanet, date);
+    };
+
+    const { date, orb } = refineExactAspectTime({
+      seedDate: t.date,
+      transitLongitudeAt,
+      natalLongitude: natalLon,
+      aspectAngle: aspectDef.angle,
+    });
+
+    const transitSignDegree = longitudeToSignDegree(transitLongitudeAt(date));
+    const natalSignDegree = longitudeToSignDegree(natalLon);
+
+    return {
+      ...t,
+      date,
+      orb,
+      isExact: orb < 0.05,
+      transitSign: transitSignDegree.sign,
+      transitDegree: transitSignDegree.degree,
+      natalSign: natalSignDegree.sign,
+      natalDegree: natalSignDegree.degree,
+    };
+  });
+
+  return refined.sort((a, b) => a.date.getTime() - b.date.getTime());
 };
 
 // Deduplicate transits to find exact passes

@@ -650,7 +650,7 @@ const TransitCard = ({ transit, compact, expanded }: TransitCardProps) => {
           {planetSymbols[transit.transitPlanet]} {transit.aspectSymbol} {planetSymbols[transit.natalPlanet]}
         </span>
         <Badge variant="outline" className="text-xs">
-          {transit.orb.toFixed(1)}° orb
+          {transit.orb.toFixed(2)}° orb
         </Badge>
       </div>
       
@@ -659,7 +659,12 @@ const TransitCard = ({ transit, compact, expanded }: TransitCardProps) => {
           {transit.transitPlanet} {transit.aspect} {transit.natalPlanet}
         </div>
         <div className="text-xs text-muted-foreground">
-          {format(transit.date, 'EEEE, MMMM d, yyyy')}
+          {format(transit.date, 'EEEE, MMMM d, yyyy • HH:mm')}
+        </div>
+        <div className="text-xs">
+          <span className="text-muted-foreground">Aspect audit: </span>
+          {planetSymbols[transit.transitPlanet]} {transit.aspectSymbol} {planetSymbols[transit.natalPlanet]}
+          <span className="text-muted-foreground/70"> ({transit.orb.toFixed(2)}°)</span>
         </div>
         <div className="text-xs">
           <span className="text-muted-foreground">Transit: </span>
