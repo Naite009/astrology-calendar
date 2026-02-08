@@ -2,9 +2,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, Heart, Sun, Moon, Activity } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { PLANETARY_HEALTH_RULERS, getElementForSign } from "@/lib/healthAstrology";
+import { getValidatedAscendant, validateChartData } from "@/lib/chartDataValidation";
 
 interface HealthNatalBlueprintProps {
   natalChart: NatalChart;
@@ -21,13 +22,21 @@ export const HealthNatalBlueprint = ({ natalChart }: HealthNatalBlueprintProps) 
 
   const { planets, houseCusps } = natalChart;
 
+  // Run validation on mount and log any issues
+  useEffect(() => {
+    const validation = validateChartData(natalChart);
+    if (validation.hasIssues) {
+      console.warn('[HealthNatalBlueprint] Chart data issues detected:', validation.issues);
+    }
+  }, [natalChart]);
+
   // Get key health indicators
   const sunSign = planets.Sun?.sign || 'Unknown';
   const moonSign = planets.Moon?.sign || 'Unknown';
   
-  // CRITICAL: Use house1 as the definitive source for Ascendant, not planets.Ascendant
-  // This prevents import/OCR errors where Ascendant/Descendant can get flipped
-  const ascendantSign = houseCusps?.house1?.sign || planets.Ascendant?.sign || sunSign;
+  // Use validated Ascendant with cross-checks
+  const ascValidation = getValidatedAscendant(natalChart);
+  const ascendantSign = ascValidation.correctedValue;
   
   // Get 6th house info
   const sixthHouseCusp = houseCusps?.house6?.sign || 'Unknown';
