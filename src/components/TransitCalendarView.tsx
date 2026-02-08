@@ -11,7 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ChevronLeft, ChevronRight, Star, Calendar, TrendingUp, Zap, Globe, CalendarDays } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Star, Calendar, TrendingUp, Zap, Globe, CalendarDays, Moon } from 'lucide-react';
+import { MoonTransitCalendar } from './MoonTransitCalendar';
 import { cn } from '@/lib/utils';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { ChartSelector } from './ChartSelector';
@@ -100,7 +101,7 @@ export const TransitCalendarView = ({
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [currentMonth, setCurrentMonth] = useState(new Date(selectedYear, new Date().getMonth(), 1));
   const [selectedTransit, setSelectedTransit] = useState<YearlyTransitEvent | null>(null);
-  const [viewTab, setViewTab] = useState<'calendar' | 'timeline' | 'list'>('calendar');
+  const [viewTab, setViewTab] = useState<'calendar' | 'timeline' | 'list' | 'moon'>('calendar');
   const [includePersonal, setIncludePersonal] = useState(false);
   // Default to 'user' if userNatalChart exists, otherwise first saved chart
   // 'user' represents the primary user chart (Lauren Newman)
@@ -336,7 +337,7 @@ export const TransitCalendarView = ({
       
       {/* View Tabs */}
       <Tabs value={viewTab} onValueChange={(v) => setViewTab(v as typeof viewTab)}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="calendar" className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
             Calendar
@@ -348,6 +349,10 @@ export const TransitCalendarView = ({
           <TabsTrigger value="list" className="flex items-center gap-2">
             <Zap className="h-4 w-4" />
             All Transits
+          </TabsTrigger>
+          <TabsTrigger value="moon" className="flex items-center gap-2">
+            <Moon className="h-4 w-4" />
+            ☽ Transits
           </TabsTrigger>
         </TabsList>
         
@@ -619,6 +624,11 @@ export const TransitCalendarView = ({
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+        
+        {/* Moon Transits Tab */}
+        <TabsContent value="moon" className="mt-4">
+          <MoonTransitCalendar natalChart={activeChart} />
         </TabsContent>
       </Tabs>
       
