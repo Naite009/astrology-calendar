@@ -24,7 +24,10 @@ export const HealthNatalBlueprint = ({ natalChart }: HealthNatalBlueprintProps) 
   // Get key health indicators
   const sunSign = planets.Sun?.sign || 'Unknown';
   const moonSign = planets.Moon?.sign || 'Unknown';
-  const ascendantSign = planets.Ascendant?.sign || sunSign;
+  
+  // CRITICAL: Use house1 as the definitive source for Ascendant, not planets.Ascendant
+  // This prevents import/OCR errors where Ascendant/Descendant can get flipped
+  const ascendantSign = houseCusps?.house1?.sign || planets.Ascendant?.sign || sunSign;
   
   // Get 6th house info
   const sixthHouseCusp = houseCusps?.house6?.sign || 'Unknown';
