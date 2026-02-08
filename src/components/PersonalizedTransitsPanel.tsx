@@ -16,6 +16,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  getPersonalizedTransitInterpretation,
+  getPlutoTransitFeeling,
+  getNeptuneTransitFeeling,
+  getUranusTransitFeeling,
+  getSaturnTransitFeeling,
+  getJupiterTransitFeeling,
+} from '@/lib/personalizedTransitInterpretations';
 
 const ZODIAC_SYMBOLS: Record<string, string> = {
   Aries: "♈", Taurus: "♉", Gemini: "♊", Cancer: "♋",
@@ -760,57 +768,76 @@ Format with ## headers. Be chart-specific - no generic advice that could apply t
               Active Transits Today
             </h4>
             <div className="space-y-2">
-              {significantTransits.map((aspect, i) => (
-                <div key={i} className="p-3 rounded-lg bg-background/50 border border-border/50">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="font-medium text-sm">
-                      {getTransitPlanetSymbol(aspect.transitPlanet)} {aspect.transitPlanet}
-                      {renderBodyDescription(aspect.transitPlanet)}
-                    </span>
-                    <span style={{ color: aspect.color }}>
-                      {renderAspectDescription(aspect.aspect)}
-                    </span>
-                    <span className="text-sm">
-                      your {aspect.natalPlanet}
-                      {renderBodyDescription(aspect.natalPlanet)}
-                    </span>
-                    <Badge 
-                      variant={aspect.isExact ? "destructive" : "outline"} 
-                      className="text-xs"
-                    >
-                      {aspect.isExact ? 'EXACT!' : `${aspect.orb}°`}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {aspect.detailedInterpretation?.header || aspect.interpretation}
-                  </p>
-                  {aspect.transitHouse && (() => {
-                    const houseInterp = getTransitInHouseInterpretation(aspect.transitPlanet, aspect.transitHouse);
-                    const suffix = aspect.transitHouse === 1 ? 'st' : aspect.transitHouse === 2 ? 'nd' : aspect.transitHouse === 3 ? 'rd' : 'th';
-                    return (
-                      <div className="mt-2 pt-2 border-t border-border/30">
-                        <p className="text-xs font-medium text-foreground/80">
-                          Transit {aspect.transitPlanet} is in your {aspect.transitHouse}{suffix} house:
+              {significantTransits.map((aspect, i) => {
+                // Get the natal planet's house and sign for personalized interpretation
+                const natalHouse = getNatalPlanetHouse(aspect.natalPlanet, chart);
+                const natalSign = chart.planets[aspect.natalPlanet]?.sign || null;
+                
+                // Get planet-specific detailed feeling
+                let personalizedFeeling = '';
+                if (aspect.transitPlanet === 'Pluto') {
+                  personalizedFeeling = getPlutoTransitFeeling(aspect.aspect, aspect.natalPlanet, natalHouse, natalSign);
+                } else if (aspect.transitPlanet === 'Neptune') {
+                  personalizedFeeling = getNeptuneTransitFeeling(aspect.aspect, aspect.natalPlanet, natalHouse);
+                } else if (aspect.transitPlanet === 'Uranus') {
+                  personalizedFeeling = getUranusTransitFeeling(aspect.aspect, aspect.natalPlanet, natalHouse);
+                } else if (aspect.transitPlanet === 'Saturn') {
+                  personalizedFeeling = getSaturnTransitFeeling(aspect.aspect, aspect.natalPlanet, natalHouse);
+                } else if (aspect.transitPlanet === 'Jupiter') {
+                  personalizedFeeling = getJupiterTransitFeeling(aspect.aspect, aspect.natalPlanet, natalHouse);
+                } else {
+                  // For inner planets, use the general personalized interpretation
+                  const interp = getPersonalizedTransitInterpretation(
+                    aspect.transitPlanet,
+                    aspect.aspect,
+                    aspect.natalPlanet,
+                    natalHouse,
+                    natalSign
+                  );
+                  personalizedFeeling = interp.howItFeels;
+                }
+                
+                const suffix = natalHouse ? (natalHouse === 1 ? 'st' : natalHouse === 2 ? 'nd' : natalHouse === 3 ? 'rd' : 'th') : '';
+                
+                return (
+                  <div key={i} className="p-3 rounded-lg bg-background/50 border border-border/50">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span className="font-medium text-sm">
+                        {getTransitPlanetSymbol(aspect.transitPlanet)} {aspect.transitPlanet}
+                        {renderBodyDescription(aspect.transitPlanet)}
+                      </span>
+                      <span style={{ color: aspect.color }}>
+                        {renderAspectDescription(aspect.aspect)}
+                      </span>
+                      <span className="text-sm">
+                        your {aspect.natalPlanet}
+                        {natalHouse && <span className="text-muted-foreground"> (H{natalHouse})</span>}
+                        {renderBodyDescription(aspect.natalPlanet)}
+                      </span>
+                      <Badge 
+                        variant={aspect.isExact ? "destructive" : "outline"} 
+                        className="text-xs"
+                      >
+                        {aspect.isExact ? 'EXACT!' : `${aspect.orb}°`}
+                      </Badge>
+                    </div>
+                    
+                    {/* Personalized interpretation based on aspect + natal planet + house + sign */}
+                    <div className="mt-2 space-y-2">
+                      <p className="text-sm text-foreground/90 leading-relaxed">
+                        {personalizedFeeling}
+                      </p>
+                      
+                      {/* Context: where natal planet lives */}
+                      {natalHouse && natalSign && (
+                        <p className="text-xs text-muted-foreground italic">
+                          Your {aspect.natalPlanet} in {natalSign} in the {natalHouse}{suffix} house is being activated.
                         </p>
-                        {houseInterp ? (
-                          <>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {houseInterp.meaning}
-                            </p>
-                            <p className="text-xs text-muted-foreground/80 italic mt-1">
-                              How it feels: {houseInterp.feeling}
-                            </p>
-                          </>
-                        ) : (
-                          <p className="text-xs text-muted-foreground italic mt-1">
-                            This transit activates themes of your {aspect.transitHouse}{suffix} house.
-                          </p>
-                        )}
-                      </div>
-                    );
-                  })()}
-                </div>
-              ))}
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
