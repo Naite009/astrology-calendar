@@ -27,7 +27,8 @@ export const PlanetarySpeedsView = () => {
           comparison = a.name.localeCompare(b.name);
           break;
         case 'speed':
-          comparison = b.degreesPerDay - a.degreesPerDay; // Fastest first
+          // Use absolute value so retrograde bodies (negative speed) sort correctly by actual speed
+          comparison = Math.abs(b.degreesPerDay) - Math.abs(a.degreesPerDay); // Fastest first
           break;
         case 'orbit':
           comparison = a.orbitalYears - b.orbitalYears;
