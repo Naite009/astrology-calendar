@@ -1463,6 +1463,29 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
 
         {/* Pattern Mirror Tab */}
         <TabsContent value="patterns" className="mt-6 space-y-6">
+          {/* Chart Selector for Pattern Matching */}
+          <Card className="border-border">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">Check Patterns For:</span>
+                </div>
+                <ChartSelector
+                  userNatalChart={userChart}
+                  savedCharts={savedCharts}
+                  selectedChartId={selectedChartId || ''}
+                  onSelect={setSelectedChartId}
+                />
+              </div>
+              {!selectedChartId && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Select a chart above to see which patterns match. Matches show with a blue "In Your Chart" badge.
+                </p>
+              )}
+            </CardHeader>
+          </Card>
+
           {/* Thematic Tag Filter */}
           <Card className="border-border">
             <CardHeader className="pb-3">
