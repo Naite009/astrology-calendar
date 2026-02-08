@@ -261,14 +261,12 @@ export const useNatalChart = () => {
     return readWithRollingBackups<NatalChart[]>('savedCharts', [], isValidChartArray);
   });
 
-  // If the user explicitly chose a selection before, we should respect it.
-  // If they never chose, default to the primary user chart when it exists.
-  const [hadStoredSelection] = useState(() => localStorage.getItem('selectedChartForTiming') !== null);
+  // Determine initial selection: prefer stored value, otherwise default to 'user' if chart exists
   const [selectedChartForTiming, setSelectedChartForTiming] = useState<string>(() => {
     const stored = localStorage.getItem('selectedChartForTiming');
     if (stored) return stored;
-
-    // Default selection
+    
+    // No stored selection - default to user chart if it exists
     const storedUserChart = safeParseJSON<NatalChart | null>('userNatalChart', null);
     return storedUserChart ? 'user' : 'general';
   });
@@ -284,15 +282,8 @@ export const useNatalChart = () => {
       const next = userNatalChart ? 'user' : 'general';
       localStorage.setItem('selectedChartForTiming', next);
       setSelectedChartForTiming(next);
-      return;
     }
-
-    // If the user never picked a chart, and the user chart exists, auto-default to it.
-    if (!hadStoredSelection && selectedChartForTiming === 'general' && userNatalChart) {
-      localStorage.setItem('selectedChartForTiming', 'user');
-      setSelectedChartForTiming('user');
-    }
-  }, [selectedChartForTiming, savedCharts, userNatalChart, hadStoredSelection]);
+  }, [selectedChartForTiming, savedCharts, userNatalChart]);
 
   const saveUserNatalChart = (chart: NatalChart) => {
     // Prevent saving empty/invalid chart data
