@@ -44,6 +44,53 @@ interface TransitCalendarViewProps {
   onSelectChart?: (chartId: string) => void;
 }
 
+// Separate component for planet transit list with its own expand state
+const PlanetTransitList = ({ 
+  planet, 
+  transits, 
+  onSelectTransit 
+}: { 
+  planet: string; 
+  transits: YearlyTransitEvent[]; 
+  onSelectTransit: (t: YearlyTransitEvent) => void;
+}) => {
+  const [expanded, setExpanded] = useState(false);
+  const displayTransits = expanded ? transits : transits.slice(0, 3);
+  const hasMore = transits.length > 3;
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <span className="text-lg">{planetSymbols[planet]}</span>
+        <span className="font-medium">{planet}</span>
+        <Badge variant="outline" className="text-xs">
+          {transits.length} transits
+        </Badge>
+      </div>
+      <div className="pl-7 space-y-1">
+        {displayTransits.map(t => (
+          <button
+            key={t.id} 
+            className="text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 px-2 py-1 rounded w-full text-left transition-colors"
+            onClick={() => onSelectTransit(t)}
+          >
+            {format(t.date, 'MMM d')}: {t.aspectSymbol} {t.aspect} {planetSymbols[t.natalPlanet] || t.natalPlanet} {t.natalPlanet}
+            {t.isExact && <span className="text-primary ml-1">★</span>}
+          </button>
+        ))}
+        {hasMore && (
+          <button 
+            onClick={() => setExpanded(!expanded)}
+            className="text-xs text-primary hover:text-primary/80 hover:underline font-medium px-2 py-1"
+          >
+            {expanded ? '↑ Show less' : `+${transits.length - 3} more`}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export const TransitCalendarView = ({ 
   natalChart, 
   savedCharts = [],
@@ -560,27 +607,12 @@ export const TransitCalendarView = ({
                   {['Pluto', 'Neptune', 'Uranus', 'Saturn', 'Jupiter'].map(planet => {
                     const planetTransits = yearTransits.filter(t => t.transitPlanet === planet);
                     return (
-                      <div key={planet} className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg">{planetSymbols[planet]}</span>
-                          <span className="font-medium">{planet}</span>
-                          <Badge variant="outline" className="text-xs">
-                            {planetTransits.length} transits
-                          </Badge>
-                        </div>
-                        <div className="pl-7 space-y-1">
-                          {planetTransits.slice(0, 3).map(t => (
-                            <div key={t.id} className="text-xs text-muted-foreground">
-                              {format(t.date, 'MMM d')}: {t.aspect} {t.natalPlanet}
-                            </div>
-                          ))}
-                          {planetTransits.length > 3 && (
-                            <div className="text-xs text-primary">
-                              +{planetTransits.length - 3} more
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                      <PlanetTransitList
+                        key={planet}
+                        planet={planet}
+                        transits={planetTransits}
+                        onSelectTransit={setSelectedTransit}
+                      />
                     );
                   })}
                 </div>
