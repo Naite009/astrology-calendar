@@ -400,14 +400,18 @@ ${interceptedInfo}
 ${doubleSignedInfo}
 
 TODAY'S PERSONAL TRANSITS:
-- Moon is in their ${moonHouse}${moonHouse === 1 ? 'st' : moonHouse === 2 ? 'nd' : moonHouse === 3 ? 'rd' : 'th'} house (${moonSign})${moonInIntercepted ? ' - THIS IS AN INTERCEPTED SIGN IN THEIR CHART - pay special attention!' : ''}
+**MOON HOUSE PLACEMENT (CALCULATED FROM THEIR EXACT HOUSE CUSPS - DO NOT OVERRIDE):**
+- Moon at ${moonDegree.toFixed(1)}° ${moonSign} is in their ${moonHouse}${moonHouse === 1 ? 'ST' : moonHouse === 2 ? 'ND' : moonHouse === 3 ? 'RD' : 'TH'} HOUSE
+- Their ${moonHouse}${moonHouse === 1 ? 'st' : moonHouse === 2 ? 'nd' : moonHouse === 3 ? 'rd' : 'th'} house cusp is at ${chart.houseCusps?.house1?.degree || 0}° ${chart.houseCusps?.house1?.sign || ''} (House 1), so ${moonDegree.toFixed(0)}° ${moonSign} falls in house ${moonHouse}
+${moonInIntercepted ? '- THIS IS AN INTERCEPTED SIGN IN THEIR CHART - pay special attention!' : ''}
+
 - Moon aspects to natal planets: ${moonAspectsList || 'none major'}
 - Other active transits: ${transitList || 'none significant'}
 
 Write a reading that:
 1. Opens with the most significant transit happening RIGHT NOW - no preamble
 2. References SPECIFIC placements (e.g., "Your natal Venus at 14° Scorpio in the 8th...")
-3. Explains how today's Moon in ${moonSign} activates specific houses and planets in THEIR chart
+3. **CRITICAL**: When mentioning the Moon's house, you MUST say "${moonHouse}${moonHouse === 1 ? 'st' : moonHouse === 2 ? 'nd' : moonHouse === 3 ? 'rd' : 'th'} house" - this is calculated from their exact house cusps. Do NOT say a different house number.
 ${interceptedSigns.length > 0 ? `4. If the Moon is transiting an intercepted sign, explain the unlocking/activation
 5. If any natal planets are in intercepted signs, note how transits there feel more significant` : `4. DO NOT mention "intercepted" signs - this chart has NO interceptions
 5. DO NOT invent or hallucinate interceptions - stick to the data provided`}
@@ -415,7 +419,10 @@ ${interceptedSigns.length > 0 ? `4. If the Moon is transiting an intercepted sig
 7. Gives ONE concrete, practical action or focus for the day
 8. End with the takeaway, not a blessing
 
-CRITICAL: Only reference interceptions if INTERCEPTED SIGNS data above is non-empty. If empty, do NOT mention interceptions at all.
+CRITICAL ANTI-HALLUCINATION RULES:
+- The Moon is in the ${moonHouse}${moonHouse === 1 ? 'ST' : moonHouse === 2 ? 'ND' : moonHouse === 3 ? 'RD' : 'TH'} house. If you say ANY other house number, you are hallucinating.
+- Only reference interceptions if INTERCEPTED SIGNS data above is non-empty. If empty, do NOT mention interceptions.
+- Use ONLY the data provided. Do not infer or assume house placements.
 
 Format with ## headers. Be chart-specific - no generic advice that could apply to anyone.`;
 
