@@ -101,6 +101,101 @@ const getMoonInHouseInterpretation = (house: number | null): string => {
   return interpretations[house] || '';
 };
 
+// Get interpretation for where a transit planet falls in natal house
+// Returns: { meaning: what it means, feeling: how it feels }
+const getTransitInHouseInterpretation = (planet: string, house: number | null): { meaning: string; feeling: string } | null => {
+  if (!house) return null;
+  
+  const interpretations: Record<string, Record<number, { meaning: string; feeling: string }>> = {
+    Pluto: {
+      1: { meaning: "Deep identity transformation is underway - who you are is evolving at the core.", feeling: "You feel compelled to shed old versions of yourself, sometimes uncomfortably." },
+      2: { meaning: "Your relationship with money, possessions, and self-worth is being transformed.", feeling: "You may feel obsessed with financial security or purging what you own." },
+      3: { meaning: "Your thinking patterns and communication style are undergoing profound change.", feeling: "Conversations feel heavier; you are drawn to deeper truths and uncomfortable topics." },
+      4: { meaning: "Family dynamics, home life, and emotional roots are being transformed.", feeling: "You feel like you are excavating your past - old family patterns demand attention." },
+      5: { meaning: "Your creative expression, romance, and relationship with joy are intensifying.", feeling: "Creative projects feel all-consuming; love affairs are transformative, not casual." },
+      6: { meaning: "Your daily routines, health habits, and work patterns are undergoing deep change.", feeling: "You may feel compelled to overhaul your diet, job, or how you serve others." },
+      7: { meaning: "Partnerships and one-on-one relationships are transforming profoundly.", feeling: "Relationships feel intense - power dynamics surface and demand renegotiation." },
+      8: { meaning: "Shared resources, intimacy, and psychological depths are being transformed.", feeling: "You are drawn to investigate taboos, death, sex, or other people's money." },
+      9: { meaning: "Your beliefs, worldview, and search for meaning are being deeply transformed.", feeling: "Old philosophies feel hollow; you are searching for a truth that resonates in your bones." },
+      10: { meaning: "Your career, public image, and life direction are undergoing major transformation.", feeling: "You feel driven to claim power in your career - or tear down false success." },
+      11: { meaning: "Your friendships, community ties, and future visions are transforming.", feeling: "You are outgrowing old friend groups and feeling called to impact the collective." },
+      12: { meaning: "Your subconscious, spirituality, and hidden patterns are being transformed.", feeling: "You may feel haunted by the past, drawn to therapy, or experiencing vivid dreams." },
+    },
+    Neptune: {
+      1: { meaning: "Your identity and self-image are becoming more fluid and spiritualized.", feeling: "You may feel confused about who you are, or more intuitive and creative." },
+      2: { meaning: "Your relationship with money and values is becoming idealistic or confused.", feeling: "Finances feel slippery; you are drawn to spend on art, spirituality, or escapism." },
+      3: { meaning: "Your thinking and communication are becoming more intuitive and imaginative.", feeling: "Your mind drifts; conversations feel poetic but sometimes lack clarity." },
+      4: { meaning: "Your home and family life are becoming more idealized or confusing.", feeling: "Home feels like a sanctuary or a source of longing; family dynamics are hazy." },
+      5: { meaning: "Your creativity, romance, and self-expression are becoming more inspired.", feeling: "You are drawn to artistic pursuits; romance feels magical but potentially illusory." },
+      6: { meaning: "Your daily routines and health are influenced by intuition or confusion.", feeling: "Work boundaries blur; you may be drawn to healing arts or feel drained by service." },
+      7: { meaning: "Your partnerships are becoming more idealized or confusing.", feeling: "You may project fantasy onto partners or feel spiritually connected - or deceived." },
+      8: { meaning: "Your experience of intimacy and shared resources is becoming more spiritual.", feeling: "Boundaries dissolve in close relationships; you are drawn to mystical transformation." },
+      9: { meaning: "Your beliefs and search for meaning are expanding into spiritual realms.", feeling: "You are drawn to transcendent experiences, travel, or escaping through philosophy." },
+      10: { meaning: "Your career and public image are becoming more idealistic or unclear.", feeling: "You may feel lost about your calling, or drawn to creative/healing professions." },
+      11: { meaning: "Your friendships and future visions are becoming more idealistic.", feeling: "You are drawn to spiritual communities; some friends may disappoint or inspire." },
+      12: { meaning: "Your spirituality and subconscious are extremely activated.", feeling: "You are deeply intuitive, possibly psychic - but may struggle with boundaries or escapism." },
+    },
+    Uranus: {
+      1: { meaning: "Your identity and self-expression are becoming more independent and unpredictable.", feeling: "You feel restless in your own skin - drawn to reinvent yourself unexpectedly." },
+      2: { meaning: "Your finances and values are undergoing sudden changes.", feeling: "Income may be erratic; you are questioning what truly matters to you." },
+      3: { meaning: "Your thinking and communication style are becoming more original.", feeling: "Your mind races with new ideas; you may shock others with what you say." },
+      4: { meaning: "Your home and family life are experiencing unexpected changes.", feeling: "Home feels unstable; you may relocate suddenly or break from family patterns." },
+      5: { meaning: "Your creativity, romance, and self-expression are becoming more unconventional.", feeling: "You are drawn to unusual creative outlets; love affairs may be sudden or unusual." },
+      6: { meaning: "Your daily routines and work are disrupted by change and innovation.", feeling: "You cannot stand boring routines; drawn to freelance, tech, or alternative health." },
+      7: { meaning: "Your partnerships are experiencing sudden changes and need for freedom.", feeling: "Relationships feel electric but unstable; you need more independence." },
+      8: { meaning: "Your experience of intimacy and shared resources is becoming unpredictable.", feeling: "Sudden financial changes through others; intimacy needs freedom and experimentation." },
+      9: { meaning: "Your beliefs and worldview are being revolutionized.", feeling: "Old beliefs shatter; you are drawn to radical ideas, sudden travel, or unconventional teachers." },
+      10: { meaning: "Your career and public image are undergoing sudden changes.", feeling: "Career path feels unpredictable; you may pivot suddenly or seek more freedom." },
+      11: { meaning: "Your friendships and future visions are electrified.", feeling: "You are drawn to unconventional friends; group activities feel exciting but unstable." },
+      12: { meaning: "Your subconscious and spiritual life are experiencing awakenings.", feeling: "Sudden insights from dreams; you may feel like an outsider or have psychic flashes." },
+    },
+    Saturn: {
+      1: { meaning: "You are being called to take responsibility for who you are.", feeling: "Life feels heavier; you are learning to define yourself through discipline and maturity." },
+      2: { meaning: "You are learning lessons about money, resources, and self-worth.", feeling: "Finances feel restricted; you are building lasting security through hard work." },
+      3: { meaning: "You are developing more disciplined thinking and communication.", feeling: "Learning feels serious; you may struggle with siblings or feel mentally burdened." },
+      4: { meaning: "You are facing responsibilities around home and family.", feeling: "Home feels like work; you are dealing with family obligations or building foundations." },
+      5: { meaning: "You are learning to take your creativity and joy more seriously.", feeling: "Fun feels like a responsibility; romance may feel restricted or more mature." },
+      6: { meaning: "You are being called to master your daily routines and health.", feeling: "Work feels demanding; you are building better habits through discipline." },
+      7: { meaning: "You are facing lessons about commitment and partnership.", feeling: "Relationships feel tested; you are learning what you need from a mature partner." },
+      8: { meaning: "You are learning about shared resources, intimacy, and transformation.", feeling: "Deep topics feel heavy; you are facing fears and building psychological strength." },
+      9: { meaning: "You are being tested on your beliefs and search for meaning.", feeling: "Education or travel may feel restricted; you are building a solid philosophy." },
+      10: { meaning: "You are facing major responsibilities around career and life direction.", feeling: "Career feels demanding; you are building something lasting through hard work." },
+      11: { meaning: "You are learning lessons about friendship and your role in community.", feeling: "Friend groups may shrink; you are identifying who your true allies are." },
+      12: { meaning: "You are facing hidden fears and learning to work with solitude.", feeling: "You may feel isolated; spiritual practices become more disciplined and grounding." },
+    },
+    Jupiter: {
+      1: { meaning: "Opportunities for growth in your identity and self-expression are expanding.", feeling: "You feel optimistic, larger than life - possibly taking on too much." },
+      2: { meaning: "Financial growth and abundance opportunities are increasing.", feeling: "Money flows more easily; you feel generous and value expansion." },
+      3: { meaning: "Learning, communication, and short journeys are expanding.", feeling: "Your mind is hungry for knowledge; conversations open doors." },
+      4: { meaning: "Home, family, and emotional foundations are expanding.", feeling: "Home feels abundant; you may move to a larger space or feel rooted." },
+      5: { meaning: "Creativity, romance, and joy are expanding.", feeling: "Life feels more playful; love and creative projects flourish." },
+      6: { meaning: "Opportunities in work and health improvement are increasing.", feeling: "Work flows well; you are motivated to improve health habits." },
+      7: { meaning: "Partnership opportunities and relationship growth are expanding.", feeling: "Relationships feel supportive and growth-oriented; you attract beneficial partners." },
+      8: { meaning: "Shared resources and transformative experiences are expanding.", feeling: "You may receive through others; deep experiences feel lucky and meaningful." },
+      9: { meaning: "Education, travel, and spiritual growth are extremely favored.", feeling: "You are hungry for meaning; travel and learning feel life-changing." },
+      10: { meaning: "Career opportunities and public recognition are expanding.", feeling: "Professional life feels blessed; you are seen as an authority or leader." },
+      11: { meaning: "Friendships, networking, and future visions are expanding.", feeling: "Social life blossoms; you attract helpful connections and feel hopeful." },
+      12: { meaning: "Spiritual growth and inner expansion are highlighted.", feeling: "You find meaning in solitude; hidden blessings and intuition increase." },
+    },
+    Mars: {
+      1: { meaning: "Your drive, energy, and assertiveness are heightened.", feeling: "You feel more combative and energetic - ready to take action on your own behalf." },
+      2: { meaning: "Energy is directed toward earning money and protecting your resources.", feeling: "You are motivated to make money and may be defensive about possessions." },
+      3: { meaning: "Communication becomes more direct and potentially aggressive.", feeling: "You speak your mind forcefully; debates and arguments are likely." },
+      4: { meaning: "Energy is focused on home and family matters.", feeling: "You may be doing home projects or experiencing family conflicts." },
+      5: { meaning: "Creative and romantic energy is heightened.", feeling: "You pursue pleasure aggressively; passion runs high in romance and creativity." },
+      6: { meaning: "Drive toward work and health improvements intensifies.", feeling: "You are working harder than usual; exercise and productivity surge." },
+      7: { meaning: "Conflict and passion in partnerships are activated.", feeling: "Relationships feel heated; you are either fighting with or for your partner." },
+      8: { meaning: "Intense energy around intimacy, shared resources, and transformation.", feeling: "Sexual energy is high; you may be dealing with other people's money or power." },
+      9: { meaning: "Energy toward travel, education, and defending beliefs increases.", feeling: "You want to go somewhere or learn something; you will fight for your beliefs." },
+      10: { meaning: "Ambition and drive for career success are activated.", feeling: "You are pushing hard for professional goals; conflicts with authority possible." },
+      11: { meaning: "Energy directed toward friends, groups, and future goals.", feeling: "You are actively pursuing your dreams; group dynamics may be competitive." },
+      12: { meaning: "Hidden anger and subconscious drives are activated.", feeling: "You may feel tired or passive-aggressive; spiritual action behind the scenes." },
+    },
+  };
+  
+  return interpretations[planet]?.[house] || null;
+};
+
 // Get Moon-to-natal-planet aspects with personalized meaning
 const getMoonToNatalInterpretation = (natalPlanet: string, aspect: string, moonSign: string): string => {
   const planetMeanings: Record<string, Record<string, string>> = {
@@ -689,12 +784,31 @@ Format with ## headers. Be chart-specific - no generic advice that could apply t
                   <p className="text-sm text-muted-foreground">
                     {aspect.detailedInterpretation?.header || aspect.interpretation}
                   </p>
-                  {aspect.transitHouse && (
-                    <p className="text-xs text-muted-foreground mt-1 italic">
-                      Transit {aspect.transitPlanet} is in your {aspect.transitHouse}
-                      {aspect.transitHouse === 1 ? 'st' : aspect.transitHouse === 2 ? 'nd' : aspect.transitHouse === 3 ? 'rd' : 'th'} house
-                    </p>
-                  )}
+                  {aspect.transitHouse && (() => {
+                    const houseInterp = getTransitInHouseInterpretation(aspect.transitPlanet, aspect.transitHouse);
+                    const suffix = aspect.transitHouse === 1 ? 'st' : aspect.transitHouse === 2 ? 'nd' : aspect.transitHouse === 3 ? 'rd' : 'th';
+                    return (
+                      <div className="mt-2 pt-2 border-t border-border/30">
+                        <p className="text-xs font-medium text-foreground/80">
+                          Transit {aspect.transitPlanet} is in your {aspect.transitHouse}{suffix} house:
+                        </p>
+                        {houseInterp ? (
+                          <>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {houseInterp.meaning}
+                            </p>
+                            <p className="text-xs text-muted-foreground/80 italic mt-1">
+                              How it feels: {houseInterp.feeling}
+                            </p>
+                          </>
+                        ) : (
+                          <p className="text-xs text-muted-foreground italic mt-1">
+                            This transit activates themes of your {aspect.transitHouse}{suffix} house.
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               ))}
             </div>
