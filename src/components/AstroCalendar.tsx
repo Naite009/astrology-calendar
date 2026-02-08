@@ -853,12 +853,6 @@ export const AstroCalendar = () => {
           <TransitCalendarView 
             natalChart={userNatalChart} 
             savedCharts={savedCharts}
-            onSelectChart={(chartId) => {
-              const chart = savedCharts.find(c => c.id === chartId);
-              if (chart) {
-                saveUserNatalChart(chart);
-              }
-            }}
           />
         )}
 
