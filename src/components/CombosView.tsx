@@ -642,7 +642,16 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
               <CardTitle className="text-lg font-serif">{combo.title}</CardTitle>
             </div>
             {combo.tags?.includes('warning') && (
-              <AlertTriangle className="h-5 w-5 text-warning shrink-0" />
+              <div className="relative group">
+                <AlertTriangle className="h-5 w-5 text-warning shrink-0 cursor-help" />
+                <div className="absolute right-0 top-full mt-1 z-50 hidden group-hover:block w-48 p-2 bg-popover border border-border rounded-md shadow-lg text-xs text-muted-foreground">
+                  {combo.tags?.includes('detriment') 
+                    ? "Detriment placement—requires conscious effort but offers deep mastery potential"
+                    : combo.tags?.includes('fall')
+                    ? "Fall placement—confidence is earned through practice and patience"
+                    : "This placement has growth challenges that become strengths with awareness"}
+                </div>
+              </div>
             )}
             {combo.tags?.includes('wealth') && (
               <Sparkles className="h-5 w-5 text-primary shrink-0" />
