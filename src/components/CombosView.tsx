@@ -1670,6 +1670,12 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                       combo={combo}
                       isMatch={isMatch}
                       matchDetails={matchDetails}
+                      onNavigateToCombo={(planets) => {
+                        // Switch to Combos tab and pre-select these planets as factors
+                        setActiveTab('explore');
+                        setSelectedFactors(planets);
+                        setSelectedCategory(null);
+                      }}
                     />
                   </div>
                 );
