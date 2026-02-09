@@ -1463,81 +1463,111 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
 
         {/* Pattern Mirror Tab */}
         <TabsContent value="patterns" className="mt-6 space-y-6">
+          {/* Explanation Card - What are Pattern Mirrors */}
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-start gap-3">
+                <Sparkles className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Pattern Mirrors describe how configurations feel, not just what they mean.</p>
+                  <p className="text-xs text-muted-foreground">
+                    Unlike Combos (which describe single placements like "Mars in Aries"), Pattern Mirrors explore <strong>complex configurations</strong> — 
+                    aspects between planets, specific house placements — and describe the <strong>lived experience</strong> with Light, Core, and Shadow expressions.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Chart Selector for Pattern Matching */}
           <Card className="border-border">
             <CardHeader className="pb-3">
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center justify-between gap-4 flex-wrap">
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4 text-primary" />
                   <span className="text-sm font-medium">Check Patterns For:</span>
                 </div>
-                <ChartSelector
-                  userNatalChart={userChart}
-                  savedCharts={savedCharts}
-                  selectedChartId={selectedChartId || ''}
-                  onSelect={setSelectedChartId}
-                />
+                <div className="flex items-center gap-3">
+                  <ChartSelector
+                    userNatalChart={userChart}
+                    savedCharts={savedCharts}
+                    selectedChartId={selectedChartId || ''}
+                    onSelect={setSelectedChartId}
+                  />
+                  {selectedChartId && (
+                    <label className="flex items-center gap-2 text-sm cursor-pointer">
+                      <Checkbox
+                        checked={selectedThematicTag === '__MY_MATCHES__'}
+                        onCheckedChange={(checked) => setSelectedThematicTag(checked ? '__MY_MATCHES__' : null)}
+                      />
+                      <span>My Matches Only</span>
+                    </label>
+                  )}
+                </div>
               </div>
               {!selectedChartId && (
                 <p className="text-xs text-muted-foreground mt-2">
-                  Select a chart above to see which patterns match. Matches show with a blue "In Your Chart" badge.
+                  Select a chart to see which patterns match. Toggle "My Matches Only" to filter to just your patterns.
                 </p>
               )}
             </CardHeader>
           </Card>
 
-          {/* Thematic Tag Filter */}
-          <Card className="border-border">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Filter className="h-4 w-4" />
-                Filter by Theme
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => setSelectedThematicTag(null)}
-                  className={`px-3 py-1.5 text-sm rounded-full border transition-all ${
-                    !selectedThematicTag
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'bg-background border-border hover:border-primary/50 hover:bg-secondary'
-                  }`}
-                >
-                  All Patterns
-                </button>
-                {THEMATIC_CATEGORIES.map(cat => (
+          {/* Thematic Tag Filter - only show when not in "My Matches" mode */}
+          {selectedThematicTag !== '__MY_MATCHES__' && (
+            <Card className="border-border">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Filter className="h-4 w-4" />
+                  Filter by Theme
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
                   <button
-                    key={cat.id}
-                    onClick={() => setSelectedThematicTag(selectedThematicTag === cat.id ? null : cat.id)}
-                    className={`px-3 py-1.5 text-sm rounded-full border transition-all flex items-center gap-1.5 ${
-                      selectedThematicTag === cat.id
+                    onClick={() => setSelectedThematicTag(null)}
+                    className={`px-3 py-1.5 text-sm rounded-full border transition-all ${
+                      !selectedThematicTag
                         ? 'bg-primary text-primary-foreground border-primary'
                         : 'bg-background border-border hover:border-primary/50 hover:bg-secondary'
                     }`}
                   >
-                    <span>{cat.icon}</span>
-                    {cat.label}
+                    All Patterns
                   </button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  {THEMATIC_CATEGORIES.map(cat => (
+                    <button
+                      key={cat.id}
+                      onClick={() => setSelectedThematicTag(selectedThematicTag === cat.id ? null : cat.id)}
+                      className={`px-3 py-1.5 text-sm rounded-full border transition-all flex items-center gap-1.5 ${
+                        selectedThematicTag === cat.id
+                          ? 'bg-primary text-primary-foreground border-primary'
+                          : 'bg-background border-border hover:border-primary/50 hover:bg-secondary'
+                      }`}
+                    >
+                      <span>{cat.icon}</span>
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Pattern Mirror Cards */}
           <div className="grid gap-4 md:grid-cols-2">
             {patternMirrorCombos
-              .filter(combo => !selectedThematicTag || combo.thematicTags.includes(selectedThematicTag))
+              .filter(combo => {
+                // Filter by thematic tag (unless showing My Matches)
+                if (selectedThematicTag && selectedThematicTag !== '__MY_MATCHES__') {
+                  return combo.thematicTags.includes(selectedThematicTag);
+                }
+                return true;
+              })
               .map(combo => {
                 // Check if this pattern matches the selected chart
                 let isMatch = false;
                 let matchDetails: { aspectType?: string; sign?: string; house?: number } = {};
-                let partialMatchInfo: { 
-                  hasHouse?: { planet: string; house: number }; 
-                  hasSign?: { planet: string; sign: string };
-                  missingPlanet?: string;
-                  missingAspect?: boolean;
-                } | undefined = undefined;
+                // REMOVED: partialMatchInfo - it was confusing (e.g., Moon in 12th as "partial" for Moon in 4th pattern is meaningless)
 
                 if (selectedChart) {
                   // Check aspect patterns
@@ -1550,18 +1580,6 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                       if (aspect && combo.aspectTypes.includes(aspect)) {
                         isMatch = true;
                         matchDetails.aspectType = aspect;
-                      } else if (!aspect) {
-                        // Partial match: have both planets but no aspect
-                        partialMatchInfo = {
-                          missingAspect: true,
-                        };
-                      }
-                    } else {
-                      // Check if we have one planet but not the other
-                      if (p1Pos && !p2Pos) {
-                        partialMatchInfo = { missingPlanet: p2 };
-                      } else if (p2Pos && !p1Pos) {
-                        partialMatchInfo = { missingPlanet: p1 };
                       }
                     }
                   }
@@ -1573,12 +1591,8 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                     if (house === combo.house) {
                       isMatch = true;
                       matchDetails.house = house;
-                    } else if (house) {
-                      // User has this planet in a DIFFERENT house - show partial info
-                      partialMatchInfo = {
-                        hasHouse: { planet, house },
-                      };
                     }
+                    // NO partial match - having Moon in 12th is NOT relevant to a Moon in 4th pattern
                   }
 
                   // Check sign placement patterns
@@ -1588,11 +1602,6 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                     if (pos && combo.signs.includes(pos.sign)) {
                       isMatch = true;
                       matchDetails.sign = pos.sign;
-                    } else if (pos) {
-                      // User has this planet in a different sign
-                      partialMatchInfo = {
-                        hasSign: { planet, sign: pos.sign },
-                      };
                     }
                   }
 
@@ -1630,15 +1639,15 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                           isMatch = true;
                           matchDetails.house = house;
                           break;
-                        } else if (house && !partialMatchInfo) {
-                          // Partial: planet is in chart but different house
-                          partialMatchInfo = {
-                            hasHouse: { planet, house },
-                          };
                         }
                       }
                     }
                   }
+                }
+
+                // If "My Matches Only" is selected, filter out non-matches
+                if (selectedThematicTag === '__MY_MATCHES__' && !isMatch) {
+                  return null;
                 }
 
                 return (
@@ -1647,14 +1656,46 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                     combo={combo}
                     isMatch={isMatch}
                     matchDetails={matchDetails}
-                    partialMatchInfo={partialMatchInfo}
                   />
                 );
-              })}
+              })
+              .filter(Boolean)}
           </div>
 
-          {/* Empty state */}
-          {patternMirrorCombos.filter(combo => !selectedThematicTag || combo.thematicTags.includes(selectedThematicTag)).length === 0 && (
+          {/* Empty state for My Matches */}
+          {selectedThematicTag === '__MY_MATCHES__' && selectedChart && 
+            patternMirrorCombos.filter(combo => {
+              if (combo.patternType === 'aspect' && combo.planets && combo.aspectTypes) {
+                const [p1, p2] = combo.planets;
+                const p1Pos = getChartPos(p1);
+                const p2Pos = getChartPos(p2);
+                if (p1Pos && p2Pos) {
+                  const aspect = calculateAspect(p1Pos.sign, p1Pos.degree, p2Pos.sign, p2Pos.degree);
+                  return aspect && combo.aspectTypes.includes(aspect);
+                }
+              }
+              if (combo.patternType === 'house-placement' && combo.planets && combo.house) {
+                const house = getNatalPlanetHouse(combo.planets[0], selectedChart);
+                return house === combo.house;
+              }
+              if (combo.patternType === 'sign-placement' && combo.planets && combo.signs) {
+                const pos = getChartPos(combo.planets[0]);
+                return pos && combo.signs.includes(pos.sign);
+              }
+              return false;
+            }).length === 0 && (
+            <Card className="border-dashed">
+              <CardContent className="py-8 text-center">
+                <p className="text-muted-foreground text-sm">
+                  No pattern matches found for {selectedChart.name}'s chart. Try viewing "All Patterns" to explore.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Empty state for theme filter */}
+          {selectedThematicTag && selectedThematicTag !== '__MY_MATCHES__' && 
+            patternMirrorCombos.filter(combo => combo.thematicTags.includes(selectedThematicTag)).length === 0 && (
             <Card className="border-dashed">
               <CardContent className="py-8 text-center">
                 <p className="text-muted-foreground text-sm">

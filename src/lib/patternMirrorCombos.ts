@@ -279,6 +279,436 @@ export const patternMirrorCombos: PatternMirrorCombo[] = [
     ],
     thematicTags: ['inheritance-patterns', 'family-imprint', 'emotional-memory'],
   },
+
+  // ============== MARS PATTERNS ==============
+
+  // COMBO 9: The Combustible Will
+  {
+    id: 'combustible-will',
+    title: 'The Combustible Will',
+    patternType: 'aspect',
+    planets: ['Mars', 'Uranus'],
+    aspectTypes: ['Conjunction', 'Square', 'Opposition'],
+    summary: 'Mars-Uranus contacts electrify the will and action principle. There is an instinctive rebellion against restriction, and energy arrives in bursts rather than steady streams.',
+    lightExpressions: [
+      'Courageous innovation',
+      'Quick reflexes and responses',
+      'Ability to act decisively under pressure',
+      'Pioneering spirit and originality',
+    ],
+    coreExpressions: [
+      'Action is sudden, unpredictable',
+      'Strong need for autonomy and freedom',
+      'Boredom with routine or slowness',
+    ],
+    shadowExpressions: [
+      'Impulsive or reckless action',
+      'Explosive temper or volatility',
+      'Difficulty with sustained effort',
+      'Accidents through impatience',
+    ],
+    thematicTags: ['nervous-system', 'control-power', 'perception'],
+  },
+
+  // COMBO 10: The Smoldering Fire
+  {
+    id: 'smoldering-fire',
+    title: 'The Smoldering Fire',
+    patternType: 'aspect',
+    planets: ['Mars', 'Pluto'],
+    aspectTypes: ['Conjunction', 'Square', 'Opposition', 'Sextile', 'Trine'],
+    summary: 'Mars-Pluto contacts create concentrated willpower and intensity. Anger and desire run deep, often hidden, with the potential for profound transformation through action.',
+    lightExpressions: [
+      'Extraordinary determination',
+      'Capacity to regenerate after defeat',
+      'Powerful focused action',
+      'Ability to confront taboos and shadows',
+    ],
+    coreExpressions: [
+      'Will is intense, often operating beneath the surface',
+      'Strong survival instincts',
+      'Action connected to power dynamics',
+    ],
+    shadowExpressions: [
+      'Suppressed rage or resentment',
+      'Power struggles and control issues',
+      'Ruthlessness or manipulation',
+      'Self-destructive intensity',
+    ],
+    thematicTags: ['control-power', 'inheritance-patterns', 'vigilance'],
+  },
+
+  // COMBO 11: The Disciplined Warrior
+  {
+    id: 'disciplined-warrior',
+    title: 'The Disciplined Warrior',
+    patternType: 'aspect',
+    planets: ['Mars', 'Saturn'],
+    aspectTypes: ['Conjunction', 'Square', 'Opposition', 'Sextile', 'Trine'],
+    summary: 'Mars-Saturn contacts create tension between impulse and restraint. Action is filtered through caution, creating either disciplined endurance or frustrated inhibition.',
+    lightExpressions: [
+      'Strategic patience',
+      'Disciplined work ethic',
+      'Ability to pace oneself for long-term goals',
+      'Controlled strength and endurance',
+    ],
+    coreExpressions: [
+      'Action requires justification or permission',
+      'Fear of failure shapes initiative',
+      'Lessons around timing and patience',
+    ],
+    shadowExpressions: [
+      'Suppressed anger or passive aggression',
+      'Fear of taking action',
+      'Chronic frustration or resentment',
+      'Harsh self-criticism for mistakes',
+    ],
+    thematicTags: ['responsibility', 'control-power', 'emotional-regulation'],
+  },
+
+  // ============== VENUS PATTERNS ==============
+
+  // COMBO 12: The Intense Bond
+  {
+    id: 'intense-bond',
+    title: 'The Intense Bond',
+    patternType: 'aspect',
+    planets: ['Venus', 'Pluto'],
+    aspectTypes: ['Conjunction', 'Square', 'Opposition'],
+    summary: 'Venus-Pluto contacts create intensity in love and relating. Attractions are powerful, often transformative, with themes of possession, merging, and deep vulnerability.',
+    lightExpressions: [
+      'Profound capacity for intimacy',
+      'Transformative relationships',
+      'Depth of love and passion',
+      'Ability to love past surface appearances',
+    ],
+    coreExpressions: [
+      'Love is all-or-nothing',
+      'Attractions carry weight and significance',
+      'Relationships involve power dynamics',
+    ],
+    shadowExpressions: [
+      'Possessiveness or jealousy',
+      'Fear of abandonment or betrayal',
+      'Obsessive attachments',
+      'Using love as control',
+    ],
+    thematicTags: ['attachment', 'control-power', 'emotional-boundaries'],
+  },
+
+  // COMBO 13: The Idealized Heart
+  {
+    id: 'idealized-heart',
+    title: 'The Idealized Heart',
+    patternType: 'aspect',
+    planets: ['Venus', 'Neptune'],
+    aspectTypes: ['Conjunction', 'Square', 'Opposition', 'Sextile', 'Trine'],
+    summary: 'Venus-Neptune contacts infuse love with imagination, idealism, and longing. There is a desire for transcendent connection, which can manifest as profound devotion or chronic disappointment.',
+    lightExpressions: [
+      'Romantic idealism and devotion',
+      'Artistic sensitivity in love',
+      'Compassion and selfless giving',
+      'Spiritual connection in relationships',
+    ],
+    coreExpressions: [
+      'Love carries dreams and projections',
+      'Reality vs. fantasy tension in relating',
+      'Sensitivity to beauty and aesthetics',
+    ],
+    shadowExpressions: [
+      'Idealizing partners beyond reality',
+      'Chronic disappointment when reality intrudes',
+      'Self-sacrifice or martyrdom in love',
+      'Escapism through romance',
+    ],
+    thematicTags: ['attachment', 'dissolution-sensitivity', 'intuition'],
+  },
+
+  // COMBO 14: The Cautious Heart
+  {
+    id: 'cautious-heart',
+    title: 'The Cautious Heart',
+    patternType: 'aspect',
+    planets: ['Venus', 'Saturn'],
+    aspectTypes: ['Conjunction', 'Square', 'Opposition', 'Sextile', 'Trine'],
+    summary: 'Venus-Saturn contacts create seriousness in love. Relationships are approached with caution, often requiring time and proof before trust develops. Worth may feel conditional.',
+    lightExpressions: [
+      'Loyalty and commitment',
+      'Love that deepens with time',
+      'Realistic relationship expectations',
+      'Appreciation earned through effort',
+    ],
+    coreExpressions: [
+      'Love feels earned rather than freely given',
+      'Fear of rejection shapes relating',
+      'Preference for substance over superficiality',
+    ],
+    shadowExpressions: [
+      'Fear of not being lovable',
+      'Emotional distance or coldness',
+      'Staying in difficult relationships too long',
+      'Difficulty receiving affection',
+    ],
+    thematicTags: ['attachment', 'responsibility', 'emotional-boundaries'],
+  },
+
+  // ============== MERCURY PATTERNS ==============
+
+  // COMBO 15: The Penetrating Mind
+  {
+    id: 'penetrating-mind',
+    title: 'The Penetrating Mind',
+    patternType: 'aspect',
+    planets: ['Mercury', 'Pluto'],
+    aspectTypes: ['Conjunction', 'Square', 'Opposition', 'Sextile', 'Trine'],
+    summary: 'Mercury-Pluto contacts create depth and intensity in thought. The mind probes beneath surfaces, seeking hidden truths, with a capacity for research, investigation, and transformation through understanding.',
+    lightExpressions: [
+      'Psychological insight',
+      'Research and investigative ability',
+      'Persuasive communication',
+      'Ability to grasp hidden meanings',
+    ],
+    coreExpressions: [
+      'Thinking is intense and penetrating',
+      'Need to understand what lies beneath',
+      'Words carry power and impact',
+    ],
+    shadowExpressions: [
+      'Obsessive thinking patterns',
+      'Suspicion or paranoia',
+      'Manipulative communication',
+      'Difficulty with light conversation',
+    ],
+    thematicTags: ['perception', 'vigilance', 'control-power'],
+  },
+
+  // COMBO 16: The Scattered Brilliance
+  {
+    id: 'scattered-brilliance',
+    title: 'The Scattered Brilliance',
+    patternType: 'aspect',
+    planets: ['Mercury', 'Uranus'],
+    aspectTypes: ['Conjunction', 'Square', 'Opposition'],
+    summary: 'Mercury-Uranus contacts electrify the mind with sudden insights and unconventional thinking. Ideas arrive in flashes, and the thinking style resists conventional patterns.',
+    lightExpressions: [
+      'Brilliant insights and breakthroughs',
+      'Original thinking and problem-solving',
+      'Quick mental processing',
+      'Comfort with unconventional ideas',
+    ],
+    coreExpressions: [
+      'Mind operates in non-linear ways',
+      'Boredom with routine thinking',
+      'Need for mental stimulation and novelty',
+    ],
+    shadowExpressions: [
+      'Mental restlessness or anxiety',
+      'Difficulty with sustained focus',
+      'Nervousness and overthinking',
+      'Contrarian for its own sake',
+    ],
+    thematicTags: ['perception', 'nervous-system', 'intuition'],
+  },
+
+  // COMBO 17: The Visionary Mind
+  {
+    id: 'visionary-mind',
+    title: 'The Visionary Mind',
+    patternType: 'aspect',
+    planets: ['Mercury', 'Neptune'],
+    aspectTypes: ['Conjunction', 'Square', 'Opposition', 'Sextile', 'Trine'],
+    summary: 'Mercury-Neptune contacts dissolve the boundaries of ordinary thinking. The mind accesses imagination, intuition, and subtle perceptions, but may struggle with precision and clarity.',
+    lightExpressions: [
+      'Poetic and artistic expression',
+      'Intuitive knowing',
+      'Ability to sense unspoken dynamics',
+      'Creative imagination',
+    ],
+    coreExpressions: [
+      'Thinking is impressionistic rather than linear',
+      'Boundaries between thought and feeling are thin',
+      'Receptive to atmospheres and moods',
+    ],
+    shadowExpressions: [
+      'Mental fog or confusion',
+      'Difficulty with facts and details',
+      'Susceptibility to deception',
+      'Escapism through fantasy',
+    ],
+    thematicTags: ['intuition', 'dissolution-sensitivity', 'perception'],
+  },
+
+  // ============== SUN PATTERNS ==============
+
+  // COMBO 18: The Hidden Self
+  {
+    id: 'hidden-self',
+    title: 'The Hidden Self',
+    patternType: 'house-placement',
+    planets: ['Sun'],
+    house: 12,
+    summary: 'Sun in the 12th house creates a private sense of identity. The self may feel hidden, diffuse, or connected to something larger than personal ego. Visibility can feel uncomfortable.',
+    lightExpressions: [
+      'Deep spiritual sensitivity',
+      'Ability to work behind the scenes',
+      'Compassion and service orientation',
+      'Rich inner imaginative life',
+    ],
+    coreExpressions: [
+      'Identity forms in solitude and reflection',
+      'Sense of self can feel elusive',
+      'Connection to the collective or transpersonal',
+    ],
+    shadowExpressions: [
+      'Difficulty claiming personal power',
+      'Self-sabotage or invisibility',
+      'Confusion about identity',
+      'Fear of visibility or recognition',
+    ],
+    thematicTags: ['dissolution-sensitivity', 'intuition', 'emotional-boundaries'],
+  },
+
+  // COMBO 19: The Transformative Identity
+  {
+    id: 'transformative-identity',
+    title: 'The Transformative Identity',
+    patternType: 'aspect',
+    planets: ['Sun', 'Pluto'],
+    aspectTypes: ['Conjunction', 'Square', 'Opposition'],
+    summary: 'Sun-Pluto contacts create intensity around identity and self-expression. The sense of self undergoes cycles of death and rebirth, with themes of power, control, and transformation.',
+    lightExpressions: [
+      'Powerful presence and charisma',
+      'Capacity for personal transformation',
+      'Depth of character and self-awareness',
+      'Ability to influence and inspire',
+    ],
+    coreExpressions: [
+      'Identity is forged through crisis',
+      'Strong will and determination',
+      'Themes of power in self-expression',
+    ],
+    shadowExpressions: [
+      'Control issues around identity',
+      'Power struggles in self-expression',
+      'Fear of vulnerability or exposure',
+      'Compulsive need to transform',
+    ],
+    thematicTags: ['control-power', 'inheritance-patterns', 'vigilance'],
+  },
+
+  // COMBO 20: The Unconventional Self
+  {
+    id: 'unconventional-self',
+    title: 'The Unconventional Self',
+    patternType: 'aspect',
+    planets: ['Sun', 'Uranus'],
+    aspectTypes: ['Conjunction', 'Square', 'Opposition'],
+    summary: 'Sun-Uranus contacts create an identity that resists convention. There is a strong need to be authentic and unique, even if it means standing apart from the crowd.',
+    lightExpressions: [
+      'Authentic self-expression',
+      'Innovative and original personality',
+      'Independence and freedom',
+      'Comfort being different',
+    ],
+    coreExpressions: [
+      'Identity forms against expectations',
+      'Strong need for personal freedom',
+      'Discomfort with conformity',
+    ],
+    shadowExpressions: [
+      'Chronic outsider feeling',
+      'Rebellion for its own sake',
+      'Difficulty with intimacy or closeness',
+      'Destabilized sense of self',
+    ],
+    thematicTags: ['perception', 'emotional-boundaries', 'nervous-system'],
+  },
+
+  // COMBO 21: The Burdened Self
+  {
+    id: 'burdened-self',
+    title: 'The Burdened Self',
+    patternType: 'aspect',
+    planets: ['Sun', 'Saturn'],
+    aspectTypes: ['Conjunction', 'Square', 'Opposition'],
+    summary: 'Sun-Saturn contacts create seriousness around identity. The sense of self develops through effort, responsibility, and often early challenges. Self-worth may feel like something to be earned.',
+    lightExpressions: [
+      'Strong sense of responsibility',
+      'Mature self-discipline',
+      'Reliable and trustworthy character',
+      'Achievement through sustained effort',
+    ],
+    coreExpressions: [
+      'Identity shaped by challenges',
+      'Self-worth tied to accomplishment',
+      'Serious approach to self-expression',
+    ],
+    shadowExpressions: [
+      'Chronic self-doubt or criticism',
+      'Fear of failure or inadequacy',
+      'Difficulty feeling "good enough"',
+      'Suppressed vitality or joy',
+    ],
+    thematicTags: ['responsibility', 'attachment', 'emotional-regulation'],
+  },
+
+  // ============== ADDITIONAL HOUSE PLACEMENTS ==============
+
+  // COMBO 22: The Public Emotional Self
+  {
+    id: 'public-emotional-self',
+    title: 'The Public Emotional Self',
+    patternType: 'house-placement',
+    planets: ['Moon'],
+    house: 10,
+    summary: 'Moon in the 10th house places emotional needs in the public arena. There is a need to be seen, recognized, and perhaps nurtured by the world, while personal feelings are on display.',
+    lightExpressions: [
+      'Emotional intelligence in career',
+      'Nurturing public presence',
+      'Ability to connect emotionally with audiences',
+      'Career that fulfills emotional needs',
+    ],
+    coreExpressions: [
+      'Emotions tied to reputation and status',
+      'Public life and private feelings intertwined',
+      'Need for recognition and validation',
+    ],
+    shadowExpressions: [
+      'Emotional vulnerability in public',
+      'Fluctuating public image',
+      'Difficulty separating work and personal life',
+      'Fear of public judgment',
+    ],
+    thematicTags: ['attachment', 'emotional-boundaries', 'responsibility'],
+  },
+
+  // COMBO 23: The Relational Healer
+  {
+    id: 'relational-healer',
+    title: 'The Relational Healer',
+    patternType: 'house-placement',
+    planets: ['Chiron'],
+    house: 7,
+    summary: 'Chiron in the 7th house places wounds and healing in the realm of partnership. Relationships become the arena for both vulnerability and wisdom about connection.',
+    lightExpressions: [
+      'Deep empathy for partners',
+      'Wisdom about relationship dynamics',
+      'Ability to help others heal in partnership',
+      'Authentic relating despite wounds',
+    ],
+    coreExpressions: [
+      'Relationships touch core wounds',
+      'Learning about self through partnership',
+      'Healing through connection',
+    ],
+    shadowExpressions: [
+      'Repeated painful relationship patterns',
+      'Fear of commitment or partnership',
+      'Attracting partners who need healing',
+      'Difficulty receiving support in relationships',
+    ],
+    thematicTags: ['attachment', 'inheritance-patterns', 'emotional-boundaries'],
+  },
 ];
 
 // ============== PATTERN DETECTION HELPERS ==============
