@@ -51,6 +51,8 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
   const [activeTab, setActiveTab] = useState<'explore' | 'browse' | 'patterns'>('explore');
   const [selectedThematicTag, setSelectedThematicTag] = useState<string | null>(null);
   const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
+  // Track which Pattern Mirror to highlight after navigating from Combos
+  const [highlightedPatternId, setHighlightedPatternId] = useState<string | null>(null);
   // Individual retrograde checkboxes for each planet (manual selection)
   const [manualRetrogrades, setManualRetrogrades] = useState<Set<string>>(new Set());
   // Aspect type filter
@@ -616,6 +618,21 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
     
     const aspectModifierData = getAspectModifierData();
 
+    // Find related Pattern Mirror combos for this Combo entry
+    const getRelatedPatternMirrors = () => {
+      const related: { id: string; title: string }[] = [];
+      for (const pm of patternMirrorCombos) {
+        // Match on overlapping planets
+        if (pm.planets && pm.planets.length > 0) {
+          const overlap = pm.planets.filter(p => comboPlanets.includes(p));
+          if (overlap.length >= (pm.planets.length >= 2 ? 2 : 1)) {
+            related.push({ id: pm.id, title: pm.title });
+          }
+        }
+      }
+      return related;
+    };
+    const relatedPatternMirrors = getRelatedPatternMirrors();
     return (
       <Card key={combo.id} className={`border-border ${isMatch ? 'ring-2 ring-primary/50 bg-primary/5' : ''}`}>
         <CardHeader className="pb-3">
@@ -1016,6 +1033,34 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
           {combo.sources && combo.sources.length > 0 && (
             <div className="text-[10px] text-muted-foreground pt-2">
               Sources: {combo.sources.join(', ')}
+            </div>
+          )}
+
+          {/* Related Pattern Mirror link */}
+          {relatedPatternMirrors.length > 0 && (
+            <div className="pt-3 border-t border-border mt-3">
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1.5">Related Pattern Mirror</p>
+              <div className="flex flex-wrap gap-2">
+                {relatedPatternMirrors.slice(0, 3).map(pm => (
+                  <button
+                    key={pm.id}
+                    onClick={() => {
+                      setActiveTab('patterns');
+                      setSelectedThematicTag('__MY_MATCHES__');
+                      setHighlightedPatternId(pm.id);
+                      // Scroll to the pattern after a short delay (allow tab to render)
+                      setTimeout(() => {
+                        const el = document.getElementById(`pattern-mirror-${pm.id}`);
+                        el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }, 150);
+                    }}
+                    className="text-xs px-2.5 py-1 rounded-full bg-secondary hover:bg-primary/10 border border-border hover:border-primary/50 transition-colors flex items-center gap-1"
+                  >
+                    <Moon className="h-3 w-3" />
+                    {pm.title}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </CardContent>
@@ -1659,12 +1704,23 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                 }
 
                 return (
-                  <PatternMirrorCard
+                  <div
                     key={combo.id}
-                    combo={combo}
-                    isMatch={isMatch}
-                    matchDetails={matchDetails}
-                  />
+                    id={`pattern-mirror-${combo.id}`}
+                    className={`transition-all ${highlightedPatternId === combo.id ? 'ring-2 ring-primary ring-offset-2 ring-offset-background rounded-lg' : ''}`}
+                    onAnimationEnd={() => {
+                      // Clear highlight after animation
+                      if (highlightedPatternId === combo.id) {
+                        setTimeout(() => setHighlightedPatternId(null), 2000);
+                      }
+                    }}
+                  >
+                    <PatternMirrorCard
+                      combo={combo}
+                      isMatch={isMatch}
+                      matchDetails={matchDetails}
+                    />
+                  </div>
                 );
               })
               .filter(Boolean)}
