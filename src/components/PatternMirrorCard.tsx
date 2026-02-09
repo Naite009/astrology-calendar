@@ -94,7 +94,7 @@ export const PatternMirrorCard = ({ combo, isMatch = false, matchDetails }: Patt
             {/* Match indicator & Pattern identifier */}
             <div className="flex items-center gap-2 flex-wrap">
               {isMatch && (
-                <Badge className="bg-primary text-primary-foreground text-xs gap-1">
+                <Badge className="bg-primary text-primary-foreground text-xs gap-1 font-semibold shadow-sm">
                   <Check className="h-3 w-3" />
                   In Your Chart
                 </Badge>
