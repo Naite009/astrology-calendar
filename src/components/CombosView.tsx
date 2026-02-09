@@ -1542,85 +1542,36 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                     selectedChartId={selectedChartId || ''}
                     onSelect={(id) => {
                       setSelectedChartId(id || null);
-                      // Default to showing *only* what is in the selected chart.
-                      // User can uncheck to explore the full library.
+                      // Pattern Mirror is intentionally "your matches only" to avoid confusion.
                       setSelectedThematicTag('__MY_MATCHES__');
                     }}
                   />
                   {selectedChartId && (
-                    <label className="flex items-center gap-2 text-sm cursor-pointer">
-                      <Checkbox
-                        checked={selectedThematicTag === '__MY_MATCHES__'}
-                        onCheckedChange={(checked) => setSelectedThematicTag(checked ? '__MY_MATCHES__' : null)}
-                      />
-                      <span>My Matches Only</span>
-                    </label>
+                    <Badge variant="secondary" className="text-xs">
+                      Showing your matches
+                    </Badge>
                   )}
                 </div>
               </div>
               {!selectedChartId && (
                 <p className="text-xs text-muted-foreground mt-2">
-                  Select a chart to see which patterns match. Toggle "My Matches Only" to filter to just your patterns.
+                  Select your chart to see your exact Pattern Mirror matches.
                 </p>
               )}
             </CardHeader>
           </Card>
 
-          {/* Thematic Tag Filter - only show when not in "My Matches" mode */}
-          {selectedThematicTag !== '__MY_MATCHES__' && (
-            <Card className="border-border">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Filter className="h-4 w-4" />
-                  Filter by Theme
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => setSelectedThematicTag(null)}
-                    className={`px-3 py-1.5 text-sm rounded-full border transition-all ${
-                      !selectedThematicTag
-                        ? 'bg-primary text-primary-foreground border-primary'
-                        : 'bg-background border-border hover:border-primary/50 hover:bg-secondary'
-                    }`}
-                  >
-                    All Patterns
-                  </button>
-                  {THEMATIC_CATEGORIES.map(cat => (
-                    <button
-                      key={cat.id}
-                      onClick={() => setSelectedThematicTag(selectedThematicTag === cat.id ? null : cat.id)}
-                      className={`px-3 py-1.5 text-sm rounded-full border transition-all flex items-center gap-1.5 ${
-                        selectedThematicTag === cat.id
-                          ? 'bg-primary text-primary-foreground border-primary'
-                          : 'bg-background border-border hover:border-primary/50 hover:bg-secondary'
-                      }`}
-                    >
-                      <span>{cat.icon}</span>
-                      {cat.label}
-                    </button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Pattern Mirror Cards */}
-          <div className="grid gap-4 md:grid-cols-2">
-            {patternMirrorCombos
-              .filter(combo => {
-                // Filter by thematic tag (unless showing My Matches)
-                if (selectedThematicTag && selectedThematicTag !== '__MY_MATCHES__') {
-                  return combo.thematicTags.includes(selectedThematicTag);
-                }
-                return true;
-              })
-              .map(combo => {
-                // Check if this pattern matches the selected chart
-                let isMatch = false;
-                let matchDetails: { aspectType?: string; sign?: string; house?: number } = {};
-                // REMOVED: partialMatchInfo - it was confusing (e.g., Moon in 12th as "partial" for Moon in 4th pattern is meaningless)
+            <div className="grid gap-4 md:grid-cols-2">
+              {patternMirrorCombos
+                .map(combo => {
+                  // Until a chart is actually resolved, don't render the library (avoids confusion).
+                  if (!selectedChart) return null;
+
+                  // Check if this pattern matches the selected chart
+                  let isMatch = false;
+                  let matchDetails: { aspectType?: string; sign?: string; house?: number } = {};
 
                 if (selectedChart) {
                   // Check aspect patterns
@@ -1698,8 +1649,8 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                   }
                 }
 
-                // If "My Matches Only" is selected, filter out non-matches
-                if (selectedThematicTag === '__MY_MATCHES__' && !isMatch) {
+                // Pattern Mirror is ALWAYS exact matches only once a chart is selected.
+                if (selectedChart && !isMatch) {
                   return null;
                 }
 
@@ -1726,9 +1677,9 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
               .filter(Boolean)}
           </div>
 
-          {/* Empty state for My Matches */}
-          {selectedThematicTag === '__MY_MATCHES__' && selectedChart && 
-            patternMirrorCombos.filter(combo => {
+          {/* Empty state when your chart has no matches in the current library */}
+          {selectedChart &&
+            patternMirrorCombos.filter((combo) => {
               if (combo.patternType === 'aspect' && combo.planets && combo.aspectTypes) {
                 const [p1, p2] = combo.planets;
                 const p1Pos = getChartPos(p1);
@@ -1744,26 +1695,38 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
               }
               if (combo.patternType === 'sign-placement' && combo.planets && combo.signs) {
                 const pos = getChartPos(combo.planets[0]);
-                return pos && combo.signs.includes(pos.sign);
+                return !!pos && combo.signs.includes(pos.sign);
+              }
+              if (combo.patternType === 'combined' && combo.planets) {
+                // same matching logic as above, but simplified for empty-state check
+                if (combo.aspectTypes && combo.planets.length >= 2) {
+                  const [p1, p2] = combo.planets;
+                  const p1Pos = getChartPos(p1);
+                  const p2Pos = getChartPos(p2);
+                  if (p1Pos && p2Pos) {
+                    const aspect = calculateAspect(p1Pos.sign, p1Pos.degree, p2Pos.sign, p2Pos.degree);
+                    if (aspect && combo.aspectTypes.includes(aspect)) return true;
+                  }
+                }
+                if (combo.signs) {
+                  for (const p of combo.planets) {
+                    const pos = getChartPos(p);
+                    if (pos && combo.signs.includes(pos.sign)) return true;
+                  }
+                }
+                if (combo.house) {
+                  for (const p of combo.planets) {
+                    const house = getNatalPlanetHouse(p, selectedChart);
+                    if (house === combo.house) return true;
+                  }
+                }
               }
               return false;
             }).length === 0 && (
             <Card className="border-dashed">
               <CardContent className="py-8 text-center">
                 <p className="text-muted-foreground text-sm">
-                  No pattern matches found for {selectedChart.name}'s chart. Try viewing "All Patterns" to explore.
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Empty state for theme filter */}
-          {selectedThematicTag && selectedThematicTag !== '__MY_MATCHES__' && 
-            patternMirrorCombos.filter(combo => combo.thematicTags.includes(selectedThematicTag)).length === 0 && (
-            <Card className="border-dashed">
-              <CardContent className="py-8 text-center">
-                <p className="text-muted-foreground text-sm">
-                  No patterns found for this theme.
+                  No pattern matches found for {selectedChart.name}'s chart in the current library.
                 </p>
               </CardContent>
             </Card>
