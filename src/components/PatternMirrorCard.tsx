@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Sun, Zap, Moon, Check, Info } from 'lucide-react';
+import { Sun, Zap, Moon, Check, Info, Sparkles } from 'lucide-react';
 import { PatternMirrorCombo, THEMATIC_CATEGORIES } from '@/lib/patternMirrorCombos';
 import { getPlanetSymbol } from '@/components/PlanetSymbol';
 import { ASPECT_SYMBOLS } from '@/lib/aspectModifiers';
@@ -19,9 +19,10 @@ interface PatternMirrorCardProps {
     sign?: string;
     house?: number;
   };
+  onNavigateToCombo?: (planets: string[]) => void;
 }
 
-export const PatternMirrorCard = ({ combo, isMatch = false, matchDetails }: PatternMirrorCardProps) => {
+export const PatternMirrorCard = ({ combo, isMatch = false, matchDetails, onNavigateToCombo }: PatternMirrorCardProps) => {
   // Build the pattern identifier display
   const getPatternIdentifier = () => {
     const parts: string[] = [];
@@ -177,6 +178,20 @@ export const PatternMirrorCard = ({ combo, isMatch = false, matchDetails }: Patt
             </ul>
           </div>
         </div>
+
+        {/* Related Combo link */}
+        {combo.planets && combo.planets.length > 0 && onNavigateToCombo && (
+          <div className="pt-3 border-t border-border">
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1.5">Related Combo</p>
+            <button
+              onClick={() => onNavigateToCombo(combo.planets!)}
+              className="text-xs px-2.5 py-1 rounded-full bg-secondary hover:bg-primary/10 border border-border hover:border-primary/50 transition-colors flex items-center gap-1"
+            >
+              <Sparkles className="h-3 w-3" />
+              {combo.planets.map(p => getPlanetSymbol(p)).join(' ')} {combo.planets.join('–')}
+            </button>
+          </div>
+        )}
 
         {/* Thematic Tags */}
         <div className="flex flex-wrap gap-1.5 pt-2 border-t border-border">
