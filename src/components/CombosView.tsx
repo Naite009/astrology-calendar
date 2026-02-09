@@ -64,10 +64,13 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
   }, [userChart, savedCharts]);
 
   // Get the selected chart
+  // NOTE: ChartSelector uses the special id "user" for the primary chart.
+  // Many views rely on that behavior, so we map it back to the actual userChart here.
   const selectedChart = useMemo(() => {
     if (!selectedChartId) return null;
-    return allCharts.find(c => c.id === selectedChartId) || null;
-  }, [selectedChartId, allCharts]);
+    if (selectedChartId === 'user') return userChart;
+    return allCharts.find((c) => c.id === selectedChartId) || null;
+  }, [selectedChartId, allCharts, userChart]);
 
   // Helper to calculate aspect between two planets
   const calculateAspect = (
@@ -1492,7 +1495,12 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                     userNatalChart={userChart}
                     savedCharts={savedCharts}
                     selectedChartId={selectedChartId || ''}
-                    onSelect={setSelectedChartId}
+                    onSelect={(id) => {
+                      setSelectedChartId(id || null);
+                      // Default to showing *only* what is in the selected chart.
+                      // User can uncheck to explore the full library.
+                      setSelectedThematicTag('__MY_MATCHES__');
+                    }}
                   />
                   {selectedChartId && (
                     <label className="flex items-center gap-2 text-sm cursor-pointer">
