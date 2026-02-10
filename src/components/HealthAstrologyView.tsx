@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, Apple, Sparkles, Home, Clock, Leaf, AlertCircle, AlertTriangle } from "lucide-react";
+import { Heart, Apple, Sparkles, Home, Clock, Leaf, AlertCircle, AlertTriangle, Stethoscope } from "lucide-react";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { HealthNatalBlueprint } from "./health/HealthNatalBlueprint";
 import { NutritionalAstrology } from "./health/NutritionalAstrology";
@@ -10,6 +10,7 @@ import { HouseHealthSystem } from "./health/HouseHealthSystem";
 import { HealthTimingCard } from "./health/HealthTimingCard";
 import { HealingModalitiesCard } from "./health/HealingModalitiesCard";
 import { HealthTransitAlertsCard } from "./health/HealthTransitAlertsCard";
+import { SymptomAnalyzerCard } from "./health/SymptomAnalyzerCard";
 import { ChartSelector } from "./ChartSelector";
 import { getValidatedAscendant, validateChartData } from "@/lib/chartDataValidation";
 
@@ -115,6 +116,10 @@ export const HealthAstrologyView = ({ natalChart, allCharts }: HealthAstrologyVi
             <Leaf size={14} />
             Healing
           </TabsTrigger>
+          <TabsTrigger value="symptom" className="flex items-center gap-1.5 text-xs">
+            <Stethoscope size={14} />
+            Symptom AI
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="blueprint">
@@ -143,6 +148,10 @@ export const HealthAstrologyView = ({ natalChart, allCharts }: HealthAstrologyVi
 
         <TabsContent value="healing">
           <HealingModalitiesCard natalChart={selectedChart} />
+        </TabsContent>
+
+        <TabsContent value="symptom">
+          <SymptomAnalyzerCard natalChart={selectedChart} />
         </TabsContent>
       </Tabs>
 
