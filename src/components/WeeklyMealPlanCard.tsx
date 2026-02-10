@@ -503,15 +503,6 @@ FORMAT:
             <Button
               variant="ghost"
               size="sm"
-              onClick={handlePrint}
-              className="gap-2"
-            >
-              <Printer className="h-4 w-4" />
-              <span className="hidden sm:inline">Print</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
               onClick={handleDownload}
               className="gap-2"
             >
