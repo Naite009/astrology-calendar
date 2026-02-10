@@ -71,13 +71,57 @@ export const HDChannelsTab = ({ chart }: HDChannelsTabProps) => {
 
   return (
     <div className="space-y-4">
-      <div className="rounded border border-border bg-card p-4">
-        <h4 className="mb-2 text-[10px] uppercase tracking-widest text-muted-foreground">
-          Defined Channels ({channelsWithInfo.length})
-        </h4>
-        <p className="text-sm text-muted-foreground mb-4">
-          Channels form when you have both gates activated, creating defined energy flow between centers.
-        </p>
+      <div className="rounded border border-border bg-card p-4 space-y-4">
+        <div>
+          <h4 className="mb-2 text-[10px] uppercase tracking-widest text-muted-foreground">
+            Defined Channels ({channelsWithInfo.length})
+          </h4>
+          <p className="text-sm text-muted-foreground">
+            Channels form when you have both gates activated, creating a fixed energy flow between two centers. A defined channel means this energy is <strong className="text-foreground">always on</strong> for you — it's a reliable, consistent part of who you are.
+          </p>
+        </div>
+
+        <div className="border-t border-border pt-3">
+          <h5 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
+            Channel Types — What They Mean
+          </h5>
+          <div className="space-y-2 text-sm">
+            <div className="flex items-start gap-2">
+              <span className="shrink-0 mt-0.5 px-2 py-0.5 text-xs rounded bg-orange-500/20 text-orange-500">Generated</span>
+              <p className="text-muted-foreground">
+                <strong className="text-foreground">Motor energy that responds.</strong> These channels connect a motor center (Sacral, Root, Heart, or Solar Plexus) and create energy you can sustain. You access this energy by <em>responding</em> — waiting for life to bring you something to react to, rather than initiating.
+              </p>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="shrink-0 mt-0.5 px-2 py-0.5 text-xs rounded bg-blue-500/20 text-blue-500">Projected</span>
+              <p className="text-muted-foreground">
+                <strong className="text-foreground">Wisdom that needs recognition.</strong> These channels carry awareness and insight rather than raw motor energy. Their gifts are best expressed when <em>invited or recognized</em> by others. Sharing unsolicited can meet resistance.
+              </p>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="shrink-0 mt-0.5 px-2 py-0.5 text-xs rounded bg-red-500/20 text-red-500">Manifested</span>
+              <p className="text-muted-foreground">
+                <strong className="text-foreground">Motor connected directly to the Throat.</strong> These channels give you the ability to <em>initiate and act</em> independently. The key practice is to <em>inform</em> those affected before you act — this removes resistance.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-border pt-3">
+          <h5 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
+            Activation Colors
+          </h5>
+          <div className="flex flex-wrap gap-3 text-sm">
+            <div className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded bg-foreground/20 border border-foreground/30"></span>
+              <span className="text-muted-foreground"><strong className="text-foreground">Personality</strong> (Conscious) — the you that you know</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded bg-destructive/20 border border-destructive/30"></span>
+              <span className="text-muted-foreground"><strong className="text-destructive">Design</strong> (Unconscious) — the you that others see</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {channelsWithInfo.length === 0 ? (
