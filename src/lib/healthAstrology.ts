@@ -474,8 +474,9 @@ export const ELEMENT_HEALING_MODALITIES: Record<string, string[]> = {
   Water: ['Swimming', 'Hydrotherapy', 'Energy healing', 'Emotional release work', 'Intuitive practices', 'Floatation therapy']
 };
 
-// Get dominant element from chart
-export const getDominantElement = (planets: Record<string, { sign: string }>): string => {
+// Get dominant element from chart — weighted by planet importance
+// Personal planets (Sun, Moon, Mercury, Venus, Mars) count more than outer planets
+export const getDominantElement = (planets: Record<string, { sign: string }>, ascendantSign?: string): string => {
   const fireSignes = ['Aries', 'Leo', 'Sagittarius'];
   const earthSigns = ['Taurus', 'Virgo', 'Capricorn'];
   const airSigns = ['Gemini', 'Libra', 'Aquarius'];
@@ -483,13 +484,29 @@ export const getDominantElement = (planets: Record<string, { sign: string }>): s
 
   const counts = { Fire: 0, Earth: 0, Air: 0, Water: 0 };
 
-  Object.values(planets).forEach(planet => {
+  // Weight: Sun/Moon/Ascendant = 3, Mercury/Venus/Mars = 2, outer planets = 1
+  const weights: Record<string, number> = {
+    Sun: 3, Moon: 3, Mercury: 2, Venus: 2, Mars: 2,
+    Jupiter: 1, Saturn: 1, Uranus: 1, Neptune: 1, Pluto: 1
+  };
+
+  const addToElement = (sign: string, weight: number) => {
+    if (fireSignes.includes(sign)) counts.Fire += weight;
+    else if (earthSigns.includes(sign)) counts.Earth += weight;
+    else if (airSigns.includes(sign)) counts.Air += weight;
+    else if (waterSigns.includes(sign)) counts.Water += weight;
+  };
+
+  Object.entries(planets).forEach(([name, planet]) => {
     if (!planet.sign) return;
-    if (fireSignes.includes(planet.sign)) counts.Fire++;
-    else if (earthSigns.includes(planet.sign)) counts.Earth++;
-    else if (airSigns.includes(planet.sign)) counts.Air++;
-    else if (waterSigns.includes(planet.sign)) counts.Water++;
+    const weight = weights[name] || 1;
+    addToElement(planet.sign, weight);
   });
+
+  // Include Ascendant with weight 3 if provided
+  if (ascendantSign) {
+    addToElement(ascendantSign, 3);
+  }
 
   return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
 };
