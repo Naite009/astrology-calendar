@@ -394,7 +394,30 @@ FORMAT:
   };
 
   const handlePrint = () => {
-    window.print();
+    if (!contentRef.current) return;
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    
+    printWindow.document.write(`
+      <!DOCTYPE html><html><head>
+      <title>Cosmic Meal Plan</title>
+      <style>
+        @page { margin: 0.5in; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Georgia, serif; color: #1f2937; line-height: 1.5; font-size: 12px; }
+        h1, h2 { margin: 8px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+        th, td { border: 1px solid #d1d5db; padding: 4px 8px; text-align: left; font-size: 11px; }
+        th { background: #f3f4f6; font-weight: 600; }
+        ul, ol { padding-left: 18px; }
+        li { margin-bottom: 3px; font-size: 11px; }
+        p { margin: 4px 0; font-size: 12px; }
+        strong { font-weight: 600; }
+      </style>
+      </head><body>${contentRef.current.innerHTML}</body></html>
+    `);
+    printWindow.document.close();
+    printWindow.onload = () => printWindow.print();
   };
 
   // Extract the selected day's content from the full meal plan
