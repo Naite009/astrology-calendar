@@ -151,17 +151,19 @@ export const CosmicRecipeCard = ({ recipe, date }: CosmicRecipeCardProps) => {
       <head>
         <title>${recipe.name} - Cosmic Recipe</title>
         <style>
+          @page { margin: 0.5in; }
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body { 
             font-family: Georgia, 'Times New Roman', serif; 
-            padding: 40px; 
+            padding: 0; 
             color: #1f2937;
-            line-height: 1.6;
+            line-height: 1.5;
+            font-size: 12px;
           }
           .header { 
             border-bottom: 3px solid ${printColor}; 
-            padding-bottom: 16px; 
-            margin-bottom: 24px; 
+            padding-bottom: 10px; 
+            margin-bottom: 14px; 
           }
           .element-badge {
             font-size: 11px;
@@ -171,10 +173,10 @@ export const CosmicRecipeCard = ({ recipe, date }: CosmicRecipeCardProps) => {
             margin-bottom: 8px;
           }
           h1 { 
-            font-size: 28px; 
+            font-size: 22px; 
             font-weight: 500; 
             color: #111827;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
           }
           .tagline { 
             font-style: italic; 
@@ -183,23 +185,23 @@ export const CosmicRecipeCard = ({ recipe, date }: CosmicRecipeCardProps) => {
           }
           .meta { 
             display: flex; 
-            gap: 24px; 
-            margin-top: 16px; 
-            font-size: 13px;
+            gap: 16px; 
+            margin-top: 8px; 
+            font-size: 11px;
             color: #4b5563;
           }
           .content { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
-            gap: 32px; 
-            margin-top: 24px;
+            gap: 20px; 
+            margin-top: 14px;
           }
           h2 { 
-            font-size: 14px; 
+            font-size: 12px; 
             text-transform: uppercase; 
             letter-spacing: 1px;
             color: ${printColor}; 
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             font-weight: 600;
           }
           ul, ol { 
@@ -207,10 +209,10 @@ export const CosmicRecipeCard = ({ recipe, date }: CosmicRecipeCardProps) => {
             list-style: none;
           }
           li { 
-            margin-bottom: 8px; 
-            font-size: 13px;
+            margin-bottom: 4px; 
+            font-size: 11px;
             display: flex;
-            gap: 8px;
+            gap: 6px;
           }
           .bullet { color: ${printColor}; font-weight: bold; }
           .step-num { 
@@ -219,31 +221,33 @@ export const CosmicRecipeCard = ({ recipe, date }: CosmicRecipeCardProps) => {
             min-width: 24px;
           }
           .cosmic-note {
-            margin-top: 32px;
-            padding: 16px;
+            margin-top: 14px;
+            padding: 10px;
             border: 1px solid ${printColor};
-            border-radius: 8px;
+            border-radius: 6px;
             background: #f9fafb;
           }
           .cosmic-note-label {
             color: ${printColor};
             font-weight: 600;
-            font-size: 13px;
+            font-size: 11px;
           }
           .cosmic-note p {
             font-style: italic;
-            font-size: 13px;
+            font-size: 11px;
             color: #4b5563;
-            margin-top: 4px;
+            margin-top: 2px;
           }
           .watermark {
-            margin-top: 32px;
+            margin-top: 14px;
             text-align: right;
-            font-size: 11px;
+            font-size: 10px;
             color: #9ca3af;
           }
           @media print {
-            body { padding: 20px; }
+            body { padding: 0; }
+            .content { page-break-inside: auto; }
+            li { page-break-inside: avoid; }
           }
         </style>
       </head>
