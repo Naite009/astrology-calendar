@@ -256,15 +256,18 @@ export const LifePatternsTab = ({ chart }: LifePatternsTabProps) => {
         </div>
       </PatternSection>
 
-      {/* 5. Lucky Days */}
+      {/* 5. Lucky Days + Top 10 Luckiest Dates */}
       <PatternSection
         icon={Calendar}
-        title={`Your Luckiest Day: ${luckyDays.primaryDay}`}
-        subtitle="When to schedule your biggest moves"
-        badgeText={luckyDays.primaryDay}
+        title="Your Luckiest Days & Dates"
+        subtitle="Weekly power day + top 10 transit-powered dates this year"
+        badgeText={`#1: ${luckyDays.primaryDay}`}
         badgeVariant="default"
+        defaultOpen
       >
+        {/* Weekly power day */}
         <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Your Weekly Power Day</p>
           <p className="text-sm text-foreground/85 leading-relaxed">
             <strong>{luckyDays.primaryDay}</strong> is ruled by <strong>{luckyDays.primaryPlanet}</strong>. {luckyDays.primaryReason}.
           </p>
@@ -272,7 +275,7 @@ export const LifePatternsTab = ({ chart }: LifePatternsTabProps) => {
 
         {luckyDays.secondaryDays.length > 0 && (
           <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Also favorable:</p>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Also favorable weekly:</p>
             {luckyDays.secondaryDays.map((d, i) => (
               <div key={i} className="flex items-start gap-2 text-sm mb-1.5">
                 <Badge variant="outline" className="text-[10px]">{d.day}</Badge>
@@ -282,8 +285,52 @@ export const LifePatternsTab = ({ chart }: LifePatternsTabProps) => {
           </div>
         )}
 
-        <p className="text-xs text-muted-foreground italic">
-          💡 Timing tip: Start important ventures, schedule interviews, or make big asks on {luckyDays.primaryDay} for best results.
+        {/* Top 10 Luckiest Dates */}
+        {luckyDays.topDates.length > 0 && (
+          <div>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3 mt-2">
+              🌟 Your Top 10 Luckiest Dates (Based on Real Transits to Your Chart)
+            </p>
+            <div className="space-y-2">
+              {luckyDays.topDates.map((entry, i) => {
+                const dateStr = entry.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+                const maxScore = luckyDays.topDates[0]?.score || 1;
+                const barWidth = Math.round((entry.score / maxScore) * 100);
+                return (
+                  <div key={i} className="p-3 bg-secondary/30 rounded-lg border border-border/50">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-primary">#{i + 1}</span>
+                        <span className="text-sm font-medium">{dateStr}</span>
+                      </div>
+                      <span className="text-xs text-amber-500 font-medium">{entry.rating}</span>
+                    </div>
+                    {/* Score bar */}
+                    <div className="w-full h-1.5 bg-secondary rounded-full mb-1.5 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-primary to-accent"
+                        style={{ width: `${barWidth}%` }}
+                      />
+                    </div>
+                    <div className="flex flex-wrap gap-1 mb-1">
+                      {entry.categories.map((cat, ci) => (
+                        <Badge key={ci} variant="outline" className="text-[9px] px-1.5 py-0">
+                          {cat === 'love' ? '💕' : cat === 'expansion' ? '🍀' : cat === 'vitality' ? '☀️' : cat === 'fortune' ? '🎯' : '✨'} {cat}
+                        </Badge>
+                      ))}
+                    </div>
+                    <ul className="text-xs text-muted-foreground space-y-0.5">
+                      {entry.reasons.map((r, ri) => <li key={ri}>• {r}</li>)}
+                    </ul>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        <p className="text-xs text-muted-foreground italic mt-2">
+          💡 These dates are calculated from real planetary transits making exact harmonious aspects to your natal chart. Schedule important moves, launches, and asks on these days.
         </p>
       </PatternSection>
 

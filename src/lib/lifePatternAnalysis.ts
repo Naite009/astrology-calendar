@@ -6,6 +6,8 @@
 import { NatalChart } from '@/hooks/useNatalChart';
 import { getNatalPlanetHouse, signDegreesToLongitude } from '@/lib/houseCalculations';
 import { PLANET_DIGNITIES } from '@/lib/planetDignities';
+import { getPlanetaryPositions as getLuckyPositions, getMoonPhase as getLuckyMoonPhase } from '@/lib/astrology';
+import { isTimeVOC as isLuckyVOC } from '@/lib/voidOfCourseMoon';
 
 // ──────────────────────────────────────────
 // Shared helpers
@@ -573,14 +575,23 @@ export function analyzeCareer(chart: NatalChart): CareerResult {
 }
 
 // ──────────────────────────────────────────
-// 5. LUCKIEST DAY OF WEEK
+// 5. LUCKIEST DAY OF WEEK + TOP 10 DATES
 // ──────────────────────────────────────────
+
+export interface LuckyDateEntry {
+  date: Date;
+  score: number;
+  rating: string;
+  reasons: string[];
+  categories: string[];
+}
 
 export interface LuckyDayResult {
   primaryDay: string;
   primaryPlanet: string;
   primaryReason: string;
   secondaryDays: { day: string; planet: string; reason: string }[];
+  topDates: LuckyDateEntry[];
 }
 
 const DAY_RULERS: Record<string, string> = {
@@ -589,6 +600,152 @@ const DAY_RULERS: Record<string, string> = {
 };
 
 const PLANET_TO_DAY = Object.fromEntries(Object.entries(DAY_RULERS).map(([p,d]) => [p,d]));
+
+/**
+ * Calculate the top 10 luckiest specific calendar dates for the year
+ * by scoring each day based on benefic transits to the natal chart.
+ */
+function calculateLuckiestDates(chart: NatalChart): LuckyDateEntry[] {
+  const getPlanetaryPositions = getLuckyPositions;
+  const getMoonPhase = getLuckyMoonPhase;
+  const isTimeVOC = isLuckyVOC;
+
+  const planets = extractPlanetData(chart);
+  const now = new Date();
+  const startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const endDate = new Date(now.getFullYear(), 11, 31);
+
+  // Natal longitudes for key personal points
+  const natalPoints: { name: string; lon: number }[] = [];
+  for (const p of planets) {
+    natalPoints.push({ name: p.name, lon: p.degree });
+  }
+
+  // Score benefic planets (Jupiter, Venus, Sun) making harmonious aspects to natal points
+  const BENEFIC_TRANSITS = ['Jupiter', 'Venus', 'Sun'];
+  const ASPECT_DEFS = [
+    { angle: 0, name: 'conjunction', symbol: '☌', score: 35 },
+    { angle: 60, name: 'sextile', symbol: '⚹', score: 25 },
+    { angle: 120, name: 'trine', symbol: '△', score: 35 },
+  ];
+  const HARD_ASPECTS = [
+    { angle: 90, name: 'square', symbol: '□', score: -15 },
+    { angle: 180, name: 'opposition', symbol: '☍', score: -10 },
+  ];
+  const MALEFIC_TRANSITS = ['Saturn', 'Mars'];
+
+  const dayScores: Map<string, { date: Date; score: number; reasons: string[]; categories: Set<string> }> = new Map();
+
+  const currentDate = new Date(startDate);
+  // Sample at noon each day for daily scoring
+  currentDate.setHours(12, 0, 0, 0);
+
+  while (currentDate <= endDate) {
+    const dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth()+1).padStart(2,'0')}-${String(currentDate.getDate()).padStart(2,'0')}`;
+    let score = 0;
+    const reasons: string[] = [];
+    const categories = new Set<string>();
+
+    try {
+      const transitPositions = getPlanetaryPositions(currentDate);
+      const moonPhase = getMoonPhase(currentDate);
+
+      const getTransitLon = (name: string): number | null => {
+        const key = name.toLowerCase() as keyof typeof transitPositions;
+        const pos = transitPositions[key];
+        if (!pos?.signName) return null;
+        const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+        return SIGNS.indexOf(pos.signName) * 30 + (pos.degree || 0);
+      };
+
+      // Check benefic transits to natal points
+      for (const transitName of BENEFIC_TRANSITS) {
+        const transitLon = getTransitLon(transitName);
+        if (transitLon === null) continue;
+
+        for (const natal of natalPoints) {
+          const diff = Math.abs(((transitLon - natal.lon + 180) % 360) - 180);
+          for (const asp of ASPECT_DEFS) {
+            const orbDiff = Math.abs(diff - asp.angle);
+            if (orbDiff < 3) { // tight 3° orb for precision
+              const bonus = asp.score * (1 - orbDiff / 3); // tighter = stronger
+              score += bonus;
+              reasons.push(`${transitName} ${asp.symbol} natal ${natal.name} (${orbDiff.toFixed(1)}°)`);
+              if (transitName === 'Venus') categories.add('love');
+              if (transitName === 'Jupiter') categories.add('expansion');
+              if (transitName === 'Sun') categories.add('vitality');
+            }
+          }
+        }
+      }
+
+      // Check malefic hard aspects as penalties
+      for (const transitName of MALEFIC_TRANSITS) {
+        const transitLon = getTransitLon(transitName);
+        if (transitLon === null) continue;
+        for (const natal of natalPoints) {
+          const diff = Math.abs(((transitLon - natal.lon + 180) % 360) - 180);
+          for (const asp of HARD_ASPECTS) {
+            const orbDiff = Math.abs(diff - asp.angle);
+            if (orbDiff < 2) {
+              score += asp.score;
+              reasons.push(`${transitName} ${asp.symbol} natal ${natal.name}`);
+            }
+          }
+        }
+      }
+
+      // Jupiter conjunct/trine natal Jupiter = extra lucky
+      const jupiterLon = getTransitLon('Jupiter');
+      const natalJupiter = natalPoints.find(p => p.name === 'Jupiter');
+      if (jupiterLon !== null && natalJupiter) {
+        const diff = Math.abs(((jupiterLon - natalJupiter.lon + 180) % 360) - 180);
+        if (diff < 2) {
+          score += 20;
+          reasons.push('Jupiter return (peak luck!)');
+          categories.add('fortune');
+        }
+      }
+
+      // Moon phase bonus
+      if (moonPhase.phaseName?.includes('Waxing')) {
+        score += 5;
+      }
+      if (moonPhase.phaseName === 'Full Moon') {
+        score += 8;
+        reasons.push('Full Moon illumination');
+      }
+
+      // VOC penalty
+      const vocCheck = isTimeVOC(currentDate);
+      if (vocCheck) {
+        score -= 10;
+      }
+
+    } catch {
+      // Skip days with calculation errors
+    }
+
+    if (score > 15) {
+      dayScores.set(dateKey, { date: new Date(currentDate), score: Math.round(score), reasons, categories });
+    }
+
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  // Sort by score and return top 10
+  const sorted = Array.from(dayScores.values())
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 10);
+
+  return sorted.map(d => ({
+    date: d.date,
+    score: d.score,
+    rating: d.score > 60 ? '★★★★★' : d.score > 45 ? '★★★★' : d.score > 30 ? '★★★' : '★★',
+    reasons: d.reasons.slice(0, 4),
+    categories: Array.from(d.categories),
+  }));
+}
 
 export function analyzeLuckyDays(chart: NatalChart): LuckyDayResult {
   const planets = extractPlanetData(chart);
@@ -634,11 +791,15 @@ export function analyzeLuckyDays(chart: NatalChart): LuckyDayResult {
   const seen = new Set([primary.day]);
   const secondary = candidates.filter(c => { if (seen.has(c.day)) return false; seen.add(c.day); return true; }).slice(0, 2);
 
+  // Calculate actual luckiest dates from transits
+  const topDates = calculateLuckiestDates(chart);
+
   return {
     primaryDay: primary.day,
     primaryPlanet: primary.planet,
     primaryReason: primary.reason,
-    secondaryDays: secondary.map(s => ({ day: s.day, planet: s.planet, reason: s.reason }))
+    secondaryDays: secondary.map(s => ({ day: s.day, planet: s.planet, reason: s.reason })),
+    topDates
   };
 }
 
