@@ -8,6 +8,7 @@ import { toast } from '@/hooks/use-toast';
 import html2canvas from 'html2canvas';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { CosmicRecipeCard, parseRecipeFromContent } from './CosmicRecipeCard';
 import {
   Select,
   SelectContent,
@@ -592,53 +593,77 @@ FORMAT:
             </div>
           )}
           
-          {/* Recipe of the Week */}
-          {weeklyRecipe && (
-            <div className="border-t border-border pt-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Sparkles className="h-5 w-5 text-primary" />
-                <h2 className="font-serif text-lg font-medium">Recipe of the Week</h2>
+          {weeklyRecipe && (() => {
+            const parsedRecipe = parseRecipeFromContent(weeklyRecipe);
+            // Strip structured tags so raw RECIPE_START etc. never show
+            const cleanedRecipe = weeklyRecipe
+              .replace(/\*?\*?RECIPE_START\*?\*?/g, '')
+              .replace(/\*?\*?RECIPE_END\*?\*?/g, '')
+              .replace(/^[A-Z_]+:\s*.+$/gm, (line) => {
+                // Remove lines like "RECIPE_NAME: ...", "COOK_TIME: ..." etc.
+                if (/^(RECIPE_NAME|RECIPE_TAGLINE|SERVINGS|PREP_TIME|COOK_TIME|MOON_SIGN|ELEMENT|INGREDIENTS|INSTRUCTIONS|COSMIC_NOTE):/.test(line)) return '';
+                return line;
+              })
+              .replace(/\n{3,}/g, '\n\n')
+              .trim();
+
+            if (parsedRecipe && parsedRecipe.name) {
+              // Use the beautiful CosmicRecipeCard
+              return (
+                <div className="border-t border-border pt-6">
+                  <CosmicRecipeCard recipe={parsedRecipe} date={weekData[0].dateStr + ' – ' + weekData[6].dateStr} />
+                </div>
+              );
+            }
+
+            // Fallback: render as cleaned markdown
+            return (
+              <div className="border-t border-border pt-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  <h2 className="font-serif text-lg font-medium">Recipe of the Week</h2>
+                </div>
+                
+                <div className="prose prose-sm dark:prose-invert max-w-none">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      h1: ({ children }) => (
+                        <h1 className="font-serif text-xl font-medium text-foreground mb-2 flex items-center gap-2">
+                          {children}
+                        </h1>
+                      ),
+                      h2: ({ children }) => (
+                        <h2 className="font-serif text-base font-medium text-foreground mt-4 mb-2">
+                          {children}
+                        </h2>
+                      ),
+                      ul: ({ children }) => (
+                        <ul className="space-y-1 my-2 list-disc list-inside">{children}</ul>
+                      ),
+                      ol: ({ children }) => (
+                        <ol className="space-y-2 my-2 list-decimal list-inside">{children}</ol>
+                      ),
+                      li: ({ children }) => (
+                        <li className="text-foreground/90">{children}</li>
+                      ),
+                      p: ({ children }) => (
+                        <p className="text-foreground/90 leading-relaxed my-2">{children}</p>
+                      ),
+                      strong: ({ children }) => (
+                        <strong className="font-semibold text-foreground">{children}</strong>
+                      ),
+                      em: ({ children }) => (
+                        <em className="text-muted-foreground">{children}</em>
+                      ),
+                    }}
+                  >
+                    {cleanedRecipe}
+                  </ReactMarkdown>
+                </div>
               </div>
-              
-              <div className="prose prose-sm dark:prose-invert max-w-none">
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={{
-                    h1: ({ children }) => (
-                      <h1 className="font-serif text-xl font-medium text-foreground mb-2 flex items-center gap-2">
-                        {children}
-                      </h1>
-                    ),
-                    h2: ({ children }) => (
-                      <h2 className="font-serif text-base font-medium text-foreground mt-4 mb-2">
-                        {children}
-                      </h2>
-                    ),
-                    ul: ({ children }) => (
-                      <ul className="space-y-1 my-2 list-disc list-inside">{children}</ul>
-                    ),
-                    ol: ({ children }) => (
-                      <ol className="space-y-2 my-2 list-decimal list-inside">{children}</ol>
-                    ),
-                    li: ({ children }) => (
-                      <li className="text-foreground/90">{children}</li>
-                    ),
-                    p: ({ children }) => (
-                      <p className="text-foreground/90 leading-relaxed my-2">{children}</p>
-                    ),
-                    strong: ({ children }) => (
-                      <strong className="font-semibold text-foreground">{children}</strong>
-                    ),
-                    em: ({ children }) => (
-                      <em className="text-muted-foreground">{children}</em>
-                    ),
-                  }}
-                >
-                  {weeklyRecipe}
-                </ReactMarkdown>
-              </div>
-            </div>
-          )}
+            );
+          })()}
           
           {!mealPlan && !weeklyRecipe && !loading && (
             <div className="text-center py-8 text-muted-foreground">
