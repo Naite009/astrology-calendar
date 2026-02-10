@@ -5,6 +5,7 @@ import { ChevronDown, Apple, Leaf, Droplets, Flame } from "lucide-react";
 import { useState } from "react";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { SIGN_NUTRITION, ELEMENTAL_NUTRITION, getDominantElement, getElementForSign } from "@/lib/healthAstrology";
+import { getValidatedAscendant } from "@/lib/chartDataValidation";
 
 interface NutritionalAstrologyProps {
   natalChart: NatalChart;
@@ -23,7 +24,8 @@ export const NutritionalAstrology = ({ natalChart }: NutritionalAstrologyProps) 
   const sunSign = planets.Sun?.sign || 'Aries';
   const moonSign = planets.Moon?.sign || 'Cancer';
 
-  const dominantElement = getDominantElement(planets);
+  const ascendantSign = getValidatedAscendant(natalChart).correctedValue;
+  const dominantElement = getDominantElement(planets, ascendantSign);
   const elementalInfo = ELEMENTAL_NUTRITION[dominantElement];
   const sunNutrition = SIGN_NUTRITION[sunSign];
   const moonNutrition = SIGN_NUTRITION[moonSign];
