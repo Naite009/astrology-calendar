@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -34,84 +35,91 @@ function synthesizeCrossPurpose(
   const uSun = unconsciousSun;
   const uEarth = unconsciousEarth;
 
-  // Build the "Your Life Purpose" synthesis
+  // ── PURPOSE: Deep behavioral narrative of each gate's role ──
   const purposeParts: string[] = [];
 
   if (cSun) {
     purposeParts.push(
-      `Your Conscious Sun sits in Gate ${cSun.number} — ${cSun.name}. This is the primary theme of your life purpose, accounting for roughly 70% of your cross's energy. ${cSun.consciousExpression} Your core gifts here include: ${cSun.gifts.slice(0, 3).join(', ')}.`
+      `**Gate ${cSun.number} — ${cSun.name} (Conscious Sun · ~70% of your cross)**\n\nThis is the loudest note in your life purpose. It's the theme you're here to live, not as an abstract concept, but as a daily, embodied experience.\n\n${cSun.description}\n\n*What this feels like for you:* ${cSun.consciousExpression}`
     );
   }
 
   if (cEarth) {
     purposeParts.push(
-      `Your Conscious Earth in Gate ${cEarth.number} — ${cEarth.name} — provides grounding and stability for your Sun theme. This is what keeps you anchored: ${cEarth.keynotes.slice(0, 2).join(' and ')}. ${cEarth.consciousExpression}`
+      `**Gate ${cEarth.number} — ${cEarth.name} (Conscious Earth · Your Grounding)**\n\nIf your Conscious Sun is the theme of your purpose, your Conscious Earth is what stabilizes it — the ground you stand on so that the Sun theme doesn't burn you out or float away. Without this grounding, your purpose would feel unanchored.\n\n${cEarth.description}\n\n*What this feels like for you:* ${cEarth.consciousExpression}`
     );
   }
 
   if (uSun) {
     purposeParts.push(
-      `Your Unconscious Sun in Gate ${uSun.number} — ${uSun.name} — is the deeper, less visible driver of your purpose. Others see this in you before you do: ${uSun.unconsciousExpression} This adds the dimension of ${uSun.keynotes.slice(0, 2).join(' and ')} to your life theme.`
+      `**Gate ${uSun.number} — ${uSun.name} (Unconscious Sun · What Others See)**\n\nThis is the part of your purpose that operates beneath your awareness. You don't "do" this gate — it does you. Others experience this in you clearly, often before you recognize it in yourself. This is the hidden engine of your cross.\n\n${uSun.description}\n\n*How others experience this in you:* ${uSun.unconsciousExpression}`
     );
   }
 
   if (uEarth) {
     purposeParts.push(
-      `Your Unconscious Earth in Gate ${uEarth.number} — ${uEarth.name} — is the unconscious foundation beneath everything. It grounds the deeper purpose with ${uEarth.keynotes.slice(0, 2).join(' and ')}. ${uEarth.unconsciousExpression}`
+      `**Gate ${uEarth.number} — ${uEarth.name} (Unconscious Earth · Deepest Foundation)**\n\nThis is the most hidden gate in your cross — the unconscious ground beneath the unconscious theme. It quietly stabilizes everything from below the surface. You may never fully "see" this gate in yourself, but others feel its steadying presence.\n\n${uEarth.description}\n\n*How others experience this in you:* ${uEarth.unconsciousExpression}`
     );
   }
 
-  // Build "How These Gates Work Together"
+  // ── INTEGRATION: How the gates weave together ──
   const integrationParts: string[] = [];
   if (cSun && uSun) {
     integrationParts.push(
-      `The conscious drive of ${cSun.name} (Gate ${cSun.number}) meets the unconscious pull of ${uSun.name} (Gate ${uSun.number}). On the surface you express ${cSun.keynotes[0]?.toLowerCase() || 'your conscious theme'}, while underneath, ${uSun.keynotes[0]?.toLowerCase() || 'your unconscious theme'} is always at work shaping how your purpose lands in the world.`
+      `**The Conscious–Unconscious Dance**\n\nYour purpose has two layers that work simultaneously. On the surface — the part you're most aware of — Gate ${cSun.number} (${cSun.name}) drives your experience. You feel its themes consciously: ${cSun.keynotes[0]?.toLowerCase()}, ${cSun.keynotes[1]?.toLowerCase()}. But underneath that, Gate ${uSun.number} (${uSun.name}) is always running. This is the part of your purpose that others see in you, even when you don't see it yourself.\n\nThe interplay matters: your conscious theme of ${cSun.keynotes[0]?.toLowerCase()} is given depth and texture by the unconscious dimension of ${uSun.keynotes[0]?.toLowerCase()}. Neither gate alone IS your purpose — the cross is the combination, the way they inform and enrich each other.`
     );
   }
   if (cEarth && uEarth) {
     integrationParts.push(
-      `Your grounding axis — Gate ${cEarth.number} (${cEarth.name}) consciously and Gate ${uEarth.number} (${uEarth.name}) unconsciously — creates the stable base from which you operate. Together they anchor your purpose in ${cEarth.keynotes[0]?.toLowerCase() || 'stability'} and ${uEarth.keynotes[0]?.toLowerCase() || 'foundation'}.`
+      `**The Grounding Axis**\n\nWhile the Sun gates carry the "what" of your purpose, the Earth gates carry the "how you sustain it." Gate ${cEarth.number} (${cEarth.name}) consciously anchors you through ${cEarth.keynotes[0]?.toLowerCase()}, while Gate ${uEarth.number} (${uEarth.name}) unconsciously provides a foundation of ${uEarth.keynotes[0]?.toLowerCase()}. Without these Earth gates, the Sun's purpose would lack staying power. They're the roots that let the visible part of your purpose grow tall.`
+    );
+  }
+  if (cSun && cEarth && uSun && uEarth) {
+    integrationParts.push(
+      `**The Full Picture**\n\nYour cross is a four-part architecture: the conscious purpose of ${cSun.name} (Gate ${cSun.number}), grounded by ${cEarth.name} (Gate ${cEarth.number}), deepened by the unconscious ${uSun.name} (Gate ${uSun.number}), and stabilized at the deepest level by ${uEarth.name} (Gate ${uEarth.number}). When you're living according to your Strategy and Authority, these four energies aren't competing — they're harmonizing into a coherent life direction that you don't need to manage. It simply emerges.`
     );
   }
 
-  // Build "Living Your Cross"
+  // ── LIVING YOUR CROSS ──
   const livingParts: string[] = [];
   if (crossType === 'Right Angle') {
     livingParts.push(
-      `As a Right Angle Cross, your purpose is deeply personal. It's not about fulfilling a role for the collective — it's about your own journey and transformation. Your cross unfolds through the specific experiences that your Strategy brings to you.`
+      `**Your Cross Is Personal**\n\nAs a Right Angle Cross, your purpose is a personal journey. It's not about serving the collective, fulfilling a mission statement, or saving anyone. It's about what happens when YOU live correctly — when you follow your Strategy and Authority and let your unique configuration express itself without interference.\n\nThis means your purpose isn't something you figure out intellectually. It's something that reveals itself through the accumulation of correct decisions. Each time you honor your design, the cross becomes a little more visible — to you and to others.`
     );
   } else if (crossType === 'Left Angle') {
     livingParts.push(
-      `As a Left Angle Cross, your purpose is transpersonal — it comes alive through your interactions and relationships with others. Your cross needs other people to fulfill itself. The people you meet aren't accidental; they're part of your purpose geometry.`
+      `**Your Cross Is Transpersonal**\n\nAs a Left Angle Cross, your purpose comes alive through other people. The people you meet, the relationships you form, the communities you move through — these aren't distractions from your purpose, they ARE your purpose. Your cross needs interaction to fulfill itself.\n\nThis means your purpose isn't something you find in isolation. It emerges through the specific chemistry of your interactions. The "right" people for your cross show up when you're making correct decisions through your Strategy and Authority.`
     );
   } else {
     livingParts.push(
-      `As a Juxtaposition Cross, you walk a fixed geometry — a singular, focused path. Your purpose is neither purely personal nor transpersonal but a bridge between both. You have a very specific frequency and direction that doesn't bend.`
+      `**Your Cross Is Fixed**\n\nAs a Juxtaposition Cross, you walk a singular, focused path. Your geometry is precise — neither the personal journey of a Right Angle nor the transpersonal dance of a Left Angle, but a specific, unwavering direction. You have a very particular frequency that doesn't adapt or bend to circumstances.\n\nThis can feel isolating at times, but it's also your power. Your consistency of direction is exactly what others need from you.`
     );
   }
 
   if (cSun) {
     livingParts.push(
-      `In practice, you'll notice your purpose most when you allow Gate ${cSun.number}'s theme of ${cSun.keynotes[0]?.toLowerCase() || 'expression'} to emerge naturally through correct decision-making. The challenges of ${cSun.challenges[0]?.toLowerCase() || 'this gate'} are actually the friction that polishes your purpose into something real and embodied.`
+      `**Where You'll Feel It**\n\nYou'll know your cross is emerging when the themes of Gate ${cSun.number} (${cSun.name}) stop feeling like effort and start feeling like inevitability. The challenges — ${cSun.challenges[0]?.toLowerCase()} — aren't obstacles to your purpose. They're the friction that refines it. Every time you navigate those challenges correctly (through your ${hdType} Strategy), your purpose becomes more embodied and less theoretical.\n\nDon't try to "live your cross." Instead, make correct decisions, and watch the cross live you.`
     );
   }
 
-  // Build "Collective Contribution" 
+  // ── COLLECTIVE CONTRIBUTION ──
   const contributionParts: string[] = [];
-  const allGifts = [
-    ...(cSun?.gifts || []).slice(0, 2),
-    ...(uSun?.gifts || []).slice(0, 2),
-  ];
-  if (allGifts.length > 0) {
+  
+  if (cSun && uSun) {
     contributionParts.push(
-      `When you're living your design correctly, your natural contribution to others includes: ${allGifts.join(', ')}. This isn't something you need to work at — these gifts emerge when you follow your Strategy and Authority.`
+      `**What You Offer Without Trying**\n\nWhen you're living correctly, you naturally bring two layers of contribution to the people around you.\n\nThe conscious layer — Gate ${cSun.number} (${cSun.name}) — shows up as: ${cSun.gifts.slice(0, 2).join(', ')}. This is the contribution you're more aware of, the one you can somewhat deliberately express.\n\nBut the deeper contribution — Gate ${uSun.number} (${uSun.name}) — happens without your awareness: ${uSun.gifts.slice(0, 2).join(', ')}. ${uSun.unconsciousExpression}`
     );
   }
-  if (uSun) {
+
+  if (cEarth && uEarth) {
     contributionParts.push(
-      `The unconscious dimension of Gate ${uSun.number} means others often receive ${uSun.gifts?.[0]?.toLowerCase() || 'something valuable'} from you without you even realizing you're offering it.`
+      `**The Invisible Support You Provide**\n\nBeyond the visible contributions, your Earth gates create a stabilizing effect on the people in your life. Through Gate ${cEarth.number} (${cEarth.name}), you ground others with ${cEarth.gifts[0]?.toLowerCase()}. Through Gate ${uEarth.number} (${uEarth.name}), you unconsciously provide ${uEarth.gifts[0]?.toLowerCase()} — a foundation others lean on without either of you fully realizing it.`
     );
   }
+
+  contributionParts.push(
+    `**The Key Distinction**\n\nNone of this contribution requires effort or strategy. It's not a job description or a mission. It's the natural byproduct of living correctly. When you follow your Strategy and Authority, these gifts flow as naturally as breathing. When you try to force them, they distort.`
+  );
 
   return {
     purpose: purposeParts.join('\n\n'),
@@ -207,14 +215,12 @@ export function IncarnationCrossAnalysis({ chart }: IncarnationCrossAnalysisProp
               <CardHeader>
                 <CardTitle>Your Cross — What It Means For You</CardTitle>
               </CardHeader>
-              <CardContent className="prose prose-sm max-w-none space-y-4">
+              <CardContent className="prose prose-sm max-w-none dark:prose-invert space-y-4">
                 {cross?.description && (
                   <p>{cross.description}</p>
                 )}
                 <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
-                  {lifeWorkText.split('\n\n').map((para, i) => (
-                    <p key={i} className={i > 0 ? 'mt-3' : ''}>{para}</p>
-                  ))}
+                  <ReactMarkdown>{lifeWorkText}</ReactMarkdown>
                 </div>
               </CardContent>
             </Card>
@@ -223,10 +229,8 @@ export function IncarnationCrossAnalysis({ chart }: IncarnationCrossAnalysisProp
                 <CardHeader>
                   <CardTitle>Your Collective Contribution</CardTitle>
                 </CardHeader>
-                <CardContent className="prose prose-sm max-w-none">
-                  {contributionText.split('\n\n').map((para, i) => (
-                    <p key={i} className={i > 0 ? 'mt-3' : ''}>{para}</p>
-                  ))}
+                <CardContent className="prose prose-sm max-w-none dark:prose-invert">
+                  <ReactMarkdown>{contributionText}</ReactMarkdown>
                 </CardContent>
               </Card>
             )}
@@ -340,10 +344,8 @@ export function IncarnationCrossAnalysis({ chart }: IncarnationCrossAnalysisProp
                 <CardHeader>
                   <CardTitle>How These Gates Work Together</CardTitle>
                 </CardHeader>
-                <CardContent className="prose prose-sm max-w-none">
-                  {integrationText.split('\n\n').map((para, i) => (
-                    <p key={i} className={i > 0 ? 'mt-3' : ''}>{para}</p>
-                  ))}
+                <CardContent className="prose prose-sm max-w-none dark:prose-invert">
+                  <ReactMarkdown>{integrationText}</ReactMarkdown>
                 </CardContent>
               </Card>
             )}
@@ -355,10 +357,8 @@ export function IncarnationCrossAnalysis({ chart }: IncarnationCrossAnalysisProp
                 <CardHeader>
                   <CardTitle>Living Your Cross</CardTitle>
                 </CardHeader>
-                <CardContent className="prose prose-sm max-w-none">
-                  {livingText.split('\n\n').map((para, i) => (
-                    <p key={i} className={i > 0 ? 'mt-3' : ''}>{para}</p>
-                  ))}
+                <CardContent className="prose prose-sm max-w-none dark:prose-invert">
+                  <ReactMarkdown>{livingText}</ReactMarkdown>
                 </CardContent>
               </Card>
             )}
