@@ -393,31 +393,70 @@ FORMAT:
     }
   };
 
-  const handlePrint = () => {
-    if (!contentRef.current) return;
+  const printRecipeMarkdown = (markdown: string) => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
     
-    printWindow.document.write(`
-      <!DOCTYPE html><html><head>
-      <title>Cosmic Meal Plan</title>
+    // Convert markdown to simple HTML for print
+    const htmlContent = markdown
+      .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+      .replace(/^\*(.+)\*$/gm, '<p><em>$1</em></p>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/^- (.+)$/gm, '<li>$1</li>')
+      .replace(/^(\d+)\. (.+)$/gm, '<li><strong>$1.</strong> $2</li>')
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/<\/li>\n<li>/g, '</li><li>');
+
+    printWindow.document.write(`<!DOCTYPE html><html><head>
+      <title>Recipe of the Week</title>
       <style>
         @page { margin: 0.5in; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Georgia, serif; color: #1f2937; line-height: 1.5; font-size: 12px; }
-        h1, h2 { margin: 8px 0; }
-        table { width: 100%; border-collapse: collapse; margin: 8px 0; }
-        th, td { border: 1px solid #d1d5db; padding: 4px 8px; text-align: left; font-size: 11px; }
-        th { background: #f3f4f6; font-weight: 600; }
+        body { font-family: Georgia, serif; color: #1f2937; line-height: 1.5; font-size: 12px; padding: 0; }
+        h1 { font-size: 22px; font-weight: 500; margin-bottom: 8px; color: #111827; }
+        h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #4338ca; margin: 14px 0 8px; font-weight: 600; }
         ul, ol { padding-left: 18px; }
-        li { margin-bottom: 3px; font-size: 11px; }
+        li { margin-bottom: 4px; font-size: 11px; }
         p { margin: 4px 0; font-size: 12px; }
+        em { color: #6b7280; }
         strong { font-weight: 600; }
       </style>
-      </head><body>${contentRef.current.innerHTML}</body></html>
-    `);
+      </head><body>${htmlContent}</body></html>`);
     printWindow.document.close();
     printWindow.onload = () => printWindow.print();
+  };
+
+  const downloadRecipeMarkdown = async (markdown: string) => {
+    // Create a temporary styled div, render it, capture with html2canvas
+    const tempDiv = document.createElement('div');
+    tempDiv.style.cssText = 'position:absolute;left:-9999px;width:800px;padding:40px;font-family:Georgia,serif;background:#fff;color:#1f2937;line-height:1.5;font-size:13px;';
+    
+    const htmlContent = markdown
+      .replace(/^# (.+)$/gm, '<h1 style="font-size:22px;font-weight:500;margin-bottom:8px;">$1</h1>')
+      .replace(/^## (.+)$/gm, '<h2 style="font-size:13px;text-transform:uppercase;letter-spacing:1px;color:#4338ca;margin:14px 0 8px;font-weight:600;">$1</h2>')
+      .replace(/^\*(.+)\*$/gm, '<p><em style="color:#6b7280;">$1</em></p>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/^- (.+)$/gm, '<li style="margin-bottom:4px;">$1</li>')
+      .replace(/^(\d+)\. (.+)$/gm, '<li style="margin-bottom:4px;"><strong>$1.</strong> $2</li>')
+      .replace(/\n\n/g, '<br/>');
+
+    tempDiv.innerHTML = htmlContent;
+    document.body.appendChild(tempDiv);
+
+    try {
+      const canvas = await html2canvas(tempDiv, { scale: 2, backgroundColor: '#ffffff' });
+      const link = document.createElement('a');
+      link.download = `cosmic-recipe-${new Date().toISOString().split('T')[0]}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      toast({ title: "Recipe downloaded!", description: "Saved as image ✨" });
+    } catch (err) {
+      console.error('Download failed:', err);
+      toast({ title: "Download failed", variant: "destructive" });
+    } finally {
+      document.body.removeChild(tempDiv);
+    }
   };
 
   // Extract the selected day's content from the full meal plan
@@ -499,15 +538,6 @@ FORMAT:
             >
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
               <span className="hidden sm:inline">Regenerate</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDownload}
-              className="gap-2"
-            >
-              <Download className="h-4 w-4" />
-              <span className="hidden sm:inline">Download</span>
             </Button>
           </div>
         </div>
@@ -630,12 +660,23 @@ FORMAT:
               );
             }
 
-            // Fallback: render as cleaned markdown
             return (
               <div className="border-t border-border pt-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  <h2 className="font-serif text-lg font-medium">Recipe of the Week</h2>
+                <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
+                  <h3 className="font-serif text-lg font-medium flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    Recipe of the Week
+                  </h3>
+                  <div className="flex gap-2 print:hidden">
+                    <Button variant="outline" size="sm" onClick={() => printRecipeMarkdown(cleanedRecipe)} className="gap-2">
+                      <Printer className="h-4 w-4" />
+                      Print
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => downloadRecipeMarkdown(cleanedRecipe)} className="gap-2">
+                      <Download className="h-4 w-4" />
+                      Download
+                    </Button>
+                  </div>
                 </div>
                 
                 <div className="prose prose-sm dark:prose-invert max-w-none">
