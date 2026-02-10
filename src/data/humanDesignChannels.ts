@@ -160,6 +160,28 @@ export const HUMAN_DESIGN_CHANNELS: HDChannel[] = [
     gifts: ["Immediate response", "Powerful presence", "Charismatic action", "Present-moment power"],
     challenges: ["Busy-ness without purpose", "Acting before responding", "Burnout from constant action"]
   },
+  {
+    gates: [34, 57],
+    name: "Channel of Power",
+    centers: ["Sacral", "Spleen"],
+    circuit: "Integration",
+    type: "Generated",
+    keynotes: ["Archetypal human power", "Intuitive survival response", "Pure sustained energy"],
+    description: "The Channel of Power connects sacral life-force energy (Gate 34) with splenic intuition (Gate 57). This is one of the most powerful channels in Human Design — it is the archetype of human survival power. The sacral responds and the spleen provides the intuitive awareness to use that power wisely. This channel operates purely in the now.",
+    gifts: ["Tremendous sustained energy", "Intuitive power", "Survival instincts", "Physical vitality"],
+    challenges: ["Power without awareness", "Ignoring intuitive signals", "Overwhelming others with raw energy"]
+  },
+  {
+    gates: [10, 57],
+    name: "Channel of Perfected Form",
+    centers: ["G", "Spleen"],
+    circuit: "Integration",
+    type: "Projected",
+    keynotes: ["Survival through behavior", "Intuitive self-love", "Perfected expression"],
+    description: "The Channel of Perfected Form connects the behavior of self-love (Gate 10) with intuitive clarity (Gate 57). This channel brings perfected form through intuitive awareness of what is healthy and correct. It provides an instinctive knowing of how to behave in a way that supports survival and well-being.",
+    gifts: ["Intuitive self-awareness", "Perfected behavior", "Healthy instincts", "Grace under pressure"],
+    challenges: ["Not trusting intuition", "Perfectionism", "Difficulty explaining intuitive knowing"]
+  },
 
   // Tribal Circuits - Ego
   {
