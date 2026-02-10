@@ -430,7 +430,8 @@ FORMAT:
     return `<!DOCTYPE html><html><head>
       <title>${title}</title>
       <style>
-        @page { margin: 0.5in; }
+        @page { margin: 0; size: auto; }
+        body { padding: 0.5in; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Georgia, serif; color: #1f2937; line-height: 1.5; }
         .title { font-size: 26px; font-weight: 600; color: #111827; margin-bottom: 4px; }

@@ -245,8 +245,9 @@ export const CosmicRecipeCard = ({ recipe, date }: CosmicRecipeCardProps) => {
             color: #9ca3af;
           }
           .page-break { page-break-before: always; margin-top: 0; }
+          @page { margin: 0; size: auto; }
           @media print {
-            body { padding: 0; }
+            body { padding: 0.5in; }
             li { page-break-inside: avoid; }
           }
         </style>
