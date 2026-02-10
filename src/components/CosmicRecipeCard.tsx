@@ -173,8 +173,8 @@ export const CosmicRecipeCard = ({ recipe, date }: CosmicRecipeCardProps) => {
             margin-bottom: 8px;
           }
           h1 { 
-            font-size: 22px; 
-            font-weight: 500; 
+            font-size: 26px; 
+            font-weight: 600; 
             color: #111827;
             margin-bottom: 4px;
           }
@@ -289,16 +289,21 @@ export const CosmicRecipeCard = ({ recipe, date }: CosmicRecipeCardProps) => {
       </html>
     `;
 
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(printContent);
-      printWindow.document.close();
-      printWindow.onload = () => {
-        printWindow.print();
-      };
-    } else {
-      toast({ title: "Print blocked", description: "Please allow popups to print", variant: "destructive" });
-    }
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;left:-9999px;width:0;height:0;border:none;';
+    document.body.appendChild(iframe);
+    
+    const doc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!doc) return;
+    
+    doc.open();
+    doc.write(printContent);
+    doc.close();
+    
+    iframe.onload = () => {
+      iframe.contentWindow?.print();
+      setTimeout(() => document.body.removeChild(iframe), 1000);
+    };
   };
 
   const gradient = ELEMENT_GRADIENTS[recipe.element] || ELEMENT_GRADIENTS.Water;

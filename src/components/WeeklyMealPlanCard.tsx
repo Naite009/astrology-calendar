@@ -393,55 +393,99 @@ FORMAT:
     }
   };
 
-  const printRecipeMarkdown = (markdown: string) => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
+  const extractRecipeTitle = (markdown: string): string => {
+    // Try to find the actual recipe name (usually after "Recipe of the Week" heading)
+    const boldMatch = markdown.match(/\*\*([^*]+)\*\*/);
+    const h1Match = markdown.match(/^# .+\n\*\*(.+)\*\*/m);
+    return h1Match?.[1] || boldMatch?.[1] || 'Recipe of the Week';
+  };
+
+  const buildRecipeHTML = (markdown: string): string => {
+    const title = extractRecipeTitle(markdown);
     
-    // Convert markdown to simple HTML for print
-    const htmlContent = markdown
-      .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    // Strip the generic "Recipe of the Week" h1 and the bold title line since we show it ourselves
+    const content = markdown
+      .replace(/^# ✨ Recipe of the Week\s*/m, '')
+      .replace(/^\*\*[^*]+\*\*\s*/m, '')
       .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-      .replace(/^\*(.+)\*$/gm, '<p><em>$1</em></p>')
+      .replace(/^\*(.+)\*$/gm, '<p class="tagline">$1</p>')
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
       .replace(/^- (.+)$/gm, '<li>$1</li>')
-      .replace(/^(\d+)\. (.+)$/gm, '<li><strong>$1.</strong> $2</li>')
+      .replace(/^(\d+)\. (.+)$/gm, '<li><span class="step">$1.</span> $2</li>')
       .replace(/\n\n/g, '</p><p>')
       .replace(/<\/li>\n<li>/g, '</li><li>');
 
-    printWindow.document.write(`<!DOCTYPE html><html><head>
-      <title>Recipe of the Week</title>
+    return `<!DOCTYPE html><html><head>
+      <title>${title}</title>
       <style>
         @page { margin: 0.5in; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Georgia, serif; color: #1f2937; line-height: 1.5; font-size: 12px; padding: 0; }
-        h1 { font-size: 22px; font-weight: 500; margin-bottom: 8px; color: #111827; }
-        h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #4338ca; margin: 14px 0 8px; font-weight: 600; }
-        ul, ol { padding-left: 18px; }
-        li { margin-bottom: 4px; font-size: 11px; }
+        body { font-family: Georgia, serif; color: #1f2937; line-height: 1.5; }
+        .title { font-size: 26px; font-weight: 600; color: #111827; margin-bottom: 4px; }
+        .tagline { font-style: italic; color: #6b7280; font-size: 13px; margin-bottom: 12px; }
+        .divider { border: none; border-top: 3px solid #4338ca; margin: 8px 0 16px; }
+        h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: #4338ca; margin: 16px 0 8px; font-weight: 600; }
+        ul, ol { padding-left: 0; list-style: none; }
+        li { margin-bottom: 4px; font-size: 12px; padding-left: 16px; position: relative; }
+        li::before { content: "•"; color: #4338ca; font-weight: bold; position: absolute; left: 0; }
+        .step { color: #4338ca; font-weight: bold; }
+        ol li::before { content: none; }
         p { margin: 4px 0; font-size: 12px; }
         em { color: #6b7280; }
         strong { font-weight: 600; }
+        .footer { margin-top: 20px; text-align: right; font-size: 10px; color: #9ca3af; }
       </style>
-      </head><body>${htmlContent}</body></html>`);
-    printWindow.document.close();
-    printWindow.onload = () => printWindow.print();
+      </head><body>
+        <div class="title">${title}</div>
+        <hr class="divider"/>
+        ${content}
+        <div class="footer">Cosmic Kitchen</div>
+      </body></html>`;
+  };
+
+  const printRecipeMarkdown = (markdown: string) => {
+    const html = buildRecipeHTML(markdown);
+    
+    // Use hidden iframe instead of new tab
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;left:-9999px;width:0;height:0;border:none;';
+    document.body.appendChild(iframe);
+    
+    const doc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!doc) return;
+    
+    doc.open();
+    doc.write(html);
+    doc.close();
+    
+    iframe.onload = () => {
+      iframe.contentWindow?.print();
+      // Clean up after print dialog closes
+      setTimeout(() => document.body.removeChild(iframe), 1000);
+    };
   };
 
   const downloadRecipeMarkdown = async (markdown: string) => {
-    // Create a temporary styled div, render it, capture with html2canvas
+    const title = extractRecipeTitle(markdown);
     const tempDiv = document.createElement('div');
-    tempDiv.style.cssText = 'position:absolute;left:-9999px;width:800px;padding:40px;font-family:Georgia,serif;background:#fff;color:#1f2937;line-height:1.5;font-size:13px;';
+    tempDiv.style.cssText = 'position:absolute;left:-9999px;width:800px;padding:40px;font-family:Georgia,serif;background:#fff;color:#1f2937;line-height:1.5;';
     
-    const htmlContent = markdown
-      .replace(/^# (.+)$/gm, '<h1 style="font-size:22px;font-weight:500;margin-bottom:8px;">$1</h1>')
-      .replace(/^## (.+)$/gm, '<h2 style="font-size:13px;text-transform:uppercase;letter-spacing:1px;color:#4338ca;margin:14px 0 8px;font-weight:600;">$1</h2>')
-      .replace(/^\*(.+)\*$/gm, '<p><em style="color:#6b7280;">$1</em></p>')
+    const content = markdown
+      .replace(/^# ✨ Recipe of the Week\s*/m, '')
+      .replace(/^\*\*[^*]+\*\*\s*/m, '')
+      .replace(/^## (.+)$/gm, '<h2 style="font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:#4338ca;margin:16px 0 8px;font-weight:600;">$1</h2>')
+      .replace(/^\*(.+)\*$/gm, '<p style="font-style:italic;color:#6b7280;font-size:13px;margin-bottom:12px;">$1</p>')
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/^- (.+)$/gm, '<li style="margin-bottom:4px;">$1</li>')
-      .replace(/^(\d+)\. (.+)$/gm, '<li style="margin-bottom:4px;"><strong>$1.</strong> $2</li>')
+      .replace(/^- (.+)$/gm, '<div style="margin-bottom:4px;font-size:12px;"><span style="color:#4338ca;font-weight:bold;">•</span> $1</div>')
+      .replace(/^(\d+)\. (.+)$/gm, '<div style="margin-bottom:4px;font-size:12px;"><span style="color:#4338ca;font-weight:bold;">$1.</span> $2</div>')
       .replace(/\n\n/g, '<br/>');
 
-    tempDiv.innerHTML = htmlContent;
+    tempDiv.innerHTML = `
+      <div style="font-size:26px;font-weight:600;color:#111827;margin-bottom:4px;">${title}</div>
+      <hr style="border:none;border-top:3px solid #4338ca;margin:8px 0 16px;"/>
+      ${content}
+      <div style="margin-top:20px;text-align:right;font-size:10px;color:#9ca3af;">Cosmic Kitchen</div>
+    `;
     document.body.appendChild(tempDiv);
 
     try {
