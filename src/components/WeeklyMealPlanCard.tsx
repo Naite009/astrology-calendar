@@ -403,10 +403,22 @@ FORMAT:
   const buildRecipeHTML = (markdown: string): string => {
     const title = extractRecipeTitle(markdown);
     
-    // Strip the generic "Recipe of the Week" h1 and the bold title line since we show it ourselves
-    const content = markdown
+    // Split content: recipe vs cosmic explanation
+    // Cosmic sections: "Cosmic Connection", "Cosmic Note", "Weekly Tip"
+    const cosmicSplitRegex = /^(## (?:Cosmic Connection|Cosmic Note|Weekly Tip)[\s\S]*)$/m;
+    const stripped = markdown
       .replace(/^# ✨ Recipe of the Week\s*/m, '')
-      .replace(/^\*\*[^*]+\*\*\s*/m, '')
+      .replace(/^\*\*[^*]+\*\*\s*/m, '');
+    
+    const splitMatch = stripped.match(cosmicSplitRegex);
+    let recipePart = stripped;
+    let cosmicPart = '';
+    if (splitMatch && splitMatch.index !== undefined) {
+      recipePart = stripped.slice(0, splitMatch.index).trim();
+      cosmicPart = splitMatch[0].trim();
+    }
+
+    const convertMd = (md: string) => md
       .replace(/^## (.+)$/gm, '<h2>$1</h2>')
       .replace(/^\*(.+)\*$/gm, '<p class="tagline">$1</p>')
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
@@ -433,13 +445,14 @@ FORMAT:
         p { margin: 4px 0; font-size: 12px; }
         em { color: #6b7280; }
         strong { font-weight: 600; }
-        .footer { margin-top: 20px; text-align: right; font-size: 10px; color: #9ca3af; }
+        .page-break { page-break-before: always; }
+        @media print { li { page-break-inside: avoid; } }
       </style>
       </head><body>
         <div class="title">${title}</div>
         <hr class="divider"/>
-        ${content}
-        <div class="footer">Cosmic Kitchen</div>
+        ${convertMd(recipePart)}
+        ${cosmicPart ? `<div class="page-break">${convertMd(cosmicPart)}</div>` : ''}
       </body></html>`;
   };
 

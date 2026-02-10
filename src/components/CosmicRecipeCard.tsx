@@ -244,9 +244,9 @@ export const CosmicRecipeCard = ({ recipe, date }: CosmicRecipeCardProps) => {
             font-size: 10px;
             color: #9ca3af;
           }
+          .page-break { page-break-before: always; margin-top: 0; }
           @media print {
             body { padding: 0; }
-            .content { page-break-inside: auto; }
             li { page-break-inside: avoid; }
           }
         </style>
@@ -279,12 +279,12 @@ export const CosmicRecipeCard = ({ recipe, date }: CosmicRecipeCardProps) => {
           </div>
         </div>
         
-        <div class="cosmic-note">
-          <span class="cosmic-note-label">✨ Cosmic Note</span>
+        ${recipe.cosmicNote ? `
+        <div class="cosmic-note page-break">
+          <span class="cosmic-note-label">✨ Cosmic Connection</span>
           <p>${recipe.cosmicNote}</p>
         </div>
-        
-        <div class="watermark">astro-calendar • ${date}</div>
+        ` : ''}
       </body>
       </html>
     `;
