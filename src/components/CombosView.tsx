@@ -31,6 +31,7 @@ import {
 import { findAspectModifiers, ASPECT_SYMBOLS, AspectModifier } from '@/lib/aspectModifiers';
 import { patternMirrorCombos, THEMATIC_CATEGORIES, PatternMirrorCombo } from '@/lib/patternMirrorCombos';
 import { PatternMirrorCard } from '@/components/PatternMirrorCard';
+import { LifePatternsTab } from '@/components/LifePatternsTab';
 import { ChartSelector } from '@/components/ChartSelector';
 
 const SIGN_SYMBOLS: Record<string, string> = {
@@ -48,7 +49,7 @@ interface CombosViewProps {
 export const CombosView = ({ className = '', savedCharts = [], userChart = null }: CombosViewProps) => {
   const [selectedFactors, setSelectedFactors] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'explore' | 'browse' | 'patterns'>('explore');
+  const [activeTab, setActiveTab] = useState<'explore' | 'browse' | 'patterns' | 'life-patterns'>('explore');
   const [selectedThematicTag, setSelectedThematicTag] = useState<string | null>(null);
   const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
   // Track which Pattern Mirror to highlight after navigating from Combos
@@ -1269,19 +1270,23 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
         </Card>
       )}
 
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'explore' | 'browse' | 'patterns')}>
-        <TabsList className="grid w-full max-w-lg mx-auto grid-cols-3">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'explore' | 'browse' | 'patterns' | 'life-patterns')}>
+        <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4">
           <TabsTrigger value="explore" className="flex items-center gap-2">
             <Sparkles className="h-4 w-4" />
-            Explore Combos
+            Combos
           </TabsTrigger>
           <TabsTrigger value="patterns" className="flex items-center gap-2">
             <Moon className="h-4 w-4" />
-            Pattern Mirror
+            Mirrors
+          </TabsTrigger>
+          <TabsTrigger value="life-patterns" className="flex items-center gap-2">
+            <Zap className="h-4 w-4" />
+            Life Patterns
           </TabsTrigger>
           <TabsTrigger value="browse" className="flex items-center gap-2">
             <BookOpen className="h-4 w-4" />
-            Browse All
+            Browse
           </TabsTrigger>
         </TabsList>
 
@@ -1734,6 +1739,20 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                 <p className="text-muted-foreground text-sm">
                   No pattern matches found for {selectedChart.name}'s chart in the current library.
                 </p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="life-patterns" className="mt-6">
+          {selectedChart ? (
+            <LifePatternsTab chart={selectedChart} />
+          ) : (
+            <Card className="border-dashed">
+              <CardContent className="py-12 text-center">
+                <Zap className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground text-sm mb-1">Select a chart above to see your Life Patterns</p>
+                <p className="text-xs text-muted-foreground">Dominant planet, career sweet spot, lucky days, psychic gifts, guardian angel, and more</p>
               </CardContent>
             </Card>
           )}
