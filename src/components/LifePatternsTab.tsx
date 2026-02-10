@@ -293,7 +293,7 @@ export const LifePatternsTab = ({ chart }: LifePatternsTabProps) => {
             </p>
             <div className="space-y-2">
               {luckyDays.topDates.map((entry, i) => {
-                const dateStr = entry.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+                const dateStr = entry.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
                 const maxScore = luckyDays.topDates[0]?.score || 1;
                 const barWidth = Math.round((entry.score / maxScore) * 100);
                 return (
