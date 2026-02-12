@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects, planetPositions, customPrompt, voiceStyle, upcomingEvents, deviceId, forceRegenerate, greeting: reqGreeting, timeOfDay: reqTimeOfDay } = await req.json();
+    const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects, planetPositions, customPrompt, voiceStyle, upcomingEvents, deviceId, forceRegenerate, greeting: reqGreeting, timeOfDay: reqTimeOfDay, moonSignChange, imminentSignChanges, mercuryRetrogradeInfo, personalizedRetrograde } = await req.json();
     
     console.log("Received cosmic weather request:", { date, moonPhase, moonSign, exactLunarPhase, voiceStyle, planetPositions });
     console.log("Aspects received:", aspects?.slice(0, 15));
@@ -37,7 +37,7 @@ serve(async (req) => {
     
     // Cache key versioning: bump this when prompt/format changes so users don't get stale cached text.
     // This intentionally changes the cache key without requiring any DB schema changes.
-    const PROMPT_VERSION = "2026-02-08-v4-integrative-day-ruler";
+    const PROMPT_VERSION = "2026-02-12-v5-moon-ingress-retro-shadow";
 
     const cacheDeviceId = deviceId || 'default';
     const cacheVoiceStyle = `${voiceStyle || ''}@${PROMPT_VERSION}`;
@@ -83,7 +83,36 @@ ${planetPositions.map((p: any) => `- ${p.name}: ${p.degree}° ${p.sign}`).join('
     // Enhanced aspects text with applying/separating status
     const aspectsText = aspects?.length > 0
       ? `Major Aspects Today:
-${aspects.slice(0, 10).map((a: any) => `- ${a.planet1} ${a.symbol} ${a.planet2} (orb: ${a.orb}°, ${a.applyingSeparating || 'status unknown'})`).join('\n')}`
+${aspects.slice(0, 10).map((a: any) => `- ${a.planet1} ${a.symbol} ${a.planet2} (orb: ${a.orb}°, ${a.applyingSeparating || a.motion || 'status unknown'})`).join('\n')}`
+      : '';
+
+    // Moon sign change text
+    const moonSignChangeText = moonSignChange
+      ? `IMPORTANT - MOON SIGN CHANGE TODAY: The Moon moves from ${moonSignChange.fromSign} into ${moonSignChange.toSign} at ${moonSignChange.time}. This means the day will feel like TWO different energies. The morning is ${moonSignChange.fromSign} energy, but the afternoon/evening shifts to ${moonSignChange.toSign}. EMPHASIZE this transition - do NOT say "the Moon is in ${moonSignChange.fromSign} all day" because it is NOT. The ${moonSignChange.toSign} energy will dominate the latter part of the day.`
+      : '';
+
+    // Imminent planet sign changes
+    const imminentChangesText = imminentSignChanges?.length > 0
+      ? `UNUSUAL/NOTEWORTHY - IMMINENT PLANET SIGN CHANGES (EMPHASIZE THESE):
+${imminentSignChanges.map((c: any) => `- ${c.planet} is at ${c.degree.toFixed(1)}° ${c.currentSign} - about to enter ${c.nextSign}! This is a BIG DEAL. ${c.planet} energy is extremely concentrated right now at the end of ${c.currentSign}. Discuss what it means for ${c.planet} to leave ${c.currentSign} and enter ${c.nextSign}.`).join('\n')}`
+      : '';
+
+    // Mercury retrograde shadow info
+    const mercuryRxText = mercuryRetrogradeInfo
+      ? `MERCURY RETROGRADE STATUS - MUST MENTION: Phase: ${mercuryRetrogradeInfo.phase}. ${mercuryRetrogradeInfo.description}
+Mercury retrograde is about our soul taking another look at something - things show up in daily life that make us rethink HOW we are thinking, communicating, and processing. The shadow degree (${mercuryRetrogradeInfo.shadowDegree}) is where to pay attention in your chart.`
+      : '';
+
+    // Personalized retrograde guidance
+    const personalizedRetroText = personalizedRetrograde
+      ? `PERSONALIZED MERCURY RETROGRADE ANALYSIS FOR THIS CHART:
+${personalizedRetrograde.guidance}
+Layer this through the phases:
+- Pre-shadow (NOW): Notice what topics around ${personalizedRetrograde.housePlacement} themes start appearing. Pay attention to conversations, emails, thoughts.
+- Retrograde: Old matters from ${personalizedRetrograde.housePlacement} resurface. Review, don't resist.
+- Mercury-Sun conjunction (midpoint): A breakthrough insight about ${personalizedRetrograde.housePlacement} themes.
+- Station direct: Clarity arrives. You know what to do now about ${personalizedRetrograde.housePlacement} matters.
+- Post-shadow: Integration and forward movement.`
       : '';
 
     // Upcoming events text
@@ -520,7 +549,14 @@ Keep it simple - do NOT list out examples for different rising signs. That's gen
 FORMAT:
 
 ## The Day at a Glance
-[2-3 sentences capturing the essential quality of the day for the WORLD. What's the collective vibe? What might SOCIETY be focused on?]
+[2-3 sentences capturing the essential quality of the day. CRITICAL: If the Moon changes signs today, lead with that transition. If a planet is about to change signs (imminent sign change), emphasize that - it's unusual and noteworthy. If Mercury is in a retrograde shadow phase, mention it. Focus on what makes TODAY's sky UNIQUE - don't just describe generic sign energy. What is the weather doing? What's the dominant planetary story?]
+
+## ⚡ What's Unusual Right Now
+[ONLY include this section if there ARE unusual events: imminent planet sign changes, Mercury retrograde shadow, rare aspects, etc. If nothing unusual, skip this section entirely.
+For each unusual event, explain:
+- WHAT is happening (specific astronomical event)
+- WHY it matters (how often does this happen? what does it mean?)
+- HOW it will FEEL (practical, tangible impact on daily life)]
 
 ## Cosmic Weather
 [3-4 paragraphs weaving together the Moon sign/phase, major aspects (especially applying ones!), and their implications for the COLLECTIVE. 
@@ -705,13 +741,17 @@ ${planetText}
 
 ${exactPhaseText ? `${exactPhaseText}` : `Moon Phase: ${moonPhase}`}
 Current Moon Sign: ${moonSign}
+${moonSignChangeText}
 ${moonJupiterConjunction}
 Mercury Retrograde: ${mercuryRetro ? 'Yes' : 'No'}
+${mercuryRxText}
 ${stelliumText}
 ${rareAspectText}
 ${nodeAspectText}
 ${aspectsText}
+${imminentChangesText}
 ${upcomingEventsText}
+${personalizedRetroText}
 
 AYURVEDIC SEASON: ${currentSeason}
 
@@ -723,7 +763,11 @@ CRITICAL INSTRUCTIONS:
 5. If an aspect is APPLYING, emphasize it's building/intensifying. If SEPARATING, it's releasing/completing.
 6. ALWAYS include the "Coming Up" section if upcoming events are provided!
 7. For squares: Explain the tension and what wants to break through. What's stuck that wants to move?
-8. Mention the Moon sign's influence on the emotional atmosphere and suggest finding where that sign falls in their own chart.`;
+8. Mention the Moon sign's influence on the emotional atmosphere and suggest finding where that sign falls in their own chart.
+9. If moonSignChange data is provided, the Moon changes signs TODAY. Do NOT say "Moon in [sign] all day". Describe BOTH energies and the transition.
+10. If imminentSignChanges data is provided, these are UNUSUAL and NOTEWORTHY events. Give them prominent coverage - a planet changing signs is a big shift in collective energy.
+11. If mercuryRetrogradeInfo is provided, Mercury's retrograde cycle MUST be discussed. Our soul takes another look at what shows up in daily life - rethinking how we think and communicate.
+12. If personalizedRetrograde data is provided, include a personalized section about how Mercury retrograde affects THIS person's chart specifically, layered through the phases.`;
 
     console.log("Sending prompt to AI:", userPrompt.substring(0, 500) + "...");
 

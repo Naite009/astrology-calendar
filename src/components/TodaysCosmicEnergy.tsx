@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { getMoonPhase, getPlanetaryPositions, calculateDailyAspects, PlanetaryPositions, getPlanetSymbol } from "@/lib/astrology";
-import { getVOCMoonDetails } from "@/lib/voidOfCourseMoon";
+import { getVOCMoonDetails, findNextMoonSignChange } from "@/lib/voidOfCourseMoon";
 import { formatLocalDateKey } from "@/lib/localDate";
 import ReactMarkdown from "react-markdown";
 import html2canvas from "html2canvas";
@@ -402,6 +402,127 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
       const timeOfDay = localHour < 12 ? 'morning' : localHour < 17 ? 'afternoon' : 'evening';
       const greeting = localHour < 12 ? 'Good morning' : localHour < 17 ? 'Good afternoon' : 'Good evening';
 
+      // --- Moon sign change today ---
+      const moonSignChangeToday = (() => {
+        // Check VOC info first (already has moon ingress data)
+        if (voc.isVOC && voc.end && voc.moonEntersSign) {
+          const changeDate = voc.end;
+          const dayStart = new Date(now); dayStart.setHours(0,0,0,0);
+          const dayEnd = new Date(now); dayEnd.setHours(23,59,59,999);
+          if (changeDate >= dayStart && changeDate <= dayEnd) {
+            return {
+              fromSign: planets.moon?.signName || signGlyphToName[planets.moon?.sign] || 'Unknown',
+              toSign: voc.moonEntersSign,
+              time: changeDate.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit' }) + ' ET',
+            };
+          }
+        }
+        // Fallback: calculate directly
+        const nextChange = findNextMoonSignChange(now);
+        const dayEnd2 = new Date(now); dayEnd2.setHours(23,59,59,999);
+        if (nextChange.time <= dayEnd2) {
+          return {
+            fromSign: planets.moon?.signName || signGlyphToName[planets.moon?.sign] || 'Unknown',
+            toSign: nextChange.newSign,
+            time: nextChange.time.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit' }) + ' ET',
+          };
+        }
+        return null;
+      })();
+
+      // --- Imminent planet sign changes (planets at 28°+ in a sign) ---
+      const imminentSignChanges: Array<{ planet: string; currentSign: string; degree: number; nextSign: string }> = [];
+      const signOrder = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+      for (const pp of planetPositions) {
+        if (pp.name === 'Moon') continue; // handled separately
+        const deg = typeof pp.degree === 'string' ? parseFloat(pp.degree) : pp.degree;
+        const rawDeg = deg % 30; // degree within sign
+        if (rawDeg >= 28) {
+          const signIdx = signOrder.indexOf(pp.sign);
+          const nextSign = signOrder[(signIdx + 1) % 12];
+          imminentSignChanges.push({ planet: pp.name, currentSign: pp.sign, degree: rawDeg, nextSign });
+        }
+      }
+
+      // --- Mercury retrograde shadow tracking ---
+      // 2026 Mercury retrogrades (approximate):
+      // #1: Shadow starts ~Feb 12 (8° Pisces), Rx March 1 (26° Pisces), Direct March 24 (8° Pisces), Post-shadow ~April 7
+      // #2: Shadow starts ~Jun 6 (2° Cancer), Rx Jun 26 (22° Cancer), Direct Jul 20 (2° Cancer), Post-shadow ~Aug 3
+      // #3: Shadow starts ~Sep 28 (26° Libra), Rx Oct 18 (16° Scorpio), Direct Nov 8 (26° Libra), Post-shadow ~Nov 24
+      const mercuryRetrogrades2026 = [
+        { preShadowStart: new Date(2026, 1, 12), rxStart: new Date(2026, 2, 1), rxEnd: new Date(2026, 2, 24), postShadowEnd: new Date(2026, 3, 7), shadowDegree: '8° Pisces', rxDegree: '26° Pisces', sign: 'Pisces', shadowAbsoluteDeg: 338 },
+        { preShadowStart: new Date(2026, 5, 6), rxStart: new Date(2026, 5, 26), rxEnd: new Date(2026, 6, 20), postShadowEnd: new Date(2026, 7, 3), shadowDegree: '2° Cancer', rxDegree: '22° Cancer', sign: 'Cancer', shadowAbsoluteDeg: 92 },
+        { preShadowStart: new Date(2026, 8, 28), rxStart: new Date(2026, 9, 18), rxEnd: new Date(2026, 10, 8), postShadowEnd: new Date(2026, 10, 24), shadowDegree: '26° Libra', rxDegree: '16° Scorpio', sign: 'Libra/Scorpio', shadowAbsoluteDeg: 206 },
+      ];
+      const mercuryRxInfo = (() => {
+        for (const rx of mercuryRetrogrades2026) {
+          if (now >= rx.preShadowStart && now < rx.rxStart) {
+            return { phase: 'pre-shadow', ...rx, description: `Mercury entered the pre-retrograde shadow at ${rx.shadowDegree}. It will station retrograde on ${rx.rxStart.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} at ${rx.rxDegree}. Mercury retrogrades back to ${rx.shadowDegree} by ${rx.rxEnd.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}. Post-shadow clears ${rx.postShadowEnd.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}.` };
+          }
+          if (now >= rx.rxStart && now < rx.rxEnd) {
+            const midpoint = new Date((rx.rxStart.getTime() + rx.rxEnd.getTime()) / 2);
+            const isFirstHalf = now < midpoint;
+            return { phase: isFirstHalf ? 'retrograde-first-half' : 'retrograde-second-half', ...rx, description: `Mercury is RETROGRADE in ${rx.sign}. ${isFirstHalf ? 'First half - things from the past resurface, review and reassess.' : 'Second half - Mercury and Sun have met (inferior conjunction), clarity begins to emerge.'} Stations direct ${rx.rxEnd.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} at ${rx.shadowDegree}. Post-shadow clears ${rx.postShadowEnd.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}.` };
+          }
+          if (now >= rx.rxEnd && now < rx.postShadowEnd) {
+            return { phase: 'post-shadow', ...rx, description: `Mercury stationed direct at ${rx.shadowDegree} and is now retracing its steps through the post-retrograde shadow. Clarity returns gradually. Shadow clears ${rx.postShadowEnd.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}.` };
+          }
+        }
+        return null;
+      })();
+
+      // --- Personalized Mercury retrograde house placement ---
+      let personalizedRetroInfo: { housePlacement: string; houseNumber: number; sign: string; degree: string; guidance: string } | null = null;
+      if (selectedChart && mercuryRxInfo) {
+        const absRxDeg = mercuryRxInfo.shadowAbsoluteDeg;
+        // Find which house this degree falls in
+        if (selectedChart.houseCusps) {
+          const cusps = selectedChart.houseCusps;
+          const cuspDegrees: number[] = [];
+          for (let i = 1; i <= 12; i++) {
+            const key = `house${i}` as keyof typeof cusps;
+            const cuspData = cusps[key];
+            if (cuspData && typeof cuspData === 'object' && 'degree' in cuspData) {
+              cuspDegrees.push(typeof cuspData.degree === 'number' ? cuspData.degree : parseFloat(String(cuspData.degree)) || 0);
+            }
+          }
+          if (cuspDegrees.length === 12) {
+            let houseNum = 12;
+            for (let i = 0; i < 12; i++) {
+              const nextI = (i + 1) % 12;
+              const start = cuspDegrees[i];
+              const end = cuspDegrees[nextI];
+              if (end > start) {
+                if (absRxDeg >= start && absRxDeg < end) { houseNum = i + 1; break; }
+              } else {
+                if (absRxDeg >= start || absRxDeg < end) { houseNum = i + 1; break; }
+              }
+            }
+            const houseThemes: Record<number, string> = {
+              1: 'identity, appearance, how you present yourself to the world',
+              2: 'money, possessions, values, self-worth',
+              3: 'communication, siblings, short trips, learning, daily thinking',
+              4: 'home, family, roots, emotional foundation, a parent',
+              5: 'creativity, romance, children, pleasure, self-expression',
+              6: 'health, daily routines, work environment, service, pets',
+              7: 'partnerships, marriage, one-on-one relationships, open enemies',
+              8: 'shared resources, intimacy, transformation, death/rebirth, other people\'s money',
+              9: 'higher education, travel, philosophy, beliefs, publishing',
+              10: 'career, public reputation, authority, legacy, a parent',
+              11: 'friends, groups, hopes and wishes, community, networks',
+              12: 'subconscious, spirituality, hidden matters, self-undoing, retreat',
+            };
+            personalizedRetroInfo = {
+              housePlacement: `House ${houseNum}`,
+              houseNumber: houseNum,
+              sign: mercuryRxInfo.sign,
+              degree: mercuryRxInfo.shadowDegree,
+              guidance: `Mercury retrograde at ${mercuryRxInfo.shadowDegree} falls in your ${houseNum}th house of ${houseThemes[houseNum] || 'various themes'}. During the pre-shadow, notice what topics arise around ${houseThemes[houseNum]}. During the retrograde, you'll revisit, review, and rethink matters of ${houseThemes[houseNum]}. At the Mercury-Sun conjunction (midpoint), a key insight about ${houseThemes[houseNum]} will crystallize. When Mercury stations direct, you'll have clarity about what needs to change in this area.`,
+            };
+          }
+        }
+      }
+
       // Call edge function
       const { data, error: fnError } = await supabase.functions.invoke('cosmic-weather', {
         body: {
@@ -417,7 +538,11 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
             count: s.planets.length,
             planets: s.planets.map(p => ({ name: p }))
           })),
-          mercuryRetro: false,
+          mercuryRetro: mercuryRxInfo?.phase === 'retrograde-first-half' || mercuryRxInfo?.phase === 'retrograde-second-half',
+          mercuryRetrogradeInfo: mercuryRxInfo ? { phase: mercuryRxInfo.phase, description: mercuryRxInfo.description, shadowDegree: mercuryRxInfo.shadowDegree, rxDegree: mercuryRxInfo.rxDegree, sign: mercuryRxInfo.sign } : null,
+          moonSignChange: moonSignChangeToday,
+          imminentSignChanges,
+          personalizedRetrograde: personalizedRetroInfo,
           voiceStyle: effectiveVoiceStyle
         }
       });
