@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, Heart, Sun, Moon, Activity, Shield, AlertCircle, Pill, Leaf as LeafIcon, Zap } from "lucide-react";
+import { ChevronDown, Heart, Sun, Moon, Activity, Shield, AlertCircle, Pill, Leaf as LeafIcon, Zap, Hexagon } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { PLANETARY_HEALTH_RULERS, getElementForSign, getDominantElement } from "@/lib/healthAstrology";
@@ -13,6 +13,8 @@ import {
   ELEMENT_VITAMIN_PROTOCOLS,
   CONDITION_PROTOCOLS
 } from "@/lib/healthRemedies";
+import { useHumanDesignChart } from "@/hooks/useHumanDesignChart";
+import { determinationData } from "@/data/humanDesignDeterminations";
 
 interface HealthNatalBlueprintProps {
   natalChart: NatalChart;
@@ -20,6 +22,7 @@ interface HealthNatalBlueprintProps {
 
 export const HealthNatalBlueprint = ({ natalChart }: HealthNatalBlueprintProps) => {
   const [openSections, setOpenSections] = useState<string[]>(['constitutional', 'vulnerabilities']);
+  const { charts: hdCharts } = useHumanDesignChart();
 
   const toggleSection = (section: string) => {
     setOpenSections(prev =>
@@ -48,6 +51,34 @@ export const HealthNatalBlueprint = ({ natalChart }: HealthNatalBlueprintProps) 
   const moonElement = getElementForSign(moonSign);
   const ascElement = getElementForSign(ascendantSign);
   const dominantElement = getDominantElement(planets, ascendantSign);
+
+  // Find matching HD chart by name
+  const matchingHdChart = useMemo(() => {
+    const chartName = natalChart.name?.toLowerCase().trim();
+    if (!chartName || hdCharts.length === 0) return null;
+    return hdCharts.find(hd => hd.name?.toLowerCase().trim() === chartName) || null;
+  }, [natalChart.name, hdCharts]);
+
+  // Get HD determination data if available
+  const hdDetermination = useMemo(() => {
+    if (!matchingHdChart?.variables?.determination) return null;
+    const detColor = matchingHdChart.variables.determination.color;
+    // Map color number to determination name
+    const colorToName: Record<string, Record<number, string>> = {
+      Left: { 1: 'Appetite', 2: 'Taste', 3: 'Thirst', 4: 'Nervous', 5: 'Low Sound', 6: 'Indirect Light' },
+      Right: { 1: 'Appetite', 2: 'Taste', 3: 'Thirst', 4: 'Nervous', 5: 'Low Sound', 6: 'Indirect Light' }
+    };
+    const leftNames: Record<number, string> = { 1: 'Consecutive', 2: 'Alternating', 3: 'Open', 4: 'Calm', 5: 'Hot Thirst', 6: 'Direct Light' };
+    const rightNames: Record<number, string> = { 1: 'Appetite', 2: 'Taste', 3: 'Thirst', 4: 'Nervous', 5: 'Low Sound', 6: 'Indirect Light' };
+    
+    const dir = matchingHdChart.variables.determination.arrow;
+    const nameMap = dir === 'Left' ? leftNames : rightNames;
+    const detName = nameMap[detColor];
+    if (!detName) return null;
+    
+    const data = determinationData[detName];
+    return data ? { ...data, determinationName: detName } : null;
+  }, [matchingHdChart]);
 
   // Constitutional assessment
   const constitutional = useMemo(() => assessConstitutionalStrength(planets, ascendantSign), [planets, ascendantSign]);
@@ -326,26 +357,111 @@ export const HealthNatalBlueprint = ({ natalChart }: HealthNatalBlueprintProps) 
                 <div>
                   <span className="text-xs font-medium">☀️ Daily:</span>
                   {prevention.daily.map((d, i) => (
-                    <p key={i} className="text-xs text-muted-foreground">• {d}</p>
+                    <div key={i} className="ml-2 mt-1">
+                      <p className="text-xs text-foreground">• {d.text}</p>
+                      <p className="text-xs text-muted-foreground italic ml-3">↳ Why: {d.reason}</p>
+                    </div>
                   ))}
                 </div>
 
                 <div>
                   <span className="text-xs font-medium">📅 Weekly:</span>
                   {prevention.weekly.map((w, i) => (
-                    <p key={i} className="text-xs text-muted-foreground">• {w}</p>
+                    <div key={i} className="ml-2 mt-1">
+                      <p className="text-xs text-foreground">• {w.text}</p>
+                      <p className="text-xs text-muted-foreground italic ml-3">↳ Why: {w.reason}</p>
+                    </div>
                   ))}
                 </div>
 
                 <div>
                   <span className="text-xs font-medium">🚫 Avoid:</span>
                   {prevention.avoid.map((a, i) => (
-                    <p key={i} className="text-xs text-muted-foreground">• {a}</p>
+                    <div key={i} className="ml-2 mt-1">
+                      <p className="text-xs text-foreground">• {a.text}</p>
+                      <p className="text-xs text-muted-foreground italic ml-3">↳ Why: {a.reason}</p>
+                    </div>
                   ))}
                 </div>
               </div>
             </CollapsibleContent>
           </Collapsible>
+
+          {/* HUMAN DESIGN PHS - SECONDARY LAYER */}
+          {hdDetermination ? (
+            <Collapsible
+              open={openSections.includes('hd-phs')}
+              onOpenChange={() => toggleSection('hd-phs')}
+            >
+              <CollapsibleTrigger className="flex w-full items-center justify-between rounded-sm border border-purple-500/30 bg-purple-500/5 p-3 hover:bg-purple-500/10">
+                <div className="flex items-center gap-2">
+                  <Hexagon className="h-4 w-4 text-purple-600" />
+                  <span className="font-medium">Human Design: How You Eat</span>
+                  <Badge variant="outline" className="text-xs">{(hdDetermination as any).determinationName} ({hdDetermination.direction})</Badge>
+                </div>
+                <ChevronDown className={`h-4 w-4 transition-transform ${openSections.includes('hd-phs') ? 'rotate-180' : ''}`} />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-3 space-y-3">
+                <div className="rounded-sm border border-purple-500/20 p-4 space-y-4">
+                  <p className="text-xs text-muted-foreground italic">
+                    Your Human Design PHS (Primary Health System) Determination adds a second layer to your astrological health profile.
+                    While astrology shows what your body needs, HD shows <strong>how</strong> your body best processes food.
+                  </p>
+                  
+                  <div>
+                    <span className="text-sm font-medium">{(hdDetermination as any).determinationName} Determination</span>
+                    <span className="text-xs text-muted-foreground ml-2">({hdDetermination.category})</span>
+                    <p className="text-xs text-muted-foreground mt-1">{hdDetermination.description}</p>
+                  </div>
+
+                  <div>
+                    <span className="text-xs font-medium">🍽️ How to Eat:</span>
+                    <p className="text-xs text-muted-foreground mt-1">{hdDetermination.implementation}</p>
+                  </div>
+
+                  <div>
+                    <span className="text-xs font-medium">📋 Meal Structure:</span>
+                    {hdDetermination.mealStructure.map((item: string, i: number) => (
+                      <p key={i} className="text-xs text-muted-foreground ml-2">• {item}</p>
+                    ))}
+                  </div>
+
+                  <div>
+                    <span className="text-xs font-medium">✅ Benefits when followed:</span>
+                    <p className="text-xs text-muted-foreground mt-1">{hdDetermination.benefits}</p>
+                  </div>
+
+                  <div>
+                    <span className="text-xs font-medium">⚠️ Common Mistakes:</span>
+                    {hdDetermination.commonMistakes.map((m: string, i: number) => (
+                      <p key={i} className="text-xs text-muted-foreground ml-2">• {m}</p>
+                    ))}
+                  </div>
+
+                  <div>
+                    <span className="text-xs font-medium">💡 Practical Tips:</span>
+                    {hdDetermination.practicalTips.map((t: string, i: number) => (
+                      <p key={i} className="text-xs text-muted-foreground ml-2">• {t}</p>
+                    ))}
+                  </div>
+
+                  <div className="border-t border-border pt-2">
+                    <span className="text-xs font-medium">🧪 30-Day Experiment:</span>
+                    <p className="text-xs text-muted-foreground mt-1">{hdDetermination.experimentationGuide}</p>
+                  </div>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          ) : (
+            <div className="rounded-sm border border-dashed border-muted-foreground/30 p-4 text-center">
+              <Hexagon className="h-5 w-5 mx-auto text-muted-foreground mb-2" />
+              <p className="text-xs text-muted-foreground">
+                Add a Human Design chart with matching name to see PHS eating guidance here.
+                <br />
+                <span className="italic">Your HD Determination shows <strong>how</strong> your body best digests — a powerful complement to astrological health insights.</span>
+              </p>
+            </div>
+          )}
 
           {/* Planetary Health Rulers */}
           <Collapsible

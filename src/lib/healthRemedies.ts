@@ -369,10 +369,15 @@ export function detectAfflictedPlanets(
 }
 
 // Generate prevention protocol based on chart
+export interface PreventionItem {
+  text: string;
+  reason: string; // astrological WHY
+}
+
 export interface PreventionProtocol {
-  daily: string[];
-  weekly: string[];
-  avoid: string[];
+  daily: PreventionItem[];
+  weekly: PreventionItem[];
+  avoid: PreventionItem[];
   keySupplements: string[];
 }
 
@@ -381,9 +386,9 @@ export function generatePreventionProtocol(
   afflictedPlanets: AfflictedPlanet[],
   ascendantSign?: string
 ): PreventionProtocol {
-  const daily: string[] = [];
-  const weekly: string[] = [];
-  const avoid: string[] = [];
+  const daily: PreventionItem[] = [];
+  const weekly: PreventionItem[] = [];
+  const avoid: PreventionItem[] = [];
   const keySupplements: string[] = [];
 
   // Element-based daily
@@ -392,47 +397,105 @@ export function generatePreventionProtocol(
     keySupplements.push(...elementProtocol.vitamins);
   }
 
-  // Element daily habits
+  // Element daily habits with WHY
   switch (dominantElement) {
     case 'Fire':
-      daily.push('Morning movement or exercise', 'Anti-inflammatory foods', 'Hydrate generously');
-      avoid.push('Overexertion without rest', 'Excess caffeine', 'Skipping cool-down');
+      daily.push(
+        { text: 'Morning movement or exercise', reason: 'Fire-dominant charts carry excess Mars/Sun heat — movement channels that energy before it becomes inflammation or restlessness.' },
+        { text: 'Anti-inflammatory foods', reason: 'Fire signs (Aries, Leo, Sagittarius) are prone to inflammation, fevers, and heat-related conditions. Cooling foods balance your elemental excess.' },
+        { text: 'Hydrate generously', reason: 'Fire dries out the body. Your element naturally burns through fluids faster, making dehydration a chronic risk.' }
+      );
+      avoid.push(
+        { text: 'Overexertion without rest', reason: 'Fire signs push past limits — your Mars energy feels endless until burnout hits suddenly. Rest prevents adrenal fatigue.' },
+        { text: 'Excess caffeine', reason: 'Your system already runs hot and stimulated. Caffeine overfires your adrenals (Mars) and can cause heart palpitations (Sun).' },
+        { text: 'Skipping cool-down', reason: 'Fire signs generate excess heat during activity. Without cool-down, inflammation and muscle tension accumulate in Mars-ruled areas.' }
+      );
       break;
     case 'Earth':
-      daily.push('Stretching/flexibility work', 'Mineral-rich foods', 'Regular meal schedule');
-      avoid.push('Sedentary patterns', 'Heavy late-night eating', 'Ignoring stiffness');
+      daily.push(
+        { text: 'Stretching/flexibility work', reason: 'Earth-dominant charts tend toward stiffness and rigidity (Saturn influence). Your bones, joints, and connective tissue need regular mobilization.' },
+        { text: 'Mineral-rich foods', reason: 'Earth signs govern bones (Capricorn), digestion (Virgo), and throat/thyroid (Taurus). Your body uses minerals faster than other elements.' },
+        { text: 'Regular meal schedule', reason: 'Earth energy thrives on rhythm and consistency. Irregular eating destabilizes your naturally steady metabolism (Venus/Saturn rulership).' }
+      );
+      avoid.push(
+        { text: 'Sedentary patterns', reason: 'Earth\'s natural inertia means your body holds onto stagnation — lymph slows, digestion stalls, and Saturn-ruled joints stiffen without movement.' },
+        { text: 'Heavy late-night eating', reason: 'Earth signs already have slower metabolism. Late eating overloads your Virgo-ruled digestive system during its natural rest period.' },
+        { text: 'Ignoring stiffness', reason: 'Early stiffness is Saturn whispering. Ignoring it leads to chronic joint/bone issues that become much harder to reverse later.' }
+      );
       break;
     case 'Air':
-      daily.push('Breathwork or meditation', 'Brain-nourishing fats', 'Digital detox breaks');
-      avoid.push('Excess caffeine', 'Eating while distracted', 'Over-stimulation');
+      daily.push(
+        { text: 'Breathwork or meditation', reason: 'Air-dominant charts (Gemini/Libra/Aquarius) overactivate the Mercury/Uranus nervous system. Breathwork is the direct antidote — it calms the electrical system.' },
+        { text: 'Brain-nourishing fats', reason: 'Mercury and Uranus rule your nervous system and brain. Omega-3s and healthy fats are essential fuel for your most active organ system.' },
+        { text: 'Digital detox breaks', reason: 'Air signs absorb information constantly via Mercury. Your nervous system needs deliberate breaks from input or it becomes chronically overstimulated.' }
+      );
+      avoid.push(
+        { text: 'Excess caffeine', reason: 'Your Mercury/Uranus-ruled nervous system is already highly wired. Caffeine amplifies anxiety, scattered thinking, and nervous exhaustion.' },
+        { text: 'Eating while distracted', reason: 'Air signs live in their heads — eating while multitasking means your nervous system stays in sympathetic (fight-or-flight) mode, shutting down digestion. Your Mercury needs to be present with food.' },
+        { text: 'Over-stimulation', reason: 'Air\'s natural tendency is to take in everything. Without boundaries, your Uranus-ruled electrical system short-circuits into anxiety, insomnia, or nerve pain.' }
+      );
       break;
     case 'Water':
-      daily.push('Emotional check-in', 'Clean water (2L+)', 'Gentle movement in nature');
-      avoid.push('Excess alcohol', 'Emotional eating triggers', 'Energy vampires');
+      daily.push(
+        { text: 'Emotional check-in', reason: 'Water-dominant charts (Cancer/Scorpio/Pisces) store emotions in the body — unprocessed feelings directly impact Moon-ruled digestion and Neptune-ruled immunity.' },
+        { text: 'Clean water (2L+)', reason: 'Water signs govern the lymphatic (Neptune), fluid (Moon), and elimination (Pluto) systems. Hydration is literally your element — your body needs more than most.' },
+        { text: 'Gentle movement in nature', reason: 'Water energy stagnates without flow. Nature calms your Neptune sensitivity while movement keeps your Moon-ruled lymphatic system circulating.' }
+      );
+      avoid.push(
+        { text: 'Excess alcohol', reason: 'Neptune (your dominant planetary energy) already creates blurred boundaries. Alcohol amplifies this, weakening your immune system and making you absorb others\' energy.' },
+        { text: 'Emotional eating triggers', reason: 'Your Moon-ruled digestive system responds directly to emotions. Eating to numb feelings creates a cycle where the body stores emotional weight as physical weight.' },
+        { text: 'Energy vampires', reason: 'Water signs are energetic sponges (Neptune/Moon). Spending time with draining people depletes your immune system and emotional reserves faster than any other element.' }
+      );
       break;
   }
 
-  // Affliction-based supplements
+  // Affliction-based supplements with WHY
   for (const aff of afflictedPlanets.slice(0, 3)) {
     keySupplements.push(...aff.remedies.vitamins.slice(0, 2));
-    daily.push(...aff.remedies.lifestyle.slice(0, 1));
+    if (aff.remedies.lifestyle[0]) {
+      daily.push({
+        text: aff.remedies.lifestyle[0],
+        reason: `Your ${aff.planet} in ${aff.sign} is ${aff.afflictions[0]?.toLowerCase() || 'challenged'} — this directly affects ${aff.bodyAreas.slice(0, 2).join(' and ').toLowerCase()}.`
+      });
+    }
   }
 
-  // Weekly
-  weekly.push('Review energy levels and adjust activities');
-  weekly.push('One dedicated self-care practice (massage, bath, etc.)');
+  // Weekly with WHY
+  weekly.push({
+    text: 'Review energy levels and adjust activities',
+    reason: `Your ${dominantElement}-dominant chart has specific energy rhythms. Weekly review helps you catch depletion patterns before they become health issues.`
+  });
+  weekly.push({
+    text: 'One dedicated self-care practice (massage, bath, etc.)',
+    reason: 'Consistent self-care supports your constitutional type. It keeps your dominant element balanced rather than letting it swing to excess or deficiency.'
+  });
   if (afflictedPlanets.some(a => a.planet === 'Saturn')) {
-    weekly.push('Bone/joint strengthening exercises');
+    weekly.push({
+      text: 'Bone/joint strengthening exercises',
+      reason: 'Your Saturn is afflicted — Saturn governs bones, teeth, joints, and skin. Weight-bearing exercise prevents the chronic conditions Saturn brings when neglected.'
+    });
   }
   if (afflictedPlanets.some(a => a.planet === 'Neptune')) {
-    weekly.push('Lymphatic support (dry brushing, movement)');
+    weekly.push({
+      text: 'Lymphatic support (dry brushing, movement)',
+      reason: 'Your Neptune is afflicted — Neptune rules the lymphatic and immune systems. Without active support, you\'re more prone to mysterious illnesses and immune weakness.'
+    });
   }
 
-  // Deduplicate
+  // Deduplicate by text
+  const dedup = (arr: PreventionItem[]) => {
+    const seen = new Set<string>();
+    return arr.filter(item => {
+      if (seen.has(item.text)) return false;
+      seen.add(item.text);
+      return true;
+    });
+  };
+
   return {
-    daily: [...new Set(daily)],
-    weekly: [...new Set(weekly)],
-    avoid: [...new Set(avoid)],
+    daily: dedup(daily),
+    weekly: dedup(weekly),
+    avoid: dedup(avoid),
     keySupplements: [...new Set(keySupplements)]
   };
 }
