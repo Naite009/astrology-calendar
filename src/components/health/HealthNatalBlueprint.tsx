@@ -52,11 +52,21 @@ export const HealthNatalBlueprint = ({ natalChart }: HealthNatalBlueprintProps) 
   const ascElement = getElementForSign(ascendantSign);
   const dominantElement = getDominantElement(planets, ascendantSign);
 
-  // Find matching HD chart by name
+  // Find matching HD chart by name — fuzzy: try exact, then first-name, then just use first HD chart
   const matchingHdChart = useMemo(() => {
+    if (hdCharts.length === 0) return null;
     const chartName = natalChart.name?.toLowerCase().trim();
-    if (!chartName || hdCharts.length === 0) return null;
-    return hdCharts.find(hd => hd.name?.toLowerCase().trim() === chartName) || null;
+    if (!chartName) return hdCharts[0] || null;
+    // Exact match
+    const exact = hdCharts.find(hd => hd.name?.toLowerCase().trim() === chartName);
+    if (exact) return exact;
+    // First-name match
+    const firstName = chartName.split(/\s+/)[0];
+    const firstNameMatch = hdCharts.find(hd => hd.name?.toLowerCase().trim().split(/\s+/)[0] === firstName);
+    if (firstNameMatch) return firstNameMatch;
+    // If only one HD chart exists, just use it
+    if (hdCharts.length === 1) return hdCharts[0];
+    return null;
   }, [natalChart.name, hdCharts]);
 
   // Get HD determination data if available
