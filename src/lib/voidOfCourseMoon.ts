@@ -100,7 +100,7 @@ const getMoonAspectsAtTime = (date: Date): AspectInfo[] => {
 };
 
 // Find when Moon NEXT changes sign (forward search)
-const findNextMoonSignChange = (startDate: Date): { time: Date; newSign: string } => {
+export const findNextMoonSignChange = (startDate: Date): { time: Date; newSign: string } => {
   const startSign = getMoonSignIndex(startDate);
   let current = new Date(startDate);
   
