@@ -37,7 +37,7 @@ serve(async (req) => {
     
     // Cache key versioning: bump this when prompt/format changes so users don't get stale cached text.
     // This intentionally changes the cache key without requiring any DB schema changes.
-    const PROMPT_VERSION = "2026-02-12-v5-moon-ingress-retro-shadow";
+    const PROMPT_VERSION = "2026-02-13-v6-no-kitchen-in-weather";
 
     const cacheDeviceId = deviceId || 'default';
     const cacheVoiceStyle = `${voiceStyle || ''}@${PROMPT_VERSION}`;
@@ -620,88 +620,7 @@ Here's how the planetary day ruler integrates with today's sky:
 - [2-3 specific activities that blend the day ruler with current sky]
 **5-minute practice:** [ONE concrete ritual that honors both the day ruler and current planetary weather]
 
-## Cosmic Kitchen: Today's Menu
-Based on the Moon in [SIGN] and today's planetary weather, here's what will feel nourishing:
-
-**🍳 Breakfast:** [Dish Name]
-*Why:* [2-3 sentences in plain language connecting to Moon sign and season.]
-
-**🥗 Lunch:** [Dish Name]
-*Why:* [2-3 sentences. Midday = strongest digestion.]
-
-**🍽️ Dinner:** [Dish Name]
-*Why:* [2-3 sentences. Lighter evening meals.]
-
-**🥜 Snacks:** [Snack 1], [Snack 2], [Snack 3]
-*Why:* [Brief reasoning]
-
-**🍵 Drink of the Day:** [Beverage Name]
-*Why:* [Why this drink fits today]
-
-DO NOT include a "Featured Recipe" heading - the UI handles this. Just output the recipe block:
-
-**RECIPE_START**
-RECIPE_NAME: [Creative but practical name]
-RECIPE_TAGLINE: [One line about why this recipe fits today]
-SERVINGS: [number like "4" or "2-4"]
-PREP_TIME: [time like "15 minutes"]
-COOK_TIME: [time like "30 minutes"]
-MOON_SIGN: [current Moon sign symbol and name]
-ELEMENT: [Fire/Earth/Air/Water]
-INGREDIENTS:
-- [ALWAYS include FULL numeric quantities - e.g., "2 cups basmati rice", "1/2 teaspoon turmeric"]
-- [Write out measurement units: "tablespoon" not "tbsp"]
-- [Include 6-12 ingredients with complete measurements]
-INSTRUCTIONS:
-1. [Clear step with specific times/temperatures]
-2. [Continue with detailed steps]
-COSMIC_NOTE: [2-3 sentences about why this dish fits the day]
-**RECIPE_END**
-
-SEASONAL FOOD WISDOM:
-- WINTER (Nov-Feb): Strong digestion. Warm, hearty, nourishing foods. No cold/raw foods.
-- SPRING (Mar-May): Lighter foods. Less heavy/oily.
-- SUMMER (Jun-Aug): Cooling foods, weaker digestion. Avoid excess spicy.
-- AUTUMN (Sep-Oct): Transitional. Balance warmth with some cooling.
-
-MOON SIGN FOOD GUIDANCE:
-- Fire Moons (Aries/Leo/Sag): Warming proteins, bold flavors
-- Earth Moons (Taurus/Virgo/Cap): Grounding, substantial, comfort foods
-- Air Moons (Gemini/Libra/Aqua): Variety, interesting combinations, but still warm in winter
-- Water Moons (Cancer/Scorpio/Pisces): Soups, broths, emotionally comforting foods
-
-CRITICAL RECIPE VARIETY: You MUST select from this database. DO NOT repeat the same recipes. Track what you've suggested recently:
-
-WINTER BREAKFAST OPTIONS (rotate through these):
-Savory: Shakshuka, Congee with ginger, Migas, Cheese grits with bacon, Khichdi, Oatmeal with tahini and dates, Savory oatmeal with fried egg, Polenta with mushrooms, Masala dosa, Chilaquiles, Breakfast fried rice, Turkish menemen, Persian herb frittata, Huevos rancheros, Egyptian ful medames, Japanese tamago gohan
-Sweet: Steel-cut oats with cardamom and almonds, Buckwheat pancakes with warm berries, French toast with cinnamon apples, Banana bread oatmeal, Sweet potato hash, Warm quinoa porridge, Date and walnut muffins
-
-WINTER LUNCH OPTIONS (rotate through these):
-Soups: Tom yum, Mulligatawny, Minestrone, Roasted tomato basil, Corn chowder, Broccoli cheddar, Tuscan white bean, Split pea with ham, Carrot ginger, Roasted butternut squash, Borscht, Pho, Hot and sour soup, Pozole, Laksa, Scotch broth, Ribollita, Zuppa toscana, Avgolemono, Caldo verde
-Hearty: Buddha bowl with tahini, Falafel plate, Grain bowl with roasted vegetables, Stuffed bell peppers, Shepherd's pie, Pot pie, Chicken tikka masala, Pasta e fagioli, Bean and cheese burrito, Quesadilla with black beans
-
-WINTER DINNER OPTIONS (rotate through these):
-Main Dishes: Beef bourguignon, Chicken cacciatore, Lamb tagine, Coq au vin, Short ribs braised in red wine, Osso buco, Pot roast, Chicken adobo, Beef rendang, Massaman curry, Japanese curry, Korean bibimbap, Lamb shanks, Braised pork shoulder, Cassoulet, Duck confit, Moroccan chicken with preserved lemons, Ethiopian doro wat
-Vegetarian: Mushroom risotto, Eggplant parmesan, Ratatouille, Vegetable biryani, Chana masala, Palak paneer, Stuffed acorn squash, White bean cassoulet, Mushroom stroganoff, Vegetable lasagna, Cauliflower steaks with romesco
-Pasta: Cacio e pepe, Carbonara, Puttanesca, Bolognese, Pasta primavera (with roasted winter veg), Baked ziti, Lasagna, Orecchiette with sausage and broccoli rabe
-
-FIRE MOON RECIPES (Aries/Leo/Sagittarius):
-Spicy: Szechuan mapo tofu, Nashville hot chicken, Jerk chicken, Vindaloo, Arrabiata, Thai basil stir-fry, Kung pao chicken, Cajun jambalaya, Buffalo cauliflower, Harissa roasted chicken
-Bold: Chimichurri steak, Korean BBQ, Tandoori chicken, Blackened fish, Carne asada, Lamb kofta
-
-EARTH MOON RECIPES (Taurus/Virgo/Capricorn):
-Grounding: Roast chicken with root vegetables, Beef stew, Mashed potatoes with gravy, Meatloaf, Pot pie, Mac and cheese, Gratin dauphinois, Cottage pie, Toad in the hole, Bangers and mash
-Nurturing: Chicken soup, Bone broth ramen, Matzo ball soup, Wonton soup, Udon noodles in broth
-
-AIR MOON RECIPES (Gemini/Libra/Aquarius):
-Varied: Mezze platter, Tapas selection, Dim sum, Korean banchan spread, Mediterranean grain bowl, Poke bowl (warm version in winter), Bento box, Sushi (hot rolls in winter)
-Social: Fondue, Hot pot, Raclette, Communal paella
-
-WATER MOON RECIPES (Cancer/Scorpio/Pisces):
-Comforting: Chicken pot pie, Beef and vegetable soup, Clam chowder, Seafood bisque, Bouillabaisse, Cioppino, Gumbo, She-crab soup
-Nourishing: Miso soup, Dashi-based dishes, Fish stew, Poached salmon, Steamed fish with ginger
-
-NEVER REPEAT: Lentil soup, butternut squash soup, or any dish more than once per week. CHECK the current date and vary your selections.`;
+End the report after the Planetary Day Practice section. Do NOT include any meal plans, recipes, or food recommendations - those belong in the dedicated Kitchen tab.`;
 
 
     const systemPrompt = selectedVoice + "\n\n" + formatInstructions;
@@ -758,7 +677,7 @@ AYURVEDIC SEASON: ${currentSeason}
 CRITICAL INSTRUCTIONS:
 1. Use EXACT degrees provided. If a Full Moon is at 13° Cancer, say "Full Moon at 13° Cancer" - not 9° or any other number.
 2. Be direct and practical. No mystical fluff or greetings.
-3. For Cosmic Kitchen, ALWAYS honor the current Ayurvedic season - in winter, NEVER suggest cold/raw foods.
+3. Do NOT include any meal plans, recipes, or food content - that belongs exclusively in the Kitchen tab.
 4. PAY SPECIAL ATTENTION to tight aspects (orb < 2°) - these are the most powerful influences today.
 5. If an aspect is APPLYING, emphasize it's building/intensifying. If SEPARATING, it's releasing/completing.
 6. ALWAYS include the "Coming Up" section if upcoming events are provided!
