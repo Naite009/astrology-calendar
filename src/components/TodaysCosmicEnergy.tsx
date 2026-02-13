@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Sparkles, Moon, Sun, Clock, Loader2, RefreshCw, X, Utensils, Download, Share2, ChevronRight, AlertTriangle, Calendar, ArrowLeft, User } from "lucide-react";
+import { Sparkles, Moon, Sun, Clock, Loader2, RefreshCw, X, Download, Share2, ChevronRight, AlertTriangle, Calendar, ArrowLeft, User } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -657,41 +657,7 @@ Any challenging moon sign transits or VOC periods to be mindful of.
 ## 🎯 Weekly Focus
 3 practical things to prioritize this week based on the lunar energy.
 
-## 🍽️ Cosmic Kitchen: Weekly Menu
-Generate a FULL 7-DAY MEAL PLAN based on each day's Moon sign. For EACH day, include:
-
-${weekData.map((d, i) => `### ${d.dayName} (${d.dateStr}) - Moon in ${d.moonSign}
-**🍳 Breakfast:** [Dish name]
-*Why:* [2-3 sentences explaining WHY this breakfast matches ${d.moonSign} Moon energy - connect to the element, ruling planet, and day's theme]
-
-**🥗 Lunch:** [Dish name]  
-*Why:* [Explain the astrological reasoning]
-
-**🍽️ Dinner:** [Dish name]
-*Why:* [Explain the astrological reasoning]
-
-**🥜 Snacks:** [Snack 1], [Snack 2], [Snack 3]
-*Why:* [Explain EACH snack choice - e.g., "Granola with yogurt grounds the nervous Gemini energy while the probiotics support mental clarity. Dark chocolate honors the day's Venus aspect..."]
-
-**🍵 Drink:** [Beverage] - [Why it matches the day's energy]
-
----`).join('\n\n')}
-
-MOON SIGN MEAL THEMES (use but always explain WHY):
-- Aries: Spicy, protein-rich, energizing (Mars = heat and action)
-- Taurus: Comfort food, earthy, sensory (Venus = pleasure)
-- Gemini: Light, varied, tapas-style (Mercury = variety)
-- Cancer: Soul food, soups, nostalgic (Moon = nourishment)
-- Leo: Bold, golden colors, celebratory (Sun = vitality)
-- Virgo: Clean, whole foods, herbal (Mercury = digestion)
-- Libra: Beautiful, balanced, paired flavors (Venus = harmony)
-- Scorpio: Rich, intense, fermented (Pluto = depth)
-- Sagittarius: International, adventurous (Jupiter = expansion)
-- Capricorn: Traditional, substantial, slow-cooked (Saturn = structure)
-- Aquarius: Innovative, plant-based, unusual (Uranus = unconventional)
-- Pisces: Seafood, water-rich, gentle (Neptune = oceanic)
-
-Keep the tone insightful, practical, and empowering.`
+Keep the tone insightful, practical, and empowering. Do NOT include any meal plans, recipes, or food content.`
         }
       });
       
@@ -1402,16 +1368,11 @@ Keep the tone professional, insightful, and practically applicable.`
                       <div className="prose prose-lg dark:prose-invert max-w-none">
                         <ReactMarkdown
                           components={{
-                            h2: ({ children }) => {
-                              const text = String(children);
-                              const isKitchen = text.toLowerCase().includes('kitchen') || text.toLowerCase().includes('menu');
-                              return (
-                                <h2 className={`font-serif text-xl font-medium text-foreground mt-6 mb-3 pb-2 border-b first:mt-0 ${isKitchen ? 'border-amber-500/30 flex items-center gap-2' : 'border-primary/10'}`}>
-                                  {isKitchen && <Utensils className="h-5 w-5 text-amber-600" />}
+                            h2: ({ children }) => (
+                                <h2 className="font-serif text-xl font-medium text-foreground mt-6 mb-3 pb-2 border-b first:mt-0 border-primary/10">
                                   {children}
                                 </h2>
-                              );
-                            },
+                              ),
                             a: ({ href, children }) => (
                               <button 
                                 onClick={async (e) => {
