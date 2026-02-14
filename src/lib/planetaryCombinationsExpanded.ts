@@ -455,7 +455,7 @@ export const uranusSignCombinations: CombinationEntry[] = [
     id: 'uranus-taurus',
     factors: ['Uranus', 'Taurus'],
     title: 'The Value Revolutionaries',
-    summary: 'Uranus in Taurus (2018-2026, 1934-1942) creates individuals who revolutionize values, money, and relationship to Earth. This generation disrupts financial systems and environmental attitudes.',
+    summary: 'Uranus in Taurus (May 15, 2018 – July 7, 2025; retrogrades back Nov 7, 2025; permanently leaves April 26, 2026) creates individuals who revolutionize values, money, and relationship to Earth. This generation disrupts financial systems and environmental attitudes.',
     energies: [
       { expression: 'Revolutionary approach to money/values', polarity: 'light' },
       { expression: 'Environmental awakening', polarity: 'light' },
