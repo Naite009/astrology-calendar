@@ -35,7 +35,7 @@ export interface HouseHealthInfo {
 export const PLANETARY_HEALTH_RULERS: Record<string, PlanetaryHealthInfo> = {
   Sun: {
     symbol: '☉',
-    bodyParts: ['Heart', 'Spine', 'Right eye (men)', 'General vitality'],
+    bodyParts: ['Heart', 'Spine', 'Right eye (men) / Left eye (women)', 'General vitality'],
     healthThemes: ['Cardiovascular system', 'Vitality levels', 'Ego-health connection', 'Life force'],
     signEffects: {
       Aries: 'Strong vitality with tendency toward head-related issues, fevers',
