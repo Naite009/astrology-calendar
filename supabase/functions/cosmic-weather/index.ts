@@ -37,7 +37,7 @@ serve(async (req) => {
     
     // Cache key versioning: bump this when prompt/format changes so users don't get stale cached text.
     // This intentionally changes the cache key without requiring any DB schema changes.
-    const PROMPT_VERSION = "2026-02-14-v7-ingress-dates";
+    const PROMPT_VERSION = "2026-02-14-v8-mercury-rx-guidance";
 
     const cacheDeviceId = deviceId || 'default';
     const cacheVoiceStyle = `${voiceStyle || ''}@${PROMPT_VERSION}`;
@@ -100,7 +100,28 @@ ${imminentSignChanges.map((c: any) => `- ${c.planet} is at ${c.degree.toFixed(1)
     // Mercury retrograde shadow info
     const mercuryRxText = mercuryRetrogradeInfo
       ? `MERCURY RETROGRADE STATUS - MUST MENTION: Phase: ${mercuryRetrogradeInfo.phase}. ${mercuryRetrogradeInfo.description}
-Mercury retrograde is about our soul taking another look at something - things show up in daily life that make us rethink HOW we are thinking, communicating, and processing. The shadow degree (${mercuryRetrogradeInfo.shadowDegree}) is where to pay attention in your chart.`
+Mercury retrograde is about our soul taking another look at something - things show up in daily life that make us rethink HOW we are thinking, communicating, and processing. The shadow degree (${mercuryRetrogradeInfo.shadowDegree}) is where to pay attention in your chart.
+
+PRACTICAL MERCURY RETROGRADE GUIDANCE (weave naturally into the report):
+🚫 AVOID during Mercury Rx:
+- Signing major contracts, leases, or legal documents (if you must, read fine print 3x and expect revisions later)
+- Making major purchases especially electronics, cars, or appliances (glitches and buyer's remorse are common)
+- Launching new projects, businesses, or initiatives (better to plan now, launch after Rx ends)
+- Making impulsive life decisions — quitting jobs, ending relationships, moving (emotions and confusion are heightened)
+- Taking communication at face value — misunderstandings are rampant, so ask for clarification before reacting
+- Booking travel without backup plans (delays, cancellations, lost luggage are classic Rx themes)
+
+✅ DO during Mercury Rx:
+- Review, revise, and refine existing projects and plans
+- Reconnect with old friends, revisit old ideas, re-read old journals
+- Back up your devices and double-check important files
+- Slow down before hitting send on important emails or texts
+- Finish what you started — tie up loose ends
+- Reflect on whether your current communication patterns serve you
+- Use the "re-" words: reassess, reconsider, revise, revisit, renegotiate
+- If you MUST sign something, a Mercury-Sun cazimi (exact conjunction) is the one favorable window
+
+HOW IT FEELS: Like walking through fog — you THINK you see clearly but details are blurry. Your brain moves faster than reality can keep up. Old memories and people resurface. Technology feels like it has a mind of its own. This is normal. It passes. Use it.`
       : '';
 
     // Personalized retrograde guidance
