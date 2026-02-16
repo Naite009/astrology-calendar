@@ -240,8 +240,12 @@ function calculateHealthTransitAlerts(natalChart: NatalChart): HealthTransitAler
   if (natalChart.planets.Moon) {
     healthTargets.push({ name: 'Moon', longitude: natalToLongitude(natalChart.planets.Moon) });
   }
-  if (natalChart.planets.Ascendant) {
-    healthTargets.push({ name: 'Ascendant', longitude: natalToLongitude(natalChart.planets.Ascendant) });
+  // Always prefer houseCusps.house1 for Ascendant to avoid Asc/Desc flip
+  const reliableAsc = natalChart.houseCusps?.house1 
+    ? { sign: natalChart.houseCusps.house1.sign, degree: natalChart.houseCusps.house1.degree, minutes: natalChart.houseCusps.house1.minutes || 0 }
+    : natalChart.planets.Ascendant;
+  if (reliableAsc) {
+    healthTargets.push({ name: 'Ascendant', longitude: natalToLongitude(reliableAsc) });
   }
 
   // Add 6th House cusp

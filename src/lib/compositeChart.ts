@@ -260,10 +260,12 @@ export function calculateCompositeChart(chart1: NatalChart, chart2: NatalChart):
     }
   }
   
-  // Calculate Ascendant midpoint if available
-  if (chart1.planets.Ascendant && chart2.planets.Ascendant) {
-    const lon1 = toAbsoluteLongitude(chart1.planets.Ascendant);
-    const lon2 = toAbsoluteLongitude(chart2.planets.Ascendant);
+  // Calculate Ascendant midpoint if available — prefer houseCusps.house1
+  const compAsc1 = chart1.houseCusps?.house1 ? { sign: chart1.houseCusps.house1.sign, degree: chart1.houseCusps.house1.degree, minutes: chart1.houseCusps.house1.minutes || 0, seconds: 0 } : chart1.planets.Ascendant;
+  const compAsc2 = chart2.houseCusps?.house1 ? { sign: chart2.houseCusps.house1.sign, degree: chart2.houseCusps.house1.degree, minutes: chart2.houseCusps.house1.minutes || 0, seconds: 0 } : chart2.planets.Ascendant;
+  if (compAsc1 && compAsc2) {
+    const lon1 = toAbsoluteLongitude(compAsc1);
+    const lon2 = toAbsoluteLongitude(compAsc2);
     compositePlanets['Ascendant'] = fromLongitude(calculateMidpoint(lon1, lon2));
   }
   
@@ -427,10 +429,12 @@ export function calculateDavisonChart(chart1: NatalChart, chart2: NatalChart): D
   }
   
   // For Ascendant, we'd need latitude/longitude for precise calculation
-  // Using midpoint method as fallback for angles
-  if (chart1.planets.Ascendant && chart2.planets.Ascendant) {
-    const lon1 = toAbsoluteLongitude(chart1.planets.Ascendant);
-    const lon2 = toAbsoluteLongitude(chart2.planets.Ascendant);
+  // Using midpoint method as fallback for angles — prefer houseCusps.house1
+  const davAsc1 = chart1.houseCusps?.house1 ? { sign: chart1.houseCusps.house1.sign, degree: chart1.houseCusps.house1.degree, minutes: chart1.houseCusps.house1.minutes || 0, seconds: 0 } : chart1.planets.Ascendant;
+  const davAsc2 = chart2.houseCusps?.house1 ? { sign: chart2.houseCusps.house1.sign, degree: chart2.houseCusps.house1.degree, minutes: chart2.houseCusps.house1.minutes || 0, seconds: 0 } : chart2.planets.Ascendant;
+  if (davAsc1 && davAsc2) {
+    const lon1 = toAbsoluteLongitude(davAsc1);
+    const lon2 = toAbsoluteLongitude(davAsc2);
     davisonPlanets['Ascendant'] = fromLongitude(calculateMidpoint(lon1, lon2));
   }
   

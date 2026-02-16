@@ -834,8 +834,10 @@ function calculateHouseOverlays(chart1: NatalChart, chart2: NatalChart): HouseOv
   const overlays: HouseOverlay[] = [];
   
   // We need house cusps to do proper overlays
-  // For now, we'll use whole sign houses based on Ascendant
-  if (!chart1.planets.Ascendant || !chart2.planets.Ascendant) {
+  // For now, we'll use whole sign houses based on Ascendant — prefer houseCusps.house1
+  const asc1 = chart1.houseCusps?.house1 || chart1.planets.Ascendant;
+  const asc2 = chart2.houseCusps?.house1 || chart2.planets.Ascendant;
+  if (!asc1 || !asc2) {
     return overlays;
   }
   
@@ -855,7 +857,7 @@ function calculateHouseOverlays(chart1: NatalChart, chart2: NatalChart): HouseOv
     const planetPos = chart1.planets[planet as keyof typeof chart1.planets];
     if (!planetPos) continue;
     
-    const house = getHouseForPlanet(planetPos, chart2.planets.Ascendant.sign);
+    const house = getHouseForPlanet(planetPos, asc2.sign);
     const overlayData = PLANET_HOUSE_OVERLAYS[planet]?.[house];
     
     if (overlayData) {
@@ -876,7 +878,7 @@ function calculateHouseOverlays(chart1: NatalChart, chart2: NatalChart): HouseOv
     const planetPos = chart2.planets[planet as keyof typeof chart2.planets];
     if (!planetPos) continue;
     
-    const house = getHouseForPlanet(planetPos, chart1.planets.Ascendant.sign);
+    const house = getHouseForPlanet(planetPos, asc1.sign);
     const overlayData = PLANET_HOUSE_OVERLAYS[planet]?.[house];
     
     if (overlayData) {

@@ -229,8 +229,8 @@ function getNatalPlanetLongitude(chart: NatalChart, planetName: string): number 
 // Get planet's house placement (Whole Sign houses if cusps not provided)
 function getPlanetHouse(chart: NatalChart, planetLongitude: number): number | null {
   if (!chart.houseCusps) {
-    // Fall back to Whole Sign houses using Ascendant
-    const ascendant = chart.planets.Ascendant;
+    // Fall back to Whole Sign houses using Ascendant — prefer houseCusps.house1
+    const ascendant = chart.houseCusps?.house1 || chart.planets.Ascendant;
     if (!ascendant) return null;
     const ascIndex = ZODIAC_SIGNS.indexOf(ascendant.sign);
     if (ascIndex === -1) return null;

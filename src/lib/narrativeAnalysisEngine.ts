@@ -519,10 +519,10 @@ export function computePressurePoints(chart: NatalChart, planetHouses: PlanetHou
     }
   }
 
-  // 8. Chart ruler condition
-  if (planets.Ascendant) {
-    const ascSign = planets.Ascendant.sign;
-    const ascRuler = getSignRuler(ascSign);
+  // 8. Chart ruler condition — prefer houseCusps.house1 for Ascendant sign
+  const reliableAscSign = chart.houseCusps?.house1?.sign || planets.Ascendant?.sign;
+  if (reliableAscSign) {
+    const ascRuler = getSignRuler(reliableAscSign);
     const rulerInfo = planetHouses.find(p => p.planet === ascRuler);
     if (rulerInfo) {
       points.push({
@@ -530,7 +530,7 @@ export function computePressurePoints(chart: NatalChart, planetHouses: PlanetHou
         planet: ascRuler,
         description: `Chart ruler ${ascRuler} in ${rulerInfo.sign} (house ${rulerInfo.house})`,
         weight: 70,
-        details: `As ruler of ${ascSign} Ascendant, ${ascRuler}'s condition in house ${rulerInfo.house} shapes overall life approach.`
+        details: `As ruler of ${reliableAscSign} Ascendant, ${ascRuler}'s condition in house ${rulerInfo.house} shapes overall life approach.`
       });
     }
   }

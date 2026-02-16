@@ -19,6 +19,22 @@ interface ValidationResult {
  * Prioritizes houseCusps.house1 and cross-checks against planets.Ascendant.
  * Uses zodiacal logic (6th house sign relationship) as additional validation.
  */
+/**
+ * Returns the reliable Ascendant position data, always preferring houseCusps.house1.
+ * Use this instead of chart.planets.Ascendant anywhere you need Ascendant sign/degree/minutes.
+ */
+export function getReliableAscendant(chart: NatalChart): { sign: string; degree: number; minutes: number; seconds?: number; isRetrograde?: boolean } | null {
+  const h1 = chart.houseCusps?.house1;
+  if (h1?.sign) {
+    return { sign: h1.sign, degree: h1.degree, minutes: h1.minutes || 0 };
+  }
+  const pa = chart.planets?.Ascendant;
+  if (pa?.sign) {
+    return { sign: pa.sign, degree: pa.degree, minutes: pa.minutes || 0 };
+  }
+  return null;
+}
+
 export function getValidatedAscendant(chart: NatalChart): ValidationResult {
   const warnings: string[] = [];
   

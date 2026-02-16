@@ -174,7 +174,9 @@ export const SynastryWheelSimple = ({ chart1, chart2, size = 500 }: SynastryWhee
   
   // Get Ascendant degree based on selected house system
   const ascendantDegree = useMemo(() => {
-    const asc = activeHouseChart.planets.Ascendant;
+    // Always prefer houseCusps.house1 over planets.Ascendant to avoid Asc/Desc flip
+    const h1 = activeHouseChart.houseCusps?.house1;
+    const asc = h1?.sign ? { sign: h1.sign, degree: h1.degree, minutes: h1.minutes || 0, seconds: 0 } : activeHouseChart.planets.Ascendant;
     if (asc) return toAbsoluteDegree(asc);
     // Default to 0° Libra if no Ascendant (Libra at 9 o'clock as user mentioned)
     return 180; // 0° Libra

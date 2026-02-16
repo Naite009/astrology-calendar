@@ -654,7 +654,9 @@ function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): Foc
   // HOUSE OVERLAY INTEGRATION
   // Business-relevant houses: 2nd (money), 6th (work), 7th (contracts), 10th (career), 11th (goals)
   // ============================================
-  if (chart1.planets.Ascendant && chart2.planets.Ascendant) {
+  const bizAsc1 = chart1.houseCusps?.house1 || chart1.planets.Ascendant;
+  const bizAsc2 = chart2.houseCusps?.house1 || chart2.planets.Ascendant;
+  if (bizAsc1 && bizAsc2) {
     const businessPlanets = ['Sun', 'Saturn', 'Jupiter', 'Mars', 'Mercury'];
     const businessHouses = [2, 6, 7, 10, 11];
     
@@ -663,7 +665,7 @@ function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): Foc
       const planetPos = chart1.planets[planet as keyof typeof chart1.planets];
       if (!planetPos) continue;
       
-      const house = getHouseForPlanet(planetPos, chart2.planets.Ascendant.sign);
+      const house = getHouseForPlanet(planetPos, bizAsc2.sign);
       if (businessHouses.includes(house)) {
         let bonus = 0;
         
@@ -694,7 +696,7 @@ function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): Foc
       const planetPos = chart2.planets[planet as keyof typeof chart2.planets];
       if (!planetPos) continue;
       
-      const house = getHouseForPlanet(planetPos, chart1.planets.Ascendant.sign);
+      const house = getHouseForPlanet(planetPos, bizAsc1.sign);
       if (businessHouses.includes(house)) {
         let bonus = 0;
         

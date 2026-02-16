@@ -318,6 +318,7 @@ export const getCharacterCards = (chart: NatalChart): CharacterCard[] => {
   const house1Cusp = chart.houseCusps?.house1;
   const ascPos = chart.planets.Ascendant;
   
+  // Always prefer house1 cusp — planets.Ascendant can contain the Descendant (180° flip)
   const risingSign = house1Cusp?.sign || ascPos?.sign;
   const risingDegree = house1Cusp?.degree ?? ascPos?.degree ?? 0;
   
