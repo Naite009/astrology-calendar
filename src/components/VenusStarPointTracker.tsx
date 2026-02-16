@@ -44,7 +44,7 @@ export const VenusStarPointTracker = ({ date, activeChart }: VenusStarPointTrack
   
   // Get natal Venus info
   const natalVenus = activeChart?.planets?.Venus;
-  const natalAscendant = activeChart?.planets?.Ascendant;
+  const natalAscendant = activeChart?.houseCusps?.house1 || activeChart?.planets?.Ascendant;
   const isVenusRuled = natalAscendant?.sign === 'Libra' || natalAscendant?.sign === 'Taurus';
   
   // Check if natal Venus is in the same sign as current cycle

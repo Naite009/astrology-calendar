@@ -217,8 +217,9 @@ export function calculateSect(chart: NatalChart): SectData {
   // (Less reliable if the underlying chart uses non-equal houses / interceptions, but better than nothing.)
   const sunSign = chart.planets.Sun?.sign;
   const sunDegree = chart.planets.Sun?.degree || 0;
-  const ascSign = chart.planets.Ascendant?.sign;
-  const ascDegree = chart.planets.Ascendant?.degree || 0;
+  const ascSource = chart.houseCusps?.house1 || chart.planets.Ascendant;
+  const ascSign = ascSource?.sign;
+  const ascDegree = ascSource?.degree || 0;
 
   if (!sunSign || !ascSign) {
     // Default to night chart if we can't calculate (safer assumption)

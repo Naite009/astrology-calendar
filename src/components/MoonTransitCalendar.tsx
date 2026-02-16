@@ -66,7 +66,9 @@ const getMoonSign = (longitude: number): { sign: string; degree: number } => {
 
 const getNatalPlanetLongitude = (chart: NatalChart, planet: string): number | null => {
   if (planet === 'Ascendant') {
-    const asc = chart.planets.Ascendant;
+    // Always prefer houseCusps.house1 over planets.Ascendant to avoid Asc/Desc flip
+    const h1 = chart.houseCusps?.house1;
+    const asc = h1?.sign ? h1 : chart.planets.Ascendant;
     if (!asc?.sign) return null;
     const signIndex = ZODIAC_SIGNS.indexOf(asc.sign);
     if (signIndex === -1) return null;
