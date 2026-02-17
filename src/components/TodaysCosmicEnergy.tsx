@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { getMoonPhase, getPlanetaryPositions, calculateDailyAspects, PlanetaryPositions, getPlanetSymbol } from "@/lib/astrology";
+import { getMoonPhase, getPlanetaryPositions, calculateDailyAspects, PlanetaryPositions, getPlanetSymbol, getExactLunarPhase } from "@/lib/astrology";
 import { getVOCMoonDetails, findNextMoonSignChange } from "@/lib/voidOfCourseMoon";
 import { formatLocalDateKey } from "@/lib/localDate";
 import ReactMarkdown from "react-markdown";
@@ -907,6 +907,22 @@ Keep the tone professional, insightful, and practically applicable.`
                     <Moon className="h-6 w-6 mx-auto mb-2 text-primary" />
                     <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Moon Phase</p>
                     <p className="font-medium">{moonPhase.phaseName}</p>
+                    {(() => {
+                      const exactPhase = getExactLunarPhase(today);
+                      if (exactPhase) {
+                        const timeStr = exactPhase.time.toLocaleTimeString('en-US', {
+                          timeZone: 'America/New_York',
+                          hour: 'numeric',
+                          minute: '2-digit',
+                        });
+                        return (
+                          <p className="text-xs text-primary mt-1 font-medium">
+                            {exactPhase.type} at {timeStr} ET
+                          </p>
+                        );
+                      }
+                      return null;
+                    })()}
                   </CardContent>
                 </Card>
                 <Card className="bg-primary/5 border-primary/20">
