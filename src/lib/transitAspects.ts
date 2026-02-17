@@ -91,9 +91,9 @@ export const calculateTransitAspects = (
     { key: 'pluto', name: 'Pluto', data: transitPositions.pluto },
   ];
 
-  // Natal planets to check
-  const natalPlanets = Object.entries(natalChart.planets)
-    .filter(([_, pos]) => pos?.sign)
+  // Natal planets to check — use corrected Ascendant from houseCusps.house1
+  const rawNatalPlanets = Object.entries(natalChart.planets)
+    .filter(([name, pos]) => pos?.sign && name !== 'Ascendant') // exclude raw Ascendant, add corrected one below
     .map(([name, pos]) => ({
       name,
       sign: pos!.sign,
@@ -101,6 +101,21 @@ export const calculateTransitAspects = (
       minutes: pos!.minutes || 0,
       longitude: signToLongitude(pos!.sign, pos!.degree, pos!.minutes),
     }));
+
+  // Add corrected Ascendant from houseCusps.house1 (avoids 180° flip bug)
+  const h1 = natalChart.houseCusps?.house1;
+  const ascData = h1?.sign ? h1 : natalChart.planets?.Ascendant;
+  if (ascData?.sign) {
+    rawNatalPlanets.push({
+      name: 'Ascendant',
+      sign: ascData.sign,
+      degree: ascData.degree,
+      minutes: ascData.minutes || 0,
+      longitude: signToLongitude(ascData.sign, ascData.degree, ascData.minutes || 0),
+    });
+  }
+
+  const natalPlanets = rawNatalPlanets;
 
   // Check each transit planet against each natal planet
   transitPlanets.forEach(transit => {
