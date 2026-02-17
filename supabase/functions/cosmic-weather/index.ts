@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects, planetPositions, customPrompt, voiceStyle, upcomingEvents, deviceId, forceRegenerate, greeting: reqGreeting, timeOfDay: reqTimeOfDay, moonSignChange, imminentSignChanges, mercuryRetrogradeInfo, personalizedRetrograde } = await req.json();
+    const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects, planetPositions, customPrompt, voiceStyle, upcomingEvents, deviceId, forceRegenerate, greeting: reqGreeting, timeOfDay: reqTimeOfDay, moonSignChange, imminentSignChanges, mercuryRetrogradeInfo, personalizedRetrograde, userTimezone, userTzAbbr } = await req.json();
     
     console.log("Received cosmic weather request:", { date, moonPhase, moonSign, exactLunarPhase, voiceStyle, planetPositions });
     console.log("Aspects received:", aspects?.slice(0, 15));
@@ -37,7 +37,7 @@ serve(async (req) => {
     
     // Cache key versioning: bump this when prompt/format changes so users don't get stale cached text.
     // This intentionally changes the cache key without requiring any DB schema changes.
-    const PROMPT_VERSION = "2026-02-17-v9-day-of-week-fix";
+    const PROMPT_VERSION = "2026-02-17-v10-user-timezone";
 
     const cacheDeviceId = deviceId || 'default';
     const cacheVoiceStyle = `${voiceStyle || ''}@${PROMPT_VERSION}`;
@@ -502,9 +502,13 @@ ALWAYS: Connect present moment to recent past and near future with contemplative
     const selectedVoice = voicePrompts[voiceStyle || 'tara'] || voicePrompts.tara;
 
     // Common format instructions that apply to all voices
+    const tzLabel = userTzAbbr || 'ET';
+    const tzName = userTimezone || 'America/New_York';
+
     const formatInstructions = `
 CRITICAL RULES:
 0. **DAY OF THE WEEK**: The date string provided (e.g., "Monday, February 16, 2026") contains the EXACT correct day of the week. Use THAT day name verbatim everywhere — in greetings, in the Planetary Day Practice section, and anywhere else you reference the day. NEVER substitute a different day name. If the date says "Monday", it IS Monday. Period.
+0b. **TIMEZONE**: The user is in ${tzName} (${tzLabel}). ALL times you mention (ingresses, sign changes, retrogrades, exact aspects, Moon transitions) MUST be in ${tzLabel}. NEVER use PST, PDT, CST, UTC, or any other timezone abbreviation. Always append "${tzLabel}" after any time. Example: "10:48 AM ${tzLabel}" not "10:48 AM PST".
 1. Use ONLY the planetary positions provided. These are calculated from astronomy-engine and are accurate.
 2. Use EXACT degrees when mentioning positions. If data says "3° Cancer", use that precisely.
 3. NEVER call something a "Full Moon" or "New Moon" unless exactLunarPhase is provided.
