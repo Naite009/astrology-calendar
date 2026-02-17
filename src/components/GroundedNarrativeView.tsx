@@ -8,19 +8,20 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, FileText, BarChart3, Map, Loader2, AlertCircle, ChevronRight } from 'lucide-react';
+import { Sparkles, FileText, BarChart3, Map, Loader2, AlertCircle, ChevronRight, Star, Layers, Diamond } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { computeAllSignals, SignalsData, SourceMapEntry } from '@/lib/narrativeAnalysisEngine';
 import { supabase } from '@/integrations/supabase/client';
 import { ChartSelector } from './ChartSelector';
 import { LifeStylesSection } from './narrative/LifeStylesSection';
- import { toast } from 'sonner';
- 
- interface Props {
-   savedCharts: NatalChart[];
-   userNatalChart: NatalChart | null;
- }
- 
+import { useHumanDesignChart } from '@/hooks/useHumanDesignChart';
+import { toast } from 'sonner';
+
+interface Props {
+  savedCharts: NatalChart[];
+  userNatalChart: NatalChart | null;
+}
+
 export type VoiceStyle = 
   | 'grounded_therapist' 
   | 'spiritual_guide' 
@@ -28,6 +29,8 @@ export type VoiceStyle =
   | 'direct_practical' 
   | 'mystical_poetic'
   | 'analytical_technical';
+
+export type ReadingType = 'astrology' | 'human_design' | 'combined';
 
 const VOICE_OPTIONS: { value: VoiceStyle; label: string; description: string }[] = [
   { value: 'grounded_therapist', label: 'Therapist', description: 'Warm, steady, emotionally intelligent' },
@@ -38,8 +41,16 @@ const VOICE_OPTIONS: { value: VoiceStyle; label: string; description: string }[]
   { value: 'analytical_technical', label: 'Technical Astrologer', description: 'Traditional dignities, precise language' },
 ];
 
+const READING_TYPE_OPTIONS: { value: ReadingType; label: string; description: string; icon: typeof Star }[] = [
+  { value: 'astrology', label: 'Astrology', description: 'Natal chart reading', icon: Star },
+  { value: 'human_design', label: 'Human Design', description: 'HD chart reading', icon: Diamond },
+  { value: 'combined', label: 'Combined', description: 'Astrology + HD unified', icon: Layers },
+];
+
 export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
   const [selectedChartId, setSelectedChartId] = useState<string>('');
+  const [readingType, setReadingType] = useState<ReadingType>('astrology');
+  const [selectedHdChartId, setSelectedHdChartId] = useState<string>('');
   const [lengthPreset, setLengthPreset] = useState<'short_250' | 'full_800'>('full_800');
   const [includeShadow, setIncludeShadow] = useState(true);
   const [voiceStyle, setVoiceStyle] = useState<VoiceStyle>('grounded_therapist');
@@ -50,26 +61,45 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
   const [signals, setSignals] = useState<SignalsData | null>(null);
   const [sourceMap, setSourceMap] = useState<SourceMapEntry[] | null>(null);
   const [selectedSentenceIndex, setSelectedSentenceIndex] = useState<number | null>(null);
- 
-   // Build chart options
-   const allCharts = userNatalChart ? [userNatalChart, ...savedCharts] : savedCharts;
- 
-   // Auto-select first chart if none selected
-   useEffect(() => {
-     if (!selectedChartId && allCharts.length > 0) {
-       setSelectedChartId(allCharts[0].id);
-     }
-   }, [allCharts, selectedChartId]);
- 
-   const selectedChart = allCharts.find(c => c.id === selectedChartId);
- 
-   // Check if chart has required data
-   const hasRequiredData = selectedChart && selectedChart.planets && 
-     Object.keys(selectedChart.planets).length >= 3;
- 
+
+  // HD charts
+  const { charts: hdCharts } = useHumanDesignChart();
+
+  // Build chart options
+  const allCharts = userNatalChart ? [userNatalChart, ...savedCharts] : savedCharts;
+
+  // Auto-select first chart if none selected
+  useEffect(() => {
+    if (!selectedChartId && allCharts.length > 0) {
+      setSelectedChartId(allCharts[0].id);
+    }
+  }, [allCharts, selectedChartId]);
+
+  // Auto-select first HD chart if none selected
+  useEffect(() => {
+    if (!selectedHdChartId && hdCharts.length > 0) {
+      setSelectedHdChartId(hdCharts[0].id);
+    }
+  }, [hdCharts, selectedHdChartId]);
+
+  const selectedChart = allCharts.find(c => c.id === selectedChartId);
+  const selectedHdChart = hdCharts.find(c => c.id === selectedHdChartId);
+
+  // Check if chart has required data
+  const hasRequiredAstroData = selectedChart && selectedChart.planets && 
+    Object.keys(selectedChart.planets).length >= 3;
+  const hasRequiredHdData = selectedHdChart && selectedHdChart.type;
+  
+  const canGenerate = (() => {
+    if (readingType === 'astrology') return hasRequiredAstroData;
+    if (readingType === 'human_design') return hasRequiredHdData;
+    if (readingType === 'combined') return hasRequiredAstroData && hasRequiredHdData;
+    return false;
+  })();
+
   const handleGenerate = async () => {
-    if (!selectedChart || !hasRequiredData) {
-      toast.error('Please select a chart with planet data');
+    if (!canGenerate) {
+      toast.error('Please select the required chart(s)');
       return;
     }
 
@@ -86,57 +116,114 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
     setSourceMap(null);
 
     try {
-      // Compute signals locally
-      const computedSignals = computeAllSignals(selectedChart);
-      setSignals(computedSignals);
+      if (readingType === 'astrology') {
+        // Original astrology flow
+        const computedSignals = computeAllSignals(selectedChart!);
+        setSignals(computedSignals);
 
-      // Call backend function
-      const { data, error } = await supabase.functions.invoke('generate-narrative', {
-        body: {
-          signals: computedSignals,
-          chartName: selectedChart.name,
-          planets: selectedChart.planets,
-          lengthPreset,
-          includeShadow,
-          voiceStyle,
-        },
-      });
+        const { data, error } = await supabase.functions.invoke('generate-narrative', {
+          body: {
+            signals: computedSignals,
+            chartName: selectedChart!.name,
+            planets: selectedChart!.planets,
+            lengthPreset,
+            includeShadow,
+            voiceStyle,
+          },
+        });
 
-      if (error) throw error;
-      if (data?.error) {
-        toast.error(data.error);
-        return;
-      }
+        if (error) throw error;
+        if (data?.error) {
+          toast.error(data.error);
+          return;
+        }
 
-      const generatedNarrativeText = (data?.narrativeText as string | undefined) || null;
-      const generatedSourceMap = (data?.sourceMap as SourceMapEntry[] | undefined) || [];
+        setNarrativeText(data?.narrativeText || null);
+        setSourceMap(data?.sourceMap || []);
 
-      setNarrativeText(generatedNarrativeText);
-      setSourceMap(generatedSourceMap);
+        // Save to database
+        const deviceId = localStorage.getItem('deviceId') || crypto.randomUUID();
+        localStorage.setItem('deviceId', deviceId);
 
-      // Save to database (best-effort). If this fails, keep UI populated.
-      const deviceId = localStorage.getItem('deviceId') || crypto.randomUUID();
-      localStorage.setItem('deviceId', deviceId);
-
-      const { error: insertError } = await supabase.from('chart_narratives').insert([
-        {
-          chart_id: selectedChart.id,
+        const { error: insertError } = await supabase.from('chart_narratives').insert([{
+          chart_id: selectedChart!.id,
           voice_preset: voiceStyle,
           length_preset: lengthPreset,
           include_shadow: includeShadow,
           engine_version: 'narrative_v1.0.0',
-          narrative_text: generatedNarrativeText || '',
+          narrative_text: data?.narrativeText || '',
           signals_json: JSON.parse(JSON.stringify(computedSignals)),
-          source_map_json: JSON.parse(JSON.stringify(generatedSourceMap)),
+          source_map_json: JSON.parse(JSON.stringify(data?.sourceMap || [])),
           device_id: deviceId,
-        },
-      ]);
+        }]);
 
-      if (insertError) {
-        console.warn('Failed to persist narrative:', insertError);
-        toast.error('Generated, but failed to save. Please try again.');
+        if (insertError) {
+          console.warn('Failed to persist narrative:', insertError);
+        } else {
+          toast.success('Narrative generated successfully');
+        }
+
       } else {
-        toast.success('Narrative generated successfully');
+        // Human Design or Combined flow
+        setSignals(null); // No astro signals for HD-only
+
+        const body: Record<string, unknown> = {
+          readingType: readingType,
+          hdChart: selectedHdChart,
+          chartName: readingType === 'combined' 
+            ? `${selectedChart?.name} + ${selectedHdChart?.name}` 
+            : selectedHdChart?.name,
+          lengthPreset,
+          includeShadow,
+          voiceStyle,
+        };
+
+        // Add astro data for combined reading
+        if (readingType === 'combined' && selectedChart) {
+          const computedSignals = computeAllSignals(selectedChart);
+          setSignals(computedSignals);
+          body.astroSignals = computedSignals;
+          body.astroPlanets = selectedChart.planets;
+        }
+
+        const { data, error } = await supabase.functions.invoke('generate-hd-narrative', {
+          body,
+        });
+
+        if (error) throw error;
+        if (data?.error) {
+          toast.error(data.error);
+          return;
+        }
+
+        setNarrativeText(data?.narrativeText || null);
+        setSourceMap(null); // HD narratives don't have source maps yet
+
+        // Save to database
+        const deviceId = localStorage.getItem('deviceId') || crypto.randomUUID();
+        localStorage.setItem('deviceId', deviceId);
+
+        const chartId = readingType === 'combined' 
+          ? `combined_${selectedChart?.id}_${selectedHdChart?.id}` 
+          : `hd_${selectedHdChart?.id}`;
+
+        const { error: insertError } = await supabase.from('chart_narratives').insert([{
+          chart_id: chartId,
+          voice_preset: voiceStyle,
+          length_preset: lengthPreset,
+          include_shadow: includeShadow,
+          engine_version: readingType === 'combined' ? 'combined_v1.0.0' : 'hd_v1.0.0',
+          narrative_text: data?.narrativeText || '',
+          signals_json: readingType === 'combined' && signals ? JSON.parse(JSON.stringify(signals)) : {},
+          source_map_json: [],
+          device_id: deviceId,
+        }]);
+
+        if (insertError) {
+          console.warn('Failed to persist narrative:', insertError);
+        } else {
+          toast.success('Narrative generated successfully');
+        }
       }
     } catch (err) {
       console.error('Generate narrative error:', err);
@@ -145,11 +232,12 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
       setIsGenerating(false);
     }
   };
- 
+
   // Load previous narrative on chart change
   useEffect(() => {
-    if (!selectedChartId) return;
-    // Don't load/clear if currently generating
+    if (!selectedChartId && readingType === 'astrology') return;
+    if (!selectedHdChartId && readingType === 'human_design') return;
+    if ((!selectedChartId || !selectedHdChartId) && readingType === 'combined') return;
     if (isGenerating) return;
 
     let cancelled = false;
@@ -163,10 +251,19 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
         return;
       }
 
+      let chartId = '';
+      if (readingType === 'astrology') {
+        chartId = selectedChartId;
+      } else if (readingType === 'human_design') {
+        chartId = `hd_${selectedHdChartId}`;
+      } else {
+        chartId = `combined_${selectedChartId}_${selectedHdChartId}`;
+      }
+
       const { data, error } = await supabase
         .from('chart_narratives')
         .select('*')
-        .eq('chart_id', selectedChartId)
+        .eq('chart_id', chartId)
         .eq('device_id', deviceId)
         .order('created_at', { ascending: false })
         .limit(1);
@@ -191,150 +288,240 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
 
     loadPrevious();
 
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedChartId]);
- 
+    return () => { cancelled = true; };
+  }, [selectedChartId, selectedHdChartId, readingType]);
+
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
         <h1 className="text-2xl font-serif">Narrative</h1>
       </div>
- 
-       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-         {/* Left Panel - Controls */}
-         <Card className="lg:col-span-1">
-           <CardHeader className="pb-3">
-             <CardTitle className="text-sm font-medium">Settings</CardTitle>
-           </CardHeader>
-           <CardContent className="space-y-4">
-            {/* Chart Selection */}
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Left Panel - Controls */}
+        <Card className="lg:col-span-1">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">Settings</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Reading Type Toggle */}
             <div className="space-y-2">
-              <ChartSelector
-                userNatalChart={userNatalChart}
-                savedCharts={savedCharts}
-                selectedChartId={selectedChartId}
-                onSelect={setSelectedChartId}
-                label="Chart"
+              <Label className="text-xs text-muted-foreground">Reading Type</Label>
+              <div className="grid grid-cols-3 gap-1">
+                {READING_TYPE_OPTIONS.map(opt => {
+                  const Icon = opt.icon;
+                  return (
+                    <button
+                      key={opt.value}
+                      onClick={() => {
+                        setReadingType(opt.value);
+                        setNarrativeText(null);
+                        setSourceMap(null);
+                        setSignals(null);
+                      }}
+                      className={`flex flex-col items-center gap-1 p-2 rounded border text-[10px] uppercase tracking-wider transition-colors ${
+                        readingType === opt.value
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-border text-muted-foreground hover:border-primary/50'
+                      }`}
+                    >
+                      <Icon size={16} />
+                      <span>{opt.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                {readingType === 'astrology' && 'AI narrative from your natal chart'}
+                {readingType === 'human_design' && 'AI narrative from your HD chart'}
+                {readingType === 'combined' && 'Unified astrology + HD portrait'}
+              </p>
+            </div>
+
+            {/* Astrology Chart Selection - show for astrology & combined */}
+            {(readingType === 'astrology' || readingType === 'combined') && (
+              <div className="space-y-2">
+                <ChartSelector
+                  userNatalChart={userNatalChart}
+                  savedCharts={savedCharts}
+                  selectedChartId={selectedChartId}
+                  onSelect={setSelectedChartId}
+                  label={readingType === 'combined' ? 'Astrology Chart' : 'Chart'}
+                />
+              </div>
+            )}
+
+            {/* HD Chart Selection - show for HD & combined */}
+            {(readingType === 'human_design' || readingType === 'combined') && (
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">
+                  {readingType === 'combined' ? 'Human Design Chart' : 'Chart'}
+                </Label>
+                {hdCharts.length > 0 ? (
+                  <Select value={selectedHdChartId} onValueChange={setSelectedHdChartId}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select HD chart..." />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border z-50">
+                      {hdCharts.map(chart => (
+                        <SelectItem key={chart.id} value={chart.id}>
+                          <div className="flex flex-col">
+                            <span>{chart.name}</span>
+                            <span className="text-[10px] text-muted-foreground">{chart.type} · {chart.profile}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="text-xs text-destructive flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    No HD charts. Create one in Human Design tab first.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Length Toggle */}
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Length</Label>
+              <Select value={lengthPreset} onValueChange={(v) => setLengthPreset(v as 'short_250' | 'full_800')}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-background border z-50">
+                  <SelectItem value="short_250">Short (~250 words)</SelectItem>
+                  <SelectItem value="full_800">Full (~800 words)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Shadow Toggle */}
+            <div className="flex items-center justify-between">
+              <Label htmlFor="shadow-toggle" className="text-xs text-muted-foreground">
+                Include Shadow Content
+              </Label>
+              <Switch 
+                id="shadow-toggle"
+                checked={includeShadow} 
+                onCheckedChange={setIncludeShadow} 
               />
             </div>
- 
-             {/* Length Toggle */}
-             <div className="space-y-2">
-               <Label className="text-xs text-muted-foreground">Length</Label>
-               <Select value={lengthPreset} onValueChange={(v) => setLengthPreset(v as 'short_250' | 'full_800')}>
-                 <SelectTrigger className="w-full">
-                   <SelectValue />
-                 </SelectTrigger>
-                 <SelectContent className="bg-background border z-50">
-                   <SelectItem value="short_250">Short (~250 words)</SelectItem>
-                   <SelectItem value="full_800">Full (~800 words)</SelectItem>
-                 </SelectContent>
-               </Select>
-             </div>
- 
-             {/* Shadow Toggle */}
-             <div className="flex items-center justify-between">
-               <Label htmlFor="shadow-toggle" className="text-xs text-muted-foreground">
-                 Include Shadow Content
-               </Label>
-               <Switch 
-                 id="shadow-toggle"
-                 checked={includeShadow} 
-                 onCheckedChange={setIncludeShadow} 
-               />
-             </div>
- 
-              {/* Voice Style */}
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Voice Style</Label>
-                <Select value={voiceStyle} onValueChange={(v) => setVoiceStyle(v as VoiceStyle)}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background border z-50">
-                    {VOICE_OPTIONS.map(opt => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        <div className="flex flex-col">
-                          <span>{opt.label}</span>
-                          <span className="text-[10px] text-muted-foreground">{opt.description}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
- 
-             {/* Generate Button */}
-             <Button 
-               onClick={handleGenerate} 
-               disabled={isGenerating || !hasRequiredData}
-               className="w-full"
-             >
-               {isGenerating ? (
-                 <>
-                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                   Generating...
-                 </>
-               ) : (
-                 <>
-                   <Sparkles className="mr-2 h-4 w-4" />
-                   Generate
-                 </>
-               )}
-             </Button>
- 
-             {!hasRequiredData && selectedChart && (
-               <p className="text-xs text-destructive flex items-center gap-1">
-                 <AlertCircle className="h-3 w-3" />
-                 Chart needs planet data
-               </p>
-             )}
-           </CardContent>
-         </Card>
- 
-         {/* Right Panel - Tabs */}
-         <Card className="lg:col-span-3">
-           <CardContent className="pt-6">
-             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
-               <TabsList className="grid w-full grid-cols-3">
-                 <TabsTrigger value="narrative" className="flex items-center gap-2">
-                   <FileText className="h-4 w-4" />
-                   Narrative
-                 </TabsTrigger>
-                 <TabsTrigger value="signals" className="flex items-center gap-2">
-                   <BarChart3 className="h-4 w-4" />
-                   Signals
-                 </TabsTrigger>
-                 <TabsTrigger value="source-map" className="flex items-center gap-2">
-                   <Map className="h-4 w-4" />
-                   Source Map
-                 </TabsTrigger>
-               </TabsList>
- 
-                {/* Narrative Tab */}
-                <TabsContent value="narrative" className="mt-4">
-                  {!narrativeText && !isGenerating && (
-                    <div className="text-center py-12 text-muted-foreground">
-                      <FileText className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                      <p>No narrative generated yet.</p>
-                      <p className="text-sm">Select a chart and click Generate to create your narrative.</p>
+
+            {/* Voice Style */}
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Voice Style</Label>
+              <Select value={voiceStyle} onValueChange={(v) => setVoiceStyle(v as VoiceStyle)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-background border z-50">
+                  {VOICE_OPTIONS.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      <div className="flex flex-col">
+                        <span>{opt.label}</span>
+                        <span className="text-[10px] text-muted-foreground">{opt.description}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Generate Button */}
+            <Button 
+              onClick={handleGenerate} 
+              disabled={isGenerating || !canGenerate}
+              className="w-full"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Generate {readingType === 'combined' ? 'Combined' : readingType === 'human_design' ? 'HD' : ''} Reading
+                </>
+              )}
+            </Button>
+
+            {!canGenerate && (
+              <p className="text-xs text-destructive flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {readingType === 'astrology' && 'Chart needs planet data'}
+                {readingType === 'human_design' && (hdCharts.length === 0 ? 'No HD charts available' : 'Select an HD chart')}
+                {readingType === 'combined' && (!hasRequiredAstroData ? 'Astrology chart needs planet data' : 'Select an HD chart')}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Right Panel - Tabs */}
+        <Card className="lg:col-span-3">
+          <CardContent className="pt-6">
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+              <TabsList className={`grid w-full ${readingType === 'astrology' ? 'grid-cols-3' : 'grid-cols-1'}`}>
+                <TabsTrigger value="narrative" className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Narrative
+                </TabsTrigger>
+                {readingType === 'astrology' && (
+                  <>
+                    <TabsTrigger value="signals" className="flex items-center gap-2">
+                      <BarChart3 className="h-4 w-4" />
+                      Signals
+                    </TabsTrigger>
+                    <TabsTrigger value="source-map" className="flex items-center gap-2">
+                      <Map className="h-4 w-4" />
+                      Source Map
+                    </TabsTrigger>
+                  </>
+                )}
+              </TabsList>
+
+              {/* Narrative Tab */}
+              <TabsContent value="narrative" className="mt-4">
+                {!narrativeText && !isGenerating && (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <FileText className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                    <p>No narrative generated yet.</p>
+                    <p className="text-sm">
+                      {readingType === 'astrology' && 'Select a chart and click Generate to create your narrative.'}
+                      {readingType === 'human_design' && 'Select your HD chart and click Generate for a Human Design reading.'}
+                      {readingType === 'combined' && 'Select both charts and click Generate for a unified reading.'}
+                    </p>
+                  </div>
+                )}
+                {isGenerating && (
+                  <div className="text-center py-12">
+                    <Loader2 className="h-12 w-12 mx-auto mb-4 animate-spin text-primary" />
+                    <p>
+                      {readingType === 'combined' 
+                        ? 'Weaving your astrology and Human Design together...' 
+                        : readingType === 'human_design'
+                        ? 'Analyzing your Human Design blueprint...'
+                        : 'Generating your narrative...'}
+                    </p>
+                  </div>
+                )}
+                {narrativeText && !isGenerating && (
+                  <>
+                    {/* Reading type badge */}
+                    <div className="mb-3 flex items-center gap-2">
+                      <Badge variant="outline" className="text-[10px]">
+                        {readingType === 'astrology' && '☉ Astrology Reading'}
+                        {readingType === 'human_design' && '◇ Human Design Reading'}
+                        {readingType === 'combined' && '☉◇ Combined Reading'}
+                      </Badge>
                     </div>
-                  )}
-                  {isGenerating && (
-                    <div className="text-center py-12">
-                      <Loader2 className="h-12 w-12 mx-auto mb-4 animate-spin text-primary" />
-                      <p>Generating your narrative...</p>
-                    </div>
-                  )}
-                  {narrativeText && !isGenerating && (
-                    <>
-                      <ScrollArea className="h-[500px] pr-4">
-                        <p className="text-xs text-muted-foreground mb-3 italic">💡 Click any sentence to see the astrological triggers behind it</p>
-                        <div className="space-y-1">
-                          {sourceMap && sourceMap.length > 0 ? (
-                            sourceMap.map((entry, i) => (
+                    <ScrollArea className="h-[500px] pr-4">
+                      {readingType === 'astrology' && sourceMap && sourceMap.length > 0 ? (
+                        <>
+                          <p className="text-xs text-muted-foreground mb-3 italic">💡 Click any sentence to see the astrological triggers behind it</p>
+                          <div className="space-y-1">
+                            {sourceMap.map((entry, i) => (
                               <span
                                 key={i}
                                 onClick={() => setSelectedSentenceIndex(selectedSentenceIndex === i ? null : i)}
@@ -364,28 +551,40 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                                   </span>
                                 )}
                               </span>
-                            ))
-                          ) : (
-                            // Fallback if no source map
-                            <div className="prose prose-sm dark:prose-invert max-w-none">
-                              {narrativeText.split('\n\n').map((para, i) => (
-                                <p key={i} className="leading-relaxed mb-4">{para}</p>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </ScrollArea>
-                      {/* Life Styles Section */}
-                      {signals && (
-                        <div className="mt-6">
-                          <LifeStylesSection signals={signals} />
+                            ))}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                          {narrativeText.split('\n\n').map((para, i) => {
+                            // Handle markdown bold
+                            const parts = para.split(/(\*\*[^*]+\*\*)/g);
+                            return (
+                              <p key={i} className="leading-relaxed mb-4">
+                                {parts.map((part, j) => {
+                                  if (part.startsWith('**') && part.endsWith('**')) {
+                                    return <strong key={j}>{part.slice(2, -2)}</strong>;
+                                  }
+                                  return <span key={j}>{part}</span>;
+                                })}
+                              </p>
+                            );
+                          })}
                         </div>
                       )}
-                    </>
-                  )}
-                </TabsContent>
- 
-               {/* Signals Tab */}
+                    </ScrollArea>
+                    {/* Life Styles Section - only for astrology */}
+                    {readingType === 'astrology' && signals && (
+                      <div className="mt-6">
+                        <LifeStylesSection signals={signals} />
+                      </div>
+                    )}
+                  </>
+                )}
+              </TabsContent>
+
+              {/* Signals Tab - only for astrology */}
+              {readingType === 'astrology' && (
                 <TabsContent value="signals" className="mt-4">
                   {!signals && (
                     <div className="text-center py-12 text-muted-foreground">
@@ -658,57 +857,60 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                     </ScrollArea>
                   )}
                 </TabsContent>
- 
-               {/* Source Map Tab */}
-               <TabsContent value="source-map" className="mt-4">
-                 {!sourceMap && (
-                   <div className="text-center py-12 text-muted-foreground">
-                     <Map className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                     <p>Generate a narrative to see the source map.</p>
-                   </div>
-                 )}
-                 {sourceMap && (
-                   <ScrollArea className="h-[500px] pr-4">
-                     <div className="space-y-2">
-                       {sourceMap.map((entry, i) => (
-                         <div 
-                           key={i}
-                           className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                             selectedSentenceIndex === i 
-                               ? 'bg-primary/10 border border-primary/30' 
-                               : 'bg-muted/30 hover:bg-muted/50'
-                           }`}
-                           onClick={() => setSelectedSentenceIndex(selectedSentenceIndex === i ? null : i)}
-                         >
-                           <div className="flex items-start gap-2">
-                             <ChevronRight className={`h-4 w-4 mt-1 transition-transform ${selectedSentenceIndex === i ? 'rotate-90' : ''}`} />
-                             <div className="flex-1">
-                               <p className="text-sm">{entry.sentence}</p>
-                               {selectedSentenceIndex === i && entry.triggers.length > 0 && (
-                                 <div className="mt-2 pl-2 border-l-2 border-primary/30 space-y-1">
-                                   {entry.triggers.map((t, j) => (
-                                     <div key={j} className="text-xs">
-                                       <Badge variant="secondary" className="mr-2">{t.type}</Badge>
-                                       <span className="text-muted-foreground">{t.object}: {t.details}</span>
-                                     </div>
-                                   ))}
-                                 </div>
-                               )}
-                               {selectedSentenceIndex === i && entry.triggers.length === 0 && (
-                                 <p className="mt-2 text-xs text-muted-foreground italic">No specific triggers identified</p>
-                               )}
-                             </div>
-                           </div>
-                         </div>
-                       ))}
-                     </div>
-                   </ScrollArea>
-                 )}
-               </TabsContent>
-             </Tabs>
-           </CardContent>
-         </Card>
-       </div>
-     </div>
-   );
- }
+              )}
+
+              {/* Source Map Tab - only for astrology */}
+              {readingType === 'astrology' && (
+                <TabsContent value="source-map" className="mt-4">
+                  {!sourceMap && (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Map className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                      <p>Generate a narrative to see the source map.</p>
+                    </div>
+                  )}
+                  {sourceMap && (
+                    <ScrollArea className="h-[500px] pr-4">
+                      <div className="space-y-2">
+                        {sourceMap.map((entry, i) => (
+                          <div 
+                            key={i}
+                            className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                              selectedSentenceIndex === i 
+                                ? 'bg-primary/10 border border-primary/30' 
+                                : 'bg-muted/30 hover:bg-muted/50'
+                            }`}
+                            onClick={() => setSelectedSentenceIndex(selectedSentenceIndex === i ? null : i)}
+                          >
+                            <div className="flex items-start gap-2">
+                              <ChevronRight className={`h-4 w-4 mt-1 transition-transform ${selectedSentenceIndex === i ? 'rotate-90' : ''}`} />
+                              <div className="flex-1">
+                                <p className="text-sm">{entry.sentence}</p>
+                                {selectedSentenceIndex === i && entry.triggers.length > 0 && (
+                                  <div className="mt-2 pl-2 border-l-2 border-primary/30 space-y-1">
+                                    {entry.triggers.map((t, j) => (
+                                      <div key={j} className="text-xs">
+                                        <Badge variant="secondary" className="mr-2">{t.type}</Badge>
+                                        <span className="text-muted-foreground">{t.object}: {t.details}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                                {selectedSentenceIndex === i && entry.triggers.length === 0 && (
+                                  <p className="mt-2 text-xs text-muted-foreground italic">No specific triggers identified</p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  )}
+                </TabsContent>
+              )}
+            </Tabs>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
