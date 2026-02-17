@@ -715,16 +715,30 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
       const weekMoonSigns = weekData.map(d => d.moonSign);
       const weekMoonPhases = weekData.map(d => d.moonPhase);
       
+      // Get current planetary positions so the AI doesn't hallucinate them
+      const nowPlanets = getPlanetaryPositions(new Date());
+      const signGlyphMap: Record<string, string> = { '♈':'Aries','♉':'Taurus','♊':'Gemini','♋':'Cancer','♌':'Leo','♍':'Virgo','♎':'Libra','♏':'Scorpio','♐':'Sagittarius','♑':'Capricorn','♒':'Aquarius','♓':'Pisces' };
+      const weekPlanetPositions = Object.entries(nowPlanets)
+        .filter(([key]) => ['sun','moon','mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto'].includes(key))
+        .map(([key, val]: [string, any]) => ({
+          name: key.charAt(0).toUpperCase() + key.slice(1),
+          sign: val?.signName || signGlyphMap[val?.sign] || val?.sign || 'Unknown',
+          degree: typeof val?.degree === 'number' ? val.degree.toFixed(1) : val?.degree || 0,
+        }));
+
       const { data, error } = await supabase.functions.invoke('cosmic-weather', {
         body: {
           date: today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
           moonPhase: weekMoonPhases[0],
           moonSign: weekMoonSigns[0],
+          planetPositions: weekPlanetPositions,
           customPrompt: `Write a comprehensive WEEKLY cosmic forecast for the next 7 days.
 
 WEEK OVERVIEW:
 - Moon signs this week: ${weekMoonSigns.join(' → ')}
 - Moon phases: ${[...new Set(weekMoonPhases)].join(', ')}
+
+IMPORTANT: Use ONLY the planetary positions provided in the planetPositions data. Do NOT guess or recall positions from memory. For example, if the data says Jupiter is at 15° Cancer, use THAT — do not say Jupiter is in Libra or any other sign.
 
 Write in a professional astrologer's voice with these sections:
 
@@ -772,21 +786,27 @@ Keep the tone insightful, practical, and empowering. Do NOT include any meal pla
     try {
       const currentMonth = today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
       const planets = getPlanetaryPositions(today);
+      const signGlyphMap2: Record<string, string> = { '♈':'Aries','♉':'Taurus','♊':'Gemini','♋':'Cancer','♌':'Leo','♍':'Virgo','♎':'Libra','♏':'Scorpio','♐':'Sagittarius','♑':'Capricorn','♒':'Aquarius','♓':'Pisces' };
+      const monthPlanetPositions = Object.entries(planets)
+        .filter(([key]) => ['sun','moon','mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto'].includes(key))
+        .map(([key, val]: [string, any]) => ({
+          name: key.charAt(0).toUpperCase() + key.slice(1),
+          sign: val?.signName || signGlyphMap2[val?.sign] || val?.sign || 'Unknown',
+          degree: typeof val?.degree === 'number' ? val.degree.toFixed(1) : val?.degree || 0,
+        }));
       
       const { data, error } = await supabase.functions.invoke('cosmic-weather', {
         body: {
           date: today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
           moonPhase: getMoonPhase(today).phaseName,
           moonSign: planets.moon?.sign || 'Unknown',
+          planetPositions: monthPlanetPositions,
           customPrompt: `Write a comprehensive MONTHLY cosmic forecast for ${currentMonth}.
 
-CURRENT POSITIONS:
-- Sun: ${planets.sun?.sign} at ${planets.sun?.degree}°
-- Mercury: ${planets.mercury?.sign}
-- Venus: ${planets.venus?.sign}
-- Mars: ${planets.mars?.sign}
-- Jupiter: ${planets.jupiter?.sign}
-- Saturn: ${planets.saturn?.sign}
+IMPORTANT: Use ONLY the planetary positions provided in the planetPositions data. Do NOT guess or recall positions from memory.
+
+CURRENT POSITIONS (from planetPositions data):
+${monthPlanetPositions.map(p => `- ${p.name}: ${p.degree}° ${p.sign}`).join('\n')}
 
 Write in a professional astrologer's voice with these sections:
 
