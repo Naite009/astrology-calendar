@@ -37,7 +37,7 @@ serve(async (req) => {
     
     // Cache key versioning: bump this when prompt/format changes so users don't get stale cached text.
     // This intentionally changes the cache key without requiring any DB schema changes.
-    const PROMPT_VERSION = "2026-02-14-v8-mercury-rx-guidance";
+    const PROMPT_VERSION = "2026-02-17-v9-day-of-week-fix";
 
     const cacheDeviceId = deviceId || 'default';
     const cacheVoiceStyle = `${voiceStyle || ''}@${PROMPT_VERSION}`;
@@ -504,6 +504,7 @@ ALWAYS: Connect present moment to recent past and near future with contemplative
     // Common format instructions that apply to all voices
     const formatInstructions = `
 CRITICAL RULES:
+0. **DAY OF THE WEEK**: The date string provided (e.g., "Monday, February 16, 2026") contains the EXACT correct day of the week. Use THAT day name verbatim everywhere — in greetings, in the Planetary Day Practice section, and anywhere else you reference the day. NEVER substitute a different day name. If the date says "Monday", it IS Monday. Period.
 1. Use ONLY the planetary positions provided. These are calculated from astronomy-engine and are accurate.
 2. Use EXACT degrees when mentioning positions. If data says "3° Cancer", use that precisely.
 3. NEVER call something a "Full Moon" or "New Moon" unless exactLunarPhase is provided.
@@ -639,7 +640,8 @@ Glyph reference: ☉=Sun, ☽=Moon, ☿=Mercury, ♀=Venus, ♂=Mars, ♃=Jupite
 Aspects: ☌=conjunction, ⚹=sextile, □=square, △=trine, ☍=opposition
 
 ## Planetary Day Practice
-Today is [DAY OF WEEK], traditionally ruled by [PLANET GLYPH] [PLANET NAME]. 
+IMPORTANT: Extract the day of the week from the date string provided in the user prompt (e.g., "Monday, February 16, 2026" → Monday). Use THAT exact day name below. Do NOT guess or use a different day.
+Today is [USE THE EXACT DAY FROM THE DATE STRING], traditionally ruled by [PLANET GLYPH] [PLANET NAME].
 
 Here's how the planetary day ruler integrates with today's sky:
 [Describe 1-2 key transits or aspects that blend with the planetary day ruler. How does the day ruler's energy express itself given today's specific cosmic weather? Be specific about how to work with BOTH energies together.]
@@ -684,6 +686,7 @@ CRITICAL ANTI-HALLUCINATION RULES FOR PERSONALIZED READINGS:
 
 ${planetText}
 ${moonJupiterConjunction}` : `Generate cosmic weather for ${date}.
+CRITICAL: The day of the week is "${date?.split(',')[0]?.trim() || 'unknown'}". Use this EXACT day name throughout your response — in greetings, Planetary Day Practice, and everywhere else.
 
 ${planetText}
 
