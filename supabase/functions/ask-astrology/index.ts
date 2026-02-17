@@ -24,6 +24,12 @@ When answering questions:
 4. Be specific about degrees, signs, and houses when relevant
 5. If asked about psychic abilities, consider: 12th house planets, Neptune aspects, water sign emphasis, Pluto-Moon aspects, and nodal connections
 
+CRITICAL ANTI-HALLUCINATION RULES:
+- The chart data includes BOTH natal positions AND current transit positions.
+- If the user asks "where is Jupiter" or any planet RIGHT NOW, use the CURRENT TRANSITS section, NOT their natal chart.
+- NEVER guess or recall planetary positions from memory. ONLY use the data provided.
+- Clearly distinguish between natal placements (birth chart) and current transits (today's sky).
+
 Important: You have the chart data in context. Use it to give specific, personalized interpretations.`;
 
 serve(async (req) => {
