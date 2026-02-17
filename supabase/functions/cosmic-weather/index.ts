@@ -37,7 +37,7 @@ serve(async (req) => {
     
     // Cache key versioning: bump this when prompt/format changes so users don't get stale cached text.
     // This intentionally changes the cache key without requiring any DB schema changes.
-    const PROMPT_VERSION = "2026-02-17-v11-calculated-ingress-times";
+    const PROMPT_VERSION = "2026-02-17-v12-phase-correction";
 
     const cacheDeviceId = deviceId || 'default';
     const cacheVoiceStyle = `${voiceStyle || ''}@${PROMPT_VERSION}`;
@@ -153,14 +153,19 @@ ${upcomingEvents.map((e: any) => `- ${e.date} (${e.daysAway} days away): ${e.typ
     // Build exact lunar phase information if present
     let exactPhaseText = '';
     if (exactLunarPhase) {
-      exactPhaseText = `EXACT LUNAR EVENT (FIXED TIMESTAMP): ${exactLunarPhase.type} at ${exactLunarPhase.position} ${exactLunarPhase.sign} at ${exactLunarPhase.time}`;
-      if (exactLunarPhase.name) {
-        exactPhaseText += ` (${exactLunarPhase.name})`;
+      if (exactLunarPhase.isToday === false) {
+        // The exact phase is NOT today — tell the AI when it actually is
+        exactPhaseText = `LUNAR PHASE TIMING: The next ${exactLunarPhase.type} is on ${exactLunarPhase.date} at ${exactLunarPhase.time} (${exactLunarPhase.daysAway} day(s) ${exactLunarPhase.direction}). It is NOT today. Do NOT say there was a ${exactLunarPhase.type} "yesterday" or "today" unless the data explicitly confirms it. The current moon phase label provided is the accurate one for today.`;
+      } else {
+        exactPhaseText = `EXACT LUNAR EVENT TODAY (FIXED TIMESTAMP): ${exactLunarPhase.type} at ${exactLunarPhase.position} ${exactLunarPhase.sign} at ${exactLunarPhase.time}`;
+        if (exactLunarPhase.name) {
+          exactPhaseText += ` (${exactLunarPhase.name})`;
+        }
+        if (exactLunarPhase.isSupermoon) {
+          exactPhaseText += ' - SUPERMOON';
+        }
+        exactPhaseText += `\nIMPORTANT: Use this EXACT degree (${exactLunarPhase.position}) when mentioning the ${exactLunarPhase.type}. This is a fixed astronomical event.`;
       }
-      if (exactLunarPhase.isSupermoon) {
-        exactPhaseText += ' - SUPERMOON';
-      }
-      exactPhaseText += `\nIMPORTANT: Use this EXACT degree (${exactLunarPhase.position}) when mentioning the ${exactLunarPhase.type}. This is a fixed astronomical event.`;
     }
 
     // =========================================================================

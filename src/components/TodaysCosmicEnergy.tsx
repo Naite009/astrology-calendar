@@ -579,7 +579,44 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
           greeting,
           userTimezone,
           userTzAbbr,
-          moonPhase: moonPhase.phaseName,
+          moonPhase: (() => {
+            // Avoid labeling adjacent days as "New Moon"/"Full Moon" when the exact phase isn't today
+            const exactPhaseToday = getExactLunarPhase(now);
+            if (exactPhaseToday) return exactPhaseToday.type;
+            // Downshift broad bucket labels to more accurate waxing/waning
+            if (moonPhase.phaseName === 'New Moon') {
+              return moonPhase.phase < 180 ? 'Waxing Crescent' : 'Waning Crescent';
+            }
+            if (moonPhase.phaseName === 'Full Moon') {
+              return moonPhase.phase < 180 ? 'Waxing Gibbous' : 'Waning Gibbous';
+            }
+            return moonPhase.phaseName;
+          })(),
+          exactLunarPhase: (() => {
+            const exact = getExactLunarPhase(now);
+            if (exact) return {
+              type: exact.type,
+              sign: exact.sign,
+              position: exact.position,
+              time: exact.time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) + ' ' + userTzAbbr,
+              name: exact.name,
+            };
+            // If no exact phase today, find the nearest one and tell AI about it
+            const nearest = findNearestMajorPhaseTime(now, moonPhase.phaseName);
+            if (nearest) {
+              const daysAway = Math.round((nearest.date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+              const direction = daysAway > 0 ? 'in' : 'ago';
+              return {
+                type: nearest.type,
+                time: nearest.date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) + ' ' + userTzAbbr,
+                date: nearest.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
+                isToday: false,
+                daysAway: Math.abs(daysAway),
+                direction,
+              };
+            }
+            return null;
+          })(),
           moonSign: planets.moon?.signName || signGlyphToName[planets.moon?.sign] || 'Unknown',
           planetPositions,
           aspects: aspectsWithDetails,
