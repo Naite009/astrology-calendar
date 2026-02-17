@@ -523,12 +523,18 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
         }
       }
 
+      // Detect user's timezone for the AI to use
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const userTzAbbr = new Date().toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop() || 'ET';
+
       // Call edge function
       const { data, error: fnError } = await supabase.functions.invoke('cosmic-weather', {
         body: {
           date: dateStr,
           timeOfDay,
           greeting,
+          userTimezone,
+          userTzAbbr,
           moonPhase: moonPhase.phaseName,
           moonSign: planets.moon?.signName || signGlyphToName[planets.moon?.sign] || 'Unknown',
           planetPositions,
