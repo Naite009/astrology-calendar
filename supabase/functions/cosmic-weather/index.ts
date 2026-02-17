@@ -37,7 +37,7 @@ serve(async (req) => {
     
     // Cache key versioning: bump this when prompt/format changes so users don't get stale cached text.
     // This intentionally changes the cache key without requiring any DB schema changes.
-    const PROMPT_VERSION = "2026-02-17-v10-user-timezone";
+    const PROMPT_VERSION = "2026-02-17-v11-calculated-ingress-times";
 
     const cacheDeviceId = deviceId || 'default';
     const cacheVoiceStyle = `${voiceStyle || ''}@${PROMPT_VERSION}`;
@@ -94,7 +94,7 @@ ${aspects.slice(0, 10).map((a: any) => `- ${a.planet1} ${a.symbol} ${a.planet2} 
     // Imminent planet sign changes
     const imminentChangesText = imminentSignChanges?.length > 0
       ? `UNUSUAL/NOTEWORTHY - IMMINENT PLANET SIGN CHANGES (EMPHASIZE THESE):
-${imminentSignChanges.map((c: any) => `- ${c.planet} is at ${c.degree.toFixed(1)}° ${c.currentSign} - about to enter ${c.nextSign}! This is a BIG DEAL. ${c.planet} energy is extremely concentrated right now at the end of ${c.currentSign}. Discuss what it means for ${c.planet} to leave ${c.currentSign} and enter ${c.nextSign}.`).join('\n')}`
+${imminentSignChanges.map((c: any) => `- ${c.planet} is at ${c.degree.toFixed(1)}° ${c.currentSign} - about to enter ${c.nextSign}!${c.ingressTime ? ` EXACT INGRESS TIME: ${c.ingressTime}.` : ''} This is a BIG DEAL. ${c.planet} energy is extremely concentrated right now at the end of ${c.currentSign}. Discuss what it means for ${c.planet} to leave ${c.currentSign} and enter ${c.nextSign}.${c.ingressTime ? ` Use the exact time provided: ${c.ingressTime}.` : ' Do NOT mention a specific time since none was calculated.'}`).join('\n')}`
       : '';
 
     // Mercury retrograde shadow info
@@ -508,7 +508,7 @@ ALWAYS: Connect present moment to recent past and near future with contemplative
     const formatInstructions = `
 CRITICAL RULES:
 0. **DAY OF THE WEEK**: The date string provided (e.g., "Monday, February 16, 2026") contains the EXACT correct day of the week. Use THAT day name verbatim everywhere — in greetings, in the Planetary Day Practice section, and anywhere else you reference the day. NEVER substitute a different day name. If the date says "Monday", it IS Monday. Period.
-0b. **TIMEZONE**: The user is in ${tzName} (${tzLabel}). ALL times you mention (ingresses, sign changes, retrogrades, exact aspects, Moon transitions) MUST be in ${tzLabel}. NEVER use PST, PDT, CST, UTC, or any other timezone abbreviation. Always append "${tzLabel}" after any time. Example: "10:48 AM ${tzLabel}" not "10:48 AM PST".
+0b. **TIMEZONE & TIMES**: The user is in ${tzName} (${tzLabel}). ONLY use times that are EXPLICITLY provided in the data (moonSignChange.time, imminentSignChanges[].ingressTime, exactLunarPhase.time). NEVER calculate, guess, or recall times from your training data. If no time is provided for an event, do NOT mention a time — just say "today" or "later today". All provided times are already converted to ${tzLabel}. NEVER use PST, PDT, CST, UTC, or any other timezone abbreviation.
 1. Use ONLY the planetary positions provided. These are calculated from astronomy-engine and are accurate.
 2. Use EXACT degrees when mentioning positions. If data says "3° Cancer", use that precisely.
 3. NEVER call something a "Full Moon" or "New Moon" unless exactLunarPhase is provided.
