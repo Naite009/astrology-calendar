@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
+import { getPlanetaryPositions } from "@/lib/astrology";
 
 interface Message {
   role: "user" | "assistant";
@@ -53,7 +54,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId }: AskVie
     context += `Birth: ${chart.birthDate}`;
     if (chart.birthTime) context += ` at ${chart.birthTime}`;
     if (chart.birthLocation) context += ` in ${chart.birthLocation}`;
-    context += "\n\nPlanetary Positions:\n";
+    context += "\n\nNATAL Planetary Positions:\n";
     
     Object.entries(planets).forEach(([planet, data]) => {
       if (data && typeof data === 'object' && 'sign' in data) {
@@ -74,6 +75,23 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId }: AskVie
           context += `- House ${houseNum}: ${pos.degree}° ${pos.sign}\n`;
         }
       });
+    }
+    
+    // Add CURRENT TRANSIT positions so the AI knows where planets are NOW
+    context += "\n--- CURRENT TRANSITS (today's sky) ---\n";
+    context += "IMPORTANT: These are the REAL current planetary positions calculated from ephemeris. Use these if the user asks about current transits or 'where is [planet] right now'.\n";
+    try {
+      const nowPlanets = getPlanetaryPositions(new Date());
+      const signGlyphMap: Record<string, string> = { '♈':'Aries','♉':'Taurus','♊':'Gemini','♋':'Cancer','♌':'Leo','♍':'Virgo','♎':'Libra','♏':'Scorpio','♐':'Sagittarius','♑':'Capricorn','♒':'Aquarius','♓':'Pisces' };
+      Object.entries(nowPlanets).forEach(([key, val]: [string, any]) => {
+        if (['sun','moon','mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto'].includes(key) && val) {
+          const sign = val.signName || signGlyphMap[val.sign] || val.sign || 'Unknown';
+          const deg = typeof val.degree === 'number' ? val.degree.toFixed(1) : val.degree || 0;
+          context += `- Transiting ${key.charAt(0).toUpperCase() + key.slice(1)}: ${deg}° ${sign}\n`;
+        }
+      });
+    } catch (e) {
+      // Fallback: transit data unavailable
     }
     
     return context;

@@ -373,11 +373,23 @@ This is a PERSONALIZED reading for ${activeChart?.name}. Make the entire reading
 
 ${natalContext}` : '';
 
+      // Get current planetary positions to prevent AI hallucinations
+      const nowPlanets = getPlanetaryPositions(new Date());
+      const signGlyphMap: Record<string, string> = { '♈':'Aries','♉':'Taurus','♊':'Gemini','♋':'Cancer','♌':'Leo','♍':'Virgo','♎':'Libra','♏':'Scorpio','♐':'Sagittarius','♑':'Capricorn','♒':'Aquarius','♓':'Pisces' };
+      const transitPositions = Object.entries(nowPlanets)
+        .filter(([key]) => ['sun','moon','mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto'].includes(key))
+        .map(([key, val]: [string, any]) => ({
+          name: key.charAt(0).toUpperCase() + key.slice(1),
+          sign: val?.signName || signGlyphMap[val?.sign] || val?.sign || 'Unknown',
+          degree: typeof val?.degree === 'number' ? val.degree.toFixed(1) : val?.degree || 0,
+        }));
+
       const { data, error } = await supabase.functions.invoke('cosmic-weather', {
         body: {
           date: newMoons?.previous.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
           moonPhase: 'New Moon',
           moonSign: interpretation.sign,
+          planetPositions: transitPositions,
           customPrompt: `Write a detailed ${isPersonalized ? 'PERSONALIZED ' : ''}NEW MOON CYCLE interpretation for the ${interpretation.sign} New Moon at ${interpretation.degree}°.
 ${personalizedInstructions}
 LUNAR CYCLE CONTEXT:

@@ -228,11 +228,23 @@ export const WeeklyMealPlanCard = () => {
     const dietaryAddition = getDietaryPromptAddition();
     
     try {
+      // Get current planetary positions to prevent AI hallucinations
+      const nowPlanets = getPlanetaryPositions(new Date());
+      const signGlyphMap: Record<string, string> = { '♈':'Aries','♉':'Taurus','♊':'Gemini','♋':'Cancer','♌':'Leo','♍':'Virgo','♎':'Libra','♏':'Scorpio','♐':'Sagittarius','♑':'Capricorn','♒':'Aquarius','♓':'Pisces' };
+      const currentPositions = Object.entries(nowPlanets)
+        .filter(([key]) => ['sun','moon','mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto'].includes(key))
+        .map(([key, val]: [string, any]) => ({
+          name: key.charAt(0).toUpperCase() + key.slice(1),
+          sign: val?.signName || signGlyphMap[val?.sign] || val?.sign || 'Unknown',
+          degree: typeof val?.degree === 'number' ? val.degree.toFixed(1) : val?.degree || 0,
+        }));
+
       const { data, error } = await supabase.functions.invoke('cosmic-weather', {
         body: {
           date: new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
           moonPhase: todayData.moonPhase,
           moonSign: todayData.moonSign,
+          planetPositions: currentPositions,
           customPrompt: `Create a WEEKLY COSMIC MEAL PLAN for this week (Sunday through Saturday)${selectedPersonName ? ` for ${selectedPersonName}` : ''}.
 
 ${selectedPersonName ? `PERSONALIZED FOR: ${selectedPersonName}` : 'GENERAL COSMIC GUIDANCE'}
@@ -296,11 +308,23 @@ Keep descriptions SHORT and punchy. Make it scannable.`
     try {
       const dominantElement = getMostCommonElement(weekData.map(d => d.moonSign));
       
+      // Get current planetary positions to prevent AI hallucinations
+      const nowPlanets2 = getPlanetaryPositions(new Date());
+      const signGlyphMap2: Record<string, string> = { '♈':'Aries','♉':'Taurus','♊':'Gemini','♋':'Cancer','♌':'Leo','♍':'Virgo','♎':'Libra','♏':'Scorpio','♐':'Sagittarius','♑':'Capricorn','♒':'Aquarius','♓':'Pisces' };
+      const currentPositions2 = Object.entries(nowPlanets2)
+        .filter(([key]) => ['sun','moon','mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto'].includes(key))
+        .map(([key, val]: [string, any]) => ({
+          name: key.charAt(0).toUpperCase() + key.slice(1),
+          sign: val?.signName || signGlyphMap2[val?.sign] || val?.sign || 'Unknown',
+          degree: typeof val?.degree === 'number' ? val.degree.toFixed(1) : val?.degree || 0,
+        }));
+      
       const { data, error } = await supabase.functions.invoke('cosmic-weather', {
         body: {
           date: new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
           moonPhase: todayData.moonPhase,
           moonSign: todayData.moonSign,
+          planetPositions: currentPositions2,
           customPrompt: `Create ONE special "Recipe of the Week" that captures this week's lunar journey${selectedPersonName ? ` for ${selectedPersonName}` : ''}.
 
 ${selectedPersonName ? `PERSONALIZED FOR: ${selectedPersonName}` : 'GENERAL COSMIC GUIDANCE'}
