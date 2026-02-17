@@ -402,6 +402,10 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
       const timeOfDay = localHour < 12 ? 'morning' : localHour < 17 ? 'afternoon' : 'evening';
       const greeting = localHour < 12 ? 'Good morning' : localHour < 17 ? 'Good afternoon' : 'Good evening';
 
+      // Detect user's timezone early (used for ingress times and AI prompt)
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const userTzAbbr = new Date().toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop() || 'ET';
+
       // --- Moon sign change today ---
       const moonSignChangeToday = (() => {
         // Check VOC info first (already has moon ingress data)
@@ -431,8 +435,42 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
       })();
 
       // --- Imminent planet sign changes (planets at 28°+ in a sign) ---
-      const imminentSignChanges: Array<{ planet: string; currentSign: string; degree: number; nextSign: string }> = [];
+      const imminentSignChanges: Array<{ planet: string; currentSign: string; degree: number; nextSign: string; ingressTime?: string }> = [];
       const signOrder = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+      
+      // Helper to find when a planet crosses into the next sign using getPlanetaryPositions
+      const findPlanetIngress = (planetName: string, currentSign: string): Date | null => {
+        try {
+          const planetKey = planetName.toLowerCase() as keyof PlanetaryPositions;
+          // Step forward in time to find when the planet's sign changes
+          const stepHours = planetName === 'Sun' ? 4 : ['Mercury', 'Venus', 'Mars'].includes(planetName) ? 4 : 12;
+          let searchDate = new Date(now);
+          
+          for (let i = 0; i < 180; i++) {
+            searchDate = new Date(searchDate.getTime() + stepHours * 3600000);
+            const futurePositions = getPlanetaryPositions(searchDate);
+            const futureSign = futurePositions[planetKey]?.signName || futurePositions[planetKey]?.sign;
+            
+            if (futureSign && futureSign !== currentSign) {
+              // Found the sign change — refine with 10-minute steps backward
+              let refineDate = new Date(searchDate.getTime() - stepHours * 3600000);
+              for (let j = 0; j < (stepHours * 6 + 10); j++) {
+                refineDate = new Date(refineDate.getTime() + 10 * 60000);
+                const refPositions = getPlanetaryPositions(refineDate);
+                const refSign = refPositions[planetKey]?.signName || refPositions[planetKey]?.sign;
+                if (refSign && refSign !== currentSign) {
+                  return refineDate;
+                }
+              }
+              return searchDate;
+            }
+          }
+        } catch (e) {
+          console.error('Failed to calculate ingress time for', planetName, e);
+        }
+        return null;
+      };
+      
       for (const pp of planetPositions) {
         if (pp.name === 'Moon') continue; // handled separately
         const deg = typeof pp.degree === 'string' ? parseFloat(pp.degree) : pp.degree;
@@ -440,7 +478,15 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
         if (rawDeg >= 28) {
           const signIdx = signOrder.indexOf(pp.sign);
           const nextSign = signOrder[(signIdx + 1) % 12];
-          imminentSignChanges.push({ planet: pp.name, currentSign: pp.sign, degree: rawDeg, nextSign });
+          
+          // Calculate the actual ingress time
+          let ingressTimeStr: string | undefined;
+          const ingressDate = findPlanetIngress(pp.name, pp.sign);
+          if (ingressDate) {
+            ingressTimeStr = ingressDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) + ' ' + userTzAbbr + ', ' + ingressDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+          }
+          
+          imminentSignChanges.push({ planet: pp.name, currentSign: pp.sign, degree: rawDeg, nextSign, ingressTime: ingressTimeStr });
         }
       }
 
@@ -523,9 +569,7 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
         }
       }
 
-      // Detect user's timezone for the AI to use
-      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const userTzAbbr = new Date().toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop() || 'ET';
+      // userTimezone and userTzAbbr already declared above
 
       // Call edge function
       const { data, error: fnError } = await supabase.functions.invoke('cosmic-weather', {
