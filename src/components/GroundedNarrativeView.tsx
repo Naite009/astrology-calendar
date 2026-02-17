@@ -8,14 +8,16 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, FileText, BarChart3, Map, Loader2, AlertCircle, ChevronRight, Star, Layers, Diamond } from 'lucide-react';
+import { Sparkles, FileText, BarChart3, Map, Loader2, AlertCircle, ChevronRight, Star, Layers, Diamond, Download, Printer } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { computeAllSignals, SignalsData, SourceMapEntry } from '@/lib/narrativeAnalysisEngine';
 import { supabase } from '@/integrations/supabase/client';
 import { ChartSelector } from './ChartSelector';
 import { LifeStylesSection } from './narrative/LifeStylesSection';
 import { useHumanDesignChart } from '@/hooks/useHumanDesignChart';
+import { useDownloadImage } from '@/hooks/useDownloadImage';
 import { toast } from 'sonner';
+import { useRef, useCallback } from 'react';
 
 interface Props {
   savedCharts: NatalChart[];
@@ -62,6 +64,9 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
   const [sourceMap, setSourceMap] = useState<SourceMapEntry[] | null>(null);
   const [selectedSentenceIndex, setSelectedSentenceIndex] = useState<number | null>(null);
 
+  const narrativeRef = useRef<HTMLDivElement>(null);
+  const { downloadAsImage } = useDownloadImage();
+
   // HD charts
   const { charts: hdCharts } = useHumanDesignChart();
 
@@ -84,6 +89,43 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
 
   const selectedChart = allCharts.find(c => c.id === selectedChartId);
   const selectedHdChart = hdCharts.find(c => c.id === selectedHdChartId);
+
+  const handleDownload = useCallback(() => {
+    const chartName = readingType === 'combined'
+      ? `${selectedChart?.name}_${selectedHdChart?.name}`
+      : readingType === 'human_design'
+      ? selectedHdChart?.name
+      : selectedChart?.name;
+    downloadAsImage(narrativeRef.current, `${chartName || 'narrative'}_reading`);
+  }, [downloadAsImage, readingType, selectedChart, selectedHdChart]);
+
+  const handlePrint = useCallback(() => {
+    if (!narrativeText) return;
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    const chartName = readingType === 'combined'
+      ? `${selectedChart?.name} + ${selectedHdChart?.name}`
+      : readingType === 'human_design'
+      ? selectedHdChart?.name
+      : selectedChart?.name;
+    printWindow.document.write(`
+      <html><head><title>${chartName} - Narrative Reading</title>
+      <style>
+        @page { margin: 20mm; }
+        body { font-family: Georgia, serif; line-height: 1.8; color: #1a1a1a; max-width: 700px; margin: 0 auto; padding: 40px 20px; }
+        h1 { font-size: 22px; margin-bottom: 4px; }
+        .meta { font-size: 12px; color: #666; margin-bottom: 24px; }
+        p { margin-bottom: 16px; font-size: 15px; }
+        strong { font-weight: 600; }
+      </style></head><body>
+      <h1>${chartName}</h1>
+      <div class="meta">${readingType === 'combined' ? 'Combined Astrology + Human Design' : readingType === 'human_design' ? 'Human Design' : 'Astrology'} Reading</div>
+      ${narrativeText.split('\n\n').map(p => `<p>${p.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')}</p>`).join('')}
+      </body></html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  }, [narrativeText, readingType, selectedChart, selectedHdChart]);
 
   // Check if chart has required data
   const hasRequiredAstroData = selectedChart && selectedChart.planets && 
@@ -509,13 +551,22 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                 {narrativeText && !isGenerating && (
                   <>
                     {/* Reading type badge */}
-                    <div className="mb-3 flex items-center gap-2">
+                    <div className="mb-3 flex items-center justify-between">
                       <Badge variant="outline" className="text-[10px]">
                         {readingType === 'astrology' && '☉ Astrology Reading'}
                         {readingType === 'human_design' && '◇ Human Design Reading'}
                         {readingType === 'combined' && '☉◇ Combined Reading'}
                       </Badge>
+                      <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleDownload} title="Download as image">
+                          <Download className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handlePrint} title="Print">
+                          <Printer className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
+                    <div ref={narrativeRef}>
                     <ScrollArea className="h-[500px] pr-4">
                       {readingType === 'astrology' && sourceMap && sourceMap.length > 0 ? (
                         <>
@@ -573,6 +624,7 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                         </div>
                       )}
                     </ScrollArea>
+                    </div>
                     {/* Life Styles Section - only for astrology */}
                     {readingType === 'astrology' && signals && (
                       <div className="mt-6">
