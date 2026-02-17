@@ -423,10 +423,16 @@ export const PersonalizedTransitsPanel = ({
     setIsLoadingAI(true);
     try {
       // Build natal chart context WITH calculated house positions (not inferred from sign!)
-      const natalPlanetsWithHouses = Object.entries(chart.planets)
+      // Use corrected Ascendant from houseCusps.house1 to avoid 180° flip
+      const correctedPlanets = { ...chart.planets };
+      const h1 = chart.houseCusps?.house1;
+      if (h1?.sign && correctedPlanets.Ascendant) {
+        correctedPlanets.Ascendant = { ...correctedPlanets.Ascendant, sign: h1.sign, degree: h1.degree, minutes: h1.minutes || 0 };
+      }
+      const natalPlanetsWithHouses = Object.entries(correctedPlanets)
         .filter(([_, data]) => data?.sign && data?.degree !== undefined)
         .map(([name, data]) => {
-          const house = getNatalPlanetHouse(name, chart);
+          const house = name === 'Ascendant' ? 1 : getNatalPlanetHouse(name, chart);
           const houseLabel = house ? ` [HOUSE ${house}]` : '';
           const deg = data!.degree ?? 0;
           const min = data!.minutes ?? 0;
