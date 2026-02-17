@@ -1022,6 +1022,18 @@ export const getExactLunarPhase = (date: Date): ExactLunarPhase | null => {
   return null;
 };
 
+// Find the nearest New Moon or Full Moon time to a given date
+export const findNearestMajorPhaseTime = (date: Date, phaseName: string): { date: Date; type: string } | null => {
+  try {
+    const angle = phaseName === 'New Moon' ? 0 : phaseName === 'Full Moon' ? 180 : phaseName === 'First Quarter' ? 90 : 270;
+    const nearby = Astronomy.SearchMoonPhase(angle, new Date(date.getTime() - 3 * 86400000), 6);
+    if (nearby) {
+      return { date: nearby.date, type: phaseName };
+    }
+  } catch {}
+  return null;
+};
+
 // Calculate aspects between two longitudes (degrees)
 const calculateAspect = (lon1: number, lon2: number) => {
   const diff = Math.abs(((lon2 - lon1 + 180) % 360) - 180);
