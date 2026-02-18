@@ -1272,21 +1272,24 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                                 emoji: '🔺',
                                 pct: '~70%',
                                 keyword: 'Personal Destiny',
-                                short: 'Your purpose is about YOUR journey. Everything you need to fulfill your purpose is already inside you — you don\'t need to find the right person, the right group, or the right opportunity to "unlock" it. You just need to live as yourself. Your impact on others happens naturally as a byproduct of living authentically — you don\'t need to go looking for your purpose in other people. Think of it this way: Left Angle people need specific relationships to find their purpose. You don\'t. Yours is built in.',
+                                brief: 'Purpose is <strong>self-contained</strong> — everything needed is already built in. Impact on others is a natural byproduct of living authentically.',
+                                full: 'Your purpose is about <strong>YOUR journey</strong>. Everything you need to fulfill your purpose is <strong>already inside you</strong> — you don\'t need to find the right person, the right group, or the right opportunity to "unlock" it. You just need to <strong>live as yourself</strong>. Your impact on others happens naturally as a <strong>byproduct of living authentically</strong> — you don\'t need to go looking for your purpose in other people. Think of it this way: Left Angle people need specific relationships to find their purpose. <strong>You don\'t. Yours is built in.</strong> About 70% of people have Right Angle crosses, which means most humans are here to figure out their own thing first — and that\'s not selfish, it\'s by design.',
                               },
                               {
                                 type: 'Left Angle',
                                 emoji: '🔻',
                                 pct: '~25%',
                                 keyword: 'Transpersonal Karma',
-                                short: 'Purpose unfolds through specific relationships and "fated" meetings. These people NEED others to fulfill their cross — their destiny is intimately tied to who they meet and the networks they enter.',
+                                brief: 'Purpose unfolds <strong>through others</strong> — specific relationships and networks are essential, not optional.',
+                                full: 'Your purpose <strong>cannot be fulfilled alone</strong>. Unlike Right Angle people who carry everything they need inside them, your destiny is <strong>woven into specific relationships</strong> — the people you meet, the groups you join, the networks you enter. These aren\'t random — they feel <strong>"fated"</strong> because they are. You\'ll notice certain people walk into your life and everything shifts. That\'s your cross at work. Your gift is <strong>transpersonal</strong> — meaning your purpose literally <strong>lives in the space between you and others</strong>. You\'re here to impact specific people, and they\'re here to unlock something in you too. If you\'ve ever felt like you can\'t figure out your purpose by yourself, that\'s not a flaw — <strong>that\'s your design</strong>. About 25% of people have Left Angle crosses.',
                               },
                               {
                                 type: 'Juxtaposition',
                                 emoji: '⬥',
                                 pct: '~5%',
                                 keyword: 'Fixed Fate',
-                                short: 'The rarest geometry — a bridge between personal and transpersonal. These people walk a very specific, almost laser-focused path. Their life has a "fated" quality where they\'re meant to be in exact places at exact times.',
+                                brief: 'The <strong>rarest geometry</strong> — a laser-focused, almost fated path that bridges personal and transpersonal destiny.',
+                                full: 'You have the <strong>rarest cross geometry</strong> — only about 5% of people share it. Your path is <strong>extremely specific and focused</strong>, almost like you\'re walking a tightrope that was laid out before you were born. While Right Angle people explore their own journey and Left Angle people find purpose through relationships, you\'re doing something in between: your life has a <strong>"fixed fate" quality</strong> where you\'re meant to be in <strong>exact places at exact times</strong>. You might notice your life doesn\'t have as much "wiggle room" as others — that\'s not bad luck, it\'s your geometry. You serve as a <strong>bridge</strong> between the personal and the transpersonal, and your very presence in certain situations is what matters. <strong>You don\'t need to force anything — your job is to show up as yourself, and the geometry handles the rest.</strong>',
                               },
                             ];
                             return (
@@ -1311,7 +1314,10 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                                           </Badge>
                                           <span className="text-[10px] text-muted-foreground ml-auto">{a.keyword}</span>
                                         </div>
-                                        <p className="text-xs text-muted-foreground leading-relaxed">{a.short}</p>
+                                        <p
+                                          className="text-xs text-muted-foreground leading-relaxed"
+                                          dangerouslySetInnerHTML={{ __html: isYours ? a.full : a.brief }}
+                                        />
                                       </div>
                                     );
                                   })}
