@@ -139,8 +139,17 @@ INCARNATION CROSS RULES (CRITICAL - follow exactly):
 - Use everyday examples: "This looks like..." or "In daily life, this means..."
 - NEVER use abstract nouns without immediately explaining what they look like in real behavior
 
+OPENING PARAGRAPH RULES (CRITICAL):
+- The FIRST sentence must be a one-of-a-kind synthesis that could ONLY describe THIS person's chart
+- It must weave together at least 3 unique chart elements (e.g., specific channels + profile + cross gates + authority + defined centers pattern) into a single vivid behavioral portrait
+- Do NOT open with a generic Type description like "As a Manifesting Generator, you have multi-passionate energy" — that applies to ALL MGs
+- Instead, find the UNIQUE COMBINATION: What specific channels do they have? What profile? What cross? What authority? What centers are open vs defined? Synthesize those into one sentence that describes how THIS person specifically moves through life
+- GOOD: "With your 34-20 Channel of Charisma powered by a 5/1 profile and an Emotional authority, you're someone who broadcasts raw creative force but must wait through your emotional wave before committing — a paradox of instant magnetism and slow decision-making that IS your design"
+- BAD: "As a Manifesting Generator, you are a powerhouse of creative vitality designed to move through life with multi-passionate speed" (this is generic — it describes every MG)
+- The second paragraph can then expand on Type & Strategy mechanics
+
 STRUCTURE:
-1. Opening hook: Reference their Type + a defining gate or channel
+1. Opening synthesis: A unique behavioral portrait synthesizing 3+ specific chart mechanics that could ONLY describe this person
 2. Type & Strategy: How their energy operates in the world - what "correct" looks like for them
 3. Authority: How they make aligned decisions - what it feels like in their body
 4. Profile: The costume they wear and the role they play - conscious vs unconscious lines
