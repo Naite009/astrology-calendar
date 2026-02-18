@@ -150,9 +150,15 @@ export const useHumanDesignChart = () => {
   // Restore HD charts from cloud
   const restoreFromCloud = useCallback(async (): Promise<HumanDesignChart[]> => {
     try {
-      const { data: session } = await supabase.auth.getSession();
-      const userId = session?.session?.user?.id;
       const deviceId = getDeviceId();
+      let userId: string | undefined;
+
+      try {
+        const { data: session } = await supabase.auth.getSession();
+        userId = session?.session?.user?.id;
+      } catch (authErr) {
+        console.warn('[HDChart] Auth session failed, falling back to device ID:', authErr);
+      }
 
       let query = supabase
         .from('device_charts')
@@ -196,7 +202,7 @@ export const useHumanDesignChart = () => {
     if (cloudSyncDoneRef.current) return;
     cloudSyncDoneRef.current = true;
 
-    const init = async () => {
+    const init = async (retryCount = 0) => {
       const cloudCharts = await restoreFromCloud();
 
       if (cloudCharts.length > 0) {
@@ -217,6 +223,10 @@ export const useHumanDesignChart = () => {
           setCharts(merged);
           console.log('[HDChart] Merged cloud charts, total:', merged.length);
         }
+      } else if (charts.length === 0 && retryCount < 2) {
+        // Retry after a delay if we got nothing (auth may not be ready)
+        setTimeout(() => init(retryCount + 1), 3000);
+        return;
       }
 
       // Sync local to cloud
