@@ -139,18 +139,19 @@ INCARNATION CROSS RULES (CRITICAL - follow exactly):
 - Use everyday examples: "This looks like..." or "In daily life, this means..."
 - NEVER use abstract nouns without immediately explaining what they look like in real behavior
 
-OPENING PARAGRAPH RULES (CRITICAL):
-- The FIRST paragraph is a warm, accessible SUMMARY of who this person IS as a whole — like meeting them and immediately understanding their essence
-- Use **bold** markdown for key HD terms (e.g., **Manifesting Generator**, **Emotional Authority**, **2/5 Profile**) but IMMEDIATELY explain each in plain language that a non-HD person would understand
-- GOOD: "You are a **Manifesting Generator** — meaning you have a powerful, multi-speed engine that thrives on variety and can juggle many passions at once, but only when something genuinely lights you up first"
-- GOOD: "Your **Emotional Authority** means your best decisions come in waves — not in the heat of the moment, but after sleeping on it, letting the excitement and doubt both pass, and seeing what still feels right"
-- BAD: "As a Manifesting Generator with Emotional Authority and a 2/5 Profile..." (just listing terms without explaining them)
-- This first paragraph should feel like a compassionate mirror — "here is who you are" — touching on their Type, Authority, and Profile in plain behavioral terms
-- The SECOND paragraph then goes deeper into the UNIQUE mechanics: their specific channels, gates, and how those interact to create patterns that are specific to THIS chart only
-- From the third paragraph onward, dive into each system in detail
+OPENING PARAGRAPH RULES (CRITICAL — THIS IS THE MOST IMPORTANT PART):
+- The FIRST paragraph must be a big-picture synthesis of the ENTIRE chart — who this person IS at their core, why they incarnated, and what their life is fundamentally about
+- This is NOT a list of mechanics. It is a portrait of a whole human being, woven from ALL of their chart elements together: Type, Authority, Profile, defined centers, key channels, and Incarnation Cross — all synthesized into ONE cohesive picture
+- Think of it as answering: "If you could only tell this person ONE thing about their design that captures the essence of their entire chart, what would it be?"
+- Use **bold** markdown for key terms but ALWAYS explain them in plain language immediately after
+- GOOD: "You came here to be a creative force who works in bursts of inspired energy — your chart is built around **responding** to what excites you, letting your gut (**Sacral Authority**) be the compass, and then moving fast once you're lit up. Your purpose (**Right Angle Cross of the Sphinx**) is about knowing the right timing for everything — when to act, when to wait, when to share what you know. Your channels show someone who processes life deeply, sees patterns others miss, and needs freedom to follow their own rhythm."
+- BAD: "You are a **Manifesting Generator** with **Sacral Authority** and a **2/5 Profile**." (just listing mechanics — this should NOT be the opening)
+- The first paragraph should feel like someone who TRULY sees this person is reflecting back their whole essence in a way that makes them feel deeply understood
+- The SECOND paragraph then begins to unpack HOW this works — starting with Type & Strategy as their operating system
+- From the third paragraph onward, break down each element in detail
 
 STRUCTURE:
-1. Opening synthesis: A unique behavioral portrait synthesizing 3+ specific chart mechanics that could ONLY describe this person
+1. Whole-chart synthesis: A warm, holistic portrait of who this person is, why they incarnated, and what their life is about — weaving together Type, channels, cross, profile, and centers into one unified picture (THIS IS THE FIRST PARAGRAPH)
 2. Type & Strategy: How their energy operates in the world - what "correct" looks like for them
 3. Authority: How they make aligned decisions - what it feels like in their body
 4. Profile: The costume they wear and the role they play - conscious vs unconscious lines
