@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, FileText, BarChart3, Map, Loader2, AlertCircle, ChevronRight, Star, Layers, Diamond, Download, Printer } from 'lucide-react';
+import { Sparkles, FileText, BarChart3, Map, Loader2, AlertCircle, ChevronRight, Star, Layers, Diamond, Download, Printer, Hexagon, Crosshair } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { computeAllSignals, SignalsData, SourceMapEntry } from '@/lib/narrativeAnalysisEngine';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,6 +18,7 @@ import { useHumanDesignChart } from '@/hooks/useHumanDesignChart';
 import { useDownloadImage } from '@/hooks/useDownloadImage';
 import { toast } from 'sonner';
 import { useRef, useCallback } from 'react';
+import { namesMatch } from '@/lib/nameMatching';
 
 interface Props {
   savedCharts: NatalChart[];
@@ -56,7 +57,7 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
   const [lengthPreset, setLengthPreset] = useState<'short_250' | 'full_800'>('full_800');
   const [includeShadow, setIncludeShadow] = useState(true);
   const [voiceStyle, setVoiceStyle] = useState<VoiceStyle>('grounded_therapist');
-  const [activeTab, setActiveTab] = useState<'narrative' | 'signals' | 'source-map'>('narrative');
+  const [activeTab, setActiveTab] = useState<string>('narrative');
   
   const [isGenerating, setIsGenerating] = useState(false);
   const [narrativeText, setNarrativeText] = useState<string | null>(null);
@@ -104,23 +105,34 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
   const selectedChart = allCharts.find(c => c.id === selectedChartId);
   const selectedHdChart = hdCharts.find(c => c.id === selectedHdChartId);
 
+  // Auto-match HD chart when in Combined mode and astrology chart changes
+  const autoMatchedHdChart = useMemo(() => {
+    if (readingType !== 'combined' || !selectedChart) return null;
+    // Try to find HD chart matching the selected astrology chart's name
+    const match = hdCharts.find(hd => namesMatch(hd.name || '', selectedChart.name || ''));
+    return match || null;
+  }, [readingType, selectedChart, hdCharts]);
+
+  // Use auto-matched chart for Combined, manual selection for HD-only
+  const effectiveHdChart = readingType === 'combined' ? autoMatchedHdChart : selectedHdChart;
+
   const handleDownload = useCallback(() => {
     const chartName = readingType === 'combined'
-      ? `${selectedChart?.name}_${selectedHdChart?.name}`
+      ? `${selectedChart?.name}_combined`
       : readingType === 'human_design'
-      ? selectedHdChart?.name
+      ? effectiveHdChart?.name
       : selectedChart?.name;
     downloadAsImage(narrativeRef.current, `${chartName || 'narrative'}_reading`);
-  }, [downloadAsImage, readingType, selectedChart, selectedHdChart]);
+  }, [downloadAsImage, readingType, selectedChart, effectiveHdChart]);
 
   const handlePrint = useCallback(() => {
     if (!narrativeText) return;
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
     const chartName = readingType === 'combined'
-      ? `${selectedChart?.name} + ${selectedHdChart?.name}`
+      ? `${selectedChart?.name} — Combined Reading`
       : readingType === 'human_design'
-      ? selectedHdChart?.name
+      ? effectiveHdChart?.name
       : selectedChart?.name;
     printWindow.document.write(`
       <html><head><title>${chartName} - Narrative Reading</title>
@@ -144,7 +156,7 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
   // Check if chart has required data
   const hasRequiredAstroData = selectedChart && selectedChart.planets && 
     Object.keys(selectedChart.planets).length >= 3;
-  const hasRequiredHdData = selectedHdChart && selectedHdChart.type;
+  const hasRequiredHdData = effectiveHdChart && effectiveHdChart.type;
   
   const canGenerate = (() => {
     if (readingType === 'astrology') return hasRequiredAstroData;
@@ -152,6 +164,9 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
     if (readingType === 'combined') return hasRequiredAstroData && hasRequiredHdData;
     return false;
   })();
+
+  // Combined mode: no matching HD chart warning
+  const combinedMismatch = readingType === 'combined' && selectedChart && !autoMatchedHdChart;
 
   const handleGenerate = async () => {
     if (!canGenerate) {
@@ -225,10 +240,10 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
 
         const body: Record<string, unknown> = {
           readingType: readingType,
-          hdChart: selectedHdChart,
+          hdChart: effectiveHdChart,
           chartName: readingType === 'combined' 
-            ? `${selectedChart?.name} + ${selectedHdChart?.name}` 
-            : selectedHdChart?.name,
+            ? `${selectedChart?.name} — Combined` 
+            : effectiveHdChart?.name,
           lengthPreset,
           includeShadow,
           voiceStyle,
@@ -260,8 +275,8 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
         localStorage.setItem('deviceId', deviceId);
 
         const chartId = readingType === 'combined' 
-          ? `combined_${selectedChart?.id}_${selectedHdChart?.id}` 
-          : `hd_${selectedHdChart?.id}`;
+          ? `combined_${selectedChart?.id}_${effectiveHdChart?.id}` 
+          : `hd_${effectiveHdChart?.id}`;
 
         const { error: insertError } = await supabase.from('chart_narratives').insert([{
           chart_id: chartId,
@@ -293,7 +308,7 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
   useEffect(() => {
     if (!selectedChartId && readingType === 'astrology') return;
     if (!selectedHdChartId && readingType === 'human_design') return;
-    if ((!selectedChartId || !selectedHdChartId) && readingType === 'combined') return;
+    if ((!selectedChartId || !effectiveHdChart) && readingType === 'combined') return;
     if (isGenerating) return;
 
     let cancelled = false;
@@ -313,7 +328,7 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
       } else if (readingType === 'human_design') {
         chartId = `hd_${selectedHdChartId}`;
       } else {
-        chartId = `combined_${selectedChartId}_${selectedHdChartId}`;
+        chartId = `combined_${selectedChartId}_${effectiveHdChart?.id || ''}`;
       }
 
       const { data, error } = await supabase
@@ -345,7 +360,7 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
     loadPrevious();
 
     return () => { cancelled = true; };
-  }, [selectedChartId, selectedHdChartId, readingType]);
+  }, [selectedChartId, selectedHdChartId, readingType, effectiveHdChart]);
 
   return (
     <div className="space-y-6">
@@ -374,6 +389,7 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                         setNarrativeText(null);
                         setSourceMap(null);
                         setSignals(null);
+                        setActiveTab('narrative');
                       }}
                       className={`flex flex-col items-center gap-1 p-2 rounded border text-[10px] uppercase tracking-wider transition-colors ${
                         readingType === opt.value
@@ -394,7 +410,7 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
               </p>
             </div>
 
-            {/* Astrology Chart Selection - show for astrology & combined */}
+            {/* Chart Selection */}
             {(readingType === 'astrology' || readingType === 'combined') && (
               <div className="space-y-2">
                 <ChartSelector
@@ -402,17 +418,30 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                   savedCharts={savedCharts}
                   selectedChartId={selectedChartId}
                   onSelect={setSelectedChartId}
-                  label={readingType === 'combined' ? 'Astrology Chart' : 'Chart'}
+                  label={readingType === 'combined' ? 'Person' : 'Chart'}
                 />
+                {readingType === 'combined' && selectedChart && (
+                  <div className="text-[10px] space-y-1">
+                    {autoMatchedHdChart ? (
+                      <p className="text-muted-foreground flex items-center gap-1">
+                        <Diamond className="h-3 w-3 text-primary" />
+                        HD chart auto-matched: <span className="font-medium">{autoMatchedHdChart.type} · {autoMatchedHdChart.profile}</span>
+                      </p>
+                    ) : (
+                      <p className="text-destructive flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        No HD chart found for "{selectedChart.name}". Create one in the Human Design tab.
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
-            {/* HD Chart Selection - show for HD & combined */}
-            {(readingType === 'human_design' || readingType === 'combined') && (
+            {/* HD Chart Selection - only for HD-only mode */}
+            {readingType === 'human_design' && (
               <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">
-                  {readingType === 'combined' ? 'Human Design Chart' : 'Chart'}
-                </Label>
+                <Label className="text-xs text-muted-foreground">Chart</Label>
                 {sortedHdCharts.length > 0 ? (
                   <Select value={selectedHdChartId} onValueChange={setSelectedHdChartId}>
                     <SelectTrigger className="w-full">
@@ -511,7 +540,7 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                 <AlertCircle className="h-3 w-3" />
                 {readingType === 'astrology' && 'Chart needs planet data'}
                 {readingType === 'human_design' && (sortedHdCharts.length === 0 ? 'No HD charts available' : 'Select an HD chart')}
-                {readingType === 'combined' && (!hasRequiredAstroData ? 'Astrology chart needs planet data' : 'Select an HD chart')}
+                {readingType === 'combined' && (!hasRequiredAstroData ? 'Chart needs planet data' : 'No matching HD chart found')}
               </p>
             )}
           </CardContent>
@@ -520,8 +549,11 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
         {/* Right Panel - Tabs */}
         <Card className="lg:col-span-3">
           <CardContent className="pt-6">
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
-              <TabsList className={`grid w-full ${readingType === 'astrology' ? 'grid-cols-3' : 'grid-cols-1'}`}>
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v)}>
+              <TabsList className={`grid w-full ${
+                readingType === 'astrology' ? 'grid-cols-3' : 
+                (readingType === 'human_design' || readingType === 'combined') ? 'grid-cols-3' : 'grid-cols-1'
+              }`}>
                 <TabsTrigger value="narrative" className="flex items-center gap-2">
                   <FileText className="h-4 w-4" />
                   Narrative
@@ -535,6 +567,18 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                     <TabsTrigger value="source-map" className="flex items-center gap-2">
                       <Map className="h-4 w-4" />
                       Source Map
+                    </TabsTrigger>
+                  </>
+                )}
+                {(readingType === 'human_design' || readingType === 'combined') && (
+                  <>
+                    <TabsTrigger value="blueprint" className="flex items-center gap-2">
+                      <Hexagon className="h-4 w-4" />
+                      Blueprint
+                    </TabsTrigger>
+                    <TabsTrigger value="cross" className="flex items-center gap-2">
+                      <Crosshair className="h-4 w-4" />
+                      Cross
                     </TabsTrigger>
                   </>
                 )}
@@ -974,6 +1018,213 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                       </div>
                     </ScrollArea>
                   )}
+                </TabsContent>
+              )}
+
+              {/* Blueprint Tab - HD & Combined */}
+              {(readingType === 'human_design' || readingType === 'combined') && (
+                <TabsContent value="blueprint" className="mt-4">
+                  {(() => {
+                    const hd = effectiveHdChart;
+                    if (!hd) return (
+                      <div className="text-center py-12 text-muted-foreground">
+                        <Hexagon className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                        <p>No Human Design chart available.</p>
+                      </div>
+                    );
+                    const centerNames: Array<{label: string, key: string}> = [
+                      {label: 'Head', key: 'Head'}, {label: 'Ajna', key: 'Ajna'}, {label: 'Throat', key: 'Throat'},
+                      {label: 'G/Self', key: 'G'}, {label: 'Heart/Will', key: 'Heart'}, {label: 'Sacral', key: 'Sacral'},
+                      {label: 'Solar Plexus', key: 'SolarPlexus'}, {label: 'Spleen', key: 'Spleen'}, {label: 'Root', key: 'Root'}
+                    ];
+                    const definedCenterKeys = hd.definedCenters || [];
+                    return (
+                      <ScrollArea className="h-[500px] pr-4">
+                        <div className="space-y-6">
+                          <div className="space-y-3">
+                            <h3 className="font-medium">Your Design at a Glance</h3>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="p-3 bg-muted/30 rounded-lg">
+                                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Type</p>
+                                <p className="font-medium text-sm">{hd.type || '—'}</p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {hd.type === 'Generator' && 'You have sustainable energy. Life works when you wait for things that light you up, then respond with your gut.'}
+                                  {hd.type === 'Manifesting Generator' && 'You have multi-passionate energy. Wait for your gut response, then inform others before acting.'}
+                                  {hd.type === 'Projector' && 'You see others deeply. Your power comes from being recognized and invited — not from pushing.'}
+                                  {hd.type === 'Manifestor' && 'You are here to initiate. Inform those affected before you act, and you\'ll meet less resistance.'}
+                                  {hd.type === 'Reflector' && 'You mirror the health of your environment. Wait a full lunar cycle before major decisions.'}
+                                </p>
+                              </div>
+                              <div className="p-3 bg-muted/30 rounded-lg">
+                                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Strategy</p>
+                                <p className="font-medium text-sm">{hd.strategy || '—'}</p>
+                                <p className="text-xs text-muted-foreground mt-1">This is HOW life brings you the right opportunities. Follow this and decisions feel easier.</p>
+                              </div>
+                              <div className="p-3 bg-muted/30 rounded-lg">
+                                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Authority</p>
+                                <p className="font-medium text-sm">{hd.authority || '—'}</p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {hd.authority?.includes('Emotional') && 'Never decide in the moment. Wait until the emotional wave passes and you feel clear.'}
+                                  {hd.authority?.includes('Sacral') && 'Trust your gut sounds — "uh-huh" (yes) or "un-uh" (no). Your body knows before your mind does.'}
+                                  {hd.authority?.includes('Splenic') && 'Trust your instinctive, in-the-moment knowing. It speaks once and doesn\'t repeat.'}
+                                  {!hd.authority?.includes('Emotional') && !hd.authority?.includes('Sacral') && !hd.authority?.includes('Splenic') && 'This is your body\'s decision-making intelligence. Trust it over mental analysis.'}
+                                </p>
+                              </div>
+                              <div className="p-3 bg-muted/30 rounded-lg">
+                                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Profile</p>
+                                <p className="font-medium text-sm">{hd.profile || '—'}</p>
+                                <p className="text-xs text-muted-foreground mt-1">Your profile describes your costume in life — how you naturally learn and interact with the world.</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <h3 className="font-medium">Definition</h3>
+                            <p className="text-xs text-muted-foreground">
+                              {hd.definitionType === 'Single' && 'Single Definition: Your defined centers are all connected. You process independently and don\'t need others to feel complete.'}
+                              {hd.definitionType === 'Split' && 'Split Definition: Your defined centers form two separate groups. You may seek partners who "bridge" the gap — this is by design.'}
+                              {hd.definitionType === 'Triple Split' && 'Triple Split: Three separate defined areas. You need time in busy environments to let different parts of you connect through others\' energy.'}
+                              {hd.definitionType === 'Quadruple Split' && 'Quadruple Split: Four separate areas. You need lots of aura contact and patience with your own process.'}
+                              {hd.definitionType === 'None' && 'No Definition: You are a Reflector — sampling and reflecting the energy around you.'}
+                            </p>
+                          </div>
+
+                          <div className="space-y-3">
+                            <h3 className="font-medium">Centers</h3>
+                            <p className="text-xs text-muted-foreground mb-2">
+                              <span className="font-medium">Defined</span> = consistent energy you can rely on. <span className="font-medium">Open</span> = where you absorb and amplify others' energy (wisdom through experience, not weakness).
+                            </p>
+                            <div className="grid grid-cols-3 gap-2">
+                              {centerNames.map(center => {
+                                const isDefined = definedCenterKeys.includes(center.key as any);
+                                return (
+                                  <div key={center.key} className={`p-2 rounded border text-center text-xs ${isDefined ? 'bg-primary/10 border-primary/30' : 'bg-muted/20 border-border'}`}>
+                                    <p className="font-medium">{center.label}</p>
+                                    <p className={`text-[10px] ${isDefined ? 'text-primary' : 'text-muted-foreground'}`}>
+                                      {isDefined ? 'Defined' : 'Open'}
+                                    </p>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          {hd.definedChannels && hd.definedChannels.length > 0 && (
+                            <div className="space-y-2">
+                              <h3 className="font-medium">Active Channels ({hd.definedChannels.length})</h3>
+                              <p className="text-xs text-muted-foreground">Channels are your fixed life themes — consistent gifts you carry.</p>
+                              <div className="space-y-1">
+                                {hd.definedChannels.map((chId: string, i: number) => (
+                                  <div key={i} className="p-2 bg-muted/30 rounded flex items-center justify-between">
+                                    <span className="text-sm font-medium">Channel {chId}</span>
+                                    <Badge variant="outline" className="text-[10px]">Active</Badge>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </ScrollArea>
+                    );
+                  })()}
+                </TabsContent>
+              )}
+
+              {/* Cross Tab - HD & Combined */}
+              {(readingType === 'human_design' || readingType === 'combined') && (
+                <TabsContent value="cross" className="mt-4">
+                  {(() => {
+                    const hd = effectiveHdChart;
+                    if (!hd) return (
+                      <div className="text-center py-12 text-muted-foreground">
+                        <Crosshair className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                        <p>No Human Design chart available.</p>
+                      </div>
+                    );
+                    const crossName = hd.incarnationCross?.name || 'Unknown';
+                    // Find gate details from activations
+                    const findGate = (planet: string, conscious: boolean) => {
+                      const activations = conscious ? hd.personalityActivations : hd.designActivations;
+                      return activations?.find(a => a.planet === planet);
+                    };
+                    const personalitySun = findGate('Sun', true);
+                    const personalityEarth = findGate('Earth', true);
+                    const designSun = findGate('Sun', false);
+                    const designEarth = findGate('Earth', false);
+                    const gateLabel = (g?: { gate: number; line: number }) => g ? `Gate ${g.gate}.${g.line}` : 'Gate ?';
+                    return (
+                      <ScrollArea className="h-[500px] pr-4">
+                        <div className="space-y-6">
+                          <div className="text-center space-y-1">
+                            <h3 className="font-medium text-lg">{crossName}</h3>
+                            <p className="text-xs text-muted-foreground">Your Incarnation Cross is your life's overarching purpose — the theme that gives your life meaning over time.</p>
+                          </div>
+
+                          <div className="p-4 bg-muted/30 rounded-lg space-y-3">
+                            <h4 className="font-medium text-sm">How to Read Your Cross</h4>
+                            <p className="text-xs text-muted-foreground">
+                              Your cross has <strong>two axes</strong>. Each axis is a Sun-Earth pair. The Sun is what you radiate; the Earth is what grounds you.
+                            </p>
+                            <div className="grid grid-cols-1 gap-3">
+                              <div className="p-3 bg-background rounded border-l-4 border-foreground">
+                                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Conscious Axis (What You Know About Yourself)</p>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div>
+                                    <p className="text-[10px] text-muted-foreground">☀️ Personality Sun</p>
+                                    <p className="font-medium text-sm">{gateLabel(personalitySun)}</p>
+                                    <p className="text-[10px] text-muted-foreground mt-1">What you consciously express and identify with</p>
+                                    <p className="text-[10px] text-muted-foreground mt-1">What you consciously express and identify with</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-[10px] text-muted-foreground">🌍 Personality Earth</p>
+                                    <p className="font-medium text-sm">{gateLabel(personalityEarth)}</p>
+                                    <p className="text-[10px] text-muted-foreground mt-1">What keeps you grounded and stable</p>
+                                    <p className="text-[10px] text-muted-foreground mt-1">What keeps you grounded and stable</p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="p-3 bg-background rounded border-l-4 border-destructive/50">
+                                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Unconscious Axis (What Others See in You)</p>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div>
+                                    <p className="text-[10px] text-muted-foreground">☀️ Design Sun</p>
+                                    <p className="font-medium text-sm">{gateLabel(designSun)}</p>
+                                    <p className="text-[10px] text-muted-foreground mt-1">What your body naturally radiates without you knowing</p>
+                                    <p className="text-[10px] text-muted-foreground mt-1">What your body naturally radiates without you knowing</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-[10px] text-muted-foreground">🌍 Design Earth</p>
+                                    <p className="font-medium text-sm">{gateLabel(designEarth)}</p>
+                                    <p className="text-[10px] text-muted-foreground mt-1">The deep unconscious foundation of your being</p>
+                                    <p className="text-[10px] text-muted-foreground mt-1">The deep unconscious foundation of your being</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {hd.incarnationCross?.type && (
+                            <div className="p-3 bg-muted/30 rounded-lg">
+                              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Cross Angle</p>
+                              <p className="font-medium text-sm">{hd.incarnationCross.type}</p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {hd.incarnationCross.type === 'Right Angle' && 'Your purpose is personal — your journey is about your own transformation. You\'re not here to "fix" anyone else.'}
+                                {hd.incarnationCross.type === 'Left Angle' && 'Your purpose unfolds through others. You need relationships and networks to fulfill your cross.'}
+                                {hd.incarnationCross.type === 'Juxtaposition' && 'You walk a fixed, fated path. Your geometry is between personal and transpersonal.'}
+                              </p>
+                            </div>
+                          )}
+
+                          <div className="p-3 border border-primary/20 rounded-lg bg-primary/5">
+                            <p className="text-xs text-muted-foreground">
+                              💡 <strong>Remember:</strong> Your cross doesn't "activate" at birth — it unfolds gradually. Most people begin to feel their cross purpose clearly around age 40+, after living their Strategy and Authority. It's a destination, not a starting point.
+                            </p>
+                          </div>
+                        </div>
+                      </ScrollArea>
+                    );
+                  })()}
                 </TabsContent>
               )}
             </Tabs>
