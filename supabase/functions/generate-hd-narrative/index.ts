@@ -27,7 +27,7 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const wordCount = lengthPreset === 'short_250' ? '250' : '800';
+    const wordCount = lengthPreset === 'short_250' ? '400' : '1200';
 
     // Voice style prompts
     const voicePrompts: Record<string, string> = {
@@ -140,13 +140,14 @@ INCARNATION CROSS RULES (CRITICAL - follow exactly):
 - NEVER use abstract nouns without immediately explaining what they look like in real behavior
 
 OPENING PARAGRAPH RULES (CRITICAL):
-- The FIRST sentence must be a one-of-a-kind synthesis that could ONLY describe THIS person's chart
-- It must weave together at least 3 unique chart elements (e.g., specific channels + profile + cross gates + authority + defined centers pattern) into a single vivid behavioral portrait
-- Do NOT open with a generic Type description like "As a Manifesting Generator, you have multi-passionate energy" — that applies to ALL MGs
-- Instead, find the UNIQUE COMBINATION: What specific channels do they have? What profile? What cross? What authority? What centers are open vs defined? Synthesize those into one sentence that describes how THIS person specifically moves through life
-- GOOD: "With your 34-20 Channel of Charisma powered by a 5/1 profile and an Emotional authority, you're someone who broadcasts raw creative force but must wait through your emotional wave before committing — a paradox of instant magnetism and slow decision-making that IS your design"
-- BAD: "As a Manifesting Generator, you are a powerhouse of creative vitality designed to move through life with multi-passionate speed" (this is generic — it describes every MG)
-- The second paragraph can then expand on Type & Strategy mechanics
+- The FIRST paragraph is a warm, accessible SUMMARY of who this person IS as a whole — like meeting them and immediately understanding their essence
+- Use **bold** markdown for key HD terms (e.g., **Manifesting Generator**, **Emotional Authority**, **2/5 Profile**) but IMMEDIATELY explain each in plain language that a non-HD person would understand
+- GOOD: "You are a **Manifesting Generator** — meaning you have a powerful, multi-speed engine that thrives on variety and can juggle many passions at once, but only when something genuinely lights you up first"
+- GOOD: "Your **Emotional Authority** means your best decisions come in waves — not in the heat of the moment, but after sleeping on it, letting the excitement and doubt both pass, and seeing what still feels right"
+- BAD: "As a Manifesting Generator with Emotional Authority and a 2/5 Profile..." (just listing terms without explaining them)
+- This first paragraph should feel like a compassionate mirror — "here is who you are" — touching on their Type, Authority, and Profile in plain behavioral terms
+- The SECOND paragraph then goes deeper into the UNIQUE mechanics: their specific channels, gates, and how those interact to create patterns that are specific to THIS chart only
+- From the third paragraph onward, dive into each system in detail
 
 STRUCTURE:
 1. Opening synthesis: A unique behavioral portrait synthesizing 3+ specific chart mechanics that could ONLY describe this person
