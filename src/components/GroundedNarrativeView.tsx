@@ -1263,21 +1263,62 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                             </div>
                           </div>
 
-                          {/* Cross Angle - enriched */}
-                          {hd.incarnationCross?.type && (
-                            <div className="p-3 bg-muted/30 rounded-lg space-y-2">
-                              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Cross Angle — {hd.incarnationCross.type}</p>
-                              <p className="text-sm">
-                                {angleDesc?.description || (
-                                  <>
-                                    {hd.incarnationCross.type === 'Right Angle' && 'Your purpose is personal — your journey is about your own transformation. You\'re not here to "fix" anyone else.'}
-                                    {hd.incarnationCross.type === 'Left Angle' && 'Your purpose unfolds through others. You need relationships and networks to fulfill your cross.'}
-                                    {hd.incarnationCross.type === 'Juxtaposition' && 'You walk a fixed, fated path. Your geometry is between personal and transpersonal.'}
-                                  </>
-                                )}
-                              </p>
-                            </div>
-                          )}
+                          {/* Cross Angle - comparison of all three */}
+                          {hd.incarnationCross?.type && (() => {
+                            const userAngle = hd.incarnationCross!.type;
+                            const angles = [
+                              {
+                                type: 'Right Angle',
+                                emoji: '🔺',
+                                pct: '~70%',
+                                keyword: 'Personal Destiny',
+                                short: 'Your purpose is about YOUR journey. You\'re here to live out your own unique process. Your impact on others happens naturally as a byproduct of living authentically — you don\'t need to go looking for your purpose in other people.',
+                              },
+                              {
+                                type: 'Left Angle',
+                                emoji: '🔻',
+                                pct: '~25%',
+                                keyword: 'Transpersonal Karma',
+                                short: 'Purpose unfolds through specific relationships and "fated" meetings. These people NEED others to fulfill their cross — their destiny is intimately tied to who they meet and the networks they enter.',
+                              },
+                              {
+                                type: 'Juxtaposition',
+                                emoji: '⬥',
+                                pct: '~5%',
+                                keyword: 'Fixed Fate',
+                                short: 'The rarest geometry — a bridge between personal and transpersonal. These people walk a very specific, almost laser-focused path. Their life has a "fated" quality where they\'re meant to be in exact places at exact times.',
+                              },
+                            ];
+                            return (
+                              <div className="p-4 bg-muted/30 rounded-lg space-y-3">
+                                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Cross Geometry — Understanding the Three Angles</p>
+                                <p className="text-xs text-muted-foreground">
+                                  Every Incarnation Cross has one of three "angles" that determines HOW your purpose operates. Yours is <strong>{userAngle}</strong>.
+                                </p>
+                                <div className="space-y-2">
+                                  {angles.map(a => {
+                                    const isYours = a.type === userAngle;
+                                    return (
+                                      <div
+                                        key={a.type}
+                                        className={`p-3 rounded-lg border ${isYours ? 'border-primary bg-primary/5' : 'border-transparent bg-background/50'}`}
+                                      >
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <span>{a.emoji}</span>
+                                          <span className={`font-medium text-sm ${isYours ? 'text-primary' : ''}`}>{a.type}</span>
+                                          <Badge variant={isYours ? 'default' : 'secondary'} className="text-[9px] h-4">
+                                            {isYours ? '← You' : a.pct}
+                                          </Badge>
+                                          <span className="text-[10px] text-muted-foreground ml-auto">{a.keyword}</span>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground leading-relaxed">{a.short}</p>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })()}
 
                           {/* Collective Contribution */}
                           {crossEntry?.collectiveContribution && (
