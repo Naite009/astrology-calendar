@@ -10,6 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, FileText, BarChart3, Map, Loader2, AlertCircle, ChevronRight, Star, Layers, Diamond, Download, Printer, Hexagon, Crosshair, Palette } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
+import { HUMAN_DESIGN_GATES } from '@/data/humanDesignGates';
 import { computeAllSignals, SignalsData, SourceMapEntry } from '@/lib/narrativeAnalysisEngine';
 import { supabase } from '@/integrations/supabase/client';
 import { ChartSelector } from './ChartSelector';
@@ -1182,6 +1183,11 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                     const designSun = findGate('Sun', false);
                     const designEarth = findGate('Earth', false);
                     const gateLabel = (g?: { gate: number; line: number }) => g ? `Gate ${g.gate}.${g.line}` : 'Gate ?';
+                    const getGateData = (g?: { gate: number }) => g ? HUMAN_DESIGN_GATES.find(gd => gd.number === g.gate) : undefined;
+                    const pSunData = getGateData(personalitySun);
+                    const pEarthData = getGateData(personalityEarth);
+                    const dSunData = getGateData(designSun);
+                    const dEarthData = getGateData(designEarth);
                     return (
                       <ScrollArea className="h-[500px] pr-4">
                         <div className="space-y-6">
@@ -1201,15 +1207,13 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                                 <div className="grid grid-cols-2 gap-2">
                                   <div>
                                     <p className="text-[10px] text-muted-foreground">☀️ Personality Sun</p>
-                                    <p className="font-medium text-sm">{gateLabel(personalitySun)}</p>
-                                    <p className="text-[10px] text-muted-foreground mt-1">What you consciously express and identify with</p>
-                                    <p className="text-[10px] text-muted-foreground mt-1">What you consciously express and identify with</p>
+                                    <p className="font-medium text-sm">{gateLabel(personalitySun)}{pSunData ? ` — ${pSunData.name}` : ''}</p>
+                                    <p className="text-[10px] text-muted-foreground mt-1">{pSunData?.consciousExpression || 'What you consciously express and identify with'}</p>
                                   </div>
                                   <div>
                                     <p className="text-[10px] text-muted-foreground">🌍 Personality Earth</p>
-                                    <p className="font-medium text-sm">{gateLabel(personalityEarth)}</p>
-                                    <p className="text-[10px] text-muted-foreground mt-1">What keeps you grounded and stable</p>
-                                    <p className="text-[10px] text-muted-foreground mt-1">What keeps you grounded and stable</p>
+                                    <p className="font-medium text-sm">{gateLabel(personalityEarth)}{pEarthData ? ` — ${pEarthData.name}` : ''}</p>
+                                    <p className="text-[10px] text-muted-foreground mt-1">{pEarthData?.consciousExpression || 'What keeps you grounded and stable'}</p>
                                   </div>
                                 </div>
                               </div>
@@ -1219,15 +1223,13 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                                 <div className="grid grid-cols-2 gap-2">
                                   <div>
                                     <p className="text-[10px] text-muted-foreground">☀️ Design Sun</p>
-                                    <p className="font-medium text-sm">{gateLabel(designSun)}</p>
-                                    <p className="text-[10px] text-muted-foreground mt-1">What your body naturally radiates without you knowing</p>
-                                    <p className="text-[10px] text-muted-foreground mt-1">What your body naturally radiates without you knowing</p>
+                                    <p className="font-medium text-sm">{gateLabel(designSun)}{dSunData ? ` — ${dSunData.name}` : ''}</p>
+                                    <p className="text-[10px] text-muted-foreground mt-1">{dSunData?.unconsciousExpression || 'What your body naturally radiates without you knowing'}</p>
                                   </div>
                                   <div>
                                     <p className="text-[10px] text-muted-foreground">🌍 Design Earth</p>
-                                    <p className="font-medium text-sm">{gateLabel(designEarth)}</p>
-                                    <p className="text-[10px] text-muted-foreground mt-1">The deep unconscious foundation of your being</p>
-                                    <p className="text-[10px] text-muted-foreground mt-1">The deep unconscious foundation of your being</p>
+                                    <p className="font-medium text-sm">{gateLabel(designEarth)}{dEarthData ? ` — ${dEarthData.name}` : ''}</p>
+                                    <p className="text-[10px] text-muted-foreground mt-1">{dEarthData?.unconsciousExpression || 'The deep unconscious foundation of your being'}</p>
                                   </div>
                                 </div>
                               </div>
