@@ -139,8 +139,8 @@ export const ElectionalCalendarView = ({
   };
   
   const allCharts = [
-    ...(userNatalChart ? [{ id: 'user', name: userNatalChart.name }] : []),
-    ...savedCharts.map(c => ({ id: c.id, name: c.name }))
+    ...(userNatalChart ? [{ id: 'user', name: `★ ${userNatalChart.name}` }] : []),
+    ...[...savedCharts].sort((a, b) => a.name.localeCompare(b.name)).map(c => ({ id: c.id, name: c.name }))
   ];
 
   return (

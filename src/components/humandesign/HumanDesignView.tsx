@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Plus, User, Trash2, Edit3 } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Plus, User, Trash2, Edit3, Star } from 'lucide-react';
 import { useHumanDesignChart } from '@/hooks/useHumanDesignChart';
 import { useUserData } from '@/hooks/useUserData';
 import { HDChartInputForm } from './HDChartInputForm';
@@ -32,6 +32,20 @@ export const HumanDesignView = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingChart, setEditingChart] = useState<HumanDesignChart | null>(null);
   const [activeTab, setActiveTab] = useState<HDTab>('overview');
+
+  // Sort charts: user's chart first with ★, then alphabetical
+  const sortedCharts = useMemo(() => {
+    const userName = mainUserData?.name?.toLowerCase().trim() || '';
+    const userChart = charts.find(c => c.name?.toLowerCase().trim() === userName);
+    const others = charts
+      .filter(c => c.id !== userChart?.id)
+      .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    return userChart ? [userChart, ...others] : others;
+  }, [charts, mainUserData]);
+
+  const userHdChartId = sortedCharts.length > 0 && mainUserData
+    ? sortedCharts.find(c => c.name?.toLowerCase().trim() === mainUserData.name?.toLowerCase().trim())?.id
+    : undefined;
 
   const handleSaveChart = (chart: HumanDesignChart) => {
     console.log('[HumanDesignView] handleSaveChart called with:', chart.name, chart.type);
@@ -96,10 +110,14 @@ export const HumanDesignView = () => {
               <SelectValue placeholder={charts.length > 0 ? "Choose a chart..." : "No charts saved yet"} />
             </SelectTrigger>
             <SelectContent>
-              {charts.map(chart => (
+              {sortedCharts.map(chart => (
                 <SelectItem key={chart.id} value={chart.id}>
                   <div className="flex items-center gap-2">
-                    <User size={14} />
+                    {chart.id === userHdChartId ? (
+                      <span className="text-primary">★</span>
+                    ) : (
+                      <User size={14} />
+                    )}
                     <span>{chart.name}</span>
                     <span className="text-xs text-muted-foreground">({chart.type})</span>
                   </div>

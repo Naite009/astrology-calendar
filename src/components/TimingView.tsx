@@ -522,8 +522,8 @@ const TodaySection = ({
 
   const allCharts = [
     { id: 'general', name: 'Collective Only' },
-    ...(userNatalChart ? [{ id: 'user', name: userNatalChart.name }] : []),
-    ...savedCharts.map(c => ({ id: c.id, name: c.name }))
+    ...(userNatalChart ? [{ id: 'user', name: `★ ${userNatalChart.name}` }] : []),
+    ...[...savedCharts].sort((a, b) => a.name.localeCompare(b.name)).map(c => ({ id: c.id, name: c.name }))
   ];
 
   return (
@@ -772,8 +772,8 @@ const PlanAheadSection = ({
   };
 
   const allCharts = [
-    ...(userNatalChart ? [{ id: 'user', name: userNatalChart.name }] : []),
-    ...savedCharts.map(c => ({ id: c.id, name: c.name }))
+    ...(userNatalChart ? [{ id: 'user', name: `★ ${userNatalChart.name}` }] : []),
+    ...[...savedCharts].sort((a, b) => a.name.localeCompare(b.name)).map(c => ({ id: c.id, name: c.name }))
   ];
 
   const getRating = (data: ElectionalDayData | ElectionalDay | null): string | undefined => {
@@ -1156,8 +1156,8 @@ const PlanAheadSection = ({
             startDate={new Date(selectedYear, currentMonth, 1)}
             days={35}
             savedCharts={[
-              ...(userNatalChart ? [{ id: 'user', name: userNatalChart.name, birthDate: userNatalChart.birthDate }] : []),
-              ...savedCharts.map(c => ({ id: c.id, name: c.name, birthDate: c.birthDate }))
+              ...(userNatalChart ? [{ id: 'user', name: `★ ${userNatalChart.name}`, birthDate: userNatalChart.birthDate }] : []),
+              ...[...savedCharts].sort((a, b) => a.name.localeCompare(b.name)).map(c => ({ id: c.id, name: c.name, birthDate: c.birthDate }))
             ]}
             selectedChartId={selectedChart}
             onChartChange={(id) => setSelectedChart(id)}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -73,6 +73,20 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
   // Build chart options
   const allCharts = userNatalChart ? [userNatalChart, ...savedCharts] : savedCharts;
 
+  // Sort HD charts: user's chart (matching userNatalChart name) first with ★, then alphabetical
+  const sortedHdCharts = useMemo(() => {
+    const userName = userNatalChart?.name?.toLowerCase().trim() || '';
+    const userHd = hdCharts.find(c => c.name?.toLowerCase().trim() === userName);
+    const others = hdCharts
+      .filter(c => c.id !== userHd?.id)
+      .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    return userHd ? [userHd, ...others] : others;
+  }, [hdCharts, userNatalChart]);
+
+  const userHdChartId = sortedHdCharts.length > 0 && userNatalChart
+    ? sortedHdCharts.find(c => c.name?.toLowerCase().trim() === userNatalChart.name?.toLowerCase().trim())?.id
+    : undefined;
+
   // Auto-select first chart if none selected
   useEffect(() => {
     if (!selectedChartId && allCharts.length > 0) {
@@ -80,12 +94,12 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
     }
   }, [allCharts, selectedChartId]);
 
-  // Auto-select first HD chart if none selected
+  // Auto-select user's HD chart (or first) if none selected
   useEffect(() => {
-    if (!selectedHdChartId && hdCharts.length > 0) {
-      setSelectedHdChartId(hdCharts[0].id);
+    if (!selectedHdChartId && sortedHdCharts.length > 0) {
+      setSelectedHdChartId(sortedHdCharts[0].id);
     }
-  }, [hdCharts, selectedHdChartId]);
+  }, [sortedHdCharts, selectedHdChartId]);
 
   const selectedChart = allCharts.find(c => c.id === selectedChartId);
   const selectedHdChart = hdCharts.find(c => c.id === selectedHdChartId);
@@ -399,16 +413,19 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                 <Label className="text-xs text-muted-foreground">
                   {readingType === 'combined' ? 'Human Design Chart' : 'Chart'}
                 </Label>
-                {hdCharts.length > 0 ? (
+                {sortedHdCharts.length > 0 ? (
                   <Select value={selectedHdChartId} onValueChange={setSelectedHdChartId}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select HD chart..." />
                     </SelectTrigger>
                     <SelectContent className="bg-background border z-50">
-                      {hdCharts.map(chart => (
+                      {sortedHdCharts.map(chart => (
                         <SelectItem key={chart.id} value={chart.id}>
                           <div className="flex flex-col">
-                            <span>{chart.name}</span>
+                            <span>
+                              {chart.id === userHdChartId && <span className="text-primary mr-1">★</span>}
+                              {chart.name}
+                            </span>
                             <span className="text-[10px] text-muted-foreground">{chart.type} · {chart.profile}</span>
                           </div>
                         </SelectItem>
@@ -493,7 +510,7 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
               <p className="text-xs text-destructive flex items-center gap-1">
                 <AlertCircle className="h-3 w-3" />
                 {readingType === 'astrology' && 'Chart needs planet data'}
-                {readingType === 'human_design' && (hdCharts.length === 0 ? 'No HD charts available' : 'Select an HD chart')}
+                {readingType === 'human_design' && (sortedHdCharts.length === 0 ? 'No HD charts available' : 'Select an HD chart')}
                 {readingType === 'combined' && (!hasRequiredAstroData ? 'Astrology chart needs planet data' : 'Select an HD chart')}
               </p>
             )}
