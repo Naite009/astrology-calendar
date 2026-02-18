@@ -8,12 +8,16 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, FileText, BarChart3, Map, Loader2, AlertCircle, ChevronRight, Star, Layers, Diamond, Download, Printer, Hexagon, Crosshair } from 'lucide-react';
+import { Sparkles, FileText, BarChart3, Map, Loader2, AlertCircle, ChevronRight, Star, Layers, Diamond, Download, Printer, Hexagon, Crosshair, Palette } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { computeAllSignals, SignalsData, SourceMapEntry } from '@/lib/narrativeAnalysisEngine';
 import { supabase } from '@/integrations/supabase/client';
 import { ChartSelector } from './ChartSelector';
 import { LifeStylesSection } from './narrative/LifeStylesSection';
+import { AtAGlanceCard } from './narrative/AtAGlanceCard';
+import { WhatsAheadPanel } from './narrative/WhatsAheadPanel';
+import { ThemesTab } from './narrative/ThemesTab';
+import { HDLifeStyles } from './narrative/HDLifeStyles';
 import { useHumanDesignChart } from '@/hooks/useHumanDesignChart';
 import { useDownloadImage } from '@/hooks/useDownloadImage';
 import { toast } from 'sonner';
@@ -551,8 +555,8 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
           <CardContent className="pt-6">
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v)}>
               <TabsList className={`grid w-full ${
-                readingType === 'astrology' ? 'grid-cols-3' : 
-                (readingType === 'human_design' || readingType === 'combined') ? 'grid-cols-3' : 'grid-cols-1'
+                readingType === 'astrology' ? 'grid-cols-4' : 
+                (readingType === 'human_design' || readingType === 'combined') ? 'grid-cols-4' : 'grid-cols-1'
               }`}>
                 <TabsTrigger value="narrative" className="flex items-center gap-2">
                   <FileText className="h-4 w-4" />
@@ -582,6 +586,10 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                     </TabsTrigger>
                   </>
                 )}
+                <TabsTrigger value="themes" className="flex items-center gap-2">
+                  <Palette className="h-4 w-4" />
+                  Themes
+                </TabsTrigger>
               </TabsList>
 
               {/* Narrative Tab */}
@@ -611,6 +619,13 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                 )}
                 {narrativeText && !isGenerating && (
                   <>
+                    {/* At a Glance Card */}
+                    <AtAGlanceCard
+                      readingType={readingType}
+                      chart={selectedChart}
+                      signals={signals}
+                      hdChart={effectiveHdChart}
+                    />
                     {/* Reading type badge */}
                     <div className="mb-3 flex items-center justify-between">
                       <Badge variant="outline" className="text-[10px]">
@@ -686,11 +701,26 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                       )}
                     </ScrollArea>
                     </div>
-                    {/* Life Styles Section - only for astrology */}
+                    {/* Life Styles Section */}
                     {readingType === 'astrology' && signals && (
                       <div className="mt-6">
                         <LifeStylesSection signals={signals} />
                       </div>
+                    )}
+                    {readingType === 'human_design' && effectiveHdChart && (
+                      <div className="mt-6">
+                        <HDLifeStyles hdChart={effectiveHdChart} />
+                      </div>
+                    )}
+                    {readingType === 'combined' && (
+                      <div className="mt-6 space-y-4">
+                        {signals && <LifeStylesSection signals={signals} />}
+                        {effectiveHdChart && <HDLifeStyles hdChart={effectiveHdChart} />}
+                      </div>
+                    )}
+                    {/* What's Ahead Panel - transit forecast */}
+                    {selectedChart && selectedChart.planets && Object.keys(selectedChart.planets).length >= 3 && (
+                      <WhatsAheadPanel chart={selectedChart} />
                     )}
                   </>
                 )}
@@ -1227,6 +1257,15 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                   })()}
                 </TabsContent>
               )}
+
+              {/* Themes Tab - All Modes */}
+              <TabsContent value="themes" className="mt-4">
+                <ThemesTab
+                  readingType={readingType}
+                  signals={signals}
+                  hdChart={effectiveHdChart}
+                />
+              </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
