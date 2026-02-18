@@ -269,9 +269,9 @@ const handleFileInputChange = useCallback(async (e: React.ChangeEvent<HTMLInputE
           onChange={(e) => setSelectedChartId(e.target.value)}
           className="flex-1 max-w-xs border border-border bg-background px-3 py-2 text-sm rounded-md focus:border-primary focus:outline-none"
         >
-          {allSortedCharts.map(chart => (
+          {allSortedCharts.map((chart, idx) => (
             <option key={chart.id} value={chart.id}>
-              {chart.name} {chart.chartImageBase64 ? '✓' : '(no wheel)'}
+              {idx === 0 && userChart ? '★ ' : ''}{chart.name} {chart.chartImageBase64 ? '✓' : '(no wheel)'}
             </option>
           ))}
         </select>
