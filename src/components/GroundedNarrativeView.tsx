@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Sparkles, FileText, BarChart3, Map, Loader2, AlertCircle, ChevronRight, Star, Layers, Diamond, Download, Printer, Hexagon, Crosshair, Palette } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { HUMAN_DESIGN_GATES } from '@/data/humanDesignGates';
+import { incarnationCrosses, crossTypeDescriptions } from '@/data/incarnationCrosses';
 import { computeAllSignals, SignalsData, SourceMapEntry } from '@/lib/narrativeAnalysisEngine';
 import { supabase } from '@/integrations/supabase/client';
 import { ChartSelector } from './ChartSelector';
@@ -1172,7 +1173,7 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                         <p>No Human Design chart available.</p>
                       </div>
                     );
-                    const crossName = hd.incarnationCross?.name || 'Unknown';
+                     const crossName = hd.incarnationCross?.name || 'Unknown';
                     // Find gate details from activations
                     const findGate = (planet: string, conscious: boolean) => {
                       const activations = conscious ? hd.personalityActivations : hd.designActivations;
@@ -1188,19 +1189,45 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                     const pEarthData = getGateData(personalityEarth);
                     const dSunData = getGateData(designSun);
                     const dEarthData = getGateData(designEarth);
+
+                    // Look up rich cross data from incarnationCrosses
+                    const crossEntry = incarnationCrosses.find((c) => c.name === crossName);
+                    const angleDesc = hd.incarnationCross?.type ? crossTypeDescriptions[hd.incarnationCross.type as keyof typeof crossTypeDescriptions] : undefined;
+
                     return (
                       <ScrollArea className="h-[500px] pr-4">
                         <div className="space-y-6">
-                          <div className="text-center space-y-1">
-                            <h3 className="font-medium text-lg">{crossName}</h3>
-                            <p className="text-xs text-muted-foreground">Your Incarnation Cross is your life's overarching purpose — the theme that gives your life meaning over time.</p>
+                          {/* Cross Name & Purpose Synthesis */}
+                          <div className="space-y-3">
+                            <h3 className="font-medium text-lg text-center">{crossName}</h3>
+                            {crossEntry?.description ? (
+                              <p className="text-sm leading-relaxed text-foreground/90">
+                                {crossEntry.description}
+                              </p>
+                            ) : (
+                              <p className="text-xs text-muted-foreground text-center">Your Incarnation Cross is your life's overarching purpose — the theme that gives your life meaning over time.</p>
+                            )}
                           </div>
 
+                          {/* Life Work */}
+                          {crossEntry?.lifeWork && (
+                            <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">🎯 Your Life's Work</p>
+                              <p className="text-sm">{crossEntry.lifeWork}</p>
+                            </div>
+                          )}
+
+                          {/* How the Gates Work Together */}
+                          {crossEntry?.gateIntegration && (
+                            <div className="p-3 bg-muted/30 rounded-lg">
+                              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">🔗 How Your Gates Work Together</p>
+                              <p className="text-sm">{crossEntry.gateIntegration}</p>
+                            </div>
+                          )}
+
+                          {/* The Four Gates Detail */}
                           <div className="p-4 bg-muted/30 rounded-lg space-y-3">
-                            <h4 className="font-medium text-sm">How to Read Your Cross</h4>
-                            <p className="text-xs text-muted-foreground">
-                              Your cross has <strong>two axes</strong>. Each axis is a Sun-Earth pair. The Sun is what you radiate; the Earth is what grounds you.
-                            </p>
+                            <h4 className="font-medium text-sm">Your Four Cross Gates</h4>
                             <div className="grid grid-cols-1 gap-3">
                               <div className="p-3 bg-background rounded border-l-4 border-foreground">
                                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Conscious Axis (What You Know About Yourself)</p>
@@ -1236,19 +1263,39 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                             </div>
                           </div>
 
+                          {/* Cross Angle - enriched */}
                           {hd.incarnationCross?.type && (
-                            <div className="p-3 bg-muted/30 rounded-lg">
-                              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Cross Angle</p>
-                              <p className="font-medium text-sm">{hd.incarnationCross.type}</p>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {hd.incarnationCross.type === 'Right Angle' && 'Your purpose is personal — your journey is about your own transformation. You\'re not here to "fix" anyone else.'}
-                                {hd.incarnationCross.type === 'Left Angle' && 'Your purpose unfolds through others. You need relationships and networks to fulfill your cross.'}
-                                {hd.incarnationCross.type === 'Juxtaposition' && 'You walk a fixed, fated path. Your geometry is between personal and transpersonal.'}
+                            <div className="p-3 bg-muted/30 rounded-lg space-y-2">
+                              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Cross Angle — {hd.incarnationCross.type}</p>
+                              <p className="text-sm">
+                                {angleDesc?.description || (
+                                  <>
+                                    {hd.incarnationCross.type === 'Right Angle' && 'Your purpose is personal — your journey is about your own transformation. You\'re not here to "fix" anyone else.'}
+                                    {hd.incarnationCross.type === 'Left Angle' && 'Your purpose unfolds through others. You need relationships and networks to fulfill your cross.'}
+                                    {hd.incarnationCross.type === 'Juxtaposition' && 'You walk a fixed, fated path. Your geometry is between personal and transpersonal.'}
+                                  </>
+                                )}
                               </p>
                             </div>
                           )}
 
-                          <div className="p-3 border border-primary/20 rounded-lg bg-primary/5">
+                          {/* Collective Contribution */}
+                          {crossEntry?.collectiveContribution && (
+                            <div className="p-3 bg-muted/30 rounded-lg">
+                              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">🌍 What You Bring to the World</p>
+                              <p className="text-sm">{crossEntry.collectiveContribution}</p>
+                            </div>
+                          )}
+
+                          {/* Living Your Cross */}
+                          {crossEntry?.livingYourCross && (
+                            <div className="p-3 border border-primary/20 rounded-lg bg-primary/5">
+                              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">💡 How to Live This Cross</p>
+                              <p className="text-sm">{crossEntry.livingYourCross}</p>
+                            </div>
+                          )}
+
+                          <div className="p-3 border border-muted rounded-lg bg-muted/10">
                             <p className="text-xs text-muted-foreground">
                               💡 <strong>Remember:</strong> Your cross doesn't "activate" at birth — it unfolds gradually. Most people begin to feel their cross purpose clearly around age 40+, after living their Strategy and Authority. It's a destination, not a starting point.
                             </p>
