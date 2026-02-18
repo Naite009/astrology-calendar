@@ -1272,7 +1272,7 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                                 emoji: '🔺',
                                 pct: '~70%',
                                 keyword: 'Personal Destiny',
-                                short: 'Your purpose is about YOUR journey. You\'re here to live out your own unique process. Your impact on others happens naturally as a byproduct of living authentically — you don\'t need to go looking for your purpose in other people.',
+                                short: 'Your purpose is about YOUR journey. Everything you need to fulfill your purpose is already inside you — you don\'t need to find the right person, the right group, or the right opportunity to "unlock" it. You just need to live as yourself. Your impact on others happens naturally as a byproduct of living authentically — you don\'t need to go looking for your purpose in other people. Think of it this way: Left Angle people need specific relationships to find their purpose. You don\'t. Yours is built in.',
                               },
                               {
                                 type: 'Left Angle',
