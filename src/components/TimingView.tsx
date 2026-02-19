@@ -1,5 +1,21 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, ReactNode } from 'react';
 import { Clock, Calendar, CalendarCheck, Sparkles, Sun, Moon, AlertTriangle, CheckCircle, Star, ChevronLeft, ChevronRight, Users, User, Info, Activity } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+
+/* Deferred render: mounts children only after a delay so the tab opens instantly */
+const DeferredRender = ({ children, delay = 0, fallback }: { children: ReactNode; delay?: number; fallback?: ReactNode }) => {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    if (delay === 0) {
+      const id = requestAnimationFrame(() => setShow(true));
+      return () => cancelAnimationFrame(id);
+    }
+    const timer = setTimeout(() => setShow(true), delay);
+    return () => clearTimeout(timer);
+  }, [delay]);
+  if (!show) return <>{fallback || <Skeleton className="h-24 w-full rounded-lg" />}</>;
+  return <>{children}</>;
+};
 import { NatalChart } from '@/hooks/useNatalChart';
 import { calculateBestTimes, BestTimesCategory, BestTimeResult, CATEGORY_INFO, getTransitPositions, getCurrentAspects } from '@/lib/bestTimes';
 import { 
@@ -326,56 +342,68 @@ const RightNowSection = ({
 
       {/* Daily Power Synthesis Card */}
       {activeChart && (
-        <div className="mt-6">
-          <DailySynthesisCard 
-            birthDate={new Date(activeChart.birthDate)}
-            targetDate={currentTime}
-            natalChart={activeChart}
-          />
-        </div>
+        <DeferredRender delay={50}>
+          <div className="mt-6">
+            <DailySynthesisCard 
+              birthDate={new Date(activeChart.birthDate)}
+              targetDate={currentTime}
+              natalChart={activeChart}
+            />
+          </div>
+        </DeferredRender>
       )}
 
       {/* Biorhythm Section - Always visible with its own chart selector */}
-      <div className="mt-6">
-        <BiorhythmCard 
-          birthDate={activeChart ? parseLocalDate(activeChart.birthDate) : null} 
-          targetDate={currentTime}
-          savedCharts={[...(userNatalChart ? [userNatalChart] : []), ...savedCharts]}
-          selectedChartId={activeChart ? (selectedChart === 'user' ? userNatalChart?.id : selectedChart) : undefined}
-          onChartChange={(id) => {
-            const chart = [...(userNatalChart ? [userNatalChart] : []), ...savedCharts].find(c => c.id === id);
-            if (chart) {
-              if (userNatalChart && chart.id === userNatalChart.id) {
-                setSelectedChart('user');
-              } else {
-                setSelectedChart(id);
+      <DeferredRender delay={100}>
+        <div className="mt-6">
+          <BiorhythmCard 
+            birthDate={activeChart ? parseLocalDate(activeChart.birthDate) : null} 
+            targetDate={currentTime}
+            savedCharts={[...(userNatalChart ? [userNatalChart] : []), ...savedCharts]}
+            selectedChartId={activeChart ? (selectedChart === 'user' ? userNatalChart?.id : selectedChart) : undefined}
+            onChartChange={(id) => {
+              const chart = [...(userNatalChart ? [userNatalChart] : []), ...savedCharts].find(c => c.id === id);
+              if (chart) {
+                if (userNatalChart && chart.id === userNatalChart.id) {
+                  setSelectedChart('user');
+                } else {
+                  setSelectedChart(id);
+                }
               }
-            }
-          }}
-          chartName={activeChart?.name}
-        />
-      </div>
+            }}
+            chartName={activeChart?.name}
+          />
+        </div>
+      </DeferredRender>
 
       {/* Transit Alerts Card */}
-      <div className="mt-6">
-        <TransitAlertsCard natalChart={activeChart} />
-      </div>
+      <DeferredRender delay={200}>
+        <div className="mt-6">
+          <TransitAlertsCard natalChart={activeChart} />
+        </div>
+      </DeferredRender>
 
       {/* Best Days Summary Card */}
-      <div className="mt-6">
-        <BestDaysSummaryCard natalChart={activeChart} />
-      </div>
+      <DeferredRender delay={300}>
+        <div className="mt-6">
+          <BestDaysSummaryCard natalChart={activeChart} />
+        </div>
+      </DeferredRender>
 
       {/* Moon Transit Calendar */}
-      <div className="mt-6">
-        <MoonTransitCalendar natalChart={activeChart} />
-      </div>
+      <DeferredRender delay={400}>
+        <div className="mt-6">
+          <MoonTransitCalendar natalChart={activeChart} />
+        </div>
+      </DeferredRender>
 
       {/* Life Cycles Hub - Saturn Returns, Midlife Transits, Elder Initiations */}
       {activeChart && (
-        <div className="mt-6">
-          <LifeCyclesHub chart={activeChart} currentDate={currentTime} />
-        </div>
+        <DeferredRender delay={500}>
+          <div className="mt-6">
+            <LifeCyclesHub chart={activeChart} currentDate={currentTime} />
+          </div>
+        </DeferredRender>
       )}
 
       {/* Personal Transits to Natal Chart - TODAY'S TRANSITS */}
