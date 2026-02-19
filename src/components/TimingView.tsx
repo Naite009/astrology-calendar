@@ -22,7 +22,7 @@ import { TransitAlertsCard } from '@/components/TransitAlertsCard';
 import { BestDaysSummaryCard } from '@/components/BestDaysSummaryCard';
 import { MoonTransitCalendar } from '@/components/MoonTransitCalendar';
 import { ChartSelector } from '@/components/ChartSelector';
-
+import { parseLocalDate } from '@/lib/localDate';
 interface TimingViewProps {
   userNatalChart: NatalChart | null;
   savedCharts: NatalChart[];
@@ -338,7 +338,7 @@ const RightNowSection = ({
       {/* Biorhythm Section - Always visible with its own chart selector */}
       <div className="mt-6">
         <BiorhythmCard 
-          birthDate={activeChart ? new Date(activeChart.birthDate) : null} 
+          birthDate={activeChart ? parseLocalDate(activeChart.birthDate) : null} 
           targetDate={currentTime}
           savedCharts={[...(userNatalChart ? [userNatalChart] : []), ...savedCharts]}
           selectedChartId={activeChart ? (selectedChart === 'user' ? userNatalChart?.id : selectedChart) : undefined}
@@ -1152,7 +1152,7 @@ const PlanAheadSection = ({
         </h4>
         {activeChart ? (
           <BiorhythmForecast 
-            birthDate={new Date(activeChart.birthDate)}
+            birthDate={parseLocalDate(activeChart.birthDate)}
             startDate={new Date(selectedYear, currentMonth, 1)}
             days={35}
             savedCharts={[
