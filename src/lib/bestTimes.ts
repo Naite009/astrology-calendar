@@ -463,20 +463,51 @@ export const calculateBestTimes = (
       }
     }
 
-    if (score > 30) {
-      bestTimes.push({
-        date: new Date(currentDate),
-        score,
-        reasons,
-        rating: score > 70 ? '★★★' : score > 50 ? '★★' : '★',
-      });
-    }
+    bestTimes.push({
+      date: new Date(currentDate),
+      score: Math.max(0, score),
+      reasons,
+      rating: score > 70 ? '★★★' : score > 50 ? '★★' : '★',
+    });
 
     currentDate.setHours(currentDate.getHours() + hoursStep);
   }
 
   // Sort by score and return top 15
   return bestTimes.sort((a, b) => b.score - a.score).slice(0, 15);
+};
+
+/**
+ * Calculate scores for ALL days in a range (no filtering/slicing).
+ * Used for wave charts and blended sub-activity scoring.
+ */
+export const calculateAllDayScores = (
+  category: BestTimesCategory,
+  natalChart: NatalChart | null,
+  startDate: Date,
+  endDate: Date
+): BestTimeResult[] => {
+  // Reuse calculateBestTimes logic but capture everything
+  const results: BestTimeResult[] = [];
+  const current = new Date(startDate);
+  current.setHours(12, 0, 0, 0);
+
+  while (current <= endDate) {
+    const dayResults = calculateBestTimes(category, natalChart, new Date(current), new Date(current.getTime() + 24 * 60 * 60 * 1000));
+    if (dayResults.length > 0) {
+      results.push(dayResults[0]);
+    } else {
+      // Even if score was filtered out, we need a data point
+      results.push({
+        date: new Date(current),
+        score: 0,
+        reasons: ['No strong alignments'],
+        rating: '★',
+      });
+    }
+    current.setDate(current.getDate() + 1);
+  }
+  return results;
 };
 
 export const CATEGORY_INFO: Record<BestTimesCategory, { emoji: string; label: string }> = {
