@@ -32,12 +32,24 @@ export interface BestDaySummary {
   topReason: string;
 }
 
+export interface SubActivityDayScore {
+  date: Date;
+  score: number;
+  rating: string;
+  reason: string;
+}
+
 export interface SubActivityResult {
   activity: SubActivity;
   bestDay: Date;
   score: number;
   rating: string;
   topReason: string;
+  /** Top 3 days for this activity, sorted best-first */
+  topDays: SubActivityDayScore[];
+  /** Today's score for this activity */
+  todayScore: number;
+  todayRating: string;
 }
 
 export interface BestDaysSummaryResult {
@@ -186,30 +198,49 @@ export function getSubActivityBestDay(
     : [activity.category];
 
   // Build a per-day blended score map
-  const dayMap: Record<string, { date: Date; score: number; rating: string; reason: string }> = {};
+  const dayMap: Record<string, { date: Date; score: number; count: number; reason: string }> = {};
 
   for (const cat of cats) {
     const results = calculateBestTimes(cat, natalChart, startDate, endDate);
     for (const r of results) {
       const key = format(r.date, 'yyyy-MM-dd');
       if (!dayMap[key]) {
-        dayMap[key] = { date: r.date, score: 0, rating: r.rating, reason: r.reasons[0] || 'Favorable alignments' };
+        dayMap[key] = { date: r.date, score: 0, count: 0, reason: r.reasons[0] || 'Favorable alignments' };
       }
       dayMap[key].score += r.score;
+      dayMap[key].count += 1;
     }
   }
 
-  const sorted = Object.values(dayMap).sort((a, b) => b.score - a.score);
+  // Average scores across blended categories instead of summing
+  const entries = Object.values(dayMap).map(d => ({
+    ...d,
+    score: Math.round((d.score / Math.max(d.count, 1)) * activity.modifier),
+  }));
+
+  const sorted = entries.sort((a, b) => b.score - a.score);
+  const todayKey = format(new Date(), 'yyyy-MM-dd');
+  const todayEntry = entries.find(e => format(e.date, 'yyyy-MM-dd') === todayKey);
+  const todayScore = todayEntry ? todayEntry.score : 0;
+
+  const topDays: SubActivityDayScore[] = sorted.slice(0, 3).map(d => ({
+    date: d.date,
+    score: d.score,
+    rating: scoreToRating(d.score),
+    reason: d.reason,
+  }));
 
   if (sorted.length > 0) {
     const best = sorted[0];
-    const modifiedScore = Math.round(best.score * activity.modifier);
     return {
       activity,
       bestDay: best.date,
-      score: modifiedScore,
-      rating: scoreToRating(modifiedScore),
+      score: best.score,
+      rating: scoreToRating(best.score),
       topReason: best.reason,
+      topDays,
+      todayScore,
+      todayRating: scoreToRating(todayScore),
     };
   }
 
@@ -219,6 +250,9 @@ export function getSubActivityBestDay(
     score: 0,
     rating: '—',
     topReason: 'No data available',
+    topDays: [],
+    todayScore: 0,
+    todayRating: scoreToRating(0),
   };
 }
 
