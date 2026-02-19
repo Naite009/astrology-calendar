@@ -55,7 +55,7 @@ export const BIORHYTHM_CYCLES: Record<string, BiorhythmCycle> = {
   physical: {
     name: 'Physical',
     length: 23,
-    color: 'hsl(var(--destructive))',
+    color: 'hsl(210 90% 50%)',
     icon: '💪',
     description: 'Energy, strength, endurance, coordination, physical well-being'
   },
@@ -91,8 +91,9 @@ export const BIORHYTHM_CYCLES: Record<string, BiorhythmCycle> = {
  */
 export function calculateBiorhythm(birthDate: Date, targetDate: Date, cycleLength: number): number {
   const msPerDay = 24 * 60 * 60 * 1000;
-  const birthTime = new Date(birthDate.getFullYear(), birthDate.getMonth(), birthDate.getDate()).getTime();
-  const targetTime = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate()).getTime();
+  // Use UTC methods to avoid timezone-shift bugs (ISO date strings parsed as UTC)
+  const birthTime = Date.UTC(birthDate.getUTCFullYear(), birthDate.getUTCMonth(), birthDate.getUTCDate());
+  const targetTime = Date.UTC(targetDate.getUTCFullYear(), targetDate.getUTCMonth(), targetDate.getUTCDate());
   const daysSinceBirth = Math.floor((targetTime - birthTime) / msPerDay);
   const position = (2 * Math.PI * daysSinceBirth) / cycleLength;
   return Math.round(Math.sin(position) * 100);
