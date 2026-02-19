@@ -113,11 +113,11 @@ export const SUB_ACTIVITIES: Record<BestTimesCategory, SubActivity[]> = {
 export type ExtendedCategory = BestTimesCategory | 'chance';
 
 export const CHANCE_ACTIVITIES: SubActivity[] = [
-  { id: 'play-lottery', label: 'Play the Lottery', emoji: '🎰', description: 'Jupiter luck + Moon intuition peak', category: 'finance', blendCategories: ['finance', 'travel'], modifier: 0.8 },
-  { id: 'gamble-casino', label: 'Gamble at a Casino', emoji: '🎲', description: 'Risk-taking energy is amplified', category: 'career', blendCategories: ['career', 'finance'], modifier: 0.75 },
-  { id: 'raffle', label: 'Enter a Raffle / Contest', emoji: '🎟️', description: 'Passive luck channels are open', category: 'love', blendCategories: ['love', 'finance'], modifier: 0.7 },
-  { id: 'scratch-off', label: 'Buy Scratch-Offs', emoji: '🍀', description: 'Small windfalls favored', category: 'health', blendCategories: ['health', 'finance'], modifier: 0.65 },
-  { id: 'bet-sports', label: 'Sports Betting', emoji: '⚽', description: 'Analytical intuition is sharpest', category: 'career', blendCategories: ['career', 'travel'], modifier: 0.7 },
+  { id: 'play-lottery', label: 'Play the Lottery', emoji: '🎰', description: 'Jupiter luck + Moon intuition peak', category: 'finance', blendCategories: ['finance', 'travel'], modifier: 1.0 },
+  { id: 'gamble-casino', label: 'Gamble at a Casino', emoji: '🎲', description: 'Risk-taking energy is amplified', category: 'career', blendCategories: ['career', 'finance'], modifier: 1.0 },
+  { id: 'raffle', label: 'Enter a Raffle / Contest', emoji: '🎟️', description: 'Passive luck channels are open', category: 'love', blendCategories: ['love', 'finance'], modifier: 1.0 },
+  { id: 'scratch-off', label: 'Buy Scratch-Offs', emoji: '🍀', description: 'Small windfalls favored', category: 'health', blendCategories: ['health', 'finance'], modifier: 1.0 },
+  { id: 'bet-sports', label: 'Sports Betting', emoji: '⚽', description: 'Analytical intuition is sharpest', category: 'career', blendCategories: ['career', 'travel'], modifier: 1.0 },
 ];
 
 const CATEGORIES: BestTimesCategory[] = ['love', 'career', 'health', 'travel', 'finance', 'beauty'];
@@ -224,22 +224,55 @@ export function getSubActivityBestDay(
     reasons: d.reasons,
   }));
 
-  // Sort chronologically for allDays (wave chart)
+  // Sort chronologically for allDays (wave chart) — but only the requested range
   const chronological = [...entries].sort((a, b) => a.date.getTime() - b.date.getTime());
 
   // Sort by score for top days
   const sorted = [...entries].sort((a, b) => b.score - a.score);
 
-  // Pick top 3 that are spread out (at least 3 days apart)
+  // --- Normalize scores so the best day = 130 (maps to "Exceptional") ---
+  const rawMax = sorted.length > 0 ? sorted[0].score : 1;
+  const TARGET_MAX = 130; // maps to ★★★★★ Exceptional
+  const scaleFactor = rawMax > 0 ? TARGET_MAX / rawMax : 1;
+
+  const normalize = (raw: number) => Math.round(raw * scaleFactor);
+
+  // Pick top 3 from the FULL YEAR (365 days) for truly best days
+  const yearEnd = new Date(startDate);
+  yearEnd.setDate(yearEnd.getDate() + 365);
+  const yearDayMap: Record<string, { date: Date; score: number; reasons: string[] }> = {};
+  for (const cat of cats) {
+    const yearResults = calculateAllDayScores(cat, natalChart, startDate, yearEnd);
+    for (const r of yearResults) {
+      const key = format(r.date, 'yyyy-MM-dd');
+      if (!yearDayMap[key]) {
+        yearDayMap[key] = { date: r.date, score: 0, reasons: [] };
+      }
+      yearDayMap[key].score += r.score;
+      if (r.reasons.length > 0 && r.reasons[0] !== 'No strong alignments') {
+        yearDayMap[key].reasons.push(...r.reasons);
+      }
+    }
+  }
+  const yearEntries = Object.values(yearDayMap).map(d => ({
+    date: d.date,
+    score: Math.round(d.score * activity.modifier),
+    reason: d.reasons[0] || 'Favorable alignments',
+  }));
+  const yearSorted = [...yearEntries].sort((a, b) => b.score - a.score);
+  const yearMax = yearSorted.length > 0 ? yearSorted[0].score : 1;
+  const yearScale = yearMax > 0 ? TARGET_MAX / yearMax : 1;
+
+  // Pick top 3 that are spread out (at least 14 days apart for yearly view)
   const topDays: SubActivityDayScore[] = [];
-  for (const entry of sorted) {
+  for (const entry of yearSorted) {
     if (topDays.length >= 3) break;
-    const tooClose = topDays.some(t => Math.abs(differenceInDays(t.date, entry.date)) < 3);
+    const tooClose = topDays.some(t => Math.abs(differenceInDays(t.date, entry.date)) < 14);
     if (!tooClose) {
       topDays.push({
         date: entry.date,
-        score: entry.score,
-        rating: scoreToRating(entry.score),
+        score: Math.round(entry.score * yearScale),
+        rating: scoreToRating(Math.round(entry.score * yearScale)),
         reason: entry.reason,
       });
     }
@@ -247,12 +280,13 @@ export function getSubActivityBestDay(
 
   const todayKey = format(new Date(), 'yyyy-MM-dd');
   const todayEntry = entries.find(e => format(e.date, 'yyyy-MM-dd') === todayKey);
-  const todayScore = todayEntry ? todayEntry.score : 0;
+  const todayScoreRaw = todayEntry ? todayEntry.score : 0;
+  const todayScoreNorm = normalize(todayScoreRaw);
 
   const allDays: SubActivityDayScore[] = chronological.map(d => ({
     date: d.date,
-    score: d.score,
-    rating: scoreToRating(d.score),
+    score: normalize(d.score),
+    rating: scoreToRating(normalize(d.score)),
     reason: d.reason,
   }));
 
@@ -261,12 +295,12 @@ export function getSubActivityBestDay(
     return {
       activity,
       bestDay: best.date,
-      score: best.score,
-      rating: scoreToRating(best.score),
+      score: normalize(best.score),
+      rating: scoreToRating(normalize(best.score)),
       topReason: best.reason,
       topDays,
-      todayScore,
-      todayRating: scoreToRating(todayScore),
+      todayScore: todayScoreNorm,
+      todayRating: scoreToRating(todayScoreNorm),
       allDays,
     };
   }

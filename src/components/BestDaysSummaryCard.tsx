@@ -293,7 +293,9 @@ const ChanceSection = ({ natalChart, days, expanded, onToggle, bestChance }: {
           <span className="text-lg">🍀</span>
           <div className="text-left">
             <p className="text-sm font-medium">Chance & Luck</p>
-            <p className="text-xs text-muted-foreground">Lottery, casino, contests</p>
+            <p className="text-xs text-muted-foreground">
+              {bestChance ? `Best: ${bestChance.activity.emoji} ${bestChance.activity.label}` : 'Lottery, casino, contests'}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
