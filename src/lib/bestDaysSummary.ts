@@ -13,6 +13,8 @@ export interface SubActivity {
   id: string;
   label: string;
   emoji: string;
+  /** Which categories to blend for scoring (uses first as primary) */
+  blendCategories?: BestTimesCategory[];
   description: string;
   /** Which parent category scoring to use */
   category: BestTimesCategory;
@@ -97,11 +99,11 @@ export const SUB_ACTIVITIES: Record<BestTimesCategory, SubActivity[]> = {
 export type ExtendedCategory = BestTimesCategory | 'chance';
 
 export const CHANCE_ACTIVITIES: SubActivity[] = [
-  { id: 'play-lottery', label: 'Play the Lottery', emoji: '🎰', description: 'Lucky numbers energy is high', category: 'finance', modifier: 0.8 },
-  { id: 'gamble-casino', label: 'Gamble at a Casino', emoji: '🎲', description: 'Fortune favors the bold', category: 'finance', modifier: 0.75 },
-  { id: 'raffle', label: 'Enter a Raffle / Contest', emoji: '🎟️', description: 'Chance of winning is elevated', category: 'finance', modifier: 0.7 },
-  { id: 'scratch-off', label: 'Buy Scratch-Offs', emoji: '🍀', description: 'Small luck is sparkling', category: 'finance', modifier: 0.65 },
-  { id: 'bet-sports', label: 'Sports Betting', emoji: '⚽', description: 'Intuition for outcomes is sharp', category: 'finance', modifier: 0.7 },
+  { id: 'play-lottery', label: 'Play the Lottery', emoji: '🎰', description: 'Jupiter luck + Moon intuition peak', category: 'finance', blendCategories: ['finance', 'travel'], modifier: 0.8 },
+  { id: 'gamble-casino', label: 'Gamble at a Casino', emoji: '🎲', description: 'Risk-taking energy is amplified', category: 'career', blendCategories: ['career', 'finance'], modifier: 0.75 },
+  { id: 'raffle', label: 'Enter a Raffle / Contest', emoji: '🎟️', description: 'Passive luck channels are open', category: 'love', blendCategories: ['love', 'finance'], modifier: 0.7 },
+  { id: 'scratch-off', label: 'Buy Scratch-Offs', emoji: '🍀', description: 'Small windfalls favored', category: 'health', blendCategories: ['health', 'finance'], modifier: 0.65 },
+  { id: 'bet-sports', label: 'Sports Betting', emoji: '⚽', description: 'Analytical intuition is sharpest', category: 'career', blendCategories: ['career', 'travel'], modifier: 0.7 },
 ];
 
 const CATEGORIES: BestTimesCategory[] = ['love', 'career', 'health', 'travel', 'finance', 'beauty'];
@@ -166,7 +168,9 @@ export function getBestDaysSummary(
 }
 
 /**
- * Get best day for a specific sub-activity
+ * Get best day for a specific sub-activity.
+ * When blendCategories is set, combines scores from multiple categories
+ * so each activity can land on a different best day.
  */
 export function getSubActivityBestDay(
   activity: SubActivity,
@@ -176,33 +180,55 @@ export function getSubActivityBestDay(
 ): SubActivityResult {
   const endDate = new Date(startDate);
   endDate.setDate(endDate.getDate() + days);
-  
-  const results = calculateBestTimes(activity.category, natalChart, startDate, endDate);
-  
-  if (results.length > 0) {
-    // Apply modifier to scores and re-sort
-    const modified = results.map(r => ({
-      ...r,
-      score: Math.round(r.score * activity.modifier)
-    })).sort((a, b) => b.score - a.score);
-    
-    const best = modified[0];
+
+  const cats = activity.blendCategories && activity.blendCategories.length > 0
+    ? activity.blendCategories
+    : [activity.category];
+
+  // Build a per-day blended score map
+  const dayMap: Record<string, { date: Date; score: number; rating: string; reason: string }> = {};
+
+  for (const cat of cats) {
+    const results = calculateBestTimes(cat, natalChart, startDate, endDate);
+    for (const r of results) {
+      const key = format(r.date, 'yyyy-MM-dd');
+      if (!dayMap[key]) {
+        dayMap[key] = { date: r.date, score: 0, rating: r.rating, reason: r.reasons[0] || 'Favorable alignments' };
+      }
+      dayMap[key].score += r.score;
+    }
+  }
+
+  const sorted = Object.values(dayMap).sort((a, b) => b.score - a.score);
+
+  if (sorted.length > 0) {
+    const best = sorted[0];
+    const modifiedScore = Math.round(best.score * activity.modifier);
     return {
       activity,
       bestDay: best.date,
-      score: best.score,
-      rating: best.rating,
-      topReason: best.reasons[0] || 'Favorable alignments'
+      score: modifiedScore,
+      rating: scoreToRating(modifiedScore),
+      topReason: best.reason,
     };
   }
-  
+
   return {
     activity,
     bestDay: startDate,
     score: 0,
     rating: '—',
-    topReason: 'No data available'
+    topReason: 'No data available',
   };
+}
+
+/** Convert numeric score to a human-readable rating */
+function scoreToRating(score: number): string {
+  if (score >= 120) return '★★★★★ Exceptional';
+  if (score >= 90) return '★★★★ Excellent';
+  if (score >= 60) return '★★★ Good';
+  if (score >= 30) return '★★ Fair';
+  return '★ Low';
 }
 
 /**
