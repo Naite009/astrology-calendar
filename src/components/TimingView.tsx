@@ -47,7 +47,7 @@ interface TimingViewProps {
   currentDate: Date;
 }
 
-type TimingSection = 'now' | 'today' | 'plan';
+type TimingSection = 'now' | 'insights' | 'today' | 'plan';
 
 const PLANET_SYMBOLS: Record<string, string> = {
   Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀', Mars: '♂',
@@ -337,71 +337,19 @@ const RightNowSection = ({
         </div>
       </div>
 
-      {/* Daily Power Synthesis Card */}
-      {activeChart && (
-        <DeferredRender delay={50}>
-          <div className="mt-6">
-            <DailySynthesisCard 
-              birthDate={new Date(activeChart.birthDate)}
-              targetDate={currentTime}
-              natalChart={activeChart}
-            />
-          </div>
-        </DeferredRender>
-      )}
-
-      {/* Biorhythm Section - Always visible with its own chart selector */}
-      <DeferredRender delay={100}>
-        <div className="mt-6">
-          <BiorhythmCard 
-            birthDate={activeChart ? parseLocalDate(activeChart.birthDate) : null} 
-            targetDate={currentTime}
-            savedCharts={[...(userNatalChart ? [userNatalChart] : []), ...savedCharts]}
-            selectedChartId={activeChart ? (selectedChart === 'user' ? userNatalChart?.id : selectedChart) : undefined}
-            onChartChange={(id) => {
-              const chart = [...(userNatalChart ? [userNatalChart] : []), ...savedCharts].find(c => c.id === id);
-              if (chart) {
-                if (userNatalChart && chart.id === userNatalChart.id) {
-                  setSelectedChart('user');
-                } else {
-                  setSelectedChart(id);
-                }
-              }
-            }}
-            chartName={activeChart?.name}
-          />
-        </div>
-      </DeferredRender>
-
       {/* Transit Alerts Card */}
-      <DeferredRender delay={200}>
+      <DeferredRender delay={100}>
         <div className="mt-6">
           <TransitAlertsCard natalChart={activeChart} />
         </div>
       </DeferredRender>
 
-      {/* Best Days Summary Card */}
-      <DeferredRender delay={300}>
-        <div className="mt-6">
-          <BestDaysSummaryCard natalChart={activeChart} />
-        </div>
-      </DeferredRender>
-
       {/* Moon Transit Calendar */}
-      <DeferredRender delay={400}>
+      <DeferredRender delay={200}>
         <div className="mt-6">
           <MoonTransitCalendar natalChart={activeChart} />
         </div>
       </DeferredRender>
-
-      {/* Life Cycles Hub - Saturn Returns, Midlife Transits, Elder Initiations */}
-      {activeChart && (
-        <DeferredRender delay={500}>
-          <div className="mt-6">
-            <LifeCyclesHub chart={activeChart} currentDate={currentTime} />
-          </div>
-        </DeferredRender>
-      )}
 
       {/* Personal Transits to Natal Chart - TODAY'S TRANSITS */}
       {activeChart && personalTransits.length > 0 && (
@@ -1205,6 +1153,90 @@ const PlanAheadSection = ({
   );
 };
 
+// Insights Section - Biorhythms, Best Days, Power Score, Life Cycles
+const InsightsSection = ({
+  userNatalChart,
+  savedCharts,
+  selectedChart,
+  setSelectedChart
+}: {
+  userNatalChart: NatalChart | null;
+  savedCharts: NatalChart[];
+  selectedChart: string;
+  setSelectedChart: (id: string) => void;
+}) => {
+  const currentTime = new Date();
+
+  const activeChart = useMemo(() => {
+    if (selectedChart === 'general') return null;
+    if (selectedChart === 'user') return userNatalChart;
+    return savedCharts.find(c => c.id === selectedChart) || null;
+  }, [selectedChart, userNatalChart, savedCharts]);
+
+  return (
+    <div className="space-y-4">
+      {/* Chart Selector */}
+      <div className="p-4 rounded-lg border border-border bg-secondary/30">
+        <div className="flex items-center gap-3 flex-wrap">
+          <ChartSelector
+            userNatalChart={userNatalChart}
+            savedCharts={savedCharts}
+            selectedChartId={selectedChart}
+            onSelect={setSelectedChart}
+            includeGeneral={true}
+            generalLabel="Collective Only"
+            label="View insights for:"
+          />
+        </div>
+      </div>
+
+      {/* Daily Power Synthesis Card */}
+      {activeChart && (
+        <DeferredRender delay={50}>
+          <DailySynthesisCard
+            birthDate={new Date(activeChart.birthDate)}
+            targetDate={currentTime}
+            natalChart={activeChart}
+          />
+        </DeferredRender>
+      )}
+
+      {/* Biorhythm Section */}
+      <DeferredRender delay={100}>
+        <BiorhythmCard
+          birthDate={activeChart ? parseLocalDate(activeChart.birthDate) : null}
+          targetDate={currentTime}
+          savedCharts={[...(userNatalChart ? [userNatalChart] : []), ...savedCharts]}
+          selectedChartId={activeChart ? (selectedChart === 'user' ? userNatalChart?.id : selectedChart) : undefined}
+          onChartChange={(id) => {
+            const chart = [...(userNatalChart ? [userNatalChart] : []), ...savedCharts].find(c => c.id === id);
+            if (chart) {
+              if (userNatalChart && chart.id === userNatalChart.id) {
+                setSelectedChart('user');
+              } else {
+                setSelectedChart(id);
+              }
+            }
+          }}
+          chartName={activeChart?.name}
+        />
+      </DeferredRender>
+
+      {/* Best Days Summary Card */}
+      <DeferredRender delay={200}>
+        <BestDaysSummaryCard natalChart={activeChart} />
+      </DeferredRender>
+
+      {/* Life Cycles Hub */}
+      {activeChart && (
+        <DeferredRender delay={300}>
+          <LifeCyclesHub chart={activeChart} currentDate={currentTime} />
+        </DeferredRender>
+      )}
+    </div>
+  );
+};
+
 // Main Timing View Component
 export const TimingView = ({
   userNatalChart,
@@ -1247,6 +1279,17 @@ export const TimingView = ({
           Today
         </button>
         <button
+          onClick={() => setActiveSection('insights')}
+          className={`flex items-center gap-2 px-5 py-3 rounded-t-lg font-medium transition-all ${
+            activeSection === 'insights'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80'
+          }`}
+        >
+          <Activity size={18} />
+          Insights
+        </button>
+        <button
           onClick={() => setActiveSection('plan')}
           className={`flex items-center gap-2 px-5 py-3 rounded-t-lg font-medium transition-all ${
             activeSection === 'plan'
@@ -1270,6 +1313,23 @@ export const TimingView = ({
               </p>
             </div>
             <RightNowSection 
+              userNatalChart={userNatalChart}
+              savedCharts={savedCharts}
+              selectedChart={selectedChartForTiming}
+              setSelectedChart={setSelectedChartForTiming}
+            />
+          </div>
+        )}
+
+        {activeSection === 'insights' && (
+          <div>
+            <div className="mb-6">
+              <h3 className="text-lg font-serif mb-2">📊 Biorhythms & Best Days</h3>
+              <p className="text-sm text-muted-foreground">
+                Your biorhythm cycles, power score, best days for love, business, and more.
+              </p>
+            </div>
+            <InsightsSection
               userNatalChart={userNatalChart}
               savedCharts={savedCharts}
               selectedChart={selectedChartForTiming}
