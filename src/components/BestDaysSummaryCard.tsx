@@ -21,32 +21,63 @@ interface BestDaysSummaryCardProps {
   days?: number;
 }
 
-const SubActivityRow = ({ result }: { result: SubActivityResult }) => {
+/* ── Score bar visual ── */
+const ScoreBar = ({ score, category }: { score: number; category: string }) => {
+  // Normalise score to 0-100 range for the bar (scores typically 20-150+)
+  const pct = Math.min(100, Math.max(0, (score / 150) * 100));
+  
+  const barColorMap: Record<string, string> = {
+    love: 'bg-pink-400',
+    career: 'bg-amber-400',
+    health: 'bg-green-400',
+    travel: 'bg-blue-400',
+    finance: 'bg-emerald-400',
+    beauty: 'bg-purple-400',
+    chance: 'bg-yellow-400',
+  };
+  const barColor = barColorMap[category] || 'bg-primary';
+
+  const label = pct >= 80 ? 'Excellent' : pct >= 55 ? 'Good' : pct >= 30 ? 'Fair' : 'Low';
+
+  return (
+    <div className="flex items-center gap-2 min-w-[100px]">
+      <div className="flex-1 h-2 rounded-full bg-muted/40 overflow-hidden">
+        <div
+          className={`h-full rounded-full ${barColor} transition-all duration-500`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <span className="text-[10px] text-muted-foreground w-14 text-right">{label}</span>
+    </div>
+  );
+};
+
+/* ── Sub-activity row ── */
+const SubActivityRow = ({ result, parentCategory }: { result: SubActivityResult; parentCategory: string }) => {
   const isToday = isSameDay(result.bestDay, new Date());
   return (
-    <div className="flex items-center justify-between py-1.5 px-3 rounded-md bg-background/50 hover:bg-background/80 transition-colors">
-      <div className="flex items-center gap-2">
-        <span className="text-sm">{result.activity.emoji}</span>
-        <div>
+    <div className="flex items-center justify-between py-2 px-3 rounded-md bg-background/50 hover:bg-background/80 transition-colors">
+      <div className="flex items-center gap-2 min-w-0">
+        <span className="text-base shrink-0">{result.activity.emoji}</span>
+        <div className="min-w-0">
           <p className="text-xs font-medium">{result.activity.label}</p>
-          <p className="text-[10px] text-muted-foreground">{result.activity.description}</p>
+          <p className="text-[10px] text-muted-foreground truncate">{result.topReason}</p>
         </div>
       </div>
-      <div className="text-right shrink-0">
+      <div className="flex flex-col items-end gap-0.5 shrink-0 ml-2">
         <div className="flex items-center gap-1">
-          <p className="text-xs font-semibold">
-            {format(result.bestDay, 'MMM d')}
-          </p>
+          <p className="text-xs font-semibold">{format(result.bestDay, 'EEE, MMM d')}</p>
           {isToday && (
-            <Badge className="text-[9px] px-1 py-0 bg-primary">TODAY</Badge>
+            <Badge className="text-[9px] px-1 py-0 bg-primary/80 text-primary-foreground">NOW</Badge>
           )}
         </div>
-        <p className="text-[10px] text-amber-500">{result.rating}</p>
+        <ScoreBar score={result.score} category={parentCategory} />
       </div>
     </div>
   );
 };
 
+/* ── Category section with dropdown ── */
 const CategorySection = ({
   summary,
   subActivities,
@@ -71,16 +102,15 @@ const CategorySection = ({
 
   return (
     <div className="rounded-lg overflow-hidden">
-      {/* Main category row — clickable */}
       <button
         onClick={onToggle}
-        className={`w-full flex items-center justify-between p-2.5 ${getCategoryBg(summary.category)} transition-all hover:shadow-sm cursor-pointer`}
+        className={`w-full flex items-center justify-between p-2.5 rounded-lg ${getCategoryBg(summary.category)} transition-all hover:shadow-sm cursor-pointer`}
       >
         <div className="flex items-center gap-2">
           {expanded ? (
-            <ChevronDown size={14} className="text-muted-foreground" />
+            <ChevronDown size={14} className="text-muted-foreground shrink-0" />
           ) : (
-            <ChevronRight size={14} className="text-muted-foreground" />
+            <ChevronRight size={14} className="text-muted-foreground shrink-0" />
           )}
           <span className="text-lg">{summary.emoji}</span>
           <div className="text-left">
@@ -90,24 +120,23 @@ const CategorySection = ({
             </p>
           </div>
         </div>
-        <div className="text-right">
+        <div className="flex flex-col items-end gap-0.5">
           <div className="flex items-center gap-1">
             <p className={`text-sm font-semibold ${getCategoryColor(summary.category)}`}>
-              {format(summary.bestDay, 'MMM d')}
+              {format(summary.bestDay, 'EEE, MMM d')}
             </p>
             {isToday && (
-              <Badge className="text-[10px] px-1 py-0 bg-primary">TODAY</Badge>
+              <Badge className="text-[10px] px-1 py-0 bg-primary/80 text-primary-foreground">TODAY</Badge>
             )}
           </div>
-          <p className="text-xs text-amber-500">{summary.rating}</p>
+          <ScoreBar score={summary.score} category={summary.category} />
         </div>
       </button>
 
-      {/* Expanded sub-activities */}
       {expanded && (
-        <div className={`border-l-2 ml-5 pl-1 py-1 space-y-1 ${getCategoryBg(summary.category)}`}>
+        <div className="border-l-2 border-muted-foreground/20 ml-5 mt-1 pl-1 py-1 space-y-1">
           {subResults.map(r => (
-            <SubActivityRow key={r.activity.id} result={r} />
+            <SubActivityRow key={r.activity.id} result={r} parentCategory={summary.category} />
           ))}
         </div>
       )}
@@ -132,7 +161,6 @@ const ChanceSection = ({
     return CHANCE_ACTIVITIES.map(act => getSubActivityBestDay(act, natalChart, new Date(), days));
   }, [expanded, natalChart, days]);
 
-  // Best overall chance day
   const bestChance = useMemo(() => {
     const results = CHANCE_ACTIVITIES.map(act => getSubActivityBestDay(act, natalChart, new Date(), days));
     return results.sort((a, b) => b.score - a.score)[0];
@@ -144,13 +172,13 @@ const ChanceSection = ({
     <div className="rounded-lg overflow-hidden">
       <button
         onClick={onToggle}
-        className={`w-full flex items-center justify-between p-2.5 ${getCategoryBg('chance')} transition-all hover:shadow-sm cursor-pointer`}
+        className={`w-full flex items-center justify-between p-2.5 rounded-lg ${getCategoryBg('chance')} transition-all hover:shadow-sm cursor-pointer`}
       >
         <div className="flex items-center gap-2">
           {expanded ? (
-            <ChevronDown size={14} className="text-muted-foreground" />
+            <ChevronDown size={14} className="text-muted-foreground shrink-0" />
           ) : (
-            <ChevronRight size={14} className="text-muted-foreground" />
+            <ChevronRight size={14} className="text-muted-foreground shrink-0" />
           )}
           <span className="text-lg">🍀</span>
           <div className="text-left">
@@ -158,27 +186,27 @@ const ChanceSection = ({
             <p className="text-xs text-muted-foreground">Lottery, casino, contests</p>
           </div>
         </div>
-        <div className="text-right">
+        <div className="flex flex-col items-end gap-0.5">
           {bestChance && (
             <>
               <div className="flex items-center gap-1">
                 <p className={`text-sm font-semibold ${getCategoryColor('chance')}`}>
-                  {format(bestChance.bestDay, 'MMM d')}
+                  {format(bestChance.bestDay, 'EEE, MMM d')}
                 </p>
                 {isToday && (
-                  <Badge className="text-[10px] px-1 py-0 bg-primary">TODAY</Badge>
+                  <Badge className="text-[10px] px-1 py-0 bg-primary/80 text-primary-foreground">TODAY</Badge>
                 )}
               </div>
-              <p className="text-xs text-amber-500">{bestChance.rating}</p>
+              <ScoreBar score={bestChance.score} category="chance" />
             </>
           )}
         </div>
       </button>
 
       {expanded && (
-        <div className={`border-l-2 ml-5 pl-1 py-1 space-y-1 ${getCategoryBg('chance')}`}>
+        <div className="border-l-2 border-muted-foreground/20 ml-5 mt-1 pl-1 py-1 space-y-1">
           {subResults.map(r => (
-            <SubActivityRow key={r.activity.id} result={r} />
+            <SubActivityRow key={r.activity.id} result={r} parentCategory="chance" />
           ))}
         </div>
       )}
@@ -231,7 +259,7 @@ export const BestDaysSummaryCard = ({ natalChart, days = 30 }: BestDaysSummaryCa
               POWER DAY
             </span>
             {bestDayIsToday && (
-              <Badge className="text-[10px] px-1.5 py-0 bg-amber-500">TODAY!</Badge>
+              <Badge className="text-[10px] px-1.5 py-0 bg-amber-500 text-primary-foreground">TODAY!</Badge>
             )}
           </div>
           <p className="text-sm font-medium">
@@ -259,8 +287,6 @@ export const BestDaysSummaryCard = ({ natalChart, days = 30 }: BestDaysSummaryCa
             onToggle={() => toggle(s.category)}
           />
         ))}
-
-        {/* Chance & Luck section */}
         <ChanceSection
           natalChart={natalChart}
           days={days}
@@ -271,7 +297,7 @@ export const BestDaysSummaryCard = ({ natalChart, days = 30 }: BestDaysSummaryCa
 
       {/* Footer */}
       <p className="text-xs text-center text-muted-foreground mt-3">
-        {format(summary.period.start, 'MMM d')} - {format(summary.period.end, 'MMM d')}
+        {format(summary.period.start, 'MMM d')} – {format(summary.period.end, 'MMM d')}
       </p>
     </div>
   );
