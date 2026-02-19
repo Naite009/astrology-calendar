@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, ReactNode } from 'react';
-import { Clock, Calendar, CalendarCheck, Sparkles, Sun, Moon, AlertTriangle, CheckCircle, Star, ChevronLeft, ChevronRight, Users, User, Info, Activity } from 'lucide-react';
+import { Clock, Calendar, CalendarCheck, Sparkles, Sun, Moon, AlertTriangle, CheckCircle, Star, ChevronLeft, ChevronRight, Users, User, Info } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 /* Deferred render: mounts children only after a delay so the tab opens instantly */
@@ -47,7 +47,7 @@ interface TimingViewProps {
   currentDate: Date;
 }
 
-type TimingSection = 'now' | 'insights' | 'today' | 'plan';
+type TimingSection = 'now' | 'today' | 'plan';
 
 const PLANET_SYMBOLS: Record<string, string> = {
   Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀', Mars: '♂',
@@ -384,6 +384,58 @@ const RightNowSection = ({
             )}
           </div>
         </div>
+      )}
+
+      {/* Daily Power Synthesis */}
+      {activeChart && (
+        <DeferredRender delay={500} fallback={<Skeleton className="h-40 w-full rounded-lg mt-6" />}>
+          <div className="mt-6">
+            <DailySynthesisCard
+              birthDate={new Date(activeChart.birthDate)}
+              targetDate={currentTime}
+              natalChart={activeChart}
+            />
+          </div>
+        </DeferredRender>
+      )}
+
+      {/* Biorhythm Card */}
+      <DeferredRender delay={800} fallback={<Skeleton className="h-40 w-full rounded-lg mt-6" />}>
+        <div className="mt-6">
+          <BiorhythmCard
+            birthDate={activeChart ? parseLocalDate(activeChart.birthDate) : null}
+            targetDate={currentTime}
+            savedCharts={[...(userNatalChart ? [userNatalChart] : []), ...savedCharts]}
+            selectedChartId={activeChart ? (selectedChart === 'user' ? userNatalChart?.id : selectedChart) : undefined}
+            onChartChange={(id) => {
+              const chart = [...(userNatalChart ? [userNatalChart] : []), ...savedCharts].find(c => c.id === id);
+              if (chart) {
+                if (userNatalChart && chart.id === userNatalChart.id) {
+                  setSelectedChart('user');
+                } else {
+                  setSelectedChart(id);
+                }
+              }
+            }}
+            chartName={activeChart?.name}
+          />
+        </div>
+      </DeferredRender>
+
+      {/* Best Days Summary */}
+      <DeferredRender delay={1200} fallback={<Skeleton className="h-40 w-full rounded-lg mt-6" />}>
+        <div className="mt-6">
+          <BestDaysSummaryCard natalChart={activeChart} />
+        </div>
+      </DeferredRender>
+
+      {/* Life Cycles Hub */}
+      {activeChart && (
+        <DeferredRender delay={1600} fallback={<Skeleton className="h-40 w-full rounded-lg mt-6" />}>
+          <div className="mt-6">
+            <LifeCyclesHub chart={activeChart} currentDate={currentTime} />
+          </div>
+        </DeferredRender>
       )}
     </div>
   );
@@ -1120,7 +1172,7 @@ const PlanAheadSection = ({
       {/* Biorhythm Forecast Section - Always visible with built-in chart selector */}
       <div className="mt-8">
         <h4 className="text-lg font-serif mb-4 flex items-center gap-2">
-          <Activity size={20} className="text-primary" />
+          <Sparkles size={20} className="text-primary" />
           Personal Biorhythm Forecast
         </h4>
         {activeChart ? (
@@ -1138,7 +1190,7 @@ const PlanAheadSection = ({
         ) : (
           <div className="p-4 rounded-lg border border-dashed border-border bg-secondary/20">
             <div className="flex items-center gap-3">
-              <Activity size={20} className="text-muted-foreground" />
+              <Sparkles size={20} className="text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium">Biorhythm Forecast Available</p>
                 <p className="text-xs text-muted-foreground">
@@ -1153,89 +1205,7 @@ const PlanAheadSection = ({
   );
 };
 
-// Insights Section - Biorhythms, Best Days, Power Score, Life Cycles
-const InsightsSection = ({
-  userNatalChart,
-  savedCharts,
-  selectedChart,
-  setSelectedChart
-}: {
-  userNatalChart: NatalChart | null;
-  savedCharts: NatalChart[];
-  selectedChart: string;
-  setSelectedChart: (id: string) => void;
-}) => {
-  const currentTime = new Date();
-
-  const activeChart = useMemo(() => {
-    if (selectedChart === 'general') return null;
-    if (selectedChart === 'user') return userNatalChart;
-    return savedCharts.find(c => c.id === selectedChart) || null;
-  }, [selectedChart, userNatalChart, savedCharts]);
-
-  return (
-    <div className="space-y-4">
-      {/* Chart Selector */}
-      <div className="p-4 rounded-lg border border-border bg-secondary/30">
-        <div className="flex items-center gap-3 flex-wrap">
-          <ChartSelector
-            userNatalChart={userNatalChart}
-            savedCharts={savedCharts}
-            selectedChartId={selectedChart}
-            onSelect={setSelectedChart}
-            includeGeneral={true}
-            generalLabel="Collective Only"
-            label="View insights for:"
-          />
-        </div>
-      </div>
-
-      {/* Daily Power Synthesis Card */}
-      {activeChart && (
-        <DeferredRender delay={50}>
-          <DailySynthesisCard
-            birthDate={new Date(activeChart.birthDate)}
-            targetDate={currentTime}
-            natalChart={activeChart}
-          />
-        </DeferredRender>
-      )}
-
-      {/* Biorhythm Section */}
-      <DeferredRender delay={100}>
-        <BiorhythmCard
-          birthDate={activeChart ? parseLocalDate(activeChart.birthDate) : null}
-          targetDate={currentTime}
-          savedCharts={[...(userNatalChart ? [userNatalChart] : []), ...savedCharts]}
-          selectedChartId={activeChart ? (selectedChart === 'user' ? userNatalChart?.id : selectedChart) : undefined}
-          onChartChange={(id) => {
-            const chart = [...(userNatalChart ? [userNatalChart] : []), ...savedCharts].find(c => c.id === id);
-            if (chart) {
-              if (userNatalChart && chart.id === userNatalChart.id) {
-                setSelectedChart('user');
-              } else {
-                setSelectedChart(id);
-              }
-            }
-          }}
-          chartName={activeChart?.name}
-        />
-      </DeferredRender>
-
-      {/* Best Days Summary Card */}
-      <DeferredRender delay={200}>
-        <BestDaysSummaryCard natalChart={activeChart} />
-      </DeferredRender>
-
-      {/* Life Cycles Hub */}
-      {activeChart && (
-        <DeferredRender delay={300}>
-          <LifeCyclesHub chart={activeChart} currentDate={currentTime} />
-        </DeferredRender>
-      )}
-    </div>
-  );
-};
+// (InsightsSection removed – components merged into RightNowSection)
 
 // Main Timing View Component
 export const TimingView = ({
@@ -1279,17 +1249,6 @@ export const TimingView = ({
           Today
         </button>
         <button
-          onClick={() => setActiveSection('insights')}
-          className={`flex items-center gap-2 px-5 py-3 rounded-t-lg font-medium transition-all ${
-            activeSection === 'insights'
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80'
-          }`}
-        >
-          <Activity size={18} />
-          Power Days
-        </button>
-        <button
           onClick={() => setActiveSection('plan')}
           className={`flex items-center gap-2 px-5 py-3 rounded-t-lg font-medium transition-all ${
             activeSection === 'plan'
@@ -1321,22 +1280,6 @@ export const TimingView = ({
           </div>
         )}
 
-        {activeSection === 'insights' && (
-          <div>
-            <div className="mb-6">
-              <h3 className="text-lg font-serif mb-2">⚡ Power Days</h3>
-              <p className="text-sm text-muted-foreground">
-                Your biorhythm cycles, power score, best days for love, business, and more.
-              </p>
-            </div>
-            <InsightsSection
-              userNatalChart={userNatalChart}
-              savedCharts={savedCharts}
-              selectedChart={selectedChartForTiming}
-              setSelectedChart={setSelectedChartForTiming}
-            />
-          </div>
-        )}
 
         {activeSection === 'today' && (
           <div>
