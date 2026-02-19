@@ -1287,7 +1287,7 @@ export const TimingView = ({
           }`}
         >
           <Activity size={18} />
-          Insights
+          Power Days
         </button>
         <button
           onClick={() => setActiveSection('plan')}
@@ -1324,7 +1324,7 @@ export const TimingView = ({
         {activeSection === 'insights' && (
           <div>
             <div className="mb-6">
-              <h3 className="text-lg font-serif mb-2">📊 Biorhythms & Best Days</h3>
+              <h3 className="text-lg font-serif mb-2">⚡ Power Days</h3>
               <p className="text-sm text-muted-foreground">
                 Your biorhythm cycles, power score, best days for love, business, and more.
               </p>
