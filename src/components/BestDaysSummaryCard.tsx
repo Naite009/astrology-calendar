@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useTransition, useCallback } from 'react';
 import { Calendar, Sparkles, ChevronDown, ChevronRight } from 'lucide-react';
 import {
   getBestDaysSummary,
@@ -15,6 +15,7 @@ import {
 import { NatalChart } from '@/hooks/useNatalChart';
 import { format, isSameDay, differenceInDays } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface BestDaysSummaryCardProps {
   natalChart: NatalChart | null;
@@ -270,18 +271,14 @@ const CategorySection = ({
 };
 
 /* ── Chance Section ── */
-const ChanceSection = ({ natalChart, days, expanded, onToggle }: {
+const ChanceSection = ({ natalChart, days, expanded, onToggle, bestChance }: {
   natalChart: NatalChart | null; days: number; expanded: boolean; onToggle: () => void;
+  bestChance: SubActivityResult | null;
 }) => {
   const subResults = useMemo(() => {
     if (!expanded) return [];
     return CHANCE_ACTIVITIES.map(act => getSubActivityBestDay(act, natalChart, new Date(), days));
   }, [expanded, natalChart, days]);
-
-  const bestChance = useMemo(() => {
-    const results = CHANCE_ACTIVITIES.map(act => getSubActivityBestDay(act, natalChart, new Date(), days));
-    return results.sort((a, b) => b.score - a.score)[0];
-  }, [natalChart, days]);
 
   const isToday = bestChance ? isSameDay(bestChance.bestDay, new Date()) : false;
 
@@ -324,11 +321,19 @@ const ChanceSection = ({ natalChart, days, expanded, onToggle }: {
 
 export const BestDaysSummaryCard = ({ natalChart, days = 30 }: BestDaysSummaryCardProps) => {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [summary, setSummary] = useState<ReturnType<typeof getBestDaysSummary> | null>(null);
+  const [bestChance, setBestChance] = useState<SubActivityResult | null>(null);
 
-  const summary = useMemo(() => getBestDaysSummary(natalChart, new Date(), days), [natalChart, days]);
-
-  const today = new Date();
-  const bestDayIsToday = isSameDay(summary.overallBestDay.date, today);
+  // Defer heavy computation so the tab renders instantly
+  useEffect(() => {
+    const id = requestAnimationFrame(() => {
+      const s = getBestDaysSummary(natalChart, new Date(), days);
+      setSummary(s);
+      const results = CHANCE_ACTIVITIES.map(act => getSubActivityBestDay(act, natalChart, new Date(), days));
+      setBestChance(results.sort((a, b) => b.score - a.score)[0] || null);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [natalChart, days]);
 
   const toggle = (key: string) => {
     setExpandedCategories(prev => {
@@ -337,6 +342,29 @@ export const BestDaysSummaryCard = ({ natalChart, days = 30 }: BestDaysSummaryCa
       return next;
     });
   };
+
+  if (!summary) {
+    return (
+      <div className="p-4 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5 space-y-3">
+        <div className="flex items-center gap-2">
+          <div className="p-2 rounded-lg bg-gradient-to-br from-primary to-accent text-primary-foreground">
+            <Calendar size={18} />
+          </div>
+          <div>
+            <h3 className="font-semibold text-sm">Best Days at a Glance</h3>
+            <p className="text-xs text-muted-foreground">Calculating…</p>
+          </div>
+        </div>
+        <Skeleton className="h-12 w-full rounded-lg" />
+        <Skeleton className="h-10 w-full rounded-lg" />
+        <Skeleton className="h-10 w-full rounded-lg" />
+        <Skeleton className="h-10 w-full rounded-lg" />
+      </div>
+    );
+  }
+
+  const today = new Date();
+  const bestDayIsToday = isSameDay(summary.overallBestDay.date, today);
 
   return (
     <div className="p-4 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5">
@@ -382,6 +410,7 @@ export const BestDaysSummaryCard = ({ natalChart, days = 30 }: BestDaysSummaryCa
         <ChanceSection
           natalChart={natalChart} days={days}
           expanded={expandedCategories.has('chance')} onToggle={() => toggle('chance')}
+          bestChance={bestChance}
         />
       </div>
 
