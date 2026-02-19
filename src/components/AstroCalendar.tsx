@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers, Combine, Diamond, FileText, CalendarClock, Utensils } from "lucide-react";
 import { TodaysCosmicEnergy, CosmicEnergyButton } from "./TodaysCosmicEnergy";
 import { useState as useCosmicState } from "react";
@@ -14,7 +14,7 @@ import { MoonPhasesView } from "./MoonPhasesView";
 import { UserForm } from "./UserForm";
 import { DayDetail } from "./DayDetail";
 import { ChartLibrary } from "./ChartLibrary";
-import { TimingView } from "./TimingView";
+const TimingView = lazy(() => import("./TimingView").then(m => ({ default: m.TimingView })));
 import { ColorsView } from "./ColorsView";
 import { PatternsView } from "./PatternsView";
 import { SacredScriptView } from "./SacredScriptView";
@@ -742,13 +742,15 @@ export const AstroCalendar = () => {
         )}
 
         {viewMode === "timing" && (
-          <TimingView
-            userNatalChart={userNatalChart}
-            savedCharts={savedCharts}
-            selectedChartForTiming={selectedChartForTiming}
-            setSelectedChartForTiming={selectChartForTiming}
-            currentDate={currentDate}
-          />
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading Timing…</div>}>
+            <TimingView
+              userNatalChart={userNatalChart}
+              savedCharts={savedCharts}
+              selectedChartForTiming={selectedChartForTiming}
+              setSelectedChartForTiming={selectChartForTiming}
+              currentDate={currentDate}
+            />
+          </Suspense>
         )}
 
         {viewMode === "colors" && (

@@ -123,6 +123,9 @@ const RightNowSection = ({
   setSelectedChart: (id: string) => void;
 }) => {
   const [currentTime, setCurrentTime] = useState(() => new Date());
+  const [planetaryHours, setPlanetaryHours] = useState<any[]>([]);
+  const [vocMoon, setVocMoon] = useState<{ isVoid: boolean; endsAt?: Date; nextSign?: string } | null>(null);
+  const [personalTransits, setPersonalTransits] = useState<any[]>([]);
 
   // Get active natal chart
   const activeChart = useMemo(() => {
@@ -137,70 +140,64 @@ const RightNowSection = ({
     return () => clearInterval(timer);
   }, []);
 
-  // Memoize planetary hours calculation
-  const planetaryHours = useMemo(() => {
-    const lat = 34.0522;
-    const lng = -118.2437;
-    return calculatePlanetaryHours(currentTime, lat, lng);
-  }, [currentTime]);
+  // Defer all heavy calculations so the section renders instantly
+  useEffect(() => {
+    const id = requestAnimationFrame(() => {
+      // Planetary hours
+      const lat = 34.0522;
+      const lng = -118.2437;
+      setPlanetaryHours(calculatePlanetaryHours(currentTime, lat, lng));
 
-  // Memoize VOC Moon calculation
-  const vocMoon = useMemo(() => {
-    const vocDetails = getVOCMoonDetails(currentTime);
-    return vocDetails.isCurrentlyVOC 
-      ? { isVoid: true, endsAt: vocDetails.end, nextSign: vocDetails.moonEntersSign } 
-      : { isVoid: false };
-  }, [currentTime]);
+      // VOC Moon
+      const vocDetails = getVOCMoonDetails(currentTime);
+      setVocMoon(vocDetails.isCurrentlyVOC 
+        ? { isVoid: true, endsAt: vocDetails.end, nextSign: vocDetails.moonEntersSign } 
+        : { isVoid: false });
 
-  // Memoize personal transits calculation
-  const personalTransits = useMemo(() => {
-    if (!activeChart?.planets) return [];
-
-    const transits = getTransitPositions(currentTime);
-    const aspects: any[] = [];
-    const ZODIAC_SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
-    
-    const natalPlanets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'] as const;
-    
-    natalPlanets.forEach(natalPlanet => {
-      const natalPos = activeChart.planets[natalPlanet];
-      if (!natalPos?.sign) return;
-      
-      const natalSignIndex = ZODIAC_SIGNS.indexOf(natalPos.sign);
-      const natalLongitude = natalSignIndex * 30 + natalPos.degree + (natalPos.minutes || 0) / 60;
-      
-      transits.forEach(transit => {
-        if (transit.name === natalPlanet) return;
-        
-        let diff = Math.abs(transit.longitude - natalLongitude);
-        if (diff > 180) diff = 360 - diff;
-        
-        const aspectTypes = [
-          { name: 'conjunction', angle: 0, symbol: '☌', effect: 'intensifies' },
-          { name: 'sextile', angle: 60, symbol: '⚹', effect: 'supports' },
-          { name: 'square', angle: 90, symbol: '□', effect: 'challenges' },
-          { name: 'trine', angle: 120, symbol: '△', effect: 'harmonizes with' },
-          { name: 'opposition', angle: 180, symbol: '☍', effect: 'opposes' }
-        ];
-        
-        aspectTypes.forEach(aspect => {
-          const orb = Math.abs(diff - aspect.angle);
-          if (orb <= 3) {
-            aspects.push({
-              transitPlanet: transit.name,
-              natalPlanet,
-              aspectType: aspect.name,
-              symbol: aspect.symbol,
-              orb: orb.toFixed(1),
-              effect: aspect.effect,
-              isHarmonious: ['conjunction', 'trine', 'sextile'].includes(aspect.name)
-            });
-          }
+      // Personal transits
+      if (!activeChart?.planets) {
+        setPersonalTransits([]);
+        return;
+      }
+      const transits = getTransitPositions(currentTime);
+      const aspects: any[] = [];
+      const ZODIAC_SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+      const natalPlanets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'] as const;
+      natalPlanets.forEach(natalPlanet => {
+        const natalPos = activeChart.planets[natalPlanet];
+        if (!natalPos?.sign) return;
+        const natalSignIndex = ZODIAC_SIGNS.indexOf(natalPos.sign);
+        const natalLongitude = natalSignIndex * 30 + natalPos.degree + (natalPos.minutes || 0) / 60;
+        transits.forEach(transit => {
+          if (transit.name === natalPlanet) return;
+          let diff = Math.abs(transit.longitude - natalLongitude);
+          if (diff > 180) diff = 360 - diff;
+          const aspectTypes = [
+            { name: 'conjunction', angle: 0, symbol: '☌', effect: 'intensifies' },
+            { name: 'sextile', angle: 60, symbol: '⚹', effect: 'supports' },
+            { name: 'square', angle: 90, symbol: '□', effect: 'challenges' },
+            { name: 'trine', angle: 120, symbol: '△', effect: 'harmonizes with' },
+            { name: 'opposition', angle: 180, symbol: '☍', effect: 'opposes' }
+          ];
+          aspectTypes.forEach(aspect => {
+            const orb = Math.abs(diff - aspect.angle);
+            if (orb <= 3) {
+              aspects.push({
+                transitPlanet: transit.name,
+                natalPlanet,
+                aspectType: aspect.name,
+                symbol: aspect.symbol,
+                orb: orb.toFixed(1),
+                effect: aspect.effect,
+                isHarmonious: ['conjunction', 'trine', 'sextile'].includes(aspect.name)
+              });
+            }
+          });
         });
       });
+      setPersonalTransits(aspects);
     });
-    
-    return aspects;
+    return () => cancelAnimationFrame(id);
   }, [activeChart, currentTime]);
 
   // Find current planetary hour - use correct property names (start/end not startTime/endTime)
