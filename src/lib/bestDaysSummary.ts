@@ -5,9 +5,9 @@
  * with specific sub-activities per category.
  */
 
-import { calculateBestTimes, BestTimesCategory, BestTimeResult, CATEGORY_INFO } from './bestTimes';
+import { calculateBestTimes, calculateAllDayScores, BestTimesCategory, BestTimeResult, CATEGORY_INFO } from './bestTimes';
 import { NatalChart } from '@/hooks/useNatalChart';
-import { format } from 'date-fns';
+import { format, differenceInDays } from 'date-fns';
 
 export interface SubActivity {
   id: string;
@@ -45,11 +45,13 @@ export interface SubActivityResult {
   score: number;
   rating: string;
   topReason: string;
-  /** Top 3 days for this activity, sorted best-first */
+  /** Top 3 best days for this activity, spread across the month */
   topDays: SubActivityDayScore[];
   /** Today's score for this activity */
   todayScore: number;
   todayRating: string;
+  /** All 30 days with scores for wave chart */
+  allDays: SubActivityDayScore[];
 }
 
 export interface BestDaysSummaryResult {
@@ -197,33 +199,57 @@ export function getSubActivityBestDay(
     ? activity.blendCategories
     : [activity.category];
 
-  // Build a per-day blended score map
-  const dayMap: Record<string, { date: Date; score: number; count: number; reason: string }> = {};
+  // Use calculateAllDayScores so every day in the range has a data point
+  const dayMap: Record<string, { date: Date; score: number; reasons: string[] }> = {};
 
   for (const cat of cats) {
-    const results = calculateBestTimes(cat, natalChart, startDate, endDate);
-    for (const r of results) {
+    const allResults = calculateAllDayScores(cat, natalChart, startDate, endDate);
+    for (const r of allResults) {
       const key = format(r.date, 'yyyy-MM-dd');
       if (!dayMap[key]) {
-        dayMap[key] = { date: r.date, score: 0, count: 0, reason: r.reasons[0] || 'Favorable alignments' };
+        dayMap[key] = { date: r.date, score: 0, reasons: [] };
       }
       dayMap[key].score += r.score;
-      dayMap[key].count += 1;
+      if (r.reasons.length > 0 && r.reasons[0] !== 'No strong alignments') {
+        dayMap[key].reasons.push(...r.reasons);
+      }
     }
   }
 
-  // Average scores across blended categories instead of summing
+  // Apply modifier
   const entries = Object.values(dayMap).map(d => ({
-    ...d,
-    score: Math.round((d.score / Math.max(d.count, 1)) * activity.modifier),
+    date: d.date,
+    score: Math.round(d.score * activity.modifier),
+    reason: d.reasons[0] || 'Favorable alignments',
+    reasons: d.reasons,
   }));
 
-  const sorted = entries.sort((a, b) => b.score - a.score);
+  // Sort chronologically for allDays (wave chart)
+  const chronological = [...entries].sort((a, b) => a.date.getTime() - b.date.getTime());
+
+  // Sort by score for top days
+  const sorted = [...entries].sort((a, b) => b.score - a.score);
+
+  // Pick top 3 that are spread out (at least 3 days apart)
+  const topDays: SubActivityDayScore[] = [];
+  for (const entry of sorted) {
+    if (topDays.length >= 3) break;
+    const tooClose = topDays.some(t => Math.abs(differenceInDays(t.date, entry.date)) < 3);
+    if (!tooClose) {
+      topDays.push({
+        date: entry.date,
+        score: entry.score,
+        rating: scoreToRating(entry.score),
+        reason: entry.reason,
+      });
+    }
+  }
+
   const todayKey = format(new Date(), 'yyyy-MM-dd');
   const todayEntry = entries.find(e => format(e.date, 'yyyy-MM-dd') === todayKey);
   const todayScore = todayEntry ? todayEntry.score : 0;
 
-  const topDays: SubActivityDayScore[] = sorted.slice(0, 3).map(d => ({
+  const allDays: SubActivityDayScore[] = chronological.map(d => ({
     date: d.date,
     score: d.score,
     rating: scoreToRating(d.score),
@@ -241,6 +267,7 @@ export function getSubActivityBestDay(
       topDays,
       todayScore,
       todayRating: scoreToRating(todayScore),
+      allDays,
     };
   }
 
@@ -253,6 +280,7 @@ export function getSubActivityBestDay(
     topDays: [],
     todayScore: 0,
     todayRating: scoreToRating(0),
+    allDays,
   };
 }
 

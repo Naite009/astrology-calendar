@@ -21,64 +21,14 @@ interface BestDaysSummaryCardProps {
   days?: number;
 }
 
-/* ── Mini timeline: shows today vs best day on a 30-day bar ── */
-const MiniTimeline = ({ todayScore, bestDay, bestScore, days, barColor }: {
-  todayScore: number;
-  bestDay: Date;
-  bestScore: number;
-  days: number;
-  barColor: string;
-}) => {
-  const today = new Date();
-  const daysUntilBest = Math.max(0, differenceInDays(bestDay, today));
-  const bestPct = Math.min(100, (daysUntilBest / days) * 100);
-  const isToday = daysUntilBest === 0;
-  // Normalise scores
-  const todayPct = Math.min(100, Math.max(5, (todayScore / 120) * 100));
-  const bestPctHeight = Math.min(100, Math.max(5, (bestScore / 120) * 100));
-
-  return (
-    <div className="mt-1.5">
-      {/* Score comparison */}
-      <div className="flex items-center gap-2 text-[10px] text-muted-foreground mb-1">
-        <span>Today: <span className="font-semibold text-foreground">{todayScore}pts</span></span>
-        <span>•</span>
-        <span>
-          Best: <span className="font-semibold text-foreground">{bestScore}pts</span>
-          {isToday ? ' (today!)' : ` in ${daysUntilBest}d`}
-        </span>
-      </div>
-      {/* Timeline bar */}
-      <div className="relative h-3 rounded-full bg-muted/30 overflow-hidden">
-        {/* Today marker - always at left */}
-        <div className="absolute left-0 top-0 h-full rounded-l-full bg-muted-foreground/20" style={{ width: '3px' }} />
-        {/* Best day marker */}
-        <div
-          className={`absolute top-0 h-full ${barColor} rounded-full transition-all duration-500`}
-          style={{ left: `${Math.max(0, bestPct - 3)}%`, width: '6px' }}
-        />
-        {/* Score fill from 0 to best day position */}
-        <div
-          className={`absolute left-0 top-0 h-full ${barColor} opacity-25 rounded-full`}
-          style={{ width: `${bestPct}%` }}
-        />
-      </div>
-      <div className="flex justify-between text-[9px] text-muted-foreground mt-0.5">
-        <span>Today</span>
-        <span>{format(bestDay, 'MMM d')}</span>
-      </div>
-    </div>
-  );
-};
-
 /* ── Score badge ── */
 const ScoreBadge = ({ score, small = false }: { score: number; small?: boolean }) => {
-  let color = 'bg-muted text-muted-foreground';
+  let color = 'bg-muted/40 text-muted-foreground';
   let label = 'Low';
-  if (score >= 90) { color = 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'; label = 'Excellent'; }
+  if (score >= 120) { color = 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'; label = 'Exceptional'; }
+  else if (score >= 90) { color = 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'; label = 'Excellent'; }
   else if (score >= 60) { color = 'bg-blue-500/20 text-blue-700 dark:text-blue-300'; label = 'Good'; }
   else if (score >= 30) { color = 'bg-amber-500/20 text-amber-700 dark:text-amber-300'; label = 'Fair'; }
-  else { color = 'bg-muted/40 text-muted-foreground'; label = 'Low'; }
 
   return (
     <span className={`inline-flex items-center rounded-full px-1.5 py-0.5 font-medium ${color} ${small ? 'text-[9px]' : 'text-[10px]'}`}>
@@ -87,33 +37,135 @@ const ScoreBadge = ({ score, small = false }: { score: number; small?: boolean }
   );
 };
 
-/* ── Top 3 days row ── */
-const TopDayChip = ({ day, rank }: { day: SubActivityDayScore; rank: number }) => {
-  const isToday = isSameDay(day.date, new Date());
-  const medals = ['🥇', '🥈', '🥉'];
+/* ── 30-day wave chart (like biorhythm) ── */
+const WaveChart = ({ allDays, parentColor, todayIndex }: {
+  allDays: SubActivityDayScore[];
+  parentColor: string;
+  todayIndex: number;
+}) => {
+  if (allDays.length === 0) return null;
+
+  const maxScore = Math.max(...allDays.map(d => d.score), 1);
+  const width = 300;
+  const height = 60;
+  const padding = { top: 4, bottom: 14, left: 2, right: 2 };
+  const chartW = width - padding.left - padding.right;
+  const chartH = height - padding.top - padding.bottom;
+
+  const strokeColorMap: Record<string, string> = {
+    love: '#ec4899', career: '#f59e0b', health: '#22c55e',
+    travel: '#3b82f6', finance: '#10b981', beauty: '#a855f7', chance: '#eab308',
+  };
+  const strokeColor = strokeColorMap[parentColor] || '#6366f1';
+
+  // Build SVG path
+  const points = allDays.map((d, i) => {
+    const x = padding.left + (i / Math.max(allDays.length - 1, 1)) * chartW;
+    const y = padding.top + chartH - (d.score / maxScore) * chartH;
+    return { x, y, score: d.score, date: d.date };
+  });
+
+  const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+
+  // Fill area
+  const areaD = `${pathD} L${points[points.length - 1].x},${padding.top + chartH} L${points[0].x},${padding.top + chartH} Z`;
+
+  // Today marker
+  const todayX = todayIndex >= 0 && todayIndex < points.length ? points[todayIndex].x : null;
+
+  // Top 3 peaks (spread apart)
+  const sortedByScore = [...points].sort((a, b) => b.score - a.score);
+  const peaks: typeof points = [];
+  for (const p of sortedByScore) {
+    if (peaks.length >= 3) break;
+    const tooClose = peaks.some(pk => Math.abs(pk.x - p.x) < chartW * 0.1);
+    if (!tooClose && p.score > 0) peaks.push(p);
+  }
+
+  // Date labels
+  const firstDate = allDays[0]?.date;
+  const midDate = allDays[Math.floor(allDays.length / 2)]?.date;
+  const lastDate = allDays[allDays.length - 1]?.date;
+
   return (
-    <div className={`flex items-center gap-1.5 py-1 px-2 rounded-md ${isToday ? 'bg-primary/10 ring-1 ring-primary/30' : 'bg-background/60'}`}>
-      <span className="text-sm">{medals[rank]}</span>
-      <div className="min-w-0">
-        <p className="text-[11px] font-semibold">
-          {format(day.date, 'EEE, MMM d')}
-          {isToday && <span className="ml-1 text-primary text-[9px]">← TODAY</span>}
-        </p>
-        <p className="text-[9px] text-muted-foreground truncate">{day.reason}</p>
-      </div>
-      <ScoreBadge score={day.score} small />
+    <div className="w-full overflow-hidden">
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto" preserveAspectRatio="xMidYMid meet">
+        {/* Grid lines */}
+        <line x1={padding.left} y1={padding.top} x2={width - padding.right} y2={padding.top}
+          stroke="currentColor" strokeOpacity={0.08} strokeWidth={0.5} />
+        <line x1={padding.left} y1={padding.top + chartH / 2} x2={width - padding.right} y2={padding.top + chartH / 2}
+          stroke="currentColor" strokeOpacity={0.08} strokeWidth={0.5} />
+        <line x1={padding.left} y1={padding.top + chartH} x2={width - padding.right} y2={padding.top + chartH}
+          stroke="currentColor" strokeOpacity={0.08} strokeWidth={0.5} />
+
+        {/* Area fill */}
+        <path d={areaD} fill={strokeColor} fillOpacity={0.1} />
+        
+        {/* Line */}
+        <path d={pathD} fill="none" stroke={strokeColor} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+
+        {/* Today vertical line */}
+        {todayX !== null && (
+          <>
+            <line x1={todayX} y1={padding.top} x2={todayX} y2={padding.top + chartH}
+              stroke="currentColor" strokeOpacity={0.3} strokeWidth={0.5} strokeDasharray="2,2" />
+            <circle cx={todayX} cy={points[todayIndex].y} r={3} fill={strokeColor} stroke="white" strokeWidth={1} />
+            <text x={todayX} y={padding.top - 0.5} textAnchor="middle" fontSize={5} fill="currentColor" opacity={0.6}>
+              TODAY
+            </text>
+          </>
+        )}
+
+        {/* Peak markers */}
+        {peaks.map((p, i) => {
+          const medals = ['🥇', '🥈', '🥉'];
+          return (
+            <g key={i}>
+              <circle cx={p.x} cy={p.y} r={2.5} fill={strokeColor} stroke="white" strokeWidth={0.8} />
+              <text x={p.x} y={p.y - 4} textAnchor="middle" fontSize={6}>
+                {medals[i]}
+              </text>
+            </g>
+          );
+        })}
+
+        {/* Date labels */}
+        {firstDate && <text x={padding.left} y={height - 1} fontSize={4.5} fill="currentColor" opacity={0.5}>{format(firstDate, 'MMM d')}</text>}
+        {midDate && <text x={width / 2} y={height - 1} textAnchor="middle" fontSize={4.5} fill="currentColor" opacity={0.5}>{format(midDate, 'MMM d')}</text>}
+        {lastDate && <text x={width - padding.right} y={height - 1} textAnchor="end" fontSize={4.5} fill="currentColor" opacity={0.5}>{format(lastDate, 'MMM d')}</text>}
+      </svg>
     </div>
   );
 };
 
-/* ── Sub-activity row with top 3 + timeline ── */
+/* ── Top 3 day chip ── */
+const TopDayChip = ({ day, rank }: { day: SubActivityDayScore; rank: number }) => {
+  const isToday = isSameDay(day.date, new Date());
+  const medals = ['🥇', '🥈', '🥉'];
+  return (
+    <div className={`flex items-center gap-1.5 py-1.5 px-2 rounded-md ${isToday ? 'bg-primary/10 ring-1 ring-primary/30' : 'bg-background/60'}`}>
+      <span className="text-sm">{medals[rank]}</span>
+      <div className="flex-1 min-w-0">
+        <p className="text-[11px] font-semibold">
+          {format(day.date, 'EEEE, MMM d')}
+          {isToday && <span className="ml-1 text-primary text-[9px]">← YOU ARE HERE</span>}
+        </p>
+        <p className="text-[9px] text-muted-foreground truncate">{day.reason}</p>
+      </div>
+      <div className="text-right shrink-0">
+        <span className="text-[11px] font-bold">{day.score}pts</span>
+        <br />
+        <ScoreBadge score={day.score} small />
+      </div>
+    </div>
+  );
+};
+
+/* ── Sub-activity row ── */
 const SubActivityRow = ({ result, parentCategory }: { result: SubActivityResult; parentCategory: string }) => {
   const [showDetail, setShowDetail] = useState(false);
-
-  const barColorMap: Record<string, string> = {
-    love: 'bg-pink-400', career: 'bg-amber-400', health: 'bg-green-400',
-    travel: 'bg-blue-400', finance: 'bg-emerald-400', beauty: 'bg-purple-400', chance: 'bg-yellow-400',
-  };
+  const today = new Date();
+  const todayIndex = result.allDays.findIndex(d => isSameDay(d.date, today));
 
   return (
     <div className="rounded-md bg-background/50 hover:bg-background/80 transition-colors overflow-hidden">
@@ -138,19 +190,25 @@ const SubActivityRow = ({ result, parentCategory }: { result: SubActivityResult;
       </button>
 
       {showDetail && (
-        <div className="px-3 pb-2.5 space-y-2">
-          {/* Timeline */}
-          <MiniTimeline
-            todayScore={result.todayScore}
-            bestDay={result.bestDay}
-            bestScore={result.score}
-            days={30}
-            barColor={barColorMap[parentCategory] || 'bg-primary'}
-          />
-          {/* Top 3 days */}
+        <div className="px-3 pb-3 space-y-2.5">
+          {/* Today vs Best comparison */}
+          <div className="flex items-center justify-between text-[10px] px-1">
+            <span className="text-muted-foreground">
+              Today: <span className="font-semibold text-foreground">{result.todayScore}pts</span> ({result.todayRating})
+            </span>
+            <span className="text-muted-foreground">
+              Best: <span className="font-semibold text-foreground">{result.score}pts</span>
+              {isSameDay(result.bestDay, today) ? ' (today!)' : ` in ${differenceInDays(result.bestDay, today)}d`}
+            </span>
+          </div>
+
+          {/* Wave chart */}
+          <WaveChart allDays={result.allDays} parentColor={parentCategory} todayIndex={todayIndex} />
+
+          {/* Top 3 spread days */}
           {result.topDays.length > 0 && (
             <div className="space-y-1">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Top 3 Days</p>
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Best 3 Days This Month</p>
               {result.topDays.map((d, i) => (
                 <TopDayChip key={i} day={d} rank={i} />
               ))}
