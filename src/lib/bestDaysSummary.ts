@@ -279,57 +279,16 @@ export function getSubActivityBestDay(
 
   const normalize = (raw: number) => Math.round(raw * scaleFactor);
 
-  // Pick top 3 from the next 90 days (reduced from 365 for performance)
-  const yearEnd = new Date(startDate);
-  yearEnd.setDate(yearEnd.getDate() + 90);
-  const yearDayMap: Record<string, { date: Date; score: number; reasons: string[] }> = {};
-  for (const cat of cats) {
-    const yearResults = calculateAllDayScores(cat, natalChart, startDate, yearEnd);
-    for (const r of yearResults) {
-      const key = format(r.date, 'yyyy-MM-dd');
-      if (!yearDayMap[key]) {
-        yearDayMap[key] = { date: r.date, score: 0, reasons: [] };
-      }
-      yearDayMap[key].score += r.score;
-      if (r.reasons.length > 0 && r.reasons[0] !== 'No strong alignments') {
-        yearDayMap[key].reasons.push(...r.reasons);
-      }
-    }
-  }
-  const yearEntries = Object.values(yearDayMap).map(d => {
-    let bonus = 0;
-    if (activity.favorableHourPlanets && activity.favorableHourPlanets.length > 0) {
-      const noon = new Date(d.date); noon.setHours(12, 0, 0, 0);
-      const hourInfo = getPlanetaryHourAt(noon);
-      if (hourInfo && activity.favorableHourPlanets.includes(hourInfo.planet)) bonus += 20;
-    }
-    if (activity.favorableMoonPhases && activity.favorableMoonPhases.length > 0) {
-      const moonPhase = getMoonPhase(d.date);
-      if (activity.favorableMoonPhases.some(p => moonPhase.phaseName.includes(p))) bonus += 15;
-    }
-    if (activity.favorableDaysOfWeek && activity.favorableDaysOfWeek.length > 0) {
-      if (activity.favorableDaysOfWeek.includes(getDay(d.date))) bonus += 10;
-    }
-    return {
-      date: d.date,
-      score: Math.round((d.score + bonus) * activity.modifier),
-      reason: d.reasons[0] || 'Favorable alignments',
-    };
-  });
-  const yearSorted = [...yearEntries].sort((a, b) => b.score - a.score);
-  const yearMax = yearSorted.length > 0 ? yearSorted[0].score : 1;
-  const yearScale = yearMax > 0 ? TARGET_MAX / yearMax : 1;
-
-  // Pick top 3 that are spread out (at least 14 days apart for yearly view)
+  // Pick top 3 from the already-computed 30-day data (no extra scan)
   const topDays: SubActivityDayScore[] = [];
-  for (const entry of yearSorted) {
+  for (const entry of sorted) {
     if (topDays.length >= 3) break;
-    const tooClose = topDays.some(t => Math.abs(differenceInDays(t.date, entry.date)) < 14);
-    if (!tooClose) {
+    const tooClose = topDays.some(t => Math.abs(differenceInDays(t.date, entry.date)) < 7);
+    if (!tooClose && entry.score > 0) {
       topDays.push({
         date: entry.date,
-        score: Math.round(entry.score * yearScale),
-        rating: scoreToRating(Math.round(entry.score * yearScale)),
+        score: normalize(entry.score),
+        rating: scoreToRating(normalize(entry.score)),
         reason: entry.reason,
       });
     }

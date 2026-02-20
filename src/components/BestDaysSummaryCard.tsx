@@ -298,13 +298,14 @@ const CategorySection = ({
 };
 
 /* ── Chance Section ── */
-const ChanceSection = ({ natalChart, days, expanded, onToggle, bestChance }: {
+const ChanceSection = ({ natalChart, days, expanded, onToggle }: {
   natalChart: NatalChart | null; days: number; expanded: boolean; onToggle: () => void;
-  bestChance: SubActivityResult | null;
 }) => {
   const [subResults, setSubResults] = useState<SubActivityResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const [bestChance, setBestChance] = useState<SubActivityResult | null>(null);
 
+  // Compute all chance sub-activities only when expanded
   useEffect(() => {
     if (!expanded) { setSubResults([]); return; }
     let cancelled = false;
@@ -319,6 +320,7 @@ const ChanceSection = ({ natalChart, days, expanded, onToggle, bestChance }: {
       }
       if (!cancelled) {
         setSubResults(results);
+        setBestChance(results.sort((a, b) => b.score - a.score)[0] || null);
         setLoading(false);
       }
     };
@@ -378,24 +380,14 @@ const ChanceSection = ({ natalChart, days, expanded, onToggle, bestChance }: {
 export const BestDaysSummaryCard = ({ natalChart, days = 30 }: BestDaysSummaryCardProps) => {
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const [summary, setSummary] = useState<ReturnType<typeof getBestDaysSummary> | null>(null);
-  const [bestChance, setBestChance] = useState<SubActivityResult | null>(null);
 
-  // Stage heavy computation: summary first, then chance activities after yielding
+  // Stage heavy computation: summary only on mount. Chance is deferred to expansion.
   useEffect(() => {
     let cancelled = false;
     const timer = setTimeout(() => {
       if (cancelled) return;
       const s = getBestDaysSummary(natalChart, new Date(), days);
-      if (cancelled) return;
-      setSummary(s);
-      // Yield to UI before computing chance activities
-      setTimeout(() => {
-        if (cancelled) return;
-        const results = CHANCE_ACTIVITIES.map(act => getSubActivityBestDay(act, natalChart, new Date(), days));
-        if (!cancelled) {
-          setBestChance(results.sort((a, b) => b.score - a.score)[0] || null);
-        }
-      }, 50);
+      if (!cancelled) setSummary(s);
     }, 100);
     return () => { cancelled = true; clearTimeout(timer); };
   }, [natalChart, days]);
@@ -474,7 +466,6 @@ export const BestDaysSummaryCard = ({ natalChart, days = 30 }: BestDaysSummaryCa
         <ChanceSection
           natalChart={natalChart} days={days}
           expanded={!!expandedCategories['chance']} onToggle={() => toggle('chance')}
-          bestChance={bestChance}
         />
       </div>
 
