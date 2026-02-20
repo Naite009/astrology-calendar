@@ -237,9 +237,9 @@ export function getSubActivityBestDay(
 
   const normalize = (raw: number) => Math.round(raw * scaleFactor);
 
-  // Pick top 3 from the FULL YEAR (365 days) for truly best days
+  // Pick top 3 from the next 90 days (reduced from 365 for performance)
   const yearEnd = new Date(startDate);
-  yearEnd.setDate(yearEnd.getDate() + 365);
+  yearEnd.setDate(yearEnd.getDate() + 90);
   const yearDayMap: Record<string, { date: Date; score: number; reasons: string[] }> = {};
   for (const cat of cats) {
     const yearResults = calculateAllDayScores(cat, natalChart, startDate, yearEnd);
