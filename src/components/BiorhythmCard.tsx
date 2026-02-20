@@ -10,7 +10,7 @@ import {
   getStateLabel,
   CompatibilityResult
 } from '@/lib/biorhythms';
-import { getSecondaryCycles, getRomanceReadiness, SecondaryCycle, RomanceReadiness } from '@/lib/dailySynthesis';
+import { getSecondaryCycles, getRomanceReadiness, SecondaryCycle, RomanceReadiness, SECONDARY_CYCLES } from '@/lib/dailySynthesis';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { NatalChart } from '@/hooks/useNatalChart';
@@ -428,14 +428,26 @@ const CompatibilityView = ({
 };
 
 /* ── Inline 30-day biorhythm wave chart shown under the three circles ── */
-const BiorhythmWaveInline = ({ birthDate, targetDate, primaryBiorhythms }: { 
-  birthDate: Date; targetDate: Date; primaryBiorhythms: BiorhythmValue[] 
+const BiorhythmWaveInline = ({ birthDate, targetDate, primaryBiorhythms, cycleView = 'primary' }: { 
+  birthDate: Date; targetDate: Date; primaryBiorhythms: BiorhythmValue[]; cycleView?: 'primary' | 'secondary'
 }) => {
   const forecast = useMemo(() => {
     const start = new Date(targetDate);
     start.setDate(start.getDate() - 3);
     return getBiorhythmForecast(birthDate, start, 33);
   }, [birthDate, targetDate]);
+
+  // Compute 30-day secondary cycle values
+  const secondaryForecast = useMemo(() => {
+    if (cycleView !== 'secondary') return [];
+    const start = new Date(targetDate);
+    start.setDate(start.getDate() - 3);
+    return Array.from({ length: 33 }, (_, i) => {
+      const d = new Date(start);
+      d.setDate(d.getDate() + i);
+      return getSecondaryCycles(birthDate, d);
+    });
+  }, [birthDate, targetDate, cycleView]);
 
   if (forecast.length === 0) return null;
 
@@ -456,15 +468,31 @@ const BiorhythmWaveInline = ({ birthDate, targetDate, primaryBiorhythms }: {
     return d.date.getDate() === t.getDate() && d.date.getMonth() === t.getMonth() && d.date.getFullYear() === t.getFullYear();
   });
 
-  const lines = [
-    { key: 'physical', color: 'hsl(210 90% 50%)', vals: forecast.map(d => d.physical) },
-    { key: 'emotional', color: 'hsl(0 84% 60%)', vals: forecast.map(d => d.emotional) },
-    { key: 'intellectual', color: 'hsl(142 76% 36%)', vals: forecast.map(d => d.intellectual) },
+  const primaryLines = [
+    { key: 'physical', color: 'hsl(210 90% 50%)', label: 'Physical', vals: forecast.map(d => d.physical) },
+    { key: 'emotional', color: 'hsl(0 84% 60%)', label: 'Emotional', vals: forecast.map(d => d.emotional) },
+    { key: 'intellectual', color: 'hsl(142 76% 36%)', label: 'Intellectual', vals: forecast.map(d => d.intellectual) },
   ];
+
+  const secondaryLines = cycleView === 'secondary' && secondaryForecast.length > 0
+    ? Object.entries(SECONDARY_CYCLES).map(([key, cycle]) => ({
+        key,
+        color: cycle.color,
+        label: cycle.name,
+        vals: secondaryForecast.map(day => {
+          const c = day.find(s => s.name === cycle.name);
+          return c?.value ?? 0;
+        }),
+      }))
+    : [];
+
+  const lines = cycleView === 'secondary' ? secondaryLines : primaryLines;
 
   return (
     <div className="mt-4 pt-3 border-t border-border">
-      <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">30-Day Biorhythm Forecast</p>
+      <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
+        30-Day {cycleView === 'secondary' ? 'Secondary' : 'Biorhythm'} Forecast
+      </p>
       <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
         <line x1={pad.left} y1={yScale(0)} x2={width - pad.right} y2={yScale(0)}
           stroke="currentColor" strokeOpacity={0.25} strokeDasharray="4 4" />
@@ -487,10 +515,12 @@ const BiorhythmWaveInline = ({ birthDate, targetDate, primaryBiorhythms }: {
           </text>
         ))}
       </svg>
-      <div className="flex justify-center gap-4 mt-1">
-        <span className="flex items-center gap-1 text-[10px] text-muted-foreground"><span className="w-3 h-0.5 rounded inline-block" style={{ backgroundColor: 'hsl(210 90% 50%)' }} /> Physical</span>
-        <span className="flex items-center gap-1 text-[10px] text-muted-foreground"><span className="w-3 h-0.5 rounded inline-block" style={{ backgroundColor: 'hsl(0 84% 60%)' }} /> Emotional</span>
-        <span className="flex items-center gap-1 text-[10px] text-muted-foreground"><span className="w-3 h-0.5 rounded inline-block" style={{ backgroundColor: 'hsl(142 76% 36%)' }} /> Intellectual</span>
+      <div className="flex justify-center gap-4 mt-1 flex-wrap">
+        {lines.map(l => (
+          <span key={l.key} className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <span className="w-3 h-0.5 rounded inline-block" style={{ backgroundColor: l.color }} /> {l.label}
+          </span>
+        ))}
       </div>
     </div>
   );
@@ -792,7 +822,7 @@ export const BiorhythmCard = ({
             </div>
             
             {/* 30-Day Biorhythm Wave Chart */}
-            <BiorhythmWaveInline birthDate={birthDate} targetDate={targetDate} primaryBiorhythms={primaryBiorhythms} />
+            <BiorhythmWaveInline birthDate={birthDate} targetDate={targetDate} primaryBiorhythms={primaryBiorhythms} cycleView={cycleView} />
           </>
         ) : null}
       </div>
