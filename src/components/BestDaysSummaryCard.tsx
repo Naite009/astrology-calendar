@@ -326,15 +326,24 @@ export const BestDaysSummaryCard = ({ natalChart, days = 30 }: BestDaysSummaryCa
   const [summary, setSummary] = useState<ReturnType<typeof getBestDaysSummary> | null>(null);
   const [bestChance, setBestChance] = useState<SubActivityResult | null>(null);
 
-  // Defer heavy computation with setTimeout to avoid blocking the main thread
+  // Stage heavy computation: summary first, then chance activities after yielding
   useEffect(() => {
+    let cancelled = false;
     const timer = setTimeout(() => {
+      if (cancelled) return;
       const s = getBestDaysSummary(natalChart, new Date(), days);
+      if (cancelled) return;
       setSummary(s);
-      const results = CHANCE_ACTIVITIES.map(act => getSubActivityBestDay(act, natalChart, new Date(), days));
-      setBestChance(results.sort((a, b) => b.score - a.score)[0] || null);
+      // Yield to UI before computing chance activities
+      setTimeout(() => {
+        if (cancelled) return;
+        const results = CHANCE_ACTIVITIES.map(act => getSubActivityBestDay(act, natalChart, new Date(), days));
+        if (!cancelled) {
+          setBestChance(results.sort((a, b) => b.score - a.score)[0] || null);
+        }
+      }, 50);
     }, 100);
-    return () => clearTimeout(timer);
+    return () => { cancelled = true; clearTimeout(timer); };
   }, [natalChart, days]);
 
   const toggle = useCallback((key: string) => {
