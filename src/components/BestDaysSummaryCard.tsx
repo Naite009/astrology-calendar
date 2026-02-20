@@ -48,8 +48,8 @@ const WaveChart = ({ allDays, parentColor, todayIndex }: {
 
   const maxScore = Math.max(...allDays.map(d => d.score), 1);
   const width = 300;
-  const height = 60;
-  const padding = { top: 4, bottom: 14, left: 2, right: 2 };
+  const height = 70;
+  const padding = { top: 10, bottom: 14, left: 2, right: 2 };
   const chartW = width - padding.left - padding.right;
   const chartH = height - padding.top - padding.bottom;
 
@@ -117,14 +117,18 @@ const WaveChart = ({ allDays, parentColor, todayIndex }: {
           </>
         )}
 
-        {/* Peak markers */}
+        {/* Peak markers with rank labels */}
         {peaks.map((p, i) => {
-          const medals = ['🥇', '🥈', '🥉'];
+          const labels = ['1', '2', '3'];
+          const colors = ['#f59e0b', '#9ca3af', '#b45309'];
           return (
             <g key={i}>
-              <circle cx={p.x} cy={p.y} r={2.5} fill={strokeColor} stroke="white" strokeWidth={0.8} />
-              <text x={p.x} y={p.y - 4} textAnchor="middle" fontSize={6}>
-                {medals[i]}
+              <circle cx={p.x} cy={p.y} r={4} fill={colors[i]} stroke="white" strokeWidth={1} />
+              <text x={p.x} y={p.y + 1.5} textAnchor="middle" fontSize={4} fill="white" fontWeight="bold">
+                {labels[i]}
+              </text>
+              <text x={p.x} y={p.y - 6} textAnchor="middle" fontSize={4} fill="currentColor" opacity={0.7}>
+                {format(allDays[Math.round((p.x - padding.left) / chartW * (allDays.length - 1))]?.date || new Date(), 'M/d')}
               </text>
             </g>
           );

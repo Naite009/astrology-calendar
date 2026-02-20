@@ -229,31 +229,39 @@ export function getSubActivityBestDay(
     let bonus = 0;
     const bonusReasons: string[] = [];
 
-    // Planetary hour bonus — check noon of that day
+    // Planetary hour bonus — check noon of that day (strong weight)
     if (activity.favorableHourPlanets && activity.favorableHourPlanets.length > 0) {
       const noon = new Date(d.date);
       noon.setHours(12, 0, 0, 0);
       const hourInfo = getPlanetaryHourAt(noon);
-      if (hourInfo && activity.favorableHourPlanets.includes(hourInfo.planet)) {
-        bonus += 20;
+      if (hourInfo && activity.favorableHourPlanets[0] === hourInfo.planet) {
+        bonus += 50;
+        bonusReasons.push(`${hourInfo.symbol} ${hourInfo.planet} Hour (primary)`);
+      } else if (hourInfo && activity.favorableHourPlanets.includes(hourInfo.planet)) {
+        bonus += 30;
         bonusReasons.push(`${hourInfo.symbol} ${hourInfo.planet} Hour`);
       }
     }
 
-    // Moon phase bonus
+    // Moon phase bonus (strong weight)
     if (activity.favorableMoonPhases && activity.favorableMoonPhases.length > 0) {
       const moonPhase = getMoonPhase(d.date);
-      if (activity.favorableMoonPhases.some(p => moonPhase.phaseName.includes(p))) {
-        bonus += 15;
+      if (activity.favorableMoonPhases[0] && moonPhase.phaseName.includes(activity.favorableMoonPhases[0])) {
+        bonus += 40;
+        bonusReasons.push(`${moonPhase.phaseName} (ideal)`);
+      } else if (activity.favorableMoonPhases.some(p => moonPhase.phaseName.includes(p))) {
+        bonus += 25;
         bonusReasons.push(`${moonPhase.phaseName}`);
       }
     }
 
-    // Day of week bonus
+    // Day of week bonus (moderate weight)
     if (activity.favorableDaysOfWeek && activity.favorableDaysOfWeek.length > 0) {
       const dow = getDay(d.date);
-      if (activity.favorableDaysOfWeek.includes(dow)) {
-        bonus += 10;
+      if (activity.favorableDaysOfWeek[0] === dow) {
+        bonus += 25;
+      } else if (activity.favorableDaysOfWeek.includes(dow)) {
+        bonus += 15;
       }
     }
 
