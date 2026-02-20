@@ -322,7 +322,7 @@ const ChanceSection = ({ natalChart, days, expanded, onToggle, bestChance }: {
 };
 
 export const BestDaysSummaryCard = ({ natalChart, days = 30 }: BestDaysSummaryCardProps) => {
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const [summary, setSummary] = useState<ReturnType<typeof getBestDaysSummary> | null>(null);
   const [bestChance, setBestChance] = useState<SubActivityResult | null>(null);
 
@@ -337,13 +337,12 @@ export const BestDaysSummaryCard = ({ natalChart, days = 30 }: BestDaysSummaryCa
     return () => clearTimeout(timer);
   }, [natalChart, days]);
 
-  const toggle = (key: string) => {
-    setExpandedCategories(prev => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key); else next.add(key);
-      return next;
-    });
-  };
+  const toggle = useCallback((key: string) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  }, []);
 
   if (!summary) {
     return (
@@ -406,12 +405,12 @@ export const BestDaysSummaryCard = ({ natalChart, days = 30 }: BestDaysSummaryCa
           <CategorySection
             key={s.category} summary={s} subActivities={SUB_ACTIVITIES[s.category]}
             natalChart={natalChart} days={days}
-            expanded={expandedCategories.has(s.category)} onToggle={() => toggle(s.category)}
+            expanded={!!expandedCategories[s.category]} onToggle={() => toggle(s.category)}
           />
         ))}
         <ChanceSection
           natalChart={natalChart} days={days}
-          expanded={expandedCategories.has('chance')} onToggle={() => toggle('chance')}
+          expanded={!!expandedCategories['chance']} onToggle={() => toggle('chance')}
           bestChance={bestChance}
         />
       </div>

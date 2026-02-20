@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Activity, AlertTriangle, TrendingUp, TrendingDown, Minus, Heart, Users, Layers, Sparkles, ArrowUp, ArrowDown } from 'lucide-react';
+import { getBiorhythmForecast } from '@/lib/biorhythms';
 import { 
   getAllBiorhythms, 
   getDayQuality, 
@@ -426,6 +427,75 @@ const CompatibilityView = ({
   );
 };
 
+/* ── Inline 30-day biorhythm wave chart shown under the three circles ── */
+const BiorhythmWaveInline = ({ birthDate, targetDate, primaryBiorhythms }: { 
+  birthDate: Date; targetDate: Date; primaryBiorhythms: BiorhythmValue[] 
+}) => {
+  const forecast = useMemo(() => {
+    const start = new Date(targetDate);
+    start.setDate(start.getDate() - 3);
+    return getBiorhythmForecast(birthDate, start, 33);
+  }, [birthDate, targetDate]);
+
+  if (forecast.length === 0) return null;
+
+  const width = 600;
+  const height = 140;
+  const pad = { top: 20, right: 15, bottom: 24, left: 32 };
+  const cw = width - pad.left - pad.right;
+  const ch = height - pad.top - pad.bottom;
+
+  const xScale = (i: number) => pad.left + (i / (forecast.length - 1)) * cw;
+  const yScale = (v: number) => pad.top + ((100 - v) / 200) * ch;
+
+  const makePath = (vals: number[]) =>
+    vals.map((v, i) => `${i === 0 ? 'M' : 'L'}${xScale(i)},${yScale(v)}`).join(' ');
+
+  const todayIdx = forecast.findIndex(d => {
+    const t = new Date();
+    return d.date.getDate() === t.getDate() && d.date.getMonth() === t.getMonth() && d.date.getFullYear() === t.getFullYear();
+  });
+
+  const lines = [
+    { key: 'physical', color: 'hsl(var(--destructive))', vals: forecast.map(d => d.physical) },
+    { key: 'emotional', color: 'hsl(var(--primary))', vals: forecast.map(d => d.emotional) },
+    { key: 'intellectual', color: 'hsl(142 76% 36%)', vals: forecast.map(d => d.intellectual) },
+  ];
+
+  return (
+    <div className="mt-4 pt-3 border-t border-border">
+      <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">30-Day Biorhythm Forecast</p>
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
+        <line x1={pad.left} y1={yScale(0)} x2={width - pad.right} y2={yScale(0)}
+          stroke="currentColor" strokeOpacity={0.25} strokeDasharray="4 4" />
+        <text x={pad.left - 4} y={yScale(100)} textAnchor="end" className="text-[8px] fill-muted-foreground">+100</text>
+        <text x={pad.left - 4} y={yScale(0)} textAnchor="end" className="text-[8px] fill-muted-foreground">0</text>
+        <text x={pad.left - 4} y={yScale(-100)} textAnchor="end" className="text-[8px] fill-muted-foreground">-100</text>
+        {lines.map(l => (
+          <path key={l.key} d={makePath(l.vals)} fill="none" stroke={l.color} strokeWidth={1.8} strokeOpacity={0.85} />
+        ))}
+        {todayIdx >= 0 && (
+          <>
+            <line x1={xScale(todayIdx)} y1={pad.top} x2={xScale(todayIdx)} y2={height - pad.bottom}
+              stroke="hsl(var(--primary))" strokeWidth={1.5} strokeDasharray="3 2" />
+            <text x={xScale(todayIdx)} y={pad.top - 4} textAnchor="middle" className="text-[7px] fill-primary font-semibold">TODAY</text>
+          </>
+        )}
+        {forecast.filter((_, i) => i % 7 === 0).map((d, i) => (
+          <text key={i} x={xScale(i * 7)} y={height - 6} textAnchor="middle" className="text-[7px] fill-muted-foreground">
+            {format(d.date, 'M/d')}
+          </text>
+        ))}
+      </svg>
+      <div className="flex justify-center gap-4 mt-1">
+        <span className="flex items-center gap-1 text-[10px] text-muted-foreground"><span className="w-3 h-0.5 rounded bg-destructive inline-block" /> Physical</span>
+        <span className="flex items-center gap-1 text-[10px] text-muted-foreground"><span className="w-3 h-0.5 rounded bg-primary inline-block" /> Emotional</span>
+        <span className="flex items-center gap-1 text-[10px] text-muted-foreground"><span className="w-3 h-0.5 rounded inline-block" style={{ backgroundColor: 'hsl(142 76% 36%)' }} /> Intellectual</span>
+      </div>
+    </div>
+  );
+};
+
 export const BiorhythmCard = ({ 
   birthDate, 
   targetDate = new Date(),
@@ -720,6 +790,9 @@ export const BiorhythmCard = ({
                 {dayQuality.recommendation}
               </p>
             </div>
+            
+            {/* 30-Day Biorhythm Wave Chart */}
+            <BiorhythmWaveInline birthDate={birthDate} targetDate={targetDate} primaryBiorhythms={primaryBiorhythms} />
           </>
         ) : null}
       </div>
