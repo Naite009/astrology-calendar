@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Moon, ChevronLeft, ChevronRight, Calendar, Star, Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -323,10 +323,19 @@ export const MoonTransitCalendar = ({ natalChart }: MoonTransitCalendarProps) =>
   const monthEnd = endOfMonth(currentMonth);
   const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
   
-  // Calculate transits for the month
-  const transits = useMemo(() => {
-    if (!natalChart) return [];
-    return calculateMoonTransits(natalChart, monthStart, 35);
+  // Calculate transits for the month asynchronously to avoid blocking the main thread
+  const [transits, setTransits] = useState<MoonTransit[]>([]);
+  const [isCalculating, setIsCalculating] = useState(false);
+  useEffect(() => {
+    if (!natalChart) { setTransits([]); return; }
+    setIsCalculating(true);
+    // Defer heavy calculation to avoid blocking the main thread
+    const timer = setTimeout(() => {
+      const result = calculateMoonTransits(natalChart, monthStart, 35);
+      setTransits(result);
+      setIsCalculating(false);
+    }, 50);
+    return () => clearTimeout(timer);
   }, [natalChart, monthStart]);
 
   // Filter transits to only those in the current month for list view
