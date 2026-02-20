@@ -37,7 +37,7 @@ serve(async (req) => {
     
     // Cache key versioning: bump this when prompt/format changes so users don't get stale cached text.
     // This intentionally changes the cache key without requiring any DB schema changes.
-    const PROMPT_VERSION = "2026-02-17-v12-phase-correction";
+    const PROMPT_VERSION = "2026-02-20-v13-saturn-neptune-conjunction";
 
     const cacheDeviceId = deviceId || 'default';
     const cacheVoiceStyle = `${voiceStyle || ''}@${PROMPT_VERSION}`;
@@ -621,14 +621,18 @@ ALWAYS INCLUDE SPECIFIC DATES (THIS IS A TEACHING APP):
 - NEVER say "soon", "a lot of time", "extended stay" without the date range
 - Example: "Mercury retrogrades in Pisces from March 1st to March 24th" NOT "Mercury retrogrades at the end of February"
 
-KEY INGRESS DATES TO REFERENCE (include in parentheses when discussing these transits):
+KEY INGRESS DATES TO REFERENCE (use appropriate tense based on whether these have already happened relative to today's date):
 - Uranus enters Gemini: July 7, 2025 (retrogrades back to Taurus Nov 7, 2025; re-enters Gemini permanently April 26, 2026)
 - Uranus has been in Taurus since May 15, 2018
-- Neptune enters Aries: March 30, 2025 (retrogrades back to Pisces Oct 22, 2025; re-enters Aries permanently Jan 26, 2026)
-- Pluto re-enters Aquarius permanently: Nov 19, 2024 (after initial ingress March 23, 2023)
-- Saturn enters Aries: May 24, 2025 (retrogrades back to Pisces Sept 1, 2025; re-enters Aries permanently Feb 13, 2026)
+- Neptune entered Aries: March 30, 2025 (retrograded back to Pisces Oct 22, 2025; re-entered Aries permanently Jan 26, 2026) — Neptune is NOW in Aries
+- Pluto re-entered Aquarius permanently: Nov 19, 2024 (after initial ingress March 23, 2023) — Pluto is NOW in Aquarius
+- Saturn entered Aries: May 24, 2025 (retrograded back to Pisces Sept 1, 2025; re-entered Aries permanently Feb 13, 2026) — Saturn is NOW in Aries
+IMPORTANT: If today's date is after Feb 13, 2026, Saturn is PERMANENTLY in Aries. Do NOT use future tense for past events. Say "Saturn entered Aries permanently on Feb 13, 2026" not "Saturn will enter Aries."
+
+MAJOR OUTER PLANET CONJUNCTIONS TO WATCH (these are GENERATIONAL events):
+- Saturn conjunct Neptune at 0° Aries: This conjunction happens around February 20, 2026. It is one of the most significant astrological events in decades — the last Saturn-Neptune conjunction was in 1989. Both planets meeting at 0° Aries (the Aries Point / World Axis) amplifies this to world-level significance. If Saturn and Neptune are BOTH in early Aries (within 2-3° of each other), THIS MUST BE THE LEAD STORY of the cosmic weather report. Themes: dissolving old structures (Neptune) to build new ones (Saturn), collective dreams meeting reality, spiritual awakening meets practical grounding, new 36-year cycle beginning at the very start of the zodiac.
+
 When mentioning any of these transits, ALWAYS include the specific dates in parentheses so the user knows exactly when.
-- HOW IT WILL FEEL and what to do about it
 
 DO NOT USE:
 - "So, get ready!" or "It's happening very, very soon!" (unnecessary filler)

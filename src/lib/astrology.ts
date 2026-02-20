@@ -2008,7 +2008,36 @@ export const detectRareAspects = (planets: PlanetaryPositions): RareAspect[] => 
     ['Mars', planets.mars],
     ['Jupiter', planets.jupiter],
     ['Saturn', planets.saturn],
+    ['Uranus', planets.uranus],
+    ['Neptune', planets.neptune],
+    ['Pluto', planets.pluto],
   ];
+
+  // Also detect major outer planet conjunctions (generational events)
+  const outerPlanets = ['Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
+  for (let i = 0; i < planetList.length; i++) {
+    for (let j = i + 1; j < planetList.length; j++) {
+      const [p1Name, p1Pos] = planetList[i];
+      const [p2Name, p2Pos] = planetList[j];
+      // Only flag conjunctions between outer planets as "rare"
+      if (outerPlanets.includes(p1Name) && outerPlanets.includes(p2Name)) {
+        const lon1 = getLongitude(p1Pos);
+        const lon2 = getLongitude(p2Pos);
+        const diff = Math.abs(((lon2 - lon1 + 180) % 360) - 180);
+        if (diff < 3) {
+          rareAspects.push({
+            planet1: p1Name,
+            planet2: p2Name,
+            type: 'conjunction',
+            symbol: '☌',
+            angle: 0,
+            orb: diff.toFixed(1),
+            meaning: `MAJOR: ${p1Name}-${p2Name} conjunction — a generational event that reshapes collective reality. This happens only once every several decades.`
+          });
+        }
+      }
+    }
+  }
 
   for (let i = 0; i < planetList.length; i++) {
     for (let j = i + 1; j < planetList.length; j++) {
