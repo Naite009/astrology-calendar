@@ -1,4 +1,4 @@
-import { useMemo, forwardRef, useState } from 'react';
+import { useMemo, forwardRef, useState, useEffect } from 'react';
 import { AlertTriangle, Bell, Clock, ChevronRight, Zap, Star, ChevronDown, Moon } from 'lucide-react';
 import { calculateTransitAlerts, getAlertEmoji, getPriorityLabel, TransitAlert, AlertPriority } from '@/lib/transitAlerts';
 import { calculateProgressedMoonTransits, ProgressedMoonTransit, calculateSecondaryProgressions, getProgressedMoonInfo } from '@/lib/secondaryProgressions';
@@ -197,16 +197,19 @@ export const TransitAlertsCard = forwardRef<HTMLDivElement, TransitAlertsCardPro
   ({ natalChart, maxAlerts = 10 }, ref) => {
     const [isMinorOpen, setIsMinorOpen] = useState(false);
     
-    // Calculate progressed Moon transits
-    const progressedMoonTransits = useMemo(() => {
-      if (!natalChart) return [];
-      return calculateProgressedMoonTransits(natalChart);
-    }, [natalChart]);
-    
-    // Calculate regular transit alerts
-    const alerts = useMemo(() => {
-      if (!natalChart) return [];
-      return calculateTransitAlerts(natalChart);
+    // Calculate progressed Moon transits asynchronously
+    const [progressedMoonTransits, setProgressedMoonTransits] = useState<ProgressedMoonTransit[]>([]);
+    const [alerts, setAlerts] = useState<TransitAlert[]>([]);
+    useEffect(() => {
+      if (!natalChart) { setProgressedMoonTransits([]); setAlerts([]); return; }
+      // Defer heavy calculations to avoid blocking main thread
+      const t1 = setTimeout(() => {
+        setProgressedMoonTransits(calculateProgressedMoonTransits(natalChart));
+      }, 50);
+      const t2 = setTimeout(() => {
+        setAlerts(calculateTransitAlerts(natalChart));
+      }, 150);
+      return () => { clearTimeout(t1); clearTimeout(t2); };
     }, [natalChart]);
     
     // Separate major planet transits from minor ones

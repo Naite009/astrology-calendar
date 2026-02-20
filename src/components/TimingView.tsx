@@ -142,25 +142,32 @@ const RightNowSection = ({
     return () => clearInterval(timer);
   }, []);
 
-  // Defer all heavy calculations so the section renders instantly
+  // Split heavy calculations into separate timeouts to avoid blocking
   useEffect(() => {
-    const id = requestAnimationFrame(() => {
-      // Planetary hours
+    const t1 = setTimeout(() => {
       const lat = 34.0522;
       const lng = -118.2437;
       setPlanetaryHours(calculatePlanetaryHours(currentTime, lat, lng));
+    }, 0);
+    return () => clearTimeout(t1);
+  }, [currentTime]);
 
-      // VOC Moon
+  useEffect(() => {
+    const t2 = setTimeout(() => {
       const vocDetails = getVOCMoonDetails(currentTime);
       setVocMoon(vocDetails.isCurrentlyVOC 
         ? { isVoid: true, endsAt: vocDetails.end, nextSign: vocDetails.moonEntersSign } 
         : { isVoid: false });
+    }, 100);
+    return () => clearTimeout(t2);
+  }, [currentTime]);
 
-      // Personal transits
-      if (!activeChart?.planets) {
-        setPersonalTransits([]);
-        return;
-      }
+  useEffect(() => {
+    if (!activeChart?.planets) {
+      setPersonalTransits([]);
+      return;
+    }
+    const t3 = setTimeout(() => {
       const transits = getTransitPositions(currentTime);
       const aspects: any[] = [];
       const ZODIAC_SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
@@ -198,8 +205,8 @@ const RightNowSection = ({
         });
       });
       setPersonalTransits(aspects);
-    });
-    return () => cancelAnimationFrame(id);
+    }, 200);
+    return () => clearTimeout(t3);
   }, [activeChart, currentTime]);
 
   // Find current planetary hour - use correct property names (start/end not startTime/endTime)
@@ -340,14 +347,14 @@ const RightNowSection = ({
       </div>
 
       {/* Transit Alerts Card */}
-      <DeferredRender delay={100}>
+      <DeferredRender delay={300}>
         <div className="mt-6">
           <TransitAlertsCard natalChart={activeChart} />
         </div>
       </DeferredRender>
 
       {/* Moon Transit Calendar */}
-      <DeferredRender delay={200}>
+      <DeferredRender delay={600}>
         <div className="mt-6">
           <MoonTransitCalendar natalChart={activeChart} />
         </div>
@@ -390,7 +397,7 @@ const RightNowSection = ({
 
       {/* Daily Power Synthesis */}
       {activeChart && (
-        <DeferredRender delay={500} fallback={<Skeleton className="h-40 w-full rounded-lg mt-6" />}>
+        <DeferredRender delay={1000} fallback={<Skeleton className="h-40 w-full rounded-lg mt-6" />}>
           <div className="mt-6">
             <DailySynthesisCard
               birthDate={new Date(activeChart.birthDate)}
@@ -402,7 +409,7 @@ const RightNowSection = ({
       )}
 
       {/* Biorhythm Card */}
-      <DeferredRender delay={800} fallback={<Skeleton className="h-40 w-full rounded-lg mt-6" />}>
+      <DeferredRender delay={1500} fallback={<Skeleton className="h-40 w-full rounded-lg mt-6" />}>
         <div className="mt-6">
           <BiorhythmCard
             birthDate={activeChart ? parseLocalDate(activeChart.birthDate) : null}
@@ -425,7 +432,7 @@ const RightNowSection = ({
       </DeferredRender>
 
       {/* Best Days Summary */}
-      <DeferredRender delay={1200} fallback={<Skeleton className="h-40 w-full rounded-lg mt-6" />}>
+      <DeferredRender delay={2000} fallback={<Skeleton className="h-40 w-full rounded-lg mt-6" />}>
         <div className="mt-6">
           <BestDaysSummaryCard natalChart={activeChart} />
         </div>
@@ -433,7 +440,7 @@ const RightNowSection = ({
 
       {/* Life Cycles Hub */}
       {activeChart && (
-        <DeferredRender delay={1600} fallback={<Skeleton className="h-40 w-full rounded-lg mt-6" />}>
+        <DeferredRender delay={2500} fallback={<Skeleton className="h-40 w-full rounded-lg mt-6" />}>
           <div className="mt-6">
             <LifeCyclesHub chart={activeChart} currentDate={currentTime} />
           </div>
