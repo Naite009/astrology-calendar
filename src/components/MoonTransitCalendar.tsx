@@ -163,40 +163,49 @@ const findExactMoonAspectTime = (
   });
 };
 
-const calculateMoonTransits = (chart: NatalChart, startDate: Date, days: number): MoonTransit[] => {
-  const transits: MoonTransit[] = [];
+// Async chunked version: processes one day at a time, yielding to main thread between days
+const calculateMoonTransitsAsync = (
+  chart: NatalChart,
+  startDate: Date,
+  days: number,
+  onProgress: (transits: MoonTransit[]) => void,
+  signal: AbortSignal
+): void => {
   const uniqueTransits = new Map<string, MoonTransit>();
-  
-  // Check every 4 hours for rough detection (Moon moves ~13° per day)
-  for (let d = 0; d < days; d++) {
+  let currentDay = 0;
+
+  const processDay = () => {
+    if (signal.aborted || currentDay >= days) {
+      onProgress(Array.from(uniqueTransits.values()).sort((a, b) => a.date.getTime() - b.date.getTime()));
+      return;
+    }
+
+    // Process one day (6 checks × 7 planets × 5 aspects = ~210 iterations)
+    const d = currentDay;
     for (let h = 0; h < 24; h += 4) {
       const checkDate = new Date(startDate);
       checkDate.setDate(checkDate.getDate() + d);
       checkDate.setHours(h, 0, 0, 0);
-      
+
       const moonLon = getMoonLongitude(checkDate);
-      
+
       PERSONAL_POINTS.forEach(planet => {
         const natalLon = getNatalPlanetLongitude(chart, planet);
         if (natalLon === null) return;
-        
+
         ASPECT_TYPES.forEach(aspect => {
           const orb = aspectOrb(moonLon, natalLon, aspect.angle);
-          
-          // If within orb, refine to exact time
+
           if (orb <= aspect.orb) {
             const exactResult = findExactMoonAspectTime(checkDate, natalLon, aspect.angle);
-            
-            // Create unique key for this transit (one per day per planet per aspect)
             const dateKey = format(exactResult.date, 'yyyy-MM-dd');
             const transitKey = `${dateKey}-${planet}-${aspect.name}`;
-            
-            // Only keep if we haven't seen this transit or this one is more exact
+
             const existing = uniqueTransits.get(transitKey);
             if (!existing || exactResult.orb < existing.orb) {
               const { sign: moonSign, degree: moonDegree } = getMoonSign(getMoonLongitude(exactResult.date));
-              
-              const transit: MoonTransit = {
+
+              uniqueTransits.set(transitKey, {
                 date: exactResult.date,
                 exactTime: format(exactResult.date, 'h:mm a'),
                 natalPlanet: planet,
@@ -207,17 +216,19 @@ const calculateMoonTransits = (chart: NatalChart, startDate: Date, days: number)
                 moonDegree: Math.round(moonDegree * 10) / 10,
                 isExact: exactResult.orb < 0.5,
                 interpretation: getTransitInterpretation(planet, aspect.name),
-              };
-              
-              uniqueTransits.set(transitKey, transit);
+              });
             }
           }
         });
       });
     }
-  }
-  
-  return Array.from(uniqueTransits.values()).sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    currentDay++;
+    // Yield to main thread before processing the next day
+    setTimeout(processDay, 0);
+  };
+
+  setTimeout(processDay, 0);
 };
 
 const aspectColors: Record<string, string> = {
@@ -326,18 +337,20 @@ export const MoonTransitCalendar = ({ natalChart }: MoonTransitCalendarProps) =>
   // Use a stable string key so useEffect doesn't re-run on every render
   const monthKey = `${currentMonth.getFullYear()}-${currentMonth.getMonth()}`;
   
-  // Auto-calculate transits with deferred execution
+  // Auto-calculate transits with async chunked execution (yields to main thread between days)
   const [transits, setTransits] = useState<MoonTransit[]>([]);
   const [isCalculating, setIsCalculating] = useState(false);
   useEffect(() => {
     if (!natalChart) { setTransits([]); return; }
     setIsCalculating(true);
-    const timer = setTimeout(() => {
-      const result = calculateMoonTransits(natalChart, monthStart, 35);
-      setTransits(result);
-      setIsCalculating(false);
-    }, 100);
-    return () => clearTimeout(timer);
+    const controller = new AbortController();
+    calculateMoonTransitsAsync(natalChart, monthStart, 35, (result) => {
+      if (!controller.signal.aborted) {
+        setTransits(result);
+        setIsCalculating(false);
+      }
+    }, controller.signal);
+    return () => controller.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [natalChart, monthKey]);
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, ReactNode, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useMemo, ReactNode, Suspense, lazy, useRef, useCallback } from 'react';
 import { Clock, Calendar, CalendarCheck, Sparkles, Sun, Moon, AlertTriangle, CheckCircle, Star, ChevronLeft, ChevronRight, Users, User, Info } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -11,19 +11,32 @@ const TransitAlertsCard = lazy(() => import('@/components/TransitAlertsCard').th
 const BestDaysSummaryCard = lazy(() => import('@/components/BestDaysSummaryCard').then(m => ({ default: m.BestDaysSummaryCard })));
 const MoonTransitCalendar = lazy(() => import('@/components/MoonTransitCalendar').then(m => ({ default: m.MoonTransitCalendar })));
 
-/* Deferred render: mounts children only after a delay so the tab opens instantly */
-const DeferredRender = ({ children, delay = 0, fallback }: { children: ReactNode; delay?: number; fallback?: ReactNode }) => {
-  const [show, setShow] = useState(false);
+/* Visibility-gated render: only mounts children when scrolled into view.
+   This prevents off-screen heavy components from calculating and blocking the thread. */
+const VisibleRender = ({ children, fallback, rootMargin = '200px' }: { children: ReactNode; fallback?: ReactNode; rootMargin?: string }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
   useEffect(() => {
-    if (delay === 0) {
-      const id = requestAnimationFrame(() => setShow(true));
-      return () => cancelAnimationFrame(id);
-    }
-    const timer = setTimeout(() => setShow(true), delay);
-    return () => clearTimeout(timer);
-  }, [delay]);
-  if (!show) return <>{fallback || <Skeleton className="h-24 w-full rounded-lg" />}</>;
-  return <Suspense fallback={fallback || <Skeleton className="h-24 w-full rounded-lg" />}>{children}</Suspense>;
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [rootMargin]);
+
+  if (!isVisible) {
+    return <div ref={ref}>{fallback || <Skeleton className="h-40 w-full rounded-lg" />}</div>;
+  }
+  return <Suspense fallback={fallback || <Skeleton className="h-40 w-full rounded-lg" />}>{children}</Suspense>;
 };
 import { NatalChart } from '@/hooks/useNatalChart';
 import { calculateBestTimes, BestTimesCategory, BestTimeResult, CATEGORY_INFO, getTransitPositions, getCurrentAspects } from '@/lib/bestTimes';
@@ -347,18 +360,18 @@ const RightNowSection = ({
       </div>
 
       {/* Transit Alerts Card */}
-      <DeferredRender delay={300}>
+      <VisibleRender>
         <div className="mt-6">
           <TransitAlertsCard natalChart={activeChart} />
         </div>
-      </DeferredRender>
+      </VisibleRender>
 
       {/* Moon Transit Calendar */}
-      <DeferredRender delay={600}>
+      <VisibleRender>
         <div className="mt-6">
           <MoonTransitCalendar natalChart={activeChart} />
         </div>
-      </DeferredRender>
+      </VisibleRender>
 
       {/* Personal Transits to Natal Chart - TODAY'S TRANSITS */}
       {activeChart && personalTransits.length > 0 && (
@@ -397,7 +410,7 @@ const RightNowSection = ({
 
       {/* Daily Power Synthesis */}
       {activeChart && (
-        <DeferredRender delay={1000} fallback={<Skeleton className="h-40 w-full rounded-lg mt-6" />}>
+        <VisibleRender fallback={<Skeleton className="h-40 w-full rounded-lg mt-6" />}>
           <div className="mt-6">
             <DailySynthesisCard
               birthDate={new Date(activeChart.birthDate)}
@@ -405,11 +418,11 @@ const RightNowSection = ({
               natalChart={activeChart}
             />
           </div>
-        </DeferredRender>
+        </VisibleRender>
       )}
 
       {/* Biorhythm Card */}
-      <DeferredRender delay={1500} fallback={<Skeleton className="h-40 w-full rounded-lg mt-6" />}>
+      <VisibleRender fallback={<Skeleton className="h-40 w-full rounded-lg mt-6" />}>
         <div className="mt-6">
           <BiorhythmCard
             birthDate={activeChart ? parseLocalDate(activeChart.birthDate) : null}
@@ -429,22 +442,22 @@ const RightNowSection = ({
             chartName={activeChart?.name}
           />
         </div>
-      </DeferredRender>
+      </VisibleRender>
 
       {/* Best Days Summary */}
-      <DeferredRender delay={2000} fallback={<Skeleton className="h-40 w-full rounded-lg mt-6" />}>
+      <VisibleRender fallback={<Skeleton className="h-40 w-full rounded-lg mt-6" />}>
         <div className="mt-6">
           <BestDaysSummaryCard natalChart={activeChart} />
         </div>
-      </DeferredRender>
+      </VisibleRender>
 
       {/* Life Cycles Hub */}
       {activeChart && (
-        <DeferredRender delay={2500} fallback={<Skeleton className="h-40 w-full rounded-lg mt-6" />}>
+        <VisibleRender fallback={<Skeleton className="h-40 w-full rounded-lg mt-6" />}>
           <div className="mt-6">
             <LifeCyclesHub chart={activeChart} currentDate={currentTime} />
           </div>
-        </DeferredRender>
+        </VisibleRender>
       )}
     </div>
   );
