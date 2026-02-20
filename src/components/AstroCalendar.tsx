@@ -137,7 +137,7 @@ export const AstroCalendar = () => {
       return "Chart Library";
     }
     if (viewMode === "timing") {
-      return "Timing & Biorhythms";
+      return "Timing & Best Days";
     }
     if (viewMode === "colors") {
       return "Astro Colors";
@@ -341,7 +341,7 @@ export const AstroCalendar = () => {
                 }`}
               >
                 <Clock size={14} />
-                Timing & Biorhythms
+                Timing & Best Days
               </button>
               <button
                 onClick={() => setViewMode("colors")}
