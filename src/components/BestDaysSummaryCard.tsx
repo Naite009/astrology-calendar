@@ -326,15 +326,15 @@ export const BestDaysSummaryCard = ({ natalChart, days = 30 }: BestDaysSummaryCa
   const [summary, setSummary] = useState<ReturnType<typeof getBestDaysSummary> | null>(null);
   const [bestChance, setBestChance] = useState<SubActivityResult | null>(null);
 
-  // Defer heavy computation so the tab renders instantly
+  // Defer heavy computation with setTimeout to avoid blocking the main thread
   useEffect(() => {
-    const id = requestAnimationFrame(() => {
+    const timer = setTimeout(() => {
       const s = getBestDaysSummary(natalChart, new Date(), days);
       setSummary(s);
       const results = CHANCE_ACTIVITIES.map(act => getSubActivityBestDay(act, natalChart, new Date(), days));
       setBestChance(results.sort((a, b) => b.score - a.score)[0] || null);
-    });
-    return () => cancelAnimationFrame(id);
+    }, 100);
+    return () => clearTimeout(timer);
   }, [natalChart, days]);
 
   const toggle = (key: string) => {
