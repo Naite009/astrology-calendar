@@ -318,25 +318,28 @@ export const MoonTransitCalendar = ({ natalChart }: MoonTransitCalendarProps) =>
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
-  const [hasUserRequested, setHasUserRequested] = useState(false);
   
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
   const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
   
-  // Only calculate transits when user explicitly requests
+  // Use a stable string key so useEffect doesn't re-run on every render
+  const monthKey = `${currentMonth.getFullYear()}-${currentMonth.getMonth()}`;
+  
+  // Auto-calculate transits with deferred execution
   const [transits, setTransits] = useState<MoonTransit[]>([]);
   const [isCalculating, setIsCalculating] = useState(false);
   useEffect(() => {
-    if (!natalChart || !hasUserRequested) { setTransits([]); return; }
+    if (!natalChart) { setTransits([]); return; }
     setIsCalculating(true);
     const timer = setTimeout(() => {
       const result = calculateMoonTransits(natalChart, monthStart, 35);
       setTransits(result);
       setIsCalculating(false);
-    }, 50);
+    }, 100);
     return () => clearTimeout(timer);
-  }, [natalChart, monthStart, hasUserRequested]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [natalChart, monthKey]);
 
   // Filter transits to only those in the current month for list view
   const monthTransits = useMemo(() => {
@@ -377,23 +380,6 @@ export const MoonTransitCalendar = ({ natalChart }: MoonTransitCalendarProps) =>
         <CardContent className="p-6 text-center text-muted-foreground">
           <Moon className="h-8 w-8 mx-auto mb-2 opacity-50" />
           <p>Select a natal chart to see Moon transits</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!hasUserRequested) {
-    return (
-      <Card>
-        <CardContent className="p-6 text-center">
-          <Moon className="h-8 w-8 mx-auto mb-3 text-primary" />
-          <h3 className="font-semibold text-sm mb-1">☽ Moon Transits Calendar</h3>
-          <p className="text-xs text-muted-foreground mb-4">
-            See when the Moon aspects your natal planets this month with exact times.
-          </p>
-          <Button onClick={() => setHasUserRequested(true)} variant="outline" size="sm">
-            Load Moon Transits
-          </Button>
         </CardContent>
       </Card>
     );

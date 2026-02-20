@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -489,53 +489,49 @@ const ChartLordActivation: React.FC<{ chart: NatalChart; currentDate: Date }> = 
   // Find next major transit to sect light
   const natalSectLightLon = getNatalPlanetLongitude(chart, sectLight);
   
-  const nextTransit = useMemo(() => {
-    if (natalSectLightLon === null) return null;
-    
-    const outerPlanets = [
-      { name: 'Saturn', body: Astronomy.Body.Saturn },
-      { name: 'Jupiter', body: Astronomy.Body.Jupiter },
-      { name: 'Uranus', body: Astronomy.Body.Uranus },
-      { name: 'Neptune', body: Astronomy.Body.Neptune },
-      { name: 'Pluto', body: Astronomy.Body.Pluto }
-    ];
-    
-    const aspects = [
-      { name: 'conjunction', angle: 0, symbol: '☌', orb: 8 },
-      { name: 'opposition', angle: 180, symbol: '☍', orb: 8 },
-      { name: 'square', angle: 90, symbol: '□', orb: 7 },
-      { name: 'trine', angle: 120, symbol: '△', orb: 7 }
-    ];
-    
-    let closestTransit: any = null;
-    let smallestOrb = 999;
-    
-    outerPlanets.forEach(planet => {
-      const currentLon = getPlanetLongitude(planet.body, currentDate);
-      
-      aspects.forEach(aspect => {
-        const targetAngle1 = (natalSectLightLon + aspect.angle) % 360;
-        const targetAngle2 = (natalSectLightLon - aspect.angle + 360) % 360;
-        
-        [targetAngle1, targetAngle2].forEach(target => {
-          let diff = Math.abs(currentLon - target);
-          if (diff > 180) diff = 360 - diff;
-          
-          if (diff <= aspect.orb && diff < smallestOrb) {
-            smallestOrb = diff;
-            closestTransit = {
-              planet: planet.name,
-              symbol: PLANET_SYMBOLS[planet.name],
-              aspect: aspect.name,
-              aspectSymbol: aspect.symbol,
-              orb: diff.toFixed(1)
-            };
-          }
+  const [nextTransit, setNextTransit] = useState<any>(null);
+  useEffect(() => {
+    if (natalSectLightLon === null) return;
+    const timer = setTimeout(() => {
+      const outerPlanets = [
+        { name: 'Saturn', body: Astronomy.Body.Saturn },
+        { name: 'Jupiter', body: Astronomy.Body.Jupiter },
+        { name: 'Uranus', body: Astronomy.Body.Uranus },
+        { name: 'Neptune', body: Astronomy.Body.Neptune },
+        { name: 'Pluto', body: Astronomy.Body.Pluto }
+      ];
+      const aspects = [
+        { name: 'conjunction', angle: 0, symbol: '☌', orb: 8 },
+        { name: 'opposition', angle: 180, symbol: '☍', orb: 8 },
+        { name: 'square', angle: 90, symbol: '□', orb: 7 },
+        { name: 'trine', angle: 120, symbol: '△', orb: 7 }
+      ];
+      let closestTransit: any = null;
+      let smallestOrb = 999;
+      outerPlanets.forEach(planet => {
+        const currentLon = getPlanetLongitude(planet.body, currentDate);
+        aspects.forEach(aspect => {
+          const targetAngle1 = (natalSectLightLon + aspect.angle) % 360;
+          const targetAngle2 = (natalSectLightLon - aspect.angle + 360) % 360;
+          [targetAngle1, targetAngle2].forEach(target => {
+            let diff = Math.abs(currentLon - target);
+            if (diff > 180) diff = 360 - diff;
+            if (diff <= aspect.orb && diff < smallestOrb) {
+              smallestOrb = diff;
+              closestTransit = {
+                planet: planet.name,
+                symbol: PLANET_SYMBOLS[planet.name],
+                aspect: aspect.name,
+                aspectSymbol: aspect.symbol,
+                orb: diff.toFixed(1)
+              };
+            }
+          });
         });
       });
-    });
-    
-    return closestTransit;
+      setNextTransit(closestTransit);
+    }, 50);
+    return () => clearTimeout(timer);
   }, [natalSectLightLon, currentDate]);
   
   return (
@@ -587,10 +583,14 @@ const ChartLordActivation: React.FC<{ chart: NatalChart; currentDate: Date }> = 
 
 // Progressed Moon Card for Overview
 const ProgressedMoonCard: React.FC<{ chart: NatalChart; currentDate: Date }> = ({ chart, currentDate }) => {
-  const progressedMoonInfo = useMemo(() => {
-    const progressions = calculateSecondaryProgressions(chart, currentDate);
-    if (!progressions) return null;
-    return getProgressedMoonInfo(progressions, chart);
+  const [progressedMoonInfo, setProgressedMoonInfo] = useState<any>(null);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const progressions = calculateSecondaryProgressions(chart, currentDate);
+      if (!progressions) { setProgressedMoonInfo(null); return; }
+      setProgressedMoonInfo(getProgressedMoonInfo(progressions, chart));
+    }, 100);
+    return () => clearTimeout(timer);
   }, [chart, currentDate]);
   
   if (!progressedMoonInfo) {
@@ -652,10 +652,14 @@ const MidlifeTransitWindow: React.FC<{ chart: NatalChart; currentDate: Date }> =
   const birthDate = new Date(chart.birthDate);
   const currentAge = (currentDate.getTime() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000);
   
-  const midlifeTransits = useMemo(() => {
-    return calculateOuterPlanetTransits(chart, currentDate).filter(t => 
-      t.exactAge !== null && t.exactAge >= 38 && t.exactAge <= 52
-    );
+  const [midlifeTransits, setMidlifeTransits] = useState<OuterPlanetTransit[]>([]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMidlifeTransits(calculateOuterPlanetTransits(chart, currentDate).filter(t => 
+        t.exactAge !== null && t.exactAge >= 38 && t.exactAge <= 52
+      ));
+    }, 150);
+    return () => clearTimeout(timer);
   }, [chart, currentDate]);
   
   const getStatusColor = (transit: OuterPlanetTransit) => {
@@ -795,10 +799,14 @@ const Post50Transits: React.FC<{ chart: NatalChart; currentDate: Date }> = ({ ch
   const birthDate = new Date(chart.birthDate);
   const currentAge = (currentDate.getTime() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000);
   
-  const post50Transits = useMemo(() => {
-    return calculateOuterPlanetTransits(chart, currentDate).filter(t => 
-      t.exactAge !== null && t.exactAge >= 50
-    );
+  const [post50Transits, setPost50Transits] = useState<OuterPlanetTransit[]>([]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPost50Transits(calculateOuterPlanetTransits(chart, currentDate).filter(t => 
+        t.exactAge !== null && t.exactAge >= 50
+      ));
+    }, 200);
+    return () => clearTimeout(timer);
   }, [chart, currentDate]);
   
   return (
