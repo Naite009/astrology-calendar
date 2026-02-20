@@ -910,7 +910,132 @@ const Post50Transits: React.FC<{ chart: NatalChart; currentDate: Date }> = ({ ch
   );
 };
 
-// Main Life Cycles Hub Component
+// Personalized Life Cycle Timeline with exact dates
+const LifeCycleTimelinePersonalized = ({ chart }: { chart: NatalChart }) => {
+  const birthDate = useMemo(() => {
+    if (!chart.birthDate) return null;
+    const parts = chart.birthDate.split('-').map(Number);
+    return new Date(parts[0], parts[1] - 1, parts[2]);
+  }, [chart.birthDate]);
+
+  const cycles = useMemo(() => {
+    if (!birthDate) return [];
+
+    const formatAge = (targetDate: Date) => {
+      const age = Math.floor((targetDate.getTime() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+      return age;
+    };
+
+    // Saturn cycle ~29.46 years
+    const saturnReturn1Start = addYears(birthDate, 28);
+    const saturnReturn1End = addYears(birthDate, 30);
+    const saturnReturn2Start = addYears(birthDate, 57);
+    const saturnReturn2End = addYears(birthDate, 59);
+
+    // Uranus opposition ~42 years (half of 84-year cycle)
+    const uranusOppStart = addYears(birthDate, 40);
+    const uranusOppEnd = addYears(birthDate, 43);
+
+    // Neptune square ~41 years (quarter of 164-year cycle)
+    const neptuneSqStart = addYears(birthDate, 40);
+    const neptuneSqEnd = addYears(birthDate, 42);
+
+    // Pluto square varies greatly by generation (Pluto's orbit is eccentric)
+    // Approximate: if born with Pluto in Scorpio/Sagittarius → ~36-40; Libra → ~37-42; Virgo → ~38-45
+    const plutoSqStart = addYears(birthDate, 36);
+    const plutoSqEnd = addYears(birthDate, 44);
+
+    // Chiron return ~50 years
+    const chironReturnStart = addYears(birthDate, 49);
+    const chironReturnEnd = addYears(birthDate, 51);
+
+    const now = new Date();
+
+    return [
+      {
+        symbol: '♄', label: 'Saturn Return #1',
+        start: saturnReturn1Start, end: saturnReturn1End,
+        age: `Age ${formatAge(saturnReturn1Start)}-${formatAge(saturnReturn1End)}`,
+        description: 'Adult identity forms — who you truly are emerges',
+        bg: 'bg-amber-500/10',
+        isPast: now > saturnReturn1End,
+        isCurrent: now >= saturnReturn1Start && now <= saturnReturn1End,
+      },
+      {
+        symbol: '♅', label: 'Uranus Opposition',
+        start: uranusOppStart, end: uranusOppEnd,
+        age: `Age ${formatAge(uranusOppStart)}-${formatAge(uranusOppEnd)}`,
+        description: 'Midlife awakening — radical authenticity call',
+        bg: 'bg-cyan-500/10',
+        isPast: now > uranusOppEnd,
+        isCurrent: now >= uranusOppStart && now <= uranusOppEnd,
+      },
+      {
+        symbol: '♆', label: 'Neptune Square',
+        start: neptuneSqStart, end: neptuneSqEnd,
+        age: `Age ${formatAge(neptuneSqStart)}-${formatAge(neptuneSqEnd)}`,
+        description: 'Spiritual disillusionment — ego dissolves',
+        bg: 'bg-violet-500/10',
+        isPast: now > neptuneSqEnd,
+        isCurrent: now >= neptuneSqStart && now <= neptuneSqEnd,
+      },
+      {
+        symbol: '♇', label: 'Pluto Square',
+        start: plutoSqStart, end: plutoSqEnd,
+        age: `Age ${formatAge(plutoSqStart)}-${formatAge(plutoSqEnd)}`,
+        description: 'Power transformation — death/rebirth of identity',
+        bg: 'bg-rose-500/10',
+        isPast: now > plutoSqEnd,
+        isCurrent: now >= plutoSqStart && now <= plutoSqEnd,
+      },
+      {
+        symbol: '⚷', label: 'Chiron Return',
+        start: chironReturnStart, end: chironReturnEnd,
+        age: `Age ${formatAge(chironReturnStart)}-${formatAge(chironReturnEnd)}`,
+        description: 'Wound becomes gift — deepest healing',
+        bg: 'bg-emerald-500/10',
+        isPast: now > chironReturnEnd,
+        isCurrent: now >= chironReturnStart && now <= chironReturnEnd,
+      },
+      {
+        symbol: '♄', label: 'Saturn Return #2',
+        start: saturnReturn2Start, end: saturnReturn2End,
+        age: `Age ${formatAge(saturnReturn2Start)}-${formatAge(saturnReturn2End)}`,
+        description: 'Elder initiation — wisdom crystallizes',
+        bg: 'bg-amber-500/10',
+        isPast: now > saturnReturn2End,
+        isCurrent: now >= saturnReturn2Start && now <= saturnReturn2End,
+      },
+    ];
+  }, [birthDate]);
+
+  if (!birthDate) {
+    return <p className="text-xs text-muted-foreground">Birth date required for personalized dates.</p>;
+  }
+
+  return (
+    <div className="space-y-2 text-xs">
+      {cycles.map((cycle, i) => (
+        <div key={i} className={`flex items-center gap-2 p-2 rounded ${cycle.bg} ${cycle.isCurrent ? 'ring-2 ring-primary' : ''}`}>
+          <span className="text-lg shrink-0">{cycle.symbol}</span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="font-medium">{cycle.label}:</span>
+              {cycle.isPast && <Badge variant="outline" className="text-[9px] px-1 py-0">Complete</Badge>}
+              {cycle.isCurrent && <Badge className="text-[9px] px-1 py-0 bg-primary text-primary-foreground">NOW</Badge>}
+            </div>
+            <span className="text-muted-foreground">{cycle.description}</span>
+          </div>
+          <div className="text-right shrink-0">
+            <p className="font-semibold text-[11px]">{format(cycle.start, 'MMM yyyy')} – {format(cycle.end, 'MMM yyyy')}</p>
+            <p className="text-[10px] text-muted-foreground">{cycle.age}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 export const LifeCyclesHub: React.FC<LifeCyclesHubProps> = ({ chart, currentDate = new Date() }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showSaturnDetails, setShowSaturnDetails] = useState(false);
@@ -951,38 +1076,7 @@ export const LifeCyclesHub: React.FC<LifeCyclesHubProps> = ({ chart, currentDate
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2 text-xs">
-                <div className="flex items-center gap-2 p-2 bg-amber-500/10 rounded">
-                  <span className="text-lg">♄</span>
-                  <span className="font-medium">Saturn Return #1:</span>
-                  <span className="text-muted-foreground">Age 28-30 — Adult identity forms</span>
-                </div>
-                <div className="flex items-center gap-2 p-2 bg-cyan-500/10 rounded">
-                  <span className="text-lg">♅</span>
-                  <span className="font-medium">Uranus Opposition:</span>
-                  <span className="text-muted-foreground">Age 41-43 — Midlife awakening</span>
-                </div>
-                <div className="flex items-center gap-2 p-2 bg-violet-500/10 rounded">
-                  <span className="text-lg">♆</span>
-                  <span className="font-medium">Neptune Square:</span>
-                  <span className="text-muted-foreground">Age 40-42 — Spiritual disillusionment</span>
-                </div>
-                <div className="flex items-center gap-2 p-2 bg-rose-500/10 rounded">
-                  <span className="text-lg">♇</span>
-                  <span className="font-medium">Pluto Square:</span>
-                  <span className="text-muted-foreground">Varies — Power transformation</span>
-                </div>
-                <div className="flex items-center gap-2 p-2 bg-emerald-500/10 rounded">
-                  <span className="text-lg">⚷</span>
-                  <span className="font-medium">Chiron Return:</span>
-                  <span className="text-muted-foreground">Age 49-51 — Wound becomes gift</span>
-                </div>
-                <div className="flex items-center gap-2 p-2 bg-amber-500/10 rounded">
-                  <span className="text-lg">♄</span>
-                  <span className="font-medium">Saturn Return #2:</span>
-                  <span className="text-muted-foreground">Age 57-60 — Elder initiation</span>
-                </div>
-              </div>
+              <LifeCycleTimelinePersonalized chart={chart} />
             </CardContent>
           </Card>
         </TabsContent>
