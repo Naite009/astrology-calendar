@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useTransition, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Calendar, Sparkles, ChevronDown, ChevronRight } from 'lucide-react';
 import {
   getBestDaysSummary,
@@ -229,10 +229,29 @@ const CategorySection = ({
   natalChart: NatalChart | null; days: number; expanded: boolean; onToggle: () => void;
 }) => {
   const isToday = isSameDay(summary.bestDay, new Date());
+  const [subResults, setSubResults] = useState<SubActivityResult[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const subResults = useMemo(() => {
-    if (!expanded) return [];
-    return subActivities.map(act => getSubActivityBestDay(act, natalChart, new Date(), days));
+  useEffect(() => {
+    if (!expanded) { setSubResults([]); return; }
+    let cancelled = false;
+    setLoading(true);
+    // Compute each sub-activity in staggered chunks to avoid blocking UI
+    const computeAsync = async () => {
+      const results: SubActivityResult[] = [];
+      for (const act of subActivities) {
+        if (cancelled) return;
+        await new Promise(r => setTimeout(r, 0)); // yield to UI
+        if (cancelled) return;
+        results.push(getSubActivityBestDay(act, natalChart, new Date(), days));
+      }
+      if (!cancelled) {
+        setSubResults(results);
+        setLoading(false);
+      }
+    };
+    computeAsync();
+    return () => { cancelled = true; };
   }, [expanded, subActivities, natalChart, days]);
 
   return (
@@ -261,9 +280,17 @@ const CategorySection = ({
       </button>
       {expanded && (
         <div className="border-l-2 border-muted-foreground/20 ml-5 mt-1 pl-1 py-1 space-y-1">
-          {subResults.map(r => (
-            <SubActivityRow key={r.activity.id} result={r} parentCategory={summary.category} />
-          ))}
+          {loading && subResults.length === 0 ? (
+            <>
+              <Skeleton className="h-10 w-full rounded-md" />
+              <Skeleton className="h-10 w-full rounded-md" />
+              <Skeleton className="h-10 w-full rounded-md" />
+            </>
+          ) : (
+            subResults.map(r => (
+              <SubActivityRow key={r.activity.id} result={r} parentCategory={summary.category} />
+            ))
+          )}
         </div>
       )}
     </div>
@@ -275,9 +302,28 @@ const ChanceSection = ({ natalChart, days, expanded, onToggle, bestChance }: {
   natalChart: NatalChart | null; days: number; expanded: boolean; onToggle: () => void;
   bestChance: SubActivityResult | null;
 }) => {
-  const subResults = useMemo(() => {
-    if (!expanded) return [];
-    return CHANCE_ACTIVITIES.map(act => getSubActivityBestDay(act, natalChart, new Date(), days));
+  const [subResults, setSubResults] = useState<SubActivityResult[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!expanded) { setSubResults([]); return; }
+    let cancelled = false;
+    setLoading(true);
+    const computeAsync = async () => {
+      const results: SubActivityResult[] = [];
+      for (const act of CHANCE_ACTIVITIES) {
+        if (cancelled) return;
+        await new Promise(r => setTimeout(r, 0));
+        if (cancelled) return;
+        results.push(getSubActivityBestDay(act, natalChart, new Date(), days));
+      }
+      if (!cancelled) {
+        setSubResults(results);
+        setLoading(false);
+      }
+    };
+    computeAsync();
+    return () => { cancelled = true; };
   }, [expanded, natalChart, days]);
 
   const isToday = bestChance ? isSameDay(bestChance.bestDay, new Date()) : false;
@@ -312,9 +358,17 @@ const ChanceSection = ({ natalChart, days, expanded, onToggle, bestChance }: {
       </button>
       {expanded && (
         <div className="border-l-2 border-muted-foreground/20 ml-5 mt-1 pl-1 py-1 space-y-1">
-          {subResults.map(r => (
-            <SubActivityRow key={r.activity.id} result={r} parentCategory="chance" />
-          ))}
+          {loading && subResults.length === 0 ? (
+            <>
+              <Skeleton className="h-10 w-full rounded-md" />
+              <Skeleton className="h-10 w-full rounded-md" />
+              <Skeleton className="h-10 w-full rounded-md" />
+            </>
+          ) : (
+            subResults.map(r => (
+              <SubActivityRow key={r.activity.id} result={r} parentCategory="chance" />
+            ))
+          )}
         </div>
       )}
     </div>
