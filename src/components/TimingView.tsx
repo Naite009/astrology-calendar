@@ -1,6 +1,15 @@
-import { useState, useEffect, useMemo, ReactNode } from 'react';
+import React, { useState, useEffect, useMemo, ReactNode, Suspense, lazy } from 'react';
 import { Clock, Calendar, CalendarCheck, Sparkles, Sun, Moon, AlertTriangle, CheckCircle, Star, ChevronLeft, ChevronRight, Users, User, Info } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+
+/* Lazy-load heavy components to prevent main thread blocking */
+const BiorhythmCard = lazy(() => import('@/components/BiorhythmCard').then(m => ({ default: m.BiorhythmCard })));
+const BiorhythmForecast = lazy(() => import('@/components/BiorhythmForecast').then(m => ({ default: m.BiorhythmForecast })));
+const LifeCyclesHub = lazy(() => import('@/components/LifeCyclesHub').then(m => ({ default: m.LifeCyclesHub })));
+const DailySynthesisCard = lazy(() => import('@/components/DailySynthesisCard').then(m => ({ default: m.DailySynthesisCard })));
+const TransitAlertsCard = lazy(() => import('@/components/TransitAlertsCard').then(m => ({ default: m.TransitAlertsCard })));
+const BestDaysSummaryCard = lazy(() => import('@/components/BestDaysSummaryCard').then(m => ({ default: m.BestDaysSummaryCard })));
+const MoonTransitCalendar = lazy(() => import('@/components/MoonTransitCalendar').then(m => ({ default: m.MoonTransitCalendar })));
 
 /* Deferred render: mounts children only after a delay so the tab opens instantly */
 const DeferredRender = ({ children, delay = 0, fallback }: { children: ReactNode; delay?: number; fallback?: ReactNode }) => {
@@ -14,7 +23,7 @@ const DeferredRender = ({ children, delay = 0, fallback }: { children: ReactNode
     return () => clearTimeout(timer);
   }, [delay]);
   if (!show) return <>{fallback || <Skeleton className="h-24 w-full rounded-lg" />}</>;
-  return <>{children}</>;
+  return <Suspense fallback={fallback || <Skeleton className="h-24 w-full rounded-lg" />}>{children}</Suspense>;
 };
 import { NatalChart } from '@/hooks/useNatalChart';
 import { calculateBestTimes, BestTimesCategory, BestTimeResult, CATEGORY_INFO, getTransitPositions, getCurrentAspects } from '@/lib/bestTimes';
@@ -30,13 +39,6 @@ import { DATES_TO_AVOID_2026, BEST_DAYS_2026, get2026MonthData, ElectionalDayDat
 import { getVOCMoonDetails } from '@/lib/voidOfCourseMoon';
 import { calculatePlanetaryHours } from '@/lib/planetaryHours';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { BiorhythmCard } from '@/components/BiorhythmCard';
-import { BiorhythmForecast } from '@/components/BiorhythmForecast';
-import { LifeCyclesHub } from '@/components/LifeCyclesHub';
-import { DailySynthesisCard } from '@/components/DailySynthesisCard';
-import { TransitAlertsCard } from '@/components/TransitAlertsCard';
-import { BestDaysSummaryCard } from '@/components/BestDaysSummaryCard';
-import { MoonTransitCalendar } from '@/components/MoonTransitCalendar';
 import { ChartSelector } from '@/components/ChartSelector';
 import { parseLocalDate } from '@/lib/localDate';
 interface TimingViewProps {
@@ -1176,17 +1178,19 @@ const PlanAheadSection = ({
           Personal Biorhythm Forecast
         </h4>
         {activeChart ? (
-          <BiorhythmForecast 
-            birthDate={parseLocalDate(activeChart.birthDate)}
-            startDate={new Date(selectedYear, currentMonth, 1)}
-            days={35}
-            savedCharts={[
-              ...(userNatalChart ? [{ id: 'user', name: `★ ${userNatalChart.name}`, birthDate: userNatalChart.birthDate }] : []),
-              ...[...savedCharts].sort((a, b) => a.name.localeCompare(b.name)).map(c => ({ id: c.id, name: c.name, birthDate: c.birthDate }))
-            ]}
-            selectedChartId={selectedChart}
-            onChartChange={(id) => setSelectedChart(id)}
-          />
+          <Suspense fallback={<Skeleton className="h-40 w-full rounded-lg" />}>
+            <BiorhythmForecast 
+              birthDate={parseLocalDate(activeChart.birthDate)}
+              startDate={new Date(selectedYear, currentMonth, 1)}
+              days={35}
+              savedCharts={[
+                ...(userNatalChart ? [{ id: 'user', name: `★ ${userNatalChart.name}`, birthDate: userNatalChart.birthDate }] : []),
+                ...[...savedCharts].sort((a, b) => a.name.localeCompare(b.name)).map(c => ({ id: c.id, name: c.name, birthDate: c.birthDate }))
+              ]}
+              selectedChartId={selectedChart}
+              onChartChange={(id) => setSelectedChart(id)}
+            />
+          </Suspense>
         ) : (
           <div className="p-4 rounded-lg border border-dashed border-border bg-secondary/20">
             <div className="flex items-center gap-3">
