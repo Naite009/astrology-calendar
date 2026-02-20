@@ -38,6 +38,8 @@ export interface BestDaySummary {
   score: number;
   rating: string;
   topReason: string;
+  /** Top 3 days for this category, spread apart */
+  topDays: { date: Date; score: number; rating: string; reason: string }[];
 }
 
 export interface SubActivityDayScore {
@@ -151,6 +153,21 @@ export function getBestDaysSummary(
       const best = results[0];
       const info = CATEGORY_INFO[category];
       
+      // Pick top 3 spread apart by at least 5 days
+      const top3: { date: Date; score: number; rating: string; reason: string }[] = [];
+      for (const r of results) {
+        if (top3.length >= 3) break;
+        const tooClose = top3.some(t => Math.abs(differenceInDays(t.date, r.date)) < 5);
+        if (!tooClose && r.score > 0) {
+          top3.push({
+            date: r.date,
+            score: r.score,
+            rating: r.rating,
+            reason: r.reasons[0] || 'Favorable alignments',
+          });
+        }
+      }
+      
       summaries.push({
         category,
         emoji: info.emoji,
@@ -158,7 +175,8 @@ export function getBestDaysSummary(
         bestDay: best.date,
         score: best.score,
         rating: best.rating,
-        topReason: best.reasons[0] || 'Favorable alignments'
+        topReason: best.reasons[0] || 'Favorable alignments',
+        topDays: top3,
       });
       
       const dateKey = format(best.date, 'yyyy-MM-dd');
@@ -229,39 +247,39 @@ export function getSubActivityBestDay(
     let bonus = 0;
     const bonusReasons: string[] = [];
 
-    // Planetary hour bonus — check noon of that day (strong weight)
+    // Planetary hour bonus — check noon of that day (low weight to avoid homogenizing)
     if (activity.favorableHourPlanets && activity.favorableHourPlanets.length > 0) {
       const noon = new Date(d.date);
       noon.setHours(12, 0, 0, 0);
       const hourInfo = getPlanetaryHourAt(noon);
       if (hourInfo && activity.favorableHourPlanets[0] === hourInfo.planet) {
-        bonus += 50;
+        bonus += 15;
         bonusReasons.push(`${hourInfo.symbol} ${hourInfo.planet} Hour (primary)`);
       } else if (hourInfo && activity.favorableHourPlanets.includes(hourInfo.planet)) {
-        bonus += 30;
+        bonus += 8;
         bonusReasons.push(`${hourInfo.symbol} ${hourInfo.planet} Hour`);
       }
     }
 
-    // Moon phase bonus (strong weight)
+    // Moon phase bonus (moderate weight)
     if (activity.favorableMoonPhases && activity.favorableMoonPhases.length > 0) {
       const moonPhase = getMoonPhase(d.date);
       if (activity.favorableMoonPhases[0] && moonPhase.phaseName.includes(activity.favorableMoonPhases[0])) {
-        bonus += 40;
+        bonus += 12;
         bonusReasons.push(`${moonPhase.phaseName} (ideal)`);
       } else if (activity.favorableMoonPhases.some(p => moonPhase.phaseName.includes(p))) {
-        bonus += 25;
+        bonus += 6;
         bonusReasons.push(`${moonPhase.phaseName}`);
       }
     }
 
-    // Day of week bonus (moderate weight)
+    // Day of week bonus (low weight)
     if (activity.favorableDaysOfWeek && activity.favorableDaysOfWeek.length > 0) {
       const dow = getDay(d.date);
       if (activity.favorableDaysOfWeek[0] === dow) {
-        bonus += 25;
+        bonus += 8;
       } else if (activity.favorableDaysOfWeek.includes(dow)) {
-        bonus += 15;
+        bonus += 4;
       }
     }
 
