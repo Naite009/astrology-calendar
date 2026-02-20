@@ -330,7 +330,10 @@ export const AstroCalendar = () => {
                 Wheel
               </button>
               <button
-                onClick={() => setViewMode("timing")}
+                onClick={() => {
+                  if (userNatalChart) selectChartForTiming('user');
+                  setViewMode("timing");
+                }}
                 className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
                   viewMode === "timing"
                     ? "bg-primary text-primary-foreground"
