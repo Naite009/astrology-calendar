@@ -139,8 +139,8 @@ const WaveChart = ({
       ))}
       
       {/* Cycle lines */}
-      <path d={physicalPath} fill="none" stroke="hsl(var(--destructive))" strokeWidth={2} strokeOpacity={0.8} />
-      <path d={emotionalPath} fill="none" stroke="hsl(var(--primary))" strokeWidth={2} strokeOpacity={0.8} />
+      <path d={physicalPath} fill="none" stroke="hsl(210 90% 50%)" strokeWidth={2} strokeOpacity={0.8} />
+      <path d={emotionalPath} fill="none" stroke="hsl(0 84% 60%)" strokeWidth={2} strokeOpacity={0.8} />
       <path d={intellectualPath} fill="none" stroke="hsl(142 76% 36%)" strokeWidth={2} strokeOpacity={0.8} />
       
       {/* Today marker */}
@@ -510,10 +510,10 @@ export const BiorhythmForecast = ({
             
             <div className="flex gap-4 text-xs">
               <span className="flex items-center gap-1">
-                <span className="w-3 h-0.5 bg-destructive rounded" /> Physical
+                <span className="w-3 h-0.5 rounded" style={{ backgroundColor: 'hsl(210 90% 50%)' }} /> Physical
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-3 h-0.5 bg-primary rounded" /> Emotional
+                <span className="w-3 h-0.5 rounded" style={{ backgroundColor: 'hsl(0 84% 60%)' }} /> Emotional
               </span>
               <span className="flex items-center gap-1">
                 <span className="w-3 h-0.5 rounded" style={{ backgroundColor: 'hsl(142 76% 36%)' }} /> Intellectual

@@ -457,8 +457,8 @@ const BiorhythmWaveInline = ({ birthDate, targetDate, primaryBiorhythms }: {
   });
 
   const lines = [
-    { key: 'physical', color: 'hsl(var(--destructive))', vals: forecast.map(d => d.physical) },
-    { key: 'emotional', color: 'hsl(var(--primary))', vals: forecast.map(d => d.emotional) },
+    { key: 'physical', color: 'hsl(210 90% 50%)', vals: forecast.map(d => d.physical) },
+    { key: 'emotional', color: 'hsl(0 84% 60%)', vals: forecast.map(d => d.emotional) },
     { key: 'intellectual', color: 'hsl(142 76% 36%)', vals: forecast.map(d => d.intellectual) },
   ];
 
@@ -488,8 +488,8 @@ const BiorhythmWaveInline = ({ birthDate, targetDate, primaryBiorhythms }: {
         ))}
       </svg>
       <div className="flex justify-center gap-4 mt-1">
-        <span className="flex items-center gap-1 text-[10px] text-muted-foreground"><span className="w-3 h-0.5 rounded bg-destructive inline-block" /> Physical</span>
-        <span className="flex items-center gap-1 text-[10px] text-muted-foreground"><span className="w-3 h-0.5 rounded bg-primary inline-block" /> Emotional</span>
+        <span className="flex items-center gap-1 text-[10px] text-muted-foreground"><span className="w-3 h-0.5 rounded inline-block" style={{ backgroundColor: 'hsl(210 90% 50%)' }} /> Physical</span>
+        <span className="flex items-center gap-1 text-[10px] text-muted-foreground"><span className="w-3 h-0.5 rounded inline-block" style={{ backgroundColor: 'hsl(0 84% 60%)' }} /> Emotional</span>
         <span className="flex items-center gap-1 text-[10px] text-muted-foreground"><span className="w-3 h-0.5 rounded inline-block" style={{ backgroundColor: 'hsl(142 76% 36%)' }} /> Intellectual</span>
       </div>
     </div>
