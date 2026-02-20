@@ -25,40 +25,40 @@ interface CategoryRules {
 
 const CATEGORY_RULES: Record<BestTimesCategory, CategoryRules> = {
   love: {
-    favorablePlanets: ['Venus', 'Moon'],
+    favorablePlanets: ['Venus', 'Moon', 'Jupiter'],
     favorableAspects: ['trine', 'sextile', 'conjunction'],
     favorableSigns: ['Libra', 'Taurus', 'Cancer', 'Pisces'],
-    natalPlanetsToCheck: ['Sun', 'Venus', 'Moon', 'Ascendant'],
+    natalPlanetsToCheck: ['Venus', 'Moon', 'Ascendant'],
   },
   finance: {
-    favorablePlanets: ['Jupiter', 'Sun', 'Venus'],
+    favorablePlanets: ['Jupiter', 'Venus', 'Pluto'],
     favorableAspects: ['trine', 'sextile'],
-    favorableSigns: ['Taurus', 'Capricorn', 'Virgo'],
-    natalPlanetsToCheck: ['Sun', 'Jupiter', 'Saturn'],
+    favorableSigns: ['Taurus', 'Capricorn', 'Scorpio'],
+    natalPlanetsToCheck: ['Jupiter', 'Saturn', 'Pluto'],
   },
   health: {
-    favorablePlanets: ['Mars', 'Sun'],
+    favorablePlanets: ['Mars', 'Sun', 'Saturn'],
     favorableAspects: ['trine', 'sextile'],
-    favorableSigns: ['Aries', 'Leo', 'Sagittarius'],
-    natalPlanetsToCheck: ['Mars', 'Sun', 'Ascendant'],
+    favorableSigns: ['Aries', 'Virgo', 'Capricorn'],
+    natalPlanetsToCheck: ['Mars', 'Ascendant', 'Sun'],
   },
   beauty: {
-    favorablePlanets: ['Venus', 'Moon'],
+    favorablePlanets: ['Venus', 'Neptune', 'Moon'],
     favorableAspects: ['trine', 'sextile', 'conjunction'],
-    favorableSigns: ['Taurus', 'Libra', 'Leo'],
-    natalPlanetsToCheck: ['Venus', 'Ascendant'],
+    favorableSigns: ['Taurus', 'Libra', 'Pisces'],
+    natalPlanetsToCheck: ['Venus', 'Neptune', 'Ascendant'],
   },
   career: {
-    favorablePlanets: ['Saturn', 'Sun', 'Jupiter'],
-    favorableAspects: ['trine', 'sextile'],
-    favorableSigns: ['Capricorn', 'Virgo', 'Leo'],
-    natalPlanetsToCheck: ['Sun', 'Saturn', 'Mercury'],
+    favorablePlanets: ['Saturn', 'Jupiter', 'Sun', 'Pluto'],
+    favorableAspects: ['trine', 'sextile', 'conjunction'],
+    favorableSigns: ['Capricorn', 'Leo', 'Aries'],
+    natalPlanetsToCheck: ['Sun', 'Saturn', 'Midheaven'],
   },
   travel: {
-    favorablePlanets: ['Jupiter', 'Sun'],
+    favorablePlanets: ['Jupiter', 'Mercury', 'Uranus'],
     favorableAspects: ['trine', 'sextile'],
     favorableSigns: ['Sagittarius', 'Gemini', 'Aquarius'],
-    natalPlanetsToCheck: ['Jupiter', 'Sun'],
+    natalPlanetsToCheck: ['Mercury', 'Jupiter', 'Uranus'],
     avoidMercuryRetrograde: true,
   },
 };
@@ -85,21 +85,23 @@ const calculateAspectBetween = (planet1: NatalPlanetPosition, planet2Lon: number
   const diff = Math.abs(((planet2Lon - lon1 + 180) % 360) - 180);
 
   const aspects = [
-    { angle: 0, type: 'conjunction', symbol: '☌', orb: 8, score: 30 },
-    { angle: 60, type: 'sextile', symbol: '⚹', orb: 6, score: 25 },
-    { angle: 90, type: 'square', symbol: '□', orb: 8, score: -20 },
-    { angle: 120, type: 'trine', symbol: '△', orb: 8, score: 35 },
-    { angle: 180, type: 'opposition', symbol: '☍', orb: 8, score: -15 },
+    { angle: 0, type: 'conjunction', symbol: '☌', orb: 8, score: 80 },
+    { angle: 60, type: 'sextile', symbol: '⚹', orb: 6, score: 60 },
+    { angle: 90, type: 'square', symbol: '□', orb: 8, score: -40 },
+    { angle: 120, type: 'trine', symbol: '△', orb: 8, score: 90 },
+    { angle: 180, type: 'opposition', symbol: '☍', orb: 8, score: -30 },
   ];
 
   for (const aspect of aspects) {
     const orbDiff = Math.abs(diff - aspect.angle);
     if (orbDiff < aspect.orb) {
+      // Tighter orbs get higher scores (exactness bonus)
+      const exactnessMultiplier = 1 + (1 - orbDiff / aspect.orb) * 0.5;
       return { 
         type: aspect.type, 
         symbol: aspect.symbol, 
         orb: orbDiff.toFixed(1), 
-        score: aspect.score 
+        score: Math.round(aspect.score * exactnessMultiplier)
       };
     }
   }
@@ -257,8 +259,9 @@ export const calculateBestTimes = (
     const transitPlanets = getPlanetaryPositions(currentDate);
     const moonPhase = getMoonPhase(currentDate);
 
-    // For personalized charts: Check transits to natal planets
+    // For personalized charts: Check transits to natal planets (HEAVY weight)
     if (natalChart && natalChart.planets) {
+      // Primary check: favorable transiting planets to category-specific natal planets
       rules.natalPlanetsToCheck.forEach(natalPlanetName => {
         const natalPos = natalChart.planets[natalPlanetName as keyof typeof natalChart.planets];
         if (!natalPos) return;
@@ -277,6 +280,25 @@ export const calculateBestTimes = (
           }
         });
       });
+
+      // Secondary check: ALL outer planets making any aspect to primary natal target
+      // This catches e.g. Pluto trine natal Venus for love, even if Pluto isn't in favorablePlanets
+      const outerPlanets = ['jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
+      const primaryNatal = rules.natalPlanetsToCheck[0]; // Most important natal planet for this category
+      const primaryNatalPos = natalChart.planets[primaryNatal as keyof typeof natalChart.planets];
+      if (primaryNatalPos) {
+        outerPlanets.forEach(op => {
+          if (rules.favorablePlanets.map(p => p.toLowerCase()).includes(op)) return; // Already counted
+          const transitPos = transitPlanets[op as keyof typeof transitPlanets];
+          if (!transitPos) return;
+          const transitLon = ZODIAC_SIGNS.indexOf(transitPos.signName) * 30 + transitPos.degree;
+          const aspect = calculateAspectBetween(primaryNatalPos, transitLon);
+          if (aspect && (aspect.type === 'trine' || aspect.type === 'sextile')) {
+            score += Math.round(aspect.score * 0.5); // Half weight for non-primary
+            reasons.push(`${op.charAt(0).toUpperCase() + op.slice(1)} ${aspect.symbol} Your ${primaryNatal}`);
+          }
+        });
+      }
     } else {
       // COLLECTIVE ASTROLOGY: Use current planetary transits and aspects between them
       
@@ -348,10 +370,10 @@ export const calculateBestTimes = (
       }
     }
 
-    // Check moon sign (applies to both personal and collective)
+    // Check moon sign (applies to both personal and collective — low weight)
     const moonSign = transitPlanets.moon.signName;
     if (rules.favorableSigns.includes(moonSign)) {
-      score += 15;
+      score += 5;
       reasons.push(`Moon in ${moonSign}`);
     }
 
@@ -368,39 +390,38 @@ export const calculateBestTimes = (
       reasons.push('Mercury Retrograde (avoid for travel)');
     }
 
-    // Bonus for waxing moon (good for new beginnings)
+    // Bonus for waxing moon (low weight — shared across all categories)
     if (moonPhase.phaseName.includes('Waxing')) {
-      score += 10;
+      score += 3;
       reasons.push('Waxing Moon (building energy)');
     }
 
     // Penalty for balsamic moon
     if (moonPhase.isBalsamic) {
-      score -= 15;
+      score -= 10;
       reasons.push('Balsamic Moon (rest period)');
     }
 
-    // Check planetary hour bonus (for personal timing)
+    // Check planetary hour bonus (low weight — shared timing layer)
     const currentHour = getPlanetaryHourAt(currentDate);
     if (currentHour) {
       const hourPlanet = currentHour.planet;
       
-      // Category-specific planetary hour bonuses
       if ((category === 'love' || category === 'beauty') && hourPlanet === 'Venus') {
-        score += 20;
-        reasons.push('♀ Venus Hour (perfect for love/beauty!)');
+        score += 8;
+        reasons.push('♀ Venus Hour');
       } else if (category === 'finance' && (hourPlanet === 'Jupiter' || hourPlanet === 'Venus')) {
-        score += 15;
-        reasons.push(`${currentHour.symbol} ${hourPlanet} Hour (good for finances)`);
+        score += 6;
+        reasons.push(`${currentHour.symbol} ${hourPlanet} Hour`);
       } else if (category === 'career' && (hourPlanet === 'Sun' || hourPlanet === 'Saturn' || hourPlanet === 'Jupiter')) {
-        score += 15;
-        reasons.push(`${currentHour.symbol} ${hourPlanet} Hour (good for career)`);
+        score += 6;
+        reasons.push(`${currentHour.symbol} ${hourPlanet} Hour`);
       } else if (category === 'health' && (hourPlanet === 'Mars' || hourPlanet === 'Sun')) {
-        score += 15;
-        reasons.push(`${currentHour.symbol} ${hourPlanet} Hour (good for health/action)`);
+        score += 6;
+        reasons.push(`${currentHour.symbol} ${hourPlanet} Hour`);
       } else if (category === 'travel' && (hourPlanet === 'Mercury' || hourPlanet === 'Jupiter')) {
-        score += 15;
-        reasons.push(`${currentHour.symbol} ${hourPlanet} Hour (good for travel)`);
+        score += 6;
+        reasons.push(`${currentHour.symbol} ${hourPlanet} Hour`);
       }
     }
 
