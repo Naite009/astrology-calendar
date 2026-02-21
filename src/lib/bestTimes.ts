@@ -1,4 +1,5 @@
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
+import { format } from 'date-fns';
 import { getPlanetaryPositions, isMercuryRetrograde, getVoidOfCourseMoon, getMoonPhase } from './astrology';
 import { isTimeVOC } from './voidOfCourseMoon';
 import { getPlanetaryHourAt } from './planetaryHours';
@@ -248,9 +249,9 @@ export const calculateBestTimes = (
   const bestTimes: BestTimeResult[] = [];
   const rules = CATEGORY_RULES[category];
   
-  // Sample every 4 hours instead of every hour for performance
-  const hoursStep = 4;
+  // Sample once per day at noon for performance (was every 4 hours)
   const currentDate = new Date(startDate);
+  currentDate.setHours(12, 0, 0, 0);
 
   while (currentDate <= endDate) {
     let score = 0;
@@ -491,7 +492,7 @@ export const calculateBestTimes = (
       rating: score > 70 ? '★★★' : score > 50 ? '★★' : '★',
     });
 
-    currentDate.setHours(currentDate.getHours() + hoursStep);
+    currentDate.setDate(currentDate.getDate() + 1);
   }
 
   // Sort by score and return top 15
@@ -500,7 +501,7 @@ export const calculateBestTimes = (
 
 /**
  * Calculate scores for ALL days in a range (no filtering/slicing).
- * Used for wave charts and blended sub-activity scoring.
+ * Uses calculateBestTimes (which now samples daily) and returns all results.
  */
 export const calculateAllDayScores = (
   category: BestTimesCategory,
@@ -508,23 +509,25 @@ export const calculateAllDayScores = (
   startDate: Date,
   endDate: Date
 ): BestTimeResult[] => {
-  // Reuse calculateBestTimes logic but capture everything
+  // calculateBestTimes now samples once per day, so just get all results unsorted
+  const allResults = calculateBestTimes(category, natalChart, startDate, endDate);
+  
+  // Build a map by date to fill gaps
+  const dateMap = new Map<string, BestTimeResult>();
+  for (const r of allResults) {
+    dateMap.set(format(r.date, 'yyyy-MM-dd'), r);
+  }
+  
   const results: BestTimeResult[] = [];
   const current = new Date(startDate);
   current.setHours(12, 0, 0, 0);
-
   while (current <= endDate) {
-    const dayResults = calculateBestTimes(category, natalChart, new Date(current), new Date(current.getTime() + 24 * 60 * 60 * 1000));
-    if (dayResults.length > 0) {
-      results.push(dayResults[0]);
+    const key = format(current, 'yyyy-MM-dd');
+    const existing = dateMap.get(key);
+    if (existing) {
+      results.push(existing);
     } else {
-      // Even if score was filtered out, we need a data point
-      results.push({
-        date: new Date(current),
-        score: 0,
-        reasons: ['No strong alignments'],
-        rating: '★',
-      });
+      results.push({ date: new Date(current), score: 0, reasons: ['No strong alignments'], rating: '★' });
     }
     current.setDate(current.getDate() + 1);
   }
