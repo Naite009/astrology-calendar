@@ -241,9 +241,11 @@ export const CosmicEnergyButton = ({ onClick }: { onClick: () => void }) => {
 
 interface TodaysCosmicEnergyProps {
   onClose?: () => void;
+  userNatalChart?: NatalChart | null;
+  savedCharts?: NatalChart[];
 }
 
-export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
+export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart, savedCharts: propSavedCharts }: TodaysCosmicEnergyProps) => {
   const [isOpen, setIsOpen] = useState(true); // Start open when rendered
   const [isLoading, setIsLoading] = useState(false);
   const [cosmicData, setCosmicData] = useState<CosmicData | null>(null);
@@ -267,8 +269,10 @@ export const TodaysCosmicEnergy = ({ onClose }: TodaysCosmicEnergyProps) => {
   const [voiceStyle, setVoiceStyle] = useState<'tara' | 'chris' | 'anne' | 'kathy' | 'krs' | 'malika' | 'sarah' | 'astrodienst' | 'cafe' | 'astrotwins' | 'chani'>('tara');
   const contentRef = useRef<HTMLDivElement>(null);
   
-  // Get saved charts from the hook
-  const { userNatalChart, savedCharts } = useNatalChart();
+  // Get saved charts - prefer props, fall back to hook
+  const hookData = useNatalChart();
+  const userNatalChart = propUserNatalChart !== undefined ? propUserNatalChart : hookData.userNatalChart;
+  const savedCharts = propSavedCharts !== undefined ? propSavedCharts : hookData.savedCharts;
   
   // Build list of available charts
   const availableCharts: NatalChart[] = [
