@@ -1255,12 +1255,18 @@ export const ChartLibrary = ({
               ) : (
                 <>
                   <div className="text-sm text-foreground mb-3 space-y-0.5">
-                    <p>☉ {chart.planets.Sun?.degree}° {chart.planets.Sun?.sign}</p>
-                    <p>☽ {chart.planets.Moon?.degree}° {chart.planets.Moon?.sign}</p>
-                    <p>
-                      ASC {(chart.houseCusps?.house1?.degree ?? chart.planets.Ascendant?.degree)}°{' '}
-                      {(chart.houseCusps?.house1?.sign ?? chart.planets.Ascendant?.sign)}
-                    </p>
+                    {chart.planets ? (
+                      <>
+                        <p>☉ {chart.planets.Sun?.degree}° {chart.planets.Sun?.sign}</p>
+                        <p>☽ {chart.planets.Moon?.degree}° {chart.planets.Moon?.sign}</p>
+                        <p>
+                          ASC {(chart.houseCusps?.house1?.degree ?? chart.planets.Ascendant?.degree)}°{' '}
+                          {(chart.houseCusps?.house1?.sign ?? chart.planets.Ascendant?.sign)}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-muted-foreground italic">Human Design chart</p>
+                    )}
                   </div>
                   <p className="text-[10px] text-muted-foreground mb-2 italic">Drag chart image here to update</p>
                   <div className="flex gap-3">
