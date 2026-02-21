@@ -157,7 +157,7 @@ export function getBestDaysSummary(
       const top3: { date: Date; score: number; rating: string; reason: string }[] = [];
       for (const r of results) {
         if (top3.length >= 3) break;
-        const tooClose = top3.some(t => Math.abs(differenceInDays(t.date, r.date)) < 5);
+        const tooClose = top3.some(t => Math.abs(differenceInDays(t.date, r.date)) < 2);
         if (!tooClose && r.score > 0) {
           top3.push({
             date: r.date,

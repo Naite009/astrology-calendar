@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Calendar, Sparkles } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Calendar, Sparkles, Star } from 'lucide-react';
 import {
   getBestDaysSummary,
   getCategoryColor,
@@ -17,64 +17,68 @@ interface BestDaysSummaryCardProps {
   days?: number;
 }
 
-/* ── Score badge ── */
-const ScoreBadge = ({ score }: { score: number }) => {
+/* ── Quality label instead of points ── */
+const QualityBadge = ({ score }: { score: number }) => {
   let color = 'bg-muted/40 text-muted-foreground';
-  let label = 'Low';
-  if (score >= 120) { color = 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'; label = 'Exceptional'; }
-  else if (score >= 90) { color = 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'; label = 'Excellent'; }
-  else if (score >= 60) { color = 'bg-blue-500/20 text-blue-700 dark:text-blue-300'; label = 'Good'; }
-  else if (score >= 30) { color = 'bg-amber-500/20 text-amber-700 dark:text-amber-300'; label = 'Fair'; }
+  let label = 'Quiet';
+  if (score >= 120) { color = 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'; label = '🔥 Peak'; }
+  else if (score >= 90) { color = 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'; label = '✦ Strong'; }
+  else if (score >= 60) { color = 'bg-blue-500/15 text-blue-600 dark:text-blue-400'; label = '● Good'; }
+  else if (score >= 30) { color = 'bg-amber-500/15 text-amber-600 dark:text-amber-400'; label = '○ Mild'; }
 
   return (
-    <span className={`inline-flex items-center rounded-full px-1.5 py-0.5 font-medium text-[9px] ${color}`}>
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 font-semibold text-[10px] tracking-wide ${color}`}>
       {label}
     </span>
   );
 };
 
-/* ── Category card with top 3 days inline ── */
+/* ── Category card with top 3 days ── */
 const CategoryCard = ({ summary }: { summary: BestDaySummary }) => {
-  const medals = ['🥇', '🥈', '🥉'];
   const today = new Date();
+  const ranks = ['#1', '#2', '#3'];
 
   return (
-    <div className={`rounded-lg p-3 ${getCategoryBg(summary.category)} transition-all`}>
+    <div className={`rounded-xl p-3.5 ${getCategoryBg(summary.category)} transition-all`}>
       {/* Header */}
-      <div className="flex items-center gap-2 mb-2.5">
+      <div className="flex items-center gap-2 mb-3">
         <span className="text-lg">{summary.emoji}</span>
-        <p className="text-sm font-semibold flex-1">{summary.label}</p>
+        <p className="text-sm font-bold flex-1">{summary.label}</p>
       </div>
 
-      {/* Top 3 days */}
-      <div className="space-y-1.5">
+      {/* Top days */}
+      <div className="space-y-2">
         {summary.topDays.map((day, i) => {
           const isToday = isSameDay(day.date, today);
           return (
             <div
               key={i}
-              className={`flex items-center gap-2 py-1.5 px-2 rounded-md ${
-                i === 0 ? 'bg-background/80 shadow-sm' : 'bg-background/40'
+              className={`flex items-center gap-2.5 py-2 px-2.5 rounded-lg ${
+                i === 0 ? 'bg-background/80 shadow-sm border border-border/50' : 'bg-background/40'
               } ${isToday ? 'ring-1 ring-primary/40' : ''}`}
             >
-              <span className="text-sm shrink-0">{medals[i]}</span>
+              <span className={`text-[10px] font-bold w-5 text-center ${i === 0 ? getCategoryColor(summary.category) : 'text-muted-foreground'}`}>
+                {ranks[i]}
+              </span>
               <div className="flex-1 min-w-0">
-                <p className={`text-xs ${i === 0 ? 'font-bold' : 'font-medium'}`}>
-                  {format(day.date, 'EEE, MMM d')}
-                  {isToday && <span className="ml-1 text-primary text-[9px]">TODAY</span>}
-                </p>
-                <p className="text-[9px] text-muted-foreground truncate">{day.reason}</p>
+                <div className="flex items-center gap-1.5">
+                  <p className={`text-xs ${i === 0 ? 'font-bold' : 'font-medium'}`}>
+                    {format(day.date, 'EEE, MMM d')}
+                  </p>
+                  {isToday && (
+                    <Badge variant="secondary" className="text-[9px] px-1 py-0 h-3.5 bg-primary/10 text-primary border-0">
+                      TODAY
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-[10px] text-muted-foreground truncate mt-0.5">{day.reason}</p>
               </div>
-              <div className="shrink-0 text-right">
-                <span className={`text-[10px] font-bold ${i === 0 ? getCategoryColor(summary.category) : ''}`}>
-                  {day.score}pts
-                </span>
-              </div>
+              <QualityBadge score={day.score} />
             </div>
           );
         })}
         {summary.topDays.length === 0 && (
-          <p className="text-xs text-muted-foreground italic px-2">No strong days found</p>
+          <p className="text-xs text-muted-foreground italic px-2 py-2">No strong days in this period</p>
         )}
       </div>
     </div>
@@ -83,15 +87,30 @@ const CategoryCard = ({ summary }: { summary: BestDaySummary }) => {
 
 export const BestDaysSummaryCard = ({ natalChart, days = 30 }: BestDaysSummaryCardProps) => {
   const [summary, setSummary] = useState<BestDaysSummaryResult | null>(null);
+  const cacheRef = useRef<{ key: string; data: BestDaysSummaryResult } | null>(null);
 
   useEffect(() => {
+    const cacheKey = `${natalChart?.planets?.Sun?.sign || 'none'}-${days}`;
+    if (cacheRef.current?.key === cacheKey) {
+      setSummary(cacheRef.current.data);
+      return;
+    }
+
     let cancelled = false;
-    const timer = setTimeout(() => {
+    // Use requestIdleCallback if available, else setTimeout
+    const schedule = typeof requestIdleCallback !== 'undefined' ? requestIdleCallback : (cb: () => void) => setTimeout(cb, 50);
+    const id = schedule(() => {
       if (cancelled) return;
       const s = getBestDaysSummary(natalChart, new Date(), days);
-      if (!cancelled) setSummary(s);
-    }, 100);
-    return () => { cancelled = true; clearTimeout(timer); };
+      if (!cancelled) {
+        cacheRef.current = { key: cacheKey, data: s };
+        setSummary(s);
+      }
+    });
+    return () => {
+      cancelled = true;
+      if (typeof cancelIdleCallback !== 'undefined' && typeof id === 'number') cancelIdleCallback(id);
+    };
   }, [natalChart, days]);
 
   if (!summary) {
@@ -103,12 +122,12 @@ export const BestDaysSummaryCard = ({ natalChart, days = 30 }: BestDaysSummaryCa
           </div>
           <div>
             <h3 className="font-semibold text-sm">Best Days at a Glance</h3>
-            <p className="text-xs text-muted-foreground">Calculating…</p>
+            <p className="text-xs text-muted-foreground">Scanning transits…</p>
           </div>
         </div>
-        <Skeleton className="h-12 w-full rounded-lg" />
-        <Skeleton className="h-10 w-full rounded-lg" />
-        <Skeleton className="h-10 w-full rounded-lg" />
+        <Skeleton className="h-16 w-full rounded-lg" />
+        <Skeleton className="h-14 w-full rounded-lg" />
+        <Skeleton className="h-14 w-full rounded-lg" />
       </div>
     );
   }
@@ -126,25 +145,25 @@ export const BestDaysSummaryCard = ({ natalChart, days = 30 }: BestDaysSummaryCa
           <div>
             <h3 className="font-semibold text-sm">Best Days at a Glance</h3>
             <p className="text-xs text-muted-foreground">
-              Next {days} days • {natalChart ? 'Personalized' : 'General'} • Top 3 per category
+              Next {days} days • {natalChart ? 'Personalized' : 'General'}
             </p>
           </div>
         </div>
       </div>
 
       {summary.overallBestDay.categories.length >= 2 && (
-        <div className="mb-4 p-3 rounded-lg bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30 border border-amber-200 dark:border-amber-800">
+        <div className="mb-4 p-3 rounded-xl bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30 border border-amber-200/60 dark:border-amber-800/40">
           <div className="flex items-center gap-2 mb-1">
             <Sparkles size={14} className="text-amber-500" />
-            <span className="text-xs font-semibold text-amber-700 dark:text-amber-300">POWER DAY</span>
+            <span className="text-[10px] font-bold tracking-widest text-amber-700 dark:text-amber-300 uppercase">Power Day</span>
             {bestDayIsToday && <Badge className="text-[10px] px-1.5 py-0 bg-amber-500 text-primary-foreground">TODAY!</Badge>}
           </div>
-          <p className="text-sm font-medium">{format(summary.overallBestDay.date, 'EEEE, MMMM d')}</p>
-          <p className="text-xs text-muted-foreground">
-            Best for: {summary.overallBestDay.categories.map(c => {
+          <p className="text-sm font-bold">{format(summary.overallBestDay.date, 'EEEE, MMMM d')}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Peak for: {summary.overallBestDay.categories.map(c => {
               const s = summary.summaries.find(s => s.category === c);
               return s?.emoji || '';
-            }).join(' ')} {summary.overallBestDay.categories.join(', ')}
+            }).join(' ')} {summary.overallBestDay.categories.join(' & ')}
           </p>
         </div>
       )}
@@ -155,8 +174,8 @@ export const BestDaysSummaryCard = ({ natalChart, days = 30 }: BestDaysSummaryCa
         ))}
       </div>
 
-      <p className="text-xs text-center text-muted-foreground mt-3">
-        {format(summary.period.start, 'MMM d')} – {format(summary.period.end, 'MMM d')}
+      <p className="text-[10px] text-center text-muted-foreground mt-3 tracking-wide">
+        {format(summary.period.start, 'MMM d')} – {format(summary.period.end, 'MMM d')} • Quality based on planetary transits
       </p>
     </div>
   );
