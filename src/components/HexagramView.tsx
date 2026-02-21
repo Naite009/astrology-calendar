@@ -540,11 +540,25 @@ export const HexagramView = () => {
                   <div className="rounded bg-secondary p-2"><strong>8</strong> (3+3+2) = Broken line ⚋</div>
                   <div className="rounded bg-secondary p-2"><strong>9</strong> (3+3+3) = Solid line ⚊ <span className="text-primary">(changing)</span></div>
                 </div>
-                <p className="text-[11px] text-muted-foreground">
-                  <strong>The hexagram number is NOT the sum of your lines.</strong> The 6 lines form a pattern of solid/broken lines. 
-                  The bottom 3 lines make one trigram, the top 3 make another. That specific combination maps to one of the 64 hexagrams. 
-                  Just match your coins below and the app does the lookup for you.
-                </p>
+                <div className="border-t border-border pt-3 space-y-2">
+                  <h4 className="text-[10px] uppercase tracking-widest text-primary font-medium">So How Do You Get the Hexagram Number?</h4>
+                  <p className="text-[11px] text-foreground">
+                    <strong>You do NOT add up your throws to get the hexagram number.</strong> Here's what actually happens:
+                  </p>
+                  <ol className="text-[11px] text-foreground space-y-1 list-decimal list-inside">
+                    <li>Each throw (6, 7, 8, or 9) just tells you if that line is <strong>solid</strong> (7 or 9) or <strong>broken</strong> (6 or 8)</li>
+                    <li>Your 6 lines create a <strong>pattern</strong> — like a barcode of solid and broken lines</li>
+                    <li>The bottom 3 lines form one <strong>trigram</strong>, the top 3 form another</li>
+                    <li>There are 8 possible trigrams × 8 = <strong>64 combinations</strong> — each one IS a hexagram</li>
+                  </ol>
+                  <div className="rounded bg-secondary p-3 text-[11px] text-foreground space-y-1">
+                    <p className="font-medium">Example — Hexagram 51 "The Arousing" (Thunder over Thunder):</p>
+                    <p>Your throws bottom→top: <strong>7, 8, 8, 7, 8, 8</strong></p>
+                    <p>Line pattern: <strong>solid, broken, broken, solid, broken, broken</strong></p>
+                    <p>Bottom trigram ☳ Thunder + Top trigram ☳ Thunder = <strong>#51</strong></p>
+                    <p className="text-muted-foreground italic pt-1">You don't need to memorize the table — just enter your coins here and the app finds the hexagram for you.</p>
+                  </div>
+                </div>
               </div>
               <p className="text-xs text-muted-foreground">
                 Click each penny to toggle H (Heads) / T (Tails), then press Cast for each line (bottom to top).
