@@ -153,19 +153,23 @@ export function getBestDaysSummary(
       const best = results[0];
       const info = CATEGORY_INFO[category];
       
-      // Pick top 3 spread apart by at least 5 days
+      // Pick top 3 spread apart by at least 2 days AND with distinct primary reasons
       const top3: { date: Date; score: number; rating: string; reason: string }[] = [];
+      const usedReasons = new Set<string>();
       for (const r of results) {
         if (top3.length >= 3) break;
         const tooClose = top3.some(t => Math.abs(differenceInDays(t.date, r.date)) < 2);
-        if (!tooClose && r.score > 0) {
-          top3.push({
-            date: r.date,
-            score: r.score,
-            rating: r.rating,
-            reason: r.reasons[0] || 'Favorable alignments',
-          });
-        }
+        if (tooClose || r.score <= 0) continue;
+        // Find the first reason not already used by a higher-ranked day
+        const uniqueReason = r.reasons.find(reason => !usedReasons.has(reason))
+          || r.reasons[0] || 'Favorable alignments';
+        usedReasons.add(uniqueReason);
+        top3.push({
+          date: r.date,
+          score: r.score,
+          rating: r.rating,
+          reason: uniqueReason,
+        });
       }
       
       summaries.push({

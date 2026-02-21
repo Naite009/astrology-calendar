@@ -260,45 +260,79 @@ export const calculateBestTimes = (
     const transitPlanets = getPlanetaryPositions(currentDate);
     const moonPhase = getMoonPhase(currentDate);
 
-    // For personalized charts: Check transits to natal planets (HEAVY weight)
+    // For personalized charts: Check ALL transiting planets to ALL natal points
     if (natalChart && natalChart.planets) {
-      // Primary check: favorable transiting planets to category-specific natal planets
-      rules.natalPlanetsToCheck.forEach(natalPlanetName => {
-        const natalPos = natalChart.planets[natalPlanetName as keyof typeof natalChart.planets];
-        if (!natalPos) return;
+      const allNatalKeys: (keyof typeof natalChart.planets)[] = [
+        'Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn',
+        'Uranus', 'Neptune', 'Pluto', 'Ascendant', 'NorthNode', 'Chiron',
+      ];
+      const mcPos = natalChart.houseCusps?.house10;
 
-        rules.favorablePlanets.forEach(transitPlanetName => {
-          const transitKey = transitPlanetName.toLowerCase() as keyof typeof transitPlanets;
-          const transitPos = transitPlanets[transitKey];
-          if (!transitPos) return;
+      const transitBodies = [
+        { name: 'Sun', key: 'sun' }, { name: 'Moon', key: 'moon' },
+        { name: 'Mercury', key: 'mercury' }, { name: 'Venus', key: 'venus' },
+        { name: 'Mars', key: 'mars' }, { name: 'Jupiter', key: 'jupiter' },
+        { name: 'Saturn', key: 'saturn' }, { name: 'Uranus', key: 'uranus' },
+        { name: 'Neptune', key: 'neptune' }, { name: 'Pluto', key: 'pluto' },
+      ];
 
-          const transitLon = ZODIAC_SIGNS.indexOf(transitPos.signName) * 30 + transitPos.degree;
+      const primaryNatalSet = new Set(rules.natalPlanetsToCheck.map(n => n.toLowerCase()));
+      const primaryTransitSet = new Set(rules.favorablePlanets.map(p => p.toLowerCase()));
+      const seenAspects = new Set<string>();
+
+      for (const transit of transitBodies) {
+        const transitPos = transitPlanets[transit.key as keyof typeof transitPlanets];
+        if (!transitPos) continue;
+        const transitLon = ZODIAC_SIGNS.indexOf(transitPos.signName) * 30 + transitPos.degree;
+
+        for (const natalKey of allNatalKeys) {
+          const natalPos = natalChart.planets[natalKey];
+          if (!natalPos) continue;
+
           const aspect = calculateAspectBetween(natalPos, transitLon);
+          if (!aspect) continue;
 
-          if (aspect && rules.favorableAspects.includes(aspect.type)) {
-            score += aspect.score;
-            reasons.push(`${transitPlanetName} ${aspect.symbol} Your ${natalPlanetName}`);
-          }
-        });
-      });
+          const aspectId = `${transit.name}-${natalKey}-${aspect.type}`;
+          if (seenAspects.has(aspectId)) continue;
+          seenAspects.add(aspectId);
 
-      // Secondary check: ALL outer planets making any aspect to primary natal target
-      // This catches e.g. Pluto trine natal Venus for love, even if Pluto isn't in favorablePlanets
-      const outerPlanets = ['jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
-      const primaryNatal = rules.natalPlanetsToCheck[0]; // Most important natal planet for this category
-      const primaryNatalPos = natalChart.planets[primaryNatal as keyof typeof natalChart.planets];
-      if (primaryNatalPos) {
-        outerPlanets.forEach(op => {
-          if (rules.favorablePlanets.map(p => p.toLowerCase()).includes(op)) return; // Already counted
-          const transitPos = transitPlanets[op as keyof typeof transitPlanets];
-          if (!transitPos) return;
-          const transitLon = ZODIAC_SIGNS.indexOf(transitPos.signName) * 30 + transitPos.degree;
-          const aspect = calculateAspectBetween(primaryNatalPos, transitLon);
-          if (aspect && (aspect.type === 'trine' || aspect.type === 'sextile')) {
-            score += Math.round(aspect.score * 0.5); // Half weight for non-primary
-            reasons.push(`${op.charAt(0).toUpperCase() + op.slice(1)} ${aspect.symbol} Your ${primaryNatal}`);
+          const isPrimNatal = primaryNatalSet.has(natalKey.toLowerCase());
+          const isPrimTransit = primaryTransitSet.has(transit.key);
+          const isFavType = rules.favorableAspects.includes(aspect.type);
+
+          let weight = 0.15;
+          if (isPrimNatal && isPrimTransit && isFavType) weight = 1.0;
+          else if ((isPrimNatal || isPrimTransit) && isFavType) weight = 0.45;
+          else if (isFavType) weight = 0.25;
+          if (aspect.score < 0) weight = Math.max(weight, 0.35);
+
+          const weighted = Math.round(aspect.score * weight);
+          if (weighted !== 0) {
+            score += weighted;
+            reasons.push(`${transit.name} ${aspect.symbol} Your ${natalKey}`);
           }
-        });
+        }
+
+        if (mcPos) {
+          const mcAspect = calculateAspectBetween(
+            { sign: mcPos.sign, degree: mcPos.degree, minutes: mcPos.minutes, seconds: 0 },
+            transitLon
+          );
+          if (mcAspect) {
+            const aspectId = `${transit.name}-MC-${mcAspect.type}`;
+            if (!seenAspects.has(aspectId)) {
+              seenAspects.add(aspectId);
+              const isMcPrimary = primaryNatalSet.has('midheaven');
+              const isFav = rules.favorableAspects.includes(mcAspect.type);
+              const w = (isMcPrimary && isFav) ? 1.0 : isFav ? 0.35 : 0.15;
+              const weighted = Math.round(mcAspect.score * w);
+              if (weighted !== 0) {
+                score += weighted;
+                reasons.push(`${transit.name} ${mcAspect.symbol} Your MC`);
+              }
+            }
+          }
+        }
       }
     } else {
       // COLLECTIVE ASTROLOGY: Use current planetary transits and aspects between them
