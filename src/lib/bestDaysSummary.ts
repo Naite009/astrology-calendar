@@ -165,19 +165,28 @@ export function getBestDaysSummary(
         return 'Quiet';
       };
 
-      // Sort reasons to prioritize category-relevant primary aspects
+      // Sort reasons: gatekeeper planets first, then primary, then harmonic aspects
       const rules = CATEGORY_RULES[category];
+      const gatekeeperPlanets = new Set(rules.gatekeeperPlanets.map(p => p.toLowerCase()));
       const primaryPlanets = new Set([
         ...rules.favorablePlanets.map(p => p.toLowerCase()),
         ...rules.natalPlanetsToCheck.map(p => p.toLowerCase()),
       ]);
       const sortReasons = (reasons: string[]): string[] => {
         return [...reasons].sort((a, b) => {
-          const aHasPrimary = [...primaryPlanets].some(p => a.toLowerCase().includes(p));
-          const bHasPrimary = [...primaryPlanets].some(p => b.toLowerCase().includes(p));
+          const aLower = a.toLowerCase();
+          const bLower = b.toLowerCase();
+          // Gatekeeper first (e.g., Venus for Love)
+          const aGate = [...gatekeeperPlanets].some(p => aLower.includes(p));
+          const bGate = [...gatekeeperPlanets].some(p => bLower.includes(p));
+          if (aGate && !bGate) return -1;
+          if (!aGate && bGate) return 1;
+          // Then primary planets
+          const aHasPrimary = [...primaryPlanets].some(p => aLower.includes(p));
+          const bHasPrimary = [...primaryPlanets].some(p => bLower.includes(p));
           if (aHasPrimary && !bHasPrimary) return -1;
           if (!aHasPrimary && bHasPrimary) return 1;
-          // Prefer trine/sextile symbols over square/opposition
+          // Prefer harmonic aspects
           const aHarmonic = a.includes('△') || a.includes('⚹') || a.includes('☌');
           const bHarmonic = b.includes('△') || b.includes('⚹') || b.includes('☌');
           if (aHarmonic && !bHarmonic) return -1;
