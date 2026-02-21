@@ -16,20 +16,28 @@ const ZODIAC_SIGNS = [
 // Grouped planets for organized display
 const CORE_PLANETS = ['Sun', 'Moon', 'Ascendant', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'] as const;
 const POINTS = ['NorthNode', 'SouthNode', 'Chiron', 'Lilith', 'PartOfFortune', 'Vertex'] as const;
-const ASTEROIDS = ['Ceres', 'Pallas', 'Juno', 'Vesta'] as const;
+const GODDESS_ASTEROIDS = ['Ceres', 'Pallas', 'Juno', 'Vesta'] as const;
+const ASTEROIDS = ['Psyche', 'Eros', 'Amor', 'Hygiea', 'Nessus', 'Pholus', 'Chariklo'] as const;
 const TNOS = ['Eris', 'Sedna', 'Makemake', 'Haumea', 'Quaoar', 'Orcus', 'Ixion', 'Varuna'] as const;
 
 // All planets combined for data structure
-const PLANETS = [...CORE_PLANETS, ...POINTS, ...ASTEROIDS, ...TNOS] as const;
+const PLANETS = [...CORE_PLANETS, ...POINTS, ...GODDESS_ASTEROIDS, ...ASTEROIDS, ...TNOS] as const;
 
 const PLANET_LABELS: Record<string, string> = {
   NorthNode: 'North Node',
   SouthNode: 'South Node',
   Lilith: 'Black ☽ Lilith',
-  Ceres: 'Ceres',
-  Pallas: 'Pallas',
-  Juno: 'Juno',
-  Vesta: 'Vesta',
+  Ceres: 'Ceres (Goddess)',
+  Pallas: 'Pallas (Goddess)',
+  Juno: 'Juno (Goddess)',
+  Vesta: 'Vesta (Goddess)',
+  Psyche: 'Psyche',
+  Eros: 'Eros',
+  Amor: 'Amor',
+  Hygiea: 'Hygiea',
+  Nessus: 'Nessus',
+  Pholus: 'Pholus',
+  Chariklo: 'Chariklo',
   Chiron: 'Chiron',
   PartOfFortune: 'Part of Fortune',
   Vertex: 'Vertex',
@@ -63,6 +71,13 @@ const PLANET_SYMBOLS: Record<string, string> = {
   Pallas: '⚴',
   Juno: '⚵',
   Vesta: '⚶',
+  Psyche: 'Ψ',
+  Eros: '♡',
+  Amor: '❤',
+  Hygiea: '⚕',
+  Nessus: '⬡',
+  Pholus: '⌖',
+  Chariklo: '⟡',
   PartOfFortune: '⊕',
   Vertex: 'Vx',
   Eris: '⯰',
@@ -102,6 +117,8 @@ const PLANET_ALIASES: Record<string, string> = {
   'south node': 'SouthNode', 'southnode': 'SouthNode', 'sn': 'SouthNode',
   'chiron': 'Chiron', 'lilith': 'Lilith', 'black moon lilith': 'Lilith', 'mean lilith': 'Lilith',
   'ceres': 'Ceres', 'pallas': 'Pallas', 'juno': 'Juno', 'vesta': 'Vesta',
+  'psyche': 'Psyche', 'eros': 'Eros', 'amor': 'Amor', 'hygiea': 'Hygiea', 'hygeia': 'Hygiea',
+  'nessus': 'Nessus', 'pholus': 'Pholus', 'chariklo': 'Chariklo',
   'part of fortune': 'PartOfFortune', 'pof': 'PartOfFortune', 'fortune': 'PartOfFortune', 'fortuna': 'PartOfFortune',
   'vertex': 'Vertex', 'vx': 'Vertex',
   'eris': 'Eris', 'sedna': 'Sedna', 'makemake': 'Makemake', 'haumea': 'Haumea',
@@ -301,6 +318,7 @@ export const ChartLibrary = ({
   });
   const [showHousesSection, setShowHousesSection] = useState(false);
   const [showPointsSection, setShowPointsSection] = useState(false);
+  const [showGoddessSection, setShowGoddessSection] = useState(false);
   const [showAsteroidsSection, setShowAsteroidsSection] = useState(false);
   const [showTNOsSection, setShowTNOsSection] = useState(false);
   const [showImportSection, setShowImportSection] = useState(false);
@@ -1620,6 +1638,32 @@ export const ChartLibrary = ({
                 )}
               </div>
 
+              {/* Goddess Asteroids Section (Collapsible) */}
+              <div className="border-t border-border pt-5">
+                <button
+                  type="button"
+                  onClick={() => setShowGoddessSection(!showGoddessSection)}
+                  className="flex items-center gap-2 w-full text-left"
+                >
+                  <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                    Goddess Asteroids
+                  </h3>
+                  <span className="text-[10px] text-muted-foreground">
+                    ({GODDESS_ASTEROIDS.filter(p => formData.planets[p]?.sign).length}/{GODDESS_ASTEROIDS.length} filled)
+                  </span>
+                  {showGoddessSection ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground" />}
+                </button>
+                
+                {showGoddessSection && (
+                  <div className="mt-4 space-y-3">
+                    <p className="text-[10px] text-muted-foreground italic mb-2">
+                      Ceres, Pallas, Juno, Vesta — the feminine archetypes
+                    </p>
+                    {GODDESS_ASTEROIDS.map(planet => renderPlanetRow(planet))}
+                  </div>
+                )}
+              </div>
+
               {/* Asteroids Section (Collapsible) */}
               <div className="border-t border-border pt-5">
                 <button
@@ -1639,7 +1683,7 @@ export const ChartLibrary = ({
                 {showAsteroidsSection && (
                   <div className="mt-4 space-y-3">
                     <p className="text-[10px] text-muted-foreground italic mb-2">
-                      Ceres, Pallas, Juno, Vesta (enter from astro.com)
+                      Psyche, Eros, Amor, Hygiea, Nessus, Pholus, Chariklo — deeper psychological & karmic layers
                     </p>
                     {ASTEROIDS.map(planet => renderPlanetRow(planet))}
                   </div>
