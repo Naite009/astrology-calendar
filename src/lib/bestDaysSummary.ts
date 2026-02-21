@@ -5,7 +5,7 @@
  * with specific sub-activities per category.
  */
 
-import { calculateBestTimes, calculateAllDayScores, BestTimesCategory, BestTimeResult, CATEGORY_INFO } from './bestTimes';
+import { calculateBestTimes, calculateAllDayScores, BestTimesCategory, BestTimeResult, CATEGORY_INFO, CATEGORY_RULES } from './bestTimes';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { format, differenceInDays, getDay } from 'date-fns';
 import { getPlanetaryHourAt } from './planetaryHours';
@@ -150,36 +150,72 @@ export function getBestDaysSummary(
     const results = calculateBestTimes(category, natalChart, startDate, endDate);
     
     if (results.length > 0) {
-      const best = results[0];
       const info = CATEGORY_INFO[category];
       
-      // Pick top 3 spread apart by at least 2 days AND with distinct primary reasons
+      // Normalize scores within this category to 0-100 percentile scale
+      const maxScore = results[0].score; // already sorted desc
+      const minScore = results[results.length - 1].score;
+      const range = maxScore - minScore || 1;
+      const normalizeScore = (raw: number): number => Math.round(((raw - minScore) / range) * 100);
+      const percentileRating = (pct: number): string => {
+        if (pct >= 90) return 'Peak';
+        if (pct >= 70) return 'Strong';
+        if (pct >= 45) return 'Good';
+        if (pct >= 20) return 'Mild';
+        return 'Quiet';
+      };
+
+      // Sort reasons to prioritize category-relevant primary aspects
+      const rules = CATEGORY_RULES[category];
+      const primaryPlanets = new Set([
+        ...rules.favorablePlanets.map(p => p.toLowerCase()),
+        ...rules.natalPlanetsToCheck.map(p => p.toLowerCase()),
+      ]);
+      const sortReasons = (reasons: string[]): string[] => {
+        return [...reasons].sort((a, b) => {
+          const aHasPrimary = [...primaryPlanets].some(p => a.toLowerCase().includes(p));
+          const bHasPrimary = [...primaryPlanets].some(p => b.toLowerCase().includes(p));
+          if (aHasPrimary && !bHasPrimary) return -1;
+          if (!aHasPrimary && bHasPrimary) return 1;
+          // Prefer trine/sextile symbols over square/opposition
+          const aHarmonic = a.includes('△') || a.includes('⚹') || a.includes('☌');
+          const bHarmonic = b.includes('△') || b.includes('⚹') || b.includes('☌');
+          if (aHarmonic && !bHarmonic) return -1;
+          if (!aHarmonic && bHarmonic) return 1;
+          return 0;
+        });
+      };
+      
+      // Pick top 3 spread apart by at least 2 days with distinct primary reasons
       const top3: { date: Date; score: number; rating: string; reason: string }[] = [];
       const usedReasons = new Set<string>();
       for (const r of results) {
         if (top3.length >= 3) break;
         const tooClose = top3.some(t => Math.abs(differenceInDays(t.date, r.date)) < 2);
         if (tooClose || r.score <= 0) continue;
-        // Find the first reason not already used by a higher-ranked day
-        const uniqueReason = r.reasons.find(reason => !usedReasons.has(reason))
-          || r.reasons[0] || 'Favorable alignments';
+        const sorted = sortReasons(r.reasons);
+        const uniqueReason = sorted.find(reason => !usedReasons.has(reason))
+          || sorted[0] || 'Favorable alignments';
         usedReasons.add(uniqueReason);
+        const pct = normalizeScore(r.score);
         top3.push({
           date: r.date,
-          score: r.score,
-          rating: r.rating,
+          score: pct,
+          rating: percentileRating(pct),
           reason: uniqueReason,
         });
       }
       
+      const best = results[0];
+      const bestPct = normalizeScore(best.score);
       summaries.push({
         category,
         emoji: info.emoji,
         label: info.label,
         bestDay: best.date,
-        score: best.score,
-        rating: best.rating,
-        topReason: best.reasons[0] || 'Favorable alignments',
+        score: bestPct,
+        rating: percentileRating(bestPct),
+        topReason: sortReasons(best.reasons)[0] || 'Favorable alignments',
         topDays: top3,
       });
       

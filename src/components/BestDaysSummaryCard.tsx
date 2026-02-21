@@ -17,14 +17,14 @@ interface BestDaysSummaryCardProps {
   days?: number;
 }
 
-/* ── Quality label instead of points ── */
-const QualityBadge = ({ score }: { score: number }) => {
+/* ── Quality label using pre-computed rating string ── */
+const QualityBadge = ({ rating }: { rating: string }) => {
   let color = 'bg-muted/40 text-muted-foreground';
-  let label = 'Quiet';
-  if (score >= 120) { color = 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'; label = '🔥 Peak'; }
-  else if (score >= 90) { color = 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'; label = '✦ Strong'; }
-  else if (score >= 60) { color = 'bg-blue-500/15 text-blue-600 dark:text-blue-400'; label = '● Good'; }
-  else if (score >= 30) { color = 'bg-amber-500/15 text-amber-600 dark:text-amber-400'; label = '○ Mild'; }
+  let label = rating || 'Quiet';
+  if (rating === 'Peak') { color = 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'; label = '🔥 Peak'; }
+  else if (rating === 'Strong') { color = 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'; label = '✦ Strong'; }
+  else if (rating === 'Good') { color = 'bg-blue-500/15 text-blue-600 dark:text-blue-400'; label = '● Good'; }
+  else if (rating === 'Mild') { color = 'bg-amber-500/15 text-amber-600 dark:text-amber-400'; label = '○ Mild'; }
 
   return (
     <span className={`inline-flex items-center rounded-full px-2 py-0.5 font-semibold text-[10px] tracking-wide ${color}`}>
@@ -73,7 +73,7 @@ const CategoryCard = ({ summary }: { summary: BestDaySummary }) => {
                 </div>
                 <p className="text-[10px] text-muted-foreground truncate mt-0.5">{day.reason}</p>
               </div>
-              <QualityBadge score={day.score} />
+              <QualityBadge rating={day.rating} />
             </div>
           );
         })}
