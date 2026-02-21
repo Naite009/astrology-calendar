@@ -10,7 +10,8 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { question, primaryHexagram, transformedHexagram, changingLines } = await req.json();
+    const { question, primaryHexagram, transformedHexagram, changingLines, style } = await req.json();
+    const isNovice = style === 'novice';
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
@@ -23,7 +24,20 @@ serve(async (req) => {
       ? `\n\nFUTURE/TRANSFORMED HEXAGRAM:\n- Number: ${transformedHexagram.number}\n- Name: ${transformedHexagram.name} (${transformedHexagram.chinese})\n- Judgment: ${transformedHexagram.judgment}\n- Image: ${transformedHexagram.image}\n- Meaning: ${transformedHexagram.meaning}\n- Keywords: ${transformedHexagram.keywords.join(", ")}`
       : "";
 
-    const systemPrompt = `You are a master I Ching scholar and counselor with 40 years of experience. You provide deeply personal, specific, and practical readings that directly address the querent's question.
+    const noviceSystemPrompt = `You are a warm, approachable I Ching guide who makes ancient wisdom easy to understand. You give clear, direct answers.
+
+Your style:
+- Answer their question directly in the FIRST sentence — yes, no, wait, or it depends
+- Speak directly to the person ("you")
+- Use **bold** for key concepts and takeaway phrases
+- Use short paragraphs and bullet points to break things down
+- Explain any I Ching terms in plain language — no jargon
+- If they asked about a job, talk about the job. If about love, talk about love
+- Keep it to 150-250 words
+- End with a bold **Bottom Line:** one-sentence summary
+- Be honest — if the answer is "not yet" or "no," say so kindly`;
+
+    const proSystemPrompt = `You are a master I Ching scholar and counselor with 40 years of experience. You provide deeply personal, specific, and practical readings that directly address the querent's question.
 
 Your style:
 - Speak directly to the person ("you")
@@ -36,6 +50,8 @@ Your style:
 - Write 400-600 words
 - Use paragraph form, not bullet points
 - Be warm but honest — the I Ching does not always say "yes"`;
+
+    const systemPrompt = isNovice ? noviceSystemPrompt : proSystemPrompt;
 
     const userPrompt = `The querent asked: "${question || "No specific question — give a general life reading."}"
 

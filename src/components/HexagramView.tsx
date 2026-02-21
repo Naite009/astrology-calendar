@@ -227,6 +227,8 @@ const HexagramKey = () => {
 };
 
 /* ─── AI Interpretation Card ─── */
+type ReadingStyle = 'novice' | 'pro';
+
 const AIInterpretationCard = ({ question, primary, transformed, changingPositions }: {
   question: string;
   primary: Hexagram;
@@ -237,6 +239,7 @@ const AIInterpretationCard = ({ question, primary, transformed, changingPosition
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasGenerated, setHasGenerated] = useState(false);
+  const [style, setStyle] = useState<ReadingStyle>('pro');
 
   const generate = async () => {
     setLoading(true);
@@ -256,6 +259,7 @@ const AIInterpretationCard = ({ question, primary, transformed, changingPosition
           primaryHexagram: primary,
           transformedHexagram: transformed,
           changingLines: changingPositions,
+          style,
         }),
       });
 
@@ -301,26 +305,46 @@ const AIInterpretationCard = ({ question, primary, transformed, changingPosition
 
   return (
     <div className="rounded border border-primary/40 bg-card p-6 space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
           <Sparkles size={16} className="text-primary" />
           <span className="text-[10px] uppercase tracking-widest text-primary font-medium">
             Personal Reading
           </span>
         </div>
-        <button
-          onClick={generate}
-          disabled={loading}
-          className="flex items-center gap-2 rounded border border-primary px-4 py-2 text-[10px] uppercase tracking-widest text-primary hover:bg-primary hover:text-primary-foreground transition-colors disabled:opacity-50"
-        >
-          {loading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-          {hasGenerated ? 'Re-interpret' : 'Interpret My Reading'}
-        </button>
+        <div className="flex items-center gap-2">
+          <div className="flex rounded border border-border overflow-hidden">
+            <button
+              onClick={() => setStyle('novice')}
+              className={`px-3 py-1.5 text-[10px] uppercase tracking-widest transition-colors ${
+                style === 'novice' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Novice
+            </button>
+            <button
+              onClick={() => setStyle('pro')}
+              className={`px-3 py-1.5 text-[10px] uppercase tracking-widest transition-colors ${
+                style === 'pro' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Pro
+            </button>
+          </div>
+          <button
+            onClick={generate}
+            disabled={loading}
+            className="flex items-center gap-2 rounded border border-primary px-4 py-2 text-[10px] uppercase tracking-widest text-primary hover:bg-primary hover:text-primary-foreground transition-colors disabled:opacity-50"
+          >
+            {loading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+            {hasGenerated ? 'Re-interpret' : 'Get My Reading'}
+          </button>
+        </div>
       </div>
 
       {!hasGenerated && !loading && (
         <p className="text-sm text-muted-foreground">
-          Click "Interpret My Reading" to receive a detailed, personal interpretation that explains exactly what this hexagram means for your specific question.
+          Choose <strong>Novice</strong> for a quick, beginner-friendly answer or <strong>Pro</strong> for a full professional reading, then click "Get My Reading."
         </p>
       )}
 
