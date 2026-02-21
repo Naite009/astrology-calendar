@@ -87,29 +87,55 @@ interface AspectResult {
   symbol: string;
   orb: string;
   score: number;
+  /** Natal longitude used (for audit) */
+  natalLon: number;
+  /** Transit longitude used (for audit) */
+  transitLon: number;
 }
+
+// Planet glyphs for compact display
+const PLANET_GLYPHS: Record<string, string> = {
+  Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀', Mars: '♂',
+  Jupiter: '♃', Saturn: '♄', Uranus: '♅', Neptune: '♆', Pluto: '♇',
+  Chiron: '⚷', NorthNode: '☊', Ascendant: 'AC', Midheaven: 'MC',
+  SouthNode: '☋', Lilith: '⚸',
+};
+const SIGN_GLYPHS: Record<string, string> = {
+  Aries: '♈', Taurus: '♉', Gemini: '♊', Cancer: '♋', Leo: '♌', Virgo: '♍',
+  Libra: '♎', Scorpio: '♏', Sagittarius: '♐', Capricorn: '♑', Aquarius: '♒', Pisces: '♓',
+};
+
+/** Safe angular difference that handles JS negative modulo */
+const angularDiff = (lon1: number, lon2: number): number => {
+  let d = (lon2 - lon1) % 360;
+  if (d < 0) d += 360;       // force positive
+  if (d > 180) d = 360 - d;  // shortest arc
+  return d;
+};
 
 const calculateAspectBetween = (planet1: NatalPlanetPosition, planet2Lon: number): AspectResult | null => {
   const lon1 = degreesToLongitude(planet1.degree + (planet1.minutes / 60), planet1.sign);
-  const diff = Math.abs(((planet2Lon - lon1 + 180) % 360) - 180);
+  const diff = angularDiff(lon1, planet2Lon);
 
+  // Tight orbs for "best day" recommendations — only truly close aspects qualify
   const aspects = [
-    { angle: 0, type: 'conjunction', symbol: '☌', orb: 8, score: 80 },
-    { angle: 60, type: 'sextile', symbol: '⚹', orb: 6, score: 60 },
-    { angle: 90, type: 'square', symbol: '□', orb: 8, score: -40 },
-    { angle: 120, type: 'trine', symbol: '△', orb: 8, score: 90 },
-    { angle: 180, type: 'opposition', symbol: '☍', orb: 8, score: -30 },
+    { angle: 0, type: 'conjunction', symbol: '☌', orb: 5, score: 80 },
+    { angle: 60, type: 'sextile', symbol: '⚹', orb: 3, score: 60 },
+    { angle: 90, type: 'square', symbol: '□', orb: 5, score: -40 },
+    { angle: 120, type: 'trine', symbol: '△', orb: 3, score: 90 },
+    { angle: 180, type: 'opposition', symbol: '☍', orb: 5, score: -30 },
   ];
 
   for (const aspect of aspects) {
     const orbDiff = Math.abs(diff - aspect.angle);
     if (orbDiff < aspect.orb) {
-      // Tighter orbs get higher scores (exactness bonus)
       const exactnessMultiplier = 1 + (1 - orbDiff / aspect.orb) * 0.5;
       return { 
         type: aspect.type, 
         symbol: aspect.symbol, 
         orb: orbDiff.toFixed(1), 
+        natalLon: lon1,
+        transitLon: planet2Lon,
         score: Math.round(aspect.score * exactnessMultiplier)
       };
     }
@@ -200,12 +226,12 @@ export const getCurrentAspects = (date: Date): CollectiveAspect[] => {
       
       const lon1 = ZODIAC_SIGNS.indexOf(p1.pos.signName) * 30 + p1.pos.degree;
       const lon2 = ZODIAC_SIGNS.indexOf(p2.pos.signName) * 30 + p2.pos.degree;
-      const diff = Math.abs(((lon2 - lon1 + 180) % 360) - 180);
+      const diff = angularDiff(lon1, lon2);
       
       // Calculate future positions for motion detection
       const futureLon1 = ZODIAC_SIGNS.indexOf(p1.futurePos.signName) * 30 + p1.futurePos.degree;
       const futureLon2 = ZODIAC_SIGNS.indexOf(p2.futurePos.signName) * 30 + p2.futurePos.degree;
-      const futureDiff = Math.abs(((futureLon2 - futureLon1 + 180) % 360) - 180);
+      const futureDiff = angularDiff(futureLon1, futureLon2);
 
       for (const aspectDef of aspectDefs) {
         const orbDiff = Math.abs(diff - aspectDef.angle);
@@ -308,29 +334,35 @@ export const calculateBestTimes = (
           const isPrimNatal = primaryNatalSet.has(natalKey.toLowerCase());
           const isPrimTransit = primaryTransitSet.has(transit.key);
           const isFavType = rules.favorableAspects.includes(aspect.type);
-          // Gatekeeper: at least one side must be a category-defining planet
           const involvesGatekeeper = gatekeeperSet.has(transit.key) || gatekeeperSet.has(natalKey.toLowerCase());
 
-          let weight = 0.1; // Tier 4: irrelevant planets
+          let weight = 0.1;
           if (involvesGatekeeper && isPrimNatal && isPrimTransit && isFavType) {
-            weight = 1.0;  // Tier 1: gatekeeper + primary both sides + favorable aspect
+            weight = 1.0;
           } else if (involvesGatekeeper && isFavType) {
-            weight = 0.6;  // Tier 2: gatekeeper + favorable aspect
+            weight = 0.6;
           } else if ((isPrimNatal || isPrimTransit) && isFavType) {
-            weight = 0.25; // Tier 3: primary but no gatekeeper
+            weight = 0.25;
           } else if (isFavType) {
-            weight = 0.15; // Tier 3b: favorable but no gatekeeper
+            weight = 0.15;
           }
           if (aspect.score < 0) weight = Math.max(weight, 0.3);
 
           const weighted = Math.round(aspect.score * weight);
           if (weighted !== 0) {
             score += weighted;
-            reasons.push(`${transit.name} ${aspect.symbol} Your ${natalKey}`);
+            // Build verifiable reason with sign+degree: "♀ 8°♒ △ Your ♀ 15°♐ (2.1°)"
+            const tGlyph = PLANET_GLYPHS[transit.name] || transit.name;
+            const nGlyph = PLANET_GLYPHS[natalKey] || natalKey;
+            const tSign = SIGN_GLYPHS[transitPos.signName] || transitPos.signName;
+            const nSign = SIGN_GLYPHS[natalPos.sign] || natalPos.sign;
+            const tDeg = Math.floor(transitPos.degree);
+            const nDeg = natalPos.degree;
+            reasons.push(`${tGlyph} ${tDeg}°${tSign} ${aspect.symbol} ${nGlyph} ${nDeg}°${nSign} (${aspect.orb}°)`);
           }
         }
 
-        if (mcPos) {
+      if (mcPos) {
           const mcAspect = calculateAspectBetween(
             { sign: mcPos.sign, degree: mcPos.degree, minutes: mcPos.minutes, seconds: 0 },
             transitLon
@@ -345,7 +377,11 @@ export const calculateBestTimes = (
               const weighted = Math.round(mcAspect.score * w);
               if (weighted !== 0) {
                 score += weighted;
-                reasons.push(`${transit.name} ${mcAspect.symbol} Your MC`);
+                const tGlyph = PLANET_GLYPHS[transit.name] || transit.name;
+                const tSign = SIGN_GLYPHS[transitPos.signName] || transitPos.signName;
+                const tDeg = Math.floor(transitPos.degree);
+                const mcSign = SIGN_GLYPHS[mcPos.sign] || mcPos.sign;
+                reasons.push(`${tGlyph} ${tDeg}°${tSign} ${mcAspect.symbol} MC ${mcPos.degree}°${mcSign} (${mcAspect.orb}°)`);
               }
             }
           }
