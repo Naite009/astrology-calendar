@@ -31,44 +31,44 @@ export const CATEGORY_RULES: Record<BestTimesCategory, CategoryRules> = {
     favorablePlanets: ['Venus', 'Moon', 'Jupiter'],
     favorableAspects: ['trine', 'sextile', 'conjunction'],
     favorableSigns: ['Libra', 'Taurus', 'Cancer', 'Pisces'],
-    natalPlanetsToCheck: ['Venus', 'Moon', 'Ascendant'],
-    gatekeeperPlanets: ['Venus'], // Love MUST involve Venus
+    natalPlanetsToCheck: ['Venus', 'Moon', 'Ascendant', 'Juno', 'Eros', 'Amor'],
+    gatekeeperPlanets: ['Venus', 'Juno', 'Eros', 'Amor'], // Love: Venus + love asteroids
   },
   finance: {
     favorablePlanets: ['Jupiter', 'Venus', 'Pluto'],
     favorableAspects: ['trine', 'sextile'],
     favorableSigns: ['Taurus', 'Capricorn', 'Scorpio'],
     natalPlanetsToCheck: ['Jupiter', 'Saturn', 'Pluto'],
-    gatekeeperPlanets: ['Jupiter', 'Pluto'], // Finance must involve Jupiter or Pluto
+    gatekeeperPlanets: ['Jupiter', 'Pluto'],
   },
   health: {
     favorablePlanets: ['Mars', 'Sun', 'Saturn'],
     favorableAspects: ['trine', 'sextile'],
     favorableSigns: ['Aries', 'Virgo', 'Capricorn'],
-    natalPlanetsToCheck: ['Mars', 'Ascendant', 'Sun'],
-    gatekeeperPlanets: ['Mars', 'Sun'], // Health must involve Mars or Sun
+    natalPlanetsToCheck: ['Mars', 'Ascendant', 'Sun', 'Hygiea', 'Chiron'],
+    gatekeeperPlanets: ['Mars', 'Sun', 'Hygiea'], // Health: Mars/Sun + Hygiea
   },
   beauty: {
     favorablePlanets: ['Venus', 'Neptune', 'Moon'],
     favorableAspects: ['trine', 'sextile', 'conjunction'],
     favorableSigns: ['Taurus', 'Libra', 'Pisces'],
-    natalPlanetsToCheck: ['Venus', 'Neptune', 'Ascendant'],
-    gatekeeperPlanets: ['Venus', 'Neptune'], // Beauty must involve Venus or Neptune
+    natalPlanetsToCheck: ['Venus', 'Neptune', 'Ascendant', 'Psyche'],
+    gatekeeperPlanets: ['Venus', 'Neptune'],
   },
   career: {
     favorablePlanets: ['Saturn', 'Jupiter', 'Sun', 'Pluto'],
     favorableAspects: ['trine', 'sextile', 'conjunction'],
     favorableSigns: ['Capricorn', 'Leo', 'Aries'],
-    natalPlanetsToCheck: ['Sun', 'Saturn', 'Midheaven'],
-    gatekeeperPlanets: ['Saturn', 'Jupiter', 'Sun'], // Career must involve Saturn, Jupiter, or Sun
+    natalPlanetsToCheck: ['Sun', 'Saturn', 'Midheaven', 'Pallas', 'Vesta'],
+    gatekeeperPlanets: ['Saturn', 'Jupiter', 'Sun', 'Pallas'], // Career: + Pallas (strategy)
   },
   travel: {
     favorablePlanets: ['Jupiter', 'Mercury', 'Uranus'],
     favorableAspects: ['trine', 'sextile'],
     favorableSigns: ['Sagittarius', 'Gemini', 'Aquarius'],
-    natalPlanetsToCheck: ['Mercury', 'Jupiter', 'Uranus'],
+    natalPlanetsToCheck: ['Mercury', 'Jupiter', 'Uranus', 'Pholus'],
     avoidMercuryRetrograde: true,
-    gatekeeperPlanets: ['Jupiter', 'Mercury'], // Travel must involve Jupiter or Mercury
+    gatekeeperPlanets: ['Jupiter', 'Mercury'],
   },
 };
 
@@ -99,6 +99,9 @@ const PLANET_GLYPHS: Record<string, string> = {
   Jupiter: '♃', Saturn: '♄', Uranus: '♅', Neptune: '♆', Pluto: '♇',
   Chiron: '⚷', NorthNode: '☊', Ascendant: 'AC', Midheaven: 'MC',
   SouthNode: '☋', Lilith: '⚸',
+  Ceres: '⚳', Pallas: '⚴', Juno: '⚵', Vesta: '⚶',
+  Psyche: 'Ψ', Eros: '♡', Amor: '❤', Hygiea: '⚕',
+  Nessus: '⬡', Pholus: '⌖', Chariklo: '⟡',
 };
 const SIGN_GLYPHS: Record<string, string> = {
   Aries: '♈', Taurus: '♉', Gemini: '♊', Cancer: '♋', Leo: '♌', Virgo: '♍',
@@ -299,6 +302,8 @@ export const calculateBestTimes = (
       const allNatalKeys: (keyof typeof natalChart.planets)[] = [
         'Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn',
         'Uranus', 'Neptune', 'Pluto', 'Ascendant', 'NorthNode', 'Chiron',
+        'Ceres', 'Pallas', 'Juno', 'Vesta',
+        'Psyche', 'Eros', 'Amor', 'Hygiea', 'Nessus', 'Pholus', 'Chariklo',
       ];
       const mcPos = natalChart.houseCusps?.house10;
 
