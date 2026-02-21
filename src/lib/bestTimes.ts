@@ -336,17 +336,21 @@ export const calculateBestTimes = (
           const isFavType = rules.favorableAspects.includes(aspect.type);
           const involvesGatekeeper = gatekeeperSet.has(transit.key) || gatekeeperSet.has(natalKey.toLowerCase());
 
-          let weight = 0.1;
-          if (involvesGatekeeper && isPrimNatal && isPrimTransit && isFavType) {
-            weight = 1.0;
-          } else if (involvesGatekeeper && isFavType) {
-            weight = 0.6;
-          } else if ((isPrimNatal || isPrimTransit) && isFavType) {
-            weight = 0.25;
+          // HARD RULE: If this aspect does NOT involve a gatekeeper planet,
+          // it gets ZERO positive weight for this category.
+          // ☽ ☌ ♂ is NOT a Love day. Love REQUIRES ♀.
+          let weight = 0;
+          if (!involvesGatekeeper) {
+            // Non-gatekeeper aspects contribute nothing positive
+            weight = aspect.score < 0 ? 0.15 : 0;
+          } else if (isPrimNatal && isPrimTransit && isFavType) {
+            weight = 1.0;   // Tier 1: gatekeeper + primary natal + primary transit + favorable type
           } else if (isFavType) {
-            weight = 0.15;
+            weight = 0.6;   // Tier 2: gatekeeper + favorable type
+          } else {
+            weight = 0.2;   // Tier 3: gatekeeper but hard aspect (square/opposition)
           }
-          if (aspect.score < 0) weight = Math.max(weight, 0.3);
+          if (aspect.score < 0 && involvesGatekeeper) weight = Math.max(weight, 0.3);
 
           const weighted = Math.round(aspect.score * weight);
           if (weighted !== 0) {
