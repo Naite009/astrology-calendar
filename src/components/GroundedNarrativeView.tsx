@@ -14,7 +14,7 @@ import { HUMAN_DESIGN_GATES } from '@/data/humanDesignGates';
 import { incarnationCrosses, crossTypeDescriptions } from '@/data/incarnationCrosses';
 import { computeAllSignals, SignalsData, SourceMapEntry } from '@/lib/narrativeAnalysisEngine';
 import { supabase } from '@/integrations/supabase/client';
-import { ChartSelector } from './ChartSelector';
+
 import { LifeStylesSection } from './narrative/LifeStylesSection';
 import { AtAGlanceCard } from './narrative/AtAGlanceCard';
 import { WhatsAheadPanel } from './narrative/WhatsAheadPanel';
@@ -58,9 +58,8 @@ const READING_TYPE_OPTIONS: { value: ReadingType; label: string; description: st
 ];
 
 export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
-  const [selectedChartId, setSelectedChartId] = useState<string>('');
+  const [selectedProfileId, setSelectedProfileId] = useState<string>('');
   const [readingType, setReadingType] = useState<ReadingType>('astrology');
-  const [selectedHdChartId, setSelectedHdChartId] = useState<string>('');
   const [lengthPreset, setLengthPreset] = useState<'short_250' | 'full_800'>('full_800');
   const [includeShadow, setIncludeShadow] = useState(true);
   const [voiceStyle, setVoiceStyle] = useState<VoiceStyle>('grounded_therapist');
@@ -78,60 +77,26 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
   // HD charts
   const { charts: hdCharts } = useHumanDesignChart();
 
-  // Unified profiles: merge natal + HD by name/birthday
+  // Unified profiles: merge natal + HD by name/birthday into one person each
   const unifiedProfiles = useUnifiedProfiles(userNatalChart, savedCharts, hdCharts, userNatalChart?.name);
 
-  // Build deduplicated chart list from unified profiles (natal charts only)
-  const allCharts = useMemo(() => {
-    return unifiedProfiles
-      .filter(p => p.natalChart)
-      .map(p => p.natalChart!);
-  }, [unifiedProfiles]);
-
-  // Build deduplicated savedCharts for ChartSelector (exclude user chart)
-  const deduplicatedSavedCharts = useMemo(() => {
-    return allCharts.filter(c => c.id !== userNatalChart?.id);
-  }, [allCharts, userNatalChart]);
-
-  // Sort HD charts: user's chart first with ★, then alphabetical
-  const sortedHdCharts = useMemo(() => {
-    // Use unified profiles that have HD charts
-    return unifiedProfiles
-      .filter(p => p.hdChart)
-      .map(p => p.hdChart!);
-  }, [unifiedProfiles]);
-
-  const userHdChartId = sortedHdCharts.length > 0 && userNatalChart
-    ? sortedHdCharts.find(c => namesMatch(c.name || '', userNatalChart.name || ''))?.id
-    : undefined;
-
-  // Auto-select first chart if none selected
+  // Auto-select first profile if none selected
   useEffect(() => {
-    if (!selectedChartId && allCharts.length > 0) {
-      setSelectedChartId(allCharts[0].id);
+    if (!selectedProfileId && unifiedProfiles.length > 0) {
+      setSelectedProfileId(unifiedProfiles[0].id);
     }
-  }, [allCharts, selectedChartId]);
+  }, [unifiedProfiles, selectedProfileId]);
 
-  // Auto-select user's HD chart (or first) if none selected
-  useEffect(() => {
-    if (!selectedHdChartId && sortedHdCharts.length > 0) {
-      setSelectedHdChartId(sortedHdCharts[0].id);
-    }
-  }, [sortedHdCharts, selectedHdChartId]);
+  // Get the selected unified profile
+  const selectedProfile = unifiedProfiles.find(p => p.id === selectedProfileId);
 
-  const selectedChart = allCharts.find(c => c.id === selectedChartId);
-  const selectedHdChart = hdCharts.find(c => c.id === selectedHdChartId);
-
-  // Auto-match HD chart when in Combined mode and astrology chart changes
-  const autoMatchedHdChart = useMemo(() => {
-    if (readingType !== 'combined' || !selectedChart) return null;
-    // Try to find HD chart matching the selected astrology chart's name
-    const match = hdCharts.find(hd => namesMatch(hd.name || '', selectedChart.name || ''));
-    return match || null;
-  }, [readingType, selectedChart, hdCharts]);
+  // Resolve the correct chart based on reading type
+  const selectedChart = selectedProfile?.natalChart || null;
+  const selectedHdChart = selectedProfile?.hdChart || null;
+  const autoMatchedHdChart = selectedProfile?.hdChart || null;
 
   // Use auto-matched chart for Combined, manual selection for HD-only
-  const effectiveHdChart = readingType === 'combined' ? autoMatchedHdChart : selectedHdChart;
+  const effectiveHdChart = selectedHdChart;
 
   const handleDownload = useCallback(() => {
     const chartName = readingType === 'combined'
@@ -321,11 +286,12 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
     }
   };
 
-  // Load previous narrative on chart change
+  // Load previous narrative on profile/mode change
   useEffect(() => {
-    if (!selectedChartId && readingType === 'astrology') return;
-    if (!selectedHdChartId && readingType === 'human_design') return;
-    if ((!selectedChartId || !effectiveHdChart) && readingType === 'combined') return;
+    if (!selectedProfileId) return;
+    if (readingType === 'astrology' && !selectedChart) return;
+    if (readingType === 'human_design' && !selectedHdChart) return;
+    if (readingType === 'combined' && (!selectedChart || !effectiveHdChart)) return;
     if (isGenerating) return;
 
     let cancelled = false;
@@ -341,11 +307,11 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
 
       let chartId = '';
       if (readingType === 'astrology') {
-        chartId = selectedChartId;
+        chartId = selectedChart?.id || '';
       } else if (readingType === 'human_design') {
-        chartId = `hd_${selectedHdChartId}`;
+        chartId = `hd_${selectedHdChart?.id || ''}`;
       } else {
-        chartId = `combined_${selectedChartId}_${effectiveHdChart?.id || ''}`;
+        chartId = `combined_${selectedChart?.id || ''}_${effectiveHdChart?.id || ''}`;
       }
 
       const { data, error } = await supabase
@@ -377,7 +343,7 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
     loadPrevious();
 
     return () => { cancelled = true; };
-  }, [selectedChartId, selectedHdChartId, readingType, effectiveHdChart]);
+  }, [selectedProfileId, readingType, selectedChart, selectedHdChart, effectiveHdChart]);
 
   return (
     <div className="space-y-6">
@@ -427,65 +393,69 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
               </p>
             </div>
 
-            {/* Chart Selection */}
-            {(readingType === 'astrology' || readingType === 'combined') && (
-              <div className="space-y-2">
-                <ChartSelector
-                  userNatalChart={userNatalChart}
-                  savedCharts={deduplicatedSavedCharts}
-                  selectedChartId={selectedChartId}
-                  onSelect={setSelectedChartId}
-                  label={readingType === 'combined' ? 'Person' : 'Chart'}
-                />
-                {readingType === 'combined' && selectedChart && (
-                  <div className="text-[10px] space-y-1">
-                    {autoMatchedHdChart ? (
-                      <p className="text-muted-foreground flex items-center gap-1">
-                        <Diamond className="h-3 w-3 text-primary" />
-                        HD chart auto-matched: <span className="font-medium">{autoMatchedHdChart.type} · {autoMatchedHdChart.profile}</span>
-                      </p>
-                    ) : (
-                      <p className="text-destructive flex items-center gap-1">
-                        <AlertCircle className="h-3 w-3" />
-                        No HD chart found for "{selectedChart.name}". Create one in the Human Design tab.
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* HD Chart Selection - only for HD-only mode */}
-            {readingType === 'human_design' && (
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Chart</Label>
-                {sortedHdCharts.length > 0 ? (
-                  <Select value={selectedHdChartId} onValueChange={setSelectedHdChartId}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select HD chart..." />
-                    </SelectTrigger>
-                    <SelectContent className="bg-background border z-50">
-                      {sortedHdCharts.map(chart => (
-                        <SelectItem key={chart.id} value={chart.id}>
-                          <div className="flex flex-col">
-                            <span>
-                              {chart.id === userHdChartId && <span className="text-primary mr-1">★</span>}
-                              {chart.name}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground">{chart.type} · {chart.profile}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <p className="text-xs text-destructive flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
-                    No HD charts. Create one in Human Design tab first.
-                  </p>
-                )}
-              </div>
-            )}
+            {/* Unified Person Selection */}
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Person</Label>
+              <Select value={selectedProfileId} onValueChange={setSelectedProfileId}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a person..." />
+                </SelectTrigger>
+                <SelectContent className="bg-background border z-50">
+                  {unifiedProfiles.map(profile => {
+                    const isUser = profile.natalChart?.id === userNatalChart?.id;
+                    const hasAstro = !!profile.natalChart;
+                    const hasHd = !!profile.hdChart;
+                    const canUseForMode = 
+                      (readingType === 'astrology' && hasAstro) ||
+                      (readingType === 'human_design' && hasHd) ||
+                      (readingType === 'combined' && hasAstro && hasHd);
+                    return (
+                      <SelectItem key={profile.id} value={profile.id} disabled={!canUseForMode}>
+                        <div className="flex flex-col">
+                          <span className="flex items-center gap-1">
+                            {isUser && <span className="text-primary">★</span>}
+                            {profile.name}
+                            {!canUseForMode && <span className="text-muted-foreground text-[10px] ml-1">(no {readingType === 'astrology' ? 'natal' : readingType === 'human_design' ? 'HD' : 'natal+HD'} data)</span>}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground">
+                            {hasAstro && '☉ Astrology'}
+                            {hasAstro && hasHd && ' · '}
+                            {hasHd && `◇ ${profile.hdChart!.type}`}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+              {readingType === 'astrology' && selectedProfile && !selectedProfile.natalChart && (
+                <p className="text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  No natal chart for "{selectedProfile.name}". Upload one in Chart Library.
+                </p>
+              )}
+              {readingType === 'human_design' && selectedProfile && !selectedProfile.hdChart && (
+                <p className="text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  No HD chart for "{selectedProfile.name}". Create one in Human Design tab.
+                </p>
+              )}
+              {readingType === 'combined' && selectedProfile && (
+                <div className="text-[10px] space-y-1">
+                  {selectedProfile.isFullyLinked ? (
+                    <p className="text-muted-foreground flex items-center gap-1">
+                      <Diamond className="h-3 w-3 text-primary" />
+                      Linked: <span className="font-medium">{selectedProfile.hdChart!.type} · {selectedProfile.hdChart!.profile}</span>
+                    </p>
+                  ) : (
+                    <p className="text-destructive flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {!selectedProfile.natalChart ? 'Missing natal chart' : 'Missing HD chart'} for combined reading.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Length Toggle */}
             <div className="space-y-2">
@@ -556,7 +526,7 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
               <p className="text-xs text-destructive flex items-center gap-1">
                 <AlertCircle className="h-3 w-3" />
                 {readingType === 'astrology' && 'Chart needs planet data'}
-                {readingType === 'human_design' && (sortedHdCharts.length === 0 ? 'No HD charts available' : 'Select an HD chart')}
+                {readingType === 'human_design' && (!selectedHdChart ? 'No HD chart for this person' : 'Select a person with HD data')}
                 {readingType === 'combined' && (!hasRequiredAstroData ? 'Chart needs planet data' : 'No matching HD chart found')}
               </p>
             )}
