@@ -25,6 +25,7 @@ import { useDownloadImage } from '@/hooks/useDownloadImage';
 import { toast } from 'sonner';
 import { useRef, useCallback } from 'react';
 import { namesMatch } from '@/lib/nameMatching';
+import { useUnifiedProfiles } from '@/hooks/useUnifiedProfiles';
 
 interface Props {
   savedCharts: NatalChart[];
@@ -77,21 +78,31 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
   // HD charts
   const { charts: hdCharts } = useHumanDesignChart();
 
-  // Build chart options
-  const allCharts = userNatalChart ? [userNatalChart, ...savedCharts] : savedCharts;
+  // Unified profiles: merge natal + HD by name/birthday
+  const unifiedProfiles = useUnifiedProfiles(userNatalChart, savedCharts, hdCharts, userNatalChart?.name);
 
-  // Sort HD charts: user's chart (matching userNatalChart name) first with ★, then alphabetical
+  // Build deduplicated chart list from unified profiles (natal charts only)
+  const allCharts = useMemo(() => {
+    return unifiedProfiles
+      .filter(p => p.natalChart)
+      .map(p => p.natalChart!);
+  }, [unifiedProfiles]);
+
+  // Build deduplicated savedCharts for ChartSelector (exclude user chart)
+  const deduplicatedSavedCharts = useMemo(() => {
+    return allCharts.filter(c => c.id !== userNatalChart?.id);
+  }, [allCharts, userNatalChart]);
+
+  // Sort HD charts: user's chart first with ★, then alphabetical
   const sortedHdCharts = useMemo(() => {
-    const userName = userNatalChart?.name?.toLowerCase().trim() || '';
-    const userHd = hdCharts.find(c => c.name?.toLowerCase().trim() === userName);
-    const others = hdCharts
-      .filter(c => c.id !== userHd?.id)
-      .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-    return userHd ? [userHd, ...others] : others;
-  }, [hdCharts, userNatalChart]);
+    // Use unified profiles that have HD charts
+    return unifiedProfiles
+      .filter(p => p.hdChart)
+      .map(p => p.hdChart!);
+  }, [unifiedProfiles]);
 
   const userHdChartId = sortedHdCharts.length > 0 && userNatalChart
-    ? sortedHdCharts.find(c => c.name?.toLowerCase().trim() === userNatalChart.name?.toLowerCase().trim())?.id
+    ? sortedHdCharts.find(c => namesMatch(c.name || '', userNatalChart.name || ''))?.id
     : undefined;
 
   // Auto-select first chart if none selected
@@ -421,7 +432,7 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
               <div className="space-y-2">
                 <ChartSelector
                   userNatalChart={userNatalChart}
-                  savedCharts={savedCharts}
+                  savedCharts={deduplicatedSavedCharts}
                   selectedChartId={selectedChartId}
                   onSelect={setSelectedChartId}
                   label={readingType === 'combined' ? 'Person' : 'Chart'}
