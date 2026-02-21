@@ -24,7 +24,7 @@ interface CategoryRules {
   avoidMercuryRetrograde?: boolean;
 }
 
-const CATEGORY_RULES: Record<BestTimesCategory, CategoryRules> = {
+export const CATEGORY_RULES: Record<BestTimesCategory, CategoryRules> = {
   love: {
     favorablePlanets: ['Venus', 'Moon', 'Jupiter'],
     favorableAspects: ['trine', 'sextile', 'conjunction'],
