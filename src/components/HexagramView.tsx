@@ -9,6 +9,7 @@ import {
   HEXAGRAMS,
   Hexagram,
   TRIGRAMS,
+  KING_WEN,
   getHexagram,
 } from '@/data/iChingHexagrams';
 
@@ -101,7 +102,77 @@ const HexagramCard = ({ hex, label, lines, changingPositions }: {
   );
 };
 
-/* ─── Manual Penny Throw Row ─── */
+/* ─── Trigram Lookup Table ─── */
+const T_LABELS = [
+  { key: '111', sym: '☰', name: 'Heaven', lines: '━━━' },
+  { key: '000', sym: '☷', name: 'Earth', lines: '⚋⚋⚋' },
+  { key: '100', sym: '☳', name: 'Thunder', lines: '━⚋⚋' },
+  { key: '010', sym: '☵', name: 'Water', lines: '⚋━⚋' },
+  { key: '001', sym: '☶', name: 'Mountain', lines: '⚋⚋━' },
+  { key: '011', sym: '☴', name: 'Wind', lines: '⚋━━' },
+  { key: '101', sym: '☲', name: 'Fire', lines: '━⚋━' },
+  { key: '110', sym: '☱', name: 'Lake', lines: '━━⚋' },
+];
+
+const TrigramLookupTable = () => {
+  const [highlight, setHighlight] = useState<number | null>(null);
+
+  return (
+    <div className="space-y-2">
+      <h4 className="text-[10px] uppercase tracking-widest text-primary font-medium">Trigram Lookup Chart</h4>
+      <p className="text-[11px] text-muted-foreground">
+        Find your <strong>bottom trigram</strong> (lines 1-3) across the top, and your <strong>top trigram</strong> (lines 4-6) down the left side. Where they meet is your hexagram number.
+      </p>
+      <div className="overflow-x-auto">
+        <table className="text-[10px] border-collapse w-full">
+          <thead>
+            <tr>
+              <th className="p-1.5 border border-border bg-secondary text-muted-foreground text-[9px]">
+                Upper↓ / Lower→
+              </th>
+              {T_LABELS.map(t => (
+                <th key={t.key} className="p-1.5 border border-border bg-secondary text-center">
+                  <div className="text-base">{t.sym}</div>
+                  <div className="text-muted-foreground text-[8px]">{t.name}</div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {T_LABELS.map((upper, ui) => (
+              <tr key={upper.key}>
+                <td className="p-1.5 border border-border bg-secondary text-center">
+                  <div className="text-base">{upper.sym}</div>
+                  <div className="text-muted-foreground text-[8px]">{upper.name}</div>
+                </td>
+                {T_LABELS.map((_, li) => {
+                  const num = KING_WEN[ui][li];
+                  return (
+                    <td
+                      key={li}
+                      onMouseEnter={() => setHighlight(num)}
+                      onMouseLeave={() => setHighlight(null)}
+                      className={`p-1.5 border border-border text-center font-medium cursor-default transition-colors ${
+                        highlight === num ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-primary/10'
+                      }`}
+                    >
+                      {num}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-[10px] text-muted-foreground italic">
+        Example: Thunder (━ ⚋ ⚋) on top + Thunder (━ ⚋ ⚋) on bottom → row 3, column 3 → <strong>#51 The Arousing</strong>
+      </p>
+    </div>
+  );
+};
+
+
 const PennyRow = ({ lineNum, onResult }: {
   lineNum: number;
   onResult: (line: HexagramLine, sum: number) => void;
@@ -560,6 +631,7 @@ export const HexagramView = () => {
                   </div>
                 </div>
               </div>
+              <TrigramLookupTable />
               <p className="text-xs text-muted-foreground">
                 Click each penny to toggle H (Heads) / T (Tails), then press Cast for each line (bottom to top).
               </p>
