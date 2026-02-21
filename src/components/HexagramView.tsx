@@ -525,6 +525,27 @@ export const HexagramView = () => {
           {/* Manual Cast */}
           {castMode === 'manual' && (
             <div className="space-y-3">
+              <div className="rounded border border-border bg-secondary/50 p-4 space-y-3">
+                <h4 className="text-[10px] uppercase tracking-widest text-primary font-medium">How to Roll It Yourself</h4>
+                <ol className="text-xs text-foreground space-y-1.5 list-decimal list-inside">
+                  <li>Grab <strong>3 coins</strong> (pennies, quarters, whatever)</li>
+                  <li>Throw all 3 at once — that's <strong>one line</strong></li>
+                  <li>Each coin: <strong>Heads = 3</strong>, <strong>Tails = 2</strong></li>
+                  <li>Add the 3 coins together. You'll get <strong>6, 7, 8, or 9</strong></li>
+                  <li>Repeat <strong>6 times</strong> total (line 1 at the bottom, line 6 at the top)</li>
+                </ol>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="rounded bg-secondary p-2"><strong>6</strong> (2+2+2) = Broken line ⚋ <span className="text-primary">(changing)</span></div>
+                  <div className="rounded bg-secondary p-2"><strong>7</strong> (3+2+2) = Solid line ⚊</div>
+                  <div className="rounded bg-secondary p-2"><strong>8</strong> (3+3+2) = Broken line ⚋</div>
+                  <div className="rounded bg-secondary p-2"><strong>9</strong> (3+3+3) = Solid line ⚊ <span className="text-primary">(changing)</span></div>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  <strong>The hexagram number is NOT the sum of your lines.</strong> The 6 lines form a pattern of solid/broken lines. 
+                  The bottom 3 lines make one trigram, the top 3 make another. That specific combination maps to one of the 64 hexagrams. 
+                  Just match your coins below and the app does the lookup for you.
+                </p>
+              </div>
               <p className="text-xs text-muted-foreground">
                 Click each penny to toggle H (Heads) / T (Tails), then press Cast for each line (bottom to top).
               </p>
