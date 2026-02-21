@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
-import { Dices, RotateCcw, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
+import { useState, useCallback, useRef } from 'react';
+import { Dices, RotateCcw, BookOpen, ChevronDown, ChevronUp, Sparkles, Loader2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import {
   HexagramLine,
   throwCoins,
@@ -221,6 +222,124 @@ const HexagramKey = () => {
           </button>
         ))}
       </div>
+    </div>
+  );
+};
+
+/* ─── AI Interpretation Card ─── */
+const AIInterpretationCard = ({ question, primary, transformed, changingPositions }: {
+  question: string;
+  primary: Hexagram;
+  transformed: Hexagram | null;
+  changingPositions: number[];
+}) => {
+  const [interpretation, setInterpretation] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [hasGenerated, setHasGenerated] = useState(false);
+
+  const generate = async () => {
+    setLoading(true);
+    setError(null);
+    setInterpretation('');
+    setHasGenerated(true);
+
+    try {
+      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/interpret-hexagram`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          question,
+          primaryHexagram: primary,
+          transformedHexagram: transformed,
+          changingLines: changingPositions,
+        }),
+      });
+
+      if (!resp.ok || !resp.body) {
+        const errData = await resp.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errData.error || `Error ${resp.status}`);
+      }
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let fullText = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
+          let line = buffer.slice(0, newlineIndex);
+          buffer = buffer.slice(newlineIndex + 1);
+          if (line.endsWith('\r')) line = line.slice(0, -1);
+          if (!line.startsWith('data: ')) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]') break;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              fullText += content;
+              setInterpretation(fullText);
+            }
+          } catch { /* partial */ }
+        }
+      }
+    } catch (e: any) {
+      setError(e.message || 'Failed to generate interpretation');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="rounded border border-primary/40 bg-card p-6 space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Sparkles size={16} className="text-primary" />
+          <span className="text-[10px] uppercase tracking-widest text-primary font-medium">
+            Personal Reading
+          </span>
+        </div>
+        <button
+          onClick={generate}
+          disabled={loading}
+          className="flex items-center gap-2 rounded border border-primary px-4 py-2 text-[10px] uppercase tracking-widest text-primary hover:bg-primary hover:text-primary-foreground transition-colors disabled:opacity-50"
+        >
+          {loading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+          {hasGenerated ? 'Re-interpret' : 'Interpret My Reading'}
+        </button>
+      </div>
+
+      {!hasGenerated && !loading && (
+        <p className="text-sm text-muted-foreground">
+          Click "Interpret My Reading" to receive a detailed, personal interpretation that explains exactly what this hexagram means for your specific question.
+        </p>
+      )}
+
+      {error && (
+        <p className="text-sm text-destructive">{error}</p>
+      )}
+
+      {interpretation && (
+        <div className="prose prose-sm max-w-none text-foreground dark:prose-invert">
+          <ReactMarkdown>{interpretation}</ReactMarkdown>
+        </div>
+      )}
+
+      {loading && !interpretation && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 size={14} className="animate-spin" />
+          Consulting the oracle…
+        </div>
+      )}
     </div>
   );
 };
@@ -450,6 +569,13 @@ export const HexagramView = () => {
                   />
                 </>
               )}
+
+              <AIInterpretationCard
+                question={question}
+                primary={result.primary}
+                transformed={result.transformed}
+                changingPositions={changingPositions}
+              />
             </div>
           )}
         </div>
