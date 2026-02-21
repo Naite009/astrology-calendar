@@ -1,7 +1,9 @@
 import { useState, useMemo } from 'react';
-import { Plus, User, Trash2, Edit3, Star } from 'lucide-react';
+import { Plus, User, Trash2, Edit3, Star, Link2 } from 'lucide-react';
 import { useHumanDesignChart } from '@/hooks/useHumanDesignChart';
 import { useUserData } from '@/hooks/useUserData';
+import { useNatalChart } from '@/hooks/useNatalChart';
+import { findLinkedNatalChart } from '@/hooks/useUnifiedProfiles';
 import { HDChartInputForm } from './HDChartInputForm';
 import { HDChartSummary } from './HDChartSummary';
 import { HDActivationsTable } from './HDActivationsTable';
@@ -29,6 +31,7 @@ type HDTab = 'overview' | 'type' | 'authority' | 'profile' | 'centers' | 'gates'
 export const HumanDesignView = () => {
   const { charts, selectedChart, addChart, updateChart, deleteChart, selectChart } = useHumanDesignChart();
   const { userData: mainUserData } = useUserData();
+  const { userNatalChart, savedCharts: savedNatalCharts } = useNatalChart();
   const [showForm, setShowForm] = useState(false);
   const [editingChart, setEditingChart] = useState<HumanDesignChart | null>(null);
   const [activeTab, setActiveTab] = useState<HDTab>('overview');
@@ -110,19 +113,28 @@ export const HumanDesignView = () => {
               <SelectValue placeholder={charts.length > 0 ? "Choose a chart..." : "No charts saved yet"} />
             </SelectTrigger>
             <SelectContent>
-              {sortedCharts.map(chart => (
-                <SelectItem key={chart.id} value={chart.id}>
-                  <div className="flex items-center gap-2">
-                    {chart.id === userHdChartId ? (
-                      <span className="text-primary">★</span>
-                    ) : (
-                      <User size={14} />
-                    )}
-                    <span>{chart.name}</span>
-                    <span className="text-xs text-muted-foreground">({chart.type})</span>
-                  </div>
-                </SelectItem>
-              ))}
+              {sortedCharts.map(chart => {
+                const linkedNatal = findLinkedNatalChart(chart, userNatalChart, savedNatalCharts);
+                return (
+                  <SelectItem key={chart.id} value={chart.id}>
+                    <div className="flex items-center gap-2">
+                      {chart.id === userHdChartId ? (
+                        <span className="text-primary">★</span>
+                      ) : (
+                        <User size={14} />
+                      )}
+                      <span>{chart.name}</span>
+                      <span className="text-xs text-muted-foreground">({chart.type})</span>
+                      {linkedNatal && (
+                        <span className="flex items-center gap-0.5 text-xs text-primary" title="Linked to natal chart">
+                          <Link2 size={10} />
+                          ☉
+                        </span>
+                      )}
+                    </div>
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
           
@@ -157,22 +169,37 @@ export const HumanDesignView = () => {
       {selectedChart ? (
         <div className="space-y-6">
           {/* Chart Header */}
-          <div className="rounded border border-border bg-card p-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <h3 className="font-serif text-xl text-foreground">{selectedChart.name}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {formatLocalDateLong(selectedChart.birthDate)}{' '}
-                  at {selectedChart.birthTime}
-                </p>
-                <p className="text-sm text-muted-foreground">{selectedChart.birthLocation}</p>
+          {(() => {
+            const linkedNatal = findLinkedNatalChart(selectedChart, userNatalChart, savedNatalCharts);
+            return (
+              <div className="rounded border border-border bg-card p-6">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="font-serif text-xl text-foreground">{selectedChart.name}</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {formatLocalDateLong(selectedChart.birthDate)}{' '}
+                      at {selectedChart.birthTime}
+                    </p>
+                    <p className="text-sm text-muted-foreground">{selectedChart.birthLocation}</p>
+                    {linkedNatal && (
+                      <div className="mt-2 flex items-center gap-2 rounded border border-primary/20 bg-primary/5 px-3 py-1.5 text-xs text-primary">
+                        <Link2 size={12} />
+                        <span>
+                          Linked to natal chart — {linkedNatal.planets?.Sun?.sign && `☉ ${linkedNatal.planets.Sun.sign}`}
+                          {linkedNatal.planets?.Moon?.sign && ` · ☽ ${linkedNatal.planets.Moon.sign}`}
+                          {linkedNatal.planets?.Ascendant?.sign && ` · ASC ${linkedNatal.planets.Ascendant.sign}`}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <span className="text-2xl font-light text-primary">{selectedChart.type}</span>
+                    <p className="text-sm text-muted-foreground">{selectedChart.profile} Profile</p>
+                  </div>
+                </div>
               </div>
-              <div className="text-right">
-                <span className="text-2xl font-light text-primary">{selectedChart.type}</span>
-                <p className="text-sm text-muted-foreground">{selectedChart.profile} Profile</p>
-              </div>
-            </div>
-          </div>
+            );
+          })()}
 
           <div className="flex gap-1 border-b border-border overflow-x-auto">
             {(['overview', 'type', 'authority', 'profile', 'centers', 'gates', 'channels', 'cross', 'variables', 'activations', 'bodygraph'] as const).map(tab => (
