@@ -94,6 +94,13 @@ export interface NatalChart {
     Orcus?: NatalPlanetPosition;
     Ixion?: NatalPlanetPosition;
     Varuna?: NatalPlanetPosition;
+    Psyche?: NatalPlanetPosition;
+    Eros?: NatalPlanetPosition;
+    Amor?: NatalPlanetPosition;
+    Hygiea?: NatalPlanetPosition;
+    Nessus?: NatalPlanetPosition;
+    Pholus?: NatalPlanetPosition;
+    Chariklo?: NatalPlanetPosition;
   };
   // 12 house cusps (manual entry from astro.com)
   houseCusps?: {

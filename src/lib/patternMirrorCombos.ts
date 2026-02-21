@@ -709,7 +709,250 @@ export const patternMirrorCombos: PatternMirrorCombo[] = [
     ],
     thematicTags: ['attachment', 'inheritance-patterns', 'emotional-boundaries'],
   },
+
+  // ============== ASTEROID PATTERNS ==============
+
+  // Psyche-Pluto: Soul Depth
+  {
+    id: 'soul-depth',
+    title: 'Soul Depth',
+    patternType: 'aspect',
+    planets: ['Psyche', 'Pluto'],
+    aspectTypes: ['Conjunction', 'Square', 'Opposition', 'Trine', 'Sextile'],
+    summary: 'Psyche in contact with Pluto creates an irresistible pull toward the deepest layers of the psyche. There is a compulsive need to understand what lies beneath the surface of every experience.',
+    lightExpressions: [
+      'Profound psychological insight',
+      'Natural talent for depth work and therapy',
+      'Ability to transmute pain into wisdom',
+      'Magnetic presence that draws others to reveal themselves',
+    ],
+    coreExpressions: [
+      'The soul feels called to confront what others avoid',
+      'Experiences of psychological death and rebirth',
+      'Deep knowing that transformation is the path',
+    ],
+    shadowExpressions: [
+      'Obsessive rumination on painful experiences',
+      'Difficulty accepting surface-level interactions',
+      'Being consumed by the intensity of one\'s own depths',
+    ],
+    thematicTags: ['control-power', 'dissolution-sensitivity', 'intuition'],
+  },
+
+  // Eros-Venus: Passionate Desire
+  {
+    id: 'passionate-desire',
+    title: 'Passionate Desire',
+    patternType: 'aspect',
+    planets: ['Eros', 'Venus'],
+    aspectTypes: ['Conjunction', 'Square', 'Opposition', 'Trine', 'Sextile'],
+    summary: 'Eros touching Venus fuses erotic desire with aesthetic appreciation. Love and desire are inseparable — beauty ignites passion, and passion creates beauty.',
+    lightExpressions: [
+      'Deeply sensual and present in the body',
+      'Creative inspiration fueled by desire',
+      'Ability to merge passion and tenderness',
+      'Magnetic attractiveness and charisma',
+    ],
+    coreExpressions: [
+      'Desire is a primary language of connection',
+      'Beauty and attraction feel like sacred experiences',
+      'The erotic is woven into daily aesthetic awareness',
+    ],
+    shadowExpressions: [
+      'Confusing desire with love',
+      'Compulsive attraction patterns',
+      'Difficulty sustaining interest after the initial spark fades',
+    ],
+    thematicTags: ['attachment', 'sensitivity', 'emotional-regulation'],
+  },
+
+  // Eros-Mars: Primal Fire
+  {
+    id: 'primal-fire',
+    title: 'Primal Fire',
+    patternType: 'aspect',
+    planets: ['Eros', 'Mars'],
+    aspectTypes: ['Conjunction', 'Square', 'Opposition'],
+    summary: 'Eros and Mars together create an intensely driven desire nature. The body\'s instincts and erotic impulses are amplified, creating a powerful force that demands expression.',
+    lightExpressions: [
+      'Extraordinary physical vitality and magnetism',
+      'Courage to pursue what is deeply desired',
+      'Passionate creative and sexual energy',
+    ],
+    coreExpressions: [
+      'Desire operates at a primal, instinctual level',
+      'The body leads and the mind follows',
+      'Action and desire are indistinguishable',
+    ],
+    shadowExpressions: [
+      'Impulsive pursuit of desire without reflection',
+      'Frustration when desire is blocked or unmet',
+      'Difficulty channeling intense energy constructively',
+    ],
+    thematicTags: ['nervous-system', 'control-power', 'emotional-regulation'],
+  },
+
+  // Nessus-Moon: Ancestral Wound Pattern
+  {
+    id: 'ancestral-wound-pattern',
+    title: 'Ancestral Wound Pattern',
+    patternType: 'aspect',
+    planets: ['Nessus', 'Moon'],
+    aspectTypes: ['Conjunction', 'Square', 'Opposition'],
+    summary: 'Nessus touching the Moon reveals inherited emotional patterns passed through family lines. There is a deep sensitivity to cycles of harm and a powerful capacity to break them.',
+    lightExpressions: [
+      'Ability to recognize inherited emotional patterns',
+      'Deep compassion born from understanding generational pain',
+      'Power to break family cycles consciously',
+      'Healing presence for others carrying ancestral wounds',
+    ],
+    coreExpressions: [
+      'Emotional responses carry echoes of family history',
+      'Sensitivity to power dynamics in intimate relationships',
+      'Feeling responsible for healing what was passed down',
+    ],
+    shadowExpressions: [
+      'Repeating harmful patterns unconsciously',
+      'Difficulty distinguishing personal feelings from inherited ones',
+      'Overwhelming sense of carrying others\' pain',
+    ],
+    thematicTags: ['inheritance-patterns', 'family-imprint', 'emotional-memory'],
+  },
+
+  // Pholus-Sun: Catalyst Identity
+  {
+    id: 'catalyst-identity',
+    title: 'Catalyst Identity',
+    patternType: 'aspect',
+    planets: ['Pholus', 'Sun'],
+    aspectTypes: ['Conjunction', 'Square', 'Opposition', 'Trine'],
+    summary: 'Pholus in aspect to the Sun marks a person whose small actions create large, often irreversible changes. Life pivots around turning-point moments that ripple outward.',
+    lightExpressions: [
+      'Ability to catalyze transformation in others',
+      'Small gestures that create lasting impact',
+      'Instinctive sense of timing for pivotal moments',
+    ],
+    coreExpressions: [
+      'Life unfolds through sudden, cascading changes',
+      'One decision can alter the entire trajectory',
+      'A sense of being at the center of something larger',
+    ],
+    shadowExpressions: [
+      'Anxiety about making irreversible decisions',
+      'Feeling out of control when change accelerates',
+      'Difficulty with moderation — things go from zero to a hundred',
+    ],
+    thematicTags: ['nervous-system', 'control-power', 'vigilance'],
+  },
+
+  // Chariklo-Chiron: Sacred Boundary Healer
+  {
+    id: 'sacred-boundary-healer',
+    title: 'Sacred Boundary Healer',
+    patternType: 'aspect',
+    planets: ['Chariklo', 'Chiron'],
+    aspectTypes: ['Conjunction', 'Square', 'Opposition', 'Trine', 'Sextile'],
+    summary: 'Chariklo meeting Chiron creates a profound capacity for holding space during healing. There is a natural grace in sitting with others\' pain without trying to fix it.',
+    lightExpressions: [
+      'Extraordinary capacity to hold space for others',
+      'Natural healer who works through presence, not intervention',
+      'Graceful boundaries that protect without isolating',
+      'Ability to witness suffering without absorbing it',
+    ],
+    coreExpressions: [
+      'Healing happens through being, not doing',
+      'Boundaries are an act of love, not rejection',
+      'The wound and the sanctuary coexist',
+    ],
+    shadowExpressions: [
+      'Over-giving to the point of self-depletion',
+      'Difficulty asking for the same holding they provide',
+      'Using healing roles to avoid addressing personal wounds',
+    ],
+    thematicTags: ['emotional-boundaries', 'sensitivity', 'responsibility'],
+  },
+
+  // Amor-Moon: Unconditional Heart
+  {
+    id: 'unconditional-heart',
+    title: 'Unconditional Heart',
+    patternType: 'aspect',
+    planets: ['Amor', 'Moon'],
+    aspectTypes: ['Conjunction', 'Trine', 'Sextile', 'Square', 'Opposition'],
+    summary: 'Amor in aspect to the Moon weaves unconditional love into the emotional fabric. There is a deep capacity for compassion that extends beyond personal attachment.',
+    lightExpressions: [
+      'Natural capacity for unconditional acceptance',
+      'Emotional generosity that asks nothing in return',
+      'Ability to love people as they are, not as you wish them to be',
+    ],
+    coreExpressions: [
+      'Love feels like a state of being, not a transaction',
+      'Emotional nourishment flows naturally toward others',
+      'The heart opens before the mind can object',
+    ],
+    shadowExpressions: [
+      'Difficulty receiving the love that is given',
+      'Loving others at the expense of self-care',
+      'Enabling harmful behavior in the name of compassion',
+    ],
+    thematicTags: ['attachment', 'emotional-boundaries', 'sensitivity'],
+  },
+
+  // Hygiea-Ascendant: Body Wisdom
+  {
+    id: 'body-wisdom',
+    title: 'Body Wisdom',
+    patternType: 'aspect',
+    planets: ['Hygiea', 'Ascendant'],
+    aspectTypes: ['Conjunction', 'Square', 'Opposition', 'Trine', 'Sextile'],
+    summary: 'Hygiea in aspect to the Ascendant connects the body\'s innate healing intelligence with outward expression. Health and self-presentation are deeply intertwined.',
+    lightExpressions: [
+      'Intuitive awareness of what the body needs',
+      'Natural inclination toward preventive health practices',
+      'Physical presence that radiates wellness',
+      'Ability to sense imbalances before they manifest as illness',
+    ],
+    coreExpressions: [
+      'The body is the primary teacher and guide',
+      'Health is a holistic practice, not a set of rules',
+      'Physical wellbeing and identity are inseparable',
+    ],
+    shadowExpressions: [
+      'Health anxiety or hypochondria',
+      'Over-identification with physical symptoms',
+      'Neglecting emotional health while perfecting physical health',
+    ],
+    thematicTags: ['nervous-system', 'sensitivity', 'vigilance'],
+  },
+
+  // Psyche-Moon: Deep Feeling
+  {
+    id: 'deep-feeling-psyche',
+    title: 'Deep Feeling',
+    patternType: 'aspect',
+    planets: ['Psyche', 'Moon'],
+    aspectTypes: ['Conjunction', 'Square', 'Opposition', 'Trine'],
+    summary: 'Psyche meeting the Moon creates an exceptionally rich inner emotional life. Feelings carry mythological weight — every emotion connects to a deeper story about the soul\'s journey.',
+    lightExpressions: [
+      'Emotional experiences carry profound meaning',
+      'Rich dream life and symbolic awareness',
+      'Natural understanding of the soul\'s language',
+      'Ability to find meaning in suffering',
+    ],
+    coreExpressions: [
+      'Emotions are portals to deeper self-knowledge',
+      'The inner world is vast and richly populated',
+      'Every feeling connects to a larger narrative',
+    ],
+    shadowExpressions: [
+      'Over-analyzing emotions instead of simply feeling them',
+      'Melancholy or heaviness from carrying so much inner weight',
+      'Difficulty with emotional simplicity or lightness',
+    ],
+    thematicTags: ['emotional-memory', 'intuition', 'dissolution-sensitivity'],
+  },
 ];
+
 
 // ============== PATTERN DETECTION HELPERS ==============
 
