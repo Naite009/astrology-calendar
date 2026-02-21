@@ -104,14 +104,14 @@ const HexagramCard = ({ hex, label, lines, changingPositions }: {
 
 /* ─── Trigram Lookup Table ─── */
 const T_LABELS = [
-  { key: '111', sym: '☰', name: 'Heaven', lines: '━━━' },
-  { key: '000', sym: '☷', name: 'Earth', lines: '⚋⚋⚋' },
-  { key: '100', sym: '☳', name: 'Thunder', lines: '━⚋⚋' },
-  { key: '010', sym: '☵', name: 'Water', lines: '⚋━⚋' },
-  { key: '001', sym: '☶', name: 'Mountain', lines: '⚋⚋━' },
-  { key: '011', sym: '☴', name: 'Wind', lines: '⚋━━' },
-  { key: '101', sym: '☲', name: 'Fire', lines: '━⚋━' },
-  { key: '110', sym: '☱', name: 'Lake', lines: '━━⚋' },
+  { key: '111', sym: '☰', name: 'Heaven', visual: '━ ━ ━' },
+  { key: '000', sym: '☷', name: 'Earth', visual: '⚋ ⚋ ⚋' },
+  { key: '100', sym: '☳', name: 'Thunder', visual: '⚋ ⚋ ━' },
+  { key: '010', sym: '☵', name: 'Water', visual: '⚋ ━ ⚋' },
+  { key: '001', sym: '☶', name: 'Mountain', visual: '━ ⚋ ⚋' },
+  { key: '011', sym: '☴', name: 'Wind', visual: '━ ━ ⚋' },
+  { key: '101', sym: '☲', name: 'Fire', visual: '━ ⚋ ━' },
+  { key: '110', sym: '☱', name: 'Lake', visual: '⚋ ━ ━' },
 ];
 
 const TrigramLookupTable = () => {
@@ -123,6 +123,13 @@ const TrigramLookupTable = () => {
       <p className="text-[11px] text-muted-foreground">
         Find your <strong>bottom trigram</strong> (lines 1-3) across the top, and your <strong>top trigram</strong> (lines 4-6) down the left side. Where they meet is your hexagram number.
       </p>
+      <div className="rounded bg-primary/5 border border-primary/20 p-2 mb-2">
+        <p className="text-[11px] text-foreground">
+          <strong>⚠️ Reading direction matters!</strong> Line patterns below are shown <strong>top-to-bottom</strong> (how they look visually on a chart). 
+          Most printed I Ching charts use this same order. So "━ ⚋ ⚋" (solid, broken, broken reading downward) = <strong>☶ Mountain (Gen/Ken)</strong>. 
+          Mountain over Mountain = <strong>#52 Keeping Still</strong>.
+        </p>
+      </div>
       <div className="overflow-x-auto">
         <table className="text-[10px] border-collapse w-full">
           <thead>
@@ -134,6 +141,7 @@ const TrigramLookupTable = () => {
                 <th key={t.key} className="p-1.5 border border-border bg-secondary text-center">
                   <div className="text-base">{t.sym}</div>
                   <div className="text-muted-foreground text-[8px]">{t.name}</div>
+                  <div className="text-muted-foreground text-[7px] font-mono">{t.visual}</div>
                 </th>
               ))}
             </tr>
@@ -144,6 +152,7 @@ const TrigramLookupTable = () => {
                 <td className="p-1.5 border border-border bg-secondary text-center">
                   <div className="text-base">{upper.sym}</div>
                   <div className="text-muted-foreground text-[8px]">{upper.name}</div>
+                  <div className="text-muted-foreground text-[7px] font-mono">{upper.visual}</div>
                 </td>
                 {T_LABELS.map((_, li) => {
                   const num = KING_WEN[ui][li];
@@ -166,7 +175,7 @@ const TrigramLookupTable = () => {
         </table>
       </div>
       <p className="text-[10px] text-muted-foreground italic">
-        Example: Thunder (━ ⚋ ⚋) on top + Thunder (━ ⚋ ⚋) on bottom → row 3, column 3 → <strong>#51 The Arousing</strong>
+        Example: Mountain ☶ (━ ⚋ ⚋) on top + Mountain ☶ (━ ⚋ ⚋) on bottom → <strong>#52 Keeping Still</strong>
       </p>
     </div>
   );
@@ -623,11 +632,15 @@ export const HexagramView = () => {
                     <li>There are 8 possible trigrams × 8 = <strong>64 combinations</strong> — each one IS a hexagram</li>
                   </ol>
                   <div className="rounded bg-secondary p-3 text-[11px] text-foreground space-y-1">
-                    <p className="font-medium">Example — Hexagram 51 "The Arousing" (Thunder over Thunder):</p>
-                    <p>Your throws bottom→top: <strong>7, 8, 8, 7, 8, 8</strong></p>
-                    <p>Line pattern: <strong>solid, broken, broken, solid, broken, broken</strong></p>
-                    <p>Bottom trigram ☳ Thunder + Top trigram ☳ Thunder = <strong>#51</strong></p>
-                    <p className="text-muted-foreground italic pt-1">You don't need to memorize the table — just enter your coins here and the app finds the hexagram for you.</p>
+                    <p className="font-medium">Example — How the same lines can be two different hexagrams:</p>
+                    <p>Say your throws are: <strong>7, 8, 8, 7, 8, 8</strong> (bottom→top)</p>
+                    <p>Line pattern (bottom→top): solid, broken, broken, solid, broken, broken</p>
+                    <p>Bottom trigram (lines 1-3): solid, broken, broken = <strong>☳ Thunder</strong> (read bottom→top)</p>
+                    <p>Top trigram (lines 4-6): solid, broken, broken = <strong>☳ Thunder</strong></p>
+                    <p>Thunder over Thunder = <strong>#51 The Arousing</strong></p>
+                    <p className="border-t border-border pt-1 mt-1">But if your chart reads <strong>top→down</strong> and you see solid, broken, broken — that's <strong>☶ Mountain (Gen/Ken)</strong></p>
+                    <p>Mountain over Mountain = <strong>#52 Keeping Still</strong></p>
+                    <p className="text-muted-foreground italic pt-1">The app builds lines bottom→top (traditional order). Just enter your coins and it handles the lookup.</p>
                   </div>
                 </div>
               </div>
