@@ -22,6 +22,8 @@ interface CategoryRules {
   favorableSigns: string[];
   natalPlanetsToCheck: string[];
   avoidMercuryRetrograde?: boolean;
+  /** At least one side of the aspect MUST involve one of these planets to get Tier 1 score */
+  gatekeeperPlanets: string[];
 }
 
 export const CATEGORY_RULES: Record<BestTimesCategory, CategoryRules> = {
@@ -30,30 +32,35 @@ export const CATEGORY_RULES: Record<BestTimesCategory, CategoryRules> = {
     favorableAspects: ['trine', 'sextile', 'conjunction'],
     favorableSigns: ['Libra', 'Taurus', 'Cancer', 'Pisces'],
     natalPlanetsToCheck: ['Venus', 'Moon', 'Ascendant'],
+    gatekeeperPlanets: ['Venus'], // Love MUST involve Venus
   },
   finance: {
     favorablePlanets: ['Jupiter', 'Venus', 'Pluto'],
     favorableAspects: ['trine', 'sextile'],
     favorableSigns: ['Taurus', 'Capricorn', 'Scorpio'],
     natalPlanetsToCheck: ['Jupiter', 'Saturn', 'Pluto'],
+    gatekeeperPlanets: ['Jupiter', 'Pluto'], // Finance must involve Jupiter or Pluto
   },
   health: {
     favorablePlanets: ['Mars', 'Sun', 'Saturn'],
     favorableAspects: ['trine', 'sextile'],
     favorableSigns: ['Aries', 'Virgo', 'Capricorn'],
     natalPlanetsToCheck: ['Mars', 'Ascendant', 'Sun'],
+    gatekeeperPlanets: ['Mars', 'Sun'], // Health must involve Mars or Sun
   },
   beauty: {
     favorablePlanets: ['Venus', 'Neptune', 'Moon'],
     favorableAspects: ['trine', 'sextile', 'conjunction'],
     favorableSigns: ['Taurus', 'Libra', 'Pisces'],
     natalPlanetsToCheck: ['Venus', 'Neptune', 'Ascendant'],
+    gatekeeperPlanets: ['Venus', 'Neptune'], // Beauty must involve Venus or Neptune
   },
   career: {
     favorablePlanets: ['Saturn', 'Jupiter', 'Sun', 'Pluto'],
     favorableAspects: ['trine', 'sextile', 'conjunction'],
     favorableSigns: ['Capricorn', 'Leo', 'Aries'],
     natalPlanetsToCheck: ['Sun', 'Saturn', 'Midheaven'],
+    gatekeeperPlanets: ['Saturn', 'Jupiter', 'Sun'], // Career must involve Saturn, Jupiter, or Sun
   },
   travel: {
     favorablePlanets: ['Jupiter', 'Mercury', 'Uranus'],
@@ -61,6 +68,7 @@ export const CATEGORY_RULES: Record<BestTimesCategory, CategoryRules> = {
     favorableSigns: ['Sagittarius', 'Gemini', 'Aquarius'],
     natalPlanetsToCheck: ['Mercury', 'Jupiter', 'Uranus'],
     avoidMercuryRetrograde: true,
+    gatekeeperPlanets: ['Jupiter', 'Mercury'], // Travel must involve Jupiter or Mercury
   },
 };
 
@@ -279,6 +287,7 @@ export const calculateBestTimes = (
       const primaryNatalSet = new Set(rules.natalPlanetsToCheck.map(n => n.toLowerCase()));
       const primaryTransitSet = new Set(rules.favorablePlanets.map(p => p.toLowerCase()));
       const seenAspects = new Set<string>();
+      const gatekeeperSet = new Set(rules.gatekeeperPlanets.map(p => p.toLowerCase()));
 
       for (const transit of transitBodies) {
         const transitPos = transitPlanets[transit.key as keyof typeof transitPlanets];
@@ -299,12 +308,20 @@ export const calculateBestTimes = (
           const isPrimNatal = primaryNatalSet.has(natalKey.toLowerCase());
           const isPrimTransit = primaryTransitSet.has(transit.key);
           const isFavType = rules.favorableAspects.includes(aspect.type);
+          // Gatekeeper: at least one side must be a category-defining planet
+          const involvesGatekeeper = gatekeeperSet.has(transit.key) || gatekeeperSet.has(natalKey.toLowerCase());
 
-          let weight = 0.15;
-          if (isPrimNatal && isPrimTransit && isFavType) weight = 1.0;
-          else if ((isPrimNatal || isPrimTransit) && isFavType) weight = 0.45;
-          else if (isFavType) weight = 0.25;
-          if (aspect.score < 0) weight = Math.max(weight, 0.35);
+          let weight = 0.1; // Tier 4: irrelevant planets
+          if (involvesGatekeeper && isPrimNatal && isPrimTransit && isFavType) {
+            weight = 1.0;  // Tier 1: gatekeeper + primary both sides + favorable aspect
+          } else if (involvesGatekeeper && isFavType) {
+            weight = 0.6;  // Tier 2: gatekeeper + favorable aspect
+          } else if ((isPrimNatal || isPrimTransit) && isFavType) {
+            weight = 0.25; // Tier 3: primary but no gatekeeper
+          } else if (isFavType) {
+            weight = 0.15; // Tier 3b: favorable but no gatekeeper
+          }
+          if (aspect.score < 0) weight = Math.max(weight, 0.3);
 
           const weighted = Math.round(aspect.score * weight);
           if (weighted !== 0) {
