@@ -40,10 +40,11 @@ import { CombosView } from "./CombosView";
 import { GroundedNarrativeView } from "./GroundedNarrativeView";
 import { TransitCalendarView } from "./TransitCalendarView";
 import { WeeklyMealPlanCard } from "./WeeklyMealPlanCard";
+import { HexagramView } from "./HexagramView";
 
 
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen";
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -180,6 +181,9 @@ export const AstroCalendar = () => {
     }
     if (viewMode === "transit-calendar") {
       return "2026 Transit Calendar";
+    }
+    if (viewMode === "hexagram") {
+      return "I Ching Hexagram";
     }
     if (viewMode === "moon-phases") {
       return `${currentDate.getFullYear()} Moon Phases`;
@@ -597,6 +601,16 @@ export const AstroCalendar = () => {
                 <Utensils size={14} />
                 Kitchen
               </button>
+              <button
+                onClick={() => setViewMode("hexagram")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "hexagram"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                ☰ Hexagram
+              </button>
             </div>
 
             {userData && (
@@ -865,6 +879,10 @@ export const AstroCalendar = () => {
           <div className="max-w-4xl mx-auto">
             <WeeklyMealPlanCard />
           </div>
+        )}
+
+        {viewMode === "hexagram" && (
+          <HexagramView />
         )}
       </div>
 
