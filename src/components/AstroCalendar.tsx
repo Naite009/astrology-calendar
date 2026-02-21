@@ -682,7 +682,7 @@ export const AstroCalendar = () => {
 
         {/* Cosmic Energy Modal */}
         {showCosmicEnergy && (
-          <TodaysCosmicEnergy onClose={() => setShowCosmicEnergy(false)} />
+          <TodaysCosmicEnergy onClose={() => setShowCosmicEnergy(false)} userNatalChart={userNatalChart} savedCharts={savedCharts} />
         )}
 
         {/* Views */}
