@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { Sparkles, Moon, Sun, Clock, Loader2, RefreshCw, X, Download, Share2, ChevronRight, AlertTriangle, Calendar, ArrowLeft, User } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Sparkles, Moon, Sun, Clock, Loader2, RefreshCw, X, Download, Share2, ChevronRight, AlertTriangle, Calendar, ArrowLeft, User, Volume2, Square, Loader } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -268,6 +268,75 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
   const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
   const [voiceStyle, setVoiceStyle] = useState<'tara' | 'chris' | 'anne' | 'kathy' | 'krs' | 'malika' | 'sarah' | 'astrodienst' | 'cafe' | 'astrotwins' | 'chani'>('tara');
   const contentRef = useRef<HTMLDivElement>(null);
+  const [ttsState, setTtsState] = useState<'idle' | 'loading' | 'playing'>('idle');
+  const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
+  const ttsUrlRef = useRef<string | null>(null);
+  const [ttsVoice, setTtsVoice] = useState<string>(() => localStorage.getItem('cosmic-tts-voice') || 'EXAVITQu4vr4xnSDxMaL');
+
+  const stopTtsAudio = useCallback(() => {
+    if (ttsAudioRef.current) {
+      ttsAudioRef.current.pause();
+      ttsAudioRef.current.currentTime = 0;
+      ttsAudioRef.current = null;
+    }
+    if (ttsUrlRef.current) {
+      URL.revokeObjectURL(ttsUrlRef.current);
+      ttsUrlRef.current = null;
+    }
+    setTtsState('idle');
+  }, []);
+
+  const playTtsInsights = useCallback(async () => {
+    const textToRead = selectedWeekDay === 0 ? cosmicData?.insight : weekDayInsights[selectedWeekDay];
+    if (!textToRead) return;
+    if (ttsState === 'playing') { stopTtsAudio(); return; }
+
+    setTtsState('loading');
+    try {
+      const cleanText = textToRead
+        .replace(/\*\*RECIPE_START\*\*[\s\S]*?\*\*RECIPE_END\*\*/, '')
+        .replace(/##\s*/g, '')
+        .replace(/\*\*(.*?)\*\*/g, '$1')
+        .replace(/- /g, '')
+        .replace(/\[.*?\]\(.*?\)/g, '')
+        .replace(/\n+/g, ' ')
+        .trim();
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ text: cleanText, voiceId: ttsVoice }),
+        }
+      );
+
+      if (!response.ok) throw new Error(`TTS failed: ${response.status}`);
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      ttsUrlRef.current = audioUrl;
+
+      const audio = new Audio(audioUrl);
+      ttsAudioRef.current = audio;
+      audio.onended = () => stopTtsAudio();
+      audio.onerror = () => { stopTtsAudio(); toast({ title: "Audio playback failed", variant: "destructive" }); };
+
+      await audio.play();
+      setTtsState('playing');
+    } catch (err) {
+      console.error('TTS error:', err);
+      toast({ title: "Could not generate audio", variant: "destructive" });
+      setTtsState('idle');
+    }
+  }, [ttsVoice, ttsState, stopTtsAudio, cosmicData, weekDayInsights, selectedWeekDay]);
+
+  // Cleanup TTS on unmount
+  useEffect(() => { return () => { stopTtsAudio(); }; }, [stopTtsAudio]);
   
   // Get saved charts - prefer props, fall back to hook
   const hookData = useNatalChart();
@@ -1515,6 +1584,49 @@ Keep the tone professional, insightful, and practically applicable.`
                     )}
 
                     {!isLoading && weekDayLoading === null && !error && displayInsight && (
+                      <>
+                      {/* Listen Controls */}
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4 p-3 rounded-lg bg-secondary/50">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={playTtsInsights}
+                          disabled={ttsState === 'loading'}
+                          className="flex items-center gap-2"
+                        >
+                          {ttsState === 'loading' ? (
+                            <><Loader className="h-4 w-4 animate-spin" /> Generating…</>
+                          ) : ttsState === 'playing' ? (
+                            <><Square className="h-3.5 w-3.5 fill-current" /> Stop</>
+                          ) : (
+                            <><Volume2 className="h-4 w-4" /> Listen</>
+                          )}
+                        </Button>
+                        <Select
+                          value={ttsVoice}
+                          onValueChange={(v) => {
+                            setTtsVoice(v);
+                            localStorage.setItem('cosmic-tts-voice', v);
+                            stopTtsAudio();
+                          }}
+                        >
+                          <SelectTrigger className="w-[180px] bg-background h-9">
+                            <SelectValue placeholder="Voice" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-background border-border z-[100]">
+                            <SelectItem value="EXAVITQu4vr4xnSDxMaL">Sarah</SelectItem>
+                            <SelectItem value="FGY2WhTYpPnrIDTdsKH5">Laura</SelectItem>
+                            <SelectItem value="XrExE9yKIg1WjnnlVkGX">Matilda</SelectItem>
+                            <SelectItem value="pFZP5JQG7iQjIQuC4Bku">Lily</SelectItem>
+                            <SelectItem value="Xb7hH8MSUJpSbSDYk0k2">Alice</SelectItem>
+                            <SelectItem value="JBFqnCBsd6RMkjVDRZzb">George</SelectItem>
+                            <SelectItem value="onwK4e9ZLuTAKqWW03F9">Daniel</SelectItem>
+                            <SelectItem value="TX3LPaxmHKxFdv7VOQHJ">Liam</SelectItem>
+                            <SelectItem value="CwhRBWXzGAHq8TQ4Fs17">Roger</SelectItem>
+                            <SelectItem value="nPczCjzI2devNBz1zQrb">Brian</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                       <div className="prose prose-lg dark:prose-invert max-w-none">
                         <ReactMarkdown
                           components={{
@@ -1563,6 +1675,7 @@ Keep the tone professional, insightful, and practically applicable.`
                         </ReactMarkdown>
                         
                       </div>
+                      </>
                     )}
 
                     {!isLoading && weekDayLoading === null && !error && !displayInsight && selectedWeekDay !== 0 && (
