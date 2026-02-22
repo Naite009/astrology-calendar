@@ -918,6 +918,11 @@ const LifeCycleTimelinePersonalized = ({ chart }: { chart: NatalChart }) => {
     return new Date(parts[0], parts[1] - 1, parts[2]);
   }, [chart.birthDate]);
 
+  // Use exact ephemeris for Saturn Returns
+  const saturnCycles = useMemo(() => {
+    return calculateDetailedSaturnCycles(chart, new Date());
+  }, [chart]);
+
   const cycles = useMemo(() => {
     if (!birthDate) return [];
 
@@ -926,11 +931,15 @@ const LifeCycleTimelinePersonalized = ({ chart }: { chart: NatalChart }) => {
       return age;
     };
 
-    // Saturn cycle ~29.46 years
-    const saturnReturn1Start = addYears(birthDate, 28);
-    const saturnReturn1End = addYears(birthDate, 30);
-    const saturnReturn2Start = addYears(birthDate, 57);
-    const saturnReturn2End = addYears(birthDate, 59);
+    // Get exact Saturn Return dates from ephemeris
+    const saturnReturns = saturnCycles?.cycles.filter(c => c.phaseName === 'Return') || [];
+    const sr1 = saturnReturns[0];
+    const sr2 = saturnReturns[1];
+    
+    const saturnReturn1Start = sr1?.events[0] ? new Date(sr1.events[0].date) : addYears(birthDate, 28);
+    const saturnReturn1End = sr1?.events[sr1.events.length - 1] ? new Date(sr1.events[sr1.events.length - 1].date) : addYears(birthDate, 30);
+    const saturnReturn2Start = sr2?.events[0] ? new Date(sr2.events[0].date) : addYears(birthDate, 57);
+    const saturnReturn2End = sr2?.events[sr2.events.length - 1] ? new Date(sr2.events[sr2.events.length - 1].date) : addYears(birthDate, 59);
 
     // Uranus opposition ~42 years (half of 84-year cycle)
     const uranusOppStart = addYears(birthDate, 40);
@@ -1007,7 +1016,7 @@ const LifeCycleTimelinePersonalized = ({ chart }: { chart: NatalChart }) => {
         isCurrent: now >= saturnReturn2Start && now <= saturnReturn2End,
       },
     ];
-  }, [birthDate]);
+  }, [birthDate, saturnCycles]);
 
   if (!birthDate) {
     return <p className="text-xs text-muted-foreground">Birth date required for personalized dates.</p>;
@@ -1027,7 +1036,7 @@ const LifeCycleTimelinePersonalized = ({ chart }: { chart: NatalChart }) => {
             <span className="text-muted-foreground">{cycle.description}</span>
           </div>
           <div className="text-right shrink-0">
-            <p className="font-semibold text-[11px]">{format(cycle.start, 'MMM yyyy')} – {format(cycle.end, 'MMM yyyy')}</p>
+            <p className="font-semibold text-[11px]">{format(cycle.start, 'MMM d, yyyy')} – {format(cycle.end, 'MMM d, yyyy')}</p>
             <p className="text-[10px] text-muted-foreground">{cycle.age}</p>
           </div>
         </div>
