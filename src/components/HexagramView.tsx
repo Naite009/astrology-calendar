@@ -104,15 +104,35 @@ const HexagramCard = ({ hex, label, lines, changingPositions }: {
 
 /* ─── Trigram Lookup Table ─── */
 const T_LABELS = [
-  { key: '111', sym: '☰', name: 'Heaven', visual: '━ ━ ━' },
-  { key: '000', sym: '☷', name: 'Earth', visual: '⚋ ⚋ ⚋' },
-  { key: '100', sym: '☳', name: 'Thunder', visual: '⚋ ⚋ ━' },
-  { key: '010', sym: '☵', name: 'Water', visual: '⚋ ━ ⚋' },
-  { key: '001', sym: '☶', name: 'Mountain', visual: '━ ⚋ ⚋' },
-  { key: '011', sym: '☴', name: 'Wind', visual: '━ ━ ⚋' },
-  { key: '101', sym: '☲', name: 'Fire', visual: '━ ⚋ ━' },
-  { key: '110', sym: '☱', name: 'Lake', visual: '⚋ ━ ━' },
+  { key: '111', sym: '☰', name: 'Heaven', lines: [1, 1, 1] },
+  { key: '000', sym: '☷', name: 'Earth', lines: [0, 0, 0] },
+  { key: '100', sym: '☳', name: 'Thunder', lines: [0, 0, 1] },
+  { key: '010', sym: '☵', name: 'Water', lines: [0, 1, 0] },
+  { key: '001', sym: '☶', name: 'Mountain', lines: [1, 0, 0] },
+  { key: '011', sym: '☴', name: 'Wind', lines: [1, 1, 0] },
+  { key: '101', sym: '☲', name: 'Fire', lines: [1, 0, 1] },
+  { key: '110', sym: '☱', name: 'Lake', lines: [0, 1, 1] },
 ];
+
+const TrigramLines = ({ lines, size = 'sm' }: { lines: number[]; size?: 'sm' | 'md' }) => {
+  const w = size === 'md' ? 'w-6' : 'w-4';
+  const h = size === 'md' ? 'h-[3px]' : 'h-[2px]';
+  const gap = size === 'md' ? 'gap-[3px]' : 'gap-[2px]';
+  return (
+    <div className={`flex flex-col items-center ${gap}`}>
+      {lines.map((l, i) =>
+        l === 1 ? (
+          <div key={i} className={`${w} ${h} bg-foreground rounded-sm`} />
+        ) : (
+          <div key={i} className={`${w} ${h} flex gap-[2px]`}>
+            <div className="flex-1 bg-foreground rounded-sm h-full" />
+            <div className="flex-1 bg-foreground rounded-sm h-full" />
+          </div>
+        )
+      )}
+    </div>
+  );
+};
 
 const TrigramLookupTable = () => {
   const [highlight, setHighlight] = useState<number | null>(null);
@@ -141,7 +161,7 @@ const TrigramLookupTable = () => {
                 <th key={t.key} className="p-1.5 border border-border bg-secondary text-center">
                   <div className="text-base">{t.sym}</div>
                   <div className="text-muted-foreground text-[8px]">{t.name}</div>
-                  <div className="text-muted-foreground text-[7px] font-mono">{t.visual}</div>
+                  <div className="flex justify-center mt-1"><TrigramLines lines={t.lines} /></div>
                 </th>
               ))}
             </tr>
@@ -152,7 +172,7 @@ const TrigramLookupTable = () => {
                 <td className="p-1.5 border border-border bg-secondary text-center">
                   <div className="text-base">{upper.sym}</div>
                   <div className="text-muted-foreground text-[8px]">{upper.name}</div>
-                  <div className="text-muted-foreground text-[7px] font-mono">{upper.visual}</div>
+                  <div className="flex justify-center mt-1"><TrigramLines lines={upper.lines} /></div>
                 </td>
                 {T_LABELS.map((_, li) => {
                   const num = KING_WEN[ui][li];
@@ -174,9 +194,13 @@ const TrigramLookupTable = () => {
           </tbody>
         </table>
       </div>
-      <p className="text-[10px] text-muted-foreground italic">
-        Example: Mountain ☶ (━ ⚋ ⚋) on top + Mountain ☶ (━ ⚋ ⚋) on bottom → <strong>#52 Keeping Still</strong>
-      </p>
+      <div className="text-[10px] text-muted-foreground italic flex items-center gap-1 flex-wrap">
+        <span>Example: Mountain ☶</span>
+        <TrigramLines lines={[1,0,0]} />
+        <span>on top + Mountain ☶</span>
+        <TrigramLines lines={[1,0,0]} />
+        <span>on bottom → <strong>#52 Keeping Still</strong></span>
+      </div>
     </div>
   );
 };
