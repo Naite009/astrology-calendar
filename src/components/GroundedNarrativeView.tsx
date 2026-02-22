@@ -38,7 +38,8 @@ export type VoiceStyle =
   | 'motherly_supportive' 
   | 'direct_practical' 
   | 'mystical_poetic'
-  | 'analytical_technical';
+  | 'analytical_technical'
+  | 'plain_human';
 
 export type ReadingType = 'astrology' | 'human_design' | 'combined';
 
@@ -46,9 +47,10 @@ const VOICE_OPTIONS: { value: VoiceStyle; label: string; description: string }[]
   { value: 'grounded_therapist', label: 'Therapist', description: 'Warm, steady, emotionally intelligent' },
   { value: 'spiritual_guide', label: 'Spiritual Guide', description: 'Soul-centered, ancestral wisdom, divine timing' },
   { value: 'motherly_supportive', label: 'Nurturing & Practical', description: 'Gentle encouragement, actionable advice' },
-  { value: 'direct_practical', label: 'Direct & Clear', description: 'Straightforward, no fluff, action-oriented' },
+  { value: 'direct_practical', label: 'Direct & Clear', description: 'Blunt, no metaphors, just facts' },
   { value: 'mystical_poetic', label: 'Mystical & Poetic', description: 'Evocative imagery, archetypal depth' },
   { value: 'analytical_technical', label: 'Technical Astrologer', description: 'Traditional dignities, precise language' },
+  { value: 'plain_human', label: 'No Astrology', description: 'Pure feelings & behavior, zero jargon' },
 ];
 
 const READING_TYPE_OPTIONS: { value: ReadingType; label: string; description: string; icon: typeof Star }[] = [
