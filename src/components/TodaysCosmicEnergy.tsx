@@ -302,6 +302,10 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
         .replace(/\n+/g, ' ')
         .trim();
 
+      // Get the user's session token for auth
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
         {
@@ -309,7 +313,7 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
           headers: {
             "Content-Type": "application/json",
             apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ text: cleanText, voiceId: ttsVoice }),
         }
