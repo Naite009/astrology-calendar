@@ -68,12 +68,59 @@ const PLANET_ESSENCES: Record<string, { name: string; essence: string }> = {
   ascendant: { name: 'Ascendant', essence: 'Your rising sign, outer personality, and how others see you.' },
 };
 
-const ASPECT_MEANINGS: Record<string, { meaning: string; energy: string }> = {
-  conjunction: { meaning: 'merges with', energy: 'Fusion - these energies become ONE. Intensity and focus.' },
-  opposition: { meaning: 'opposes', energy: 'Polarity - awareness through contrast. Balance required.' },
-  trine: { meaning: 'flows with', energy: 'Harmony - natural talent and ease. Gifts that come easily.' },
-  square: { meaning: 'challenges', energy: 'Tension - friction that creates action. Growth through struggle.' },
-  sextile: { meaning: 'supports', energy: 'Opportunity - potential that needs activation. Gentle gifts.' },
+const ASPECT_MEANINGS: Record<string, { meaning: string; energy: string; plainExplanation: string }> = {
+  conjunction: { meaning: 'merges with', energy: 'Fusion - these energies become ONE. Intensity and focus.', plainExplanation: 'These two forces combine into one — it\'s like they\'re speaking at the same time, amplifying each other.' },
+  opposition: { meaning: 'opposes', energy: 'Polarity - awareness through contrast. Balance required.', plainExplanation: 'These two forces pull you in opposite directions — like being torn between two equally important needs. The goal is to find balance, not choose one over the other.' },
+  trine: { meaning: 'flows with', energy: 'Harmony - natural talent and ease. Gifts that come easily.', plainExplanation: 'These two forces naturally support each other — things flow easily here. It\'s a green light.' },
+  square: { meaning: 'challenges', energy: 'Tension - friction that creates action. Growth through struggle.', plainExplanation: 'These two forces clash — creating friction you can feel. It\'s uncomfortable but pushes you to grow. Think of it as growing pains.' },
+  sextile: { meaning: 'supports', energy: 'Opportunity - potential that needs activation. Gentle gifts.', plainExplanation: 'These two forces gently cooperate — opportunities appear if you reach for them. It\'s a helpful nudge, not a push.' },
+};
+
+// Plain-language planet name lookup (no symbols)
+const PLANET_PLAIN_NAMES: Record<string, string> = {
+  sun: 'the Sun (your identity)', moon: 'the Moon (your emotions)', mercury: 'Mercury (your mind)',
+  venus: 'Venus (your love & values)', mars: 'Mars (your drive & action)',
+  jupiter: 'Jupiter (growth & opportunity)', saturn: 'Saturn (structure & responsibility)',
+  uranus: 'Uranus (change & awakening)', neptune: 'Neptune (intuition & spirituality)',
+  pluto: 'Pluto (deep transformation)', chiron: 'Chiron (your deepest wound)',
+  northnode: 'North Node (your life direction)', ascendant: 'your Rising Sign (how others see you)',
+  midheaven: 'your Midheaven (career & public life)',
+};
+
+const getPlainPlanetName = (planet: string): string => {
+  return PLANET_PLAIN_NAMES[planet.toLowerCase()] || planet;
+};
+
+// Generate a practical, jargon-free explanation of what a transit aspect means
+const generatePracticalMeaning = (transitPlanet: string, natalPlanet: string, aspectType: string, natalHouse?: number | null): string => {
+  const transit = PLANET_ESSENCES[transitPlanet.toLowerCase()];
+  const natal = PLANET_ESSENCES[natalPlanet.toLowerCase()];
+  const aspect = ASPECT_MEANINGS[aspectType];
+  if (!transit || !natal || !aspect) return '';
+
+  const houseContext = natalHouse ? ` This is playing out in your ${HOUSE_MEANINGS[natalHouse]?.short?.toLowerCase() || ''} area of life.` : '';
+
+  // Build specific practical explanations for common combinations
+  const key = `${transitPlanet.toLowerCase()}-${aspectType}-${natalPlanet.toLowerCase()}`;
+  const practicalDB: Record<string, string> = {
+    'uranus-opposition-neptune': 'The part of you that craves sudden change and freedom is pulling against the part of you that dreams, imagines, and connects to something greater. You may feel restless — like your inner visionary is being shaken awake. Old spiritual beliefs or fantasies you\'ve held since childhood are being disrupted. This is about waking up to a more authentic version of your intuition — letting go of illusions so your real spiritual gifts can emerge.',
+    'uranus-conjunction-neptune': 'Your intuition and imagination are being electrified. Sudden spiritual insights, vivid dreams, or creative breakthroughs may come out of nowhere. This can feel disorienting but ultimately liberating.',
+    'pluto-conjunction-sun': 'Who you are at your core is being completely transformed. You may feel like a different person is emerging. Old identities are dying so a more authentic you can be born.',
+    'pluto-opposition-sun': 'You\'re facing powerful forces (people, situations, or inner compulsions) that challenge who you think you are. Power struggles may arise. The point is to reclaim your authentic power.',
+    'pluto-square-moon': 'Your deepest emotions are being intensified and transformed. Old emotional patterns — possibly from childhood — are surfacing to be healed. This feels heavy but leads to emotional freedom.',
+    'saturn-opposition-moon': 'Your emotional needs feel restricted or tested. You might feel lonely, burdened, or like you can\'t get the nurturing you need. This is about learning emotional self-reliance and setting healthy boundaries.',
+    'saturn-conjunction-saturn': 'This is your Saturn Return — a major life milestone. The structures you\'ve built are being evaluated. What\'s solid stays; what\'s not falls away. You\'re growing up in a significant way.',
+    'jupiter-conjunction-sun': 'Confidence and opportunities are expanding. You feel optimistic and lucky. Doors open more easily. This is one of the best transits for growth and new beginnings.',
+    'neptune-square-venus': 'Your romantic ideals are being tested. You might feel confused about love, attracted to unavailable people, or seeing partnerships through rose-colored glasses. The gift is learning to love with both your heart AND your eyes open.',
+    'uranus-square-sun': 'You\'re feeling a strong urge to break free from anything that feels confining — a job, a relationship, an identity. Sudden changes may happen. The goal is to become more authentically yourself, not just rebel for rebellion\'s sake.',
+  };
+
+  if (practicalDB[key]) {
+    return practicalDB[key] + houseContext;
+  }
+
+  // Generate a meaningful generic explanation
+  return `Right now, the energy of ${getPlainPlanetName(transitPlanet)} is interacting with ${getPlainPlanetName(natalPlanet)} in your birth chart. ${aspect.plainExplanation} In practical terms: the themes of ${transit.essence.toLowerCase()} are actively ${aspectType === 'opposition' ? 'challenging and stretching' : aspectType === 'square' ? 'creating friction with' : aspectType === 'trine' ? 'supporting and enhancing' : aspectType === 'sextile' ? 'gently helping' : 'intensifying'} the part of you that relates to ${natal.essence.toLowerCase()}${houseContext}`;
 };
 
 const getDegreeMeaning = (degree: number, sign: string): { symbol: string; meaning: string } => {
@@ -1338,31 +1385,31 @@ const RETROGRADE_INFO: Record<string, { duration: string; frequency: string; pas
     duration: '5-6 months',
     frequency: 'once per year',
     passCount: 3,
-    description: 'Pluto retrogrades for about 5-6 months each year, typically from late April/early May to early October. During this time, it moves backward through 3-4 degrees, often crossing the same point in your chart 3 times over 1-2 years. This creates a deep, transformative process where themes surface (1st pass), intensify during introspection (2nd retrograde pass), and finally integrate (3rd direct pass).'
+    description: 'Pluto — the planet of deep transformation — appears to move backward for about 5-6 months every year. This is completely normal (all outer planets do this). Because it moves so slowly, it often crosses the same sensitive point in your chart 3 times over 1-2 years, giving you 3 chances to work through the transformation: first you notice the shift, then you process it deeply during the retrograde, and finally you integrate the change and move forward.'
   },
   neptune: {
     duration: '5+ months',
     frequency: 'once per year',
     passCount: 3,
-    description: 'Neptune retrogrades for about 5-6 months each year, moving backward 2-3 degrees. This creates 3 passes over natal points, allowing spiritual and creative themes to emerge, dissolve, and re-form with greater clarity.'
+    description: 'Neptune — the planet of intuition, dreams, and spirituality — reverses direction for about 5-6 months each year. Its 3 passes over a chart point allow spiritual and creative themes to gradually emerge, dissolve old illusions, and re-form with greater clarity. This is a gentle, slow unfolding — not a sudden event.'
   },
   uranus: {
     duration: '5 months',
     frequency: 'once per year',
     passCount: 3,
-    description: 'Uranus retrogrades for about 5 months annually, backing up 4 degrees. Three passes allow revolutionary changes to shock, reconsider, and finally breakthrough.'
+    description: 'Uranus — the planet of sudden change and awakening — retrogrades for about 5 months every year. Its 3 passes work like this: the first pass brings an unexpected shift or realization, the retrograde pass asks you to sit with the disruption and understand it more deeply, and the final pass helps you fully embrace the change and move forward in a more authentic way.'
   },
   saturn: {
     duration: '4.5 months',
     frequency: 'once per year',
     passCount: 3,
-    description: 'Saturn retrogrades for about 4.5 months each year. The 3 passes help solidify structures: first confrontation with limits, then internal restructuring, finally building lasting foundations.'
+    description: 'Saturn — the planet of responsibility and maturity — retrogrades for about 4.5 months each year. The 3 passes help you build something lasting: first you confront a challenge or limitation, then during the retrograde you restructure internally, and finally you build something more solid and enduring.'
   },
   jupiter: {
     duration: '4 months',
     frequency: 'once per year',
     passCount: 3,
-    description: 'Jupiter retrogrades for about 4 months annually. Three passes allow opportunities to appear, be reassessed, then fully embraced.'
+    description: 'Jupiter — the planet of growth and opportunity — retrogrades for about 4 months each year. The 3 passes allow an opportunity or growth experience to appear, then be reassessed to make sure it truly aligns with your path, and finally be fully embraced and expanded upon.'
   }
 };
 
@@ -1666,17 +1713,17 @@ const AllNatalAspects = ({ transitPlanet, transitDegree, transitSign, natalChart
               borderLeft: `4px solid ${asp.isExact ? '#F44336' : '#90A4AE'}`,
             }}>
               {/* Aspect Header */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <span style={{ fontSize: '20px' }}>
                     {getSymbol(transitPlanet)}{asp.aspectSymbol}{getSymbol(asp.natalPlanet)}
                   </span>
                   <div>
                     <div style={{ fontWeight: '600', color: '#424242', fontSize: '14px' }}>
-                      {asp.aspectType} to {PLANET_ESSENCES[asp.natalPlanet.toLowerCase()]?.name || asp.natalPlanet}
+                      {asp.aspectType.charAt(0).toUpperCase() + asp.aspectType.slice(1)} to {PLANET_ESSENCES[asp.natalPlanet.toLowerCase()]?.name || asp.natalPlanet}
                     </div>
                     <div style={{ fontSize: '12px', color: '#757575' }}>
-                      Your {getSymbol(asp.natalPlanet)} at {asp.natalDegree}° {asp.natalSign} • Orb: {asp.orb.toFixed(1)}°
+                      Your {PLANET_ESSENCES[asp.natalPlanet.toLowerCase()]?.name || asp.natalPlanet} at {asp.natalDegree}° {asp.natalSign} • Orb: {asp.orb.toFixed(1)}°
                     </div>
                   </div>
                 </div>
@@ -1692,6 +1739,23 @@ const AllNatalAspects = ({ transitPlanet, transitDegree, transitSign, natalChart
                     EXACT NOW
                   </span>
                 )}
+              </div>
+              
+              {/* Practical Meaning - Plain English */}
+              <div style={{
+                padding: '12px',
+                background: 'linear-gradient(135deg, rgba(255,248,225,0.8) 0%, rgba(255,243,224,0.8) 100%)',
+                borderRadius: '6px',
+                borderLeft: '3px solid #FF8F00',
+                marginBottom: '12px',
+                fontSize: '13px',
+                lineHeight: '1.7',
+                color: '#4E342E'
+              }}>
+                <strong style={{ color: '#E65100' }}>💡 What this actually means for you:</strong>
+                <p style={{ margin: '6px 0 0 0' }}>
+                  {generatePracticalMeaning(transitPlanet, asp.natalPlanet, asp.aspectType)}
+                </p>
               </div>
               
               {/* Multiple Passes Timeline */}
@@ -1715,38 +1779,32 @@ const AllNatalAspects = ({ transitPlanet, transitDegree, transitSign, natalChart
                   padding: '12px',
                   marginTop: '8px'
                 }}>
-                  {/* Explanation of what the dates mean */}
+                  {/* Explanation of what the dates mean - Plain English */}
                   <div style={{ 
-                    fontSize: '11px', 
+                    fontSize: '12px', 
                     color: '#5D4037', 
                     marginBottom: '12px',
-                    padding: '10px',
+                    padding: '12px',
                     background: 'rgba(255,243,224,0.8)',
                     borderRadius: '4px',
-                    lineHeight: '1.5'
+                    lineHeight: '1.6'
                   }}>
-                    <strong>What this means:</strong> {getSymbol(transitPlanet)} in <strong>{transitSignForAspect}</strong> makes a {asp.aspectType} to your {getSymbol(asp.natalPlanet)} at {asp.natalDegree}° {asp.natalSign}. Each date below is when {getSymbol(transitPlanet)} is at exactly <strong>{asp.natalDegree}° {transitSignForAspect}</strong> (which {asp.aspectType}s {asp.natalDegree}° {asp.natalSign}):
+                    <strong>🔄 Why you see 3 dates for this transit:</strong>
+                    <p style={{ margin: '8px 0 4px 0' }}>
+                      Unlike Mercury (which retrogrades 3-4 times a year for ~3 weeks), the outer planets like {transitPlanet} retrograde just <strong>once a year for about 5 months</strong>. This is completely normal — all planets appear to move backward from Earth's perspective at some point. It's not "bad," it's just part of the cycle.
+                    </p>
+                    <p style={{ margin: '4px 0 8px 0' }}>
+                      Because {transitPlanet} moves so slowly and reverses direction once a year, it crosses this sensitive point in your chart <strong>3 separate times</strong> — like a highlighter going over the same sentence 3 times:
+                    </p>
                     <ol style={{ margin: '8px 0 0 16px', padding: 0 }}>
-                      <li style={{ marginBottom: '4px' }}>
-                        <strong>1st pass</strong> (→ direct): {getSymbol(transitPlanet)} approaches {asp.natalDegree}° {transitSignForAspect}, crosses it, continues forward to ~{Math.min(29, asp.natalDegree + 3)}°-{Math.min(29, asp.natalDegree + 4)}° {transitSignForAspect}
+                      <li style={{ marginBottom: '6px' }}>
+                        <strong>1st pass — "The Introduction"</strong>: {transitPlanet} crosses this point for the first time moving forward. You start to notice the themes — something shifts, a new awareness begins.
                       </li>
-                      <li style={{ marginBottom: '4px' }}>
-                        <strong>Stations retrograde</strong>: {getSymbol(transitPlanet)} stops and turns backward
-                        {relevantStations.length > 0 && (
-                          <span style={{ color: '#7B1FA2', fontWeight: '500' }}> (see dates below)</span>
-                        )}
+                      <li style={{ marginBottom: '6px' }}>
+                        <strong>2nd pass — "The Deep Processing"</strong>: {transitPlanet} has reversed direction and crosses this point again moving backward. This is often the most intense — you're revisiting and processing what came up the first time. Think of it as going deeper.
                       </li>
-                      <li style={{ marginBottom: '4px' }}>
-                        <strong>2nd pass</strong> (℞ retrograde): Moving backward, crosses {asp.natalDegree}° {transitSignForAspect} again, continues back to ~{Math.max(0, asp.natalDegree - 3)}°-{Math.max(0, asp.natalDegree - 4)}° {transitSignForAspect}
-                      </li>
-                      <li style={{ marginBottom: '4px' }}>
-                        <strong>Stations direct</strong>: {getSymbol(transitPlanet)} stops and turns forward again
-                        {relevantStations.length > 0 && (
-                          <span style={{ color: '#1976D2', fontWeight: '500' }}> (see dates below)</span>
-                        )}
-                      </li>
-                      <li>
-                        <strong>3rd pass</strong> (→ direct): Moving forward, crosses {asp.natalDegree}° {transitSignForAspect} one final time, then moves on
+                      <li style={{ marginBottom: '6px' }}>
+                        <strong>3rd pass — "The Integration"</strong>: {transitPlanet} moves forward again and crosses this point one final time. Now you've learned the lesson. You integrate and move on with new understanding.
                       </li>
                     </ol>
                   </div>
@@ -1890,11 +1948,12 @@ const AllNatalAspects = ({ transitPlanet, transitDegree, transitSign, natalChart
         color: '#5D4037',
         lineHeight: '1.5'
       }}>
-        💡 <strong>Understanding the Passes:</strong> {isOuterPlanet ? (
+        💡 <strong>The Big Picture:</strong> {isOuterPlanet ? (
           <>
-            Because {transitPlanet} moves so slowly and retrogrades annually, it typically crosses each degree 3 times over 1-2 years. 
-            The <strong>1st pass</strong> (direct) introduces themes. The <strong>2nd pass</strong> (retrograde ℞) intensifies internal processing. 
-            The <strong>3rd pass</strong> (direct again) brings integration and resolution.
+            {transitPlanet} is a slow-moving planet — it takes years to travel through each sign. Because it reverses direction once a year (just like all outer planets do), 
+            it touches the same point in your chart 3 times. Think of it like life giving you 3 chances to learn the same lesson: 
+            first you <strong>notice it</strong>, then you <strong>sit with it deeply</strong>, and finally you <strong>integrate and move forward</strong>. 
+            This whole process typically unfolds over 1-2 years.
           </>
         ) : (
           <>Watch for themes connecting these life areas as {transitPlanet} aspects multiple natal points.</>
