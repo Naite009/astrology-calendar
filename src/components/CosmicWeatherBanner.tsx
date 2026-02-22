@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
-import { Loader2 } from 'lucide-react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { Loader2, Volume2, Square, Loader } from 'lucide-react';
 import { 
   getPlanetSymbol, 
   getStelliumMeaning,
@@ -70,6 +70,90 @@ export const CosmicWeatherBanner = ({
   const [aiInsights, setAiInsights] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const hasFetched = useRef(false);
+  const [audioState, setAudioState] = useState<'idle' | 'loading' | 'playing'>('idle');
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioUrlRef = useRef<string | null>(null);
+
+  const stopAudio = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current);
+      audioUrlRef.current = null;
+    }
+    setAudioState('idle');
+  }, []);
+
+  const playInsights = useCallback(async () => {
+    if (!aiInsights) return;
+
+    if (audioState === 'playing') {
+      stopAudio();
+      return;
+    }
+
+    setAudioState('loading');
+
+    try {
+      // Strip markdown/HTML for cleaner speech
+      const cleanText = aiInsights
+        .replace(/##\s*/g, '')
+        .replace(/\*\*(.*?)\*\*/g, '$1')
+        .replace(/- /g, '')
+        .replace(/\n+/g, ' ')
+        .trim();
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ text: cleanText }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`TTS request failed: ${response.status}`);
+      }
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      audioUrlRef.current = audioUrl;
+
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+
+      audio.onended = () => {
+        stopAudio();
+      };
+
+      audio.onerror = () => {
+        stopAudio();
+        toast.error('Audio playback failed');
+      };
+
+      await audio.play();
+      setAudioState('playing');
+    } catch (err) {
+      console.error('TTS error:', err);
+      toast.error('Could not generate audio');
+      setAudioState('idle');
+    }
+  }, [aiInsights, audioState, stopAudio]);
+
+  // Cleanup audio on unmount or date change
+  useEffect(() => {
+    return () => {
+      stopAudio();
+    };
+  }, [date, stopAudio]);
 
   // Compute 7-day major aspects (today + 6 days)
   const weekAspects = useMemo(() => {
@@ -272,9 +356,36 @@ export const CosmicWeatherBanner = ({
 
       {/* AI Insights Section */}
       <div className="mb-5 p-4 rounded-lg bg-white/10 backdrop-blur">
-        <h3 className="text-lg font-semibold mb-3 text-yellow-300">
-          ✨ AI Astrologer Synthesis
-        </h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-lg font-semibold text-yellow-300">
+            ✨ AI Astrologer Synthesis
+          </h3>
+          {aiInsights && (
+            <button
+              onClick={playInsights}
+              disabled={audioState === 'loading'}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 hover:bg-white/30 transition-colors text-sm font-medium disabled:opacity-50"
+              title={audioState === 'playing' ? 'Stop reading' : 'Listen to report'}
+            >
+              {audioState === 'loading' ? (
+                <>
+                  <Loader className="h-4 w-4 animate-spin" />
+                  Loading…
+                </>
+              ) : audioState === 'playing' ? (
+                <>
+                  <Square className="h-3.5 w-3.5 fill-current" />
+                  Stop
+                </>
+              ) : (
+                <>
+                  <Volume2 className="h-4 w-4" />
+                  Listen
+                </>
+              )}
+            </button>
+          )}
+        </div>
         
         {loading && (
           <div className="flex items-center justify-center gap-2 py-6">
