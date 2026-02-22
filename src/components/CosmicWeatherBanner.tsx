@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { Loader2, Volume2, Square, Loader } from 'lucide-react';
+import { Loader2, Volume2, Square } from 'lucide-react';
 import { 
   getPlanetSymbol, 
   getStelliumMeaning,
@@ -70,24 +70,16 @@ export const CosmicWeatherBanner = ({
   const [aiInsights, setAiInsights] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const hasFetched = useRef(false);
-  const [audioState, setAudioState] = useState<'idle' | 'loading' | 'playing'>('idle');
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const audioUrlRef = useRef<string | null>(null);
+  const [audioState, setAudioState] = useState<'idle' | 'playing'>('idle');
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   const stopAudio = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      audioRef.current = null;
-    }
-    if (audioUrlRef.current) {
-      URL.revokeObjectURL(audioUrlRef.current);
-      audioUrlRef.current = null;
-    }
+    speechSynthesis.cancel();
+    utteranceRef.current = null;
     setAudioState('idle');
   }, []);
 
-  const playInsights = useCallback(async () => {
+  const playInsights = useCallback(() => {
     if (!aiInsights) return;
 
     if (audioState === 'playing') {
@@ -95,60 +87,23 @@ export const CosmicWeatherBanner = ({
       return;
     }
 
-    setAudioState('loading');
+    const cleanText = aiInsights
+      .replace(/##\s*/g, '')
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/- /g, '')
+      .replace(/\n+/g, ' ')
+      .replace(/[☉☽☿♀♂♃♄♅♆♇♈♉♊♋♌♍♎♏♐♑♒♓☊☋△□⚹☌]/g, '')
+      .trim();
 
-    try {
-      // Strip markdown/HTML for cleaner speech
-      const cleanText = aiInsights
-        .replace(/##\s*/g, '')
-        .replace(/\*\*(.*?)\*\*/g, '$1')
-        .replace(/- /g, '')
-        .replace(/\n+/g, ' ')
-        .trim();
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    utterance.onend = () => setAudioState('idle');
+    utterance.onerror = () => setAudioState('idle');
+    utteranceRef.current = utterance;
 
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ text: cleanText }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`TTS request failed: ${response.status}`);
-      }
-
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      audioUrlRef.current = audioUrl;
-
-      const audio = new Audio(audioUrl);
-      audioRef.current = audio;
-
-      audio.onended = () => {
-        stopAudio();
-      };
-
-      audio.onerror = () => {
-        stopAudio();
-        toast.error('Audio playback failed');
-      };
-
-      await audio.play();
-      setAudioState('playing');
-    } catch (err) {
-      console.error('TTS error:', err);
-      toast.error('Could not generate audio');
-      setAudioState('idle');
-    }
+    speechSynthesis.speak(utterance);
+    setAudioState('playing');
   }, [aiInsights, audioState, stopAudio]);
 
   // Cleanup audio on unmount or date change
@@ -366,16 +321,10 @@ export const CosmicWeatherBanner = ({
           {aiInsights && (
             <button
               onClick={playInsights}
-              disabled={audioState === 'loading'}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 hover:bg-white/30 transition-colors text-sm font-medium disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 hover:bg-white/30 transition-colors text-sm font-medium"
               title={audioState === 'playing' ? 'Stop reading' : 'Listen to report'}
             >
-              {audioState === 'loading' ? (
-                <>
-                  <Loader className="h-4 w-4 animate-spin" />
-                  Loading…
-                </>
-              ) : audioState === 'playing' ? (
+              {audioState === 'playing' ? (
                 <>
                   <Square className="h-3.5 w-3.5 fill-current" />
                   Stop

@@ -268,76 +268,66 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
   const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
   const [voiceStyle, setVoiceStyle] = useState<'tara' | 'chris' | 'anne' | 'kathy' | 'krs' | 'malika' | 'sarah' | 'astrodienst' | 'cafe' | 'astrotwins' | 'chani'>('tara');
   const contentRef = useRef<HTMLDivElement>(null);
-  const [ttsState, setTtsState] = useState<'idle' | 'loading' | 'playing'>('idle');
-  const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
-  const ttsUrlRef = useRef<string | null>(null);
-  const [ttsVoice, setTtsVoice] = useState<string>(() => localStorage.getItem('cosmic-tts-voice') || 'EXAVITQu4vr4xnSDxMaL');
+  const [ttsState, setTtsState] = useState<'idle' | 'playing' | 'paused'>('idle');
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const [ttsVoiceName, setTtsVoiceName] = useState<string>(() => localStorage.getItem('cosmic-tts-voice-name') || '');
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+
+  // Load browser voices
+  useEffect(() => {
+    const loadVoices = () => {
+      const voices = speechSynthesis.getVoices().filter(v => v.lang.startsWith('en'));
+      if (voices.length > 0) setAvailableVoices(voices);
+    };
+    loadVoices();
+    speechSynthesis.onvoiceschanged = loadVoices;
+    return () => { speechSynthesis.onvoiceschanged = null; };
+  }, []);
 
   const stopTtsAudio = useCallback(() => {
-    if (ttsAudioRef.current) {
-      ttsAudioRef.current.pause();
-      ttsAudioRef.current.currentTime = 0;
-      ttsAudioRef.current = null;
-    }
-    if (ttsUrlRef.current) {
-      URL.revokeObjectURL(ttsUrlRef.current);
-      ttsUrlRef.current = null;
-    }
+    speechSynthesis.cancel();
+    utteranceRef.current = null;
     setTtsState('idle');
   }, []);
 
-  const playTtsInsights = useCallback(async () => {
+  const playTtsInsights = useCallback(() => {
     const textToRead = selectedWeekDay === 0 ? cosmicData?.insight : weekDayInsights[selectedWeekDay];
     if (!textToRead) return;
+
     if (ttsState === 'playing') { stopTtsAudio(); return; }
+    if (ttsState === 'paused') { speechSynthesis.resume(); setTtsState('playing'); return; }
 
-    setTtsState('loading');
-    try {
-      const cleanText = textToRead
-        .replace(/\*\*RECIPE_START\*\*[\s\S]*?\*\*RECIPE_END\*\*/, '')
-        .replace(/##\s*/g, '')
-        .replace(/\*\*(.*?)\*\*/g, '$1')
-        .replace(/- /g, '')
-        .replace(/\[.*?\]\(.*?\)/g, '')
-        .replace(/\n+/g, ' ')
-        .trim();
+    const cleanText = textToRead
+      .replace(/\*\*RECIPE_START\*\*[\s\S]*?\*\*RECIPE_END\*\*/, '')
+      .replace(/##\s*/g, '')
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/- /g, '')
+      .replace(/\[.*?\]\(.*?\)/g, '')
+      .replace(/\n+/g, ' ')
+      .replace(/[☉☽☿♀♂♃♄♅♆♇♈♉♊♋♌♍♎♏♐♑♒♓☊☋△□⚹☌]/g, '')
+      .trim();
 
-      // Get the user's session token for auth
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ text: cleanText, voiceId: ttsVoice }),
-        }
-      );
-
-      if (!response.ok) throw new Error(`TTS failed: ${response.status}`);
-
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      ttsUrlRef.current = audioUrl;
-
-      const audio = new Audio(audioUrl);
-      ttsAudioRef.current = audio;
-      audio.onended = () => stopTtsAudio();
-      audio.onerror = () => { stopTtsAudio(); toast({ title: "Audio playback failed", variant: "destructive" }); };
-
-      await audio.play();
-      setTtsState('playing');
-    } catch (err) {
-      console.error('TTS error:', err);
-      toast({ title: "Could not generate audio", variant: "destructive" });
-      setTtsState('idle');
+    // Apply selected voice
+    if (ttsVoiceName && availableVoices.length > 0) {
+      const match = availableVoices.find(v => v.name === ttsVoiceName);
+      if (match) utterance.voice = match;
+    } else if (availableVoices.length > 0) {
+      // Default: pick a nice voice
+      const preferred = availableVoices.find(v => v.name.includes('Samantha') || v.name.includes('Google') || v.name.includes('Female'));
+      if (preferred) utterance.voice = preferred;
     }
-  }, [ttsVoice, ttsState, stopTtsAudio, cosmicData, weekDayInsights, selectedWeekDay]);
+
+    utterance.onend = () => setTtsState('idle');
+    utterance.onerror = () => setTtsState('idle');
+    utteranceRef.current = utterance;
+
+    speechSynthesis.speak(utterance);
+    setTtsState('playing');
+  }, [ttsState, stopTtsAudio, cosmicData, weekDayInsights, selectedWeekDay, ttsVoiceName, availableVoices]);
 
   // Cleanup TTS on unmount
   useEffect(() => { return () => { stopTtsAudio(); }; }, [stopTtsAudio]);
@@ -1595,41 +1585,46 @@ Keep the tone professional, insightful, and practically applicable.`
                           variant="outline"
                           size="sm"
                           onClick={playTtsInsights}
-                          disabled={ttsState === 'loading'}
                           className="flex items-center gap-2"
                         >
-                          {ttsState === 'loading' ? (
-                            <><Loader className="h-4 w-4 animate-spin" /> Generating…</>
-                          ) : ttsState === 'playing' ? (
+                          {ttsState === 'playing' ? (
                             <><Square className="h-3.5 w-3.5 fill-current" /> Stop</>
+                          ) : ttsState === 'paused' ? (
+                            <><Volume2 className="h-4 w-4" /> Resume</>
                           ) : (
                             <><Volume2 className="h-4 w-4" /> Listen</>
                           )}
                         </Button>
-                        <Select
-                          value={ttsVoice}
-                          onValueChange={(v) => {
-                            setTtsVoice(v);
-                            localStorage.setItem('cosmic-tts-voice', v);
-                            stopTtsAudio();
-                          }}
-                        >
-                          <SelectTrigger className="w-[180px] bg-background h-9">
-                            <SelectValue placeholder="Voice" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-background border-border z-[100]">
-                            <SelectItem value="EXAVITQu4vr4xnSDxMaL">Sarah</SelectItem>
-                            <SelectItem value="FGY2WhTYpPnrIDTdsKH5">Laura</SelectItem>
-                            <SelectItem value="XrExE9yKIg1WjnnlVkGX">Matilda</SelectItem>
-                            <SelectItem value="pFZP5JQG7iQjIQuC4Bku">Lily</SelectItem>
-                            <SelectItem value="Xb7hH8MSUJpSbSDYk0k2">Alice</SelectItem>
-                            <SelectItem value="JBFqnCBsd6RMkjVDRZzb">George</SelectItem>
-                            <SelectItem value="onwK4e9ZLuTAKqWW03F9">Daniel</SelectItem>
-                            <SelectItem value="TX3LPaxmHKxFdv7VOQHJ">Liam</SelectItem>
-                            <SelectItem value="CwhRBWXzGAHq8TQ4Fs17">Roger</SelectItem>
-                            <SelectItem value="nPczCjzI2devNBz1zQrb">Brian</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        {ttsState === 'playing' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => { speechSynthesis.pause(); setTtsState('paused'); }}
+                          >
+                            Pause
+                          </Button>
+                        )}
+                        {availableVoices.length > 0 && (
+                          <Select
+                            value={ttsVoiceName || availableVoices[0]?.name || ''}
+                            onValueChange={(v) => {
+                              setTtsVoiceName(v);
+                              localStorage.setItem('cosmic-tts-voice-name', v);
+                              stopTtsAudio();
+                            }}
+                          >
+                            <SelectTrigger className="w-[200px] bg-background h-9">
+                              <SelectValue placeholder="Choose voice" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-background border-border z-[100] max-h-[300px]">
+                              {availableVoices.map(v => (
+                                <SelectItem key={v.name} value={v.name}>
+                                  {v.name.replace(/Google\s*/i, '')}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
                       </div>
                       <div className="prose prose-lg dark:prose-invert max-w-none">
                         <ReactMarkdown
