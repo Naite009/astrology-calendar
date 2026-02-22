@@ -1,8 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Loader2 } from 'lucide-react';
 import { 
   getPlanetSymbol, 
   getStelliumMeaning,
+  getPlanetaryPositions,
+  calculateDailyAspects,
   Stellium,
   RareAspect,
   NodeAspect,
@@ -68,6 +70,52 @@ export const CosmicWeatherBanner = ({
   const [aiInsights, setAiInsights] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const hasFetched = useRef(false);
+
+  // Compute 7-day major aspects (today + 6 days)
+  const weekAspects = useMemo(() => {
+    const result: { label: string; summary: string }[] = [];
+    const today = new Date(date);
+
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+
+      const label = i === 0
+        ? 'Today'
+        : i === 1
+        ? 'Tomorrow'
+        : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+      const planets = getPlanetaryPositions(d);
+      const dayAspects = calculateDailyAspects(planets);
+
+      // Pick the "major" aspect: prioritise conjunctions/oppositions/squares of slow planets
+      const ranked = [...dayAspects].sort((a, b) => {
+        const weight = (asp: Aspect) => {
+          let w = 0;
+          const orbNum = parseFloat(asp.orb) || 5;
+          w += (5 - Math.min(orbNum, 5)) * 2;
+          // Hard aspects are more noteworthy
+          if (asp.type === 'Conjunction') w += 6;
+          if (asp.type === 'Opposition') w += 5;
+          if (asp.type === 'Square') w += 4;
+          if (asp.type === 'Trine') w += 3;
+          // Applying aspects are more important
+          if (asp.applying) w += 2;
+          return w;
+        };
+        return weight(b) - weight(a);
+      });
+
+      const top = ranked[0];
+      const summary = top
+        ? `${getPlanetSymbol(top.planet1.toLowerCase())} ${top.planet1} ${top.symbol} ${getPlanetSymbol(top.planet2.toLowerCase())} ${top.planet2} (${top.type}, ${top.orb}° orb)`
+        : 'No major aspects';
+
+      result.push({ label, summary });
+    }
+    return result;
+  }, [date]);
 
   // Create a stable cache key based on the date
   const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -309,6 +357,21 @@ export const CosmicWeatherBanner = ({
           ))}
         </div>
       )}
+
+      {/* Coming Up – 7-Day Major Aspects */}
+      <div className="mt-5 p-4 rounded-lg bg-white/10 backdrop-blur">
+        <h3 className="text-lg font-semibold mb-3 text-yellow-300">
+          📅 Coming Up
+        </h3>
+        <ul className="space-y-2 text-sm">
+          {weekAspects.map((day, i) => (
+            <li key={i} className="flex items-start gap-2">
+              <span className="font-semibold min-w-[80px] shrink-0">{day.label}:</span>
+              <span className="opacity-90">{day.summary}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 };
