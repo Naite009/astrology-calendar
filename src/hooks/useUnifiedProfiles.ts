@@ -36,6 +36,7 @@ export function useUnifiedProfiles(
 ): UnifiedProfile[] {
   return useMemo(() => {
     // Collect all natal charts (user chart + saved), deduplicated by id AND name
+    // Filter out HD charts that may have been restored into savedCharts from cloud
     const seenIds = new Set<string>();
     const seenNames = new Set<string>();
     const allNatal: NatalChart[] = [];
@@ -46,8 +47,22 @@ export function useUnifiedProfiles(
     }
     for (const c of savedCharts) {
       if (seenIds.has(c.id)) continue;
+      // Skip HD charts that leaked into savedCharts (they have no planet data)
+      if (c.id.startsWith('hd_')) continue;
       const norm = normalizeName(c.name);
-      if (seenNames.has(norm)) continue; // same person already added
+      // If name already seen, prefer the chart WITH planet data
+      if (seenNames.has(norm)) {
+        // Check if the existing entry lacks planets but this one has them
+        const existing = allNatal.find(n => normalizeName(n.name) === norm);
+        if (existing && (!existing.planets || Object.keys(existing.planets).length < 3) && 
+            c.planets && Object.keys(c.planets).length >= 3) {
+          // Replace the existing (planet-less) entry with this one
+          const idx = allNatal.indexOf(existing);
+          allNatal[idx] = c;
+          seenIds.add(c.id);
+        }
+        continue;
+      }
       allNatal.push(c);
       seenIds.add(c.id);
       seenNames.add(norm);
