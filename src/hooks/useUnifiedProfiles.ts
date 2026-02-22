@@ -35,10 +35,23 @@ export function useUnifiedProfiles(
   mainUserName?: string,
 ): UnifiedProfile[] {
   return useMemo(() => {
-    // Collect all natal charts (user chart + saved)
+    // Collect all natal charts (user chart + saved), deduplicated by id AND name
+    const seenIds = new Set<string>();
+    const seenNames = new Set<string>();
     const allNatal: NatalChart[] = [];
-    if (userNatalChart) allNatal.push(userNatalChart);
-    allNatal.push(...savedCharts);
+    if (userNatalChart) {
+      allNatal.push(userNatalChart);
+      seenIds.add(userNatalChart.id);
+      seenNames.add(normalizeName(userNatalChart.name));
+    }
+    for (const c of savedCharts) {
+      if (seenIds.has(c.id)) continue;
+      const norm = normalizeName(c.name);
+      if (seenNames.has(norm)) continue; // same person already added
+      allNatal.push(c);
+      seenIds.add(c.id);
+      seenNames.add(norm);
+    }
 
     // Track which HD charts have been claimed
     const claimedHdIds = new Set<string>();
