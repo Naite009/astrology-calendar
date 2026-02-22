@@ -78,21 +78,44 @@ const PhaseCard = ({ phase, currentDate }: { phase: SaturnCyclePhase; currentDat
         )}
       </div>
       
-      {/* Age and timing */}
-      <div className="flex items-center gap-4 mb-3">
-        <div className="text-2xl font-serif">
-          Age {firstEvent?.age || '?'}
+      {/* Age, exact dates, and timing */}
+      <div className="mb-3">
+        <div className="flex items-center gap-4 mb-2">
+          <div className="text-2xl font-serif">
+            Age {firstEvent?.age || '?'}
+          </div>
+          {timeDiff && (
+            <div className={`text-xs px-2 py-1 rounded ${timeDiff.isPast ? 'bg-muted' : 'bg-primary/20'}`}>
+              {timeDiff.isPast ? `${timeDiff.value} ${timeDiff.unit} ago` : `in ${timeDiff.value} ${timeDiff.unit}`}
+            </div>
+          )}
         </div>
-        {firstEvent && (
-          <div className="text-sm text-muted-foreground">
-            {format(new Date(firstEvent.date), 'MMM yyyy')}
-          </div>
-        )}
-        {timeDiff && (
-          <div className={`text-xs px-2 py-1 rounded ${timeDiff.isPast ? 'bg-muted' : 'bg-primary/20'}`}>
-            {timeDiff.isPast ? `${timeDiff.value} ${timeDiff.unit} ago` : `in ${timeDiff.value} ${timeDiff.unit}`}
-          </div>
-        )}
+        {/* Show ALL exact dates for each pass */}
+        <div className="space-y-1">
+          {phase.events.map((event, idx) => (
+            <div key={idx} className="flex items-center gap-2 text-sm">
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                event.type === 'retrograde_pass' 
+                  ? 'bg-purple-500/20 text-purple-600' 
+                  : 'bg-blue-500/20 text-blue-600'
+              }`}>
+                {idx + 1}{idx === 0 ? 'st' : idx === 1 ? 'nd' : 'rd'} pass
+                {event.type === 'retrograde_pass' ? ' ℞' : ' →'}
+              </span>
+              <span className="font-medium">
+                {format(new Date(event.date), 'MMMM d, yyyy')}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                (age {event.age})
+              </span>
+            </div>
+          ))}
+          {phase.events.length === 0 && firstEvent && (
+            <div className="text-sm text-muted-foreground">
+              {format(new Date(firstEvent.date), 'MMMM d, yyyy')}
+            </div>
+          )}
+        </div>
       </div>
       
       {/* Description */}
