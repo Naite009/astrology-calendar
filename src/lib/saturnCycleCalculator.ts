@@ -391,7 +391,7 @@ export const calculateDetailedSaturnCycles = (
         const returnAge = 29.46;
         if (returnAge > 100) continue;
         
-        const events = findSaturnTransits(targetDegree, birthDate, natalDegree, returnAge - 2, returnAge + 2);
+        const events = findSaturnTransits(targetDegree, birthDate, natalDegree, returnAge - 3, returnAge + 3);
         const finalEvents = events.length > 0 ? events : [{
           date: new Date(birthDate.getTime() + returnAge * 365.25 * 24 * 60 * 60 * 1000),
           age: Math.floor(returnAge),
@@ -421,7 +421,8 @@ export const calculateDetailedSaturnCycles = (
       
       if (approximateAge > 100 || approximateAge <= 0) continue;
       
-      const events = findSaturnTransits(targetDegree, birthDate, natalDegree, approximateAge - 2, approximateAge + 2);
+      const searchWindow = aspect.addDegrees === 0 ? 3 : 2; // Wider window for Returns to catch all 3 passes
+      const events = findSaturnTransits(targetDegree, birthDate, natalDegree, approximateAge - searchWindow, approximateAge + searchWindow);
       const finalEvents = events.length > 0 ? events : [{
         date: new Date(birthDate.getTime() + approximateAge * 365.25 * 24 * 60 * 60 * 1000),
         age: Math.floor(approximateAge),

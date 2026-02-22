@@ -969,6 +969,7 @@ const LifeCycleTimelinePersonalized = ({ chart }: { chart: NatalChart }) => {
         bg: 'bg-amber-500/10',
         isPast: now > saturnReturn1End,
         isCurrent: now >= saturnReturn1Start && now <= saturnReturn1End,
+        exactEvents: sr1?.events || [],
       },
       {
         symbol: '♅', label: 'Uranus Opposition',
@@ -978,6 +979,7 @@ const LifeCycleTimelinePersonalized = ({ chart }: { chart: NatalChart }) => {
         bg: 'bg-cyan-500/10',
         isPast: now > uranusOppEnd,
         isCurrent: now >= uranusOppStart && now <= uranusOppEnd,
+        exactEvents: [],
       },
       {
         symbol: '♆', label: 'Neptune Square',
@@ -987,6 +989,7 @@ const LifeCycleTimelinePersonalized = ({ chart }: { chart: NatalChart }) => {
         bg: 'bg-violet-500/10',
         isPast: now > neptuneSqEnd,
         isCurrent: now >= neptuneSqStart && now <= neptuneSqEnd,
+        exactEvents: [],
       },
       {
         symbol: '♇', label: 'Pluto Square',
@@ -996,6 +999,7 @@ const LifeCycleTimelinePersonalized = ({ chart }: { chart: NatalChart }) => {
         bg: 'bg-rose-500/10',
         isPast: now > plutoSqEnd,
         isCurrent: now >= plutoSqStart && now <= plutoSqEnd,
+        exactEvents: [],
       },
       {
         symbol: '⚷', label: 'Chiron Return',
@@ -1005,6 +1009,7 @@ const LifeCycleTimelinePersonalized = ({ chart }: { chart: NatalChart }) => {
         bg: 'bg-emerald-500/10',
         isPast: now > chironReturnEnd,
         isCurrent: now >= chironReturnStart && now <= chironReturnEnd,
+        exactEvents: [],
       },
       {
         symbol: '♄', label: 'Saturn Return #2',
@@ -1014,6 +1019,7 @@ const LifeCycleTimelinePersonalized = ({ chart }: { chart: NatalChart }) => {
         bg: 'bg-amber-500/10',
         isPast: now > saturnReturn2End,
         isCurrent: now >= saturnReturn2Start && now <= saturnReturn2End,
+        exactEvents: sr2?.events || [],
       },
     ];
   }, [birthDate, saturnCycles]);
@@ -1025,20 +1031,39 @@ const LifeCycleTimelinePersonalized = ({ chart }: { chart: NatalChart }) => {
   return (
     <div className="space-y-2 text-xs">
       {cycles.map((cycle, i) => (
-        <div key={i} className={`flex items-center gap-2 p-2 rounded ${cycle.bg} ${cycle.isCurrent ? 'ring-2 ring-primary' : ''}`}>
-          <span className="text-lg shrink-0">{cycle.symbol}</span>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5">
-              <span className="font-medium">{cycle.label}:</span>
-              {cycle.isPast && <Badge variant="outline" className="text-[9px] px-1 py-0">Complete</Badge>}
-              {cycle.isCurrent && <Badge className="text-[9px] px-1 py-0 bg-primary text-primary-foreground">NOW</Badge>}
+        <div key={i} className={`p-2 rounded ${cycle.bg} ${cycle.isCurrent ? 'ring-2 ring-primary' : ''}`}>
+          <div className="flex items-center gap-2">
+            <span className="text-lg shrink-0">{cycle.symbol}</span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="font-medium">{cycle.label}:</span>
+                {cycle.isPast && <Badge variant="outline" className="text-[9px] px-1 py-0">Complete</Badge>}
+                {cycle.isCurrent && <Badge className="text-[9px] px-1 py-0 bg-primary text-primary-foreground">NOW</Badge>}
+              </div>
+              <span className="text-muted-foreground">{cycle.description}</span>
             </div>
-            <span className="text-muted-foreground">{cycle.description}</span>
+            <div className="text-right shrink-0">
+              <p className="font-semibold text-[11px]">{format(cycle.start, 'MMM d, yyyy')} – {format(cycle.end, 'MMM d, yyyy')}</p>
+              <p className="text-[10px] text-muted-foreground">{cycle.age}</p>
+            </div>
           </div>
-          <div className="text-right shrink-0">
-            <p className="font-semibold text-[11px]">{format(cycle.start, 'MMM d, yyyy')} – {format(cycle.end, 'MMM d, yyyy')}</p>
-            <p className="text-[10px] text-muted-foreground">{cycle.age}</p>
-          </div>
+          {/* Show exact pass dates for Saturn Returns */}
+          {cycle.exactEvents.length > 1 && (
+            <div className="mt-1.5 ml-8 space-y-0.5">
+              {cycle.exactEvents.map((event: any, idx: number) => (
+                <div key={idx} className="flex items-center gap-2 text-[10px]">
+                  <span className={`font-bold px-1 py-0 rounded ${
+                    event.type === 'retrograde_pass' 
+                      ? 'bg-purple-500/20 text-purple-600' 
+                      : 'bg-blue-500/20 text-blue-600'
+                  }`}>
+                    {idx + 1}{idx === 0 ? 'st' : idx === 1 ? 'nd' : 'rd'} pass
+                  </span>
+                  <span className="font-medium">{format(new Date(event.date), 'MMMM d, yyyy')}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       ))}
     </div>
