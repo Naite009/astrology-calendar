@@ -582,9 +582,9 @@ FORMAT:
 ## The Day at a Glance
 [2-3 sentences capturing the essential quality of the day. CRITICAL: If the Moon changes signs today, lead with that transition. If a planet is about to change signs (imminent sign change), emphasize that - it's unusual and noteworthy. If Mercury is in a retrograde shadow phase, mention it. Focus on what makes TODAY's sky UNIQUE - don't just describe generic sign energy. What is the weather doing? What's the dominant planetary story?]
 
-## ⚡ What's Unusual Right Now
-[ONLY include this section if there ARE unusual events: imminent planet sign changes, Mercury retrograde shadow, rare aspects, etc. If nothing unusual, skip this section entirely.
-For each unusual event, explain:
+## ⚡ What's Noteworthy Right Now
+[ONLY include this section if there ARE noteworthy events: imminent planet sign changes, Mercury retrograde shadow, rare aspects, etc. If nothing noteworthy, skip this section entirely.
+For each noteworthy event, explain:
 - WHAT is happening (specific astronomical event)
 - WHY it matters (how often does this happen? what does it mean?)
 - HOW it will FEEL (practical, tangible impact on daily life)]
