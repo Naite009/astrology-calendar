@@ -1,5 +1,5 @@
 import { useState, lazy, Suspense } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers, Combine, Diamond, FileText, CalendarClock, Utensils } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, Sparkles, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers, Combine, Diamond, FileText, CalendarClock, Utensils, Sun } from "lucide-react";
 import { TodaysCosmicEnergy, CosmicEnergyButton } from "./TodaysCosmicEnergy";
 import { useState as useCosmicState } from "react";
 import { ChartDecoderView } from "./ChartDecoderView";
@@ -41,10 +41,11 @@ import { GroundedNarrativeView } from "./GroundedNarrativeView";
 import { TransitCalendarView } from "./TransitCalendarView";
 import { WeeklyMealPlanCard } from "./WeeklyMealPlanCard";
 import { HexagramView } from "./HexagramView";
+import { SolarReturnView } from "./SolarReturnView";
 
 
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram";
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -184,6 +185,9 @@ export const AstroCalendar = () => {
     }
     if (viewMode === "hexagram") {
       return "I Ching Hexagram";
+    }
+    if (viewMode === "solar-return") {
+      return "Solar Return";
     }
     if (viewMode === "moon-phases") {
       return `${currentDate.getFullYear()} Moon Phases`;
@@ -611,6 +615,30 @@ export const AstroCalendar = () => {
               >
                 ☰ Hexagram
               </button>
+              <button
+                onClick={() => {
+                  if (userNatalChart || savedCharts.length > 0) {
+                    setViewMode("solar-return");
+                  } else {
+                    setViewMode("charts");
+                  }
+                }}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "solar-return"
+                    ? "bg-primary text-primary-foreground"
+                    : userNatalChart || savedCharts.length > 0
+                      ? "text-muted-foreground hover:text-foreground"
+                      : "text-muted-foreground/60 hover:text-muted-foreground"
+                }`}
+                title={
+                  userNatalChart || savedCharts.length > 0
+                    ? "Solar Return"
+                    : "Add a chart to use Solar Return"
+                }
+              >
+                <Sun size={14} />
+                Solar Return
+              </button>
             </div>
 
             {userData && (
@@ -883,6 +911,13 @@ export const AstroCalendar = () => {
 
         {viewMode === "hexagram" && (
           <HexagramView />
+        )}
+
+        {viewMode === "solar-return" && (
+          <SolarReturnView
+            userNatalChart={userNatalChart}
+            savedCharts={savedCharts}
+          />
         )}
       </div>
 
