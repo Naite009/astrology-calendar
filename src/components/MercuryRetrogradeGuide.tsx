@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { ChevronLeft, ChevronRight, Search, ChevronDown, Check } from "lucide-react";
 import type { NatalChart } from "@/hooks/useNatalChart";
 import { normalizeName } from "@/lib/nameMatching";
 
@@ -402,6 +402,109 @@ function RxDetail({ rx, risingSign, chartName }: { rx: RxData; risingSign: strin
   );
 }
 
+function ChartDropdown({
+  charts,
+  selectedChartId,
+  onSelect,
+  primaryUserName,
+  search,
+  onSearchChange,
+  filteredCharts,
+}: {
+  charts: NatalChart[];
+  selectedChartId: string;
+  onSelect: (id: string) => void;
+  primaryUserName?: string;
+  search: string;
+  onSearchChange: (s: string) => void;
+  filteredCharts: NatalChart[];
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+        onSearchChange('');
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [onSearchChange]);
+
+  useEffect(() => {
+    if (isOpen && inputRef.current) inputRef.current.focus();
+  }, [isOpen]);
+
+  const selectedChart = charts.find(c => c.id === selectedChartId);
+  const isPrimarySelected = primaryUserName && selectedChart && normalizeName(selectedChart.name) === normalizeName(primaryUserName);
+  const displayLabel = selectedChart ? `${isPrimarySelected ? '★ ' : ''}${selectedChart.name}` : '— Select a Chart —';
+
+  return (
+    <div className="w-72 relative" ref={containerRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between bg-violet-900/50 border border-violet-500/50 text-white rounded-xl px-4 py-2.5 text-sm cursor-pointer focus:outline-none focus:border-violet-300/70 transition-colors"
+      >
+        <span className="truncate">{displayLabel}</span>
+        <ChevronDown size={14} className={`ml-2 text-violet-300 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-50 mt-1 w-full bg-slate-900 border border-violet-500/50 rounded-xl shadow-xl overflow-hidden">
+          <div className="p-2 border-b border-violet-700/40">
+            <div className="relative">
+              <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-violet-400" />
+              <input
+                ref={inputRef}
+                type="text"
+                value={search}
+                onChange={(e) => onSearchChange(e.target.value)}
+                placeholder="Type to filter…"
+                className="w-full bg-violet-900/40 border border-violet-600/40 text-white rounded-lg pl-8 pr-3 py-1.5 text-sm placeholder:text-violet-400/60 focus:outline-none focus:border-violet-300/60"
+              />
+            </div>
+          </div>
+          <div className="max-h-[250px] overflow-y-auto py-1">
+            <button
+              type="button"
+              onClick={() => { onSelect('none'); setIsOpen(false); onSearchChange(''); }}
+              className={`flex items-center w-full px-4 py-2 text-sm text-left transition-colors ${selectedChartId === 'none' ? 'bg-violet-700/40 text-white' : 'text-violet-200 hover:bg-violet-800/40'}`}
+            >
+              <span className="flex-1">— Select a Chart —</span>
+              {selectedChartId === 'none' && <Check size={14} className="text-violet-300 ml-2" />}
+            </button>
+            {filteredCharts.length === 0 ? (
+              <div className="px-4 py-2 text-sm text-violet-400">No charts found</div>
+            ) : (
+              filteredCharts.map(c => {
+                const isPrimary = primaryUserName && normalizeName(c.name) === normalizeName(primaryUserName);
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => { onSelect(c.id); setIsOpen(false); onSearchChange(''); }}
+                    className={`flex items-center w-full px-4 py-2 text-sm text-left transition-colors ${selectedChartId === c.id ? 'bg-violet-700/40 text-white' : 'text-violet-200 hover:bg-violet-800/40'}`}
+                  >
+                    <span className="flex-1 truncate">
+                      {isPrimary && <span className="text-amber-300 mr-1">★</span>}
+                      {c.name}
+                    </span>
+                    {selectedChartId === c.id && <Check size={14} className="text-violet-300 ml-2" />}
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
 
 export function MercuryRetrogradeGuide({ allCharts, primaryUserName }: MercuryRetrogradeGuideProps) {
@@ -487,33 +590,15 @@ export function MercuryRetrogradeGuide({ allCharts, primaryUserName }: MercuryRe
 
           {/* Chart selector — deduplicated, starred, searchable */}
           <div className="mt-5 flex justify-center">
-            <div className="w-72 space-y-2">
-              <div className="relative">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-violet-400 pointer-events-none" />
-                <input
-                  type="text"
-                  placeholder="Search charts…"
-                  value={chartSearch}
-                  onChange={(e) => setChartSearch(e.target.value)}
-                  className="w-full bg-violet-900/50 border border-violet-500/50 text-white rounded-xl pl-9 pr-4 py-2 text-sm placeholder:text-violet-400/60 focus:outline-none focus:border-violet-300/70 transition-colors"
-                />
-              </div>
-              <select
-                value={selectedChartId}
-                onChange={(e) => setSelectedChartId(e.target.value)}
-                className="w-full appearance-none bg-violet-900/50 border border-violet-500/50 text-white rounded-xl px-4 py-2.5 pr-10 text-sm cursor-pointer focus:outline-none focus:border-violet-300/70 transition-colors"
-              >
-                <option value="none" className="bg-slate-900">— Select a Chart —</option>
-                {filteredCharts.map((c) => {
-                  const isPrimary = primaryUserName && normalizeName(c.name) === normalizeName(primaryUserName);
-                  return (
-                    <option key={c.id} value={c.id} className="bg-slate-900">
-                      {isPrimary ? "★ " : ""}{c.name}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
+            <ChartDropdown
+              charts={dedupedCharts}
+              selectedChartId={selectedChartId}
+              onSelect={setSelectedChartId}
+              primaryUserName={primaryUserName}
+              search={chartSearch}
+              onSearchChange={setChartSearch}
+              filteredCharts={filteredCharts}
+            />
           </div>
           {selectedChart && (
             <p className="text-xs text-violet-200 mt-2">
