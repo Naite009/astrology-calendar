@@ -14,6 +14,7 @@ import { getSecondaryCycles, getRomanceReadiness, SecondaryCycle, RomanceReadine
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { NatalChart } from '@/hooks/useNatalChart';
+import { ChartSelector } from './ChartSelector';
 import { format } from 'date-fns';
 
 interface BiorhythmCardProps {
@@ -593,19 +594,14 @@ export const BiorhythmCard = ({
           
           <div className="flex items-center gap-2">
             {/* Chart Selector - Always visible if there are charts */}
-            {savedCharts.length > 0 && onChartChange && (
-              <Select value={selectedChartId || ''} onValueChange={onChartChange}>
-                <SelectTrigger className="h-8 text-xs w-[140px]">
-                  <SelectValue placeholder="Select person" />
-                </SelectTrigger>
-                <SelectContent className="bg-popover border border-border z-50">
-                  {savedCharts.map(chart => (
-                    <SelectItem key={chart.id} value={chart.id} className="text-xs">
-                      {chart.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            {savedCharts && savedCharts.length > 0 && onChartChange && (
+              <ChartSelector
+                userNatalChart={savedCharts[0] || null}
+                savedCharts={savedCharts.slice(1)}
+                selectedChartId={selectedChartId === savedCharts[0]?.id ? 'user' : (selectedChartId || '')}
+                onSelect={(id) => onChartChange(id === 'user' ? (savedCharts[0]?.id || '') : id)}
+                className="w-[160px]"
+              />
             )}
             
             {/* Mode toggle - Personal / Solo Romance / Compatibility */}
@@ -681,18 +677,12 @@ export const BiorhythmCard = ({
           <>
             {/* Comparison chart selector */}
             <div className="mb-4">
-              <Select value={compareChartId} onValueChange={setCompareChartId}>
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue placeholder="Compare with..." />
-                </SelectTrigger>
-                <SelectContent className="bg-popover border border-border z-50">
-                  {comparisonOptions.map(chart => (
-                    <SelectItem key={chart.id} value={chart.id} className="text-xs">
-                      {chart.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <ChartSelector
+                userNatalChart={null}
+                savedCharts={comparisonOptions}
+                selectedChartId={compareChartId}
+                onSelect={setCompareChartId}
+              />
             </div>
             
             {compatibility && compareChart ? (

@@ -272,18 +272,13 @@ const handleFileInputChange = useCallback(async (e: React.ChangeEvent<HTMLInputE
     
     return (
       <div className="flex items-center gap-3 mb-6">
-        <label className="text-sm font-medium text-muted-foreground">Select Chart:</label>
-        <select
-          value={selectedChartId}
-          onChange={(e) => setSelectedChartId(e.target.value)}
-          className="flex-1 max-w-xs border border-border bg-background px-3 py-2 text-sm rounded-md focus:border-primary focus:outline-none"
-        >
-          {allSortedCharts.map((chart, idx) => (
-            <option key={chart.id} value={chart.id}>
-              {idx === 0 && userChart ? '★ ' : ''}{chart.name} {chart.chartImageBase64 ? '✓' : '(no wheel)'}
-            </option>
-          ))}
-        </select>
+        <ChartSelectorDropdown
+          userNatalChart={userChart}
+          savedCharts={allSortedCharts.filter(c => c.id !== userChart?.id)}
+          selectedChartId={selectedChartId === userChart?.id ? 'user' : selectedChartId}
+          onSelect={(id) => setSelectedChartId(id === 'user' ? (userChart?.id || '') : id)}
+          label="Select Chart"
+        />
       </div>
     );
   };
