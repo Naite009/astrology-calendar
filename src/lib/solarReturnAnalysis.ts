@@ -14,6 +14,14 @@ const toAbsDeg = (pos: NatalPlanetPosition | HouseCusp | undefined): number | nu
   return idx * 30 + (pos.degree || 0) + ((pos as any).minutes || 0) / 60;
 };
 
+// Traditional rulerships (Step 2 requirement)
+const traditionalRuler: Record<string, string> = {
+  Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon',
+  Leo: 'Sun', Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Mars',
+  Sagittarius: 'Jupiter', Capricorn: 'Saturn', Aquarius: 'Saturn', Pisces: 'Jupiter',
+};
+
+// Modern rulerships (kept for SR ascendant ruler display)
 const signRuler: Record<string, string> = {
   Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon',
   Leo: 'Sun', Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Pluto',
@@ -35,7 +43,7 @@ const houseThemes: Record<number, string> = {
   12: 'Spirituality, hidden matters, solitude, endings',
 };
 
-// ─── Generic house finder ───────────────────────────────────────────
+// ─── House placement (Step 1 — fixed logic) ─────────────────────────
 const findHouseInCusps = (planetDeg: number, cusps: number[]): number | null => {
   if (cusps.length !== 12) return null;
   for (let i = 0; i < 12; i++) {
@@ -44,6 +52,7 @@ const findHouseInCusps = (planetDeg: number, cusps: number[]): number | null => 
     if (end > start) {
       if (planetDeg >= start && planetDeg < end) return i + 1;
     } else {
+      // wrap-around (e.g. house 12 crossing 0°)
       if (planetDeg >= start || planetDeg < end) return i + 1;
     }
   }
@@ -71,6 +80,65 @@ const findNatalHouse = (planetDeg: number, natal: NatalChart): number | null => 
 const findSRHouse = (planetDeg: number, srChart: SolarReturnChart): number | null => {
   const cusps = extractCusps(srChart);
   return cusps ? findHouseInCusps(planetDeg, cusps) : null;
+};
+
+// ─── Dignity calculation (Step 2) ───────────────────────────────────
+const domicileSigns: Record<string, string[]> = {
+  Sun: ['Leo'], Moon: ['Cancer'], Mercury: ['Gemini','Virgo'], Venus: ['Taurus','Libra'],
+  Mars: ['Aries','Scorpio'], Jupiter: ['Sagittarius','Pisces'], Saturn: ['Capricorn','Aquarius'],
+  Uranus: ['Aquarius'], Neptune: ['Pisces'], Pluto: ['Scorpio'],
+};
+const exaltationSigns: Record<string, string> = {
+  Sun: 'Aries', Moon: 'Taurus', Mercury: 'Virgo', Venus: 'Pisces',
+  Mars: 'Capricorn', Jupiter: 'Cancer', Saturn: 'Libra',
+};
+const detrimentSigns: Record<string, string[]> = {
+  Sun: ['Aquarius'], Moon: ['Capricorn'], Mercury: ['Sagittarius','Pisces'], Venus: ['Aries','Scorpio'],
+  Mars: ['Taurus','Libra'], Jupiter: ['Gemini','Virgo'], Saturn: ['Cancer','Leo'],
+};
+const fallSigns: Record<string, string> = {
+  Sun: 'Libra', Moon: 'Scorpio', Mercury: 'Pisces', Venus: 'Virgo',
+  Mars: 'Cancer', Jupiter: 'Capricorn', Saturn: 'Aries',
+};
+
+const getDignity = (planet: string, sign: string): string => {
+  if (domicileSigns[planet]?.includes(sign)) return 'Domicile';
+  if (exaltationSigns[planet] === sign) return 'Exaltation';
+  if (detrimentSigns[planet]?.includes(sign)) return 'Detriment';
+  if (fallSigns[planet] === sign) return 'Fall';
+  return 'Peregrine';
+};
+
+// ─── Lord of Year house interpretations (Step 2) ────────────────────
+const lordHouseInterps: Record<number, string> = {
+  1: "Your core self and natal ruler are in the same place this year — identity, physical presence, and personal reinvention are the central story. How you show up and how others see you is under renovation. You are the project.",
+  2: "Your natal ruler is focused on money, self-worth, and material security this year. Income, values, and what you own or build are where your fundamental life force is directed. This is a year to stabilize and increase resources.",
+  3: "Your natal ruler is in the house of communication, learning, writing, and local movement. Your mind and your voice are your primary tools this year. Siblings, neighbors, and short travel may play a significant role.",
+  4: "Your natal ruler has gone inward — home, family, roots, and the private self are the year's foundation. Real estate, a parent, or your living situation may be central. This is a year of building from the inside out.",
+  5: "Your natal ruler is in the house of creativity, romance, pleasure, and children. Joy, self-expression, and love affairs become central to how you experience yourself this year. Create, play, and take risks on your heart.",
+  6: "Your natal ruler is focused on work, health, routines, and service. The daily grind becomes meaningful this year — how you show up for work, your physical body, and how you help others defines the year's arc.",
+  7: "Your natal ruler has moved into the house of partnership, contracts, and significant others. Relationships — romantic, business, or legal — are where your energy lives this year. Others reflect you back to yourself.",
+  8: "Your natal ruler is in the house of transformation, shared resources, and the hidden. This is a year of depth, not surface. Finances tied to others, intimacy, psychological excavation, and major change are in play.",
+  9: "Your natal ruler is in the house of expansion, philosophy, higher education, travel, and belief. Your worldview is expanding this year. A long journey — physical or intellectual — is likely the defining experience.",
+  10: "Your natal ruler has risen to the most public point in the chart. Career, reputation, authority, and legacy are the year's primary arena. You are visible and your professional identity is actively being shaped.",
+  11: "Your natal ruler is in the house of community, future visions, and collective purpose. Friendships, groups, networks, and your hopes for the future define this year. What you want to build for tomorrow matters most.",
+  12: "Your natal ruler has withdrawn into the hidden house. This is a year of retreat, spiritual deepening, and processing what is behind the scenes. Rest is not laziness — it is the work. What you release this year matters as much as what you pursue.",
+};
+
+// ─── Profection house summaries ─────────────────────────────────────
+const profectionHouseSummary: Record<number, string> = {
+  1: 'This is a year centered on self, identity, and new beginnings.',
+  2: 'This is a year centered on finances, values, and self-worth.',
+  3: 'This is a year centered on communication, learning, and local connections.',
+  4: 'This is a year centered on home, family, and emotional roots.',
+  5: 'This is a year centered on creativity, romance, and self-expression.',
+  6: 'This is a year centered on health, daily work, and routines.',
+  7: 'This is a year centered on partnerships, relationships, and contracts.',
+  8: 'This is a year centered on transformation, shared resources, and depth.',
+  9: 'This is a year centered on travel, higher learning, and expanding your worldview.',
+  10: 'This is a year centered on career, public reputation, and ambition.',
+  11: 'This is a year centered on community, friendships, and future visions.',
+  12: 'This is a year centered on rest, spirituality, and inner processing.',
 };
 
 // ─── Aspect detection ───────────────────────────────────────────────
@@ -139,6 +207,27 @@ export interface SolarReturnAnalysis {
   srInternalAspects: SRKeyAspect[];
   angularPlanets: string[];
   relocationTip: string;
+  lordOfTheYear: {
+    planet: string;
+    natalRisingSign: string;
+    srHouse: number | null;
+    srSign: string;
+    srDegree: string;
+    isRetrograde: boolean;
+    dignity: string;
+    interpretation: string;
+  } | null;
+  profectionYear: {
+    age: number;
+    houseNumber: number;
+    timeLord: string;
+    timeLordSRHouse: number | null;
+    timeLordSRSign: string;
+    overlap: boolean;
+    interpretation: string;
+  } | null;
+  // Helper: map planet name → SR house for display
+  planetSRHouses: Record<string, number | null>;
 }
 
 const aspectMeaning = (p1: string, p2: string, type: string): string => {
@@ -158,6 +247,15 @@ export const analyzeSolarReturn = (
   natalChart: NatalChart
 ): SolarReturnAnalysis => {
 
+  // Build planet → SR house map for reuse
+  const planetSRHouses: Record<string, number | null> = {};
+  for (const planet of [...ALL_PLANETS, 'Ascendant', 'NorthNode'] as const) {
+    const pos = srChart.planets[planet as keyof typeof srChart.planets];
+    if (!pos) { planetSRHouses[planet] = null; continue; }
+    const deg = toAbsDeg(pos);
+    planetSRHouses[planet] = deg !== null ? findSRHouse(deg, srChart) : null;
+  }
+
   // 1. Yearly Theme from SR Ascendant
   let yearlyTheme: SRYearlyTheme | null = null;
   const srAsc = srChart.houseCusps?.house1 || srChart.planets.Ascendant;
@@ -165,12 +263,7 @@ export const analyzeSolarReturn = (
     const ruler = signRuler[srAsc.sign] || 'Unknown';
     const rulerPos = srChart.planets[ruler as keyof typeof srChart.planets];
     const rulerSign = rulerPos?.sign || 'Unknown';
-    
-    let rulerHouse: number | null = null;
-    if (rulerPos) {
-      const deg = toAbsDeg(rulerPos);
-      if (deg !== null) rulerHouse = findSRHouse(deg, srChart);
-    }
+    const rulerHouse = planetSRHouses[ruler] ?? null;
 
     const themeDesc = `Your year is colored by ${srAsc.sign} Rising — ruled by ${ruler} in ${rulerSign}${rulerHouse ? ` (SR ${rulerHouse}th house)` : ''}. This sets the tone for how you approach the entire year.`;
     yearlyTheme = {
@@ -306,6 +399,93 @@ export const analyzeSolarReturn = (
   // 8. Relocation tip
   const relocationTip = `The Solar Return Ascendant changes based on WHERE you are at your exact solar return moment. By traveling to a different location on your birthday, you can shift which sign rises — and therefore which house your SR planets fall in. This is called "Solar Return relocation." Key strategy: Choose a location where benefic planets (Venus, Jupiter) fall on the SR Ascendant or MC for a more supportive year.`;
 
+  // 9. Lord of the Year (Step 2)
+  let lordOfTheYear: SolarReturnAnalysis['lordOfTheYear'] = null;
+  const natalAsc = natalChart.planets.Ascendant;
+  if (natalAsc) {
+    const natalRisingSign = natalAsc.sign;
+    const lordPlanet = traditionalRuler[natalRisingSign];
+    if (lordPlanet) {
+      const lordPos = srChart.planets[lordPlanet as keyof typeof srChart.planets];
+      if (lordPos) {
+        const lordDeg = toAbsDeg(lordPos);
+        const lordSRHouse = lordDeg !== null ? findSRHouse(lordDeg, srChart) : null;
+        const dignity = getDignity(lordPlanet, lordPos.sign);
+        const interp = lordSRHouse ? (lordHouseInterps[lordSRHouse] || '') : '';
+        lordOfTheYear = {
+          planet: lordPlanet,
+          natalRisingSign,
+          srHouse: lordSRHouse,
+          srSign: lordPos.sign,
+          srDegree: `${lordPos.degree}°${(lordPos as any).minutes || 0}'`,
+          isRetrograde: !!(lordPos as any).isRetrograde,
+          dignity,
+          interpretation: interp,
+        };
+      }
+    }
+  }
+
+  // 10. Annual Profection (Step 3)
+  let profectionYear: SolarReturnAnalysis['profectionYear'] = null;
+  if (natalChart.birthDate && srChart.solarReturnYear) {
+    const birthYear = parseInt(natalChart.birthDate.slice(0, 4), 10);
+    if (!isNaN(birthYear)) {
+      const age = srChart.solarReturnYear - birthYear;
+      const houseNumber = (age % 12) + 1; // age 0 → house 1, age 12 → house 1, etc.
+      
+      // Find the sign on the natal house cusp for this profection house
+      const natalCuspKey = `house${houseNumber}`;
+      const natalCusp = natalChart.houseCusps?.[natalCuspKey as keyof typeof natalChart.houseCusps];
+      let timeLord = '';
+      let timeLordSRHouse: number | null = null;
+      let timeLordSRSign = '';
+      
+      if (natalCusp) {
+        const cuspSign = (natalCusp as any).sign;
+        if (cuspSign) {
+          timeLord = traditionalRuler[cuspSign] || '';
+        }
+      }
+      // Fallback: if no house cusps, use whole sign from ascendant
+      if (!timeLord && natalAsc) {
+        const ascIdx = SIGNS.indexOf(natalAsc.sign);
+        if (ascIdx >= 0) {
+          const profectionSignIdx = (ascIdx + houseNumber - 1) % 12;
+          timeLord = traditionalRuler[SIGNS[profectionSignIdx]] || '';
+        }
+      }
+
+      if (timeLord) {
+        const tlPos = srChart.planets[timeLord as keyof typeof srChart.planets];
+        if (tlPos) {
+          timeLordSRSign = tlPos.sign;
+          const tlDeg = toAbsDeg(tlPos);
+          timeLordSRHouse = tlDeg !== null ? findSRHouse(tlDeg, srChart) : null;
+        }
+
+        // Check overlap with SR asc ruler or natal asc ruler (lord of the year)
+        const srAscRuler = yearlyTheme?.ascendantRuler || '';
+        const natalAscRuler = lordOfTheYear?.planet || '';
+        const overlap = timeLord === srAscRuler || timeLord === natalAscRuler;
+
+        const overlapText = overlap ? ' This planet is also emphasized as your SR or natal chart ruler — its themes are confirmed as central to this year.' : '';
+        const houseSummary = profectionHouseSummary[houseNumber] || '';
+        const interpretation = `You are in a ${houseNumber}${houseNumber === 1 ? 'st' : houseNumber === 2 ? 'nd' : houseNumber === 3 ? 'rd' : 'th'} house profection year, making ${timeLord} your Time Lord for the year. ${timeLord} is currently in the SR ${timeLordSRHouse ? `${timeLordSRHouse}${timeLordSRHouse === 1 ? 'st' : timeLordSRHouse === 2 ? 'nd' : timeLordSRHouse === 3 ? 'rd' : 'th'}` : '—'} house in ${timeLordSRSign || '—'}.${overlapText} ${houseSummary}`;
+
+        profectionYear = {
+          age,
+          houseNumber,
+          timeLord,
+          timeLordSRHouse,
+          timeLordSRSign,
+          overlap,
+          interpretation,
+        };
+      }
+    }
+  }
+
   return {
     yearlyTheme,
     sunHouse,
@@ -318,5 +498,8 @@ export const analyzeSolarReturn = (
     srInternalAspects,
     angularPlanets,
     relocationTip,
+    lordOfTheYear,
+    profectionYear,
+    planetSRHouses,
   };
 };

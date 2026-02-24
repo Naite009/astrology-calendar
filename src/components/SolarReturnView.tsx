@@ -700,6 +700,50 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         </div>
       )}
 
+      {/* Lord of the Year */}
+      {analysis.lordOfTheYear && (
+        <div className="border border-primary/20 rounded-sm p-5 bg-card">
+          <h3 className="text-sm uppercase tracking-widest font-medium text-foreground mb-3">
+            Lord of the Year — {PLANET_SYMBOLS[analysis.lordOfTheYear.planet] || ''} {analysis.lordOfTheYear.planet} in SR {analysis.lordOfTheYear.srHouse ? `${analysis.lordOfTheYear.srHouse}th House` : '—'}
+          </h3>
+          <div className="flex items-center gap-3 mb-3 flex-wrap">
+            <span className="text-2xl">{PLANET_SYMBOLS[analysis.lordOfTheYear.planet] || analysis.lordOfTheYear.planet}</span>
+            <span className="text-sm text-foreground">
+              {SIGN_SYMBOLS[analysis.lordOfTheYear.srSign]} {analysis.lordOfTheYear.srSign} {analysis.lordOfTheYear.srDegree}
+            </span>
+            {analysis.lordOfTheYear.isRetrograde && <span className="text-[10px] text-destructive font-medium">Rx</span>}
+            <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-sm ${
+              analysis.lordOfTheYear.dignity === 'Domicile' || analysis.lordOfTheYear.dignity === 'Exaltation'
+                ? 'bg-green-500/10 text-green-600'
+                : analysis.lordOfTheYear.dignity === 'Detriment' || analysis.lordOfTheYear.dignity === 'Fall'
+                  ? 'bg-red-400/10 text-red-400'
+                  : 'bg-muted text-muted-foreground'
+            }`}>
+              {analysis.lordOfTheYear.dignity}
+            </span>
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed">{analysis.lordOfTheYear.interpretation}</p>
+          <p className="text-[10px] text-muted-foreground mt-2">
+            This is your natal {analysis.lordOfTheYear.natalRisingSign} ruler — its SR placement shows where your core self is operating this year.
+          </p>
+        </div>
+      )}
+
+      {/* Annual Profection */}
+      {analysis.profectionYear && (
+        <div className="border border-primary/20 rounded-sm p-5 bg-card">
+          <h3 className="text-sm uppercase tracking-widest font-medium text-foreground mb-3">
+            Profection Year — House {analysis.profectionYear.houseNumber} / Time Lord: {PLANET_SYMBOLS[analysis.profectionYear.timeLord] || ''} {analysis.profectionYear.timeLord}
+          </h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">{analysis.profectionYear.interpretation}</p>
+          {analysis.profectionYear.overlap && (
+            <div className="mt-3 px-3 py-2 bg-primary/10 border border-primary/20 rounded-sm">
+              <p className="text-xs text-primary font-medium">⚡ Confirmed theme — this planet appears in multiple timing systems. High certainty.</p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Sun & Moon */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="border border-border rounded-sm p-4 bg-card">
@@ -751,18 +795,20 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         </div>
       )}
 
-      {/* SR planet positions summary */}
+      {/* SR planet positions summary — with house numbers (Step 5) */}
       <div className="border border-border rounded-sm p-4 bg-card">
         <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">SR Chart Positions</h4>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
           {ALL_DISPLAY_PLANETS.map(planet => {
             const pos = srChart.planets[planet as keyof typeof srChart.planets];
             if (!pos) return null;
+            const srH = analysis.planetSRHouses?.[planet];
             return (
               <div key={planet} className="flex items-center gap-2 text-sm">
                 <span className="text-muted-foreground w-6 text-center">{PLANET_SYMBOLS[planet] || planet.slice(0, 2)}</span>
                 <span className="text-foreground">{SIGN_SYMBOLS[pos.sign]} {pos.degree}°{pos.minutes}'</span>
                 {pos.isRetrograde && <span className="text-[10px] text-destructive">Rx</span>}
+                {srH != null && <span className="text-[10px] text-muted-foreground">· H{srH}</span>}
               </div>
             );
           })}
