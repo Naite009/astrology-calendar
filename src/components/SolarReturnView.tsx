@@ -13,7 +13,7 @@ const ZODIAC_SIGNS = [
   'Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'
 ];
 
-const CORE_PLANETS = ['Sun','Moon','Ascendant','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'] as const;
+const CORE_PLANETS = ['Sun','Moon','Ascendant','NorthNode','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'] as const;
 const GODDESS_PLANETS = ['Chiron','Juno','Ceres','Pallas','Vesta','Lilith','Eris'] as const;
 const ALL_INPUT_PLANETS = [...CORE_PLANETS, ...GODDESS_PLANETS] as const;
 
@@ -322,13 +322,13 @@ const SRInputForm = ({ natalChart, existingSR, onSave, onCancel }: SRInputFormPr
       let housesImported = 0;
 
       // Extract SR-specific info
-      // The "progressionDate" or the SR chart date tells us the year
-      // The "birthLocation" on an SR chart is actually the SR cast location
       const birthInfo = parsedData.birthInfo;
       if (birthInfo) {
         // For SR charts, the location shown IS the SR location
-        if (birthInfo.birthLocation && typeof birthInfo.birthLocation === 'string') {
-          setLocation(birthInfo.birthLocation);
+        // Check multiple possible location fields from the parser
+        const srLoc = birthInfo.birthLocation || birthInfo.location || birthInfo.city;
+        if (srLoc && typeof srLoc === 'string' && srLoc.trim().length > 0) {
+          setLocation(srLoc.trim());
         }
         // Try progressionDate first (SR chart date), fallback to birthDate year
         const srDateStr = birthInfo.progressionDate || birthInfo.birthDate;
@@ -336,6 +336,12 @@ const SRInputForm = ({ natalChart, existingSR, onSave, onCancel }: SRInputFormPr
           const parsedYear = parseInt(srDateStr.slice(0, 4), 10);
           if (parsedYear > 1900 && parsedYear < 2100) setYear(parsedYear);
         }
+      }
+
+      // Also check top-level location fields from parser output
+      const topLevelLoc = parsedData.solarReturnLocation || parsedData.location;
+      if (topLevelLoc && typeof topLevelLoc === 'string' && topLevelLoc.trim().length > 0) {
+        setLocation(topLevelLoc.trim());
       }
 
       // Import planets
