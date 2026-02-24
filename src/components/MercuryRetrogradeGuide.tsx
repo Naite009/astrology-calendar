@@ -100,7 +100,7 @@ const RETROGRADES_BY_YEAR: Record<number, { element: string; summary: string; re
         cazimi: "March 7, 2026 at 16°52' Pisces", current: true,
         sign_quality: "Mutable Water — Jupiter-ruled (traditionally), Neptune-ruled (modern)",
         detriment_fall: true,
-        detriment_fall_note: "Mercury is in detriment in Pisces — opposite Virgo, Mercury's home sign. The sharp, analytical mind is submerged in boundless, feeling-first Pisces. Logic becomes poetry. Intuition replaces analysis. Note: Mercury's fall is actually in Leo, not Pisces. But detriment alone is significant here.",
+        detriment_fall_note: "Mercury is in detriment in Pisces — opposite Virgo, Mercury's home sign. The sharp, analytical mind is submerged in boundless, feeling-first Pisces. Logic becomes poetry. Intuition replaces analysis.",
         jupiter_aspect: "Jupiter is in Cancer during the Pisces retrograde, forming a trine (water to water) — amplifying emotional wisdom, spiritual insight, and intuitive downloads.",
         saturn_note: "Saturn moved through Pisces from March 2023 to February 2026 — restructuring whatever house Pisces rules in your chart. This retrograde is the FIRST Mercury cycle since Saturn's departure. The reconstruction is over. Mercury is now reviewing what was rebuilt.",
         color: "#7c6fa0", gradient: "from-violet-900/40 to-indigo-900/40",
