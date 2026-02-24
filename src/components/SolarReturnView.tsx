@@ -678,21 +678,27 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
           <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">☉ Sun's Focus This Year</h4>
           {analysis.sunHouse.house ? (
             <>
-              <p className="text-lg font-serif text-foreground">{analysis.sunHouse.house}th House</p>
+              <p className="text-lg font-serif text-foreground">SR {analysis.sunHouse.house}th House</p>
               <p className="text-xs text-muted-foreground">{analysis.sunHouse.theme}</p>
+              {analysis.sunNatalHouse.house && (
+                <p className="text-[10px] text-muted-foreground mt-1">Natal overlay: {analysis.sunNatalHouse.house}th House</p>
+              )}
               <p className="text-sm text-muted-foreground mt-2">
                 Your vitality and core identity are directed toward {analysis.sunHouse.theme.toLowerCase()} themes this year.
               </p>
             </>
           ) : (
-            <p className="text-xs text-muted-foreground">Add house cusps to the natal chart to see house overlay.</p>
+            <p className="text-xs text-muted-foreground">Add house cusps to the SR chart to see house placement.</p>
           )}
         </div>
         <div className="border border-border rounded-sm p-4 bg-card">
           <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">☽ Emotional Climate</h4>
           <p className="text-lg font-serif text-foreground">{SIGN_SYMBOLS[analysis.moonSign]} Moon in {analysis.moonSign}</p>
           {analysis.moonHouse.house && (
-            <p className="text-xs text-muted-foreground">{analysis.moonHouse.house}th House — {analysis.moonHouse.theme}</p>
+            <p className="text-xs text-muted-foreground">SR {analysis.moonHouse.house}th House — {analysis.moonHouse.theme}</p>
+          )}
+          {analysis.moonNatalHouse.house && (
+            <p className="text-[10px] text-muted-foreground">Natal overlay: {analysis.moonNatalHouse.house}th House</p>
           )}
           <p className="text-sm text-muted-foreground mt-2">
             Your emotional needs and instinctive responses this year are filtered through {analysis.moonSign} energy.
@@ -755,29 +761,34 @@ const HouseOverlayTab = ({ analysis }: { analysis: SolarReturnAnalysis }) => {
     <div className="space-y-4 mt-4">
       <div className="text-xs text-muted-foreground bg-secondary/50 p-3 rounded-sm">
         <Info size={14} className="inline mr-1" />
-        This shows where your Solar Return planets fall in your <strong>natal</strong> houses — revealing which life areas are activated this year.
+        This shows where your Solar Return planets fall in the <strong>SR houses</strong> and their <strong>natal house</strong> overlay.
       </div>
 
       {analysis.houseOverlays.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Add house cusps to the natal chart to see house overlays.</p>
+        <p className="text-sm text-muted-foreground">Add house cusps to see house overlays.</p>
       ) : (
         <div className="space-y-2">
           {analysis.houseOverlays.map((overlay, i) => (
             <div key={i} className="border border-border rounded-sm p-3 bg-card flex items-start gap-3">
               <span className="text-lg w-8 text-center">{PLANET_SYMBOLS[overlay.planet] || overlay.planet.slice(0, 2)}</span>
               <div className="flex-1">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-sm font-medium text-foreground">{overlay.planet}</span>
                   <span className="text-xs text-muted-foreground">
                     {SIGN_SYMBOLS[overlay.srSign]} {overlay.srSign} {overlay.srDegree}
                   </span>
                   <ArrowRight size={12} className="text-muted-foreground" />
                   <span className="text-sm text-primary font-medium">
-                    Natal {overlay.natalHouse ? `${overlay.natalHouse}th House` : '—'}
+                    SR {overlay.srHouse ? `${overlay.srHouse}th House` : '—'}
                   </span>
+                  {overlay.natalHouse && (
+                    <span className="text-[10px] text-muted-foreground">
+                      (Natal {overlay.natalHouse}th)
+                    </span>
+                  )}
                 </div>
-                {overlay.houseTheme && (
-                  <p className="text-xs text-muted-foreground mt-1">{overlay.houseTheme}</p>
+                {overlay.srHouseTheme && (
+                  <p className="text-xs text-muted-foreground mt-1">{overlay.srHouseTheme}</p>
                 )}
               </div>
             </div>
