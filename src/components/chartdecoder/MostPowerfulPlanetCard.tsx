@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Crown, TrendingUp, TrendingDown, Flame, Target, Sparkles, AlertTriangle, Home } from 'lucide-react';
+import { Crown, TrendingUp, TrendingDown, Flame, Target, Sparkles, AlertTriangle, Home, Mountain, Info } from 'lucide-react';
 import { PlanetaryCondition } from '@/lib/planetaryCondition';
 
 interface MostPowerfulPlanetCardProps {
@@ -146,6 +146,20 @@ const GROWTH_EDGE_GUIDANCE: Record<string, { work: string; reframe: string }> = 
   }
 };
 
+// House proximity to MC (house 10 = closest, then 9, 11, etc.)
+const MC_PROXIMITY: Record<number, number> = {
+  10: 10, 9: 8, 11: 7, 8: 5, 12: 4, 7: 3, 1: 3, 6: 2, 2: 2, 5: 1, 3: 1, 4: 0
+};
+
+function getMostElevated(conditions: PlanetaryCondition[]): PlanetaryCondition | null {
+  if (conditions.length === 0) return null;
+  return conditions.reduce((best, c) => {
+    const bestProx = MC_PROXIMITY[best.house || 0] ?? 0;
+    const cProx = MC_PROXIMITY[c.house || 0] ?? 0;
+    return cProx > bestProx ? c : best;
+  }, conditions[0]);
+}
+
 // Helper to get houses ruled by a planet
 function getHousesRuled(
   planetName: string,
@@ -172,6 +186,11 @@ export const MostPowerfulPlanetCard: React.FC<MostPowerfulPlanetCardProps> = ({ 
   
   // Growth edge = lowest score (last in sorted array)
   const growthEdge = conditions[conditions.length - 1];
+
+  // Most elevated = closest to MC (house 10)
+  const elevated = getMostElevated(conditions);
+  const elevatedRank = elevated ? conditions.findIndex(c => c.planet === elevated.planet) + 1 : null;
+  const elevatedIsMvp = elevated?.planet === mostPowerful.planet;
   
   // Get houses ruled by MVP
   const mvpHousesRuled = getHousesRuled(mostPowerful.planet, houseCusps);
@@ -188,7 +207,8 @@ export const MostPowerfulPlanetCard: React.FC<MostPowerfulPlanetCardProps> = ({ 
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* Most Powerful Planet Card */}
       <Card className="bg-gradient-to-br from-emerald-500/10 to-sky-500/10 border-emerald-500/30">
         <CardHeader className="pb-2">
@@ -430,6 +450,172 @@ export const MostPowerfulPlanetCard: React.FC<MostPowerfulPlanetCardProps> = ({ 
           </div>
         </CardContent>
       </Card>
+      </div>
+
+      {/* Most Elevated Planet Card */}
+      {elevated && !elevatedIsMvp && (
+        <Card className="bg-gradient-to-br from-sky-500/10 to-indigo-500/10 border-sky-500/30">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Mountain className="text-sky-500" size={16} />
+                Most Elevated Planet
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                <Badge className="bg-sky-500/20 text-sky-600 border-sky-500/30">
+                  Score: {elevated.totalScore >= 0 ? '+' : ''}{elevated.totalScore}
+                </Badge>
+                <Badge variant="outline" className="text-xs text-muted-foreground">
+                  Rank #{elevatedRank} of {conditions.length}
+                </Badge>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Planet Header */}
+            <div className="flex items-center gap-3">
+              <div className="text-4xl">{PLANET_SYMBOLS[elevated.planet] || '⚫'}</div>
+              <div>
+                <h3 className="text-xl font-serif text-foreground">
+                  {elevated.planet}
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  {elevated.sign} • House {elevated.house || '?'} (near Midheaven)
+                </p>
+              </div>
+            </div>
+
+            {/* Score comparison with MVP */}
+            <div className="p-3 bg-background/50 rounded-lg space-y-2">
+              <div className="flex items-center gap-2 mb-2">
+                <Info size={14} className="text-sky-500" />
+                <span className="text-xs font-medium text-foreground">Why isn't this the MVP?</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Being the highest planet (closest to the Midheaven) gives <strong>{elevated.planet}</strong> public 
+                visibility and career prominence — everyone can <em>see</em> this planet's energy in your life. But 
+                the MVP score measures <strong>total condition</strong>: how well a planet can actually deliver on its 
+                promises based on sign dignity, sect, and aspects.
+              </p>
+              <div className="grid grid-cols-2 gap-2 mt-3">
+                <div className="p-2 bg-emerald-500/10 rounded text-center">
+                  <div className="text-[10px] text-muted-foreground">MVP {mostPowerful.planet}</div>
+                  <div className="text-sm font-medium text-emerald-600">+{mostPowerful.totalScore}</div>
+                </div>
+                <div className="p-2 bg-sky-500/10 rounded text-center">
+                  <div className="text-[10px] text-muted-foreground">Elevated {elevated.planet}</div>
+                  <div className="text-sm font-medium text-sky-600">{elevated.totalScore >= 0 ? '+' : ''}{elevated.totalScore}</div>
+                </div>
+              </div>
+              <p className="text-[10px] text-muted-foreground italic mt-1">
+                Difference of {mostPowerful.totalScore - elevated.totalScore} points
+              </p>
+            </div>
+
+            {/* Score Breakdown */}
+            <div className="grid grid-cols-4 gap-2 text-center">
+              <div className="p-1.5 bg-background/50 rounded text-xs">
+                <div className="text-muted-foreground">Essential</div>
+                <div className={elevated.essentialDignityScore >= 0 ? 'text-emerald-600' : 'text-rose-600'}>
+                  {elevated.essentialDignityScore >= 0 ? '+' : ''}{elevated.essentialDignityScore}
+                </div>
+              </div>
+              <div className="p-1.5 bg-background/50 rounded text-xs">
+                <div className="text-muted-foreground">Accidental</div>
+                <div className={elevated.accidentalDignityScore >= 0 ? 'text-emerald-600' : 'text-rose-600'}>
+                  {elevated.accidentalDignityScore >= 0 ? '+' : ''}{elevated.accidentalDignityScore}
+                </div>
+              </div>
+              <div className="p-1.5 bg-background/50 rounded text-xs">
+                <div className="text-muted-foreground">Sect</div>
+                <div className={elevated.sectScore >= 0 ? 'text-emerald-600' : 'text-rose-600'}>
+                  {elevated.sectScore >= 0 ? '+' : ''}{elevated.sectScore}
+                </div>
+              </div>
+              <div className="p-1.5 bg-background/50 rounded text-xs">
+                <div className="text-muted-foreground">Aspects</div>
+                <div className={elevated.aspectScore >= 0 ? 'text-emerald-600' : 'text-rose-600'}>
+                  {elevated.aspectScore >= 0 ? '+' : ''}{elevated.aspectScore}
+                </div>
+              </div>
+            </div>
+
+            {/* What Elevation Means */}
+            <div className="space-y-3">
+              <div className="flex items-start gap-2">
+                <Mountain size={14} className="text-sky-500 mt-0.5 shrink-0" />
+                <div>
+                  <div className="text-xs font-medium text-foreground">What Elevation Means</div>
+                  <p className="text-xs text-muted-foreground">
+                    The most elevated planet is the one closest to the top of your chart (the Midheaven/MC). 
+                    It's the planet the world <em>sees first</em> — it colors your public reputation, career 
+                    image, and how others perceive you before they know you deeply.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-2">
+                <Sparkles size={14} className="text-amber-500 mt-0.5 shrink-0" />
+                <div>
+                  <div className="text-xs font-medium text-foreground">How It Shapes Your Life</div>
+                  <p className="text-xs text-muted-foreground">
+                    {PLANET_KEYWORDS[elevated.planet]
+                      ? `${elevated.planet} governs ${PLANET_KEYWORDS[elevated.planet].nature}. Because it's your most visible planet, people associate you with these qualities — even if your MVP (${mostPowerful.planet}) is what truly drives you underneath.`
+                      : `This planet's energy is highly visible in your public life and career, even if it isn't your chart's strongest performer.`}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Dignity Tags */}
+            <div className="flex flex-wrap gap-1.5">
+              <Badge variant="outline" className="text-xs bg-sky-500/10 text-sky-600 border-sky-500/30">
+                Most Elevated
+              </Badge>
+              {elevated.essentialDignity === 'rulership' && (
+                <Badge variant="outline" className="text-xs bg-emerald-500/10 text-emerald-600 border-emerald-500/30">
+                  In Rulership
+                </Badge>
+              )}
+              {elevated.essentialDignity === 'exaltation' && (
+                <Badge variant="outline" className="text-xs bg-sky-500/10 text-sky-600 border-sky-500/30">
+                  Exalted
+                </Badge>
+              )}
+              {elevated.essentialDignity === 'detriment' && (
+                <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-600 border-amber-500/30">
+                  In Detriment
+                </Badge>
+              )}
+              {elevated.essentialDignity === 'fall' && (
+                <Badge variant="outline" className="text-xs bg-rose-500/10 text-rose-600 border-rose-500/30">
+                  In Fall
+                </Badge>
+              )}
+              {elevated.isInSect && (
+                <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/30">
+                  In Sect
+                </Badge>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* If elevated IS the MVP, show a note */}
+      {elevated && elevatedIsMvp && (
+        <div className="flex items-start gap-3 p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+          <Mountain size={16} className="text-emerald-500 mt-0.5 shrink-0" />
+          <div>
+            <p className="text-xs font-medium text-foreground">Your MVP is also your most elevated planet</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {mostPowerful.planet} sits near the top of your chart <em>and</em> has the strongest condition score. 
+              This means your most powerful planet is also your most publicly visible — the world sees your greatest 
+              strength. This is a particularly potent combination for career and public recognition.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
