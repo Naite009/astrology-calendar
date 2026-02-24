@@ -329,15 +329,32 @@ function RxDetail({ rx, risingSign, chartName }: { rx: RxData; risingSign: strin
 
       {/* Detriment/Fall */}
       {rx.detriment_fall && (
-        <div className="rounded-xl bg-amber-900/30 border border-amber-500/40 p-4">
-          <p className="text-xs text-amber-300 font-semibold uppercase tracking-wider mb-2">
-            {rx.sign === "Pisces" ? "⚠️ Mercury in Detriment & Fall" : "⚠️ Mercury in Detriment"}
+        <div className={`rounded-xl border p-4 ${rx.sign === "Pisces" ? "bg-red-900/30 border-red-500/40" : "bg-amber-900/30 border-amber-500/40"}`}>
+          <p className={`text-xs font-semibold uppercase tracking-wider mb-2 ${rx.sign === "Pisces" ? "text-red-300" : "text-amber-300"}`}>
+            {rx.sign === "Pisces" ? "⚠️ Mercury's Hardest Placement — Detriment & Fall" : "⚠️ Mercury in Detriment"}
           </p>
-          <p className="text-amber-50 text-sm leading-relaxed">{rx.detriment_fall_note}</p>
+          <p className={`text-sm leading-relaxed ${rx.sign === "Pisces" ? "text-red-50" : "text-amber-50"}`}>{rx.detriment_fall_note}</p>
           {rx.sign === "Pisces" && (
-            <p className="text-amber-100 text-sm leading-relaxed mt-2">
-              Pisces is Mercury's <strong className="text-amber-200">double difficulty</strong> — both detriment (opposite Virgo, Mercury's home) AND fall (opposite Virgo, Mercury's exaltation). The sharp, analytical, fact-sorting mind is submerged in boundless, imagistic, feeling-first Pisces. Logic becomes poetry. Precision becomes intuition. This is not simply weakness — it is a different kind of intelligence: channeled, received, felt rather than reasoned.
-            </p>
+            <div className="mt-3 space-y-3">
+              <div className="rounded-lg bg-red-950/50 border border-red-500/20 p-3">
+                <p className="text-xs text-red-300 font-bold uppercase mb-1.5">🎓 Why This Matters — A Teaching Moment</p>
+                <p className="text-red-100 text-sm leading-relaxed">
+                  In traditional astrology, every planet has a sign where it's <strong className="text-red-200">exalted</strong> (honored, elevated) and the opposite sign is its <strong className="text-red-200">fall</strong> (weakened, humbled). Mercury is exalted in <strong className="text-red-200">Virgo</strong> — the sign of precise analysis, systems, and detail. So Mercury's fall is <strong className="text-red-200">Pisces</strong> — the opposite sign.
+                </p>
+                <p className="text-red-100 text-sm leading-relaxed mt-2">
+                  But Mercury also <strong className="text-red-200">rules</strong> Virgo (it's Mercury's home sign). The opposite of a home sign is called <strong className="text-red-200">detriment</strong>. So Pisces is Mercury's detriment too.
+                </p>
+                <p className="text-red-100 text-sm leading-relaxed mt-2">
+                  <strong className="text-red-200">Result: Pisces is the ONLY sign where Mercury is in both detriment AND fall simultaneously.</strong> No other sign weakens Mercury this much. That's what makes this retrograde uniquely intense — the planet of clear thinking is retrograding through the one sign where clarity is hardest to find.
+                </p>
+              </div>
+              <div className="rounded-lg bg-indigo-950/50 border border-indigo-500/20 p-3">
+                <p className="text-xs text-indigo-300 font-bold uppercase mb-1.5">💡 The Gift Inside the Difficulty</p>
+                <p className="text-indigo-100 text-sm leading-relaxed">
+                  This isn't simply weakness — it's a <em>different kind of intelligence</em>. When Mercury can't think in straight lines, it thinks in spirals, images, and dreams. Poetry replaces prose. Intuition replaces analysis. Messages arrive through music, art, synchronicities, and feelings rather than words and data. Honor the fog. Journal freely. Create art. Let your subconscious speak.
+                </p>
+              </div>
+            </div>
           )}
         </div>
       )}
