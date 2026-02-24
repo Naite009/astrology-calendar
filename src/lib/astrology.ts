@@ -890,8 +890,10 @@ export const getMoonPhase = (date: Date): MoonPhase => {
     phaseIcon = '🌖'; phaseName = 'Waning Gibbous';
   } else if (phase >= 264 && phase < 276) {
     phaseIcon = '🌗'; phaseName = 'Last Quarter';
-  } else {
+  } else if (phase >= 276 && phase < 315) {
     phaseIcon = '🌘'; phaseName = 'Waning Crescent';
+  } else {
+    phaseIcon = '🌘'; phaseName = 'Balsamic';
   }
 
   const isBalsamic = phase >= 315 || phase < 45;

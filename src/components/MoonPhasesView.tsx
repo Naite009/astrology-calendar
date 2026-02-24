@@ -136,6 +136,10 @@ export const MoonPhasesView = ({ year }: MoonPhasesViewProps) => {
           <span className="text-lg">🌘</span>
           <span>Waning Crescent</span>
         </div>
+        <div className="flex items-center gap-2">
+          <span className="text-lg">🌘</span>
+          <span>Balsamic</span>
+        </div>
       </div>
     </div>
   );
