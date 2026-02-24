@@ -83,6 +83,34 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
 
   return (
     <div className="space-y-6">
+      {/* Educational intro */}
+      <div className="border border-border rounded-sm p-5 bg-card/60 space-y-3">
+        <h2 className="text-sm uppercase tracking-widest text-foreground font-medium flex items-center gap-2">
+          <Sun size={16} className="text-primary" /> Your Solar Return
+        </h2>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          A Solar Return chart is cast for the exact moment the Sun returns to its natal degree each year — your cosmic birthday blueprint.
+        </p>
+        <ul className="grid sm:grid-cols-2 gap-2 text-[13px] text-foreground/80">
+          <li className="flex items-start gap-2">
+            <Compass size={14} className="mt-0.5 text-primary shrink-0" />
+            <span>Understand how to <strong>execute</strong> a Solar Return — the directives to lean into for your year ahead</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <Star size={14} className="mt-0.5 text-primary shrink-0" />
+            <span>Discover key elements to look for and how to <strong>blend it with your natal chart</strong></span>
+          </li>
+          <li className="flex items-start gap-2">
+            <Globe size={14} className="mt-0.5 text-primary shrink-0" />
+            <span>Learn <strong>where to travel</strong> on your birthday to craft the Solar Return chart you want</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <ArrowRight size={14} className="mt-0.5 text-primary shrink-0" />
+            <span>Add a new level of understanding to <strong>your current cycle</strong> and how the planets support your growth</span>
+          </li>
+        </ul>
+      </div>
+
       {/* Header & person picker — only people with SR charts, plus option to add new */}
       <div className="flex flex-wrap items-center gap-3">
         <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Solar Return:</label>
