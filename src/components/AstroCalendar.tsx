@@ -940,6 +940,7 @@ export const AstroCalendar = () => {
               ...(userNatalChart ? [userNatalChart] : []),
               ...savedCharts
             ]}
+            primaryUserName={userData?.name}
           />
         )}
       </div>

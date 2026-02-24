@@ -1,11 +1,13 @@
-import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useState, useMemo } from "react";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import type { NatalChart } from "@/hooks/useNatalChart";
+import { normalizeName } from "@/lib/nameMatching";
 
 // ─── PROPS ───────────────────────────────────────────────────────────────────
 
 interface MercuryRetrogradeGuideProps {
   allCharts: NatalChart[];
+  primaryUserName?: string;
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
@@ -402,11 +404,47 @@ function RxDetail({ rx, risingSign, chartName }: { rx: RxData; risingSign: strin
 
 // ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
 
-export function MercuryRetrogradeGuide({ allCharts }: MercuryRetrogradeGuideProps) {
+export function MercuryRetrogradeGuide({ allCharts, primaryUserName }: MercuryRetrogradeGuideProps) {
   const [selectedChartId, setSelectedChartId] = useState("none");
   const [selectedRxId, setSelectedRxId] = useState("rx1");
   const [activeSection, setActiveSection] = useState("learn");
   const [selectedYear, setSelectedYear] = useState(2026);
+  const [chartSearch, setChartSearch] = useState("");
+
+  // Deduplicate charts by normalized name, prefer chart with most planet data
+  const dedupedCharts = useMemo(() => {
+    const nameMap = new Map<string, NatalChart>();
+    for (const c of allCharts) {
+      if (c.id.startsWith('hd_')) continue; // skip HD-only entries
+      const norm = normalizeName(c.name);
+      if (!norm) continue;
+      const existing = nameMap.get(norm);
+      if (!existing) {
+        nameMap.set(norm, c);
+      } else {
+        // prefer the one with more planet data
+        const existCount = existing.planets ? Object.keys(existing.planets).length : 0;
+        const newCount = c.planets ? Object.keys(c.planets).length : 0;
+        if (newCount > existCount) nameMap.set(norm, c);
+      }
+    }
+    // Sort: primary user starred and first, then alphabetical
+    const primaryNorm = primaryUserName ? normalizeName(primaryUserName) : '';
+    return Array.from(nameMap.values()).sort((a, b) => {
+      const aIsUser = primaryNorm && normalizeName(a.name) === primaryNorm;
+      const bIsUser = primaryNorm && normalizeName(b.name) === primaryNorm;
+      if (aIsUser && !bIsUser) return -1;
+      if (!aIsUser && bIsUser) return 1;
+      return a.name.localeCompare(b.name);
+    });
+  }, [allCharts, primaryUserName]);
+
+  // Filter by search
+  const filteredCharts = useMemo(() => {
+    if (!chartSearch.trim()) return dedupedCharts;
+    const q = chartSearch.toLowerCase();
+    return dedupedCharts.filter(c => c.name.toLowerCase().includes(q));
+  }, [dedupedCharts, chartSearch]);
 
   const selectedChart = allCharts.find(c => c.id === selectedChartId) || null;
   const risingSign = selectedChart ? getAscendantSign(selectedChart) : "none";
@@ -447,22 +485,34 @@ export function MercuryRetrogradeGuide({ allCharts }: MercuryRetrogradeGuideProp
             Understanding the Messenger's backward dance — and what it means for you
           </p>
 
-          {/* Chart selector — now uses imported chart names */}
+          {/* Chart selector — deduplicated, starred, searchable */}
           <div className="mt-5 flex justify-center">
-            <div className="relative">
+            <div className="w-72 space-y-2">
+              <div className="relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-violet-400 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="Search charts…"
+                  value={chartSearch}
+                  onChange={(e) => setChartSearch(e.target.value)}
+                  className="w-full bg-violet-900/50 border border-violet-500/50 text-white rounded-xl pl-9 pr-4 py-2 text-sm placeholder:text-violet-400/60 focus:outline-none focus:border-violet-300/70 transition-colors"
+                />
+              </div>
               <select
                 value={selectedChartId}
                 onChange={(e) => setSelectedChartId(e.target.value)}
-                className="appearance-none bg-violet-900/50 border border-violet-500/50 text-white rounded-xl px-4 py-2.5 pr-10 text-sm cursor-pointer focus:outline-none focus:border-violet-300/70 transition-colors"
+                className="w-full appearance-none bg-violet-900/50 border border-violet-500/50 text-white rounded-xl px-4 py-2.5 pr-10 text-sm cursor-pointer focus:outline-none focus:border-violet-300/70 transition-colors"
               >
                 <option value="none" className="bg-slate-900">— Select a Chart —</option>
-                {allCharts.map((c) => (
-                  <option key={c.id} value={c.id} className="bg-slate-900">
-                    {c.name}
-                  </option>
-                ))}
+                {filteredCharts.map((c) => {
+                  const isPrimary = primaryUserName && normalizeName(c.name) === normalizeName(primaryUserName);
+                  return (
+                    <option key={c.id} value={c.id} className="bg-slate-900">
+                      {isPrimary ? "★ " : ""}{c.name}
+                    </option>
+                  );
+                })}
               </select>
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-violet-300 pointer-events-none">▾</span>
             </div>
           </div>
           {selectedChart && (
