@@ -49,24 +49,25 @@ const HOUSE_MEANINGS = {
   12: { name: "12th House — The Unseen & Spiritual Life", description: "Saturn in your 12th house from 2023–2026 was one of the most profound, often invisible restructurings possible — your relationship to the unconscious, solitude, spirituality, and what hides in the shadows. Things dissolved. Fears surfaced and were faced. Now Mercury retrogrades through this same liminal space. Hidden matters may resurface. Dreams become vivid and meaningful. This is an extraordinary time for journaling, therapy, retreat, and listening to what your deeper self has been trying to tell you." },
 };
 
-const ALL_RETROGRADES_2025 = [
+const ALL_RETROGRADES_2026 = [
   {
     id: "rx1",
     name: "Mercury Retrograde #1",
     sign: "Pisces",
     element: "Water",
-    dates: "February 26 – March 20, 2025",
-    degrees: "22° Pisces → 8° Pisces",
-    preshadow: "February 9, 2025 (enters shadow at 8° Pisces)",
-    shadow: "April 7, 2025 (clears shadow at 22° Pisces)",
-    station_rx: "February 26, 2025 at 22° Pisces",
-    station_direct: "March 20, 2025 at 8° Pisces",
+    dates: "February 25–26 – March 20, 2026",
+    degrees: "22°33' Pisces → 8°29' Pisces",
+    preshadow: "February 11, 2026 at 8°29' Pisces",
+    shadow: "April 9, 2026 at 22°33' Pisces",
+    station_rx: "February 25-26, 2026 at 22°33' Pisces",
+    station_direct: "March 20, 2026 at 8°29' Pisces",
+    cazimi: "March 7, 2026 at 16°52' Pisces",
     current: true,
     sign_quality: "Mutable Water — Jupiter-ruled (traditionally), Neptune-ruled (modern)",
     detriment_fall: true,
-    detriment_fall_note: "Mercury is BOTH in detriment (Pisces is opposite Virgo, Mercury's home) AND in fall (some traditions place Mercury's fall in Pisces). This is rare and significant.",
-    jupiter_aspect: "Mercury stations retrograde in close conversation with Jupiter in Cancer — a trine that amplifies intuition, emotional wisdom, and spiritual insight even as logic becomes slippery.",
-    saturn_note: "Saturn moved through Pisces from March 2023 to February 2026 — restructuring whatever house Pisces rules in your chart. This retrograde is the first Mercury cycle where Saturn has JUST LEFT that house. The reconstruction is over. Mercury is now reviewing what was built.",
+    detriment_fall_note: "Mercury is BOTH in detriment (Pisces is opposite Virgo, Mercury's home) AND in fall in Pisces. This is rare and significant. Logic becomes poetry. Intuition replaces analysis.",
+    jupiter_aspect: "Jupiter is in Cancer during the Pisces retrograde, forming a trine (water to water) — amplifying emotional wisdom, spiritual insight, and intuitive downloads.",
+    saturn_note: "Saturn moved through Pisces from March 2023 to February 2026 — restructuring whatever house Pisces rules in your chart. This retrograde is the FIRST Mercury cycle since Saturn's departure. The reconstruction is over. Mercury is now reviewing what was rebuilt.",
     color: "#7c6fa0",
     gradient: "from-violet-900/40 to-indigo-900/40",
   },
@@ -75,17 +76,18 @@ const ALL_RETROGRADES_2025 = [
     name: "Mercury Retrograde #2",
     sign: "Cancer",
     element: "Water",
-    dates: "June 29 – July 23, 2025",
-    degrees: "~24° Cancer → 17° Cancer",
-    preshadow: "June 14, 2025",
-    shadow: "August 11, 2025",
-    station_rx: "June 29, 2025",
-    station_direct: "July 23, 2025",
+    dates: "June 29 – July 23, 2026",
+    degrees: "26°27' Cancer → 16°18' Cancer",
+    preshadow: "June 13, 2026 at 16°18' Cancer",
+    shadow: "August 7, 2026",
+    station_rx: "June 29, 2026 at 26°27' Cancer",
+    station_direct: "July 23, 2026 at 16°19' Cancer",
+    cazimi: null,
     current: false,
     sign_quality: "Cardinal Water — Moon-ruled",
     detriment_fall: false,
-    jupiter_aspect: "Mercury retrograde in Cancer conjuncts or closely aspects Jupiter in Cancer — extraordinary amplification of emotional communication, memory, and nurturing themes.",
-    saturn_note: "Cancer is the sign opposing Capricorn. With Saturn now in Aries, this retrograde activates a square tension — old structures vs. new emotional needs.",
+    jupiter_aspect: "Jupiter remains in Cancer — Mercury retrogrades directly across Jupiter's transit zone. Emotional communication, memory, and nurturing themes are extraordinarily amplified.",
+    saturn_note: null,
     color: "#4a8fa8",
     gradient: "from-cyan-900/40 to-blue-900/40",
   },
@@ -94,17 +96,18 @@ const ALL_RETROGRADES_2025 = [
     name: "Mercury Retrograde #3",
     sign: "Scorpio",
     element: "Water",
-    dates: "October 16 – November 9, 2025",
-    degrees: "~11° Scorpio → 1° Scorpio",
-    preshadow: "October 1, 2025",
-    shadow: "November 27, 2025",
-    station_rx: "October 16, 2025",
-    station_direct: "November 9, 2025",
+    dates: "October 24 – November 13, 2026",
+    degrees: "20°59' Scorpio → 5°02' Scorpio",
+    preshadow: "October 4, 2026 at 5°02' Scorpio",
+    shadow: "November 30, 2026",
+    station_rx: "October 24, 2026 at 20°59' Scorpio",
+    station_direct: "November 13, 2026 at 5°02' Scorpio",
+    cazimi: null,
     current: false,
     sign_quality: "Fixed Water — Mars-ruled (traditional), Pluto-ruled (modern)",
     detriment_fall: false,
-    jupiter_aspect: "With Jupiter in Leo by fall 2025, this deep Scorpio retrograde may create tension with Jupiterian expansion — secrets, investigations, and profound reckonings come to the surface.",
-    saturn_note: "Scorpio and Aries (where Saturn will be) create a square — karmic reckonings about power, resources, and control.",
+    jupiter_aspect: "With Jupiter having moved into Leo by fall 2026, this deep Scorpio retrograde creates tension with Jupiterian expansion — secrets, investigations, and profound reckonings come to the surface.",
+    saturn_note: null,
     color: "#8b3a52",
     gradient: "from-rose-900/40 to-red-900/40",
   },
@@ -113,8 +116,9 @@ const ALL_RETROGRADES_2025 = [
 const MERCURY_BASICS = [
   { icon: "☿", title: "Who Is Mercury?", content: "Mercury is the winged messenger god — the divine communicator who travels between worlds, carrying messages from the gods to mortals and back again. In astrology, Mercury governs the mind: how we think, speak, learn, and process information. He rules perception, logic, language, short-distance travel, contracts, technology, commerce, and the nervous system. Mercury is quick, curious, clever, and endlessly adaptable — the trickster who loves a puzzle. In your chart, Mercury shows HOW you think, not just what you think about." },
   { icon: "🌞", title: "Mercury & The Sun: Always Close", content: "Mercury is never more than 28° away from the Sun — you will never find Mercury in a sign more than one sign away from your natal Sun. This is because Mercury orbits so close to the Sun that from Earth, he stays near it always. This proximity means Mercury's retrograde always happens in a zone tightly linked to your solar identity. When Mercury retrogrades, it often brings deeply personal, ego-adjacent themes." },
-  { icon: "🔄", title: "How Often & How Far", content: "Mercury retrogrades 3 times per year (occasionally 4), each retrograde lasting approximately 3 weeks. During each retrograde, Mercury appears to travel backward between 12° and 15° of the zodiac. The full cycle — from pre-shadow to post-shadow — spans roughly 8 weeks. In 2025, all three Mercury retrogrades occur in water signs (Pisces, Cancer, Scorpio) — a rare and emotionally significant year-long theme." },
-  { icon: "🌊", title: "2025: All Water Signs", content: "When all retrogrades in a year fall in the same element, it creates a year-long emotional undercurrent. Water is the realm of feeling, memory, intuition, healing, and the unconscious. 2025 asks us — all year — to go beneath the surface. Every Mercury retrograde this year will pull up emotional memories, unresolved feelings, and intuitive wisdom. Logic will repeatedly defer to feeling. This is not a year to force clarity — it is a year to trust the deeper knowing." },
+  { icon: "🔄", title: "How Often & How Far", content: "Mercury retrogrades 3 times per year (occasionally 4), each retrograde lasting approximately 3 weeks. During each retrograde, Mercury appears to travel backward between 12° and 15° of the zodiac. The full cycle — from pre-shadow to post-shadow — spans roughly 8 weeks. In 2026, all three Mercury retrogrades occur in water signs (Pisces, Cancer, Scorpio) — a rare and emotionally significant year-long theme." },
+  { icon: "🌊", title: "2026: All Water Signs — The Shift from Fire", content: "2025 retrogrades were in FIRE signs (Aries, Leo, Sagittarius) — 2026 is the shift to ALL WATER. This is a significant elemental transition year. Water is the realm of feeling, memory, intuition, healing, and the unconscious. 2026 asks us — all year — to go beneath the surface. Every Mercury retrograde this year will pull up emotional memories, unresolved feelings, and intuitive wisdom. Logic will repeatedly defer to feeling. After a year of fire-sign action and initiative, we now descend into the emotional depths." },
+  { icon: "🌞", title: "The Cazimi — Heart of the Sun", content: "The cazimi is when Mercury is at the exact heart of the Sun during retrograde. This is a special moment of clarity and illumination within the retrograde — a brief window when Mercury is purified and insights land clearly. Traditionally, a planet cazimi the Sun is considered supremely dignified, as if sitting on the throne of the king. The 2026 Pisces cazimi is March 7 at 16°52' Pisces — a moment of lucid intuition within the fog." },
   { icon: "📐", title: "Retrograde Degrees: The Span", content: "Each retrograde has a specific range of degrees it covers — the point where Mercury stations retrograde (turns backward) and the point where it stations direct (turns forward again). The degrees between those two points are walked THREE times: once in pre-shadow going forward, once during retrograde going backward, and once in post-shadow going forward again. Planets or points in your natal chart at those degrees will be activated intensely — three passes of Mercury across that degree." },
   { icon: "🕯️", title: "Pre-Shadow, Retrograde & Post-Shadow", content: "The pre-shadow begins when Mercury first crosses the degree where it will later station direct — this is when themes begin to emerge. The retrograde begins at the station retrograde degree and ends at the station direct. The post-shadow (sometimes called 'storm') ends when Mercury returns to the degree where it first stationed retrograde. Astrologers say: you won't fully understand what the retrograde was about until Mercury clears the shadow." },
 ];
@@ -145,18 +149,18 @@ const DO_DONT = {
 };
 
 const WATER_PERSONALIZED = {
-  none: "With all 2025 Mercury retrogrades in water signs, the entire year carries an emotional, intuitive undertone. Themes of memory, feeling, healing, and spiritual sensitivity will run through every Mercury cycle. Logic will yield to intuition again and again. Trust what you feel.",
-  aries: "As an Aries Rising, the water retrogrades activate your 12th (Pisces), 4th (Cancer), and 8th (Scorpio) houses — the three most hidden, private, and transformative areas of your chart. 2025 asks you to heal what hides in your unconscious, your family roots, and your shared depths. Significant inner work awaits.",
+  none: "With all 2026 Mercury retrogrades in water signs, the entire year carries an emotional, intuitive undertone. After 2025's fire-sign retrogrades (Aries, Leo, Sagittarius), the shift to water is profound. Themes of memory, feeling, healing, and spiritual sensitivity will run through every Mercury cycle. Logic will yield to intuition again and again. Trust what you feel.",
+  aries: "As an Aries Rising, the water retrogrades activate your 12th (Pisces), 4th (Cancer), and 8th (Scorpio) houses — the three most hidden, private, and transformative areas of your chart. 2026 asks you to heal what hides in your unconscious, your family roots, and your shared depths. Significant inner work awaits.",
   taurus: "As a Taurus Rising, the water retrogrades light up your 11th (Pisces), 3rd (Cancer), and 7th (Scorpio) houses — community, communication, and partnerships. Old friendships surface, important conversations revisit, and partnership contracts need review. Your social world is being emotionally recalibrated.",
-  gemini: "As a Gemini Rising, the water retrogrades activate your 10th (Pisces), 2nd (Cancer), and 6th (Scorpio) houses — career, income, and health. Your professional direction, financial security, and daily health rhythms are all under emotional review in 2025. What do you truly want to build?",
+  gemini: "As a Gemini Rising, the water retrogrades activate your 10th (Pisces), 2nd (Cancer), and 6th (Scorpio) houses — career, income, and health. Your professional direction, financial security, and daily health rhythms are all under emotional review in 2026. What do you truly want to build?",
   cancer: "As a Cancer Rising, the water retrogrades move through your 9th (Pisces), 1st (Cancer), and 5th (Scorpio) houses — beliefs, self, and creativity. A profound year for spiritual recalibration, personal reinvention, and creative renewal. You are reviewing who you are, what you believe, and what you love to create.",
-  leo: "As a Leo Rising, the water retrogrades activate your 8th (Pisces), 12th (Cancer), and 4th (Scorpio) houses — transformation, the hidden, and home. Deep psychological themes, ancestral patterns, and profound private shifts define 2025 for you. What needs to finally be released?",
+  leo: "As a Leo Rising, the water retrogrades activate your 8th (Pisces), 12th (Cancer), and 4th (Scorpio) houses — transformation, the hidden, and home. Deep psychological themes, ancestral patterns, and profound private shifts define 2026 for you. What needs to finally be released?",
   virgo: "As a Virgo Rising, the water retrogrades move through your 7th (Pisces), 11th (Cancer), and 3rd (Scorpio) houses — partnerships, community, and communication. Relationship dynamics, friendship circles, and the way you communicate emotionally are all under review. Are the people in your life truly aligned with who you've become?",
-  libra: "As a Libra Rising, the water retrogrades activate your 6th (Pisces), 10th (Cancer), and 2nd (Scorpio) houses — health, career, and money. Daily routines, professional legacy, and financial values are all emotionally reviewed in 2025. What structures are worth keeping? What habits no longer serve you?",
+  libra: "As a Libra Rising, the water retrogrades activate your 6th (Pisces), 10th (Cancer), and 2nd (Scorpio) houses — health, career, and money. Daily routines, professional legacy, and financial values are all emotionally reviewed in 2026. What structures are worth keeping? What habits no longer serve you?",
   scorpio: "As a Scorpio Rising, the water retrogrades light up your 5th (Pisces), 9th (Cancer), and 1st (Scorpio) houses — creativity, philosophy, and self. A year of profound creative reclaiming, belief system review, and personal reinvention. The third retrograde in Scorpio activates your entire identity — a reset of the deepest kind.",
   sagittarius: "As a Sagittarius Rising, the water retrogrades move through your 4th (Pisces), 8th (Cancer), and 12th (Scorpio) houses — home, transformation, and the unseen. Family, inherited patterns, and deep subconscious material are the year's themes. What from your roots is ready to be healed and released?",
   capricorn: "As a Capricorn Rising, the water retrogrades activate your 3rd (Pisces), 7th (Cancer), and 11th (Scorpio) houses — communication, partnerships, and community. Important conversations revisit all year, partnership dynamics shift emotionally, and your community connections undergo profound review.",
-  aquarius: "As an Aquarius Rising, the water retrogrades light up your 2nd (Pisces), 6th (Cancer), and 10th (Scorpio) houses — money, health, and career. Financial values, health rhythms, and professional transformation are under review all year. 2025 restructures the material and physical dimensions of your life.",
+  aquarius: "As an Aquarius Rising, the water retrogrades light up your 2nd (Pisces), 6th (Cancer), and 10th (Scorpio) houses — money, health, and career. Financial values, health rhythms, and professional transformation are under review all year. 2026 restructures the material and physical dimensions of your life.",
   pisces: "As a Pisces Rising, the water retrogrades activate your 1st (Pisces), 5th (Cancer), and 9th (Scorpio) houses — self, creativity, and philosophy. An extraordinary year of personal reinvention, creative renaissance, and philosophical expansion. The first retrograde begins in your very sign — this year starts with you.",
 };
 
@@ -243,6 +247,7 @@ function RxDetail({ rx, selectedRising }) {
         {[
           { label: "Pre-Shadow Begins", value: rx.preshadow, icon: "🌑" },
           { label: "Station Retrograde", value: rx.station_rx, icon: "↩️" },
+          ...(rx.cazimi ? [{ label: "Cazimi (☿☌☉)", value: rx.cazimi, icon: "🌞" }] : []),
           { label: "Station Direct", value: rx.station_direct, icon: "↪️" },
           { label: "Shadow Clears", value: rx.shadow, icon: "🌕" },
         ].map((d) => (
@@ -332,11 +337,11 @@ export function MercuryRetrogradeGuide() {
   const [selectedRxId, setSelectedRxId] = useState("rx1");
   const [activeSection, setActiveSection] = useState("learn");
 
-  const selectedRx = ALL_RETROGRADES_2025.find((r) => r.id === selectedRxId);
+  const selectedRx = ALL_RETROGRADES_2026.find((r) => r.id === selectedRxId);
 
   const sections = [
     { id: "learn", label: "Learn Mercury", icon: "☿" },
-    { id: "retrogrades", label: "2025 Retrogrades", icon: "🔄" },
+    { id: "retrogrades", label: "2026 Retrogrades", icon: "🔄" },
     { id: "current", label: "Current Cycle", icon: "🌊" },
     { id: "guidance", label: "Your Guidance", icon: "✨" },
   ];
@@ -452,19 +457,19 @@ export function MercuryRetrogradeGuide() {
         {/* ── SECTION: ALL 2025 RETROGRADES ── */}
         {activeSection === "retrogrades" && (
           <div className="space-y-4">
-            <SectionHeader icon="🔄" title="2025 Mercury Retrogrades" subtitle="All three in water signs — an emotionally profound year. Tap a card to explore." />
+            <SectionHeader icon="🔄" title="2026 Mercury Retrogrades" subtitle="All three in water signs — the shift from 2025's fire to 2026's water. Tap a card to explore." />
 
             {/* Water year banner */}
             <div className="rounded-2xl bg-gradient-to-r from-cyan-900/30 to-blue-900/30 border border-cyan-700/30 p-4">
               <p className="text-cyan-200 text-sm leading-relaxed">
-                <span className="font-bold text-cyan-100">🌊 2025: The Year of Water Retrogrades.</span>{" "}
-                All three Mercury retrogrades this year occur in water signs — Pisces, Cancer, and Scorpio. This is a rare alignment that gives 2025 an emotional, intuitive, and healing undercurrent. The mind is asked to feel before it thinks. Memory, dreams, and emotional intelligence are the year's mercurial teachers.
+                <span className="font-bold text-cyan-100">🌊 2026: The Year of Water Retrogrades.</span>{" "}
+                2025's retrogrades were in fire signs (Aries, Leo, Sagittarius) — bold, action-oriented, initiating. 2026 shifts to all water: Pisces, Cancer, and Scorpio. This is a significant elemental transition. The mind is asked to feel before it thinks. Memory, dreams, emotional intelligence, and healing are the year's mercurial teachers.
               </p>
             </div>
 
             {/* Retrograde cards */}
             <div className="space-y-3">
-              {ALL_RETROGRADES_2025.map((rx) => (
+              {ALL_RETROGRADES_2026.map((rx) => (
                 <RxCard key={rx.id} rx={rx} selectedRising={selectedRising} onClick={setSelectedRxId} isSelected={selectedRxId === rx.id} />
               ))}
             </div>
@@ -481,19 +486,19 @@ export function MercuryRetrogradeGuide() {
         {/* ── SECTION: CURRENT CYCLE (Feb 26 - Mar 20) ── */}
         {activeSection === "current" && (
           <div className="space-y-4">
-            <SectionHeader icon="🌊" title="Current Cycle — Mercury in Pisces" subtitle="February 26 – March 20, 2025 · Retrograde from 22° to 8° Pisces" />
+            <SectionHeader icon="🌊" title="Current Cycle — Mercury in Pisces" subtitle="February 25–26 – March 20, 2026 · Retrograde from 22°33' to 8°29' Pisces" />
 
-            <RxDetail rx={ALL_RETROGRADES_2025[0]} selectedRising={selectedRising} />
+            <RxDetail rx={ALL_RETROGRADES_2026[0]} selectedRising={selectedRising} />
 
             {/* What to watch for each phase */}
             <div className="rounded-2xl border border-violet-800/30 bg-violet-950/30 p-5 space-y-4">
               <p className="text-xs text-violet-400 font-semibold uppercase tracking-wider">📅 Phase by Phase — What to Watch</p>
               {[
-                { phase: "Pre-Shadow · Feb 9–26", icon: "🌑", color: "slate", text: "Mercury first crosses 8° Pisces. Themes begin to whisper. A situation, conversation, or feeling starts to emerge that will become central to this retrograde. Pay attention to what arises around February 9 — it is a preview of what will need your full attention." },
-                { phase: "Station Retrograde · Feb 26", icon: "↩️", color: "violet", text: "Mercury halts at 22° Pisces and begins its backward journey. The days around February 26 are likely to feel intense, confused, or surprisingly clarifying. Old matters arrive suddenly. Technology may glitch. Conversations get complicated. This is the moment to slow down completely." },
-                { phase: "Retrograde · Feb 26 – Mar 20", icon: "🔄", color: "indigo", text: "Mercury moves backward from 22° to 8° Pisces. The entire retrograde is immersed in Pisces energy — dreamy, emotional, intuitive, sometimes unclear. Logic is a less reliable tool. Feeling, dreaming, journaling, and meditative reflection will serve you better than analysis. Old matters resurface for completion." },
-                { phase: "Station Direct · March 20", icon: "↪️", color: "violet", text: "Mercury halts again at 8° Pisces and prepares to move forward. March 20 is also the Spring Equinox — a powerful double threshold. The moment of turning direct may feel like a fog beginning to lift. Don't rush into major decisions immediately — give Mercury 2–3 days to build momentum." },
-                { phase: "Post-Shadow · Mar 20 – Apr 7", icon: "🌕", color: "amber", text: "Mercury retraces the shadow zone forward, from 8° back to 22° Pisces. You won't fully understand what this retrograde was about until April 7. Use this phase to apply what you've reviewed. Decisions are clearer now. Conversations that were tangled begin to resolve. Integration happens." },
+                { phase: "Pre-Shadow · Feb 11–25", icon: "🌑", color: "slate", text: "Mercury first crosses 8°29' Pisces. Themes begin to whisper. A situation, conversation, or feeling starts to emerge that will become central to this retrograde. Pay attention to what arises around February 11 — it is a preview of what will need your full attention." },
+                { phase: "Station Retrograde · Feb 25-26", icon: "↩️", color: "violet", text: "Mercury halts at 22°33' Pisces and begins its backward journey. The days around February 25-26 are likely to feel intense, confused, or surprisingly clarifying. Old matters arrive suddenly. Technology may glitch. Conversations get complicated. This is the moment to slow down completely." },
+                { phase: "Cazimi · March 7", icon: "🌞", color: "amber", text: "Mercury conjuncts the Sun at 16°52' Pisces — the heart of the retrograde. The cazimi is a moment of clarity and illumination within the fog: Mercury is purified by the Sun's light. Insights land clearly, downloads arrive, and a brief window of lucidity opens. Pay attention to what comes through on this day — it is the retrograde's deepest message." },
+                { phase: "Station Direct · March 20", icon: "↪️", color: "violet", text: "Mercury halts again at 8°29' Pisces and prepares to move forward. The moment of turning direct may feel like a fog beginning to lift. Don't rush into major decisions immediately — give Mercury 2–3 days to build momentum." },
+                { phase: "Post-Shadow · Mar 20 – Apr 9", icon: "🌕", color: "amber", text: "Mercury retraces the shadow zone forward, from 8°29' back to 22°33' Pisces. You won't fully understand what this retrograde was about until April 9. Use this phase to apply what you've reviewed. Decisions are clearer now. Conversations that were tangled begin to resolve. Integration happens." },
               ].map((item) => (
                 <div key={item.phase} className={`rounded-xl bg-${item.color}-900/20 border border-${item.color}-700/30 p-4`}>
                   <p className={`text-xs text-${item.color}-300 font-semibold uppercase mb-2`}>{item.icon} {item.phase}</p>
@@ -551,7 +556,7 @@ export function MercuryRetrogradeGuide() {
             {/* Personalized section */}
             <div className="rounded-2xl border border-fuchsia-600/30 bg-gradient-to-br from-fuchsia-950/40 to-violet-950/40 p-5">
               <p className="text-xs text-fuchsia-400 font-semibold uppercase tracking-wider mb-3">
-                {selectedRising === "none" ? "🔮 Select Your Rising Sign for Personalized Guidance" : `✨ Your 2025 Water Retrograde Year — ${CHARTS.find(c => c.id === selectedRising)?.label}`}
+                {selectedRising === "none" ? "🔮 Select Your Rising Sign for Personalized Guidance" : `✨ Your 2026 Water Retrograde Year — ${CHARTS.find(c => c.id === selectedRising)?.label}`}
               </p>
               {selectedRising === "none" ? (
                 <p className="text-violet-300 text-sm">Select your rising sign using the dropdown at the top of this page to receive guidance personalized to your chart.</p>
