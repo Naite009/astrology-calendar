@@ -1,0 +1,578 @@
+import { useState } from "react";
+
+// ─── DATA ────────────────────────────────────────────────────────────────────
+
+const CHARTS = [
+  { id: "none", label: "— Select Your Chart —" },
+  { id: "aries", label: "Aries Rising" },
+  { id: "taurus", label: "Taurus Rising" },
+  { id: "gemini", label: "Gemini Rising" },
+  { id: "cancer", label: "Cancer Rising" },
+  { id: "leo", label: "Leo Rising" },
+  { id: "virgo", label: "Virgo Rising" },
+  { id: "libra", label: "Libra Rising" },
+  { id: "scorpio", label: "Scorpio Rising" },
+  { id: "sagittarius", label: "Sagittarius Rising" },
+  { id: "capricorn", label: "Capricorn Rising" },
+  { id: "aquarius", label: "Aquarius Rising" },
+  { id: "pisces", label: "Pisces Rising" },
+];
+
+const PISCES_HOUSE_BY_RISING = {
+  none: null,
+  aries: 12,
+  taurus: 11,
+  gemini: 10,
+  cancer: 9,
+  leo: 8,
+  virgo: 7,
+  libra: 6,
+  scorpio: 5,
+  sagittarius: 4,
+  capricorn: 3,
+  aquarius: 2,
+  pisces: 1,
+};
+
+const HOUSE_MEANINGS = {
+  1: { name: "1st House — Self & Identity", description: "Mercury stations retrograde across your Ascendant — the very lens through which you see the world. You've been rebuilding your entire sense of self since 2023. Who you've become under Saturn's pressure is now being reviewed. Expect old versions of yourself to surface. Which parts served you? Which are ready to dissolve for good? This retrograde asks you to re-introduce yourself — to yourself first." },
+  2: { name: "2nd House — Resources & Worth", description: "Your relationship to money, security, and what you value has been radically restructured by Saturn since 2023. This retrograde passes through that zone of earned income and self-worth. Financial plans may need revisiting. But more than money — your deepest beliefs about what you deserve are being reviewed. This is a profound moment to reclaim value you once gave away." },
+  3: { name: "3rd House — Mind & Communication", description: "Siblings, neighbors, local environment, writing, and speaking — your Pisces 3rd house has been under Saturn's rewrite since 2023. Your entire way of thinking and communicating was restructured. Now Mercury's retrograde here asks: what still needs to be said? Old conversations may resurface. Reach out. Revise. The words you write now may carry unexpected power." },
+  4: { name: "4th House — Home & Roots", description: "Home, family, ancestors, and your emotional foundation — Saturn rewired all of this for you from 2023–2026. Now Mercury retraces those degrees. Old family dynamics, unresolved housing matters, or ancestral patterns may re-emerge for final review. You're not going backward — you're integrating the enormous shifts in your private world." },
+  5: { name: "5th House — Creativity & Romance", description: "Children, creative expression, romance, and play lived under Saturn's weight from 2023–2026. Joy came with responsibility. Now this Mercury retrograde moves through that same creative territory. An old romance or creative project may resurface for review. What did you create — or give up — during those years? This is your reclamation window." },
+  6: { name: "6th House — Health & Daily Life", description: "Daily routines, health practices, and work rhythms were overhauled by Saturn in your 6th house from 2023–2026. You may have changed your entire relationship to your body and work. Now Mercury revisits those degrees — expect old health matters or work projects to need attention. Systems that were established under Saturn may need refinement. Listen to your body's messages carefully." },
+  7: { name: "7th House — Partnerships", description: "Marriage, committed partnerships, and significant one-on-one relationships bore Saturn's full weight from 2023–2026. Contracts were tested. Commitments were either deepened or dissolved. Now Mercury retraces those same degrees. An ex or old partner may resurface. Partnership agreements may need review. This is not the time to sign new contracts — it is the time to honestly assess what partnerships survived and what they now mean to you." },
+  8: { name: "8th House — Transformation & Shared Resources", description: "Debt, inheritance, intimacy, and shared finances received a Saturn restructure from 2023–2026. Profound transformation happened in the most private corners of your life. Now Mercury retraces those degrees — financial entanglements, insurance, wills, or deeply intimate matters may resurface for a final review. What still needs to be released? What needs to be reclaimed?" },
+  9: { name: "9th House — Beliefs & Higher Mind", description: "Your entire belief system, philosophy of life, higher education, and relationship to foreign cultures was Saturn-tested from 2023–2026. What you once believed was dismantled and rebuilt. Now Mercury moves backward through those same degrees — old teachers, studies, or spiritual philosophies may return. A belief you let go might need one final, honest examination. Trust the revision process." },
+  10: { name: "10th House — Career & Reputation", description: "Your career, public reputation, and life direction were placed under Saturn's most rigorous testing from 2023–2026 — inside your own sign house, no less. The restructuring was intense. Now Mercury retraces those degrees. Old professional contacts may resurface. A project you thought was finished needs a second look. Your reputation is being refined. What story does your career tell now?" },
+  11: { name: "11th House — Community & Future Visions", description: "Your friendships, communities, social networks, and long-term hopes were systematically restructured by Saturn from 2023–2026. Some communities fell away. New, more authentic ones formed. Now Mercury retraces those degrees — an old friend or collaborator may reconnect. Group projects may need revision. Your vision for the future is being updated. What do you truly hope for now?" },
+  12: { name: "12th House — The Unseen & Spiritual Life", description: "Saturn in your 12th house from 2023–2026 was one of the most profound, often invisible restructurings possible — your relationship to the unconscious, solitude, spirituality, and what hides in the shadows. Things dissolved. Fears surfaced and were faced. Now Mercury retrogrades through this same liminal space. Hidden matters may resurface. Dreams become vivid and meaningful. This is an extraordinary time for journaling, therapy, retreat, and listening to what your deeper self has been trying to tell you." },
+};
+
+const ALL_RETROGRADES_2025 = [
+  {
+    id: "rx1",
+    name: "Mercury Retrograde #1",
+    sign: "Pisces",
+    element: "Water",
+    dates: "February 26 – March 20, 2025",
+    degrees: "22° Pisces → 8° Pisces",
+    preshadow: "February 9, 2025 (enters shadow at 8° Pisces)",
+    shadow: "April 7, 2025 (clears shadow at 22° Pisces)",
+    station_rx: "February 26, 2025 at 22° Pisces",
+    station_direct: "March 20, 2025 at 8° Pisces",
+    current: true,
+    sign_quality: "Mutable Water — Jupiter-ruled (traditionally), Neptune-ruled (modern)",
+    detriment_fall: true,
+    detriment_fall_note: "Mercury is BOTH in detriment (Pisces is opposite Virgo, Mercury's home) AND in fall (some traditions place Mercury's fall in Pisces). This is rare and significant.",
+    jupiter_aspect: "Mercury stations retrograde in close conversation with Jupiter in Cancer — a trine that amplifies intuition, emotional wisdom, and spiritual insight even as logic becomes slippery.",
+    saturn_note: "Saturn moved through Pisces from March 2023 to February 2026 — restructuring whatever house Pisces rules in your chart. This retrograde is the first Mercury cycle where Saturn has JUST LEFT that house. The reconstruction is over. Mercury is now reviewing what was built.",
+    color: "#7c6fa0",
+    gradient: "from-violet-900/40 to-indigo-900/40",
+  },
+  {
+    id: "rx2",
+    name: "Mercury Retrograde #2",
+    sign: "Cancer",
+    element: "Water",
+    dates: "June 29 – July 23, 2025",
+    degrees: "~24° Cancer → 17° Cancer",
+    preshadow: "June 14, 2025",
+    shadow: "August 11, 2025",
+    station_rx: "June 29, 2025",
+    station_direct: "July 23, 2025",
+    current: false,
+    sign_quality: "Cardinal Water — Moon-ruled",
+    detriment_fall: false,
+    jupiter_aspect: "Mercury retrograde in Cancer conjuncts or closely aspects Jupiter in Cancer — extraordinary amplification of emotional communication, memory, and nurturing themes.",
+    saturn_note: "Cancer is the sign opposing Capricorn. With Saturn now in Aries, this retrograde activates a square tension — old structures vs. new emotional needs.",
+    color: "#4a8fa8",
+    gradient: "from-cyan-900/40 to-blue-900/40",
+  },
+  {
+    id: "rx3",
+    name: "Mercury Retrograde #3",
+    sign: "Scorpio",
+    element: "Water",
+    dates: "October 16 – November 9, 2025",
+    degrees: "~11° Scorpio → 1° Scorpio",
+    preshadow: "October 1, 2025",
+    shadow: "November 27, 2025",
+    station_rx: "October 16, 2025",
+    station_direct: "November 9, 2025",
+    current: false,
+    sign_quality: "Fixed Water — Mars-ruled (traditional), Pluto-ruled (modern)",
+    detriment_fall: false,
+    jupiter_aspect: "With Jupiter in Leo by fall 2025, this deep Scorpio retrograde may create tension with Jupiterian expansion — secrets, investigations, and profound reckonings come to the surface.",
+    saturn_note: "Scorpio and Aries (where Saturn will be) create a square — karmic reckonings about power, resources, and control.",
+    color: "#8b3a52",
+    gradient: "from-rose-900/40 to-red-900/40",
+  },
+];
+
+const MERCURY_BASICS = [
+  { icon: "☿", title: "Who Is Mercury?", content: "Mercury is the winged messenger god — the divine communicator who travels between worlds, carrying messages from the gods to mortals and back again. In astrology, Mercury governs the mind: how we think, speak, learn, and process information. He rules perception, logic, language, short-distance travel, contracts, technology, commerce, and the nervous system. Mercury is quick, curious, clever, and endlessly adaptable — the trickster who loves a puzzle. In your chart, Mercury shows HOW you think, not just what you think about." },
+  { icon: "🌞", title: "Mercury & The Sun: Always Close", content: "Mercury is never more than 28° away from the Sun — you will never find Mercury in a sign more than one sign away from your natal Sun. This is because Mercury orbits so close to the Sun that from Earth, he stays near it always. This proximity means Mercury's retrograde always happens in a zone tightly linked to your solar identity. When Mercury retrogrades, it often brings deeply personal, ego-adjacent themes." },
+  { icon: "🔄", title: "How Often & How Far", content: "Mercury retrogrades 3 times per year (occasionally 4), each retrograde lasting approximately 3 weeks. During each retrograde, Mercury appears to travel backward between 12° and 15° of the zodiac. The full cycle — from pre-shadow to post-shadow — spans roughly 8 weeks. In 2025, all three Mercury retrogrades occur in water signs (Pisces, Cancer, Scorpio) — a rare and emotionally significant year-long theme." },
+  { icon: "🌊", title: "2025: All Water Signs", content: "When all retrogrades in a year fall in the same element, it creates a year-long emotional undercurrent. Water is the realm of feeling, memory, intuition, healing, and the unconscious. 2025 asks us — all year — to go beneath the surface. Every Mercury retrograde this year will pull up emotional memories, unresolved feelings, and intuitive wisdom. Logic will repeatedly defer to feeling. This is not a year to force clarity — it is a year to trust the deeper knowing." },
+  { icon: "📐", title: "Retrograde Degrees: The Span", content: "Each retrograde has a specific range of degrees it covers — the point where Mercury stations retrograde (turns backward) and the point where it stations direct (turns forward again). The degrees between those two points are walked THREE times: once in pre-shadow going forward, once during retrograde going backward, and once in post-shadow going forward again. Planets or points in your natal chart at those degrees will be activated intensely — three passes of Mercury across that degree." },
+  { icon: "🕯️", title: "Pre-Shadow, Retrograde & Post-Shadow", content: "The pre-shadow begins when Mercury first crosses the degree where it will later station direct — this is when themes begin to emerge. The retrograde begins at the station retrograde degree and ends at the station direct. The post-shadow (sometimes called 'storm') ends when Mercury returns to the degree where it first stationed retrograde. Astrologers say: you won't fully understand what the retrograde was about until Mercury clears the shadow." },
+];
+
+const DO_DONT = {
+  do: [
+    "Review, revise, and reconsider — the 'RE' words are your allies",
+    "Reconnect with people from the past",
+    "Return to unfinished projects with fresh eyes",
+    "Research deeply before making decisions",
+    "Rest, restore, and slow down",
+    "Reflect on what has shifted since the last retrograde",
+    "Journal dreams and intuitive impressions — especially in water retrogrades",
+    "Double-check all written communications before sending",
+    "Read fine print and re-read contracts",
+    "Breathe — Mercury retrograde is a cosmic invitation to pause",
+  ],
+  dont: [
+    "Sign brand-new contracts if you can avoid it",
+    "Launch new major projects or businesses",
+    "Make permanent decisions based on incomplete information",
+    "Assume everyone received your message — follow up",
+    "Ignore technical glitches — back up your data",
+    "Rush through negotiations",
+    "Buy major electronics or vehicles without thorough research",
+    "Send that impulsive message — wait until post-shadow",
+  ],
+};
+
+const WATER_PERSONALIZED = {
+  none: "With all 2025 Mercury retrogrades in water signs, the entire year carries an emotional, intuitive undertone. Themes of memory, feeling, healing, and spiritual sensitivity will run through every Mercury cycle. Logic will yield to intuition again and again. Trust what you feel.",
+  aries: "As an Aries Rising, the water retrogrades activate your 12th (Pisces), 4th (Cancer), and 8th (Scorpio) houses — the three most hidden, private, and transformative areas of your chart. 2025 asks you to heal what hides in your unconscious, your family roots, and your shared depths. Significant inner work awaits.",
+  taurus: "As a Taurus Rising, the water retrogrades light up your 11th (Pisces), 3rd (Cancer), and 7th (Scorpio) houses — community, communication, and partnerships. Old friendships surface, important conversations revisit, and partnership contracts need review. Your social world is being emotionally recalibrated.",
+  gemini: "As a Gemini Rising, the water retrogrades activate your 10th (Pisces), 2nd (Cancer), and 6th (Scorpio) houses — career, income, and health. Your professional direction, financial security, and daily health rhythms are all under emotional review in 2025. What do you truly want to build?",
+  cancer: "As a Cancer Rising, the water retrogrades move through your 9th (Pisces), 1st (Cancer), and 5th (Scorpio) houses — beliefs, self, and creativity. A profound year for spiritual recalibration, personal reinvention, and creative renewal. You are reviewing who you are, what you believe, and what you love to create.",
+  leo: "As a Leo Rising, the water retrogrades activate your 8th (Pisces), 12th (Cancer), and 4th (Scorpio) houses — transformation, the hidden, and home. Deep psychological themes, ancestral patterns, and profound private shifts define 2025 for you. What needs to finally be released?",
+  virgo: "As a Virgo Rising, the water retrogrades move through your 7th (Pisces), 11th (Cancer), and 3rd (Scorpio) houses — partnerships, community, and communication. Relationship dynamics, friendship circles, and the way you communicate emotionally are all under review. Are the people in your life truly aligned with who you've become?",
+  libra: "As a Libra Rising, the water retrogrades activate your 6th (Pisces), 10th (Cancer), and 2nd (Scorpio) houses — health, career, and money. Daily routines, professional legacy, and financial values are all emotionally reviewed in 2025. What structures are worth keeping? What habits no longer serve you?",
+  scorpio: "As a Scorpio Rising, the water retrogrades light up your 5th (Pisces), 9th (Cancer), and 1st (Scorpio) houses — creativity, philosophy, and self. A year of profound creative reclaiming, belief system review, and personal reinvention. The third retrograde in Scorpio activates your entire identity — a reset of the deepest kind.",
+  sagittarius: "As a Sagittarius Rising, the water retrogrades move through your 4th (Pisces), 8th (Cancer), and 12th (Scorpio) houses — home, transformation, and the unseen. Family, inherited patterns, and deep subconscious material are the year's themes. What from your roots is ready to be healed and released?",
+  capricorn: "As a Capricorn Rising, the water retrogrades activate your 3rd (Pisces), 7th (Cancer), and 11th (Scorpio) houses — communication, partnerships, and community. Important conversations revisit all year, partnership dynamics shift emotionally, and your community connections undergo profound review.",
+  aquarius: "As an Aquarius Rising, the water retrogrades light up your 2nd (Pisces), 6th (Cancer), and 10th (Scorpio) houses — money, health, and career. Financial values, health rhythms, and professional transformation are under review all year. 2025 restructures the material and physical dimensions of your life.",
+  pisces: "As a Pisces Rising, the water retrogrades activate your 1st (Pisces), 5th (Cancer), and 9th (Scorpio) houses — self, creativity, and philosophy. An extraordinary year of personal reinvention, creative renaissance, and philosophical expansion. The first retrograde begins in your very sign — this year starts with you.",
+};
+
+// ─── SUBCOMPONENTS ──────────────────────────────────────────────────────────
+
+function SectionHeader({ icon, title, subtitle }) {
+  return (
+    <div className="mb-6">
+      <div className="flex items-center gap-3 mb-1">
+        <span className="text-2xl">{icon}</span>
+        <h2 className="text-xl font-semibold tracking-wide text-violet-200">{title}</h2>
+      </div>
+      {subtitle && <p className="text-sm text-violet-400 ml-11">{subtitle}</p>}
+    </div>
+  );
+}
+
+function AccordionCard({ icon, title, content, defaultOpen = false }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div
+      className={`rounded-xl border transition-all duration-300 cursor-pointer ${open ? "border-violet-500/50 bg-violet-950/60" : "border-violet-800/30 bg-violet-950/20 hover:border-violet-600/40"}`}
+      onClick={() => setOpen(!open)}
+    >
+      <div className="flex items-center justify-between p-4">
+        <div className="flex items-center gap-3">
+          <span className="text-xl">{icon}</span>
+          <span className="font-medium text-violet-100">{title}</span>
+        </div>
+        <span className={`text-violet-400 transition-transform duration-300 text-lg ${open ? "rotate-180" : ""}`}>▾</span>
+      </div>
+      {open && (
+        <div className="px-4 pb-4 pt-0">
+          <div className="h-px bg-violet-800/30 mb-4" />
+          <p className="text-violet-200 text-sm leading-relaxed">{content}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RxCard({ rx, selectedRising, onClick, isSelected }) {
+  return (
+    <div
+      onClick={() => onClick(rx.id)}
+      className={`rounded-2xl border p-5 cursor-pointer transition-all duration-300 ${isSelected ? "border-violet-400/70 bg-gradient-to-br " + rx.gradient + " shadow-lg shadow-violet-900/30" : "border-violet-800/30 bg-violet-950/20 hover:border-violet-600/40 hover:" + rx.gradient}`}
+    >
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${rx.current ? "bg-violet-500/30 text-violet-200 border border-violet-400/40" : "bg-slate-700/40 text-slate-300 border border-slate-600/30"}`}>
+            {rx.current ? "● CURRENT" : "UPCOMING"}
+          </span>
+          <h3 className="text-lg font-semibold text-violet-100 mt-2">{rx.name}</h3>
+          <p className="text-violet-300 text-sm">{rx.sign} — {rx.element}</p>
+        </div>
+        <span className="text-3xl opacity-70">☿</span>
+      </div>
+      <div className="text-xs text-violet-400 space-y-1">
+        <p>📅 {rx.dates}</p>
+        <p>📐 {rx.degrees}</p>
+      </div>
+      {isSelected && <p className="text-xs text-violet-300 mt-2 italic">Click to expand details below ↓</p>}
+    </div>
+  );
+}
+
+function RxDetail({ rx, selectedRising }) {
+  const house = PISCES_HOUSE_BY_RISING[selectedRising];
+  const houseMeaning = house ? HOUSE_MEANINGS[house] : null;
+
+  return (
+    <div className="rounded-2xl border border-violet-500/40 bg-gradient-to-br from-violet-950/80 to-indigo-950/80 p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-violet-100">{rx.name}</h2>
+          <p className="text-violet-300">{rx.sign} · {rx.element} · {rx.sign_quality}</p>
+        </div>
+        <span className="text-5xl opacity-50">☿</span>
+      </div>
+
+      {/* Key Dates Grid */}
+      <div className="grid grid-cols-2 gap-3">
+        {[
+          { label: "Pre-Shadow Begins", value: rx.preshadow, icon: "🌑" },
+          { label: "Station Retrograde", value: rx.station_rx, icon: "↩️" },
+          { label: "Station Direct", value: rx.station_direct, icon: "↪️" },
+          { label: "Shadow Clears", value: rx.shadow, icon: "🌕" },
+        ].map((d) => (
+          <div key={d.label} className="rounded-xl bg-violet-900/30 border border-violet-700/30 p-3">
+            <p className="text-xs text-violet-400 mb-1">{d.icon} {d.label}</p>
+            <p className="text-sm font-medium text-violet-100">{d.value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Degree Range */}
+      <div className="rounded-xl bg-indigo-900/30 border border-indigo-700/30 p-4">
+        <p className="text-xs text-indigo-300 font-semibold uppercase tracking-wider mb-1">Degree Range — Triple Activation Zone</p>
+        <p className="text-indigo-100 font-bold text-lg">{rx.degrees}</p>
+        <p className="text-xs text-indigo-300 mt-2 leading-relaxed">Any natal planet or angle between these degrees will be visited THREE times by Mercury: once in pre-shadow (direct), once during retrograde (backward), and once in post-shadow (direct). These planets will be at the heart of this retrograde's story for you.</p>
+      </div>
+
+      {/* Detriment/Fall — only for current */}
+      {rx.detriment_fall && (
+        <div className="rounded-xl bg-amber-900/20 border border-amber-600/30 p-4">
+          <p className="text-xs text-amber-400 font-semibold uppercase tracking-wider mb-2">⚠️ Mercury in Detriment AND Fall</p>
+          <p className="text-amber-100 text-sm leading-relaxed">{rx.detriment_fall_note}</p>
+          <p className="text-amber-200 text-sm leading-relaxed mt-2">
+            In <strong>detriment</strong>, Mercury is in Pisces — the opposite of Virgo, Mercury's home sign. The sharp, analytical, fact-sorting mind of Mercury is submerged in boundless, imagistic, feeling-first Pisces. Logic becomes poetry. Precision becomes intuition. Facts blur into impressions.
+          </p>
+          <p className="text-amber-200 text-sm leading-relaxed mt-2">
+            In <strong>fall</strong>, Mercury's detailed, discerning nature is also at odds with Pisces' dissolution of boundaries. Details get lost in the oceanic whole. But this is not simply weakness — it is a different kind of intelligence: channeled, received, felt rather than reasoned. Trust the downloads.
+          </p>
+        </div>
+      )}
+
+      {/* Jupiter Aspect */}
+      <div className="rounded-xl bg-teal-900/20 border border-teal-600/30 p-4">
+        <p className="text-xs text-teal-400 font-semibold uppercase tracking-wider mb-2">♃ Jupiter Connection</p>
+        <p className="text-teal-100 text-sm leading-relaxed">{rx.jupiter_aspect}</p>
+      </div>
+
+      {/* Saturn Context — only for current */}
+      {rx.saturn_note && (
+        <div className="rounded-xl bg-slate-800/40 border border-slate-600/30 p-4">
+          <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-2">♄ Saturn Has Just Left — The Reconstruction Is Over</p>
+          <p className="text-slate-200 text-sm leading-relaxed">{rx.saturn_note}</p>
+        </div>
+      )}
+
+      {/* Station Events */}
+      <div className="space-y-3">
+        <p className="text-xs text-violet-400 font-semibold uppercase tracking-wider">What Happens at the Station Degrees</p>
+        <div className="rounded-xl bg-violet-900/20 border border-violet-700/30 p-4 space-y-3">
+          <div>
+            <p className="text-violet-300 text-xs font-semibold uppercase mb-1">↩️ Station Retrograde — {rx.station_rx}</p>
+            <p className="text-violet-200 text-sm leading-relaxed">Mercury appears to stop in the sky before reversing direction. This is the most intensely felt moment of the cycle. The themes of this retrograde crystallize suddenly. Expect: miscommunications to peak, technical glitches to spike, delayed news to arrive, and old situations to suddenly need your attention. The days immediately before and after the station are when you feel Mercury retrograde most acutely. Slow down. Breathe. Pay attention.</p>
+          </div>
+          <div className="h-px bg-violet-800/30" />
+          <div>
+            <p className="text-violet-300 text-xs font-semibold uppercase mb-1">↪️ Station Direct — {rx.station_direct}</p>
+            <p className="text-violet-200 text-sm leading-relaxed">Mercury halts again before moving forward. Things may feel temporarily MORE confused just before it stations direct — a final stirring of the waters. Once Mercury begins moving forward again, clarity arrives gradually. The post-shadow period is when you apply what you've reviewed. Don't rush into major decisions the day Mercury turns direct — give it a few days to build momentum.</p>
+          </div>
+        </div>
+      </div>
+
+      {/* General Retrograde Theme */}
+      <div className="rounded-xl bg-indigo-900/30 border border-indigo-600/30 p-4">
+        <p className="text-xs text-indigo-300 font-semibold uppercase tracking-wider mb-2">🌊 General Themes — This Retrograde</p>
+        <p className="text-indigo-100 text-sm leading-relaxed">
+          {rx.id === "rx1" && "Mercury retrograde in Pisces is one of the most inward, dreamlike, spiritually rich retrogrades possible. The mind turns inward and dissolves its usual defenses. Dreams become vivid and symbolic. Intuition arrives in flashes rather than logical sequences. Old emotional memories surface — not to torment, but to complete. Conversations you've been avoiding, feelings you've been filing away under 'later' — they arrive now. Clarity won't look like a spreadsheet. It will look like a dream that finally makes sense, a feeling you've been carrying whose name you can finally say."}
+          {rx.id === "rx2" && "Mercury retrograde in Cancer brings emotional memories, family themes, and home-related reconsiderations. Old family conversations resurface. Childhood patterns re-emerge in current relationships. Home and living situation logistics may need review. Your emotional intelligence is heightened — feelings arrive as information, not obstacles. Let yourself feel before you think."}
+          {rx.id === "rx3" && "Mercury retrograde in Scorpio is one of the most investigative, intense, and psychologically penetrating cycles. Hidden information surfaces. Power dynamics in relationships and finances come into sharp focus. Secrets are revealed — your own as much as others'. The unconscious speaks. This retrograde rewards honest self-reckoning."}
+        </p>
+      </div>
+
+      {/* Personalized House Section */}
+      {selectedRising !== "none" && houseMeaning && (
+        <div className="rounded-xl bg-gradient-to-br from-fuchsia-900/30 to-violet-900/30 border border-fuchsia-500/30 p-5">
+          <p className="text-xs text-fuchsia-300 font-semibold uppercase tracking-wider mb-2">✨ Personalized for {CHARTS.find(c => c.id === selectedRising)?.label} — {houseMeaning.name}</p>
+          <p className="text-fuchsia-50 text-sm leading-relaxed">{houseMeaning.description}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
+
+export function MercuryRetrogradeGuide() {
+  const [selectedRising, setSelectedRising] = useState("none");
+  const [selectedRxId, setSelectedRxId] = useState("rx1");
+  const [activeSection, setActiveSection] = useState("learn");
+
+  const selectedRx = ALL_RETROGRADES_2025.find((r) => r.id === selectedRxId);
+
+  const sections = [
+    { id: "learn", label: "Learn Mercury", icon: "☿" },
+    { id: "retrogrades", label: "2025 Retrogrades", icon: "🔄" },
+    { id: "current", label: "Current Cycle", icon: "🌊" },
+    { id: "guidance", label: "Your Guidance", icon: "✨" },
+  ];
+
+  return (
+    <div className="rounded-xl bg-gradient-to-b from-slate-950 via-indigo-950/50 to-slate-950 text-slate-100 font-sans pb-10 -mx-4 -mt-4 md:-mx-6 md:-mt-6">
+      {/* Starfield header */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 opacity-20"
+          style={{
+            backgroundImage: "radial-gradient(1px 1px at 20% 30%, white, transparent), radial-gradient(1px 1px at 80% 10%, white, transparent), radial-gradient(1px 1px at 50% 60%, white, transparent), radial-gradient(1px 1px at 10% 80%, white, transparent), radial-gradient(1px 1px at 90% 70%, white, transparent), radial-gradient(2px 2px at 40% 45%, #c4b5fd, transparent), radial-gradient(1px 1px at 70% 25%, #a5f3fc, transparent)",
+          }}
+        />
+        <div className="relative px-4 pt-10 pb-6 text-center">
+          <div className="text-5xl mb-3 animate-pulse" style={{ animationDuration: "4s" }}>☿</div>
+          <h1 className="text-3xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-violet-300 via-fuchsia-200 to-indigo-300">
+            Mercury Retrograde
+          </h1>
+          <p className="text-violet-300 text-sm mt-2 max-w-sm mx-auto">
+            Understanding the Messenger's backward dance — and what it means for you
+          </p>
+
+          {/* Chart selector */}
+          <div className="mt-5 flex justify-center">
+            <div className="relative">
+              <select
+                value={selectedRising}
+                onChange={(e) => setSelectedRising(e.target.value)}
+                className="appearance-none bg-violet-950/60 border border-violet-600/50 text-violet-100 rounded-xl px-4 py-2.5 pr-10 text-sm cursor-pointer focus:outline-none focus:border-violet-400/70 transition-colors"
+              >
+                {CHARTS.map((c) => (
+                  <option key={c.id} value={c.id} className="bg-slate-900">
+                    {c.label}
+                  </option>
+                ))}
+              </select>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-violet-400 pointer-events-none">▾</span>
+            </div>
+          </div>
+          {selectedRising !== "none" && (
+            <p className="text-xs text-violet-400 mt-2">
+              ✨ Content is now personalized for {CHARTS.find(c => c.id === selectedRising)?.label}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Section Tabs */}
+      <div className="sticky top-0 z-10 bg-slate-950/90 backdrop-blur-md border-b border-violet-900/30 px-4 py-3">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar max-w-2xl mx-auto">
+          {sections.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => setActiveSection(s.id)}
+              className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${activeSection === s.id ? "bg-violet-600 text-white shadow-lg shadow-violet-900/40" : "text-violet-300 hover:text-violet-100 hover:bg-violet-900/30"}`}
+            >
+              <span>{s.icon}</span>
+              {s.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="max-w-2xl mx-auto px-4 pt-6 space-y-8">
+
+        {/* ── SECTION: LEARN MERCURY ── */}
+        {activeSection === "learn" && (
+          <div className="space-y-4">
+            <SectionHeader icon="☿" title="Understanding Mercury" subtitle="The messenger, the mind, the trickster — click each card to explore" />
+            {MERCURY_BASICS.map((item) => (
+              <AccordionCard key={item.title} icon={item.icon} title={item.title} content={item.content} />
+            ))}
+
+            {/* Mercury Keywords */}
+            <div className="rounded-2xl border border-violet-800/30 bg-violet-950/30 p-5">
+              <p className="text-xs text-violet-400 font-semibold uppercase tracking-wider mb-3">☿ Words That Are Mercury</p>
+              <div className="flex flex-wrap gap-2">
+                {["Communication", "Logic", "Language", "Wit", "Duality", "Curiosity", "Analysis", "Writing", "Commerce", "Technology", "Nervous System", "Travel", "Siblings", "Contracts", "Trickster", "Messenger", "Perception", "Adaptability", "Data", "Speed", "Youth", "Learning", "Skill", "Connection"].map((w) => (
+                  <span key={w} className="text-xs px-3 py-1 rounded-full bg-violet-900/40 border border-violet-700/40 text-violet-200">{w}</span>
+                ))}
+              </div>
+            </div>
+
+            {/* Signs Mercury Rules / Is in Detriment / Fall / Exalt */}
+            <div className="rounded-2xl border border-violet-800/30 bg-violet-950/30 p-5">
+              <p className="text-xs text-violet-400 font-semibold uppercase tracking-wider mb-3">☿ Mercury's Sign Dignity</p>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="rounded-xl bg-emerald-900/20 border border-emerald-700/20 p-3">
+                  <p className="text-emerald-300 text-xs font-bold uppercase mb-1">Domicile (Home)</p>
+                  <p className="text-emerald-100">Gemini · Virgo</p>
+                  <p className="text-emerald-200 text-xs mt-1">Sharp, precise, at full power</p>
+                </div>
+                <div className="rounded-xl bg-blue-900/20 border border-blue-700/20 p-3">
+                  <p className="text-blue-300 text-xs font-bold uppercase mb-1">Exaltation</p>
+                  <p className="text-blue-100">Virgo (some: Aquarius)</p>
+                  <p className="text-blue-200 text-xs mt-1">Elevated, honored, refined</p>
+                </div>
+                <div className="rounded-xl bg-rose-900/20 border border-rose-700/20 p-3">
+                  <p className="text-rose-300 text-xs font-bold uppercase mb-1">Detriment</p>
+                  <p className="text-rose-100">Sagittarius · Pisces</p>
+                  <p className="text-rose-200 text-xs mt-1">Diffuse, visionary over precise</p>
+                </div>
+                <div className="rounded-xl bg-amber-900/20 border border-amber-700/20 p-3">
+                  <p className="text-amber-300 text-xs font-bold uppercase mb-1">Fall</p>
+                  <p className="text-amber-100">Pisces</p>
+                  <p className="text-amber-200 text-xs mt-1">Logic yields to feeling & dreams</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── SECTION: ALL 2025 RETROGRADES ── */}
+        {activeSection === "retrogrades" && (
+          <div className="space-y-4">
+            <SectionHeader icon="🔄" title="2025 Mercury Retrogrades" subtitle="All three in water signs — an emotionally profound year. Tap a card to explore." />
+
+            {/* Water year banner */}
+            <div className="rounded-2xl bg-gradient-to-r from-cyan-900/30 to-blue-900/30 border border-cyan-700/30 p-4">
+              <p className="text-cyan-200 text-sm leading-relaxed">
+                <span className="font-bold text-cyan-100">🌊 2025: The Year of Water Retrogrades.</span>{" "}
+                All three Mercury retrogrades this year occur in water signs — Pisces, Cancer, and Scorpio. This is a rare alignment that gives 2025 an emotional, intuitive, and healing undercurrent. The mind is asked to feel before it thinks. Memory, dreams, and emotional intelligence are the year's mercurial teachers.
+              </p>
+            </div>
+
+            {/* Retrograde cards */}
+            <div className="space-y-3">
+              {ALL_RETROGRADES_2025.map((rx) => (
+                <RxCard key={rx.id} rx={rx} selectedRising={selectedRising} onClick={setSelectedRxId} isSelected={selectedRxId === rx.id} />
+              ))}
+            </div>
+
+            {/* Selected retrograde detail inline */}
+            {selectedRx && (
+              <div className="mt-2">
+                <RxDetail rx={selectedRx} selectedRising={selectedRising} />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── SECTION: CURRENT CYCLE (Feb 26 - Mar 20) ── */}
+        {activeSection === "current" && (
+          <div className="space-y-4">
+            <SectionHeader icon="🌊" title="Current Cycle — Mercury in Pisces" subtitle="February 26 – March 20, 2025 · Retrograde from 22° to 8° Pisces" />
+
+            <RxDetail rx={ALL_RETROGRADES_2025[0]} selectedRising={selectedRising} />
+
+            {/* What to watch for each phase */}
+            <div className="rounded-2xl border border-violet-800/30 bg-violet-950/30 p-5 space-y-4">
+              <p className="text-xs text-violet-400 font-semibold uppercase tracking-wider">📅 Phase by Phase — What to Watch</p>
+              {[
+                { phase: "Pre-Shadow · Feb 9–26", icon: "🌑", color: "slate", text: "Mercury first crosses 8° Pisces. Themes begin to whisper. A situation, conversation, or feeling starts to emerge that will become central to this retrograde. Pay attention to what arises around February 9 — it is a preview of what will need your full attention." },
+                { phase: "Station Retrograde · Feb 26", icon: "↩️", color: "violet", text: "Mercury halts at 22° Pisces and begins its backward journey. The days around February 26 are likely to feel intense, confused, or surprisingly clarifying. Old matters arrive suddenly. Technology may glitch. Conversations get complicated. This is the moment to slow down completely." },
+                { phase: "Retrograde · Feb 26 – Mar 20", icon: "🔄", color: "indigo", text: "Mercury moves backward from 22° to 8° Pisces. The entire retrograde is immersed in Pisces energy — dreamy, emotional, intuitive, sometimes unclear. Logic is a less reliable tool. Feeling, dreaming, journaling, and meditative reflection will serve you better than analysis. Old matters resurface for completion." },
+                { phase: "Station Direct · March 20", icon: "↪️", color: "violet", text: "Mercury halts again at 8° Pisces and prepares to move forward. March 20 is also the Spring Equinox — a powerful double threshold. The moment of turning direct may feel like a fog beginning to lift. Don't rush into major decisions immediately — give Mercury 2–3 days to build momentum." },
+                { phase: "Post-Shadow · Mar 20 – Apr 7", icon: "🌕", color: "amber", text: "Mercury retraces the shadow zone forward, from 8° back to 22° Pisces. You won't fully understand what this retrograde was about until April 7. Use this phase to apply what you've reviewed. Decisions are clearer now. Conversations that were tangled begin to resolve. Integration happens." },
+              ].map((item) => (
+                <div key={item.phase} className={`rounded-xl bg-${item.color}-900/20 border border-${item.color}-700/30 p-4`}>
+                  <p className={`text-xs text-${item.color}-300 font-semibold uppercase mb-2`}>{item.icon} {item.phase}</p>
+                  <p className={`text-${item.color}-100 text-sm leading-relaxed`}>{item.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── SECTION: GUIDANCE ── */}
+        {activeSection === "guidance" && (
+          <div className="space-y-6">
+            <SectionHeader icon="✨" title="Mercury Retrograde Guidance" subtitle="What to do, what to avoid, and your personalized guidance" />
+
+            {/* Do's */}
+            <div className="rounded-2xl border border-emerald-700/30 bg-emerald-900/10 p-5">
+              <p className="text-xs text-emerald-400 font-semibold uppercase tracking-wider mb-4">✅ What To Do During Mercury Retrograde</p>
+              <div className="space-y-2">
+                {DO_DONT.do.map((item) => (
+                  <div key={item} className="flex items-start gap-3 text-sm text-emerald-100">
+                    <span className="text-emerald-500 mt-0.5 flex-shrink-0">✦</span>
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Don'ts */}
+            <div className="rounded-2xl border border-rose-700/30 bg-rose-900/10 p-5">
+              <p className="text-xs text-rose-400 font-semibold uppercase tracking-wider mb-4">⚠️ What To Avoid</p>
+              <div className="space-y-2">
+                {DO_DONT.dont.map((item) => (
+                  <div key={item} className="flex items-start gap-3 text-sm text-rose-100">
+                    <span className="text-rose-500 mt-0.5 flex-shrink-0">✦</span>
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Water Sign Retrograde Specific */}
+            <div className="rounded-2xl border border-cyan-700/30 bg-cyan-900/10 p-5">
+              <p className="text-xs text-cyan-400 font-semibold uppercase tracking-wider mb-3">🌊 For Water Sign Retrogrades Specifically</p>
+              <div className="space-y-2 text-sm text-cyan-100">
+                {["Journal your dreams — they carry messages during water retrogrades", "Spend time near water: baths, ocean, rivers, rain", "Allow feelings to arrive without immediately analyzing them", "Practice emotional check-ins instead of intellectual processing", "Trust your intuition over logic when the two disagree", "Use this time to tend emotional relationships with care", "Create: paint, write poetry, sing — right-brain expression is favored"].map((item) => (
+                  <div key={item} className="flex items-start gap-3">
+                    <span className="text-cyan-500 mt-0.5 flex-shrink-0">✦</span>
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Personalized section */}
+            <div className="rounded-2xl border border-fuchsia-600/30 bg-gradient-to-br from-fuchsia-950/40 to-violet-950/40 p-5">
+              <p className="text-xs text-fuchsia-400 font-semibold uppercase tracking-wider mb-3">
+                {selectedRising === "none" ? "🔮 Select Your Rising Sign for Personalized Guidance" : `✨ Your 2025 Water Retrograde Year — ${CHARTS.find(c => c.id === selectedRising)?.label}`}
+              </p>
+              {selectedRising === "none" ? (
+                <p className="text-violet-300 text-sm">Select your rising sign using the dropdown at the top of this page to receive guidance personalized to your chart.</p>
+              ) : (
+                <p className="text-fuchsia-50 text-sm leading-relaxed">{WATER_PERSONALIZED[selectedRising]}</p>
+              )}
+            </div>
+
+            {/* Closing affirmation */}
+            <div className="rounded-2xl border border-violet-700/30 bg-gradient-to-br from-violet-950/50 to-indigo-950/50 p-6 text-center">
+              <p className="text-violet-300 text-xs font-semibold uppercase tracking-wider mb-3">☿ A Mercury Retrograde Mantra</p>
+              <p className="text-violet-100 text-base leading-relaxed italic">
+                "I slow down and trust the process of review.<br/>
+                What returns to me returns for completion.<br/>
+                What is unfinished becomes my greatest teacher.<br/>
+                I am not going backward — I am going deeper."
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
