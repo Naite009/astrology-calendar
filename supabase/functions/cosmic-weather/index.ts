@@ -733,7 +733,7 @@ CRITICAL INSTRUCTIONS:
 8. Mention the Moon sign's influence on the emotional atmosphere and suggest finding where that sign falls in their own chart.
 9. If moonSignChange data is provided, the Moon changes signs TODAY. Do NOT say "Moon in [sign] all day". Describe BOTH energies and the transition.
 10. If imminentSignChanges data is provided, these are UNUSUAL and NOTEWORTHY events. Give them prominent coverage - a planet changing signs is a big shift in collective energy.
-11. If mercuryRetrogradeInfo is provided, Mercury's retrograde cycle MUST be discussed. Our soul takes another look at what shows up in daily life - rethinking how we think and communicate.
+11. If mercuryRetrogradeInfo is provided, Mercury's retrograde cycle MUST be discussed EVERY DAY. When Mercury Rx is in Pisces, you MUST explain WHY this retrograde is especially difficult: Pisces is Mercury's double difficulty — both detriment (opposite Virgo, Mercury's home) AND fall (opposite Virgo, Mercury's exaltation). No other sign weakens Mercury this much. Explain what detriment and fall MEAN in plain language appropriate to the voice style. Describe how this shows up in daily life: thicker mental fog, more miscommunication than usual, intuitive/emotional thinking overriding logic, vivid dreams, words failing where feelings succeed. This is the most challenging Mercury retrograde of the year BECAUSE of the dignity, and the user needs to understand that.
 12. If personalizedRetrograde data is provided, include a personalized section about how Mercury retrograde affects THIS person's chart specifically, layered through the phases.`;
 
     console.log("Sending prompt to AI:", userPrompt.substring(0, 500) + "...");
