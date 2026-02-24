@@ -3,7 +3,7 @@ import { Sun, MapPin, ArrowRight, Compass, Star, Globe, ChevronDown, ChevronUp, 
 import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChart';
 import { SolarReturnChart, useSolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { analyzeSolarReturn, SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
-import { ChartSelector } from './ChartSelector';
+
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -40,16 +40,24 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
     ...savedCharts,
   ], [userNatalChart, savedCharts]);
 
-  const [selectedNatalId, setSelectedNatalId] = useState<string>(
-    userNatalChart?.id || savedCharts[0]?.id || ''
-  );
-
-  const selectedNatal = allCharts.find(c => c.id === selectedNatalId) || allCharts[0] || null;
-
   const {
     solarReturnCharts, addSolarReturn, updateSolarReturn, deleteSolarReturn,
     getSolarReturnsForChart,
   } = useSolarReturnChart();
+
+  // Only show natal charts that have at least one SR chart uploaded
+  const natalChartsWithSR = useMemo(() => {
+    return allCharts.filter(c => getSolarReturnsForChart(c.id).length > 0);
+  }, [allCharts, solarReturnCharts]);
+
+  const [selectedNatalId, setSelectedNatalId] = useState<string>(
+    natalChartsWithSR[0]?.id || userNatalChart?.id || savedCharts[0]?.id || ''
+  );
+
+  // For adding a new SR, we need access to all natal charts
+  const [showAddForNewPerson, setShowAddForNewPerson] = useState(false);
+
+  const selectedNatal = allCharts.find(c => c.id === selectedNatalId) || allCharts[0] || null;
 
   const srChartsForNatal = selectedNatal ? getSolarReturnsForChart(selectedNatal.id) : [];
 
@@ -64,7 +72,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
     return analyzeSolarReturn(selectedSR, selectedNatal);
   }, [selectedSR, selectedNatal]);
 
-  if (!selectedNatal) {
+  if (!allCharts.length) {
     return (
       <div className="text-center py-20 text-muted-foreground">
         <Sun size={48} className="mx-auto mb-4 opacity-30" />
@@ -75,37 +83,62 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
 
   return (
     <div className="space-y-6">
-      {/* Header & chart picker */}
-      <div className="flex flex-wrap items-center gap-4">
-        <ChartSelector
-          userNatalChart={userNatalChart}
-          savedCharts={savedCharts}
-          selectedChartId={selectedNatalId}
-          onSelect={(id) => { setSelectedNatalId(id === 'user' ? (userNatalChart?.id || '') : id); setSelectedSRId(null); }}
-          includeGeneral={false}
-          label="Natal Chart:"
-        />
+      {/* Header & person picker — only people with SR charts, plus option to add new */}
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Solar Return:</label>
+        {natalChartsWithSR.length > 0 ? (
+          <select
+            value={selectedNatalId}
+            onChange={(e) => { setSelectedNatalId(e.target.value); setSelectedSRId(null); }}
+            className="border border-border bg-background text-foreground rounded-sm px-3 py-1.5 text-sm"
+          >
+            {natalChartsWithSR.map(c => (
+              <option key={c.id} value={c.id}>
+                {c.id === userNatalChart?.id ? `★ ${c.name}` : c.name}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <span className="text-sm text-muted-foreground">No Solar Return charts yet</span>
+        )}
+        <button
+          onClick={() => { setShowAddForNewPerson(!showAddForNewPerson); }}
+          className="text-[11px] uppercase tracking-widest px-3 py-1.5 bg-primary text-primary-foreground rounded-sm hover:bg-primary/90 transition-colors"
+        >
+          + Add SR Chart
+        </button>
       </div>
 
-      {/* SR chart list */}
-      <div className="border border-border rounded-sm p-4 bg-card">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm uppercase tracking-widest text-foreground font-medium">
+      {/* When adding for potentially a different person, show natal chart picker */}
+      {showAddForNewPerson && !showInputForm && (
+        <div className="border border-primary/30 rounded-sm p-4 bg-card space-y-3">
+          <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground">Select person for new Solar Return:</h4>
+          <div className="flex flex-wrap gap-2">
+            {allCharts.map(c => (
+              <button
+                key={c.id}
+                onClick={() => {
+                  setSelectedNatalId(c.id);
+                  setShowInputForm(true);
+                  setEditingSRId(null);
+                  setShowAddForNewPerson(false);
+                }}
+                className="text-sm px-3 py-2 rounded-sm border border-border bg-secondary text-foreground hover:border-primary transition-all"
+              >
+                {c.id === userNatalChart?.id ? `★ ${c.name}` : c.name}
+              </button>
+            ))}
+          </div>
+          <button onClick={() => setShowAddForNewPerson(false)} className="text-xs text-muted-foreground hover:text-foreground">Cancel</button>
+        </div>
+      )}
+
+      {/* SR chart list for selected person */}
+      {srChartsForNatal.length > 0 && (
+        <div className="border border-border rounded-sm p-4 bg-card">
+          <h3 className="text-sm uppercase tracking-widest text-foreground font-medium mb-3">
             ☉ Solar Return Charts for {selectedNatal.name}
           </h3>
-          <button
-            onClick={() => { setShowInputForm(true); setEditingSRId(null); }}
-            className="text-[11px] uppercase tracking-widest px-3 py-1.5 bg-primary text-primary-foreground rounded-sm hover:bg-primary/90 transition-colors"
-          >
-            + Add SR Chart
-          </button>
-        </div>
-
-        {srChartsForNatal.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No Solar Return charts yet. Add one to see your yearly analysis.
-          </p>
-        ) : (
           <div className="flex flex-wrap gap-2">
             {srChartsForNatal.sort((a, b) => b.solarReturnYear - a.solarReturnYear).map(sr => (
               <button
@@ -118,14 +151,14 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
                 }`}
               >
                 SR {sr.solarReturnYear}
-                {sr.solarReturnLocation && sr.solarReturnLocation !== selectedNatal.birthLocation && (
+                {sr.solarReturnLocation && sr.solarReturnLocation !== selectedNatal?.birthLocation && (
                   <span className="ml-1 text-[10px] opacity-70">📍</span>
                 )}
               </button>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Input form modal */}
       {showInputForm && (
