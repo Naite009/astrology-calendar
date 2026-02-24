@@ -1185,8 +1185,8 @@ export const determineApplying = (
 const INGRESS_INTERPRETATIONS: Record<string, Record<string, string>> = {
   mercury: {
     Capricorn: "Thinking becomes practical and goal-oriented. Communication takes on a serious, professional tone. Excellent for strategic planning, career discussions, and long-term goal setting. Mental discipline peaks.",
-    Aquarius: "Mercury exalted - innovative thinking and original ideas flourish. Communication becomes unconventional and forward-thinking. Perfect for technology, group discussions, and humanitarian causes.",
-    Pisces: "Mercury in detriment - thoughts become dreamy, intuitive, and artistic. Communication may be less precise but more imaginative. Great for poetry, music, and spiritual reflection. Pay extra attention to details.",
+    Aquarius: "Innovative thinking and original ideas flourish. Communication becomes unconventional and forward-thinking. Perfect for technology, group discussions, and humanitarian causes. Note: some modern sources call this Mercury's exaltation, but traditionally Mercury is exalted in Virgo.",
+    Pisces: "Mercury in detriment AND fall — its hardest placement. Thoughts become dreamy, intuitive, and artistic. Communication may be less precise but deeply imaginative. Great for poetry, music, and spiritual reflection. Pay extra attention to details and contracts.",
     Aries: "Quick, decisive thinking returns. Communication becomes direct and competitive. Great for debates, negotiations, and pioneering ideas. Watch for impulsive words.",
     Taurus: "Thoughts slow down and become more practical. Communication focuses on values and material matters. Excellent for financial planning and sensory experiences. Stubborn opinions may surface.",
     Gemini: "Mercury returns home - mental agility and curiosity peak. Communication flows easily with wit and versatility. Perfect for learning, networking, and multitasking. Watch for scattered focus.",
