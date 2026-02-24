@@ -72,8 +72,7 @@ const RETROGRADES_BY_YEAR: Record<number, { element: string; summary: string; re
         preshadow: "June 30, 2025", shadow: "August 24, 2025",
         station_rx: "July 17, 2025 at 15°34' Leo", station_direct: "August 11, 2025 at 4°37' Leo",
         cazimi: null, current: false,
-        sign_quality: "Fixed Fire — Sun-ruled", detriment_fall: true,
-        detriment_fall_note: "Mercury is in fall in Leo — opposite Aquarius, its sign of exaltation. The cool, systematic thinker becomes theatrical and heart-driven. Communication prioritizes dramatic impact over precision.",
+        sign_quality: "Fixed Fire — Sun-ruled", detriment_fall: false,
         jupiter_aspect: "Jupiter in Cancer forms a semi-sextile — subtle emotional adjustments meet creative fire.",
         saturn_note: null, color: "#d4a030", gradient: "from-amber-900/40 to-yellow-900/40",
       },
@@ -102,7 +101,7 @@ const RETROGRADES_BY_YEAR: Record<number, { element: string; summary: string; re
         cazimi: "March 7, 2026 at 16°52' Pisces", current: true,
         sign_quality: "Mutable Water — Jupiter-ruled (traditionally), Neptune-ruled (modern)",
         detriment_fall: true,
-        detriment_fall_note: "Mercury is in detriment in Pisces — opposite Virgo, Mercury's home sign. The sharp, analytical mind is submerged in boundless, feeling-first Pisces. Logic becomes poetry. Intuition replaces analysis.",
+        detriment_fall_note: "Mercury is in both detriment AND fall in Pisces — opposite Virgo, which is Mercury's home sign AND exaltation. This is Mercury's hardest placement by traditional dignity. The sharp, analytical mind is submerged in boundless, feeling-first Pisces. Logic becomes poetry. Intuition replaces analysis.",
         jupiter_aspect: "Jupiter is in Cancer during the Pisces retrograde, forming a trine (water to water) — amplifying emotional wisdom, spiritual insight, and intuitive downloads.",
         saturn_note: "Saturn moved through Pisces from March 2023 to February 2026 — restructuring whatever house Pisces rules in your chart. This retrograde is the FIRST Mercury cycle since Saturn's departure. The reconstruction is over. Mercury is now reviewing what was rebuilt.",
         color: "#7c6fa0", gradient: "from-violet-900/40 to-indigo-900/40",
@@ -332,17 +331,12 @@ function RxDetail({ rx, risingSign, chartName }: { rx: RxData; risingSign: strin
       {rx.detriment_fall && (
         <div className="rounded-xl bg-amber-900/30 border border-amber-500/40 p-4">
           <p className="text-xs text-amber-300 font-semibold uppercase tracking-wider mb-2">
-            {rx.sign === "Pisces" ? "⚠️ Mercury in Detriment" : rx.sign === "Leo" ? "⚠️ Mercury in Fall" : "⚠️ Mercury in Detriment"}
+            {rx.sign === "Pisces" ? "⚠️ Mercury in Detriment & Fall" : "⚠️ Mercury in Detriment"}
           </p>
           <p className="text-amber-50 text-sm leading-relaxed">{rx.detriment_fall_note}</p>
           {rx.sign === "Pisces" && (
             <p className="text-amber-100 text-sm leading-relaxed mt-2">
-              In <strong className="text-amber-200">detriment</strong>, Mercury is in Pisces — the opposite of Virgo, Mercury's home sign. The sharp, analytical, fact-sorting mind of Mercury is submerged in boundless, imagistic, feeling-first Pisces. Logic becomes poetry. Precision becomes intuition. Facts blur into impressions. This is not simply weakness — it is a different kind of intelligence: channeled, received, felt rather than reasoned.
-            </p>
-          )}
-          {rx.sign === "Leo" && (
-            <p className="text-amber-100 text-sm leading-relaxed mt-2">
-              In <strong className="text-amber-200">fall</strong>, Mercury is in Leo — opposite Aquarius, Mercury's sign of exaltation. Mercury's cool, detached, systems-level thinking is overwhelmed by Leo's need for personal expression and dramatic flair. Communication becomes performative rather than precise. But this also channels Mercury through the heart — messages carry warmth, creativity, and conviction.
+              Pisces is Mercury's <strong className="text-amber-200">double difficulty</strong> — both detriment (opposite Virgo, Mercury's home) AND fall (opposite Virgo, Mercury's exaltation). The sharp, analytical, fact-sorting mind is submerged in boundless, imagistic, feeling-first Pisces. Logic becomes poetry. Precision becomes intuition. This is not simply weakness — it is a different kind of intelligence: channeled, received, felt rather than reasoned.
             </p>
           )}
         </div>
@@ -655,8 +649,8 @@ export function MercuryRetrogradeGuide({ allCharts, primaryUserName }: MercuryRe
                 </div>
                 <div className="rounded-xl bg-blue-900/30 border border-blue-500/30 p-3">
                   <p className="text-blue-300 text-xs font-bold uppercase mb-1">Exaltation</p>
-                  <p className="text-blue-50">Virgo (some: Aquarius)</p>
-                  <p className="text-blue-200 text-xs mt-1">Elevated, honored, refined</p>
+                  <p className="text-blue-50">Virgo <span className="text-blue-300 text-xs">(traditional)</span></p>
+                  <p className="text-blue-200 text-xs mt-1">Elevated, honored, refined. Some modern astrologers assign Aquarius, but the traditional exaltation is Virgo at 15°.</p>
                 </div>
                 <div className="rounded-xl bg-rose-900/30 border border-rose-500/30 p-3">
                   <p className="text-rose-300 text-xs font-bold uppercase mb-1">Detriment</p>
