@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Clock, Sparkles, Info } from 'lucide-react';
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
 import { calculateBestTimes, BestTimesCategory, BestTimeResult, CATEGORY_INFO, getTransitPositions } from '@/lib/bestTimes';
+import { normalizeName } from '@/lib/nameMatching';
 
 interface BestTimesViewProps {
   userNatalChart: NatalChart | null;
@@ -348,9 +349,20 @@ export const BestTimesView = ({
         >
           <option value="general">Collective Astrology</option>
           {userNatalChart && <option value="user">Your Chart ({userNatalChart.name})</option>}
-          {savedCharts.map(chart => (
-            <option key={chart.id} value={chart.id}>{chart.name}</option>
-          ))}
+          {(() => {
+            const seen = new Set<string>();
+            if (userNatalChart) seen.add(normalizeName(userNatalChart.name) + '|' + userNatalChart.birthDate);
+            return savedCharts
+              .filter(chart => {
+                const key = normalizeName(chart.name) + '|' + chart.birthDate;
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+              })
+              .map(chart => (
+                <option key={chart.id} value={chart.id}>{chart.name}</option>
+              ));
+          })()}
         </select>
         {selectedChartForTiming === 'general' && (
           <p className="text-xs text-muted-foreground mt-2">

@@ -6,6 +6,7 @@ import { NatalChart } from '@/hooks/useNatalChart';
 import { ZoomIn, ZoomOut, RotateCcw, Download, Upload, CheckCircle, XCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ChartSelector as ChartSelectorDropdown } from './ChartSelector';
+import { normalizeName } from '@/lib/nameMatching';
 
 interface NatalChartWheelProps {
   natalChart: NatalChart | null;
@@ -17,10 +18,18 @@ export const NatalChartWheel = ({ natalChart: initialChart, allCharts = [], onCh
   // Get the user chart (first one passed in if available)
   const userChart = initialChart || allCharts[0] || null;
   
-  // Get all charts sorted: user first, then alphabetically
+  // Get all charts sorted and deduplicated: user first, then alphabetically
   const allSortedCharts = useMemo(() => {
+    const seen = new Set<string>();
+    if (userChart) seen.add(normalizeName(userChart.name) + '|' + userChart.birthDate);
     const sorted = [...allCharts]
-      .filter(c => c.id !== userChart?.id)
+      .filter(c => {
+        if (c.id === userChart?.id) return false;
+        const key = normalizeName(c.name) + '|' + c.birthDate;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
       .sort((a, b) => a.name.localeCompare(b.name));
     return userChart ? [userChart, ...sorted] : sorted;
   }, [allCharts, userChart]);
