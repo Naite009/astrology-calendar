@@ -281,7 +281,8 @@ function RxCard({ rx, onClick, isSelected }: { rx: RxData; onClick: (id: string)
         <p>📅 {rx.dates}</p>
         <p>📐 {rx.degrees}</p>
       </div>
-      {isSelected && <p className="text-xs text-violet-200 mt-2 italic">Click to expand details below ↓</p>}
+      {isSelected && <p className="text-xs text-violet-200 mt-2 italic">▼ Tap to collapse</p>}
+      {!isSelected && <p className="text-xs text-violet-300/60 mt-2 italic">▶ Tap to expand details</p>}
     </div>
   );
 }
@@ -557,20 +558,20 @@ export function MercuryRetrogradeGuide({ allCharts }: MercuryRetrogradeGuideProp
             {yearRetrogrades.length > 0 ? (
               <div className="space-y-3">
                 {yearRetrogrades.map((rx) => (
-                  <RxCard key={rx.id} rx={rx} onClick={setSelectedRxId} isSelected={selectedRxId === rx.id} />
+                  <div key={rx.id}>
+                    <RxCard rx={rx} onClick={(id) => setSelectedRxId(selectedRxId === id ? "" : id)} isSelected={selectedRxId === rx.id} />
+                    {selectedRxId === rx.id && (
+                      <div className="mt-3 mb-2">
+                        <RxDetail rx={rx} risingSign={risingSign} chartName={chartName} />
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
             ) : (
               <div className="rounded-2xl border border-violet-600/30 bg-violet-900/20 p-8 text-center">
                 <p className="text-violet-200 text-lg mb-2">☿ Data coming soon</p>
                 <p className="text-violet-300 text-sm">Detailed retrograde data for {selectedYear} will be added as it becomes available.</p>
-              </div>
-            )}
-
-            {/* Selected retrograde detail inline */}
-            {selectedRx && (
-              <div className="mt-2">
-                <RxDetail rx={selectedRx} risingSign={risingSign} chartName={chartName} />
               </div>
             )}
           </div>
