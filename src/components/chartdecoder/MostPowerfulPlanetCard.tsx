@@ -485,30 +485,22 @@ export const MostPowerfulPlanetCard: React.FC<MostPowerfulPlanetCardProps> = ({ 
               </div>
             </div>
 
-            {/* Score comparison with MVP */}
+            {/* Why Elevation Matters */}
             <div className="p-3 bg-background/50 rounded-lg space-y-2">
               <div className="flex items-center gap-2 mb-2">
                 <Info size={14} className="text-sky-500" />
-                <span className="text-xs font-medium text-foreground">Why isn't this the MVP?</span>
+                <span className="text-xs font-medium text-foreground">Why Your Highest Planet Matters</span>
               </div>
               <p className="text-xs text-muted-foreground">
-                Being the highest planet (closest to the Midheaven) gives <strong>{elevated.planet}</strong> public 
-                visibility and career prominence — everyone can <em>see</em> this planet's energy in your life. But 
-                the MVP score measures <strong>total condition</strong>: how well a planet can actually deliver on its 
-                promises based on sign dignity, sect, and aspects.
+                <strong>{elevated.planet}</strong> sits at the peak of your chart, closest to the Midheaven — the point 
+                of greatest public visibility. This is the energy other people notice about you <em>first</em>. It shapes 
+                your reputation, how you're perceived professionally, and the qualities people project onto you before 
+                they truly know you. Think of it as your "billboard" — the planet the world reads when it looks at your life.
               </p>
-              <div className="grid grid-cols-2 gap-2 mt-3">
-                <div className="p-2 bg-emerald-500/10 rounded text-center">
-                  <div className="text-[10px] text-muted-foreground">MVP {mostPowerful.planet}</div>
-                  <div className="text-sm font-medium text-emerald-600">+{mostPowerful.totalScore}</div>
-                </div>
-                <div className="p-2 bg-sky-500/10 rounded text-center">
-                  <div className="text-[10px] text-muted-foreground">Elevated {elevated.planet}</div>
-                  <div className="text-sm font-medium text-sky-600">{elevated.totalScore >= 0 ? '+' : ''}{elevated.totalScore}</div>
-                </div>
-              </div>
-              <p className="text-[10px] text-muted-foreground italic mt-1">
-                Difference of {mostPowerful.totalScore - elevated.totalScore} points
+              <p className="text-xs text-muted-foreground mt-1">
+                {PLANET_KEYWORDS[elevated.planet]
+                  ? `Because ${elevated.planet} governs ${PLANET_KEYWORDS[elevated.planet].nature}, people tend to associate you with these themes in your career and public life — even if you feel more driven by other energies internally.`
+                  : `This planet's themes dominate how others perceive your public role and career direction.`}
               </p>
             </div>
 
@@ -540,28 +532,15 @@ export const MostPowerfulPlanetCard: React.FC<MostPowerfulPlanetCardProps> = ({ 
               </div>
             </div>
 
-            {/* What Elevation Means */}
+            {/* Practical Guidance */}
             <div className="space-y-3">
-              <div className="flex items-start gap-2">
-                <Mountain size={14} className="text-sky-500 mt-0.5 shrink-0" />
-                <div>
-                  <div className="text-xs font-medium text-foreground">What Elevation Means</div>
-                  <p className="text-xs text-muted-foreground">
-                    The most elevated planet is the one closest to the top of your chart (the Midheaven/MC). 
-                    It's the planet the world <em>sees first</em> — it colors your public reputation, career 
-                    image, and how others perceive you before they know you deeply.
-                  </p>
-                </div>
-              </div>
-              
               <div className="flex items-start gap-2">
                 <Sparkles size={14} className="text-amber-500 mt-0.5 shrink-0" />
                 <div>
-                  <div className="text-xs font-medium text-foreground">How It Shapes Your Life</div>
+                  <div className="text-xs font-medium text-foreground">Working With Your Elevated Planet</div>
                   <p className="text-xs text-muted-foreground">
-                    {PLANET_KEYWORDS[elevated.planet]
-                      ? `${elevated.planet} governs ${PLANET_KEYWORDS[elevated.planet].nature}. Because it's your most visible planet, people associate you with these qualities — even if your MVP (${mostPowerful.planet}) is what truly drives you underneath.`
-                      : `This planet's energy is highly visible in your public life and career, even if it isn't your chart's strongest performer.`}
+                    {PLANET_KEYWORDS[elevated.planet]?.guidance || 'Lean into this planet\'s energy in your public and professional life — it\'s what people already see in you.'}
+                    {' '}Since {elevated.planet} is your most visible planet, leaning into its themes in your career and public roles will feel natural and be well-received by others.
                   </p>
                 </div>
               </div>
