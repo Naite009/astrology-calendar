@@ -233,10 +233,17 @@ const SRInputForm = ({ natalChart, existingSR, onSave, onCancel }: SRInputFormPr
       const reader = new FileReader();
       const base64Promise = new Promise<string>((resolve, reject) => {
         reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
+        reader.onerror = (err) => reject(new Error('Failed to read file'));
       });
       reader.readAsDataURL(file);
-      const fileBase64 = await base64Promise;
+      let fileBase64: string;
+      try {
+        fileBase64 = await base64Promise;
+      } catch {
+        setUploadStatus('idle');
+        setUploadError('Could not read file');
+        return;
+      }
 
       setUploadStatus('parsing');
 
@@ -245,30 +252,56 @@ const SRInputForm = ({ natalChart, existingSR, onSave, onCancel }: SRInputFormPr
       const isPDF = fileType === 'application/pdf' || fileName.endsWith('.pdf');
       const isWord = fileType.includes('word') || fileName.endsWith('.docx') || fileName.endsWith('.doc');
 
-      const { data, error } = await supabase.functions.invoke('parse-chart-image', {
-        body: {
-          imageBase64: fileBase64,
-          fileType: isPDF ? 'pdf' : isWord ? 'word' : 'image',
-          fileName: file.name,
-        },
-      });
+      let data: any;
+      let error: any;
+      try {
+        const result = await supabase.functions.invoke('parse-chart-image', {
+          body: {
+            imageBase64: fileBase64,
+            fileType: isPDF ? 'pdf' : isWord ? 'word' : 'image',
+            fileName: file.name,
+          },
+        });
+        data = result.data;
+        error = result.error;
+      } catch (fetchErr: any) {
+        setUploadStatus('idle');
+        setUploadError(fetchErr.message || 'Network error during parsing');
+        toast.error('Network error during chart parsing');
+        return;
+      }
 
-      if (error) throw new Error(error.message || 'Failed to parse file');
-      if (!data?.data) throw new Error('No chart data found in file.');
+      if (error) {
+        setUploadStatus('idle');
+        setUploadError(error.message || 'Failed to parse file');
+        toast.error(error.message || 'Failed to parse file');
+        return;
+      }
+      if (!data?.data) {
+        setUploadStatus('idle');
+        setUploadError('No chart data found in file.');
+        toast.error('No chart data found. Try a clearer image.');
+        return;
+      }
 
       const parsedData = data.data;
       let planetsImported = 0;
       let housesImported = 0;
 
-      // Extract birth info for SR year and location
+      // Extract SR-specific info
+      // The "progressionDate" or the SR chart date tells us the year
+      // The "birthLocation" on an SR chart is actually the SR cast location
       const birthInfo = parsedData.birthInfo;
       if (birthInfo) {
-        if (birthInfo.birthDate && /^\d{4}/.test(birthInfo.birthDate)) {
-          const parsedYear = parseInt(birthInfo.birthDate.slice(0, 4), 10);
-          if (parsedYear > 1900 && parsedYear < 2100) setYear(parsedYear);
-        }
+        // For SR charts, the location shown IS the SR location
         if (birthInfo.birthLocation && typeof birthInfo.birthLocation === 'string') {
           setLocation(birthInfo.birthLocation);
+        }
+        // Try progressionDate first (SR chart date), fallback to birthDate year
+        const srDateStr = birthInfo.progressionDate || birthInfo.birthDate;
+        if (srDateStr && /^\d{4}/.test(srDateStr)) {
+          const parsedYear = parseInt(srDateStr.slice(0, 4), 10);
+          if (parsedYear > 1900 && parsedYear < 2100) setYear(parsedYear);
         }
       }
 
@@ -317,9 +350,10 @@ const SRInputForm = ({ natalChart, existingSR, onSave, onCancel }: SRInputFormPr
       setUploadStatus('idle');
       toast.success(`Imported ${planetsImported} planets${housesImported > 0 ? ` and ${housesImported} house cusps` : ''}`);
     } catch (err: any) {
+      console.error('[SR Upload] Unexpected error:', err);
       setUploadStatus('idle');
-      setUploadError(err.message || 'Upload failed');
-      toast.error(err.message || 'Failed to parse chart');
+      setUploadError(err?.message || 'Upload failed');
+      toast.error(err?.message || 'Failed to parse chart');
     }
   };
 
