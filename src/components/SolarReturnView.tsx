@@ -1,10 +1,12 @@
-import { useState, useMemo } from 'react';
-import { Sun, MapPin, ArrowRight, Compass, Star, Globe, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { useState, useMemo, useRef } from 'react';
+import { Sun, MapPin, ArrowRight, Compass, Star, Globe, ChevronDown, ChevronUp, Info, Upload, Loader2 } from 'lucide-react';
 import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChart';
 import { SolarReturnChart, useSolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { analyzeSolarReturn, SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { ChartSelector } from './ChartSelector';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const ZODIAC_SIGNS = [
   'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
@@ -12,11 +14,14 @@ const ZODIAC_SIGNS = [
 ];
 
 const CORE_PLANETS = ['Sun','Moon','Ascendant','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'] as const;
+const GODDESS_PLANETS = ['Chiron','Juno','Ceres','Pallas','Vesta','Lilith','Eris'] as const;
+const ALL_INPUT_PLANETS = [...CORE_PLANETS, ...GODDESS_PLANETS] as const;
 
 const PLANET_SYMBOLS: Record<string, string> = {
   Sun:'☉', Moon:'☽', Mercury:'☿', Venus:'♀', Mars:'♂',
   Jupiter:'♃', Saturn:'♄', Uranus:'♅', Neptune:'♆', Pluto:'♇',
   Ascendant:'ASC', NorthNode:'☊', Chiron:'⚷',
+  Juno:'⚵', Ceres:'⚳', Pallas:'⚴', Vesta:'🜕', Lilith:'⚸', Eris:'⯰',
 };
 
 const SIGN_SYMBOLS: Record<string, string> = {
@@ -193,6 +198,16 @@ const SRInputForm = ({ natalChart, existingSR, onSave, onCancel }: SRInputFormPr
     existingSR?.houseCusps ? { ...existingSR.houseCusps } as any : {}
   );
   const [showHouses, setShowHouses] = useState(false);
+  const [showGoddess, setShowGoddess] = useState(
+    // Auto-expand if any goddess planets already have data
+    GODDESS_PLANETS.some(p => (existingSR?.planets as any)?.[p]?.sign)
+  );
+
+  // Drag & drop state
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'parsing'>('idle');
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const updatePlanet = (name: string, field: string, value: any) => {
     setPlanets(prev => ({
@@ -209,8 +224,107 @@ const SRInputForm = ({ natalChart, existingSR, onSave, onCancel }: SRInputFormPr
     }));
   };
 
+  // ─── File upload / drag-and-drop ──────────────────────────────────
+  const processFile = async (file: File) => {
+    setUploadStatus('uploading');
+    setUploadError(null);
+
+    try {
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+      });
+      reader.readAsDataURL(file);
+      const fileBase64 = await base64Promise;
+
+      setUploadStatus('parsing');
+
+      const fileName = file.name.toLowerCase();
+      const fileType = file.type;
+      const isPDF = fileType === 'application/pdf' || fileName.endsWith('.pdf');
+      const isWord = fileType.includes('word') || fileName.endsWith('.docx') || fileName.endsWith('.doc');
+
+      const { data, error } = await supabase.functions.invoke('parse-chart-image', {
+        body: {
+          imageBase64: fileBase64,
+          fileType: isPDF ? 'pdf' : isWord ? 'word' : 'image',
+          fileName: file.name,
+        },
+      });
+
+      if (error) throw new Error(error.message || 'Failed to parse file');
+      if (!data?.data) throw new Error('No chart data found in file.');
+
+      const parsedData = data.data;
+      let planetsImported = 0;
+      let housesImported = 0;
+
+      // Import planets
+      if (parsedData.planets && typeof parsedData.planets === 'object') {
+        const newPlanets: Record<string, any> = { ...planets };
+        for (const [planet, position] of Object.entries(parsedData.planets)) {
+          const pos = position as any;
+          if (pos?.sign && ZODIAC_SIGNS.includes(pos.sign)) {
+            newPlanets[planet] = {
+              sign: pos.sign,
+              degree: typeof pos.degree === 'number' ? pos.degree : 0,
+              minutes: typeof pos.minutes === 'number' ? pos.minutes : 0,
+              isRetrograde: pos.isRetrograde === true,
+            };
+            planetsImported++;
+          }
+        }
+        setPlanets(newPlanets);
+      }
+
+      // Import house cusps
+      if (parsedData.houseCusps && typeof parsedData.houseCusps === 'object') {
+        const newCusps: Record<string, any> = { ...houseCusps };
+        for (let i = 1; i <= 12; i++) {
+          const key = `house${i}`;
+          const cusp = parsedData.houseCusps[key];
+          if (cusp?.sign && ZODIAC_SIGNS.includes(cusp.sign)) {
+            newCusps[key] = {
+              sign: cusp.sign,
+              degree: typeof cusp.degree === 'number' ? cusp.degree : 0,
+              minutes: typeof cusp.minutes === 'number' ? cusp.minutes : 0,
+            };
+            housesImported++;
+          }
+        }
+        setHouseCusps(newCusps);
+        if (housesImported > 0) setShowHouses(true);
+      }
+
+      // Auto-expand goddess section if we got any
+      if (GODDESS_PLANETS.some(p => parsedData.planets?.[p]?.sign)) {
+        setShowGoddess(true);
+      }
+
+      setUploadStatus('idle');
+      toast.success(`Imported ${planetsImported} planets${housesImported > 0 ? ` and ${housesImported} house cusps` : ''}`);
+    } catch (err: any) {
+      setUploadStatus('idle');
+      setUploadError(err.message || 'Upload failed');
+      toast.error(err.message || 'Failed to parse chart');
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragOver(true); };
+  const handleDragLeave = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragOver(false); };
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault(); e.stopPropagation(); setIsDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) processFile(file);
+  };
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
+    e.target.value = '';
+  };
+
   const handleSave = () => {
-    // At minimum need Sun position
     if (!planets.Sun?.sign) return;
     onSave({
       name: `SR ${year} – ${natalChart.name}`,
@@ -225,6 +339,43 @@ const SRInputForm = ({ natalChart, existingSR, onSave, onCancel }: SRInputFormPr
     });
   };
 
+  const renderPlanetRow = (planet: string) => (
+    <div key={planet} className="flex items-center gap-2 bg-secondary/30 rounded-sm p-2">
+      <span className="w-8 text-center text-sm">{PLANET_SYMBOLS[planet] || planet.slice(0, 3)}</span>
+      <span className="w-20 text-xs text-muted-foreground truncate">{planet}</span>
+      <select
+        value={planets[planet]?.sign || ''}
+        onChange={(e) => updatePlanet(planet, 'sign', e.target.value)}
+        className="flex-1 border border-border bg-background text-foreground rounded-sm px-2 py-1 text-xs"
+      >
+        <option value="">—</option>
+        {ZODIAC_SIGNS.map(s => <option key={s} value={s}>{SIGN_SYMBOLS[s]} {s}</option>)}
+      </select>
+      <input
+        type="number" min={0} max={29}
+        value={planets[planet]?.degree ?? ''}
+        onChange={(e) => updatePlanet(planet, 'degree', parseInt(e.target.value) || 0)}
+        placeholder="°"
+        className="w-12 border border-border bg-background text-foreground rounded-sm px-2 py-1 text-xs text-center"
+      />
+      <input
+        type="number" min={0} max={59}
+        value={planets[planet]?.minutes ?? ''}
+        onChange={(e) => updatePlanet(planet, 'minutes', parseInt(e.target.value) || 0)}
+        placeholder="'"
+        className="w-12 border border-border bg-background text-foreground rounded-sm px-2 py-1 text-xs text-center"
+      />
+      <label className="flex items-center gap-1 text-[10px] text-muted-foreground">
+        <input
+          type="checkbox"
+          checked={planets[planet]?.isRetrograde || false}
+          onChange={(e) => updatePlanet(planet, 'isRetrograde', e.target.checked)}
+        />
+        Rx
+      </label>
+    </div>
+  );
+
   return (
     <div className="border border-primary/30 rounded-sm p-5 bg-card space-y-4">
       <div className="flex items-center justify-between">
@@ -236,7 +387,55 @@ const SRInputForm = ({ natalChart, existingSR, onSave, onCancel }: SRInputFormPr
 
       <div className="text-xs text-muted-foreground bg-secondary/50 p-3 rounded-sm">
         <Info size={14} className="inline mr-1" />
-        Enter your Solar Return chart data from astro.com or your preferred astrology software. The SR chart is cast for the exact moment the Sun returns to its natal position each year.
+        Enter your Solar Return chart data from astro.com or your preferred astrology software, or drag & drop a chart image below.
+      </div>
+
+      {/* Drag & Drop Upload */}
+      <div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,.pdf,.doc,.docx"
+          onChange={handleFileInput}
+          className="hidden"
+        />
+        <label
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onClick={() => fileInputRef.current?.click()}
+          className={`
+            relative flex flex-col items-center justify-center w-full min-h-[120px]
+            border-2 border-dashed rounded-lg cursor-pointer transition-all duration-200
+            ${isDragOver 
+              ? 'border-primary bg-primary/10 scale-[1.01]' 
+              : 'border-muted-foreground/30 hover:border-primary/50 hover:bg-muted/50'
+            }
+            ${uploadStatus !== 'idle' ? 'pointer-events-none opacity-70' : ''}
+          `}
+        >
+          {uploadStatus !== 'idle' ? (
+            <div className="flex flex-col items-center gap-2 text-primary">
+              <Loader2 size={28} className="animate-spin" />
+              <span className="text-sm font-medium">
+                {uploadStatus === 'uploading' ? 'Uploading...' : 'Reading chart data...'}
+              </span>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-2 p-4">
+              <div className={`p-3 rounded-full transition-colors ${isDragOver ? 'bg-primary/20' : 'bg-muted'}`}>
+                <Upload size={24} className={isDragOver ? 'text-primary' : 'text-muted-foreground'} />
+              </div>
+              <p className="text-sm font-medium text-foreground">
+                {isDragOver ? 'Drop your chart here' : 'Drag & drop your SR chart image'}
+              </p>
+              <p className="text-xs text-muted-foreground">or click to browse • PNG, JPG, PDF, DOCX</p>
+            </div>
+          )}
+        </label>
+        {uploadError && (
+          <p className="text-xs text-destructive mt-1">{uploadError}</p>
+        )}
       </div>
 
       {/* Year & Location */}
@@ -272,49 +471,28 @@ const SRInputForm = ({ natalChart, existingSR, onSave, onCancel }: SRInputFormPr
         </div>
       </div>
 
-      {/* Planet positions */}
+      {/* Core planet positions */}
       <div>
         <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Planet Positions</h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {CORE_PLANETS.map(planet => (
-            <div key={planet} className="flex items-center gap-2 bg-secondary/30 rounded-sm p-2">
-              <span className="w-8 text-center text-sm">{PLANET_SYMBOLS[planet] || planet.slice(0, 3)}</span>
-              <span className="w-20 text-xs text-muted-foreground">{planet}</span>
-              <select
-                value={planets[planet]?.sign || ''}
-                onChange={(e) => updatePlanet(planet, 'sign', e.target.value)}
-                className="flex-1 border border-border bg-background text-foreground rounded-sm px-2 py-1 text-xs"
-              >
-                <option value="">—</option>
-                {ZODIAC_SIGNS.map(s => <option key={s} value={s}>{SIGN_SYMBOLS[s]} {s}</option>)}
-              </select>
-              <input
-                type="number"
-                min={0} max={29}
-                value={planets[planet]?.degree ?? ''}
-                onChange={(e) => updatePlanet(planet, 'degree', parseInt(e.target.value) || 0)}
-                placeholder="°"
-                className="w-12 border border-border bg-background text-foreground rounded-sm px-2 py-1 text-xs text-center"
-              />
-              <input
-                type="number"
-                min={0} max={59}
-                value={planets[planet]?.minutes ?? ''}
-                onChange={(e) => updatePlanet(planet, 'minutes', parseInt(e.target.value) || 0)}
-                placeholder="'"
-                className="w-12 border border-border bg-background text-foreground rounded-sm px-2 py-1 text-xs text-center"
-              />
-              <label className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                <input
-                  type="checkbox"
-                  checked={planets[planet]?.isRetrograde || false}
-                  onChange={(e) => updatePlanet(planet, 'isRetrograde', e.target.checked)}
-                />
-                Rx
-              </label>
-            </div>
-          ))}
+          {CORE_PLANETS.map(renderPlanetRow)}
         </div>
+      </div>
+
+      {/* Goddess Planets & Chiron (collapsible) */}
+      <div>
+        <button
+          onClick={() => setShowGoddess(!showGoddess)}
+          className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground"
+        >
+          {showGoddess ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+          Chiron & Goddess Asteroids
+        </button>
+        {showGoddess && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+            {GODDESS_PLANETS.map(renderPlanetRow)}
+          </div>
+        )}
       </div>
 
       {/* House cusps (collapsible) */}
@@ -374,6 +552,8 @@ const SRInputForm = ({ natalChart, existingSR, onSave, onCancel }: SRInputFormPr
 };
 
 // ─── Overview Tab ───────────────────────────────────────────────────
+
+const ALL_DISPLAY_PLANETS = [...CORE_PLANETS, ...GODDESS_PLANETS] as const;
 
 const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
   analysis: SolarReturnAnalysis;
@@ -443,7 +623,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
           <div className="flex flex-wrap gap-2">
             {analysis.angularPlanets.map(p => (
               <span key={p} className="px-3 py-1 bg-primary/10 text-primary rounded-sm text-sm font-medium">
-                {PLANET_SYMBOLS[p]} {p}
+                {PLANET_SYMBOLS[p] || p.slice(0, 3)} {p}
               </span>
             ))}
           </div>
@@ -454,12 +634,12 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
       <div className="border border-border rounded-sm p-4 bg-card">
         <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">SR Chart Positions</h4>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-          {CORE_PLANETS.map(planet => {
+          {ALL_DISPLAY_PLANETS.map(planet => {
             const pos = srChart.planets[planet as keyof typeof srChart.planets];
             if (!pos) return null;
             return (
               <div key={planet} className="flex items-center gap-2 text-sm">
-                <span className="text-muted-foreground w-6 text-center">{PLANET_SYMBOLS[planet]}</span>
+                <span className="text-muted-foreground w-6 text-center">{PLANET_SYMBOLS[planet] || planet.slice(0, 2)}</span>
                 <span className="text-foreground">{SIGN_SYMBOLS[pos.sign]} {pos.degree}°{pos.minutes}'</span>
                 {pos.isRetrograde && <span className="text-[10px] text-destructive">Rx</span>}
               </div>
@@ -497,7 +677,7 @@ const HouseOverlayTab = ({ analysis }: { analysis: SolarReturnAnalysis }) => {
         <div className="space-y-2">
           {analysis.houseOverlays.map((overlay, i) => (
             <div key={i} className="border border-border rounded-sm p-3 bg-card flex items-start gap-3">
-              <span className="text-lg w-8 text-center">{PLANET_SYMBOLS[overlay.planet]}</span>
+              <span className="text-lg w-8 text-center">{PLANET_SYMBOLS[overlay.planet] || overlay.planet.slice(0, 2)}</span>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-foreground">{overlay.planet}</span>
@@ -545,9 +725,9 @@ const AspectsTab = ({ analysis }: { analysis: SolarReturnAnalysis }) => {
             {analysis.srToNatalAspects.slice(0, 20).map((asp, i) => (
               <div key={i} className="border border-border rounded-sm p-3 bg-card">
                 <div className="flex items-center gap-2 text-sm">
-                  <span>{PLANET_SYMBOLS[asp.planet1]} SR {asp.planet1}</span>
+                  <span>{PLANET_SYMBOLS[asp.planet1] || asp.planet1.slice(0, 3)} SR {asp.planet1}</span>
                   <span className={`font-medium ${aspectColor(asp.type)}`}>{asp.type}</span>
-                  <span>{PLANET_SYMBOLS[asp.planet2] || ''} Natal {asp.planet2}</span>
+                  <span>{PLANET_SYMBOLS[asp.planet2] || asp.planet2.slice(0, 3)} Natal {asp.planet2}</span>
                   <span className="text-[10px] text-muted-foreground ml-auto">orb {asp.orb}°</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">{asp.interpretation}</p>
@@ -567,9 +747,9 @@ const AspectsTab = ({ analysis }: { analysis: SolarReturnAnalysis }) => {
             {analysis.srInternalAspects.slice(0, 15).map((asp, i) => (
               <div key={i} className="border border-border rounded-sm p-3 bg-card">
                 <div className="flex items-center gap-2 text-sm">
-                  <span>{PLANET_SYMBOLS[asp.planet1]} {asp.planet1}</span>
+                  <span>{PLANET_SYMBOLS[asp.planet1] || asp.planet1.slice(0, 3)} {asp.planet1}</span>
                   <span className={`font-medium ${aspectColor(asp.type)}`}>{asp.type}</span>
-                  <span>{PLANET_SYMBOLS[asp.planet2]} {asp.planet2}</span>
+                  <span>{PLANET_SYMBOLS[asp.planet2] || asp.planet2.slice(0, 3)} {asp.planet2}</span>
                   <span className="text-[10px] text-muted-foreground ml-auto">orb {asp.orb}°</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">{asp.interpretation}</p>

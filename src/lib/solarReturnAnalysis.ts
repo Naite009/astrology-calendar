@@ -4,6 +4,8 @@ import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 // ─── helpers ────────────────────────────────────────────────────────
 const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 const PLANETS_CORE = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'] as const;
+const PLANETS_EXTENDED = ['Chiron','Juno','Ceres','Pallas','Vesta','Lilith','Eris'] as const;
+const ALL_PLANETS = [...PLANETS_CORE, ...PLANETS_EXTENDED] as const;
 
 const toAbsDeg = (pos: NatalPlanetPosition | HouseCusp | undefined): number | null => {
   if (!pos) return null;
@@ -210,7 +212,7 @@ export const analyzeSolarReturn = (
 
   // 4. House overlays — SR planets in natal houses
   const houseOverlays: SRHouseOverlay[] = [];
-  for (const planet of PLANETS_CORE) {
+  for (const planet of ALL_PLANETS) {
     const pos = srChart.planets[planet as keyof typeof srChart.planets];
     if (!pos) continue;
     const deg = toAbsDeg(pos);
@@ -227,13 +229,13 @@ export const analyzeSolarReturn = (
 
   // 5. SR-to-Natal aspects
   const srToNatalAspects: SRKeyAspect[] = [];
-  for (const srPlanet of PLANETS_CORE) {
+  for (const srPlanet of ALL_PLANETS) {
     const srPos = srChart.planets[srPlanet as keyof typeof srChart.planets];
     if (!srPos) continue;
     const srDeg = toAbsDeg(srPos);
     if (srDeg === null) continue;
 
-    for (const natPlanet of [...PLANETS_CORE, 'Ascendant' as const, 'NorthNode' as const, 'Chiron' as const]) {
+    for (const natPlanet of [...ALL_PLANETS, 'Ascendant' as const, 'NorthNode' as const]) {
       const natPos = natalChart.planets[natPlanet as keyof typeof natalChart.planets];
       if (!natPos) continue;
       const natDeg = toAbsDeg(natPos);
@@ -259,10 +261,10 @@ export const analyzeSolarReturn = (
 
   // 6. SR internal aspects
   const srInternalAspects: SRKeyAspect[] = [];
-  for (let i = 0; i < PLANETS_CORE.length; i++) {
-    for (let j = i + 1; j < PLANETS_CORE.length; j++) {
-      const p1 = PLANETS_CORE[i];
-      const p2 = PLANETS_CORE[j];
+  for (let i = 0; i < ALL_PLANETS.length; i++) {
+    for (let j = i + 1; j < ALL_PLANETS.length; j++) {
+      const p1 = ALL_PLANETS[i];
+      const p2 = ALL_PLANETS[j];
       const pos1 = srChart.planets[p1 as keyof typeof srChart.planets];
       const pos2 = srChart.planets[p2 as keyof typeof srChart.planets];
       if (!pos1 || !pos2) continue;
@@ -289,7 +291,7 @@ export const analyzeSolarReturn = (
     if (!angle) continue;
     const angleDeg = toAbsDeg(angle);
     if (angleDeg === null) continue;
-    for (const planet of PLANETS_CORE) {
+    for (const planet of ALL_PLANETS) {
       const pos = srChart.planets[planet as keyof typeof srChart.planets];
       if (!pos) continue;
       const pDeg = toAbsDeg(pos);
