@@ -1,28 +1,30 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { NatalChart } from "@/hooks/useNatalChart";
 
-// ─── DATA ────────────────────────────────────────────────────────────────────
+// ─── PROPS ───────────────────────────────────────────────────────────────────
 
-const CHARTS = [
-  { id: "none", label: "— Select Your Chart —" },
-  { id: "aries", label: "Aries Rising" },
-  { id: "taurus", label: "Taurus Rising" },
-  { id: "gemini", label: "Gemini Rising" },
-  { id: "cancer", label: "Cancer Rising" },
-  { id: "leo", label: "Leo Rising" },
-  { id: "virgo", label: "Virgo Rising" },
-  { id: "libra", label: "Libra Rising" },
-  { id: "scorpio", label: "Scorpio Rising" },
-  { id: "sagittarius", label: "Sagittarius Rising" },
-  { id: "capricorn", label: "Capricorn Rising" },
-  { id: "aquarius", label: "Aquarius Rising" },
-  { id: "pisces", label: "Pisces Rising" },
-];
+interface MercuryRetrogradeGuideProps {
+  allCharts: NatalChart[];
+}
 
-const PISCES_HOUSE_BY_RISING = {
-  none: null, aries: 12, taurus: 11, gemini: 10, cancer: 9, leo: 8, virgo: 7,
-  libra: 6, scorpio: 5, sagittarius: 4, capricorn: 3, aquarius: 2, pisces: 1,
-};
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+
+const SIGN_ORDER = ["aries","taurus","gemini","cancer","leo","virgo","libra","scorpio","sagittarius","capricorn","aquarius","pisces"] as const;
+
+function getAscendantSign(chart: NatalChart): string {
+  const asc = chart.planets?.Ascendant;
+  if (!asc?.sign) return "none";
+  return asc.sign.toLowerCase();
+}
+
+// House position of a sign relative to the rising sign
+function getHouseOfSign(risignSign: string, targetSign: string): number | null {
+  const rIdx = SIGN_ORDER.indexOf(risignSign as any);
+  const tIdx = SIGN_ORDER.indexOf(targetSign as any);
+  if (rIdx === -1 || tIdx === -1) return null;
+  return ((tIdx - rIdx + 12) % 12) + 1;
+}
 
 const HOUSE_MEANINGS = {
   1: { name: "1st House — Self & Identity", description: "Mercury stations retrograde across your Ascendant — the very lens through which you see the world. You've been rebuilding your entire sense of self since 2023. Who you've become under Saturn's pressure is now being reviewed. Expect old versions of yourself to surface. Which parts served you? Which are ready to dissolve for good? This retrograde asks you to re-introduce yourself — to yourself first." },
@@ -283,8 +285,9 @@ function RxCard({ rx, onClick, isSelected }: { rx: RxData; onClick: (id: string)
   );
 }
 
-function RxDetail({ rx, selectedRising }: { rx: RxData; selectedRising: string }) {
-  const house = PISCES_HOUSE_BY_RISING[selectedRising as keyof typeof PISCES_HOUSE_BY_RISING];
+function RxDetail({ rx, risingSign, chartName }: { rx: RxData; risingSign: string; chartName: string }) {
+  const retroSign = rx.sign.toLowerCase();
+  const house = risingSign !== "none" ? getHouseOfSign(risingSign, retroSign) : null;
   const houseMeaning = house ? HOUSE_MEANINGS[house as keyof typeof HOUSE_MEANINGS] : null;
 
   return (
@@ -382,10 +385,10 @@ function RxDetail({ rx, selectedRising }: { rx: RxData; selectedRising: string }
         </p>
       </div>
 
-      {/* Personalized House Section */}
-      {selectedRising !== "none" && houseMeaning && rx.sign === "Pisces" && (
+      {/* Personalized House Section — works for ALL signs now */}
+      {risingSign !== "none" && houseMeaning && (
         <div className="rounded-xl bg-gradient-to-br from-fuchsia-900/40 to-violet-900/40 border border-fuchsia-400/40 p-5">
-          <p className="text-xs text-fuchsia-200 font-semibold uppercase tracking-wider mb-2">✨ Personalized for {CHARTS.find(c => c.id === selectedRising)?.label} — {houseMeaning.name}</p>
+          <p className="text-xs text-fuchsia-200 font-semibold uppercase tracking-wider mb-2">✨ Personalized for {chartName} — {houseMeaning.name}</p>
           <p className="text-fuchsia-50 text-sm leading-relaxed">{houseMeaning.description}</p>
         </div>
       )}
@@ -395,11 +398,15 @@ function RxDetail({ rx, selectedRising }: { rx: RxData; selectedRising: string }
 
 // ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
 
-export function MercuryRetrogradeGuide() {
-  const [selectedRising, setSelectedRising] = useState("none");
+export function MercuryRetrogradeGuide({ allCharts }: MercuryRetrogradeGuideProps) {
+  const [selectedChartId, setSelectedChartId] = useState("none");
   const [selectedRxId, setSelectedRxId] = useState("rx1");
   const [activeSection, setActiveSection] = useState("learn");
   const [selectedYear, setSelectedYear] = useState(2026);
+
+  const selectedChart = allCharts.find(c => c.id === selectedChartId) || null;
+  const risingSign = selectedChart ? getAscendantSign(selectedChart) : "none";
+  const chartName = selectedChart?.name || "";
 
   const yearData = RETROGRADES_BY_YEAR[selectedYear];
   const yearRetrogrades = yearData?.retrogrades ?? [];
@@ -436,26 +443,27 @@ export function MercuryRetrogradeGuide() {
             Understanding the Messenger's backward dance — and what it means for you
           </p>
 
-          {/* Chart selector */}
+          {/* Chart selector — now uses imported chart names */}
           <div className="mt-5 flex justify-center">
             <div className="relative">
               <select
-                value={selectedRising}
-                onChange={(e) => setSelectedRising(e.target.value)}
+                value={selectedChartId}
+                onChange={(e) => setSelectedChartId(e.target.value)}
                 className="appearance-none bg-violet-900/50 border border-violet-500/50 text-white rounded-xl px-4 py-2.5 pr-10 text-sm cursor-pointer focus:outline-none focus:border-violet-300/70 transition-colors"
               >
-                {CHARTS.map((c) => (
+                <option value="none" className="bg-slate-900">— Select a Chart —</option>
+                {allCharts.map((c) => (
                   <option key={c.id} value={c.id} className="bg-slate-900">
-                    {c.label}
+                    {c.name}
                   </option>
                 ))}
               </select>
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-violet-300 pointer-events-none">▾</span>
             </div>
           </div>
-          {selectedRising !== "none" && (
+          {selectedChart && (
             <p className="text-xs text-violet-200 mt-2">
-              ✨ Content is now personalized for {CHARTS.find(c => c.id === selectedRising)?.label}
+              ✨ Content personalized for {chartName} ({risingSign !== "none" ? `${risingSign.charAt(0).toUpperCase() + risingSign.slice(1)} Rising` : "rising sign not set"})
             </p>
           )}
         </div>
@@ -559,7 +567,7 @@ export function MercuryRetrogradeGuide() {
             {/* Selected retrograde detail inline */}
             {selectedRx && (
               <div className="mt-2">
-                <RxDetail rx={selectedRx} selectedRising={selectedRising} />
+                <RxDetail rx={selectedRx} risingSign={risingSign} chartName={chartName} />
               </div>
             )}
           </div>
@@ -570,7 +578,7 @@ export function MercuryRetrogradeGuide() {
           <div className="space-y-4">
             <SectionHeader icon="🌊" title="Current Cycle — Mercury in Pisces" subtitle="February 25–26 – March 20, 2026 · Retrograde from 22°33' to 8°29' Pisces" />
 
-            <RxDetail rx={RETROGRADES_BY_YEAR[2026].retrogrades[0]} selectedRising={selectedRising} />
+            <RxDetail rx={RETROGRADES_BY_YEAR[2026].retrogrades[0]} risingSign={risingSign} chartName={chartName} />
 
             {/* Phase by phase */}
             <div className="rounded-2xl border border-violet-600/40 bg-violet-900/25 p-5 space-y-4">
@@ -638,12 +646,12 @@ export function MercuryRetrogradeGuide() {
             {/* Personalized section */}
             <div className="rounded-2xl border border-fuchsia-500/40 bg-gradient-to-br from-fuchsia-900/30 to-violet-900/30 p-5">
               <p className="text-xs text-fuchsia-200 font-semibold uppercase tracking-wider mb-3">
-                {selectedRising === "none" ? "🔮 Select Your Rising Sign for Personalized Guidance" : `✨ Your 2026 Water Retrograde Year — ${CHARTS.find(c => c.id === selectedRising)?.label}`}
+                {risingSign === "none" ? "🔮 Select a Chart for Personalized Guidance" : `✨ Your 2026 Water Retrograde Year — ${chartName}`}
               </p>
-              {selectedRising === "none" ? (
-                <p className="text-violet-200 text-sm">Select your rising sign using the dropdown at the top of this page to receive guidance personalized to your chart.</p>
+              {risingSign === "none" ? (
+                <p className="text-violet-200 text-sm">Select a chart using the dropdown at the top of this page to receive guidance personalized to your rising sign.</p>
               ) : (
-                <p className="text-fuchsia-50 text-sm leading-relaxed">{WATER_PERSONALIZED[selectedRising as keyof typeof WATER_PERSONALIZED]}</p>
+                <p className="text-fuchsia-50 text-sm leading-relaxed">{WATER_PERSONALIZED[risingSign as keyof typeof WATER_PERSONALIZED]}</p>
               )}
             </div>
 
