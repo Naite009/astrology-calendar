@@ -3,6 +3,7 @@
 
 import { useState, useRef } from 'react';
 import { NatalChart } from '@/hooks/useNatalChart';
+import { ChartSelector } from './ChartSelector';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
@@ -235,18 +236,13 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
       {/* Chart Selector */}
       {sortedCharts.length > 1 && (
         <div className="flex items-center gap-3 mb-6 print:hidden">
-          <label className="text-sm font-medium text-muted-foreground">Select Chart:</label>
-          <select
-            value={selectedChartId}
-            onChange={(e) => setSelectedChartId(e.target.value)}
-            className="flex-1 max-w-xs border border-border bg-background px-3 py-2 text-sm rounded-sm focus:border-primary focus:outline-none"
-          >
-            {sortedCharts.map((chart, i) => (
-              <option key={chart.id} value={chart.id}>
-                {i === 0 && chart.id === initialChart?.id ? `★ ${chart.name}` : chart.name}
-              </option>
-            ))}
-          </select>
+          <ChartSelector
+            userNatalChart={initialChart}
+            savedCharts={sortedCharts.filter(c => c.id !== initialChart?.id)}
+            selectedChartId={selectedChartId === initialChart?.id ? 'user' : selectedChartId}
+            onSelect={(id) => setSelectedChartId(id === 'user' ? (initialChart?.id || '') : id)}
+            label="Select Chart"
+          />
         </div>
       )}
       

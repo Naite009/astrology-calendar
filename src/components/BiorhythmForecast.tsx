@@ -12,6 +12,7 @@ import { getMoonPhase } from '@/lib/astrology';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format, isSameDay } from 'date-fns';
+import { ChartSelector } from './ChartSelector';
 
 interface SavedChart {
   id: string;
@@ -449,19 +450,13 @@ export const BiorhythmForecast = ({
               
               {/* Person Selector Dropdown */}
               {savedCharts.length > 0 && onChartChange && (
-                <Select value={selectedChartId} onValueChange={onChartChange}>
-                  <SelectTrigger className="h-7 text-xs w-[130px] bg-background">
-                    <User size={12} className="mr-1" />
-                    <SelectValue placeholder="Select person" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover z-50">
-                    {savedCharts.map(chart => (
-                      <SelectItem key={chart.id} value={chart.id} className="text-xs">
-                        {chart.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <ChartSelector
+                  userNatalChart={savedCharts[0] ? { ...savedCharts[0], planets: {}, birthTime: '', birthLocation: '' } as any : null}
+                  savedCharts={savedCharts.slice(1).map(c => ({ ...c, planets: {}, birthTime: '', birthLocation: '' })) as any}
+                  selectedChartId={selectedChartId === savedCharts[0]?.id ? 'user' : (selectedChartId || '')}
+                  onSelect={(id) => onChartChange!(id === 'user' ? (savedCharts[0]?.id || '') : id)}
+                  className="w-[140px]"
+                />
               )}
               
               {/* Romance Mode Toggle */}
@@ -485,19 +480,13 @@ export const BiorhythmForecast = ({
               
               {/* Partner Selector (when in romance mode) */}
               {mode === 'romance' && savedCharts.length > 1 && (
-                <Select value={partnerChartId} onValueChange={setPartnerChartId}>
-                  <SelectTrigger className="h-7 text-xs w-[130px] bg-pink-50 dark:bg-pink-900/20 border-pink-200 dark:border-pink-800">
-                    <Heart size={12} className="mr-1 text-pink-500" />
-                    <SelectValue placeholder="Select partner" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover z-50">
-                    {savedCharts.filter(c => c.id !== selectedChartId).map(chart => (
-                      <SelectItem key={chart.id} value={chart.id} className="text-xs">
-                        {chart.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <ChartSelector
+                  userNatalChart={null}
+                  savedCharts={savedCharts.filter(c => c.id !== selectedChartId).map(c => ({ ...c, planets: {}, birthTime: '', birthLocation: '' })) as any}
+                  selectedChartId={partnerChartId}
+                  onSelect={setPartnerChartId}
+                  className="w-[140px]"
+                />
               )}
               
               {/* Message when only 1 chart exists */}

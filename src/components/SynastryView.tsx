@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { Heart, Users, Briefcase, GraduationCap, Sparkles, Palette, AlertTriangle, Flame, Moon, ChevronDown, ChevronUp, Info, Home, HelpCircle, Handshake, Lightbulb, CheckCircle2, XCircle, Circle, UserPlus, X, Calendar, TrendingUp, Compass, BookOpen } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
+import { ChartSelector } from './ChartSelector';
 import { generateAdvancedSynastryReport, RelationshipTypeScore, HouseOverlay, KarmicIndicator } from '@/lib/synastryAdvanced';
 import { calculateCompositeChart, calculateDavisonChart, getPlanetSymbol } from '@/lib/compositeChart';
 import { analyzeRelationshipFocus, FocusAnalysis, FocusIndicator } from '@/lib/relationshipFocusAnalysis';
@@ -771,21 +772,16 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
           {selectedCharts.map((chart, i) => (
             <div key={chart.id} className="flex items-center gap-1">
               {/* Person Selector - Always changeable */}
-              <Select 
-                value={chart.id} 
-                onValueChange={(newId) => changePerson(chart.id, newId)}
-              >
-                <SelectTrigger className="h-8 bg-background border-primary/30 min-w-[120px]">
-                  <span className="text-sm font-medium">{chart.name}</span>
-                </SelectTrigger>
-                <SelectContent className="bg-popover border shadow-lg z-50">
-                  {availableForSwap(chart.id).map(c => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <ChartSelector
+                userNatalChart={userNatalChart}
+                savedCharts={availableForSwap(chart.id).filter(c => c.id !== userNatalChart?.id)}
+                selectedChartId={chart.id === userNatalChart?.id ? 'user' : chart.id}
+                onSelect={(id) => {
+                  const resolvedId = id === 'user' ? (userNatalChart?.id || '') : id;
+                  changePerson(chart.id, resolvedId);
+                }}
+                className="min-w-[140px]"
+              />
               
               {/* Remove button - show when 3+ people selected */}
               {selectedChartIds.length > 2 && (
@@ -807,21 +803,16 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
           
           {/* Add Person Button */}
           {allCharts.filter(c => !selectedChartIds.includes(c.id)).length > 0 && (
-            <Select onValueChange={addPerson}>
-              <SelectTrigger className="w-32 h-8 bg-background ml-2">
-                <div className="flex items-center gap-1 text-xs">
-                  <UserPlus size={12} />
-                  Add person
-                </div>
-              </SelectTrigger>
-              <SelectContent className="bg-popover border shadow-lg z-50">
-                {allCharts.filter(c => !selectedChartIds.includes(c.id)).map(c => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <ChartSelector
+              userNatalChart={null}
+              savedCharts={allCharts.filter(c => !selectedChartIds.includes(c.id))}
+              selectedChartId=""
+              onSelect={(id) => {
+                const resolvedId = id === 'user' ? (userNatalChart?.id || '') : id;
+                addPerson(resolvedId);
+              }}
+              className="w-[140px] ml-2"
+            />
           )}
         </div>
 
