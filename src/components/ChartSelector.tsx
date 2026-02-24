@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { Search, Check, ChevronDown } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
+import { normalizeName } from '@/lib/nameMatching';
 
 interface ChartSelectorProps {
   userNatalChart: NatalChart | null;
@@ -48,11 +49,23 @@ export const ChartSelector = ({
     }
   }, [isOpen]);
 
-  // Build sorted chart list: user first, then alphabetically sorted saved charts
-  const sortedCharts = useMemo(() => {
+  // Build deduplicated, sorted chart list: skip charts whose normalized name+birthDate already seen
+  const deduplicatedCharts = useMemo(() => {
+    const seen = new Set<string>();
+    // If user chart exists, mark its name as seen
+    if (userNatalChart) {
+      seen.add(normalizeName(userNatalChart.name) + '|' + userNatalChart.birthDate);
+    }
+    const result: NatalChart[] = [];
     const sorted = [...savedCharts].sort((a, b) => a.name.localeCompare(b.name));
-    return sorted;
-  }, [savedCharts]);
+    for (const chart of sorted) {
+      const key = normalizeName(chart.name) + '|' + chart.birthDate;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      result.push(chart);
+    }
+    return result;
+  }, [savedCharts, userNatalChart]);
 
   // Build options list
   const options = useMemo(() => {
@@ -67,13 +80,13 @@ export const ChartSelector = ({
       opts.push({ id: 'user', name: userNatalChart.name, isUser: true });
     }
     
-    // Then alphabetically sorted saved charts
-    sortedCharts.forEach(chart => {
+    // Then alphabetically sorted, deduplicated saved charts
+    deduplicatedCharts.forEach(chart => {
       opts.push({ id: chart.id, name: chart.name });
     });
     
     return opts;
-  }, [userNatalChart, sortedCharts, includeGeneral, generalLabel]);
+  }, [userNatalChart, deduplicatedCharts, includeGeneral, generalLabel]);
 
   // Filter by search term
   const filteredOptions = useMemo(() => {
