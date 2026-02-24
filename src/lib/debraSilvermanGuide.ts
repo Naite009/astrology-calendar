@@ -615,7 +615,7 @@ export const PLANET_DESCRIPTIONS: Record<string, PlanetDescription> = {
     planet: 'Mercury',
     influences: ['Intellect', 'Communication', 'The way you think'],
     rules: ['Gemini', 'Virgo'],
-    exaltedIn: 'Aquarius'
+    exaltedIn: 'Virgo'
   },
   Venus: {
     planet: 'Venus',
