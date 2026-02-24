@@ -278,7 +278,7 @@ const MoonElementCard: React.FC<MoonElementCardProps> = ({ moonSign, element, te
           <ul className="space-y-1.5">
             {teaching.medicine.slice(0, 2).map((med, i) => (
               <li key={i} className="flex items-start gap-2 text-sm">
-                <span className="text-primary mt-0.5">💊</span>
+                <span className="text-primary mt-0.5">🌿</span>
                 <span className="text-muted-foreground">{med}</span>
               </li>
             ))}
@@ -383,7 +383,7 @@ const MoonElementCard: React.FC<MoonElementCardProps> = ({ moonSign, element, te
               <ul className="space-y-1.5">
                 {teaching.medicine.map((med, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm">
-                    <span className="text-primary mt-0.5">💊</span>
+                    <span className="text-primary mt-0.5">🌿</span>
                     <span className="text-muted-foreground">{med}</span>
                   </li>
                 ))}
