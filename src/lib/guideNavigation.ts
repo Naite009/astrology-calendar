@@ -35,7 +35,6 @@ export type ViewMode =
   | "annual-tables" 
   | "guide" 
   | "charts" 
-  | "wheel" 
   | "timing" 
   | "colors" 
   | "patterns" 
@@ -82,7 +81,6 @@ export const VIEW_TO_SECTION: Record<ViewMode, GuideSection> = {
   "annual-tables": "overview",
   guide: "overview",
   charts: "overview",
-  wheel: "overview",
   timing: "timing",
   colors: "colors",
   patterns: "patterns",

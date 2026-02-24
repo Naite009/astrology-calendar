@@ -18,7 +18,6 @@ const TimingView = lazy(() => import("./TimingView").then(m => ({ default: m.Tim
 import { ColorsView } from "./ColorsView";
 import { PatternsView } from "./PatternsView";
 import { SacredScriptView } from "./SacredScriptView";
-import { NatalChartWheel } from "./NatalChartWheel";
 import { DayTypeLegend } from "./DayTypeLegend";
 import { VoiceMemoModal } from "./VoiceMemoModal";
 import { VoiceMemoLibrary } from "./VoiceMemoLibrary";
@@ -46,7 +45,7 @@ import { MercuryRetrogradeGuide } from "./MercuryRetrogradeGuide";
 
 
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "wheel" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "mercury-rx";
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "mercury-rx";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -316,30 +315,6 @@ export const AstroCalendar = () => {
               >
                 <Users size={14} />
                 Charts
-              </button>
-              <button
-                onClick={() => {
-                  if (userNatalChart || savedCharts.length > 0) {
-                    setViewMode("wheel");
-                  } else {
-                    setViewMode("charts");
-                  }
-                }}
-                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
-                  viewMode === "wheel"
-                    ? "bg-primary text-primary-foreground"
-                    : userNatalChart || savedCharts.length > 0
-                      ? "text-muted-foreground hover:text-foreground"
-                      : "text-muted-foreground/60 hover:text-muted-foreground"
-                }`}
-                title={
-                  userNatalChart || savedCharts.length > 0
-                    ? "Natal Chart Wheel"
-                    : "Add a chart to view the wheel"
-                }
-              >
-                <Circle size={14} />
-                Wheel
               </button>
               <button
                 onClick={() => {
@@ -779,26 +754,6 @@ export const AstroCalendar = () => {
           />
         )}
 
-        {viewMode === "wheel" && (
-          <NatalChartWheel
-            natalChart={userNatalChart || savedCharts[0]}
-            allCharts={[
-              ...(userNatalChart ? [userNatalChart] : []),
-              ...savedCharts
-            ]}
-            onChartImageUpload={(chartId, imageBase64) => {
-              // Find the chart and update it
-              if (userNatalChart && chartId === userNatalChart.id) {
-                saveUserNatalChart({ ...userNatalChart, chartImageBase64: imageBase64 });
-              } else {
-                const chartToUpdate = savedCharts.find(c => c.id === chartId);
-                if (chartToUpdate) {
-                  updateChart(chartId, { chartImageBase64: imageBase64 });
-                }
-              }
-            }}
-          />
-        )}
 
         {viewMode === "timing" && (
           <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading Timing…</div>}>
