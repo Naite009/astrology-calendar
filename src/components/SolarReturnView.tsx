@@ -260,6 +260,18 @@ const SRInputForm = ({ natalChart, existingSR, onSave, onCancel }: SRInputFormPr
       let planetsImported = 0;
       let housesImported = 0;
 
+      // Extract birth info for SR year and location
+      const birthInfo = parsedData.birthInfo;
+      if (birthInfo) {
+        if (birthInfo.birthDate && /^\d{4}/.test(birthInfo.birthDate)) {
+          const parsedYear = parseInt(birthInfo.birthDate.slice(0, 4), 10);
+          if (parsedYear > 1900 && parsedYear < 2100) setYear(parsedYear);
+        }
+        if (birthInfo.birthLocation && typeof birthInfo.birthLocation === 'string') {
+          setLocation(birthInfo.birthLocation);
+        }
+      }
+
       // Import planets
       if (parsedData.planets && typeof parsedData.planets === 'object') {
         const newPlanets: Record<string, any> = { ...planets };
