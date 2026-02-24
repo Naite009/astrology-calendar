@@ -102,6 +102,9 @@ ${imminentSignChanges.map((c: any) => `- ${c.planet} is at ${c.degree.toFixed(1)
       ? `MERCURY RETROGRADE STATUS - MUST MENTION: Phase: ${mercuryRetrogradeInfo.phase}. ${mercuryRetrogradeInfo.description}
 Mercury retrograde is about our soul taking another look at something - things show up in daily life that make us rethink HOW we are thinking, communicating, and processing. The shadow degree (${mercuryRetrogradeInfo.shadowDegree}) is where to pay attention in your chart.
 
+MERCURY DIGNITY IN THIS SIGN - TEACH THIS:
+${mercuryRetrogradeInfo.description?.includes('Pisces') ? `⚠️ CRITICAL: Mercury is in its WORST possible dignity in Pisces. It is BOTH in detriment (opposite Virgo, Mercury's home sign) AND in fall (opposite Virgo, Mercury's sign of exaltation). This is called "double difficulty" — no other sign weakens Mercury this much. WHY? Because Virgo is both where Mercury rules AND where Mercury is exalted. Pisces, as the opposite sign, is therefore both detriment AND fall simultaneously. This makes the Pisces retrograde the most challenging of the year for clear thinking, precise communication, and logical analysis. The mind works through dreams, feelings, symbols, and intuition rather than facts and data. Miscommunication is AMPLIFIED beyond normal retrograde levels. This is not weakness though — it is a DIFFERENT kind of intelligence. Channeled, received, felt rather than reasoned. Honor the fog. Journal. Create art. Don't sign contracts.` : `Mercury has no special dignity challenge in this sign — standard retrograde caution applies.`}
+
 PRACTICAL MERCURY RETROGRADE GUIDANCE (weave naturally into the report):
 🚫 AVOID during Mercury Rx:
 - Signing major contracts, leases, or legal documents (if you must, read fine print 3x and expect revisions later)
@@ -121,7 +124,7 @@ PRACTICAL MERCURY RETROGRADE GUIDANCE (weave naturally into the report):
 - Use the "re-" words: reassess, reconsider, revise, revisit, renegotiate
 - If you MUST sign something, a Mercury-Sun cazimi (exact conjunction) is the one favorable window
 
-HOW IT FEELS: Like walking through fog — you THINK you see clearly but details are blurry. Your brain moves faster than reality can keep up. Old memories and people resurface. Technology feels like it has a mind of its own. This is normal. It passes. Use it.`
+HOW IT FEELS: Like walking through fog — you THINK you see clearly but details are blurry. Your brain moves faster than reality can keep up. Old memories and people resurface. Technology feels like it has a mind of its own. This is normal. It passes. Use it.${mercuryRetrogradeInfo.description?.includes('Pisces') ? ' IN PISCES SPECIFICALLY: The fog is thicker than usual. Dreams are vivid and may carry messages. You may cry more easily. Words fail where feelings succeed. This is Mercury at its most mystical — and most error-prone.' : ''}`
       : '';
 
     // Personalized retrograde guidance
