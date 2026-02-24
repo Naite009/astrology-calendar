@@ -35,30 +35,42 @@ const houseThemes: Record<number, string> = {
   12: 'Spirituality, hidden matters, solitude, endings',
 };
 
-// ─── Determine which natal house a SR planet falls in ───────────────
-const findNatalHouse = (planetDeg: number, natal: NatalChart): number | null => {
-  if (!natal.houseCusps) return null;
-  const cusps: number[] = [];
-  for (let i = 1; i <= 12; i++) {
-    const key = `house${i}` as keyof typeof natal.houseCusps;
-    const c = natal.houseCusps[key];
-    if (!c) return null;
-    const deg = toAbsDeg(c);
-    if (deg === null) return null;
-    cusps.push(deg);
-  }
-  // Find which house the degree falls in
+// ─── Generic house finder ───────────────────────────────────────────
+const findHouseInCusps = (planetDeg: number, cusps: number[]): number | null => {
+  if (cusps.length !== 12) return null;
   for (let i = 0; i < 12; i++) {
     const start = cusps[i];
     const end = cusps[(i + 1) % 12];
     if (end > start) {
       if (planetDeg >= start && planetDeg < end) return i + 1;
     } else {
-      // wraps around 0°
       if (planetDeg >= start || planetDeg < end) return i + 1;
     }
   }
   return 1;
+};
+
+const extractCusps = (chart: { houseCusps?: any }): number[] | null => {
+  if (!chart.houseCusps) return null;
+  const cusps: number[] = [];
+  for (let i = 1; i <= 12; i++) {
+    const c = chart.houseCusps[`house${i}`];
+    if (!c) return null;
+    const deg = toAbsDeg(c);
+    if (deg === null) return null;
+    cusps.push(deg);
+  }
+  return cusps.length === 12 ? cusps : null;
+};
+
+const findNatalHouse = (planetDeg: number, natal: NatalChart): number | null => {
+  const cusps = extractCusps(natal);
+  return cusps ? findHouseInCusps(planetDeg, cusps) : null;
+};
+
+const findSRHouse = (planetDeg: number, srChart: SolarReturnChart): number | null => {
+  const cusps = extractCusps(srChart);
+  return cusps ? findHouseInCusps(planetDeg, cusps) : null;
 };
 
 // ─── Aspect detection ───────────────────────────────────────────────
@@ -69,7 +81,7 @@ interface Aspect {
   planet2Source: 'SR' | 'Natal';
   type: string;
   orb: number;
-  exact: number; // target angle
+  exact: number;
 }
 
 const ASPECT_ANGLES = [
@@ -91,7 +103,7 @@ const detectAspect = (deg1: number, deg2: number): { type: string; orb: number }
   return null;
 };
 
-// ─── Main Analysis ──────────────────────────────────────────────────
+// ─── Main Analysis types ────────────────────────────────────────────
 
 export interface SRYearlyTheme {
   ascendantSign: string;
@@ -105,6 +117,8 @@ export interface SRHouseOverlay {
   planet: string;
   srSign: string;
   srDegree: string;
+  srHouse: number | null;
+  srHouseTheme: string;
   natalHouse: number | null;
   houseTheme: string;
 }
@@ -116,12 +130,14 @@ export interface SRKeyAspect extends Aspect {
 export interface SolarReturnAnalysis {
   yearlyTheme: SRYearlyTheme | null;
   sunHouse: { house: number | null; theme: string };
+  sunNatalHouse: { house: number | null; theme: string };
   moonSign: string;
   moonHouse: { house: number | null; theme: string };
+  moonNatalHouse: { house: number | null; theme: string };
   houseOverlays: SRHouseOverlay[];
   srToNatalAspects: SRKeyAspect[];
   srInternalAspects: SRKeyAspect[];
-  angularPlanets: string[]; // SR planets near SR angles
+  angularPlanets: string[];
   relocationTip: string;
 }
 
@@ -134,6 +150,8 @@ const internalAspectMeaning = (p1: string, p2: string, type: string): string => 
   const action = type === 'Conjunction' ? 'unites with' : type === 'Opposition' ? 'creates tension with' : type === 'Trine' ? 'harmonizes with' : type === 'Square' ? 'creates friction with' : type === 'Sextile' ? 'cooperates with' : 'requires adjustment with';
   return `${p1} ${action} ${p2} — a key dynamic shaping your year.`;
 };
+
+// ─── Main Analysis ──────────────────────────────────────────────────
 
 export const analyzeSolarReturn = (
   srChart: SolarReturnChart,
@@ -148,33 +166,10 @@ export const analyzeSolarReturn = (
     const rulerPos = srChart.planets[ruler as keyof typeof srChart.planets];
     const rulerSign = rulerPos?.sign || 'Unknown';
     
-    // Find ruler's house in SR chart
     let rulerHouse: number | null = null;
-    if (rulerPos && srChart.houseCusps) {
+    if (rulerPos) {
       const deg = toAbsDeg(rulerPos);
-      if (deg !== null) {
-        // Use SR houses for ruler placement
-        const cusps: number[] = [];
-        for (let i = 1; i <= 12; i++) {
-          const key = `house${i}` as keyof typeof srChart.houseCusps;
-          const c = srChart.houseCusps[key];
-          if (c) {
-            const d = toAbsDeg(c);
-            if (d !== null) cusps.push(d);
-          }
-        }
-        if (cusps.length === 12) {
-          for (let i = 0; i < 12; i++) {
-            const start = cusps[i];
-            const end = cusps[(i + 1) % 12];
-            if (end > start) {
-              if (deg >= start && deg < end) { rulerHouse = i + 1; break; }
-            } else {
-              if (deg >= start || deg < end) { rulerHouse = i + 1; break; }
-            }
-          }
-        }
-      }
+      if (deg !== null) rulerHouse = findSRHouse(deg, srChart);
     }
 
     const themeDesc = `Your year is colored by ${srAsc.sign} Rising — ruled by ${ruler} in ${rulerSign}${rulerHouse ? ` (SR ${rulerHouse}th house)` : ''}. This sets the tone for how you approach the entire year.`;
@@ -187,43 +182,52 @@ export const analyzeSolarReturn = (
     };
   }
 
-  // 2. Sun house in natal overlay
+  // 2. Sun — SR house (primary) + natal overlay
   const sunPos = srChart.planets.Sun;
   let sunHouse: { house: number | null; theme: string } = { house: null, theme: '' };
+  let sunNatalHouse: { house: number | null; theme: string } = { house: null, theme: '' };
   if (sunPos) {
     const deg = toAbsDeg(sunPos);
     if (deg !== null) {
-      const h = findNatalHouse(deg, natalChart);
-      sunHouse = { house: h, theme: h ? houseThemes[h] : '' };
+      const sh = findSRHouse(deg, srChart);
+      sunHouse = { house: sh, theme: sh ? houseThemes[sh] : '' };
+      const nh = findNatalHouse(deg, natalChart);
+      sunNatalHouse = { house: nh, theme: nh ? houseThemes[nh] : '' };
     }
   }
 
-  // 3. Moon
+  // 3. Moon — SR house (primary) + natal overlay
   const moonPos = srChart.planets.Moon;
   const moonSign = moonPos?.sign || 'Unknown';
   let moonHouse: { house: number | null; theme: string } = { house: null, theme: '' };
+  let moonNatalHouse: { house: number | null; theme: string } = { house: null, theme: '' };
   if (moonPos) {
     const deg = toAbsDeg(moonPos);
     if (deg !== null) {
-      const h = findNatalHouse(deg, natalChart);
-      moonHouse = { house: h, theme: h ? houseThemes[h] : '' };
+      const sh = findSRHouse(deg, srChart);
+      moonHouse = { house: sh, theme: sh ? houseThemes[sh] : '' };
+      const nh = findNatalHouse(deg, natalChart);
+      moonNatalHouse = { house: nh, theme: nh ? houseThemes[nh] : '' };
     }
   }
 
-  // 4. House overlays — SR planets in natal houses
+  // 4. House overlays — SR planets in both SR houses and natal houses
   const houseOverlays: SRHouseOverlay[] = [];
   for (const planet of ALL_PLANETS) {
     const pos = srChart.planets[planet as keyof typeof srChart.planets];
     if (!pos) continue;
     const deg = toAbsDeg(pos);
     if (deg === null) continue;
-    const h = findNatalHouse(deg, natalChart);
+    const sh = findSRHouse(deg, srChart);
+    const nh = findNatalHouse(deg, natalChart);
     houseOverlays.push({
       planet,
       srSign: pos.sign,
       srDegree: `${pos.degree}°${pos.minutes || 0}'`,
-      natalHouse: h,
-      houseTheme: h ? houseThemes[h] : '',
+      srHouse: sh,
+      srHouseTheme: sh ? houseThemes[sh] : '',
+      natalHouse: nh,
+      houseTheme: nh ? houseThemes[nh] : '',
     });
   }
 
@@ -244,19 +248,14 @@ export const analyzeSolarReturn = (
       const asp = detectAspect(srDeg, natDeg);
       if (asp) {
         srToNatalAspects.push({
-          planet1: srPlanet,
-          planet1Source: 'SR',
-          planet2: natPlanet,
-          planet2Source: 'Natal',
-          type: asp.type,
-          orb: asp.orb,
-          exact: 0,
+          planet1: srPlanet, planet1Source: 'SR',
+          planet2: natPlanet, planet2Source: 'Natal',
+          type: asp.type, orb: asp.orb, exact: 0,
           interpretation: aspectMeaning(srPlanet, natPlanet, asp.type),
         });
       }
     }
   }
-  // Sort by orb (tightest first)
   srToNatalAspects.sort((a, b) => a.orb - b.orb);
 
   // 6. SR internal aspects
@@ -310,8 +309,10 @@ export const analyzeSolarReturn = (
   return {
     yearlyTheme,
     sunHouse,
+    sunNatalHouse,
     moonSign,
     moonHouse,
+    moonNatalHouse,
     houseOverlays,
     srToNatalAspects,
     srInternalAspects,
