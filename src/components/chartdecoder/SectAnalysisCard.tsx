@@ -105,8 +105,8 @@ export const SectAnalysisCard: React.FC<SectAnalysisCardProps> = ({ analysis, co
       team: isMorningStar ? 'Day' : 'Night',
       matchesChartSect: isMorningStar ? !isNightChart : isNightChart,
       description: isMorningStar 
-        ? 'Mercury rises before the Sun (Morning Star) — joins the Day team. Your mind works through conscious, logical analysis.'
-        : 'Mercury sets after the Sun (Evening Star) — joins the Night team. Your mind works through intuition and emotional intelligence.'
+        ? 'Mercury rises before the Sun each day, making it a "Morning Star." In ancient astrology, this means Mercury joins the Day team — the planets that work through conscious action and logic. Your thinking style is direct: you process ideas out loud, make decisions deliberately, and your best insights come when you\'re fully awake and engaged.'
+        : 'Mercury sets after the Sun each evening, making it an "Evening Star." In ancient astrology, this means Mercury joins the Night team — the planets that work through reflection and inner processing. Your thinking style is receptive: ideas come to you in quiet moments, your gut feelings carry real intelligence, and you often "just know" things before you can explain why.'
     };
   }, [mercuryCondition, sunCondition, isNightChart]);
 
@@ -275,9 +275,11 @@ export const SectAnalysisCard: React.FC<SectAnalysisCardProps> = ({ analysis, co
           <p className="text-xs text-foreground font-medium mb-1">{mercurySect.description}</p>
           <p className="text-xs text-muted-foreground">
             {mercuryCondition?.sign} • House {mercuryCondition?.house || '?'}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1.5 italic">
             {mercurySect.matchesChartSect 
-              ? ' — Mercury matches your chart sect, supporting natural mental expression.'
-              : ' — Mercury is out of sect, requiring conscious mental effort.'}
+              ? `Because you have a ${isNightChart ? 'Night' : 'Day'} chart and Mercury is also on the ${mercurySect.team} team, your mind is "in sync" with the rest of your chart. Your natural thinking style fits how the rest of your planets operate — communication flows easily and your mental instincts are reliable.`
+              : `Your chart is a ${isNightChart ? 'Night' : 'Day'} chart, but Mercury plays for the ${mercurySect.team} team. This means your thinking style doesn't automatically match your chart's default mode — you may need to consciously bridge between how you think and how you feel or act. This isn't bad; it just means your mind brings a different perspective than the rest of your chart.`}
           </p>
         </div>
         {/* Quick Summary */}
