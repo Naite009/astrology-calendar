@@ -438,8 +438,20 @@ const SRInputForm = ({ natalChart, existingSR, onSave, onCancel }: SRInputFormPr
         )}
       </div>
 
-      {/* Year & Location */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      {/* Person info (from natal chart) + SR details */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+        <div>
+          <label className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 block">Name</label>
+          <div className="w-full border border-border bg-muted text-foreground rounded-sm px-3 py-2 text-sm opacity-80">
+            {natalChart.name || '—'}
+          </div>
+        </div>
+        <div>
+          <label className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 block">Birthday</label>
+          <div className="w-full border border-border bg-muted text-foreground rounded-sm px-3 py-2 text-sm opacity-80">
+            {natalChart.birthDate || '—'}
+          </div>
+        </div>
         <div>
           <label className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 block">SR Year</label>
           <input
@@ -455,17 +467,7 @@ const SRInputForm = ({ natalChart, existingSR, onSave, onCancel }: SRInputFormPr
             type="text"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            placeholder="City, Country"
-            className="w-full border border-border bg-background text-foreground rounded-sm px-3 py-2 text-sm"
-          />
-        </div>
-        <div>
-          <label className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 block">SR Date/Time</label>
-          <input
-            type="text"
-            value={srDateTime}
-            onChange={(e) => setSrDateTime(e.target.value)}
-            placeholder="e.g. 2026-03-15 14:32"
+            placeholder="City, Country (if relocated)"
             className="w-full border border-border bg-background text-foreground rounded-sm px-3 py-2 text-sm"
           />
         </div>
