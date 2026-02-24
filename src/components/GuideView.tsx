@@ -235,8 +235,16 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
           <li><strong>Best for:</strong> Breaking habits, releasing attachments, forgiveness</li>
         </ul>
         
-        <h3>🌘 Waning Crescent / Balsamic</h3>
-        <p>The final sliver before new moon. Deep rest and surrender.</p>
+        <h3>🌘 Waning Crescent</h3>
+        <p>The Moon's light thins toward darkness. Quiet completion and gentle release.</p>
+        <ul>
+          <li><strong>Energy:</strong> Reflection, closure, soft release, simplification</li>
+          <li><strong>Best for:</strong> Wrapping up tasks, clearing space, restoring your energy</li>
+          <li><strong>Avoid:</strong> Overcommitting, forcing momentum</li>
+        </ul>
+
+        <h3>🌘 Balsamic Moon</h3>
+        <p>The final sliver before New Moon. Deep rest, surrender, and spiritual reset.</p>
         <ul>
           <li><strong>Energy:</strong> Rest, reflection, spiritual connection, surrender</li>
           <li><strong>Best for:</strong> Meditation, rest, spiritual practices, closure</li>
