@@ -113,6 +113,7 @@ interface VOCInfo {
     symbol: string;
     time: Date;
   };
+  currentMoonSign?: string;
   moonEntersSign?: string;
 }
 
@@ -1289,8 +1290,17 @@ Keep the tone professional, insightful, and practically applicable.`
                         <p className="font-medium text-sm">
                           {vocInfo.isCurrentlyVOC ? '☽ Moon is Currently Void of Course' : '☽ Void of Course Moon Today'}
                         </p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {formatTime(vocInfo.start)} – {formatTime(vocInfo.end)}
+                        <p className="text-sm mt-1">
+                          <span className="text-foreground">The Moon is in </span>
+                          <span className="font-medium">{vocInfo.currentMoonSign ? `${ZODIAC_SYMBOLS[vocInfo.currentMoonSign] || ''} ${vocInfo.currentMoonSign}` : 'its current sign'}</span>
+                          <span className="text-foreground"> and is void of course </span>
+                          <span className="font-medium text-foreground">{formatTime(vocInfo.start)} – {formatTime(vocInfo.end)}</span>
+                          {vocInfo.moonEntersSign && (
+                            <>
+                              <span className="text-foreground"> before it moves into </span>
+                              <span className="font-medium">{ZODIAC_SYMBOLS[vocInfo.moonEntersSign]} {vocInfo.moonEntersSign}</span>
+                            </>
+                          )}
                         </p>
                         
                         {/* Last Aspect Made */}
@@ -1309,15 +1319,6 @@ Keep the tone professional, insightful, and practically applicable.`
                           The VOC Moon is ideal for rest, napping, meditation, and completing routine tasks. 
                           Avoid initiating new ventures or important decisions.
                         </p>
-                        
-                        {/* Moon Entering Next Sign */}
-                        {vocInfo.moonEntersSign && (
-                          <p className="text-xs mt-2">
-                            <span className="text-muted-foreground">Then the Moon enters </span>
-                            <span className="font-medium">{ZODIAC_SYMBOLS[vocInfo.moonEntersSign]} {vocInfo.moonEntersSign}</span>
-                            <span className="text-muted-foreground">{getSignTransitionMeaning(vocInfo.moonEntersSign)}</span>
-                          </p>
-                        )}
                       </div>
                     </div>
                   </CardContent>
