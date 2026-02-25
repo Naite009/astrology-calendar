@@ -1,4 +1,5 @@
-// Venus Star Point System - Complete Data and Calculations
+// Venus Star Point System - Dynamically Computed from Ephemeris
+import * as Astronomy from 'astronomy-engine';
 
 export interface VenusStarPoint {
   date: Date;
@@ -19,48 +20,91 @@ export interface VenusCycleStatus {
   nextStarPoint: VenusStarPoint;
 }
 
-// Accurate Venus Star Point dates 2020-2032
-export const VENUS_STAR_POINTS: VenusStarPoint[] = [
-  { date: new Date('2020-06-03'), type: 'inferior', degree: 13, sign: 'Gemini' },
-  { date: new Date('2021-03-26'), type: 'superior', degree: 5, sign: 'Aries' },
-  { date: new Date('2022-01-08'), type: 'inferior', degree: 18, sign: 'Capricorn' },
-  { date: new Date('2022-10-22'), type: 'superior', degree: 29, sign: 'Libra' },
-  { date: new Date('2023-08-13'), type: 'inferior', degree: 20, sign: 'Leo' },
-  { date: new Date('2024-06-04'), type: 'inferior', degree: 14, sign: 'Gemini' },
-  { 
-    date: new Date('2025-03-23'), 
-    type: 'inferior', 
-    degree: 3, 
-    sign: 'Aries',
-    specialNotes: 'New Venus cycle begins. Opposes Libra stelliums - awareness activation!'
-  },
-  { 
-    date: new Date('2026-01-06'), 
-    type: 'superior', 
-    degree: 16, 
-    sign: 'Capricorn',
-    specialNotes: 'TRIPLE CONJUNCTION with Sun & Mars - happens every 32 years!',
-    companions: [
-      { planet: 'Sun', degree: 16 },
-      { planet: 'Mars', degree: 18 }
-    ]
-  },
-  { 
-    date: new Date('2026-10-23'), 
-    type: 'inferior', 
-    degree: 0, 
-    sign: 'Scorpio',
-    specialNotes: 'First Scorpio star point in new era'
-  },
-  { date: new Date('2027-03-10'), type: 'superior', degree: 20, sign: 'Pisces' },
-  { date: new Date('2027-08-04'), type: 'inferior', degree: 12, sign: 'Leo' },
-  { date: new Date('2028-05-16'), type: 'superior', degree: 26, sign: 'Taurus' },
-  { date: new Date('2029-03-29'), type: 'inferior', degree: 9, sign: 'Aries' },
-  { date: new Date('2030-01-11'), type: 'superior', degree: 21, sign: 'Capricorn' },
-  { date: new Date('2030-10-29'), type: 'inferior', degree: 5, sign: 'Scorpio' },
-  { date: new Date('2031-08-12'), type: 'superior', degree: 19, sign: 'Leo' },
-  { date: new Date('2032-06-02'), type: 'inferior', degree: 12, sign: 'Gemini' },
+const ZODIAC_SIGNS = [
+  'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+  'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
 ];
+
+const getSignFromLon = (lon: number): string => ZODIAC_SIGNS[Math.floor(((lon % 360) + 360) % 360 / 30)];
+const getDegInSign = (lon: number): number => Math.floor(((lon % 360) + 360) % 360 % 30);
+
+// Compute Venus-Sun elongation on a date (positive = Venus east of Sun)
+const venusElongation = (date: Date): number => {
+  try {
+    const sunV = Astronomy.GeoVector(Astronomy.Body.Sun, date, false);
+    const venV = Astronomy.GeoVector(Astronomy.Body.Venus, date, false);
+    const sunE = Astronomy.Ecliptic(sunV);
+    const venE = Astronomy.Ecliptic(venV);
+    let diff = venE.elon - sunE.elon;
+    if (diff > 180) diff -= 360;
+    if (diff < -180) diff += 360;
+    return diff;
+  } catch { return 0; }
+};
+
+// Find Venus-Sun conjunctions (star points) by searching for elongation zero-crossings
+const starPointCache: Map<string, VenusStarPoint[]> = new Map();
+
+const computeVenusStarPoints = (startYear: number, endYear: number): VenusStarPoint[] => {
+  const cacheKey = `${startYear}_${endYear}`;
+  if (starPointCache.has(cacheKey)) return starPointCache.get(cacheKey)!;
+  
+  const points: VenusStarPoint[] = [];
+  const start = new Date(startYear, 0, 1);
+  const end = new Date(endYear, 11, 31);
+  const current = new Date(start);
+  
+  let prevElong = venusElongation(current);
+  
+  while (current <= end) {
+    current.setDate(current.getDate() + 1);
+    const nowElong = venusElongation(current);
+    
+    // Zero crossing = conjunction
+    if ((prevElong > 0 && nowElong <= 0) || (prevElong < 0 && nowElong >= 0)) {
+      // Refine to nearest hour
+      let bestDate = new Date(current);
+      let bestAbs = Math.abs(nowElong);
+      const dayBefore = new Date(current);
+      dayBefore.setDate(dayBefore.getDate() - 1);
+      
+      for (let h = 0; h < 24; h++) {
+        const test = new Date(dayBefore);
+        test.setHours(test.getHours() + h);
+        const e = Math.abs(venusElongation(test));
+        if (e < bestAbs) { bestAbs = e; bestDate = new Date(test); }
+      }
+      
+      // Determine inferior vs superior:
+      // At inferior conjunction, Venus is between Earth and Sun (closer, appears smaller elongation swing)
+      // Check Venus distance - inferior = closer to Earth
+      try {
+        const venVec = Astronomy.GeoVector(Astronomy.Body.Venus, bestDate, false);
+        const dist = Math.sqrt(venVec.x ** 2 + venVec.y ** 2 + venVec.z ** 2);
+        const type: 'inferior' | 'superior' = dist < 1.0 ? 'inferior' : 'superior';
+        
+        const sunV = Astronomy.GeoVector(Astronomy.Body.Sun, bestDate, false);
+        const sunE = Astronomy.Ecliptic(sunV);
+        const lon = sunE.elon;
+        
+        points.push({
+          date: bestDate,
+          type,
+          degree: getDegInSign(lon),
+          sign: getSignFromLon(lon),
+        });
+      } catch { /* skip */ }
+    }
+    
+    prevElong = nowElong;
+  }
+  
+  starPointCache.set(cacheKey, points);
+  return points;
+};
+
+// Get Venus Star Points for display (computed dynamically from ephemeris)
+export const VENUS_STAR_POINTS: VenusStarPoint[] = computeVenusStarPoints(2020, 2032);
 
 // Check if a date is a Venus Star Point day (within 1 day)
 export function isVenusStarPointDay(date: Date): VenusStarPoint | null {

@@ -168,8 +168,8 @@ const computeRetrogradePeriods = (
 // Get cached or compute retrograde periods
 export const getRetrogradePeriods = (body: Astronomy.Body, forDate: Date): RetrogradeInfo[] => {
   const year = forDate.getFullYear();
-  const startYear = year - 1; // Include previous year for shadow periods
-  const endYear = year + 1; // Include next year for shadow periods
+  const startYear = year - 1;
+  const endYear = year + 1;
   
   const cacheKey = `${body}_${startYear}_${endYear}`;
   
@@ -177,11 +177,14 @@ export const getRetrogradePeriods = (body: Astronomy.Body, forDate: Date): Retro
     return retrogradeCache.get(cacheKey)!;
   }
   
-  // Configure based on planet
+  // Configure shadow days based on planet
   let shadowDays = 14;
-  if (body === Astronomy.Body.Mars) {
-    shadowDays = 30; // Mars has longer shadow periods
-  }
+  if (body === Astronomy.Body.Mars) shadowDays = 30;
+  if (body === Astronomy.Body.Jupiter) shadowDays = 14;
+  if (body === Astronomy.Body.Saturn) shadowDays = 14;
+  if (body === Astronomy.Body.Uranus) shadowDays = 14;
+  if (body === Astronomy.Body.Neptune) shadowDays = 14;
+  if (body === Astronomy.Body.Pluto) shadowDays = 14;
   
   const periods = computeRetrogradePeriods(body, startYear, endYear, 3, shadowDays);
   retrogradeCache.set(cacheKey, periods);
@@ -197,6 +200,111 @@ export const getMercuryRetrogrades = (forDate: Date): RetrogradeInfo[] => {
 // Get Mars retrograde periods (dynamically computed)
 export const getMarsRetrogrades = (forDate: Date): RetrogradeInfo[] => {
   return getRetrogradePeriods(Astronomy.Body.Mars, forDate);
+};
+
+// Get Jupiter retrograde periods (dynamically computed)
+export const getJupiterRetrogrades = (forDate: Date): RetrogradeInfo[] => {
+  return getRetrogradePeriods(Astronomy.Body.Jupiter, forDate);
+};
+
+// Get Saturn retrograde periods (dynamically computed)
+export const getSaturnRetrogrades = (forDate: Date): RetrogradeInfo[] => {
+  return getRetrogradePeriods(Astronomy.Body.Saturn, forDate);
+};
+
+// Get Uranus retrograde periods (dynamically computed)
+export const getUranusRetrogrades = (forDate: Date): RetrogradeInfo[] => {
+  return getRetrogradePeriods(Astronomy.Body.Uranus, forDate);
+};
+
+// Get Neptune retrograde periods (dynamically computed)
+export const getNeptuneRetrogrades = (forDate: Date): RetrogradeInfo[] => {
+  return getRetrogradePeriods(Astronomy.Body.Neptune, forDate);
+};
+
+// Get Pluto retrograde periods (dynamically computed)
+export const getPlutoRetrogrades = (forDate: Date): RetrogradeInfo[] => {
+  return getRetrogradePeriods(Astronomy.Body.Pluto, forDate);
+};
+
+// Get all planet retrograde periods for a date
+export const getAllRetrogradePeriods = (forDate: Date): Record<string, RetrogradeInfo[]> => {
+  return {
+    Mercury: getMercuryRetrogrades(forDate),
+    Mars: getMarsRetrogrades(forDate),
+    Jupiter: getJupiterRetrogrades(forDate),
+    Saturn: getSaturnRetrogrades(forDate),
+    Uranus: getUranusRetrogrades(forDate),
+    Neptune: getNeptuneRetrogrades(forDate),
+    Pluto: getPlutoRetrogrades(forDate),
+  };
+};
+
+// Get station dates with degrees for a planet (for display in transit tables)
+export interface StationInfo {
+  year: number;
+  retrograde: { date: Date; degree: string; sign: string };
+  direct: { date: Date; degree: string; sign: string };
+}
+
+export const getStationDates = (body: Astronomy.Body, forDate: Date): StationInfo[] => {
+  const periods = getRetrogradePeriods(body, forDate);
+  return periods.map(p => {
+    const rxSign = getPlanetSign(body, p.start);
+    const dSign = getPlanetSign(body, p.end);
+    
+    // Get exact degree at station
+    const rxLon = (() => {
+      try {
+        const v = Astronomy.GeoVector(body, p.start, false);
+        const e = Astronomy.Ecliptic(v);
+        return e.elon % 30;
+      } catch { return 0; }
+    })();
+    const dLon = (() => {
+      try {
+        const v = Astronomy.GeoVector(body, p.end, false);
+        const e = Astronomy.Ecliptic(v);
+        return e.elon % 30;
+      } catch { return 0; }
+    })();
+    
+    const fmtDeg = (d: number) => {
+      const deg = Math.floor(d);
+      const min = Math.floor((d - deg) * 60);
+      return `${deg}°${String(min).padStart(2,'0')}'`;
+    };
+    
+    return {
+      year: p.start.getFullYear(),
+      retrograde: { date: p.start, degree: `${fmtDeg(rxLon)} ${rxSign}`, sign: rxSign },
+      direct: { date: p.end, degree: `${fmtDeg(dLon)} ${dSign}`, sign: dSign },
+    };
+  });
+};
+
+// Compute planet ingresses (sign changes) dynamically for a date range
+export interface IngressInfo {
+  planet: string;
+  date: Date;
+  fromSign: string;
+  toSign: string;
+}
+
+export const computeIngresses = (body: Astronomy.Body, planetName: string, startDate: Date, endDate: Date): IngressInfo[] => {
+  const ingresses: IngressInfo[] = [];
+  const current = new Date(startDate);
+  let prevSign = getPlanetSign(body, current);
+  
+  while (current <= endDate) {
+    current.setDate(current.getDate() + 1);
+    const nowSign = getPlanetSign(body, current);
+    if (nowSign !== prevSign && nowSign !== 'Unknown' && prevSign !== 'Unknown') {
+      ingresses.push({ planet: planetName, date: new Date(current), fromSign: prevSign, toSign: nowSign });
+    }
+    prevSign = nowSign;
+  }
+  return ingresses;
 };
 
 // Check if date is during retrograde

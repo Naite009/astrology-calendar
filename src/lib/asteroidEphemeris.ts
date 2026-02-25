@@ -573,8 +573,25 @@ export const getAccurateAsteroidPosition = (
   const position = longitudeToPosition(longitude);
   
   // Lilith doesn't retrograde (it's a mathematical point)
-  // Eris retrogrades but very slowly (~5 months per year)
   const retro = body === 'lilith' ? false : isRetrograde(data, date, period);
   
   return { ...position, isRetrograde: retro };
+};
+
+// Exported helper for direct longitude lookup (used by astrology.ts fallback)
+export const interpolateAsteroidLongitude = (
+  body: 'chiron' | 'lilith' | 'ceres' | 'pallas' | 'juno' | 'vesta' | 'eris',
+  date: Date
+): number => {
+  const ephemerisMap: Record<string, { data: Record<string, number>; period: number }> = {
+    chiron: { data: CHIRON_EPHEMERIS, period: 50.7 },
+    lilith: { data: LILITH_EPHEMERIS, period: 8.85 },
+    ceres: { data: CERES_EPHEMERIS, period: 4.6 },
+    pallas: { data: PALLAS_EPHEMERIS, period: 4.62 },
+    juno: { data: JUNO_EPHEMERIS, period: 4.36 },
+    vesta: { data: VESTA_EPHEMERIS, period: 3.63 },
+    eris: { data: ERIS_EPHEMERIS, period: 559 },
+  };
+  const { data, period } = ephemerisMap[body];
+  return interpolatePosition(data, date, period);
 };

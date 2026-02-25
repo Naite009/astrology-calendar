@@ -101,8 +101,9 @@ export const calculateSolarArc = (birthDate: Date, currentDate: Date): number =>
     if (arc < 0) arc += 360;
     
     return arc;
-  } catch {
-    // Fallback: approximate 1° per year
+  } catch (e) {
+    // Fallback: approximate 1° per year (astronomy-engine should not fail for Sun)
+    console.warn('Solar arc calculation fell back to 1°/year approximation:', e);
     return ageInYears % 360;
   }
 };
