@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getMoonPhase, getPlanetaryPositions, calculateDailyAspects, PlanetaryPositions, getPlanetSymbol, getExactLunarPhase, findNearestMajorPhaseTime } from "@/lib/astrology";
 import { getVOCMoonDetails, findNextMoonSignChange } from "@/lib/voidOfCourseMoon";
 import { formatLocalDateKey } from "@/lib/localDate";
-import { getMercuryRetrogrades, getRetrogradeStatus, formatRetrogradeDate } from "@/lib/retrogradePatterns";
+import { getMercuryRetrogrades, getRetrogradeStatus, formatRetrogradeDate, getAllRetrogradePeriods } from "@/lib/retrogradePatterns";
 import ReactMarkdown from "react-markdown";
 import html2canvas from "html2canvas";
 import { toast } from "@/hooks/use-toast";
@@ -703,6 +703,18 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
           })),
           mercuryRetro: mercuryRxInfo?.phase === 'retrograde-first-half' || mercuryRxInfo?.phase === 'retrograde-second-half',
           mercuryRetrogradeInfo: mercuryRxInfo ? { phase: mercuryRxInfo.phase, description: mercuryRxInfo.description, shadowDegree: mercuryRxInfo.shadowDegree, rxDegree: mercuryRxInfo.rxDegree, sign: mercuryRxInfo.sign } : null,
+          // All-planet retrograde status (computed from ephemeris)
+          allRetrogrades: (() => {
+            const allPeriods = getAllRetrogradePeriods(now);
+            const statuses: Record<string, { isRetrograde: boolean; sign?: string; stationDirect?: string }> = {};
+            for (const [planet, periods] of Object.entries(allPeriods)) {
+              const status = getRetrogradeStatus(now, periods);
+              if (status.isRetrograde && status.retrogradeInfo) {
+                statuses[planet] = { isRetrograde: true, sign: status.retrogradeInfo.sign, stationDirect: formatRetrogradeDate(status.retrogradeInfo.end) };
+              }
+            }
+            return Object.keys(statuses).length > 0 ? statuses : undefined;
+          })(),
           moonSignChange: moonSignChangeToday,
           imminentSignChanges,
           personalizedRetrograde: personalizedRetroInfo,

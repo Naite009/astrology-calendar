@@ -12,6 +12,8 @@ import { getDecan } from '@/lib/decans';
 import { getPlanetInSignExpression } from '@/lib/planetSignExpressions';
 import { getAspectInterpretation, getAspectFeeling, getAspectDynamics, ASPECT_INTERPRETATIONS } from '@/lib/aspectInterpretations';
 import { detectChartPatterns, getPatternActivation, ChartPattern } from '@/lib/chartPatterns';
+import { getStationDates, formatRetrogradeDate } from '@/lib/retrogradePatterns';
+import * as Astronomy from 'astronomy-engine';
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -1413,30 +1415,25 @@ const RETROGRADE_INFO: Record<string, { duration: string; frequency: string; pas
   }
 };
 
-// Actual station dates for outer planets (2024-2027)
-const STATION_DATES: Record<string, Array<{ year: number; retrograde: { date: string; degree: string }; direct: { date: string; degree: string } }>> = {
-  pluto: [
-    { year: 2024, retrograde: { date: 'May 2, 2024', degree: '2°06\' Aquarius' }, direct: { date: 'Oct 11, 2024', degree: '29°38\' Capricorn' } },
-    { year: 2025, retrograde: { date: 'May 4, 2025', degree: '4°02\' Aquarius' }, direct: { date: 'Oct 13, 2025', degree: '1°23\' Aquarius' } },
-    { year: 2026, retrograde: { date: 'May 6, 2026', degree: '6°01\' Aquarius' }, direct: { date: 'Oct 15, 2026', degree: '3°23\' Aquarius' } },
-    { year: 2027, retrograde: { date: 'May 9, 2027', degree: '8°02\' Aquarius' }, direct: { date: 'Oct 17, 2027', degree: '5°24\' Aquarius' } },
-  ],
-  neptune: [
-    { year: 2025, retrograde: { date: 'Jul 4, 2025', degree: '2°09\' Aries' }, direct: { date: 'Dec 10, 2025', degree: '29°22\' Pisces' } },
-    { year: 2026, retrograde: { date: 'Jul 6, 2026', degree: '4°00\' Aries' }, direct: { date: 'Dec 11, 2026', degree: '1°11\' Aries' } },
-  ],
-  uranus: [
-    { year: 2025, retrograde: { date: 'Sep 6, 2025', degree: '1°07\' Gemini' }, direct: { date: 'Feb 4, 2026', degree: '27°17\' Taurus' } },
-    { year: 2026, retrograde: { date: 'Sep 10, 2026', degree: '5°25\' Gemini' }, direct: { date: 'Feb 7, 2027', degree: '1°30\' Gemini' } },
-  ],
-  saturn: [
-    { year: 2025, retrograde: { date: 'Jul 13, 2025', degree: '1°51\' Aries' }, direct: { date: 'Nov 28, 2025', degree: '25°09\' Pisces' } },
-    { year: 2026, retrograde: { date: 'Aug 1, 2026', degree: '11°28\' Aries' }, direct: { date: 'Dec 16, 2026', degree: '4°51\' Aries' } },
-  ],
-  jupiter: [
-    { year: 2025, retrograde: { date: 'Nov 11, 2025', degree: '20°03\' Cancer' }, direct: { date: 'Mar 11, 2026', degree: '11°29\' Cancer' } },
-    { year: 2026, retrograde: { date: 'Dec 6, 2026', degree: '2°18\' Leo' }, direct: { date: 'Apr 6, 2027', degree: '23°41\' Cancer' } },
-  ],
+// Dynamic station dates computed from astronomy-engine ephemeris
+
+const getComputedStationDates = (planetName: string, referenceDate: Date): Array<{ year: number; retrograde: { date: string; degree: string }; direct: { date: string; degree: string } }> => {
+  const bodyMap: Record<string, Astronomy.Body> = {
+    pluto: Astronomy.Body.Pluto,
+    neptune: Astronomy.Body.Neptune,
+    uranus: Astronomy.Body.Uranus,
+    saturn: Astronomy.Body.Saturn,
+    jupiter: Astronomy.Body.Jupiter,
+  };
+  const body = bodyMap[planetName.toLowerCase()];
+  if (!body) return [];
+  
+  const stations = getStationDates(body, referenceDate);
+  return stations.map(s => ({
+    year: s.year,
+    retrograde: { date: formatRetrogradeDate(s.retrograde.date), degree: `${s.retrograde.degree}` },
+    direct: { date: formatRetrogradeDate(s.direct.date), degree: `${s.direct.degree}` },
+  }));
 };
 
 // Get the transit sign for a given aspect (where the transit planet IS, not the natal point)
@@ -1769,7 +1766,7 @@ const AllNatalAspects = ({ transitPlanet, transitDegree, transitSign, natalChart
                 );
                 
                 // Get station dates for this planet
-                const planetStations = STATION_DATES[transitPlanet.toLowerCase()] || [];
+                const planetStations = getComputedStationDates(transitPlanet, new Date());
                 const relevantStations = planetStations.filter(s => s.year >= 2025 && s.year <= 2027);
                 
                 return (

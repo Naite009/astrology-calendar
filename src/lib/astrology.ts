@@ -187,42 +187,25 @@ export const getDetailedNodePosition = (date: Date): { sign: string; degree: num
   return getDetailedPosition(normalizedNode);
 };
 
-// Calculate Chiron position using astronomy-engine (exact ephemeris)
+// Calculate Chiron position using ephemeris lookup table (accurate interpolated data)
 export const getChironPosition = (date: Date): ExtendedZodiacPosition => {
-  // Note: astronomy-engine doesn't include Chiron directly
-  // However, we use the natal chart data which has exact Chiron positions from chart input
-  // This function is deprecated - use natal chart Chiron position instead
-  // Keeping for backward compatibility but logging warning
-  console.warn('getChironPosition uses approximate calculation - use natal chart Chiron data for exact positions');
-  
-  // Chiron has ~50.7 year orbital period
-  // Using more accurate orbital elements from JPL
-  const J2000 = new Date('2000-01-01T12:00:00Z');
-  const d = (date.getTime() - J2000.getTime()) / (1000 * 60 * 60 * 24);
-  const meanMotion = 360 / (50.42 * 365.25); // More precise orbital period: 50.42 years
-  const longitude = (72.16 + d * meanMotion) % 360; // More accurate J2000 position
-  const normalizedLon = ((longitude % 360) + 360) % 360;
-  
+  const pos = getAccurateAsteroidPosition('chiron', date);
+  const longitude = ZODIAC_SIGNS.findIndex(s => s.name === pos.sign) * 30 + pos.degree + pos.minutes / 60 + pos.seconds / 3600;
   return {
-    ...longitudeToZodiac(normalizedLon),
-    longitude: normalizedLon,
+    ...longitudeToZodiac(longitude),
+    longitude,
     planetSymbol: '⚷',
     name: 'Chiron'
   };
 };
 
-// Calculate Black Moon Lilith position (Mean Lilith approximation)
+// Calculate Black Moon Lilith position using ephemeris lookup table (accurate interpolated data)
 export const getBlackMoonLilith = (date: Date): ExtendedZodiacPosition => {
-  // Lilith has ~8.85 year cycle
-  // J2000 epoch: Mean Lilith at approximately 121° (1° Leo)
-  const d = (date.getTime() - new Date('2000-01-01T12:00:00Z').getTime()) / (1000 * 60 * 60 * 24);
-  const meanMotion = 360 / (8.85 * 365.25); // degrees per day
-  const longitude = (121 + d * meanMotion) % 360;
-  const normalizedLon = ((longitude % 360) + 360) % 360;
-  
+  const pos = getAccurateAsteroidPosition('lilith', date);
+  const longitude = ZODIAC_SIGNS.findIndex(s => s.name === pos.sign) * 30 + pos.degree + pos.minutes / 60 + pos.seconds / 3600;
   return {
-    ...longitudeToZodiac(normalizedLon),
-    longitude: normalizedLon,
+    ...longitudeToZodiac(longitude),
+    longitude,
     planetSymbol: '⚸',
     name: 'Black Moon Lilith'
   };

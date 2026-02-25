@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects, planetPositions, customPrompt, voiceStyle, upcomingEvents, deviceId, forceRegenerate, greeting: reqGreeting, timeOfDay: reqTimeOfDay, moonSignChange, imminentSignChanges, mercuryRetrogradeInfo, personalizedRetrograde, userTimezone, userTzAbbr } = await req.json();
+    const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects, planetPositions, customPrompt, voiceStyle, upcomingEvents, deviceId, forceRegenerate, greeting: reqGreeting, timeOfDay: reqTimeOfDay, moonSignChange, imminentSignChanges, mercuryRetrogradeInfo, personalizedRetrograde, userTimezone, userTzAbbr, allRetrogrades } = await req.json();
     
     console.log("Received cosmic weather request:", { date, moonPhase, moonSign, exactLunarPhase, voiceStyle, planetPositions });
     console.log("Aspects received:", aspects?.slice(0, 15));
@@ -37,7 +37,7 @@ serve(async (req) => {
     
     // Cache key versioning: bump this when prompt/format changes so users don't get stale cached text.
     // This intentionally changes the cache key without requiring any DB schema changes.
-    const PROMPT_VERSION = "2026-02-25-v14-dynamic-retrograde-dates";
+    const PROMPT_VERSION = "2026-02-25-v15-all-planet-ephemeris";
 
     const cacheDeviceId = deviceId || 'default';
     const cacheVoiceStyle = `${voiceStyle || ''}@${PROMPT_VERSION}`;
@@ -63,9 +63,16 @@ serve(async (req) => {
 
     // Build planetary positions text - this is the ground truth
     const planetText = planetPositions?.length > 0
-      ? `Current Planetary Positions (VERIFIED ASTRONOMICAL DATA):
+      ? `Current Planetary Positions (VERIFIED ASTRONOMICAL DATA — computed from astronomy-engine ephemeris, NOT from AI training data):
 ${planetPositions.map((p: any) => `- ${p.name}: ${p.degree}° ${p.sign}`).join('\n')}`
       : '';
+
+    // Build all-planet retrograde status text
+    const allRetroText = allRetrogrades && Object.keys(allRetrogrades).length > 0
+      ? `PLANETS CURRENTLY RETROGRADE (computed from ephemeris):
+${Object.entries(allRetrogrades).map(([planet, info]: [string, any]) => `- ${planet} is RETROGRADE in ${info.sign}. Stations direct: ${info.stationDirect}.`).join('\n')}
+IMPORTANT: Use these EXACT station direct dates. Do NOT substitute dates from your training data.`
+      : 'NO PLANETS ARE CURRENTLY RETROGRADE (other than any mentioned in Mercury Retrograde Status above).';
 
     // Build the astrological context for the prompt
     const stelliumText = stelliums?.length > 0 
@@ -625,18 +632,19 @@ ALWAYS INCLUDE SPECIFIC DATES (THIS IS A TEACHING APP):
 - NEVER say "soon", "a lot of time", "extended stay" without the date range
 - Use the EXACT retrograde dates provided in the Mercury Retrograde Status section above — NEVER substitute dates from your training data. If no Mercury retrograde data is provided, do NOT mention specific retrograde dates.
 
-KEY INGRESS DATES TO REFERENCE (use appropriate tense based on whether these have already happened relative to today's date):
-- Uranus enters Gemini: July 7, 2025 (retrogrades back to Taurus Nov 7, 2025; re-enters Gemini permanently April 26, 2026)
-- Uranus has been in Taurus since May 15, 2018
-- Neptune entered Aries: March 30, 2025 (retrograded back to Pisces Oct 22, 2025; re-entered Aries permanently Jan 26, 2026) — Neptune is NOW in Aries
-- Pluto re-entered Aquarius permanently: Nov 19, 2024 (after initial ingress March 23, 2023) — Pluto is NOW in Aquarius
-- Saturn entered Aries: May 24, 2025 (retrograded back to Pisces Sept 1, 2025; re-entered Aries permanently Feb 13, 2026) — Saturn is NOW in Aries
-IMPORTANT: If today's date is after Feb 13, 2026, Saturn is PERMANENTLY in Aries. Do NOT use future tense for past events. Say "Saturn entered Aries permanently on Feb 13, 2026" not "Saturn will enter Aries."
+PLANET SIGN PLACEMENTS — GROUND TRUTH:
+The planetPositions data provided above shows EXACTLY what sign each planet is in RIGHT NOW, computed from astronomy-engine. Use ONLY these positions to determine planet signs.
+- If Saturn is shown at X° Aries in the data, then Saturn IS in Aries. Do NOT say it's in Pisces.
+- If Neptune is shown at X° Aries, then Neptune IS in Aries. Do NOT say it's in Pisces.
+- NEVER reference ingress dates from your training data — they may be wrong. Instead, describe what IS (from the data) and what's COMING (from aspects and degrees).
+- If two slow planets are within 3° of each other in the same sign, note the conjunction.
+- If a planet is at 28°+ of a sign, note it's about to change signs (this is already handled by imminentSignChanges data if provided).
 
-MAJOR OUTER PLANET CONJUNCTIONS TO WATCH (these are GENERATIONAL events):
-- Saturn conjunct Neptune at 0° Aries: This conjunction happens around February 20, 2026. It is one of the most significant astrological events in decades — the last Saturn-Neptune conjunction was in 1989. Both planets meeting at 0° Aries (the Aries Point / World Axis) amplifies this to world-level significance. If Saturn and Neptune are BOTH in early Aries (within 2-3° of each other), THIS MUST BE THE LEAD STORY of the cosmic weather report. Themes: dissolving old structures (Neptune) to build new ones (Saturn), collective dreams meeting reality, spiritual awakening meets practical grounding, new 36-year cycle beginning at the very start of the zodiac.
+RETROGRADE STATION DATES — USE ONLY PROVIDED DATA:
+If the Mercury Retrograde Status section above provides station dates, use those EXACTLY.
+For other planets, check the planetPositions data — if a planet's degree is DECREASING day-over-day (compare with aspects showing 'SEPARATING'), it may be retrograde. Only state a planet is retrograde if the data confirms it.
 
-When mentioning any of these transits, ALWAYS include the specific dates in parentheses so the user knows exactly when.
+When mentioning any of these transits, use the dates and degrees from the structured data provided, NOT from your training data.
 
 DO NOT USE:
 - "So, get ready!" or "It's happening very, very soon!" (unnecessary filler)
@@ -718,6 +726,7 @@ ${rareAspectText}
 ${nodeAspectText}
 ${aspectsText}
 ${imminentChangesText}
+${allRetroText}
 ${upcomingEventsText}
 ${personalizedRetroText}
 
