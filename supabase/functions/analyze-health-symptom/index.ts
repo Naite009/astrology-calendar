@@ -65,7 +65,7 @@ serve(async (req) => {
 ${chartContext}
 
 --- CURRENT TRANSITS ---
-${transitContext || "No specific transit data available. Use current planetary positions for February 2026."}
+${transitContext || "No specific transit data available. Do NOT guess current planetary positions — state that transit data was not provided and focus on natal chart patterns only."}
 
 Please analyze this symptom through my natal chart and current transits. Determine if it's natal, transit-triggered, or both. Provide a complete support protocol with vitamins, herbs, and lifestyle recommendations.`;
 
