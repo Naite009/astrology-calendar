@@ -141,7 +141,7 @@ const TrigramLookupTable = () => {
     <div className="space-y-2">
       <h4 className="text-[10px] uppercase tracking-widest text-primary font-medium">Trigram Lookup Chart</h4>
       <p className="text-[11px] text-muted-foreground">
-        Find your <strong>bottom trigram</strong> (lines 1-3) across the top, and your <strong>top trigram</strong> (lines 4-6) down the left side. Where they meet is your hexagram number.
+        Find your <strong>lower trigram (Lines 1-2-3)</strong> across the top row, and your <strong>upper trigram (Lines 4-5-6)</strong> down the left column. The cell where they meet is your hexagram number.
       </p>
       <div className="rounded bg-primary/5 border border-primary/20 p-2 mb-2">
         <p className="text-[11px] text-foreground">
@@ -543,11 +543,11 @@ export const HexagramView = () => {
       {mode === 'cast' && (
         <div className="space-y-6">
           {/* Instructions */}
-          <div className="rounded border border-border bg-card p-4 space-y-3">
+          <div className="rounded border border-border bg-card p-4 space-y-4">
             <h3 className="text-[10px] uppercase tracking-widest text-muted-foreground">How It Works</h3>
             <p className="text-sm text-foreground">
-              The I Ching uses three coins (pennies) thrown six times to build a hexagram from bottom to top. 
-              Each coin is <strong>Heads (3)</strong> or <strong>Tails (2)</strong>. The sum determines the line:
+              The I Ching uses three coins thrown six times to build a hexagram from <strong>bottom to top</strong>. 
+              Each coin is <strong>Heads (3)</strong> or <strong>Tails (2)</strong>. Add the three coins — the sum determines the line type:
             </p>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="rounded bg-secondary p-2">
@@ -563,9 +563,45 @@ export const HexagramView = () => {
                 <span className="font-medium">9 (H+H+H)</span> — Old Yang ⚊○ <span className="text-primary">(changing)</span>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Changing lines transform into their opposite, creating a second "future" hexagram.
-            </p>
+
+            {/* Line positions explainer */}
+            <div className="rounded bg-primary/5 border border-primary/20 p-3 space-y-2">
+              <h4 className="text-[10px] uppercase tracking-widest text-primary font-medium">Line Positions &amp; Trigrams</h4>
+              <div className="flex gap-6 items-start">
+                <div className="text-xs text-foreground space-y-0.5">
+                  <p className="text-muted-foreground text-[10px] mb-1">TOP ↑</p>
+                  <p><strong>Line 6</strong> — top of upper trigram</p>
+                  <p><strong>Line 5</strong> — middle of upper trigram</p>
+                  <p><strong>Line 4</strong> — bottom of upper trigram</p>
+                  <p className="border-t border-border pt-1 mt-1"><strong>Line 3</strong> — top of lower trigram</p>
+                  <p><strong>Line 2</strong> — middle of lower trigram</p>
+                  <p><strong>Line 1</strong> — bottom of lower trigram</p>
+                  <p className="text-muted-foreground text-[10px] mt-1">BOTTOM ↓ (you start here)</p>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  <p className="text-[10px] mb-1">{"}"} <strong className="text-foreground">Upper Trigram</strong></p>
+                  <p className="mt-[3.2rem] text-[10px]">{"}"} <strong className="text-foreground">Lower Trigram</strong></p>
+                </div>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Your 6 lines split into two groups of three: <strong>Lines 1-2-3</strong> form the <strong>lower trigram</strong>, 
+                and <strong>Lines 4-5-6</strong> form the <strong>upper trigram</strong>. You look up the lower trigram <em>across</em> and the upper trigram <em>down</em> in the lookup table to find your hexagram number.
+              </p>
+            </div>
+
+            {/* One vs Two answers */}
+            <div className="rounded bg-secondary/50 border border-border p-3 space-y-2">
+              <h4 className="text-[10px] uppercase tracking-widest text-primary font-medium">One Answer or Two?</h4>
+              <p className="text-[11px] text-foreground">
+                <strong>No changing lines (all 7s and 8s):</strong> You get a <strong>single hexagram</strong> — one clear, stable answer. The situation is settled; read just this hexagram.
+              </p>
+              <p className="text-[11px] text-foreground">
+                <strong>One or more changing lines (any 6s or 9s):</strong> You get <strong>two hexagrams</strong>. The <em>primary</em> hexagram describes your current situation. Each changing line flips to its opposite (yin↔yang), creating a <em>transformed</em> "future" hexagram that shows where things are heading.
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                The more changing lines you have, the more dynamic and unstable the situation. One changing line gives the most specific guidance (read that line's text closely). Multiple changing lines suggest a bigger transformation is underway.
+              </p>
+            </div>
           </div>
 
           {/* Question */}
