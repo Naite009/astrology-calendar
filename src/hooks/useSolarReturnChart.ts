@@ -115,8 +115,11 @@ export const useSolarReturnChart = () => {
 
     const restore = async () => {
       try {
-        // Wait briefly for auth to resolve
-        await new Promise(r => setTimeout(r, 500));
+        // Wait for auth session to fully resolve (not just 500ms guess)
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user?.id) {
+          userIdRef.current = session.user.id;
+        }
 
         let query = supabase
           .from('device_charts')
