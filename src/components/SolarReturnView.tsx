@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef } from 'react';
-import { Sun, MapPin, ArrowRight, Compass, Star, Globe, ChevronDown, ChevronUp, Info, Upload, Loader2 } from 'lucide-react';
+import { Sun, MapPin, ArrowRight, Compass, Star, Globe, ChevronDown, ChevronUp, Info, Upload, Loader2, Moon, Flame, Droplets, Wind, Mountain, RotateCcw, Repeat, Layers, Target, Sparkles } from 'lucide-react';
 import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChart';
 import { SolarReturnChart, useSolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { analyzeSolarReturn, SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
@@ -7,6 +7,7 @@ import { analyzeSolarReturn, SolarReturnAnalysis } from '@/lib/solarReturnAnalys
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import ReactMarkdown from 'react-markdown';
 
 const ZODIAC_SIGNS = [
   'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
@@ -876,7 +877,162 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         </div>
       )}
 
-      {/* SR planet positions summary — with house numbers (Step 5) */}
+      {/* Moon Phase */}
+      {analysis.moonPhase && (
+        <div className="border border-primary/20 rounded-sm p-5 bg-card">
+          <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
+            <Moon size={14} className="text-primary" /> SR Moon Phase
+          </h4>
+          <p className="text-lg font-serif text-foreground mb-1">{analysis.moonPhase.phase}</p>
+          {analysis.moonPhase.isEclipse && (
+            <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-destructive/10 text-destructive rounded-sm">Near Eclipse Axis</span>
+          )}
+          <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{analysis.moonPhase.description}</p>
+        </div>
+      )}
+
+      {/* Stelliums */}
+      {analysis.stelliums.length > 0 && (
+        <div className="border border-primary/20 rounded-sm p-5 bg-card">
+          <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
+            <Layers size={14} className="text-primary" /> Stelliums — Concentrated Energy
+          </h4>
+          <div className="space-y-3">
+            {analysis.stelliums.map((s, i) => (
+              <div key={i} className="bg-secondary/30 rounded-sm p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-sm font-medium text-foreground">{s.planets.length} planets in {s.location}</span>
+                  <span className="text-[10px] text-muted-foreground">({s.planets.join(', ')})</span>
+                </div>
+                <p className="text-xs text-muted-foreground">{s.interpretation}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Element & Modality Balance */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="border border-border rounded-sm p-4 bg-card">
+          <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
+            <Flame size={14} className="text-primary" /> Element Balance
+          </h4>
+          <div className="grid grid-cols-4 gap-2 mb-3">
+            {[
+              { el: 'Fire', val: analysis.elementBalance.fire, icon: '🔥' },
+              { el: 'Earth', val: analysis.elementBalance.earth, icon: '🌍' },
+              { el: 'Air', val: analysis.elementBalance.air, icon: '💨' },
+              { el: 'Water', val: analysis.elementBalance.water, icon: '💧' },
+            ].map(({ el, val, icon }) => (
+              <div key={el} className={`text-center p-2 rounded-sm ${el.toLowerCase() === analysis.elementBalance.dominant ? 'bg-primary/10 border border-primary/20' : 'bg-secondary/30'}`}>
+                <span className="text-lg">{icon}</span>
+                <p className="text-xs font-medium text-foreground">{val}</p>
+                <p className="text-[10px] text-muted-foreground">{el}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">{analysis.elementBalance.interpretation}</p>
+        </div>
+        <div className="border border-border rounded-sm p-4 bg-card">
+          <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
+            <Repeat size={14} className="text-primary" /> Modality Balance
+          </h4>
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            {[
+              { mod: 'Cardinal', val: analysis.modalityBalance.cardinal },
+              { mod: 'Fixed', val: analysis.modalityBalance.fixed },
+              { mod: 'Mutable', val: analysis.modalityBalance.mutable },
+            ].map(({ mod, val }) => (
+              <div key={mod} className={`text-center p-2 rounded-sm ${mod.toLowerCase() === analysis.modalityBalance.dominant ? 'bg-primary/10 border border-primary/20' : 'bg-secondary/30'}`}>
+                <p className="text-sm font-medium text-foreground">{val}</p>
+                <p className="text-[10px] text-muted-foreground">{mod}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">{analysis.modalityBalance.interpretation}</p>
+        </div>
+      </div>
+
+      {/* Retrogrades */}
+      <div className="border border-border rounded-sm p-4 bg-card">
+        <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
+          <RotateCcw size={14} className="text-primary" /> Retrograde Planets
+        </h4>
+        {analysis.retrogrades.count > 0 ? (
+          <div className="flex flex-wrap gap-2 mb-2">
+            {analysis.retrogrades.planets.map(p => (
+              <span key={p} className="px-2 py-1 bg-destructive/10 text-destructive text-xs rounded-sm">
+                {PLANET_SYMBOLS[p]} {p} Rx
+              </span>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-foreground mb-2">No retrograde planets ✓</p>
+        )}
+        <p className="text-xs text-muted-foreground leading-relaxed">{analysis.retrogrades.interpretation}</p>
+      </div>
+
+      {/* Saturn & Nodes side by side */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {analysis.saturnFocus && (
+          <div className="border border-border rounded-sm p-4 bg-card">
+            <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
+              ♄ Saturn's Assignment
+            </h4>
+            <p className="text-sm text-foreground mb-1">
+              {SIGN_SYMBOLS[analysis.saturnFocus.sign]} {analysis.saturnFocus.sign}
+              {analysis.saturnFocus.house && ` · SR House ${analysis.saturnFocus.house}`}
+              {analysis.saturnFocus.isRetrograde && ' · Rx'}
+            </p>
+            <p className="text-xs text-muted-foreground leading-relaxed">{analysis.saturnFocus.interpretation}</p>
+          </div>
+        )}
+        {analysis.nodesFocus && (
+          <div className="border border-border rounded-sm p-4 bg-card">
+            <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
+              <Target size={14} className="text-primary" /> Growth Edge (North Node)
+            </h4>
+            <p className="text-sm text-foreground mb-1">
+              {SIGN_SYMBOLS[analysis.nodesFocus.sign]} {analysis.nodesFocus.sign}
+              {analysis.nodesFocus.house && ` · SR House ${analysis.nodesFocus.house}`}
+            </p>
+            <p className="text-xs text-muted-foreground leading-relaxed">{analysis.nodesFocus.interpretation}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Hemispheric Emphasis */}
+      {analysis.hemisphericEmphasis && (
+        <div className="border border-border rounded-sm p-4 bg-card">
+          <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Hemispheric Emphasis</h4>
+          <div className="flex gap-4 mb-2 text-xs text-muted-foreground">
+            <span>Upper: {analysis.hemisphericEmphasis.upper}</span>
+            <span>Lower: {analysis.hemisphericEmphasis.lower}</span>
+            <span>East: {analysis.hemisphericEmphasis.east}</span>
+            <span>West: {analysis.hemisphericEmphasis.west}</span>
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">{analysis.hemisphericEmphasis.interpretation}</p>
+        </div>
+      )}
+
+      {/* Repeated Natal Themes */}
+      {analysis.repeatedThemes.length > 0 && (
+        <div className="border border-primary/20 rounded-sm p-5 bg-card">
+          <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
+            <Sparkles size={14} className="text-primary" /> Confirmed Natal Themes
+          </h4>
+          <div className="space-y-3">
+            {analysis.repeatedThemes.map((t, i) => (
+              <div key={i} className="bg-primary/5 rounded-sm p-3">
+                <p className="text-sm font-medium text-foreground">{t.description}</p>
+                <p className="text-xs text-muted-foreground mt-1">{t.significance}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* SR planet positions summary — with house numbers */}
       <div className="border border-border rounded-sm p-4 bg-card">
         <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">SR Chart Positions</h4>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
@@ -896,6 +1052,9 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         </div>
       </div>
 
+      {/* AI Year-Ahead Narrative */}
+      <SRNarrativeBox analysis={analysis} srChart={srChart} natalChart={natalChart} />
+
       {/* Actions */}
       <div className="flex gap-2">
         <button onClick={onEdit} className="text-[11px] uppercase tracking-widest px-3 py-1.5 border border-border rounded-sm text-muted-foreground hover:text-foreground">
@@ -905,6 +1064,89 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
           Delete
         </button>
       </div>
+    </div>
+  );
+};
+
+// ─── AI Narrative Synthesis ─────────────────────────────────────────
+
+const SRNarrativeBox = ({ analysis, srChart, natalChart }: {
+  analysis: SolarReturnAnalysis;
+  srChart: SolarReturnChart;
+  natalChart: NatalChart;
+}) => {
+  const [narrative, setNarrative] = useState<string>('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const generateNarrative = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('generate-sr-narrative', {
+        body: {
+          analysisData: analysis,
+          chartName: natalChart.name,
+          srYear: srChart.solarReturnYear,
+        },
+      });
+      if (fnError) throw fnError;
+      if (data?.narrative) {
+        setNarrative(data.narrative);
+      } else {
+        throw new Error('No narrative returned');
+      }
+    } catch (err: any) {
+      console.error('SR narrative error:', err);
+      setError(err.message || 'Failed to generate narrative');
+      toast.error('Failed to generate year-ahead narrative');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="border-2 border-primary/30 rounded-sm p-5 bg-card">
+      <h3 className="text-sm uppercase tracking-widest font-medium text-foreground mb-3 flex items-center gap-2">
+        <Sparkles size={16} className="text-primary" />
+        Year-Ahead Narrative Synthesis
+      </h3>
+      {!narrative && !loading && (
+        <div className="text-center py-6 space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Generate an AI-written year-ahead reading that weaves together all the data from your Solar Return — Lord of the Year, Profection, Moon Phase, Stelliums, Saturn, and more — into a cohesive narrative.
+          </p>
+          <button
+            onClick={generateNarrative}
+            className="text-[11px] uppercase tracking-widest px-5 py-2.5 bg-primary text-primary-foreground rounded-sm hover:bg-primary/90 transition-colors inline-flex items-center gap-2"
+          >
+            <Sparkles size={14} />
+            Generate Year-Ahead Reading
+          </button>
+          {error && <p className="text-xs text-destructive">{error}</p>}
+        </div>
+      )}
+      {loading && (
+        <div className="text-center py-8">
+          <Loader2 size={24} className="animate-spin mx-auto text-primary mb-2" />
+          <p className="text-sm text-muted-foreground">Synthesizing your Solar Return data...</p>
+        </div>
+      )}
+      {narrative && !loading && (
+        <div className="space-y-3">
+          <div className="prose prose-sm max-w-none text-foreground prose-headings:text-foreground prose-headings:text-sm prose-headings:uppercase prose-headings:tracking-widest prose-headings:font-medium prose-p:text-muted-foreground prose-p:leading-relaxed prose-strong:text-foreground prose-li:text-muted-foreground">
+            <ReactMarkdown>{narrative}</ReactMarkdown>
+          </div>
+          <div className="flex gap-2 pt-3 border-t border-border">
+            <button
+              onClick={generateNarrative}
+              className="text-[11px] uppercase tracking-widest px-3 py-1.5 border border-border rounded-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+            >
+              <RotateCcw size={12} /> Regenerate
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -195,6 +195,63 @@ export interface SRKeyAspect extends Aspect {
   interpretation: string;
 }
 
+export interface SRMoonPhase {
+  phase: string;
+  description: string;
+  isEclipse: boolean;
+}
+
+export interface SRStellium {
+  location: string;
+  locationType: 'sign' | 'house';
+  planets: string[];
+  interpretation: string;
+}
+
+export interface SRElementBalance {
+  fire: number; earth: number; air: number; water: number;
+  dominant: string;
+  missing: string[];
+  interpretation: string;
+}
+
+export interface SRModalityBalance {
+  cardinal: number; fixed: number; mutable: number;
+  dominant: string;
+  interpretation: string;
+}
+
+export interface SRRetrogradeReport {
+  planets: string[];
+  count: number;
+  interpretation: string;
+}
+
+export interface SRRepeatedTheme {
+  description: string;
+  significance: string;
+}
+
+export interface SRHemisphericEmphasis {
+  upper: number; lower: number;
+  east: number; west: number;
+  interpretation: string;
+}
+
+export interface SRSaturnFocus {
+  sign: string;
+  house: number | null;
+  natalHouse: number | null;
+  isRetrograde: boolean;
+  interpretation: string;
+}
+
+export interface SRNodesFocus {
+  sign: string;
+  house: number | null;
+  interpretation: string;
+}
+
 export interface SolarReturnAnalysis {
   yearlyTheme: SRYearlyTheme | null;
   sunHouse: { house: number | null; theme: string };
@@ -226,6 +283,16 @@ export interface SolarReturnAnalysis {
     overlap: boolean;
     interpretation: string;
   } | null;
+  // New deep analysis sections
+  moonPhase: SRMoonPhase | null;
+  stelliums: SRStellium[];
+  elementBalance: SRElementBalance;
+  modalityBalance: SRModalityBalance;
+  retrogrades: SRRetrogradeReport;
+  repeatedThemes: SRRepeatedTheme[];
+  hemisphericEmphasis: SRHemisphericEmphasis | null;
+  saturnFocus: SRSaturnFocus | null;
+  nodesFocus: SRNodesFocus | null;
   // Helper: map planet name → SR house for display
   planetSRHouses: Record<string, number | null>;
 }
@@ -493,6 +560,260 @@ export const analyzeSolarReturn = (
     }
   }
 
+  // ─── 11. Moon Phase ─────────────────────────────────────────────────
+  let moonPhase: SRMoonPhase | null = null;
+  if (sunPos && moonPos) {
+    const sunDeg = toAbsDeg(sunPos);
+    const moonDeg = toAbsDeg(moonPos);
+    if (sunDeg !== null && moonDeg !== null) {
+      let diff = moonDeg - sunDeg;
+      if (diff < 0) diff += 360;
+      const phases: { name: string; min: number; max: number; desc: string }[] = [
+        { name: 'New Moon', min: 0, max: 22.5, desc: 'A year of new beginnings, planting seeds, and fresh starts. Energy is raw and initiatory — you are starting a new personal cycle. Trust your instincts even when the path is unclear.' },
+        { name: 'Crescent', min: 22.5, max: 67.5, desc: 'A year of pushing through resistance to establish something new. You may encounter doubts or obstacles early but the momentum is building. Courage and persistence are required.' },
+        { name: 'First Quarter', min: 67.5, max: 112.5, desc: 'A year of crisis in action — decisions must be made, and you cannot remain passive. External events force you to commit or change direction. Action-oriented and sometimes tense.' },
+        { name: 'Gibbous', min: 112.5, max: 157.5, desc: 'A year of refinement and adjustment before a major culmination. You are fine-tuning, improving, and preparing for something to come to fruition. Patience and analysis are key.' },
+        { name: 'Full Moon', min: 157.5, max: 202.5, desc: 'A year of culmination, revelation, and maximum visibility. What you have been building reaches a peak. Relationships are highlighted — awareness of self and others is heightened.' },
+        { name: 'Disseminating', min: 202.5, max: 247.5, desc: 'A year of sharing what you have learned and giving back. You are distributing wisdom, teaching, or reaping the harvest of previous efforts. Social engagement increases.' },
+        { name: 'Last Quarter', min: 247.5, max: 292.5, desc: 'A year of reorientation and releasing old structures. A crisis in consciousness — you are letting go of what no longer serves you. Internal shifts matter more than external events.' },
+        { name: 'Balsamic', min: 292.5, max: 360, desc: 'A year of rest, reflection, and surrender. The old cycle is ending. Solitude, spiritual practice, and inner processing are needed. Trust the void — what emerges next will be powerful.' },
+      ];
+      const phase = phases.find(p => diff >= p.min && diff < p.max) || phases[0];
+      // Check if Sun-Moon are close enough for eclipse possibility (within ~12° for solar, ~6° of nodes for lunar)
+      const isEclipse = diff < 12 || diff > 348 || (diff > 168 && diff < 192);
+      moonPhase = { phase: phase.name, description: phase.desc, isEclipse };
+    }
+  }
+
+  // ─── 12. Stelliums (3+ planets in same sign or house) ─────────────
+  const stelliums: SRStellium[] = [];
+  // By sign
+  const signCounts: Record<string, string[]> = {};
+  for (const planet of ALL_PLANETS) {
+    const pos = srChart.planets[planet as keyof typeof srChart.planets];
+    if (!pos) continue;
+    if (!signCounts[pos.sign]) signCounts[pos.sign] = [];
+    signCounts[pos.sign].push(planet);
+  }
+  for (const [sign, planets] of Object.entries(signCounts)) {
+    if (planets.length >= 3) {
+      stelliums.push({
+        location: sign,
+        locationType: 'sign',
+        planets,
+        interpretation: `A concentration of ${planets.length} planets in ${sign} — ${sign} themes dominate the year with intensified focus on ${planets.join(', ')}. This is a major emphasis that colors your entire experience.`,
+      });
+    }
+  }
+  // By house
+  const houseCounts: Record<number, string[]> = {};
+  for (const planet of ALL_PLANETS) {
+    const h = planetSRHouses[planet];
+    if (h == null) continue;
+    if (!houseCounts[h]) houseCounts[h] = [];
+    houseCounts[h].push(planet);
+  }
+  for (const [hStr, planets] of Object.entries(houseCounts)) {
+    const h = parseInt(hStr);
+    if (planets.length >= 3) {
+      stelliums.push({
+        location: `House ${h}`,
+        locationType: 'house',
+        planets,
+        interpretation: `A stellium of ${planets.length} planets in the ${h}${h === 1 ? 'st' : h === 2 ? 'nd' : h === 3 ? 'rd' : 'th'} house — ${houseThemes[h] || ''} themes are a major focus this year, activated by ${planets.join(', ')}.`,
+      });
+    }
+  }
+
+  // ─── 13. Element Balance ──────────────────────────────────────────
+  const elementMap: Record<string, 'fire' | 'earth' | 'air' | 'water'> = {
+    Aries: 'fire', Leo: 'fire', Sagittarius: 'fire',
+    Taurus: 'earth', Virgo: 'earth', Capricorn: 'earth',
+    Gemini: 'air', Libra: 'air', Aquarius: 'air',
+    Cancer: 'water', Scorpio: 'water', Pisces: 'water',
+  };
+  const elBal = { fire: 0, earth: 0, air: 0, water: 0 };
+  for (const planet of PLANETS_CORE) {
+    const pos = srChart.planets[planet as keyof typeof srChart.planets];
+    if (!pos) continue;
+    const el = elementMap[pos.sign];
+    if (el) elBal[el]++;
+  }
+  const total = elBal.fire + elBal.earth + elBal.air + elBal.water;
+  const dominant = (Object.entries(elBal) as [string, number][]).sort((a, b) => b[1] - a[1])[0][0];
+  const missing = (Object.entries(elBal) as [string, number][]).filter(([, v]) => v === 0).map(([k]) => k);
+  const elementInterpretations: Record<string, string> = {
+    fire: 'The year is driven by passion, initiative, and creative energy. You are likely to feel motivated, bold, and eager to take action.',
+    earth: 'The year emphasizes practicality, stability, and material concerns. Building, grounding, and tangible results are prioritized.',
+    air: 'The year is intellectually stimulating with emphasis on communication, ideas, and social connections. Mental activity is high.',
+    water: 'The year is emotionally rich with emphasis on feelings, intuition, and inner processing. Relationships and healing are central.',
+  };
+  const elementBalance: SRElementBalance = {
+    ...elBal,
+    dominant,
+    missing,
+    interpretation: elementInterpretations[dominant] + (missing.length > 0 ? ` Missing ${missing.join(' and ')} energy — you may need to consciously cultivate ${missing.join('/')} qualities this year.` : ''),
+  };
+
+  // ─── 14. Modality Balance ─────────────────────────────────────────
+  const modalityMap: Record<string, 'cardinal' | 'fixed' | 'mutable'> = {
+    Aries: 'cardinal', Cancer: 'cardinal', Libra: 'cardinal', Capricorn: 'cardinal',
+    Taurus: 'fixed', Leo: 'fixed', Scorpio: 'fixed', Aquarius: 'fixed',
+    Gemini: 'mutable', Virgo: 'mutable', Sagittarius: 'mutable', Pisces: 'mutable',
+  };
+  const modBal = { cardinal: 0, fixed: 0, mutable: 0 };
+  for (const planet of PLANETS_CORE) {
+    const pos = srChart.planets[planet as keyof typeof srChart.planets];
+    if (!pos) continue;
+    const mod = modalityMap[pos.sign];
+    if (mod) modBal[mod]++;
+  }
+  const domMod = (Object.entries(modBal) as [string, number][]).sort((a, b) => b[1] - a[1])[0][0];
+  const modalityInterpretations: Record<string, string> = {
+    cardinal: 'This is an initiating year — new projects, fresh starts, and active leadership. You are motivated to begin things and take charge.',
+    fixed: 'This is a year of determination, persistence, and deepening. You are building on what exists, stabilizing, and refusing to budge on what matters.',
+    mutable: 'This is a year of flexibility, adaptation, and change. Multiple shifts are likely — your ability to adjust and flow is your greatest asset.',
+  };
+  const modalityBalance: SRModalityBalance = {
+    ...modBal,
+    dominant: domMod,
+    interpretation: modalityInterpretations[domMod],
+  };
+
+  // ─── 15. Retrograde Report ────────────────────────────────────────
+  const retroPlanets: string[] = [];
+  for (const planet of PLANETS_CORE) {
+    const pos = srChart.planets[planet as keyof typeof srChart.planets];
+    if (pos && (pos as any).isRetrograde) retroPlanets.push(planet);
+  }
+  const retroInterpretations: Record<string, string> = {
+    Mercury: 'Review and revise communication, contracts, and thought processes',
+    Venus: 'Reassess relationships, values, and self-worth — old loves may resurface',
+    Mars: 'Redirect energy inward — frustrations with progress require patience',
+    Jupiter: 'Inner growth and philosophical re-evaluation rather than external expansion',
+    Saturn: 'Review structures, boundaries, and responsibilities — karmic reckoning',
+    Uranus: 'Internal rebellion and questioning of where you have been inauthentic',
+    Neptune: 'Spiritual deepening and dissolving of illusions — heightened intuition',
+    Pluto: 'Deep psychological transformation happening beneath the surface',
+  };
+  const retroDetails = retroPlanets.map(p => `${p}: ${retroInterpretations[p] || 'internalized themes'}`).join('. ');
+  const retrogrades: SRRetrogradeReport = {
+    planets: retroPlanets,
+    count: retroPlanets.length,
+    interpretation: retroPlanets.length === 0
+      ? 'No retrograde planets — direct, forward momentum characterizes the year. What you see is what you get.'
+      : `${retroPlanets.length} planet${retroPlanets.length > 1 ? 's' : ''} retrograde — ${retroDetails}. Retrograde planets indicate areas where internal reflection, revision, and re-evaluation are needed before external progress can be made.`,
+  };
+
+  // ─── 16. Repeated Natal Themes ────────────────────────────────────
+  const repeatedThemes: SRRepeatedTheme[] = [];
+  // Check if SR rising matches natal rising
+  const srRisingSign = srAsc?.sign;
+  if (srRisingSign && natalRisingSign && srRisingSign === natalRisingSign) {
+    repeatedThemes.push({
+      description: `SR Ascendant matches your natal Ascendant (${srRisingSign})`,
+      significance: 'This is a deeply personal year — you are more "yourself" than usual. Identity themes are reinforced. This year feels like a reset to your core self.',
+    });
+  }
+  // Check if SR Moon matches natal Moon
+  const natalMoonSign = natalChart.planets.Moon?.sign;
+  if (moonSign && natalMoonSign && moonSign === natalMoonSign) {
+    repeatedThemes.push({
+      description: `SR Moon matches your natal Moon (${moonSign})`,
+      significance: 'Your emotional baseline this year resonates with your core emotional nature. You feel emotionally "at home" — instincts are reliable and your needs are clearer.',
+    });
+  }
+  // Check if SR Sun house = natal Sun house
+  const natalSunPos = natalChart.planets.Sun;
+  if (natalSunPos && sunPos) {
+    const natalSunDeg = toAbsDeg(natalSunPos);
+    const natalSunHouse = natalSunDeg !== null ? findNatalHouse(natalSunDeg, natalChart) : null;
+    if (natalSunHouse && sunHouse.house && natalSunHouse === sunHouse.house) {
+      repeatedThemes.push({
+        description: `SR Sun falls in the same house as your natal Sun (House ${natalSunHouse})`,
+        significance: 'Your vitality and purpose are reinforced — this house\'s themes are doubly activated, creating a "return to purpose" year.',
+      });
+    }
+  }
+
+  // ─── 17. Hemispheric Emphasis ─────────────────────────────────────
+  let hemisphericEmphasis: SRHemisphericEmphasis | null = null;
+  const srCusps = extractCusps(srChart);
+  if (srCusps) {
+    let upper = 0, lower = 0, east = 0, west = 0;
+    for (const planet of PLANETS_CORE) {
+      const h = planetSRHouses[planet];
+      if (h == null) continue;
+      if (h >= 7 && h <= 12) upper++; else lower++;
+      if (h >= 10 || h <= 3) east++; else west++;
+    }
+    const total = upper + lower;
+    let interp = '';
+    if (upper > lower + 2) interp = 'Planets cluster above the horizon — this is a public, visible year. Career, reputation, and social standing are emphasized.';
+    else if (lower > upper + 2) interp = 'Planets cluster below the horizon — this is a private, interior year. Home, family, and personal foundations are the focus.';
+    if (east > west + 2) interp += (interp ? ' ' : '') + 'Eastern emphasis — you are in the driver\'s seat this year. Self-determination and personal initiative lead.';
+    else if (west > east + 2) interp += (interp ? ' ' : '') + 'Western emphasis — others play a significant role this year. Partnerships, collaborations, and responses to external events shape your path.';
+    if (!interp) interp = 'Planets are relatively balanced across hemispheres — a mix of public and private, self-directed and other-oriented themes.';
+    hemisphericEmphasis = { upper, lower, east, west, interpretation: interp };
+  }
+
+  // ─── 18. Saturn Focus ─────────────────────────────────────────────
+  let saturnFocus: SRSaturnFocus | null = null;
+  const saturnPos = srChart.planets.Saturn;
+  if (saturnPos) {
+    const satDeg = toAbsDeg(saturnPos);
+    const satSRHouse = satDeg !== null ? findSRHouse(satDeg, srChart) : null;
+    const satNatalHouse = satDeg !== null ? findNatalHouse(satDeg, natalChart) : null;
+    const saturnHouseInterps: Record<number, string> = {
+      1: 'Saturn demands maturity in self-expression and appearance. You may feel older, more responsible, or face challenges to your identity this year.',
+      2: 'Saturn focuses on financial discipline and values. Earnings may be limited or require hard work — but what you build financially is durable.',
+      3: 'Saturn brings serious communication, possibly challenging interactions with siblings, or a demanding learning/writing project.',
+      4: 'Saturn at the foundation — home responsibilities, family obligations, or property matters require attention. Emotional maturity is tested.',
+      5: 'Saturn restricts or matures creative expression and romance. Children may be a source of responsibility. Joy must be earned this year.',
+      6: 'Saturn emphasizes health, work discipline, and daily routines. A year to build better habits and take physical well-being seriously.',
+      7: 'Saturn tests partnerships. Relationships face reality checks — commitment is demanded or unsustainable connections end.',
+      8: 'Saturn in the house of transformation — facing fears, dealing with shared finances, taxes, or loss. Psychological maturity deepens.',
+      9: 'Saturn structures higher learning, travel, or philosophical beliefs. Formal education or publishing may require extra effort.',
+      10: 'Saturn at the career peak — professional responsibilities increase significantly. Authority figures are prominent. Reputation is being forged.',
+      11: 'Saturn asks you to get serious about your social circle and future goals. Friendships may be tested or reduced to the most meaningful.',
+      12: 'Saturn in the hidden house — solitude, spiritual discipline, or institutional involvement. Facing karma and unconscious patterns.',
+    };
+    saturnFocus = {
+      sign: saturnPos.sign,
+      house: satSRHouse,
+      natalHouse: satNatalHouse,
+      isRetrograde: !!(saturnPos as any).isRetrograde,
+      interpretation: satSRHouse ? (saturnHouseInterps[satSRHouse] || '') : 'Saturn\'s house placement shapes where you face your greatest responsibilities and growth this year.',
+    };
+  }
+
+  // ─── 19. North Node Focus ─────────────────────────────────────────
+  let nodesFocus: SRNodesFocus | null = null;
+  const nnPos = srChart.planets.NorthNode as any;
+  if (nnPos?.sign) {
+    const nnDeg = toAbsDeg(nnPos);
+    const nnHouse = nnDeg !== null ? findSRHouse(nnDeg, srChart) : null;
+    const nodeHouseInterps: Record<number, string> = {
+      1: 'Growth comes through self-assertion and independence. Step into leadership and trust your own path this year.',
+      2: 'Growth comes through building your own resources and self-worth. Financial independence and solid values are the lesson.',
+      3: 'Growth comes through communication, learning, and local connections. Speak up, write, teach — your voice matters this year.',
+      4: 'Growth comes through home, family, and emotional foundations. Creating a secure base is the soul work this year.',
+      5: 'Growth comes through creative self-expression, joy, and following your heart. Take risks on what lights you up.',
+      6: 'Growth comes through service, health, and daily discipline. Show up for the mundane — mastery lives in the details.',
+      7: 'Growth comes through partnerships and learning to truly share your life. Collaboration and compromise are the teachers.',
+      8: 'Growth comes through intimacy, vulnerability, and shared transformation. Let others in — depth is required.',
+      9: 'Growth comes through expanding your worldview, travel, and higher learning. Adventure and meaning-making are calling.',
+      10: 'Growth comes through career achievement and public responsibility. Step into your authority and be visible.',
+      11: 'Growth comes through community involvement and pursuing your ideals. Collective purpose matters more than individual glory.',
+      12: 'Growth comes through spiritual surrender, solitude, and letting go of control. Trust the unseen and release the old.',
+    };
+    nodesFocus = {
+      sign: nnPos.sign,
+      house: nnHouse,
+      interpretation: nnHouse ? (nodeHouseInterps[nnHouse] || '') : 'The North Node in your SR chart points to your growth edge this year.',
+    };
+  }
+
   return {
     yearlyTheme,
     sunHouse,
@@ -507,6 +828,15 @@ export const analyzeSolarReturn = (
     relocationTip,
     lordOfTheYear,
     profectionYear,
+    moonPhase,
+    stelliums,
+    elementBalance,
+    modalityBalance,
+    retrogrades,
+    repeatedThemes,
+    hemisphericEmphasis,
+    saturnFocus,
+    nodesFocus,
     planetSRHouses,
   };
 };
