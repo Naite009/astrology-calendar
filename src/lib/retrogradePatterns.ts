@@ -31,7 +31,10 @@ export interface RetrogradeDisplay {
 }
 
 // Cache for computed retrograde periods to avoid recalculation
-const retrogradeCache: Map<string, RetrogradeInfo[]> = new Map();
+let retrogradeCache: Map<string, RetrogradeInfo[]> = new Map();
+
+// Clear cached retrograde data (call when precision has been improved)
+export const clearRetrogradeCaches = () => { retrogradeCache = new Map(); };
 
 // Check if a planet is retrograde on a specific date using astronomy-engine
 const isPlanetRetrograde = (body: Astronomy.Body, date: Date): boolean => {
@@ -73,7 +76,9 @@ const getPlanetSign = (body: Astronomy.Body, date: Date): string => {
   }
 };
 
-// Find retrograde station (when planet goes retrograde or direct)
+// Find retrograde station with high precision using binary search.
+// First pass: daily sweep to find the 1-day window where the transition happens.
+// Second pass: binary search within that window down to ~15-minute precision.
 const findStation = (
   body: Astronomy.Body, 
   startDate: Date, 
@@ -83,25 +88,60 @@ const findStation = (
   const start = new Date(startDate);
   const end = new Date(endDate);
   
-  // Search day by day
+  // Phase 1 — coarse daily sweep
   const current = new Date(start);
   let prevRetrograde = isPlanetRetrograde(body, current);
+  let windowStart: Date | null = null;
+  let windowEnd: Date | null = null;
   
   while (current <= end) {
+    const prevTime = new Date(current);
     current.setDate(current.getDate() + 1);
     const nowRetrograde = isPlanetRetrograde(body, current);
     
     if (lookingForRetrograde && !prevRetrograde && nowRetrograde) {
-      return new Date(current);
+      windowStart = prevTime;
+      windowEnd = new Date(current);
+      break;
     }
     if (!lookingForRetrograde && prevRetrograde && !nowRetrograde) {
-      return new Date(current);
+      windowStart = prevTime;
+      windowEnd = new Date(current);
+      break;
     }
     
     prevRetrograde = nowRetrograde;
   }
   
-  return null;
+  if (!windowStart || !windowEnd) return null;
+  
+  // Phase 2 — binary search within the 24-hour window to ~15-min precision
+  let lo = windowStart.getTime();
+  let hi = windowEnd.getTime();
+  
+  while (hi - lo > 15 * 60 * 1000) { // 15 minutes
+    const mid = lo + (hi - lo) / 2;
+    const midDate = new Date(mid);
+    const isRetro = isPlanetRetrograde(body, midDate);
+    
+    if (lookingForRetrograde) {
+      // We want the earliest moment where isRetro becomes true
+      if (isRetro) {
+        hi = mid;
+      } else {
+        lo = mid;
+      }
+    } else {
+      // We want the earliest moment where isRetro becomes false
+      if (!isRetro) {
+        hi = mid;
+      } else {
+        lo = mid;
+      }
+    }
+  }
+  
+  return new Date(lookingForRetrograde ? hi : hi);
 };
 
 // Compute retrograde periods for a given year range dynamically
