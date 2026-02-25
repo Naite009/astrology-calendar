@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getMoonPhase, getPlanetaryPositions, calculateDailyAspects, PlanetaryPositions, getPlanetSymbol, getExactLunarPhase, findNearestMajorPhaseTime } from "@/lib/astrology";
 import { getVOCMoonDetails, findNextMoonSignChange } from "@/lib/voidOfCourseMoon";
 import { formatLocalDateKey } from "@/lib/localDate";
+import { getMercuryRetrogrades, getRetrogradeStatus, formatRetrogradeDate } from "@/lib/retrogradePatterns";
 import ReactMarkdown from "react-markdown";
 import html2canvas from "html2canvas";
 import { toast } from "@/hooks/use-toast";
@@ -558,29 +559,36 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
         }
       }
 
-      // --- Mercury retrograde shadow tracking ---
-      // 2026 Mercury retrogrades (approximate):
-      // #1: Shadow starts ~Feb 12 (8° Pisces), Rx March 1 (26° Pisces), Direct March 24 (8° Pisces), Post-shadow ~April 7
-      // #2: Shadow starts ~Jun 6 (2° Cancer), Rx Jun 26 (22° Cancer), Direct Jul 20 (2° Cancer), Post-shadow ~Aug 3
-      // #3: Shadow starts ~Sep 28 (26° Libra), Rx Oct 18 (16° Scorpio), Direct Nov 8 (26° Libra), Post-shadow ~Nov 24
-      const mercuryRetrogrades2026 = [
-        { preShadowStart: new Date(2026, 1, 12), rxStart: new Date(2026, 2, 1), rxEnd: new Date(2026, 2, 24), postShadowEnd: new Date(2026, 3, 7), shadowDegree: '8° Pisces', rxDegree: '26° Pisces', sign: 'Pisces', shadowAbsoluteDeg: 338 },
-        { preShadowStart: new Date(2026, 5, 6), rxStart: new Date(2026, 5, 26), rxEnd: new Date(2026, 6, 20), postShadowEnd: new Date(2026, 7, 3), shadowDegree: '2° Cancer', rxDegree: '22° Cancer', sign: 'Cancer', shadowAbsoluteDeg: 92 },
-        { preShadowStart: new Date(2026, 8, 28), rxStart: new Date(2026, 9, 18), rxEnd: new Date(2026, 10, 8), postShadowEnd: new Date(2026, 10, 24), shadowDegree: '26° Libra', rxDegree: '16° Scorpio', sign: 'Libra/Scorpio', shadowAbsoluteDeg: 206 },
-      ];
+      // --- Mercury retrograde shadow tracking (DYNAMIC from astronomy-engine) ---
+      const mercuryRetrosPeriods = getMercuryRetrogrades(now);
+      const mercuryRxStatus = getRetrogradeStatus(now, mercuryRetrosPeriods);
+      
       const mercuryRxInfo = (() => {
-        for (const rx of mercuryRetrogrades2026) {
-          if (now >= rx.preShadowStart && now < rx.rxStart) {
-            return { phase: 'pre-shadow', ...rx, description: `Mercury entered the pre-retrograde shadow at ${rx.shadowDegree}. It will station retrograde on ${rx.rxStart.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} at ${rx.rxDegree}. Mercury retrogrades back to ${rx.shadowDegree} by ${rx.rxEnd.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}. Post-shadow clears ${rx.postShadowEnd.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}.${rx.sign === 'Pisces' ? ' IMPORTANT: Pisces is Mercury\'s HARDEST sign — it is in both detriment (opposite Virgo, Mercury\'s home) AND fall (opposite Virgo, Mercury\'s exaltation). This is a double-difficulty placement. The analytical mind dissolves into intuition, feeling, and imagination. Communication becomes impressionistic rather than precise.' : ''}` };
-          }
-          if (now >= rx.rxStart && now < rx.rxEnd) {
-            const midpoint = new Date((rx.rxStart.getTime() + rx.rxEnd.getTime()) / 2);
-            const isFirstHalf = now < midpoint;
-            return { phase: isFirstHalf ? 'retrograde-first-half' : 'retrograde-second-half', ...rx, description: `Mercury is RETROGRADE in ${rx.sign}. ${isFirstHalf ? 'First half - things from the past resurface, review and reassess.' : 'Second half - Mercury and Sun have met (inferior conjunction), clarity begins to emerge.'} Stations direct ${rx.rxEnd.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} at ${rx.shadowDegree}. Post-shadow clears ${rx.postShadowEnd.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}.${rx.sign === 'Pisces' ? ' CRITICAL CONTEXT: Mercury is in its WORST possible dignity in Pisces — both detriment AND fall. This is the most intense Mercury retrograde of the year. The mind works through dreams, feelings, and intuition rather than logic. Miscommunication is amplified. Double-check everything.' : ''}` };
-          }
-          if (now >= rx.rxEnd && now < rx.postShadowEnd) {
-            return { phase: 'post-shadow', ...rx, description: `Mercury stationed direct at ${rx.shadowDegree} and is now retracing its steps through the post-retrograde shadow. Clarity returns gradually. Shadow clears ${rx.postShadowEnd.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}.` };
-          }
+        if (!mercuryRxStatus.retrogradeInfo) return null;
+        const ri = mercuryRxStatus.retrogradeInfo;
+        const sign = ri.sign;
+        const rxStartStr = formatRetrogradeDate(ri.start);
+        const rxEndStr = formatRetrogradeDate(ri.end);
+        const preStartStr = formatRetrogradeDate(ri.preStart);
+        const postEndStr = formatRetrogradeDate(ri.postEnd);
+        
+        // Compute shadow/rx degree from actual planet position at those dates
+        const isPiscesRx = sign.includes('Pisces');
+        const dignityNote = isPiscesRx
+          ? ' IMPORTANT: Pisces is Mercury\'s HARDEST sign — it is in both detriment (opposite Virgo, Mercury\'s home) AND fall (opposite Virgo, Mercury\'s exaltation). This is a double-difficulty placement. The analytical mind dissolves into intuition, feeling, and imagination. Communication becomes impressionistic rather than precise.'
+          : '';
+        
+        if (mercuryRxStatus.isShadow && mercuryRxStatus.shadowType === 'pre') {
+          return { phase: 'pre-shadow' as const, sign, rxStart: ri.start, rxEnd: ri.end, postShadowEnd: ri.postEnd, preShadowStart: ri.preStart, shadowDegree: '', rxDegree: '', shadowAbsoluteDeg: 0, description: `Mercury entered the pre-retrograde shadow on ${preStartStr}. It will station retrograde on ${rxStartStr}. Mercury stations direct ${rxEndStr}. Post-shadow clears ${postEndStr}.${dignityNote}` };
+        }
+        if (mercuryRxStatus.isRetrograde) {
+          const midpoint = new Date((ri.start.getTime() + ri.end.getTime()) / 2);
+          const isFirstHalf = now < midpoint;
+          const phase: string = isFirstHalf ? 'retrograde-first-half' : 'retrograde-second-half';
+          return { phase, sign, rxStart: ri.start, rxEnd: ri.end, postShadowEnd: ri.postEnd, preShadowStart: ri.preStart, shadowDegree: '', rxDegree: '', shadowAbsoluteDeg: 0, description: `Mercury is RETROGRADE in ${sign}. ${isFirstHalf ? 'First half - things from the past resurface, review and reassess.' : 'Second half - Mercury and Sun have met (inferior conjunction), clarity begins to emerge.'} Stations direct ${rxEndStr}. Post-shadow clears ${postEndStr}.${isPiscesRx ? ' CRITICAL CONTEXT: Mercury is in its WORST possible dignity in Pisces — both detriment AND fall. This is the most intense Mercury retrograde of the year. The mind works through dreams, feelings, and intuition rather than logic. Miscommunication is amplified. Double-check everything.' : ''}` };
+        }
+        if (mercuryRxStatus.isShadow && mercuryRxStatus.shadowType === 'post') {
+          return { phase: 'post-shadow' as const, sign, rxStart: ri.start, rxEnd: ri.end, postShadowEnd: ri.postEnd, preShadowStart: ri.preStart, shadowDegree: '', rxDegree: '', shadowAbsoluteDeg: 0, description: `Mercury stationed direct on ${rxEndStr} and is now retracing its steps through the post-retrograde shadow. Clarity returns gradually. Shadow clears ${postEndStr}.` };
         }
         return null;
       })();
