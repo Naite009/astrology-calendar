@@ -243,6 +243,7 @@ export interface VOCMoonDetails {
     symbol: string;
     time: Date;
   };
+  currentMoonSign?: string;
   moonEntersSign?: string;
   durationMinutes?: number;
   displayStart?: Date; // For display: clamped to day start if VOC started before
@@ -319,6 +320,7 @@ export const getVOCMoonDetails = (date: Date): VOCMoonDetails => {
           symbol: ASPECT_SYMBOLS[lastAspect.aspectName] || '?',
           time: lastAspect.time,
         } : undefined,
+        currentMoonSign: currentSign,
         moonEntersSign: signChange.newSign,
         durationMinutes,
       };

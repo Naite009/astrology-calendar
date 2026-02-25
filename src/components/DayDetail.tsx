@@ -1118,35 +1118,34 @@ const VOCMoonSection = ({ date, voc }: { date: Date; voc: DayData['voc'] }) => {
         </h3>
         
         <div className="space-y-3">
-          {/* Time Range */}
-          <div className="flex items-center gap-2 text-foreground font-medium">
-            <span className="text-lg">
+          {/* Descriptive sentence */}
+          <p className="text-sm text-foreground">
+            The Moon is in <span className="font-medium">{vocDetails.currentMoonSign || 'its current sign'}</span> and is void of course{' '}
+            <span className="font-medium">
               {vocDetails.start?.toLocaleTimeString('en-US', { 
                 timeZone: 'America/New_York',
                 hour: 'numeric', 
                 minute: '2-digit' 
               })}
-            </span>
-            <span className="text-muted-foreground">—</span>
-            <span className="text-lg">
+              {' '}–{' '}
               {vocDetails.end?.toLocaleTimeString('en-US', { 
                 timeZone: 'America/New_York',
                 hour: 'numeric', 
                 minute: '2-digit' 
-              })}
+              })} ET
             </span>
-            <span className="text-xs text-muted-foreground">ET</span>
             {vocDetails.durationMinutes && (
-              <span className="ml-2 text-sm text-amber-600 dark:text-amber-400">
-                ({formatVOCDuration(vocDetails.durationMinutes)})
-              </span>
+              <span className="text-amber-600 dark:text-amber-400"> ({formatVOCDuration(vocDetails.durationMinutes)})</span>
             )}
-          </div>
+            {vocDetails.moonEntersSign && (
+              <> before it moves into <span className="font-medium">{vocDetails.moonEntersSign}</span></>
+            )}
+          </p>
           
           {/* Last Aspect Info */}
           {vocDetails.lastAspect && (
             <div className="text-sm">
-              <span className="text-muted-foreground">Moon's last aspect:</span>
+              <span className="text-muted-foreground">Last aspect:</span>
               <span className="ml-2 font-medium text-foreground">
                 ☽ {vocDetails.lastAspect.symbol} {vocDetails.lastAspect.planet}
               </span>
@@ -1157,14 +1156,6 @@ const VOCMoonSection = ({ date, voc }: { date: Date; voc: DayData['voc'] }) => {
                   minute: '2-digit',
                 })} ET
               </span>
-            </div>
-          )}
-          
-          {/* Moon Enters Sign */}
-          {vocDetails.moonEntersSign && (
-            <div className="text-sm">
-              <span className="text-muted-foreground">Moon enters:</span>
-              <span className="ml-2 font-medium text-foreground">{vocDetails.moonEntersSign}</span>
             </div>
           )}
           
