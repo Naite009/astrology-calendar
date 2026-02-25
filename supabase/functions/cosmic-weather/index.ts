@@ -37,7 +37,7 @@ serve(async (req) => {
     
     // Cache key versioning: bump this when prompt/format changes so users don't get stale cached text.
     // This intentionally changes the cache key without requiring any DB schema changes.
-    const PROMPT_VERSION = "2026-02-20-v13-saturn-neptune-conjunction";
+    const PROMPT_VERSION = "2026-02-25-v14-dynamic-retrograde-dates";
 
     const cacheDeviceId = deviceId || 'default';
     const cacheVoiceStyle = `${voiceStyle || ''}@${PROMPT_VERSION}`;
@@ -517,7 +517,8 @@ ALWAYS: Connect present moment to recent past and near future with contemplative
 CRITICAL RULES:
 0. **DAY OF THE WEEK**: The date string provided (e.g., "Monday, February 16, 2026") contains the EXACT correct day of the week. Use THAT day name verbatim everywhere — in greetings, in the Planetary Day Practice section, and anywhere else you reference the day. NEVER substitute a different day name. If the date says "Monday", it IS Monday. Period.
 0b. **TIMEZONE & TIMES**: The user is in ${tzName} (${tzLabel}). ONLY use times that are EXPLICITLY provided in the data (moonSignChange.time, imminentSignChanges[].ingressTime, exactLunarPhase.time). NEVER calculate, guess, or recall times from your training data. If no time is provided for an event, do NOT mention a time — just say "today" or "later today". All provided times are already converted to ${tzLabel}. NEVER use PST, PDT, CST, UTC, or any other timezone abbreviation.
-1. Use ONLY the planetary positions provided. These are calculated from astronomy-engine and are accurate.
+1. Use ONLY the planetary positions provided. These are calculated from astronomy-engine and are accurate. NEVER use dates, degrees, or astronomical facts from your training data — they may be wrong.
+1b. **RETROGRADE DATES**: If the Mercury Retrograde Status section provides specific dates (station retrograde, station direct, shadow dates), use THOSE dates EXACTLY. Do NOT substitute dates from your training data. The dates in the data are computed from real ephemeris and are the ground truth.
 2. Use EXACT degrees when mentioning positions. If data says "3° Cancer", use that precisely.
 3. NEVER call something a "Full Moon" or "New Moon" unless exactLunarPhase is provided.
 4. ALWAYS mention APPLYING aspects as building/intensifying and SEPARATING aspects as releasing/completing.
@@ -622,7 +623,7 @@ ALWAYS INCLUDE SPECIFIC DATES (THIS IS A TEACHING APP):
 - What's coming THIS WEEKEND with the actual dates (e.g., "February 8-9")
 - What's building NEXT WEEK+ with EXACT DATES for retrogrades, eclipses, major ingresses
 - NEVER say "soon", "a lot of time", "extended stay" without the date range
-- Example: "Mercury retrogrades in Pisces from March 1st to March 24th" NOT "Mercury retrogrades at the end of February"
+- Use the EXACT retrograde dates provided in the Mercury Retrograde Status section above — NEVER substitute dates from your training data. If no Mercury retrograde data is provided, do NOT mention specific retrograde dates.
 
 KEY INGRESS DATES TO REFERENCE (use appropriate tense based on whether these have already happened relative to today's date):
 - Uranus enters Gemini: July 7, 2025 (retrogrades back to Taurus Nov 7, 2025; re-enters Gemini permanently April 26, 2026)
