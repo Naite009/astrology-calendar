@@ -400,13 +400,14 @@ export const analyzeSolarReturn = (
   const relocationTip = `The Solar Return Ascendant changes based on WHERE you are at your exact solar return moment. By traveling to a different location on your birthday, you can shift which sign rises — and therefore which house your SR planets fall in. This is called "Solar Return relocation." Key strategy: Choose a location where benefic planets (Venus, Jupiter) fall on the SR Ascendant or MC for a more supportive year.`;
 
   // 9. Lord of the Year (Step 2)
-  // Read natal ascendant sign — try planets.Ascendant.sign first, then house cusp 1
+  // Read natal ascendant sign — houseCusps.house1 is the DEFINITIVE source
+  // planets.Ascendant may contain the ecliptic longitude expressed as Aries-based degrees (wrong sign)
   let lordOfTheYear: SolarReturnAnalysis['lordOfTheYear'] = null;
-  const natalAscPlanet = natalChart.planets.Ascendant;
   const natalAscCusp = natalChart.houseCusps?.house1;
+  const natalAscPlanet = natalChart.planets.Ascendant;
   const natalRisingSign: string | null =
-    (natalAscPlanet?.sign && SIGNS.includes(natalAscPlanet.sign)) ? natalAscPlanet.sign :
     (natalAscCusp && (natalAscCusp as any).sign && SIGNS.includes((natalAscCusp as any).sign)) ? (natalAscCusp as any).sign :
+    (natalAscPlanet?.sign && SIGNS.includes(natalAscPlanet.sign)) ? natalAscPlanet.sign :
     null;
 
   if (natalRisingSign) {
