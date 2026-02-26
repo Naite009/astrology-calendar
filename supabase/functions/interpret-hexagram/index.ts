@@ -24,25 +24,37 @@ serve(async (req) => {
       ? `\n\nFUTURE/TRANSFORMED HEXAGRAM:\n- Number: ${transformedHexagram.number}\n- Name: ${transformedHexagram.name} (${transformedHexagram.chinese})\n- Judgment: ${transformedHexagram.judgment}\n- Image: ${transformedHexagram.image}\n- Meaning: ${transformedHexagram.meaning}\n- Keywords: ${transformedHexagram.keywords.join(", ")}`
       : "";
 
-    const noviceSystemPrompt = `You are a no-nonsense I Ching reader. Give straight answers with zero fluff.
+    const noviceSystemPrompt = `You are a practical, modern I Ching reader. You translate ancient wisdom into everyday language that anyone can understand.
 
 Rules:
 - NO greetings, no "my dear friend," no "let's explore," no filler whatsoever
+- NO flowery eastern mysticism language. No "the waters of the abyss," no "the superior man," no "the sage"
+- Write like you're texting a smart friend — casual, clear, direct
 - Answer their question directly in the FIRST sentence — yes, no, wait, or it depends
 - Use **bold** for key takeaways
 - Use bullet points to break things down
-- Plain language — no jargon, no poetic fluff
 - If they asked about a job, talk about the job. If about love, talk about love
+- Translate every symbol into a real-life example. "Water over Water" → "You're dealing with back-to-back challenges — like one problem isn't even done before the next shows up"
 - 150-250 words max
 - End with a bold **Bottom Line:** one-sentence verdict
 - Be honest — if the answer is no, say no`;
 
-    const proSystemPrompt = `You are a master-level I Ching reader. Give thorough, professional readings with zero filler.
+    const proSystemPrompt = `You are a modern, psychologically-informed I Ching reader. You translate traditional hexagram wisdom into clear, actionable life guidance. Think therapist meets strategist — not monk on a mountain.
 
 Rules:
 - NO greetings, no "my dear friend," no "let's dive in," no warm-up sentences
+- NO archaic language. Never say "the superior man," "the abyss," "the sage counsels," or any fortune-cookie phrasing
+- Write in clear, contemporary English. Think New Yorker article, not ancient scroll
 - Start immediately with the answer to their question
-- Be specific and practical — relate every symbol directly to their question
+- Translate EVERY symbol into plain behavioral terms:
+  - "Water" = emotional depth, uncertainty, things you can't fully control
+  - "Mountain" = boundaries, pause, knowing when to stop
+  - "Thunder" = sudden change, wake-up call, energy burst
+  - "Wind" = gradual influence, persistence, flexibility
+  - "Fire" = clarity, visibility, passion that can burn out
+  - "Lake" = joy, connection, but also excess if unchecked
+  - "Heaven" = authority, ambition, big-picture thinking
+  - "Earth" = patience, support, doing the groundwork
 - If they asked about a job, talk about the job. If about a relationship, talk about the relationship
 - Use the changing lines to show trajectory — where things are heading
 - Include specific advice: what to do, what to avoid, what to watch for
@@ -52,9 +64,12 @@ Rules:
 
     const systemPrompt = isNovice ? noviceSystemPrompt : proSystemPrompt;
 
-    const userPrompt = `The querent asked: "${question || "No specific question — give a general life reading."}"
+    const hasQuestion = question && question.trim().length > 0;
 
-PRIMARY HEXAGRAM (Present Situation):
+    const userPrompt = hasQuestion
+      ? `The person asked: "${question}"
+
+PRIMARY HEXAGRAM (Where they are now):
 - Number: ${primaryHexagram.number}
 - Name: ${primaryHexagram.name} (${primaryHexagram.chinese})
 - Judgment: ${primaryHexagram.judgment}
@@ -64,7 +79,20 @@ PRIMARY HEXAGRAM (Present Situation):
 ${changingLinesText}
 ${transformedText}
 
-Give a full, deeply personal interpretation that directly answers their question using the wisdom of these hexagrams. Explain what each hexagram means IN THE CONTEXT of their specific question. If there is a transformed hexagram, explain the journey from present to future.`;
+Give a reading that DIRECTLY answers their specific question. Every paragraph should relate back to what they asked. Translate all imagery into plain terms they can apply to their situation today. If there is a transformed hexagram, explain what's shifting and what that means for their question.`
+      : `No specific question was asked. Give a general life reading — a snapshot of where they are right now and what energy is present.
+
+PRIMARY HEXAGRAM (Current energy):
+- Number: ${primaryHexagram.number}
+- Name: ${primaryHexagram.name} (${primaryHexagram.chinese})
+- Judgment: ${primaryHexagram.judgment}
+- Image: ${primaryHexagram.image}
+- Meaning: ${primaryHexagram.meaning}
+- Keywords: ${primaryHexagram.keywords.join(", ")}
+${changingLinesText}
+${transformedText}
+
+Give a reading about what this hexagram says about their current chapter of life. What themes are active? What should they pay attention to? If there is a transformed hexagram, explain where things are heading. Keep it practical and grounded — this should feel like advice from a wise friend, not a fortune cookie.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
