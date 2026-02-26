@@ -3,10 +3,11 @@ import { ChartSelector } from './ChartSelector';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { calculateBirthMoonPhase, BirthMoonPhase } from '@/lib/birthConditions';
 import { calculateSecondaryProgressions, getProgressedMoonInfo } from '@/lib/secondaryProgressions';
+import { getMoonPhase, getPlanetaryPositions } from '@/lib/astrology';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { ChevronDown, ChevronUp, MapPin } from 'lucide-react';
+import { ChevronDown, ChevronUp, MapPin, Moon } from 'lucide-react';
 import { format, addMonths } from 'date-fns';
 
 interface MoonPhaseEncyclopediaProps {
@@ -132,6 +133,27 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
     ? (progressedMoonInfo.exactDegree < 7.5 ? 'q1' : progressedMoonInfo.exactDegree < 15 ? 'q2' : progressedMoonInfo.exactDegree < 22.5 ? 'q3' : 'q4')
     : null;
 
+  // Today's transiting moon
+  const transitingMoon = useMemo(() => {
+    const now = new Date();
+    const phase = getMoonPhase(now);
+    const positions = getPlanetaryPositions(now);
+    const moonPos = positions.moon;
+    const PHASE_EMOJIS: Record<string, string> = {
+      'New Moon': '🌑', 'Waxing Crescent': '🌒', 'First Quarter': '🌓',
+      'Waxing Gibbous': '🌔', 'Full Moon': '🌕', 'Waning Gibbous': '🌖',
+      'Last Quarter': '🌗', 'Waning Crescent': '🌘', 'Balsamic': '🌘',
+    };
+    return {
+      sign: moonPos?.signName || 'Unknown',
+      degree: moonPos?.degree ?? 0,
+      minutes: moonPos?.minutes ?? 0,
+      phaseName: phase.phaseName,
+      emoji: PHASE_EMOJIS[phase.phaseName] || '🌙',
+      illumination: phase.illumination,
+    };
+  }, []);
+
   return (
     <div className="space-y-8">
       {/* Chart Selector */}
@@ -144,6 +166,33 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
           onSelect={setSelectedChartId}
         />
       </div>
+
+      {/* Today's Transiting Moon */}
+      <Card className="border-accent/30 bg-accent/5">
+        <CardContent className="p-5">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-3xl">{transitingMoon.emoji}</span>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-serif text-lg text-foreground flex items-center gap-2">
+                  <Moon size={16} className="text-muted-foreground" />
+                  Today's Moon
+                </h3>
+                <Badge variant="outline" className="text-[10px]">Live</Badge>
+              </div>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                <span className="text-foreground font-medium">{transitingMoon.phaseName}</span>
+                {' in '}
+                <span className="text-foreground font-medium">{transitingMoon.sign}</span>
+                {' · '}
+                <span className="font-mono text-xs">{transitingMoon.degree}°{transitingMoon.minutes.toString().padStart(2, '0')}'</span>
+                {' · '}
+                {Math.round(transitingMoon.illumination * 100)}% illuminated
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Natal Result Banner */}
       {natalPhaseResult && selectedChart && (
