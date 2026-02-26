@@ -25,6 +25,19 @@ interface PhaseWheelPanelProps {
   selectedChartName?: string;
 }
 
+// Helper to extract natal planet positions from a NatalChart
+function getNatalPlanets(chart: NatalChart): Array<{ name: string; sign: string; degree: number }> {
+  const result: Array<{ name: string; sign: string; degree: number }> = [];
+  const keys = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Chiron', 'NorthNode'] as const;
+  for (const key of keys) {
+    const p = chart.planets[key];
+    if (p?.sign && p?.degree !== undefined) {
+      result.push({ name: key, sign: p.sign, degree: p.degree });
+    }
+  }
+  return result;
+}
+
 // Phase aspect educational descriptions
 const PHASE_TEACHINGS: Record<string, { meaning: string; lifeExample: string }> = {
   'New Phase': {
@@ -621,16 +634,34 @@ export const PhaseWheelPanel: React.FC<PhaseWheelPanelProps> = ({
   onChartSelect,
   selectedChartName,
 }) => {
-  const [focusPlanet, setFocusPlanet] = useState(initialFocusPlanet);
+  const [transitFocus, setTransitFocus] = useState(initialFocusPlanet);
+  const [natalFocus, setNatalFocus] = useState('Sun');
   
-  const handleFocusChange = (planet: string) => {
-    setFocusPlanet(planet);
+  const handleTransitFocusChange = (planet: string) => {
+    setTransitFocus(planet);
     onFocusChange?.(planet);
   };
+
+  // Get the selected natal chart
+  const selectedChart = useMemo(() => {
+    if (!selectedChartId) return userNatalChart;
+    if (userNatalChart && userNatalChart.id === selectedChartId) return userNatalChart;
+    return savedCharts.find(c => c.id === selectedChartId) || userNatalChart;
+  }, [selectedChartId, userNatalChart, savedCharts]);
+
+  const natalPlanets = useMemo(() => {
+    if (!selectedChart) return [];
+    return getNatalPlanets(selectedChart);
+  }, [selectedChart]);
   
-  const phaseData = useMemo(() => {
-    return computePhaseWheelData(focusPlanet, planets);
-  }, [focusPlanet, planets]);
+  const transitPhaseData = useMemo(() => {
+    return computePhaseWheelData(transitFocus, planets);
+  }, [transitFocus, planets]);
+
+  const natalPhaseData = useMemo(() => {
+    if (natalPlanets.length === 0) return null;
+    return computePhaseWheelData(natalFocus, natalPlanets);
+  }, [natalFocus, natalPlanets]);
 
   if (planets.length === 0) {
     return (
@@ -652,16 +683,16 @@ export const PhaseWheelPanel: React.FC<PhaseWheelPanelProps> = ({
             <span className="text-sm text-muted-foreground font-normal">(Full-Phase Aspects)</span>
           </h3>
           <p className="text-sm text-muted-foreground mt-1">
-            Pick a planet. See how every other planet is developing relative to it — building something new (waxing) or harvesting wisdom (waning).
+            Compare today's sky phases with your natal chart phases side by side.
           </p>
         </div>
       </div>
 
-      {/* Chart Selector — moved here from page header */}
+      {/* Chart Selector */}
       {onChartSelect && userNatalChart && (
         <div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30">
           <User size={16} className="text-primary flex-shrink-0" />
-          <span className="text-sm text-muted-foreground flex-shrink-0">Personalize for:</span>
+          <span className="text-sm text-muted-foreground flex-shrink-0">Natal chart:</span>
           <div className="flex-1">
             <ChartSelector
               userNatalChart={userNatalChart}
@@ -674,43 +705,99 @@ export const PhaseWheelPanel: React.FC<PhaseWheelPanelProps> = ({
         </div>
       )}
 
-      {selectedChartName && (
-        <p className="text-xs text-muted-foreground italic">
-          Showing current sky phase relationships. Select a chart above to see how today's planets relate to {selectedChartName}'s natal positions.
-        </p>
-      )}
-
       {/* How to Read Guide */}
       <HowToReadGuide />
-      
-      {/* Planet Picker */}
-      <div>
-        <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Focus Planet</h4>
-        <PlanetPicker 
-          planets={planets} 
-          selected={focusPlanet} 
-          onSelect={handleFocusChange}
-        />
+
+      {/* TWO-COLUMN LAYOUT: Daily (left) | Natal (right) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* LEFT COLUMN — Daily / Transit */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 mb-1">
+            <Badge variant="outline" className="text-xs font-medium">Daily Sky</Badge>
+            <span className="text-xs text-muted-foreground">Current transits</span>
+          </div>
+          
+          {/* Transit Planet Picker */}
+          <div>
+            <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Focus Planet</h4>
+            <PlanetPicker 
+              planets={planets} 
+              selected={transitFocus} 
+              onSelect={handleTransitFocusChange}
+            />
+          </div>
+          
+          {/* Transit Wheel */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <span className="text-2xl">{transitPhaseData.focusSymbol}</span>
+                Daily — {transitFocus}
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Today's sky plotted around {transitFocus}.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <PhaseWheelSVG data={transitPhaseData} />
+            </CardContent>
+          </Card>
+          
+          {/* Transit Summary */}
+          <SummaryCards data={transitPhaseData} />
+        </div>
+
+        {/* RIGHT COLUMN — Natal */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 mb-1">
+            <Badge variant="outline" className="text-xs font-medium border-primary/50 text-primary">Natal</Badge>
+            <span className="text-xs text-muted-foreground">
+              {selectedChart?.name || 'Select a chart'}
+            </span>
+          </div>
+
+          {natalPlanets.length > 0 && natalPhaseData ? (
+            <>
+              {/* Natal Planet Picker */}
+              <div>
+                <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Focus Planet</h4>
+                <PlanetPicker 
+                  planets={natalPlanets} 
+                  selected={natalFocus} 
+                  onSelect={setNatalFocus}
+                />
+              </div>
+              
+              {/* Natal Wheel */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <span className="text-2xl">{natalPhaseData.focusSymbol}</span>
+                    Natal — {natalFocus}
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">
+                    {selectedChart?.name}'s birth chart plotted around {natalFocus}.
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <PhaseWheelSVG data={natalPhaseData} />
+                </CardContent>
+              </Card>
+              
+              {/* Natal Summary */}
+              <SummaryCards data={natalPhaseData} />
+            </>
+          ) : (
+            <Card className="border-dashed">
+              <CardContent className="p-8 text-center text-muted-foreground">
+                <User className="h-8 w-8 mx-auto mb-3 opacity-40" />
+                <p className="text-sm font-medium">No natal chart selected</p>
+                <p className="text-xs mt-1">Select a chart above to see natal phase relationships.</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
-      
-      {/* The Wheel - LARGER */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <span className="text-2xl">{phaseData.focusSymbol}</span>
-            Phase Wheel for {focusPlanet}
-          </CardTitle>
-          <p className="text-xs text-muted-foreground">
-            Every planet plotted by its angular separation from {focusPlanet}. Green (right) = waxing/building. Amber (left) = waning/harvesting.
-          </p>
-        </CardHeader>
-        <CardContent>
-          <PhaseWheelSVG data={phaseData} />
-        </CardContent>
-      </Card>
-      
-      {/* Summary Cards */}
-      <SummaryCards data={phaseData} />
 
       {/* Phase Meanings Reference */}
       <PhaseMeaningsGuide />
@@ -718,16 +805,27 @@ export const PhaseWheelPanel: React.FC<PhaseWheelPanelProps> = ({
       {/* Quadrant Guide */}
       <QuadrantGuide />
       
-      {/* Detailed Table */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Detailed Phase Analysis</CardTitle>
-          <p className="text-xs text-muted-foreground">Each planet's exact phase relationship to {focusPlanet}, with interpretation.</p>
-        </CardHeader>
-        <CardContent>
-          <PhaseTable data={phaseData} />
-        </CardContent>
-      </Card>
+      {/* Detailed Tables - side by side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Daily Phase Detail — {transitFocus}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PhaseTable data={transitPhaseData} />
+          </CardContent>
+        </Card>
+        {natalPhaseData && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Natal Phase Detail — {natalFocus}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PhaseTable data={natalPhaseData} />
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 };
