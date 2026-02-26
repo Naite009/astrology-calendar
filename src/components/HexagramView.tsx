@@ -339,36 +339,113 @@ const ChangingLinesExplainer = ({ lines, changingPositions, primary, transformed
 }) => {
   if (changingPositions.length === 0 || !transformed) return null;
 
+  // Build the transformed lines array
+  const transformedLines: HexagramLine[] = lines.map(l => ({
+    type: l.changing ? (l.type === 'yang' ? 'yin' : 'yang') : l.type,
+    changing: false,
+  }));
+
   return (
-    <div className="rounded border border-primary/30 bg-primary/5 p-4 space-y-3">
+    <div className="rounded border border-primary/30 bg-primary/5 p-5 space-y-4">
       <div className="flex items-center gap-2">
+        <BookOpen size={14} className="text-primary" />
         <span className="text-[10px] uppercase tracking-widest text-primary font-medium">
-          How You Got Two Hexagrams
+          How You Got Two Hexagrams — Step by Step
         </span>
       </div>
-      <p className="text-sm text-foreground">
-        When you threw your coins, {changingPositions.length === 1 ? 'one line' : `${changingPositions.length} lines`} came up as <strong>"changing"</strong> — 
-        that means {changingPositions.length === 1 ? 'it' : 'they'} got a 6 (old yin) or 9 (old yang). These are lines that are so extreme they flip to their opposite.
-      </p>
-      <div className="space-y-1.5">
+
+      {/* Step 1: Explain the concept */}
+      <div className="space-y-2">
+        <p className="text-sm text-foreground">
+          Each coin toss gives you a number: <strong>6, 7, 8, or 9</strong>. Most are stable (7 = solid, 8 = broken — they stay put). 
+          But <strong>6 and 9 are "old" lines</strong> — they've maxed out and <em>flip to their opposite</em>.
+        </p>
+        <p className="text-sm text-foreground">
+          That flip is how you get a second hexagram. The first one = <strong>where you are now</strong>. 
+          The second one = <strong>where things are heading</strong>.
+        </p>
+      </div>
+
+      {/* Step 2: Visual line-by-line transformation */}
+      <div className="space-y-1">
+        <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Your Lines — Watch the Flip</span>
+        <div className="rounded bg-card border border-border p-3 space-y-1">
+          {/* Header */}
+          <div className="grid grid-cols-[40px_1fr_24px_1fr] items-center gap-2 mb-2">
+            <span />
+            <span className="text-[9px] uppercase tracking-widest text-muted-foreground text-center">Now ({primary.number})</span>
+            <span />
+            <span className="text-[9px] uppercase tracking-widest text-muted-foreground text-center">Future ({transformed.number})</span>
+          </div>
+          {/* Lines from 6 down to 1 (visual top-to-bottom) */}
+          {[...Array(6)].map((_, i) => {
+            const lineIdx = 5 - i; // display line 6 at top
+            const orig = lines[lineIdx];
+            const tfm = transformedLines[lineIdx];
+            const isChanging = orig.changing;
+            const lineNum = lineIdx + 1;
+            return (
+              <div key={lineIdx} className={`grid grid-cols-[40px_1fr_24px_1fr] items-center gap-2 py-0.5 rounded ${isChanging ? 'bg-primary/10' : ''}`}>
+                <span className={`text-[10px] text-right ${isChanging ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
+                  Line {lineNum}
+                </span>
+                {/* Original line */}
+                <div className="flex items-center justify-center gap-1">
+                  {orig.type === 'yang' ? (
+                    <div className={`h-[5px] w-20 rounded-sm ${isChanging ? 'bg-primary' : 'bg-foreground'}`} />
+                  ) : (
+                    <>
+                      <div className={`h-[5px] w-8 rounded-sm ${isChanging ? 'bg-primary' : 'bg-foreground'}`} />
+                      <div className="w-3" />
+                      <div className={`h-[5px] w-8 rounded-sm ${isChanging ? 'bg-primary' : 'bg-foreground'}`} />
+                    </>
+                  )}
+                </div>
+                {/* Arrow */}
+                <span className={`text-center text-xs ${isChanging ? 'text-primary font-bold' : 'text-muted-foreground/40'}`}>
+                  {isChanging ? '→' : '='}
+                </span>
+                {/* Transformed line */}
+                <div className="flex items-center justify-center gap-1">
+                  {tfm.type === 'yang' ? (
+                    <div className={`h-[5px] w-20 rounded-sm ${isChanging ? 'bg-primary' : 'bg-foreground'}`} />
+                  ) : (
+                    <>
+                      <div className={`h-[5px] w-8 rounded-sm ${isChanging ? 'bg-primary' : 'bg-foreground'}`} />
+                      <div className="w-3" />
+                      <div className={`h-[5px] w-8 rounded-sm ${isChanging ? 'bg-primary' : 'bg-foreground'}`} />
+                    </>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Step 3: Plain-English summary */}
+      <div className="space-y-1.5 border-t border-primary/20 pt-3">
+        <span className="text-[10px] uppercase tracking-widest text-muted-foreground">What Changed</span>
         {changingPositions.map(pos => {
           const line = lines[pos - 1];
           return (
-            <div key={pos} className="text-sm text-foreground flex items-center gap-2">
+            <div key={pos} className="text-sm text-foreground flex items-center gap-2 flex-wrap">
               <span className="rounded bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">Line {pos}</span>
               <span>
                 {line.type === 'yang' 
-                  ? 'Old Yang (9) — solid line that breaks apart → becomes broken' 
-                  : 'Old Yin (6) — broken line that solidifies → becomes solid'}
+                  ? 'was solid (old yang = 9) → broke apart into a broken line' 
+                  : 'was broken (old yin = 6) → solidified into a solid line'}
               </span>
             </div>
           );
         })}
       </div>
-      <p className="text-sm text-muted-foreground">
-        Your <strong>primary hexagram</strong> ({primary.number}. {primary.name}) shows where you are <em>right now</em>. 
-        After {changingPositions.length === 1 ? 'this line flips' : 'these lines flip'}, you get your <strong>future hexagram</strong> ({transformed.number}. {transformed.name}) — 
-        that's where things are <em>heading</em>.
+
+      <p className="text-sm text-muted-foreground border-t border-primary/20 pt-3">
+        <strong>Think of it like this:</strong> Hexagram {primary.number} ({primary.name}) is a snapshot of your situation <em>right now</em>. 
+        The changing lines show what's unstable — what's actively shifting. 
+        Once those lines flip, you get Hexagram {transformed.number} ({transformed.name}) — that's where the energy is <em>moving toward</em>. 
+        If you got no changing lines, it means the situation is stable — one hexagram, one story.
       </p>
     </div>
   );
