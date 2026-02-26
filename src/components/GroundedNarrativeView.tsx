@@ -26,7 +26,7 @@ import { toast } from 'sonner';
 import { useRef, useCallback } from 'react';
 import { namesMatch } from '@/lib/nameMatching';
 import { useUnifiedProfiles } from '@/hooks/useUnifiedProfiles';
-import { FoundationsSection } from './narrative/FoundationsSection';
+
 
 interface Props {
   savedCharts: NatalChart[];
@@ -772,10 +772,6 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
                   </>
                 )}
 
-                {/* Foundations Section — always visible when chart has data, even without narrative */}
-                {readingType === 'astrology' && selectedChart && selectedChart.planets && Object.keys(selectedChart.planets).length >= 3 && (
-                  <FoundationsSection planetHouses={(signals || computeAllSignals(selectedChart)).planetHouses} />
-                )}
               </TabsContent>
 
               {/* Signals Tab - only for astrology */}
