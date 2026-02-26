@@ -36,20 +36,23 @@ let retrogradeCache: Map<string, RetrogradeInfo[]> = new Map();
 // Clear cached retrograde data (call when precision has been improved)
 export const clearRetrogradeCaches = () => { retrogradeCache = new Map(); };
 
-// Check if a planet is retrograde on a specific date using astronomy-engine
-const isPlanetRetrograde = (body: Astronomy.Body, date: Date): boolean => {
+// Force-clear on module load to pick up precision improvements
+clearRetrogradeCaches();
+
+// Check if a planet is retrograde on a specific date using astronomy-engine.
+// `intervalHours` controls the comparison window; shorter = more precise near stations.
+const isPlanetRetrograde = (body: Astronomy.Body, date: Date, intervalHours: number = 24): boolean => {
   try {
-    const yesterday = new Date(date);
-    yesterday.setDate(yesterday.getDate() - 1);
+    const earlier = new Date(date.getTime() - intervalHours * 3600000);
     
     const todayVector = Astronomy.GeoVector(body, date, false);
-    const yesterdayVector = Astronomy.GeoVector(body, yesterday, false);
+    const earlierVector = Astronomy.GeoVector(body, earlier, false);
     
     const todayEcliptic = Astronomy.Ecliptic(todayVector);
-    const yesterdayEcliptic = Astronomy.Ecliptic(yesterdayVector);
+    const earlierEcliptic = Astronomy.Ecliptic(earlierVector);
     
     // Handle wrap-around at 0/360
-    let diff = todayEcliptic.elon - yesterdayEcliptic.elon;
+    let diff = todayEcliptic.elon - earlierEcliptic.elon;
     if (diff > 180) diff -= 360;
     if (diff < -180) diff += 360;
     
@@ -116,23 +119,22 @@ const findStation = (
   if (!windowStart || !windowEnd) return null;
   
   // Phase 2 — binary search within the 24-hour window to ~15-min precision
+  // Use a 1-hour comparison interval for much more accurate station detection
   let lo = windowStart.getTime();
   let hi = windowEnd.getTime();
   
   while (hi - lo > 15 * 60 * 1000) { // 15 minutes
     const mid = lo + (hi - lo) / 2;
     const midDate = new Date(mid);
-    const isRetro = isPlanetRetrograde(body, midDate);
+    const isRetro = isPlanetRetrograde(body, midDate, 1); // 1-hour interval for precision
     
     if (lookingForRetrograde) {
-      // We want the earliest moment where isRetro becomes true
       if (isRetro) {
         hi = mid;
       } else {
         lo = mid;
       }
     } else {
-      // We want the earliest moment where isRetro becomes false
       if (!isRetro) {
         hi = mid;
       } else {
@@ -141,7 +143,7 @@ const findStation = (
     }
   }
   
-  return new Date(lookingForRetrograde ? hi : hi);
+  return new Date(lo + (hi - lo) / 2);
 };
 
 // Compute retrograde periods for a given year range dynamically
