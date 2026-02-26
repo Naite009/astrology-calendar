@@ -3,6 +3,7 @@ import { Sun, MapPin, ArrowRight, Compass, Star, Globe, ChevronDown, ChevronUp, 
 import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChart';
 import { SolarReturnChart, useSolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { analyzeSolarReturn, SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
+import { srSunInHouse, srMoonInHouse, srMoonInSign, srOverlayNarrative, srPlanetInHouse, rulerConditionNarrative, angularPlanetMeaning } from '@/lib/solarReturnInterpretations';
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
@@ -698,6 +699,14 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
             </div>
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed">{analysis.yearlyTheme.yearTheme}</p>
+          {/* Chart ruler condition */}
+          {analysis.lordOfTheYear && (
+            <div className="mt-3 pt-3 border-t border-border">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                <strong className="text-foreground">Chart Ruler Condition:</strong> {rulerConditionNarrative(analysis.lordOfTheYear.dignity, analysis.lordOfTheYear.isRetrograde)}
+              </p>
+            </div>
+          )}
         </div>
       )}
 
@@ -826,52 +835,107 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         </div>
       )}
 
-      {/* Sun & Moon */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="border border-border rounded-sm p-4 bg-card">
-          <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">☉ Sun's Focus This Year</h4>
-          {analysis.sunHouse.house ? (
-            <>
-              <p className="text-lg font-serif text-foreground">SR {analysis.sunHouse.house}th House</p>
-              <p className="text-xs text-muted-foreground">{analysis.sunHouse.theme}</p>
-              {analysis.sunNatalHouse.house && (
-                <p className="text-[10px] text-muted-foreground mt-1">Natal overlay: {analysis.sunNatalHouse.house}th House</p>
+      {/* ── Sun Deep Dive ── */}
+      <div className="border border-primary/20 rounded-sm p-5 bg-card">
+        <h3 className="text-sm uppercase tracking-widest font-medium text-foreground mb-3 flex items-center gap-2">
+          <Sun size={16} className="text-primary" />
+          ☉ The Sun — Where Your Life Force Goes This Year
+        </h3>
+        {analysis.sunHouse.house ? (
+          <>
+            <div className="flex items-center gap-3 mb-3">
+              <span className="text-2xl font-serif text-primary">SR House {analysis.sunHouse.house}</span>
+              {analysis.sunNatalHouse.house && analysis.sunNatalHouse.house !== analysis.sunHouse.house && (
+                <span className="text-xs text-muted-foreground">→ lands in your natal {analysis.sunNatalHouse.house}th house</span>
               )}
-              <p className="text-sm text-muted-foreground mt-2">
-                Your vitality and core identity are directed toward {analysis.sunHouse.theme.toLowerCase()} themes this year.
-              </p>
-            </>
-          ) : (
-            <p className="text-xs text-muted-foreground">Add house cusps to the SR chart to see house placement.</p>
-          )}
-        </div>
-        <div className="border border-border rounded-sm p-4 bg-card">
-          <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">☽ Emotional Climate</h4>
-          <p className="text-lg font-serif text-foreground">{SIGN_SYMBOLS[analysis.moonSign]} Moon in {analysis.moonSign}</p>
+            </div>
+            {srSunInHouse[analysis.sunHouse.house] && (
+              <div className="space-y-3">
+                <p className="text-base font-serif text-foreground">{srSunInHouse[analysis.sunHouse.house].title}</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{srSunInHouse[analysis.sunHouse.house].overview}</p>
+                <div className="bg-secondary/40 rounded-sm p-3">
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">How You'll Experience It</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{srSunInHouse[analysis.sunHouse.house].experience}</p>
+                </div>
+                <div className="bg-primary/5 rounded-sm p-3">
+                  <p className="text-[10px] uppercase tracking-widest text-primary mb-1">What To Focus On</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{srSunInHouse[analysis.sunHouse.house].focus}</p>
+                </div>
+                <div className="bg-destructive/5 rounded-sm p-3">
+                  <p className="text-[10px] uppercase tracking-widest text-destructive mb-1">Watch Out For</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{srSunInHouse[analysis.sunHouse.house].caution}</p>
+                </div>
+              </div>
+            )}
+            {/* Overlay narrative */}
+            {analysis.sunNatalHouse.house && analysis.sunNatalHouse.house !== analysis.sunHouse.house && (
+              <div className="mt-4 pt-3 border-t border-border">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">House Overlay: Where the action is vs. where you feel it</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {srOverlayNarrative('The Sun', analysis.sunHouse.house, analysis.sunNatalHouse.house)}
+                </p>
+              </div>
+            )}
+          </>
+        ) : (
+          <p className="text-xs text-muted-foreground">Add house cusps to the SR chart to see the Sun's house placement and deep interpretation.</p>
+        )}
+      </div>
+
+      {/* ── Moon Deep Dive ── */}
+      <div className="border border-primary/20 rounded-sm p-5 bg-card">
+        <h3 className="text-sm uppercase tracking-widest font-medium text-foreground mb-3 flex items-center gap-2">
+          <Moon size={16} className="text-primary" />
+          ☽ The Moon — Your Emotional Landscape This Year
+        </h3>
+        <div className="flex items-center gap-3 mb-3 flex-wrap">
+          <span className="text-2xl">{SIGN_SYMBOLS[analysis.moonSign]}</span>
+          <span className="text-lg font-serif text-foreground">Moon in {analysis.moonSign}</span>
           {analysis.moonHouse.house && (
-            <p className="text-xs text-muted-foreground">SR {analysis.moonHouse.house}th House — {analysis.moonHouse.theme}</p>
+            <span className="text-sm text-muted-foreground">· SR House {analysis.moonHouse.house}</span>
           )}
-          {analysis.moonNatalHouse.house && (
-            <p className="text-[10px] text-muted-foreground">Natal overlay: {analysis.moonNatalHouse.house}th House</p>
-          )}
-          <p className="text-sm text-muted-foreground mt-2">
-            Your emotional needs and instinctive responses this year are filtered through {analysis.moonSign} energy.
-          </p>
         </div>
+        {/* Moon sign interpretation */}
+        {srMoonInSign[analysis.moonSign] && (
+          <div className="mb-3">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Emotional Temperament</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{srMoonInSign[analysis.moonSign]}</p>
+          </div>
+        )}
+        {/* Moon house interpretation */}
+        {analysis.moonHouse.house && srMoonInHouse[analysis.moonHouse.house] && (
+          <div className="bg-secondary/40 rounded-sm p-3 mb-3">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Where Emotions Live (SR House {analysis.moonHouse.house})</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{srMoonInHouse[analysis.moonHouse.house]}</p>
+          </div>
+        )}
+        {/* Moon overlay */}
+        {analysis.moonHouse.house && analysis.moonNatalHouse.house && analysis.moonHouse.house !== analysis.moonNatalHouse.house && (
+          <div className="pt-3 border-t border-border">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">House Overlay</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {srOverlayNarrative('The Moon', analysis.moonHouse.house, analysis.moonNatalHouse.house)}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Angular Planets */}
       {analysis.angularPlanets.length > 0 && (
-        <div className="border border-primary/20 rounded-sm p-4 bg-card">
-          <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">⚡ Angular Planets (High Impact)</h4>
-          <p className="text-sm text-muted-foreground mb-2">
-            These planets are near the SR Ascendant or MC — they dominate the year:
+        <div className="border border-primary/20 rounded-sm p-5 bg-card">
+          <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">⚡ Angular Planets — The Year's Powerhouses</h4>
+          <p className="text-sm text-muted-foreground mb-3">
+            Planets near the SR Ascendant or Midheaven are ANGULAR — they have disproportionate influence over the year. These are the loudest voices in your chart:
           </p>
-          <div className="flex flex-wrap gap-2">
+          <div className="space-y-2">
             {analysis.angularPlanets.map(p => (
-              <span key={p} className="px-3 py-1 bg-primary/10 text-primary rounded-sm text-sm font-medium">
-                {PLANET_SYMBOLS[p] || p.slice(0, 3)} {p}
-              </span>
+              <div key={p} className="bg-primary/5 rounded-sm p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-lg">{PLANET_SYMBOLS[p] || p.slice(0, 3)}</span>
+                  <span className="text-sm font-medium text-foreground">{p}</span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">{angularPlanetMeaning[p] || `${p} on an angle amplifies its themes throughout the year.`}</p>
+              </div>
             ))}
           </div>
         </div>
@@ -1158,38 +1222,57 @@ const HouseOverlayTab = ({ analysis }: { analysis: SolarReturnAnalysis }) => {
     <div className="space-y-4 mt-4">
       <div className="text-xs text-muted-foreground bg-secondary/50 p-3 rounded-sm">
         <Info size={14} className="inline mr-1" />
-        This shows where your Solar Return planets fall in the <strong>SR houses</strong> and their <strong>natal house</strong> overlay.
+        The <strong>SR house</strong> shows WHERE the action happens. The <strong>natal house overlay</strong> shows WHERE YOU FEEL IT. This is the key to understanding your Solar Return — it is not just what house a planet sits in, but how that house's energy lands on YOUR natal chart.
       </div>
 
       {analysis.houseOverlays.length === 0 ? (
         <p className="text-sm text-muted-foreground">Add house cusps to see house overlays.</p>
       ) : (
-        <div className="space-y-2">
-          {analysis.houseOverlays.map((overlay, i) => (
-            <div key={i} className="border border-border rounded-sm p-3 bg-card flex items-start gap-3">
-              <span className="text-lg w-8 text-center">{PLANET_SYMBOLS[overlay.planet] || overlay.planet.slice(0, 2)}</span>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-medium text-foreground">{overlay.planet}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {SIGN_SYMBOLS[overlay.srSign]} {overlay.srSign} {overlay.srDegree}
-                  </span>
-                  <ArrowRight size={12} className="text-muted-foreground" />
-                  <span className="text-sm text-primary font-medium">
-                    SR {overlay.srHouse ? `${overlay.srHouse}th House` : '—'}
-                  </span>
-                  {overlay.natalHouse && (
-                    <span className="text-[10px] text-muted-foreground">
-                      (Natal {overlay.natalHouse}th)
-                    </span>
-                  )}
+        <div className="space-y-3">
+          {analysis.houseOverlays.map((overlay, i) => {
+            const planetInterps = srPlanetInHouse[overlay.planet];
+            const planetHouseInterp = overlay.srHouse && planetInterps ? planetInterps[overlay.srHouse] : null;
+            const overlayNarr = srOverlayNarrative(overlay.planet, overlay.srHouse, overlay.natalHouse);
+            return (
+              <div key={i} className="border border-border rounded-sm p-4 bg-card">
+                <div className="flex items-start gap-3">
+                  <span className="text-xl w-8 text-center mt-0.5">{PLANET_SYMBOLS[overlay.planet] || overlay.planet.slice(0, 2)}</span>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span className="text-sm font-medium text-foreground">{overlay.planet}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {SIGN_SYMBOLS[overlay.srSign]} {overlay.srSign} {overlay.srDegree}
+                      </span>
+                      <ArrowRight size={12} className="text-muted-foreground" />
+                      <span className="text-sm text-primary font-medium">
+                        SR House {overlay.srHouse || '—'}
+                      </span>
+                      {overlay.natalHouse && (
+                        <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded-sm">
+                          → Natal House {overlay.natalHouse}
+                        </span>
+                      )}
+                    </div>
+                    {/* SR house theme */}
+                    {overlay.srHouseTheme && (
+                      <p className="text-[10px] text-muted-foreground mb-2">{overlay.srHouseTheme}</p>
+                    )}
+                    {/* Deep planet-in-house interpretation */}
+                    {planetHouseInterp && (
+                      <p className="text-sm text-muted-foreground leading-relaxed mb-2">{planetHouseInterp}</p>
+                    )}
+                    {/* Overlay narrative */}
+                    {overlayNarr && overlay.natalHouse && overlay.srHouse !== overlay.natalHouse && (
+                      <div className="bg-secondary/40 rounded-sm p-2 mt-1">
+                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">Overlay</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{overlayNarr}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                {overlay.srHouseTheme && (
-                  <p className="text-xs text-muted-foreground mt-1">{overlay.srHouseTheme}</p>
-                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
