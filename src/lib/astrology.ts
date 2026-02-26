@@ -827,17 +827,8 @@ export const getPlanetaryPositions = (date: Date): PlanetaryPositions => {
 // Check if Mercury is retrograde
 export const isMercuryRetrograde = (date: Date): boolean => {
   try {
-    const yesterday = new Date(date);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    const todayMercury = Astronomy.GeoVector(Astronomy.Body.Mercury, date, false);
-    const yesterdayMercury = Astronomy.GeoVector(Astronomy.Body.Mercury, yesterday, false);
-
-    const todayEcliptic = Astronomy.Ecliptic(todayMercury);
-    const yesterdayEcliptic = Astronomy.Ecliptic(yesterdayMercury);
-
-    // If longitude is decreasing, Mercury is retrograde
-    return todayEcliptic.elon < yesterdayEcliptic.elon;
+    // Use isPlanetRetrograde for consistency — it handles the zodiac wrap correctly
+    return isPlanetRetrograde(Astronomy.Body.Mercury, date);
   } catch {
     return false;
   }
