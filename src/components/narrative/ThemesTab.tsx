@@ -1,6 +1,6 @@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, AlertTriangle, Target, Hexagon } from 'lucide-react';
+import { Sparkles, AlertTriangle, Target, Hexagon, Compass } from 'lucide-react';
 import { SignalsData, PlanetHouseInfo } from '@/lib/narrativeAnalysisEngine';
 import type { ReadingType } from '../GroundedNarrativeView';
 
@@ -147,6 +147,92 @@ export function ThemesTab({ readingType, signals, hdChart }: Props) {
                 House {astroThemes.topHouseNum} has the most planets — this is where your chart concentrates energy.
               </p>
             </div>
+           </div>
+        )}
+
+        {/* Quadrant & Hemisphere Summary */}
+        {astroThemes && signals && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Compass className="h-4 w-4 text-primary" />
+              <h3 className="font-medium">Quadrant & Hemisphere Balance</h3>
+            </div>
+            {(() => {
+              // Compute hemisphere distribution from planetHouses
+              const ph = signals.planetHouses;
+              const total = ph.length;
+              if (total === 0) return null;
+
+              let upper = 0, lower = 0, eastern = 0, western = 0;
+              for (const p of ph) {
+                if (p.house >= 7 && p.house <= 12) upper++; else lower++;
+                if (p.house >= 10 || p.house <= 3) eastern++; else western++;
+              }
+
+              const pct = (n: number) => Math.round((n / total) * 100);
+              const upperPct = pct(upper);
+              const easternPct = pct(eastern);
+
+              // Quadrants
+              const q1 = ph.filter(p => p.house >= 1 && p.house <= 3);
+              const q2 = ph.filter(p => p.house >= 4 && p.house <= 6);
+              const q3 = ph.filter(p => p.house >= 7 && p.house <= 9);
+              const q4 = ph.filter(p => p.house >= 10 && p.house <= 12);
+              const quads = [
+                { label: 'Self-Dev', houses: '1-3', count: q1.length, planets: q1.map(p => p.planet) },
+                { label: 'Security', houses: '4-6', count: q2.length, planets: q2.map(p => p.planet) },
+                { label: 'Relationship', houses: '7-9', count: q3.length, planets: q3.map(p => p.planet) },
+                { label: 'Career', houses: '10-12', count: q4.length, planets: q4.map(p => p.planet) },
+              ];
+              const maxQ = Math.max(...quads.map(q => q.count));
+
+              return (
+                <div className="space-y-3">
+                  {/* Hemisphere bars */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 rounded-lg bg-muted/40">
+                      <p className="text-[10px] font-medium mb-1">Above / Below Horizon</p>
+                      <div className="flex items-center gap-2 text-xs">
+                        <span>{upperPct}% Public</span>
+                        <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                          <div className="h-full bg-primary/50 rounded-full" style={{ width: `${upperPct}%` }} />
+                        </div>
+                        <span>{100 - upperPct}% Private</span>
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/40">
+                      <p className="text-[10px] font-medium mb-1">East / West</p>
+                      <div className="flex items-center gap-2 text-xs">
+                        <span>{easternPct}% Self</span>
+                        <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                          <div className="h-full bg-primary/50 rounded-full" style={{ width: `${easternPct}%` }} />
+                        </div>
+                        <span>{100 - easternPct}% Others</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quadrant grid */}
+                  <div className="grid grid-cols-4 gap-2">
+                    {quads.map(q => (
+                      <div key={q.label} className={`p-2 rounded-lg border text-center ${q.count === maxQ && q.count > 0 ? 'bg-primary/5 border-primary/20' : 'bg-muted/20 border-border'}`}>
+                        <p className="text-lg font-semibold">{q.count}</p>
+                        <p className="text-[10px] font-medium">{q.label}</p>
+                        <p className="text-[10px] text-muted-foreground">H {q.houses}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <p className="text-xs text-muted-foreground italic">
+                    {upperPct > 60 && 'Your chart is weighted above the horizon — you\'re meant to be visible and publicly engaged.'}
+                    {upperPct < 40 && 'Your chart is weighted below the horizon — your work unfolds privately before the world sees it.'}
+                    {easternPct > 60 && ' You initiate from your own will, leading rather than waiting.'}
+                    {easternPct < 40 && ' You thrive through collaboration and response to others\' invitations.'}
+                    {upperPct >= 40 && upperPct <= 60 && easternPct >= 40 && easternPct <= 60 && 'Balanced distribution — you have access to both public and private realms, and can initiate or respond with equal comfort.'}
+                  </p>
+                </div>
+              );
+            })()}
           </div>
         )}
 
