@@ -614,7 +614,7 @@ const ProgressedMoonJourneyInline: React.FC<{ moonInfo: any }> = ({ moonInfo }) 
       const date = addMonths(now, Math.round(monthsFromNow));
       const isPast = m.deg <= currentDeg;
       const isCurrent = (currentDeg >= (m.deg - 3.75) && currentDeg < (m.deg + 3.75));
-      return { ...m, date, isPast, isCurrent, formattedDate: format(date, 'MMM yyyy') };
+      return { ...m, date, isPast, isCurrent, formattedDate: format(date, 'MMM d, yyyy') };
     });
   }, [moonInfo]);
 
