@@ -1,112 +1,55 @@
 
-# Zodiac Foundations: Signs, Elements, Polarity & Questionnaire
 
-## What We're Building
+# New Moon Phases Tab
 
-A rich, visual "Foundations" section in the Narrative tab that teaches the user about their chart from the ground up — clickable zodiac signs, element distribution with meaning, polarity (yin/yang), quadrant emphasis, and a self-assessment questionnaire to determine if a missing element is truly absent or already mastered.
+## What This Does
+Creates a dedicated "Moon" tab in the main navigation that serves as a comprehensive moon phase encyclopedia and personal moon phase identifier. When you select a name from the dropdown, it calculates which of the 8 lunar phases you were born under, highlights it, and gives you a full description with your exact degree.
 
----
+## The 8 Moon Phases (Corrected Degrees)
+The existing code in `birthConditions.ts` already has all 8 phases with rich descriptions (archetype, soul purpose, gift, challenge, life theme). The degree ranges will be:
 
-## 1. Zodiac Sign Encyclopedia (New Data File)
+1. New Moon: 0-45 degrees
+2. Waxing Crescent: 45-90 degrees
+3. First Quarter: 90-135 degrees
+4. Waxing Gibbous: 135-180 degrees
+5. Full Moon: 180-225 degrees
+6. Disseminating (Waning Gibbous): 225-270 degrees
+7. Last Quarter: 270-315 degrees
+8. Balsamic: 315-360 degrees
 
-Create `src/lib/zodiacSignEncyclopedia.ts` — a comprehensive data file for all 12 signs containing:
+## Changes
 
-| Field | Example (Aries) |
-|-------|-----------------|
-| Glyph/Symbol | Ram icon |
-| Element | Fire |
-| Modality | Cardinal |
-| Polarity | Yang / Masculine / Assertive |
-| Ruling Planet + Symbol | Mars |
-| Body Region | Head, face, eyes, brain |
-| Mantra | "I take action" |
-| Affirmation | "If it can be done, I can do it" |
-| Shadow Mindset | "Faster is always better" |
-| Mnemonic | "The first spark of the match — quick, bright, gone" |
-| Essence (multi-paragraph) | Deep description of the sign's nature, needs, creative expression, body associations |
-| Areas to Work On | Impatience, impulsivity |
-| Superpower | Most spontaneous of the signs |
+### 1. Add "Moon" to the ViewMode type and navigation
+**File: `src/components/AstroCalendar.tsx`**
+- Add `"moon"` to the `ViewMode` type
+- Add a Moon navigation button (using the Moon icon)
+- Render the new `MoonPhaseEncyclopedia` component when `viewMode === "moon"`
+- Pass `userNatalChart`, `savedCharts`, and allCharts to it
 
-All 12 signs will have this full treatment.
+### 2. Create the Moon Phase Encyclopedia component
+**New file: `src/components/MoonPhaseEncyclopedia.tsx`**
 
----
+This component will contain:
 
-## 2. Clickable Sign Grid Component
+- **Chart Selector dropdown** at the top ("Show my natal moon phase for:") using the existing `ChartSelector` component
+- **8 clickable phase cards** arranged in a grid/circle layout, each showing:
+  - Phase emoji/symbol
+  - Phase name
+  - Degree range (e.g., "0-45 degrees")
+  - Archetype name (e.g., "The Pioneer")
+- When a chart is selected, the person's natal moon phase card gets **highlighted** with a "Your Birth Phase" badge and their exact Sun-Moon separation degree
+- **Clicking any phase card** expands it (or opens a detail section) showing:
+  - Full soul purpose description
+  - Expression style
+  - Gift and Challenge
+  - Life theme
+  - The exact degree range and what it means to be in the early/middle/late portion of that phase
 
-Create `src/components/narrative/ZodiacSignExplorer.tsx`:
+### 3. Natal Moon Phase Calculation
+Reuses the existing `calculateBirthMoonPhase` function from `src/lib/birthConditions.ts`, which already computes the Sun-Moon angular separation and maps it to the correct phase. The exact degree will be displayed (e.g., "You were born at 127 degrees Sun-Moon separation -- Waxing Gibbous phase").
 
-- A 4x3 grid (or 6x2) of all 12 signs, each showing: glyph icon, sign name, element color-coded badge, modality badge
-- Clicking a sign opens a detailed modal/expandable panel showing ALL the fields above
-- Visual layout: icon + name at top, then polarity/element/modality/ruler row, then mantra, then mnemonic box, then multi-paragraph essence, then body region, then shadow/growth
-
----
-
-## 3. Element Distribution with Deep Meaning
-
-Create `src/components/narrative/ElementDistributionCard.tsx`:
-
-- Shows the user's natal chart element counts with planet symbols (reusing the pattern from Solar Return)
-- For each element: count, percentage bar, list of planets in that element
-- **Key addition**: When an element has 0 or 1 planets, show what that means using the existing `lackSymptoms` data from `elementTeachings.ts`
-- When an element has 4+, show the "overdominance" interpretation
-- Includes the Debra Silverman insight: "Just because someone is missing an element does not mean they are out of balance"
-
----
-
-## 4. Element Self-Assessment Questionnaire
-
-Integrate the existing `ElementSelfAssessment` component (already built in `src/components/sacredscript/ElementSelfAssessment.tsx`) into the Narrative section, but enhanced:
-
-- Automatically targets the user's weakest/absent elements
-- After completing, shows interpretation: "You scored 8/10 on Water despite having no Water planets — you've already internalized this element" vs "You scored 2/10 — this is genuinely undeveloped territory"
-- This directly addresses the astrology paradox: missing element = already mastered OR needs development
-
----
-
-## 5. Polarity Balance Display
-
-Add polarity (Yin/Yang) tracking to the element distribution:
-
-- Count planets in Yang signs (Fire + Air) vs Yin signs (Earth + Water)
-- Visual bar showing the balance
-- Interpretation: "Yang-dominant charts are action-oriented, externally focused" / "Yin-dominant charts are receptive, internally focused"
-- Show which planets contribute to each side
-
----
-
-## 6. Quadrant Integration in Narrative
-
-The quadrant analysis already exists in `src/lib/hemisphereAnalysis.ts` and `QuadrantAnalysisDisplay.tsx` (Chart Decoder). We'll bring a summary into the Narrative tab's Themes section:
-
-- Add hemisphere/quadrant summary to `ThemesTab.tsx`
-- Show dominant quadrant with its meaning
-- Show hemisphere balance (upper/lower = public/private, eastern/western = self-initiated/responsive)
-
----
-
-## 7. Narrative Tab Integration
-
-In `GroundedNarrativeView.tsx`, add a new **"Foundations"** sub-section that appears below the narrative text (alongside Life Styles and What's Ahead):
-
-- Zodiac Sign Explorer (clickable grid)
-- Element Distribution Card (with interpretations)
-- Polarity Balance
-- Element Self-Assessment (collapsible)
-- These are always visible once a chart is selected, even before generating an AI narrative
-
----
-
-## Technical Details
-
-**New files:**
-- `src/lib/zodiacSignEncyclopedia.ts` — full 12-sign data
-- `src/components/narrative/ZodiacSignExplorer.tsx` — clickable sign grid + detail modal
-- `src/components/narrative/ElementDistributionCard.tsx` — element counts, polarity, missing element meaning
-- `src/components/narrative/FoundationsSection.tsx` — wrapper combining all foundation components
-
-**Modified files:**
-- `src/components/GroundedNarrativeView.tsx` — add Foundations section to narrative tab
-- `src/components/narrative/ThemesTab.tsx` — add quadrant/hemisphere summary
-- `src/lib/narrativeAnalysisEngine.ts` — add polarity scores to SignalsData (yangCount, yinCount, polarityPlanets)
-
-**Dependencies:** None new — uses existing UI components (Dialog, Badge, Progress, Tabs) and data (`elementTeachings.ts`, `hemisphereAnalysis.ts`, `planetDignities.ts`)
+### Technical Notes
+- The existing `BIRTH_MOON_PHASES` data in `birthConditions.ts` already contains all content (archetype, soulPurpose, expression, gift, challenge, lifeTheme) for all 8 phases
+- The `calculateBirthMoonPhase` function already handles the degree calculation -- just need to also expose the raw `separation` degree alongside the phase name
+- The `ChartSelector` component is already used throughout the app for personalization dropdowns
+- No database changes needed -- all data is computed from natal chart positions already stored locally
