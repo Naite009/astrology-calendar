@@ -112,6 +112,14 @@ export function ElementDistributionCard({ planetHouses }: Props) {
                     Dominant {element} ({count} planets) — this is a core operating mode. Watch for overdoing {element.toLowerCase()} tendencies.
                   </p>
                 )}
+                {count >= 2 && count <= 3 && (
+                  <p className="text-[10px] text-muted-foreground mt-1 italic">
+                    {element === 'Fire' && 'Moderate Fire — enough spark to act on inspiration without burning out. Drive is present but not consuming.'}
+                    {element === 'Earth' && 'Moderate Earth — grounded enough to build, practical enough to sustain. Structure is available when you need it.'}
+                    {element === 'Air' && 'Moderate Air — mental agility is present. You can communicate and analyze without overthinking or detaching.'}
+                    {element === 'Water' && 'Moderate Water — emotional depth is accessible. You can feel, empathize, and intuit without being overwhelmed.'}
+                  </p>
+                )}
               </div>
             );
           })}
