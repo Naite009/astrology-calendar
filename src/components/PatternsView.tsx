@@ -714,7 +714,7 @@ export const PatternsView = ({ year, initialFocusPlanet }: PatternsViewProps) =>
 
   return (
     <div className="max-w-4xl mx-auto space-y-12">
-      {/* Header + Chart Selector */}
+      {/* Header */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">
           <Orbit className="text-primary" size={28} />
@@ -724,27 +724,6 @@ export const PatternsView = ({ year, initialFocusPlanet }: PatternsViewProps) =>
         <p className="text-muted-foreground">
           Track retrograde patterns, major planetary conjunctions, and current cosmic configurations.
         </p>
-
-        {/* Chart Selector for personalization */}
-        <div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30">
-          <User size={16} className="text-primary flex-shrink-0" />
-          <span className="text-sm text-muted-foreground flex-shrink-0">Personalize for:</span>
-          <div className="flex-1">
-            <ChartSelector
-              userNatalChart={userNatalChart}
-              savedCharts={savedCharts}
-              selectedChartId={selectedChartId}
-              onSelect={setSelectedChartId}
-              label=""
-            />
-          </div>
-        </div>
-
-        {selectedChart && (
-          <p className="text-xs text-muted-foreground italic">
-            Showing transits personalized for {selectedChart.name}'s natal chart. Planetary aspects to natal positions will be highlighted.
-          </p>
-        )}
       </div>
 
       {/* Live Planetary Positions */}
@@ -757,11 +736,16 @@ export const PatternsView = ({ year, initialFocusPlanet }: PatternsViewProps) =>
         <InteractiveAspectExplorer date={selectedDate} />
       </section>
 
-      {/* Phase Wheel Panel - NEW */}
+      {/* Phase Wheel Panel with integrated chart selector */}
       <section className="rounded-lg border border-border bg-card p-6">
         <PhaseWheelPanel 
           planets={planets} 
           initialFocusPlanet={initialFocusPlanet || 'Sun'}
+          userNatalChart={userNatalChart}
+          savedCharts={savedCharts}
+          selectedChartId={selectedChartId}
+          onChartSelect={setSelectedChartId}
+          selectedChartName={selectedChart?.name}
         />
       </section>
 
