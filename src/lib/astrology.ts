@@ -241,19 +241,22 @@ export const getDetailedPosition = (longitude: number): { sign: string; degree: 
 };
 
 // Check if a planet is retrograde at a given date
+// Uses a forward-looking window to catch station days accurately:
+// compares longitude at date vs date+1day. If longitude decreases, planet is retrograde.
 export const isPlanetRetrograde = (body: Astronomy.Body, date: Date): boolean => {
   try {
-    const yesterday = new Date(date);
-    yesterday.setDate(yesterday.getDate() - 1);
+    // Use a small forward+backward window to avoid station-day ambiguity
+    const before = new Date(date.getTime() - 12 * 3600000); // 12h before
+    const after = new Date(date.getTime() + 12 * 3600000);  // 12h after
     
-    const todayVector = Astronomy.GeoVector(body, date, false);
-    const yesterdayVector = Astronomy.GeoVector(body, yesterday, false);
+    const beforeVector = Astronomy.GeoVector(body, before, false);
+    const afterVector = Astronomy.GeoVector(body, after, false);
     
-    const todayEcliptic = Astronomy.Ecliptic(todayVector);
-    const yesterdayEcliptic = Astronomy.Ecliptic(yesterdayVector);
+    const beforeEcliptic = Astronomy.Ecliptic(beforeVector);
+    const afterEcliptic = Astronomy.Ecliptic(afterVector);
     
     // Handle wrap-around at 0/360
-    let diff = todayEcliptic.elon - yesterdayEcliptic.elon;
+    let diff = afterEcliptic.elon - beforeEcliptic.elon;
     if (diff > 180) diff -= 360;
     if (diff < -180) diff += 360;
     
