@@ -1,9 +1,11 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown } from 'lucide-react';
 import { ChartPlanet, getPlanetSymbol } from '@/lib/chartDecoderLogic';
 import { analyzeQuadrants, QuadrantAnalysis, getHemisphereSummary } from '@/lib/hemisphereAnalysis';
-import { detectChartShape, ChartShape } from '@/lib/chartShapes';
+import { detectChartShape, ChartShape, SecondaryShapeInfo } from '@/lib/chartShapes';
 
 interface QuadrantAnalysisDisplayProps {
   planets: ChartPlanet[];
@@ -102,63 +104,126 @@ export const QuadrantAnalysisDisplay: React.FC<QuadrantAnalysisDisplayProps> = (
 };
 
 // Sub-components
-const ChartShapeCard: React.FC<{ shape: ChartShape }> = ({ shape }) => (
-  <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-    <CardHeader className="pb-2">
-      <div className="flex items-center justify-between">
-        <CardTitle className="text-sm font-medium">Chart Shape Pattern</CardTitle>
-        <Badge variant="outline" className="border-primary text-primary">
-          {shape.confidence}% confidence
-        </Badge>
+const RunnerUpCard: React.FC<{ shape: SecondaryShapeInfo; rank: number }> = ({ shape, rank }) => (
+  <Collapsible>
+    <CollapsibleTrigger className="w-full">
+      <div className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-secondary/30 transition-colors">
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-muted-foreground font-mono">#{rank + 2}</span>
+          <span className="text-sm font-medium text-foreground">{shape.type}</span>
+          {shape.leadPlanet && (
+            <span className="text-xs text-primary">{getPlanetSymbol(shape.leadPlanet)} {shape.leadPlanet}</span>
+          )}
+          {shape.involvedPlanets && shape.involvedPlanets.length > 0 && (
+            <span className="text-xs text-muted-foreground">
+              ({shape.involvedPlanets.filter(p => p !== '|').map(p => getPlanetSymbol(p)).join(' ')})
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="text-[10px]">{shape.confidence}%</Badge>
+          <ChevronDown className="h-3 w-3 text-muted-foreground transition-transform [[data-state=open]_&]:rotate-180" />
+        </div>
       </div>
-    </CardHeader>
-    <CardContent className="space-y-3">
-      <div>
-        <h3 className="text-2xl font-serif text-foreground">{shape.type}</h3>
+    </CollapsibleTrigger>
+    <CollapsibleContent>
+      <div className="px-3 pb-3 pt-2 space-y-3 border-x border-b border-border rounded-b-lg -mt-1">
         <p className="text-sm text-muted-foreground">{shape.description}</p>
-      </div>
-      
-      <div className="bg-background/50 p-3 rounded-md">
-        <p className="text-sm text-foreground">{shape.personality}</p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 pt-2">
-        <div>
-          <span className="text-xs text-emerald-500 font-medium">Gift:</span>
-          <p className="text-xs text-muted-foreground">{shape.gift}</p>
+        <div className="bg-secondary/30 p-3 rounded-md">
+          <p className="text-sm text-foreground">{shape.personality}</p>
         </div>
-        <div>
-          <span className="text-xs text-amber-500 font-medium">Challenge:</span>
-          <p className="text-xs text-muted-foreground">{shape.challenge}</p>
-        </div>
-      </div>
-
-      {shape.leadPlanet && (
-        <div className="pt-2 border-t border-border/50">
-          <span className="text-xs text-primary font-medium">
-            Lead Planet: {getPlanetSymbol(shape.leadPlanet)} {shape.leadPlanet}
-          </span>
-          <p className="text-xs text-muted-foreground mt-1">{shape.emptyArea}</p>
-        </div>
-      )}
-
-      {shape.secondaryShape && shape.confidence < 100 && (
-        <div className="pt-2 border-t border-border/50 bg-muted/30 -mx-3 px-3 pb-1 rounded-b-md">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-xs text-muted-foreground font-medium">Runner-up:</span>
-            <Badge variant="outline" className="text-[10px] border-muted-foreground/30">
-              {shape.secondaryShape.confidence}%
-            </Badge>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <span className="text-xs text-emerald-500 font-medium">Gift:</span>
+            <p className="text-xs text-muted-foreground">{shape.gift}</p>
           </div>
-          <p className="text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">{shape.secondaryShape.type}</span> — {shape.secondaryShape.description}
-          </p>
+          <div>
+            <span className="text-xs text-amber-500 font-medium">Challenge:</span>
+            <p className="text-xs text-muted-foreground">{shape.challenge}</p>
+          </div>
         </div>
-      )}
-    </CardContent>
-  </Card>
+        <div className="border-t border-border/50 pt-3">
+          <span className="text-[10px] uppercase tracking-wider text-primary font-medium">Teaching</span>
+          <p className="text-xs text-foreground mt-1 leading-relaxed">{shape.teaching}</p>
+        </div>
+      </div>
+    </CollapsibleContent>
+  </Collapsible>
 );
 
+const ChartShapeCard: React.FC<{ shape: ChartShape }> = ({ shape }) => (
+  <div className="space-y-4">
+    {/* Primary Shape */}
+    <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-medium">Chart Shape Pattern</CardTitle>
+          <Badge variant="outline" className="border-primary text-primary">
+            {shape.confidence}% confidence
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div>
+          <h3 className="text-2xl font-serif text-foreground">{shape.type}</h3>
+          <p className="text-sm text-muted-foreground">{shape.description}</p>
+        </div>
+        
+        <div className="bg-background/50 p-3 rounded-md">
+          <p className="text-sm text-foreground">{shape.personality}</p>
+        </div>
+
+        {shape.involvedPlanets && shape.involvedPlanets.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {shape.involvedPlanets.filter(p => p !== '|').map(p => (
+              <Badge key={p} variant="secondary" className="text-xs">
+                {getPlanetSymbol(p)} {p}
+              </Badge>
+            ))}
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-3 pt-2">
+          <div>
+            <span className="text-xs text-emerald-500 font-medium">Gift:</span>
+            <p className="text-xs text-muted-foreground">{shape.gift}</p>
+          </div>
+          <div>
+            <span className="text-xs text-amber-500 font-medium">Challenge:</span>
+            <p className="text-xs text-muted-foreground">{shape.challenge}</p>
+          </div>
+        </div>
+
+        {shape.leadPlanet && (
+          <div className="pt-2 border-t border-border/50">
+            <span className="text-xs text-primary font-medium">
+              Lead Planet: {getPlanetSymbol(shape.leadPlanet)} {shape.leadPlanet}
+            </span>
+            <p className="text-xs text-muted-foreground mt-1">{shape.emptyArea}</p>
+          </div>
+        )}
+
+        {/* Deep Teaching */}
+        <div className="pt-2 border-t border-border/50">
+          <span className="text-[10px] uppercase tracking-wider text-primary font-medium">The Deeper Teaching</span>
+          <p className="text-xs text-foreground mt-1 leading-relaxed">{shape.teaching}</p>
+        </div>
+      </CardContent>
+    </Card>
+
+    {/* Runner-ups */}
+    {shape.secondaryShapes && shape.secondaryShapes.length > 0 && (
+      <div className="space-y-2">
+        <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">
+          Also Present in Your Chart ({shape.secondaryShapes.length} additional pattern{shape.secondaryShapes.length > 1 ? 's' : ''})
+        </h4>
+        {shape.secondaryShapes.map((s, i) => (
+          <RunnerUpCard key={s.type} shape={s} rank={i} />
+        ))}
+      </div>
+    )}
+  </div>
+);
 interface QuadrantCellProps {
   label: string;
   houses: string;
