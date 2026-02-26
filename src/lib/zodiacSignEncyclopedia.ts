@@ -37,7 +37,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     mantra: 'I take action',
     affirmation: 'If it can be done, I can do it.',
     shadowMindset: 'Faster is always better.',
-    mnemonic: 'The first spark of the match — quick, bright, gone.',
+    mnemonic: 'The strike of the match — cardinal fire. One quick scratch and the flame leaps to life. It doesn\'t wait. It ignites.',
     superpower: 'Most spontaneous of the signs',
     areasToWorkOn: ['Impatience', 'Impulsivity', 'Listening before acting'],
     essence: [
@@ -62,7 +62,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     mantra: 'I have enough',
     affirmation: 'I deserve beauty, comfort, and stability.',
     shadowMindset: 'Change is dangerous.',
-    mnemonic: 'The ancient oak — deeply rooted, slow-growing, immovable, sheltering.',
+    mnemonic: 'The bedrock — fixed earth. The stone layer beneath the soil that nothing moves, nothing shakes, nothing rushes. It was here before you and will be here after.',
     superpower: 'Most patient and enduring of the signs',
     areasToWorkOn: ['Stubbornness', 'Resistance to change', 'Possessiveness'],
     essence: [
@@ -87,7 +87,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     mantra: 'I communicate',
     affirmation: 'My curiosity is my greatest gift.',
     shadowMindset: 'If I stop moving, I\'ll miss something.',
-    mnemonic: 'The hummingbird — hovering, darting, tasting every flower, never landing for long.',
+    mnemonic: 'The crosswind — mutable air. A breeze that shifts direction mid-gust, carrying pollen from one garden to the next. It pollinates everything it touches.',
     superpower: 'Most versatile and quick-witted of the signs',
     areasToWorkOn: ['Scattered focus', 'Superficiality', 'Nervous restlessness'],
     essence: [
@@ -112,7 +112,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     mantra: 'I feel',
     affirmation: 'My sensitivity is my strength, not my weakness.',
     shadowMindset: 'If I open up, I\'ll be hurt.',
-    mnemonic: 'The tide pool — still on the surface, teeming with life underneath, protected by rocks.',
+    mnemonic: 'The first spring rain — cardinal water. It initiates the thaw, breaks through frozen ground, and coaxes life from the earth. Gentle, persistent, life-giving.',
     superpower: 'Most nurturing and emotionally intelligent of the signs',
     areasToWorkOn: ['Moodiness', 'Over-protectiveness', 'Difficulty letting go of the past'],
     essence: [
@@ -137,7 +137,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     mantra: 'I create',
     affirmation: 'I shine my light so others can find theirs.',
     shadowMindset: 'If I\'m not the center, I don\'t matter.',
-    mnemonic: 'The bonfire at the campsite — everyone gathers around it, warmed and magnetized.',
+    mnemonic: 'The bonfire — fixed fire. Not a spark but a sustained blaze that holds its ground all night. Everyone gathers around it. It doesn\'t chase; it magnetizes.',
     superpower: 'Most generous and radiant of the signs',
     areasToWorkOn: ['Need for validation', 'Pride', 'Drama when ignored'],
     essence: [
@@ -162,7 +162,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     mantra: 'I improve',
     affirmation: 'Good enough IS enough. My worth is not measured by my productivity.',
     shadowMindset: 'If it\'s not perfect, it\'s worthless.',
-    mnemonic: 'The Swiss watch — thousands of tiny parts, perfectly calibrated, silently precise.',
+    mnemonic: 'The sifted soil — mutable earth. Hands running through compost, sorting nutrients from debris, preparing the ground so seeds can actually take root. Quiet, essential labor.',
     superpower: 'Most discerning and service-oriented of the signs',
     areasToWorkOn: ['Perfectionism', 'Self-criticism', 'Analysis paralysis'],
     essence: [
@@ -187,7 +187,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     mantra: 'I balance',
     affirmation: 'I can hold my own truth and still love you.',
     shadowMindset: 'If I disagree, they won\'t love me.',
-    mnemonic: 'The diplomat\'s handshake — elegant, measured, always aware of both sides.',
+    mnemonic: 'The first breath of dialogue — cardinal air. The moment you open your mouth to bridge a divide. It initiates connection, creates space between two people, and insists on fairness.',
     superpower: 'Most aesthetically gifted and fair-minded of the signs',
     areasToWorkOn: ['People-pleasing', 'Indecisiveness', 'Avoiding conflict at all costs'],
     essence: [
@@ -212,7 +212,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     mantra: 'I transform',
     affirmation: 'I can let go and still be whole.',
     shadowMindset: 'Trust no one completely.',
-    mnemonic: 'The volcano — still and silent for years, then erupting with unstoppable, transformative power.',
+    mnemonic: 'The deep well — fixed water. Still on the surface, but the water goes down farther than anyone can see. Drop a stone and you\'ll wait a long time before you hear it hit bottom.',
     superpower: 'Most psychologically penetrating of the signs',
     areasToWorkOn: ['Control', 'Jealousy', 'Holding grudges', 'Secrecy'],
     essence: [
@@ -237,7 +237,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     mantra: 'I explore',
     affirmation: 'The meaning I seek is found in the journey, not the destination.',
     shadowMindset: 'Rules don\'t apply to me.',
-    mnemonic: 'The arrow in flight — aimed high, committed to the arc, trusting it will land somewhere meaningful.',
+    mnemonic: 'The wildfire — mutable fire. Flames that leap from treetop to treetop, spreading in every direction, crossing borders, impossible to contain. It follows the wind wherever meaning leads.',
     superpower: 'Most optimistic and philosophically adventurous of the signs',
     areasToWorkOn: ['Over-promising', 'Tactlessness', 'Commitment phobia'],
     essence: [
@@ -262,7 +262,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     mantra: 'I achieve',
     affirmation: 'I am worthy even when I rest.',
     shadowMindset: 'I must earn everything. Nothing is given.',
-    mnemonic: 'The mountain goat — sure-footed, climbing alone, one ledge at a time, until it reaches the summit.',
+    mnemonic: 'The cornerstone — cardinal earth. The first stone laid in a foundation, precisely placed, upon which the entire cathedral will rise. It initiates structure.',
     superpower: 'Most disciplined and strategically minded of the signs',
     areasToWorkOn: ['Workaholism', 'Emotional suppression', 'Pessimism'],
     essence: [
@@ -287,7 +287,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     mantra: 'I know',
     affirmation: 'Being different is my contribution, not my burden.',
     shadowMindset: 'Emotions are inefficient.',
-    mnemonic: 'The lightning bolt — brilliant, unpredictable, illuminating everything in a flash.',
+    mnemonic: 'The jet stream — fixed air. An invisible current miles above the earth, locked on course, carrying weather systems across continents. You can\'t see it, but it shapes everything.',
     superpower: 'Most innovative and humanitarian of the signs',
     areasToWorkOn: ['Emotional detachment', 'Contrarian tendencies', 'Alienation'],
     essence: [
@@ -312,7 +312,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     mantra: 'I believe',
     affirmation: 'I can be sensitive and strong at the same time.',
     shadowMindset: 'Reality is too painful — I\'d rather escape.',
-    mnemonic: 'The ocean at dawn — boundless, shimmering, holding all life, dissolving all borders.',
+    mnemonic: 'The morning mist — mutable water. It drifts, dissolves borders, softens edges, seeps into everything. You can\'t hold it, but you feel it on your skin. It\'s everywhere and nowhere.',
     superpower: 'Most intuitive and spiritually attuned of the signs',
     areasToWorkOn: ['Escapism', 'Boundary dissolution', 'Victim mentality'],
     essence: [
