@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { Dices, RotateCcw, BookOpen, ChevronDown, ChevronUp, Sparkles, Loader2 } from 'lucide-react';
+import { Dices, RotateCcw, BookOpen, ChevronDown, ChevronUp, Sparkles, Loader2, Send, MessageCircle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import {
   HexagramLine,
@@ -330,6 +330,181 @@ const HexagramKey = () => {
   );
 };
 
+/* ─── Changing Lines Explainer ─── */
+const ChangingLinesExplainer = ({ lines, changingPositions, primary, transformed }: {
+  lines: HexagramLine[];
+  changingPositions: number[];
+  primary: Hexagram;
+  transformed: Hexagram | null;
+}) => {
+  if (changingPositions.length === 0 || !transformed) return null;
+
+  return (
+    <div className="rounded border border-primary/30 bg-primary/5 p-4 space-y-3">
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] uppercase tracking-widest text-primary font-medium">
+          How You Got Two Hexagrams
+        </span>
+      </div>
+      <p className="text-sm text-foreground">
+        When you threw your coins, {changingPositions.length === 1 ? 'one line' : `${changingPositions.length} lines`} came up as <strong>"changing"</strong> — 
+        that means {changingPositions.length === 1 ? 'it' : 'they'} got a 6 (old yin) or 9 (old yang). These are lines that are so extreme they flip to their opposite.
+      </p>
+      <div className="space-y-1.5">
+        {changingPositions.map(pos => {
+          const line = lines[pos - 1];
+          return (
+            <div key={pos} className="text-sm text-foreground flex items-center gap-2">
+              <span className="rounded bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">Line {pos}</span>
+              <span>
+                {line.type === 'yang' 
+                  ? 'Old Yang (9) — solid line that breaks apart → becomes broken' 
+                  : 'Old Yin (6) — broken line that solidifies → becomes solid'}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      <p className="text-sm text-muted-foreground">
+        Your <strong>primary hexagram</strong> ({primary.number}. {primary.name}) shows where you are <em>right now</em>. 
+        After {changingPositions.length === 1 ? 'this line flips' : 'these lines flip'}, you get your <strong>future hexagram</strong> ({transformed.number}. {transformed.name}) — 
+        that's where things are <em>heading</em>.
+      </p>
+    </div>
+  );
+};
+
+/* ─── Follow-Up Chat for No-Question Readings ─── */
+const FollowUpChat = ({ primary, transformed, changingPositions, initialReading }: {
+  primary: Hexagram;
+  transformed: Hexagram | null;
+  changingPositions: number[];
+  initialReading: string;
+}) => {
+  const [messages, setMessages] = useState<{ role: 'user' | 'ai'; content: string }[]>([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const send = async () => {
+    const q = input.trim();
+    if (!q || loading) return;
+    setInput('');
+    setMessages(prev => [...prev, { role: 'user', content: q }]);
+    setLoading(true);
+
+    try {
+      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/interpret-hexagram`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          question: `Context: The user already received a general reading which said: "${initialReading.slice(0, 500)}..."\n\nNow they're asking a follow-up question for clarity: "${q}"`,
+          primaryHexagram: primary,
+          transformedHexagram: transformed,
+          changingLines: changingPositions,
+          style: 'novice',
+        }),
+      });
+
+      if (!resp.ok || !resp.body) throw new Error('Failed');
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let fullText = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let newlineIndex: number;
+        while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
+          let line = buffer.slice(0, newlineIndex);
+          buffer = buffer.slice(newlineIndex + 1);
+          if (line.endsWith('\r')) line = line.slice(0, -1);
+          if (!line.startsWith('data: ')) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]') break;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              fullText += content;
+              setMessages(prev => {
+                const updated = [...prev];
+                const last = updated[updated.length - 1];
+                if (last?.role === 'ai') {
+                  updated[updated.length - 1] = { role: 'ai', content: fullText };
+                } else {
+                  updated.push({ role: 'ai', content: fullText });
+                }
+                return updated;
+              });
+            }
+          } catch { /* partial */ }
+        }
+      }
+    } catch {
+      setMessages(prev => [...prev, { role: 'ai', content: 'Sorry, I couldn\'t process that. Try again.' }]);
+    } finally {
+      setLoading(false);
+      setTimeout(() => scrollRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+    }
+  };
+
+  return (
+    <div className="rounded border border-border bg-card p-4 space-y-3">
+      <div className="flex items-center gap-2">
+        <MessageCircle size={16} className="text-primary" />
+        <span className="text-[10px] uppercase tracking-widest text-primary font-medium">
+          Ask for Clarity
+        </span>
+      </div>
+      <p className="text-sm text-muted-foreground">
+        Want to understand something specific from your reading? Ask a follow-up question and I'll dig deeper.
+      </p>
+
+      {messages.length > 0 && (
+        <div className="space-y-3 max-h-80 overflow-y-auto border-t border-border pt-3">
+          {messages.map((msg, i) => (
+            <div key={i} className={`text-sm ${msg.role === 'user' ? 'text-foreground font-medium' : ''}`}>
+              {msg.role === 'user' ? (
+                <p className="text-foreground italic">"{msg.content}"</p>
+              ) : (
+                <div className="prose prose-sm max-w-none text-foreground dark:prose-invert">
+                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                </div>
+              )}
+            </div>
+          ))}
+          <div ref={scrollRef} />
+        </div>
+      )}
+
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && send()}
+          placeholder="What does the water symbolism mean for me? What should I actually do?"
+          className="flex-1 rounded border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+        />
+        <button
+          onClick={send}
+          disabled={loading || !input.trim()}
+          className="rounded bg-primary px-3 py-2 text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+        >
+          {loading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+        </button>
+      </div>
+    </div>
+  );
+};
+
 /* ─── AI Interpretation Card ─── */
 type ReadingStyle = 'novice' | 'pro';
 
@@ -407,68 +582,82 @@ const AIInterpretationCard = ({ question, primary, transformed, changingPosition
     }
   };
 
+  const hasQuestion = question.trim().length > 0;
+
   return (
-    <div className="rounded border border-primary/40 bg-card p-6 space-y-4">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-2">
-          <Sparkles size={16} className="text-primary" />
-          <span className="text-[10px] uppercase tracking-widest text-primary font-medium">
-            Personal Reading
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex rounded border border-border overflow-hidden">
+    <>
+      <div className="rounded border border-primary/40 bg-card p-6 space-y-4">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-2">
+            <Sparkles size={16} className="text-primary" />
+            <span className="text-[10px] uppercase tracking-widest text-primary font-medium">
+              Personal Reading
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex rounded border border-border overflow-hidden">
+              <button
+                onClick={() => setStyle('novice')}
+                className={`px-3 py-1.5 text-[10px] uppercase tracking-widest transition-colors ${
+                  style === 'novice' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Novice
+              </button>
+              <button
+                onClick={() => setStyle('pro')}
+                className={`px-3 py-1.5 text-[10px] uppercase tracking-widest transition-colors ${
+                  style === 'pro' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Pro
+              </button>
+            </div>
             <button
-              onClick={() => setStyle('novice')}
-              className={`px-3 py-1.5 text-[10px] uppercase tracking-widest transition-colors ${
-                style === 'novice' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-              }`}
+              onClick={generate}
+              disabled={loading}
+              className="flex items-center gap-2 rounded border border-primary px-4 py-2 text-[10px] uppercase tracking-widest text-primary hover:bg-primary hover:text-primary-foreground transition-colors disabled:opacity-50"
             >
-              Novice
-            </button>
-            <button
-              onClick={() => setStyle('pro')}
-              className={`px-3 py-1.5 text-[10px] uppercase tracking-widest transition-colors ${
-                style === 'pro' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Pro
+              {loading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+              {hasGenerated ? 'Re-interpret' : 'Get My Reading'}
             </button>
           </div>
-          <button
-            onClick={generate}
-            disabled={loading}
-            className="flex items-center gap-2 rounded border border-primary px-4 py-2 text-[10px] uppercase tracking-widest text-primary hover:bg-primary hover:text-primary-foreground transition-colors disabled:opacity-50"
-          >
-            {loading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-            {hasGenerated ? 'Re-interpret' : 'Get My Reading'}
-          </button>
         </div>
+
+        {!hasGenerated && !loading && (
+          <p className="text-sm text-muted-foreground">
+            Choose <strong>Novice</strong> for a quick, beginner-friendly answer or <strong>Pro</strong> for a full professional reading, then click "Get My Reading."
+          </p>
+        )}
+
+        {error && (
+          <p className="text-sm text-destructive">{error}</p>
+        )}
+
+        {interpretation && (
+          <div className="prose prose-sm max-w-none text-foreground dark:prose-invert">
+            <ReactMarkdown>{interpretation}</ReactMarkdown>
+          </div>
+        )}
+
+        {loading && !interpretation && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 size={14} className="animate-spin" />
+            Consulting the oracle…
+          </div>
+        )}
       </div>
 
-      {!hasGenerated && !loading && (
-        <p className="text-sm text-muted-foreground">
-          Choose <strong>Novice</strong> for a quick, beginner-friendly answer or <strong>Pro</strong> for a full professional reading, then click "Get My Reading."
-        </p>
+      {/* Show follow-up chat box when no question was asked and reading is done */}
+      {!hasQuestion && hasGenerated && !loading && interpretation && (
+        <FollowUpChat
+          primary={primary}
+          transformed={transformed}
+          changingPositions={changingPositions}
+          initialReading={interpretation}
+        />
       )}
-
-      {error && (
-        <p className="text-sm text-destructive">{error}</p>
-      )}
-
-      {interpretation && (
-        <div className="prose prose-sm max-w-none text-foreground dark:prose-invert">
-          <ReactMarkdown>{interpretation}</ReactMarkdown>
-        </div>
-      )}
-
-      {loading && !interpretation && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 size={14} className="animate-spin" />
-          Consulting the oracle…
-        </div>
-      )}
-    </div>
+    </>
   );
 };
 
@@ -762,6 +951,12 @@ export const HexagramView = () => {
 
               {result.transformed && (
                 <>
+                  <ChangingLinesExplainer
+                    lines={lines}
+                    changingPositions={changingPositions}
+                    primary={result.primary}
+                    transformed={result.transformed}
+                  />
                   <div className="flex items-center gap-3 text-muted-foreground">
                     <div className="flex-1 border-t border-border" />
                     <span className="text-[10px] uppercase tracking-widest">transforms into</span>
