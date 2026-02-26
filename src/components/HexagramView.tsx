@@ -725,8 +725,8 @@ const AIInterpretationCard = ({ question, primary, transformed, changingPosition
         )}
       </div>
 
-      {/* Show follow-up chat box when no question was asked and reading is done */}
-      {!hasQuestion && hasGenerated && !loading && interpretation && (
+      {/* Show follow-up chat box after any reading is done */}
+      {hasGenerated && !loading && interpretation && (
         <FollowUpChat
           primary={primary}
           transformed={transformed}
