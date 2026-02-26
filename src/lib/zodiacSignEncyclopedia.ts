@@ -62,7 +62,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     mantra: 'I have enough',
     affirmation: 'I deserve beauty, comfort, and stability.',
     shadowMindset: 'Change is dangerous.',
-    mnemonic: 'The bedrock — fixed earth. The stone layer beneath the soil that nothing moves, nothing shakes, nothing rushes. It was here before you and will be here after.',
+    mnemonic: 'The roots of an ancient tree — fixed earth. They grip the ground so deep nothing can pull them up. Slow, silent, unmovable. They were growing before you arrived and they\'ll be here long after.',
     superpower: 'Most patient and enduring of the signs',
     areasToWorkOn: ['Stubbornness', 'Resistance to change', 'Possessiveness'],
     essence: [
@@ -262,7 +262,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     mantra: 'I achieve',
     affirmation: 'I am worthy even when I rest.',
     shadowMindset: 'I must earn everything. Nothing is given.',
-    mnemonic: 'The cornerstone — cardinal earth. The first stone laid in a foundation, precisely placed, upon which the entire cathedral will rise. It initiates structure.',
+    mnemonic: 'The first shovel in the ground — cardinal earth. Breaking dirt to lay a foundation. Methodical, deliberate, building something meant to stand for generations.',
     superpower: 'Most disciplined and strategically minded of the signs',
     areasToWorkOn: ['Workaholism', 'Emotional suppression', 'Pessimism'],
     essence: [
@@ -287,7 +287,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     mantra: 'I know',
     affirmation: 'Being different is my contribution, not my burden.',
     shadowMindset: 'Emotions are inefficient.',
-    mnemonic: 'The jet stream — fixed air. An invisible current miles above the earth, locked on course, carrying weather systems across continents. You can\'t see it, but it shapes everything.',
+    mnemonic: 'The wind inside a closed room — fixed air. You can\'t see it, but the pressure is there. It holds steady, hums with electricity, and when it finally moves, it rearranges everything.',
     superpower: 'Most innovative and humanitarian of the signs',
     areasToWorkOn: ['Emotional detachment', 'Contrarian tendencies', 'Alienation'],
     essence: [
