@@ -19,7 +19,7 @@ interface PhaseWheelPanelProps {
 
 // SVG Phase Wheel Component
 const PhaseWheelSVG: React.FC<{ data: PhaseWheelData }> = ({ data }) => {
-  const size = 320;
+  const size = 380;
   const center = size / 2;
   const radius = 130;
   const innerRadius = 40;
@@ -42,7 +42,7 @@ const PhaseWheelSVG: React.FC<{ data: PhaseWheelData }> = ({ data }) => {
   };
 
   return (
-    <svg viewBox={`0 0 ${size} ${size}`} className="w-full max-w-[320px] mx-auto">
+    <svg viewBox={`0 0 ${size} ${size}`} className="w-full max-w-[380px] mx-auto overflow-visible">
       {/* Background circle */}
       <circle cx={center} cy={center} r={radius} fill="none" stroke="currentColor" strokeOpacity={0.1} strokeWidth={1} />
       

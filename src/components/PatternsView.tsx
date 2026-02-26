@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Orbit, History, TrendingUp, AlertTriangle, Star, RefreshCw, Clock, MapPin } from 'lucide-react';
+import { Orbit, History, TrendingUp, AlertTriangle, Star, RefreshCw, Clock, MapPin, User } from 'lucide-react';
 import { PlanetDetailModal } from './PlanetDetailModal';
 import { InteractiveAspectExplorer } from './patterns/InteractiveAspectExplorer';
 import { PhaseWheelPanel } from './chartdecoder/PhaseWheelPanel';
@@ -26,6 +26,8 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { useUserData } from '@/hooks/useUserData';
+import { useNatalChart } from '@/hooks/useNatalChart';
+import { ChartSelector } from './ChartSelector';
 import * as Astronomy from 'astronomy-engine';
 
 interface PatternsViewProps {
@@ -651,6 +653,22 @@ const CurrentPatternsPanel = ({ date }: { date: Date }) => {
 export const PatternsView = ({ year, initialFocusPlanet }: PatternsViewProps) => {
   const [selectedDate] = useState(new Date());
   const { userData } = useUserData();
+  const { userNatalChart, savedCharts } = useNatalChart();
+  const [selectedChartId, setSelectedChartId] = useState<string>('');
+
+  // Set default chart
+  useEffect(() => {
+    if (!selectedChartId && userNatalChart) {
+      setSelectedChartId(userNatalChart.id);
+    }
+  }, [userNatalChart, selectedChartId]);
+
+  // Get selected chart data
+  const selectedChart = useMemo(() => {
+    if (!selectedChartId) return userNatalChart;
+    if (userNatalChart && userNatalChart.id === selectedChartId) return userNatalChart;
+    return savedCharts.find(c => c.id === selectedChartId) || userNatalChart;
+  }, [selectedChartId, userNatalChart, savedCharts]);
   
   // Get current planetary positions for the Phase Wheel
   const planets = useMemo(() => {
@@ -696,15 +714,38 @@ export const PatternsView = ({ year, initialFocusPlanet }: PatternsViewProps) =>
 
   return (
     <div className="max-w-4xl mx-auto space-y-12">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Orbit className="text-primary" size={28} />
-        <h2 className="font-serif text-2xl font-light text-foreground">Astrological Patterns & Cycles</h2>
-      </div>
+      {/* Header + Chart Selector */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <Orbit className="text-primary" size={28} />
+          <h2 className="font-serif text-2xl font-light text-foreground">Astrological Patterns & Cycles</h2>
+        </div>
 
-      <p className="text-muted-foreground">
-        Track retrograde patterns, major planetary conjunctions, and current cosmic configurations.
-      </p>
+        <p className="text-muted-foreground">
+          Track retrograde patterns, major planetary conjunctions, and current cosmic configurations.
+        </p>
+
+        {/* Chart Selector for personalization */}
+        <div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30">
+          <User size={16} className="text-primary flex-shrink-0" />
+          <span className="text-sm text-muted-foreground flex-shrink-0">Personalize for:</span>
+          <div className="flex-1">
+            <ChartSelector
+              userNatalChart={userNatalChart}
+              savedCharts={savedCharts}
+              selectedChartId={selectedChartId}
+              onSelect={setSelectedChartId}
+              label=""
+            />
+          </div>
+        </div>
+
+        {selectedChart && (
+          <p className="text-xs text-muted-foreground italic">
+            Showing transits personalized for {selectedChart.name}'s natal chart. Planetary aspects to natal positions will be highlighted.
+          </p>
+        )}
+      </div>
 
       {/* Live Planetary Positions */}
       <section className="rounded-lg border border-border bg-card p-6">
