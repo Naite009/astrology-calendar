@@ -11,7 +11,7 @@ import { SaturnReturnCalculator } from './SaturnReturnCalculator';
 import { calculateSect } from '@/lib/birthConditions';
 import { calculateSecondaryProgressions, getProgressedMoonInfo } from '@/lib/secondaryProgressions';
 import * as Astronomy from 'astronomy-engine';
-import { format, differenceInDays, differenceInMonths, addYears } from 'date-fns';
+import { format, differenceInDays, differenceInMonths, addYears, addMonths } from 'date-fns';
 
 interface LifeCyclesHubProps {
   chart: NatalChart;
@@ -581,6 +581,80 @@ const ChartLordActivation: React.FC<{ chart: NatalChart; currentDate: Date }> = 
   );
 };
 
+// Journey stages for progressed moon through each sign
+const PROG_MOON_JOURNEY: Record<string, { q1: string; q2: string; q3: string; q4: string }> = {
+  Aries: { q1: "The spark ignites — restless, ready to move. New impulses arrive before you can name them.", q2: "The fire burns steady. You've found what you're fighting for.", q3: "Your courage has been tested. Others see your strength now.", q4: "The warrior prepares to rest. A quieter voice asks what to BUILD. Taurus beckons." },
+  Taurus: { q1: "Everything slows down — and it's a relief. You crave comfort, stability, beauty.", q2: "You're settling in. Financial security matters. Patience comes naturally.", q3: "What you planted is growing. Sensual pleasure feeds your soul deeply.", q4: "The garden is full but curiosity stirs. Gemini energy approaches." },
+  Gemini: { q1: "Your mind wakes up. You want to read everything, talk to everyone.", q2: "Connecting dots, building networks. Writing or teaching may call.", q3: "Information overload possible. Depth vs. breadth becomes the lesson.", q4: "The social butterfly looks homeward, craving something deeper. Cancer stirs." },
+  Cancer: { q1: "You turn inward. Home, family, roots become everything. Old memories surface.", q2: "You're nesting. Nurturing brings deep satisfaction.", q3: "Emotional depth is your superpower. You understand what 'home' really means.", q4: "The cocoon cracks. Something wants to SHINE. Leo approaches." },
+  Leo: { q1: "You step into the light. Romance, creativity, play — your heart demands joy.", q2: "Full bloom. Creative projects flow. You're learning to receive applause.", q3: "Confidence is earned. You know what makes you unique.", q4: "The spotlight dims gently. A quieter voice asks: how can I be useful? Virgo calls." },
+  Virgo: { q1: "Time to organize. Health routines and daily improvements call.", q2: "You've found your rhythm. Being of service brings satisfaction.", q3: "Perfectionism may peak. Be gentle. Your skills are honed.", q4: "You feel the pull toward partnership, balance. Libra approaches." },
+  Libra: { q1: "Relationships become the mirror. Beauty, harmony, and fairness matter.", q2: "Learning the dance of compromise. Aesthetics nourish your soul.", q3: "Diplomatic skills peak. You've learned when to give and hold.", q4: "Surface harmony isn't enough. Something deeper calls. Scorpio's waters pull." },
+  Scorpio: { q1: "The surface breaks. Emotions are raw, powerful, honest.", q2: "You're transforming. Old patterns crumble. Intimacy deepens.", q3: "You've faced darkness and found treasure. Psychological insight is profound.", q4: "The phoenix rises. You crave meaning, adventure. Sagittarius points to the horizon." },
+  Sagittarius: { q1: "Freedom! You need space. Travel, philosophy, higher learning expand your spirit.", q2: "Exploring physically, mentally, spiritually. Beliefs are evolving.", q3: "Wisdom gathered. The quest shifts from outer adventure to inner meaning.", q4: "Adventure winds down. You want to BUILD something. Capricorn's mountain appears." },
+  Capricorn: { q1: "You get serious. Career ambitions crystallize. Ready for hard work.", q2: "You're climbing. Discipline comes naturally. Building a legacy.", q3: "Authority becomes you. People look to you for guidance.", q4: "The summit is visible. Loneliness makes you crave connection. Aquarius calls." },
+  Aquarius: { q1: "You break free. Old rules feel stifling. Community and innovation excite.", q2: "Your tribe finds you. Friendships based on shared ideals matter.", q3: "You've found your cause. You're the visionary now.", q4: "The mind has gone far. Something softer, more spiritual calls. Pisces awaits." },
+  Pisces: { q1: "The veil thins. Dreams are vivid. Intuition is sharp. Boundaries blur.", q2: "Swimming in the collective unconscious. Art and spirituality feed your soul.", q3: "Spiritual depth is profound. Forgiveness becomes the great gift.", q4: "The cycle completes. Old identities release. A new beginning forms. Aries is coming." },
+};
+
+const ProgressedMoonJourneyInline: React.FC<{ moonInfo: any }> = ({ moonInfo }) => {
+  const journey = useMemo(() => {
+    const currentDeg = moonInfo.exactDegree;
+    const monthsPerDegree = 1 / 1.08;
+    const now = new Date();
+    const milestones = [
+      { deg: 0, label: 'Entry — 0°', stage: 'entry' as const },
+      { deg: 7.5, label: 'Quarter — 7°30\'', stage: 'q1' as const },
+      { deg: 15, label: 'Midpoint — 15°', stage: 'q2' as const },
+      { deg: 22.5, label: 'Three-Quarter — 22°30\'', stage: 'q3' as const },
+      { deg: 30, label: `Exit → ${moonInfo.nextSign}`, stage: 'q4' as const },
+    ];
+    return milestones.map(m => {
+      const monthsFromNow = (m.deg - currentDeg) * monthsPerDegree;
+      const date = addMonths(now, Math.round(monthsFromNow));
+      const isPast = m.deg <= currentDeg;
+      const isCurrent = (currentDeg >= (m.deg - 3.75) && currentDeg < (m.deg + 3.75));
+      return { ...m, date, isPast, isCurrent, formattedDate: format(date, 'MMM yyyy') };
+    });
+  }, [moonInfo]);
+
+  const stages = PROG_MOON_JOURNEY[moonInfo.sign];
+  const currentQuarter = moonInfo.exactDegree < 7.5 ? 'q1' : moonInfo.exactDegree < 15 ? 'q2' : moonInfo.exactDegree < 22.5 ? 'q3' : 'q4';
+
+  return (
+    <Collapsible>
+      <CollapsibleTrigger className="text-xs text-primary hover:underline cursor-pointer flex items-center gap-1">
+        <ChevronDown size={12} />
+        Journey through {moonInfo.sign} — Milestones
+      </CollapsibleTrigger>
+      <CollapsibleContent className="mt-2 space-y-3">
+        <div className="relative pl-5 space-y-0">
+          <div className="absolute left-[9px] top-1 bottom-1 w-0.5 bg-border" />
+          {journey.map((m, i) => (
+            <div key={i} className="relative flex items-start gap-2 pb-3">
+              <div className={`absolute left-[-11px] top-1 w-2.5 h-2.5 rounded-full border-2 ${
+                m.isCurrent ? 'bg-primary border-primary ring-2 ring-primary/20' : m.isPast ? 'bg-muted-foreground/50 border-muted-foreground/50' : 'bg-background border-border'
+              }`} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className={`text-xs font-medium ${m.isCurrent ? 'text-primary' : m.isPast ? 'text-muted-foreground' : 'text-foreground'}`}>{m.label}</span>
+                  <span className="text-[10px] text-muted-foreground font-mono">{m.formattedDate}</span>
+                  {m.isCurrent && <Badge variant="default" className="text-[8px] px-1 py-0">NOW</Badge>}
+                </div>
+                {stages && i > 0 && i <= 4 && (
+                  <p className={`text-[11px] mt-0.5 leading-relaxed ${m.stage === currentQuarter ? 'text-foreground' : 'text-muted-foreground'}`}>
+                    {stages[m.stage === 'entry' ? 'q1' : m.stage]}
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+};
+
 // Progressed Moon Card for Overview
 const ProgressedMoonCard: React.FC<{ chart: NatalChart; currentDate: Date }> = ({ chart, currentDate }) => {
   const [progressedMoonInfo, setProgressedMoonInfo] = useState<any>(null);
@@ -642,6 +716,9 @@ const ProgressedMoonCard: React.FC<{ chart: NatalChart; currentDate: Date }> = (
             <p className="text-muted-foreground">{progressedMoonInfo.signMeaning?.clientSummary || progressedMoonInfo.currentExperience}</p>
           </CollapsibleContent>
         </Collapsible>
+
+        {/* Journey Timeline */}
+        <ProgressedMoonJourneyInline moonInfo={progressedMoonInfo} />
       </CardContent>
     </Card>
   );
