@@ -1,10 +1,12 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { PlanetHouseInfo } from '@/lib/narrativeAnalysisEngine';
 import { getElementTeaching } from '@/lib/elementTeachings';
-import { ELEMENT_COLORS, SIGN_POLARITY } from '@/lib/zodiacSignEncyclopedia';
+import { ELEMENT_COLORS, SIGN_POLARITY, SIGN_AXES, SignAxis } from '@/lib/zodiacSignEncyclopedia';
 import { ElementSelfAssessment } from '@/components/sacredscript/ElementSelfAssessment';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown } from 'lucide-react';
 
 interface Props {
   planetHouses: PlanetHouseInfo[];
@@ -126,15 +128,118 @@ export function ElementDistributionCard({ planetHouses }: Props) {
         </div>
       </div>
 
-      {/* Polarity Balance */}
+      {/* Sign Axes — The 6 Polarities */}
       <div className="space-y-3">
         <h3 className="text-sm font-medium flex items-center gap-2">
-          <span>☯</span> Polarity Balance
+          <span>☯</span> The 6 Sign Axes — Oppositions as Partnerships
+        </h3>
+        <p className="text-xs text-muted-foreground">
+          Every sign has an opposite — not an enemy, but a partner. These axes represent spectrums of consciousness you're learning to integrate. When two planets oppose each other across an axis, they activate this tension in your life. If the axis is intercepted (no house cusp falls in those signs), the lesson is delayed — it develops internally before it shows up externally.
+        </p>
+
+        <div className="space-y-2">
+          {SIGN_AXES.map(axis => {
+            // Find planets on each side of this axis
+            const sign1Planets = planetHouses.filter(p => p.sign === axis.sign1).map(p => p.planet);
+            const sign2Planets = planetHouses.filter(p => p.sign === axis.sign2).map(p => p.planet);
+            const hasActivity = sign1Planets.length > 0 || sign2Planets.length > 0;
+            
+            // Check for actual house placements on the natural houses
+            const house1Planets = planetHouses.filter(p => p.house === axis.houses[0]);
+            const house2Planets = planetHouses.filter(p => p.house === axis.houses[1]);
+
+            return (
+              <Collapsible key={axis.sign1}>
+                <CollapsibleTrigger className="w-full">
+                  <div className={`flex items-center justify-between p-3 rounded-lg border ${hasActivity ? 'bg-primary/5 border-primary/20' : 'bg-muted/30 border-border'} hover:bg-primary/10 transition-colors cursor-pointer`}>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">{axis.sign1} ↔ {axis.sign2}</span>
+                      <span className="text-xs text-muted-foreground">· {axis.spectrum}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {hasActivity && (
+                        <Badge variant="secondary" className="text-[10px]">
+                          {sign1Planets.length + sign2Planets.length} planet{sign1Planets.length + sign2Planets.length !== 1 ? 's' : ''}
+                        </Badge>
+                      )}
+                      <ChevronDown className="h-3.5 w-3.5 text-muted-foreground transition-transform" />
+                    </div>
+                  </div>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="p-4 border border-t-0 rounded-b-lg space-y-3">
+                    <p className="text-xs font-medium text-primary">{axis.theme}</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{axis.description}</p>
+
+                    {/* Planets on this axis */}
+                    {hasActivity && (
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="p-2 rounded bg-muted/40">
+                          <p className="text-[10px] font-medium mb-1">{axis.sign1} side</p>
+                          {sign1Planets.length > 0 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {sign1Planets.map(p => (
+                                <span key={p} className="text-[10px] bg-background rounded px-1.5 py-0.5">
+                                  {PLANET_SYMBOLS[p] || ''} {p}
+                                </span>
+                              ))}
+                            </div>
+                          ) : <p className="text-[10px] text-muted-foreground italic">No planets</p>}
+                        </div>
+                        <div className="p-2 rounded bg-muted/40">
+                          <p className="text-[10px] font-medium mb-1">{axis.sign2} side</p>
+                          {sign2Planets.length > 0 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {sign2Planets.map(p => (
+                                <span key={p} className="text-[10px] bg-background rounded px-1.5 py-0.5">
+                                  {PLANET_SYMBOLS[p] || ''} {p}
+                                </span>
+                              ))}
+                            </div>
+                          ) : <p className="text-[10px] text-muted-foreground italic">No planets</p>}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* House context */}
+                    <div className="p-2 rounded bg-muted/20 border border-dashed">
+                      <p className="text-[10px] font-medium mb-1">🏠 Natural Houses: {axis.houses[0]} & {axis.houses[1]}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        In your chart, House {axis.houses[0]} has {house1Planets.length} planet{house1Planets.length !== 1 ? 's' : ''} and House {axis.houses[1]} has {house2Planets.length} planet{house2Planets.length !== 1 ? 's' : ''}.
+                        {house1Planets.length > 0 && house2Planets.length === 0 && ` Energy concentrates in House ${axis.houses[0]} — the ${axis.sign1} side of this axis is emphasized.`}
+                        {house2Planets.length > 0 && house1Planets.length === 0 && ` Energy concentrates in House ${axis.houses[1]} — the ${axis.sign2} side of this axis is emphasized.`}
+                        {house1Planets.length > 0 && house2Planets.length > 0 && ' Both houses are active — you\'re working both sides of this spectrum.'}
+                      </p>
+                    </div>
+
+                    {/* Opposition as aspect */}
+                    <div className="p-2 rounded bg-primary/5 border border-primary/10">
+                      <p className="text-[10px] font-medium text-primary mb-1">☍ As a Planetary Opposition</p>
+                      <p className="text-[10px] text-muted-foreground">{axis.asAspect}</p>
+                    </div>
+
+                    {/* Interception */}
+                    <div className="p-2 rounded bg-accent/30 border border-accent/50">
+                      <p className="text-[10px] font-medium mb-1">🔒 If Intercepted</p>
+                      <p className="text-[10px] text-muted-foreground">{axis.interceptedMeaning}</p>
+                    </div>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Polarity Balance — Yang vs Yin summary */}
+      <div className="space-y-3">
+        <h3 className="text-sm font-medium flex items-center gap-2">
+          <span>⚖</span> Yang / Yin Balance
         </h3>
         <div className="p-4 rounded-lg border bg-muted/30">
           <div className="flex items-center justify-between text-xs mb-2">
-            <span className="font-medium">Yang · Assertive</span>
-            <span className="font-medium">Yin · Receptive</span>
+            <span className="font-medium">Yang · Assertive (Fire + Air)</span>
+            <span className="font-medium">Yin · Receptive (Earth + Water)</span>
           </div>
           <div className="relative h-4 rounded-full bg-muted overflow-hidden">
             <div 
