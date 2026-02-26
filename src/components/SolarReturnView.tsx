@@ -786,7 +786,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
                   const ly = cy - labelR * Math.sin(toRad(midAngle));
                   // Sample ages that land on this house (age mod 12 + 1 = houseNum)
                   const baseAge = houseNum - 1; // age 0 → house 1
-                  const sampleAges = [baseAge, baseAge + 12, baseAge + 24, baseAge + 36, baseAge + 48, baseAge + 60].filter(a => a >= 0 && a <= 90);
+                  const sampleAges = [baseAge, baseAge + 12, baseAge + 24, baseAge + 36, baseAge + 48, baseAge + 60, baseAge + 72, baseAge + 84, baseAge + 96].filter(a => a >= 0 && a <= 100);
 
                   const path = `M ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2} L ${x3} ${y3} A ${rInner} ${rInner} 0 0 0 ${x4} ${y4} Z`;
                   return (
