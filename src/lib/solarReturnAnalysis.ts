@@ -213,6 +213,7 @@ export interface SRStellium {
 
 export interface SRElementBalance {
   fire: number; earth: number; air: number; water: number;
+  firePlanets: string[]; earthPlanets: string[]; airPlanets: string[]; waterPlanets: string[];
   dominant: string;
   missing: string[];
   interpretation: string;
@@ -220,6 +221,7 @@ export interface SRElementBalance {
 
 export interface SRModalityBalance {
   cardinal: number; fixed: number; mutable: number;
+  cardinalPlanets: string[]; fixedPlanets: string[]; mutablePlanets: string[];
   dominant: string;
   interpretation: string;
 }
@@ -757,11 +759,12 @@ export const analyzeSolarReturn = (
     Cancer: 'water', Scorpio: 'water', Pisces: 'water',
   };
   const elBal = { fire: 0, earth: 0, air: 0, water: 0 };
+  const elPlanets: Record<string, string[]> = { fire: [], earth: [], air: [], water: [] };
   for (const planet of PLANETS_CORE) {
     const pos = srChart.planets[planet as keyof typeof srChart.planets];
     if (!pos) continue;
     const el = elementMap[pos.sign];
-    if (el) elBal[el]++;
+    if (el) { elBal[el]++; elPlanets[el].push(planet); }
   }
   const total = elBal.fire + elBal.earth + elBal.air + elBal.water;
   const dominant = (Object.entries(elBal) as [string, number][]).sort((a, b) => b[1] - a[1])[0][0];
@@ -774,6 +777,7 @@ export const analyzeSolarReturn = (
   };
   const elementBalance: SRElementBalance = {
     ...elBal,
+    firePlanets: elPlanets.fire, earthPlanets: elPlanets.earth, airPlanets: elPlanets.air, waterPlanets: elPlanets.water,
     dominant,
     missing,
     interpretation: elementInterpretations[dominant] + (missing.length > 0 ? ` Missing ${missing.join(' and ')} energy — you may need to consciously cultivate ${missing.join('/')} qualities this year.` : ''),
@@ -786,11 +790,12 @@ export const analyzeSolarReturn = (
     Gemini: 'mutable', Virgo: 'mutable', Sagittarius: 'mutable', Pisces: 'mutable',
   };
   const modBal = { cardinal: 0, fixed: 0, mutable: 0 };
+  const modPlanets: Record<string, string[]> = { cardinal: [], fixed: [], mutable: [] };
   for (const planet of PLANETS_CORE) {
     const pos = srChart.planets[planet as keyof typeof srChart.planets];
     if (!pos) continue;
     const mod = modalityMap[pos.sign];
-    if (mod) modBal[mod]++;
+    if (mod) { modBal[mod]++; modPlanets[mod].push(planet); }
   }
   const domMod = (Object.entries(modBal) as [string, number][]).sort((a, b) => b[1] - a[1])[0][0];
   const modalityInterpretations: Record<string, string> = {
@@ -800,6 +805,7 @@ export const analyzeSolarReturn = (
   };
   const modalityBalance: SRModalityBalance = {
     ...modBal,
+    cardinalPlanets: modPlanets.cardinal, fixedPlanets: modPlanets.fixed, mutablePlanets: modPlanets.mutable,
     dominant: domMod,
     interpretation: modalityInterpretations[domMod],
   };
