@@ -30,6 +30,11 @@ export interface ChartShape {
   challenge: string;
   leadPlanet?: string; // For Bucket/Locomotive patterns
   emptyArea?: string; // Description of the empty portion
+  secondaryShape?: {
+    type: ChartShapeType;
+    confidence: number;
+    description: string;
+  };
 }
 
 // ============================================================================
@@ -462,143 +467,187 @@ export function detectChartShape(planets: ChartPlanet[]): ChartShape {
   const significantGaps = countSignificantGaps(positions);
   const stelliums = countStelliums(positions);
   
-  // Check for aspect-based patterns first (higher priority)
+  // Build a list of all candidates with scores
+  const candidates: Array<ChartShape & { _score: number }> = [];
   
-  // GRAND CROSS: Four planets in square formation
+  // --- Aspect-based patterns ---
+  
+  // GRAND CROSS
   const grandCross = detectGrandCross(positions);
   if (grandCross.found) {
-    return {
+    candidates.push({
       type: 'GrandCross',
-      confidence: 90,
+      confidence: 95,
+      _score: 95,
       ...SHAPE_DATA.GrandCross,
       emptyArea: `Your chart contains a Grand Cross involving ${grandCross.planets.join(', ')}—a powerful pattern of dynamic tension.`
-    };
+    });
   }
   
-  // KITE: Grand Trine with opposition
+  // KITE
   const kite = detectKite(positions);
   if (kite.found) {
-    return {
+    candidates.push({
       type: 'Kite',
-      confidence: 88,
+      confidence: 93,
+      _score: 93,
       ...SHAPE_DATA.Kite,
       leadPlanet: kite.apex,
       emptyArea: `Your Grand Trine (${kite.trinePlanets.join(', ')}) has ${kite.apex} as the grounding apex, creating a Kite formation.`
-    };
+    });
   }
   
-  // TRIPOD: Three clusters 120° apart
+  // TRIPOD
   if (detectTripod(positions)) {
-    return {
+    candidates.push({
       type: 'Tripod',
-      confidence: 82,
+      confidence: 88,
+      _score: 88,
       ...SHAPE_DATA.Tripod,
       emptyArea: 'Your planets form three distinct clusters roughly 120° apart—a stable triangular foundation.'
-    };
+    });
   }
   
-  // FAN: Spread from apex
+  // FAN
   const fan = detectFan(positions);
   if (fan.found) {
-    return {
+    candidates.push({
       type: 'Fan',
-      confidence: 78,
+      confidence: 85,
+      _score: 85,
       ...SHAPE_DATA.Fan,
       leadPlanet: fan.apex,
       emptyArea: `Your planets spread in a fan shape with ${fan.apex} as the focal apex.`
-    };
+    });
   }
-  
-  // Determine shape based on span and gaps (original detection)
+
+  // --- Span-based patterns ---
   
   // BUNDLE: Span 120° or less
   if (span <= 130) {
-    return {
+    // Perfect at 90-120°, degrades as it approaches 130
+    const conf = span <= 120 ? 97 : Math.round(97 - (span - 120) * 2);
+    candidates.push({
       type: 'Bundle',
-      confidence: Math.min(95, 100 - (span - 90)),
+      confidence: conf,
+      _score: conf,
       ...SHAPE_DATA.Bundle,
       emptyArea: `Two-thirds of your zodiac (${Math.round(largestGap)}°) is empty—uncharted territory in your life.`
-    };
+    });
   }
   
-  // BOWL: Span 180° or less (but more than bundle)
-  if (span <= 190) {
-    // Check for Bucket (Bowl + handle)
+  // BUCKET: Bowl-like span with an isolated handle planet
+  // Check Bucket before Bowl AND before Locomotive — a bucket can span up to ~220° if the handle is far out
+  if (span >= 140 && span <= 220) {
     const isolatedPlanet = findIsolatedPlanet(positions, { start: emptyStart, end: emptyEnd });
-    
-    if (isolatedPlanet && largestGap > 150) {
-      return {
+    if (isolatedPlanet && largestGap >= 120) {
+      // Confidence based on how clear the handle isolation is
+      const gapQuality = Math.min(1, (largestGap - 120) / 40); // 0-1 scale, perfect at 160+
+      const spanQuality = 1 - Math.abs(180 - span) / 50; // peaks at 180° span
+      const conf = Math.round(75 + 22 * Math.min(gapQuality, spanQuality));
+      candidates.push({
         type: 'Bucket',
-        confidence: 85,
+        confidence: conf,
+        _score: conf,
         ...SHAPE_DATA.Bucket,
         leadPlanet: isolatedPlanet,
         emptyArea: `Your chart has a bowl shape with ${isolatedPlanet} as the "handle"—your point of focused release.`
-      };
+      });
     }
-    
-    return {
-      type: 'Bowl',
-      confidence: Math.min(90, 100 - Math.abs(180 - span)),
-      ...SHAPE_DATA.Bowl,
-      emptyArea: `Half your zodiac (${Math.round(largestGap)}°) is empty—the unlived half of life you gaze toward.`
-    };
   }
   
-  // LOCOMOTIVE: Span ~240° (2/3 of zodiac)
-  if (span >= 200 && span <= 270 && largestGap >= 90 && largestGap <= 160) {
-    return {
+  // BOWL: Span 180° or less
+  if (span >= 130 && span <= 195) {
+    const conf = Math.round(95 - Math.abs(180 - span) * 1.2);
+    candidates.push({
+      type: 'Bowl',
+      confidence: Math.max(60, conf),
+      _score: Math.max(60, conf),
+      ...SHAPE_DATA.Bowl,
+      emptyArea: `Half your zodiac (${Math.round(largestGap)}°) is empty—the unlived half of life you gaze toward.`
+    });
+  }
+  
+  // LOCOMOTIVE: Span ~240°
+  if (span >= 200 && span <= 280 && largestGap >= 80 && largestGap <= 160) {
+    // Perfect at 240° span with 120° gap
+    const spanFit = 1 - Math.abs(240 - span) / 50;
+    const gapFit = 1 - Math.abs(120 - largestGap) / 50;
+    const conf = Math.round(70 + 28 * Math.min(1, (spanFit + gapFit) / 2));
+    candidates.push({
       type: 'Locomotive',
-      confidence: Math.min(85, 100 - Math.abs(240 - span) / 2),
+      confidence: Math.max(60, conf),
+      _score: Math.max(60, conf),
       ...SHAPE_DATA.Locomotive,
       leadPlanet: leadingPlanet,
       emptyArea: `One-third of your zodiac (${Math.round(largestGap)}°) is empty—the void you're always driving toward, with ${leadingPlanet} as your engine.`
-    };
+    });
   }
   
-  // SEESAW: Two significant gaps (two groups opposite)
-  if (significantGaps === 2 && largestGap >= 60 && largestGap <= 150) {
-    return {
+  // SEESAW
+  if (significantGaps >= 2 && largestGap >= 60 && largestGap <= 150) {
+    const conf = Math.round(80 + 15 * Math.min(1, (significantGaps - 1) / 1));
+    candidates.push({
       type: 'Seesaw',
-      confidence: 80,
+      confidence: Math.min(95, conf),
+      _score: Math.min(95, conf),
       ...SHAPE_DATA.Seesaw,
       emptyArea: 'Your planets form two opposing groups, creating a dynamic of polarities and balance-seeking.'
-    };
+    });
   }
   
-  // SPLAY: Irregular clusters (stelliums with gaps)
-  if (stelliums >= 2 || (stelliums >= 1 && significantGaps >= 2)) {
-    return {
+  // SPLAY
+  if (stelliums >= 1) {
+    const conf = stelliums >= 2 ? 85 : (significantGaps >= 2 ? 78 : 65);
+    candidates.push({
       type: 'Splay',
-      confidence: 75,
+      confidence: conf,
+      _score: conf,
       ...SHAPE_DATA.Splay,
       emptyArea: 'Your chart has distinct power centers (stelliums) with irregular spacing—a highly individual pattern.'
-    };
+    });
   }
   
-  // SPLASH: Relatively even distribution
+  // SPLASH
   if (largestGap < 90 && significantGaps <= 1) {
-    return {
+    // Confidence based on how even the distribution is
+    const evenness = 1 - (largestGap / 90);
+    const conf = Math.round(70 + 25 * evenness);
+    candidates.push({
       type: 'Splash',
-      confidence: 70,
+      confidence: conf,
+      _score: conf,
       ...SHAPE_DATA.Splash,
       emptyArea: 'Your planets are scattered across the zodiac—you have access to all areas of life experience.'
-    };
+    });
   }
   
-  // Default to Splay or Unknown for unclear patterns
-  if (stelliums >= 1) {
+  // Sort by confidence
+  candidates.sort((a, b) => b._score - a._score);
+  
+  if (candidates.length === 0) {
     return {
-      type: 'Splay',
-      confidence: 60,
-      ...SHAPE_DATA.Splay
+      type: 'Unknown',
+      confidence: 40,
+      ...SHAPE_DATA.Unknown
     };
   }
   
-  return {
-    type: 'Unknown',
-    confidence: 40,
-    ...SHAPE_DATA.Unknown
-  };
+  // Primary result
+  const primary = candidates[0];
+  const { _score: _, ...result } = primary;
+  
+  // Secondary shape (if exists and is a different type)
+  const secondary = candidates.find(c => c.type !== primary.type);
+  if (secondary) {
+    result.secondaryShape = {
+      type: secondary.type,
+      confidence: secondary.confidence,
+      description: secondary.description,
+    };
+  }
+  
+  return result;
 }
 
 /**

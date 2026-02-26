@@ -141,6 +141,20 @@ const ChartShapeCard: React.FC<{ shape: ChartShape }> = ({ shape }) => (
           <p className="text-xs text-muted-foreground mt-1">{shape.emptyArea}</p>
         </div>
       )}
+
+      {shape.secondaryShape && shape.confidence < 100 && (
+        <div className="pt-2 border-t border-border/50 bg-muted/30 -mx-3 px-3 pb-1 rounded-b-md">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs text-muted-foreground font-medium">Runner-up:</span>
+            <Badge variant="outline" className="text-[10px] border-muted-foreground/30">
+              {shape.secondaryShape.confidence}%
+            </Badge>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            <span className="font-medium text-foreground">{shape.secondaryShape.type}</span> — {shape.secondaryShape.description}
+          </p>
+        </div>
+      )}
     </CardContent>
   </Card>
 );
