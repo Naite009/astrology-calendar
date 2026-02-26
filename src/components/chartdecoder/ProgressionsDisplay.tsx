@@ -2,7 +2,8 @@ import React, { useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Moon, Sun, ArrowRight, Clock, Sparkles, AlertCircle } from 'lucide-react';
+import { Moon, Sun, ArrowRight, Clock, Sparkles, AlertCircle, MapPin } from 'lucide-react';
+import { format, addMonths } from 'date-fns';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { 
   calculateSecondaryProgressions, 
@@ -34,6 +35,165 @@ const SIGN_SYMBOLS: Record<string, string> = {
   Aries: '♈', Taurus: '♉', Gemini: '♊', Cancer: '♋',
   Leo: '♌', Virgo: '♍', Libra: '♎', Scorpio: '♏',
   Sagittarius: '♐', Capricorn: '♑', Aquarius: '♒', Pisces: '♓'
+};
+
+// Journey milestone descriptions for each quarter of a sign
+const JOURNEY_STAGES: Record<string, { q1: string; q2: string; q3: string; q4: string }> = {
+  Aries: {
+    q1: "The spark ignites. You feel restless, impatient, ready to move. New impulses arrive before you can name them. You act first, think later — and that's exactly right for now.",
+    q2: "The fire burns steady. You've found what you're fighting for. Independence feels natural, not reactive. You're learning to assert without apologizing.",
+    q3: "Your courage has been tested. You know what's worth the fight and what isn't. Others start to see your strength. Leadership opportunities appear.",
+    q4: "The warrior prepares to rest. You've claimed your ground. A quieter voice begins to whisper about what you want to BUILD with all this energy. Taurus beckons.",
+  },
+  Taurus: {
+    q1: "After the fire of Aries, everything slows down — and it's a relief. You crave comfort, stability, simplicity. Your body wants rest, good food, beauty.",
+    q2: "You're settling in. Financial security matters more. You're investing — in yourself, your home, your values. Patience comes more naturally now.",
+    q3: "What you've planted is growing. You can see the results of your patience. Sensual pleasure — music, nature, touch — feeds your soul deeply.",
+    q4: "The garden is full but you're getting restless. Curiosity stirs. You've built the foundation; now your mind wants to explore. Gemini energy approaches.",
+  },
+  Gemini: {
+    q1: "Your mind wakes up. Suddenly you want to read everything, talk to everyone, learn something new. Social energy explodes. Short trips feel necessary.",
+    q2: "You're connecting dots, making links, building networks. Writing or teaching may call you. Your nervous system is buzzing — in a good way, mostly.",
+    q3: "Information overload is possible. You've absorbed a lot — now comes the challenge of depth vs. breadth. Focus becomes the lesson.",
+    q4: "The social butterfly looks homeward. All this mental activity has left you craving something deeper, more emotional, more rooted. Cancer energy stirs.",
+  },
+  Cancer: {
+    q1: "You turn inward. Home, family, roots — these become everything. Old memories surface. You may cry more easily, and that's healthy. The shell is building.",
+    q2: "You're nesting. Home improvements, family connections, cooking, nurturing — these bring deep satisfaction. Your inner mother/father activates.",
+    q3: "Emotional depth has become your superpower. You understand what 'home' really means — not just a place but a feeling. Ancestry may call to you.",
+    q4: "The cocoon begins to crack. You've done the deep emotional work; now something in you wants to SHINE. Creativity stirs. Leo approaches.",
+  },
+  Leo: {
+    q1: "You step into the light. After Cancer's inward journey, you need to be SEEN. Romance, creativity, play — your heart demands joy.",
+    q2: "You're in full bloom. Creative projects flow. Romance thrives. Children (your own or your inner child) bring delight. You're learning to receive applause.",
+    q3: "Your confidence is earned now. You know what makes you unique and you're no longer shy about it. Generosity flows naturally from fullness.",
+    q4: "The spotlight dims gently. You've had your season of joy; now a quieter voice asks: how can I be USEFUL? Virgo's practical wisdom calls.",
+  },
+  Virgo: {
+    q1: "The party's over and you're organizing the cleanup — and surprisingly, it feels good. Health routines, work habits, and daily improvements call to you.",
+    q2: "You've found your rhythm. Being of service brings deep satisfaction. Your analytical mind is sharp. You notice what needs fixing — and you fix it.",
+    q3: "Perfectionism may peak. Be gentle with yourself. The gift of Virgo is discernment, not self-criticism. Your skills are honed and others notice.",
+    q4: "You've improved everything you can on your own. Now you feel the pull toward PARTNERSHIP, toward balance, toward another person. Libra approaches.",
+  },
+  Libra: {
+    q1: "Relationships become the mirror. After Virgo's self-improvement, you need someone to share it with. Beauty, harmony, and fairness matter deeply.",
+    q2: "You're learning the dance of compromise. Partnership skills deepen. Art, design, and aesthetics nourish your soul. You see beauty everywhere.",
+    q3: "The scales tip and rebalance. You've learned when to give and when to hold. Justice feels personal. Your diplomatic skills are at their peak.",
+    q4: "Surface harmony isn't enough anymore. Something deeper calls — intensity, truth, transformation. Scorpio's waters begin to pull you under.",
+  },
+  Scorpio: {
+    q1: "The surface breaks. After Libra's lightness, you plunge into depth. Emotions are raw, powerful, and honest. Power dynamics reveal themselves.",
+    q2: "You're transforming. Old emotional patterns die — literally crumbling. Intimacy deepens. Trust becomes the central question. Therapy is powerful now.",
+    q3: "You've faced the darkness and found treasure there. Psychological insight is profound. You can see through masks. Your power comes from authenticity.",
+    q4: "The phoenix rises. The heaviness lifts. You crave MEANING, adventure, philosophy. Sagittarius' arrow points toward the horizon.",
+  },
+  Sagittarius: {
+    q1: "Freedom! After Scorpio's intensity, you need SPACE. Travel, philosophy, higher learning — your spirit expands. Optimism returns like sunlight.",
+    q2: "You're exploring — physically, mentally, spiritually. Foreign cultures or ideas excite you. Teaching or publishing may call. Your beliefs are evolving.",
+    q3: "You've seen enough to have wisdom. The quest shifts from outer adventure to inner meaning. Faith is tested and deepened. You become the teacher.",
+    q4: "The adventure winds down. You've gathered wisdom; now you want to BUILD something with it. Ambition stirs. Capricorn's mountain appears on the horizon.",
+  },
+  Capricorn: {
+    q1: "You get serious. After Sagittarius' wandering, you need STRUCTURE. Career ambitions crystallize. You're ready to do the hard work.",
+    q2: "You're climbing. Discipline comes naturally. Professional achievements bring deep satisfaction. You're building a legacy, brick by brick.",
+    q3: "Authority becomes you. People look to you for guidance. The weight of responsibility is real but you carry it with dignity. Maturity is your gift.",
+    q4: "The summit is reached or at least visible. But loneliness at the top makes you crave CONNECTION — not professional, but humanitarian. Aquarius calls.",
+  },
+  Aquarius: {
+    q1: "You break free. After Capricorn's structure, you need INNOVATION. Old rules feel stifling. Community, technology, and progressive ideas excite you.",
+    q2: "Your tribe finds you. Friendships based on shared ideals matter more than status. You're thinking about the future — for everyone, not just yourself.",
+    q3: "You've found your cause. Humanitarian impulses are strong. You're the visionary now — seeing what others can't. Detachment is both gift and challenge.",
+    q4: "The mind has gone as far as it can. Something softer, more spiritual, more surrendered calls from the deep. Pisces' ocean awaits.",
+  },
+  Pisces: {
+    q1: "The veil thins. After Aquarius' mental energy, you dissolve into feeling. Dreams are vivid. Intuition is sharp. Boundaries blur — beautifully and dangerously.",
+    q2: "You're swimming in the collective unconscious. Art, music, and spirituality feed your soul like nothing else. Compassion overflows. You feel everything.",
+    q3: "Spiritual depth is profound. You may need solitude to process the ocean of feelings. Forgiveness — of self and others — becomes the great gift.",
+    q4: "The cycle completes. You're releasing everything — old identities, old wounds, old stories. The seed of a completely new beginning forms in the darkness. Aries is coming.",
+  },
+};
+
+// Progressed Moon Journey Timeline Component
+const ProgressedMoonJourney: React.FC<{ moonInfo: ProgressedMoonInfo }> = ({ moonInfo }) => {
+  const journey = useMemo(() => {
+    const currentDeg = moonInfo.exactDegree;
+    const monthsPerDegree = 1 / 1.08;
+    const now = new Date();
+    
+    const milestones = [
+      { deg: 0, label: 'Entry — 0°', stage: 'entry' as const },
+      { deg: 7.5, label: 'Quarter — 7°30\'', stage: 'q1' as const },
+      { deg: 15, label: 'Midpoint — 15°', stage: 'q2' as const },
+      { deg: 22.5, label: 'Three-Quarter — 22°30\'', stage: 'q3' as const },
+      { deg: 30, label: 'Exit → ' + moonInfo.nextSign, stage: 'q4' as const },
+    ];
+    
+    return milestones.map(m => {
+      const monthsFromNow = (m.deg - currentDeg) * monthsPerDegree;
+      const date = addMonths(now, Math.round(monthsFromNow));
+      const isPast = m.deg <= currentDeg;
+      const isCurrent = (currentDeg >= (m.deg - 3.75) && currentDeg < (m.deg + 3.75));
+      
+      return { ...m, date, isPast, isCurrent, formattedDate: format(date, 'MMM yyyy') };
+    });
+  }, [moonInfo]);
+
+  const stages = JOURNEY_STAGES[moonInfo.sign];
+  const currentQuarter = moonInfo.exactDegree < 7.5 ? 'q1' 
+    : moonInfo.exactDegree < 15 ? 'q2' 
+    : moonInfo.exactDegree < 22.5 ? 'q3' 
+    : 'q4';
+
+  return (
+    <div className="space-y-4">
+      <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+        <MapPin size={14} />
+        Your Journey Through {moonInfo.sign} — Timeline
+      </h4>
+      
+      <div className="relative pl-6 space-y-0">
+        <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-border" />
+        
+        {journey.map((milestone, i) => (
+          <div key={i} className="relative flex items-start gap-3 pb-4">
+            <div className={`absolute left-[-13px] top-1.5 w-3 h-3 rounded-full border-2 ${
+              milestone.isCurrent 
+                ? 'bg-primary border-primary ring-4 ring-primary/20' 
+                : milestone.isPast 
+                  ? 'bg-muted-foreground/50 border-muted-foreground/50' 
+                  : 'bg-background border-border'
+            }`} />
+            
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className={`text-sm font-medium ${milestone.isCurrent ? 'text-primary' : milestone.isPast ? 'text-muted-foreground' : 'text-foreground'}`}>
+                  {milestone.label}
+                </span>
+                <span className="text-xs text-muted-foreground font-mono">{milestone.formattedDate}</span>
+                {milestone.isCurrent && <Badge variant="default" className="text-[9px]">YOU ARE HERE</Badge>}
+                {milestone.isPast && !milestone.isCurrent && <Badge variant="secondary" className="text-[9px]">Complete</Badge>}
+              </div>
+              
+              {stages && i > 0 && i <= 4 && (
+                <p className={`text-xs mt-1 leading-relaxed ${milestone.stage === currentQuarter ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  {stages[milestone.stage === 'entry' ? 'q1' : milestone.stage]}
+                </p>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {stages && (
+        <div className="bg-primary/5 border border-primary/20 p-4 rounded-md">
+          <h5 className="text-xs font-medium text-primary uppercase tracking-wide mb-2">
+            Where You Are Now — {Math.floor(moonInfo.exactDegree)}° {moonInfo.sign}
+          </h5>
+          <p className="text-sm leading-relaxed">{stages[currentQuarter]}</p>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export const ProgressionsDisplay: React.FC<ProgressionsDisplayProps> = ({
@@ -184,7 +344,9 @@ export const ProgressionsDisplay: React.FC<ProgressionsDisplayProps> = ({
               </div>
             )}
 
-            {/* Current House Activation — WITH CLIENT FEEL */}
+            {/* ═══ JOURNEY TIMELINE — Milestone dates through this sign ═══ */}
+            <Separator />
+            <ProgressedMoonJourney moonInfo={progressedMoonInfo} />
             {progressedMoonInfo.house && progressedMoonInfo.houseMeaning && (
               <>
                 <Separator />
