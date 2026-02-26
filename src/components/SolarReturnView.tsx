@@ -1021,15 +1021,22 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
           </h4>
           <div className="grid grid-cols-4 gap-2 mb-3">
             {[
-              { el: 'Fire', val: analysis.elementBalance.fire, icon: '🔥' },
-              { el: 'Earth', val: analysis.elementBalance.earth, icon: '🌍' },
-              { el: 'Air', val: analysis.elementBalance.air, icon: '💨' },
-              { el: 'Water', val: analysis.elementBalance.water, icon: '💧' },
-            ].map(({ el, val, icon }) => (
+              { el: 'Fire', val: analysis.elementBalance.fire, icon: '🔥', planets: analysis.elementBalance.firePlanets },
+              { el: 'Earth', val: analysis.elementBalance.earth, icon: '🌍', planets: analysis.elementBalance.earthPlanets },
+              { el: 'Air', val: analysis.elementBalance.air, icon: '💨', planets: analysis.elementBalance.airPlanets },
+              { el: 'Water', val: analysis.elementBalance.water, icon: '💧', planets: analysis.elementBalance.waterPlanets },
+            ].map(({ el, val, icon, planets }) => (
               <div key={el} className={`text-center p-2 rounded-sm ${el.toLowerCase() === analysis.elementBalance.dominant ? 'bg-primary/10 border border-primary/20' : 'bg-secondary/30'}`}>
                 <span className="text-lg">{icon}</span>
-                <p className="text-xs font-medium text-foreground">{val}</p>
-                <p className="text-[10px] text-muted-foreground">{el}</p>
+                <p className="text-sm font-medium text-foreground">{val}</p>
+                <p className="text-[10px] text-muted-foreground mb-1">{el}</p>
+                {planets.length > 0 && (
+                  <div className="flex flex-wrap justify-center gap-0.5">
+                    {planets.map(p => (
+                      <span key={p} className="text-[10px] text-muted-foreground" title={p}>{PLANET_SYMBOLS[p]}</span>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -1041,13 +1048,20 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
           </h4>
           <div className="grid grid-cols-3 gap-2 mb-3">
             {[
-              { mod: 'Cardinal', val: analysis.modalityBalance.cardinal },
-              { mod: 'Fixed', val: analysis.modalityBalance.fixed },
-              { mod: 'Mutable', val: analysis.modalityBalance.mutable },
-            ].map(({ mod, val }) => (
+              { mod: 'Cardinal', val: analysis.modalityBalance.cardinal, planets: analysis.modalityBalance.cardinalPlanets },
+              { mod: 'Fixed', val: analysis.modalityBalance.fixed, planets: analysis.modalityBalance.fixedPlanets },
+              { mod: 'Mutable', val: analysis.modalityBalance.mutable, planets: analysis.modalityBalance.mutablePlanets },
+            ].map(({ mod, val, planets }) => (
               <div key={mod} className={`text-center p-2 rounded-sm ${mod.toLowerCase() === analysis.modalityBalance.dominant ? 'bg-primary/10 border border-primary/20' : 'bg-secondary/30'}`}>
                 <p className="text-sm font-medium text-foreground">{val}</p>
-                <p className="text-[10px] text-muted-foreground">{mod}</p>
+                <p className="text-[10px] text-muted-foreground mb-1">{mod}</p>
+                {planets.length > 0 && (
+                  <div className="flex flex-wrap justify-center gap-0.5">
+                    {planets.map(p => (
+                      <span key={p} className="text-[10px] text-muted-foreground" title={p}>{PLANET_SYMBOLS[p]}</span>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
