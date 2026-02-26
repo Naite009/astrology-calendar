@@ -127,6 +127,11 @@ export function ZodiacSignExplorer() {
               <span className="text-2xl block group-hover:scale-110 transition-transform">{sign.symbol}</span>
               <span className="text-xs font-medium block mt-1">{sign.name}</span>
               <span className={`text-[10px] block ${ec.text}`}>{sign.element}</span>
+              <div className="mt-1 flex flex-wrap justify-center gap-0.5">
+                {sign.keywords.slice(0, 2).map((kw, i) => (
+                  <span key={i} className="text-[8px] text-muted-foreground">{kw}{i === 0 ? ' ·' : ''}</span>
+                ))}
+              </div>
             </button>
           );
         })}

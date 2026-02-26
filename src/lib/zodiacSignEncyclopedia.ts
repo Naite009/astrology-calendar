@@ -20,7 +20,77 @@ export interface ZodiacSignData {
   essence: string[];     // multi-paragraph
   needs: string[];
   creativeExpression: string;
+  keywords: string[];    // 3-5 core keywords
 }
+
+// The 6 sign axes — oppositions that form a spectrum of consciousness
+export interface SignAxis {
+  sign1: string;
+  sign2: string;
+  theme: string;
+  spectrum: string;       // e.g. "Self ↔ Other"
+  description: string;
+  asAspect: string;       // what it means when planets oppose on this axis
+  interceptedMeaning: string; // what it means if this axis is intercepted
+  houses: [number, number]; // natural house rulers
+}
+
+export const SIGN_AXES: SignAxis[] = [
+  {
+    sign1: 'Aries', sign2: 'Libra',
+    theme: 'Identity vs. Relationship',
+    spectrum: 'Self ↔ Other',
+    description: 'The Aries-Libra axis asks: How do I assert myself AND honor others? Aries acts alone; Libra seeks partnership. Mastery means doing both — leading without steamrolling, compromising without disappearing.',
+    asAspect: 'Planets opposing across Aries-Libra create tension between independence and cooperation. You may feel pulled between "my way" and "our way." The growth is learning that your needs and others\' needs aren\'t mutually exclusive.',
+    interceptedMeaning: 'When Aries-Libra is intercepted, the ability to assert yourself or truly partner feels locked. You may over-accommodate (intercepted Aries) or struggle to compromise (intercepted Libra). This energy develops later in life, often after a defining relationship teaches the lesson.',
+    houses: [1, 7],
+  },
+  {
+    sign1: 'Taurus', sign2: 'Scorpio',
+    theme: 'Security vs. Transformation',
+    spectrum: 'Mine ↔ Ours',
+    description: 'Taurus holds on; Scorpio lets go. This axis governs what you own vs. what you share, comfort vs. crisis, building vs. destroying to rebuild. Both signs are fixed — this axis doesn\'t move easily.',
+    asAspect: 'Planets opposing across Taurus-Scorpio pull between stability and upheaval. You want safety AND depth. The tension is: clinging to what\'s comfortable blocks transformation, but constant crisis prevents you from enjoying what you\'ve built.',
+    interceptedMeaning: 'Intercepted Taurus-Scorpio makes it hard to feel truly secure or truly surrender. You may hoard resources (intercepted Scorpio) or avoid building anything permanent (intercepted Taurus). Trust — in yourself and others — develops slowly.',
+    houses: [2, 8],
+  },
+  {
+    sign1: 'Gemini', sign2: 'Sagittarius',
+    theme: 'Information vs. Meaning',
+    spectrum: 'Facts ↔ Wisdom',
+    description: 'Gemini collects data; Sagittarius finds the story. This axis asks: Do you know a lot about a little, or a little about a lot? The integration is becoming someone who can gather information AND see the big picture.',
+    asAspect: 'Planets opposing across Gemini-Sagittarius create tension between details and philosophy. You may swing between overthinking small things and making sweeping generalizations. Growth comes from honoring both the footnote and the thesis.',
+    interceptedMeaning: 'Intercepted Gemini-Sagittarius can make it hard to speak your truth or find your belief system. Communication may feel stilted (intercepted Gemini) or conviction feels borrowed (intercepted Sagittarius). Travel, teaching, or writing often unlocks this axis.',
+    houses: [3, 9],
+  },
+  {
+    sign1: 'Cancer', sign2: 'Capricorn',
+    theme: 'Home vs. Career',
+    spectrum: 'Private ↔ Public',
+    description: 'Cancer nurtures the inner world; Capricorn builds the outer one. This is the parent axis — the mother (Cancer) and the father (Capricorn). It asks: Can you be soft at home and strong in the world?',
+    asAspect: 'Planets opposing across Cancer-Capricorn pull between emotional needs and ambition. You feel guilty working when family needs you, and restless at home when you could be building. Integration means redefining success to include both.',
+    interceptedMeaning: 'Intercepted Cancer-Capricorn often shows up as confusion about where you belong — neither fully at home nor fully in your career. Parental dynamics may feel unresolved. This axis unlocks when you parent yourself.',
+    houses: [4, 10],
+  },
+  {
+    sign1: 'Leo', sign2: 'Aquarius',
+    theme: 'Self-Expression vs. Collective',
+    spectrum: 'Individual ↔ Community',
+    description: 'Leo shines as "me"; Aquarius serves as "we." This axis asks: Can you stand out AND belong? Leo creates from the heart; Aquarius innovates for humanity. Both are fixed — neither bends easily.',
+    asAspect: 'Planets opposing across Leo-Aquarius create tension between personal glory and group contribution. You want to be special AND equal. Growth is realizing your unique gifts are your contribution to the collective.',
+    interceptedMeaning: 'Intercepted Leo-Aquarius makes it hard to feel seen for who you truly are. You may perform for approval (intercepted Aquarius) or hide your individuality in groups (intercepted Leo). Creative risk-taking unlocks this axis.',
+    houses: [5, 11],
+  },
+  {
+    sign1: 'Virgo', sign2: 'Pisces',
+    theme: 'Order vs. Surrender',
+    spectrum: 'Analyze ↔ Trust',
+    description: 'Virgo sorts reality into categories; Pisces dissolves all categories. This is the healing axis — practical medicine (Virgo) meets spiritual faith (Pisces). It asks: Can you plan AND let go?',
+    asAspect: 'Planets opposing across Virgo-Pisces pull between perfectionism and acceptance. You want everything precise AND flowing. The tension is: too much Virgo creates anxiety; too much Pisces creates chaos. Integration is "organized compassion."',
+    interceptedMeaning: 'Intercepted Virgo-Pisces can make it hard to trust your own competence or your own intuition. You may overwork to compensate (intercepted Pisces) or escape into fantasy (intercepted Virgo). Service work often activates this axis.',
+    houses: [6, 12],
+  },
+];
 
 export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
   {
@@ -47,6 +117,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     ],
     needs: ['Independence', 'Physical outlets', 'New challenges', 'To be first', 'Directness from others'],
     creativeExpression: 'Aries creates in bursts — brilliant starts, bold strokes. They are the idea generators, the first drafts, the daring prototypes. Their art is kinetic, competitive, and alive with urgency.',
+    keywords: ['Courage', 'Initiative', 'Independence', 'Impulse'],
   },
   {
     name: 'Taurus',
@@ -72,6 +143,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     ],
     needs: ['Security', 'Physical comfort', 'Routine', 'Financial stability', 'Sensory pleasure'],
     creativeExpression: 'Taurus creates through craft — pottery, cooking, gardening, music. Their art is tangible, sensual, and built to last. They are the masters of form and texture.',
+    keywords: ['Stability', 'Sensuality', 'Patience', 'Endurance'],
   },
   {
     name: 'Gemini',
@@ -97,6 +169,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     ],
     needs: ['Mental stimulation', 'Variety', 'Social connection', 'Information', 'Freedom to change'],
     creativeExpression: 'Gemini creates through language — writing, comedy, podcasting, teaching. Their art is verbal, clever, and often arrives in multiple formats simultaneously.',
+    keywords: ['Curiosity', 'Versatility', 'Communication', 'Duality'],
   },
   {
     name: 'Cancer',
@@ -122,6 +195,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     ],
     needs: ['Emotional safety', 'Home', 'Family connection', 'Permission to feel', 'Loyalty'],
     creativeExpression: 'Cancer creates through atmosphere — interior design, cooking, photography, memoir. Their art is intimate, nostalgic, and designed to make others feel held.',
+    keywords: ['Nurturing', 'Intuition', 'Protection', 'Memory'],
   },
   {
     name: 'Leo',
@@ -147,6 +221,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     ],
     needs: ['Recognition', 'Creative outlets', 'To be seen', 'Applause (literal or metaphorical)', 'Loyal subjects'],
     creativeExpression: 'Leo creates through performance — acting, directing, fashion, event planning. Their art is dramatic, warm, and designed to be witnessed and applauded.',
+    keywords: ['Creativity', 'Generosity', 'Radiance', 'Pride'],
   },
   {
     name: 'Virgo',
@@ -172,6 +247,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     ],
     needs: ['Order', 'Useful work', 'To feel helpful', 'Systems', 'Quiet appreciation'],
     creativeExpression: 'Virgo creates through refinement — editing, herbalism, craftsmanship, coding. Their art is in the details others miss and the systems that run invisibly.',
+    keywords: ['Precision', 'Service', 'Analysis', 'Refinement'],
   },
   {
     name: 'Libra',
@@ -197,6 +273,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     ],
     needs: ['Partnership', 'Beauty', 'Fairness', 'Harmony', 'Intellectual stimulation'],
     creativeExpression: 'Libra creates through design — fashion, interior design, law, curation. Their art is elegant, balanced, and always considers how others will receive it.',
+    keywords: ['Harmony', 'Partnership', 'Beauty', 'Diplomacy'],
   },
   {
     name: 'Scorpio',
@@ -222,6 +299,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     ],
     needs: ['Depth', 'Truth', 'Emotional intimacy', 'Power over self', 'Privacy'],
     creativeExpression: 'Scorpio creates through intensity — psychology, surgery, investigation, taboo art. Their work goes where others are afraid to look.',
+    keywords: ['Depth', 'Transformation', 'Intensity', 'Power'],
   },
   {
     name: 'Sagittarius',
@@ -247,6 +325,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     ],
     needs: ['Freedom', 'Adventure', 'Meaning', 'New horizons', 'Big-picture conversations'],
     creativeExpression: 'Sagittarius creates through teaching — philosophy, travel writing, documentary, comedy. Their art expands horizons and makes people laugh at the absurdity of being human.',
+    keywords: ['Freedom', 'Optimism', 'Philosophy', 'Adventure'],
   },
   {
     name: 'Capricorn',
@@ -272,6 +351,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     ],
     needs: ['Structure', 'Achievement', 'Respect', 'Legacy', 'Solitude for recharging'],
     creativeExpression: 'Capricorn creates through mastery — architecture, business, classical music, strategic planning. Their art is built to endure and earns respect through craft.',
+    keywords: ['Discipline', 'Ambition', 'Structure', 'Legacy'],
   },
   {
     name: 'Aquarius',
@@ -297,6 +377,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     ],
     needs: ['Intellectual freedom', 'Community of like-minds', 'Space to be eccentric', 'Causes to champion', 'Independence within connection'],
     creativeExpression: 'Aquarius creates through innovation — technology, social activism, avant-garde art, community organizing. Their work disrupts the status quo.',
+    keywords: ['Innovation', 'Rebellion', 'Humanity', 'Vision'],
   },
   {
     name: 'Pisces',
@@ -322,6 +403,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     ],
     needs: ['Solitude', 'Creative/spiritual practice', 'Permission to feel deeply', 'Time near water', 'Boundaries (even though they resist them)'],
     creativeExpression: 'Pisces creates through channeling — music, film, poetry, healing arts. Their work arrives from somewhere beyond the rational mind and touches people in places words cannot reach.',
+    keywords: ['Compassion', 'Intuition', 'Mysticism', 'Surrender'],
   },
 ];
 
