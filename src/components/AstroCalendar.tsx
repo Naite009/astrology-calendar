@@ -43,10 +43,11 @@ import { HexagramView } from "./HexagramView";
 import { SolarReturnView } from "./SolarReturnView";
 import { MercuryRetrogradeGuide } from "./MercuryRetrogradeGuide";
 import { MoonPhaseEncyclopedia } from "./MoonPhaseEncyclopedia";
+import { FoundationsView } from "./FoundationsView";
 
 
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "mercury-rx" | "moon-encyclopedia";
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "mercury-rx" | "moon-encyclopedia" | "foundations";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -196,6 +197,9 @@ export const AstroCalendar = () => {
     if (viewMode === "moon-encyclopedia") {
       return "Moon Phase Encyclopedia";
     }
+    if (viewMode === "foundations") {
+      return "Foundations";
+    }
     if (viewMode === "moon-phases") {
       return `${currentDate.getFullYear()} Moon Phases`;
     }
@@ -308,6 +312,16 @@ export const AstroCalendar = () => {
               >
                 <Book size={14} />
                 Guide
+              </button>
+              <button
+                onClick={() => setViewMode("foundations")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "foundations"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                ✦ Foundations
               </button>
               <button
                 onClick={() => setViewMode("charts")}
@@ -916,6 +930,13 @@ export const AstroCalendar = () => {
 
         {viewMode === "moon-encyclopedia" && (
           <MoonPhaseEncyclopedia
+            userNatalChart={userNatalChart}
+            savedCharts={savedCharts}
+          />
+        )}
+
+        {viewMode === "foundations" && (
+          <FoundationsView
             userNatalChart={userNatalChart}
             savedCharts={savedCharts}
           />
