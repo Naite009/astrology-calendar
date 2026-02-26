@@ -957,21 +957,59 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
 
       {/* Stelliums */}
       {analysis.stelliums.length > 0 && (
-        <div className="border border-primary/20 rounded-sm p-5 bg-card">
-          <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
-            <Layers size={14} className="text-primary" /> Stelliums — Concentrated Energy
-          </h4>
-          <div className="space-y-3">
-            {analysis.stelliums.map((s, i) => (
-              <div key={i} className="bg-secondary/30 rounded-sm p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-sm font-medium text-foreground">{s.planets.length} planets in {s.location}</span>
-                  <span className="text-[10px] text-muted-foreground">({s.planets.join(', ')})</span>
-                </div>
-                <p className="text-xs text-muted-foreground">{s.interpretation}</p>
-              </div>
-            ))}
+        <div className="border border-primary/20 rounded-sm p-5 bg-card space-y-4">
+          <div>
+            <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 flex items-center gap-2">
+              <Layers size={14} className="text-primary" /> Stelliums — Concentrated Energy
+            </h4>
+            <p className="text-xs text-muted-foreground">A stellium requires 3+ true planets (Sun through Pluto) in the same sign or house. Asteroids and points do not count toward a stellium but are noted when present.</p>
           </div>
+          {analysis.stelliums.map((s, i) => (
+            <div key={i} className="border border-border rounded-sm p-4 bg-card space-y-3">
+              {/* Header */}
+              <div>
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <span className="text-base font-serif text-foreground">{s.planets.length}-Planet Stellium in {s.location}</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {s.planets.map(p => (
+                    <span key={p} className="px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-sm font-medium">
+                      {PLANET_SYMBOLS[p]} {p}
+                    </span>
+                  ))}
+                  {s.extras.length > 0 && (
+                    <>
+                      <span className="text-[10px] text-muted-foreground self-center">also present:</span>
+                      {s.extras.map(e => (
+                        <span key={e} className="px-2 py-0.5 bg-muted text-muted-foreground text-xs rounded-sm">
+                          {PLANET_SYMBOLS[e]} {e}
+                        </span>
+                      ))}
+                    </>
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed">{s.interpretation}</p>
+              </div>
+
+              {/* Sign meaning (for sign stelliums) */}
+              {s.signMeaning && (
+                <div className="bg-secondary/40 rounded-sm p-3">
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">What {s.location} Dominance Means For Your Year</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{s.signMeaning}</p>
+                </div>
+              )}
+
+              {/* Blend meaning — what THIS combination of planets means */}
+              {s.blendMeaning && (
+                <div className="bg-primary/5 rounded-sm p-3">
+                  <p className="text-[10px] uppercase tracking-widest text-primary mb-1">This Specific Combination</p>
+                  {s.blendMeaning.split('\n\n').map((para, j) => (
+                    <p key={j} className="text-sm text-muted-foreground leading-relaxed mb-2 last:mb-0">{para}</p>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       )}
 

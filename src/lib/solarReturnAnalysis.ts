@@ -205,7 +205,10 @@ export interface SRStellium {
   location: string;
   locationType: 'sign' | 'house';
   planets: string[];
+  extras: string[]; // non-planet bodies also in this sign/house
   interpretation: string;
+  signMeaning: string;
+  blendMeaning: string;
 }
 
 export interface SRElementBalance {
@@ -305,6 +308,101 @@ const aspectMeaning = (p1: string, p2: string, type: string): string => {
 const internalAspectMeaning = (p1: string, p2: string, type: string): string => {
   const action = type === 'Conjunction' ? 'unites with' : type === 'Opposition' ? 'creates tension with' : type === 'Trine' ? 'harmonizes with' : type === 'Square' ? 'creates friction with' : type === 'Sextile' ? 'cooperates with' : 'requires adjustment with';
   return `${p1} ${action} ${p2} — a key dynamic shaping your year.`;
+};
+
+// ─── Stellium interpretation helpers ────────────────────────────────
+
+const signStelliumMeanings: Record<string, string> = {
+  Aries: 'An Aries stellium makes this a year of fierce independence, initiative, and courage. You are the pioneer — impatient with delay, ready to fight for what matters. The danger is burnout from constant forward motion. Channel this fire into ONE major initiative rather than scattering it.',
+  Taurus: 'A Taurus stellium grounds the year in material reality — money, comfort, beauty, and physical pleasure are central. You are building something lasting and tangible. Stubbornness is both your strength and your trap. Slow, steady effort produces permanent results.',
+  Gemini: 'A Gemini stellium creates a year of mental hyperactivity — ideas, conversations, writing, and learning are everywhere. You are collecting information, making connections, and communicating constantly. The risk is superficiality; the gift is versatility and adaptability.',
+  Cancer: 'A Cancer stellium makes this a deeply emotional, family-centered year. Home, mother figures, nurturing, and emotional security are the dominant themes. You feel everything more intensely. Creating a safe emotional harbor is both the work and the reward.',
+  Leo: 'A Leo stellium infuses the year with creative fire, self-expression, and a desire for recognition. You want to shine, create, love, and be seen. Generosity flows naturally but so does ego. The year asks: can you radiate without needing applause?',
+  Virgo: 'A Virgo stellium creates a year focused on improvement, analysis, health, and service. You are fixing, organizing, and refining every area of your life. Perfectionism is the shadow — "good enough" is the lesson. Your body\'s needs demand attention.',
+  Libra: 'A Libra stellium makes relationships, beauty, justice, and harmony the year\'s central concerns. You are constantly weighing options, seeking balance, and navigating partnerships. The danger is indecision or people-pleasing. The gift is diplomacy, grace, and genuine collaboration.',
+  Scorpio: 'A Scorpio stellium brings a year of intensity, transformation, and depth. Surface-level living is impossible — you are drawn to hidden truths, power dynamics, and psychological excavation. Trust is earned slowly. What dies this year needed to die.',
+  Sagittarius: 'A Sagittarius stellium creates an expansive year of travel, philosophy, education, and truth-seeking. You want MORE — more experience, more understanding, more freedom. The risk is overextension or dogmatism. The gift is wisdom earned through direct experience.',
+  Capricorn: 'A Capricorn stellium makes this a year of ambition, structure, responsibility, and building for the long term. You are climbing — career, status, or personal mastery. The weight is real but so is the endurance. Discipline is your superpower; rigidity is the trap.',
+  Aquarius: 'An Aquarius stellium brings a year of innovation, community, and unconventional thinking. You are questioning everything — systems, traditions, your own assumptions. The group matters more than the individual. Genius and eccentricity walk the same line.',
+  Pisces: 'A Pisces stellium creates a year of spiritual depth, artistic inspiration, and emotional sensitivity. Boundaries dissolve — between you and others, between reality and imagination. The gift is compassion and creativity; the danger is escapism and confusion.',
+};
+
+const planetKeywords: Record<string, { energy: string; domain: string }> = {
+  Sun: { energy: 'vitality, identity, purpose', domain: 'the core self' },
+  Moon: { energy: 'emotion, instinct, needs', domain: 'the emotional body' },
+  Mercury: { energy: 'thought, communication, analysis', domain: 'the mind' },
+  Venus: { energy: 'love, beauty, pleasure, values', domain: 'relationships and aesthetics' },
+  Mars: { energy: 'drive, aggression, action, desire', domain: 'willpower and assertion' },
+  Jupiter: { energy: 'expansion, optimism, abundance', domain: 'growth and opportunity' },
+  Saturn: { energy: 'discipline, limitation, responsibility', domain: 'structure and maturity' },
+  Uranus: { energy: 'disruption, freedom, innovation', domain: 'sudden change and awakening' },
+  Neptune: { energy: 'dissolution, imagination, spirituality', domain: 'transcendence and illusion' },
+  Pluto: { energy: 'transformation, power, death/rebirth', domain: 'deep psychological change' },
+};
+
+const getSignStelliumMeaning = (sign: string): string => signStelliumMeanings[sign] || '';
+
+const getStelliumBlendMeaning = (planets: string[]): string => {
+  const sorted = [...planets].sort((a, b) => {
+    const order = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
+    return order.indexOf(a) - order.indexOf(b);
+  });
+
+  // Check for specific meaningful combinations
+  const has = (p: string) => sorted.includes(p);
+  const parts: string[] = [];
+
+  if (has('Sun') && has('Moon')) {
+    parts.push('Sun-Moon together means your conscious identity and emotional instincts are ALIGNED — there is no internal conflict between what you want and what you need. This creates powerful focus but can also create blind spots (no one is challenging your assumptions from within).');
+  }
+  if (has('Sun') && has('Venus')) {
+    parts.push('Sun-Venus together draws love, beauty, and social pleasure toward your core identity. You attract others naturally this year. Creativity, romance, and aesthetic refinement are inseparable from who you are.');
+  }
+  if (has('Sun') && has('Mars')) {
+    parts.push('Sun-Mars together creates forceful, assertive energy — you are driven to ACT on your identity. This is a year of courage, competition, and potentially conflict. You cannot stay passive; your life force demands direct expression.');
+  }
+  if (has('Moon') && has('Venus')) {
+    parts.push('Moon-Venus together creates emotional warmth, a need for beauty and comfort, and deepened relationships. Your feelings and your values are in sync — what feels good IS good for you this year. Nurturing through beauty and love.');
+  }
+  if (has('Moon') && has('Mars')) {
+    parts.push('Moon-Mars together creates emotional volatility and passionate instincts. You react first, think later. Anger and emotional needs are tangled together. Physical activity channels this intensity productively.');
+  }
+  if (has('Venus') && has('Mars')) {
+    parts.push('Venus-Mars together is the classic attraction combination — passion, desire, and creative/sexual energy are heightened. Relationships are charged. You pursue what you want with both charm and force.');
+  }
+  if (has('Sun') && has('Pluto')) {
+    parts.push('Sun-Pluto together brings transformation to your very identity. This is not a gentle year — you are being remade at a fundamental level. Power dynamics, psychological depth, and letting go of who you used to be are central.');
+  }
+  if (has('Mars') && has('Pluto')) {
+    parts.push('Mars-Pluto together is the most intense drive combination — willpower is extreme, ambition is relentless, and the potential for power struggles is high. Channel this into purposeful transformation, not control.');
+  }
+  if (has('Jupiter') && has('Saturn')) {
+    parts.push('Jupiter-Saturn together balances expansion with discipline — growth is structured and sustainable rather than reckless. You are building something that lasts. Ambition meets realism.');
+  }
+  if (has('Saturn') && has('Pluto')) {
+    parts.push('Saturn-Pluto together brings heavy restructuring — old systems break down to be rebuilt stronger. This can feel crushing but produces lasting transformation. Endurance through difficulty.');
+  }
+  if (has('Mercury') && has('Venus')) {
+    parts.push('Mercury-Venus together brings charm to communication — your words are diplomatic, artistic, and socially effective. Writing, speaking, and negotiating are enhanced by grace and aesthetic sense.');
+  }
+
+  if (parts.length === 0) {
+    // Generic blend based on planet energies
+    const energies = sorted.map(p => planetKeywords[p]?.energy || p).join(', ');
+    return `This combination brings together ${energies}. When these forces share the same sign, they amplify each other — the year\'s dominant themes carry the combined weight of all these planetary functions operating in concert.`;
+  }
+
+  return parts.join('\n\n');
+};
+
+const generateStelliumInterpretation = (location: string, planets: string[], type: 'sign' | 'house', houseNum?: number): string => {
+  const planetList = planets.join(', ');
+  if (type === 'sign') {
+    return `A true stellium of ${planets.length} planets (${planetList}) concentrated in ${location}. This is not a casual emphasis — when three or more planets share a sign, that sign\'s energy becomes the dominant frequency of the entire year. Every area of life touched by these planets is filtered through ${location} qualities.`;
+  } else {
+    const theme = houseNum ? (houseThemes[houseNum] || '') : '';
+    return `A stellium of ${planets.length} planets (${planetList}) in ${location}. This house becomes the primary arena of your year — ${theme.toLowerCase()}. With this much planetary energy concentrated here, events and inner development in this life area are unavoidable and transformative.`;
+  }
 };
 
 // ─── Main Analysis ──────────────────────────────────────────────────
@@ -585,42 +683,68 @@ export const analyzeSolarReturn = (
     }
   }
 
-  // ─── 12. Stelliums (3+ planets in same sign or house) ─────────────
+  // ─── 12. Stelliums (3+ TRUE PLANETS in same sign or house) ─────────
+  // Only Sun through Pluto count for stellium detection; asteroids are noted separately
+  const STELLIUM_PLANETS = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'] as const;
+  const EXTRA_BODIES = ['Chiron','Juno','Ceres','Pallas','Vesta','Lilith','Eris'] as const;
   const stelliums: SRStellium[] = [];
+
   // By sign
-  const signCounts: Record<string, string[]> = {};
-  for (const planet of ALL_PLANETS) {
+  const signPlanetCounts: Record<string, string[]> = {};
+  const signExtraCounts: Record<string, string[]> = {};
+  for (const planet of STELLIUM_PLANETS) {
     const pos = srChart.planets[planet as keyof typeof srChart.planets];
     if (!pos) continue;
-    if (!signCounts[pos.sign]) signCounts[pos.sign] = [];
-    signCounts[pos.sign].push(planet);
+    if (!signPlanetCounts[pos.sign]) signPlanetCounts[pos.sign] = [];
+    signPlanetCounts[pos.sign].push(planet);
   }
-  for (const [sign, planets] of Object.entries(signCounts)) {
+  for (const body of EXTRA_BODIES) {
+    const pos = srChart.planets[body as keyof typeof srChart.planets];
+    if (!pos) continue;
+    if (!signExtraCounts[pos.sign]) signExtraCounts[pos.sign] = [];
+    signExtraCounts[pos.sign].push(body);
+  }
+  for (const [sign, planets] of Object.entries(signPlanetCounts)) {
     if (planets.length >= 3) {
+      const extras = signExtraCounts[sign] || [];
       stelliums.push({
         location: sign,
         locationType: 'sign',
         planets,
-        interpretation: `A concentration of ${planets.length} planets in ${sign} — ${sign} themes dominate the year with intensified focus on ${planets.join(', ')}. This is a major emphasis that colors your entire experience.`,
+        extras,
+        interpretation: generateStelliumInterpretation(sign, planets, 'sign'),
+        signMeaning: getSignStelliumMeaning(sign),
+        blendMeaning: getStelliumBlendMeaning(planets),
       });
     }
   }
   // By house
-  const houseCounts: Record<number, string[]> = {};
-  for (const planet of ALL_PLANETS) {
+  const housePlanetCounts: Record<number, string[]> = {};
+  const houseExtraCounts: Record<number, string[]> = {};
+  for (const planet of STELLIUM_PLANETS) {
     const h = planetSRHouses[planet];
     if (h == null) continue;
-    if (!houseCounts[h]) houseCounts[h] = [];
-    houseCounts[h].push(planet);
+    if (!housePlanetCounts[h]) housePlanetCounts[h] = [];
+    housePlanetCounts[h].push(planet);
   }
-  for (const [hStr, planets] of Object.entries(houseCounts)) {
+  for (const body of EXTRA_BODIES) {
+    const h = planetSRHouses[body];
+    if (h == null) continue;
+    if (!houseExtraCounts[h]) houseExtraCounts[h] = [];
+    houseExtraCounts[h].push(body);
+  }
+  for (const [hStr, planets] of Object.entries(housePlanetCounts)) {
     const h = parseInt(hStr);
     if (planets.length >= 3) {
+      const extras = houseExtraCounts[h] || [];
       stelliums.push({
         location: `House ${h}`,
         locationType: 'house',
         planets,
-        interpretation: `A stellium of ${planets.length} planets in the ${h}${h === 1 ? 'st' : h === 2 ? 'nd' : h === 3 ? 'rd' : 'th'} house — ${houseThemes[h] || ''} themes are a major focus this year, activated by ${planets.join(', ')}.`,
+        extras,
+        interpretation: generateStelliumInterpretation(`House ${h}`, planets, 'house', h),
+        signMeaning: '',
+        blendMeaning: getStelliumBlendMeaning(planets),
       });
     }
   }
