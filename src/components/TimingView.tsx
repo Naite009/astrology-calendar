@@ -10,6 +10,7 @@ const DailySynthesisCard = lazy(() => import('@/components/DailySynthesisCard').
 const TransitAlertsCard = lazy(() => import('@/components/TransitAlertsCard').then(m => ({ default: m.TransitAlertsCard })));
 const BestDaysSummaryCard = lazy(() => import('@/components/BestDaysSummaryCard').then(m => ({ default: m.BestDaysSummaryCard })));
 const MoonTransitCalendar = lazy(() => import('@/components/MoonTransitCalendar').then(m => ({ default: m.MoonTransitCalendar })));
+const VenusStarPointTrackerComp = lazy(() => import('@/components/VenusStarPointTracker').then(m => ({ default: m.VenusStarPointTracker })));
 
 /* Visibility-gated render: only mounts children when scrolled into view.
    This prevents off-screen heavy components from calculating and blocking the thread. */
@@ -62,7 +63,7 @@ interface TimingViewProps {
   currentDate: Date;
 }
 
-type TimingSection = 'now' | 'today' | 'plan';
+type TimingSection = 'now' | 'today' | 'plan' | 'venus';
 
 const PLANET_SYMBOLS: Record<string, string> = {
   Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀', Mars: '♂',
@@ -1231,6 +1232,53 @@ const PlanAheadSection = ({
 
 // (InsightsSection removed – components merged into RightNowSection)
 
+// Venus Star Point Section
+const VenusStarSection = ({
+  userNatalChart,
+  savedCharts,
+  selectedChart,
+  setSelectedChart,
+  currentDate,
+}: {
+  userNatalChart: NatalChart | null;
+  savedCharts: NatalChart[];
+  selectedChart: string;
+  setSelectedChart: (id: string) => void;
+  currentDate: Date;
+}) => {
+  const activeChart = useMemo(() => {
+    if (selectedChart === 'general') return null;
+    if (selectedChart === 'user') return userNatalChart;
+    return savedCharts.find(c => c.id === selectedChart) || null;
+  }, [selectedChart, userNatalChart, savedCharts]);
+
+  return (
+    <div>
+      <div className="mb-6">
+        <h3 className="text-lg font-serif mb-2">♀⭐ Venus Star Point Tracker</h3>
+        <p className="text-sm text-muted-foreground">
+          Track the Venus-Sun cycle, your personal Venus connections, and journal prompts for each phase.
+        </p>
+      </div>
+
+      {/* Chart Selector for personalization */}
+      <div className="mb-6">
+        <ChartSelector
+          userNatalChart={userNatalChart}
+          savedCharts={savedCharts}
+          selectedChartId={selectedChart}
+          onSelect={setSelectedChart}
+          label="Personalize to"
+        />
+      </div>
+
+      <Suspense fallback={<Skeleton className="h-40 w-full rounded-lg" />}>
+        <VenusStarPointTrackerComp date={currentDate} activeChart={activeChart} />
+      </Suspense>
+    </div>
+  );
+};
+
 // Main Timing View Component
 export const TimingView = ({
   userNatalChart,
@@ -1282,6 +1330,17 @@ export const TimingView = ({
         >
           <CalendarCheck size={18} />
           Plan Ahead
+        </button>
+        <button
+          onClick={() => setActiveSection('venus')}
+          className={`flex items-center gap-2 px-5 py-3 rounded-t-lg font-medium transition-all ${
+            activeSection === 'venus'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80'
+          }`}
+        >
+          <span className="text-lg">♀</span>
+          Venus Star
         </button>
       </div>
 
@@ -1337,6 +1396,16 @@ export const TimingView = ({
               savedCharts={savedCharts}
             />
           </div>
+        )}
+
+        {activeSection === 'venus' && (
+          <VenusStarSection
+            userNatalChart={userNatalChart}
+            savedCharts={savedCharts}
+            selectedChart={selectedChartForTiming}
+            setSelectedChart={setSelectedChartForTiming}
+            currentDate={currentDate}
+          />
         )}
       </div>
     </div>
