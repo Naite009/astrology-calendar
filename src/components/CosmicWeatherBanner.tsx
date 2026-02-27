@@ -60,6 +60,9 @@ interface MercuryRetrogradeInfoData {
   shadowDegree?: string;
   rxDegree?: string;
   sign?: string;
+  stationRetrograde?: string;
+  stationDirect?: string;
+  postShadowClear?: string;
 }
 
 interface CosmicWeatherBannerProps {
@@ -200,9 +203,10 @@ export const CosmicWeatherBanner = ({
     return result;
   }, [date]);
 
-  // Create a stable cache key based on the date
+  // Create a stable cache key based on date + prompt version to avoid stale astrology text
   const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-  const cacheKey = `cosmic-day-weather-${dateKey}`;
+  const CLIENT_CACHE_VERSION = 'v2-mercury-fact-check';
+  const cacheKey = `cosmic-day-weather-${CLIENT_CACHE_VERSION}-${dateKey}`;
 
   // Determine the correct moon sign to use:
   // - For an exact lunar event, use exactLunarPhase.sign

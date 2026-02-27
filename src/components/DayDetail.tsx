@@ -607,16 +607,22 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
               const rxStartStr = formatRetrogradeDateWithTime(ri.start);
               const isPiscesRx = ri.sign.includes('Pisces');
               const dignityNote = isPiscesRx ? ' Mercury is in BOTH detriment AND fall in Pisces — double difficulty.' : '';
+              const stationData = {
+                sign: ri.sign,
+                stationRetrograde: rxStartStr,
+                stationDirect: rxEndStr,
+                postShadowClear: postEndStr,
+              };
               if (status.isShadow && status.shadowType === 'pre') {
-                return { phase: 'pre-shadow', description: `Mercury entered pre-retrograde shadow on ${preStartStr}. Stations retrograde ${rxStartStr}. Stations direct ${rxEndStr}. Post-shadow clears ${postEndStr}.${dignityNote}`, sign: ri.sign };
+                return { phase: 'pre-shadow', description: `Mercury entered pre-retrograde shadow on ${preStartStr}. Stations retrograde ${rxStartStr}. Stations direct ${rxEndStr}. Post-shadow clears ${postEndStr}.${dignityNote}`, ...stationData };
               }
               if (status.isRetrograde) {
                 const midpoint = new Date((ri.start.getTime() + ri.end.getTime()) / 2);
                 const isFirstHalf = date < midpoint;
-                return { phase: isFirstHalf ? 'retrograde-first-half' : 'retrograde-second-half', description: `Mercury is RETROGRADE in ${ri.sign}. ${isFirstHalf ? 'First half - things resurface.' : 'Second half - clarity begins.'} Stations direct ${rxEndStr}. Post-shadow clears ${postEndStr}.${dignityNote}`, sign: ri.sign };
+                return { phase: isFirstHalf ? 'retrograde-first-half' : 'retrograde-second-half', description: `Mercury is RETROGRADE in ${ri.sign}. ${isFirstHalf ? 'First half - things resurface.' : 'Second half - clarity begins.'} Stations direct ${rxEndStr}. Post-shadow clears ${postEndStr}.${dignityNote}`, ...stationData };
               }
               if (status.isShadow && status.shadowType === 'post') {
-                return { phase: 'post-shadow', description: `Mercury stationed direct ${rxEndStr} and is retracing post-retrograde shadow. Clarity returns. Shadow clears ${postEndStr}.`, sign: ri.sign };
+                return { phase: 'post-shadow', description: `Mercury stationed direct ${rxEndStr} and is retracing post-retrograde shadow. Clarity returns. Shadow clears ${postEndStr}.`, ...stationData };
               }
               return null;
             } catch { return null; }
