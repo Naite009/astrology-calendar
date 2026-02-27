@@ -143,6 +143,176 @@ const FUNCTION_DESCRIPTIONS: Record<string, { superior: string; inferior: string
   },
 };
 
+// Court Card Quiz
+const COURT_QUIZ_QUESTIONS = [
+  {
+    question: "When you encounter a new challenge, you tend to:",
+    options: [
+      { label: "Watch and study it first — there's so much to learn", rank: "Page" },
+      { label: "Charge in and figure it out along the way", rank: "Knight" },
+      { label: "Feel into it — what does my intuition say?", rank: "Queen" },
+      { label: "Assess it strategically — I know what works", rank: "King" },
+    ],
+  },
+  {
+    question: "In a group, you naturally:",
+    options: [
+      { label: "Ask questions and absorb everyone's perspective", rank: "Page" },
+      { label: "Push for action — let's stop talking and do", rank: "Knight" },
+      { label: "Hold space for the emotional temperature of the room", rank: "Queen" },
+      { label: "Take the lead and set the direction", rank: "King" },
+    ],
+  },
+  {
+    question: "Your relationship to your element's energy is:",
+    options: [
+      { label: "I'm still discovering it — it surprises me", rank: "Page" },
+      { label: "I chase it relentlessly — sometimes too much", rank: "Knight" },
+      { label: "I channel it inward — it's part of my wisdom", rank: "Queen" },
+      { label: "I've mastered it — I wield it with authority", rank: "King" },
+    ],
+  },
+  {
+    question: "When reading tarot for yourself, you prefer to:",
+    options: [
+      { label: "Pull a single card and journal about it", rank: "Page" },
+      { label: "Do a quick 3-card spread and act on it", rank: "Knight" },
+      { label: "Sit with a full spread and let meanings emerge slowly", rank: "Queen" },
+      { label: "Use a structured spread with clear positions and logic", rank: "King" },
+    ],
+  },
+];
+
+const COURT_RANK_DESCRIPTIONS: Record<string, { title: string; archetype: string; traits: string }> = {
+  Page: { title: "Page", archetype: "The Student", traits: "Curious, eager, open-minded, sometimes naive. You're in a phase of learning and discovery with this element's energy. Messages and new beginnings." },
+  Knight: { title: "Knight", archetype: "The Quester", traits: "Passionate, driven, sometimes reckless. You actively pursue this element's energy with intensity. Action, movement, and pursuit." },
+  Queen: { title: "Queen", archetype: "The Nurturer", traits: "Emotionally mature, intuitive, receptive. You channel this element inward and use it with wisdom. Depth, mastery through feeling." },
+  King: { title: "King", archetype: "The Authority", traits: "Commanding, experienced, outwardly directed. You've integrated this element and wield it with confidence. Leadership and external mastery." },
+};
+
+const SUIT_IMAGERY: Record<string, { emoji: string; keywords: string }> = {
+  Wands: { emoji: "🏔️", keywords: "Passion, creativity, ambition, spiritual fire" },
+  Cups: { emoji: "🌊", keywords: "Emotions, love, relationships, inner world" },
+  Swords: { emoji: "⚔️", keywords: "Intellect, truth, conflict, clarity" },
+  Pentacles: { emoji: "🌿", keywords: "Material world, health, money, craft" },
+};
+
+function CourtCardQuiz({ chart }: { chart: NatalChart }) {
+  const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [showResult, setShowResult] = useState(false);
+
+  const sunPos = chart.planets.Sun;
+  if (!sunPos) return null;
+
+  const sunElement = SIGN_ELEMENT[sunPos.sign];
+  const suit = FUNCTION_SUIT[ELEMENT_FUNCTION[sunElement]];
+  const suitInfo = SUIT_IMAGERY[suit];
+
+  const handleAnswer = (questionIndex: number, rank: string) => {
+    setAnswers(prev => ({ ...prev, [questionIndex]: rank }));
+    setShowResult(false);
+  };
+
+  const allAnswered = Object.keys(answers).length === COURT_QUIZ_QUESTIONS.length;
+
+  const calculateRank = (): string => {
+    const counts: Record<string, number> = { Page: 0, Knight: 0, Queen: 0, King: 0 };
+    Object.values(answers).forEach(r => counts[r]++);
+
+    // Tiebreaker: modality of sun sign
+    const modalityBoost: Record<string, string> = {
+      Aries: 'Knight', Cancer: 'Queen', Libra: 'Queen', Capricorn: 'King',
+      Taurus: 'King', Leo: 'King', Scorpio: 'Queen', Aquarius: 'Knight',
+      Gemini: 'Knight', Virgo: 'Page', Sagittarius: 'Knight', Pisces: 'Queen',
+    };
+    const boost = modalityBoost[sunPos.sign] || 'Knight';
+    counts[boost] += 0.5;
+
+    return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+  };
+
+  const rank = allAnswered ? calculateRank() : null;
+  const rankInfo = rank ? COURT_RANK_DESCRIPTIONS[rank] : null;
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg font-serif">👑 Discover Your Court Card</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="p-4 rounded bg-secondary/30 border border-border space-y-2">
+          <p className="text-sm text-muted-foreground">
+            Your Sun is in <strong>{sunPos.sign}</strong> ({sunElement}), which places you in the suit of <strong>{suit}</strong>.
+          </p>
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">{suitInfo.emoji}</span>
+            <p className="text-xs text-muted-foreground">{suitInfo.keywords}</p>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Now answer these questions to discover your <strong>rank</strong> — are you the Page, Knight, Queen, or King of {suit}?
+          </p>
+        </div>
+
+        {COURT_QUIZ_QUESTIONS.map((q, qi) => (
+          <div key={qi} className="space-y-2">
+            <p className="text-sm font-medium">{qi + 1}. {q.question}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {q.options.map((opt, oi) => (
+                <button
+                  key={oi}
+                  onClick={() => handleAnswer(qi, opt.rank)}
+                  className={`p-3 rounded border text-left text-sm transition-all ${
+                    answers[qi] === opt.rank
+                      ? 'bg-primary/10 border-primary ring-1 ring-primary'
+                      : 'bg-secondary/20 border-border hover:bg-secondary/40'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+
+        {allAnswered && !showResult && (
+          <button
+            onClick={() => setShowResult(true)}
+            className="w-full py-3 rounded bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
+          >
+            Reveal My Court Card
+          </button>
+        )}
+
+        {showResult && rank && rankInfo && (
+          <div className={`p-6 rounded-lg border-2 ${ELEMENT_COLORS[sunElement]} space-y-4`}>
+            <div className="text-center space-y-2">
+              <p className="text-4xl">{suitInfo.emoji}</p>
+              <p className="text-2xl font-serif font-bold">{rankInfo.title} of {suit}</p>
+              <p className="text-sm text-muted-foreground italic">{rankInfo.archetype}</p>
+            </div>
+            <p className="text-sm leading-relaxed">{rankInfo.traits}</p>
+            <div className="p-3 rounded bg-background/60 border border-border">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">As Your Significator</p>
+              <p className="text-sm text-muted-foreground">
+                Use the <strong>{rankInfo.title} of {suit}</strong> as your significator card in readings. 
+                This card represents your core identity — pull it from the deck before shuffling and place it face-up 
+                to anchor the reading in your energy.
+              </p>
+            </div>
+            <div className="p-3 rounded bg-background/60 border border-border">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Astrological Basis</p>
+              <p className="text-sm text-muted-foreground">
+                ☉ Sun in {sunPos.sign} → {sunElement} element → Suit of {suit}. 
+                Your quiz responses + {sunPos.sign}'s modality energy shaped your rank as {rankInfo.title}.
+              </p>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 interface Props {
   userNatalChart: NatalChart | null;
   savedCharts: NatalChart[];
@@ -297,6 +467,9 @@ export function TarotFunctionsView({ userNatalChart, savedCharts }: Props) {
               </div>
             </CardContent>
           </Card>
+
+          {/* Court Card Quiz */}
+          {chart && <CourtCardQuiz chart={chart} />}
 
           {/* Element ↔ Function reference */}
           <Card>
