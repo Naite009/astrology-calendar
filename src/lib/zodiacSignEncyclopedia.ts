@@ -21,6 +21,8 @@ export interface ZodiacSignData {
   needs: string[];
   creativeExpression: string;
   keywords: string[];    // 3-5 core keywords
+  highRoadKeywords: string[];  // positive expression keywords
+  lowRoadKeywords: string[];   // shadow expression keywords
 }
 
 // The 6 sign axes — oppositions that form a spectrum of consciousness
@@ -118,6 +120,8 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     needs: ['Independence', 'Physical outlets', 'New challenges', 'To be first', 'Directness from others'],
     creativeExpression: 'Aries creates in bursts — brilliant starts, bold strokes. They are the idea generators, the first drafts, the daring prototypes. Their art is kinetic, competitive, and alive with urgency.',
     keywords: ['Courage', 'Initiative', 'Independence', 'Impulse'],
+    highRoadKeywords: ['Active', 'Adventurous', 'Independent', 'Self-motivated', 'Confident', 'Spontaneous', 'Enterprising', 'Leadership', 'Instinctive', 'Courageous', 'Direct', 'Daring', 'Pioneering', 'Bold', 'Energetic', 'Decisive', 'Passionate'],
+    lowRoadKeywords: ['Self-centered', 'Egotistical', 'Domineering', 'Impatient', 'Restless', 'Demanding', 'Bullying', 'Starts but doesn\'t finish', 'Combative', 'Insensitive', 'Impulsive', 'Reckless', 'Aggressive', 'Short-tempered', 'Selfish'],
   },
   {
     name: 'Taurus',
@@ -144,6 +148,8 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     needs: ['Security', 'Physical comfort', 'Routine', 'Financial stability', 'Sensory pleasure'],
     creativeExpression: 'Taurus creates through craft — pottery, cooking, gardening, music. Their art is tangible, sensual, and built to last. They are the masters of form and texture.',
     keywords: ['Stability', 'Sensuality', 'Patience', 'Endurance'],
+    highRoadKeywords: ['Patient', 'Reliable', 'Loyal', 'Sensual', 'Grounded', 'Persistent', 'Artistic', 'Practical', 'Devoted', 'Steady', 'Nurturing', 'Resourceful', 'Calm', 'Thorough', 'Generous'],
+    lowRoadKeywords: ['Stubborn', 'Possessive', 'Materialistic', 'Greedy', 'Lazy', 'Resistant to change', 'Indulgent', 'Jealous', 'Inflexible', 'Complacent', 'Hoarding', 'Gluttonous', 'Stagnant'],
   },
   {
     name: 'Gemini',
@@ -170,6 +176,8 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     needs: ['Mental stimulation', 'Variety', 'Social connection', 'Information', 'Freedom to change'],
     creativeExpression: 'Gemini creates through language — writing, comedy, podcasting, teaching. Their art is verbal, clever, and often arrives in multiple formats simultaneously.',
     keywords: ['Curiosity', 'Versatility', 'Communication', 'Duality'],
+    highRoadKeywords: ['Witty', 'Adaptable', 'Curious', 'Communicative', 'Versatile', 'Intellectual', 'Quick-thinking', 'Social', 'Playful', 'Clever', 'Articulate', 'Open-minded', 'Inventive', 'Youthful', 'Charming'],
+    lowRoadKeywords: ['Scattered', 'Superficial', 'Gossipy', 'Two-faced', 'Unreliable', 'Nervous', 'Restless', 'Inconsistent', 'Manipulative with words', 'Flighty', 'Non-committal', 'Anxious', 'Deceptive'],
   },
   {
     name: 'Cancer',
@@ -196,6 +204,8 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     needs: ['Emotional safety', 'Home', 'Family connection', 'Permission to feel', 'Loyalty'],
     creativeExpression: 'Cancer creates through atmosphere — interior design, cooking, photography, memoir. Their art is intimate, nostalgic, and designed to make others feel held.',
     keywords: ['Nurturing', 'Intuition', 'Protection', 'Memory'],
+    highRoadKeywords: ['Nurturing', 'Protective', 'Intuitive', 'Empathetic', 'Loyal', 'Domestic', 'Sentimental', 'Caring', 'Imaginative', 'Tenacious', 'Sympathetic', 'Maternal', 'Supportive', 'Devoted', 'Emotionally intelligent'],
+    lowRoadKeywords: ['Moody', 'Clingy', 'Overprotective', 'Manipulative', 'Passive-aggressive', 'Smothering', 'Victim mentality', 'Guilt-tripping', 'Unable to let go', 'Overly sensitive', 'Codependent', 'Crabby', 'Insecure'],
   },
   {
     name: 'Leo',
@@ -222,6 +232,8 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     needs: ['Recognition', 'Creative outlets', 'To be seen', 'Applause (literal or metaphorical)', 'Loyal subjects'],
     creativeExpression: 'Leo creates through performance — acting, directing, fashion, event planning. Their art is dramatic, warm, and designed to be witnessed and applauded.',
     keywords: ['Creativity', 'Generosity', 'Radiance', 'Pride'],
+    highRoadKeywords: ['Generous', 'Radiant', 'Creative', 'Confident', 'Warm-hearted', 'Loyal', 'Charismatic', 'Dignified', 'Playful', 'Dramatic', 'Inspirational', 'Passionate', 'Enthusiastic', 'Regal', 'Magnetic'],
+    lowRoadKeywords: ['Arrogant', 'Vain', 'Attention-seeking', 'Dramatic', 'Domineering', 'Entitled', 'Prideful', 'Self-absorbed', 'Jealous of spotlight', 'Lazy when uninspired', 'Demanding', 'Condescending', 'Melodramatic'],
   },
   {
     name: 'Virgo',
@@ -248,6 +260,8 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     needs: ['Order', 'Useful work', 'To feel helpful', 'Systems', 'Quiet appreciation'],
     creativeExpression: 'Virgo creates through refinement — editing, herbalism, craftsmanship, coding. Their art is in the details others miss and the systems that run invisibly.',
     keywords: ['Precision', 'Service', 'Analysis', 'Refinement'],
+    highRoadKeywords: ['Analytical', 'Precise', 'Helpful', 'Humble', 'Diligent', 'Practical', 'Health-conscious', 'Organized', 'Efficient', 'Discerning', 'Thoughtful', 'Dedicated', 'Detail-oriented', 'Reliable', 'Service-minded'],
+    lowRoadKeywords: ['Perfectionist', 'Critical', 'Judgmental', 'Anxious', 'Overthinking', 'Nitpicking', 'Self-critical', 'Hypochondriac', 'Uptight', 'Martyring', 'Fussy', 'Nagging', 'Micromanaging'],
   },
   {
     name: 'Libra',
@@ -274,6 +288,8 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     needs: ['Partnership', 'Beauty', 'Fairness', 'Harmony', 'Intellectual stimulation'],
     creativeExpression: 'Libra creates through design — fashion, interior design, law, curation. Their art is elegant, balanced, and always considers how others will receive it.',
     keywords: ['Harmony', 'Partnership', 'Beauty', 'Diplomacy'],
+    highRoadKeywords: ['Diplomatic', 'Fair-minded', 'Gracious', 'Charming', 'Romantic', 'Artistic', 'Cooperative', 'Peaceful', 'Refined', 'Social', 'Balanced', 'Idealistic', 'Considerate', 'Elegant', 'Harmonious'],
+    lowRoadKeywords: ['Indecisive', 'People-pleasing', 'Codependent', 'Superficial', 'Avoids conflict', 'Passive-aggressive', 'Vain', 'Manipulative', 'Wishy-washy', 'Dependent', 'Resentful beneath politeness', 'Lost without a partner'],
   },
   {
     name: 'Scorpio',
@@ -300,6 +316,8 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     needs: ['Depth', 'Truth', 'Emotional intimacy', 'Power over self', 'Privacy'],
     creativeExpression: 'Scorpio creates through intensity — psychology, surgery, investigation, taboo art. Their work goes where others are afraid to look.',
     keywords: ['Depth', 'Transformation', 'Intensity', 'Power'],
+    highRoadKeywords: ['Intense', 'Perceptive', 'Passionate', 'Resourceful', 'Brave', 'Magnetic', 'Loyal', 'Strategic', 'Transformative', 'Resilient', 'Psychologically astute', 'Determined', 'Deep', 'Healing', 'Powerful'],
+    lowRoadKeywords: ['Jealous', 'Controlling', 'Manipulative', 'Vindictive', 'Obsessive', 'Secretive', 'Paranoid', 'Power-hungry', 'Grudge-holding', 'Destructive', 'Possessive', 'Suspicious', 'Ruthless'],
   },
   {
     name: 'Sagittarius',
@@ -326,6 +344,8 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     needs: ['Freedom', 'Adventure', 'Meaning', 'New horizons', 'Big-picture conversations'],
     creativeExpression: 'Sagittarius creates through teaching — philosophy, travel writing, documentary, comedy. Their art expands horizons and makes people laugh at the absurdity of being human.',
     keywords: ['Freedom', 'Optimism', 'Philosophy', 'Adventure'],
+    highRoadKeywords: ['Optimistic', 'Adventurous', 'Philosophical', 'Honest', 'Generous', 'Enthusiastic', 'Open-minded', 'Freedom-loving', 'Jovial', 'Inspiring', 'Visionary', 'Tolerant', 'Humorous', 'Big-hearted', 'Truth-seeking'],
+    lowRoadKeywords: ['Blunt', 'Tactless', 'Preachy', 'Over-promising', 'Irresponsible', 'Commitment-phobic', 'Reckless', 'Dogmatic', 'Exaggerating', 'Know-it-all', 'Restless', 'Careless', 'Self-righteous'],
   },
   {
     name: 'Capricorn',
@@ -352,6 +372,8 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     needs: ['Structure', 'Achievement', 'Respect', 'Legacy', 'Solitude for recharging'],
     creativeExpression: 'Capricorn creates through mastery — architecture, business, classical music, strategic planning. Their art is built to endure and earns respect through craft.',
     keywords: ['Discipline', 'Ambition', 'Structure', 'Legacy'],
+    highRoadKeywords: ['Disciplined', 'Ambitious', 'Responsible', 'Strategic', 'Patient', 'Wise', 'Authoritative', 'Hardworking', 'Mature', 'Dependable', 'Traditional', 'Masterful', 'Pragmatic', 'Resilient', 'Dignified'],
+    lowRoadKeywords: ['Workaholic', 'Cold', 'Pessimistic', 'Controlling', 'Status-obsessed', 'Emotionally repressed', 'Rigid', 'Ruthless', 'Condescending', 'Uses people', 'Melancholic', 'Fear-driven', 'Unforgiving'],
   },
   {
     name: 'Aquarius',
@@ -378,6 +400,8 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     needs: ['Intellectual freedom', 'Community of like-minds', 'Space to be eccentric', 'Causes to champion', 'Independence within connection'],
     creativeExpression: 'Aquarius creates through innovation — technology, social activism, avant-garde art, community organizing. Their work disrupts the status quo.',
     keywords: ['Innovation', 'Rebellion', 'Humanity', 'Vision'],
+    highRoadKeywords: ['Innovative', 'Humanitarian', 'Independent', 'Visionary', 'Progressive', 'Original', 'Intellectual', 'Friendly', 'Objective', 'Inventive', 'Idealistic', 'Unconventional', 'Community-minded', 'Forward-thinking', 'Eccentric'],
+    lowRoadKeywords: ['Detached', 'Aloof', 'Contrarian', 'Rebellious for the sake of it', 'Emotionally unavailable', 'Superiority complex', 'Alienating', 'Stubborn', 'Cold', 'Unpredictable', 'Dismissive of feelings', 'Anarchic'],
   },
   {
     name: 'Pisces',
@@ -404,6 +428,8 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     needs: ['Solitude', 'Creative/spiritual practice', 'Permission to feel deeply', 'Time near water', 'Boundaries (even though they resist them)'],
     creativeExpression: 'Pisces creates through channeling — music, film, poetry, healing arts. Their work arrives from somewhere beyond the rational mind and touches people in places words cannot reach.',
     keywords: ['Compassion', 'Intuition', 'Mysticism', 'Surrender'],
+    highRoadKeywords: ['Compassionate', 'Intuitive', 'Artistic', 'Empathetic', 'Spiritual', 'Imaginative', 'Gentle', 'Selfless', 'Dreamy', 'Healing', 'Forgiving', 'Mystical', 'Romantic', 'Wise', 'Transcendent'],
+    lowRoadKeywords: ['Escapist', 'Victim mentality', 'Delusional', 'Boundary-less', 'Addictive tendencies', 'Self-pitying', 'Martyr', 'Passive', 'Easily deceived', 'Avoidant', 'Spacey', 'Codependent', 'Self-destructive'],
   },
 ];
 

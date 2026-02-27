@@ -53,6 +53,29 @@ function SignDetailModal({ sign, open, onClose }: { sign: ZodiacSignData | null;
               </div>
             </div>
 
+            {/* Keywords — High Road & Low Road */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium">Keywords</h4>
+              <div className="grid grid-cols-1 gap-3">
+                <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+                  <p className="text-[10px] font-medium text-muted-foreground mb-2">✦ HIGH ROAD</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {sign.highRoadKeywords.map((kw, i) => (
+                      <Badge key={i} variant="secondary" className="text-[10px]">{kw}</Badge>
+                    ))}
+                  </div>
+                </div>
+                <div className="p-3 rounded-lg bg-destructive/5 border border-destructive/10">
+                  <p className="text-[10px] font-medium text-muted-foreground mb-2">⚠ LOW ROAD</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {sign.lowRoadKeywords.map((kw, i) => (
+                      <Badge key={i} variant="outline" className="text-[10px] border-destructive/30">{kw}</Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Essence */}
             <div className="space-y-3">
               <h4 className="text-sm font-medium">Essence</h4>
