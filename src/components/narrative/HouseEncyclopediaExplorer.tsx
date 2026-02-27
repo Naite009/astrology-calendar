@@ -111,10 +111,15 @@ function HouseDetailModal({ house, open, onClose, chart }: { house: HouseData | 
 export function HouseEncyclopediaExplorer({ chart }: { chart: NatalChart | null }) {
   const [selectedHouse, setSelectedHouse] = useState<HouseData | null>(null);
 
+  const handleWheelClick = (houseNum: number) => {
+    const house = HOUSES_DATA.find(h => h.number === houseNum);
+    if (house) setSelectedHouse(house);
+  };
+
   return (
     <div className="space-y-8">
       {/* Interactive House Wheel */}
-      <HouseWheelVisualization chart={chart} />
+      <HouseWheelVisualization chart={chart} onHouseClick={handleWheelClick} />
 
       {/* Hemispheres & Quadrants */}
       <div className="space-y-3">
