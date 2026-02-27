@@ -44,10 +44,11 @@ import { SolarReturnView } from "./SolarReturnView";
 import { MercuryRetrogradeGuide } from "./MercuryRetrogradeGuide";
 import { MoonPhaseEncyclopedia } from "./MoonPhaseEncyclopedia";
 import { FoundationsView } from "./FoundationsView";
+import { TarotFunctionsView } from "./TarotFunctionsView";
 
 
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "mercury-rx" | "moon-encyclopedia" | "foundations";
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "mercury-rx" | "moon-encyclopedia" | "foundations" | "tarot-functions";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -199,6 +200,9 @@ export const AstroCalendar = () => {
     }
     if (viewMode === "foundations") {
       return "Foundations";
+    }
+    if (viewMode === "tarot-functions") {
+      return "Tarot Functions";
     }
     if (viewMode === "moon-phases") {
       return `${currentDate.getFullYear()} Moon Phases`;
@@ -657,6 +661,29 @@ export const AstroCalendar = () => {
               >
                 ☿ Mercury Rx
               </button>
+              <button
+                onClick={() => {
+                  if (userNatalChart || savedCharts.length > 0) {
+                    setViewMode("tarot-functions");
+                  } else {
+                    setViewMode("charts");
+                  }
+                }}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "tarot-functions"
+                    ? "bg-primary text-primary-foreground"
+                    : userNatalChart || savedCharts.length > 0
+                      ? "text-muted-foreground hover:text-foreground"
+                      : "text-muted-foreground/60 hover:text-muted-foreground"
+                }`}
+                title={
+                  userNatalChart || savedCharts.length > 0
+                    ? "Tarot Functions"
+                    : "Add a chart to see Tarot Functions"
+                }
+              >
+                🃏 Tarot
+              </button>
             </div>
 
             {userData && (
@@ -937,6 +964,13 @@ export const AstroCalendar = () => {
 
         {viewMode === "foundations" && (
           <FoundationsView
+            userNatalChart={userNatalChart}
+            savedCharts={savedCharts}
+          />
+        )}
+
+        {viewMode === "tarot-functions" && (
+          <TarotFunctionsView
             userNatalChart={userNatalChart}
             savedCharts={savedCharts}
           />
