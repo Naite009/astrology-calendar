@@ -204,8 +204,40 @@ function CourtCardQuiz({ chart }: { chart: NatalChart }) {
   const sunPos = chart.planets.Sun;
   if (!sunPos) return null;
 
-  const sunElement = SIGN_ELEMENT[sunPos.sign];
-  const suit = FUNCTION_SUIT[ELEMENT_FUNCTION[sunElement]];
+  // Calculate dominant element from Big Three + inner planets
+  const elementWeights: Record<string, number> = { Fire: 0, Water: 0, Air: 0, Earth: 0 };
+  const breakdown: { name: string; sign: string; element: string; weight: number }[] = [];
+
+  // Sun = 3pts, Moon = 3pts, Ascendant = 2pts, Mercury/Venus/Mars = 1pt each
+  const weights: Record<string, number> = { Sun: 3, Moon: 3, Ascendant: 2, Mercury: 1, Venus: 1, Mars: 1 };
+
+  for (const [planet, weight] of Object.entries(weights)) {
+    if (planet === 'Ascendant') {
+      const asc = chart.houseCusps?.house1;
+      if (asc) {
+        const el = SIGN_ELEMENT[asc.sign];
+        if (el) {
+          elementWeights[el] += weight;
+          breakdown.push({ name: 'Ascendant', sign: asc.sign, element: el, weight });
+        }
+      }
+    } else {
+      const pos = chart.planets[planet as keyof typeof chart.planets];
+      if (pos) {
+        const el = SIGN_ELEMENT[pos.sign];
+        if (el) {
+          elementWeights[el] += weight;
+          breakdown.push({ name: planet, sign: pos.sign, element: el, weight });
+        }
+      }
+    }
+  }
+
+  const dominantElement = Object.entries(elementWeights).sort((a, b) => b[1] - a[1])[0][0];
+  const totalWeight = Object.values(elementWeights).reduce((a, b) => a + b, 0);
+  const dominantPct = totalWeight > 0 ? Math.round((elementWeights[dominantElement] / totalWeight) * 100) : 0;
+
+  const suit = FUNCTION_SUIT[ELEMENT_FUNCTION[dominantElement]];
   const suitInfo = SUIT_IMAGERY[suit];
 
   const handleAnswer = (questionIndex: number, rank: string) => {
@@ -219,7 +251,6 @@ function CourtCardQuiz({ chart }: { chart: NatalChart }) {
     const counts: Record<string, number> = { Page: 0, Knight: 0, Queen: 0, King: 0 };
     Object.values(answers).forEach(r => counts[r]++);
 
-    // Tiebreaker: modality of sun sign
     const modalityBoost: Record<string, string> = {
       Aries: 'Knight', Cancer: 'Queen', Libra: 'Queen', Capricorn: 'King',
       Taurus: 'King', Leo: 'King', Scorpio: 'Queen', Aquarius: 'Knight',
@@ -240,9 +271,25 @@ function CourtCardQuiz({ chart }: { chart: NatalChart }) {
         <CardTitle className="text-lg font-serif">👑 Discover Your Court Card</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="p-4 rounded bg-secondary/30 border border-border space-y-2">
+        <div className="p-4 rounded bg-secondary/30 border border-border space-y-3">
+          <p className="text-sm font-medium">Your Elemental Signature (Big Three + Inner Planets)</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {breakdown.map((b, i) => (
+              <div key={i} className={`p-2 rounded border text-xs ${ELEMENT_COLORS[b.element]}`}>
+                <span className="font-medium">{b.name}</span> in {b.sign}
+                <span className="text-muted-foreground ml-1">({b.element} ×{b.weight})</span>
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-3 flex-wrap">
+            {Object.entries(elementWeights).filter(([,v]) => v > 0).sort((a,b) => b[1] - a[1]).map(([el, w]) => (
+              <div key={el} className={`px-3 py-1 rounded-full border text-xs font-medium ${ELEMENT_COLORS[el]} ${el === dominantElement ? 'ring-2 ring-primary' : ''}`}>
+                {el}: {w}pts ({Math.round((w / totalWeight) * 100)}%)
+              </div>
+            ))}
+          </div>
           <p className="text-sm text-muted-foreground">
-            Your Sun is in <strong>{sunPos.sign}</strong> ({sunElement}), which places you in the suit of <strong>{suit}</strong>.
+            Your dominant element is <strong>{dominantElement}</strong> ({dominantPct}%), placing you in the suit of <strong>{suit}</strong>.
           </p>
           <div className="flex items-center gap-2">
             <span className="text-2xl">{suitInfo.emoji}</span>
@@ -284,7 +331,7 @@ function CourtCardQuiz({ chart }: { chart: NatalChart }) {
         )}
 
         {showResult && rank && rankInfo && (
-          <div className={`p-6 rounded-lg border-2 ${ELEMENT_COLORS[sunElement]} space-y-4`}>
+          <div className={`p-6 rounded-lg border-2 ${ELEMENT_COLORS[dominantElement]} space-y-4`}>
             <div className="text-center space-y-2">
               <p className="text-4xl">{suitInfo.emoji}</p>
               <p className="text-2xl font-serif font-bold">{rankInfo.title} of {suit}</p>
@@ -302,8 +349,11 @@ function CourtCardQuiz({ chart }: { chart: NatalChart }) {
             <div className="p-3 rounded bg-background/60 border border-border">
               <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Astrological Basis</p>
               <p className="text-sm text-muted-foreground">
-                ☉ Sun in {sunPos.sign} → {sunElement} element → Suit of {suit}. 
-                Your quiz responses + {sunPos.sign}'s modality energy shaped your rank as {rankInfo.title}.
+                Dominant element: <strong>{dominantElement}</strong> ({dominantPct}% of your chart weight) → Suit of {suit}. 
+                {breakdown.filter(b => b.element === dominantElement).length > 1 
+                  ? ` Multiple placements (${breakdown.filter(b => b.element === dominantElement).map(b => b.name).join(', ')}) reinforce this energy.`
+                  : ''
+                } Your quiz responses + {sunPos.sign}'s modality shaped your rank as {rankInfo.title}.
               </p>
             </div>
           </div>
