@@ -37,7 +37,7 @@ serve(async (req) => {
     
     // Cache key versioning: bump this when prompt/format changes so users don't get stale cached text.
     // This intentionally changes the cache key without requiring any DB schema changes.
-    const PROMPT_VERSION = "2026-02-27-v18-station-exact-times-eclipse";
+    const PROMPT_VERSION = "2026-02-27-v19-mercury-fact-check-local-cache-bust";
 
     const cacheDeviceId = deviceId || 'default';
     const cacheVoiceStyle = `${voiceStyle || ''}@${PROMPT_VERSION}`;
@@ -132,6 +132,14 @@ PRACTICAL MERCURY RETROGRADE GUIDANCE (weave naturally into the report):
 - If you MUST sign something, a Mercury-Sun cazimi (exact conjunction) is the one favorable window
 
 HOW IT FEELS: Like walking through fog — you THINK you see clearly but details are blurry. Your brain moves faster than reality can keep up. Old memories and people resurface. Technology feels like it has a mind of its own. This is normal. It passes. Use it.${mercuryRetrogradeInfo.description?.includes('Pisces') ? ' IN PISCES SPECIFICALLY: The fog is thicker than usual. Dreams are vivid and may carry messages. You may cry more easily. Words fail where feelings succeed. This is Mercury at its most mystical — and most error-prone.' : ''}`
+      : '';
+
+    const mercuryFactCheckText = mercuryRetrogradeInfo
+      ? `MERCURY EPHEMERIS FACT CHECK (NON-NEGOTIABLE):
+- Station retrograde: ${mercuryRetrogradeInfo.stationRetrograde || 'not provided'}
+- Station direct: ${mercuryRetrogradeInfo.stationDirect || 'not provided'}
+- Post-shadow clear: ${mercuryRetrogradeInfo.postShadowClear || 'not provided'}
+If you mention Mercury retrograde milestones, you MUST quote these exact values verbatim and must not substitute any date/time from memory.`
       : '';
 
     // Personalized retrograde guidance
@@ -727,7 +735,7 @@ ${moonSignChangeText}
 ${moonJupiterConjunction}
 Mercury Retrograde: ${mercuryRetro ? 'Yes' : 'No'}
 ${mercuryRxText}
-${stelliumText}
+${mercuryFactCheckText}
 ${rareAspectText}
 ${nodeAspectText}
 ${aspectsText}
@@ -792,7 +800,11 @@ CRITICAL INSTRUCTIONS:
     }
 
     const data = await response.json();
-    const insight = data.choices?.[0]?.message?.content || "Unable to generate insights at this time.";
+    const insightRaw = data.choices?.[0]?.message?.content || "Unable to generate insights at this time.";
+    const mercuryFactAppendix = mercuryRetrogradeInfo
+      ? `\n\n## Ephemeris Fact Check\n- Mercury station retrograde: ${mercuryRetrogradeInfo.stationRetrograde || 'not provided'}\n- Mercury station direct: ${mercuryRetrogradeInfo.stationDirect || 'not provided'}\n- Mercury post-shadow clears: ${mercuryRetrogradeInfo.postShadowClear || 'not provided'}\n(All times and dates above are computed from ephemeris in the user's local timezone.)`
+      : '';
+    const insight = `${insightRaw}${mercuryFactAppendix}`;
 
     // Save to DB cache (expires at end of day in user's timezone, approximated as 24h)
     if (dateKey && !customPrompt) {
