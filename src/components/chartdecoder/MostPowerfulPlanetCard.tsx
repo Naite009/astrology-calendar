@@ -230,9 +230,12 @@ export const MostPowerfulPlanetCard: React.FC<MostPowerfulPlanetCardProps> = ({ 
               <h3 className="text-xl font-serif text-foreground">
                 {mostPowerful.planet}
               </h3>
-              <p className="text-xs text-muted-foreground">
-                {mostPowerful.sign} • House {mostPowerful.house || '?'}
-              </p>
+               <p className="text-xs text-muted-foreground">
+                 {mostPowerful.sign} • House {mostPowerful.house || '?'}
+               </p>
+               <p className="text-[10px] text-muted-foreground/70 mt-0.5 italic">
+                 Best condition score — not necessarily the most dominant
+               </p>
             </div>
           </div>
 
