@@ -32,7 +32,7 @@ import { getVOCMoonDetails, formatVOCDuration } from '@/lib/voidOfCourseMoon';
 import { calculatePlanetaryHours, getDayRuler, formatPlanetaryHourTime, PlanetaryHour } from '@/lib/planetaryHours';
 import { calculateSolarArcChart, findSolarArcAspects, getExactSolarArcAspects, getUpcomingSolarArcAspects, getSolarArcPlanetSymbol, formatSolarArcAge } from '@/lib/solarArcDirections';
 import { calculateSecondaryProgressions, getProgressedMoonInfo, findProgressedAspects, getProgressedPlanetSymbol, formatSignChangeDate } from '@/lib/secondaryProgressions';
-import { getMercuryRetrogrades, getRetrogradeStatus, formatRetrogradeDate, getAllRetrogradePeriods, getRetrogradeDisplay, getRetrogradeChartActivation, MARS_RETROGRADE_GUIDANCE, MERCURY_RETROGRADE_GUIDANCE } from '@/lib/retrogradePatterns';
+import { getMercuryRetrogrades, getRetrogradeStatus, formatRetrogradeDate, formatRetrogradeDateWithTime, getAllRetrogradePeriods, getRetrogradeDisplay, getRetrogradeChartActivation, MARS_RETROGRADE_GUIDANCE, MERCURY_RETROGRADE_GUIDANCE } from '@/lib/retrogradePatterns';
 import { DATES_TO_AVOID_2026, BEST_DAYS_2026 } from '@/lib/electional2026Database';
 import { findNextMoonSignChange } from '@/lib/voidOfCourseMoon';
 
@@ -600,10 +600,11 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
               const status = getRetrogradeStatus(date, periods);
               if (!status.retrogradeInfo) return null;
               const ri = status.retrogradeInfo;
-              const rxEndStr = formatRetrogradeDate(ri.end);
+              // Use exact times (with user's local timezone) for station dates
+              const rxEndStr = formatRetrogradeDateWithTime(ri.end);
               const postEndStr = formatRetrogradeDate(ri.postEnd);
               const preStartStr = formatRetrogradeDate(ri.preStart);
-              const rxStartStr = formatRetrogradeDate(ri.start);
+              const rxStartStr = formatRetrogradeDateWithTime(ri.start);
               const isPiscesRx = ri.sign.includes('Pisces');
               const dignityNote = isPiscesRx ? ' Mercury is in BOTH detriment AND fall in Pisces — double difficulty.' : '';
               if (status.isShadow && status.shadowType === 'pre') {
@@ -615,7 +616,7 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
                 return { phase: isFirstHalf ? 'retrograde-first-half' : 'retrograde-second-half', description: `Mercury is RETROGRADE in ${ri.sign}. ${isFirstHalf ? 'First half - things resurface.' : 'Second half - clarity begins.'} Stations direct ${rxEndStr}. Post-shadow clears ${postEndStr}.${dignityNote}`, sign: ri.sign };
               }
               if (status.isShadow && status.shadowType === 'post') {
-                return { phase: 'post-shadow', description: `Mercury stationed direct on ${rxEndStr} and is retracing post-retrograde shadow. Clarity returns. Shadow clears ${postEndStr}.`, sign: ri.sign };
+                return { phase: 'post-shadow', description: `Mercury stationed direct ${rxEndStr} and is retracing post-retrograde shadow. Clarity returns. Shadow clears ${postEndStr}.`, sign: ri.sign };
               }
               return null;
             } catch { return null; }
@@ -627,7 +628,7 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
               for (const [planet, periods] of Object.entries(allPeriods)) {
                 const status = getRetrogradeStatus(date, periods);
                 if (status.isRetrograde && status.retrogradeInfo) {
-                  statuses[planet] = { isRetrograde: true, sign: status.retrogradeInfo.sign, stationDirect: formatRetrogradeDate(status.retrogradeInfo.end) };
+                  statuses[planet] = { isRetrograde: true, sign: status.retrogradeInfo.sign, stationDirect: formatRetrogradeDateWithTime(status.retrogradeInfo.end) };
                 }
               }
               return Object.keys(statuses).length > 0 ? statuses : undefined;
