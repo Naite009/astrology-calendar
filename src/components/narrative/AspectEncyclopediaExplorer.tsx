@@ -9,6 +9,7 @@ import {
 } from '@/lib/aspectEncyclopedia';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { detectChartPatterns } from '@/lib/chartPatterns';
+import { PersonalAspectGrid } from './PersonalAspectGrid';
 
 // Pattern images
 import patternGrandTrine from '@/assets/pattern-grand-trine.png';
@@ -432,6 +433,9 @@ export function AspectEncyclopediaExplorer({
           <p className="text-xs text-muted-foreground">No major patterns or stelliums detected in this chart. Your chart expresses through individual aspects — explore them below.</p>
         </div>
       )}
+
+      {/* Personal Aspect Grid */}
+      {activeChart && <PersonalAspectGrid chart={activeChart} />}
 
       {/* Major Aspects */}
       <div className="space-y-3">
