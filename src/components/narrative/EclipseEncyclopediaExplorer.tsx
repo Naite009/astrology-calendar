@@ -4,32 +4,87 @@ import { ChartSelector } from '@/components/ChartSelector';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-// ── Eclipse data for the Leo-Aquarius series (2026-2028) + preceding Pisces/Virgo ──
+// ── Verified eclipse data from Cafe Astrology / NASA ──
 interface EclipseEvent {
   date: string;
   type: 'solar' | 'lunar';
-  subtype: 'total' | 'annular' | 'partial' | 'penumbral';
+  subtype: 'total' | 'annular' | 'partial' | 'penumbral' | 'annular-total';
   sign: string;
   degree: number;
+  minutes: number;
   nodal: 'north' | 'south';
   series: string;
-  sarosCycle?: number;
   description: string;
 }
 
-const ECLIPSE_EVENTS: EclipseEvent[] = [
-  // Pisces-Virgo final eclipses
-  { date: '2025-09-07', type: 'lunar', subtype: 'total', sign: 'Pisces', degree: 15, nodal: 'south', series: 'Pisces-Virgo', description: 'Final total lunar eclipse in Pisces — closing the Pisces-Virgo chapter that began in 2024.' },
-  { date: '2025-09-21', type: 'solar', subtype: 'partial', sign: 'Virgo', degree: 29, nodal: 'north', series: 'Pisces-Virgo', description: 'Last solar eclipse in Virgo at a critical 29° anaretic degree — final harvest of Virgo themes.' },
-  // Leo-Aquarius series (from Brennan's chart)
-  { date: '2026-02-17', type: 'solar', subtype: 'annular', sign: 'Aquarius', degree: 28, nodal: 'south', series: 'Leo-Aquarius', description: 'First solar eclipse opening the new Leo-Aquarius axis. Major new beginnings in community, innovation, and individuality.' },
-  { date: '2026-08-12', type: 'solar', subtype: 'total', sign: 'Leo', degree: 20, nodal: 'north', series: 'Leo-Aquarius', description: 'Total solar eclipse in Leo — powerful creative and leadership reset. Heart-centered new chapters.' },
-  { date: '2027-02-06', type: 'solar', subtype: 'annular', sign: 'Aquarius', degree: 17, nodal: 'south', series: 'Leo-Aquarius', description: 'Deepening the Aquarius themes — humanitarian vision, detachment from ego, collective evolution.' },
-  { date: '2027-08-02', type: 'solar', subtype: 'total', sign: 'Leo', degree: 9, nodal: 'north', series: 'Leo-Aquarius', description: 'Second total solar eclipse in Leo — the story of self-expression and courage reaches a crescendo.' },
-  { date: '2027-08-17', type: 'lunar', subtype: 'penumbral', sign: 'Aquarius', degree: 24, nodal: 'south', series: 'Leo-Aquarius', description: 'Penumbral lunar eclipse in Aquarius — subtle emotional release around group dynamics and independence.' },
-  { date: '2028-01-26', type: 'solar', subtype: 'annular', sign: 'Aquarius', degree: 6, nodal: 'south', series: 'Leo-Aquarius', description: 'Final solar eclipse of the Leo-Aquarius series — completing the cycle of individuation vs. community.' },
-];
+// Eclipse series are organized by nodal axis.
+// IMPORTANT: Series overlap! Solar eclipses tend to follow the new axis
+// while lunar eclipses from the outgoing axis continue alongside.
+const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: string; status: string; description: string; events: EclipseEvent[] }> = {
+  'Aries-Libra': {
+    label: 'Aries ↔ Libra',
+    glyphs: '♈ ♎',
+    period: '2023–2025',
+    status: 'ending',
+    description: 'Self vs. Other — identity, independence, relationships, and compromise. This series is winding down with its final eclipse in March 2025.',
+    events: [
+      { date: '2023-04-20', type: 'solar', subtype: 'annular-total', sign: 'Aries', degree: 29, minutes: 50, nodal: 'north', series: 'Aries-Libra', description: 'Hybrid solar eclipse at 29° Aries — powerful anaretic degree new beginning in self-identity.' },
+      { date: '2023-10-14', type: 'solar', subtype: 'annular', sign: 'Libra', degree: 21, minutes: 8, nodal: 'south', series: 'Aries-Libra', description: 'Annular "ring of fire" eclipse in Libra — karmic release in relationships and partnerships.' },
+      { date: '2024-03-25', type: 'lunar', subtype: 'penumbral', sign: 'Libra', degree: 5, minutes: 7, nodal: 'south', series: 'Aries-Libra', description: 'Penumbral lunar eclipse in Libra — subtle emotional processing around relationship dynamics.' },
+      { date: '2024-04-08', type: 'solar', subtype: 'total', sign: 'Aries', degree: 19, minutes: 24, nodal: 'north', series: 'Aries-Libra', description: 'Total solar eclipse in Aries — major new beginning in self-expression and courage. Visible across North America.' },
+      { date: '2024-10-02', type: 'solar', subtype: 'annular', sign: 'Libra', degree: 10, minutes: 4, nodal: 'south', series: 'Aries-Libra', description: 'Final solar eclipse in Libra — last call to release outdated relationship patterns.' },
+      { date: '2025-03-29', type: 'solar', subtype: 'partial', sign: 'Aries', degree: 9, minutes: 0, nodal: 'north', series: 'Aries-Libra', description: 'Final partial solar eclipse in Aries — closing the Aries-Libra chapter. Last seeding of self-identity themes.' },
+    ],
+  },
+  'Virgo-Pisces': {
+    label: 'Virgo ↔ Pisces',
+    glyphs: '♍ ♓',
+    period: '2024–2027',
+    status: 'active',
+    description: 'Service vs. Surrender — health, routines, analysis, spirituality, intuition, and letting go. These LUNAR eclipses overlap with the Leo-Aquarius solar eclipses.',
+    events: [
+      { date: '2024-09-18', type: 'lunar', subtype: 'partial', sign: 'Pisces', degree: 25, minutes: 41, nodal: 'south', series: 'Virgo-Pisces', description: 'Partial lunar eclipse in Pisces — emotional release around spiritual boundaries and escapism.' },
+      { date: '2025-03-14', type: 'lunar', subtype: 'total', sign: 'Virgo', degree: 23, minutes: 57, nodal: 'north', series: 'Virgo-Pisces', description: 'Total lunar eclipse in Virgo — powerful culmination around health, work, and daily practices.' },
+      { date: '2025-09-07', type: 'lunar', subtype: 'total', sign: 'Pisces', degree: 15, minutes: 23, nodal: 'south', series: 'Virgo-Pisces', description: 'Total lunar eclipse in Pisces — deep emotional release, spiritual breakthroughs, dissolving old illusions.' },
+      { date: '2025-09-21', type: 'solar', subtype: 'partial', sign: 'Virgo', degree: 29, minutes: 5, nodal: 'north', series: 'Virgo-Pisces', description: 'Partial solar eclipse at 29° Virgo — anaretic degree! Final harvest of Virgo themes before the nodes fully shift.' },
+      { date: '2026-03-03', type: 'lunar', subtype: 'total', sign: 'Virgo', degree: 12, minutes: 54, nodal: 'north', series: 'Virgo-Pisces', description: 'Total lunar eclipse in Virgo — continuing to illuminate health, service, and discernment themes.' },
+      { date: '2026-08-28', type: 'lunar', subtype: 'partial', sign: 'Pisces', degree: 4, minutes: 54, nodal: 'south', series: 'Virgo-Pisces', description: 'Partial lunar eclipse in Pisces — releasing spiritual bypassing, refining compassion and boundaries.' },
+      { date: '2027-02-20', type: 'lunar', subtype: 'penumbral', sign: 'Virgo', degree: 2, minutes: 6, nodal: 'north', series: 'Virgo-Pisces', description: 'Final penumbral lunar eclipse in Virgo — gentle closing of the Virgo-Pisces cycle.' },
+    ],
+  },
+  'Leo-Aquarius': {
+    label: 'Leo ↔ Aquarius',
+    glyphs: '♌ ♒',
+    period: '2026–2028',
+    status: 'upcoming',
+    description: 'Self-Expression vs. Community — creativity, heart, leadership, individuality, group consciousness, and humanitarian vision. All SOLAR eclipses fall on this axis.',
+    events: [
+      { date: '2026-02-17', type: 'solar', subtype: 'annular', sign: 'Aquarius', degree: 28, minutes: 50, nodal: 'south', series: 'Leo-Aquarius', description: 'First solar eclipse on the Leo-Aquarius axis — opening a new chapter around individuality vs. collective belonging.' },
+      { date: '2026-08-12', type: 'solar', subtype: 'total', sign: 'Leo', degree: 20, minutes: 2, nodal: 'north', series: 'Leo-Aquarius', description: 'Total solar eclipse in Leo — powerful creative and leadership reset. Heart-centered new chapters.' },
+      { date: '2027-02-06', type: 'solar', subtype: 'annular', sign: 'Aquarius', degree: 17, minutes: 38, nodal: 'south', series: 'Leo-Aquarius', description: 'Deepening Aquarius themes — humanitarian vision, innovation, and releasing ego attachment.' },
+      { date: '2027-08-02', type: 'solar', subtype: 'total', sign: 'Leo', degree: 9, minutes: 55, nodal: 'north', series: 'Leo-Aquarius', description: 'Second total solar eclipse in Leo — the story of self-expression and courage reaches its crescendo.' },
+      { date: '2027-08-17', type: 'lunar', subtype: 'penumbral', sign: 'Aquarius', degree: 24, minutes: 12, nodal: 'south', series: 'Leo-Aquarius', description: 'Penumbral lunar eclipse in Aquarius — subtle emotional release around group dynamics and independence.' },
+      { date: '2028-01-26', type: 'solar', subtype: 'annular', sign: 'Aquarius', degree: 6, minutes: 11, nodal: 'south', series: 'Leo-Aquarius', description: 'Final solar eclipse of the Leo-Aquarius series — completing the cycle of individuation vs. community.' },
+    ],
+  },
+  'Cancer-Capricorn': {
+    label: 'Cancer ↔ Capricorn',
+    glyphs: '♋ ♑',
+    period: '2027–2029',
+    status: 'next',
+    description: 'Home vs. Career — emotional security, family, nurturing, ambition, public reputation, and authority. The next major axis to activate.',
+    events: [
+      { date: '2027-07-18', type: 'lunar', subtype: 'penumbral', sign: 'Capricorn', degree: 25, minutes: 49, nodal: 'south', series: 'Cancer-Capricorn', description: 'First eclipse of the Cancer-Capricorn series — subtle shifts around career authority and legacy.' },
+      { date: '2028-01-12', type: 'lunar', subtype: 'partial', sign: 'Cancer', degree: 21, minutes: 28, nodal: 'north', series: 'Cancer-Capricorn', description: 'Partial lunar eclipse in Cancer — emotional revelations around home, family, and security needs.' },
+      { date: '2028-07-06', type: 'lunar', subtype: 'partial', sign: 'Capricorn', degree: 15, minutes: 11, nodal: 'south', series: 'Cancer-Capricorn', description: 'Partial lunar eclipse in Capricorn — releasing outdated career or authority structures.' },
+      { date: '2028-07-22', type: 'solar', subtype: 'total', sign: 'Cancer', degree: 29, minutes: 51, nodal: 'north', series: 'Cancer-Capricorn', description: 'Total solar eclipse at 29° Cancer — powerful anaretic degree new beginning in home and family.' },
+      { date: '2028-12-31', type: 'lunar', subtype: 'total', sign: 'Cancer', degree: 10, minutes: 33, nodal: 'north', series: 'Cancer-Capricorn', description: 'Total lunar eclipse in Cancer — deep emotional culmination around nurturing and belonging.' },
+      { date: '2029-06-26', type: 'lunar', subtype: 'total', sign: 'Capricorn', degree: 4, minutes: 50, nodal: 'south', series: 'Cancer-Capricorn', description: 'Total lunar eclipse in Capricorn — major karmic release around ambition and public role.' },
+    ],
+  },
+};
 
 const ZODIAC_ORDER = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
@@ -97,6 +152,7 @@ interface Props {
 
 export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Props) {
   const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
+  const [activeSeriesTab, setActiveSeriesTab] = useState('Virgo-Pisces');
 
   const allCharts = useMemo(() => {
     const charts: NatalChart[] = [];
@@ -111,20 +167,22 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
     ? allCharts.find(c => c.name === selectedChartId) || allCharts[0] || null
     : allCharts[0] || null;
 
-  const personalizedEclipses = useMemo(() => {
-    if (!selectedChart || !selectedChart.houseCusps) return null;
-    return ECLIPSE_EVENTS.map(e => {
+  const activeSeries = ECLIPSE_SERIES[activeSeriesTab];
+
+  const personalizedEvents = useMemo(() => {
+    if (!selectedChart?.houseCusps || !activeSeries) return null;
+    return activeSeries.events.map(e => {
       const house = getHouseForDegree(e.sign, e.degree, selectedChart);
       const oppositeSign = ZODIAC_ORDER[(ZODIAC_ORDER.indexOf(e.sign) + 6) % 12];
       const oppositeHouse = getHouseForDegree(oppositeSign, e.degree, selectedChart);
       return { ...e, house, oppositeHouse };
     });
-  }, [selectedChart]);
+  }, [selectedChart, activeSeries]);
 
   return (
     <div className="space-y-8">
       {/* ── Education Section ── */}
-      <Card className="border-amber-500/30 bg-gradient-to-br from-background to-amber-950/10">
+      <Card className="border-primary/20 bg-gradient-to-br from-background to-primary/5">
         <CardHeader>
           <CardTitle className="flex items-center gap-3 text-2xl">
             <span className="text-3xl">🌑</span> Understanding Eclipses
@@ -135,7 +193,6 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
         </CardHeader>
         <CardContent className="space-y-6">
           <Accordion type="multiple" defaultValue={['what', 'solar-vs-lunar', 'nodes']}>
-            {/* What Are Eclipses */}
             <AccordionItem value="what">
               <AccordionTrigger className="text-lg font-semibold">What Are Eclipses?</AccordionTrigger>
               <AccordionContent className="text-muted-foreground space-y-3">
@@ -146,17 +203,31 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
                   Astrologically, eclipses represent <strong>fate-accelerating events</strong>. They open and close chapters of your life, often bringing sudden revelations, endings, or beginnings that feel "meant to be." Unlike regular New and Full Moons, eclipse effects can unfold over <strong>6 months to a year</strong>.
                 </p>
                 <p>
-                  Eclipses travel in pairs along an <strong>axis</strong> (two opposite signs), cycling through each axis for about 18 months before moving on. The current series shifts from <strong>Pisces-Virgo to Leo-Aquarius</strong> in early 2026.
+                  Eclipses travel in pairs along an <strong>axis</strong> (two opposite signs), cycling through each axis for about 18 months before moving on.
                 </p>
               </AccordionContent>
             </AccordionItem>
 
-            {/* Solar vs Lunar */}
+            <AccordionItem value="overlap">
+              <AccordionTrigger className="text-lg font-semibold">Why Eclipse Series Overlap</AccordionTrigger>
+              <AccordionContent className="text-muted-foreground space-y-3">
+                <p>
+                  One of the most confusing things about eclipses is that <strong>multiple series run simultaneously</strong>. As the nodes shift from one axis to the next, there's a transition period where eclipses from the old and new axes interleave.
+                </p>
+                <p>
+                  Right now (2025–2027), this is exactly what's happening: the <strong>Virgo-Pisces lunar eclipses</strong> continue alongside the new <strong>Leo-Aquarius solar eclipses</strong>. The solar eclipses have moved to Leo-Aquarius, but the lunar eclipses are still completing the Virgo-Pisces story.
+                </p>
+                <p>
+                  This means two different axes of your chart are being activated at the same time — a more complex but rich period of growth.
+                </p>
+              </AccordionContent>
+            </AccordionItem>
+
             <AccordionItem value="solar-vs-lunar">
               <AccordionTrigger className="text-lg font-semibold">Solar vs. Lunar Eclipses</AccordionTrigger>
               <AccordionContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card className="bg-card/50 border-amber-500/20">
+                  <Card className="bg-card/50 border-primary/20">
                     <CardContent className="pt-4 space-y-2">
                       <div className="flex items-center gap-2 text-lg font-semibold">
                         <span className="text-2xl">🌑</span> Solar Eclipse
@@ -170,7 +241,7 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
                       </ul>
                     </CardContent>
                   </Card>
-                  <Card className="bg-card/50 border-purple-500/20">
+                  <Card className="bg-card/50 border-accent/20">
                     <CardContent className="pt-4 space-y-2">
                       <div className="flex items-center gap-2 text-lg font-semibold">
                         <span className="text-2xl">🌕</span> Lunar Eclipse
@@ -188,7 +259,6 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
               </AccordionContent>
             </AccordionItem>
 
-            {/* The Nodes */}
             <AccordionItem value="nodes">
               <AccordionTrigger className="text-lg font-semibold">The Lunar Nodes & Eclipse Families</AccordionTrigger>
               <AccordionContent className="text-muted-foreground space-y-3">
@@ -204,7 +274,6 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
               </AccordionContent>
             </AccordionItem>
 
-            {/* Types */}
             <AccordionItem value="types">
               <AccordionTrigger className="text-lg font-semibold">Types of Eclipses</AccordionTrigger>
               <AccordionContent className="space-y-3">
@@ -229,7 +298,6 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
               </AccordionContent>
             </AccordionItem>
 
-            {/* How to Read */}
             <AccordionItem value="how-to-read">
               <AccordionTrigger className="text-lg font-semibold">How Eclipses Affect Your Chart</AccordionTrigger>
               <AccordionContent className="text-muted-foreground space-y-3">
@@ -248,7 +316,6 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
               </AccordionContent>
             </AccordionItem>
 
-            {/* Saros Cycle */}
             <AccordionItem value="saros">
               <AccordionTrigger className="text-lg font-semibold">The Saros Cycle</AccordionTrigger>
               <AccordionContent className="text-muted-foreground space-y-3">
@@ -264,20 +331,20 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
         </CardContent>
       </Card>
 
-      {/* ── Timeline: Leo-Aquarius Series ── */}
+      {/* ── Eclipse Timeline by Series ── */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
-            <span className="text-2xl">♌ ♒</span> Eclipse Timeline: Leo-Aquarius Series (2026–2028)
+            <span className="text-2xl">📅</span> Eclipse Timeline by Series
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            This series opens Feb 17, 2026 and completes Jan 26, 2028 — bringing major endings and new beginnings in the Leo-Aquarius axis of your chart.
+            Eclipse series overlap — multiple axes are active simultaneously. Select a series to see its eclipses and how they land in your chart.
           </p>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           {/* Chart selector */}
           {allCharts.length > 0 && (
-            <div className="mb-6">
+            <div className="mb-4">
               <ChartSelector
                 userNatalChart={userNatalChart}
                 savedCharts={savedCharts}
@@ -287,56 +354,81 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
             </div>
           )}
 
-          <div className="space-y-3">
-            {(personalizedEclipses || ECLIPSE_EVENTS).map((eclipse, idx) => {
-              const e = eclipse as EclipseEvent & { house?: number | null; oppositeHouse?: number | null };
-              const dateObj = new Date(e.date + 'T12:00:00');
-              const formatted = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-              const isFuture = dateObj > new Date();
-              const isPast = !isFuture;
+          <Tabs value={activeSeriesTab} onValueChange={setActiveSeriesTab}>
+            <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full h-auto">
+              {Object.entries(ECLIPSE_SERIES).map(([key, s]) => (
+                <TabsTrigger key={key} value={key} className="text-xs sm:text-sm py-2 flex flex-col gap-0.5">
+                  <span>{s.glyphs}</span>
+                  <span className="hidden sm:inline">{s.label}</span>
+                  <Badge variant={s.status === 'active' ? 'default' : s.status === 'upcoming' ? 'secondary' : 'outline'} className="text-[10px] mt-0.5">
+                    {s.status === 'ending' ? 'Ending' : s.status === 'active' ? 'Active Now' : s.status === 'upcoming' ? 'Starting' : 'Next Up'}
+                  </Badge>
+                </TabsTrigger>
+              ))}
+            </TabsList>
 
-              return (
-                <Card key={idx} className={`border-l-4 ${e.type === 'solar' ? 'border-l-amber-500' : 'border-l-purple-400'} ${isPast ? 'opacity-60' : ''}`}>
-                  <CardContent className="py-4 flex flex-col sm:flex-row sm:items-start gap-3">
-                    <div className="flex items-center gap-2 min-w-[140px]">
-                      <span className="text-2xl">{e.type === 'solar' ? '🌑' : '🌕'}</span>
-                      <div>
-                        <p className="font-semibold text-sm capitalize">{e.subtype} {e.type}</p>
-                        <p className="text-xs text-muted-foreground">{formatted}</p>
-                      </div>
-                    </div>
-                    <div className="flex-1 space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Badge variant="outline" className="text-xs">
-                          {e.degree}° {getSignGlyph(e.sign)} {e.sign}
-                        </Badge>
-                        <Badge variant="secondary" className="text-xs">
-                          {e.nodal === 'north' ? '☊ North Node' : '☋ South Node'}
-                        </Badge>
-                        {isPast && <Badge className="text-xs bg-muted text-muted-foreground">Past</Badge>}
-                      </div>
-                      <p className="text-sm text-muted-foreground">{e.description}</p>
-                      {e.house && (
-                        <div className="mt-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
-                          <p className="text-sm font-medium">
-                            ✨ Falls in your <strong>{getOrdinalSuffix(e.house)} House</strong>
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {HOUSE_LIFE_AREAS[e.house]}
-                          </p>
-                          {e.oppositeHouse && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Axis activation: also stirring <strong>{getOrdinalSuffix(e.oppositeHouse)} House</strong> themes ({HOUSE_LIFE_AREAS[e.oppositeHouse]?.split(',')[0]})
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+            {Object.entries(ECLIPSE_SERIES).map(([key, series]) => (
+              <TabsContent key={key} value={key} className="mt-4 space-y-4">
+                <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
+                  <h3 className="font-semibold text-lg">{series.glyphs} {series.label} ({series.period})</h3>
+                  <p className="text-sm text-muted-foreground mt-1">{series.description}</p>
+                </div>
+
+                <div className="space-y-3">
+                  {(key === activeSeriesTab ? (personalizedEvents || series.events) : series.events).map((eclipse, idx) => {
+                    const e = eclipse as EclipseEvent & { house?: number | null; oppositeHouse?: number | null };
+                    const dateObj = new Date(e.date + 'T12:00:00');
+                    const formatted = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                    const now = new Date();
+                    const isPast = dateObj < now;
+                    const isNext = !isPast && (idx === 0 || new Date(series.events[idx - 1].date + 'T12:00:00') < now);
+
+                    return (
+                      <Card key={idx} className={`border-l-4 ${e.type === 'solar' ? 'border-l-primary' : 'border-l-accent'} ${isPast ? 'opacity-50' : ''} ${isNext ? 'ring-2 ring-primary/30' : ''}`}>
+                        <CardContent className="py-4 flex flex-col sm:flex-row sm:items-start gap-3">
+                          <div className="flex items-center gap-2 min-w-[140px]">
+                            <span className="text-2xl">{e.type === 'solar' ? '🌑' : '🌕'}</span>
+                            <div>
+                              <p className="font-semibold text-sm capitalize">{e.subtype} {e.type}</p>
+                              <p className="text-xs text-muted-foreground">{formatted}</p>
+                            </div>
+                          </div>
+                          <div className="flex-1 space-y-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Badge variant="outline" className="text-xs">
+                                {e.degree}°{e.minutes > 0 ? e.minutes.toString().padStart(2, '0') + "'" : ''} {getSignGlyph(e.sign)} {e.sign}
+                              </Badge>
+                              <Badge variant="secondary" className="text-xs">
+                                {e.nodal === 'north' ? '☊ North Node' : '☋ South Node'}
+                              </Badge>
+                              {isPast && <Badge className="text-xs bg-muted text-muted-foreground">Past</Badge>}
+                              {isNext && <Badge className="text-xs bg-primary text-primary-foreground">Next</Badge>}
+                            </div>
+                            <p className="text-sm text-muted-foreground">{e.description}</p>
+                            {'house' in e && e.house && (
+                              <div className="mt-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
+                                <p className="text-sm font-medium">
+                                  ✨ Falls in your <strong>{getOrdinalSuffix(e.house)} House</strong>
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {HOUSE_LIFE_AREAS[e.house]}
+                                </p>
+                                {'oppositeHouse' in e && e.oppositeHouse && (
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    Axis activation: also stirring <strong>{getOrdinalSuffix(e.oppositeHouse)} House</strong> themes ({HOUSE_LIFE_AREAS[e.oppositeHouse]?.split(',')[0]})
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </TabsContent>
+            ))}
+          </Tabs>
 
           {!selectedChart?.houseCusps && allCharts.length > 0 && (
             <p className="mt-4 text-sm text-muted-foreground italic text-center">
