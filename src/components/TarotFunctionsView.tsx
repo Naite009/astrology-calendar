@@ -242,11 +242,121 @@ const COURT_RANK_DESCRIPTIONS: Record<string, { title: string; archetype: string
   King: { title: "King", archetype: "The Authority", traits: "Commanding, experienced, outwardly directed. You've integrated your element and wield it with confidence and responsibility. Leadership and external mastery.", reading: "When this card appears for others, it signals mature authority. For you, it's a reminder that your experience has earned you the right to lead — trust your track record." },
 };
 
+const COURT_CARD_PROFILES: Record<string, { personality: string; shadow: string; advice: string; symbols: string }> = {
+  "Page of Wands": {
+    personality: "You are the eternal spark — the one who lights up when a new idea hits. You live for creative beginnings, passion projects, and the thrill of possibility. People are drawn to your infectious enthusiasm and your willingness to try anything.",
+    shadow: "You may start a hundred things and finish three. Your fire burns bright but brief. Watch for scattered energy and chasing novelty over depth.",
+    advice: "Your gift is ignition. Not every flame needs to become a bonfire — some are meant to light someone else's torch.",
+    symbols: "A young figure holding a wand in a desert landscape, gazing with wonder. Salamanders on their tunic. The energy of 'what could be.'"
+  },
+  "Knight of Wands": {
+    personality: "You are pure momentum — a blazing comet of passion and action. You don't just have ideas, you chase them with reckless devotion. Charismatic and bold, you book the flight before checking the price and confess feelings at 2am.",
+    shadow: "Impulsiveness can burn bridges. You may charge into situations without reading the room, leaving unfinished quests and bewildered people behind.",
+    advice: "Your fire is real and rare — but direction matters more than speed. Before you charge, ask: 'Am I running toward something or away from something?'",
+    symbols: "A rider on a rearing horse, plumes of fire, desert landscape. Pure kinetic energy — the charge before the battle."
+  },
+  "Queen of Wands": {
+    personality: "You radiate warmth and creative authority. People gather around you not because you demand attention, but because your presence is magnetic — you make others feel seen, inspired, and capable. You are the sunflower and the sun.",
+    shadow: "You can become possessive of your creative territory or jealous when others shine. Your warmth can turn to scorching heat if you feel disrespected.",
+    advice: "Your throne is built on authenticity, not performance. You don't need to be 'on' all the time — your quiet fire is just as powerful as your roar.",
+    symbols: "A confident figure on a throne holding a wand and a sunflower, with a black cat at her feet. Creative sovereignty and inner fire."
+  },
+  "King of Wands": {
+    personality: "You are the visionary leader — the one who sees the big picture and inspires others to build it. You've taken raw creative fire and forged it into something sustainable. Your confidence isn't bravado — it's earned through creative courage.",
+    shadow: "You can become domineering or dismissive of others' ideas when too attached to your own vision. Your certainty can calcify into rigidity.",
+    advice: "The greatest kings build kingdoms that outlast them. Your vision is the spark, but your people are the fuel. Lead with generosity, not just genius.",
+    symbols: "A commanding figure on a throne with lions and salamanders. A wand planted firmly — not waved, but wielded with purpose."
+  },
+  "Page of Cups": {
+    personality: "You are the dreamer — tender, imaginative, and emotionally open in a way that startles people. You see beauty in the mundane and feel things others walk right past. You're the one who cries at commercials and means it.",
+    shadow: "Your emotional openness can make you naive or easily manipulated. You may retreat into fantasy when reality feels too harsh.",
+    advice: "Your sensitivity is not weakness — it's a superpower. But learn to discern between intuition and wishful thinking. Not every fish in your cup is a gift.",
+    symbols: "A young figure gazing curiously at a fish emerging from a golden cup. The unexpected arrival of feeling and creativity."
+  },
+  "Knight of Cups": {
+    personality: "You are the romantic quester — pursuing love, beauty, and emotional truth with poetic intensity. You write the love letter, plan the meaningful gesture, or follow a feeling across continents. Your emotional courage is remarkable.",
+    shadow: "You can become moody, emotionally manipulative, or addicted to the high of falling in love without staying for the work of loving.",
+    advice: "The grail you seek isn't in another person or another horizon — it's in your capacity to sit with your own depths. The bravest quest is inward.",
+    symbols: "A knight on a white horse, calmly approaching with a cup extended. Not charging — offering. The quiet courage of emotional vulnerability."
+  },
+  "Queen of Cups": {
+    personality: "You are the deep well — emotionally psychic, compassionate, and profoundly intuitive. You sense what others feel before they speak it. People confide in you because your presence alone is healing. Your emotional intelligence is your throne.",
+    shadow: "You can absorb others' emotions until you lose yourself. Codependency, martyrdom, and emotional enmeshment are your traps.",
+    advice: "Your gift of feeling everything is sacred, but you must learn where you end and others begin. A cup that's always pouring eventually runs dry.",
+    symbols: "A contemplative figure at the water's edge, holding an ornate sealed cup. Emotions mastered, not suppressed."
+  },
+  "King of Cups": {
+    personality: "You are emotional mastery personified — you feel deeply but act wisely. You've learned to navigate your inner ocean without drowning in it. Calm in crisis, compassionate without being consumed, everyone turns to you when things fall apart.",
+    shadow: "Your control can become emotional repression. You may appear calm while seething underneath, or use emotional intelligence to manipulate.",
+    advice: "True mastery isn't controlling the waves — it's surfing them. Let people see your depths sometimes. Vulnerability from strength is the most powerful thing there is.",
+    symbols: "A composed figure amid turbulent seas, holding a cup steadily. A fish and a ship — unconscious and conscious held in balance."
+  },
+  "Page of Swords": {
+    personality: "You are the sharp observer — endlessly curious, mentally agile, and always watching. You ask the questions nobody else thinks to ask and notice the detail everyone else misses. Truth matters to you more than comfort.",
+    shadow: "You can become argumentative for sport, or so focused on finding flaws that you miss the beauty. Your sharp tongue can cut people you love.",
+    advice: "Your mind is a magnificent sword — but a sword that swings at everything eventually hits something precious. Choose your battles.",
+    symbols: "A vigilant figure on rough ground, sword raised, hair blown by wind. Alert, watchful, ready — the spy before the battle."
+  },
+  "Knight of Swords": {
+    personality: "You are the intellectual warrior — charging toward truth with the ferocity of a storm. You cut through nonsense, challenge authority, and refuse to accept 'because I said so.' Your mind is a weapon and you wield it fearlessly.",
+    shadow: "You can become ruthless, tactless, or so attached to being right that you destroy relationships in the name of truth.",
+    advice: "Being right and being effective are not the same thing. The sharpest blade is useless if wielded without precision. Slow down long enough to aim.",
+    symbols: "A charging knight, sword raised high, riding into a storm. Trees bending, clouds racing. The unstoppable force of a mind on a mission."
+  },
+  "Queen of Swords": {
+    personality: "You are the clear-eyed truth-teller — someone who has suffered and emerged sharper, not harder. Your clarity comes from experience, not theory. You see through pretense instantly and speak with precision that cuts to the core.",
+    shadow: "You can become cold, judgmental, or isolated behind walls of independence. Past pain may make you preemptively push people away.",
+    advice: "Your sword of truth is most powerful when held with an open heart. You've earned your clarity through pain — now use it to liberate, not to punish.",
+    symbols: "A solitary figure on a throne in the clouds, sword upright, one hand extended. Butterflies and a crescent moon. Grief transformed into wisdom."
+  },
+  "King of Swords": {
+    personality: "You are the strategic authority — fair, analytical, and unswayed by emotional manipulation. You make decisions based on principle and precedent, not feelings. People respect you because your judgments are consistent and your standards are clear.",
+    shadow: "You can become tyrannical in your logic, dismissing emotion as weakness and demanding perfection from others. Detachment may read as coldness.",
+    advice: "The greatest minds serve the greatest hearts. Logic without compassion is just cruelty with good grammar. Let your principles protect people, not punish them.",
+    symbols: "An authoritative figure on a throne, sword raised vertically, butterflies carved in stone. Thought made law."
+  },
+  "Page of Pentacles": {
+    personality: "You are the devoted student of the material world — fascinated by how things work, grow, and are built. You approach money, health, and craft with genuine wonder and patience. You practice until you get it right.",
+    shadow: "You can become too cautious, missing opportunities while 'preparing.' Perfectionism and analysis paralysis may keep you studying instead of doing.",
+    advice: "The seed you're examining so carefully? It's time to plant it. Perfection is the enemy of progress. Your careful nature will serve you — but only if you begin.",
+    symbols: "A figure in a green landscape, holding a pentacle up and studying it with fascination. Rich earth, a plowed field."
+  },
+  "Knight of Pentacles": {
+    personality: "You are the reliable builder — methodical, hardworking, and quietly unstoppable. While others sprint and crash, you maintain a steady pace that actually gets you there. You show up every day, do the work, and finish what you start. Always.",
+    shadow: "You can become stubborn, rigid, or so focused on the plan that you miss when it needs to change. You may equate your worth with productivity.",
+    advice: "Your consistency is your crown, but don't let it become a cage. Sometimes the most productive thing is rest. Sometimes the plan needs to change.",
+    symbols: "A knight on a heavy workhorse, standing still in a plowed field. Not charging — enduring. The long game personified."
+  },
+  "Queen of Pentacles": {
+    personality: "You are the abundant nurturer — someone who creates beauty, comfort, and security wherever you go. Your home is a sanctuary, your cooking feeds the soul, your advice is practical and warm. You have a magical ability to make things grow.",
+    shadow: "You can become possessive, materialistic, or so focused on providing for others that you forget your own needs. Generosity may come with invisible strings.",
+    advice: "Your abundance is real and you've earned it — but remember that the most valuable thing you grow is yourself. Don't lose the wild woman inside the garden walls.",
+    symbols: "A nurturing figure on a throne in a lush garden, holding a pentacle lovingly. A rabbit at her feet, flowers everywhere."
+  },
+  "King of Pentacles": {
+    personality: "You are the master builder — patience, discipline, and practical wisdom turned into tangible wealth and security. Not just money, but a life that works: stable relationships, good health, a home reflecting your values. Proof that slow, intentional effort creates lasting results.",
+    shadow: "You can become controlling, status-obsessed, or so attached to what you've built that you resist all change. Your empire may become your prison.",
+    advice: "You've built something remarkable — now make sure it serves life, not just legacy. The greatest wealth is the freedom to be generous.",
+    symbols: "A prosperous figure surrounded by vines and bulls, holding a pentacle and a scepter. Material mastery complete."
+  },
+};
+
 const SUIT_IMAGERY: Record<string, { emoji: string; keywords: string; courtStyle: string }> = {
   Wands: { emoji: "🔥", keywords: "Passion, creativity, ambition, spiritual fire", courtStyle: "The Wands court are visionaries and creators — charismatic, restless, and driven by inspiration." },
   Cups: { emoji: "🌊", keywords: "Emotions, love, relationships, inner world", courtStyle: "The Cups court are feelers and healers — empathic, romantic, and guided by the heart." },
   Swords: { emoji: "⚔️", keywords: "Intellect, truth, conflict, clarity", courtStyle: "The Swords court are thinkers and truth-seekers — sharp, analytical, and unafraid of hard truths." },
   Pentacles: { emoji: "🌿", keywords: "Material world, health, money, craft", courtStyle: "The Pentacles court are builders and providers — steady, resourceful, and deeply grounded." },
+};
+
+const SUIT_CARD_STYLES: Record<string, { border: string; bg: string; glow: string; accent: string }> = {
+  Wands: { border: 'border-red-400/60', bg: 'bg-gradient-to-b from-red-950/40 via-red-900/20 to-orange-950/30', glow: 'shadow-[0_0_40px_-10px_rgba(239,68,68,0.4)]', accent: 'text-red-300' },
+  Cups: { border: 'border-blue-400/60', bg: 'bg-gradient-to-b from-blue-950/40 via-blue-900/20 to-cyan-950/30', glow: 'shadow-[0_0_40px_-10px_rgba(59,130,246,0.4)]', accent: 'text-blue-300' },
+  Swords: { border: 'border-yellow-400/60', bg: 'bg-gradient-to-b from-slate-900/40 via-yellow-950/10 to-slate-950/30', glow: 'shadow-[0_0_40px_-10px_rgba(250,204,21,0.3)]', accent: 'text-yellow-300' },
+  Pentacles: { border: 'border-green-400/60', bg: 'bg-gradient-to-b from-green-950/40 via-emerald-900/20 to-green-950/30', glow: 'shadow-[0_0_40px_-10px_rgba(34,197,94,0.4)]', accent: 'text-green-300' },
+};
+
+const SUIT_NUMERAL: Record<string, string> = {
+  Wands: '🜂', Cups: '🜄', Swords: '🜁', Pentacles: '🜃',
 };
 
 function CourtCardQuiz({ chart }: { chart: NatalChart }) {
@@ -460,17 +570,73 @@ function CourtCardQuiz({ chart }: { chart: NatalChart }) {
         </div>
 
         {/* Result */}
-        {showResult && result && rankInfo && suitInfo && (
-          <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* The card reveal */}
-            <div className={`p-8 rounded-xl border-2 ${ELEMENT_COLORS[Object.entries(SIGN_ELEMENT).find(([,el]) => FUNCTION_SUIT[ELEMENT_FUNCTION[el]] === result.suit)?.[1] || 'Fire']} space-y-4`}>
-              <div className="text-center space-y-3">
-                <p className="text-5xl">{suitInfo.emoji}</p>
-                <p className="text-3xl font-serif font-bold">{rankInfo.title} of {result.suit}</p>
-                <p className="text-sm text-muted-foreground italic">"{rankInfo.archetype}"</p>
+        {showResult && result && rankInfo && suitInfo && (() => {
+          const cardName = `${rankInfo.title} of ${result.suit}`;
+          const profile = COURT_CARD_PROFILES[cardName];
+          const cardStyle = SUIT_CARD_STYLES[result.suit];
+          const numeral = SUIT_NUMERAL[result.suit];
+          return (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Tarot Card Frame */}
+            <div className="flex justify-center">
+              <div className={`relative w-64 rounded-2xl border-2 ${cardStyle.border} ${cardStyle.bg} ${cardStyle.glow} p-1 overflow-hidden`}>
+                {/* Inner card */}
+                <div className="rounded-xl border border-white/10 bg-background/80 backdrop-blur-sm overflow-hidden">
+                  {/* Top decoration */}
+                  <div className="flex justify-between items-start px-3 pt-3">
+                    <span className={`text-xs font-serif ${cardStyle.accent}`}>{numeral}</span>
+                    <span className={`text-xs font-serif ${cardStyle.accent}`}>{numeral}</span>
+                  </div>
+                  
+                  {/* Card center */}
+                  <div className="px-6 py-8 text-center space-y-3">
+                    <p className="text-6xl">{suitInfo.emoji}</p>
+                    <div className="space-y-1">
+                      <p className={`text-lg font-serif font-bold tracking-wide ${cardStyle.accent}`}>
+                        {rankInfo.title}
+                      </p>
+                      <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">— of —</p>
+                      <p className={`text-lg font-serif font-bold tracking-wide ${cardStyle.accent}`}>
+                        {result.suit}
+                      </p>
+                    </div>
+                    <p className="text-xs italic text-muted-foreground pt-2">"{rankInfo.archetype}"</p>
+                  </div>
+
+                  {/* Bottom decoration */}
+                  <div className="flex justify-between items-end px-3 pb-3">
+                    <span className={`text-xs font-serif rotate-180 ${cardStyle.accent}`}>{numeral}</span>
+                    <span className={`text-xs font-serif rotate-180 ${cardStyle.accent}`}>{numeral}</span>
+                  </div>
+                </div>
               </div>
-              <p className="text-sm leading-relaxed text-center max-w-md mx-auto">{rankInfo.traits}</p>
             </div>
+
+            {/* Unique personality profile */}
+            {profile && (
+              <div className="space-y-4">
+                <div className="p-5 rounded-lg bg-secondary/20 border border-border space-y-3">
+                  <p className="text-xs uppercase tracking-widest text-muted-foreground">🪞 Your Personality</p>
+                  <p className="text-sm leading-relaxed">{profile.personality}</p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-4 rounded-lg bg-secondary/20 border border-border space-y-2">
+                    <p className="text-xs uppercase tracking-widest text-muted-foreground">🌑 Your Shadow</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{profile.shadow}</p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-secondary/20 border border-border space-y-2">
+                    <p className="text-xs uppercase tracking-widest text-muted-foreground">💎 Your Advice</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{profile.advice}</p>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-lg bg-secondary/10 border border-border space-y-2">
+                  <p className="text-xs uppercase tracking-widest text-muted-foreground">🎨 Traditional Imagery</p>
+                  <p className="text-xs text-muted-foreground italic leading-relaxed">{profile.symbols}</p>
+                </div>
+              </div>
+            )}
 
             {/* Court style */}
             <div className="p-4 rounded-lg bg-secondary/30 border border-border space-y-2">
@@ -488,7 +654,7 @@ function CourtCardQuiz({ chart }: { chart: NatalChart }) {
             <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
               <p className="text-xs uppercase tracking-widest text-primary/70">✨ Your Significator</p>
               <p className="text-sm text-muted-foreground">
-                Use the <strong>{rankInfo.title} of {result.suit}</strong> as your significator card. Pull it from the deck before shuffling and place it face-up to anchor the reading in your energy.
+                Use the <strong>{cardName}</strong> as your significator card. Pull it from the deck before shuffling and place it face-up to anchor the reading in your energy.
               </p>
             </div>
 
@@ -520,7 +686,8 @@ function CourtCardQuiz({ chart }: { chart: NatalChart }) {
               Retake Quiz
             </button>
           </div>
-        )}
+          );
+        })()}
       </CardContent>
     </Card>
   );
