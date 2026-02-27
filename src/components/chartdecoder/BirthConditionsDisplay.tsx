@@ -26,53 +26,8 @@ interface BirthConditionsDisplayProps {
   useTraditional?: boolean;
 }
 
-// Helper to convert NatalChart planets to ChartPlanet format
-const convertToChartPlanets = (chart: NatalChart): ChartPlanet[] => {
-  const planets: ChartPlanet[] = [];
-  const planetNames = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'] as const;
-  
-  const toAbsoluteDegree = (sign: string, degree: number): number => {
-    const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
-    const signIndex = signs.indexOf(sign);
-    return signIndex === -1 ? 0 : signIndex * 30 + degree;
-  };
-  
-  const calculateHouse = (planetSign: string, planetDegree: number): number | null => {
-    if (!chart.houseCusps) return null;
-    const planetAbsDeg = toAbsoluteDegree(planetSign, planetDegree);
-    const cusps: number[] = [];
-    for (let i = 1; i <= 12; i++) {
-      const cusp = chart.houseCusps[`house${i}` as keyof typeof chart.houseCusps];
-      if (cusp) cusps.push(toAbsoluteDegree(cusp.sign, cusp.degree + (cusp.minutes || 0) / 60));
-      else return null;
-    }
-    for (let i = 0; i < 12; i++) {
-      const currentCusp = cusps[i];
-      const nextCusp = cusps[(i + 1) % 12];
-      if (nextCusp < currentCusp) {
-        if (planetAbsDeg >= currentCusp || planetAbsDeg < nextCusp) return i + 1;
-      } else {
-        if (planetAbsDeg >= currentCusp && planetAbsDeg < nextCusp) return i + 1;
-      }
-    }
-    return 1;
-  };
-  
-  for (const name of planetNames) {
-    const pos = chart.planets[name as keyof typeof chart.planets];
-    if (pos) {
-      const degree = pos.degree + (pos.minutes || 0) / 60;
-      planets.push({
-        name,
-        sign: pos.sign,
-        degree,
-        retrograde: pos.isRetrograde || false,
-        house: calculateHouse(pos.sign, degree)
-      });
-    }
-  }
-  return planets;
-};
+// Use shared helper
+import { convertToChartPlanets } from '@/lib/chartConversion';
 
 export const BirthConditionsDisplay: React.FC<BirthConditionsDisplayProps> = ({ chart, useTraditional = true }) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
