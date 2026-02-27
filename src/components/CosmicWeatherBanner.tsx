@@ -40,6 +40,28 @@ interface UpcomingEvent {
   daysAway: number;
 }
 
+interface MoonSignChangeData {
+  fromSign: string;
+  toSign: string;
+  time: string;
+}
+
+interface ImminentSignChange {
+  planet: string;
+  currentSign: string;
+  degree: number;
+  nextSign: string;
+  ingressTime?: string;
+}
+
+interface MercuryRetrogradeInfoData {
+  phase: string;
+  description: string;
+  shadowDegree?: string;
+  rxDegree?: string;
+  sign?: string;
+}
+
 interface CosmicWeatherBannerProps {
   date: Date;
   moonPhase: MoonPhase;
@@ -52,6 +74,16 @@ interface CosmicWeatherBannerProps {
   aspects: Aspect[];
   planetPositions: PlanetPositionForAI[];
   upcomingEvents?: UpcomingEvent[];
+  // Extended data fields (when provided, forwarded to AI for richer reports)
+  voiceStyle?: string;
+  userTimezone?: string;
+  userTzAbbr?: string;
+  moonSignChange?: MoonSignChangeData | null;
+  imminentSignChanges?: ImminentSignChange[];
+  mercuryRetrogradeInfo?: MercuryRetrogradeInfoData | null;
+  allRetrogrades?: Record<string, { isRetrograde: boolean; sign?: string; stationDirect?: string }>;
+  personalizedRetrograde?: { housePlacement: string; guidance: string } | null;
+  eclipseContext?: string;
 }
 
 export const CosmicWeatherBanner = ({ 
@@ -65,7 +97,16 @@ export const CosmicWeatherBanner = ({
   mercuryRetro,
   aspects,
   planetPositions,
-  upcomingEvents = []
+  upcomingEvents = [],
+  voiceStyle,
+  userTimezone,
+  userTzAbbr,
+  moonSignChange,
+  imminentSignChanges,
+  mercuryRetrogradeInfo,
+  allRetrogrades,
+  personalizedRetrograde,
+  eclipseContext,
 }: CosmicWeatherBannerProps) => {
   const [aiInsights, setAiInsights] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -245,6 +286,16 @@ export const CosmicWeatherBanner = ({
           planetPositions,
           upcomingEvents: upcomingEvents.length > 0 ? upcomingEvents : undefined,
           deviceId,
+          // Forward extended data when available
+          ...(voiceStyle && { voiceStyle }),
+          ...(userTimezone && { userTimezone }),
+          ...(userTzAbbr && { userTzAbbr }),
+          ...(moonSignChange && { moonSignChange }),
+          ...(imminentSignChanges && imminentSignChanges.length > 0 && { imminentSignChanges }),
+          ...(mercuryRetrogradeInfo && { mercuryRetrogradeInfo }),
+          ...(allRetrogrades && { allRetrogrades }),
+          ...(personalizedRetrograde && { personalizedRetrograde }),
+          ...(eclipseContext && { eclipseContext }),
         }
       });
 

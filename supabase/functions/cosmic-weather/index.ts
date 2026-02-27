@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects, planetPositions, customPrompt, voiceStyle, upcomingEvents, deviceId, forceRegenerate, greeting: reqGreeting, timeOfDay: reqTimeOfDay, moonSignChange, imminentSignChanges, mercuryRetrogradeInfo, personalizedRetrograde, userTimezone, userTzAbbr, allRetrogrades } = await req.json();
+    const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects, planetPositions, customPrompt, voiceStyle, upcomingEvents, deviceId, forceRegenerate, greeting: reqGreeting, timeOfDay: reqTimeOfDay, moonSignChange, imminentSignChanges, mercuryRetrogradeInfo, personalizedRetrograde, userTimezone, userTzAbbr, allRetrogrades, eclipseContext } = await req.json();
     
     console.log("Received cosmic weather request:", { date, moonPhase, moonSign, exactLunarPhase, voiceStyle, planetPositions });
     console.log("Aspects received:", aspects?.slice(0, 15));
@@ -150,6 +150,12 @@ Layer this through the phases:
     const upcomingEventsText = upcomingEvents?.length > 0
       ? `UPCOMING MAJOR EVENTS (MENTION THESE!):
 ${upcomingEvents.map((e: any) => `- ${e.date} (${e.daysAway} days away): ${e.type} - ${e.description}`).join('\n')}`
+      : '';
+
+    // Eclipse season context
+    const eclipseContextText = eclipseContext
+      ? `ECLIPSE SEASON CONTEXT (MUST MENTION):
+${eclipseContext}`
       : '';
 
     // Find significant conjunctions (Moon with outer planets)
@@ -728,6 +734,7 @@ ${aspectsText}
 ${imminentChangesText}
 ${allRetroText}
 ${upcomingEventsText}
+${eclipseContextText}
 ${personalizedRetroText}
 
 AYURVEDIC SEASON: ${currentSeason}
