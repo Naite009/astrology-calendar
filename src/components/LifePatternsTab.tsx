@@ -139,20 +139,28 @@ export const LifePatternsTab = ({ chart }: LifePatternsTabProps) => {
       <PatternSection
         icon={Crown}
         title="Your Dominant Planet"
-        subtitle="The planet that colors everything you do"
+        subtitle="The planet with the most influence across your chart"
         badgeText={topPlanet ? `${getPlanetSymbol(topPlanet.planet)} ${topPlanet.planet}` : undefined}
         defaultOpen={true}
       >
         {topPlanet && (
           <>
-            <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
-              <p className="text-sm font-medium text-primary mb-1">
-                {getPlanetSymbol(topPlanet.planet)} {topPlanet.planet} dominates your chart
-              </p>
-              <p className="text-sm text-foreground/85 leading-relaxed">
-                {meanings[topPlanet.planet] || ''}
-              </p>
-            </div>
+             <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+               <p className="text-sm font-medium text-primary mb-1">
+                 {getPlanetSymbol(topPlanet.planet)} {topPlanet.planet} dominates your chart
+               </p>
+               <p className="text-sm text-foreground/85 leading-relaxed">
+                 {meanings[topPlanet.planet] || ''}
+               </p>
+             </div>
+
+             <div className="p-3 bg-muted/40 rounded-lg border border-border/50">
+               <p className="text-[11px] text-muted-foreground leading-relaxed">
+                 <strong>Dominant ≠ MVP:</strong> Your Dominant Planet is the one that <em>shows up the most</em> — it rules your rising sign, Sun sign, key houses, or aspects many planets. 
+                 The MVP in Chart Decoder measures planetary <em>condition</em> — how well-resourced and effective a planet is. 
+                 A planet can dominate your chart but be in poor condition, or be your strongest performer without dominating. Both perspectives matter.
+               </p>
+             </div>
 
             <div className="space-y-2.5">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Why this planet dominates:</p>
