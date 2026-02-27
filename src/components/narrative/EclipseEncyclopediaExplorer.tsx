@@ -271,7 +271,7 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
             <span className="text-2xl">♌ ♒</span> Eclipse Timeline: Leo-Aquarius Series (2026–2028)
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Based on Chris Brennan's eclipse research. This series opens Feb 17, 2026 and completes Jan 26, 2028 — bringing major endings and new beginnings in the Leo-Aquarius axis of your chart.
+            This series opens Feb 17, 2026 and completes Jan 26, 2028 — bringing major endings and new beginnings in the Leo-Aquarius axis of your chart.
           </p>
         </CardHeader>
         <CardContent>
