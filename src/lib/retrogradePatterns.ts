@@ -509,9 +509,16 @@ export const MERCURY_RETROGRADE_GUIDANCE = {
   ],
 };
 
-// Format date for display
+// Format date for display (date only)
 export const formatRetrogradeDate = (date: Date): string => {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+};
+
+// Format date + exact time in user's local timezone for station precision
+export const formatRetrogradeDateWithTime = (date: Date): string => {
+  const dateStr = date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
+  return `${dateStr} at ${timeStr}`;
 };
 
 // Get days until retrograde ends
