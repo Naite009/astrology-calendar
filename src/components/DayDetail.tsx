@@ -32,8 +32,9 @@ import { getVOCMoonDetails, formatVOCDuration } from '@/lib/voidOfCourseMoon';
 import { calculatePlanetaryHours, getDayRuler, formatPlanetaryHourTime, PlanetaryHour } from '@/lib/planetaryHours';
 import { calculateSolarArcChart, findSolarArcAspects, getExactSolarArcAspects, getUpcomingSolarArcAspects, getSolarArcPlanetSymbol, formatSolarArcAge } from '@/lib/solarArcDirections';
 import { calculateSecondaryProgressions, getProgressedMoonInfo, findProgressedAspects, getProgressedPlanetSymbol, formatSignChangeDate } from '@/lib/secondaryProgressions';
-import { getRetrogradeDisplay, getRetrogradeChartActivation, MARS_RETROGRADE_GUIDANCE, MERCURY_RETROGRADE_GUIDANCE, formatRetrogradeDate } from '@/lib/retrogradePatterns';
+import { getMercuryRetrogrades, getRetrogradeStatus, formatRetrogradeDate, getAllRetrogradePeriods, getRetrogradeDisplay, getRetrogradeChartActivation, MARS_RETROGRADE_GUIDANCE, MERCURY_RETROGRADE_GUIDANCE } from '@/lib/retrogradePatterns';
 import { DATES_TO_AVOID_2026, BEST_DAYS_2026 } from '@/lib/electional2026Database';
+import { findNextMoonSignChange } from '@/lib/voidOfCourseMoon';
 
 // Sign-specific energies for daily guidance
 const SIGN_ENERGIES: Record<string, { action: string; focus: string; avoid: string }> = {
@@ -590,6 +591,109 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
             { name: 'Pluto', sign: planets.pluto.signName, degree: planets.pluto.degree },
           ]}
           upcomingEvents={upcomingEvents}
+          voiceStyle={(() => { try { return localStorage.getItem('cosmic-voice-style') || 'tara'; } catch { return 'tara'; } })()}
+          userTimezone={Intl.DateTimeFormat().resolvedOptions().timeZone}
+          userTzAbbr={new Date().toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop() || 'ET'}
+          mercuryRetrogradeInfo={(() => {
+            try {
+              const periods = getMercuryRetrogrades(date);
+              const status = getRetrogradeStatus(date, periods);
+              if (!status.retrogradeInfo) return null;
+              const ri = status.retrogradeInfo;
+              const rxEndStr = formatRetrogradeDate(ri.end);
+              const postEndStr = formatRetrogradeDate(ri.postEnd);
+              const preStartStr = formatRetrogradeDate(ri.preStart);
+              const rxStartStr = formatRetrogradeDate(ri.start);
+              const isPiscesRx = ri.sign.includes('Pisces');
+              const dignityNote = isPiscesRx ? ' Mercury is in BOTH detriment AND fall in Pisces — double difficulty.' : '';
+              if (status.isShadow && status.shadowType === 'pre') {
+                return { phase: 'pre-shadow', description: `Mercury entered pre-retrograde shadow on ${preStartStr}. Stations retrograde ${rxStartStr}. Stations direct ${rxEndStr}. Post-shadow clears ${postEndStr}.${dignityNote}`, sign: ri.sign };
+              }
+              if (status.isRetrograde) {
+                const midpoint = new Date((ri.start.getTime() + ri.end.getTime()) / 2);
+                const isFirstHalf = date < midpoint;
+                return { phase: isFirstHalf ? 'retrograde-first-half' : 'retrograde-second-half', description: `Mercury is RETROGRADE in ${ri.sign}. ${isFirstHalf ? 'First half - things resurface.' : 'Second half - clarity begins.'} Stations direct ${rxEndStr}. Post-shadow clears ${postEndStr}.${dignityNote}`, sign: ri.sign };
+              }
+              if (status.isShadow && status.shadowType === 'post') {
+                return { phase: 'post-shadow', description: `Mercury stationed direct on ${rxEndStr} and is retracing post-retrograde shadow. Clarity returns. Shadow clears ${postEndStr}.`, sign: ri.sign };
+              }
+              return null;
+            } catch { return null; }
+          })()}
+          allRetrogrades={(() => {
+            try {
+              const allPeriods = getAllRetrogradePeriods(date);
+              const statuses: Record<string, { isRetrograde: boolean; sign?: string; stationDirect?: string }> = {};
+              for (const [planet, periods] of Object.entries(allPeriods)) {
+                const status = getRetrogradeStatus(date, periods);
+                if (status.isRetrograde && status.retrogradeInfo) {
+                  statuses[planet] = { isRetrograde: true, sign: status.retrogradeInfo.sign, stationDirect: formatRetrogradeDate(status.retrogradeInfo.end) };
+                }
+              }
+              return Object.keys(statuses).length > 0 ? statuses : undefined;
+            } catch { return undefined; }
+          })()}
+          moonSignChange={(() => {
+            try {
+              if (voc.isVOC && voc.end && (voc as any).moonEntersSign) {
+                const dayEnd = new Date(date); dayEnd.setHours(23,59,59,999);
+                if (voc.end <= dayEnd) {
+                  const tzAbbr = new Date().toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop() || 'ET';
+                  return { fromSign: (voc as any).fromSign || planets.moon.signName, toSign: (voc as any).moonEntersSign, time: voc.end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) + ' ' + tzAbbr };
+                }
+              }
+              const nextChange = findNextMoonSignChange(date);
+              const dayEnd2 = new Date(date); dayEnd2.setHours(23,59,59,999);
+              if (nextChange.time <= dayEnd2) {
+                const tzAbbr = new Date().toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop() || 'ET';
+                const currentMoonSign = planets.moon.signName;
+                return { fromSign: currentMoonSign, toSign: nextChange.newSign, time: nextChange.time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) + ' ' + tzAbbr };
+              }
+              return null;
+            } catch { return null; }
+          })()}
+          imminentSignChanges={(() => {
+            try {
+              const signOrder = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+              const checks = [
+                { name: 'Mercury', pos: planets.mercury },
+                { name: 'Venus', pos: planets.venus },
+                { name: 'Mars', pos: planets.mars },
+                { name: 'Jupiter', pos: planets.jupiter },
+                { name: 'Saturn', pos: planets.saturn },
+              ];
+              const result: Array<{ planet: string; currentSign: string; degree: number; nextSign: string }> = [];
+              for (const c of checks) {
+                const rawDeg = c.pos.rawDegree ?? c.pos.degree;
+                if (rawDeg >= 28) {
+                  const idx = signOrder.indexOf(c.pos.signName);
+                  if (idx >= 0) {
+                    result.push({ planet: c.name, currentSign: c.pos.signName, degree: rawDeg, nextSign: signOrder[(idx + 1) % 12] });
+                  }
+                }
+              }
+              return result.length > 0 ? result : undefined;
+            } catch { return undefined; }
+          })()}
+          eclipseContext={(() => {
+            try {
+              const eclipses = DATES_TO_AVOID_2026.filter(d => d.reason.includes('Eclipse'));
+              const now = date.getTime();
+              const nearby = eclipses.filter(e => {
+                const eDate = new Date(e.date + 'T12:00:00').getTime();
+                const daysDiff = (now - eDate) / (1000 * 60 * 60 * 24);
+                return daysDiff >= -30 && daysDiff <= 30;
+              });
+              if (nearby.length === 0) return undefined;
+              const lines = nearby.map(e => {
+                const eDate = new Date(e.date + 'T12:00:00');
+                const daysDiff = Math.round((now - eDate.getTime()) / (1000 * 60 * 60 * 24));
+                const when = daysDiff > 0 ? `${daysDiff} days ago` : daysDiff < 0 ? `in ${Math.abs(daysDiff)} days` : 'TODAY';
+                return `- ${e.reason} on ${eDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} (${when}). Eclipse energy lingers for weeks — themes of sudden revelations, endings, and powerful new beginnings. ${e.why}`;
+              });
+              return `We are in ECLIPSE SEASON. Eclipses are the most powerful lunations of the year — they activate fate, bring sudden changes, and accelerate karmic timelines.\n${lines.join('\n')}\nEclipse effects ripple out for 6 months. Even if the eclipse has passed, its themes are still unfolding. Mention this context.`;
+            } catch { return undefined; }
+          })()}
         />
 
         {/* Fixed Star Conjunctions */}
