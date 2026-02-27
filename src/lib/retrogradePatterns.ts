@@ -13,6 +13,9 @@ export interface RetrogradeInfo {
   sign: string;
   preStart: Date;
   postEnd: Date;
+  cazimi?: Date; // Mercury-Sun exact conjunction during retrograde
+  rxDegree?: number; // ecliptic longitude at station retrograde
+  dDegree?: number; // ecliptic longitude at station direct
 }
 
 export interface RetrogradeStatus {
@@ -62,6 +65,17 @@ const isPlanetRetrograde = (body: Astronomy.Body, date: Date, intervalHours: num
   }
 };
 
+// Get ecliptic longitude for a planet
+const getPlanetLongitude = (body: Astronomy.Body, date: Date): number => {
+  try {
+    const vector = Astronomy.GeoVector(body, date, false);
+    const ecliptic = Astronomy.Ecliptic(vector);
+    return ecliptic.elon;
+  } catch {
+    return 0;
+  }
+};
+
 // Get zodiac sign from ecliptic longitude
 const getSignFromLongitude = (longitude: number): string => {
   const signIndex = Math.floor(longitude / 30) % 12;
@@ -71,9 +85,7 @@ const getSignFromLongitude = (longitude: number): string => {
 // Get the sign a planet is in on a specific date
 const getPlanetSign = (body: Astronomy.Body, date: Date): string => {
   try {
-    const vector = Astronomy.GeoVector(body, date, false);
-    const ecliptic = Astronomy.Ecliptic(vector);
-    return getSignFromLongitude(ecliptic.elon);
+    return getSignFromLongitude(getPlanetLongitude(body, date));
   } catch {
     return 'Unknown';
   }
@@ -146,61 +158,196 @@ const findStation = (
   return new Date(lo + (hi - lo) / 2);
 };
 
+// Find the date when a planet reaches a specific ecliptic longitude (searching forward)
+// Uses daily scan + binary search for ~1 hour precision
+const findDateForLongitude = (
+  body: Astronomy.Body,
+  targetLon: number,
+  searchStart: Date,
+  searchEnd: Date,
+  direction: 'forward' | 'backward' = 'forward'
+): Date | null => {
+  const start = new Date(searchStart);
+  const end = new Date(searchEnd);
+  const current = new Date(start);
+  
+  // Normalize target to 0-360
+  const normTarget = ((targetLon % 360) + 360) % 360;
+  
+  // Daily scan to find the crossing window
+  let prevLon = getPlanetLongitude(body, current);
+  let windowStart: Date | null = null;
+  let windowEnd: Date | null = null;
+  
+  while (current <= end) {
+    const prevTime = new Date(current);
+    current.setDate(current.getDate() + 1);
+    const nowLon = getPlanetLongitude(body, current);
+    
+    // Check if the planet crossed the target degree (handle 360/0 wrap)
+    let prevDiff = normTarget - prevLon;
+    if (prevDiff > 180) prevDiff -= 360;
+    if (prevDiff < -180) prevDiff += 360;
+    
+    let nowDiff = normTarget - nowLon;
+    if (nowDiff > 180) nowDiff -= 360;
+    if (nowDiff < -180) nowDiff += 360;
+    
+    // Signs changed = crossed the degree (only match correct motion direction)
+    const isForwardCrossing = prevDiff >= 0 && nowDiff < 0;
+    const isBackwardCrossing = prevDiff <= 0 && nowDiff > 0;
+    
+    if ((direction === 'forward' && isForwardCrossing) ||
+        (direction === 'backward' && isBackwardCrossing) ||
+        (Math.abs(nowDiff) < 0.5 && Math.abs(prevDiff) > Math.abs(nowDiff))) {
+      windowStart = prevTime;
+      windowEnd = new Date(current);
+      break;
+    }
+    
+    prevLon = nowLon;
+  }
+  
+  if (!windowStart || !windowEnd) return null;
+  
+  // Binary search within the 24-hour window
+  let lo = windowStart.getTime();
+  let hi = windowEnd.getTime();
+  
+  for (let i = 0; i < 30; i++) {
+    const mid = lo + (hi - lo) / 2;
+    const midLon = getPlanetLongitude(body, new Date(mid));
+    let midDiff = normTarget - midLon;
+    if (midDiff > 180) midDiff -= 360;
+    if (midDiff < -180) midDiff += 360;
+    
+    if ((direction === 'forward' && midDiff >= 0) || (direction === 'backward' && midDiff <= 0)) {
+      lo = mid;
+    } else {
+      hi = mid;
+    }
+  }
+  
+  return new Date(lo + (hi - lo) / 2);
+};
+
+// Find cazimi (planet-Sun exact conjunction) during retrograde period
+const findCazimi = (body: Astronomy.Body, retroStart: Date, retroEnd: Date): Date | null => {
+  // Scan daily for minimum separation between planet and Sun
+  const start = new Date(retroStart);
+  const end = new Date(retroEnd);
+  let minSep = 999;
+  let minDate = start;
+  const current = new Date(start);
+  
+  while (current <= end) {
+    const planetLon = getPlanetLongitude(body, current);
+    const sunLon = getPlanetLongitude(Astronomy.Body.Sun, current);
+    let sep = Math.abs(planetLon - sunLon);
+    if (sep > 180) sep = 360 - sep;
+    
+    if (sep < minSep) {
+      minSep = sep;
+      minDate = new Date(current);
+    }
+    current.setDate(current.getDate() + 1);
+  }
+  
+  if (minSep > 5) return null; // No conjunction found
+  
+  // Binary search for exact cazimi within ±1 day of minimum
+  let lo = minDate.getTime() - 24 * 3600000;
+  let hi = minDate.getTime() + 24 * 3600000;
+  
+  for (let i = 0; i < 40; i++) {
+    const m1 = lo + (hi - lo) / 3;
+    const m2 = hi - (hi - lo) / 3;
+    
+    const sep1 = (() => {
+      const pL = getPlanetLongitude(body, new Date(m1));
+      const sL = getPlanetLongitude(Astronomy.Body.Sun, new Date(m1));
+      let s = Math.abs(pL - sL); if (s > 180) s = 360 - s; return s;
+    })();
+    const sep2 = (() => {
+      const pL = getPlanetLongitude(body, new Date(m2));
+      const sL = getPlanetLongitude(Astronomy.Body.Sun, new Date(m2));
+      let s = Math.abs(pL - sL); if (s > 180) s = 360 - s; return s;
+    })();
+    
+    if (sep1 < sep2) hi = m2; else lo = m1;
+  }
+  
+  return new Date(lo + (hi - lo) / 2);
+};
+
 // Compute retrograde periods for a given year range dynamically
 const computeRetrogradePeriods = (
   body: Astronomy.Body,
   startYear: number,
   endYear: number,
-  avgRetrosPerYear: number = 3,
-  shadowDays: number = 14
 ): RetrogradeInfo[] => {
   const periods: RetrogradeInfo[] = [];
   
-  // Calculate for each year
   for (let year = startYear; year <= endYear; year++) {
     const yearStart = new Date(year, 0, 1);
     const yearEnd = new Date(year, 11, 31);
     
     let searchStart = new Date(yearStart);
     
-    // Find all retrograde periods in this year
     while (searchStart < yearEnd) {
-      // Find the next retrograde station
       const retroStart = findStation(body, searchStart, yearEnd, true);
-      
       if (!retroStart) break;
       
-      // Find when it goes direct again (search up to 6 months for Mars)
       const searchEnd = new Date(retroStart);
       searchEnd.setMonth(searchEnd.getMonth() + 6);
       
       const retroEnd = findStation(body, retroStart, searchEnd, false);
-      
       if (!retroEnd) break;
       
-      // Get the sign(s) during retrograde
+      // Get sign(s)
       const startSign = getPlanetSign(body, retroStart);
       const endSign = getPlanetSign(body, retroEnd);
       const sign = startSign === endSign ? startSign : `${startSign}/${endSign}`;
       
-      // Calculate shadow periods
-      const preStart = new Date(retroStart);
-      preStart.setDate(preStart.getDate() - shadowDays);
+      // Get exact degrees at stations
+      const rxLon = getPlanetLongitude(body, retroStart);
+      const dLon = getPlanetLongitude(body, retroEnd);
       
-      const postEnd = new Date(retroEnd);
-      postEnd.setDate(postEnd.getDate() + shadowDays);
+      // DEGREE-BASED SHADOW CALCULATION (matches Brennan methodology):
+      // Pre-shadow starts when planet first crosses the direct-station degree (going forward)
+      // Post-shadow ends when planet returns to the retrograde-station degree (going forward after direct)
+      const preShadowSearchStart = new Date(retroStart);
+      preShadowSearchStart.setMonth(preShadowSearchStart.getMonth() - 2);
+      const preStart = findDateForLongitude(body, dLon, preShadowSearchStart, retroStart, 'forward');
+      
+      const postShadowSearchEnd = new Date(retroEnd);
+      postShadowSearchEnd.setMonth(postShadowSearchEnd.getMonth() + 3);
+      const postEnd = findDateForLongitude(body, rxLon, retroEnd, postShadowSearchEnd, 'forward');
+      
+      // Cazimi (Mercury/Venus only — inner planets)
+      const cazimi = (body === Astronomy.Body.Mercury || body === Astronomy.Body.Venus)
+        ? findCazimi(body, retroStart, retroEnd)
+        : undefined;
+      
+      // Fallback to fixed days if degree search fails
+      const fallbackPre = new Date(retroStart);
+      fallbackPre.setDate(fallbackPre.getDate() - 14);
+      const fallbackPost = new Date(retroEnd);
+      fallbackPost.setDate(fallbackPost.getDate() + 20);
       
       periods.push({
         start: retroStart,
         end: retroEnd,
         sign,
-        preStart,
-        postEnd
+        preStart: preStart || fallbackPre,
+        postEnd: postEnd || fallbackPost,
+        cazimi: cazimi || undefined,
+        rxDegree: rxLon,
+        dDegree: dLon,
       });
       
-      // Move search forward past this retrograde period
       searchStart = new Date(retroEnd);
-      searchStart.setDate(searchStart.getDate() + 30); // Skip ahead to avoid re-finding same period
+      searchStart.setDate(searchStart.getDate() + 30);
     }
   }
   
@@ -219,16 +366,7 @@ export const getRetrogradePeriods = (body: Astronomy.Body, forDate: Date): Retro
     return retrogradeCache.get(cacheKey)!;
   }
   
-  // Configure shadow days based on planet
-  let shadowDays = 14;
-  if (body === Astronomy.Body.Mars) shadowDays = 30;
-  if (body === Astronomy.Body.Jupiter) shadowDays = 14;
-  if (body === Astronomy.Body.Saturn) shadowDays = 14;
-  if (body === Astronomy.Body.Uranus) shadowDays = 14;
-  if (body === Astronomy.Body.Neptune) shadowDays = 14;
-  if (body === Astronomy.Body.Pluto) shadowDays = 14;
-  
-  const periods = computeRetrogradePeriods(body, startYear, endYear, 3, shadowDays);
+  const periods = computeRetrogradePeriods(body, startYear, endYear);
   retrogradeCache.set(cacheKey, periods);
   
   return periods;

@@ -37,7 +37,7 @@ serve(async (req) => {
     
     // Cache key versioning: bump this when prompt/format changes so users don't get stale cached text.
     // This intentionally changes the cache key without requiring any DB schema changes.
-    const PROMPT_VERSION = "2026-02-27-v19-mercury-fact-check-local-cache-bust";
+    const PROMPT_VERSION = "2026-02-27-v20-degree-based-shadow-cazimi";
 
     const cacheDeviceId = deviceId || 'default';
     const cacheVoiceStyle = `${voiceStyle || ''}@${PROMPT_VERSION}`;
@@ -138,8 +138,9 @@ HOW IT FEELS: Like walking through fog — you THINK you see clearly but details
       ? `MERCURY EPHEMERIS FACT CHECK (NON-NEGOTIABLE):
 - Station retrograde: ${mercuryRetrogradeInfo.stationRetrograde || 'not provided'}
 - Station direct: ${mercuryRetrogradeInfo.stationDirect || 'not provided'}
+- Cazimi (Mercury-Sun conjunction): ${mercuryRetrogradeInfo.cazimi || 'not provided'}
 - Post-shadow clear: ${mercuryRetrogradeInfo.postShadowClear || 'not provided'}
-If you mention Mercury retrograde milestones, you MUST quote these exact values verbatim and must not substitute any date/time from memory.`
+These are computed from high-precision ephemeris in the user's local timezone. You MUST quote these exact values verbatim. NEVER substitute dates from your training data.`
       : '';
 
     // Personalized retrograde guidance
@@ -802,7 +803,7 @@ CRITICAL INSTRUCTIONS:
     const data = await response.json();
     const insightRaw = data.choices?.[0]?.message?.content || "Unable to generate insights at this time.";
     const mercuryFactAppendix = mercuryRetrogradeInfo
-      ? `\n\n## Ephemeris Fact Check\n- Mercury station retrograde: ${mercuryRetrogradeInfo.stationRetrograde || 'not provided'}\n- Mercury station direct: ${mercuryRetrogradeInfo.stationDirect || 'not provided'}\n- Mercury post-shadow clears: ${mercuryRetrogradeInfo.postShadowClear || 'not provided'}\n(All times and dates above are computed from ephemeris in the user's local timezone.)`
+      ? `\n\n## Ephemeris Fact Check\n- Mercury station retrograde: ${mercuryRetrogradeInfo.stationRetrograde || 'not provided'}\n- Mercury station direct: ${mercuryRetrogradeInfo.stationDirect || 'not provided'}\n- Mercury cazimi: ${mercuryRetrogradeInfo.cazimi || 'not provided'}\n- Mercury post-shadow clears: ${mercuryRetrogradeInfo.postShadowClear || 'not provided'}\n(All times and dates above are computed from ephemeris in the user's local timezone.)`
       : '';
     const insight = `${insightRaw}${mercuryFactAppendix}`;
 

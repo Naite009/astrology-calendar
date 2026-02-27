@@ -607,11 +607,13 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
               const rxStartStr = formatRetrogradeDateWithTime(ri.start);
               const isPiscesRx = ri.sign.includes('Pisces');
               const dignityNote = isPiscesRx ? ' Mercury is in BOTH detriment AND fall in Pisces — double difficulty.' : '';
+              const cazimiStr = ri.cazimi ? formatRetrogradeDateWithTime(ri.cazimi) : undefined;
               const stationData = {
                 sign: ri.sign,
                 stationRetrograde: rxStartStr,
                 stationDirect: rxEndStr,
                 postShadowClear: postEndStr,
+                ...(cazimiStr && { cazimi: cazimiStr }),
               };
               if (status.isShadow && status.shadowType === 'pre') {
                 return { phase: 'pre-shadow', description: `Mercury entered pre-retrograde shadow on ${preStartStr}. Stations retrograde ${rxStartStr}. Stations direct ${rxEndStr}. Post-shadow clears ${postEndStr}.${dignityNote}`, ...stationData };
