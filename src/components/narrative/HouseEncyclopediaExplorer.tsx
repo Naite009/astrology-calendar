@@ -7,6 +7,7 @@ import {
   INTERCEPTED_HOUSES_INFO, EMPTY_HOUSES_INFO, HouseData,
 } from '@/lib/houseEncyclopedia';
 import { NatalChart } from '@/hooks/useNatalChart';
+import { HouseWheelVisualization } from './HouseWheelVisualization';
 
 const ANGULARITY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
   Angular:  { bg: 'bg-primary/10', text: 'text-primary', border: 'border-primary/30' },
@@ -112,6 +113,9 @@ export function HouseEncyclopediaExplorer({ chart }: { chart: NatalChart | null 
 
   return (
     <div className="space-y-8">
+      {/* Interactive House Wheel */}
+      <HouseWheelVisualization chart={chart} />
+
       {/* Hemispheres & Quadrants */}
       <div className="space-y-3">
         <h3 className="text-sm font-medium flex items-center gap-2"><span>◑</span> Hemispheres</h3>

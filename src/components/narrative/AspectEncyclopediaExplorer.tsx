@@ -10,6 +10,23 @@ import {
 import { NatalChart } from '@/hooks/useNatalChart';
 import { detectChartPatterns } from '@/lib/chartPatterns';
 
+// Pattern images
+import patternGrandTrine from '@/assets/pattern-grand-trine.png';
+import patternTSquare from '@/assets/pattern-t-square.png';
+import patternYod from '@/assets/pattern-yod.png';
+import patternMysticRectangle from '@/assets/pattern-mystic-rectangle.png';
+import patternKite from '@/assets/pattern-kite.png';
+import patternGrandCross from '@/assets/pattern-grand-cross.png';
+
+const PATTERN_IMAGES: Record<string, string> = {
+  'Grand Trine': patternGrandTrine,
+  'T-Square': patternTSquare,
+  'Yod (Finger of God)': patternYod,
+  'Mystic Rectangle': patternMysticRectangle,
+  'Kite': patternKite,
+  'Grand Cross': patternGrandCross,
+};
+
 const ZODIAC_ORDER = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 const PLANET_SYMBOLS: Record<string, string> = {
   Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀', Mars: '♂',
@@ -44,7 +61,7 @@ function findAspectsInChart(chart: NatalChart, targetDegrees: number, orb: numbe
     return 1;
   };
 
-  const results: typeof positions extends any ? ReturnType<typeof findAspectsInChart> : never = [];
+  const results: ReturnType<typeof findAspectsInChart> = [];
 
   for (let i = 0; i < positions.length - 1; i++) {
     for (let j = i + 1; j < positions.length; j++) {
@@ -96,13 +113,11 @@ function AspectDetailModal({ aspect, open, onClose, chart }: { aspect: AspectDat
 
             <p className="text-sm leading-relaxed">{aspect.core}</p>
 
-            {/* Waxing vs Waning */}
             <div className="p-3 rounded-lg bg-muted/50">
               <p className="text-[10px] font-medium text-muted-foreground mb-1">🌓 WAXING vs WANING</p>
               <p className="text-xs leading-relaxed">{aspect.waxingVsWaning}</p>
             </div>
 
-            {/* Personal vs Outer */}
             <div className="p-3 rounded-lg bg-muted/50">
               <p className="text-[10px] font-medium text-muted-foreground mb-1">🌐 PERSONAL vs OUTER PLANETS</p>
               <p className="text-xs leading-relaxed">{aspect.personalVsOuter}</p>
@@ -124,7 +139,6 @@ function AspectDetailModal({ aspect, open, onClose, chart }: { aspect: AspectDat
               <p className="text-xs">{aspect.teaching}</p>
             </div>
 
-            {/* Personalized: aspects in YOUR chart */}
             {chart && chartAspects.length > 0 && (
               <div className="space-y-2">
                 <h4 className="text-sm font-medium flex items-center gap-2">
@@ -168,6 +182,7 @@ function AspectDetailModal({ aspect, open, onClose, chart }: { aspect: AspectDat
 
 function PatternDetailModal({ pattern, open, onClose }: { pattern: PatternData | null; open: boolean; onClose: () => void }) {
   if (!pattern) return null;
+  const img = PATTERN_IMAGES[pattern.name];
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-lg max-h-[85vh]">
@@ -179,6 +194,11 @@ function PatternDetailModal({ pattern, open, onClose }: { pattern: PatternData |
         </DialogHeader>
         <ScrollArea className="max-h-[65vh] pr-4">
           <div className="space-y-4">
+            {img && (
+              <div className="flex justify-center">
+                <img src={img} alt={`${pattern.name} diagram`} className="w-40 h-40 object-contain rounded-lg border bg-background" />
+              </div>
+            )}
             <p className="text-sm leading-relaxed">{pattern.description}</p>
             <div className="p-3 rounded-lg bg-muted/50">
               <p className="text-[10px] font-medium mb-1">COMPONENTS</p>
@@ -235,6 +255,28 @@ function getPersonalizedDescription(p1: string, p2: string, aspect: AspectData):
     `${PLANET_SYMBOLS[p1] || ''} ${p1} and ${PLANET_SYMBOLS[p2] || ''} ${p2} are in ${aspect.name.toLowerCase()} — ${aspect.nature === 'Harmonious' ? 'flowing together with ease' : aspect.nature === 'Dynamic' ? 'creating dynamic tension that drives growth' : 'requiring constant adjustment and adaptation'}.`;
 }
 
+// Detect stelliums in a chart
+function detectStelliums(chart: NatalChart): Array<{ sign: string; planets: string[]; isPersonal: boolean }> {
+  const signGroups: Record<string, string[]> = {};
+  const personalPlanets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars'];
+  const planetNames = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','Chiron','NorthNode'];
+  
+  for (const pn of planetNames) {
+    const p = chart.planets[pn as keyof typeof chart.planets];
+    if (!p?.sign) continue;
+    if (!signGroups[p.sign]) signGroups[p.sign] = [];
+    signGroups[p.sign].push(pn);
+  }
+  
+  return Object.entries(signGroups)
+    .filter(([, planets]) => planets.length >= 3)
+    .map(([sign, planets]) => ({
+      sign,
+      planets,
+      isPersonal: planets.some(p => personalPlanets.includes(p)),
+    }));
+}
+
 export function AspectEncyclopediaExplorer({
   userNatalChart,
   savedCharts,
@@ -252,10 +294,16 @@ export function AspectEncyclopediaExplorer({
     return savedCharts.find(c => c.id === selectedChartId) || null;
   }, [selectedChartId, userNatalChart, savedCharts]);
 
-  // Detect patterns in active chart
+  // Detect ALL patterns in active chart
   const chartPatterns = useMemo(() => {
     if (!activeChart) return [];
     try { return detectChartPatterns(activeChart); } catch { return []; }
+  }, [activeChart]);
+
+  // Detect stelliums
+  const stelliums = useMemo(() => {
+    if (!activeChart) return [];
+    try { return detectStelliums(activeChart); } catch { return []; }
   }, [activeChart]);
 
   const ASPECT_COLORS: Record<string, string> = {
@@ -264,6 +312,8 @@ export function AspectEncyclopediaExplorer({
     'Dynamic': 'bg-rose-500/10 border-rose-500/30',
     'Complex': 'bg-amber-500/10 border-amber-500/30',
   };
+
+  const hasMyPatterns = activeChart && (chartPatterns.length > 0 || stelliums.length > 0);
 
   return (
     <div className="space-y-8">
@@ -279,6 +329,109 @@ export function AspectEncyclopediaExplorer({
           label="Personalize to"
         />
       </div>
+
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* MY PATTERNS — Auto-detected from natal chart               */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {hasMyPatterns && (
+        <div className="space-y-4 p-5 rounded-xl border-2 border-primary/30 bg-primary/5">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">⭐</span>
+            <h3 className="text-base font-semibold">My Chart Patterns</h3>
+            <span className="text-xs text-muted-foreground ml-auto">Auto-detected from your natal chart</span>
+          </div>
+
+          {/* Detected aspect patterns */}
+          {chartPatterns.length > 0 && (
+            <div className="space-y-3">
+              {chartPatterns.map((p, i) => {
+                const img = PATTERN_IMAGES[p.name] || PATTERN_IMAGES[p.name.split(' (')[0]];
+                return (
+                  <div key={i} className="p-4 rounded-lg border bg-background">
+                    <div className="flex items-start gap-3">
+                      {img && (
+                        <img src={img} alt={p.name} className="w-16 h-16 object-contain rounded border bg-muted/30 flex-shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-lg">{p.symbol}</span>
+                          <span className="text-sm font-semibold">{p.name}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1 mb-2">
+                          {p.planets.map(pl => (
+                            <Badge key={pl} variant="secondary" className="text-[10px]">
+                              {PLANET_SYMBOLS[pl] || ''} {pl}
+                            </Badge>
+                          ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-line">
+                          {p.description.length > 300 ? p.description.slice(0, 300) + '…' : p.description}
+                        </p>
+                        {p.meaning && (
+                          <div className="mt-2 p-2 rounded bg-muted/50">
+                            <p className="text-[10px] font-medium text-muted-foreground mb-0.5">MEANING</p>
+                            <p className="text-xs text-muted-foreground">{p.meaning.length > 200 ? p.meaning.slice(0, 200) + '…' : p.meaning}</p>
+                          </div>
+                        )}
+                        <div className="grid grid-cols-2 gap-2 mt-2">
+                          <div className="p-2 rounded bg-primary/5 border border-primary/10">
+                            <p className="text-[9px] font-medium text-muted-foreground">✦ GIFT</p>
+                            <p className="text-[10px]">{p.gift.length > 120 ? p.gift.slice(0, 120) + '…' : p.gift}</p>
+                          </div>
+                          <div className="p-2 rounded bg-destructive/5 border border-destructive/10">
+                            <p className="text-[9px] font-medium text-muted-foreground">⚠ CHALLENGE</p>
+                            <p className="text-[10px]">{p.challenge.length > 120 ? p.challenge.slice(0, 120) + '…' : p.challenge}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Detected stelliums */}
+          {stelliums.length > 0 && (
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium flex items-center gap-2">
+                <span>✦✦✦</span> Stelliums Detected
+              </h4>
+              {stelliums.map((s, i) => (
+                <div key={i} className="p-3 rounded-lg border bg-background">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge variant="secondary">{s.sign}</Badge>
+                    <span className="text-xs font-medium">{s.planets.length} planets</span>
+                    {s.isPersonal && <Badge className="text-[9px] bg-primary/10 text-primary border-primary/20">Personal Planet Stellium</Badge>}
+                  </div>
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {s.planets.map(p => (
+                      <Badge key={p} variant="outline" className="text-[10px]">
+                        {PLANET_SYMBOLS[p] || ''} {p}
+                      </Badge>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {s.isPersonal
+                      ? `A powerful concentration of personal energy in ${s.sign}. This sign dominates your personality — you feel it in your bones. ${s.sign} themes are magnified and unavoidable.`
+                      : `A generational cluster in ${s.sign}. While shared with peers born around the same time, the house placement makes it personal to your life.`}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {chartPatterns.length === 0 && stelliums.length > 0 && (
+            <p className="text-xs text-muted-foreground">No major aspect patterns (Grand Trine, T-Square, Yod, etc.) detected — your chart expresses through individual aspects rather than complex configurations.</p>
+          )}
+        </div>
+      )}
+
+      {activeChart && !hasMyPatterns && (
+        <div className="p-4 rounded-lg border bg-muted/30 text-center">
+          <p className="text-xs text-muted-foreground">No major patterns or stelliums detected in this chart. Your chart expresses through individual aspects — explore them below.</p>
+        </div>
+      )}
 
       {/* Major Aspects */}
       <div className="space-y-3">
@@ -307,44 +460,32 @@ export function AspectEncyclopediaExplorer({
         </p>
       </div>
 
-      {/* Aspect Patterns */}
+      {/* Aspect Patterns with Images */}
       <div className="space-y-3">
         <h3 className="text-sm font-medium flex items-center gap-2"><span>⬡</span> Aspect Patterns</h3>
         <p className="text-xs text-muted-foreground">Click any pattern to learn about its meaning, gift, and challenge.</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {PATTERNS_DATA.map(pattern => (
-            <button
-              key={pattern.name}
-              onClick={() => setSelectedPattern(pattern)}
-              className="p-3 rounded-lg border bg-muted/30 hover:shadow-md transition-all text-left cursor-pointer group"
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-xl group-hover:scale-110 transition-transform">{pattern.symbol}</span>
-                <span className="text-xs font-medium">{pattern.name}</span>
-              </div>
-              <p className="text-[10px] text-muted-foreground mt-1">{pattern.components}</p>
-            </button>
-          ))}
-        </div>
-
-        {/* Patterns found in chart */}
-        {activeChart && chartPatterns.length > 0 && (
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium flex items-center gap-2">
-              <span>⭐</span> Patterns In Your Chart
-            </h4>
-            {chartPatterns.map((p, i) => (
-              <div key={i} className="p-3 rounded-lg border bg-primary/5 border-primary/20">
+          {PATTERNS_DATA.map(pattern => {
+            const img = PATTERN_IMAGES[pattern.name];
+            return (
+              <button
+                key={pattern.name}
+                onClick={() => setSelectedPattern(pattern)}
+                className="p-3 rounded-lg border bg-muted/30 hover:shadow-md transition-all text-left cursor-pointer group"
+              >
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">{p.symbol}</span>
-                  <span className="text-sm font-medium">{p.name}</span>
-                  <span className="text-xs text-muted-foreground ml-auto">{p.planets.join(', ')}</span>
+                  {img ? (
+                    <img src={img} alt={pattern.name} className="w-10 h-10 object-contain rounded opacity-70 group-hover:opacity-100 transition-opacity" />
+                  ) : (
+                    <span className="text-xl group-hover:scale-110 transition-transform">{pattern.symbol}</span>
+                  )}
+                  <span className="text-xs font-medium">{pattern.name}</span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">{p.description}</p>
-              </div>
-            ))}
-          </div>
-        )}
+                <p className="text-[10px] text-muted-foreground mt-1">{pattern.components}</p>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Stelliums */}
