@@ -3,12 +3,13 @@ import { ZodiacSignExplorer } from '@/components/narrative/ZodiacSignExplorer';
 import { PlanetEncyclopediaExplorer } from '@/components/narrative/PlanetEncyclopediaExplorer';
 import { HouseEncyclopediaExplorer } from '@/components/narrative/HouseEncyclopediaExplorer';
 import { AspectEncyclopediaExplorer } from '@/components/narrative/AspectEncyclopediaExplorer';
+import { EclipseEncyclopediaExplorer } from '@/components/narrative/EclipseEncyclopediaExplorer';
 import { ElementDistributionCard } from '@/components/narrative/ElementDistributionCard';
 import { ChartSelector } from '@/components/ChartSelector';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { computeAllSignals } from '@/lib/narrativeAnalysisEngine';
 
-type SubTab = 'signs' | 'planets' | 'houses' | 'aspects';
+type SubTab = 'signs' | 'planets' | 'houses' | 'aspects' | 'eclipses';
 
 interface Props {
   userNatalChart: NatalChart | null;
@@ -42,12 +43,13 @@ export function FoundationsView({ userNatalChart, savedCharts }: Props) {
     { key: 'planets', label: 'Planets', icon: '☿' },
     { key: 'houses', label: 'Houses', icon: '🏛' },
     { key: 'aspects', label: 'Aspects', icon: '△' },
+    { key: 'eclipses', label: 'Eclipses', icon: '🌑' },
   ];
 
   return (
     <div className="max-w-5xl mx-auto">
       {/* Chart selector for personalization */}
-      {allCharts.length > 0 && (activeTab === 'signs' || activeTab === 'houses') && (
+      {allCharts.length > 0 && (activeTab === 'signs' || activeTab === 'houses' || activeTab === 'eclipses') && (
         <div className="mb-6">
           <ChartSelector
             userNatalChart={userNatalChart}
@@ -94,6 +96,13 @@ export function FoundationsView({ userNatalChart, savedCharts }: Props) {
 
       {activeTab === 'aspects' && (
         <AspectEncyclopediaExplorer
+          userNatalChart={userNatalChart}
+          savedCharts={savedCharts}
+        />
+      )}
+
+      {activeTab === 'eclipses' && (
+        <EclipseEncyclopediaExplorer
           userNatalChart={userNatalChart}
           savedCharts={savedCharts}
         />
