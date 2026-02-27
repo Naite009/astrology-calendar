@@ -143,219 +143,382 @@ const FUNCTION_DESCRIPTIONS: Record<string, { superior: string; inferior: string
   },
 };
 
-// Court Card Quiz
-const COURT_QUIZ_QUESTIONS = [
+// Court Card Quiz — expanded with suit + rank questions
+const SUIT_QUESTIONS = [
   {
-    question: "When you encounter a new challenge, you tend to:",
+    question: "What draws you to a new idea?",
+    icon: "💡",
     options: [
-      { label: "Watch and study it first — there's so much to learn", rank: "Page" },
-      { label: "Charge in and figure it out along the way", rank: "Knight" },
-      { label: "Feel into it — what does my intuition say?", rank: "Queen" },
-      { label: "Assess it strategically — I know what works", rank: "King" },
+      { label: "The spark — I feel it in my gut before I can explain it", suit: "Wands" },
+      { label: "How it makes me feel — does it resonate emotionally?", suit: "Cups" },
+      { label: "Whether it's logical — does it actually make sense?", suit: "Swords" },
+      { label: "Whether it's practical — can I build something real with it?", suit: "Pentacles" },
     ],
   },
   {
-    question: "In a group, you naturally:",
+    question: "When a friend is going through a hard time, you:",
+    icon: "🤝",
     options: [
-      { label: "Ask questions and absorb everyone's perspective", rank: "Page" },
-      { label: "Push for action — let's stop talking and do", rank: "Knight" },
-      { label: "Hold space for the emotional temperature of the room", rank: "Queen" },
-      { label: "Take the lead and set the direction", rank: "King" },
+      { label: "Inspire them with possibilities and a bigger vision", suit: "Wands" },
+      { label: "Hold space and let them feel their feelings with you", suit: "Cups" },
+      { label: "Help them think it through and find clarity", suit: "Swords" },
+      { label: "Show up with something tangible — food, help, a plan", suit: "Pentacles" },
     ],
   },
   {
-    question: "Your relationship to your element's energy is:",
+    question: "Your ideal weekend looks like:",
+    icon: "🌅",
     options: [
-      { label: "I'm still discovering it — it surprises me", rank: "Page" },
-      { label: "I chase it relentlessly — sometimes too much", rank: "Knight" },
-      { label: "I channel it inward — it's part of my wisdom", rank: "Queen" },
-      { label: "I've mastered it — I wield it with authority", rank: "King" },
+      { label: "An adventure — somewhere new, something spontaneous", suit: "Wands" },
+      { label: "Quality time — deep conversations, music, art", suit: "Cups" },
+      { label: "Learning — a book, documentary, or stimulating debate", suit: "Swords" },
+      { label: "Making something — cooking, gardening, organizing", suit: "Pentacles" },
     ],
   },
   {
-    question: "When reading tarot for yourself, you prefer to:",
+    question: "You're most drained by:",
+    icon: "😩",
     options: [
-      { label: "Pull a single card and journal about it", rank: "Page" },
-      { label: "Do a quick 3-card spread and act on it", rank: "Knight" },
-      { label: "Sit with a full spread and let meanings emerge slowly", rank: "Queen" },
-      { label: "Use a structured spread with clear positions and logic", rank: "King" },
+      { label: "Routine and repetition — I need novelty", suit: "Wands" },
+      { label: "Conflict and coldness — I need harmony", suit: "Cups" },
+      { label: "Chaos and illogic — I need order", suit: "Swords" },
+      { label: "Instability and waste — I need security", suit: "Pentacles" },
     ],
   },
 ];
 
-const COURT_RANK_DESCRIPTIONS: Record<string, { title: string; archetype: string; traits: string }> = {
-  Page: { title: "Page", archetype: "The Student", traits: "Curious, eager, open-minded, sometimes naive. You're in a phase of learning and discovery with this element's energy. Messages and new beginnings." },
-  Knight: { title: "Knight", archetype: "The Quester", traits: "Passionate, driven, sometimes reckless. You actively pursue this element's energy with intensity. Action, movement, and pursuit." },
-  Queen: { title: "Queen", archetype: "The Nurturer", traits: "Emotionally mature, intuitive, receptive. You channel this element inward and use it with wisdom. Depth, mastery through feeling." },
-  King: { title: "King", archetype: "The Authority", traits: "Commanding, experienced, outwardly directed. You've integrated this element and wield it with confidence. Leadership and external mastery." },
+const RANK_QUESTIONS = [
+  {
+    question: "How do you relate to your own power?",
+    icon: "⚡",
+    options: [
+      { label: "I'm still figuring it out — every day I learn something new", rank: "Page" },
+      { label: "I'm chasing it — I want to prove what I'm capable of", rank: "Knight" },
+      { label: "I hold it quietly — I lead through understanding, not force", rank: "Queen" },
+      { label: "I own it — I've earned my authority through experience", rank: "King" },
+    ],
+  },
+  {
+    question: "When you walk into a room of strangers:",
+    icon: "🚪",
+    options: [
+      { label: "I observe and absorb — I'm curious about everyone", rank: "Page" },
+      { label: "I make an entrance — I want to be seen and engage", rank: "Knight" },
+      { label: "I feel the energy — I tune into the emotional atmosphere", rank: "Queen" },
+      { label: "I assess the room — I know where I stand instinctively", rank: "King" },
+    ],
+  },
+  {
+    question: "Your approach to making decisions is:",
+    icon: "🔮",
+    options: [
+      { label: "I ask others and gather lots of input first", rank: "Page" },
+      { label: "I decide fast and course-correct later if needed", rank: "Knight" },
+      { label: "I sit with it until I feel a deep inner knowing", rank: "Queen" },
+      { label: "I weigh the facts, decide, and commit fully", rank: "King" },
+    ],
+  },
+  {
+    question: "Which stage of life resonates most right now?",
+    icon: "🌱",
+    options: [
+      { label: "Beginning — everything feels new and full of potential", rank: "Page" },
+      { label: "Pursuit — I'm actively going after what I want", rank: "Knight" },
+      { label: "Depth — I'm cultivating inner wisdom and emotional truth", rank: "Queen" },
+      { label: "Mastery — I'm building legacy and leading from experience", rank: "King" },
+    ],
+  },
+];
+
+const ALL_QUIZ_QUESTIONS = [
+  ...SUIT_QUESTIONS.map(q => ({ ...q, type: 'suit' as const })),
+  ...RANK_QUESTIONS.map(q => ({ ...q, type: 'rank' as const })),
+];
+
+const COURT_RANK_DESCRIPTIONS: Record<string, { title: string; archetype: string; traits: string; reading: string }> = {
+  Page: { title: "Page", archetype: "The Student", traits: "Curious, eager, open-minded, sometimes naive. You're in a phase of learning and discovery. Messages and new beginnings define your energy.", reading: "When this card appears for others, it signals a message incoming or a fresh start. For you, it's a reminder that your greatest strength is your willingness to learn." },
+  Knight: { title: "Knight", archetype: "The Quester", traits: "Passionate, driven, sometimes reckless. You pursue what you want with intensity and speed. Action, movement, and pursuit are your calling cards.", reading: "When this card appears for others, it signals momentum and pursuit. For you, it's a reminder to channel your drive purposefully — speed without direction is just chaos." },
+  Queen: { title: "Queen", archetype: "The Nurturer", traits: "Emotionally mature, intuitive, receptive. You channel energy inward and use it with depth and wisdom. Mastery through feeling and inner knowing.", reading: "When this card appears for others, it signals emotional intelligence at work. For you, it's a reminder that your receptivity IS your power — you don't need to push to lead." },
+  King: { title: "King", archetype: "The Authority", traits: "Commanding, experienced, outwardly directed. You've integrated your element and wield it with confidence and responsibility. Leadership and external mastery.", reading: "When this card appears for others, it signals mature authority. For you, it's a reminder that your experience has earned you the right to lead — trust your track record." },
 };
 
-const SUIT_IMAGERY: Record<string, { emoji: string; keywords: string }> = {
-  Wands: { emoji: "🏔️", keywords: "Passion, creativity, ambition, spiritual fire" },
-  Cups: { emoji: "🌊", keywords: "Emotions, love, relationships, inner world" },
-  Swords: { emoji: "⚔️", keywords: "Intellect, truth, conflict, clarity" },
-  Pentacles: { emoji: "🌿", keywords: "Material world, health, money, craft" },
+const SUIT_IMAGERY: Record<string, { emoji: string; keywords: string; courtStyle: string }> = {
+  Wands: { emoji: "🔥", keywords: "Passion, creativity, ambition, spiritual fire", courtStyle: "The Wands court are visionaries and creators — charismatic, restless, and driven by inspiration." },
+  Cups: { emoji: "🌊", keywords: "Emotions, love, relationships, inner world", courtStyle: "The Cups court are feelers and healers — empathic, romantic, and guided by the heart." },
+  Swords: { emoji: "⚔️", keywords: "Intellect, truth, conflict, clarity", courtStyle: "The Swords court are thinkers and truth-seekers — sharp, analytical, and unafraid of hard truths." },
+  Pentacles: { emoji: "🌿", keywords: "Material world, health, money, craft", courtStyle: "The Pentacles court are builders and providers — steady, resourceful, and deeply grounded." },
 };
 
 function CourtCardQuiz({ chart }: { chart: NatalChart }) {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [showResult, setShowResult] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
 
   const sunPos = chart.planets.Sun;
   if (!sunPos) return null;
 
-  // Calculate dominant element from Big Three + inner planets
+  // Elemental signature for added weight (shown after quiz)
   const elementWeights: Record<string, number> = { Fire: 0, Water: 0, Air: 0, Earth: 0 };
   const breakdown: { name: string; sign: string; element: string; weight: number }[] = [];
+  const astroWeights: Record<string, number> = { Sun: 3, Moon: 3, Ascendant: 2, Mercury: 1, Venus: 1, Mars: 1 };
 
-  // Sun = 3pts, Moon = 3pts, Ascendant = 2pts, Mercury/Venus/Mars = 1pt each
-  const weights: Record<string, number> = { Sun: 3, Moon: 3, Ascendant: 2, Mercury: 1, Venus: 1, Mars: 1 };
-
-  for (const [planet, weight] of Object.entries(weights)) {
+  for (const [planet, weight] of Object.entries(astroWeights)) {
     if (planet === 'Ascendant') {
       const asc = chart.houseCusps?.house1;
       if (asc) {
         const el = SIGN_ELEMENT[asc.sign];
-        if (el) {
-          elementWeights[el] += weight;
-          breakdown.push({ name: 'Ascendant', sign: asc.sign, element: el, weight });
-        }
+        if (el) { elementWeights[el] += weight; breakdown.push({ name: 'Ascendant', sign: asc.sign, element: el, weight }); }
       }
     } else {
       const pos = chart.planets[planet as keyof typeof chart.planets];
       if (pos) {
         const el = SIGN_ELEMENT[pos.sign];
-        if (el) {
-          elementWeights[el] += weight;
-          breakdown.push({ name: planet, sign: pos.sign, element: el, weight });
-        }
+        if (el) { elementWeights[el] += weight; breakdown.push({ name: planet, sign: pos.sign, element: el, weight }); }
       }
     }
   }
 
-  const dominantElement = Object.entries(elementWeights).sort((a, b) => b[1] - a[1])[0][0];
-  const totalWeight = Object.values(elementWeights).reduce((a, b) => a + b, 0);
-  const dominantPct = totalWeight > 0 ? Math.round((elementWeights[dominantElement] / totalWeight) * 100) : 0;
+  const totalAstroWeight = Object.values(elementWeights).reduce((a, b) => a + b, 0);
 
-  const suit = FUNCTION_SUIT[ELEMENT_FUNCTION[dominantElement]];
-  const suitInfo = SUIT_IMAGERY[suit];
-
-  const handleAnswer = (questionIndex: number, rank: string) => {
-    setAnswers(prev => ({ ...prev, [questionIndex]: rank }));
+  const handleAnswer = (questionIndex: number, value: string) => {
+    const newAnswers = { ...answers, [questionIndex]: value };
+    setAnswers(newAnswers);
     setShowResult(false);
+    // Auto-advance after a short delay
+    if (currentStep < ALL_QUIZ_QUESTIONS.length - 1) {
+      setTimeout(() => setCurrentStep(prev => Math.min(prev + 1, ALL_QUIZ_QUESTIONS.length - 1)), 300);
+    }
   };
 
-  const allAnswered = Object.keys(answers).length === COURT_QUIZ_QUESTIONS.length;
+  const answeredCount = Object.keys(answers).length;
+  const allAnswered = answeredCount === ALL_QUIZ_QUESTIONS.length;
+  const progress = Math.round((answeredCount / ALL_QUIZ_QUESTIONS.length) * 100);
 
-  const calculateRank = (): string => {
-    const counts: Record<string, number> = { Page: 0, Knight: 0, Queen: 0, King: 0 };
-    Object.values(answers).forEach(r => counts[r]++);
+  const calculateResult = (): { suit: string; rank: string } => {
+    // Tally suit votes from quiz
+    const suitCounts: Record<string, number> = { Wands: 0, Cups: 0, Swords: 0, Pentacles: 0 };
+    const rankCounts: Record<string, number> = { Page: 0, Knight: 0, Queen: 0, King: 0 };
 
+    ALL_QUIZ_QUESTIONS.forEach((q, i) => {
+      const answer = answers[i];
+      if (!answer) return;
+      if (q.type === 'suit') {
+        const opt = SUIT_QUESTIONS.find(sq => sq.question === q.question)?.options.find(o => o.suit === answer);
+        if (opt) suitCounts[opt.suit]++;
+      } else {
+        const opt = RANK_QUESTIONS.find(rq => rq.question === q.question)?.options.find(o => o.rank === answer);
+        if (opt) rankCounts[opt.rank]++;
+      }
+    });
+
+    // Add elemental signature as weighted bonus (0.5 per astro point, normalized)
+    if (totalAstroWeight > 0) {
+      for (const [el, w] of Object.entries(elementWeights)) {
+        const func = ELEMENT_FUNCTION[el];
+        const s = FUNCTION_SUIT[func];
+        suitCounts[s] += (w / totalAstroWeight) * 1.5; // up to 1.5 bonus points
+      }
+    }
+
+    // Modality tiebreaker for rank
     const modalityBoost: Record<string, string> = {
       Aries: 'Knight', Cancer: 'Queen', Libra: 'Queen', Capricorn: 'King',
       Taurus: 'King', Leo: 'King', Scorpio: 'Queen', Aquarius: 'Knight',
       Gemini: 'Knight', Virgo: 'Page', Sagittarius: 'Knight', Pisces: 'Queen',
     };
     const boost = modalityBoost[sunPos.sign] || 'Knight';
-    counts[boost] += 0.5;
+    rankCounts[boost] += 0.5;
 
-    return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+    const suit = Object.entries(suitCounts).sort((a, b) => b[1] - a[1])[0][0];
+    const rank = Object.entries(rankCounts).sort((a, b) => b[1] - a[1])[0][0];
+    return { suit, rank };
   };
 
-  const rank = allAnswered ? calculateRank() : null;
-  const rankInfo = rank ? COURT_RANK_DESCRIPTIONS[rank] : null;
+  const result = allAnswered ? calculateResult() : null;
+  const rankInfo = result ? COURT_RANK_DESCRIPTIONS[result.rank] : null;
+  const suitInfo = result ? SUIT_IMAGERY[result.suit] : null;
+
+  const currentQ = ALL_QUIZ_QUESTIONS[currentStep];
 
   return (
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-lg font-serif">👑 Discover Your Court Card</CardTitle>
+        <p className="text-sm text-muted-foreground">Answer 8 questions and your chart does the rest.</p>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="p-4 rounded bg-secondary/30 border border-border space-y-3">
-          <p className="text-sm font-medium">Your Elemental Signature (Big Three + Inner Planets)</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {breakdown.map((b, i) => (
-              <div key={i} className={`p-2 rounded border text-xs ${ELEMENT_COLORS[b.element]}`}>
-                <span className="font-medium">{b.name}</span> in {b.sign}
-                <span className="text-muted-foreground ml-1">({b.element} ×{b.weight})</span>
-              </div>
-            ))}
+      <CardContent className="space-y-5">
+        {/* Progress bar */}
+        <div className="space-y-2">
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <span>{answeredCount} of {ALL_QUIZ_QUESTIONS.length} answered</span>
+            <span>{progress}%</span>
           </div>
-          <div className="flex gap-3 flex-wrap">
-            {Object.entries(elementWeights).filter(([,v]) => v > 0).sort((a,b) => b[1] - a[1]).map(([el, w]) => (
-              <div key={el} className={`px-3 py-1 rounded-full border text-xs font-medium ${ELEMENT_COLORS[el]} ${el === dominantElement ? 'ring-2 ring-primary' : ''}`}>
-                {el}: {w}pts ({Math.round((w / totalWeight) * 100)}%)
-              </div>
-            ))}
+          <div className="h-2 rounded-full bg-secondary overflow-hidden">
+            <div
+              className="h-full rounded-full bg-primary transition-all duration-500"
+              style={{ width: `${progress}%` }}
+            />
           </div>
-          <p className="text-sm text-muted-foreground">
-            Your dominant element is <strong>{dominantElement}</strong> ({dominantPct}%), placing you in the suit of <strong>{suit}</strong>.
-          </p>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">{suitInfo.emoji}</span>
-            <p className="text-xs text-muted-foreground">{suitInfo.keywords}</p>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Now answer these questions to discover your <strong>rank</strong> — are you the Page, Knight, Queen, or King of {suit}?
-          </p>
         </div>
 
-        {COURT_QUIZ_QUESTIONS.map((q, qi) => (
-          <div key={qi} className="space-y-2">
-            <p className="text-sm font-medium">{qi + 1}. {q.question}</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {q.options.map((opt, oi) => (
-                <button
-                  key={oi}
-                  onClick={() => handleAnswer(qi, opt.rank)}
-                  className={`p-3 rounded border text-left text-sm transition-all ${
-                    answers[qi] === opt.rank
-                      ? 'bg-primary/10 border-primary ring-1 ring-primary'
-                      : 'bg-secondary/20 border-border hover:bg-secondary/40'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
+        {/* Question navigation dots */}
+        <div className="flex gap-1.5 justify-center flex-wrap">
+          {ALL_QUIZ_QUESTIONS.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentStep(i)}
+              className={`w-8 h-8 rounded-full text-xs font-medium transition-all border ${
+                i === currentStep
+                  ? 'bg-primary text-primary-foreground border-primary scale-110'
+                  : answers[i] !== undefined
+                    ? 'bg-primary/20 border-primary/40 text-foreground'
+                    : 'bg-secondary/50 border-border text-muted-foreground hover:bg-secondary'
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
+        </div>
+
+        {/* Current question */}
+        <div className="p-5 rounded-lg bg-secondary/20 border border-border space-y-4">
+          <div className="flex items-start gap-3">
+            <span className="text-2xl mt-0.5">{currentQ.icon}</span>
+            <div>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">
+                {currentQ.type === 'suit' ? 'Your Element' : 'Your Rank'} · Question {currentStep + 1}
+              </p>
+              <p className="font-serif text-base font-medium">{currentQ.question}</p>
             </div>
           </div>
-        ))}
 
-        {allAnswered && !showResult && (
+          <div className="grid grid-cols-1 gap-2">
+            {currentQ.type === 'suit'
+              ? SUIT_QUESTIONS.find(q => q.question === currentQ.question)?.options.map((opt, oi) => {
+                  const selected = answers[currentStep] === opt.suit;
+                  return (
+                    <button
+                      key={oi}
+                      onClick={() => handleAnswer(currentStep, opt.suit)}
+                      className={`p-4 rounded-lg border text-left transition-all flex items-center gap-3 ${
+                        selected
+                          ? 'bg-primary/10 border-primary ring-1 ring-primary shadow-sm'
+                          : 'bg-background border-border hover:bg-secondary/40 hover:border-primary/30'
+                      }`}
+                    >
+                      <span className="text-lg shrink-0">{SUIT_IMAGERY[opt.suit].emoji}</span>
+                      <span className="text-sm">{opt.label}</span>
+                    </button>
+                  );
+                })
+              : RANK_QUESTIONS.find(q => q.question === currentQ.question)?.options.map((opt, oi) => {
+                  const selected = answers[currentStep] === opt.rank;
+                  const rankEmoji: Record<string, string> = { Page: '📖', Knight: '⚔️', Queen: '👑', King: '🏛️' };
+                  return (
+                    <button
+                      key={oi}
+                      onClick={() => handleAnswer(currentStep, opt.rank)}
+                      className={`p-4 rounded-lg border text-left transition-all flex items-center gap-3 ${
+                        selected
+                          ? 'bg-primary/10 border-primary ring-1 ring-primary shadow-sm'
+                          : 'bg-background border-border hover:bg-secondary/40 hover:border-primary/30'
+                      }`}
+                    >
+                      <span className="text-lg shrink-0">{rankEmoji[opt.rank]}</span>
+                      <span className="text-sm">{opt.label}</span>
+                    </button>
+                  );
+                })
+            }
+          </div>
+        </div>
+
+        {/* Nav buttons */}
+        <div className="flex gap-2">
           <button
-            onClick={() => setShowResult(true)}
-            className="w-full py-3 rounded bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
+            onClick={() => setCurrentStep(s => Math.max(0, s - 1))}
+            disabled={currentStep === 0}
+            className="px-4 py-2 rounded border border-border text-sm text-muted-foreground hover:bg-secondary/40 disabled:opacity-30 transition-colors"
           >
-            Reveal My Court Card
+            ← Back
           </button>
-        )}
+          <button
+            onClick={() => setCurrentStep(s => Math.min(ALL_QUIZ_QUESTIONS.length - 1, s + 1))}
+            disabled={currentStep === ALL_QUIZ_QUESTIONS.length - 1}
+            className="px-4 py-2 rounded border border-border text-sm text-muted-foreground hover:bg-secondary/40 disabled:opacity-30 transition-colors"
+          >
+            Next →
+          </button>
+          {allAnswered && !showResult && (
+            <button
+              onClick={() => setShowResult(true)}
+              className="ml-auto px-6 py-2 rounded bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
+            >
+              ✨ Reveal My Court Card
+            </button>
+          )}
+        </div>
 
-        {showResult && rank && rankInfo && (
-          <div className={`p-6 rounded-lg border-2 ${ELEMENT_COLORS[dominantElement]} space-y-4`}>
-            <div className="text-center space-y-2">
-              <p className="text-4xl">{suitInfo.emoji}</p>
-              <p className="text-2xl font-serif font-bold">{rankInfo.title} of {suit}</p>
-              <p className="text-sm text-muted-foreground italic">{rankInfo.archetype}</p>
+        {/* Result */}
+        {showResult && result && rankInfo && suitInfo && (
+          <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* The card reveal */}
+            <div className={`p-8 rounded-xl border-2 ${ELEMENT_COLORS[Object.entries(SIGN_ELEMENT).find(([,el]) => FUNCTION_SUIT[ELEMENT_FUNCTION[el]] === result.suit)?.[1] || 'Fire']} space-y-4`}>
+              <div className="text-center space-y-3">
+                <p className="text-5xl">{suitInfo.emoji}</p>
+                <p className="text-3xl font-serif font-bold">{rankInfo.title} of {result.suit}</p>
+                <p className="text-sm text-muted-foreground italic">"{rankInfo.archetype}"</p>
+              </div>
+              <p className="text-sm leading-relaxed text-center max-w-md mx-auto">{rankInfo.traits}</p>
             </div>
-            <p className="text-sm leading-relaxed">{rankInfo.traits}</p>
-            <div className="p-3 rounded bg-background/60 border border-border">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">As Your Significator</p>
+
+            {/* Court style */}
+            <div className="p-4 rounded-lg bg-secondary/30 border border-border space-y-2">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">The {result.suit} Court</p>
+              <p className="text-sm text-muted-foreground">{suitInfo.courtStyle}</p>
+            </div>
+
+            {/* Reading advice */}
+            <div className="p-4 rounded-lg bg-secondary/30 border border-border space-y-2">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">In Your Readings</p>
+              <p className="text-sm text-muted-foreground">{rankInfo.reading}</p>
+            </div>
+
+            {/* Significator tip */}
+            <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
+              <p className="text-xs uppercase tracking-widest text-primary/70">✨ Your Significator</p>
               <p className="text-sm text-muted-foreground">
-                Use the <strong>{rankInfo.title} of {suit}</strong> as your significator card in readings. 
-                This card represents your core identity — pull it from the deck before shuffling and place it face-up 
-                to anchor the reading in your energy.
+                Use the <strong>{rankInfo.title} of {result.suit}</strong> as your significator card. Pull it from the deck before shuffling and place it face-up to anchor the reading in your energy.
               </p>
             </div>
-            <div className="p-3 rounded bg-background/60 border border-border">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Astrological Basis</p>
-              <p className="text-sm text-muted-foreground">
-                Dominant element: <strong>{dominantElement}</strong> ({dominantPct}% of your chart weight) → Suit of {suit}. 
-                {breakdown.filter(b => b.element === dominantElement).length > 1 
-                  ? ` Multiple placements (${breakdown.filter(b => b.element === dominantElement).map(b => b.name).join(', ')}) reinforce this energy.`
-                  : ''
-                } Your quiz responses + {sunPos.sign}'s modality shaped your rank as {rankInfo.title}.
-              </p>
+
+            {/* Elemental signature (added weight, shown after) */}
+            <div className="p-4 rounded-lg bg-secondary/20 border border-border space-y-3">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">Your Elemental Signature (Chart Influence)</p>
+              <p className="text-xs text-muted-foreground">Your chart placements added weighted influence to your suit result:</p>
+              <div className="flex gap-2 flex-wrap">
+                {breakdown.map((b, i) => (
+                  <span key={i} className={`px-2 py-1 rounded text-xs border ${ELEMENT_COLORS[b.element]}`}>
+                    {b.name} in {b.sign} <span className="opacity-60">({b.element} ×{b.weight})</span>
+                  </span>
+                ))}
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                {Object.entries(elementWeights).filter(([,v]) => v > 0).sort((a,b) => b[1] - a[1]).map(([el, w]) => (
+                  <span key={el} className={`px-2 py-1 rounded-full text-xs border font-medium ${ELEMENT_COLORS[el]}`}>
+                    {el}: {Math.round((w / totalAstroWeight) * 100)}%
+                  </span>
+                ))}
+              </div>
             </div>
+
+            {/* Retake */}
+            <button
+              onClick={() => { setAnswers({}); setShowResult(false); setCurrentStep(0); }}
+              className="w-full py-2 rounded border border-border text-sm text-muted-foreground hover:bg-secondary/40 transition-colors"
+            >
+              Retake Quiz
+            </button>
           </div>
         )}
       </CardContent>
