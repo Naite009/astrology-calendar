@@ -4,12 +4,13 @@ import { PlanetEncyclopediaExplorer } from '@/components/narrative/PlanetEncyclo
 import { HouseEncyclopediaExplorer } from '@/components/narrative/HouseEncyclopediaExplorer';
 import { AspectEncyclopediaExplorer } from '@/components/narrative/AspectEncyclopediaExplorer';
 import { EclipseEncyclopediaExplorer } from '@/components/narrative/EclipseEncyclopediaExplorer';
+import { MidpointExplorer } from '@/components/narrative/MidpointExplorer';
 import { ElementDistributionCard } from '@/components/narrative/ElementDistributionCard';
 import { ChartSelector } from '@/components/ChartSelector';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { computeAllSignals } from '@/lib/narrativeAnalysisEngine';
 
-type SubTab = 'signs' | 'planets' | 'houses' | 'aspects' | 'eclipses';
+type SubTab = 'signs' | 'planets' | 'houses' | 'aspects' | 'midpoints' | 'eclipses';
 
 interface Props {
   userNatalChart: NatalChart | null;
@@ -43,13 +44,14 @@ export function FoundationsView({ userNatalChart, savedCharts }: Props) {
     { key: 'planets', label: 'Planets', icon: '☿' },
     { key: 'houses', label: 'Houses', icon: '🏛' },
     { key: 'aspects', label: 'Aspects', icon: '△' },
+    { key: 'midpoints', label: 'Midpoints', icon: '⊕' },
     { key: 'eclipses', label: 'Eclipses', icon: '🌑' },
   ];
 
   return (
     <div className="max-w-5xl mx-auto">
       {/* Chart selector for personalization */}
-      {allCharts.length > 0 && (activeTab === 'signs' || activeTab === 'houses' || activeTab === 'eclipses') && (
+      {allCharts.length > 0 && (activeTab === 'signs' || activeTab === 'houses' || activeTab === 'eclipses' || activeTab === 'midpoints') && activeTab !== 'midpoints' && (
         <div className="mb-6">
           <ChartSelector
             userNatalChart={userNatalChart}
@@ -96,6 +98,13 @@ export function FoundationsView({ userNatalChart, savedCharts }: Props) {
 
       {activeTab === 'aspects' && (
         <AspectEncyclopediaExplorer
+          userNatalChart={userNatalChart}
+          savedCharts={savedCharts}
+        />
+      )}
+
+      {activeTab === 'midpoints' && (
+        <MidpointExplorer
           userNatalChart={userNatalChart}
           savedCharts={savedCharts}
         />
