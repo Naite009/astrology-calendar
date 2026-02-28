@@ -991,6 +991,7 @@ export const AstroCalendar = () => {
             <FoundationsView
               userNatalChart={userNatalChart}
               savedCharts={savedCharts}
+              onNavigateToView={(view) => setViewMode(view as ViewMode)}
             />
           </Suspense>
         )}

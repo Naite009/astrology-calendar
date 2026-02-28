@@ -15,9 +15,10 @@ type SubTab = 'signs' | 'planets' | 'houses' | 'aspects' | 'midpoints' | 'eclips
 interface Props {
   userNatalChart: NatalChart | null;
   savedCharts: NatalChart[];
+  onNavigateToView?: (view: string) => void;
 }
 
-export function FoundationsView({ userNatalChart, savedCharts }: Props) {
+export function FoundationsView({ userNatalChart, savedCharts, onNavigateToView }: Props) {
   const [activeTab, setActiveTab] = useState<SubTab>('signs');
   const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
 
@@ -51,7 +52,7 @@ export function FoundationsView({ userNatalChart, savedCharts }: Props) {
   return (
     <div className="max-w-5xl mx-auto">
       {/* Chart selector for personalization */}
-      {allCharts.length > 0 && (activeTab === 'signs' || activeTab === 'houses' || activeTab === 'eclipses' || activeTab === 'midpoints') && activeTab !== 'midpoints' && (
+      {allCharts.length > 0 && (activeTab === 'signs' || activeTab === 'planets' || activeTab === 'houses' || activeTab === 'eclipses' || activeTab === 'midpoints') && activeTab !== 'midpoints' && (
         <div className="mb-6">
           <ChartSelector
             userNatalChart={userNatalChart}
@@ -90,10 +91,10 @@ export function FoundationsView({ userNatalChart, savedCharts }: Props) {
         </div>
       )}
 
-      {activeTab === 'planets' && <PlanetEncyclopediaExplorer />}
+      {activeTab === 'planets' && <PlanetEncyclopediaExplorer chart={selectedChart} onNavigateToView={onNavigateToView} />}
 
       {activeTab === 'houses' && (
-        <HouseEncyclopediaExplorer chart={selectedChart} />
+        <HouseEncyclopediaExplorer chart={selectedChart} onNavigateToView={onNavigateToView} />
       )}
 
       {activeTab === 'aspects' && (
