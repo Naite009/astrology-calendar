@@ -278,18 +278,18 @@ export function ElementDistributionCard({ planetHouses }: Props) {
         </div>
       </div>
 
-      {/* Element Self-Assessment for weak/missing elements */}
-      {weakElements.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-xs text-muted-foreground">
-            You have low or missing {weakElements.join(' & ')}. Use this self-assessment to discover if you've already internalized the element — or if it's genuinely undeveloped territory.
-          </p>
-          <ElementSelfAssessment 
-            elements={weakElements} 
-            title={`${weakElements.join(' & ')} Self-Assessment — Have You Already Mastered It?`}
-          />
-        </div>
-      )}
+      {/* Element Self-Assessment for all elements */}
+      <div className="space-y-2">
+        <p className="text-xs text-muted-foreground">
+          {weakElements.length > 0 
+            ? `You have low or missing ${weakElements.join(' & ')}. Use this self-assessment to discover if you've already internalized it — or explore any element's presence in your life.`
+            : 'Use this self-assessment to explore how each element shows up in your daily life, regardless of your chart placements.'}
+        </p>
+        <ElementSelfAssessment 
+          elements={['Fire', 'Earth', 'Air', 'Water']} 
+          title="Element Self-Assessment — All Four Elements"
+        />
+      </div>
     </div>
   );
 }
