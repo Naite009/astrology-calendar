@@ -2,7 +2,7 @@ import { useState, lazy, Suspense } from "react";
 import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, ScanSearch, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers, Combine, Diamond, FileText, CalendarClock, Utensils, Sun } from "lucide-react";
 import { TodaysCosmicEnergy, CosmicEnergyButton } from "./TodaysCosmicEnergy";
 import { useState as useCosmicState } from "react";
-import { ChartDecoderView } from "./ChartDecoderView";
+const ChartDecoderView = lazy(() => import("./ChartDecoderView").then(m => ({ default: m.ChartDecoderView })));
 import { AskView } from "./AskView";
 import { ChartSelector } from "./ChartSelector";
 import { MonthView } from "./MonthView";
@@ -17,14 +17,14 @@ import { ChartLibrary } from "./ChartLibrary";
 const TimingView = lazy(() => import("./TimingView").then(m => ({ default: m.TimingView })));
 import { ColorsView } from "./ColorsView";
 import { PatternsView } from "./PatternsView";
-import { SacredScriptView } from "./SacredScriptView";
+const SacredScriptView = lazy(() => import("./SacredScriptView").then(m => ({ default: m.SacredScriptView })));
 import { DayTypeLegend } from "./DayTypeLegend";
 import { VoiceMemoModal } from "./VoiceMemoModal";
 import { VoiceMemoLibrary } from "./VoiceMemoLibrary";
 import { PlanetarySpeedsView } from "./PlanetarySpeedsView";
 import { DwarfPlanetsGuide } from "./DwarfPlanetsGuide";
-import { HealthAstrologyView } from "./HealthAstrologyView";
-import { HumanDesignView } from "./humandesign/HumanDesignView";
+const HealthAstrologyView = lazy(() => import("./HealthAstrologyView").then(m => ({ default: m.HealthAstrologyView })));
+const HumanDesignView = lazy(() => import("./humandesign/HumanDesignView").then(m => ({ default: m.HumanDesignView })));
 import { useUserData } from "@/hooks/useUserData";
 import { useNotes } from "@/hooks/useNotes";
 import { useNatalChart, NatalChart } from "@/hooks/useNatalChart";
@@ -32,19 +32,19 @@ import { useCloudBackup } from "@/hooks/useCloudBackup";
 import { useVoiceMemos } from "@/hooks/useVoiceMemos";
 import { DayData, generateICalExport } from "@/lib/astrology";
 
-import { SynastryView } from "./SynastryView";
-import { RelationshipTimelineView } from "./RelationshipTimelineView";
-import { StructuralStressView } from "./StructuralStressView";
-import { CombosView } from "./CombosView";
-import { GroundedNarrativeView } from "./GroundedNarrativeView";
-import { TransitCalendarView } from "./TransitCalendarView";
+const SynastryView = lazy(() => import("./SynastryView").then(m => ({ default: m.SynastryView })));
+const RelationshipTimelineView = lazy(() => import("./RelationshipTimelineView").then(m => ({ default: m.RelationshipTimelineView })));
+const StructuralStressView = lazy(() => import("./StructuralStressView").then(m => ({ default: m.StructuralStressView })));
+const CombosView = lazy(() => import("./CombosView").then(m => ({ default: m.CombosView })));
+const GroundedNarrativeView = lazy(() => import("./GroundedNarrativeView").then(m => ({ default: m.GroundedNarrativeView })));
+const TransitCalendarView = lazy(() => import("./TransitCalendarView").then(m => ({ default: m.TransitCalendarView })));
 import { WeeklyMealPlanCard } from "./WeeklyMealPlanCard";
-import { HexagramView } from "./HexagramView";
-import { SolarReturnView } from "./SolarReturnView";
+const HexagramView = lazy(() => import("./HexagramView").then(m => ({ default: m.HexagramView })));
+const SolarReturnView = lazy(() => import("./SolarReturnView").then(m => ({ default: m.SolarReturnView })));
 import { MercuryRetrogradeGuide } from "./MercuryRetrogradeGuide";
 import { MoonPhaseEncyclopedia } from "./MoonPhaseEncyclopedia";
-import { FoundationsView } from "./FoundationsView";
-import { TarotFunctionsView } from "./TarotFunctionsView";
+const FoundationsView = lazy(() => import("./FoundationsView").then(m => ({ default: m.FoundationsView })));
+const TarotFunctionsView = lazy(() => import("./TarotFunctionsView").then(m => ({ default: m.TarotFunctionsView })));
 
 
 
@@ -836,24 +836,28 @@ export const AstroCalendar = () => {
         )}
 
         {viewMode === "sacred-script" && (
-          <SacredScriptView 
-            natalChart={userNatalChart || savedCharts[0]}
-            allCharts={[
-              ...(userNatalChart ? [userNatalChart] : []),
-              ...savedCharts
-            ]}
-          />
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+            <SacredScriptView 
+              natalChart={userNatalChart || savedCharts[0]}
+              allCharts={[
+                ...(userNatalChart ? [userNatalChart] : []),
+                ...savedCharts
+              ]}
+            />
+          </Suspense>
         )}
 
         {viewMode === "decoder" && (
-          <ChartDecoderView
-            natalChart={userNatalChart || savedCharts[0]}
-            allCharts={[
-              ...(userNatalChart ? [userNatalChart] : []),
-              ...savedCharts
-            ]}
-            selectedChartId={selectedChartForTiming}
-          />
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+            <ChartDecoderView
+              natalChart={userNatalChart || savedCharts[0]}
+              allCharts={[
+                ...(userNatalChart ? [userNatalChart] : []),
+                ...savedCharts
+              ]}
+              selectedChartId={selectedChartForTiming}
+            />
+          </Suspense>
         )}
 
         {viewMode === "speeds" && (
@@ -865,27 +869,33 @@ export const AstroCalendar = () => {
         )}
 
         {viewMode === "synastry" && (
-          <SynastryView
-            userNatalChart={userNatalChart}
-            savedCharts={savedCharts}
-          />
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+            <SynastryView
+              userNatalChart={userNatalChart}
+              savedCharts={savedCharts}
+            />
+          </Suspense>
         )}
 
         {viewMode === "timeline" && (
-          <RelationshipTimelineView
-            userNatalChart={userNatalChart}
-            savedCharts={savedCharts}
-          />
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+            <RelationshipTimelineView
+              userNatalChart={userNatalChart}
+              savedCharts={savedCharts}
+            />
+          </Suspense>
         )}
 
         {viewMode === "health" && (
-          <HealthAstrologyView
-            natalChart={userNatalChart || savedCharts[0]}
-            allCharts={[
-              ...(userNatalChart ? [userNatalChart] : []),
-              ...savedCharts
-            ]}
-          />
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+            <HealthAstrologyView
+              natalChart={userNatalChart || savedCharts[0]}
+              allCharts={[
+                ...(userNatalChart ? [userNatalChart] : []),
+                ...savedCharts
+              ]}
+            />
+          </Suspense>
         )}
 
         {viewMode === "ask" && (
@@ -897,35 +907,45 @@ export const AstroCalendar = () => {
         )}
 
         {viewMode === "structural" && (
-          <StructuralStressView
-            userChart={userNatalChart}
-            savedCharts={savedCharts}
-          />
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+            <StructuralStressView
+              userChart={userNatalChart}
+              savedCharts={savedCharts}
+            />
+          </Suspense>
         )}
 
         {viewMode === "combos" && (
-          <CombosView 
-            savedCharts={savedCharts}
-            userChart={userNatalChart}
-          />
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+            <CombosView 
+              savedCharts={savedCharts}
+              userChart={userNatalChart}
+            />
+          </Suspense>
         )}
 
         {viewMode === "human-design" && (
-          <HumanDesignView />
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+            <HumanDesignView />
+          </Suspense>
         )}
 
         {viewMode === "narrative" && (
-          <GroundedNarrativeView 
-            savedCharts={savedCharts}
-            userNatalChart={userNatalChart}
-          />
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+            <GroundedNarrativeView 
+              savedCharts={savedCharts}
+              userNatalChart={userNatalChart}
+            />
+          </Suspense>
         )}
 
         {viewMode === "transit-calendar" && (
-          <TransitCalendarView 
-            natalChart={userNatalChart} 
-            savedCharts={savedCharts}
-          />
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+            <TransitCalendarView 
+              natalChart={userNatalChart} 
+              savedCharts={savedCharts}
+            />
+          </Suspense>
         )}
 
         {viewMode === "cosmic-kitchen" && (
@@ -935,14 +955,18 @@ export const AstroCalendar = () => {
         )}
 
         {viewMode === "hexagram" && (
-          <HexagramView />
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+            <HexagramView />
+          </Suspense>
         )}
 
         {viewMode === "solar-return" && (
-          <SolarReturnView
-            userNatalChart={userNatalChart}
-            savedCharts={savedCharts}
-          />
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+            <SolarReturnView
+              userNatalChart={userNatalChart}
+              savedCharts={savedCharts}
+            />
+          </Suspense>
         )}
 
         {viewMode === "mercury-rx" && (
@@ -963,17 +987,21 @@ export const AstroCalendar = () => {
         )}
 
         {viewMode === "foundations" && (
-          <FoundationsView
-            userNatalChart={userNatalChart}
-            savedCharts={savedCharts}
-          />
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+            <FoundationsView
+              userNatalChart={userNatalChart}
+              savedCharts={savedCharts}
+            />
+          </Suspense>
         )}
 
         {viewMode === "tarot-functions" && (
-          <TarotFunctionsView
-            userNatalChart={userNatalChart}
-            savedCharts={savedCharts}
-          />
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+            <TarotFunctionsView
+              userNatalChart={userNatalChart}
+              savedCharts={savedCharts}
+            />
+          </Suspense>
         )}
       </div>
 
