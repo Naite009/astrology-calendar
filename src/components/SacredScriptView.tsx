@@ -68,6 +68,7 @@ import { PermissionsCard } from '@/components/sacredscript/PermissionsCard';
 import { OppositionPairsCard } from '@/components/sacredscript/OppositionPairsCard';
 import { PsychicGiftsCard } from '@/components/sacredscript/PsychicGiftsCard';
 import { BigThreeSynthesisCard } from '@/components/sacredscript/BigThreeSynthesisCard';
+import { LunarNodesCard } from '@/components/sacredscript/LunarNodesCard';
 
 interface SacredScriptViewProps {
   natalChart: NatalChart;
@@ -1823,14 +1824,27 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
                 {lifeLesson.northNode.house && ` (House ${lifeLesson.northNode.house})`}
               </h4>
               <p className="text-sm text-muted-foreground italic">
-                (For your reference—Step 6: "Combine Saturn, the Rising Sign and the North Node to identify someone's purpose")
+                See Section 8.5 below for the full Lunar Nodes deep dive — "What Are You Here to Learn?"
               </p>
-              <p className="text-sm mt-2">{lifeLesson.northNode.direction}</p>
             </div>
           )}
           
           <NoteArea placeholder="How Saturn themes show up in client's life..." />
         </div>
+      </Section>
+      
+      {/* 8.5 Lunar Nodes — What Are You Here to Learn? */}
+      <Section 
+        title="8.5 The Lunar Nodes — What Are You Here to Learn?" 
+        color="border-l-indigo-500" 
+        icon={<div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-600 text-xs font-bold">☊</div>}
+      >
+        <LunarNodesCard 
+          chart={natalChart} 
+          northNodeHouse={getPlanetHouse(natalChart, 'NorthNode')}
+          southNodeHouse={getPlanetHouse(natalChart, 'SouthNode')}
+        />
+        <NoteArea placeholder="How the client relates to North Node / South Node themes..." />
       </Section>
       
       {/* 9. Final Directive */}
