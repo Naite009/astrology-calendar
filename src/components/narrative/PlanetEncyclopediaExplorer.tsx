@@ -88,9 +88,9 @@ function PlanetDetailModal({ planet, open, onClose }: { planet: PlanetEncycloped
             </div>
 
             {/* High Road / Low Road Keywords */}
-            {(planet.highRoad.length > 0 || planet.lowRoad.length > 0) && (
+            {((planet.highRoad?.length ?? 0) > 0 || (planet.lowRoad?.length ?? 0) > 0) && (
               <div className="grid grid-cols-2 gap-3">
-                {planet.highRoad.length > 0 && (
+                {(planet.highRoad?.length ?? 0) > 0 && (
                   <div>
                     <p className="text-[10px] font-medium text-muted-foreground mb-1.5">✦ HIGH ROAD</p>
                     <div className="flex flex-wrap gap-1">
@@ -100,7 +100,7 @@ function PlanetDetailModal({ planet, open, onClose }: { planet: PlanetEncycloped
                     </div>
                   </div>
                 )}
-                {planet.lowRoad.length > 0 && (
+                {(planet.lowRoad?.length ?? 0) > 0 && (
                   <div>
                     <p className="text-[10px] font-medium text-muted-foreground mb-1.5">⚠ LOW ROAD</p>
                     <div className="flex flex-wrap gap-1">
