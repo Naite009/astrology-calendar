@@ -939,25 +939,29 @@ export function TarotFunctionsView({ userNatalChart, savedCharts }: Props) {
           {/* Tarot Reading Guide */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg font-serif">🃏 How to Use This in Readings</CardTitle>
+              <CardTitle className="text-lg font-serif">🃏 How to Read Suit Dominance in a Spread</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 text-sm text-muted-foreground leading-relaxed">
+              <p className="text-xs italic border-l-2 border-primary/30 pl-3">
+                Your superior function ({result.superiorFunction} → {result.superiorSuit}) isn't "good" or "bad" — it's your comfort zone. 
+                Here's what it means when suits show up in your readings:
+              </p>
               <div className="space-y-3">
                 <div className="p-3 rounded bg-secondary/30 border border-border">
-                  <p className="font-medium text-foreground mb-1">When your Superior suit appears ({result.superiorSuit})</p>
-                  <p>Trust your instincts. These cards speak your native language. Your interpretations here are likely accurate and insightful — lean into confidence.</p>
+                  <p className="font-medium text-foreground mb-1">Lots of {result.superiorSuit} (your comfort zone)</p>
+                  <p>You're on familiar ground. You'll understand these cards intuitively — but ask yourself: <em>"Am I playing it safe?"</em> A spread dominated by your superior suit can mean you're staying where things feel easy instead of growing.</p>
                 </div>
                 <div className="p-3 rounded bg-secondary/30 border border-border">
-                  <p className="font-medium text-foreground mb-1">When your Inferior suit appears ({result.inferiorSuit})</p>
-                  <p>Slow down and pay extra attention. These cards carry messages from your unconscious — they often point to where the <em>real</em> growth is happening. Don't dismiss them as irrelevant.</p>
+                  <p className="font-medium text-foreground mb-1">Lots of {result.inferiorSuit} (your growth edge)</p>
+                  <p>Pay close attention — this is where the real message lives. These cards may feel confusing or uncomfortable because they speak to your blind spot. That discomfort <em>is</em> the signal. Life is pushing you to develop your {result.inferiorFunction} function.</p>
                 </div>
                 <div className="p-3 rounded bg-secondary/30 border border-border">
-                  <p className="font-medium text-foreground mb-1">When a reading is dominated by your Inferior suit</p>
-                  <p>This is a significant message. Life is asking you to develop your weakest function. It may feel uncomfortable, but this is where transformation lives.</p>
+                  <p className="font-medium text-foreground mb-1">A mix of suits</p>
+                  <p>Balanced energy. Look at which suit lands in which <em>position</em> — if your inferior suit ({result.inferiorSuit}) shows up in the outcome position, the reading is pointing toward growth. If your superior suit ({result.superiorSuit}) is in the challenge position, your usual strengths may not help here.</p>
                 </div>
                 <div className="p-3 rounded bg-secondary/30 border border-border">
-                  <p className="font-medium text-foreground mb-1">Significator Card Selection</p>
-                  <p>Choose your significator from your Superior suit. For example, if {result.superiorSuit} is your strength, consider the King/Queen of {result.superiorSuit} as your significator depending on how you identify.</p>
+                  <p className="font-medium text-foreground mb-1">Your Significator</p>
+                  <p>Use your <strong>Court Card result</strong> from the quiz below as your significator — it combines your personality <em>and</em> your chart. Pull it from the deck before shuffling and place it face-up to anchor the reading in your energy.</p>
                 </div>
               </div>
             </CardContent>
