@@ -160,9 +160,11 @@ export function MidpointExplorer({ userNatalChart, savedCharts }: Props) {
     return charts;
   }, [userNatalChart, savedCharts]);
 
-  const selectedChart = selectedChartId
-    ? allCharts.find(c => c.name === selectedChartId) || allCharts[0] || null
-    : allCharts[0] || null;
+  const selectedChart = useMemo(() => {
+    if (!selectedChartId) return allCharts[0] || null;
+    if (selectedChartId === 'user' && userNatalChart) return userNatalChart;
+    return allCharts.find(c => c.id === selectedChartId || c.name === selectedChartId) || allCharts[0] || null;
+  }, [selectedChartId, allCharts, userNatalChart]);
 
   const midpoints = useMemo(() => {
     if (!selectedChart || !selectedChart.planets || Object.keys(selectedChart.planets).length < 3) return [];
@@ -196,7 +198,11 @@ export function MidpointExplorer({ userNatalChart, savedCharts }: Props) {
       <ChartSelector
         userNatalChart={userNatalChart}
         savedCharts={savedCharts}
-        selectedChartId={selectedChart?.name || ''}
+        selectedChartId={
+          selectedChart && userNatalChart && selectedChart.id === userNatalChart.id
+            ? 'user'
+            : selectedChart?.id || ''
+        }
         onSelect={setSelectedChartId}
       />
 
