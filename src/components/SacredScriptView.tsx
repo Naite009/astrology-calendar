@@ -55,8 +55,11 @@ import {
   getMercuryInSign,
   getElementForSign,
   getSaturnTeaching,
-  SaturnTeaching
+  SaturnTeaching,
+  SATURN_IN_HOUSES_GREENE,
+  SATURN_ASPECTS_GREENE,
 } from '@/lib/elementTeachings';
+import { computeAllSignals } from '@/lib/narrativeAnalysisEngine';
 import { getPlanetaryPositions } from '@/lib/astrology';
 import { calculateTransitAspects, TransitAspect, getTransitPlanetSymbol } from '@/lib/transitAspects';
 import { detectBigThreeAspects, BigThreeAspect } from '@/lib/natalBigThreeAspects';
@@ -1697,6 +1700,22 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
             const saturnTeaching = getSaturnTeaching(lifeLesson.saturn.sign);
             const saturnArchetype = getSignArchetype(lifeLesson.saturn.sign);
             const age = calculateAge(natalChart.birthDate);
+            const saturnHouse = lifeLesson.saturn.house;
+            const saturnHouseGreene = saturnHouse ? SATURN_IN_HOUSES_GREENE[saturnHouse] : null;
+            
+            // Find Saturn's natal aspects
+            const signals = computeAllSignals(natalChart);
+            const saturnAspects = signals.natalAspects.filter(a => 
+              a.planet1 === 'Saturn' || a.planet2 === 'Saturn'
+            );
+            const saturnAspectGreeneEntries = saturnAspects
+              .map(a => {
+                const otherPlanet = a.planet1 === 'Saturn' ? a.planet2 : a.planet1;
+                const key = `Saturn-${otherPlanet}`;
+                const entry = SATURN_ASPECTS_GREENE[key];
+                return entry ? { aspect: a, greene: entry } : null;
+              })
+              .filter(Boolean) as { aspect: typeof saturnAspects[0]; greene: typeof SATURN_ASPECTS_GREENE['Saturn-Sun'] }[];
             
             return (
               <>
@@ -1733,21 +1752,24 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
                         <p className="text-sm leading-relaxed">{saturnTeaching.lifeLesson}</p>
                       </div>
                       
-                      {/* Beast & Prince - Liz Greene Framework */}
+                      {/* Beast & Prince BY SIGN - Liz Greene Framework */}
                       {saturnTeaching.beast && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          <div className="bg-slate-800/5 dark:bg-slate-200/5 p-4 rounded-lg border border-slate-400/20">
-                            <p className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-2 flex items-center gap-1.5">🐉 THE BEAST <span className="font-normal text-[10px]">(unconscious expression)</span></p>
-                            <p className="text-sm leading-relaxed">{saturnTeaching.beast}</p>
+                        <>
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mt-2">♄ in {lifeLesson.saturn.sign} — The Beast & The Prince</p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div className="bg-slate-800/5 dark:bg-slate-200/5 p-4 rounded-lg border border-slate-400/20">
+                              <p className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-2 flex items-center gap-1.5">🐉 THE BEAST <span className="font-normal text-[10px]">(unconscious expression)</span></p>
+                              <p className="text-sm leading-relaxed">{saturnTeaching.beast}</p>
+                            </div>
+                            <div className="bg-amber-50/50 dark:bg-amber-900/10 p-4 rounded-lg border border-amber-400/20">
+                              <p className="text-xs font-bold text-amber-700 dark:text-amber-400 mb-2 flex items-center gap-1.5">👑 THE PRINCE <span className="font-normal text-[10px]">(conscious expression)</span></p>
+                              <p className="text-sm leading-relaxed">{saturnTeaching.prince}</p>
+                            </div>
                           </div>
-                          <div className="bg-amber-50/50 dark:bg-amber-900/10 p-4 rounded-lg border border-amber-400/20">
-                            <p className="text-xs font-bold text-amber-700 dark:text-amber-400 mb-2 flex items-center gap-1.5">👑 THE PRINCE <span className="font-normal text-[10px]">(conscious expression)</span></p>
-                            <p className="text-sm leading-relaxed">{saturnTeaching.prince}</p>
-                          </div>
-                        </div>
+                        </>
                       )}
 
-                      {/* Greene Insight */}
+                      {/* Greene Insight for Sign */}
                       {saturnTeaching.greeneInsight && (
                         <div className="bg-indigo-50/50 dark:bg-indigo-950/20 p-4 rounded-lg border border-indigo-300/30">
                           <p className="text-[10px] font-medium text-indigo-600 dark:text-indigo-400 mb-1">🔮 PSYCHOLOGICAL INSIGHT</p>
@@ -1756,6 +1778,70 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
                         </div>
                       )}
 
+                      {/* Beast & Prince BY HOUSE — Liz Greene */}
+                      {saturnHouseGreene && (
+                        <>
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mt-4">♄ in House {saturnHouse} — The Beast & The Prince</p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div className="bg-slate-800/5 dark:bg-slate-200/5 p-4 rounded-lg border border-slate-400/20">
+                              <p className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-2 flex items-center gap-1.5">🐉 THE BEAST <span className="font-normal text-[10px]">(House {saturnHouse})</span></p>
+                              <p className="text-sm leading-relaxed">{saturnHouseGreene.beast}</p>
+                            </div>
+                            <div className="bg-amber-50/50 dark:bg-amber-900/10 p-4 rounded-lg border border-amber-400/20">
+                              <p className="text-xs font-bold text-amber-700 dark:text-amber-400 mb-2 flex items-center gap-1.5">👑 THE PRINCE <span className="font-normal text-[10px]">(House {saturnHouse})</span></p>
+                              <p className="text-sm leading-relaxed">{saturnHouseGreene.prince}</p>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div className="bg-rose-50/50 dark:bg-rose-950/20 p-3 rounded-lg">
+                              <p className="text-xs font-medium text-rose-700 dark:text-rose-400 mb-1">Core Wound:</p>
+                              <p className="text-sm">{saturnHouseGreene.coreWound}</p>
+                            </div>
+                            <div className="bg-emerald-50/50 dark:bg-emerald-950/20 p-3 rounded-lg">
+                              <p className="text-xs font-medium text-emerald-700 dark:text-emerald-400 mb-1">Gold Potential:</p>
+                              <p className="text-sm">{saturnHouseGreene.goldPotential}</p>
+                            </div>
+                          </div>
+                          <div className="bg-indigo-50/50 dark:bg-indigo-950/20 p-3 rounded-lg border border-indigo-300/30">
+                            <p className="text-[10px] font-medium text-indigo-600 dark:text-indigo-400 mb-1">🔮 HOUSE INSIGHT</p>
+                            <p className="text-sm italic leading-relaxed text-muted-foreground">{saturnHouseGreene.greeneInsight}</p>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Saturn Natal Aspects — Beast & Prince */}
+                      {saturnAspectGreeneEntries.length > 0 && (
+                        <details className="group">
+                          <summary className="cursor-pointer text-xs font-medium text-muted-foreground uppercase tracking-widest hover:text-foreground flex items-center gap-2 mt-4">
+                            <span>♄ Natal Aspects — Beast & Prince ({saturnAspectGreeneEntries.length})</span>
+                            <ChevronDown size={14} className="group-open:rotate-180 transition-transform" />
+                          </summary>
+                          <div className="mt-3 space-y-4">
+                            {saturnAspectGreeneEntries.map(({ aspect, greene }) => (
+                              <div key={greene.planets} className="space-y-2">
+                                <p className="text-sm font-medium flex items-center gap-2">
+                                  <span className="text-primary">♄</span>
+                                  {greene.planets.replace('-', ' ')} — {aspect.type} ({aspect.orb.toFixed(1)}° orb)
+                                </p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                  <div className="bg-slate-800/5 dark:bg-slate-200/5 p-3 rounded-lg border border-slate-400/20">
+                                    <p className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">🐉 BEAST</p>
+                                    <p className="text-xs leading-relaxed">{greene.beast}</p>
+                                  </div>
+                                  <div className="bg-amber-50/50 dark:bg-amber-900/10 p-3 rounded-lg border border-amber-400/20">
+                                    <p className="text-xs font-bold text-amber-700 dark:text-amber-400 mb-1">👑 PRINCE</p>
+                                    <p className="text-xs leading-relaxed">{greene.prince}</p>
+                                  </div>
+                                </div>
+                                <div className="bg-indigo-50/30 dark:bg-indigo-950/10 p-2 rounded border border-indigo-300/20">
+                                  <p className="text-xs italic text-muted-foreground">{greene.greeneInsight}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </details>
+                      )}
+                      
                       {/* Challenge & Mastery */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div className="bg-rose-50 dark:bg-rose-950/30 p-3 rounded-lg">
