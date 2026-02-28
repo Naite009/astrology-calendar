@@ -3,9 +3,32 @@ import { NatalChart } from "@/hooks/useNatalChart";
 import tarotThreeWands from "@/assets/tarot-three-wands.png";
 import tarotSevenSwords from "@/assets/tarot-seven-swords.png";
 import tarotAceCups from "@/assets/tarot-ace-cups.png";
+import pageWands from "@/assets/court-cards/page-wands.png";
+import knightWands from "@/assets/court-cards/knight-wands.png";
+import queenWands from "@/assets/court-cards/queen-wands.png";
+import kingWands from "@/assets/court-cards/king-wands.png";
+import pageCups from "@/assets/court-cards/page-cups.png";
+import knightCups from "@/assets/court-cards/knight-cups.png";
+import queenCups from "@/assets/court-cards/queen-cups.png";
+import kingCups from "@/assets/court-cards/king-cups.png";
+import pageSwords from "@/assets/court-cards/page-swords.png";
+import knightSwords from "@/assets/court-cards/knight-swords.png";
+import queenSwords from "@/assets/court-cards/queen-swords.png";
+import kingSwords from "@/assets/court-cards/king-swords.png";
+import pagePentacles from "@/assets/court-cards/page-pentacles.png";
+import knightPentacles from "@/assets/court-cards/knight-pentacles.png";
+import queenPentacles from "@/assets/court-cards/queen-pentacles.png";
+import kingPentacles from "@/assets/court-cards/king-pentacles.png";
 import { ChartSelector } from "./ChartSelector";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
+
+const COURT_CARD_IMAGES: Record<string, string> = {
+  "Page of Wands": pageWands, "Knight of Wands": knightWands, "Queen of Wands": queenWands, "King of Wands": kingWands,
+  "Page of Cups": pageCups, "Knight of Cups": knightCups, "Queen of Cups": queenCups, "King of Cups": kingCups,
+  "Page of Swords": pageSwords, "Knight of Swords": knightSwords, "Queen of Swords": queenSwords, "King of Swords": kingSwords,
+  "Page of Pentacles": pagePentacles, "Knight of Pentacles": knightPentacles, "Queen of Pentacles": queenPentacles, "King of Pentacles": kingPentacles,
+};
 
 // Traditional rulers only
 const SIGN_RULERS: Record<string, string> = {
@@ -756,18 +779,21 @@ function CourtCardGallery() {
               const name = `${rank} of ${suit}`;
               const isSelected = selectedCard === name;
               const style = SUIT_CARD_STYLES[suit];
+              const img = COURT_CARD_IMAGES[name];
               return (
                 <button
                   key={name}
                   onClick={() => setSelectedCard(isSelected ? null : name)}
-                  className={`p-2.5 rounded-lg border text-center transition-all text-xs font-medium ${
+                  className={`rounded-lg border text-center transition-all overflow-hidden ${
                     isSelected
-                      ? `${style.border} ${style.bg} ${style.accent} ring-1 ring-primary shadow-md scale-105`
-                      : 'border-border bg-secondary/20 text-muted-foreground hover:bg-secondary/40 hover:border-primary/30'
+                      ? `${style.border} ring-2 ring-primary shadow-lg scale-105`
+                      : 'border-border hover:border-primary/30 hover:shadow-md'
                   }`}
                 >
-                  <span className="block text-base mb-0.5">{SUIT_IMAGERY[suit].emoji}</span>
-                  {rank}
+                  <div className="aspect-[2/3] overflow-hidden">
+                    <img src={img} alt={name} className="w-full h-full object-cover" />
+                  </div>
+                  <p className={`text-[10px] font-medium py-1.5 ${isSelected ? style.accent : 'text-muted-foreground'}`}>{rank}</p>
                 </button>
               );
             })
@@ -777,11 +803,18 @@ function CourtCardGallery() {
         {/* Selected card detail */}
         {selectedCard && profile && cardStyle && suitInfo && rankInfo && (
           <div className="animate-in fade-in slide-in-from-bottom-3 duration-300 space-y-4">
-            {/* Mini card header */}
-            <div className={`p-4 rounded-xl border-2 ${cardStyle.border} ${cardStyle.bg} text-center space-y-1`}>
-              <p className="text-3xl">{suitInfo.emoji}</p>
-              <p className={`text-lg font-serif font-bold ${cardStyle.accent}`}>{selectedCard}</p>
-              <p className="text-xs italic text-muted-foreground">"{rankInfo.archetype}"</p>
+            {/* Card header with illustration */}
+            <div className={`rounded-xl border-2 ${cardStyle.border} ${cardStyle.bg} overflow-hidden`}>
+              <div className="flex flex-col sm:flex-row items-center gap-4 p-4">
+                <div className="w-32 shrink-0 rounded-lg overflow-hidden border border-white/10 shadow-lg">
+                  <img src={COURT_CARD_IMAGES[selectedCard]} alt={selectedCard} className="w-full" />
+                </div>
+                <div className="text-center sm:text-left space-y-1">
+                  <p className={`text-xl font-serif font-bold ${cardStyle.accent}`}>{selectedCard}</p>
+                  <p className="text-xs italic text-muted-foreground">"{rankInfo.archetype}"</p>
+                  <p className="text-sm text-muted-foreground mt-2">{rankInfo.traits}</p>
+                </div>
+              </div>
             </div>
 
             <div className="p-4 rounded-lg bg-secondary/20 border border-border space-y-2">
@@ -1061,6 +1094,141 @@ export function TarotFunctionsView({ userNatalChart, savedCharts }: Props) {
                 <p className="text-xs uppercase tracking-widest text-primary/70">💡 The Key Insight</p>
                 <p className="text-sm text-muted-foreground">
                   Notice how the same three cards tell a <em>different story</em> depending on your functions. Someone with Cups as their superior suit reads this spread completely differently than someone with Swords as their inferior. <strong>Your chart is the lens — the cards are the light passing through it.</strong>
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Celtic Cross Spread Example */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg font-serif">✝️ Celtic Cross: Reading Court Cards by Position</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                A Celtic Cross uses 10 positions. Here's an example spread using court cards — and how your functions ({result.superiorFunction}/{result.inferiorFunction}) change the interpretation.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Visual Celtic Cross layout */}
+              <div className="relative mx-auto" style={{ maxWidth: 420 }}>
+                {/* Cross section */}
+                <div className="grid grid-cols-5 gap-1 items-center" style={{ gridTemplateRows: 'auto auto auto' }}>
+                  {/* Row 1: Crown (pos 5) centered */}
+                  <div className="col-start-3 text-center">
+                    <div className="rounded-lg overflow-hidden border border-border shadow-sm w-14 mx-auto aspect-[2/3]">
+                      <img src={COURT_CARD_IMAGES["Queen of Wands"]} alt="Queen of Wands" className="w-full h-full object-cover" />
+                    </div>
+                    <p className="text-[8px] text-muted-foreground mt-0.5">5 · Crown</p>
+                  </div>
+                  
+                  {/* Row 2: Recent Past (4), Present (1) + Crossing (2), Near Future (6) */}
+                  <div className="col-start-2 text-center">
+                    <div className="rounded-lg overflow-hidden border border-border shadow-sm w-14 mx-auto aspect-[2/3]">
+                      <img src={COURT_CARD_IMAGES["King of Pentacles"]} alt="King of Pentacles" className="w-full h-full object-cover" />
+                    </div>
+                    <p className="text-[8px] text-muted-foreground mt-0.5">4 · Past</p>
+                  </div>
+                  <div className="col-start-3 text-center relative">
+                    <div className="rounded-lg overflow-hidden border-2 border-primary shadow-md w-14 mx-auto aspect-[2/3] relative z-10">
+                      <img src={COURT_CARD_IMAGES["Queen of Swords"]} alt="Queen of Swords" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-90 rounded-lg overflow-hidden border border-destructive/50 shadow-sm w-14 aspect-[2/3] z-20 opacity-80">
+                      <img src={COURT_CARD_IMAGES["Knight of Wands"]} alt="Knight of Wands" className="w-full h-full object-cover" />
+                    </div>
+                    <p className="text-[8px] text-muted-foreground mt-0.5">1+2</p>
+                  </div>
+                  <div className="col-start-4 text-center">
+                    <div className="rounded-lg overflow-hidden border border-border shadow-sm w-14 mx-auto aspect-[2/3]">
+                      <img src={COURT_CARD_IMAGES["Page of Swords"]} alt="Page of Swords" className="w-full h-full object-cover" />
+                    </div>
+                    <p className="text-[8px] text-muted-foreground mt-0.5">6 · Future</p>
+                  </div>
+
+                  {/* Row 3: Foundation (3) centered */}
+                  <div className="col-start-3 text-center">
+                    <div className="rounded-lg overflow-hidden border border-border shadow-sm w-14 mx-auto aspect-[2/3]">
+                      <img src={COURT_CARD_IMAGES["Page of Cups"]} alt="Page of Cups" className="w-full h-full object-cover" />
+                    </div>
+                    <p className="text-[8px] text-muted-foreground mt-0.5">3 · Foundation</p>
+                  </div>
+                </div>
+
+                {/* Staff column (right side) */}
+                <div className="absolute right-0 top-0 bottom-0 flex flex-col justify-between items-center" style={{ width: 64 }}>
+                  {[
+                    { pos: 10, label: 'Outcome', card: 'King of Cups' },
+                    { pos: 9, label: 'Hopes', card: 'Knight of Swords' },
+                    { pos: 8, label: 'Others', card: 'Knight of Pentacles' },
+                    { pos: 7, label: 'Self', card: 'Queen of Cups' },
+                  ].map(({ pos, label, card }) => (
+                    <div key={pos} className="text-center">
+                      <div className="rounded-lg overflow-hidden border border-border shadow-sm w-12 mx-auto aspect-[2/3]">
+                        <img src={COURT_CARD_IMAGES[card]} alt={card} className="w-full h-full object-cover" />
+                      </div>
+                      <p className="text-[8px] text-muted-foreground mt-0.5">{pos} · {label}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Position interpretations */}
+              <div className="space-y-3 text-sm">
+                <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium">Position-by-Position Breakdown:</p>
+
+                {[
+                  { pos: '1', label: 'Present Situation', card: 'Queen of Swords', suit: 'Swords',
+                    text: 'The Queen of Swords as your present situation means mental clarity and discernment are front and center right now.' },
+                  { pos: '2', label: 'Crossing Challenge', card: 'Knight of Wands', suit: 'Wands',
+                    text: 'The Knight of Wands crossing you — impulsive fire energy is creating friction with your current mental clarity. Someone (maybe you) is charging ahead without thinking.' },
+                  { pos: '3', label: 'Foundation', card: 'Page of Cups', suit: 'Cups',
+                    text: 'Page of Cups beneath you — this situation began with an emotional opening, a tender feeling or creative nudge that started everything.' },
+                  { pos: '4', label: 'Recent Past', card: 'King of Pentacles', suit: 'Pentacles',
+                    text: 'King of Pentacles in the recent past — material stability, financial authority, or a grounded mentor was recently influential.' },
+                  { pos: '5', label: 'Crown / Best Possible Outcome', card: 'Queen of Wands', suit: 'Wands',
+                    text: 'Queen of Wands crowning you — the highest potential here is creative confidence, magnetic warmth, and owning your fire.' },
+                  { pos: '6', label: 'Near Future', card: 'Page of Swords', suit: 'Swords',
+                    text: 'Page of Swords approaching — expect new information, messages, or a need to investigate something. Stay sharp.' },
+                  { pos: '7', label: 'Your Attitude', card: 'Queen of Cups', suit: 'Cups',
+                    text: 'Queen of Cups as how you see yourself — you\'re approaching this from deep emotional intuition, holding space, feeling your way through.' },
+                  { pos: '8', label: 'Others / Environment', card: 'Knight of Pentacles', suit: 'Pentacles',
+                    text: 'Knight of Pentacles as your environment — others around you are methodical, steady, maybe slow. Patience is the energy in the room.' },
+                  { pos: '9', label: 'Hopes & Fears', card: 'Knight of Swords', suit: 'Swords',
+                    text: 'Knight of Swords as hopes and fears — you both want and fear decisive, cutting action. The charge forward is thrilling and terrifying.' },
+                  { pos: '10', label: 'Outcome', card: 'King of Cups', suit: 'Cups',
+                    text: 'King of Cups as the outcome — emotional mastery. You\'ll navigate this with calm depth, integrating mind and heart, emerging wiser and more composed.' },
+                ].map(({ pos, label, card, suit, text }) => (
+                  <div key={pos} className="p-3 rounded-lg bg-secondary/20 border border-border space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded overflow-hidden border border-border shrink-0">
+                        <img src={COURT_CARD_IMAGES[card]} alt={card} className="w-full h-full object-cover" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">
+                          {pos}. {label}: {card}
+                          {result.superiorSuit === suit && <span className="ml-1.5 text-[10px] text-primary">(comfort zone)</span>}
+                          {result.inferiorSuit === suit && <span className="ml-1.5 text-[10px] text-destructive">(growth edge)</span>}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{text}</p>
+                    {result.inferiorSuit === suit && (
+                      <p className="text-xs italic text-destructive/70">
+                        ↑ This is your inferior suit ({result.inferiorFunction}). Pay extra attention here — this position carries your biggest growth message.
+                      </p>
+                    )}
+                    {result.superiorSuit === suit && (
+                      <p className="text-xs italic text-primary/70">
+                        ↑ This is your superior suit ({result.superiorFunction}). You'll read this position naturally — but ask if your comfort zone is helping or hiding.
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
+                <p className="text-xs uppercase tracking-widest text-primary/70">💡 Suit Distribution in This Spread</p>
+                <p className="text-sm text-muted-foreground">
+                  This example has <strong>3 Swords</strong>, <strong>3 Cups</strong>, <strong>2 Wands</strong>, and <strong>2 Pentacles</strong> — 
+                  a nearly balanced spread. In your own readings, notice when one suit dominates. If 4+ cards share your inferior suit, the entire reading is a growth assignment. If 4+ share your superior suit, life is playing to your strengths — enjoy it, but don't coast.
                 </p>
               </div>
             </CardContent>
