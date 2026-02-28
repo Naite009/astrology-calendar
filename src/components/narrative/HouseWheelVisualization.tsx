@@ -51,8 +51,8 @@ interface Props {
 
 export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
   const [hoveredQuadrant, setHoveredQuadrant] = useState<number | null>(null);
-  const cx = 250, cy = 250;
-  const outerR = 220, innerR = 120, angleR = 240;
+  const cx = 260, cy = 260;
+  const outerR = 210, innerR = 130, angleR = 238;
 
   const planetsByHouse = useMemo(() => {
     const map: Record<number, string[]> = {};
@@ -80,7 +80,6 @@ export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
     return map;
   }, [chart]);
 
-  // Get cusp signs from chart
   const cuspSigns = useMemo(() => {
     const signs: Record<number, { sign: string; deg: number }> = {};
     if (!chart?.houseCusps) return signs;
@@ -91,6 +90,7 @@ export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
     return signs;
   }, [chart]);
 
+  // Houses go counter-clockwise from AC at 9 o'clock
   const houseAngle = (houseNum: number) => 180 + (houseNum - 1) * 30;
   const toRad = (deg: number) => (deg * Math.PI) / 180;
   const polarToXY = (angleDeg: number, r: number) => ({
@@ -118,12 +118,11 @@ export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
 
     const midAngle = (startAngle + endAngle) / 2;
     const labelR = (innerR + outerR) / 2;
-    const numPos = polarToXY(midAngle, labelR + 8);
-    const namePos = polarToXY(midAngle, labelR - 10);
+    const numPos = polarToXY(midAngle, labelR + 5);
+    const namePos = polarToXY(midAngle, labelR - 12);
     const planets = planetsByHouse[h.num] || [];
     const cusp = cuspSigns[h.num];
-    // Place cusp sign near the start edge of the wedge
-    const cuspPos = polarToXY(startAngle - 3, outerR + 14);
+    const cuspPos = polarToXY(startAngle + 3, outerR + 14);
 
     return { h, path, color, numPos, namePos, planets, midAngle, quadrantIdx, cusp, cuspPos };
   });
@@ -132,6 +131,7 @@ export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
     const angle = houseAngle(a.house);
     const innerPt = polarToXY(angle, innerR - 5);
     const outerPt = polarToXY(angle, outerR + 5);
+    // Position angle labels further out and away from house numbers
     const labelPt = polarToXY(angle, angleR);
     return { ...a, innerPt, outerPt, labelPt, angle };
   });
@@ -145,7 +145,7 @@ export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
       </p>
 
       <div className="flex justify-center">
-        <svg viewBox="0 0 500 500" className="w-full max-w-[500px]" role="img" aria-label="Astrological house wheel">
+        <svg viewBox="0 0 520 520" className="w-full max-w-[520px]" role="img" aria-label="Astrological house wheel">
           {/* Quadrant wedges */}
           {houseWedges.map(w => {
             const isHovered = hoveredQuadrant === w.quadrantIdx;
@@ -179,11 +179,11 @@ export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
           <circle cx={cx} cy={cy} r={outerR} fill="none" stroke="hsl(var(--border))" strokeWidth={1.5} />
           <circle cx={cx} cy={cy} r={innerR} fill="hsl(var(--background))" stroke="hsl(var(--border))" strokeWidth={1} />
 
-          {/* Hemisphere labels */}
-          <text x={cx} y={28} textAnchor="middle" className="fill-muted-foreground text-[9px] font-medium">SOUTHERN (Public)</text>
-          <text x={cx} y={490} textAnchor="middle" className="fill-muted-foreground text-[9px] font-medium">NORTHERN (Private)</text>
-          <text x={12} y={cy} textAnchor="start" className="fill-muted-foreground text-[9px] font-medium" dominantBaseline="middle">EAST (Self)</text>
-          <text x={488} y={cy} textAnchor="end" className="fill-muted-foreground text-[9px] font-medium" dominantBaseline="middle">WEST (Other)</text>
+          {/* Hemisphere labels — positioned well outside the wheel */}
+          <text x={cx} y={18} textAnchor="middle" className="fill-muted-foreground text-[9px] font-medium">SOUTHERN (Public)</text>
+          <text x={cx} y={512} textAnchor="middle" className="fill-muted-foreground text-[9px] font-medium">NORTHERN (Private)</text>
+          <text x={8} y={cy} textAnchor="start" className="fill-muted-foreground text-[9px] font-medium" dominantBaseline="middle">EAST (Self)</text>
+          <text x={512} y={cy} textAnchor="end" className="fill-muted-foreground text-[9px] font-medium" dominantBaseline="middle">WEST (Other)</text>
 
           {/* House numbers and names */}
           {houseWedges.map(w => (
@@ -191,7 +191,7 @@ export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
               <text x={w.numPos.x} y={w.numPos.y} textAnchor="middle" dominantBaseline="middle"
                 className="fill-foreground text-[11px] font-bold">{w.h.num}</text>
               <text x={w.namePos.x} y={w.namePos.y} textAnchor="middle" dominantBaseline="middle"
-                className="fill-muted-foreground text-[7px]">{w.h.name}</text>
+                className="fill-muted-foreground text-[6px]">{w.h.name}</text>
             </g>
           ))}
 
@@ -201,7 +201,7 @@ export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
             return (
               <text key={`cusp-${w.h.num}`} x={w.cuspPos.x} y={w.cuspPos.y}
                 textAnchor="middle" dominantBaseline="middle"
-                className="fill-muted-foreground text-[10px]">
+                className="fill-muted-foreground text-[9px]">
                 {ZODIAC_GLYPHS[w.cusp.sign] || ''}{w.cusp.deg}°
               </text>
             );
@@ -213,14 +213,14 @@ export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
               <line x1={a.innerPt.x} y1={a.innerPt.y} x2={a.outerPt.x} y2={a.outerPt.y}
                 stroke="hsl(var(--primary))" strokeWidth={2.5} />
               <text x={a.labelPt.x} y={a.labelPt.y} textAnchor="middle" dominantBaseline="middle"
-                className="fill-primary text-[12px] font-bold">{a.abbr}</text>
+                className="fill-primary text-[11px] font-bold">{a.abbr}</text>
             </g>
           ))}
 
           {/* Quadrant labels in center */}
           {QUADRANT_COLORS.map((q, i) => {
             const angles = [225, 315, 45, 135];
-            const pos = polarToXY(angles[i], 65);
+            const pos = polarToXY(angles[i], 60);
             const labelLines = q.label.split(': ');
             const isHovered = hoveredQuadrant === i;
             return (

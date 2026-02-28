@@ -8,6 +8,7 @@ export interface HouseData {
   naturalRuler: string;
   rulerSymbol: string;
   keywords: string[];
+  lifeExplanation: string;
   angularity: 'Angular' | 'Succedent' | 'Cadent';
   angularityMeaning: string;
   quadrant: number;
@@ -139,7 +140,8 @@ export const HOUSES_DATA: HouseData[] = [
   {
     number: 1, name: 'House of Self', nickname: 'The House of Initiation',
     naturalSign: 'Aries', naturalRuler: 'Mars', rulerSymbol: '♂',
-    keywords: ['Identity', 'Body', 'First impressions', 'Vitality', 'Self-image'],
+    keywords: ['Identity', 'Body', 'First impressions', 'Vitality', 'Self-image', 'Physical appearance', 'Persona'],
+    lifeExplanation: 'Rules your physical body, your automatic first impression, and how you instinctively approach every new situation. This is your default setting — the energy people feel when you walk into a room before you even speak.',
     angularity: 'Angular', angularityMeaning: 'Angular houses (1, 4, 7, 10) are the most powerful and visible. Planets here ACT — they demand expression and are immediately noticeable to others.',
     quadrant: 1, quadrantName: 'Self Development', quadrantMantra: 'I AM BECOMING',
     hemisphere: { vertical: 'Northern', horizontal: 'Eastern' },
@@ -153,7 +155,8 @@ export const HOUSES_DATA: HouseData[] = [
   {
     number: 2, name: 'House of Resources', nickname: 'The House of Consolidation',
     naturalSign: 'Taurus', naturalRuler: 'Venus', rulerSymbol: '♀',
-    keywords: ['Money', 'Values', 'Self-worth', 'Possessions', 'Talents'],
+    keywords: ['Money', 'Values', 'Self-worth', 'Possessions', 'Talents', 'Earning power', 'Material security'],
+    lifeExplanation: 'Rules your money, possessions, personal talents, and deep sense of self-worth. This reveals how you earn, what you spend on, and what makes you feel materially and emotionally secure.',
     angularity: 'Succedent', angularityMeaning: 'Succedent houses (2, 5, 8, 11) stabilize and consolidate what the angular houses initiated. They provide resources, sustenance, and depth.',
     quadrant: 1, quadrantName: 'Self Development', quadrantMantra: 'I AM BECOMING',
     hemisphere: { vertical: 'Northern', horizontal: 'Eastern' },
@@ -167,7 +170,8 @@ export const HOUSES_DATA: HouseData[] = [
   {
     number: 3, name: 'House of Communication', nickname: 'The House of Initiation',
     naturalSign: 'Gemini', naturalRuler: 'Mercury', rulerSymbol: '☿',
-    keywords: ['Communication', 'Siblings', 'Learning', 'Local travel', 'Mind'],
+    keywords: ['Communication', 'Siblings', 'Learning', 'Local travel', 'Mind', 'Neighbors', 'Early education', 'Writing'],
+    lifeExplanation: 'Rules early school life, siblings, neighbors, short trips, and your everyday thinking style. This reveals your attitude toward learning and being around peers — how you process information and communicate daily.',
     angularity: 'Cadent', angularityMeaning: 'Cadent houses (3, 6, 9, 12) are houses of transition and adaptation. Planets here process, learn, and prepare for the next angular house. They are mental and flexible.',
     quadrant: 1, quadrantName: 'Self Development', quadrantMantra: 'I AM BECOMING',
     hemisphere: { vertical: 'Northern', horizontal: 'Eastern' },
@@ -181,7 +185,8 @@ export const HOUSES_DATA: HouseData[] = [
   {
     number: 4, name: 'House of Home & Roots', nickname: 'The House of Consolidation',
     naturalSign: 'Cancer', naturalRuler: 'Moon', rulerSymbol: '☽',
-    keywords: ['Home', 'Family', 'Roots', 'Mother', 'Emotional foundation', 'Ancestry'],
+    keywords: ['Home', 'Family', 'Roots', 'Mother', 'Emotional foundation', 'Ancestry', 'Private life', 'Real estate'],
+    lifeExplanation: 'Rules your home environment, family of origin, one parent (traditionally the mother), ancestry, and your most private emotional self. This is where you retreat to recharge and the foundation everything in your life is built upon.',
     angularity: 'Angular', angularityMeaning: 'Angular — powerful and foundational. The IC (4th house cusp) is one of the four angles.',
     quadrant: 2, quadrantName: 'Creative Expression', quadrantMantra: 'I AM EXPRESSING',
     hemisphere: { vertical: 'Northern', horizontal: 'Western' },
@@ -195,7 +200,8 @@ export const HOUSES_DATA: HouseData[] = [
   {
     number: 5, name: 'House of Creativity', nickname: 'The House of Initiation',
     naturalSign: 'Leo', naturalRuler: 'Sun', rulerSymbol: '☉',
-    keywords: ['Creativity', 'Romance', 'Children', 'Joy', 'Play', 'Performance'],
+    keywords: ['Creativity', 'Romance', 'Children', 'Joy', 'Play', 'Performance', 'Hobbies', 'Self-expression'],
+    lifeExplanation: 'Rules creative self-expression, romantic love affairs (not marriage), children, hobbies, gambling, and anything done purely for the joy of it. This reveals what lights you up and how you play.',
     angularity: 'Succedent', angularityMeaning: 'Succedent — stabilizes and deepens the creative/emotional foundation built in Q2.',
     quadrant: 2, quadrantName: 'Creative Expression', quadrantMantra: 'I AM EXPRESSING',
     hemisphere: { vertical: 'Northern', horizontal: 'Western' },
@@ -209,7 +215,8 @@ export const HOUSES_DATA: HouseData[] = [
   {
     number: 6, name: 'House of Service & Health', nickname: 'The House of Consolidation',
     naturalSign: 'Virgo', naturalRuler: 'Mercury', rulerSymbol: '☿',
-    keywords: ['Health', 'Work', 'Routines', 'Service', 'Habits', 'Pets'],
+    keywords: ['Health', 'Work', 'Routines', 'Service', 'Habits', 'Pets', 'Daily rituals', 'Coworkers'],
+    lifeExplanation: 'Rules your daily work (not career — that\'s the 10th), health and body maintenance, routines, habits, pets, and acts of service. This reveals your relationship with discipline, self-care, and being useful to others.',
     angularity: 'Cadent', angularityMeaning: 'Cadent — transitional, adaptive, preparing for the relationship quadrant.',
     quadrant: 2, quadrantName: 'Creative Expression', quadrantMantra: 'I AM EXPRESSING',
     hemisphere: { vertical: 'Northern', horizontal: 'Western' },
@@ -223,7 +230,8 @@ export const HOUSES_DATA: HouseData[] = [
   {
     number: 7, name: 'House of Partnership', nickname: 'The House of Initiation',
     naturalSign: 'Libra', naturalRuler: 'Venus', rulerSymbol: '♀',
-    keywords: ['Marriage', 'Partnership', 'Open enemies', 'Contracts', 'One-on-one relationships'],
+    keywords: ['Marriage', 'Partnership', 'Open enemies', 'Contracts', 'One-on-one relationships', 'Business partners', 'Shadow projection'],
+    lifeExplanation: 'Rules committed partnerships (marriage, business partners), contracts, legal agreements, and open adversaries. This is also your shadow — the qualities you don\'t own in yourself that you attract or project onto your partner.',
     angularity: 'Angular', angularityMeaning: 'Angular — one of the four most powerful houses. The DC (7th house cusp) is a major angle.',
     quadrant: 3, quadrantName: 'Relationships', quadrantMantra: 'I AM RELATING',
     hemisphere: { vertical: 'Southern', horizontal: 'Western' },
@@ -237,7 +245,8 @@ export const HOUSES_DATA: HouseData[] = [
   {
     number: 8, name: 'House of Transformation', nickname: 'The House of Consolidation',
     naturalSign: 'Scorpio', naturalRuler: 'Pluto', rulerSymbol: '♇',
-    keywords: ['Death', 'Rebirth', 'Shared resources', 'Intimacy', 'Taxes', 'Psychology', 'Occult'],
+    keywords: ['Death', 'Rebirth', 'Shared resources', 'Intimacy', 'Taxes', 'Psychology', 'Occult', 'Inheritance'],
+    lifeExplanation: 'Rules shared finances (joint accounts, inheritance, taxes, debt), sexual intimacy, psychological transformation, death and rebirth cycles, and the occult. This reveals how you handle power, merge with others, and transform through crisis.',
     angularity: 'Succedent', angularityMeaning: 'Succedent — deepens and intensifies the relationship experience.',
     quadrant: 3, quadrantName: 'Relationships', quadrantMantra: 'I AM RELATING',
     hemisphere: { vertical: 'Southern', horizontal: 'Western' },
@@ -251,7 +260,8 @@ export const HOUSES_DATA: HouseData[] = [
   {
     number: 9, name: 'House of Philosophy', nickname: 'The House of Initiation',
     naturalSign: 'Sagittarius', naturalRuler: 'Jupiter', rulerSymbol: '♃',
-    keywords: ['Travel', 'Higher education', 'Philosophy', 'Religion', 'Law', 'Publishing', 'Foreign cultures'],
+    keywords: ['Travel', 'Higher education', 'Philosophy', 'Religion', 'Law', 'Publishing', 'Foreign cultures', 'Mentors'],
+    lifeExplanation: 'Rules long-distance and foreign travel, university-level education, religion, philosophy, law, publishing, and mentors/gurus. This reveals your worldview, what you believe in, and how you search for meaning beyond your immediate environment.',
     angularity: 'Cadent', angularityMeaning: 'Cadent — transitional, mental, preparing for the achievement quadrant.',
     quadrant: 3, quadrantName: 'Relationships', quadrantMantra: 'I AM RELATING',
     hemisphere: { vertical: 'Southern', horizontal: 'Western' },
@@ -265,7 +275,8 @@ export const HOUSES_DATA: HouseData[] = [
   {
     number: 10, name: 'House of Career & Legacy', nickname: 'The House of Consolidation',
     naturalSign: 'Capricorn', naturalRuler: 'Saturn', rulerSymbol: '♄',
-    keywords: ['Career', 'Reputation', 'Public image', 'Authority', 'Father', 'Achievement', 'Legacy'],
+    keywords: ['Career', 'Reputation', 'Public image', 'Authority', 'Father', 'Achievement', 'Legacy', 'Social status'],
+    lifeExplanation: 'Rules your career path, public reputation, social status, authority figures, one parent (traditionally the father), and the legacy you build over a lifetime. This is how the world sees you at your most accomplished.',
     angularity: 'Angular', angularityMeaning: 'Angular — the MOST visible house. The MC (Midheaven) is the highest point of the chart and your most public expression.',
     quadrant: 4, quadrantName: 'Social Achievement', quadrantMantra: 'I AM ACHIEVING',
     hemisphere: { vertical: 'Southern', horizontal: 'Eastern' },
@@ -279,7 +290,8 @@ export const HOUSES_DATA: HouseData[] = [
   {
     number: 11, name: 'House of Community', nickname: 'The House of Initiation',
     naturalSign: 'Aquarius', naturalRuler: 'Uranus', rulerSymbol: '♅',
-    keywords: ['Friends', 'Groups', 'Hopes', 'Wishes', 'Humanitarian goals', 'Networks', 'Innovation'],
+    keywords: ['Friends', 'Groups', 'Hopes', 'Wishes', 'Humanitarian goals', 'Networks', 'Innovation', 'Social causes'],
+    lifeExplanation: 'Rules friendships, social networks, group affiliations, humanitarian goals, hopes and wishes for the future, and your vision for society. This reveals the type of community you\'re drawn to and the causes you champion.',
     angularity: 'Succedent', angularityMeaning: 'Succedent — stabilizes and sustains the achievement energy of Q4.',
     quadrant: 4, quadrantName: 'Social Achievement', quadrantMantra: 'I AM ACHIEVING',
     hemisphere: { vertical: 'Southern', horizontal: 'Eastern' },
@@ -293,7 +305,8 @@ export const HOUSES_DATA: HouseData[] = [
   {
     number: 12, name: 'House of the Unconscious', nickname: 'The House of Consolidation',
     naturalSign: 'Pisces', naturalRuler: 'Neptune', rulerSymbol: '♆',
-    keywords: ['Unconscious', 'Spirituality', 'Hidden enemies', 'Isolation', 'Dreams', 'Karma', 'Transcendence'],
+    keywords: ['Unconscious', 'Spirituality', 'Hidden enemies', 'Isolation', 'Dreams', 'Karma', 'Transcendence', 'Self-undoing'],
+    lifeExplanation: 'Rules the unconscious mind, dreams, spirituality, solitude, hidden enemies (including self-sabotage), hospitals, prisons, and past-life karma. This reveals what operates beneath the surface — your blind spots, spiritual gifts, and where you need to surrender control.',
     angularity: 'Cadent', angularityMeaning: 'Cadent — the final dissolving before rebirth at the 1st house. Transitional, spiritual, and hidden.',
     quadrant: 4, quadrantName: 'Social Achievement', quadrantMantra: 'I AM ACHIEVING',
     hemisphere: { vertical: 'Southern', horizontal: 'Eastern' },
