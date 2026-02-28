@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { NatalChart } from "@/hooks/useNatalChart";
+import tarotThreeWands from "@/assets/tarot-three-wands.png";
+import tarotSevenSwords from "@/assets/tarot-seven-swords.png";
+import tarotAceCups from "@/assets/tarot-ace-cups.png";
 import { ChartSelector } from "./ChartSelector";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -963,6 +966,102 @@ export function TarotFunctionsView({ userNatalChart, savedCharts }: Props) {
                   <p className="font-medium text-foreground mb-1">Your Significator</p>
                   <p>Use your <strong>Court Card result</strong> from the quiz below as your significator — it combines your personality <em>and</em> your chart. Pull it from the deck before shuffling and place it face-up to anchor the reading in your energy.</p>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Example Spread Walkthrough */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg font-serif">📖 Example: Reading a 3-Card Spread Through Your Functions</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Let's say you asked <em>"What do I need to know about this new opportunity?"</em> and pulled these three cards:
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Card images */}
+              <div className="grid grid-cols-3 gap-3 sm:gap-5">
+                <div className="text-center space-y-2">
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Past / Foundation</p>
+                  <div className="rounded-xl overflow-hidden border border-border shadow-md aspect-[2/3]">
+                    <img src={tarotThreeWands} alt="Three of Wands" className="w-full h-full object-cover" />
+                  </div>
+                  <p className="text-xs font-serif font-semibold">Three of Wands</p>
+                  <Badge variant="outline" className="text-[10px] bg-red-500/10 text-red-700 border-red-300">🔥 Wands</Badge>
+                </div>
+                <div className="text-center space-y-2">
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Present / Challenge</p>
+                  <div className="rounded-xl overflow-hidden border border-border shadow-md aspect-[2/3]">
+                    <img src={tarotSevenSwords} alt="Seven of Swords" className="w-full h-full object-cover" />
+                  </div>
+                  <p className="text-xs font-serif font-semibold">Seven of Swords</p>
+                  <Badge variant="outline" className="text-[10px] bg-yellow-500/10 text-yellow-700 border-yellow-300">🗡️ Swords</Badge>
+                </div>
+                <div className="text-center space-y-2">
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Future / Outcome</p>
+                  <div className="rounded-xl overflow-hidden border border-border shadow-md aspect-[2/3]">
+                    <img src={tarotAceCups} alt="Ace of Cups" className="w-full h-full object-cover" />
+                  </div>
+                  <p className="text-xs font-serif font-semibold">Ace of Cups</p>
+                  <Badge variant="outline" className="text-[10px] bg-blue-500/10 text-blue-700 border-blue-300">💧 Cups</Badge>
+                </div>
+              </div>
+
+              {/* Interpretation walkthrough */}
+              <div className="space-y-3">
+                <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium">How to interpret this with your functions:</p>
+
+                <div className="p-4 rounded-lg bg-secondary/20 border border-border space-y-2">
+                  <p className="text-sm font-medium text-foreground">
+                    1️⃣ Past — Three of Wands
+                    {result.superiorSuit === 'Wands' && <span className="ml-2 text-xs text-primary">(your comfort zone)</span>}
+                    {result.inferiorSuit === 'Wands' && <span className="ml-2 text-xs text-destructive">(your growth edge)</span>}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {result.superiorSuit === 'Wands'
+                      ? "This is your superior suit in the past position — the foundation of this situation is something you naturally understand. You already have the vision and forward momentum. This isn't where the lesson lives."
+                      : result.inferiorSuit === 'Wands'
+                        ? "Your inferior suit in the past position means you've already been stretched out of your comfort zone. The groundwork involved unfamiliar energy — creative risk, visionary leaps. Give yourself credit."
+                        : "Wands in the past position shows the foundation was built on vision and creative fire — an inspired beginning, plans set in motion, watching your ships come in."}
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-lg bg-secondary/20 border border-border space-y-2">
+                  <p className="text-sm font-medium text-foreground">
+                    2️⃣ Present — Seven of Swords
+                    {result.superiorSuit === 'Swords' && <span className="ml-2 text-xs text-primary">(your comfort zone)</span>}
+                    {result.inferiorSuit === 'Swords' && <span className="ml-2 text-xs text-destructive">(your growth edge)</span>}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {result.superiorSuit === 'Swords'
+                      ? "Your superior suit in the challenge position is interesting — it means your usual mental strategies (analysis, logic, planning) are the tool at hand, but they might also be the problem. Are you overthinking? Being too clever? Your strength could be your trap here."
+                      : result.inferiorSuit === 'Swords'
+                        ? "Your inferior suit in the challenge position — this is the heart of the reading. The Seven of Swords asks for strategic thinking, and that's exactly your blind spot. You may feel like you're flying blind or being deceived. The discomfort you feel IS the message: develop your Thinking function."
+                        : "Swords in the challenge position points to a mental puzzle — strategy, deception, or needing to be more clever about your approach. Something requires sharper thinking."}
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-lg bg-secondary/20 border border-border space-y-2">
+                  <p className="text-sm font-medium text-foreground">
+                    3️⃣ Outcome — Ace of Cups
+                    {result.superiorSuit === 'Cups' && <span className="ml-2 text-xs text-primary">(your comfort zone)</span>}
+                    {result.inferiorSuit === 'Cups' && <span className="ml-2 text-xs text-destructive">(your growth edge)</span>}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {result.superiorSuit === 'Cups'
+                      ? "Your superior suit in the outcome position — you'll land somewhere emotionally natural for you. The result flows through feeling, love, or emotional opening. Trust your emotional intelligence to guide you home."
+                      : result.inferiorSuit === 'Cups'
+                        ? "Your inferior suit in the outcome position is the most powerful placement in this spread. The destination requires you to develop your Feeling function — emotional vulnerability, receptivity, opening your heart. This opportunity leads to deep personal growth in your weakest area."
+                        : "Cups in the outcome position promises emotional fulfillment — a new beginning in love, creativity, or spiritual connection. The opportunity leads to the heart opening."}
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
+                <p className="text-xs uppercase tracking-widest text-primary/70">💡 The Key Insight</p>
+                <p className="text-sm text-muted-foreground">
+                  Notice how the same three cards tell a <em>different story</em> depending on your functions. Someone with Cups as their superior suit reads this spread completely differently than someone with Swords as their inferior. <strong>Your chart is the lens — the cards are the light passing through it.</strong>
+                </p>
               </div>
             </CardContent>
           </Card>
