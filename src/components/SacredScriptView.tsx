@@ -1733,6 +1733,29 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
                         <p className="text-sm leading-relaxed">{saturnTeaching.lifeLesson}</p>
                       </div>
                       
+                      {/* Beast & Prince - Liz Greene Framework */}
+                      {saturnTeaching.beast && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div className="bg-slate-800/5 dark:bg-slate-200/5 p-4 rounded-lg border border-slate-400/20">
+                            <p className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-2 flex items-center gap-1.5">🐉 THE BEAST <span className="font-normal text-[10px]">(unconscious expression)</span></p>
+                            <p className="text-sm leading-relaxed">{saturnTeaching.beast}</p>
+                          </div>
+                          <div className="bg-amber-50/50 dark:bg-amber-900/10 p-4 rounded-lg border border-amber-400/20">
+                            <p className="text-xs font-bold text-amber-700 dark:text-amber-400 mb-2 flex items-center gap-1.5">👑 THE PRINCE <span className="font-normal text-[10px]">(conscious expression)</span></p>
+                            <p className="text-sm leading-relaxed">{saturnTeaching.prince}</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Greene Insight */}
+                      {saturnTeaching.greeneInsight && (
+                        <div className="bg-indigo-50/50 dark:bg-indigo-950/20 p-4 rounded-lg border border-indigo-300/30">
+                          <p className="text-[10px] font-medium text-indigo-600 dark:text-indigo-400 mb-1">🔮 PSYCHOLOGICAL INSIGHT</p>
+                          <p className="text-sm italic leading-relaxed text-muted-foreground">{saturnTeaching.greeneInsight}</p>
+                          <p className="text-[10px] text-muted-foreground mt-2">— Framework: Liz Greene, <em>Saturn: A New Look at an Old Devil</em></p>
+                        </div>
+                      )}
+
                       {/* Challenge & Mastery */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div className="bg-rose-50 dark:bg-rose-950/30 p-3 rounded-lg">

@@ -839,7 +839,191 @@ export interface SaturnTeaching {
   questions: string[];
   firstReturn: string;
   secondReturn: string;
+  // Liz Greene "Beast & Prince" framework
+  beast: string;       // unconscious/shadow expression
+  prince: string;      // conscious/gold expression  
+  greeneInsight: string; // key psychological insight from the book
 }
+
+// Liz Greene "Beast & Prince" Saturn in Houses data
+export interface SaturnHouseGreene {
+  house: number;
+  beast: string;
+  prince: string;
+  greeneInsight: string;
+  coreWound: string;
+  goldPotential: string;
+}
+
+export const SATURN_IN_HOUSES_GREENE: Record<number, SaturnHouseGreene> = {
+  1: {
+    house: 1,
+    beast: 'Deep insecurity about the right to exist. A sense that you must earn the right to take up space. Self-consciousness, shyness, or overcompensation through rigid self-control. You may feel like the world is hostile and that you must defend yourself at every turn.',
+    prince: 'Hard-won self-authority and a presence that commands respect without demanding it. You become your own authority figure — someone whose identity was forged in fire and is therefore unshakeable. Leadership through earned wisdom, not inherited privilege.',
+    greeneInsight: 'Saturn in the 1st house creates a personality built through effort rather than ease. The individual must construct their sense of self consciously, brick by brick, which ultimately produces a far more durable and authentic identity than one that came without struggle.',
+    coreWound: 'Feeling invisible, inadequate, or "not enough" — as if your very existence requires justification.',
+    goldPotential: 'A self-made identity of extraordinary integrity. You become the person others turn to for strength because yours was hard-won.',
+  },
+  2: {
+    house: 2,
+    beast: 'Intense anxiety about money, resources, and survival. A feeling that you never have enough — or that what you have could be taken away at any moment. You may hoard, or conversely, be reckless with money as a way of proving you don\'t need it.',
+    prince: 'A profound understanding of true value — both material and spiritual. You learn that real security comes from within, and once this is internalized, you often become remarkably capable with resources. Patience and persistence in building lasting wealth.',
+    greeneInsight: 'Saturn in the 2nd attempts to make tangible what is essentially an inner sense of worth. The translation usually fails because material things cannot satisfy an emotional need. The real work is building an unshakeable sense of self-value.',
+    coreWound: 'Feeling worthless or undeserving. A deep fear that without money or possessions, you are nothing.',
+    goldPotential: 'Mastery over the material world, combined with the wisdom to know what is truly valuable.',
+  },
+  3: {
+    house: 3,
+    beast: 'Difficulty expressing ideas freely. A feeling that your thoughts are not valued, or that you must have absolute authority before speaking. Shyness in communication, or conversely, rigid opinions that mask deep intellectual insecurity. Difficult sibling relationships.',
+    prince: 'A powerful and precise communicator whose words carry weight precisely because they were earned through struggle. Depth of thought, careful reasoning, and the ability to teach complex subjects with authority.',
+    greeneInsight: 'Saturn in the 3rd creates a mind that feels inadequate yet works harder than any other to compensate. The result is often someone who becomes an authority in precisely the area where they once felt most inferior.',
+    coreWound: 'Feeling stupid, unheard, or intellectually inadequate. Early experiences of being silenced or dismissed.',
+    goldPotential: 'Mastery of communication and thought. The teacher who earns authority through deep, disciplined study.',
+  },
+  4: {
+    house: 4,
+    beast: 'A sense of being emotionally unsupported in childhood. The father may have been cold, absent, authoritarian, or simply unable to provide emotional warmth. This creates a deep mistrust of emotional intimacy and a craving for security that can never quite be satisfied through external means. Compulsive need to accumulate land or property.',
+    prince: 'The ability to become your own inner parent — to provide yourself the emotional foundation that was missing. Once the wound is understood, you develop extraordinary inner strength and the capacity to create genuine sanctuary for yourself and others.',
+    greeneInsight: 'Saturn in the 4th works as an unconscious factor from the plane of feelings. It can cripple emotional life for decades if not understood. The individual is never truly indifferent to family — something necessary for emotional development was missing, and the entire psyche develops lopsided to compensate.',
+    coreWound: 'Feeling unloved, unwanted, or emotionally abandoned. A sense that home was never truly safe.',
+    goldPotential: 'Becoming your own authority on emotional matters. Creating the family and home you never had — from the inside out.',
+  },
+  5: {
+    house: 5,
+    beast: 'Fear of self-expression, creativity, and spontaneous joy. A sense that play is irresponsible and that one must always be productive. Difficulty with romance — either avoiding it entirely or pursuing it with desperate intensity. Creative blocks rooted in fear of judgment.',
+    prince: 'Disciplined creativity that produces lasting works. Love that deepens with time rather than burning out. The ability to play with purpose and to find joy in the process of mastering a craft. Mature, faithful romantic partnerships.',
+    greeneInsight: 'Saturn in the 5th restricts the natural child within — the capacity for spontaneous joy and creative expression. Yet the individual who works through this restriction often becomes the most disciplined artist or the most faithful lover, precisely because nothing came without effort.',
+    coreWound: 'Feeling that joy and pleasure are not allowed. That you must earn the right to play, create, or be loved.',
+    goldPotential: 'Creative mastery achieved through discipline. The ability to bring structure to inspiration and produce enduring works.',
+  },
+  6: {
+    house: 6,
+    beast: 'Obsessive concern with health, work routine, and perfection. A feeling of being trapped in meaningless labor. Psychosomatic illness as a way of avoiding the deeper need for integration. Compulsive ordering of the external environment while inner chaos reigns.',
+    prince: 'True service — not "good works" done for approval, but an innate quality of inner alignment where mind, body, and spirit work as one. Real healing ability. The capacity to order one\'s life as a sacred practice.',
+    greeneInsight: 'Saturn in the 6th reflects an imperative need for inner integration which, if avoided, may produce illness and, if forced into a material channel, may produce frustration and depression. The gold is the power to synthesize mind and body into a finely balanced vehicle.',
+    coreWound: 'Feeling stuck in a rut, imprisoned by routine, unable to find meaning in daily work.',
+    goldPotential: 'Genuine healing ability and the wisdom to serve from a place of inner balance rather than obligation.',
+  },
+  7: {
+    house: 7,
+    beast: 'Difficulty in relationships — either avoiding commitment entirely or entering partnerships with much older, authoritarian, or cold partners. Projecting one\'s inner authority onto others and then resenting their control. Marriage as duty rather than love.',
+    prince: 'Deep, committed partnerships built on mutual respect and earned trust. The ability to be a true equal in relationship — neither dominant nor submissive. Loyalty and faithfulness that comes from understanding what love truly costs.',
+    greeneInsight: 'Saturn in the 7th often attracts Saturnian partners — those who are older, more authoritative, or more restrictive — because the individual has not yet claimed their own inner authority in relationship. Once this projection is withdrawn, partnerships become genuinely equal.',
+    coreWound: 'Feeling unworthy of love, or believing that relationships always require sacrifice and suffering.',
+    goldPotential: 'Mature, enduring partnerships. The wisdom to love without losing yourself.',
+  },
+  8: {
+    house: 8,
+    beast: 'Fear of emotional and sexual vulnerability. Difficulty trusting others with your deepest feelings. Control issues around shared resources, inheritance, and intimacy. A fascination with death and taboo that is simultaneously compelling and terrifying.',
+    prince: 'Profound psychological depth and the ability to guide others through their own transformations. Mastery of emotional and financial power through understanding rather than control. The courage to face death — psychological and literal — without flinching.',
+    greeneInsight: 'Saturn in the 8th demands that the individual confront the shared world of emotions, finances, and sexuality with honesty. The fear is of being consumed or controlled by another\'s power; the gold is discovering that true power comes from the willingness to be vulnerable.',
+    coreWound: 'Fear of being emotionally or financially consumed by others. Trust issues at the deepest level.',
+    goldPotential: 'The capacity for genuine intimacy and shared power. The therapist, the guide through the underworld.',
+  },
+  9: {
+    house: 9,
+    beast: 'Rigid belief systems or, conversely, a complete lack of faith. Fear of the unknown, of travel, of expanding beyond the familiar. Dogmatism that masks a terror of meaninglessness. Using philosophy or religion as armor rather than illumination.',
+    prince: 'Hard-won wisdom and a personal philosophy forged through experience, not borrowed from books. The ability to teach from lived truth. A faith that has been tested and therefore cannot be shaken by circumstance.',
+    greeneInsight: 'Saturn in the 9th limits the natural expansiveness of belief until the individual earns their own truth through direct experience. The resulting philosophy is far more genuine and powerful than any inherited belief system could ever be.',
+    coreWound: 'Feeling that the universe is meaningless, or that truth is always just out of reach.',
+    goldPotential: 'Becoming a genuine teacher of wisdom earned through life experience rather than academic study.',
+  },
+  10: {
+    house: 10,
+    beast: 'Intense ambition driven by a deep need to prove yourself — often to a mother who was cold, controlling, or who shaped your social attitudes with an iron will. Fear of failure so intense it can paralyze. Workaholism as identity.',
+    prince: 'Earned authority and lasting achievement. The capacity to build something of real value in the world — not for applause, but because mastery itself is the reward. Leadership that inspires through example and integrity.',
+    greeneInsight: 'Saturn in the 10th — Saturn\'s own house — shows ambition running in direct proportion to the suppression of identity in early life. The drive to achieve is ultimately a drive to prove that you exist, that you matter. When this is understood, achievement becomes joyful rather than desperate.',
+    coreWound: 'Feeling that you must achieve to be worthy of love. That failure means annihilation.',
+    goldPotential: 'True mastery and earned respect. The elder whose authority comes from integrity, not position.',
+  },
+  11: {
+    house: 11,
+    beast: 'Difficulty belonging to groups. Feeling like a perpetual outsider, unable to find your "tribe." Fear that your ideals are foolish or impractical. Loneliness within crowds. Friendships that feel obligatory rather than nourishing.',
+    prince: 'The ability to lead communities with wisdom and to hold space for collective vision. Friendships built on genuine respect rather than social convenience. The capacity to turn idealistic visions into practical realities.',
+    greeneInsight: 'Saturn in the 11th creates a person who feels excluded from the group — yet it is precisely this outsider status that eventually allows them to lead it. Their vision for the collective is grounded in hard experience rather than naive idealism.',
+    coreWound: 'Feeling that you don\'t belong anywhere. That your vision for a better world is foolish.',
+    goldPotential: 'Community leadership grounded in experience. The reformer who builds lasting structures for collective good.',
+  },
+  12: {
+    house: 12,
+    beast: 'A vague, generalized fear that fate or destiny will destroy you. Isolation, helplessness, and the feeling that you are powerless against forces larger than yourself. Guilt that has no specific source. Self-undoing through unconscious patterns.',
+    prince: 'The power to serve — not to "do good" (which is not service at all) but to experience genuine unity with life. The capacity for profound inner peace, meditation, and spiritual surrender. Wisdom that comes from releasing the need to control.',
+    greeneInsight: 'Saturn in the 12th is the most difficult from the personality\'s perspective because the Saturnian defense mechanisms are rendered ineffectual. The individual must eventually sacrifice personal control — and this sacrifice, when willingly made, becomes the last door between the person and genuine inner freedom.',
+    coreWound: 'Feeling helpless, isolated from life, unable to control your own destiny. Guilt without a name.',
+    goldPotential: 'The mystic\'s inner peace. The capacity to serve life itself, not from obligation but from experienced unity.',
+  },
+};
+
+// Saturn aspect Beast/Prince interpretations from Liz Greene
+export interface SaturnAspectGreene {
+  planets: string;
+  beast: string;
+  prince: string;
+  greeneInsight: string;
+}
+
+export const SATURN_ASPECTS_GREENE: Record<string, SaturnAspectGreene> = {
+  'Saturn-Sun': {
+    planets: 'Saturn-Sun',
+    beast: 'A crushing inner authority figure that undermines confidence and vitality. You may feel that the father — or life itself — disapproves of who you are. Chronic self-doubt, heaviness, and a feeling that joy is not permitted. You work compulsively to earn the right to exist.',
+    prince: 'Self-mastery and earned authority. Once you stop trying to win the approval of the inner father, you become your own authority — disciplined, reliable, and capable of lasting achievement. Your light shines steadier and longer than those who never had to fight for it.',
+    greeneInsight: 'Saturn-Sun aspects create a fundamental tension between the ego\'s need to shine and Saturn\'s demand that nothing be given freely. The father is often experienced as cold, critical, or absent. The individual must eventually become their own father — providing the structure and approval they never received.',
+  },
+  'Saturn-Moon': {
+    planets: 'Saturn-Moon',
+    beast: 'Emotional suppression and a deep fear of vulnerability. The mother may have been cold, depressed, or emotionally unavailable, teaching the child that feelings are dangerous. You may control your emotions rigidly, creating an interior desert while longing desperately for warmth.',
+    prince: 'Emotional maturity and the ability to hold space for deep feeling without being destroyed by it. You become someone others trust with their pain because you have learned to contain your own. Genuine emotional wisdom earned through suffering.',
+    greeneInsight: 'Saturn-Moon contacts are among the most painful because they strike at the root of emotional security. The individual learns early that emotional needs will not be met and develops elaborate defenses. The gold emerges when these defenses are consciously recognized and gradually softened.',
+  },
+  'Saturn-Mercury': {
+    planets: 'Saturn-Mercury',
+    beast: 'Mental rigidity, pessimistic thinking, and a fear of being intellectually inadequate. You may have been told you were stupid, or your ideas were dismissed in childhood. This creates either painful shyness in communication or an overcompensating need to be the smartest person in the room.',
+    prince: 'A powerful, disciplined mind capable of deep concentration and structured thinking. Your words carry weight because they are chosen carefully. The scholar, the strategist, the person whose intellectual authority is beyond question because it was built through years of patient effort.',
+    greeneInsight: 'Saturn-Mercury aspects often produce the most serious and careful thinkers, precisely because the mind was never allowed to be lazy. What begins as intellectual insecurity becomes intellectual mastery through sheer determination.',
+  },
+  'Saturn-Venus': {
+    planets: 'Saturn-Venus',
+    beast: 'A deep fear of not being lovable. Difficulty receiving affection, or choosing partners who are cold, unavailable, or punishing. You may sacrifice pleasure and beauty for duty, believing you don\'t deserve joy. Loneliness that feels permanent.',
+    prince: 'Love that endures and deepens with time. Loyalty and faithfulness that is not naive but earned through understanding what love truly costs. An appreciation for beauty that is refined rather than superficial. The capacity to create lasting art and lasting relationships.',
+    greeneInsight: 'Saturn-Venus contacts often produce individuals who experience profound loneliness in youth but develop the most enduring and genuine capacity for love in maturity. The restriction teaches the true value of what is restricted.',
+  },
+  'Saturn-Mars': {
+    planets: 'Saturn-Mars',
+    beast: 'Frustration and suppressed anger. Your drive and initiative feel blocked at every turn. You may explode periodically after long periods of bottling up aggression, or you may turn the anger inward, creating depression and self-punishment. Fear of your own power.',
+    prince: 'Controlled, strategic power. The capacity for sustained effort over long periods. Endurance, stamina, and the ability to work toward a goal with relentless patience. The warrior who has learned discipline — far more dangerous and effective than raw aggression.',
+    greeneInsight: 'Saturn-Mars is often experienced as a brake on the accelerator — enormous energy that cannot find release. The key is learning that controlled force is exponentially more powerful than uncontrolled force. The individual must learn to express anger cleanly rather than swallowing it.',
+  },
+  'Saturn-Jupiter': {
+    planets: 'Saturn-Jupiter',
+    beast: 'A perpetual tension between optimism and pessimism, expansion and contraction. You start projects with enthusiasm and then abandon them when reality sets in. Or you never start at all, fearing that faith is foolish. Chronic dissatisfaction — nothing is ever enough, yet you\'re afraid to ask for more.',
+    prince: 'The wisdom to balance vision with pragmatism. The ability to build big dreams on solid foundations. You become someone who can see the possibility AND the plan — the entrepreneur, the builder, the leader who knows when to expand and when to consolidate.',
+    greeneInsight: 'Saturn-Jupiter is the great balancing act of the psyche. When these two are in harmony, the individual can achieve remarkable things because they combine faith with discipline. The tension between them is ultimately productive — it prevents both reckless overexpansion and paralyzing caution.',
+  },
+  'Saturn-Uranus': {
+    planets: 'Saturn-Uranus',
+    beast: 'A painful tension between the need for security and the need for freedom. You may swing between rigid conformity and explosive rebellion, never finding a middle ground. Fear of change combined with an equal fear of stagnation. Nervous anxiety from trying to control the uncontrollable.',
+    prince: 'The capacity to reform systems from within — to innovate without destroying. You become someone who can bring the future into the present through disciplined, practical change. The revolutionary who builds rather than merely tears down.',
+    greeneInsight: 'Saturn-Uranus aspects create individuals who are perpetually caught between the old and the new. The tension can be agonizing, but it also produces the most effective agents of change — those who understand both tradition and innovation.',
+  },
+  'Saturn-Neptune': {
+    planets: 'Saturn-Neptune',
+    beast: 'A painful collision between dreams and reality. Your ideals are perpetually crushed by circumstance, creating cynicism and disillusionment. You may feel that spiritual meaning is just an illusion, or conversely, escape into fantasy to avoid the harsh demands of the real world.',
+    prince: 'The ability to give form to the formless — to bring spiritual vision into concrete reality. The artist who creates transcendent beauty within the constraints of a medium. The mystic who remains grounded. The healer who translates compassion into practical action.',
+    greeneInsight: 'Saturn-Neptune is the alchemist\'s aspect — the marriage of lead and gold, matter and spirit. The suffering it produces is often the crucible in which genuine spiritual wisdom is forged. Neither pure idealism nor pure pragmatism works; only their synthesis produces gold.',
+  },
+  'Saturn-Pluto': {
+    planets: 'Saturn-Pluto',
+    beast: 'A confrontation with absolute power and absolute powerlessness. You may experience crushing external authority, systemic oppression, or situations where control is ripped away entirely. The response is often to become ruthlessly controlling yourself, or to collapse into helpless submission.',
+    prince: 'The capacity to endure what would destroy others and to rebuild from total devastation. Profound psychological strength and the wisdom that comes from surviving the unsurvivable. You become someone who understands power at its deepest level — and uses it with integrity.',
+    greeneInsight: 'Saturn-Pluto aspects bring the individual face to face with the darkest expressions of power. Whether this manifests as abuse, institutional control, or psychological crisis, the purpose is the same: to forge an individual who understands power so thoroughly that they can never be corrupted by it.',
+  },
+  'Saturn-Chiron': {
+    planets: 'Saturn-Chiron',
+    beast: 'The wound that becomes a wall. Your deepest pain solidifies into rigid structures — rules, defenses, and beliefs that protect you from ever being hurt again. But these same walls prevent healing, creating a cycle of chronic suffering that feels permanent and inescapable.',
+    prince: 'The wounded healer whose authority comes from having fully faced their own pain. You become someone who can guide others through their darkest passages because you have navigated your own. Your wound becomes your teaching credential.',
+    greeneInsight: 'Saturn-Chiron asks the individual to build something lasting from their deepest wound. The temptation is to wall off the pain, but the invitation is to make it the foundation of genuine wisdom and service to others.',
+  },
+};
 
 export const SATURN_IN_SIGNS: Record<string, SaturnTeaching> = {
   Aries: {
@@ -851,7 +1035,10 @@ export const SATURN_IN_SIGNS: Record<string, SaturnTeaching> = {
     mastery: 'The ability to initiate action with wisdom. Courageous leadership tempered by experience.',
     questions: ['Where do you hold back from taking initiative?', 'What would you do if you weren\'t afraid?', 'How do you handle your anger?'],
     firstReturn: 'Major restructuring around identity and independence. Time to stop waiting for permission and become the leader of your own life.',
-    secondReturn: 'Wisdom about when to act and when to wait. Teaching others about courage and initiative.'
+    secondReturn: 'Wisdom about when to act and when to wait. Teaching others about courage and initiative.',
+    beast: 'Fear of asserting yourself, suppressed anger that erupts unpredictably, hiding behind passivity while secretly seething. You may let others go first in everything — jobs, relationships, arguments — and then resent them for it.',
+    prince: 'Courageous, decisive leadership earned through overcoming deep self-doubt. Your initiative carries weight precisely because it was hard-won. You become the person who acts when everyone else freezes.',
+    greeneInsight: 'Saturn in Aries creates the paradox of a warrior afraid of their own sword. The individual must learn that assertion is not aggression, and that the right to act does not need to be earned from anyone else.',
   },
   Taurus: {
     sign: 'Taurus',
@@ -862,7 +1049,10 @@ export const SATURN_IN_SIGNS: Record<string, SaturnTeaching> = {
     mastery: 'The ability to create lasting value. Patience that produces results. Unshakeable self-worth.',
     questions: ['What does security mean to you?', 'Where do you struggle with self-worth?', 'What are you building that will last?'],
     firstReturn: 'Major restructuring around values, money, and self-worth. Time to build a foundation that truly supports you.',
-    secondReturn: 'Wisdom about what truly matters. Teaching others about patience and lasting value.'
+    secondReturn: 'Wisdom about what truly matters. Teaching others about patience and lasting value.',
+    beast: 'Hoarding resources out of deep survival fear. Measuring your worth by what you own. Refusing to change or adapt because the unknown feels like annihilation. Financial anxiety that dominates your inner life.',
+    prince: 'Profound understanding of true value — both material and spiritual. You build things that last because you understand the difference between having and being. Unshakeable inner worth that no external loss can touch.',
+    greeneInsight: 'Saturn in Taurus attempts to make tangible what is essentially an inner sense of worth. Material things cannot satisfy an emotional need, but once the individual discovers that real security is internal, they often become remarkably capable with resources.',
   },
   Gemini: {
     sign: 'Gemini',
@@ -873,7 +1063,10 @@ export const SATURN_IN_SIGNS: Record<string, SaturnTeaching> = {
     mastery: 'The ability to communicate profound ideas clearly. Mental discipline with flexibility.',
     questions: ['What ideas do you need to commit to fully?', 'Where do you scatter your mental energy?', 'What truth needs to be spoken?'],
     firstReturn: 'Major restructuring around communication and learning. Time to focus your mind on what truly matters.',
-    secondReturn: 'Wisdom about the power of words. Teaching others through clear, disciplined communication.'
+    secondReturn: 'Wisdom about the power of words. Teaching others through clear, disciplined communication.',
+    beast: 'Intellectual insecurity disguised as either painful shyness or compulsive over-talking. The feeling that your ideas are not good enough, that you must know everything before speaking. Nervous mental energy that never settles.',
+    prince: 'A precise, authoritative communicator whose words carry weight. Your mental discipline produces deep understanding where others skim surfaces. You become the teacher, writer, or thinker whose ideas endure.',
+    greeneInsight: 'Saturn in Gemini creates a mind that works harder than any other to compensate for a feeling of intellectual inadequacy. The result is often mastery of precisely the area where the individual once felt most inferior.',
   },
   Cancer: {
     sign: 'Cancer',
@@ -884,7 +1077,10 @@ export const SATURN_IN_SIGNS: Record<string, SaturnTeaching> = {
     mastery: 'The ability to create emotional safety for yourself and others. Nurturing with wisdom.',
     questions: ['What does home mean to you?', 'How do family patterns affect you now?', 'Where do you over-give or under-receive?'],
     firstReturn: 'Major restructuring around family and emotional patterns. Time to create your own definition of home.',
-    secondReturn: 'Wisdom about emotional bonds. Becoming the wise elder of your family.'
+    secondReturn: 'Wisdom about emotional bonds. Becoming the wise elder of your family.',
+    beast: 'Deep mistrust of emotional intimacy alongside a desperate craving for it. Coldness that masks vulnerability. A childhood where emotional support was absent — the father may have been cold, absent, or a burden. You may be inordinately tied to family or completely cut off.',
+    prince: 'The ability to become your own inner parent. You develop extraordinary emotional strength precisely because nothing was given freely. You create genuine sanctuary — not from need, but from hard-won wisdom about what love truly requires.',
+    greeneInsight: 'Saturn in Cancer works as an unconscious factor from the plane of feelings. Something necessary for emotional development was missing, and the entire psyche develops lopsided to compensate. The individual is never truly indifferent — the gold is learning to provide internally what was missing externally.',
   },
   Leo: {
     sign: 'Leo',
@@ -895,7 +1091,10 @@ export const SATURN_IN_SIGNS: Record<string, SaturnTeaching> = {
     mastery: 'The ability to lead with warmth and creativity. Authentic self-expression that inspires others.',
     questions: ['Where do you hide your light?', 'What would you create if no one was watching?', 'How do you handle not being recognized?'],
     firstReturn: 'Major restructuring around self-expression and recognition. Time to stop performing and start being authentic.',
-    secondReturn: 'Wisdom about true creative power. Teaching others to find their own light.'
+    secondReturn: 'Wisdom about true creative power. Teaching others to find their own light.',
+    beast: 'Fear of being seen, or its opposite — a desperate need for recognition that never feels satisfied. Creative blocks rooted in shame. You may suppress your natural warmth and playfulness, believing joy is irresponsible.',
+    prince: 'Disciplined creativity that produces lasting works of genuine beauty. Your self-expression carries authority because it cost you everything to find it. A warm, generous leader whose light is steady because it was hard-won.',
+    greeneInsight: 'Saturn in Leo restricts the natural child within — the capacity for spontaneous joy and creative expression. The individual who works through this often becomes the most disciplined artist or most faithful lover, because nothing came without effort.',
   },
   Virgo: {
     sign: 'Virgo',
@@ -906,7 +1105,10 @@ export const SATURN_IN_SIGNS: Record<string, SaturnTeaching> = {
     mastery: 'The ability to discern what truly needs fixing. Service that heals without depleting.',
     questions: ['Where is your inner critic too harsh?', 'What would "good enough" look like?', 'How do you serve without losing yourself?'],
     firstReturn: 'Major restructuring around work, health, and service. Time to find the balance between excellence and self-acceptance.',
-    secondReturn: 'Wisdom about practical mastery. Teaching others through grounded, helpful guidance.'
+    secondReturn: 'Wisdom about practical mastery. Teaching others through grounded, helpful guidance.',
+    beast: 'Obsessive perfectionism and compulsive ordering of the external environment while inner chaos reigns. Psychosomatic illness as avoidance. Feeling trapped in meaningless routine. A deep anxiety over physical or mental disintegration.',
+    prince: 'True service — not "good works" done for approval, but inner alignment where mind, body, and spirit work as one. Genuine healing ability. The capacity to integrate yourself so thoroughly that you become a conduit for others\' healing.',
+    greeneInsight: 'Saturn in Virgo reflects an imperative need for inner integration which, if avoided, produces illness, and if forced into a material channel, produces frustration. The gold is making mind and body not two interrelated things but one — a finely balanced vehicle for the inner self.',
   },
   Libra: {
     sign: 'Libra',
@@ -917,7 +1119,10 @@ export const SATURN_IN_SIGNS: Record<string, SaturnTeaching> = {
     mastery: 'The ability to create true partnership. Diplomacy that serves justice and beauty.',
     questions: ['Where do you lose yourself in relationships?', 'What conflict are you avoiding?', 'How do you balance your needs with others?'],
     firstReturn: 'Major restructuring around relationships and fairness. Time to stop people-pleasing and create true balance.',
-    secondReturn: 'Wisdom about partnership. Teaching others about justice, beauty, and relating.'
+    secondReturn: 'Wisdom about partnership. Teaching others about justice, beauty, and relating.',
+    beast: 'Attracting controlling or cold partners because you haven\'t claimed your own inner authority in relationship. Giving away your power to keep the peace. Marriage as duty rather than joy. A terror of being alone that drives you into one-sided partnerships.',
+    prince: 'Genuine partnership between equals. You develop the rare ability to be both independent and intimately connected. Your relationships are built on earned mutual respect, not need or obligation.',
+    greeneInsight: 'Saturn in Libra often attracts Saturnian partners — older, more authoritative, or restrictive — because the individual has not yet claimed their own authority in relationship. Once this projection is withdrawn, partnerships become genuinely balanced.',
   },
   Scorpio: {
     sign: 'Scorpio',
@@ -928,7 +1133,10 @@ export const SATURN_IN_SIGNS: Record<string, SaturnTeaching> = {
     mastery: 'The ability to transform crisis into growth. Deep intimacy with appropriate boundaries.',
     questions: ['What are you afraid to let go of?', 'Where do control issues show up?', 'What needs to die so something new can be born?'],
     firstReturn: 'Major restructuring around trust, power, and intimacy. Time to face your shadows and transform.',
-    secondReturn: 'Wisdom about transformation. Teaching others about the power of letting go.'
+    secondReturn: 'Wisdom about transformation. Teaching others about the power of letting go.',
+    beast: 'Fear of emotional and sexual vulnerability so intense that you build walls of control around your deepest self. You may manipulate others to avoid being manipulated yourself, or withdraw completely from intimacy. A fascination with power that terrifies you.',
+    prince: 'Profound psychological depth and the courage to face what others flee from. You become the guide through the underworld — the therapist, the healer, the one who can hold space for the darkest human experiences without flinching.',
+    greeneInsight: 'Saturn in Scorpio demands that the individual confront the shared world of emotions, sexuality, and power with total honesty. The fear is of being consumed; the gold is discovering that true power comes from the willingness to be completely vulnerable.',
   },
   Sagittarius: {
     sign: 'Sagittarius',
@@ -939,7 +1147,10 @@ export const SATURN_IN_SIGNS: Record<string, SaturnTeaching> = {
     mastery: 'The ability to teach from lived experience. Optimism grounded in reality.',
     questions: ['What do you truly believe?', 'Where do you escape instead of committing?', 'How do you walk your talk?'],
     firstReturn: 'Major restructuring around beliefs and purpose. Time to commit to your truth and stop running.',
-    secondReturn: 'Wisdom about meaning and faith. Becoming the teacher and philosopher.'
+    secondReturn: 'Wisdom about meaning and faith. Becoming the teacher and philosopher.',
+    beast: 'Rigid belief systems that mask a terror of meaninglessness, or a complete collapse of faith. Using philosophy, religion, or adventure as armor against the emptiness. Dogmatism that refuses to question its own assumptions.',
+    prince: 'A personal philosophy forged through direct experience, not borrowed from books. Your faith has been tested and therefore cannot be shaken. You become the genuine teacher — one who speaks from lived truth, not theory.',
+    greeneInsight: 'Saturn in Sagittarius limits the natural expansiveness of belief until the individual earns their own truth through experience. The resulting philosophy is far more genuine and powerful than any inherited belief system.',
   },
   Capricorn: {
     sign: 'Capricorn',
@@ -950,7 +1161,10 @@ export const SATURN_IN_SIGNS: Record<string, SaturnTeaching> = {
     mastery: 'The ability to achieve lasting success with integrity. Leadership that earns respect.',
     questions: ['What legacy do you want to leave?', 'Where do you fear failure?', 'How do you balance achievement with connection?'],
     firstReturn: 'Major restructuring around career and authority. Time to become your own authority figure.',
-    secondReturn: 'Wisdom about true success. Teaching others about integrity and lasting achievement.'
+    secondReturn: 'Wisdom about true success. Teaching others about integrity and lasting achievement.',
+    beast: 'Ambition so intense it consumes everything else — relationships, joy, spontaneity. A fear of failure so deep it can paralyze. You may justify any means by the end, overcompensating for a childhood where your identity was suppressed by becoming ruthlessly driven.',
+    prince: 'Earned mastery and natural authority that inspires rather than intimidates. You become the elder whose leadership comes from integrity, not position. Achievement becomes joyful rather than desperate once you stop proving yourself.',
+    greeneInsight: 'Saturn in Capricorn — his own sign — shows ambition running in direct proportion to the suppression of identity in early life. The drive to achieve is ultimately a drive to prove that you exist, that you matter. When understood, achievement becomes an expression of joy rather than desperation.',
   },
   Aquarius: {
     sign: 'Aquarius',
@@ -961,7 +1175,10 @@ export const SATURN_IN_SIGNS: Record<string, SaturnTeaching> = {
     mastery: 'The ability to bring innovative ideas into practical form. Community leadership.',
     questions: ['Where do you feel like an outsider?', 'How do you balance individuality with belonging?', 'What vision do you have for the future?'],
     firstReturn: 'Major restructuring around individuality and community. Time to find your tribe while being yourself.',
-    secondReturn: 'Wisdom about innovation and humanity. Teaching others about the future.'
+    secondReturn: 'Wisdom about innovation and humanity. Teaching others about the future.',
+    beast: 'Chronic outsider syndrome — feeling that you don\'t belong anywhere. Rebellion that destroys rather than reforms. Emotional detachment disguised as independence. Using ideology to avoid genuine human connection.',
+    prince: 'The capacity to lead communities with wisdom grounded in experience, not naive idealism. You become the reformer who builds lasting structures for collective good — precisely because your outsider perspective lets you see what insiders miss.',
+    greeneInsight: 'Saturn in Aquarius creates a person who feels excluded from the group, yet it is precisely this outsider status that eventually allows them to lead it. Their vision for the collective is grounded in hard experience rather than utopian fantasy.',
   },
   Pisces: {
     sign: 'Pisces',
@@ -972,7 +1189,10 @@ export const SATURN_IN_SIGNS: Record<string, SaturnTeaching> = {
     mastery: 'The ability to be in the world but not of it. Spiritual service with groundedness.',
     questions: ['Where do you escape instead of facing reality?', 'How do you maintain boundaries while staying compassionate?', 'What is your spiritual practice?'],
     firstReturn: 'Major restructuring around spirituality and service. Time to ground your dreams in reality.',
-    secondReturn: 'Wisdom about the nature of existence. Becoming the mystic and healer.'
+    secondReturn: 'Wisdom about the nature of existence. Becoming the mystic and healer.',
+    beast: 'A vague fear that fate will destroy you. Isolation, helplessness, and guilt without a specific source. Escapism through substances, fantasy, or self-sacrifice. You may dedicate your life to caring for others at the cost of your own development — not from genuine service but from fear of facing your own life.',
+    prince: 'The power to serve life itself — not to "do good," which is not service at all, but to experience genuine unity with existence. Inner peace, meditation, and spiritual surrender become your greatest strengths. The last door between you and real freedom.',
+    greeneInsight: 'Saturn in Pisces is most difficult from the personality\'s perspective because Saturnian defenses are rendered ineffectual. The individual must eventually sacrifice personal control, and this sacrifice, when willingly made, becomes the gateway to genuine inner freedom and spiritual wisdom.',
   }
 };
 
