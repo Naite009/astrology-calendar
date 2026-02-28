@@ -17,13 +17,48 @@ const ANGULARITY_COLORS: Record<string, { bg: string; text: string; border: stri
 
 const QUADRANT_COLORS = ['bg-rose-500/10 border-rose-500/30', 'bg-amber-500/10 border-amber-500/30', 'bg-sky-500/10 border-sky-500/30', 'bg-violet-500/10 border-violet-500/30'];
 
+const ZODIAC_ORDER = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+
+const SIGN_RULERS: Record<string, { planet: string; symbol: string }> = {
+  Aries: { planet: 'Mars', symbol: '♂' }, Taurus: { planet: 'Venus', symbol: '♀' },
+  Gemini: { planet: 'Mercury', symbol: '☿' }, Cancer: { planet: 'Moon', symbol: '☽' },
+  Leo: { planet: 'Sun', symbol: '☉' }, Virgo: { planet: 'Mercury', symbol: '☿' },
+  Libra: { planet: 'Venus', symbol: '♀' }, Scorpio: { planet: 'Pluto', symbol: '♇' },
+  Sagittarius: { planet: 'Jupiter', symbol: '♃' }, Capricorn: { planet: 'Saturn', symbol: '♄' },
+  Aquarius: { planet: 'Uranus', symbol: '♅' }, Pisces: { planet: 'Neptune', symbol: '♆' },
+};
+
+const toLon = (sign: string, deg: number, min: number = 0) => ZODIAC_ORDER.indexOf(sign) * 30 + deg + min / 60;
+
+function ordinal(n: number) {
+  if (n === 1) return '1st';
+  if (n === 2) return '2nd';
+  if (n === 3) return '3rd';
+  return `${n}th`;
+}
+
+function findPlanetHouse(planetName: string, chart: NatalChart): number | null {
+  const p = chart.planets[planetName as keyof typeof chart.planets];
+  if (!p?.sign || !chart.houseCusps) return null;
+  const lon = toLon(p.sign, p.degree, p.minutes ?? 0);
+  const cusps: number[] = [];
+  for (let i = 1; i <= 12; i++) {
+    const c = chart.houseCusps[`house${i}` as keyof typeof chart.houseCusps];
+    if (c?.sign) cusps.push(toLon(c.sign, c.degree, c.minutes ?? 0));
+  }
+  if (cusps.length < 12) return null;
+  for (let i = 0; i < 12; i++) {
+    const cur = cusps[i], next = cusps[(i + 1) % 12];
+    const inH = next < cur ? (lon >= cur || lon < next) : (lon >= cur && lon < next);
+    if (inH) return i + 1;
+  }
+  return null;
+}
+
 function HouseDetailModal({ house, open, onClose, chart }: { house: HouseData | null; open: boolean; onClose: () => void; chart: NatalChart | null }) {
-  // Find planets in this house from chart
   const planetsInHouse = useMemo(() => {
     if (!house || !chart?.planets || !chart?.houseCusps) return [];
     const results: string[] = [];
-    const ZODIAC = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
-    const toLon = (sign: string, deg: number, min: number = 0) => ZODIAC.indexOf(sign) * 30 + deg + min / 60;
     const cusps: number[] = [];
     for (let i = 1; i <= 12; i++) {
       const c = chart.houseCusps[`house${i}` as keyof typeof chart.houseCusps];
@@ -43,6 +78,34 @@ function HouseDetailModal({ house, open, onClose, chart }: { house: HouseData | 
     }
     return results;
   }, [chart, house]);
+
+  const rulerAnalysis = useMemo(() => {
+    if (!house || !chart?.planets || !chart?.houseCusps) return null;
+    const houseKey = `house${house.number}` as keyof typeof chart.houseCusps;
+    const cuspData = chart.houseCusps[houseKey];
+    if (!cuspData?.sign) return null;
+    
+    const cuspSign = cuspData.sign;
+    const ruler = SIGN_RULERS[cuspSign];
+    if (!ruler) return null;
+
+    const rulerPlanet = chart.planets[ruler.planet as keyof typeof chart.planets];
+    if (!rulerPlanet?.sign) return null;
+
+    const rulerHouse = findPlanetHouse(ruler.planet, chart);
+    if (!rulerHouse) return null;
+
+    const rulerHouseData = HOUSES_DATA.find(h => h.number === rulerHouse);
+
+    return {
+      cuspSign,
+      rulerPlanet: ruler.planet,
+      rulerSymbol: ruler.symbol,
+      rulerSign: rulerPlanet.sign,
+      rulerHouse,
+      rulerHouseName: rulerHouseData?.name || `House ${rulerHouse}`,
+    };
+  }, [house, chart, planetsInHouse]);
 
   if (!house) return null;
   const ac = ANGULARITY_COLORS[house.angularity];
@@ -66,6 +129,22 @@ function HouseDetailModal({ house, open, onClose, chart }: { house: HouseData | 
               <Badge variant="outline">Q{house.quadrant}: {house.quadrantMantra}</Badge>
             </div>
 
+            {/* Keywords */}
+            <div>
+              <p className="text-[10px] font-medium text-muted-foreground mb-1.5">🔑 KEYWORDS</p>
+              <div className="flex flex-wrap gap-1">
+                {house.keywords.map((kw, i) => (
+                  <Badge key={i} variant="secondary" className="text-[10px]">{kw}</Badge>
+                ))}
+              </div>
+            </div>
+
+            {/* Life explanation */}
+            <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+              <p className="text-[10px] font-medium text-muted-foreground mb-1">📋 WHAT THIS HOUSE RULES</p>
+              <p className="text-sm leading-relaxed">{house.lifeExplanation}</p>
+            </div>
+
             <p className="text-sm leading-relaxed">{house.core}</p>
 
             <div className="p-3 rounded-lg bg-muted/50">
@@ -73,12 +152,40 @@ function HouseDetailModal({ house, open, onClose, chart }: { house: HouseData | 
               <p className="text-sm">{house.bodyPart}</p>
             </div>
 
-            {planetsInHouse.length > 0 && (
-              <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
-                <p className="text-[10px] font-medium text-muted-foreground mb-1">⭐ YOUR PLANETS HERE</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {planetsInHouse.map(p => <Badge key={p} variant="secondary">{p}</Badge>)}
-                </div>
+            {/* Personalized section when chart is selected */}
+            {chart && rulerAnalysis && (
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/10 space-y-2">
+                <p className="text-[10px] font-medium text-muted-foreground">⭐ YOUR {ordinal(house.number).toUpperCase()} HOUSE</p>
+                
+                {planetsInHouse.length > 0 ? (
+                  <div>
+                    <p className="text-xs mb-1.5">You have <strong>{planetsInHouse.length} planet{planetsInHouse.length > 1 ? 's' : ''}</strong> in your {ordinal(house.number)} house:</p>
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {planetsInHouse.map(p => <Badge key={p} variant="secondary">{p}</Badge>)}
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Your {ordinal(house.number)} house is ruled by <strong>{rulerAnalysis.cuspSign}</strong>, 
+                      so {rulerAnalysis.rulerSymbol} <strong>{rulerAnalysis.rulerPlanet}</strong> (your house ruler) is in 
+                      the <strong>{ordinal(rulerAnalysis.rulerHouse)} house</strong> in <strong>{rulerAnalysis.rulerSign}</strong>. 
+                      This means the themes of your {house.name.toLowerCase()} are also channeled through your {rulerAnalysis.rulerHouseName.toLowerCase()} — look there for how this house expresses in practice.
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-xs leading-relaxed">
+                      You have <strong>no planets</strong> in your {ordinal(house.number)} house, 
+                      but it's ruled by <strong>{rulerAnalysis.cuspSign}</strong>, 
+                      and {rulerAnalysis.rulerSymbol} <strong>{rulerAnalysis.rulerPlanet}</strong> is in 
+                      the <strong>{ordinal(rulerAnalysis.rulerHouse)} house</strong> in <strong>{rulerAnalysis.rulerSign}</strong>.
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                      This means the {house.name.toLowerCase()} themes in your life are not a major source of drama — they run on autopilot through {rulerAnalysis.cuspSign} energy. 
+                      But to understand <em>how</em> this area actually plays out, look at where {rulerAnalysis.rulerSymbol} {rulerAnalysis.rulerPlanet} sits: 
+                      in the {ordinal(rulerAnalysis.rulerHouse)} house ({rulerAnalysis.rulerHouseName}) in {rulerAnalysis.rulerSign}. 
+                      That's where this house's energy is being <em>directed</em> — the {rulerAnalysis.rulerHouseName.toLowerCase()} colors how your {house.name.toLowerCase().replace('house of ', '')} functions.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
