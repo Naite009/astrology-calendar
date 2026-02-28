@@ -967,7 +967,7 @@ export const SATURN_IN_SIGNS: Record<string, SaturnTeaching> = {
     sign: 'Pisces',
     soulPurpose: 'To bring spiritual wisdom into practical form. To serve with healthy boundaries.',
     lifeLesson: 'You are learning healthy boundaries while maintaining compassion and spiritual connection. The lesson is about faith, surrender, and transcendence.',
-    directive: 'Trust your intuition. Your sensitive, intuitive mind is not a weakness—it is a gift that must be disciplined, trusted, and expressed with courage. Serve without martyrdom. Let go and let God.',
+    directive: 'Trust your intuition. Your sensitive, intuitive mind is not a weakness—it is a gift that must be disciplined, trusted, and expressed with courage.',
     challenge: 'Escapism. Martyrdom. Boundary confusion. Difficulty with practical reality.',
     mastery: 'The ability to be in the world but not of it. Spiritual service with groundedness.',
     questions: ['Where do you escape instead of facing reality?', 'How do you maintain boundaries while staying compassionate?', 'What is your spiritual practice?'],
