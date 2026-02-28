@@ -360,9 +360,19 @@ const SUIT_NUMERAL: Record<string, string> = {
 };
 
 function CourtCardQuiz({ chart }: { chart: NatalChart }) {
-  const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [showResult, setShowResult] = useState(false);
+  const chartId = chart.name || 'default';
+  const storageKey = `court-card-result-${chartId}`;
+  const savedData = (() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  })();
+
+  const [answers, setAnswers] = useState<Record<number, string>>(savedData?.answers || {});
+  const [showResult, setShowResult] = useState(!!savedData?.result);
   const [currentStep, setCurrentStep] = useState(0);
+  const [isSaved, setIsSaved] = useState(!!savedData?.result);
 
   const sunPos = chart.planets.Sun;
   if (!sunPos) return null;
@@ -650,6 +660,22 @@ function CourtCardQuiz({ chart }: { chart: NatalChart }) {
               <p className="text-sm text-muted-foreground">{rankInfo.reading}</p>
             </div>
 
+            {/* Save button */}
+            <button
+              onClick={() => {
+                localStorage.setItem(storageKey, JSON.stringify({ result, answers, savedAt: new Date().toISOString() }));
+                setIsSaved(true);
+              }}
+              className={`w-full py-3 rounded-lg font-medium transition-all ${
+                isSaved
+                  ? 'bg-green-500/10 border border-green-400/40 text-green-400 cursor-default'
+                  : 'bg-primary text-primary-foreground hover:bg-primary/90'
+              }`}
+              disabled={isSaved}
+            >
+              {isSaved ? '✓ Saved to Your Chart' : '💾 Save My Court Card'}
+            </button>
+
             {/* Significator tip */}
             <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
               <p className="text-xs uppercase tracking-widest text-primary/70">✨ Your Significator</p>
@@ -680,7 +706,7 @@ function CourtCardQuiz({ chart }: { chart: NatalChart }) {
 
             {/* Retake */}
             <button
-              onClick={() => { setAnswers({}); setShowResult(false); setCurrentStep(0); }}
+              onClick={() => { setAnswers({}); setShowResult(false); setCurrentStep(0); setIsSaved(false); localStorage.removeItem(storageKey); }}
               className="w-full py-2 rounded border border-border text-sm text-muted-foreground hover:bg-secondary/40 transition-colors"
             >
               Retake Quiz
