@@ -82,10 +82,36 @@ function PlanetDetailModal({ planet, open, onClose }: { planet: PlanetEncycloped
               <p className="text-xs font-medium mb-2">What {planet.symbol} Rules</p>
               <div className="flex flex-wrap gap-1.5">
                 {planet.whatItRules.map((r, i) => (
-                  <Badge key={i} variant="secondary" className="text-[10px]">{r}</Badge>
+                  <Badge key={i} variant="secondary" className="text-[11px]">{r}</Badge>
                 ))}
               </div>
             </div>
+
+            {/* High Road / Low Road Keywords */}
+            {(planet.highRoad.length > 0 || planet.lowRoad.length > 0) && (
+              <div className="grid grid-cols-2 gap-3">
+                {planet.highRoad.length > 0 && (
+                  <div>
+                    <p className="text-[10px] font-medium text-muted-foreground mb-1.5">✦ HIGH ROAD</p>
+                    <div className="flex flex-wrap gap-1">
+                      {planet.highRoad.map((k, i) => (
+                        <Badge key={i} variant="outline" className="text-[10px] border-primary/30 bg-primary/5 text-primary">{k}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {planet.lowRoad.length > 0 && (
+                  <div>
+                    <p className="text-[10px] font-medium text-muted-foreground mb-1.5">⚠ LOW ROAD</p>
+                    <div className="flex flex-wrap gap-1">
+                      {planet.lowRoad.map((k, i) => (
+                        <Badge key={i} variant="outline" className="text-[10px] border-destructive/30 bg-destructive/5 text-destructive">{k}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Orbit / Astronomy */}
             <div className={`p-4 rounded-lg border ${cs.border} ${cs.bg}`}>
