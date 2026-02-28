@@ -719,6 +719,95 @@ function CourtCardQuiz({ chart }: { chart: NatalChart }) {
   );
 }
 
+const ALL_RANKS = ['Page', 'Knight', 'Queen', 'King'] as const;
+const ALL_SUITS = ['Wands', 'Cups', 'Swords', 'Pentacles'] as const;
+
+function CourtCardGallery() {
+  const [selectedCard, setSelectedCard] = useState<string | null>(null);
+  const profile = selectedCard ? COURT_CARD_PROFILES[selectedCard] : null;
+  const selectedSuit = selectedCard ? selectedCard.split(' of ')[1] : null;
+  const selectedRank = selectedCard ? selectedCard.split(' of ')[0] : null;
+  const cardStyle = selectedSuit ? SUIT_CARD_STYLES[selectedSuit] : null;
+  const suitInfo = selectedSuit ? SUIT_IMAGERY[selectedSuit] : null;
+  const rankInfo = selectedRank ? COURT_RANK_DESCRIPTIONS[selectedRank] : null;
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg font-serif">🃏 Court Card Encyclopedia</CardTitle>
+        <p className="text-sm text-muted-foreground">Tap any card to read its full personality profile.</p>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        {/* Grid */}
+        <div className="grid grid-cols-4 gap-2">
+          {/* Column headers */}
+          {ALL_SUITS.map(suit => (
+            <div key={suit} className="text-center pb-1">
+              <span className="text-lg">{SUIT_IMAGERY[suit].emoji}</span>
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{suit}</p>
+            </div>
+          ))}
+          {/* Cards by rank */}
+          {ALL_RANKS.map(rank =>
+            ALL_SUITS.map(suit => {
+              const name = `${rank} of ${suit}`;
+              const isSelected = selectedCard === name;
+              const style = SUIT_CARD_STYLES[suit];
+              return (
+                <button
+                  key={name}
+                  onClick={() => setSelectedCard(isSelected ? null : name)}
+                  className={`p-2.5 rounded-lg border text-center transition-all text-xs font-medium ${
+                    isSelected
+                      ? `${style.border} ${style.bg} ${style.accent} ring-1 ring-primary shadow-md scale-105`
+                      : 'border-border bg-secondary/20 text-muted-foreground hover:bg-secondary/40 hover:border-primary/30'
+                  }`}
+                >
+                  <span className="block text-base mb-0.5">{SUIT_IMAGERY[suit].emoji}</span>
+                  {rank}
+                </button>
+              );
+            })
+          )}
+        </div>
+
+        {/* Selected card detail */}
+        {selectedCard && profile && cardStyle && suitInfo && rankInfo && (
+          <div className="animate-in fade-in slide-in-from-bottom-3 duration-300 space-y-4">
+            {/* Mini card header */}
+            <div className={`p-4 rounded-xl border-2 ${cardStyle.border} ${cardStyle.bg} text-center space-y-1`}>
+              <p className="text-3xl">{suitInfo.emoji}</p>
+              <p className={`text-lg font-serif font-bold ${cardStyle.accent}`}>{selectedCard}</p>
+              <p className="text-xs italic text-muted-foreground">"{rankInfo.archetype}"</p>
+            </div>
+
+            <div className="p-4 rounded-lg bg-secondary/20 border border-border space-y-2">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">🪞 Personality</p>
+              <p className="text-sm leading-relaxed">{profile.personality}</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-4 rounded-lg bg-secondary/20 border border-border space-y-2">
+                <p className="text-xs uppercase tracking-widest text-muted-foreground">🌑 Shadow</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{profile.shadow}</p>
+              </div>
+              <div className="p-4 rounded-lg bg-secondary/20 border border-border space-y-2">
+                <p className="text-xs uppercase tracking-widest text-muted-foreground">💎 Advice</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{profile.advice}</p>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-lg bg-secondary/10 border border-border space-y-2">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">🎨 Traditional Imagery</p>
+              <p className="text-xs text-muted-foreground italic leading-relaxed">{profile.symbols}</p>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 interface Props {
   userNatalChart: NatalChart | null;
   savedCharts: NatalChart[];
@@ -876,6 +965,9 @@ export function TarotFunctionsView({ userNatalChart, savedCharts }: Props) {
 
           {/* Court Card Quiz */}
           {chart && <CourtCardQuiz chart={chart} />}
+
+          {/* Court Card Encyclopedia */}
+          <CourtCardGallery />
 
           {/* Element ↔ Function reference */}
           <Card>
