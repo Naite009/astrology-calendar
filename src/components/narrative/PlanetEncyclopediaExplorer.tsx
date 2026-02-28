@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import { ArrowRight } from 'lucide-react';
 import { PLANET_ENCYCLOPEDIA, PLANET_CATEGORIES, PlanetEncyclopediaData } from '@/lib/planetEncyclopedia';
+import { NatalChart } from '@/hooks/useNatalChart';
 
 const CATEGORY_STYLES: Record<string, { bg: string; border: string; text: string; badge: string }> = {
   personal: { bg: 'bg-primary/5', border: 'border-primary/20', text: 'text-primary', badge: 'bg-primary/10 text-primary' },
@@ -12,9 +15,12 @@ const CATEGORY_STYLES: Record<string, { bg: string; border: string; text: string
   asteroid: { bg: 'bg-primary/5', border: 'border-primary/15', text: 'text-primary', badge: 'bg-primary/10 text-primary' },
 };
 
-function PlanetDetailModal({ planet, open, onClose }: { planet: PlanetEncyclopediaData | null; open: boolean; onClose: () => void }) {
+function PlanetDetailModal({ planet, open, onClose, chart, onNavigateToView }: { planet: PlanetEncyclopediaData | null; open: boolean; onClose: () => void; chart: NatalChart | null; onNavigateToView?: (view: string) => void }) {
   if (!planet) return null;
   const cs = CATEGORY_STYLES[planet.category] || CATEGORY_STYLES.personal;
+
+  // Find planet in user's chart
+  const userPlacement = chart?.planets?.[planet.name as keyof typeof chart.planets];
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -160,6 +166,49 @@ function PlanetDetailModal({ planet, open, onClose }: { planet: PlanetEncycloped
               <p className="text-xs font-medium text-primary mb-2">📖 How to Read {planet.symbol} in Your Chart</p>
               <p className="text-sm leading-relaxed">{planet.howToRead}</p>
             </div>
+
+            {/* Personalized placement + Navigate */}
+            {userPlacement && (
+              <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-3">
+                <p className="text-[10px] font-medium text-muted-foreground">⭐ YOUR {planet.symbol} {planet.name.toUpperCase()}</p>
+                <p className="text-sm">
+                  Your <strong>{planet.name}</strong> is in <strong>{userPlacement.sign}</strong> at {Math.round(userPlacement.degree)}°
+                  {userPlacement.isRetrograde ? ' ℞ (retrograde)' : ''}.
+                </p>
+                {onNavigateToView && (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="w-full gap-2"
+                    onClick={() => {
+                      onClose();
+                      onNavigateToView('decoder');
+                    }}
+                  >
+                    Show it to me — Full {planet.name} Reading
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {!userPlacement && onNavigateToView && (
+              <div className="p-3 rounded-lg bg-muted/50 border border-border">
+                <p className="text-xs text-muted-foreground mb-2">Add a chart to see your personal {planet.name} placement and get a full reading.</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full gap-2"
+                  onClick={() => {
+                    onClose();
+                    onNavigateToView('charts');
+                  }}
+                >
+                  Go to Charts
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
         </ScrollArea>
       </DialogContent>
@@ -167,7 +216,7 @@ function PlanetDetailModal({ planet, open, onClose }: { planet: PlanetEncycloped
   );
 }
 
-export function PlanetEncyclopediaExplorer() {
+export function PlanetEncyclopediaExplorer({ chart, onNavigateToView }: { chart?: NatalChart | null; onNavigateToView?: (view: string) => void }) {
   const [selectedPlanet, setSelectedPlanet] = useState<PlanetEncyclopediaData | null>(null);
 
   return (
@@ -188,22 +237,29 @@ export function PlanetEncyclopediaExplorer() {
               <span className="text-[10px] text-muted-foreground">— {cat.description}</span>
             </div>
             <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-              {planets.map(planet => (
-                <button
-                  key={planet.name}
-                  onClick={() => setSelectedPlanet(planet)}
-                  className={`p-3 rounded-lg border ${cs.border} ${cs.bg} hover:shadow-md transition-all text-center cursor-pointer group`}
-                >
-                  <span className="text-2xl block group-hover:scale-110 transition-transform">{planet.symbol}</span>
-                  <span className="text-xs font-medium block mt-1">{planet.name}</span>
-                  <span className={`text-[10px] block ${cs.text}`}>{planet.nickname}</span>
-                  <div className="mt-1">
-                    {planet.ruledSigns.length > 0 && (
-                      <span className="text-[8px] text-muted-foreground">{planet.ruledSigns[0]}</span>
+              {planets.map(planet => {
+                const placement = chart?.planets?.[planet.name as keyof typeof chart.planets];
+                return (
+                  <button
+                    key={planet.name}
+                    onClick={() => setSelectedPlanet(planet)}
+                    className={`p-3 rounded-lg border ${cs.border} ${cs.bg} hover:shadow-md transition-all text-center cursor-pointer group`}
+                  >
+                    <span className="text-2xl block group-hover:scale-110 transition-transform">{planet.symbol}</span>
+                    <span className="text-xs font-medium block mt-1">{planet.name}</span>
+                    {placement ? (
+                      <span className="text-[10px] text-primary block">{placement.sign} {Math.round(placement.degree)}°</span>
+                    ) : (
+                      <span className={`text-[10px] block ${cs.text}`}>{planet.nickname}</span>
                     )}
-                  </div>
-                </button>
-              ))}
+                    <div className="mt-1">
+                      {planet.ruledSigns.length > 0 && (
+                        <span className="text-[8px] text-muted-foreground">{planet.ruledSigns[0]}</span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         );
@@ -213,6 +269,8 @@ export function PlanetEncyclopediaExplorer() {
         planet={selectedPlanet}
         open={!!selectedPlanet}
         onClose={() => setSelectedPlanet(null)}
+        chart={chart || null}
+        onNavigateToView={onNavigateToView}
       />
     </div>
   );

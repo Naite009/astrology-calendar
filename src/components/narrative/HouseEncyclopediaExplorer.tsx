@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ArrowRight } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   HOUSES_DATA, QUADRANT_INFO, HEMISPHERE_INFO, ANGLE_INFO,
@@ -55,7 +57,7 @@ function findPlanetHouse(planetName: string, chart: NatalChart): number | null {
   return null;
 }
 
-function HouseDetailModal({ house, open, onClose, chart }: { house: HouseData | null; open: boolean; onClose: () => void; chart: NatalChart | null }) {
+function HouseDetailModal({ house, open, onClose, chart, onNavigateToView }: { house: HouseData | null; open: boolean; onClose: () => void; chart: NatalChart | null; onNavigateToView?: (view: string) => void }) {
   const planetsInHouse = useMemo(() => {
     if (!house || !chart?.planets || !chart?.houseCusps) return [];
     const results: string[] = [];
@@ -208,6 +210,40 @@ function HouseDetailModal({ house, open, onClose, chart }: { house: HouseData | 
             <div>
               <p className="text-xs text-muted-foreground">{house.angularityMeaning}</p>
             </div>
+
+            {/* Navigate to full reading */}
+            {chart && onNavigateToView && (
+              <Button
+                variant="default"
+                size="sm"
+                className="w-full gap-2"
+                onClick={() => {
+                  onClose();
+                  onNavigateToView('decoder');
+                }}
+              >
+                Show it to me — Full House {house.number} Reading
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            )}
+
+            {!chart && onNavigateToView && (
+              <div className="p-3 rounded-lg bg-muted/50 border border-border">
+                <p className="text-xs text-muted-foreground mb-2">Add a chart to see your personal {ordinal(house.number)} house placement and get a full reading.</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full gap-2"
+                  onClick={() => {
+                    onClose();
+                    onNavigateToView('charts');
+                  }}
+                >
+                  Go to Charts
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
         </ScrollArea>
       </DialogContent>
@@ -215,7 +251,7 @@ function HouseDetailModal({ house, open, onClose, chart }: { house: HouseData | 
   );
 }
 
-export function HouseEncyclopediaExplorer({ chart }: { chart: NatalChart | null }) {
+export function HouseEncyclopediaExplorer({ chart, onNavigateToView }: { chart: NatalChart | null; onNavigateToView?: (view: string) => void }) {
   const [selectedHouse, setSelectedHouse] = useState<HouseData | null>(null);
 
   const handleWheelClick = (houseNum: number) => {
@@ -352,7 +388,7 @@ export function HouseEncyclopediaExplorer({ chart }: { chart: NatalChart | null 
         </ul>
       </div>
 
-      <HouseDetailModal house={selectedHouse} open={!!selectedHouse} onClose={() => setSelectedHouse(null)} chart={chart} />
+      <HouseDetailModal house={selectedHouse} open={!!selectedHouse} onClose={() => setSelectedHouse(null)} chart={chart} onNavigateToView={onNavigateToView} />
     </div>
   );
 }
