@@ -91,7 +91,7 @@ export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
     return signs;
   }, [chart]);
 
-  const houseAngle = (houseNum: number) => 180 - (houseNum - 1) * 30;
+  const houseAngle = (houseNum: number) => 180 + (houseNum - 1) * 30;
   const toRad = (deg: number) => (deg * Math.PI) / 180;
   const polarToXY = (angleDeg: number, r: number) => ({
     x: cx + r * Math.cos(toRad(angleDeg)),
@@ -111,9 +111,9 @@ export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
 
     const path = [
       `M ${p1.x} ${p1.y}`, `L ${p2.x} ${p2.y}`,
-      `A ${outerR} ${outerR} 0 0 1 ${p3.x} ${p3.y}`,
+      `A ${outerR} ${outerR} 0 0 0 ${p3.x} ${p3.y}`,
       `L ${p4.x} ${p4.y}`,
-      `A ${innerR} ${innerR} 0 0 0 ${p1.x} ${p1.y}`, 'Z',
+      `A ${innerR} ${innerR} 0 0 1 ${p1.x} ${p1.y}`, 'Z',
     ].join(' ');
 
     const midAngle = (startAngle + endAngle) / 2;
