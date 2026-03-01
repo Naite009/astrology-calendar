@@ -180,11 +180,11 @@ export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
           <circle cx={cx} cy={cy} r={outerR} fill="none" stroke="hsl(var(--border))" strokeWidth={1.5} />
           <circle cx={cx} cy={cy} r={innerR} fill="hsl(var(--background))" stroke="hsl(var(--border))" strokeWidth={1} />
 
-          {/* Hemisphere labels — positioned at edges of viewBox */}
-          <text x={cx} y={18} textAnchor="middle" className="fill-muted-foreground text-[9px] font-medium">SOUTHERN (Public)</text>
-          <text x={cx} y={592} textAnchor="middle" className="fill-muted-foreground text-[9px] font-medium">NORTHERN (Private)</text>
-          <text x={8} y={cy} textAnchor="start" className="fill-muted-foreground text-[9px] font-medium" dominantBaseline="middle">EAST (Self)</text>
-          <text x={592} y={cy} textAnchor="end" className="fill-muted-foreground text-[9px] font-medium" dominantBaseline="middle">WEST (Other)</text>
+          {/* Hemisphere labels — close to MC/IC and above AC/DC */}
+          <text x={cx} y={cy - outerR - 38} textAnchor="middle" className="fill-muted-foreground text-[9px] font-medium">SOUTHERN (Public)</text>
+          <text x={cx} y={cy + outerR + 48} textAnchor="middle" className="fill-muted-foreground text-[9px] font-medium">NORTHERN (Private)</text>
+          <text x={cx - outerR - 42} y={cy - 30} textAnchor="start" className="fill-muted-foreground text-[9px] font-medium">EAST (Self)</text>
+          <text x={cx + outerR + 42} y={cy - 30} textAnchor="end" className="fill-muted-foreground text-[9px] font-medium">WEST (Other)</text>
 
           {/* House numbers and names */}
           {houseWedges.map(w => (
