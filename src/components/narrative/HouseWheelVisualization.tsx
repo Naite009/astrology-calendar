@@ -118,8 +118,8 @@ export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
 
     const midAngle = (startAngle + endAngle) / 2;
     const labelR = (innerR + outerR) / 2;
-    const numPos = polarToXY(midAngle, labelR + 5);
-    const namePos = polarToXY(midAngle, labelR - 12);
+    const numPos = polarToXY(midAngle, labelR + 8);
+    const namePos = polarToXY(midAngle, labelR - 8);
     const planets = planetsByHouse[h.num] || [];
     const cusp = cuspSigns[h.num];
     const cuspPos = polarToXY(startAngle + 3, outerR + 14);
@@ -180,11 +180,11 @@ export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
           <circle cx={cx} cy={cy} r={outerR} fill="none" stroke="hsl(var(--border))" strokeWidth={1.5} />
           <circle cx={cx} cy={cy} r={innerR} fill="hsl(var(--background))" stroke="hsl(var(--border))" strokeWidth={1} />
 
-          {/* Hemisphere labels — close to MC/IC and above AC/DC */}
-          <text x={cx} y={cy - outerR - 38} textAnchor="middle" className="fill-muted-foreground text-[9px] font-medium">SOUTHERN (Public)</text>
+          {/* Hemisphere labels */}
+          <text x={cx} y={cy - outerR - 48} textAnchor="middle" className="fill-muted-foreground text-[9px] font-medium">SOUTHERN (Public)</text>
           <text x={cx} y={cy + outerR + 48} textAnchor="middle" className="fill-muted-foreground text-[9px] font-medium">NORTHERN (Private)</text>
-          <text x={cx - outerR - 42} y={cy - 30} textAnchor="start" className="fill-muted-foreground text-[9px] font-medium">EAST (Self)</text>
-          <text x={cx + outerR + 42} y={cy - 30} textAnchor="end" className="fill-muted-foreground text-[9px] font-medium">WEST (Other)</text>
+          <text x={cx - outerR - 48} y={cy - 16} textAnchor="start" className="fill-muted-foreground text-[9px] font-medium">EAST (Self)</text>
+          <text x={cx + outerR + 48} y={cy - 16} textAnchor="end" className="fill-muted-foreground text-[9px] font-medium">WEST (Other)</text>
 
           {/* House numbers and names */}
           {houseWedges.map(w => (
