@@ -17,6 +17,7 @@ import {
   getCharacterCards, 
   getLifeLesson, 
   generateFinalDirective,
+  generateFullFinalDirective,
   getElementGuidance,
   calculateAge,
   ElementalBalance,
@@ -221,6 +222,7 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
   const bigThreeAspects = detectBigThreeAspects(natalChart);
   const lifeLesson = getLifeLesson(natalChart);
   const finalDirective = generateFinalDirective(natalChart, elements);
+  const fullDirective = generateFullFinalDirective(natalChart, elements);
   
   // Get house positions for deep synthesis
   const sunHouse = getPlanetHouse(natalChart, 'Sun');
@@ -1985,13 +1987,46 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
         icon={<Star className="text-yellow-500" size={20} />}
         defaultOpen={true}
       >
-        <div className="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/30 p-6 rounded-lg border border-yellow-200 dark:border-yellow-800">
-          <p className="text-sm text-muted-foreground mb-2 italic">
-            "When you leave, remember this one thing..."
-          </p>
-          <p className="text-xl font-serif text-foreground">
-            {finalDirective}
-          </p>
+        <div className="space-y-4">
+          {/* Big Three Summary */}
+          <div className="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/30 p-5 rounded-lg border border-yellow-200 dark:border-yellow-800">
+            <p className="text-[10px] uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-2 font-medium">Your Big Three Integration</p>
+            <p className="text-sm leading-relaxed">{fullDirective.coreDirective}</p>
+          </div>
+
+          {/* Saturn Lesson */}
+          {fullDirective.saturnLesson && (
+            <div className="p-4 rounded-lg bg-slate-100 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 font-medium">♄ Saturn's Life Lesson</p>
+              <p className="text-sm leading-relaxed">{fullDirective.saturnLesson}</p>
+            </div>
+          )}
+
+          {/* North Node Direction */}
+          {fullDirective.northNodeDirection && (
+            <div className="p-4 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800">
+              <p className="text-[10px] uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-2 font-medium">☊ Soul Direction</p>
+              <p className="text-sm leading-relaxed">{fullDirective.northNodeDirection}</p>
+            </div>
+          )}
+
+          {/* Elemental Advice */}
+          {fullDirective.elementalAdvice && (
+            <div className="p-4 rounded-lg bg-secondary/50 border border-border">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 font-medium">🜂 Elemental Growth Edge</p>
+              <p className="text-sm leading-relaxed">{fullDirective.elementalAdvice}</p>
+            </div>
+          )}
+
+          {/* The One Thing — Closing Integration */}
+          <div className="bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/40 dark:to-yellow-900/40 p-6 rounded-lg border-2 border-amber-300 dark:border-amber-700">
+            <p className="text-[10px] uppercase tracking-wider text-amber-700 dark:text-amber-300 mb-3 font-medium text-center">
+              "When you leave, remember this one thing..."
+            </p>
+            <p className="text-base font-serif leading-relaxed text-foreground">
+              {fullDirective.closingIntegration}
+            </p>
+          </div>
         </div>
         
         <NoteArea placeholder="Personalized closing message for client..." />

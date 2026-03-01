@@ -586,27 +586,103 @@ const getNorthNodeDirection = (sign: string): string => {
   return directions[sign] || 'Moving toward your soul\'s evolutionary path';
 };
 
-// Generate final directive
+// Generate comprehensive final directive synthesis
+export interface FinalDirectiveSynthesis {
+  coreDirective: string;
+  saturnLesson: string | null;
+  northNodeDirection: string | null;
+  elementalAdvice: string | null;
+  closingIntegration: string;
+}
+
 export const generateFinalDirective = (chart: NatalChart, elements: ElementalBalance): string => {
   const lifeLesson = getLifeLesson(chart);
-  
-  // Priority: Saturn directive, then missing element guidance
-  if (lifeLesson.saturn) {
-    return lifeLesson.saturn.directive;
-  }
-  
+  if (lifeLesson.saturn) return lifeLesson.saturn.directive;
   if (elements.missing.length > 0) {
-    const missingElement = elements.missing[0];
     const guidance: Record<string, string> = {
       Fire: 'Take action. Don\'t wait for permission. Your spark comes from doing.',
       Earth: 'Ground yourself. Build something tangible. Trust the physical world.',
       Air: 'Communicate more. Share your thoughts. Let ideas flow.',
       Water: 'Feel your feelings. Trust your intuition. Allow emotional connection.',
     };
-    return guidance[missingElement] || 'Trust your unique path.';
+    return guidance[elements.missing[0]] || 'Trust your unique path.';
   }
-  
   return 'Trust yourself. You have everything you need within.';
+};
+
+export const generateFullFinalDirective = (chart: NatalChart, elements: ElementalBalance): FinalDirectiveSynthesis => {
+  const lifeLesson = getLifeLesson(chart);
+  const sun = chart.planets.Sun;
+  const moon = chart.planets.Moon;
+  const asc = chart.planets.Ascendant;
+
+  // Core directive from Saturn
+  const saturnLesson = lifeLesson.saturn
+    ? `Saturn in ${lifeLesson.saturn.sign}${lifeLesson.saturn.house ? ` (House ${lifeLesson.saturn.house})` : ''}: ${lifeLesson.saturn.lesson}`
+    : null;
+
+  // North Node direction
+  const northNodeDirection = lifeLesson.northNode
+    ? `${lifeLesson.northNode.direction}${lifeLesson.northNode.house ? ` through House ${lifeLesson.northNode.house}` : ''}.`
+    : null;
+
+  // Elemental advice
+  let elementalAdvice: string | null = null;
+  if (elements.missing.length > 0) {
+    const el = elements.missing[0];
+    const advice: Record<string, string> = {
+      Fire: 'You carry no Fire in your chart — you must consciously choose action, courage, and initiative. Don\'t wait to feel ready. Start before you\'re prepared.',
+      Earth: 'You carry no Earth in your chart — practical grounding doesn\'t come naturally. Build routines, touch the physical world, create something tangible as an anchor.',
+      Air: 'You carry no Air in your chart — communication and perspective need deliberate cultivation. Talk things through, seek outside viewpoints, don\'t assume others understand.',
+      Water: 'You carry no Water in your chart — emotional awareness must be practiced. Pause to feel before deciding. Trust intuition even when it can\'t be explained.',
+    };
+    elementalAdvice = advice[el] || null;
+  } else if (elements.dominant) {
+    const dom = elements.dominant;
+    const advice: Record<string, string> = {
+      Fire: 'Your dominant Fire gives you natural initiative and enthusiasm — your growth edge is learning patience and follow-through.',
+      Earth: 'Your dominant Earth gives you natural reliability and persistence — your growth edge is learning to take risks and embrace change.',
+      Air: 'Your dominant Air gives you natural perspective and communication — your growth edge is learning to feel deeply and commit fully.',
+      Water: 'Your dominant Water gives you natural empathy and intuition — your growth edge is learning healthy boundaries and objectivity.',
+    };
+    elementalAdvice = advice[dom] || null;
+  }
+
+  // Build the core directive from Big Three
+  const sunPhrase = sun?.sign ? `Your Sun in ${sun.sign} is your identity — the person you are becoming` : '';
+  const moonPhrase = moon?.sign ? `Your Moon in ${moon.sign} is what you need to feel safe and whole` : '';
+  const ascPhrase = asc?.sign ? `Your ${asc.sign} Rising is how the world first meets you` : '';
+
+  const bigThreeParts = [sunPhrase, moonPhrase, ascPhrase].filter(Boolean);
+  const coreDirective = bigThreeParts.length > 0
+    ? `${bigThreeParts.join('. ')}. These three forces are not in conflict — they are collaborating to create a life that is uniquely yours.`
+    : 'Your chart reveals a unique pattern of growth and purpose.';
+
+  // Closing integration — the "one thing to remember"
+  const saturnSign = lifeLesson.saturn?.sign || '';
+  const nnSign = lifeLesson.northNode?.sign || '';
+  const closingParts: string[] = [];
+  
+  if (saturnSign && nnSign) {
+    closingParts.push(`Your deepest work is the ${saturnSign} lesson of ${lifeLesson.saturn!.directive.toLowerCase()}, and your soul is evolving toward ${nnSign} — ${lifeLesson.northNode!.direction.toLowerCase()}.`);
+    closingParts.push('These two paths are not separate. Saturn shows you HOW to grow; the North Node shows you WHERE you\'re growing toward. Every time you choose the harder, more honest path, you are living both.');
+  } else if (saturnSign) {
+    closingParts.push(`Your Saturn in ${saturnSign} is your teacher: ${lifeLesson.saturn!.lesson}. This is the work of a lifetime — not a single moment of revelation, but a daily practice of showing up.`);
+  } else if (nnSign) {
+    closingParts.push(`Your North Node in ${nnSign} is your compass: ${lifeLesson.northNode!.direction}. Trust the discomfort of growth. What feels unfamiliar is exactly what your soul came here to learn.`);
+  }
+
+  if (closingParts.length === 0) {
+    closingParts.push('Trust yourself. You have everything you need within. The chart doesn\'t create your destiny — it reveals the raw material. What you build with it is yours to choose.');
+  }
+
+  return {
+    coreDirective,
+    saturnLesson,
+    northNodeDirection,
+    elementalAdvice,
+    closingIntegration: closingParts.join(' '),
+  };
 };
 
 // Element guidance for missing/abundant
