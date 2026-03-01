@@ -428,93 +428,125 @@ export const LunarNodesCard = ({ chart, northNodeHouse, southNodeHouse }: LunarN
         </div>
       </div>
 
-      {/* Jan Spiller Deep Dive */}
+      {/* Jan Spiller Deep Dive — expanded by default */}
       {spillerData && (
-        <Collapsible>
-          <CollapsibleTrigger className="flex items-center gap-2 w-full text-left py-3 px-4 rounded-lg bg-secondary/50 hover:bg-secondary/80 transition-colors border border-border">
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">Deep Dive: Your North Node Story</span>
-            <span className="text-[10px] text-muted-foreground ml-auto">Jan Spiller</span>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="mt-3 space-y-4">
-            {/* Past Life Story */}
-            <div className="p-4 rounded-lg bg-accent/20 border border-accent/20">
-              <p className="text-[10px] font-medium text-muted-foreground mb-2">🕰️ YOUR PAST-LIFE PATTERN</p>
-              <p className="text-sm leading-relaxed italic">{spillerData.pastLifeStory}</p>
-            </div>
+        <>
+          {/* Past Life Story */}
+          <div className="p-4 rounded-lg bg-accent/20 border border-accent/20">
+            <p className="text-[10px] font-medium text-muted-foreground mb-2">🕰️ YOUR PAST-LIFE PATTERN</p>
+            <p className="text-sm leading-relaxed italic">{spillerData.pastLifeStory}</p>
+          </div>
 
-            {/* Overview */}
-            <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
-              <p className="text-[10px] font-medium text-muted-foreground mb-2">✦ THIS LIFETIME'S DIRECTION</p>
-              <p className="text-sm leading-relaxed">{spillerData.overview}</p>
-            </div>
+          {/* Overview */}
+          <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
+            <p className="text-[10px] font-medium text-muted-foreground mb-2">✦ THIS LIFETIME'S DIRECTION</p>
+            <p className="text-sm leading-relaxed">{spillerData.overview}</p>
+          </div>
 
-            {/* What Works For/Against */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="p-3 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800">
-                <p className="text-[10px] font-medium text-green-700 dark:text-green-400 mb-2">✓ WHAT WORKS FOR YOU</p>
-                <p className="text-xs leading-relaxed">{spillerData.whatWorksForYou}</p>
-              </div>
-              <div className="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800">
-                <p className="text-[10px] font-medium text-rose-700 dark:text-rose-400 mb-2">✗ WHAT WORKS AGAINST YOU</p>
-                <p className="text-xs leading-relaxed">{spillerData.whatWorksAgainstYou}</p>
-              </div>
-            </div>
-
-            {/* Tendencies */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="p-3 rounded-lg bg-muted/50">
-                <p className="text-[10px] font-medium text-muted-foreground mb-2">↓ TENDENCIES TO LEAVE BEHIND</p>
-                <ul className="space-y-1">
-                  {spillerData.tendenciesToLeaveBehind.map((t, i) => (
-                    <li key={i} className="text-xs flex items-start gap-1.5">
-                      <span className="text-muted-foreground mt-0.5">—</span>
-                      <span>{t}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="p-3 rounded-lg bg-muted/50">
-                <p className="text-[10px] font-medium text-muted-foreground mb-2">↑ TENDENCIES TO DEVELOP</p>
-                <ul className="space-y-1">
-                  {spillerData.tendenciesToDevelop.map((t, i) => (
-                    <li key={i} className="text-xs flex items-start gap-1.5">
-                      <span className="text-primary mt-0.5">+</span>
-                      <span>{t}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            {/* Relationships */}
-            <div className="p-4 rounded-lg bg-secondary/50 border border-border">
-              <p className="text-[10px] font-medium text-muted-foreground mb-2">💞 IN RELATIONSHIPS</p>
-              <p className="text-sm leading-relaxed">{spillerData.relationships}</p>
-            </div>
-
-            {/* House Overlay */}
-            {northNodeHouse && spillerHouse && (
-              <div className="p-4 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800">
-                <p className="text-[10px] font-medium text-indigo-700 dark:text-indigo-400 mb-2">🏠 NORTH NODE IN HOUSE {northNodeHouse}: {spillerHouse.focus.toUpperCase()}</p>
-                <p className="text-sm leading-relaxed mb-2">{spillerHouse.description}</p>
-                <p className="text-xs text-muted-foreground italic leading-relaxed">{spillerHouse.lifeLesson}</p>
-              </div>
-            )}
-
-            {/* Healing Affirmations */}
-            <div className="p-4 rounded-lg bg-accent/10 border border-accent/20">
-              <p className="text-[10px] font-medium text-muted-foreground mb-2">🌿 HEALING AFFIRMATIONS</p>
-              <div className="space-y-1.5">
-                {spillerData.healingAffirmations.map((a, i) => (
-                  <p key={i} className="text-sm italic text-center">"{a}"</p>
+          {/* Desires vs Needs */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+              <p className="text-[10px] font-medium text-amber-700 dark:text-amber-400 mb-2">⚡ SUBCONSCIOUS DESIRES (South Node Pull)</p>
+              <ul className="space-y-1">
+                {spillerData.desires.map((d, i) => (
+                  <li key={i} className="text-xs flex items-start gap-1.5">
+                    <span className="text-amber-500 mt-0.5">•</span>
+                    <span>{d}</span>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
+            <div className="p-3 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800">
+              <p className="text-[10px] font-medium text-indigo-700 dark:text-indigo-400 mb-2">🌱 TRUE NEEDS (North Node Growth)</p>
+              <ul className="space-y-1">
+                {spillerData.needs.map((n, i) => (
+                  <li key={i} className="text-xs flex items-start gap-1.5">
+                    <span className="text-indigo-500 mt-0.5">•</span>
+                    <span>{n}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
 
-            <p className="text-[9px] text-muted-foreground italic text-center">Insights drawn from {SPILLER_SOURCE}</p>
-          </CollapsibleContent>
-        </Collapsible>
+          {/* What Works For/Against */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="p-3 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800">
+              <p className="text-[10px] font-medium text-green-700 dark:text-green-400 mb-2">✓ WHAT WORKS FOR YOU</p>
+              <p className="text-xs leading-relaxed">{spillerData.whatWorksForYou}</p>
+            </div>
+            <div className="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800">
+              <p className="text-[10px] font-medium text-rose-700 dark:text-rose-400 mb-2">✗ WHAT WORKS AGAINST YOU</p>
+              <p className="text-xs leading-relaxed">{spillerData.whatWorksAgainstYou}</p>
+            </div>
+          </div>
+
+          {/* Tendencies */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="p-3 rounded-lg bg-muted/50">
+              <p className="text-[10px] font-medium text-muted-foreground mb-2">↓ TENDENCIES TO LEAVE BEHIND</p>
+              <ul className="space-y-1">
+                {spillerData.tendenciesToLeaveBehind.map((t, i) => (
+                  <li key={i} className="text-xs flex items-start gap-1.5">
+                    <span className="text-muted-foreground mt-0.5">—</span>
+                    <span>{t}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="p-3 rounded-lg bg-muted/50">
+              <p className="text-[10px] font-medium text-muted-foreground mb-2">↑ TENDENCIES TO DEVELOP</p>
+              <ul className="space-y-1">
+                {spillerData.tendenciesToDevelop.map((t, i) => (
+                  <li key={i} className="text-xs flex items-start gap-1.5">
+                    <span className="text-primary mt-0.5">+</span>
+                    <span>{t}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Pitfalls */}
+          <div className="p-3 rounded-lg bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800">
+            <p className="text-[10px] font-medium text-rose-700 dark:text-rose-400 mb-2">🚧 PITFALLS TO WATCH FOR</p>
+            <ul className="space-y-1">
+              {spillerData.pitfalls.map((p, i) => (
+                <li key={i} className="text-xs flex items-start gap-1.5">
+                  <span className="text-rose-400 mt-0.5">⚠</span>
+                  <span>{p}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Relationships */}
+          <div className="p-4 rounded-lg bg-secondary/50 border border-border">
+            <p className="text-[10px] font-medium text-muted-foreground mb-2">💞 IN RELATIONSHIPS</p>
+            <p className="text-sm leading-relaxed">{spillerData.relationships}</p>
+          </div>
+
+          {/* House Overlay */}
+          {northNodeHouse && spillerHouse && (
+            <div className="p-4 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800">
+              <p className="text-[10px] font-medium text-indigo-700 dark:text-indigo-400 mb-2">🏠 NORTH NODE IN HOUSE {northNodeHouse}: {spillerHouse.focus.toUpperCase()}</p>
+              <p className="text-sm leading-relaxed mb-2">{spillerHouse.description}</p>
+              <p className="text-xs text-muted-foreground italic leading-relaxed">{spillerHouse.lifeLesson}</p>
+            </div>
+          )}
+
+          {/* Healing Affirmations */}
+          <div className="p-4 rounded-lg bg-accent/10 border border-accent/20">
+            <p className="text-[10px] font-medium text-muted-foreground mb-2">🌿 HEALING AFFIRMATIONS</p>
+            <div className="space-y-1.5">
+              {spillerData.healingAffirmations.map((a, i) => (
+                <p key={i} className="text-sm italic text-center">"{a}"</p>
+              ))}
+            </div>
+          </div>
+
+          <p className="text-[9px] text-muted-foreground italic text-center">Insights drawn from {SPILLER_SOURCE}</p>
+        </>
       )}
     </div>
   );
