@@ -1762,6 +1762,7 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
                       {saturnTeaching.beast && (
                         <>
                           <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mt-2">♄ in {lifeLesson.saturn.sign} — The Beast & The Prince</p>
+                          <p className="text-[10px] text-muted-foreground italic mb-1">The Beast is your default stress pattern — what you do on autopilot without realizing it. The Prince is the same energy used consciously — what it becomes when you catch yourself and choose differently.</p>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div className="bg-slate-800/5 dark:bg-slate-200/5 p-4 rounded-lg border border-slate-400/20">
                               <p className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-2 flex items-center gap-1.5">🐉 THE BEAST <span className="font-normal text-[10px]">(unconscious expression)</span></p>
@@ -1788,6 +1789,7 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
                       {saturnHouseGreene && (
                         <>
                           <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mt-4">♄ in House {saturnHouse} — The Beast & The Prince</p>
+                          <p className="text-[10px] text-muted-foreground italic mb-1">Same idea, now applied to the life area (house) where Saturn sits — your autopilot trap vs. your conscious potential in this domain.</p>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div className="bg-slate-800/5 dark:bg-slate-200/5 p-4 rounded-lg border border-slate-400/20">
                               <p className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-2 flex items-center gap-1.5">🐉 THE BEAST <span className="font-normal text-[10px]">(House {saturnHouse})</span></p>
