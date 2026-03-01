@@ -83,6 +83,7 @@ export interface ElementalBalance {
   planets: Record<string, string[]>;
   dominant: string;
   missing: string[];
+  low: string[];
   abundant: string[];
   pattern: 'Energized' | 'Grounded' | 'Balanced' | 'Intense' | 'Variable';
 }
@@ -107,7 +108,8 @@ export const calculateElementalBalance = (chart: NatalChart): ElementalBalance =
   // Find dominant, missing, and abundant
   const entries = Object.entries(balance).sort(([, a], [, b]) => b - a);
   const dominant = entries[0][0];
-  const missing = entries.filter(([, count]) => count <= 1).map(([element]) => element);
+  const missing = entries.filter(([, count]) => count === 0).map(([element]) => element);
+  const low = entries.filter(([, count]) => count === 1).map(([element]) => element);
   const abundant = entries.filter(([, count]) => count >= 4).map(([element]) => element);
   
   // Determine pattern
@@ -128,6 +130,7 @@ export const calculateElementalBalance = (chart: NatalChart): ElementalBalance =
     planets: planetsByElement,
     dominant,
     missing,
+    low,
     abundant,
     pattern,
   };
@@ -588,11 +591,11 @@ const getNorthNodeDirection = (sign: string): string => {
 
 // Generate comprehensive final directive synthesis
 export interface FinalDirectiveSynthesis {
-  coreDirective: string;
-  saturnLesson: string | null;
-  northNodeDirection: string | null;
+  saturnHow: string | null;
+  northNodeWhere: string | null;
   elementalAdvice: string | null;
-  closingIntegration: string;
+  fortuneCookie: string;
+  reasoning: string;
 }
 
 export const generateFinalDirective = (chart: NatalChart, elements: ElementalBalance): string => {
@@ -610,78 +613,119 @@ export const generateFinalDirective = (chart: NatalChart, elements: ElementalBal
   return 'Trust yourself. You have everything you need within.';
 };
 
+// Fortune cookie generators — specific to Saturn/NN combinations
+const getSaturnActionVerb = (sign: string): string => {
+  const verbs: Record<string, string> = {
+    Aries: 'Show up and start before you feel ready',
+    Taurus: 'Build one thing slowly and don\'t abandon it',
+    Gemini: 'Say the true thing, not the clever thing',
+    Cancer: 'Let people see you need them',
+    Leo: 'Create something only you could make, then share it',
+    Virgo: 'Do the unglamorous work with your whole heart',
+    Libra: 'Choose fairness even when it costs you comfort',
+    Scorpio: 'Tell the truth you\'re most afraid to say',
+    Sagittarius: 'Commit to one truth and follow it all the way through',
+    Capricorn: 'Take responsibility even when nobody\'s watching',
+    Aquarius: 'Be yourself even when the group disagrees',
+    Pisces: 'Trust what you feel even when you can\'t prove it',
+  };
+  return verbs[sign] || 'Do the harder, more honest thing';
+};
+
+const getNorthNodeDestination = (sign: string): string => {
+  const destinations: Record<string, string> = {
+    Aries: 'the independence you\'ve always wanted',
+    Taurus: 'the peace and stability you deserve',
+    Gemini: 'the understanding you\'ve been searching for',
+    Cancer: 'the emotional home you\'ve been missing',
+    Leo: 'the recognition your heart needs',
+    Virgo: 'the purpose that makes ordinary days meaningful',
+    Libra: 'the partnership that actually works',
+    Scorpio: 'the depth and intimacy that transforms everything',
+    Sagittarius: 'the freedom and meaning you crave',
+    Capricorn: 'the legacy that outlasts you',
+    Aquarius: 'the community where you truly belong',
+    Pisces: 'the faith that makes everything else make sense',
+  };
+  return destinations[sign] || 'where your soul is meant to go';
+};
+
 export const generateFullFinalDirective = (chart: NatalChart, elements: ElementalBalance): FinalDirectiveSynthesis => {
   const lifeLesson = getLifeLesson(chart);
-  const sun = chart.planets.Sun;
-  const moon = chart.planets.Moon;
-  const asc = getReliableAscendant(chart);
 
-  // Core directive from Saturn
-  const saturnLesson = lifeLesson.saturn
-    ? `Saturn in ${lifeLesson.saturn.sign}${lifeLesson.saturn.house ? ` (House ${lifeLesson.saturn.house})` : ''}: ${lifeLesson.saturn.lesson}`
+  // Saturn HOW
+  const saturnHow = lifeLesson.saturn
+    ? `♄ Saturn in ${lifeLesson.saturn.sign}${lifeLesson.saturn.house ? ` (House ${lifeLesson.saturn.house})` : ''} — ${lifeLesson.saturn.directive.toLowerCase()}`
     : null;
 
-  // North Node direction
-  const northNodeDirection = lifeLesson.northNode
-    ? `${lifeLesson.northNode.direction}${lifeLesson.northNode.house ? ` through House ${lifeLesson.northNode.house}` : ''}.`
+  // North Node WHERE
+  const northNodeWhere = lifeLesson.northNode
+    ? `☊ North Node in ${lifeLesson.northNode.sign}${lifeLesson.northNode.house ? ` (House ${lifeLesson.northNode.house})` : ''} — ${lifeLesson.northNode.direction.toLowerCase()}`
     : null;
 
-  // Elemental advice
+  // Elemental advice — only for truly MISSING elements (0 planets), not low (1 planet)
   let elementalAdvice: string | null = null;
   if (elements.missing.length > 0) {
     const el = elements.missing[0];
     const advice: Record<string, string> = {
-      Fire: 'You carry no Fire in your chart — you must consciously choose action, courage, and initiative. Don\'t wait to feel ready. Start before you\'re prepared.',
-      Earth: 'You carry no Earth in your chart — practical grounding doesn\'t come naturally. Build routines, touch the physical world, create something tangible as an anchor.',
-      Air: 'You carry no Air in your chart — communication and perspective need deliberate cultivation. Talk things through, seek outside viewpoints, don\'t assume others understand.',
-      Water: 'You carry no Water in your chart — emotional awareness must be practiced. Pause to feel before deciding. Trust intuition even when it can\'t be explained.',
+      Fire: 'You carry no Fire planets — consciously choose action and initiative. Don\'t wait to feel ready.',
+      Earth: 'You carry no Earth planets — grounding must be a deliberate practice. Build routines, touch the physical world.',
+      Air: 'You carry no Air planets — communication needs deliberate cultivation. Talk things through, seek outside viewpoints.',
+      Water: 'You carry no Water planets — emotional awareness must be practiced. Pause to feel before deciding.',
+    };
+    elementalAdvice = advice[el] || null;
+  } else if (elements.low.length > 0) {
+    const el = elements.low[0];
+    const planetList = elements.planets[el]?.join(', ') || '';
+    const advice: Record<string, string> = {
+      Fire: `Your Fire is represented only through ${planetList} — initiative doesn't come automatically but it's accessible when you choose it.`,
+      Earth: `Your Earth is represented only through ${planetList} — grounding is available to you but not your default mode. Lean into it when decisions feel abstract.`,
+      Air: `Your Air is represented only through ${planetList} — perspective is available but not your first instinct. Make space for it in important moments.`,
+      Water: `Your Water is represented only through ${planetList} — emotional depth is accessible to you but may not lead. Honor it when it surfaces.`,
     };
     elementalAdvice = advice[el] || null;
   } else if (elements.dominant) {
     const dom = elements.dominant;
     const advice: Record<string, string> = {
-      Fire: 'Your dominant Fire gives you natural initiative and enthusiasm — your growth edge is learning patience and follow-through.',
-      Earth: 'Your dominant Earth gives you natural reliability and persistence — your growth edge is learning to take risks and embrace change.',
-      Air: 'Your dominant Air gives you natural perspective and communication — your growth edge is learning to feel deeply and commit fully.',
-      Water: 'Your dominant Water gives you natural empathy and intuition — your growth edge is learning healthy boundaries and objectivity.',
+      Fire: 'Your dominant Fire gives you natural initiative — your growth edge is patience and follow-through.',
+      Earth: 'Your dominant Earth gives you natural reliability — your growth edge is taking risks and embracing change.',
+      Air: 'Your dominant Air gives you natural perspective — your growth edge is feeling deeply and committing fully.',
+      Water: 'Your dominant Water gives you natural empathy — your growth edge is healthy boundaries and objectivity.',
     };
     elementalAdvice = advice[dom] || null;
   }
 
-  // Build the core directive from Big Three
-  const sunPhrase = sun?.sign ? `Your Sun in ${sun.sign} is your identity — the person you are becoming` : '';
-  const moonPhrase = moon?.sign ? `Your Moon in ${moon.sign} is what you need to feel safe and whole` : '';
-  const ascPhrase = asc?.sign ? `Your ${asc.sign} Rising is how the world first meets you` : '';
-
-  const bigThreeParts = [sunPhrase, moonPhrase, ascPhrase].filter(Boolean);
-  const coreDirective = bigThreeParts.length > 0
-    ? `${bigThreeParts.join('. ')}. These three forces are not in conflict — they are collaborating to create a life that is uniquely yours.`
-    : 'Your chart reveals a unique pattern of growth and purpose.';
-
-  // Closing integration — the "one thing to remember"
+  // Build the reasoning (small font, top of card)
   const saturnSign = lifeLesson.saturn?.sign || '';
   const nnSign = lifeLesson.northNode?.sign || '';
-  const closingParts: string[] = [];
-  
+  let reasoning = '';
+
   if (saturnSign && nnSign) {
-    closingParts.push(`Your deepest work is the ${saturnSign} lesson of ${lifeLesson.saturn!.directive.toLowerCase()}, and your soul is evolving toward ${nnSign} — ${lifeLesson.northNode!.direction.toLowerCase()}.`);
-    closingParts.push('These two paths are not separate. Saturn shows you HOW to grow; the North Node shows you WHERE you\'re growing toward. Every time you choose the harder, more honest path, you are living both.');
+    reasoning = `Saturn in ${saturnSign} teaches you HOW to grow: ${lifeLesson.saturn!.lesson.toLowerCase()}. Your North Node in ${nnSign} shows WHERE that growth leads: ${lifeLesson.northNode!.direction.toLowerCase()}. These aren't separate journeys — Saturn is the daily practice, the North Node is the destination.`;
   } else if (saturnSign) {
-    closingParts.push(`Your Saturn in ${saturnSign} is your teacher: ${lifeLesson.saturn!.lesson}. This is the work of a lifetime — not a single moment of revelation, but a daily practice of showing up.`);
+    reasoning = `Saturn in ${saturnSign} is your lifelong teacher: ${lifeLesson.saturn!.lesson}`;
   } else if (nnSign) {
-    closingParts.push(`Your North Node in ${nnSign} is your compass: ${lifeLesson.northNode!.direction}. Trust the discomfort of growth. What feels unfamiliar is exactly what your soul came here to learn.`);
+    reasoning = `Your North Node in ${nnSign} is your compass: ${lifeLesson.northNode!.direction}`;
   }
 
-  if (closingParts.length === 0) {
-    closingParts.push('Trust yourself. You have everything you need within. The chart doesn\'t create your destiny — it reveals the raw material. What you build with it is yours to choose.');
+  // Build the fortune cookie — the one memorable sentence
+  let fortuneCookie: string;
+  if (saturnSign && nnSign) {
+    fortuneCookie = `${getSaturnActionVerb(saturnSign)} — that's how you get to ${getNorthNodeDestination(nnSign)}.`;
+  } else if (saturnSign) {
+    fortuneCookie = `${getSaturnActionVerb(saturnSign)}. That's your life's work.`;
+  } else if (nnSign) {
+    fortuneCookie = `Keep moving toward ${getNorthNodeDestination(nnSign)}. The discomfort means you're on the right path.`;
+  } else {
+    fortuneCookie = 'Trust yourself. The chart doesn\'t create your destiny — it reveals the raw material. What you build is yours.';
   }
 
   return {
-    coreDirective,
-    saturnLesson,
-    northNodeDirection,
+    saturnHow,
+    northNodeWhere,
     elementalAdvice,
-    closingIntegration: closingParts.join(' '),
+    fortuneCookie,
+    reasoning,
   };
 };
 
