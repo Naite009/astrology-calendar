@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, ChevronUp, Skull, Clock } from 'lucide-react';
+import { ChevronDown, ChevronUp, Sparkles, Clock } from 'lucide-react';
 import { TWELFTH_HOUSE_PAST_LIVES, PLANETS_IN_12TH, KARMIC_SOURCE } from '@/lib/karmicAstrologyData';
 
 interface Props {
@@ -59,7 +59,7 @@ export function KarmicPastLifeCard({ chart }: Props) {
         {signData && (
           <div className="p-4 rounded-lg bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800">
             <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
-              <Skull className="h-4 w-4 text-purple-500" />
+              <Sparkles className="h-4 w-4 text-purple-500" />
               {h12Sign} in the 12th House
             </h4>
             <p className="text-xs leading-relaxed mb-3">{signData.pastLifeDescription}</p>
