@@ -35,6 +35,7 @@ import { RelationshipTimelineCard } from './RelationshipTimelineCard';
 import { RelationshipTimeline } from './synastry/RelationshipTimeline';
 import { FiveEssentialQuestions } from './FiveEssentialQuestions';
 import { FamilyRelationshipSelector } from './FamilyRelationshipSelector';
+import { SpillerNodeInsightsCard } from './synastry/SpillerNodeInsightsCard';
 import { format } from 'date-fns';
 
 interface SynastryViewProps {
@@ -1084,6 +1085,13 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                               ))}
                             </div>
                           </ScrollArea>
+                        </section>
+                      )}
+                      
+                      {/* Spiller North Node Relationship Insights */}
+                      {chart1 && chart2 && (
+                        <section>
+                          <SpillerNodeInsightsCard chart1={chart1} chart2={chart2} />
                         </section>
                       )}
                       
