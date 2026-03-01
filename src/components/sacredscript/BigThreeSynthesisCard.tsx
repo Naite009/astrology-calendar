@@ -7,6 +7,7 @@ import { NatalChart } from '@/hooks/useNatalChart';
 import { getDecan, Decan } from '@/lib/decans';
 import { getSabianSymbol } from '@/lib/sabianSymbols';
 import { getPlanetHouse } from '@/lib/sacredScriptHelpers';
+import { getReliableAscendant } from '@/lib/chartDataValidation';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useState } from 'react';
 interface BigThreeSynthesisCardProps {
@@ -260,8 +261,9 @@ export const BigThreeSynthesisCard = ({ natalChart }: BigThreeSynthesisCardProps
   
   const sunPos = natalChart.planets.Sun;
   const moonPos = natalChart.planets.Moon;
-  const risingSign = natalChart.houseCusps?.house1?.sign || natalChart.planets.Ascendant?.sign;
-  const risingDegree = natalChart.houseCusps?.house1?.degree ?? natalChart.planets.Ascendant?.degree ?? 0;
+  const reliableAsc = getReliableAscendant(natalChart);
+  const risingSign = reliableAsc?.sign;
+  const risingDegree = reliableAsc?.degree ?? 0;
   
   if (!sunPos?.sign || !moonPos?.sign || !risingSign) return null;
   
