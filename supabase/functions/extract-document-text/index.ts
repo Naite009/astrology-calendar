@@ -37,33 +37,20 @@ serve(async (req) => {
       .update({ extraction_status: "extracting" })
       .eq("id", documentId);
 
-    // Download the file from storage
-    const { data: fileData, error: downloadError } = await supabase.storage
+    // Generate a signed URL instead of downloading the file (avoids memory issues)
+    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
       .from("astrology-docs")
-      .download(filePath);
+      .createSignedUrl(filePath, 3600);
 
-    if (downloadError || !fileData) {
+    if (signedUrlError || !signedUrlData?.signedUrl) {
       await supabase
         .from("astrology_documents")
         .update({ extraction_status: "error" })
         .eq("id", documentId);
-      throw new Error(`Failed to download file: ${downloadError?.message}`);
+      throw new Error(`Failed to create signed URL: ${signedUrlError?.message}`);
     }
 
-    // Convert to base64 for the AI model
-    const arrayBuffer = await fileData.arrayBuffer();
-    const base64 = btoa(
-      new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
-    );
-
-    // Determine MIME type
-    const ext = filePath.split(".").pop()?.toLowerCase();
-    let mimeType = "application/pdf";
-    if (ext === "doc" || ext === "docx") {
-      mimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    }
-
-    // Use Gemini to extract text (it handles PDFs natively)
+    // Use Gemini with the file URL — no need to load into memory
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -91,7 +78,7 @@ If the document is very long, extract as much as you can.`,
               {
                 type: "image_url",
                 image_url: {
-                  url: `data:${mimeType};base64,${base64}`,
+                  url: signedUrlData.signedUrl,
                 },
               },
             ],
@@ -130,7 +117,7 @@ If the document is very long, extract as much as you can.`,
         .from("astrology_documents")
         .update({ extraction_status: "error" })
         .eq("id", documentId);
-      throw new Error(`AI extraction failed: ${aiResponse.status}`);
+      throw new Error(`AI extraction failed: ${aiResponse.status} - ${errText}`);
     }
 
     const aiData = await aiResponse.json();
