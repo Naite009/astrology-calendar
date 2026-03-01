@@ -117,7 +117,7 @@ export const DocumentUploader = forwardRef<HTMLDivElement, Record<string, never>
       toast.success('Document uploaded successfully!');
 
       // Trigger text extraction
-      triggerExtraction(data.id, filePath);
+      triggerExtraction(data.id);
 
       // Reset file input
       if (fileInputRef.current) {
@@ -131,15 +131,15 @@ export const DocumentUploader = forwardRef<HTMLDivElement, Record<string, never>
     }
   };
 
-  const triggerExtraction = async (documentId: string, filePath: string) => {
+  const triggerExtraction = async (documentId: string) => {
     try {
       // Update local state to show extracting
       setDocuments(prev => prev.map(d => 
         d.id === documentId ? { ...d, extraction_status: 'extracting' } : d
       ));
 
-      const { data, error } = await supabase.functions.invoke('extract-document-text', {
-        body: { documentId, filePath },
+      const { error } = await supabase.functions.invoke('extract-document-text', {
+        body: { documentId },
       });
 
       if (error) throw error;
@@ -154,7 +154,16 @@ export const DocumentUploader = forwardRef<HTMLDivElement, Record<string, never>
       setDocuments(prev => prev.map(d => 
         d.id === documentId ? { ...d, extraction_status: 'error' } : d
       ));
-      toast.error('Text extraction failed — you can retry later');
+
+      let message = 'Text extraction failed — you can retry later';
+      try {
+        const errBody = await error?.context?.json?.();
+        if (errBody?.error) message = errBody.error;
+      } catch {
+        // ignore parse errors and keep fallback message
+      }
+
+      toast.error(message);
     }
   };
 
@@ -361,7 +370,7 @@ export const DocumentUploader = forwardRef<HTMLDivElement, Record<string, never>
                       )}
                       {(doc.extraction_status === 'error' || doc.extraction_status === 'rate_limited') && (
                         <button
-                          onClick={(e) => { e.stopPropagation(); triggerExtraction(doc.id, doc.file_path); }}
+                          onClick={(e) => { e.stopPropagation(); triggerExtraction(doc.id); }}
                           className="flex items-center gap-1 text-xs text-destructive hover:underline"
                         >
                           <RefreshCw size={10} /> Retry extraction
@@ -369,7 +378,7 @@ export const DocumentUploader = forwardRef<HTMLDivElement, Record<string, never>
                       )}
                       {(!doc.extraction_status || doc.extraction_status === 'pending') && (
                         <button
-                          onClick={(e) => { e.stopPropagation(); triggerExtraction(doc.id, doc.file_path); }}
+                          onClick={(e) => { e.stopPropagation(); triggerExtraction(doc.id); }}
                           className="flex items-center gap-1 text-xs text-primary hover:underline"
                         >
                           <Sparkles size={10} /> Extract text
