@@ -3,6 +3,7 @@
 
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
 import { getDecan, Decan } from './decans';
+import { getReliableAscendant } from './chartDataValidation';
 
 // ============================================================================
 // ELEMENT & MODALITY COMBINATIONS
@@ -405,8 +406,9 @@ export const generateCharacterSynthesis = (
 ): CharacterSynthesis | null => {
   const sunPos = chart.planets.Sun;
   const moonPos = chart.planets.Moon;
-  const risingSign = chart.houseCusps?.house1?.sign || chart.planets.Ascendant?.sign;
-  const risingDegree = chart.houseCusps?.house1?.degree ?? chart.planets.Ascendant?.degree ?? 0;
+  const reliableAsc = getReliableAscendant(chart);
+  const risingSign = reliableAsc?.sign;
+  const risingDegree = reliableAsc?.degree ?? 0;
   
   if (!sunPos?.sign || !moonPos?.sign || !risingSign) return null;
   

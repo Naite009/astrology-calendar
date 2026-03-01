@@ -64,6 +64,7 @@ import { computeAllSignals } from '@/lib/narrativeAnalysisEngine';
 import { getPlanetaryPositions } from '@/lib/astrology';
 import { calculateTransitAspects, TransitAspect, getTransitPlanetSymbol } from '@/lib/transitAspects';
 import { detectBigThreeAspects, BigThreeAspect } from '@/lib/natalBigThreeAspects';
+import { getReliableAscendant } from '@/lib/chartDataValidation';
 
 // New Level 1 Handbook Components
 import { ElementSelfAssessment } from '@/components/sacredscript/ElementSelfAssessment';
@@ -881,8 +882,9 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
             <div className="grid grid-cols-2 gap-3">
               {/* Ascendant */}
               {(() => {
-                const ascSign = natalChart.houseCusps?.house1?.sign || natalChart.planets.Ascendant?.sign;
-                const ascDegree = natalChart.houseCusps?.house1?.degree ?? natalChart.planets.Ascendant?.degree;
+                const reliableAsc = getReliableAscendant(natalChart);
+                const ascSign = reliableAsc?.sign;
+                const ascDegree = reliableAsc?.degree;
                 return (
                   <div className="bg-background/50 p-3 rounded">
                     <p className="text-xs font-medium text-purple-600 dark:text-purple-400">ASC (1st House Cusp)</p>

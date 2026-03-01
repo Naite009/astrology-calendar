@@ -2,6 +2,7 @@
 // Calculations and data for professional astrology reading framework
 
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
+import { getReliableAscendant } from './chartDataValidation';
 
 const ZODIAC_SIGNS = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
@@ -315,12 +316,11 @@ export const getCharacterCards = (chart: NatalChart): CharacterCard[] => {
     });
   }
   
-  const house1Cusp = chart.houseCusps?.house1;
-  const ascPos = chart.planets.Ascendant;
+  const reliableAsc = getReliableAscendant(chart);
   
-  // Always prefer house1 cusp — planets.Ascendant can contain the Descendant (180° flip)
-  const risingSign = house1Cusp?.sign || ascPos?.sign;
-  const risingDegree = house1Cusp?.degree ?? ascPos?.degree ?? 0;
+  // Always use validated house1-based Ascendant to avoid AC/DC flips
+  const risingSign = reliableAsc?.sign;
+  const risingDegree = reliableAsc?.degree ?? 0;
   
   if (risingSign) {
     const archetype = SIGN_ARCHETYPES[risingSign];
@@ -614,7 +614,7 @@ export const generateFullFinalDirective = (chart: NatalChart, elements: Elementa
   const lifeLesson = getLifeLesson(chart);
   const sun = chart.planets.Sun;
   const moon = chart.planets.Moon;
-  const asc = chart.planets.Ascendant;
+  const asc = getReliableAscendant(chart);
 
   // Core directive from Saturn
   const saturnLesson = lifeLesson.saturn
