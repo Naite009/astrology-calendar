@@ -1,1 +1,4 @@
 project_id = "ccdjecgztodkgifzjttc"
+
+[functions.extract-document-text]
+verify_jwt = false
