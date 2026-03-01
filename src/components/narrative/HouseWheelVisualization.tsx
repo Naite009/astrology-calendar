@@ -51,8 +51,8 @@ interface Props {
 
 export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
   const [hoveredQuadrant, setHoveredQuadrant] = useState<number | null>(null);
-  const cx = 280, cy = 280;
-  const outerR = 210, innerR = 130, angleR = 238;
+  const cx = 300, cy = 300;
+  const outerR = 210, innerR = 130;
 
   const planetsByHouse = useMemo(() => {
     const map: Record<number, string[]> = {};
@@ -131,8 +131,9 @@ export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
     const angle = houseAngle(a.house);
     const innerPt = polarToXY(angle, innerR - 5);
     const outerPt = polarToXY(angle, outerR + 5);
-    // Position angle labels well outside the wheel with extra clearance
-    const labelPt = polarToXY(angle, outerR + 28);
+    // Push AC/DC labels much further out to avoid cusp sign overlap
+    const labelOffset = (a.abbr === 'AC' || a.abbr === 'DC') ? 42 : 32;
+    const labelPt = polarToXY(angle, outerR + labelOffset);
     return { ...a, innerPt, outerPt, labelPt, angle };
   });
 
@@ -145,7 +146,7 @@ export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
       </p>
 
       <div className="flex justify-center">
-        <svg viewBox="0 0 560 560" className="w-full max-w-[560px]" role="img" aria-label="Astrological house wheel">
+        <svg viewBox="0 0 600 600" className="w-full max-w-[600px]" role="img" aria-label="Astrological house wheel">
           {/* Quadrant wedges */}
           {houseWedges.map(w => {
             const isHovered = hoveredQuadrant === w.quadrantIdx;
@@ -181,9 +182,9 @@ export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
 
           {/* Hemisphere labels — positioned at edges of viewBox */}
           <text x={cx} y={18} textAnchor="middle" className="fill-muted-foreground text-[9px] font-medium">SOUTHERN (Public)</text>
-          <text x={cx} y={552} textAnchor="middle" className="fill-muted-foreground text-[9px] font-medium">NORTHERN (Private)</text>
-          <text x={12} y={cy} textAnchor="start" className="fill-muted-foreground text-[9px] font-medium" dominantBaseline="middle">EAST (Self)</text>
-          <text x={548} y={cy} textAnchor="end" className="fill-muted-foreground text-[9px] font-medium" dominantBaseline="middle">WEST (Other)</text>
+          <text x={cx} y={592} textAnchor="middle" className="fill-muted-foreground text-[9px] font-medium">NORTHERN (Private)</text>
+          <text x={8} y={cy} textAnchor="start" className="fill-muted-foreground text-[9px] font-medium" dominantBaseline="middle">EAST (Self)</text>
+          <text x={592} y={cy} textAnchor="end" className="fill-muted-foreground text-[9px] font-medium" dominantBaseline="middle">WEST (Other)</text>
 
           {/* House numbers and names */}
           {houseWedges.map(w => (
