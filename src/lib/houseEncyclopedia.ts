@@ -1,5 +1,10 @@
 // House Encyclopedia — comprehensive data for all 12 houses
 
+export interface SourcedInsight {
+  text: string;
+  source: string; // e.g. "Moses Siregar III, Secrets of the 12 Houses"
+}
+
 export interface HouseData {
   number: number;
   name: string;
@@ -22,6 +27,13 @@ export interface HouseData {
   emptyHouse: string;
   rulerGuidance: string;
   teaching: string;
+  // Sourced perspectives from published authors
+  perspectives?: {
+    esoteric?: SourcedInsight;      // Soul-level / spiritual dimension
+    relational?: SourcedInsight;    // Intimate / relationship dimension
+    shadow?: SourcedInsight;        // Danger / pitfall dimension
+    soulQuestion?: SourcedInsight;  // The deep question this house asks
+  };
 }
 
 // Quadrant and Hemisphere descriptions
@@ -151,6 +163,12 @@ export const HOUSES_DATA: HouseData[] = [
     emptyHouse: 'An empty 1st house is common and simply means your identity expression runs through the sign on the cusp (your Rising sign) and its ruling planet. No extra complexity — you present clearly as your Rising sign.',
     rulerGuidance: 'The ruler of your 1st house (your chart ruler) is the single most important planet in your chart. Its sign, house, and aspects describe how you navigate ALL of life. Find it and study it deeply.',
     teaching: 'The 1st house is the house of becoming. You are not born finished — you are born with a vehicle (this house) and a direction (its ruler). Your entire life is the process of growing into this house\'s full potential.',
+    perspectives: {
+      esoteric: { text: 'The soul chooses the body and persona it needs for this incarnation. The 1st house is the vehicle the soul selected — not random, but intentional. Your physical form and instinctive approach are spiritual tools.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      relational: { text: 'In relationships, the 1st house represents how you assert your individuality. Partners must learn to respect this energy, and you must learn not to bulldoze others with it. Healthy relationships require you to show up as yourself without dominating.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      shadow: { text: 'The danger of the 1st house is narcissism — becoming so identified with your persona that you lose access to your deeper self. The mask becomes the face. Alternatively, rejecting your body or appearance entirely, living only in your head.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      soulQuestion: { text: 'Who am I when I stop performing? What is the authentic self beneath the persona?', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+    },
   },
   {
     number: 2, name: 'House of Resources', nickname: 'The House of Consolidation',
@@ -166,6 +184,12 @@ export const HOUSES_DATA: HouseData[] = [
     emptyHouse: 'An empty 2nd house means money and values are not a major life theme requiring extra attention. Look to the ruler of the sign on the cusp to see how and where your financial energy flows.',
     rulerGuidance: 'The ruler of your 2nd house shows HOW you make money and what you naturally value. Its house placement shows WHERE your earning power is directed.',
     teaching: 'True security comes from knowing your worth independent of your bank account. The 2nd house teaches that what you value determines what you attract.',
+    perspectives: {
+      esoteric: { text: 'The 2nd house is the soul\'s relationship with the material plane. Spiritual traditions warn against attachment to possessions, but the esoteric truth is that the material world is sacred — how you earn and spend reflects your spiritual values in action.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      relational: { text: 'In intimate relationships, 2nd house issues manifest as codependency around money and worth. One partner may control finances while the other loses their sense of personal value. Healthy relating requires each person to maintain their own sense of worth.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      shadow: { text: 'Addiction is the shadow of the 2nd house — seeking material comfort to fill a spiritual void. Compulsive spending, hoarding, or using substances to feel "full" when the inner well is empty.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      soulQuestion: { text: 'What am I truly worth, beyond what I own or earn? What do I value enough to sacrifice for?', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+    },
   },
   {
     number: 3, name: 'House of Communication', nickname: 'The House of Initiation',
@@ -181,6 +205,12 @@ export const HOUSES_DATA: HouseData[] = [
     emptyHouse: 'An empty 3rd house means communication and learning happen naturally through the sign on the cusp. No drama or complexity around siblings or mental processes — they just work.',
     rulerGuidance: 'The ruler of your 3rd house shows the style and direction of your mind. Its house shows what area of life your thinking is most focused on.',
     teaching: 'The 3rd house teaches that how you think shapes how you experience reality. Your words create your world.',
+    perspectives: {
+      esoteric: { text: 'The 3rd house represents the mind as a spiritual instrument. The quality of your thoughts creates your reality. Esoteric traditions emphasize that naming something gives you power over it — the 3rd house is where you learn to use the Word consciously.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      relational: { text: 'Communication breakdowns in relationships almost always trace to 3rd house dynamics. How you speak to your partner daily — the tone, the assumptions, the willingness to listen — determines the quality of your bond more than any grand gesture.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      shadow: { text: 'The shadow of the 3rd house is using words as weapons — gossip, manipulation, intellectualizing emotions to avoid feeling them, or going silent as punishment. The mind can become a prison when it refuses to connect to the heart.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      soulQuestion: { text: 'Am I using my mind to connect or to separate? Do my words build bridges or walls?', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+    },
   },
   {
     number: 4, name: 'House of Home & Roots', nickname: 'The House of Consolidation',
@@ -196,6 +226,12 @@ export const HOUSES_DATA: HouseData[] = [
     emptyHouse: 'An empty 4th house means home and family are not a major source of complexity. Your emotional foundation functions through the cusp sign and its ruler without extra drama.',
     rulerGuidance: 'The ruler of the 4th house shows what drives your need for security and where your family patterns play out.',
     teaching: 'You cannot build a life on an unstable foundation. The 4th house teaches that healing your roots heals everything above them.',
+    perspectives: {
+      esoteric: { text: 'The 4th house is the soul\'s anchor point in this lifetime — the karmic family you chose and the ancestral lineage you carry. Your roots are not accidental; they are the soil your soul planted itself in for specific lessons.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      relational: { text: 'How you were parented becomes how you parent — or how you rebel against parenting. The 4th house in synastry shows whether two people can truly make a home together, not just date. It reveals the deepest emotional compatibility or incompatibility.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      shadow: { text: 'The shadow of the 4th house is emotional regression — retreating into childhood patterns when stressed, expecting partners to parent you, or refusing to grow up. Nostalgia that prevents presence. Building walls instead of homes.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      soulQuestion: { text: 'Where do I truly belong? Can I create safety within myself rather than depending on external structures?', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+    },
   },
   {
     number: 5, name: 'House of Creativity', nickname: 'The House of Initiation',
@@ -211,6 +247,12 @@ export const HOUSES_DATA: HouseData[] = [
     emptyHouse: 'An empty 5th house does NOT mean no creativity or romance. It means these areas flow naturally through the cusp sign. Creativity is accessible without internal conflict.',
     rulerGuidance: 'The ruler of the 5th shows how and where your creative energy naturally flows. Its aspects show what supports or blocks your joy.',
     teaching: 'The 5th house teaches that play is not frivolous — it is essential. Joy is a spiritual practice.',
+    perspectives: {
+      esoteric: { text: 'The 5th house is where the soul creates — not just art, but reality itself. Creative expression is a divine act: bringing something from nothing into form. Children are the ultimate 5th house creation, but so is any authentic self-expression that didn\'t exist before you made it.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      relational: { text: 'Romantic love lives in the 5th house — the intoxication, the drama, the falling. But this is love as performance, not partnership (7th house). In long-term relationships, maintaining 5th house energy means keeping courtship alive — date nights, surprises, seeing your partner as fascinating rather than familiar.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      shadow: { text: 'The shadow of the 5th house is ego inflation through creation — believing your art, your children, or your romantic conquests make you special. Using creativity to avoid responsibility. Gambling addiction. Drama addiction. Living as if life is a stage and you must always be performing.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      soulQuestion: { text: 'What do I create that is uniquely mine? Can I express myself without needing applause?', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+    },
   },
   {
     number: 6, name: 'House of Service & Health', nickname: 'The House of Consolidation',
@@ -226,6 +268,12 @@ export const HOUSES_DATA: HouseData[] = [
     emptyHouse: 'An empty 6th house means health and daily work run smoothly without major drama. Routines are natural. Look to the ruler for subtle health tendencies.',
     rulerGuidance: 'The ruler of the 6th house shows your natural approach to health and daily work. Its condition indicates whether maintenance comes easily or requires effort.',
     teaching: 'The 6th house teaches that sacred service is not sacrifice — it is finding meaning in the mundane.',
+    perspectives: {
+      esoteric: { text: 'The 6th house is the house of purification — the soul refining itself through discipline, service, and health. Illness in the esoteric view is not punishment but information: the body communicating what the mind won\'t acknowledge. The 6th house is where spirit meets matter in daily practice.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      relational: { text: 'The 6th house in relationships is about practical love — who does the dishes, who manages the calendar, who takes care of the other when sick. Unglamorous but essential. Many relationships fail not from lack of passion but from 6th house resentment over unequal daily labor.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      shadow: { text: 'The shadow of the 6th house is martyrdom through service — giving until you\'re empty, then resenting everyone for not noticing. Perfectionism that paralyzes. Hypochondria as a cry for attention. Using busyness to avoid inner stillness.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      soulQuestion: { text: 'Am I serving from fullness or from emptiness? Do my routines nourish me or numb me?', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+    },
   },
   {
     number: 7, name: 'House of Partnership', nickname: 'The House of Initiation',
@@ -241,6 +289,12 @@ export const HOUSES_DATA: HouseData[] = [
     emptyHouse: 'An empty 7th house does NOT mean no marriage or partnership. It means relationships function through the cusp sign without extra complexity. Partnership is straightforward.',
     rulerGuidance: 'The ruler of the 7th describes the TYPE of partner you attract and how partnerships unfold. Its house shows where partnership energy is directed.',
     teaching: 'The 7th house teaches that your partner is your mirror. What you love and hate in them is what you haven\'t integrated in yourself.',
+    perspectives: {
+      esoteric: { text: 'The 7th house is the soul\'s mirror — you incarnated to meet yourself through the other. Every significant partnership is a soul agreement. The DC (Descendant) reveals the qualities your soul specifically chose to encounter through others, not because you lack them, but because you need to see them reflected.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      relational: { text: 'The 7th house reveals your relationship blind spots. What you project onto partners — the idealization and the demonization — is your own unlived life. True partnership begins when projection ends and you start seeing the actual person, not your fantasy or fear.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      shadow: { text: 'The shadow of the 7th house is losing yourself in the other — becoming whatever your partner needs, abandoning your own identity for the relationship. Or the opposite: controlling partners to manage your own anxiety. "Open enemies" as a keyword reminds us that those we oppose most fiercely mirror us most clearly.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      soulQuestion: { text: 'Am I seeking a partner or seeking myself through a partner? Can I love without losing who I am?', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+    },
   },
   {
     number: 8, name: 'House of Transformation', nickname: 'The House of Consolidation',
@@ -256,6 +310,12 @@ export const HOUSES_DATA: HouseData[] = [
     emptyHouse: 'An empty 8th house means transformation and shared resources are not a constant focus. Deep psychological crises are not your primary mode of growth. Look to the ruler for how these themes play out when activated.',
     rulerGuidance: 'The ruler of the 8th shows how you handle intimacy, shared power, and transformation. Its condition reveals your relationship with control and surrender.',
     teaching: 'The 8th house teaches that death is not the end — it is the doorway. What you fear losing is what you must transform.',
+    perspectives: {
+      esoteric: { text: 'The 8th house is the alchemical crucible — where the lead of ego is transformed into spiritual gold. Every crisis, every loss, every "death" in your life is an initiation. The soul specifically seeks 8th house experiences to burn away what is false and reveal what is eternal.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      relational: { text: 'The 8th house is where true intimacy lives — not the romance of the 5th but the raw vulnerability of merging with another person psychologically, sexually, and financially. This house reveals your capacity for trust, your relationship with power, and whether you can surrender control without losing yourself.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      shadow: { text: 'The shadow of the 8th house is manipulation — using intimacy, money, sex, or psychological insight as tools of control. Obsession. Power struggles. Refusing to let go of what has died. Or the opposite: self-destructive behavior as an attempt to force transformation before you\'re ready.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      soulQuestion: { text: 'What must I allow to die so something new can be born? Can I trust another person with my vulnerability?', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+    },
   },
   {
     number: 9, name: 'House of Philosophy', nickname: 'The House of Initiation',
@@ -271,6 +331,12 @@ export const HOUSES_DATA: HouseData[] = [
     emptyHouse: 'An empty 9th house means philosophy and higher education are not a major focus of complexity. You may still travel and learn, but it happens naturally through the cusp sign.',
     rulerGuidance: 'The ruler of the 9th shows how you seek meaning and where your philosophical nature expresses itself.',
     teaching: 'The 9th house teaches that truth is not fixed — it is a journey. The map is not the territory.',
+    perspectives: {
+      esoteric: { text: 'The 9th house is the soul\'s search for God — or for whatever lies beyond the individual self. Whether through religion, philosophy, travel, or higher education, the 9th house drives you toward the Big Picture. This is the house of the guru, the teacher, and the pilgrim.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      relational: { text: 'The 9th house in relationships shows whether partners can grow together — sharing a worldview, traveling together, learning together. When 9th house energies clash between partners, one feels intellectually or spiritually stifled. Shared meaning is the foundation of lasting connection.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      shadow: { text: 'The shadow of the 9th house is dogmatism — believing your truth is THE truth and everyone else is wrong. Spiritual bypassing. Using philosophy to judge others. Perpetual seeking that never lands — always the next teacher, the next trip, the next belief system, never committing to depth.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      soulQuestion: { text: 'What do I believe with my whole being, not just my intellect? Can I seek truth without becoming righteous?', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+    },
   },
   {
     number: 10, name: 'House of Career & Legacy', nickname: 'The House of Consolidation',
@@ -286,6 +352,12 @@ export const HOUSES_DATA: HouseData[] = [
     emptyHouse: 'An empty 10th house does NOT mean no career. It means your career direction is straightforward — look to the MC sign and its ruling planet for your professional path.',
     rulerGuidance: 'The ruler of the 10th (the MC ruler) describes your career path, the type of authority you build, and how you achieve public recognition.',
     teaching: 'The 10th house teaches that legacy is built one day at a time. What you do consistently becomes what you\'re known for.',
+    perspectives: {
+      esoteric: { text: 'The 10th house is the soul\'s public purpose — your dharma, your contribution to the world that only you can make. The MC is the point of highest spiritual visibility. Esoterically, the 10th house is not about ambition but about answering the call of your vocation — literally, your "voice."', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      relational: { text: 'The 10th house in relationships shows how career and public life affect your partnership. When one partner\'s 10th house dominates, the other may feel eclipsed. The challenge is building a shared public life without one person becoming the other\'s audience. Both need their own 10th house expression.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      shadow: { text: 'The shadow of the 10th house is sacrificing everything for status — your health, your relationships, your joy, all burned on the altar of achievement. Or the opposite: fear of visibility, hiding your gifts because being seen feels dangerous. Authoritarian behavior. Defining your worth entirely by your title.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      soulQuestion: { text: 'What would I build if I weren\'t afraid of being seen? Is my ambition serving my soul or my ego?', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+    },
   },
   {
     number: 11, name: 'House of Community', nickname: 'The House of Initiation',
@@ -301,6 +373,12 @@ export const HOUSES_DATA: HouseData[] = [
     emptyHouse: 'An empty 11th house means friendships and group involvement happen naturally without drama. You are part of communities without it being a major life theme.',
     rulerGuidance: 'The ruler of the 11th shows how you find your tribe and what kind of groups you\'re drawn to.',
     teaching: 'The 11th house teaches that your individual gifts are meant for the collective. Your dreams are bigger than you.',
+    perspectives: {
+      esoteric: { text: 'The 11th house is the soul\'s vision for humanity — not just your personal hopes but your part in the collective dream. The friends and groups you attract are your spiritual family, chosen not by blood but by resonance. The 11th house asks: what future are you building?', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      relational: { text: 'The 11th house in relationships shows how a couple relates to the world beyond their partnership — shared friendships, causes they champion together, their social identity as a pair. Relationships that lack 11th house connection can become isolated and stagnant.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      shadow: { text: 'The shadow of the 11th house is conformity — losing your individuality to belong, or alternately, being so rebellious that you can never truly connect with any group. Utopian idealism that rejects imperfect reality. Friendships based on ideology rather than genuine human warmth.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      soulQuestion: { text: 'What is my vision for the world? Can I belong to a group without losing my individuality?', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+    },
   },
   {
     number: 12, name: 'House of the Unconscious', nickname: 'The House of Consolidation',
@@ -316,5 +394,11 @@ export const HOUSES_DATA: HouseData[] = [
     emptyHouse: 'An empty 12th house means the unconscious realm is not a major source of visible struggle. Spiritual life and solitude function through the cusp sign. Hidden patterns still exist but are less intense.',
     rulerGuidance: 'The ruler of the 12th shows what pulls you toward solitude, spiritual practice, or unconscious patterns. Its house placement reveals where your hidden life plays out.',
     teaching: 'The 12th house teaches that ego dissolution is not death — it is liberation. What you surrender becomes your greatest strength.',
+    perspectives: {
+      esoteric: { text: 'The 12th house is the soul\'s return to source — the dissolution of individual identity back into the infinite. This is the most mystical house: dreams, meditation, past lives, and the thin veil between worlds. Planets here operate in dimensions beyond the rational mind. What is hidden in the 12th house is often your greatest spiritual gift, accessible only through surrender.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      relational: { text: 'The 12th house in relationships reveals the unconscious dynamics between partners — what is never spoken but always felt. Secret attractions, hidden resentments, spiritual bonds that transcend explanation. The most powerful connections often have strong 12th house overlays: they feel destined but inexplicable.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      shadow: { text: 'The shadow of the 12th house is escapism — using substances, fantasy, sleep, or spiritual practice to avoid reality. Self-undoing through unconscious patterns. Victim consciousness. Martyrdom. Isolation that masquerades as spirituality. The most dangerous shadow: not knowing your own shadow because it operates entirely beneath awareness.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      soulQuestion: { text: 'What am I hiding from — even from myself? Can I surrender control without losing my way?', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+    },
   },
 ];
