@@ -1168,9 +1168,9 @@ export const SATURN_IN_SIGNS: Record<string, SaturnTeaching> = {
   },
   Aquarius: {
     sign: 'Aquarius',
-    soulPurpose: 'To innovate within structure and serve the collective. To be yourself within community.',
-    lifeLesson: 'You are learning to be yourself within groups and to innovate responsibly. The lesson is about individuality, friendship, and humanitarian vision.',
-    directive: 'Be yourself. Serve the collective. Innovate without destroying.',
+    soulPurpose: 'To bring your unconventional ideas into forms that actually help people. To stop choosing between fitting in and standing out.',
+    lifeLesson: 'You are learning that your "weird" is your superpower — but only when you channel it into something concrete. The lesson is turning brilliant ideas into real-world results, and letting people in close enough to collaborate.',
+    directive: 'Pick ONE idea you believe in and build it. Stop theorizing and start doing. Let people help you — their input won\'t dilute your vision, it\'ll ground it.',
     challenge: 'Feeling alienated. Rebellion for its own sake. Detachment from emotions. Fear of intimacy.',
     mastery: 'The ability to bring innovative ideas into practical form. Community leadership.',
     questions: ['Where do you feel like an outsider?', 'How do you balance individuality with belonging?', 'What vision do you have for the future?'],
