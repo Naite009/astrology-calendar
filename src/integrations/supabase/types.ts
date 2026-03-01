@@ -19,6 +19,8 @@ export type Database = {
           created_at: string | null
           description: string | null
           document_type: string | null
+          extracted_text: string | null
+          extraction_status: string | null
           file_name: string
           file_path: string
           file_size: number | null
@@ -30,6 +32,8 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           document_type?: string | null
+          extracted_text?: string | null
+          extraction_status?: string | null
           file_name: string
           file_path: string
           file_size?: number | null
@@ -41,6 +45,8 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           document_type?: string | null
+          extracted_text?: string | null
+          extraction_status?: string | null
           file_name?: string
           file_path?: string
           file_size?: number | null

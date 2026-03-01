@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, FileText, Trash2, Loader2, AlertCircle, CheckCircle, LogIn, LogOut } from 'lucide-react';
+import { Upload, FileText, Trash2, Loader2, AlertCircle, CheckCircle, LogIn, LogOut, Sparkles, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface UploadedDocument {
@@ -15,6 +15,8 @@ interface UploadedDocument {
   document_type: string | null;
   description: string | null;
   created_at: string | null;
+  extraction_status: string | null;
+  extracted_text: string | null;
 }
 
 export const DocumentUploader = forwardRef<HTMLDivElement, Record<string, never>>((_, ref) => {
@@ -114,6 +116,9 @@ export const DocumentUploader = forwardRef<HTMLDivElement, Record<string, never>
       setDocuments((prev) => [data, ...prev]);
       toast.success('Document uploaded successfully!');
 
+      // Trigger text extraction
+      triggerExtraction(data.id, filePath);
+
       // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -123,6 +128,33 @@ export const DocumentUploader = forwardRef<HTMLDivElement, Record<string, never>
       toast.error(error.message || 'Failed to upload document');
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const triggerExtraction = async (documentId: string, filePath: string) => {
+    try {
+      // Update local state to show extracting
+      setDocuments(prev => prev.map(d => 
+        d.id === documentId ? { ...d, extraction_status: 'extracting' } : d
+      ));
+
+      const { data, error } = await supabase.functions.invoke('extract-document-text', {
+        body: { documentId, filePath },
+      });
+
+      if (error) throw error;
+
+      // Update local state with completion
+      setDocuments(prev => prev.map(d => 
+        d.id === documentId ? { ...d, extraction_status: 'complete' } : d
+      ));
+      toast.success('Text extracted from document!');
+    } catch (error: any) {
+      console.error('Extraction error:', error);
+      setDocuments(prev => prev.map(d => 
+        d.id === documentId ? { ...d, extraction_status: 'error' } : d
+      ));
+      toast.error('Text extraction failed — you can retry later');
     }
   };
 
@@ -313,9 +345,37 @@ export const DocumentUploader = forwardRef<HTMLDivElement, Record<string, never>
                   <FileText className="text-primary shrink-0" size={20} />
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">{doc.file_name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatFileSize(doc.file_size)}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs text-muted-foreground">
+                        {formatFileSize(doc.file_size)}
+                      </p>
+                      {doc.extraction_status === 'extracting' && (
+                        <span className="flex items-center gap-1 text-xs text-primary">
+                          <Loader2 size={10} className="animate-spin" /> Extracting text…
+                        </span>
+                      )}
+                      {doc.extraction_status === 'complete' && (
+                        <span className="flex items-center gap-1 text-xs text-accent-foreground">
+                          <Sparkles size={10} /> Text extracted
+                        </span>
+                      )}
+                      {(doc.extraction_status === 'error' || doc.extraction_status === 'rate_limited') && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); triggerExtraction(doc.id, doc.file_path); }}
+                          className="flex items-center gap-1 text-xs text-destructive hover:underline"
+                        >
+                          <RefreshCw size={10} /> Retry extraction
+                        </button>
+                      )}
+                      {(!doc.extraction_status || doc.extraction_status === 'pending') && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); triggerExtraction(doc.id, doc.file_path); }}
+                          className="flex items-center gap-1 text-xs text-primary hover:underline"
+                        >
+                          <Sparkles size={10} /> Extract text
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <Button
@@ -332,11 +392,11 @@ export const DocumentUploader = forwardRef<HTMLDivElement, Record<string, never>
         )}
 
         {/* Success message */}
-        {documents.length > 0 && (
-          <div className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-950/30 rounded-lg text-sm">
-            <CheckCircle className="text-green-600 shrink-0 mt-0.5" size={16} />
-            <p className="text-green-700 dark:text-green-400">
-              Documents are saved! Share them with me in chat and I can integrate the content into your Sacred Script.
+        {documents.some(d => d.extraction_status === 'complete') && (
+          <div className="flex items-start gap-2 p-3 bg-secondary/50 rounded-lg text-sm">
+            <Sparkles className="text-primary shrink-0 mt-0.5" size={16} />
+            <p className="text-muted-foreground">
+              Extracted text is now available to enrich your Sacred Script, Moon phases, and transit interpretations.
             </p>
           </div>
         )}
