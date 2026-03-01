@@ -11,28 +11,24 @@ interface Props {
 const SIGN_ORDER = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 
 function getHouse12Sign(chart: NatalChart): string | null {
-  if (!chart.houseCusps || chart.houseCusps.length < 12) return null;
-  const cusp12Deg = chart.houseCusps[11]; // 0-indexed, house 12 is index 11
-  const signIndex = Math.floor(cusp12Deg / 30);
-  return SIGN_ORDER[signIndex] || null;
+  if (!chart.houseCusps?.house12) return null;
+  return chart.houseCusps.house12.sign || null;
 }
 
 function getPlanetsInHouse12(chart: NatalChart): string[] {
-  if (!chart.planets || !chart.houseCusps || chart.houseCusps.length < 12) return [];
-  const h12Start = chart.houseCusps[11];
-  const h1Start = chart.houseCusps[0];
+  if (!chart.planets || !chart.houseCusps?.house12 || !chart.houseCusps?.house1) return [];
+  const h12Sign = chart.houseCusps.house12.sign;
+  const h12Deg = chart.houseCusps.house12.degree;
+  const h1Sign = chart.houseCusps.house1.sign;
+  const h1Deg = chart.houseCusps.house1.degree;
   const results: string[] = [];
   const PLANETS = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','Chiron'];
   
   for (const name of PLANETS) {
-    const p = chart.planets[name];
+    const p = chart.planets[name as keyof typeof chart.planets];
     if (!p) continue;
-    const deg = p.degree;
-    if (h12Start < h1Start) {
-      if (deg >= h12Start && deg < h1Start) results.push(name);
-    } else {
-      if (deg >= h12Start || deg < h1Start) results.push(name);
-    }
+    // Simple sign-based check: planet is in 12th house if its sign matches the 12th house cusp sign
+    if (p.sign === h12Sign) results.push(name);
   }
   return results;
 }
