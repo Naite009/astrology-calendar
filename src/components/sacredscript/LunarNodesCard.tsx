@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sparkles, ArrowUp, ArrowDown, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
+import { Sparkles, ArrowUp, ArrowDown, BookOpen, ChevronDown, ChevronUp, Compass } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { SPILLER_NODE_DATA, SPILLER_HOUSE_OVERLAYS, SPILLER_SOURCE } from '@/lib/nodeSpillerData';
 
@@ -245,6 +245,51 @@ const HOUSE_THEMES: Record<number, { area: string; description: string }> = {
   12: { area: "Spirituality & Transcendence", description: "The nodes across 12th/6th houses ask you to balance spiritual dissolution vs. grounded practical service." },
 };
 
+// Node Ruler technique — the ruling planet of the North Node sign shows HOW you approach soul growth
+const SIGN_RULERS: Record<string, string> = {
+  Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon',
+  Leo: 'Sun', Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Pluto',
+  Sagittarius: 'Jupiter', Capricorn: 'Saturn', Aquarius: 'Uranus', Pisces: 'Neptune',
+};
+
+const getNodeRulerInsight = (nnSign: string, chart: NatalChart): { ruler: string; rulerSign: string; rulerHouse: number | null; interpretation: string } | null => {
+  const ruler = SIGN_RULERS[nnSign];
+  if (!ruler) return null;
+  
+  const rulerKey = ruler as keyof typeof chart.planets;
+  const rulerPos = chart.planets[rulerKey];
+  if (!rulerPos?.sign) return null;
+  
+  // Find ruler's house
+  let rulerHouse: number | null = null;
+  if (chart.houseCusps) {
+    const ZODIAC = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+    const toLon = (sign: string, deg: number, min: number = 0) => ZODIAC.indexOf(sign) * 30 + deg + min / 60;
+    const cusps: number[] = [];
+    for (let i = 1; i <= 12; i++) {
+      const c = chart.houseCusps[`house${i}` as keyof typeof chart.houseCusps];
+      if (c?.sign) cusps.push(toLon(c.sign, c.degree, c.minutes ?? 0));
+    }
+    if (cusps.length === 12) {
+      const lon = toLon(rulerPos.sign, rulerPos.degree, rulerPos.minutes ?? 0);
+      for (let i = 0; i < 12; i++) {
+        const cur = cusps[i], next = cusps[(i + 1) % 12];
+        const inH = next < cur ? (lon >= cur || lon < next) : (lon >= cur && lon < next);
+        if (inH) { rulerHouse = i + 1; break; }
+      }
+    }
+  }
+  
+  const housePhrase = rulerHouse ? ` in your ${rulerHouse}${rulerHouse === 1 ? 'st' : rulerHouse === 2 ? 'nd' : rulerHouse === 3 ? 'rd' : 'th'} house` : '';
+  
+  return {
+    ruler,
+    rulerSign: rulerPos.sign,
+    rulerHouse,
+    interpretation: `Your North Node in ${nnSign} is ruled by ${ruler}. Your ${ruler} is in ${rulerPos.sign}${housePhrase}${rulerPos.isRetrograde ? ' (retrograde)' : ''}. This means you approach your soul's lessons through a ${rulerPos.sign} lens — the energy, style, and concerns of ${rulerPos.sign} shape HOW you grow toward your North Node destiny.${rulerHouse ? ` The ${rulerHouse}${rulerHouse === 1 ? 'st' : rulerHouse === 2 ? 'nd' : rulerHouse === 3 ? 'rd' : 'th'} house is the life area where this growth is most actively channeled.` : ''}`,
+  };
+};
+
 export const LunarNodesCard = ({ chart, northNodeHouse, southNodeHouse }: LunarNodesCardProps) => {
   const nn = chart.planets.NorthNode;
   const sn = chart.planets.SouthNode;
@@ -256,6 +301,7 @@ export const LunarNodesCard = ({ chart, northNodeHouse, southNodeHouse }: LunarN
   const axisData = NODE_AXIS_DATA[nnSign];
   const spillerData = SPILLER_NODE_DATA[nnSign] || null;
   const spillerHouse = northNodeHouse ? SPILLER_HOUSE_OVERLAYS[northNodeHouse] || null : null;
+  const nodeRuler = getNodeRulerInsight(nnSign, chart);
 
   if (!axisData) return null;
 
@@ -344,6 +390,31 @@ export const LunarNodesCard = ({ chart, northNodeHouse, southNodeHouse }: LunarN
           ))}
         </ul>
       </div>
+
+      {/* Node Ruler Technique */}
+      {nodeRuler && (
+        <div className="bg-gradient-to-r from-cyan-50 to-teal-50 dark:from-cyan-950/40 dark:to-teal-950/40 p-5 rounded-lg border border-cyan-200 dark:border-cyan-800">
+          <div className="flex items-center gap-2 mb-3">
+            <Compass className="text-cyan-600 dark:text-cyan-400" size={18} />
+            <h4 className="font-medium text-sm">How You Approach Your North Node</h4>
+            <span className="text-[10px] text-muted-foreground ml-auto">Node Ruler Technique</span>
+          </div>
+          <p className="text-sm leading-relaxed mb-3">{nodeRuler.interpretation}</p>
+          <div className="flex flex-wrap gap-2">
+            <span className="text-xs bg-cyan-100 dark:bg-cyan-900/40 text-cyan-700 dark:text-cyan-300 px-2 py-0.5 rounded-full">
+              NN Ruler: {nodeRuler.ruler}
+            </span>
+            <span className="text-xs bg-cyan-100 dark:bg-cyan-900/40 text-cyan-700 dark:text-cyan-300 px-2 py-0.5 rounded-full">
+              In {nodeRuler.rulerSign}
+            </span>
+            {nodeRuler.rulerHouse && (
+              <span className="text-xs bg-cyan-100 dark:bg-cyan-900/40 text-cyan-700 dark:text-cyan-300 px-2 py-0.5 rounded-full">
+                House {nodeRuler.rulerHouse}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Shadow & Integration */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

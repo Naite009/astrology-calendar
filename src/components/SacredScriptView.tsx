@@ -72,6 +72,8 @@ import { OppositionPairsCard } from '@/components/sacredscript/OppositionPairsCa
 import { PsychicGiftsCard } from '@/components/sacredscript/PsychicGiftsCard';
 import { BigThreeSynthesisCard } from '@/components/sacredscript/BigThreeSynthesisCard';
 import { LunarNodesCard } from '@/components/sacredscript/LunarNodesCard';
+import { MidheavenCareerCard } from '@/components/sacredscript/MidheavenCareerCard';
+import { KarmicPastLifeCard } from '@/components/sacredscript/KarmicPastLifeCard';
 
 interface SacredScriptViewProps {
   natalChart: NatalChart;
@@ -1954,6 +1956,26 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
           southNodeHouse={getPlanetHouse(natalChart, 'SouthNode')}
         />
         <NoteArea placeholder="How the client relates to North Node / South Node themes..." />
+      </Section>
+      
+      {/* 8.6 Midheaven & Career Path */}
+      <Section 
+        title="8.6 Your Path to Success — Midheaven" 
+        color="border-l-amber-500" 
+        icon={<div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-600 text-xs font-bold">MC</div>}
+      >
+        <MidheavenCareerCard chart={natalChart} />
+        <NoteArea placeholder="Career themes and MC insights..." />
+      </Section>
+      
+      {/* 8.7 Karmic Past Life Patterns */}
+      <Section 
+        title="8.7 Past Lives & Karmic Memory" 
+        color="border-l-purple-500" 
+        icon={<div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-600 text-xs font-bold">♇</div>}
+      >
+        <KarmicPastLifeCard chart={natalChart} />
+        <NoteArea placeholder="Karmic patterns and past life themes..." />
       </Section>
       
       {/* 9. Final Directive */}

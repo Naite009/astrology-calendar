@@ -14,6 +14,7 @@ import { getAspectInterpretation, getAspectFeeling, getAspectDynamics, ASPECT_IN
 import { detectChartPatterns, getPatternActivation, ChartPattern } from '@/lib/chartPatterns';
 import { getStationDates, formatRetrogradeDate } from '@/lib/retrogradePatterns';
 import * as Astronomy from 'astronomy-engine';
+import { RETROGRADE_GUIDANCE, KENT_SOURCE } from '@/lib/transitGuidanceData';
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -958,7 +959,7 @@ const TransitTimeline = ({ transitPlanet, transitDegree, natalPlanet, natalDegre
               borderLeft: '4px solid #4CAF50'
             }}>
               <div style={{ fontWeight: '600', color: '#2E7D32', marginBottom: '6px' }}>
-                1st Pass (Direct Motion) →
+                1st Pass — "The Introduction" (Direct Motion) →
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '4px 12px', fontSize: '13px' }}>
                 <span style={{ color: '#78909C' }}>Enters orb:</span>
@@ -980,7 +981,7 @@ const TransitTimeline = ({ transitPlanet, transitDegree, natalPlanet, natalDegre
                 borderLeft: '4px solid #FF9800'
               }}>
                 <div style={{ fontWeight: '600', color: '#E65100', marginBottom: '6px' }}>
-                  2nd Pass (Retrograde) ←
+                  2nd Pass — "The Deep Processing" (Retrograde) ←
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '4px 12px', fontSize: '13px' }}>
                   <span style={{ color: '#78909C' }}>Re-enters orb:</span>
@@ -1002,7 +1003,7 @@ const TransitTimeline = ({ transitPlanet, transitDegree, natalPlanet, natalDegre
                 borderLeft: '4px solid #9C27B0'
               }}>
                 <div style={{ fontWeight: '600', color: '#7B1FA2', marginBottom: '6px' }}>
-                  3rd Pass (Direct Motion) → Final
+                  3rd Pass — "The Integration" (Direct Motion) → Final
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '4px 12px', fontSize: '13px' }}>
                   <span style={{ color: '#78909C' }}>Re-enters orb:</span>
@@ -1025,6 +1026,43 @@ const TransitTimeline = ({ transitPlanet, transitDegree, natalPlanet, natalDegre
             }}>
               🔄 {timeline.retrogradeNote}
             </div>
+            
+            {/* Kent's Retrograde Guidance */}
+            {(() => {
+              const planetKey = transitPlanet.charAt(0).toUpperCase() + transitPlanet.slice(1).toLowerCase();
+              const guidance = RETROGRADE_GUIDANCE[planetKey];
+              if (!guidance) return null;
+              return (
+                <div style={{
+                  marginTop: '12px',
+                  padding: '14px',
+                  background: 'rgba(255,255,255,0.9)',
+                  borderRadius: '6px',
+                  border: '1px solid rgba(156,39,176,0.2)',
+                }}>
+                  <div style={{ fontWeight: '600', fontSize: '13px', marginBottom: '8px', color: '#4A148C' }}>
+                    📖 {transitPlanet} Retrograde Guidance
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: '600', color: '#2E7D32', marginBottom: '6px' }}>✓ DO THIS</div>
+                      {guidance.doThis.map((item, i) => (
+                        <div key={i} style={{ fontSize: '12px', marginBottom: '3px', color: '#333' }}>• {item}</div>
+                      ))}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: '600', color: '#C62828', marginBottom: '6px' }}>✗ AVOID THIS</div>
+                      {guidance.avoidThis.map((item, i) => (
+                        <div key={i} style={{ fontSize: '12px', marginBottom: '3px', color: '#333' }}>• {item}</div>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '10px', color: '#9E9E9E', marginTop: '8px', fontStyle: 'italic' }}>
+                    Source: {KENT_SOURCE}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         ) : (
           /* Single pass for faster planets */
