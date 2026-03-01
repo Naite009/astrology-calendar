@@ -152,7 +152,13 @@ interface Props {
 
 export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Props) {
   const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
-  const [activeSeriesTab, setActiveSeriesTab] = useState('Virgo-Pisces');
+  const [activeSeriesTab, setActiveSeriesTab] = useState('all');
+
+  const allEclipsesSorted = useMemo(() => {
+    const all: EclipseEvent[] = [];
+    Object.values(ECLIPSE_SERIES).forEach(s => all.push(...s.events));
+    return all.sort((a, b) => a.date.localeCompare(b.date));
+  }, []);
 
   const allCharts = useMemo(() => {
     const charts: NatalChart[] = [];
@@ -355,7 +361,12 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
           )}
 
           <Tabs value={activeSeriesTab} onValueChange={setActiveSeriesTab}>
-            <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full h-auto">
+            <TabsList className="grid grid-cols-3 sm:grid-cols-5 w-full h-auto">
+              <TabsTrigger value="all" className="text-xs sm:text-sm py-2 flex flex-col gap-0.5">
+                <span>📅</span>
+                <span className="hidden sm:inline">All Eclipses</span>
+                <Badge variant="default" className="text-[10px] mt-0.5">Timeline</Badge>
+              </TabsTrigger>
               {Object.entries(ECLIPSE_SERIES).map(([key, s]) => (
                 <TabsTrigger key={key} value={key} className="text-xs sm:text-sm py-2 flex flex-col gap-0.5">
                   <span>{s.glyphs}</span>
@@ -366,6 +377,68 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
                 </TabsTrigger>
               ))}
             </TabsList>
+
+            <TabsContent value="all" className="mt-4 space-y-4">
+              <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
+                <h3 className="font-semibold text-lg">📅 Complete Eclipse Timeline (2023–2029)</h3>
+                <p className="text-sm text-muted-foreground mt-1">Every eclipse in chronological order across all series. Solar eclipses happen at New Moons, lunar eclipses at Full Moons.</p>
+              </div>
+              <div className="space-y-3">
+                {allEclipsesSorted.map((e, idx) => {
+                  const dateObj = new Date(e.date + 'T12:00:00');
+                  const formatted = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                  const now = new Date();
+                  const isPast = dateObj < now;
+                  const isNext = !isPast && (idx === 0 || new Date(allEclipsesSorted[idx - 1].date + 'T12:00:00') < now);
+                  const house = selectedChart?.houseCusps ? getHouseForDegree(e.sign, e.degree, selectedChart) : null;
+                  const oppositeSign = ZODIAC_ORDER[(ZODIAC_ORDER.indexOf(e.sign) + 6) % 12];
+                  const oppositeHouse = selectedChart?.houseCusps ? getHouseForDegree(oppositeSign, e.degree, selectedChart) : null;
+
+                  return (
+                    <Card key={`all-${idx}`} className={`border-l-4 ${e.type === 'solar' ? 'border-l-primary' : 'border-l-accent'} ${isPast ? 'opacity-50' : ''} ${isNext ? 'ring-2 ring-primary/30' : ''}`}>
+                      <CardContent className="py-4 flex flex-col sm:flex-row sm:items-start gap-3">
+                        <div className="flex items-center gap-2 min-w-[140px]">
+                          <span className="text-2xl">{e.type === 'solar' ? '🌑' : '🌕'}</span>
+                          <div>
+                            <p className="font-semibold text-sm capitalize">{e.subtype} {e.type}</p>
+                            <p className="text-xs text-muted-foreground">{formatted}</p>
+                          </div>
+                        </div>
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge variant="outline" className="text-xs">
+                              {e.degree}°{e.minutes > 0 ? e.minutes.toString().padStart(2, '0') + "'" : ''} {getSignGlyph(e.sign)} {e.sign}
+                            </Badge>
+                            <Badge variant="secondary" className="text-xs">
+                              {e.nodal === 'north' ? '☊ North Node' : '☋ South Node'}
+                            </Badge>
+                            <Badge variant="outline" className="text-[10px]">{e.series}</Badge>
+                            {isPast && <Badge className="text-xs bg-muted text-muted-foreground">Past</Badge>}
+                            {isNext && <Badge className="text-xs bg-primary text-primary-foreground">Next</Badge>}
+                          </div>
+                          <p className="text-sm text-muted-foreground">{e.description}</p>
+                          {house && (
+                            <div className="mt-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
+                              <p className="text-sm font-medium">
+                                ✨ Falls in your <strong>{getOrdinalSuffix(house)} House</strong>
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {HOUSE_LIFE_AREAS[house]}
+                              </p>
+                              {oppositeHouse && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Axis activation: also stirring <strong>{getOrdinalSuffix(oppositeHouse)} House</strong> themes ({HOUSE_LIFE_AREAS[oppositeHouse]?.split(',')[0]})
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </TabsContent>
 
             {Object.entries(ECLIPSE_SERIES).map(([key, series]) => (
               <TabsContent key={key} value={key} className="mt-4 space-y-4">
