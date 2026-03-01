@@ -2,7 +2,8 @@ import { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, BookOpen } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   HOUSES_DATA, QUADRANT_INFO, HEMISPHERE_INFO, ANGLE_INFO,
@@ -206,6 +207,44 @@ function HouseDetailModal({ house, open, onClose, chart, onNavigateToView }: { h
               <p className="text-[10px] font-medium text-muted-foreground mb-1">📖 TEACHING</p>
               <p className="text-xs">{house.teaching}</p>
             </div>
+
+            {/* Sourced Perspectives */}
+            {house.perspectives && (
+              <Collapsible>
+                <CollapsibleTrigger className="flex items-center gap-2 w-full text-left py-2 px-3 rounded-lg bg-secondary/50 hover:bg-secondary/80 transition-colors">
+                  <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-xs font-medium">Deeper Perspectives</span>
+                  <span className="text-[10px] text-muted-foreground ml-auto">tap to expand</span>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-2 space-y-3">
+                  {house.perspectives.soulQuestion && (
+                    <div className="p-3 rounded-lg bg-accent/30 border border-accent/20">
+                      <p className="text-[10px] font-medium text-muted-foreground mb-1">🔮 SOUL QUESTION</p>
+                      <p className="text-sm italic leading-relaxed">{house.perspectives.soulQuestion.text}</p>
+                    </div>
+                  )}
+                  {house.perspectives.esoteric && (
+                    <div className="p-3 rounded-lg bg-muted/50">
+                      <p className="text-[10px] font-medium text-muted-foreground mb-1">✦ ESOTERIC ESSENCE</p>
+                      <p className="text-xs leading-relaxed">{house.perspectives.esoteric.text}</p>
+                    </div>
+                  )}
+                  {house.perspectives.relational && (
+                    <div className="p-3 rounded-lg bg-muted/50">
+                      <p className="text-[10px] font-medium text-muted-foreground mb-1">💞 IN RELATIONSHIPS</p>
+                      <p className="text-xs leading-relaxed">{house.perspectives.relational.text}</p>
+                    </div>
+                  )}
+                  {house.perspectives.shadow && (
+                    <div className="p-3 rounded-lg bg-destructive/5 border border-destructive/10">
+                      <p className="text-[10px] font-medium text-muted-foreground mb-1">⚠ SHADOW & DANGER</p>
+                      <p className="text-xs leading-relaxed">{house.perspectives.shadow.text}</p>
+                    </div>
+                  )}
+                  <p className="text-[9px] text-muted-foreground italic">Insights drawn from {house.perspectives.esoteric?.source || 'published sources'}</p>
+                </CollapsibleContent>
+              </Collapsible>
+            )}
 
             <div>
               <p className="text-xs text-muted-foreground">{house.angularityMeaning}</p>
