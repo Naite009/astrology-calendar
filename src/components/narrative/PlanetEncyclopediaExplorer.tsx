@@ -15,12 +15,22 @@ const CATEGORY_STYLES: Record<string, { bg: string; border: string; text: string
   asteroid: { bg: 'bg-primary/5', border: 'border-primary/15', text: 'text-primary', badge: 'bg-primary/10 text-primary' },
 };
 
+// Map encyclopedia display names to chart planet keys
+const PLANET_NAME_TO_KEY: Record<string, string> = {
+  'North Node': 'NorthNode',
+  'South Node': 'SouthNode',
+  'Part of Fortune': 'PartOfFortune',
+};
+
+const getPlanetKey = (name: string) => PLANET_NAME_TO_KEY[name] || name;
+
 function PlanetDetailModal({ planet, open, onClose, chart, onNavigateToView }: { planet: PlanetEncyclopediaData | null; open: boolean; onClose: () => void; chart: NatalChart | null; onNavigateToView?: (view: string) => void }) {
   if (!planet) return null;
   const cs = CATEGORY_STYLES[planet.category] || CATEGORY_STYLES.personal;
 
-  // Find planet in user's chart
-  const userPlacement = chart?.planets?.[planet.name as keyof typeof chart.planets];
+  // Find planet in user's chart (handle name mismatches like "North Node" → "NorthNode")
+  const chartKey = getPlanetKey(planet.name) as keyof typeof chart.planets;
+  const userPlacement = chart?.planets?.[chartKey];
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -238,7 +248,7 @@ export function PlanetEncyclopediaExplorer({ chart, onNavigateToView }: { chart?
             </div>
             <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
               {planets.map(planet => {
-                const placement = chart?.planets?.[planet.name as keyof typeof chart.planets];
+                const placement = chart?.planets?.[getPlanetKey(planet.name) as keyof typeof chart.planets];
                 return (
                   <button
                     key={planet.name}
