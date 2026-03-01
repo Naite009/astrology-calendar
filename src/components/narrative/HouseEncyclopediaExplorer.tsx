@@ -219,25 +219,29 @@ function HouseDetailModal({ house, open, onClose, chart, onNavigateToView }: { h
                 <CollapsibleContent className="mt-2 space-y-3">
                   {house.perspectives.soulQuestion && (
                     <div className="p-3 rounded-lg bg-accent/30 border border-accent/20">
-                      <p className="text-[10px] font-medium text-muted-foreground mb-1">🔮 SOUL QUESTION</p>
+                      <p className="text-[10px] font-medium text-muted-foreground mb-0.5">🔮 SOUL QUESTION</p>
+                      <p className="text-[9px] text-muted-foreground italic mb-1">A prompt to help you grow consciously in this life area</p>
                       <p className="text-sm italic leading-relaxed">{house.perspectives.soulQuestion.text}</p>
                     </div>
                   )}
                   {house.perspectives.esoteric && (
                     <div className="p-3 rounded-lg bg-muted/50">
-                      <p className="text-[10px] font-medium text-muted-foreground mb-1">✦ ESOTERIC ESSENCE</p>
+                      <p className="text-[10px] font-medium text-muted-foreground mb-0.5">✦ ESOTERIC ESSENCE</p>
+                      <p className="text-[9px] text-muted-foreground italic mb-1">The deeper spiritual lesson of this house — what it's really about beyond the textbook definition</p>
                       <p className="text-xs leading-relaxed">{house.perspectives.esoteric.text}</p>
                     </div>
                   )}
                   {house.perspectives.relational && (
                     <div className="p-3 rounded-lg bg-muted/50">
-                      <p className="text-[10px] font-medium text-muted-foreground mb-1">💞 IN RELATIONSHIPS</p>
+                      <p className="text-[10px] font-medium text-muted-foreground mb-0.5">💞 IN RELATIONSHIPS</p>
+                      <p className="text-[9px] text-muted-foreground italic mb-1">How this house theme plays out in your connections with other people</p>
                       <p className="text-xs leading-relaxed">{house.perspectives.relational.text}</p>
                     </div>
                   )}
                   {house.perspectives.shadow && (
                     <div className="p-3 rounded-lg bg-destructive/5 border border-destructive/10">
-                      <p className="text-[10px] font-medium text-muted-foreground mb-1">⚠ SHADOW & DANGER</p>
+                      <p className="text-[10px] font-medium text-muted-foreground mb-0.5">⚠ SHADOW & DANGER</p>
+                      <p className="text-[9px] text-muted-foreground italic mb-1">The trap you fall into when you're on autopilot in this life area</p>
                       <p className="text-xs leading-relaxed">{house.perspectives.shadow.text}</p>
                     </div>
                   )}
