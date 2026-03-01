@@ -1990,43 +1990,42 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
         defaultOpen={true}
       >
         <div className="space-y-4">
-          {/* Big Three Summary */}
-          <div className="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/30 p-5 rounded-lg border border-yellow-200 dark:border-yellow-800">
-            <p className="text-[10px] uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-2 font-medium">Your Big Three Integration</p>
-            <p className="text-sm leading-relaxed">{fullDirective.coreDirective}</p>
-          </div>
-
-          {/* Saturn Lesson */}
-          {fullDirective.saturnLesson && (
-            <div className="p-4 rounded-lg bg-slate-100 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 font-medium">♄ Saturn's Life Lesson</p>
-              <p className="text-sm leading-relaxed">{fullDirective.saturnLesson}</p>
-            </div>
-          )}
-
-          {/* North Node Direction */}
-          {fullDirective.northNodeDirection && (
-            <div className="p-4 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800">
-              <p className="text-[10px] uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-2 font-medium">☊ Soul Direction</p>
-              <p className="text-sm leading-relaxed">{fullDirective.northNodeDirection}</p>
+          {/* Reasoning — small font at top */}
+          {fullDirective.reasoning && (
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground leading-relaxed italic">
+                {fullDirective.reasoning}
+              </p>
+              {/* Saturn + NN pills */}
+              <div className="flex flex-wrap gap-2">
+                {fullDirective.saturnHow && (
+                  <span className="text-[11px] bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-full text-muted-foreground">
+                    {fullDirective.saturnHow}
+                  </span>
+                )}
+                {fullDirective.northNodeWhere && (
+                  <span className="text-[11px] bg-indigo-50 dark:bg-indigo-950/40 px-3 py-1.5 rounded-full text-muted-foreground">
+                    {fullDirective.northNodeWhere}
+                  </span>
+                )}
+              </div>
             </div>
           )}
 
           {/* Elemental Advice */}
           {fullDirective.elementalAdvice && (
-            <div className="p-4 rounded-lg bg-secondary/50 border border-border">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 font-medium">🜂 Elemental Growth Edge</p>
-              <p className="text-sm leading-relaxed">{fullDirective.elementalAdvice}</p>
+            <div className="p-3 rounded-lg bg-secondary/50 border border-border">
+              <p className="text-xs text-muted-foreground leading-relaxed">{fullDirective.elementalAdvice}</p>
             </div>
           )}
 
-          {/* The One Thing — Closing Integration */}
-          <div className="bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/40 dark:to-yellow-900/40 p-6 rounded-lg border-2 border-amber-300 dark:border-amber-700">
-            <p className="text-[10px] uppercase tracking-wider text-amber-700 dark:text-amber-300 mb-3 font-medium text-center">
-              "When you leave, remember this one thing..."
+          {/* The Fortune Cookie — big, bold, memorable */}
+          <div className="bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/40 dark:to-yellow-900/40 p-8 rounded-xl border-2 border-amber-300 dark:border-amber-700 text-center">
+            <p className="text-[10px] uppercase tracking-widest text-amber-600/70 dark:text-amber-400/70 mb-4 font-medium">
+              Keep this in your pocket
             </p>
-            <p className="text-base font-serif leading-relaxed text-foreground">
-              {fullDirective.closingIntegration}
+            <p className="text-xl md:text-2xl font-serif font-semibold leading-snug text-foreground">
+              {fullDirective.fortuneCookie}
             </p>
           </div>
         </div>
