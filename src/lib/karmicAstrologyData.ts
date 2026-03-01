@@ -59,7 +59,7 @@ export const TWELFTH_HOUSE_PAST_LIVES: Record<string, TwelfthHousePastLife> = {
     pastLifeDescription: 'In a previous cycle you were a person linked to art and aesthetics, public relations, justice, democracy, or fashion. Your inner psyche especially needs balance and moderation.',
     subconscious: 'Your best way to overcome karmic difficulties is through good manners, justice, cultivation of social relationships, and refinement of aesthetics.',
     pastLifeOccupation: 'Artist, diplomat, judge, fashion designer, or social coordinator',
-    karmicAdvice: 'Avoid banal attitudes and the pretense of seeing everything through rose-colored glasses. Genuine balance — not artificial harmony — is your path.',
+    karmicAdvice: 'Your instinct to weigh every side can become paralysis. Make the decision even when it feels imperfect — your past-life diplomacy already taught you how to read people. Now the lesson is to trust your own judgment and act on it, even if someone disagrees.',
   },
   Scorpio: {
     sign: 'Scorpio',
