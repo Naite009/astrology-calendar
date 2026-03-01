@@ -51,7 +51,7 @@ interface Props {
 
 export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
   const [hoveredQuadrant, setHoveredQuadrant] = useState<number | null>(null);
-  const cx = 260, cy = 260;
+  const cx = 280, cy = 280;
   const outerR = 210, innerR = 130, angleR = 238;
 
   const planetsByHouse = useMemo(() => {
@@ -131,8 +131,8 @@ export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
     const angle = houseAngle(a.house);
     const innerPt = polarToXY(angle, innerR - 5);
     const outerPt = polarToXY(angle, outerR + 5);
-    // Position angle labels further out and away from house numbers
-    const labelPt = polarToXY(angle, angleR);
+    // Position angle labels well outside the wheel with extra clearance
+    const labelPt = polarToXY(angle, outerR + 28);
     return { ...a, innerPt, outerPt, labelPt, angle };
   });
 
@@ -145,7 +145,7 @@ export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
       </p>
 
       <div className="flex justify-center">
-        <svg viewBox="0 0 520 520" className="w-full max-w-[520px]" role="img" aria-label="Astrological house wheel">
+        <svg viewBox="0 0 560 560" className="w-full max-w-[560px]" role="img" aria-label="Astrological house wheel">
           {/* Quadrant wedges */}
           {houseWedges.map(w => {
             const isHovered = hoveredQuadrant === w.quadrantIdx;
@@ -179,11 +179,11 @@ export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
           <circle cx={cx} cy={cy} r={outerR} fill="none" stroke="hsl(var(--border))" strokeWidth={1.5} />
           <circle cx={cx} cy={cy} r={innerR} fill="hsl(var(--background))" stroke="hsl(var(--border))" strokeWidth={1} />
 
-          {/* Hemisphere labels — positioned well outside the wheel */}
+          {/* Hemisphere labels — positioned at edges of viewBox */}
           <text x={cx} y={18} textAnchor="middle" className="fill-muted-foreground text-[9px] font-medium">SOUTHERN (Public)</text>
-          <text x={cx} y={512} textAnchor="middle" className="fill-muted-foreground text-[9px] font-medium">NORTHERN (Private)</text>
-          <text x={8} y={cy} textAnchor="start" className="fill-muted-foreground text-[9px] font-medium" dominantBaseline="middle">EAST (Self)</text>
-          <text x={512} y={cy} textAnchor="end" className="fill-muted-foreground text-[9px] font-medium" dominantBaseline="middle">WEST (Other)</text>
+          <text x={cx} y={552} textAnchor="middle" className="fill-muted-foreground text-[9px] font-medium">NORTHERN (Private)</text>
+          <text x={12} y={cy} textAnchor="start" className="fill-muted-foreground text-[9px] font-medium" dominantBaseline="middle">EAST (Self)</text>
+          <text x={548} y={cy} textAnchor="end" className="fill-muted-foreground text-[9px] font-medium" dominantBaseline="middle">WEST (Other)</text>
 
           {/* House numbers and names */}
           {houseWedges.map(w => (
@@ -207,15 +207,21 @@ export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
             );
           })}
 
-          {/* Angle markers */}
-          {angleMarkers.map(a => (
-            <g key={a.abbr}>
-              <line x1={a.innerPt.x} y1={a.innerPt.y} x2={a.outerPt.x} y2={a.outerPt.y}
-                stroke="hsl(var(--primary))" strokeWidth={2.5} />
-              <text x={a.labelPt.x} y={a.labelPt.y} textAnchor="middle" dominantBaseline="middle"
-                className="fill-primary text-[11px] font-bold">{a.abbr}</text>
-            </g>
-          ))}
+          {/* Angle markers — MC, IC, AC, DC with clear label placement */}
+          {angleMarkers.map(a => {
+            // For horizontal angles (AC/DC), offset vertically; for vertical (MC/IC), offset horizontally
+            const isHorizontal = a.abbr === 'AC' || a.abbr === 'DC';
+            const fullLabel = a.abbr === 'AC' ? 'AC' : a.abbr === 'DC' ? 'DC' : a.abbr === 'MC' ? 'MC' : 'IC';
+            return (
+              <g key={a.abbr}>
+                <line x1={a.innerPt.x} y1={a.innerPt.y} x2={a.outerPt.x} y2={a.outerPt.y}
+                  stroke="hsl(var(--primary))" strokeWidth={2.5} />
+                {/* Main angle label */}
+                <text x={a.labelPt.x} y={a.labelPt.y} textAnchor="middle" dominantBaseline="middle"
+                  className="fill-primary text-[12px] font-bold">{fullLabel}</text>
+              </g>
+            );
+          })}
 
           {/* Quadrant labels in center */}
           {QUADRANT_COLORS.map((q, i) => {
