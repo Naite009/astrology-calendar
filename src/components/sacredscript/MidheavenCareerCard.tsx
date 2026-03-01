@@ -12,19 +12,24 @@ interface Props {
 
 function getPlanetHouse(chart: NatalChart, planetName: string): number | null {
   if (!chart.planets || !chart.houseCusps) return null;
-  const planet = chart.planets[planetName];
-  if (!planet) return null;
-  const cusps = chart.houseCusps;
-  const deg = planet.degree;
+  const planet = chart.planets[planetName as keyof typeof chart.planets];
+  if (!planet?.sign) return null;
+  
+  const ZODIAC = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+  const toLon = (sign: string, deg: number, min: number = 0) => ZODIAC.indexOf(sign) * 30 + deg + (min / 60);
+  
+  const cusps: number[] = [];
+  for (let i = 1; i <= 12; i++) {
+    const c = chart.houseCusps[`house${i}` as keyof typeof chart.houseCusps];
+    if (c?.sign) cusps.push(toLon(c.sign, c.degree, c.minutes ?? 0));
+    else return null;
+  }
+  
+  const lon = toLon(planet.sign, planet.degree, planet.minutes ?? 0);
   for (let i = 0; i < 12; i++) {
-    const next = (i + 1) % 12;
-    const start = cusps[i];
-    const end = cusps[next];
-    if (start < end) {
-      if (deg >= start && deg < end) return i + 1;
-    } else {
-      if (deg >= start || deg < end) return i + 1;
-    }
+    const cur = cusps[i], next = cusps[(i + 1) % 12];
+    const inH = next < cur ? (lon >= cur || lon < next) : (lon >= cur && lon < next);
+    if (inH) return i + 1;
   }
   return null;
 }
@@ -32,9 +37,8 @@ function getPlanetHouse(chart: NatalChart, planetName: string): number | null {
 export function MidheavenCareerCard({ chart }: Props) {
   const [isOpen, setIsOpen] = useState(false);
 
-  // Get MC sign from house cusps (house 10 cusp sign) or from planets
-  const mcPlanet = chart.planets?.['Midheaven'] || chart.planets?.['MC'];
-  const mcSign = mcPlanet?.sign;
+  // Get MC sign from house 10 cusp (primary), fallback to planets
+  const mcSign = chart.houseCusps?.house10?.sign || chart.planets?.['Midheaven']?.sign || chart.planets?.['MC']?.sign;
 
   if (!mcSign) return null;
 
