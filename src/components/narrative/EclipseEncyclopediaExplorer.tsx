@@ -6,6 +6,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EclipseInterpretationLayer } from './EclipseInterpretationLayer';
+import { buildAxisTeaching, type ZodiacSign } from '@/lib/astrology/signTeacher';
 
 // ── Verified eclipse data from Cafe Astrology / NASA ──
 interface EclipseEvent {
@@ -159,12 +160,19 @@ interface Props {
 export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Props) {
   const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
   const [activeSeriesTab, setActiveSeriesTab] = useState('all');
+  const [selectedEclipseSign, setSelectedEclipseSign] = useState<ZodiacSign | null>(null);
 
   const allEclipsesSorted = useMemo(() => {
     const all: EclipseEvent[] = [];
     Object.values(ECLIPSE_SERIES).forEach(s => all.push(...s.events));
     return all.sort((a, b) => a.date.localeCompare(b.date));
   }, []);
+
+  const nextUpcomingSign = useMemo(() => {
+    const now = new Date().toISOString().slice(0, 10);
+    const next = allEclipsesSorted.find(e => e.date >= now);
+    return (next?.sign as ZodiacSign) || 'Virgo';
+  }, [allEclipsesSorted]);
 
   const allCharts = useMemo(() => {
     const charts: NatalChart[] = [];
@@ -344,7 +352,7 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
       </Card>
 
       {/* ── Interpretation Layer ── */}
-      <EclipseInterpretationLayer />
+      <EclipseInterpretationLayer selectedSign={selectedEclipseSign || nextUpcomingSign} />
 
       {/* ── Eclipse Timeline by Series ── */}
       <Card>
@@ -404,7 +412,7 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
                   const oppositeHouse = selectedChart?.houseCusps ? getHouseForDegree(oppositeSign, e.degree, selectedChart) : null;
 
                   return (
-                    <Card key={`all-${idx}`} className={`border-l-4 ${e.type === 'solar' ? 'border-l-primary' : 'border-l-accent'} ${isPast ? 'opacity-50' : ''} ${isNext ? 'ring-2 ring-primary/30' : ''}`}>
+                    <Card key={`all-${idx}`} onClick={() => setSelectedEclipseSign(e.sign as ZodiacSign)} className={`border-l-4 cursor-pointer hover:shadow-md transition-shadow ${e.type === 'solar' ? 'border-l-primary' : 'border-l-accent'} ${isPast ? 'opacity-50' : ''} ${isNext ? 'ring-2 ring-primary/30' : ''} ${selectedEclipseSign === e.sign ? 'ring-2 ring-accent' : ''}`}>
                       <CardContent className="py-4 flex flex-col sm:flex-row sm:items-start gap-3">
                         <div className="flex items-center gap-2 min-w-[140px]">
                           <span className="text-2xl">{e.type === 'solar' ? '🌑' : '🌕'}</span>
@@ -474,7 +482,7 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
                     const isNext = !isPast && (idx === 0 || new Date(series.events[idx - 1].date + 'T12:00:00') < now);
 
                     return (
-                      <Card key={idx} className={`border-l-4 ${e.type === 'solar' ? 'border-l-primary' : 'border-l-accent'} ${isPast ? 'opacity-50' : ''} ${isNext ? 'ring-2 ring-primary/30' : ''}`}>
+                      <Card key={idx} onClick={() => setSelectedEclipseSign(e.sign as ZodiacSign)} className={`border-l-4 cursor-pointer hover:shadow-md transition-shadow ${e.type === 'solar' ? 'border-l-primary' : 'border-l-accent'} ${isPast ? 'opacity-50' : ''} ${isNext ? 'ring-2 ring-primary/30' : ''} ${selectedEclipseSign === e.sign ? 'ring-2 ring-accent' : ''}`}>
                         <CardContent className="py-4 flex flex-col sm:flex-row sm:items-start gap-3">
                           <div className="flex items-center gap-2 min-w-[140px]">
                             <span className="text-2xl">{e.type === 'solar' ? '🌑' : '🌕'}</span>
@@ -503,11 +511,14 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
                                 ))}
                               </div>
                             )}
-                            {e.series === 'Virgo-Pisces' && (
-                              <p className="text-xs text-muted-foreground mt-1 italic">
-                                Axis stirred: {e.sign === 'Virgo' ? 'Virgo (systems) + Pisces (meaning)' : 'Pisces (meaning) + Virgo (systems)'}
-                              </p>
-                            )}
+                            {(() => {
+                              const axisData = buildAxisTeaching(e.sign as ZodiacSign);
+                              return (
+                                <p className="text-xs text-muted-foreground mt-1 italic">
+                                  {axisData.axisStirredLine(e.sign as ZodiacSign)}
+                                </p>
+                              );
+                            })()}
                             {'house' in e && e.house && (
                               <div className="mt-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
                                 <p className="text-sm font-medium">

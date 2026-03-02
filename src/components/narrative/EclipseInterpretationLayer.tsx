@@ -2,11 +2,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
+import { buildSignTeaching, buildAxisTeaching, getSignGlyph, type ZodiacSign } from '@/lib/astrology/signTeacher';
 
-const MODULES = [
+interface Props {
+  selectedSign?: ZodiacSign | null;
+}
+
+const STATIC_MODULES = [
   { key: 'nodes', icon: '☊', title: 'Nodal Direction — North vs. South' },
-  { key: 'virgo-sign', icon: '♍', title: 'Virgo: Mutable Earth (How It Works)' },
-  { key: 'virgo-pisces', icon: '♍♓', title: 'Virgo ↔ Pisces: Reality vs Meaning' },
   { key: 'houses', icon: '🏛', title: 'Eclipse Through the Houses' },
   { key: 'natal', icon: '🎯', title: 'Natal Planet Activations' },
   { key: 'cycles', icon: '🔄', title: 'Saros Cycles & Long-Range Patterns' },
@@ -16,7 +19,6 @@ function NodalDirectionContent() {
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* North Node */}
         <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
           <div className="flex items-center gap-2">
             <span className="text-xl">☊</span>
@@ -29,8 +31,6 @@ function NodalDirectionContent() {
             <li>Opportunities arrive that require courage to accept</li>
           </ul>
         </div>
-
-        {/* South Node */}
         <div className="rounded-lg border border-accent/20 bg-accent/5 p-4 space-y-3">
           <div className="flex items-center gap-2">
             <span className="text-xl">☋</span>
@@ -44,7 +44,6 @@ function NodalDirectionContent() {
           </ul>
         </div>
       </div>
-
       <div className="rounded-lg bg-muted/50 border border-border/50 px-4 py-3 text-center space-y-1">
         <p className="text-sm font-medium italic">
           North Node eclipses ask: <span className="text-primary">"Where must I grow?"</span>
@@ -57,104 +56,91 @@ function NodalDirectionContent() {
   );
 }
 
-function VirgoSignContent() {
+function SignTeachingContent({ sign }: { sign: ZodiacSign }) {
+  const t = buildSignTeaching(sign);
   return (
     <div className="space-y-5">
       <p className="text-sm text-muted-foreground italic">
-        Why Virgo refines reality — and how it differs from Taurus and Capricorn.
+        Why {sign} expresses {t.info.element} through the {t.info.modality} mode — and how it differs from the other {t.info.element} signs.
       </p>
 
-      {/* Section 1 — Element */}
+      {/* Element */}
       <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-2">
-        <h4 className="font-semibold text-sm">🌍 Earth = The Reality Layer</h4>
-        <p className="text-sm text-muted-foreground">
-          Earth signs describe the physical life we have to manage: the body, health, food, work, money, schedules, tools, and the systems that keep life running.
-        </p>
+        <h4 className="font-semibold text-sm">{t.elementCard.icon} {t.elementCard.title}</h4>
+        <p className="text-sm text-muted-foreground">{t.elementCard.body}</p>
       </div>
 
-      {/* Section 2 — Modality */}
+      {/* Modality */}
       <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-2">
-        <h4 className="font-semibold text-sm">🔄 Mutable = Adjustment & Refinement</h4>
-        <p className="text-sm text-muted-foreground">
-          Mutable signs don't initiate like cardinal signs or preserve like fixed signs. They adjust. Over time, small tweaks and repeated habits accumulate — and the results become visible.
-        </p>
+        <h4 className="font-semibold text-sm">🔄 {t.modalityCard.title}</h4>
+        <p className="text-sm text-muted-foreground">{t.modalityCard.body}</p>
       </div>
 
-      {/* Section 3 — Comparison */}
+      {/* Comparison triad */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-2">
-          <h4 className="font-semibold text-sm">♑ Capricorn <span className="font-normal text-muted-foreground">(Cardinal Earth)</span></h4>
-          <p className="text-sm text-muted-foreground">Builds structures. Creates frameworks. Sets the long-term plan.</p>
-        </div>
-        <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-2">
-          <h4 className="font-semibold text-sm">♉ Taurus <span className="font-normal text-muted-foreground">(Fixed Earth)</span></h4>
-          <p className="text-sm text-muted-foreground">Stabilizes resources. Preserves what works. Protects what's valuable.</p>
-        </div>
-        <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-2">
-          <h4 className="font-semibold text-sm">♍ Virgo <span className="font-normal text-muted-foreground">(Mutable Earth)</span></h4>
-          <p className="text-sm text-muted-foreground">Optimizes function. Refines the system. Fixes friction so life actually works.</p>
-        </div>
+        {t.comparison.map(c => (
+          <div
+            key={c.sign}
+            className={`rounded-lg p-4 space-y-2 ${
+              c.isCurrent
+                ? 'border border-primary/20 bg-primary/5'
+                : 'border border-border/50 bg-card/50'
+            }`}
+          >
+            <h4 className="font-semibold text-sm">
+              {c.glyph} {c.title}
+            </h4>
+            <p className="text-sm text-muted-foreground">{c.body}</p>
+          </div>
+        ))}
       </div>
 
       <div className="rounded-lg bg-muted/50 border border-border/50 px-4 py-3 text-center">
-        <p className="text-sm font-medium italic">
-          Virgo doesn't build the system (Capricorn) or preserve it (Taurus) — Virgo makes sure the system actually functions.
-        </p>
+        <p className="text-sm font-medium italic">{t.closingLine}</p>
       </div>
     </div>
   );
 }
 
-function VirgoPiscesAxisContent() {
+function AxisTeachingContent({ sign }: { sign: ZodiacSign }) {
+  const a = buildAxisTeaching(sign);
   return (
     <div className="space-y-5">
       <p className="text-sm text-muted-foreground italic">
-        Full Moons on this axis ask you to reconcile measurable reality with the deeper "why."
+        Full Moons on this axis ask you to reconcile {a.left.title.split(': ')[1]} with {a.right.title.split(': ')[1]}.
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Virgo */}
         <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
-          <h4 className="font-semibold text-sm">♍ Virgo: Measurable Reality</h4>
+          <h4 className="font-semibold text-sm">{a.leftGlyph} {a.left.title}</h4>
           <ul className="text-sm text-muted-foreground space-y-1.5 list-disc pl-4">
-            <li>What's working, what isn't</li>
-            <li>Habits, routines, systems</li>
-            <li>Health, workload, daily rhythm</li>
-            <li>Practical signals and real outcomes</li>
+            {a.left.bullets.map(b => <li key={b}>{b}</li>)}
           </ul>
         </div>
-
-        {/* Pisces */}
         <div className="rounded-lg border border-accent/20 bg-accent/5 p-4 space-y-3">
-          <h4 className="font-semibold text-sm">♓ Pisces: Meaning & Surrender</h4>
+          <h4 className="font-semibold text-sm">{a.rightGlyph} {a.right.title}</h4>
           <ul className="text-sm text-muted-foreground space-y-1.5 list-disc pl-4">
-            <li>Why it matters</li>
-            <li>Intuition, faith, emotional truth</li>
-            <li>Spiritual alignment</li>
-            <li>Letting go of noise and urgency</li>
+            {a.right.bullets.map(b => <li key={b}>{b}</li>)}
           </ul>
         </div>
       </div>
 
-      {/* Integration Question */}
       <div className="rounded-lg bg-primary/5 border border-primary/20 px-5 py-4 space-y-2">
         <h4 className="font-semibold text-sm">🔗 The Integration Question</h4>
-        <p className="text-sm text-muted-foreground">
-          Does my daily life support my deeper purpose — or am I functioning efficiently inside expectations that don't fit me?
-        </p>
+        <p className="text-sm text-muted-foreground">{a.integrationQuestion}</p>
       </div>
 
       <div className="rounded-lg bg-muted/50 border border-border/50 px-4 py-3 text-center">
-        <p className="text-sm font-medium italic">
-          On this axis, alignment is the bridge between vision (Pisces) and execution (Virgo).
-        </p>
+        <p className="text-sm font-medium italic">{a.closingLine}</p>
       </div>
     </div>
   );
 }
 
-export function EclipseInterpretationLayer() {
+export function EclipseInterpretationLayer({ selectedSign }: Props) {
   const [openModules, setOpenModules] = useState<string[]>([]);
+
+  const sign = selectedSign || 'Virgo';
 
   const toggle = (key: string) => {
     setOpenModules(prev =>
@@ -162,10 +148,22 @@ export function EclipseInterpretationLayer() {
     );
   };
 
+  const dynamicModules = [
+    { key: 'sign-teaching', icon: getSignGlyph(sign), title: `${sign}: ${buildSignTeaching(sign).info.modality} ${buildSignTeaching(sign).info.element} (How It Works)` },
+    { key: 'axis-teaching', icon: `${getSignGlyph(sign)}${getSignGlyph(buildSignTeaching(sign).info.opposite)}`, title: `${sign} ↔ ${buildSignTeaching(sign).info.opposite}: The Axis` },
+  ];
+
+  const allModules = [
+    STATIC_MODULES[0], // nodes
+    dynamicModules[0], // sign teaching
+    dynamicModules[1], // axis teaching
+    ...STATIC_MODULES.slice(1), // houses, natal, cycles
+  ];
+
   const renderContent = (key: string) => {
     if (key === 'nodes') return <NodalDirectionContent />;
-    if (key === 'virgo-sign') return <VirgoSignContent />;
-    if (key === 'virgo-pisces') return <VirgoPiscesAxisContent />;
+    if (key === 'sign-teaching') return <SignTeachingContent sign={sign} />;
+    if (key === 'axis-teaching') return <AxisTeachingContent sign={sign} />;
     return <p className="italic text-muted-foreground">Content coming soon…</p>;
   };
 
@@ -177,10 +175,13 @@ export function EclipseInterpretationLayer() {
         </CardTitle>
         <p className="text-sm text-muted-foreground">
           A deeper framework for interpreting eclipse cycles personally — expand each module to learn more.
+          {selectedSign && (
+            <span className="ml-1 font-medium text-foreground">Currently viewing: {getSignGlyph(sign)} {sign}</span>
+          )}
         </p>
       </CardHeader>
       <CardContent className="space-y-2">
-        {MODULES.map(mod => (
+        {allModules.map(mod => (
           <Collapsible
             key={mod.key}
             open={openModules.includes(mod.key)}
