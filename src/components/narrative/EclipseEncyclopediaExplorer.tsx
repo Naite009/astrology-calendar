@@ -1,12 +1,13 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartSelector } from '@/components/ChartSelector';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { EclipseInterpretationLayer } from './EclipseInterpretationLayer';
+import { EclipseInterpretationLayer, extractNatalPoints } from './EclipseInterpretationLayer';
 import { buildAxisTeaching, type ZodiacSign } from '@/lib/astrology/signTeacher';
+import { getProximityBadge } from '@/lib/astrology/eclipseAspects';
 
 // ── Verified eclipse data from Cafe Astrology / NASA ──
 export interface EclipseEvent {
@@ -21,9 +22,6 @@ export interface EclipseEvent {
   description: string;
 }
 
-// Eclipse series are organized by nodal axis.
-// IMPORTANT: Series overlap! Solar eclipses tend to follow the new axis
-// while lunar eclipses from the outgoing axis continue alongside.
 const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: string; status: string; description: string; events: EclipseEvent[] }> = {
   'Aries-Libra': {
     label: 'Aries ↔ Libra',
@@ -93,7 +91,6 @@ const ZODIAC_ORDER = [
   'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
 ];
 
-// Teaching tags for specific eclipses
 const TEACHING_TAGS: Record<string, string[]> = {
   '2026-03-03': ['System audit', 'Cause & effect', 'Mutable Earth refinement'],
 };
@@ -152,16 +149,27 @@ const HOUSE_LIFE_AREAS: Record<number, string> = {
   12: 'Spirituality, solitude, hidden matters, the unconscious',
 };
 
+const LS_KEYS = {
+  tab: 'eclipseExplorer.activeTab',
+  eclipse: 'eclipseExplorer.selectedEclipseDate',
+  chart: 'eclipseExplorer.selectedChartId',
+};
+
 interface Props {
   userNatalChart: NatalChart | null;
   savedCharts: NatalChart[];
 }
 
 export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Props) {
-  const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
-  const [activeSeriesTab, setActiveSeriesTab] = useState('all');
+  const [selectedChartId, setSelectedChartId] = useState<string | null>(() => {
+    try { return localStorage.getItem(LS_KEYS.chart); } catch { return null; }
+  });
+  const [activeSeriesTab, setActiveSeriesTab] = useState(() => {
+    try { return localStorage.getItem(LS_KEYS.tab) || 'all'; } catch { return 'all'; }
+  });
   const [selectedEclipse, setSelectedEclipse] = useState<EclipseEvent | null>(null);
   const teacherRef = useRef<HTMLDivElement>(null);
+  const timelineRef = useRef<HTMLDivElement>(null);
 
   const allEclipsesSorted = useMemo(() => {
     const all: EclipseEvent[] = [];
@@ -174,10 +182,43 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
     return allEclipsesSorted.find(e => e.date >= now) ?? allEclipsesSorted[0] ?? null;
   }, [allEclipsesSorted]);
 
-  const handleSelectEclipse = (e: EclipseEvent) => {
+  // Restore selected eclipse from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedDate = localStorage.getItem(LS_KEYS.eclipse);
+      if (savedDate) {
+        const found = allEclipsesSorted.find(e => e.date === savedDate);
+        if (found) setSelectedEclipse(found);
+      }
+    } catch { /* ignore */ }
+  }, [allEclipsesSorted]);
+
+  // Persist state to localStorage
+  useEffect(() => {
+    try { localStorage.setItem(LS_KEYS.tab, activeSeriesTab); } catch { /* */ }
+  }, [activeSeriesTab]);
+
+  useEffect(() => {
+    try {
+      if (selectedEclipse?.date) localStorage.setItem(LS_KEYS.eclipse, selectedEclipse.date);
+    } catch { /* */ }
+  }, [selectedEclipse?.date]);
+
+  useEffect(() => {
+    try {
+      if (selectedChartId) localStorage.setItem(LS_KEYS.chart, selectedChartId);
+      else localStorage.removeItem(LS_KEYS.chart);
+    } catch { /* */ }
+  }, [selectedChartId]);
+
+  const handleSelectEclipse = useCallback((e: EclipseEvent) => {
     setSelectedEclipse(e);
     requestAnimationFrame(() => teacherRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
-  };
+  }, []);
+
+  const scrollToTimeline = useCallback(() => {
+    timelineRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
 
   const activeEclipse = selectedEclipse || nextUpcomingEclipse;
 
@@ -196,6 +237,28 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
 
   const activeSeries = ECLIPSE_SERIES[activeSeriesTab];
 
+  // Compute current list for prev/next navigation
+  const currentList = useMemo(() => {
+    if (activeSeriesTab === 'all') return allEclipsesSorted;
+    return activeSeries?.events ?? allEclipsesSorted;
+  }, [activeSeriesTab, activeSeries, allEclipsesSorted]);
+
+  // Precompute proximity badges
+  const natalPoints = useMemo(() => {
+    if (!selectedChart) return null;
+    return extractNatalPoints(selectedChart);
+  }, [selectedChart]);
+
+  const proximityByDate = useMemo(() => {
+    if (!natalPoints) return new Map<string, string>();
+    const m = new Map<string, string>();
+    for (const e of allEclipsesSorted) {
+      const badge = getProximityBadge(e, natalPoints);
+      if (badge) m.set(e.date, badge);
+    }
+    return m;
+  }, [allEclipsesSorted, natalPoints]);
+
   const personalizedEvents = useMemo(() => {
     if (!selectedChart?.houseCusps || !activeSeries) return null;
     return activeSeries.events.map(e => {
@@ -205,6 +268,12 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
       return { ...e, house, oppositeHouse };
     });
   }, [selectedChart, activeSeries]);
+
+  const renderProximityBadge = (date: string) => {
+    const prox = proximityByDate.get(date);
+    if (!prox) return null;
+    return <Badge variant="secondary" className="text-[10px] bg-primary/10 text-primary">🧲 {prox}</Badge>;
+  };
 
   return (
     <div className="space-y-8">
@@ -360,7 +429,13 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
 
       {/* ── Interpretation Layer ── */}
       <div ref={teacherRef}>
-        <EclipseInterpretationLayer selectedEclipse={activeEclipse} userNatalChart={userNatalChart} />
+        <EclipseInterpretationLayer
+          selectedEclipse={activeEclipse}
+          userNatalChart={selectedChart}
+          onBackToTimeline={scrollToTimeline}
+          currentList={currentList}
+          onSelectEclipse={handleSelectEclipse}
+        />
       </div>
 
       {/* ── Eclipse Timeline by Series ── */}
@@ -374,7 +449,6 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Chart selector */}
           {allCharts.length > 0 && (
             <div className="mb-4">
               <ChartSelector
@@ -386,112 +460,43 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
             </div>
           )}
 
-          <Tabs value={activeSeriesTab} onValueChange={setActiveSeriesTab}>
-            <TabsList className="grid grid-cols-3 sm:grid-cols-5 w-full h-auto">
-              <TabsTrigger value="all" className="text-xs sm:text-sm py-2 flex flex-col gap-0.5">
-                <span>📅</span>
-                <span className="hidden sm:inline">All Eclipses</span>
-                <Badge variant="default" className="text-[10px] mt-0.5">Timeline</Badge>
-              </TabsTrigger>
-              {Object.entries(ECLIPSE_SERIES).map(([key, s]) => (
-                <TabsTrigger key={key} value={key} className="text-xs sm:text-sm py-2 flex flex-col gap-0.5">
-                  <span>{s.glyphs}</span>
-                  <span className="hidden sm:inline">{s.label}</span>
-                  <Badge variant={s.status === 'active' ? 'default' : s.status === 'upcoming' ? 'secondary' : 'outline'} className="text-[10px] mt-0.5">
-                    {s.status === 'ending' ? 'Ending' : s.status === 'active' ? 'Active Now' : s.status === 'upcoming' ? 'Starting' : 'Next Up'}
-                  </Badge>
+          <div ref={timelineRef}>
+            <Tabs value={activeSeriesTab} onValueChange={setActiveSeriesTab}>
+              <TabsList className="grid grid-cols-3 sm:grid-cols-5 w-full h-auto">
+                <TabsTrigger value="all" className="text-xs sm:text-sm py-2 flex flex-col gap-0.5">
+                  <span>📅</span>
+                  <span className="hidden sm:inline">All Eclipses</span>
+                  <Badge variant="default" className="text-[10px] mt-0.5">Timeline</Badge>
                 </TabsTrigger>
-              ))}
-            </TabsList>
+                {Object.entries(ECLIPSE_SERIES).map(([key, s]) => (
+                  <TabsTrigger key={key} value={key} className="text-xs sm:text-sm py-2 flex flex-col gap-0.5">
+                    <span>{s.glyphs}</span>
+                    <span className="hidden sm:inline">{s.label}</span>
+                    <Badge variant={s.status === 'active' ? 'default' : s.status === 'upcoming' ? 'secondary' : 'outline'} className="text-[10px] mt-0.5">
+                      {s.status === 'ending' ? 'Ending' : s.status === 'active' ? 'Active Now' : s.status === 'upcoming' ? 'Starting' : 'Next Up'}
+                    </Badge>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
 
-            <TabsContent value="all" className="mt-4 space-y-4">
-              <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
-                <h3 className="font-semibold text-lg">📅 Complete Eclipse Timeline (2023–2029)</h3>
-                <p className="text-sm text-muted-foreground mt-1">Every eclipse in chronological order across all series. Solar eclipses happen at New Moons, lunar eclipses at Full Moons.</p>
-              </div>
-              <div className="space-y-3">
-                {allEclipsesSorted.map((e, idx) => {
-                  const dateObj = new Date(e.date + 'T12:00:00');
-                  const formatted = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-                  const now = new Date();
-                  const isPast = dateObj < now;
-                  const isNext = !isPast && (idx === 0 || new Date(allEclipsesSorted[idx - 1].date + 'T12:00:00') < now);
-                  const house = selectedChart?.houseCusps ? getHouseForDegree(e.sign, e.degree, selectedChart) : null;
-                  const oppositeSign = ZODIAC_ORDER[(ZODIAC_ORDER.indexOf(e.sign) + 6) % 12];
-                  const oppositeHouse = selectedChart?.houseCusps ? getHouseForDegree(oppositeSign, e.degree, selectedChart) : null;
-
-                  return (
-                    <Card key={`all-${idx}`} onClick={() => handleSelectEclipse(e)} className={`border-l-4 cursor-pointer hover:shadow-md transition-shadow ${e.type === 'solar' ? 'border-l-primary' : 'border-l-accent'} ${isPast ? 'opacity-50' : ''} ${isNext ? 'ring-2 ring-primary/30' : ''} ${selectedEclipse?.date === e.date ? 'ring-2 ring-accent' : ''}`}>
-                      <CardContent className="py-4 flex flex-col sm:flex-row sm:items-start gap-3">
-                        <div className="flex items-center gap-2 min-w-[140px]">
-                          <span className="text-2xl">{e.type === 'solar' ? '🌑' : '🌕'}</span>
-                          <div>
-                            <p className="font-semibold text-sm capitalize">{e.subtype} {e.type}</p>
-                            <p className="text-xs text-muted-foreground">{formatted}</p>
-                          </div>
-                        </div>
-                        <div className="flex-1 space-y-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <Badge variant="outline" className="text-xs">
-                              {e.degree}°{e.minutes > 0 ? e.minutes.toString().padStart(2, '0') + "'" : ''} {getSignGlyph(e.sign)} {e.sign}
-                            </Badge>
-                            <Badge variant="secondary" className="text-xs">
-                              {e.nodal === 'north' ? '☊ North Node' : '☋ South Node'}
-                            </Badge>
-                            <Badge variant="outline" className="text-[10px]">{e.series}</Badge>
-                            {isPast && <Badge className="text-xs bg-muted text-muted-foreground">Past</Badge>}
-                            {isNext && <Badge className="text-xs bg-primary text-primary-foreground">Next</Badge>}
-                          </div>
-                          <p className="text-sm text-muted-foreground">{e.description}</p>
-                          {TEACHING_TAGS[e.date] && (
-                            <div className="flex items-center gap-2 flex-wrap mt-1">
-                              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Teaching Tags:</span>
-                              {TEACHING_TAGS[e.date].map(tag => (
-                                <Badge key={tag} variant="secondary" className="text-[10px] bg-accent/10 text-accent-foreground">{tag}</Badge>
-                              ))}
-                            </div>
-                          )}
-                          {house && (
-                            <div className="mt-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
-                              <p className="text-sm font-medium">
-                                ✨ Falls in your <strong>{getOrdinalSuffix(house)} House</strong>
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {HOUSE_LIFE_AREAS[house]}
-                              </p>
-                              {oppositeHouse && (
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  Axis activation: also stirring <strong>{getOrdinalSuffix(oppositeHouse)} House</strong> themes ({HOUSE_LIFE_AREAS[oppositeHouse]?.split(',')[0]})
-                                </p>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </TabsContent>
-
-            {Object.entries(ECLIPSE_SERIES).map(([key, series]) => (
-              <TabsContent key={key} value={key} className="mt-4 space-y-4">
+              <TabsContent value="all" className="mt-4 space-y-4">
                 <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
-                  <h3 className="font-semibold text-lg">{series.glyphs} {series.label} ({series.period})</h3>
-                  <p className="text-sm text-muted-foreground mt-1">{series.description}</p>
+                  <h3 className="font-semibold text-lg">📅 Complete Eclipse Timeline (2023–2029)</h3>
+                  <p className="text-sm text-muted-foreground mt-1">Every eclipse in chronological order across all series. Solar eclipses happen at New Moons, lunar eclipses at Full Moons.</p>
                 </div>
-
                 <div className="space-y-3">
-                  {(key === activeSeriesTab ? (personalizedEvents || series.events) : series.events).map((eclipse, idx) => {
-                    const e = eclipse as EclipseEvent & { house?: number | null; oppositeHouse?: number | null };
+                  {allEclipsesSorted.map((e, idx) => {
                     const dateObj = new Date(e.date + 'T12:00:00');
                     const formatted = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
                     const now = new Date();
                     const isPast = dateObj < now;
-                    const isNext = !isPast && (idx === 0 || new Date(series.events[idx - 1].date + 'T12:00:00') < now);
+                    const isNext = !isPast && (idx === 0 || new Date(allEclipsesSorted[idx - 1].date + 'T12:00:00') < now);
+                    const house = selectedChart?.houseCusps ? getHouseForDegree(e.sign, e.degree, selectedChart) : null;
+                    const oppositeSign = ZODIAC_ORDER[(ZODIAC_ORDER.indexOf(e.sign) + 6) % 12];
+                    const oppositeHouse = selectedChart?.houseCusps ? getHouseForDegree(oppositeSign, e.degree, selectedChart) : null;
 
                     return (
-                      <Card key={idx} onClick={() => handleSelectEclipse(e)} className={`border-l-4 cursor-pointer hover:shadow-md transition-shadow ${e.type === 'solar' ? 'border-l-primary' : 'border-l-accent'} ${isPast ? 'opacity-50' : ''} ${isNext ? 'ring-2 ring-primary/30' : ''} ${selectedEclipse?.date === e.date ? 'ring-2 ring-accent' : ''}`}>
+                      <Card key={`all-${idx}`} onClick={() => handleSelectEclipse(e)} className={`border-l-4 cursor-pointer hover:shadow-md transition-shadow ${e.type === 'solar' ? 'border-l-primary' : 'border-l-accent'} ${isPast ? 'opacity-50' : ''} ${isNext ? 'ring-2 ring-primary/30' : ''} ${selectedEclipse?.date === e.date ? 'ring-2 ring-accent' : ''}`}>
                         <CardContent className="py-4 flex flex-col sm:flex-row sm:items-start gap-3">
                           <div className="flex items-center gap-2 min-w-[140px]">
                             <span className="text-2xl">{e.type === 'solar' ? '🌑' : '🌕'}</span>
@@ -508,8 +513,10 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
                               <Badge variant="secondary" className="text-xs">
                                 {e.nodal === 'north' ? '☊ North Node' : '☋ South Node'}
                               </Badge>
+                              <Badge variant="outline" className="text-[10px]">{e.series}</Badge>
                               {isPast && <Badge className="text-xs bg-muted text-muted-foreground">Past</Badge>}
                               {isNext && <Badge className="text-xs bg-primary text-primary-foreground">Next</Badge>}
+                              {renderProximityBadge(e.date)}
                             </div>
                             <p className="text-sm text-muted-foreground">{e.description}</p>
                             {TEACHING_TAGS[e.date] && (
@@ -528,17 +535,17 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
                                 </p>
                               );
                             })()}
-                            {'house' in e && e.house && (
+                            {house && (
                               <div className="mt-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
                                 <p className="text-sm font-medium">
-                                  ✨ Falls in your <strong>{getOrdinalSuffix(e.house)} House</strong>
+                                  ✨ Falls in your <strong>{getOrdinalSuffix(house)} House</strong>
                                 </p>
                                 <p className="text-xs text-muted-foreground mt-1">
-                                  {HOUSE_LIFE_AREAS[e.house]}
+                                  {HOUSE_LIFE_AREAS[house]}
                                 </p>
-                                {'oppositeHouse' in e && e.oppositeHouse && (
+                                {oppositeHouse && (
                                   <p className="text-xs text-muted-foreground mt-1">
-                                    Axis activation: also stirring <strong>{getOrdinalSuffix(e.oppositeHouse)} House</strong> themes ({HOUSE_LIFE_AREAS[e.oppositeHouse]?.split(',')[0]})
+                                    Axis activation: also stirring <strong>{getOrdinalSuffix(oppositeHouse)} House</strong> themes ({HOUSE_LIFE_AREAS[oppositeHouse]?.split(',')[0]})
                                   </p>
                                 )}
                               </div>
@@ -550,8 +557,87 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
                   })}
                 </div>
               </TabsContent>
-            ))}
-          </Tabs>
+
+              {Object.entries(ECLIPSE_SERIES).map(([key, series]) => (
+                <TabsContent key={key} value={key} className="mt-4 space-y-4">
+                  <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
+                    <h3 className="font-semibold text-lg">{series.glyphs} {series.label} ({series.period})</h3>
+                    <p className="text-sm text-muted-foreground mt-1">{series.description}</p>
+                  </div>
+
+                  <div className="space-y-3">
+                    {(key === activeSeriesTab ? (personalizedEvents || series.events) : series.events).map((eclipse, idx) => {
+                      const e = eclipse as EclipseEvent & { house?: number | null; oppositeHouse?: number | null };
+                      const dateObj = new Date(e.date + 'T12:00:00');
+                      const formatted = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                      const now = new Date();
+                      const isPast = dateObj < now;
+                      const isNext = !isPast && (idx === 0 || new Date(series.events[idx - 1].date + 'T12:00:00') < now);
+
+                      return (
+                        <Card key={idx} onClick={() => handleSelectEclipse(e)} className={`border-l-4 cursor-pointer hover:shadow-md transition-shadow ${e.type === 'solar' ? 'border-l-primary' : 'border-l-accent'} ${isPast ? 'opacity-50' : ''} ${isNext ? 'ring-2 ring-primary/30' : ''} ${selectedEclipse?.date === e.date ? 'ring-2 ring-accent' : ''}`}>
+                          <CardContent className="py-4 flex flex-col sm:flex-row sm:items-start gap-3">
+                            <div className="flex items-center gap-2 min-w-[140px]">
+                              <span className="text-2xl">{e.type === 'solar' ? '🌑' : '🌕'}</span>
+                              <div>
+                                <p className="font-semibold text-sm capitalize">{e.subtype} {e.type}</p>
+                                <p className="text-xs text-muted-foreground">{formatted}</p>
+                              </div>
+                            </div>
+                            <div className="flex-1 space-y-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <Badge variant="outline" className="text-xs">
+                                  {e.degree}°{e.minutes > 0 ? e.minutes.toString().padStart(2, '0') + "'" : ''} {getSignGlyph(e.sign)} {e.sign}
+                                </Badge>
+                                <Badge variant="secondary" className="text-xs">
+                                  {e.nodal === 'north' ? '☊ North Node' : '☋ South Node'}
+                                </Badge>
+                                {isPast && <Badge className="text-xs bg-muted text-muted-foreground">Past</Badge>}
+                                {isNext && <Badge className="text-xs bg-primary text-primary-foreground">Next</Badge>}
+                                {renderProximityBadge(e.date)}
+                              </div>
+                              <p className="text-sm text-muted-foreground">{e.description}</p>
+                              {TEACHING_TAGS[e.date] && (
+                                <div className="flex items-center gap-2 flex-wrap mt-1">
+                                  <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Teaching Tags:</span>
+                                  {TEACHING_TAGS[e.date].map(tag => (
+                                    <Badge key={tag} variant="secondary" className="text-[10px] bg-accent/10 text-accent-foreground">{tag}</Badge>
+                                  ))}
+                                </div>
+                              )}
+                              {(() => {
+                                const axisData = buildAxisTeaching(e.sign);
+                                return (
+                                  <p className="text-xs text-muted-foreground mt-1 italic">
+                                    {axisData.axisStirredLine(e.sign)}
+                                  </p>
+                                );
+                              })()}
+                              {'house' in e && e.house && (
+                                <div className="mt-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
+                                  <p className="text-sm font-medium">
+                                    ✨ Falls in your <strong>{getOrdinalSuffix(e.house)} House</strong>
+                                  </p>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {HOUSE_LIFE_AREAS[e.house]}
+                                  </p>
+                                  {'oppositeHouse' in e && e.oppositeHouse && (
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                      Axis activation: also stirring <strong>{getOrdinalSuffix(e.oppositeHouse)} House</strong> themes ({HOUSE_LIFE_AREAS[e.oppositeHouse]?.split(',')[0]})
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </TabsContent>
+              ))}
+            </Tabs>
+          </div>
 
           {!selectedChart?.houseCusps && allCharts.length > 0 && (
             <p className="mt-4 text-sm text-muted-foreground italic text-center">
