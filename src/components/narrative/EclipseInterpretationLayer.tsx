@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 const MODULES = [
   { key: 'nodes', icon: '☊', title: 'Nodal Direction — North vs. South' },
-  { key: 'mechanics', icon: '⚙️', title: 'Eclipse Mechanics & Astronomy' },
+  { key: 'virgo-sign', icon: '♍', title: 'Virgo: Mutable Earth (How It Works)' },
   { key: 'types', icon: '🌑', title: 'Solar vs. Lunar Eclipse Psychology' },
   { key: 'houses', icon: '🏛', title: 'Eclipse Through the Houses' },
   { key: 'natal', icon: '🎯', title: 'Natal Planet Activations' },
@@ -57,6 +57,54 @@ function NodalDirectionContent() {
   );
 }
 
+function VirgoSignContent() {
+  return (
+    <div className="space-y-5">
+      <p className="text-sm text-muted-foreground italic">
+        Why Virgo refines reality — and how it differs from Taurus and Capricorn.
+      </p>
+
+      {/* Section 1 — Element */}
+      <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-2">
+        <h4 className="font-semibold text-sm">🌍 Earth = The Reality Layer</h4>
+        <p className="text-sm text-muted-foreground">
+          Earth signs describe the physical life we have to manage: the body, health, food, work, money, schedules, tools, and the systems that keep life running.
+        </p>
+      </div>
+
+      {/* Section 2 — Modality */}
+      <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-2">
+        <h4 className="font-semibold text-sm">🔄 Mutable = Adjustment & Refinement</h4>
+        <p className="text-sm text-muted-foreground">
+          Mutable signs don't initiate like cardinal signs or preserve like fixed signs. They adjust. Over time, small tweaks and repeated habits accumulate — and the results become visible.
+        </p>
+      </div>
+
+      {/* Section 3 — Comparison */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-2">
+          <h4 className="font-semibold text-sm">♑ Capricorn <span className="font-normal text-muted-foreground">(Cardinal Earth)</span></h4>
+          <p className="text-sm text-muted-foreground">Builds structures. Creates frameworks. Sets the long-term plan.</p>
+        </div>
+        <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-2">
+          <h4 className="font-semibold text-sm">♉ Taurus <span className="font-normal text-muted-foreground">(Fixed Earth)</span></h4>
+          <p className="text-sm text-muted-foreground">Stabilizes resources. Preserves what works. Protects what's valuable.</p>
+        </div>
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-2">
+          <h4 className="font-semibold text-sm">♍ Virgo <span className="font-normal text-muted-foreground">(Mutable Earth)</span></h4>
+          <p className="text-sm text-muted-foreground">Optimizes function. Refines the system. Fixes friction so life actually works.</p>
+        </div>
+      </div>
+
+      <div className="rounded-lg bg-muted/50 border border-border/50 px-4 py-3 text-center">
+        <p className="text-sm font-medium italic">
+          Virgo doesn't build the system (Capricorn) or preserve it (Taurus) — Virgo makes sure the system actually functions.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export function EclipseInterpretationLayer() {
   const [openModules, setOpenModules] = useState<string[]>([]);
 
@@ -68,6 +116,7 @@ export function EclipseInterpretationLayer() {
 
   const renderContent = (key: string) => {
     if (key === 'nodes') return <NodalDirectionContent />;
+    if (key === 'virgo-sign') return <VirgoSignContent />;
     return <p className="italic text-muted-foreground">Content coming soon…</p>;
   };
 

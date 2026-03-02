@@ -92,6 +92,11 @@ const ZODIAC_ORDER = [
   'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
 ];
 
+// Teaching tags for specific eclipses
+const TEACHING_TAGS: Record<string, string[]> = {
+  '2026-03-03': ['System audit', 'Cause & effect', 'Mutable Earth refinement'],
+};
+
 function getSignGlyph(sign: string): string {
   const glyphs: Record<string, string> = {
     Aries: '♈', Taurus: '♉', Gemini: '♊', Cancer: '♋', Leo: '♌', Virgo: '♍',
@@ -421,6 +426,14 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
                             {isNext && <Badge className="text-xs bg-primary text-primary-foreground">Next</Badge>}
                           </div>
                           <p className="text-sm text-muted-foreground">{e.description}</p>
+                          {TEACHING_TAGS[e.date] && (
+                            <div className="flex items-center gap-2 flex-wrap mt-1">
+                              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Teaching Tags:</span>
+                              {TEACHING_TAGS[e.date].map(tag => (
+                                <Badge key={tag} variant="secondary" className="text-[10px] bg-accent/10 text-accent-foreground">{tag}</Badge>
+                              ))}
+                            </div>
+                          )}
                           {house && (
                             <div className="mt-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
                               <p className="text-sm font-medium">
@@ -482,6 +495,14 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
                               {isNext && <Badge className="text-xs bg-primary text-primary-foreground">Next</Badge>}
                             </div>
                             <p className="text-sm text-muted-foreground">{e.description}</p>
+                            {TEACHING_TAGS[e.date] && (
+                              <div className="flex items-center gap-2 flex-wrap mt-1">
+                                <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Teaching Tags:</span>
+                                {TEACHING_TAGS[e.date].map(tag => (
+                                  <Badge key={tag} variant="secondary" className="text-[10px] bg-accent/10 text-accent-foreground">{tag}</Badge>
+                                ))}
+                              </div>
+                            )}
                             {'house' in e && e.house && (
                               <div className="mt-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
                                 <p className="text-sm font-medium">
