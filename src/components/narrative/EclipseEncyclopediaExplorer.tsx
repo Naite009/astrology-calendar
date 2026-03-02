@@ -5,6 +5,7 @@ import { NatalChart } from '@/hooks/useNatalChart';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { EclipseInterpretationLayer } from './EclipseInterpretationLayer';
 
 // ── Verified eclipse data from Cafe Astrology / NASA ──
 interface EclipseEvent {
@@ -336,6 +337,9 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
           </Accordion>
         </CardContent>
       </Card>
+
+      {/* ── Interpretation Layer ── */}
+      <EclipseInterpretationLayer />
 
       {/* ── Eclipse Timeline by Series ── */}
       <Card>
