@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
-import { ChevronDown, Lock } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { ChevronDown, Lock, Copy, Check } from 'lucide-react';
+import { useState, useMemo, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
 import { buildSignTeaching, buildAxisTeaching, getSignGlyph, type ZodiacSign } from '@/lib/astrology/signTeacher';
 import { getEclipseAspectHits, type NatalPoint, type NatalPointKey } from '@/lib/astrology/eclipseAspects';
 import { signDegreesToLongitude, getHouseForLongitude, HOUSE_MEANINGS } from '@/lib/houseCalculations';
@@ -18,6 +19,7 @@ const STATIC_MODULES = [
   { key: 'nodes', icon: '☊', title: 'Nodal Direction — North vs. South' },
   { key: 'houses', icon: '🏛', title: 'Your Life Area Activated (Houses)' },
   { key: 'natal', icon: '🎯', title: 'Natal Planet Activations' },
+  { key: 'takeaway', icon: '🧭', title: 'What To Do With This Eclipse' },
   { key: 'cycles', icon: '🔄', title: 'Saros Cycles & Long-Range Patterns' },
 ];
 
@@ -331,6 +333,168 @@ function HouseActivationContent({ eclipse, chart }: { eclipse: EclipseEvent | nu
   );
 }
 
+const POINT_THEMES: Partial<Record<NatalPointKey, string>> = {
+  Sun: 'identity, vitality, and life direction',
+  Moon: 'emotional needs, habits, and inner security',
+  Mercury: 'communication, thinking patterns, and daily decisions',
+  Venus: 'values, relationships, and money choices',
+  Mars: 'energy, boundaries, and conflict style',
+  Jupiter: 'growth, beliefs, and opportunity areas',
+  Saturn: 'responsibility, structure, and long-term commitments',
+  Uranus: 'freedom, innovation, and sudden shifts',
+  Neptune: 'intuition, ideals, and where clarity is needed',
+  Pluto: 'power dynamics, transformation, and what must change',
+  ASC: 'identity, self-image, and how others perceive you',
+  MC: 'career, public role, and life direction',
+  NorthNode: 'destiny direction and growth edge',
+  SouthNode: 'past patterns and what to release',
+  Chiron: 'healing journey and core vulnerability',
+};
+
+function generateTakeaway(eclipse: EclipseEvent, modality: string, hitHouse: number | null, topHit: { point: NatalPointKey } | null) {
+  const isSolar = eclipse.type === 'solar';
+  const isNorth = eclipse.nodal === 'north';
+
+  const doItems: string[] = [];
+  const watchItems: string[] = [];
+
+  // Type-based
+  if (isSolar && isNorth) doItems.push('Start small but real — make the first move in the activated house themes.');
+  if (isSolar && !isNorth) doItems.push('Clear space first — remove one obligation or system that blocks momentum.');
+  if (!isSolar && isNorth) doItems.push("Name what you're ready to grow into, even if you don't feel \"ready.\"");
+  if (!isSolar && !isNorth) doItems.push('Close a loop — finish, release, or step away from what\'s complete.');
+
+  // Nodal
+  if (isNorth) doItems.push('Lean in — experiment, say yes to the stretch.');
+  else doItems.push('Cut clutter — end loops, stop feeding drains.');
+
+  // Modality
+  if (modality === 'Cardinal') doItems.push('Initiate — decide, set a clear direction.');
+  if (modality === 'Fixed') doItems.push('Stabilize — protect what matters, make it sustainable.');
+  if (modality === 'Mutable') doItems.push('Adjust — audit your method, change what isn\'t working.');
+
+  // Top hit bonus
+  if (topHit) {
+    const theme = POINT_THEMES[topHit.point] || topHit.point;
+    doItems.push(`Because this eclipse aspects your ${topHit.point}, prioritize ${theme}.`);
+  }
+
+  // Watch items
+  if (isSolar) watchItems.push('New openings that arrive indirectly — through other people, timing shifts, or sudden invitations.');
+  else watchItems.push('A truth surfacing that changes how you feel about a situation.');
+
+  if (modality === 'Cardinal') watchItems.push('Pressure to decide quickly — pause before committing.');
+  if (modality === 'Fixed') watchItems.push('Stubbornness or sunk-cost thinking — resistance to necessary change.');
+  if (modality === 'Mutable') watchItems.push('Over-optimizing, constant tweaking, nervous overthinking.');
+
+  if (isNorth) watchItems.push('Growth disguised as discomfort — the stretch is the signal.');
+  else watchItems.push('Relief after letting go — the lightness confirms the release was right.');
+
+  const journal = isNorth
+    ? `What is calling me forward in ${hitHouse ? `my ${ordinal(hitHouse)} house` : 'this life area'} — and what would "brave participation" look like?`
+    : `What has run its course in ${hitHouse ? `my ${ordinal(hitHouse)} house` : 'this life area'} — even if it's been normal for years?`;
+
+  const caution = isSolar
+    ? 'Avoid making irreversible commitments on eclipse day — observe first, then choose.'
+    : "Avoid emotional ultimatums on eclipse day — let the storyline reveal itself over a few days.";
+
+  return { doItems, watchItems, journal, caution };
+}
+
+function TakeawayContent({ eclipse, chart }: { eclipse: EclipseEvent | null; chart: NatalChart | null }) {
+  const [copied, setCopied] = useState(false);
+
+  const modality = eclipse ? buildSignTeaching(eclipse.sign).info.modality : 'Cardinal';
+
+  const hitHouse = useMemo(() => {
+    if (!eclipse || !chart?.houseCusps) return null;
+    const lon = signDegreesToLongitude(eclipse.sign, eclipse.degree, eclipse.minutes);
+    return getHouseForLongitude(lon, chart);
+  }, [eclipse, chart]);
+
+  const topHit = useMemo(() => {
+    if (!eclipse || !chart) return null;
+    const natalPoints = extractNatalPoints(chart);
+    const hits = getEclipseAspectHits(eclipse, natalPoints, 1);
+    return hits[0] ?? null;
+  }, [eclipse, chart]);
+
+  const takeaway = useMemo(() => {
+    if (!eclipse) return null;
+    return generateTakeaway(eclipse, modality, hitHouse, topHit);
+  }, [eclipse, modality, hitHouse, topHit]);
+
+  const handleCopy = useCallback(() => {
+    if (!takeaway || !eclipse) return;
+    const text = [
+      `🧭 What To Do With This Eclipse (${eclipse.subtype} ${eclipse.type} at ${eclipse.degree}° ${eclipse.sign})`,
+      '',
+      '✅ DO:',
+      ...takeaway.doItems.map(d => `• ${d}`),
+      '',
+      '👁 WATCH FOR:',
+      ...takeaway.watchItems.map(w => `• ${w}`),
+      '',
+      `📝 JOURNAL: ${takeaway.journal}`,
+      '',
+      `⚠️ CAUTION: ${takeaway.caution}`,
+    ].join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [takeaway, eclipse]);
+
+  if (!eclipse) {
+    return <p className="text-sm text-muted-foreground italic">Select an eclipse to see guidance.</p>;
+  }
+
+  if (!takeaway) return null;
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground italic">
+        Practical guidance based on eclipse type, nodal direction, sign modality{chart ? ', and your chart activations' : ''}.
+      </p>
+
+      {/* DO */}
+      <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-2">
+        <h4 className="font-semibold text-sm">✅ Do</h4>
+        <ul className="text-sm text-muted-foreground space-y-1.5 list-disc pl-4">
+          {takeaway.doItems.map((d, i) => <li key={i}>{d}</li>)}
+        </ul>
+      </div>
+
+      {/* WATCH FOR */}
+      <div className="rounded-lg border border-accent/20 bg-accent/5 p-4 space-y-2">
+        <h4 className="font-semibold text-sm">👁 Watch For</h4>
+        <ul className="text-sm text-muted-foreground space-y-1.5 list-disc pl-4">
+          {takeaway.watchItems.map((w, i) => <li key={i}>{w}</li>)}
+        </ul>
+      </div>
+
+      {/* JOURNAL */}
+      <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-2">
+        <h4 className="font-semibold text-sm">📝 Journal Prompt</h4>
+        <p className="text-sm text-muted-foreground italic">{takeaway.journal}</p>
+      </div>
+
+      {/* CAUTION */}
+      <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 space-y-2">
+        <h4 className="font-semibold text-sm">⚠️ Caution</h4>
+        <p className="text-sm text-muted-foreground">{takeaway.caution}</p>
+      </div>
+
+      <div className="flex justify-center">
+        <Button variant="outline" size="sm" onClick={handleCopy} className="gap-2">
+          {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied ? 'Copied!' : 'Copy Takeaways'}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export function EclipseInterpretationLayer({ selectedEclipse, userNatalChart }: Props) {
   const [openModules, setOpenModules] = useState<string[]>([]);
 
@@ -361,6 +525,7 @@ export function EclipseInterpretationLayer({ selectedEclipse, userNatalChart }: 
     if (key === 'axis-teaching') return <AxisTeachingContent sign={sign} />;
     if (key === 'natal') return <NatalAspectContent eclipse={selectedEclipse} chart={userNatalChart ?? null} />;
     if (key === 'houses') return <HouseActivationContent eclipse={selectedEclipse} chart={userNatalChart ?? null} />;
+    if (key === 'takeaway') return <TakeawayContent eclipse={selectedEclipse} chart={userNatalChart ?? null} />;
     return <p className="italic text-muted-foreground">Content coming soon…</p>;
   };
 
