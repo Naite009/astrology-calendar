@@ -360,7 +360,7 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
 
       {/* ── Interpretation Layer ── */}
       <div ref={teacherRef}>
-        <EclipseInterpretationLayer selectedEclipse={activeEclipse} />
+        <EclipseInterpretationLayer selectedEclipse={activeEclipse} userNatalChart={userNatalChart} />
       </div>
 
       {/* ── Eclipse Timeline by Series ── */}

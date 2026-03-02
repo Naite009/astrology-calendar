@@ -1,12 +1,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { ChevronDown, Lock } from 'lucide-react';
+import { useState, useMemo } from 'react';
 import { buildSignTeaching, buildAxisTeaching, getSignGlyph, type ZodiacSign } from '@/lib/astrology/signTeacher';
+import { getEclipseAspectHits, type NatalPoint, type NatalPointKey } from '@/lib/astrology/eclipseAspects';
 import type { EclipseEvent } from './EclipseEncyclopediaExplorer';
+import type { NatalChart } from '@/hooks/useNatalChart';
 
 interface Props {
   selectedEclipse: EclipseEvent | null;
+  userNatalChart?: NatalChart | null;
 }
 
 const STATIC_MODULES = [
@@ -147,7 +151,105 @@ function AxisTeachingContent({ sign }: { sign: ZodiacSign }) {
   );
 }
 
-export function EclipseInterpretationLayer({ selectedEclipse }: Props) {
+function extractNatalPoints(chart: NatalChart): NatalPoint[] {
+  const points: NatalPoint[] = [];
+  const PLANET_KEYS: { chartKey: string; pointKey: NatalPointKey }[] = [
+    { chartKey: 'Sun', pointKey: 'Sun' },
+    { chartKey: 'Moon', pointKey: 'Moon' },
+    { chartKey: 'Mercury', pointKey: 'Mercury' },
+    { chartKey: 'Venus', pointKey: 'Venus' },
+    { chartKey: 'Mars', pointKey: 'Mars' },
+    { chartKey: 'Jupiter', pointKey: 'Jupiter' },
+    { chartKey: 'Saturn', pointKey: 'Saturn' },
+    { chartKey: 'Uranus', pointKey: 'Uranus' },
+    { chartKey: 'Neptune', pointKey: 'Neptune' },
+    { chartKey: 'Pluto', pointKey: 'Pluto' },
+    { chartKey: 'Chiron', pointKey: 'Chiron' },
+    { chartKey: 'NorthNode', pointKey: 'NorthNode' },
+    { chartKey: 'SouthNode', pointKey: 'SouthNode' },
+    { chartKey: 'Ascendant', pointKey: 'ASC' },
+  ];
+
+  for (const { chartKey, pointKey } of PLANET_KEYS) {
+    const p = chart.planets[chartKey as keyof typeof chart.planets];
+    if (p?.sign && typeof p.degree === 'number') {
+      points.push({ key: pointKey, sign: p.sign as ZodiacSign, degree: p.degree, minutes: p.minutes ?? 0 });
+    }
+  }
+
+  // MC from house10 cusp
+  const mc = chart.houseCusps?.house10;
+  if (mc?.sign && typeof mc.degree === 'number') {
+    points.push({ key: 'MC', sign: mc.sign as ZodiacSign, degree: mc.degree, minutes: mc.minutes ?? 0 });
+  }
+
+  return points;
+}
+
+function NatalAspectContent({ eclipse, chart }: { eclipse: EclipseEvent | null; chart: NatalChart | null }) {
+  const hits = useMemo(() => {
+    if (!eclipse || !chart) return [];
+    const natalPoints = extractNatalPoints(chart);
+    return getEclipseAspectHits(eclipse, natalPoints, 3);
+  }, [eclipse, chart]);
+
+  if (!chart || !chart.planets || Object.keys(chart.planets).length < 3) {
+    return (
+      <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-muted/30 px-4 py-5">
+        <Lock className="h-5 w-5 text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">
+          Add a birth chart with birth time to see eclipse-to-natal activations.
+        </p>
+      </div>
+    );
+  }
+
+  if (!eclipse) {
+    return <p className="text-sm text-muted-foreground italic">Select an eclipse to see natal aspects.</p>;
+  }
+
+  if (hits.length === 0) {
+    return (
+      <div className="space-y-3">
+        <div className="rounded-lg border border-border/50 bg-muted/30 px-4 py-4">
+          <p className="text-sm text-muted-foreground">
+            <strong>No tight hits within orb.</strong> The house and axis story matters most for this eclipse — look at which house it lands in and what life areas it activates.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground italic">
+        Eclipses speak loudest when they contact your natal planets, angles, or nodes.
+      </p>
+      <div className="space-y-3">
+        {hits.map((hit, idx) => (
+          <div key={idx} className="flex items-start gap-3 rounded-lg border border-border/50 bg-card/50 p-4">
+            <div className="flex items-center gap-2 min-w-[120px]">
+              <Badge variant="outline" className="text-sm font-mono">{hit.glyph}</Badge>
+              <span className="text-sm font-semibold">{hit.point}</span>
+            </div>
+            <div className="flex-1 space-y-1">
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="text-xs capitalize">{hit.aspect}</Badge>
+                <span className="text-xs text-muted-foreground font-mono">orb {hit.orbLabel}</span>
+              </div>
+              <p className="text-sm text-muted-foreground">{hit.interpretation}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="text-[11px] text-muted-foreground text-center italic">
+        Aspect Audit: {hits.map(h => `${h.glyph} (${h.orbLabel})`).join(' · ')}
+      </p>
+    </div>
+  );
+}
+
+export function EclipseInterpretationLayer({ selectedEclipse, userNatalChart }: Props) {
   const [openModules, setOpenModules] = useState<string[]>([]);
 
   const sign: ZodiacSign = selectedEclipse?.sign ?? 'Virgo';
@@ -175,6 +277,7 @@ export function EclipseInterpretationLayer({ selectedEclipse }: Props) {
     if (key === 'nodes') return <NodalDirectionContent nodal={nodal} />;
     if (key === 'sign-teaching') return <SignTeachingContent sign={sign} />;
     if (key === 'axis-teaching') return <AxisTeachingContent sign={sign} />;
+    if (key === 'natal') return <NatalAspectContent eclipse={selectedEclipse} chart={userNatalChart ?? null} />;
     return <p className="italic text-muted-foreground">Content coming soon…</p>;
   };
 
