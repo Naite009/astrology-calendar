@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { analysisData, chartName, srYear } = await req.json();
+    const { analysisData, chartName, srYear, referenceExcerpts = '' } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -117,7 +117,12 @@ serve(async (req) => {
       });
     }
 
-    const systemPrompt = `You are a senior professional astrologer writing a comprehensive Solar Return interpretation for a client. Your voice is warm, grounded, psychologically rich, and actionable — like a trusted advisor who deeply understands both astrology and human nature.
+    // Append reference material from user's uploaded books if available
+    const refBlock = referenceExcerpts
+      ? "\n\nREFERENCE LIBRARY (the user has uploaded astrological reference books — use these to enrich and ground your Solar Return interpretation. When you draw from this material, briefly cite the source):\n" + referenceExcerpts
+      : '';
+
+    const systemPrompt = `You are a senior professional astrologer writing a comprehensive Solar Return interpretation for a client. Your voice is warm, grounded, psychologically rich, and actionable — like a trusted advisor who deeply understands both astrology and human nature.${refBlock}
 
 Write a cohesive year-ahead narrative that SYNTHESIZES all the data below into a flowing, insightful reading. Do NOT just list each factor separately — weave them together into themes. Structure with markdown headers:
 

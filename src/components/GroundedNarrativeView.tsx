@@ -14,6 +14,7 @@ import { HUMAN_DESIGN_GATES } from '@/data/humanDesignGates';
 import { incarnationCrosses, crossTypeDescriptions } from '@/data/incarnationCrosses';
 import { computeAllSignals, SignalsData, SourceMapEntry } from '@/lib/narrativeAnalysisEngine';
 import { supabase } from '@/integrations/supabase/client';
+import { useDocumentExcerpts } from '@/hooks/useDocumentExcerpts';
 
 import { LifeStylesSection } from './narrative/LifeStylesSection';
 import { AtAGlanceCard } from './narrative/AtAGlanceCard';
@@ -75,6 +76,9 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
   const [selectedSentenceIndex, setSelectedSentenceIndex] = useState<number | null>(null);
 
   const narrativeRef = useRef<HTMLDivElement>(null);
+
+  // Document excerpts for AI enrichment
+  const { buildPromptBlock: buildRefBlock } = useDocumentExcerpts();
 
   // HD charts
   const { charts: hdCharts } = useHumanDesignChart();
@@ -246,6 +250,7 @@ export function GroundedNarrativeView({ savedCharts, userNatalChart }: Props) {
             lengthPreset,
             includeShadow,
             voiceStyle,
+            referenceExcerpts: buildRefBlock(),
           },
         });
 

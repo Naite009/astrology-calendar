@@ -9,6 +9,7 @@ import * as Astronomy from 'astronomy-engine';
 import { getNewMoonInterpretation, NewMoonInterpretation } from "@/lib/newMoonInterpretations";
 import { getPlanetaryPositions, getMoonPhase } from "@/lib/astrology";
 import { supabase } from "@/integrations/supabase/client";
+import { useDocumentExcerpts } from "@/hooks/useDocumentExcerpts";
 import ReactMarkdown from "react-markdown";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { getSignLunationData, SignLunationData } from "@/lib/signLunationData";
@@ -206,6 +207,7 @@ export const LunarCycleView = ({
   const [aiInsight, setAiInsight] = useState<string | null>(null);
   const [keyPhases, setKeyPhases] = useState<KeyPhaseDates | null>(null);
   const [localSelectedChart, setLocalSelectedChart] = useState(selectedChartId);
+  const { buildPromptBlock: buildRefBlock } = useDocumentExcerpts();
   const [sectionsOpen, setSectionsOpen] = useState<Record<string, boolean>>({
     expressions: true,
     themes: true,
@@ -390,6 +392,7 @@ ${natalContext}` : '';
           moonPhase: 'New Moon',
           moonSign: interpretation.sign,
           planetPositions: transitPositions,
+          referenceExcerpts: buildRefBlock(),
           customPrompt: `Write a detailed ${isPersonalized ? 'PERSONALIZED ' : ''}NEW MOON CYCLE interpretation for the ${interpretation.sign} New Moon at ${interpretation.degree}°.
 ${personalizedInstructions}
 LUNAR CYCLE CONTEXT:

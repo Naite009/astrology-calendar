@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { useDocumentExcerpts } from "@/hooks/useDocumentExcerpts";
 import { getMoonPhase, getPlanetaryPositions, calculateDailyAspects, PlanetaryPositions, getPlanetSymbol, getExactLunarPhase, findNearestMajorPhaseTime } from "@/lib/astrology";
 import { getVOCMoonDetails, findNextMoonSignChange } from "@/lib/voidOfCourseMoon";
 import { formatLocalDateKey } from "@/lib/localDate";
@@ -274,6 +275,9 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const [ttsVoiceName, setTtsVoiceName] = useState<string>(() => localStorage.getItem('cosmic-tts-voice-name') || '');
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+
+  // Document excerpts for AI enrichment
+  const { buildPromptBlock: buildRefBlock } = useDocumentExcerpts();
 
   // Load browser voices
   useEffect(() => {
@@ -718,7 +722,8 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
           moonSignChange: moonSignChangeToday,
           imminentSignChanges,
           personalizedRetrograde: personalizedRetroInfo,
-          voiceStyle: effectiveVoiceStyle
+          voiceStyle: effectiveVoiceStyle,
+          referenceExcerpts: buildRefBlock(),
         }
       });
 
@@ -846,7 +851,8 @@ Any challenging moon sign transits or VOC periods to be mindful of.
 ## 🎯 Weekly Focus
 3 practical things to prioritize this week based on the lunar energy.
 
-Keep the tone insightful, practical, and empowering. Do NOT include any meal plans, recipes, or food content.`
+Keep the tone insightful, practical, and empowering. Do NOT include any meal plans, recipes, or food content.`,
+          referenceExcerpts: buildRefBlock(),
         }
       });
       
@@ -919,7 +925,8 @@ Professional opportunities and timing for career moves.
 ## 🎯 Monthly Intention
 A guiding theme or mantra for the month.
 
-Keep the tone professional, insightful, and practically applicable.`
+Keep the tone professional, insightful, and practically applicable.`,
+          referenceExcerpts: buildRefBlock(),
         }
       });
       

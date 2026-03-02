@@ -7,6 +7,7 @@ import { srSunInHouse, srMoonInHouse, srMoonInSign, srOverlayNarrative, srPlanet
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
+import { useDocumentExcerpts } from '@/hooks/useDocumentExcerpts';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 
@@ -1194,6 +1195,7 @@ const SRNarrativeBox = ({ analysis, srChart, natalChart }: {
   const [narrative, setNarrative] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { buildPromptBlock: buildRefBlock } = useDocumentExcerpts();
 
   const generateNarrative = async () => {
     setLoading(true);
@@ -1204,6 +1206,7 @@ const SRNarrativeBox = ({ analysis, srChart, natalChart }: {
           analysisData: analysis,
           chartName: natalChart.name,
           srYear: srChart.solarReturnYear,
+          referenceExcerpts: buildRefBlock(),
         },
       });
       if (fnError) throw fnError;

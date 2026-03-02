@@ -80,7 +80,7 @@ serve(async (req) => {
   }
 
   try {
-    const { signals, chartName, planets, lengthPreset, includeShadow, voiceStyle = 'grounded_therapist' } = await req.json();
+    const { signals, chartName, planets, lengthPreset, includeShadow, voiceStyle = 'grounded_therapist', referenceExcerpts = '' } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -200,7 +200,12 @@ serve(async (req) => {
       userPrompt = "Generate a narrative for this natal chart. Be SPECIFIC about houses and only mention aspects that are verified in the data.\n\nCHART: " + chartName + "\n\nPLANET PLACEMENTS WITH HOUSES:\n" + planetHouseSummary + "\n\n" + angularSummary + "\n\nVERIFIED ASPECTS (only reference these):\n" + aspectsSummary + "\n\n" + dominantPatterns + "\n\nMIDHEAVEN (MC) ANALYSIS:\n" + mcSummary + "\n\nOPERATING MODE SCORES (0-100): " + scoresSummary + "\n\nPRESSURE POINTS (ranked by significance):\n" + (pressurePoints || "None identified") + "\n\nABSENCES: " + (absenceNotes || "None notable") + saturnGreeneContext + "\n\nWrite the narrative now as flowing prose paragraphs. Remember: always include house numbers when discussing planets, only mention aspects that appear in the verified aspects list above, and include a dedicated paragraph about the Midheaven/career direction.";
     }
 
-    const systemPrompt = selectedVoice + "\n" + structureBlock;
+    // Append reference material from user's uploaded books if available
+    const refBlock = referenceExcerpts
+      ? "\n\nREFERENCE LIBRARY (the user has uploaded astrological reference books — use these to enrich, deepen, and ground your interpretations with authoritative sourced insights. When you draw from this material, briefly cite the source):\n" + referenceExcerpts
+      : '';
+
+    const systemPrompt = selectedVoice + "\n" + structureBlock + refBlock;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
