@@ -6,7 +6,7 @@ import { useState } from 'react';
 const MODULES = [
   { key: 'nodes', icon: '☊', title: 'Nodal Direction — North vs. South' },
   { key: 'virgo-sign', icon: '♍', title: 'Virgo: Mutable Earth (How It Works)' },
-  { key: 'types', icon: '🌑', title: 'Solar vs. Lunar Eclipse Psychology' },
+  { key: 'virgo-pisces', icon: '♍♓', title: 'Virgo ↔ Pisces: Reality vs Meaning' },
   { key: 'houses', icon: '🏛', title: 'Eclipse Through the Houses' },
   { key: 'natal', icon: '🎯', title: 'Natal Planet Activations' },
   { key: 'cycles', icon: '🔄', title: 'Saros Cycles & Long-Range Patterns' },
@@ -105,6 +105,54 @@ function VirgoSignContent() {
   );
 }
 
+function VirgoPiscesAxisContent() {
+  return (
+    <div className="space-y-5">
+      <p className="text-sm text-muted-foreground italic">
+        Full Moons on this axis ask you to reconcile measurable reality with the deeper "why."
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Virgo */}
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
+          <h4 className="font-semibold text-sm">♍ Virgo: Measurable Reality</h4>
+          <ul className="text-sm text-muted-foreground space-y-1.5 list-disc pl-4">
+            <li>What's working, what isn't</li>
+            <li>Habits, routines, systems</li>
+            <li>Health, workload, daily rhythm</li>
+            <li>Practical signals and real outcomes</li>
+          </ul>
+        </div>
+
+        {/* Pisces */}
+        <div className="rounded-lg border border-accent/20 bg-accent/5 p-4 space-y-3">
+          <h4 className="font-semibold text-sm">♓ Pisces: Meaning & Surrender</h4>
+          <ul className="text-sm text-muted-foreground space-y-1.5 list-disc pl-4">
+            <li>Why it matters</li>
+            <li>Intuition, faith, emotional truth</li>
+            <li>Spiritual alignment</li>
+            <li>Letting go of noise and urgency</li>
+          </ul>
+        </div>
+      </div>
+
+      {/* Integration Question */}
+      <div className="rounded-lg bg-primary/5 border border-primary/20 px-5 py-4 space-y-2">
+        <h4 className="font-semibold text-sm">🔗 The Integration Question</h4>
+        <p className="text-sm text-muted-foreground">
+          Does my daily life support my deeper purpose — or am I functioning efficiently inside expectations that don't fit me?
+        </p>
+      </div>
+
+      <div className="rounded-lg bg-muted/50 border border-border/50 px-4 py-3 text-center">
+        <p className="text-sm font-medium italic">
+          On this axis, alignment is the bridge between vision (Pisces) and execution (Virgo).
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export function EclipseInterpretationLayer() {
   const [openModules, setOpenModules] = useState<string[]>([]);
 
@@ -117,6 +165,7 @@ export function EclipseInterpretationLayer() {
   const renderContent = (key: string) => {
     if (key === 'nodes') return <NodalDirectionContent />;
     if (key === 'virgo-sign') return <VirgoSignContent />;
+    if (key === 'virgo-pisces') return <VirgoPiscesAxisContent />;
     return <p className="italic text-muted-foreground">Content coming soon…</p>;
   };
 

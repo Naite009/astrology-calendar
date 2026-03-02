@@ -503,6 +503,11 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
                                 ))}
                               </div>
                             )}
+                            {e.series === 'Virgo-Pisces' && (
+                              <p className="text-xs text-muted-foreground mt-1 italic">
+                                Axis stirred: {e.sign === 'Virgo' ? 'Virgo (systems) + Pisces (meaning)' : 'Pisces (meaning) + Virgo (systems)'}
+                              </p>
+                            )}
                             {'house' in e && e.house && (
                               <div className="mt-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
                                 <p className="text-sm font-medium">
