@@ -3,9 +3,10 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import { buildSignTeaching, buildAxisTeaching, getSignGlyph, type ZodiacSign } from '@/lib/astrology/signTeacher';
+import type { EclipseEvent } from './EclipseEncyclopediaExplorer';
 
 interface Props {
-  selectedSign?: ZodiacSign | null;
+  selectedEclipse: EclipseEvent | null;
 }
 
 const STATIC_MODULES = [
@@ -15,9 +16,18 @@ const STATIC_MODULES = [
   { key: 'cycles', icon: '🔄', title: 'Saros Cycles & Long-Range Patterns' },
 ];
 
-function NodalDirectionContent() {
+function NodalDirectionContent({ nodal }: { nodal: 'north' | 'south' }) {
   return (
     <div className="space-y-5">
+      {/* Active eclipse context */}
+      <div className={`rounded-lg px-4 py-3 border ${nodal === 'north' ? 'border-primary/20 bg-primary/5' : 'border-accent/20 bg-accent/5'}`}>
+        <p className="text-sm font-medium">
+          {nodal === 'north'
+            ? '☊ This eclipse is North Node: growth + initiation.'
+            : '☋ This eclipse is South Node: culmination + release.'}
+        </p>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
           <div className="flex items-center gap-2">
@@ -137,10 +147,11 @@ function AxisTeachingContent({ sign }: { sign: ZodiacSign }) {
   );
 }
 
-export function EclipseInterpretationLayer({ selectedSign }: Props) {
+export function EclipseInterpretationLayer({ selectedEclipse }: Props) {
   const [openModules, setOpenModules] = useState<string[]>([]);
 
-  const sign = selectedSign || 'Virgo';
+  const sign: ZodiacSign = selectedEclipse?.sign ?? 'Virgo';
+  const nodal = selectedEclipse?.nodal ?? 'north';
 
   const toggle = (key: string) => {
     setOpenModules(prev =>
@@ -161,7 +172,7 @@ export function EclipseInterpretationLayer({ selectedSign }: Props) {
   ];
 
   const renderContent = (key: string) => {
-    if (key === 'nodes') return <NodalDirectionContent />;
+    if (key === 'nodes') return <NodalDirectionContent nodal={nodal} />;
     if (key === 'sign-teaching') return <SignTeachingContent sign={sign} />;
     if (key === 'axis-teaching') return <AxisTeachingContent sign={sign} />;
     return <p className="italic text-muted-foreground">Content coming soon…</p>;
@@ -175,8 +186,10 @@ export function EclipseInterpretationLayer({ selectedSign }: Props) {
         </CardTitle>
         <p className="text-sm text-muted-foreground">
           A deeper framework for interpreting eclipse cycles personally — expand each module to learn more.
-          {selectedSign && (
-            <span className="ml-1 font-medium text-foreground">Currently viewing: {getSignGlyph(sign)} {sign}</span>
+          {selectedEclipse && (
+            <span className="ml-1 font-medium text-foreground">
+              Currently viewing: {getSignGlyph(sign)} {selectedEclipse.subtype} {selectedEclipse.type} at {selectedEclipse.degree}°{selectedEclipse.minutes > 0 ? selectedEclipse.minutes.toString().padStart(2, '0') + "'" : ''} {sign} ({selectedEclipse.date})
+            </span>
           )}
         </p>
       </CardHeader>
