@@ -1,55 +1,52 @@
 
+# Integrate Rich Eclipse Content from Uploaded Data
 
-# New Moon Phases Tab
+## What's Missing (confirmed by codebase search)
+The current `ECLIPSE_SERIES` in `EclipseEncyclopediaExplorer.tsx` has only a `description` field per eclipse. The uploaded file contains 7 additional per-eclipse fields, series-level `bigPicture` narratives, a `nodalEducation` teaching object, and 8 detailed `signProfiles` -- none of which exist in the app yet.
 
-## What This Does
-Creates a dedicated "Moon" tab in the main navigation that serves as a comprehensive moon phase encyclopedia and personal moon phase identifier. When you select a name from the dropdown, it calculates which of the 8 lunar phases you were born under, highlights it, and gives you a full description with your exact degree.
+## Plan
 
-## The 8 Moon Phases (Corrected Degrees)
-The existing code in `birthConditions.ts` already has all 8 phases with rich descriptions (archetype, soul purpose, gift, challenge, life theme). The degree ranges will be:
+### Step 1: Expand the EclipseEvent interface and populate all 25 eclipses
+**File:** `src/components/narrative/EclipseEncyclopediaExplorer.tsx`
 
-1. New Moon: 0-45 degrees
-2. Waxing Crescent: 45-90 degrees
-3. First Quarter: 90-135 degrees
-4. Waxing Gibbous: 135-180 degrees
-5. Full Moon: 180-225 degrees
-6. Disseminating (Waning Gibbous): 225-270 degrees
-7. Last Quarter: 270-315 degrees
-8. Balsamic: 315-360 degrees
+- Add optional fields to `EclipseEvent`: `title`, `nodalTheme`, `releasingThemes`, `buildingThemes`, `reflectionQuestions`, `aspects`, `sarosNote`
+- Add `bigPicture` to the series object type
+- Copy all the rich content from the uploaded file into every eclipse entry and series
+- This is the bulk of the work -- it's a large data paste
 
-## Changes
+### Step 2: Add the `nodalEducation` object
+**File:** `src/components/narrative/EclipseEncyclopediaExplorer.tsx`
 
-### 1. Add "Moon" to the ViewMode type and navigation
-**File: `src/components/AstroCalendar.tsx`**
-- Add `"moon"` to the `ViewMode` type
-- Add a Moon navigation button (using the Moon icon)
-- Render the new `MoonPhaseEncyclopedia` component when `viewMode === "moon"`
-- Pass `userNatalChart`, `savedCharts`, and allCharts to it
+Export the `nodalEducation` constant (north/south teachings with headline, shortMeaning, deeperMeaning, howItFeels, guidance) so Module 1 can use it.
 
-### 2. Create the Moon Phase Encyclopedia component
-**New file: `src/components/MoonPhaseEncyclopedia.tsx`**
+### Step 3: Show the new content in the UI
 
-This component will contain:
+**Timeline cards** (`EclipseEncyclopediaExplorer.tsx`):
+- Display `title` as a bold headline on each card
+- Show `bigPicture` at the top of each series tab
 
-- **Chart Selector dropdown** at the top ("Show my natal moon phase for:") using the existing `ChartSelector` component
-- **8 clickable phase cards** arranged in a grid/circle layout, each showing:
-  - Phase emoji/symbol
-  - Phase name
-  - Degree range (e.g., "0-45 degrees")
-  - Archetype name (e.g., "The Pioneer")
-- When a chart is selected, the person's natal moon phase card gets **highlighted** with a "Your Birth Phase" badge and their exact Sun-Moon separation degree
-- **Clicking any phase card** expands it (or opens a detail section) showing:
-  - Full soul purpose description
-  - Expression style
-  - Gift and Challenge
-  - Life theme
-  - The exact degree range and what it means to be in the early/middle/late portion of that phase
+**Module 1 — Nodal Direction** (`EclipseInterpretationLayer.tsx`):
+- Replace generic nodal copy with the per-eclipse `nodalTheme`
+- Use `nodalEducation` for the deeper teaching (howItFeels bullets, guidance quote)
+- Show `releasingThemes` and `buildingThemes` as labeled bullet lists
 
-### 3. Natal Moon Phase Calculation
-Reuses the existing `calculateBirthMoonPhase` function from `src/lib/birthConditions.ts`, which already computes the Sun-Moon angular separation and maps it to the correct phase. The exact degree will be displayed (e.g., "You were born at 127 degrees Sun-Moon separation -- Waxing Gibbous phase").
+**Module 6 — What To Do** (`EclipseInterpretationLayer.tsx`):
+- Use `reflectionQuestions` as the journal prompt section (show all 3 instead of the single generated one)
 
-### Technical Notes
-- The existing `BIRTH_MOON_PHASES` data in `birthConditions.ts` already contains all content (archetype, soulPurpose, expression, gift, challenge, lifeTheme) for all 8 phases
-- The `calculateBirthMoonPhase` function already handles the degree calculation -- just need to also expose the raw `separation` degree alongside the phase name
-- The `ChartSelector` component is already used throughout the app for personalization dropdowns
-- No database changes needed -- all data is computed from natal chart positions already stored locally
+**Module 4 — Natal Activations** (`EclipseInterpretationLayer.tsx`):
+- If the eclipse has pre-written `aspects[]`, show them as supplemental context below the computed natal hits
+
+**Education accordion** (`EclipseEncyclopediaExplorer.tsx`):
+- Surface `sarosNote` when viewing the relevant eclipse (link to the Saros cycle section)
+
+### Step 4: Sign profiles -- skip duplication
+Your `signTeacher.ts` already has element/modality data. The uploaded `signProfiles` adds `coreQuestion`, `superpower`, and `shadow` which are unique. Rather than duplicating the whole profile system, we'll add these 3 fields to the sign teaching used in Module 2 (Sign Mechanics), pulling from a small lookup.
+
+### Files changed
+- `src/components/narrative/EclipseEncyclopediaExplorer.tsx` (interface expansion + data population + card UI + bigPicture display)
+- `src/components/narrative/EclipseInterpretationLayer.tsx` (Modules 1, 4, 6 enrichment)
+
+### What stays untouched
+- `eclipseNodalGuard.ts` (normalization still runs on the enriched data)
+- `eclipseAspects.ts` (computed natal hits remain independent)
+- All other modules (2, 3, 5) continue working as-is
