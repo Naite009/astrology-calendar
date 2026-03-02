@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects, planetPositions, customPrompt, voiceStyle, upcomingEvents, deviceId, forceRegenerate, greeting: reqGreeting, timeOfDay: reqTimeOfDay, moonSignChange, imminentSignChanges, mercuryRetrogradeInfo, personalizedRetrograde, userTimezone, userTzAbbr, allRetrogrades, eclipseContext } = await req.json();
+    const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects, planetPositions, customPrompt, voiceStyle, upcomingEvents, deviceId, forceRegenerate, greeting: reqGreeting, timeOfDay: reqTimeOfDay, moonSignChange, imminentSignChanges, mercuryRetrogradeInfo, personalizedRetrograde, userTimezone, userTzAbbr, allRetrogrades, eclipseContext, referenceExcerpts } = await req.json();
     
     console.log("Received cosmic weather request:", { date, moonPhase, moonSign, exactLunarPhase, voiceStyle, planetPositions });
     console.log("Aspects received:", aspects?.slice(0, 15));
@@ -762,6 +762,11 @@ CRITICAL INSTRUCTIONS:
 11. If mercuryRetrogradeInfo is provided, Mercury's retrograde cycle MUST be discussed EVERY DAY. When Mercury Rx is in Pisces, you MUST explain WHY this retrograde is especially difficult: Pisces is Mercury's double difficulty — both detriment (opposite Virgo, Mercury's home) AND fall (opposite Virgo, Mercury's exaltation). No other sign weakens Mercury this much. Explain what detriment and fall MEAN in plain language appropriate to the voice style. Describe how this shows up in daily life: thicker mental fog, more miscommunication than usual, intuitive/emotional thinking overriding logic, vivid dreams, words failing where feelings succeed. This is the most challenging Mercury retrograde of the year BECAUSE of the dignity, and the user needs to understand that.
 12. If personalizedRetrograde data is provided, include a personalized section about how Mercury retrograde affects THIS person's chart specifically, layered through the phases.`;
 
+    // Append reference material from user's uploaded books if available
+    const refBlock = referenceExcerpts
+      ? "\n\nREFERENCE LIBRARY (the user has uploaded astrological reference books — draw from these to provide richer, more authoritative daily guidance. When you use a concept from this material, briefly cite the source):\n" + referenceExcerpts
+      : '';
+
     console.log("Sending prompt to AI:", userPrompt.substring(0, 500) + "...");
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -773,7 +778,7 @@ CRITICAL INSTRUCTIONS:
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: systemPrompt + personalizedSystemAddendum },
+          { role: "system", content: systemPrompt + personalizedSystemAddendum + refBlock },
           { role: "user", content: userPrompt },
         ],
       }),

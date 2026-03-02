@@ -9,6 +9,7 @@ import { calculateTransitAspects, getTransitPlanetSymbol } from '@/lib/transitAs
 import { getNatalPlanetHouse, getTransitPlanetHouse } from '@/lib/houseCalculations';
 import { Sparkles, Heart, Zap, ChevronDown, ChevronUp, Loader2, Info } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
+import { useDocumentExcerpts } from "@/hooks/useDocumentExcerpts";
 import { toast } from "sonner";
 import {
   Tooltip,
@@ -324,6 +325,7 @@ export const PersonalizedTransitsPanel = ({
   const [showMinorBodies, setShowMinorBodies] = useState(false);
   const [aiReading, setAiReading] = useState<string | null>(null);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
+  const { buildPromptBlock: buildRefBlock } = useDocumentExcerpts();
 
   // Build planetPositions from transitPositions if not provided
   const computedPlanetPositions = useMemo(() => {
@@ -563,6 +565,7 @@ Format with ## headers. Be chart-specific - no generic advice that could apply t
           moonSign,
           planetPositions: computedPlanetPositions,
           customPrompt,
+          referenceExcerpts: buildRefBlock(),
         }
       });
 

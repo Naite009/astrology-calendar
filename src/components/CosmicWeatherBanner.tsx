@@ -12,6 +12,7 @@ import {
   Aspect
 } from "@/lib/astrology";
 import { supabase } from "@/integrations/supabase/client";
+import { useDocumentExcerpts } from "@/hooks/useDocumentExcerpts";
 import { toast } from "sonner";
 
 interface ExactLunarPhase {
@@ -116,6 +117,7 @@ export const CosmicWeatherBanner = ({
   const hasFetched = useRef(false);
   const [audioState, setAudioState] = useState<'idle' | 'playing'>('idle');
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const { buildPromptBlock: buildRefBlock } = useDocumentExcerpts();
 
   const stopAudio = useCallback(() => {
     speechSynthesis.cancel();
@@ -300,6 +302,7 @@ export const CosmicWeatherBanner = ({
           ...(allRetrogrades && { allRetrogrades }),
           ...(personalizedRetrograde && { personalizedRetrograde }),
           ...(eclipseContext && { eclipseContext }),
+          referenceExcerpts: buildRefBlock(),
         }
       });
 
