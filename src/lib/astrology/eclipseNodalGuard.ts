@@ -21,6 +21,9 @@ export function normalizeEclipseNodal<T extends EclipseLike>(e: T): T {
   const expected: "north" | "south" = e.sign === northSign ? "north" : "south";
 
   if (e.nodal !== expected) {
+    if (import.meta.env.DEV) {
+      console.warn(`[eclipseNodalGuard] Corrected ${e.series} ${(e as any).date ?? ''} ${e.sign}: ${e.nodal} → ${expected}`);
+    }
     return { ...e, nodal: expected };
   }
   return e;
