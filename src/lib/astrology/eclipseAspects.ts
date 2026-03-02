@@ -116,3 +116,13 @@ export function getEclipseAspectHits(
 
   return hits.sort((a, b) => a.orbDeg - b.orbDeg).slice(0, limit);
 }
+
+export function getProximityBadge(
+  eclipse: EclipseAspectEvent,
+  natalPoints: NatalPoint[] | null
+): string | null {
+  if (!natalPoints || natalPoints.length === 0) return null;
+  const top = getEclipseAspectHits(eclipse, natalPoints, 1)[0];
+  if (!top) return null;
+  return `${top.orbLabel} from ${top.point}`;
+}

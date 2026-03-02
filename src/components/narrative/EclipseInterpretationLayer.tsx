@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
-import { ChevronDown, Lock, Copy, Check } from 'lucide-react';
+import { ChevronDown, Lock, Copy, Check, ChevronLeft, ChevronRight, ArrowUp } from 'lucide-react';
 import { useState, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { buildSignTeaching, buildAxisTeaching, getSignGlyph, type ZodiacSign } from '@/lib/astrology/signTeacher';
@@ -13,6 +13,9 @@ import type { NatalChart } from '@/hooks/useNatalChart';
 interface Props {
   selectedEclipse: EclipseEvent | null;
   userNatalChart?: NatalChart | null;
+  onBackToTimeline?: () => void;
+  currentList?: EclipseEvent[];
+  onSelectEclipse?: (e: EclipseEvent) => void;
 }
 
 const STATIC_MODULES = [
@@ -26,7 +29,6 @@ const STATIC_MODULES = [
 function NodalDirectionContent({ nodal }: { nodal: 'north' | 'south' }) {
   return (
     <div className="space-y-5">
-      {/* Active eclipse context */}
       <div className={`rounded-lg px-4 py-3 border ${nodal === 'north' ? 'border-primary/20 bg-primary/5' : 'border-accent/20 bg-accent/5'}`}>
         <p className="text-sm font-medium">
           {nodal === 'north'
@@ -80,20 +82,14 @@ function SignTeachingContent({ sign }: { sign: ZodiacSign }) {
       <p className="text-sm text-muted-foreground italic">
         Why {sign} expresses {t.info.element} through the {t.info.modality} mode — and how it differs from the other {t.info.element} signs.
       </p>
-
-      {/* Element */}
       <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-2">
         <h4 className="font-semibold text-sm">{t.elementCard.icon} {t.elementCard.title}</h4>
         <p className="text-sm text-muted-foreground">{t.elementCard.body}</p>
       </div>
-
-      {/* Modality */}
       <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-2">
         <h4 className="font-semibold text-sm">🔄 {t.modalityCard.title}</h4>
         <p className="text-sm text-muted-foreground">{t.modalityCard.body}</p>
       </div>
-
-      {/* Comparison triad */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {t.comparison.map(c => (
           <div
@@ -111,7 +107,6 @@ function SignTeachingContent({ sign }: { sign: ZodiacSign }) {
           </div>
         ))}
       </div>
-
       <div className="rounded-lg bg-muted/50 border border-border/50 px-4 py-3 text-center">
         <p className="text-sm font-medium italic">{t.closingLine}</p>
       </div>
@@ -126,7 +121,6 @@ function AxisTeachingContent({ sign }: { sign: ZodiacSign }) {
       <p className="text-sm text-muted-foreground italic">
         Full Moons on this axis ask you to reconcile {a.left.title.split(': ')[1]} with {a.right.title.split(': ')[1]}.
       </p>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
           <h4 className="font-semibold text-sm">{a.leftGlyph} {a.left.title}</h4>
@@ -141,12 +135,10 @@ function AxisTeachingContent({ sign }: { sign: ZodiacSign }) {
           </ul>
         </div>
       </div>
-
       <div className="rounded-lg bg-primary/5 border border-primary/20 px-5 py-4 space-y-2">
         <h4 className="font-semibold text-sm">🔗 The Integration Question</h4>
         <p className="text-sm text-muted-foreground">{a.integrationQuestion}</p>
       </div>
-
       <div className="rounded-lg bg-muted/50 border border-border/50 px-4 py-3 text-center">
         <p className="text-sm font-medium italic">{a.closingLine}</p>
       </div>
@@ -180,7 +172,6 @@ function extractNatalPoints(chart: NatalChart): NatalPoint[] {
     }
   }
 
-  // MC from house10 cusp
   const mc = chart.houseCusps?.house10;
   if (mc?.sign && typeof mc.degree === 'number') {
     points.push({ key: 'MC', sign: mc.sign as ZodiacSign, degree: mc.degree, minutes: mc.minutes ?? 0 });
@@ -188,6 +179,9 @@ function extractNatalPoints(chart: NatalChart): NatalPoint[] {
 
   return points;
 }
+
+// Export for use in EclipseEncyclopediaExplorer proximity badges
+export { extractNatalPoints };
 
 function NatalAspectContent({ eclipse, chart }: { eclipse: EclipseEvent | null; chart: NatalChart | null }) {
   const hits = useMemo(() => {
@@ -293,7 +287,6 @@ function HouseActivationContent({ eclipse, chart }: { eclipse: EclipseEvent | nu
       <p className="text-sm text-muted-foreground italic">
         Eclipses activate a house — and simultaneously stir its opposite.
       </p>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-2">
           <h4 className="font-semibold text-sm">🏛 Activated House: {ordinal(hitHouse)}</h4>
@@ -306,7 +299,6 @@ function HouseActivationContent({ eclipse, chart }: { eclipse: EclipseEvent | nu
           <p className="text-sm text-muted-foreground">{oppInfo.lifeArea}</p>
         </div>
       </div>
-
       <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-3">
         <h4 className="font-semibold text-sm">🔮 What This Usually Looks Like</h4>
         <p className="text-sm text-muted-foreground">
@@ -321,7 +313,6 @@ function HouseActivationContent({ eclipse, chart }: { eclipse: EclipseEvent | nu
             : 'South Node emphasis: simplify and release — let an outdated system or obligation complete.'}
         </p>
       </div>
-
       <div className="rounded-lg bg-muted/50 border border-border/50 px-4 py-3 text-center">
         <p className="text-sm font-medium italic">
           {isNorth
@@ -358,28 +349,23 @@ function generateTakeaway(eclipse: EclipseEvent, modality: string, hitHouse: num
   const doItems: string[] = [];
   const watchItems: string[] = [];
 
-  // Type-based
   if (isSolar && isNorth) doItems.push('Start small but real — make the first move in the activated house themes.');
   if (isSolar && !isNorth) doItems.push('Clear space first — remove one obligation or system that blocks momentum.');
   if (!isSolar && isNorth) doItems.push("Name what you're ready to grow into, even if you don't feel \"ready.\"");
   if (!isSolar && !isNorth) doItems.push('Close a loop — finish, release, or step away from what\'s complete.');
 
-  // Nodal
   if (isNorth) doItems.push('Lean in — experiment, say yes to the stretch.');
   else doItems.push('Cut clutter — end loops, stop feeding drains.');
 
-  // Modality
   if (modality === 'Cardinal') doItems.push('Initiate — decide, set a clear direction.');
   if (modality === 'Fixed') doItems.push('Stabilize — protect what matters, make it sustainable.');
   if (modality === 'Mutable') doItems.push('Adjust — audit your method, change what isn\'t working.');
 
-  // Top hit bonus
   if (topHit) {
     const theme = POINT_THEMES[topHit.point] || topHit.point;
     doItems.push(`Because this eclipse aspects your ${topHit.point}, prioritize ${theme}.`);
   }
 
-  // Watch items
   if (isSolar) watchItems.push('New openings that arrive indirectly — through other people, timing shifts, or sudden invitations.');
   else watchItems.push('A truth surfacing that changes how you feel about a situation.');
 
@@ -456,35 +442,26 @@ function TakeawayContent({ eclipse, chart }: { eclipse: EclipseEvent | null; cha
       <p className="text-sm text-muted-foreground italic">
         Practical guidance based on eclipse type, nodal direction, sign modality{chart ? ', and your chart activations' : ''}.
       </p>
-
-      {/* DO */}
       <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-2">
         <h4 className="font-semibold text-sm">✅ Do</h4>
         <ul className="text-sm text-muted-foreground space-y-1.5 list-disc pl-4">
           {takeaway.doItems.map((d, i) => <li key={i}>{d}</li>)}
         </ul>
       </div>
-
-      {/* WATCH FOR */}
       <div className="rounded-lg border border-accent/20 bg-accent/5 p-4 space-y-2">
         <h4 className="font-semibold text-sm">👁 Watch For</h4>
         <ul className="text-sm text-muted-foreground space-y-1.5 list-disc pl-4">
           {takeaway.watchItems.map((w, i) => <li key={i}>{w}</li>)}
         </ul>
       </div>
-
-      {/* JOURNAL */}
       <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-2">
         <h4 className="font-semibold text-sm">📝 Journal Prompt</h4>
         <p className="text-sm text-muted-foreground italic">{takeaway.journal}</p>
       </div>
-
-      {/* CAUTION */}
       <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 space-y-2">
         <h4 className="font-semibold text-sm">⚠️ Caution</h4>
         <p className="text-sm text-muted-foreground">{takeaway.caution}</p>
       </div>
-
       <div className="flex justify-center">
         <Button variant="outline" size="sm" onClick={handleCopy} className="gap-2">
           {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
@@ -495,7 +472,110 @@ function TakeawayContent({ eclipse, chart }: { eclipse: EclipseEvent | null; cha
   );
 }
 
-export function EclipseInterpretationLayer({ selectedEclipse, userNatalChart }: Props) {
+/* ── Summary Strip ── */
+function SelectedEclipseSummaryStrip({
+  eclipse,
+  chart,
+  onBackToTimeline,
+  currentList,
+  onSelectEclipse,
+}: {
+  eclipse: EclipseEvent;
+  chart: NatalChart | null;
+  onBackToTimeline?: () => void;
+  currentList?: EclipseEvent[];
+  onSelectEclipse?: (e: EclipseEvent) => void;
+}) {
+  const natalPoints = useMemo(() => chart ? extractNatalPoints(chart) : null, [chart]);
+
+  const { hitHouse, oppHouse } = useMemo(() => {
+    if (!chart?.houseCusps) return { hitHouse: null, oppHouse: null };
+    const lon = signDegreesToLongitude(eclipse.sign, eclipse.degree, eclipse.minutes);
+    const h = getHouseForLongitude(lon, chart);
+    if (!h) return { hitHouse: null, oppHouse: null };
+    return { hitHouse: h, oppHouse: h <= 6 ? h + 6 : h - 6 };
+  }, [eclipse, chart]);
+
+  const topHit = useMemo(() => {
+    if (!natalPoints) return null;
+    const hits = getEclipseAspectHits(eclipse, natalPoints, 1);
+    return hits[0] ?? null;
+  }, [eclipse, natalPoints]);
+
+  const { prev, next } = useMemo(() => {
+    if (!currentList || !onSelectEclipse) return { prev: null, next: null };
+    const idx = currentList.findIndex(x => x.date === eclipse.date);
+    return {
+      prev: idx > 0 ? currentList[idx - 1] : null,
+      next: idx >= 0 && idx < currentList.length - 1 ? currentList[idx + 1] : null,
+    };
+  }, [currentList, eclipse.date, onSelectEclipse]);
+
+  const subtypeLabel = eclipse.subtype.charAt(0).toUpperCase() + eclipse.subtype.slice(1);
+  const typeLabel = eclipse.type === 'solar' ? 'Solar Eclipse' : 'Lunar Eclipse';
+  const degreeStr = `${eclipse.degree}°${eclipse.minutes > 0 ? eclipse.minutes.toString().padStart(2, '0') + "'" : ''}`;
+
+  return (
+    <div className="sticky top-0 z-10 rounded-lg border border-border/60 bg-background/80 backdrop-blur-md px-4 py-3 mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+        {/* Main info */}
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold truncate">
+            {subtypeLabel} {typeLabel} • {degreeStr} {getSignGlyph(eclipse.sign)} {eclipse.sign} • {eclipse.nodal === 'north' ? '☊ North' : '☋ South'} Node • {eclipse.date}
+          </p>
+          {/* Conditional pills */}
+          <div className="flex items-center gap-2 flex-wrap mt-1.5">
+            {hitHouse && oppHouse && (
+              <Badge variant="outline" className="text-[10px]">
+                🏛 House {hitHouse} / {oppHouse} axis
+              </Badge>
+            )}
+            {topHit && (
+              <Badge variant="secondary" className="text-[10px]">
+                🎯 {topHit.point} {topHit.aspect} ({topHit.orbLabel})
+              </Badge>
+            )}
+          </div>
+        </div>
+
+        {/* Nav buttons */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {currentList && onSelectEclipse && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                disabled={!prev}
+                onClick={() => prev && onSelectEclipse(prev)}
+                title="Previous eclipse"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                disabled={!next}
+                onClick={() => next && onSelectEclipse(next)}
+                title="Next eclipse"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </>
+          )}
+          {onBackToTimeline && (
+            <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={onBackToTimeline}>
+              <ArrowUp className="h-3 w-3" /> Timeline
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function EclipseInterpretationLayer({ selectedEclipse, userNatalChart, onBackToTimeline, currentList, onSelectEclipse }: Props) {
   const [openModules, setOpenModules] = useState<string[]>([]);
 
   const sign: ZodiacSign = selectedEclipse?.sign ?? 'Virgo';
@@ -513,10 +593,10 @@ export function EclipseInterpretationLayer({ selectedEclipse, userNatalChart }: 
   ];
 
   const allModules = [
-    STATIC_MODULES[0], // nodes
-    dynamicModules[0], // sign teaching
-    dynamicModules[1], // axis teaching
-    ...STATIC_MODULES.slice(1), // houses, natal, cycles
+    STATIC_MODULES[0],
+    dynamicModules[0],
+    dynamicModules[1],
+    ...STATIC_MODULES.slice(1),
   ];
 
   const renderContent = (key: string) => {
@@ -537,14 +617,20 @@ export function EclipseInterpretationLayer({ selectedEclipse, userNatalChart }: 
         </CardTitle>
         <p className="text-sm text-muted-foreground">
           A deeper framework for interpreting eclipse cycles personally — expand each module to learn more.
-          {selectedEclipse && (
-            <span className="ml-1 font-medium text-foreground">
-              Currently viewing: {getSignGlyph(sign)} {selectedEclipse.subtype} {selectedEclipse.type} at {selectedEclipse.degree}°{selectedEclipse.minutes > 0 ? selectedEclipse.minutes.toString().padStart(2, '0') + "'" : ''} {sign} ({selectedEclipse.date})
-            </span>
-          )}
         </p>
       </CardHeader>
       <CardContent className="space-y-2">
+        {/* Summary Strip */}
+        {selectedEclipse && (
+          <SelectedEclipseSummaryStrip
+            eclipse={selectedEclipse}
+            chart={userNatalChart ?? null}
+            onBackToTimeline={onBackToTimeline}
+            currentList={currentList}
+            onSelectEclipse={onSelectEclipse}
+          />
+        )}
+
         {allModules.map(mod => (
           <Collapsible
             key={mod.key}
