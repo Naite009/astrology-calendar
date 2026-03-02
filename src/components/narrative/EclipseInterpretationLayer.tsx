@@ -5,6 +5,7 @@ import { ChevronDown, Lock } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { buildSignTeaching, buildAxisTeaching, getSignGlyph, type ZodiacSign } from '@/lib/astrology/signTeacher';
 import { getEclipseAspectHits, type NatalPoint, type NatalPointKey } from '@/lib/astrology/eclipseAspects';
+import { signDegreesToLongitude, getHouseForLongitude, HOUSE_MEANINGS } from '@/lib/houseCalculations';
 import type { EclipseEvent } from './EclipseEncyclopediaExplorer';
 import type { NatalChart } from '@/hooks/useNatalChart';
 
@@ -15,7 +16,7 @@ interface Props {
 
 const STATIC_MODULES = [
   { key: 'nodes', icon: '☊', title: 'Nodal Direction — North vs. South' },
-  { key: 'houses', icon: '🏛', title: 'Eclipse Through the Houses' },
+  { key: 'houses', icon: '🏛', title: 'Your Life Area Activated (Houses)' },
   { key: 'natal', icon: '🎯', title: 'Natal Planet Activations' },
   { key: 'cycles', icon: '🔄', title: 'Saros Cycles & Long-Range Patterns' },
 ];
@@ -249,6 +250,87 @@ function NatalAspectContent({ eclipse, chart }: { eclipse: EclipseEvent | null; 
   );
 }
 
+function ordinal(n: number) {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+function HouseActivationContent({ eclipse, chart }: { eclipse: EclipseEvent | null; chart: NatalChart | null }) {
+  const { hitHouse, oppHouse } = useMemo(() => {
+    if (!eclipse || !chart?.houseCusps) return { hitHouse: null, oppHouse: null };
+    const lon = signDegreesToLongitude(eclipse.sign, eclipse.degree, eclipse.minutes);
+    const h = getHouseForLongitude(lon, chart);
+    if (!h) return { hitHouse: null, oppHouse: null };
+    const opp = h <= 6 ? h + 6 : h - 6;
+    return { hitHouse: h, oppHouse: opp };
+  }, [eclipse, chart]);
+
+  if (!chart || !chart.houseCusps) {
+    return (
+      <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-muted/30 px-4 py-5">
+        <Lock className="h-5 w-5 text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">
+          Birth time is required to calculate houses.
+        </p>
+      </div>
+    );
+  }
+
+  if (!eclipse || !hitHouse || !oppHouse) {
+    return <p className="text-sm text-muted-foreground italic">Select an eclipse to see house activation.</p>;
+  }
+
+  const hitInfo = HOUSE_MEANINGS[hitHouse];
+  const oppInfo = HOUSE_MEANINGS[oppHouse];
+  const isLunar = eclipse.type === 'lunar';
+  const isNorth = eclipse.nodal === 'north';
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground italic">
+        Eclipses activate a house — and simultaneously stir its opposite.
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-2">
+          <h4 className="font-semibold text-sm">🏛 Activated House: {ordinal(hitHouse)}</h4>
+          <p className="text-xs text-muted-foreground font-medium">{hitInfo.keywords}</p>
+          <p className="text-sm text-muted-foreground">{hitInfo.lifeArea}</p>
+        </div>
+        <div className="rounded-lg border border-accent/20 bg-accent/5 p-4 space-y-2">
+          <h4 className="font-semibold text-sm">↔ Opposite House Stirred: {ordinal(oppHouse)}</h4>
+          <p className="text-xs text-muted-foreground font-medium">{oppInfo.keywords}</p>
+          <p className="text-sm text-muted-foreground">{oppInfo.lifeArea}</p>
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-3">
+        <h4 className="font-semibold text-sm">🔮 What This Usually Looks Like</h4>
+        <p className="text-sm text-muted-foreground">
+          {isLunar
+            ? `This lunar eclipse brings visibility and emotional culmination to your ${ordinal(hitHouse)}-house themes — ${hitInfo.lifeArea}.`
+            : `This solar eclipse begins a new chapter in your ${ordinal(hitHouse)}-house themes — ${hitInfo.lifeArea}.`}
+          {' '}At the same time, it rebalances the {hitHouse}–{oppHouse} axis, so the story also touches {oppInfo.lifeArea.toLowerCase()}.
+        </p>
+        <p className="text-sm text-muted-foreground">
+          {isNorth
+            ? 'North Node emphasis: lean into growth here — choose the unfamiliar but life-expanding option.'
+            : 'South Node emphasis: simplify and release — let an outdated system or obligation complete.'}
+        </p>
+      </div>
+
+      <div className="rounded-lg bg-muted/50 border border-border/50 px-4 py-3 text-center">
+        <p className="text-sm font-medium italic">
+          {isNorth
+            ? `Ask: "What's the next level for me in my ${ordinal(hitHouse)} house?"`
+            : `Ask: "What's done in my ${ordinal(hitHouse)} house — even if it's been 'normal'?"`}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export function EclipseInterpretationLayer({ selectedEclipse, userNatalChart }: Props) {
   const [openModules, setOpenModules] = useState<string[]>([]);
 
@@ -278,6 +360,7 @@ export function EclipseInterpretationLayer({ selectedEclipse, userNatalChart }: 
     if (key === 'sign-teaching') return <SignTeachingContent sign={sign} />;
     if (key === 'axis-teaching') return <AxisTeachingContent sign={sign} />;
     if (key === 'natal') return <NatalAspectContent eclipse={selectedEclipse} chart={userNatalChart ?? null} />;
+    if (key === 'houses') return <HouseActivationContent eclipse={selectedEclipse} chart={userNatalChart ?? null} />;
     return <p className="italic text-muted-foreground">Content coming soon…</p>;
   };
 
