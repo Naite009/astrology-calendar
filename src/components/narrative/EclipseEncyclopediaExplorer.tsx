@@ -414,14 +414,107 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
             </AccordionItem>
 
             <AccordionItem value="saros">
-              <AccordionTrigger className="text-lg font-semibold">The Saros Cycle</AccordionTrigger>
-              <AccordionContent className="text-muted-foreground space-y-3">
-                <p>
-                  Every eclipse belongs to a <strong>Saros family</strong> — a series that repeats every 18 years, 11 days. Each Saros series produces eclipses at nearly the same degree, creating a thread of connected events across your lifetime.
-                </p>
-                <p>
-                  If you experienced a major life event during an eclipse, check what happened 18-19 years prior — you may find a thematic echo. This is the Saros cycle at work, weaving a longer story through your chart.
-                </p>
+              <AccordionTrigger className="text-lg font-semibold">Eclipse Cycles: Saros, Metonic & More</AccordionTrigger>
+              <AccordionContent className="text-muted-foreground space-y-6">
+                {/* Saros */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-foreground text-base flex items-center gap-2">
+                    <span className="text-xl">🔄</span> The Saros Cycle — 18 years, 11 days
+                  </h4>
+                  <p>
+                    The Saros cycle is an <strong>astronomical pattern</strong>, not an astrological invention. It's based on a remarkable coincidence of three lunar cycles syncing up almost perfectly:
+                  </p>
+                  <ul className="list-disc pl-5 space-y-1 text-sm">
+                    <li>The Moon's orbit around Earth — <strong>29.5 days</strong> (synodic month)</li>
+                    <li>The Moon's orbital wobble — <strong>27.2 days</strong> (anomalistic month)</li>
+                    <li>The Moon crossing the ecliptic — <strong>27.2 days</strong> (draconic month)</li>
+                  </ul>
+                  <p>
+                    Every <strong>18 years, 11 days, and 8 hours</strong>, these three cycles realign. When they do, the Sun, Earth, and Moon return to nearly identical positions — which means an eclipse that happened 18 years ago will <strong>repeat at roughly the same degree</strong>, with the same character (total, partial, annular).
+                  </p>
+                  <p>
+                    That's the Saros. It's a <strong>family of eclipses</strong>, each one 18 years apart, sharing the same astronomical DNA.
+                  </p>
+                  <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 space-y-2">
+                    <p className="text-sm font-medium text-foreground">📖 Example: March 3, 2026 Eclipse</p>
+                    <p className="text-sm">
+                      The March 2026 eclipse at 12° Virgo belongs to a Saros family that had an eclipse around <strong>March 2008</strong> — at a similar degree, similar type. Astrologers use this as a <em>"thematic echo"</em> — not that the same events repeat, but that <strong>similar themes surface for resolution or continuation</strong>.
+                    </p>
+                    <p className="text-sm italic">
+                      Try it: Journal back to March 2008. What was happening in your health, daily routines, or work life? It often rhymes with what this eclipse is activating now.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Metonic */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-foreground text-base flex items-center gap-2">
+                    <span className="text-xl">📅</span> The Metonic Cycle — 19 years
+                  </h4>
+                  <p>
+                    Every 19 years, an eclipse returns to almost the <strong>exact same calendar date and same zodiac degree</strong>. This is slightly different from the Saros — it's more <em>calendar-precise</em> rather than astronomically precise.
+                  </p>
+                  <p>
+                    You may have heard of this cycle in Jewish or lunar calendar traditions. Astrologers use it the same way as the Saros: <strong>check what was happening 19 years ago</strong> for thematic echoes.
+                  </p>
+                </div>
+
+                {/* Nodal */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-foreground text-base flex items-center gap-2">
+                    <span className="text-xl">☊</span> The Nodal Cycle — 18.6 years
+                  </h4>
+                  <p>
+                    This is the cycle astrologers use most. The <strong>Lunar Nodes</strong> — the intersection points of the Moon's orbit with the Sun's path — take <strong>18.6 years</strong> to travel all the way around the zodiac.
+                  </p>
+                  <p>
+                    Every ~18–19 years, the Nodes return to the same signs, and the eclipse themes you lived through then <strong>echo again</strong>. This is why the Virgo-Pisces axis was also active in 2006–2007 — the Nodes were in the same signs, producing eclipses with similar themes.
+                  </p>
+                  <p className="text-sm italic">
+                    The Nodal cycle, the Saros, and the Metonic all hover around 18–19 years. They're not identical cycles, but they overlap enough that looking back ~18 years from any eclipse tends to reveal meaningful connections.
+                  </p>
+                </div>
+
+                {/* Semester */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-foreground text-base flex items-center gap-2">
+                    <span className="text-xl">⏳</span> The Semester Cycle — 6 months
+                  </h4>
+                  <p>
+                    This is the most <strong>practical cycle for everyday astrology</strong>. Eclipses always come in pairs or triplets, spaced roughly 6 months apart, along the same nodal axis.
+                  </p>
+                  <p>
+                    That's why you get a Virgo eclipse in September and a Pisces eclipse in March — they're part of the <strong>same 6-month pulse</strong>. The same life themes activate, then 6 months later you get another hit on the same story from the opposite angle.
+                  </p>
+                  <p className="text-sm italic">
+                    Think of each 6-month pair as one conversation: the first eclipse asks the question, the second eclipse reveals the answer.
+                  </p>
+                </div>
+
+                {/* Inex */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-foreground text-base flex items-center gap-2">
+                    <span className="text-xl">🌐</span> The Inex Cycle — 29 years
+                  </h4>
+                  <p>
+                    Less talked about but astronomically significant. Every <strong>29 years</strong>, an eclipse of the same type (total, annular, etc.) occurs in the same general family. The Inex and Saros together form a larger <strong>600-year grid</strong> of eclipse families that astronomers use to map every eclipse in history.
+                  </p>
+                  <p className="text-sm">
+                    For personal use, the 29-year cycle mirrors the Saturn Return — check what was happening around ages 29, 58, or 87 for deep structural echoes in your eclipse story.
+                  </p>
+                </div>
+
+                {/* Summary */}
+                <div className="bg-card border border-border rounded-lg p-4">
+                  <h4 className="font-semibold text-foreground text-sm mb-3">Quick Reference: Eclipse Cycles</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                    <div className="flex justify-between"><span className="text-muted-foreground">Semester</span><span className="font-medium">6 months — same axis, opposite angle</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Saros</span><span className="font-medium">18 yrs 11 days — same degree & type</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Nodal</span><span className="font-medium">18.6 yrs — same signs activated</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Metonic</span><span className="font-medium">19 yrs — same calendar date</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Inex</span><span className="font-medium">29 yrs — same type family</span></div>
+                  </div>
+                </div>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
