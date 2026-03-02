@@ -8,6 +8,7 @@ import { buildSignTeaching, buildAxisTeaching, getSignGlyph, type ZodiacSign } f
 import { getEclipseAspectHits, type NatalPoint, type NatalPointKey } from '@/lib/astrology/eclipseAspects';
 import { signDegreesToLongitude, getHouseForLongitude, HOUSE_MEANINGS } from '@/lib/houseCalculations';
 import type { EclipseEvent } from './EclipseEncyclopediaExplorer';
+import { nodalEducation } from './EclipseEncyclopediaExplorer';
 import type { NatalChart } from '@/hooks/useNatalChart';
 
 interface Props {
@@ -26,49 +27,59 @@ const STATIC_MODULES = [
   { key: 'cycles', icon: '🔄', title: 'Saros Cycles & Long-Range Patterns' },
 ];
 
-function NodalDirectionContent({ nodal }: { nodal: 'north' | 'south' }) {
+function NodalDirectionContent({ nodal, eclipse }: { nodal: 'north' | 'south'; eclipse?: EclipseEvent | null }) {
+  const edu = nodalEducation[nodal];
+
   return (
     <div className="space-y-5">
-      <div className={`rounded-lg px-4 py-3 border ${nodal === 'north' ? 'border-primary/20 bg-primary/5' : 'border-accent/20 bg-accent/5'}`}>
-        <p className="text-sm font-medium">
-          {nodal === 'north'
-            ? '☊ This eclipse is North Node: growth + initiation.'
-            : '☋ This eclipse is South Node: culmination + release.'}
-        </p>
+      {/* Eclipse-specific nodal theme */}
+      {eclipse?.nodalTheme && (
+        <div className={`rounded-lg px-4 py-3 border ${nodal === 'north' ? 'border-primary/20 bg-primary/5' : 'border-accent/20 bg-accent/5'}`}>
+          <p className="text-sm font-medium">{eclipse.nodalTheme}</p>
+        </div>
+      )}
+
+      {/* Rich nodal education */}
+      <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-3">
+        <h4 className="font-semibold text-sm">{edu.emoji} {edu.headline}</h4>
+        <p className="text-sm text-muted-foreground">{edu.shortMeaning}</p>
+        <p className="text-sm text-muted-foreground">{edu.deeperMeaning}</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">☊</span>
-            <h4 className="font-semibold text-sm">North Node Eclipse — Growth & Initiation</h4>
-          </div>
-          <ul className="text-sm text-muted-foreground space-y-1.5 list-disc pl-4">
-            <li>Pulls life <strong>forward</strong> into unfamiliar territory</li>
-            <li>New identity forming — uncomfortable but necessary</li>
-            <li>Energy <strong>increases</strong> around the eclipse themes</li>
-            <li>Opportunities arrive that require courage to accept</li>
-          </ul>
-        </div>
-        <div className="rounded-lg border border-accent/20 bg-accent/5 p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">☋</span>
-            <h4 className="font-semibold text-sm">South Node Eclipse — Release & Audit</h4>
-          </div>
-          <ul className="text-sm text-muted-foreground space-y-1.5 list-disc pl-4">
-            <li>Culmination — what you've built is <strong>reviewed</strong></li>
-            <li>Patterns revealed that have run their course</li>
-            <li>Energy <strong>drains</strong> from outdated systems</li>
-            <li>Recognition rather than pursuit — receive, don't chase</li>
-          </ul>
-        </div>
+      {/* How it feels */}
+      <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-2">
+        <h4 className="font-semibold text-sm">How This Typically Feels</h4>
+        <ul className="text-sm text-muted-foreground space-y-1.5 list-disc pl-4">
+          {edu.howItFeels.map((item, i) => <li key={i}>{item}</li>)}
+        </ul>
       </div>
+
+      {/* Releasing & Building themes from eclipse data */}
+      {(eclipse?.releasingThemes?.length || eclipse?.buildingThemes?.length) && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {eclipse.releasingThemes && eclipse.releasingThemes.length > 0 && (
+            <div className="rounded-lg border border-accent/20 bg-accent/5 p-4 space-y-2">
+              <h4 className="font-semibold text-sm">☋ Releasing</h4>
+              <ul className="text-sm text-muted-foreground space-y-1.5 list-disc pl-4">
+                {eclipse.releasingThemes.map((t, i) => <li key={i}>{t}</li>)}
+              </ul>
+            </div>
+          )}
+          {eclipse.buildingThemes && eclipse.buildingThemes.length > 0 && (
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-2">
+              <h4 className="font-semibold text-sm">☊ Building Toward</h4>
+              <ul className="text-sm text-muted-foreground space-y-1.5 list-disc pl-4">
+                {eclipse.buildingThemes.map((t, i) => <li key={i}>{t}</li>)}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Guidance */}
       <div className="rounded-lg bg-muted/50 border border-border/50 px-4 py-3 text-center space-y-1">
-        <p className="text-sm font-medium italic">
-          North Node eclipses ask: <span className="text-primary">"Where must I grow?"</span>
-        </p>
-        <p className="text-sm font-medium italic">
-          South Node eclipses ask: <span className="text-accent-foreground">"What has already run its course?"</span>
+        <p className="text-sm font-medium italic text-muted-foreground">
+          "{edu.guidance}"
         </p>
       </div>
     </div>
@@ -90,6 +101,25 @@ function SignTeachingContent({ sign }: { sign: ZodiacSign }) {
         <h4 className="font-semibold text-sm">🔄 {t.modalityCard.title}</h4>
         <p className="text-sm text-muted-foreground">{t.modalityCard.body}</p>
       </div>
+      {/* Sign profile extras */}
+      {t.signProfile && (
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
+          <div className="space-y-2">
+            <div>
+              <p className="text-xs font-medium text-primary uppercase tracking-wide">Core Question</p>
+              <p className="text-sm text-muted-foreground italic">{t.signProfile.coreQuestion}</p>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-primary uppercase tracking-wide">Superpower</p>
+              <p className="text-sm text-muted-foreground">{t.signProfile.superpower}</p>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-primary uppercase tracking-wide">Shadow</p>
+              <p className="text-sm text-muted-foreground">{t.signProfile.shadow}</p>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {t.comparison.map(c => (
           <div
@@ -180,7 +210,6 @@ function extractNatalPoints(chart: NatalChart): NatalPoint[] {
   return points;
 }
 
-// Export for use in EclipseEncyclopediaExplorer proximity badges
 export { extractNatalPoints };
 
 function NatalAspectContent({ eclipse, chart }: { eclipse: EclipseEvent | null; chart: NatalChart | null }) {
@@ -205,43 +234,57 @@ function NatalAspectContent({ eclipse, chart }: { eclipse: EclipseEvent | null; 
     return <p className="text-sm text-muted-foreground italic">Select an eclipse to see natal aspects.</p>;
   }
 
-  if (hits.length === 0) {
-    return (
-      <div className="space-y-3">
-        <div className="rounded-lg border border-border/50 bg-muted/30 px-4 py-4">
-          <p className="text-sm text-muted-foreground">
-            <strong>No tight hits within orb.</strong> The house and axis story matters most for this eclipse — look at which house it lands in and what life areas it activates.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground italic">
         Eclipses speak loudest when they contact your natal planets, angles, or nodes.
       </p>
-      <div className="space-y-3">
-        {hits.map((hit, idx) => (
-          <div key={idx} className="flex items-start gap-3 rounded-lg border border-border/50 bg-card/50 p-4">
-            <div className="flex items-center gap-2 min-w-[120px]">
-              <Badge variant="outline" className="text-sm font-mono">{hit.glyph}</Badge>
-              <span className="text-sm font-semibold">{hit.point}</span>
-            </div>
-            <div className="flex-1 space-y-1">
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="text-xs capitalize">{hit.aspect}</Badge>
-                <span className="text-xs text-muted-foreground font-mono">orb {hit.orbLabel}</span>
+
+      {hits.length === 0 ? (
+        <div className="rounded-lg border border-border/50 bg-muted/30 px-4 py-4">
+          <p className="text-sm text-muted-foreground">
+            <strong>No tight hits within orb.</strong> The house and axis story matters most for this eclipse — look at which house it lands in and what life areas it activates.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="space-y-3">
+            {hits.map((hit, idx) => (
+              <div key={idx} className="flex items-start gap-3 rounded-lg border border-border/50 bg-card/50 p-4">
+                <div className="flex items-center gap-2 min-w-[120px]">
+                  <Badge variant="outline" className="text-sm font-mono">{hit.glyph}</Badge>
+                  <span className="text-sm font-semibold">{hit.point}</span>
+                </div>
+                <div className="flex-1 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-xs capitalize">{hit.aspect}</Badge>
+                    <span className="text-xs text-muted-foreground font-mono">orb {hit.orbLabel}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{hit.interpretation}</p>
+                </div>
               </div>
-              <p className="text-sm text-muted-foreground">{hit.interpretation}</p>
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
-      <p className="text-[11px] text-muted-foreground text-center italic">
-        Aspect Audit: {hits.map(h => `${h.glyph} (${h.orbLabel})`).join(' · ')}
-      </p>
+          <p className="text-[11px] text-muted-foreground text-center italic">
+            Aspect Audit: {hits.map(h => `${h.glyph} (${h.orbLabel})`).join(' · ')}
+          </p>
+        </>
+      )}
+
+      {/* Pre-written transit aspects from eclipse data */}
+      {eclipse.aspects && eclipse.aspects.length > 0 && (
+        <div className="space-y-3 pt-2 border-t border-border/30">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Transit Context</p>
+          {eclipse.aspects.map((asp, i) => (
+            <div key={i} className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-1">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-xs capitalize">{asp.planet} {asp.type} ({asp.sign})</Badge>
+              </div>
+              <p className="text-sm text-muted-foreground">{asp.meaning}</p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -421,8 +464,9 @@ function TakeawayContent({ eclipse, chart }: { eclipse: EclipseEvent | null; cha
       '👁 WATCH FOR:',
       ...takeaway.watchItems.map(w => `• ${w}`),
       '',
-      `📝 JOURNAL: ${takeaway.journal}`,
-      '',
+      ...(eclipse.reflectionQuestions?.length
+        ? ['📝 REFLECTION QUESTIONS:', ...eclipse.reflectionQuestions.map(q => `• ${q}`), '']
+        : [`📝 JOURNAL: ${takeaway.journal}`, '']),
       `⚠️ CAUTION: ${takeaway.caution}`,
     ].join('\n');
     navigator.clipboard.writeText(text).then(() => {
@@ -454,10 +498,24 @@ function TakeawayContent({ eclipse, chart }: { eclipse: EclipseEvent | null; cha
           {takeaway.watchItems.map((w, i) => <li key={i}>{w}</li>)}
         </ul>
       </div>
-      <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-2">
-        <h4 className="font-semibold text-sm">📝 Journal Prompt</h4>
-        <p className="text-sm text-muted-foreground italic">{takeaway.journal}</p>
-      </div>
+
+      {/* Reflection Questions from eclipse data OR generated journal prompt */}
+      {eclipse.reflectionQuestions && eclipse.reflectionQuestions.length > 0 ? (
+        <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-2">
+          <h4 className="font-semibold text-sm">📝 Reflection Questions</h4>
+          <ul className="text-sm text-muted-foreground space-y-2 list-none">
+            {eclipse.reflectionQuestions.map((q, i) => (
+              <li key={i} className="italic border-l-2 border-primary/20 pl-3">{q}</li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-2">
+          <h4 className="font-semibold text-sm">📝 Journal Prompt</h4>
+          <p className="text-sm text-muted-foreground italic">{takeaway.journal}</p>
+        </div>
+      )}
+
       <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 space-y-2">
         <h4 className="font-semibold text-sm">⚠️ Caution</h4>
         <p className="text-sm text-muted-foreground">{takeaway.caution}</p>
@@ -518,12 +576,13 @@ function SelectedEclipseSummaryStrip({
   return (
     <div className="sticky top-0 z-10 rounded-lg border border-border/60 bg-background/80 backdrop-blur-md px-4 py-3 mb-4">
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-        {/* Main info */}
         <div className="flex-1 min-w-0">
+          {eclipse.title && (
+            <p className="text-sm font-bold text-foreground truncate">{eclipse.title}</p>
+          )}
           <p className="text-sm font-semibold truncate">
             {subtypeLabel} {typeLabel} • {degreeStr} {getSignGlyph(eclipse.sign)} {eclipse.sign} • {eclipse.nodal === 'north' ? '☊ North' : '☋ South'} Node • {eclipse.date}
           </p>
-          {/* Conditional pills */}
           <div className="flex items-center gap-2 flex-wrap mt-1.5">
             {hitHouse && oppHouse && (
               <Badge variant="outline" className="text-[10px]">
@@ -538,7 +597,6 @@ function SelectedEclipseSummaryStrip({
           </div>
         </div>
 
-        {/* Nav buttons */}
         <div className="flex items-center gap-1.5 shrink-0">
           {currentList && onSelectEclipse && (
             <>
@@ -600,7 +658,7 @@ export function EclipseInterpretationLayer({ selectedEclipse, userNatalChart, on
   ];
 
   const renderContent = (key: string) => {
-    if (key === 'nodes') return <NodalDirectionContent nodal={nodal} />;
+    if (key === 'nodes') return <NodalDirectionContent nodal={nodal} eclipse={selectedEclipse} />;
     if (key === 'sign-teaching') return <SignTeachingContent sign={sign} />;
     if (key === 'axis-teaching') return <AxisTeachingContent sign={sign} />;
     if (key === 'natal') return <NatalAspectContent eclipse={selectedEclipse} chart={userNatalChart ?? null} />;
@@ -620,7 +678,6 @@ export function EclipseInterpretationLayer({ selectedEclipse, userNatalChart, on
         </p>
       </CardHeader>
       <CardContent className="space-y-2">
-        {/* Summary Strip */}
         {selectedEclipse && (
           <SelectedEclipseSummaryStrip
             eclipse={selectedEclipse}

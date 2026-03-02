@@ -6,6 +6,12 @@ export type ZodiacSign =
   | "Leo" | "Virgo" | "Libra" | "Scorpio"
   | "Sagittarius" | "Capricorn" | "Aquarius" | "Pisces";
 
+export type SignProfile = {
+  coreQuestion: string;
+  superpower: string;
+  shadow: string;
+};
+
 export type SignInfo = {
   sign: ZodiacSign;
   element: Element;
@@ -85,6 +91,17 @@ const MODE_ROLE_COPY: Record<Modality, string> = {
   Mutable: "Optimizes function. Refines the system. Fixes friction so life actually works.",
 };
 
+const SIGN_PROFILES: Partial<Record<ZodiacSign, SignProfile>> = {
+  Virgo: { coreQuestion: "What is actually working — and what am I maintaining out of habit, obligation, or fear of change?", superpower: "Virgo's knowing is rooted in the gut — not how things feel, but discernment built from observation, pattern recognition, and lived experience. Virgo sees what others miss: what makes practical sense, and what is wishful thinking dressed up as a plan.", shadow: "Perfectionism as a coping mechanism. Over-optimizing the outer system while neglecting the inner one. Becoming efficient at functioning inside someone else's expectations while losing touch with your own rhythm." },
+  Pisces: { coreQuestion: "What is the deeper meaning behind what I'm doing — and am I connected to something larger than my daily tasks?", superpower: "Pisces can sense what's beneath the surface — the emotional undercurrents, the unspoken needs, the spiritual significance of seemingly ordinary events.", shadow: "Escapism, avoidance of practical reality, dissolving into others' needs at the expense of one's own, chronic vagueness about direction." },
+  Aries: { coreQuestion: "Who am I, and what do I actually want — separate from what others expect of me?", superpower: "Aries can begin without a map. It has the courage to move into the unknown before conditions are perfect.", shadow: "Impulsiveness, self-centeredness, burning hot and fast without follow-through." },
+  Libra: { coreQuestion: "Where am I giving too much or too little — and what does genuine equality in my relationships actually look like?", superpower: "Libra can see all sides of a situation and hold space for complexity without rushing to judgment.", shadow: "Indecision, people-pleasing, losing oneself in the needs and opinions of others." },
+  Leo: { coreQuestion: "Am I living from my heart — or am I performing a version of myself to gain approval?", superpower: "Leo has the gift of genuine warmth and the courage to shine — not from ego, but from the belief that life is meant to be celebrated.", shadow: "Ego inflation, needing constant validation, losing authenticity to the performance." },
+  Aquarius: { coreQuestion: "Where am I conforming to fit in — and where am I called to stand for something larger than personal comfort?", superpower: "Aquarius can detach from personal emotion to see the big picture — what a system needs, what a group needs, what the future requires.", shadow: "Emotional detachment, contrarianism for its own sake, rigidity disguised as principle." },
+  Cancer: { coreQuestion: "Where do I truly feel safe — and am I nourishing myself with the same devotion I give to others?", superpower: "Cancer's emotional intelligence and attunement creates profound bonds and safe spaces where people feel genuinely held.", shadow: "Clinginess, emotional manipulation, retreating into the shell when vulnerability is needed." },
+  Capricorn: { coreQuestion: "Am I climbing the right mountain — or am I achieving for achievement's sake, disconnected from what actually matters?", superpower: "Capricorn's extraordinary capacity for long-term thinking and disciplined effort allows it to build what others can only dream about.", shadow: "Workaholism, emotional suppression, defining worth entirely through status and achievement." },
+};
+
 const AXIS_TEACHER: Record<ZodiacSign, { title: string; bullets: string[] }> = {
   Aries: { title: "Aries: Self & Initiative", bullets: ["Identity and courage", "Decisive action", "Independence and self-definition"] },
   Libra: { title: "Libra: Relationship & Balance", bullets: ["Partnership and negotiation", "Fairness and reciprocity", "Harmony and shared decisions"] },
@@ -133,7 +150,9 @@ export function buildSignTeaching(sign: ZodiacSign) {
       ? `start the system (${triad.Cardinal}) or refine it (${triad.Mutable}) — ${sign} sustains and protects it.`
       : `build the system (${triad.Cardinal}) or preserve it (${triad.Fixed}) — ${sign} makes sure the system actually functions.`);
 
-  return { info, elementCard, modalityCard, comparison, closingLine };
+  const signProfile = SIGN_PROFILES[sign] || null;
+
+  return { info, elementCard, modalityCard, comparison, closingLine, signProfile };
 }
 
 export function buildAxisTeaching(sign: ZodiacSign) {
