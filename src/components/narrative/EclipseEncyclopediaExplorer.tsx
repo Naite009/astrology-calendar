@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EclipseInterpretationLayer, extractNatalPoints } from './EclipseInterpretationLayer';
 import { buildAxisTeaching, type ZodiacSign } from '@/lib/astrology/signTeacher';
 import { getProximityBadge } from '@/lib/astrology/eclipseAspects';
+import { normalizeEclipseNodal } from '@/lib/astrology/eclipseNodalGuard';
 
 // ── Verified eclipse data from Cafe Astrology / NASA ──
 export interface EclipseEvent {
@@ -49,7 +50,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
       { date: '2025-03-14', type: 'lunar', subtype: 'total', sign: 'Virgo', degree: 23, minutes: 57, nodal: 'north', series: 'Virgo-Pisces', description: 'Total lunar eclipse in Virgo — powerful culmination around health, work, and daily practices.' },
       { date: '2025-09-07', type: 'lunar', subtype: 'total', sign: 'Pisces', degree: 15, minutes: 23, nodal: 'south', series: 'Virgo-Pisces', description: 'Total lunar eclipse in Pisces — deep emotional release, spiritual breakthroughs, dissolving old illusions.' },
       { date: '2025-09-21', type: 'solar', subtype: 'partial', sign: 'Virgo', degree: 29, minutes: 5, nodal: 'north', series: 'Virgo-Pisces', description: 'Partial solar eclipse at 29° Virgo — anaretic degree! Final harvest of Virgo themes before the nodes fully shift.' },
-      { date: '2026-03-03', type: 'lunar', subtype: 'total', sign: 'Virgo', degree: 12, minutes: 54, nodal: 'north', series: 'Virgo-Pisces', description: 'Total lunar eclipse in Virgo — continuing to illuminate health, service, and discernment themes.' },
+      { date: '2026-03-03', type: 'lunar', subtype: 'total', sign: 'Virgo', degree: 12, minutes: 54, nodal: 'south', series: 'Virgo-Pisces', description: 'Total lunar eclipse in Virgo — continuing to illuminate health, service, and discernment themes.' },
       { date: '2026-08-28', type: 'lunar', subtype: 'partial', sign: 'Pisces', degree: 4, minutes: 54, nodal: 'south', series: 'Virgo-Pisces', description: 'Partial lunar eclipse in Pisces — releasing spiritual bypassing, refining compassion and boundaries.' },
       { date: '2027-02-20', type: 'lunar', subtype: 'penumbral', sign: 'Virgo', degree: 2, minutes: 6, nodal: 'north', series: 'Virgo-Pisces', description: 'Final penumbral lunar eclipse in Virgo — gentle closing of the Virgo-Pisces cycle.' },
     ],
@@ -174,7 +175,7 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
   const allEclipsesSorted = useMemo(() => {
     const all: EclipseEvent[] = [];
     Object.values(ECLIPSE_SERIES).forEach(s => all.push(...s.events));
-    return all.sort((a, b) => a.date.localeCompare(b.date));
+    return all.map(normalizeEclipseNodal).sort((a, b) => a.date.localeCompare(b.date));
   }, []);
 
   const nextUpcomingEclipse = useMemo(() => {
