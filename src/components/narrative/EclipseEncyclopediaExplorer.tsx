@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartSelector } from '@/components/ChartSelector';
 import { NatalChart } from '@/hooks/useNatalChart';
@@ -9,11 +9,11 @@ import { EclipseInterpretationLayer } from './EclipseInterpretationLayer';
 import { buildAxisTeaching, type ZodiacSign } from '@/lib/astrology/signTeacher';
 
 // ── Verified eclipse data from Cafe Astrology / NASA ──
-interface EclipseEvent {
+export interface EclipseEvent {
   date: string;
   type: 'solar' | 'lunar';
   subtype: 'total' | 'annular' | 'partial' | 'penumbral' | 'annular-total';
-  sign: string;
+  sign: ZodiacSign;
   degree: number;
   minutes: number;
   nodal: 'north' | 'south';
@@ -160,7 +160,8 @@ interface Props {
 export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Props) {
   const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
   const [activeSeriesTab, setActiveSeriesTab] = useState('all');
-  const [selectedEclipseSign, setSelectedEclipseSign] = useState<ZodiacSign | null>(null);
+  const [selectedEclipse, setSelectedEclipse] = useState<EclipseEvent | null>(null);
+  const teacherRef = useRef<HTMLDivElement>(null);
 
   const allEclipsesSorted = useMemo(() => {
     const all: EclipseEvent[] = [];
@@ -168,11 +169,17 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
     return all.sort((a, b) => a.date.localeCompare(b.date));
   }, []);
 
-  const nextUpcomingSign = useMemo(() => {
+  const nextUpcomingEclipse = useMemo(() => {
     const now = new Date().toISOString().slice(0, 10);
-    const next = allEclipsesSorted.find(e => e.date >= now);
-    return (next?.sign as ZodiacSign) || 'Virgo';
+    return allEclipsesSorted.find(e => e.date >= now) ?? allEclipsesSorted[0] ?? null;
   }, [allEclipsesSorted]);
+
+  const handleSelectEclipse = (e: EclipseEvent) => {
+    setSelectedEclipse(e);
+    requestAnimationFrame(() => teacherRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  };
+
+  const activeEclipse = selectedEclipse || nextUpcomingEclipse;
 
   const allCharts = useMemo(() => {
     const charts: NatalChart[] = [];
@@ -352,7 +359,9 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
       </Card>
 
       {/* ── Interpretation Layer ── */}
-      <EclipseInterpretationLayer selectedSign={selectedEclipseSign || nextUpcomingSign} />
+      <div ref={teacherRef}>
+        <EclipseInterpretationLayer selectedEclipse={activeEclipse} />
+      </div>
 
       {/* ── Eclipse Timeline by Series ── */}
       <Card>
@@ -412,7 +421,7 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
                   const oppositeHouse = selectedChart?.houseCusps ? getHouseForDegree(oppositeSign, e.degree, selectedChart) : null;
 
                   return (
-                    <Card key={`all-${idx}`} onClick={() => setSelectedEclipseSign(e.sign as ZodiacSign)} className={`border-l-4 cursor-pointer hover:shadow-md transition-shadow ${e.type === 'solar' ? 'border-l-primary' : 'border-l-accent'} ${isPast ? 'opacity-50' : ''} ${isNext ? 'ring-2 ring-primary/30' : ''} ${selectedEclipseSign === e.sign ? 'ring-2 ring-accent' : ''}`}>
+                    <Card key={`all-${idx}`} onClick={() => handleSelectEclipse(e)} className={`border-l-4 cursor-pointer hover:shadow-md transition-shadow ${e.type === 'solar' ? 'border-l-primary' : 'border-l-accent'} ${isPast ? 'opacity-50' : ''} ${isNext ? 'ring-2 ring-primary/30' : ''} ${selectedEclipse?.date === e.date ? 'ring-2 ring-accent' : ''}`}>
                       <CardContent className="py-4 flex flex-col sm:flex-row sm:items-start gap-3">
                         <div className="flex items-center gap-2 min-w-[140px]">
                           <span className="text-2xl">{e.type === 'solar' ? '🌑' : '🌕'}</span>
@@ -482,7 +491,7 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
                     const isNext = !isPast && (idx === 0 || new Date(series.events[idx - 1].date + 'T12:00:00') < now);
 
                     return (
-                      <Card key={idx} onClick={() => setSelectedEclipseSign(e.sign as ZodiacSign)} className={`border-l-4 cursor-pointer hover:shadow-md transition-shadow ${e.type === 'solar' ? 'border-l-primary' : 'border-l-accent'} ${isPast ? 'opacity-50' : ''} ${isNext ? 'ring-2 ring-primary/30' : ''} ${selectedEclipseSign === e.sign ? 'ring-2 ring-accent' : ''}`}>
+                      <Card key={idx} onClick={() => handleSelectEclipse(e)} className={`border-l-4 cursor-pointer hover:shadow-md transition-shadow ${e.type === 'solar' ? 'border-l-primary' : 'border-l-accent'} ${isPast ? 'opacity-50' : ''} ${isNext ? 'ring-2 ring-primary/30' : ''} ${selectedEclipse?.date === e.date ? 'ring-2 ring-accent' : ''}`}>
                         <CardContent className="py-4 flex flex-col sm:flex-row sm:items-start gap-3">
                           <div className="flex items-center gap-2 min-w-[140px]">
                             <span className="text-2xl">{e.type === 'solar' ? '🌑' : '🌕'}</span>
@@ -512,10 +521,10 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
                               </div>
                             )}
                             {(() => {
-                              const axisData = buildAxisTeaching(e.sign as ZodiacSign);
+                              const axisData = buildAxisTeaching(e.sign);
                               return (
                                 <p className="text-xs text-muted-foreground mt-1 italic">
-                                  {axisData.axisStirredLine(e.sign as ZodiacSign)}
+                                  {axisData.axisStirredLine(e.sign)}
                                 </p>
                               );
                             })()}
