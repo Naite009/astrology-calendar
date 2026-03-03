@@ -76,28 +76,47 @@ export function synthesizeEclipseWithNodes(
     connectionNarrative = `This ${eclipseSign} eclipse is in ${eclipseInfo.element}, which doesn't directly share an element with either node. It acts as a catalyst — a side angle that illuminates your nodal axis indirectly. Pay attention to how ${eclipseSign} themes (${SIGN_SHADOW_THEMES[eclipseSign]?.slice(0, 2).join(', ')}) interact with your ${snSign} comfort zone and your ${nnSign} growth edge.`;
   }
 
-  // Pattern sentences — the \"I keep doing X but nothing changes\" recognition
+  // Pattern sentences — the "I keep doing X but nothing changes" recognition
+  // IMPORTANT: tendenciesToLeaveBehind in nnSpiller are the SOUTH NODE habits to release
+  // (the data is keyed by NN sign and describes what the SN defaults look like)
   const eclipseShadows = SIGN_SHADOW_THEMES[eclipseSign] || [];
-  const snTendencies = snSpiller?.tendenciesToLeaveBehind?.slice(0, 3) || [];
+  const snTendencies = nnSpiller?.tendenciesToLeaveBehind?.slice(0, 3) || [];
+  const nnGrowth = nnSpiller?.tendenciesToDevelop?.slice(0, 3) || [];
 
   const patternSentences: string[] = [];
 
   if (elementConnection === 'same-as-sn') {
     patternSentences.push(
-      `Look for this pattern: \"I keep ${eclipseShadows[0] || 'optimizing'} but nothing actually changes.\" That's the ${snSign} South Node talking through ${eclipseSign} methods.`
+      `Look for this pattern: "I keep ${eclipseShadows[0] || 'optimizing'} but nothing actually changes." That's the ${snSign} South Node talking through ${eclipseSign} methods.`
     );
     patternSentences.push(
       `The eclipse is revealing: the METHOD (${eclipseSign}-style ${eclipseShadows.slice(0, 2).join('/')}) isn't broken — the GOAL might be. Your ${nnSign} North Node says: go ${nnInfo.element === 'Water' ? 'deeper emotionally' : nnInfo.element === 'Fire' ? 'bolder' : nnInfo.element === 'Air' ? 'wider in perspective' : 'more practical'}, not harder at what you've been doing.`
     );
   } else {
+    const snHabitExplained = snTendencies[0] || `${snSign} comfort zone`;
+    const nnGrowthExplained = nnGrowth[0] || `${nnSign} growth`;
+
     patternSentences.push(
-      `Watch for the pull to handle this eclipse through ${snSign} default behavior: ${snTendencies[0] || 'old habits'}. The eclipse is asking you to try a ${nnSign} approach instead.`
+      `Your South Node is in ${snSign} — that's your comfort zone, the autopilot behavior you fall back on when life gets stressful. ` +
+      `One of those autopilot patterns is: "${snHabitExplained}." ` +
+      `Think of it like a path you've walked a thousand times — it's easy, but it doesn't lead anywhere new.`
+    );
+    patternSentences.push(
+      `This eclipse is nudging you OFF that familiar path. Instead of defaulting to ${snSign} habits, ` +
+      `the eclipse is asking you to practice ${nnSign} energy — specifically: "${nnGrowthExplained}." ` +
+      `That's your North Node direction. It feels unfamiliar and uncomfortable precisely because it IS your growth edge.`
+    );
+    patternSentences.push(
+      `The nodes are generational — millions of people share your ${nnSign}/${snSign} nodal axis. ` +
+      `But the HOUSE they fall in makes them deeply personal to you` +
+      `${nnHouse ? `. Your North Node is in your ${nnHouse}th house, so this growth plays out in ${SPILLER_HOUSE_OVERLAYS[nnHouse]?.focus || 'that specific life area'}` : ''}. ` +
+      `The sign tells you the HOW (${nnSign}-style); the house tells you the WHERE (which part of YOUR life).`
     );
   }
 
-  if (snTendencies.length > 0) {
+  if (snTendencies.length > 1) {
     patternSentences.push(
-      `Your South Node pattern to watch: \"${snTendencies.join('; ')}.\" If this eclipse triggers any of these — that's the signal. Pause. Choose the North Node path.`
+      `Other ${snSign} South Node patterns to watch during this eclipse: "${snTendencies.slice(1).join('"; "')}" — if any of these show up, that's your signal to pause and consciously choose the North Node path.`
     );
   }
 
@@ -107,7 +126,7 @@ export function synthesizeEclipseWithNodes(
     releaseGuidance.push(`This is a South Node eclipse — release energy is amplified. What ${eclipseSign} habit has run its course?`);
   }
   releaseGuidance.push(
-    ...(snSpiller?.tendenciesToLeaveBehind?.slice(0, 3) || []).map(
+    ...(nnSpiller?.tendenciesToLeaveBehind?.slice(0, 3) || []).map(
       t => `Release: ${t}`
     )
   );
