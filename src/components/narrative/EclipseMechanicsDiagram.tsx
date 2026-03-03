@@ -109,7 +109,20 @@ export function EclipseMechanicsDiagram({ eclipse }: Props) {
               <stop offset="0%" stopColor="hsl(0, 70%, 45%)" />
               <stop offset="100%" stopColor="hsl(0, 60%, 30%)" />
             </radialGradient>
+            {/* Moon color transition for lunar eclipse */}
+            <radialGradient id="moonPreShadow">
+              <stop offset="0%" stopColor="hsl(0, 0%, 90%)" />
+              <stop offset="100%" stopColor="hsl(0, 0%, 70%)" />
+            </radialGradient>
           </defs>
+
+          {/* Starfield dots */}
+          {[
+            [45, 30], [120, 55], [530, 40], [480, 320], [90, 300], [350, 25],
+            [560, 90], [40, 200], [550, 250], [200, 340], [420, 45], [260, 20],
+          ].map(([sx, sy], i) => (
+            <circle key={i} cx={sx} cy={sy} r={0.8} fill="hsl(0, 0%, 50%)" opacity={0.4 + (i % 3) * 0.2} />
+          ))}
 
           {/* Background: dark space */}
           <rect width="600" height="360" fill="hsl(230, 25%, 8%)" rx="12" />
@@ -124,16 +137,17 @@ export function EclipseMechanicsDiagram({ eclipse }: Props) {
             /* ═══ LUNAR ECLIPSE LAYOUT ═══ */
             /* Sun (left) → Earth (center) → Moon (right) */
             <>
-              {/* Shadow cone from Earth to Moon */}
+              {/* Shadow cone from Earth to Moon — fades in as Moon arrives */}
               <polygon
                 points={`${cx + 20},${cy - 22} ${cx + 175},${cy - 35} ${cx + 175},${cy + 35} ${cx + 20},${cy + 22}`}
                 fill="url(#shadowGrad)"
-                opacity="0.6"
-              />
+                opacity="0"
+              >
+                <animate attributeName="opacity" values="0;0;0.6;0.6" keyTimes="0;0.4;0.7;1" dur="6s" fill="freeze" />
+              </polygon>
 
               {/* Sun */}
               <circle cx={cx - 170} cy={cy} r={38} fill="url(#sunGlow)" />
-              {/* Sun rays */}
               {[0, 45, 90, 135, 180, 225, 270, 315].map(angle => {
                 const rad = (angle * Math.PI) / 180;
                 const x1 = (cx - 170) + Math.cos(rad) * 42;
@@ -153,39 +167,64 @@ export function EclipseMechanicsDiagram({ eclipse }: Props) {
               <text x={cx} y={cy + 4} textAnchor="middle" fill="hsl(0, 0%, 95%)" fontSize="14" fontWeight="700">🌍</text>
               <text x={cx} y={cy + 48} textAnchor="middle" fill="hsl(200, 50%, 70%)" fontSize="11" fontWeight="600">Earth</text>
 
-              {/* Moon (right, in shadow) */}
-              <circle cx={cx + 170} cy={cy} r={22}
-                fill={eclipse.subtype === 'total' ? 'url(#bloodMoon)' : 'url(#moonGrad)'}
-                stroke={eclipse.subtype === 'total' ? 'hsl(0, 50%, 50%)' : 'hsl(0, 0%, 50%)'}
-                strokeWidth="1.5"
-              />
-              {eclipse.subtype === 'total' && (
-                <text x={cx + 170} y={cy - 30} textAnchor="middle" fill="hsl(0, 70%, 60%)" fontSize="9" fontWeight="600">
-                  🩸 Blood Moon
+              {/* ═══ ANIMATED MOON GROUP ═══ */}
+              {/* Moon starts 80px to the right (off-axis) and slides left into the shadow */}
+              <g>
+                <animateTransform
+                  attributeName="transform"
+                  type="translate"
+                  values="80,40;0,0"
+                  dur="5s"
+                  fill="freeze"
+                  calcMode="spline"
+                  keySplines="0.25 0.1 0.25 1"
+                />
+
+                {/* Moon body — color transitions from bright silver to blood red (total) or dimmed (partial) */}
+                <circle cx={cx + 170} cy={cy} r={22} fill="url(#moonPreShadow)" strokeWidth="1.5" stroke="hsl(0, 0%, 50%)">
+                  {eclipse.subtype === 'total' ? (
+                    <animate attributeName="fill" values="url(#moonPreShadow);url(#moonPreShadow);url(#bloodMoon);url(#bloodMoon)" keyTimes="0;0.5;0.8;1" dur="6s" fill="freeze" />
+                  ) : (
+                    <animate attributeName="opacity" values="1;1;0.6;0.6" keyTimes="0;0.5;0.8;1" dur="6s" fill="freeze" />
+                  )}
+                  {eclipse.subtype === 'total' && (
+                    <animate attributeName="stroke" values="hsl(0, 0%, 50%);hsl(0, 50%, 50%)" dur="6s" fill="freeze" />
+                  )}
+                </circle>
+
+                {/* Blood Moon label — fades in */}
+                {eclipse.subtype === 'total' && (
+                  <text x={cx + 170} y={cy - 30} textAnchor="middle" fill="hsl(0, 70%, 60%)" fontSize="9" fontWeight="600" opacity="0">
+                    🩸 Blood Moon
+                    <animate attributeName="opacity" values="0;0;0;1" keyTimes="0;0.6;0.8;1" dur="6s" fill="freeze" />
+                  </text>
+                )}
+
+                <text x={cx + 170} y={cy + 5} textAnchor="middle" fill="hsl(0, 0%, 80%)" fontSize="12" fontWeight="700">☽</text>
+                <text x={cx + 170} y={cy + 48} textAnchor="middle" fill="hsl(0, 0%, 75%)" fontSize="11" fontWeight="600">Moon</text>
+                <text x={cx + 170} y={cy + 62} textAnchor="middle" fill="hsl(0, 0%, 60%)" fontSize="10">
+                  {SIGN_GLYPHS[moonSign]} {moonSign} {eclipse.degree}°{String(eclipse.minutes).padStart(2, '0')}'
                 </text>
-              )}
-              <text x={cx + 170} y={cy + 5} textAnchor="middle" fill={eclipse.subtype === 'total' ? 'hsl(0, 20%, 85%)' : 'hsl(0, 0%, 30%)'} fontSize="12" fontWeight="700">☽</text>
-              <text x={cx + 170} y={cy + 48} textAnchor="middle" fill="hsl(0, 0%, 75%)" fontSize="11" fontWeight="600">Moon</text>
-              <text x={cx + 170} y={cy + 62} textAnchor="middle" fill="hsl(0, 0%, 60%)" fontSize="10">
-                {SIGN_GLYPHS[moonSign]} {moonSign} {eclipse.degree}°{String(eclipse.minutes).padStart(2, '0')}'
-              </text>
+              </g>
 
-              {/* Light rays blocked */}
-              <line x1={cx - 130} y1={cy - 25} x2={cx - 20} y2={cy - 20} stroke="hsl(45, 100%, 60%)" strokeWidth="1" opacity="0.3" />
-              <line x1={cx - 130} y1={cy} x2={cx - 28} y2={cy} stroke="hsl(45, 100%, 60%)" strokeWidth="1" opacity="0.3" />
-              <line x1={cx - 130} y1={cy + 25} x2={cx - 20} y2={cy + 20} stroke="hsl(45, 100%, 60%)" strokeWidth="1" opacity="0.3" />
+              {/* Light rays from Sun — dim as shadow forms */}
+              {[[-25, -20], [0, 0], [25, 20]].map(([dy1, dy2], i) => (
+                <line key={i} x1={cx - 130} y1={cy + dy1} x2={cx - 20} y2={cy + dy2} stroke="hsl(45, 100%, 60%)" strokeWidth="1" opacity="0.3">
+                  <animate attributeName="opacity" values="0.5;0.5;0.15;0.15" keyTimes="0;0.4;0.7;1" dur="6s" fill="freeze" />
+                </line>
+              ))}
 
-              {/* Annotation arrow and text */}
-              <text x={cx} y={cy - 55} textAnchor="middle" fill="hsl(220, 30%, 65%)" fontSize="10" fontStyle="italic">
+              {/* Annotation — fades in after Moon arrives */}
+              <text x={cx} y={cy - 55} textAnchor="middle" fill="hsl(220, 30%, 65%)" fontSize="10" fontStyle="italic" opacity="0">
                 Earth's shadow falls on the Moon
+                <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.6;0.85;1" dur="6s" fill="freeze" />
               </text>
-              <path d={`M${cx},${cy - 48} L${cx + 50},${cy - 38}`} stroke="hsl(220, 30%, 50%)" strokeWidth="1" fill="none" markerEnd="url(#arrowhead)" />
             </>
           ) : (
             /* ═══ SOLAR ECLIPSE LAYOUT ═══ */
             /* Sun (left) → Moon (center, blocking) → Earth (right) */
             <>
-              {/* Sun */}
+              {/* Sun — rays dim as Moon crosses */}
               <circle cx={cx - 170} cy={cy} r={38} fill="url(#sunGlow)" />
               {[0, 45, 90, 135, 180, 225, 270, 315].map(angle => {
                 const rad = (angle * Math.PI) / 180;
@@ -193,7 +232,11 @@ export function EclipseMechanicsDiagram({ eclipse }: Props) {
                 const y1 = cy + Math.sin(rad) * 42;
                 const x2 = (cx - 170) + Math.cos(rad) * 52;
                 const y2 = cy + Math.sin(rad) * 52;
-                return <line key={angle} x1={x1} y1={y1} x2={x2} y2={y2} stroke="hsl(45, 100%, 60%)" strokeWidth="2" opacity="0.7" />;
+                return (
+                  <line key={angle} x1={x1} y1={y1} x2={x2} y2={y2} stroke="hsl(45, 100%, 60%)" strokeWidth="2" opacity="0.7">
+                    <animate attributeName="opacity" values="0.7;0.7;0.2;0.2" keyTimes="0;0.4;0.75;1" dur="5s" fill="freeze" />
+                  </line>
+                );
               })}
               <text x={cx - 170} y={cy + 4} textAnchor="middle" fill="hsl(30, 80%, 20%)" fontSize="13" fontWeight="700">☉</text>
               <text x={cx - 170} y={cy + 58} textAnchor="middle" fill="hsl(45, 80%, 70%)" fontSize="11" fontWeight="600">Sun</text>
@@ -201,32 +244,48 @@ export function EclipseMechanicsDiagram({ eclipse }: Props) {
                 {SIGN_GLYPHS[sunSign]} {sunSign}
               </text>
 
-              {/* Moon (center, blocking the Sun) */}
-              <circle cx={cx} cy={cy} r={24} fill="hsl(0, 0%, 10%)" stroke="hsl(0, 0%, 35%)" strokeWidth="1.5" />
-              {eclipse.subtype === 'annular' && (
-                <circle cx={cx} cy={cy} r={26} fill="none" stroke="hsl(45, 100%, 50%)" strokeWidth="2" opacity="0.7" />
-              )}
-              <text x={cx} y={cy + 5} textAnchor="middle" fill="hsl(0, 0%, 70%)" fontSize="12" fontWeight="700">☽</text>
-              <text x={cx} y={cy + 48} textAnchor="middle" fill="hsl(0, 0%, 75%)" fontSize="11" fontWeight="600">Moon</text>
-              <text x={cx} y={cy + 62} textAnchor="middle" fill="hsl(0, 0%, 60%)" fontSize="10">
-                {SIGN_GLYPHS[moonSign]} {moonSign} {eclipse.degree}°
-              </text>
+              {/* ═══ ANIMATED MOON — slides from right to center ═══ */}
+              <g>
+                <animateTransform
+                  attributeName="transform"
+                  type="translate"
+                  values="120,35;0,0"
+                  dur="4.5s"
+                  fill="freeze"
+                  calcMode="spline"
+                  keySplines="0.25 0.1 0.25 1"
+                />
+                <circle cx={cx} cy={cy} r={24} fill="hsl(0, 0%, 10%)" stroke="hsl(0, 0%, 35%)" strokeWidth="1.5" />
+                {eclipse.subtype === 'annular' && (
+                  <circle cx={cx} cy={cy} r={26} fill="none" stroke="hsl(45, 100%, 50%)" strokeWidth="2" opacity="0">
+                    <animate attributeName="opacity" values="0;0;0.7;0.7" keyTimes="0;0.6;0.85;1" dur="5s" fill="freeze" />
+                  </circle>
+                )}
+                <text x={cx} y={cy + 5} textAnchor="middle" fill="hsl(0, 0%, 70%)" fontSize="12" fontWeight="700">☽</text>
+                <text x={cx} y={cy + 48} textAnchor="middle" fill="hsl(0, 0%, 75%)" fontSize="11" fontWeight="600">Moon</text>
+                <text x={cx} y={cy + 62} textAnchor="middle" fill="hsl(0, 0%, 60%)" fontSize="10">
+                  {SIGN_GLYPHS[moonSign]} {moonSign} {eclipse.degree}°
+                </text>
 
-              {/* Shadow cone from Moon to Earth */}
-              <polygon
-                points={`${cx + 24},${cy - 18} ${cx + 175},${cy - 30} ${cx + 175},${cy + 30} ${cx + 24},${cy + 18}`}
-                fill="url(#shadowGrad)"
-                opacity="0.4"
-              />
+                {/* Shadow cone — appears after Moon arrives */}
+                <polygon
+                  points={`${cx + 24},${cy - 18} ${cx + 175},${cy - 30} ${cx + 175},${cy + 30} ${cx + 24},${cy + 18}`}
+                  fill="url(#shadowGrad)"
+                  opacity="0"
+                >
+                  <animate attributeName="opacity" values="0;0;0.4;0.4" keyTimes="0;0.5;0.8;1" dur="5s" fill="freeze" />
+                </polygon>
+              </g>
 
               {/* Earth (right) */}
               <circle cx={cx + 170} cy={cy} r={28} fill="url(#earthGrad)" />
               <text x={cx + 170} y={cy + 4} textAnchor="middle" fill="hsl(0, 0%, 95%)" fontSize="14" fontWeight="700">🌍</text>
               <text x={cx + 170} y={cy + 48} textAnchor="middle" fill="hsl(200, 50%, 70%)" fontSize="11" fontWeight="600">Earth</text>
 
-              {/* Annotation */}
-              <text x={cx} y={cy - 45} textAnchor="middle" fill="hsl(220, 30%, 65%)" fontSize="10" fontStyle="italic">
+              {/* Annotation — fades in */}
+              <text x={cx} y={cy - 45} textAnchor="middle" fill="hsl(220, 30%, 65%)" fontSize="10" fontStyle="italic" opacity="0">
                 Moon blocks the Sun's light
+                <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.65;0.9;1" dur="5s" fill="freeze" />
               </text>
             </>
           )}
