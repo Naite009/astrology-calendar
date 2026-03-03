@@ -639,6 +639,102 @@ function SelectedEclipseSummaryStrip({
   );
 }
 
+function SarosCyclesContent({ eclipse }: { eclipse: EclipseEvent | null }) {
+  if (!eclipse) return null;
+
+  const [y, m, d] = eclipse.date.split('-').map(Number);
+  const eclipseDate = new Date(y, m - 1, d);
+  const formatDate = (dt: Date) => dt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+  const previousEcho = new Date(eclipseDate);
+  previousEcho.setFullYear(previousEcho.getFullYear() - 18);
+  previousEcho.setDate(previousEcho.getDate() - 11);
+
+  const nextEcho = new Date(eclipseDate);
+  nextEcho.setFullYear(nextEcho.getFullYear() + 18);
+  nextEcho.setDate(nextEcho.getDate() + 11);
+
+  const twoBack = new Date(previousEcho);
+  twoBack.setFullYear(twoBack.getFullYear() - 18);
+  twoBack.setDate(twoBack.getDate() - 11);
+
+  return (
+    <div className="space-y-6 text-sm leading-relaxed">
+      {eclipse.sarosNote && (
+        <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+          <p className="font-semibold text-foreground mb-1">🔄 Your Thematic Echo</p>
+          <p className="text-muted-foreground">{eclipse.sarosNote}</p>
+        </div>
+      )}
+
+      <div className="space-y-3">
+        <h4 className="font-semibold text-foreground text-base">This Eclipse's Saros Family Timeline</h4>
+        <p className="text-muted-foreground">
+          Every eclipse belongs to a <strong>Saros family</strong> — a series of eclipses spaced ~18 years and 11 days apart that share similar astronomical geometry. Each one revisits related themes in your life.
+        </p>
+        <div className="grid gap-2">
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
+            <span className="text-muted-foreground text-xs w-20">~36 yrs ago</span>
+            <span className="font-medium text-foreground">{formatDate(twoBack)}</span>
+            <span className="text-xs text-muted-foreground ml-auto">2 cycles back</span>
+          </div>
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
+            <span className="text-muted-foreground text-xs w-20">~18 yrs ago</span>
+            <span className="font-medium text-foreground">{formatDate(previousEcho)}</span>
+            <span className="text-xs text-muted-foreground ml-auto">Previous echo</span>
+          </div>
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/10 border border-primary/30">
+            <span className="text-primary text-xs w-20 font-bold">Current</span>
+            <span className="font-bold text-foreground">{formatDate(eclipseDate)}</span>
+            <Badge variant="outline" className="ml-auto text-xs">{eclipse.sign}</Badge>
+          </div>
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
+            <span className="text-muted-foreground text-xs w-20">~18 yrs out</span>
+            <span className="font-medium text-foreground">{formatDate(nextEcho)}</span>
+            <span className="text-xs text-muted-foreground ml-auto">Next echo</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <h4 className="font-semibold text-foreground text-base">What Is a Saros Cycle?</h4>
+        <p className="text-muted-foreground">
+          The Saros is an <strong>astronomical pattern</strong> — not an astrological invention. It's based on three lunar cycles syncing up almost perfectly every 6,585.3 days (~18 years, 11 days, 8 hours):
+        </p>
+        <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+          <li><strong>Synodic month</strong> (new moon → new moon): 223 of these = 6,585.32 days</li>
+          <li><strong>Draconic month</strong> (node → node): 242 of these = 6,585.36 days</li>
+          <li><strong>Anomalistic month</strong> (perigee → perigee): 239 of these = 6,585.54 days</li>
+        </ul>
+        <p className="text-muted-foreground">
+          Because these three cycles nearly coincide, eclipses <strong>repeat</strong> with very similar geometry — same type, similar degree, similar duration. That's why astrologers treat them as <em>thematic families</em>.
+        </p>
+      </div>
+
+      <div className="space-y-3">
+        <h4 className="font-semibold text-foreground text-base">How to Use This</h4>
+        <div className="bg-accent/10 rounded-lg p-4 space-y-2 text-muted-foreground">
+          <p>📓 <strong>Look back ~18 years</strong> from this eclipse date. What was happening in your life around {formatDate(previousEcho)}?</p>
+          <p>🔍 The same life area was being activated. You won't see identical events — but you'll likely recognize <strong>similar themes, similar questions, similar turning points</strong>.</p>
+          <p>🌱 This eclipse is the next chapter in that story. What did you learn last time? What still needs to shift?</p>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <h4 className="font-semibold text-foreground text-base">Other Eclipse Cycles</h4>
+        <div className="space-y-2 text-muted-foreground">
+          <p>
+            <strong>Metonic Cycle (19 years)</strong> — Eclipses return to nearly the same calendar date and zodiac degree. If this eclipse is on {formatDate(eclipseDate)}, look also at what happened around {(() => { const mt = new Date(eclipseDate); mt.setFullYear(mt.getFullYear() - 19); return formatDate(mt); })()}.
+          </p>
+          <p>
+            <strong>Eclipse Seasons</strong> — Eclipses come in pairs (sometimes triplets) about 2 weeks apart. A solar and lunar eclipse always accompany each other, forming an "eclipse season" lasting ~35 days.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function EclipseInterpretationLayer({ selectedEclipse, userNatalChart, onBackToTimeline, currentList, onSelectEclipse }: Props) {
   const [openModules, setOpenModules] = useState<string[]>([]);
 
@@ -670,6 +766,7 @@ export function EclipseInterpretationLayer({ selectedEclipse, userNatalChart, on
     if (key === 'natal') return <NatalAspectContent eclipse={selectedEclipse} chart={userNatalChart ?? null} />;
     if (key === 'houses') return <HouseActivationContent eclipse={selectedEclipse} chart={userNatalChart ?? null} />;
     if (key === 'takeaway') return <TakeawayContent eclipse={selectedEclipse} chart={userNatalChart ?? null} />;
+    if (key === 'cycles') return <SarosCyclesContent eclipse={selectedEclipse} />;
     return <p className="italic text-muted-foreground">Content coming soon…</p>;
   };
 
