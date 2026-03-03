@@ -216,6 +216,8 @@ export const getCurrentAspects = (date: Date): CollectiveAspect[] => {
     { angle: 60, type: 'sextile', symbol: '⚹', orb: 6, desc: 'Harmonious opportunity - easy flow' },
     { angle: 90, type: 'square', symbol: '□', orb: 8, desc: 'Tension & challenge - drives action' },
     { angle: 120, type: 'trine', symbol: '△', orb: 8, desc: 'Natural harmony - gifts & talents' },
+    { angle: 150, type: 'quincunx', symbol: '⚻', orb: 3, desc: 'Awkward tension - demands creative adjustment' },
+    { angle: 30, type: 'semisextile', symbol: '⚺', orb: 2, desc: 'Subtle nudge - background signal from adjacent energy' },
     { angle: 180, type: 'opposition', symbol: '☍', orb: 8, desc: 'Polarity & awareness - balance needed' },
   ];
 

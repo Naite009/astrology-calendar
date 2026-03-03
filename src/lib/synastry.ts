@@ -46,7 +46,8 @@ const ASPECT_DEFINITIONS = {
   trine: { angle: 120, orb: 8, symbol: '△', harmonious: true },
   square: { angle: 90, orb: 7, symbol: '□', harmonious: false },
   sextile: { angle: 60, orb: 6, symbol: '⚹', harmonious: true },
-  quincunx: { angle: 150, orb: 3, symbol: '⚻', harmonious: false }
+  quincunx: { angle: 150, orb: 3, symbol: '⚻', harmonious: false },
+  semisextile: { angle: 30, orb: 2, symbol: '⚺', harmonious: true }
 };
 
 // Key romantic planet pairs and their interpretations
@@ -612,7 +613,8 @@ export function getAspectSymbol(aspectType: string): string {
     trine: '△',
     square: '□',
     sextile: '⚹',
-    quincunx: '⚻'
+    quincunx: '⚻',
+    semisextile: '⚺'
   };
   return symbols[aspectType] || '•';
 }
