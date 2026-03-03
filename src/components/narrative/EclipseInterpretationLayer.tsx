@@ -29,6 +29,7 @@ const STATIC_MODULES = [
 
 function NodalDirectionContent({ nodal, eclipse }: { nodal: 'north' | 'south'; eclipse?: EclipseEvent | null }) {
   const edu = nodalEducation[nodal];
+  const isLunar = eclipse?.type === 'lunar';
 
   return (
     <div className="space-y-5">
@@ -36,6 +37,38 @@ function NodalDirectionContent({ nodal, eclipse }: { nodal: 'north' | 'south'; e
       {eclipse?.nodalTheme && (
         <div className={`rounded-lg px-4 py-3 border ${nodal === 'north' ? 'border-primary/20 bg-primary/5' : 'border-accent/20 bg-accent/5'}`}>
           <p className="text-sm font-medium">{eclipse.nodalTheme}</p>
+        </div>
+      )}
+
+      {/* Eclipse Mechanics — how the shadow works */}
+      {eclipse && (
+        <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-3">
+          <h4 className="font-semibold text-sm">🌗 Eclipse Mechanics: Sun, Earth & Moon</h4>
+          {isLunar ? (
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p>
+                In a <strong>lunar eclipse</strong>, the <strong>Moon</strong> (your instinct, your past, your attachments, your emotional body) is opposite the <strong>Sun</strong> (your conscious awareness). But the <strong>Earth</strong> — the life you are living right now — stands between them, casting its shadow onto the Moon.
+              </p>
+              <p>
+                The Sun cannot illuminate the Moon because something is in its way: <em>your current life</em>. The patterns you've built, the routines you maintain, the identity you've constructed — these are the Earth's shadow falling on your unconscious. What was hidden in the dark becomes visible.
+              </p>
+              <p>
+                <strong>A lunar eclipse is not for manifestation — that belongs to solar eclipses.</strong> A lunar eclipse is for <em>revelation and release</em>. It's a Full Moon, which means completion. Something is done. A pattern has run its course. Your job is to see it clearly, work with your shadow rather than pushing it away, and let what's finished be finished — so something new can enter.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p>
+                In a <strong>solar eclipse</strong>, the <strong>Moon</strong> passes between the Earth and the Sun, temporarily blocking the Sun's light. Your unconscious (Moon) moves in front of your conscious awareness (Sun), creating a moment where the old story briefly covers the new one.
+              </p>
+              <p>
+                This is why solar eclipses are moments of <strong>manifestation and new beginnings</strong>. The unconscious and conscious align — what you've been carrying internally gets projected outward into your life. Doors open. New chapters begin. But because the Moon (past) is involved, what manifests often carries threads from where you've been.
+              </p>
+              <p>
+                <strong>Solar eclipses plant seeds.</strong> You may not see the full picture on eclipse day — but the direction is being set. What starts now has momentum behind it that unfolds over the next 6 months to a year.
+              </p>
+            </div>
+          )}
         </div>
       )}
 
@@ -52,6 +85,22 @@ function NodalDirectionContent({ nodal, eclipse }: { nodal: 'north' | 'south'; e
         <ul className="text-sm text-muted-foreground space-y-1.5 list-disc pl-4">
           {edu.howItFeels.map((item, i) => <li key={i}>{item}</li>)}
         </ul>
+      </div>
+
+      {/* Nervous System & Body Awareness — universal for all eclipses */}
+      <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-3">
+        <h4 className="font-semibold text-sm">🧠 The Nervous System Layer</h4>
+        <p className="text-sm text-muted-foreground">{edu.nervousSystem}</p>
+      </div>
+
+      <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-3">
+        <h4 className="font-semibold text-sm">🫀 Somatic Awareness</h4>
+        <p className="text-sm text-muted-foreground">{edu.somaticAwareness}</p>
+      </div>
+
+      <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-3">
+        <h4 className="font-semibold text-sm">🪞 Working With Your Inner Parts</h4>
+        <p className="text-sm text-muted-foreground">{edu.innerParts}</p>
       </div>
 
       {/* Releasing & Building themes from eclipse data */}
@@ -395,14 +444,21 @@ function generateTakeaway(eclipse: EclipseEvent, modality: string, hitHouse: num
   if (isSolar && isNorth) doItems.push('Start small but real — make the first move in the activated house themes.');
   if (isSolar && !isNorth) doItems.push('Clear space first — remove one obligation or system that blocks momentum.');
   if (!isSolar && isNorth) doItems.push("Name what you're ready to grow into, even if you don't feel \"ready.\"");
-  if (!isSolar && !isNorth) doItems.push('Close a loop — finish, release, or step away from what\'s complete.');
+  if (!isSolar && !isNorth) doItems.push('Close a loop — finish, release, or step away from what\'s complete. This is a Full Moon — the time for completion.');
 
-  if (isNorth) doItems.push('Lean in — experiment, say yes to the stretch.');
-  else doItems.push('Cut clutter — end loops, stop feeding drains.');
+  if (isNorth) doItems.push('Lean in — experiment, say yes to the stretch. Your nervous system will read "unfamiliar" as "unsafe" — that\'s the growth edge, not a warning.');
+  else doItems.push('Cut clutter — end loops, stop feeding drains. Ask: "What unconscious contract am I still honoring that no longer serves me?"');
 
   if (modality === 'Cardinal') doItems.push('Initiate — decide, set a clear direction.');
   if (modality === 'Fixed') doItems.push('Stabilize — protect what matters, make it sustainable.');
   if (modality === 'Mutable') doItems.push('Adjust — audit your method, change what isn\'t working.');
+
+  // Body awareness — universal for all eclipses
+  if (!isSolar) {
+    doItems.push('Check in with your body. Where do you feel tension, heaviness, or activation? That\'s the pattern speaking — don\'t override it with productivity. Sit with it.');
+  } else {
+    doItems.push('Notice what your body is drawn toward. Excitement and anxiety feel almost identical physically — reframe activation as readiness, not danger.');
+  }
 
   if (topHit) {
     const theme = POINT_THEMES[topHit.point] || topHit.point;
@@ -410,22 +466,25 @@ function generateTakeaway(eclipse: EclipseEvent, modality: string, hitHouse: num
   }
 
   if (isSolar) watchItems.push('New openings that arrive indirectly — through other people, timing shifts, or sudden invitations.');
-  else watchItems.push('A truth surfacing that changes how you feel about a situation.');
+  else watchItems.push('A truth surfacing that changes how you feel about a situation. It may arrive through your body before your mind catches up.');
 
   if (modality === 'Cardinal') watchItems.push('Pressure to decide quickly — pause before committing.');
   if (modality === 'Fixed') watchItems.push('Stubbornness or sunk-cost thinking — resistance to necessary change.');
   if (modality === 'Mutable') watchItems.push('Over-optimizing, constant tweaking, nervous overthinking.');
 
-  if (isNorth) watchItems.push('Growth disguised as discomfort — the stretch is the signal.');
-  else watchItems.push('Relief after letting go — the lightness confirms the release was right.');
+  if (isNorth) watchItems.push('Growth disguised as discomfort — the stretch is the signal. Your younger parts may try to pull you back to safety. Acknowledge them, then stay present.');
+  else watchItems.push('Relief after letting go — the lightness confirms the release was right. If grief accompanies the release, that\'s not a sign you made the wrong choice. It\'s your nervous system recalibrating.');
+
+  // Somatic watch item — universal
+  watchItems.push('Physical symptoms during eclipse season (fatigue, tension, restlessness, vivid dreams) — your body processes what your mind hasn\'t yet. Don\'t pathologize it. Work with it.');
 
   const journal = isNorth
     ? `What is calling me forward in ${hitHouse ? `my ${ordinal(hitHouse)} house` : 'this life area'} — and what would "brave participation" look like?`
-    : `What has run its course in ${hitHouse ? `my ${ordinal(hitHouse)} house` : 'this life area'} — even if it's been normal for years?`;
+    : `What has run its course in ${hitHouse ? `my ${ordinal(hitHouse)} house` : 'this life area'} — even if it's been normal for years? What burden is my younger self still carrying that my adult self can now set down?`;
 
   const caution = isSolar
     ? 'Avoid making irreversible commitments on eclipse day — observe first, then choose.'
-    : "Avoid emotional ultimatums on eclipse day — let the storyline reveal itself over a few days.";
+    : "Avoid emotional ultimatums on eclipse day — let the storyline reveal itself over a few days. The revelation is the gift, not the reaction.";
 
   return { doItems, watchItems, journal, caution };
 }
