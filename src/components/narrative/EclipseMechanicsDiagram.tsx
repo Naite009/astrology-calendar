@@ -1,5 +1,6 @@
-import { useMemo } from 'react';
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface EclipseInfo {
   date: string;
@@ -47,8 +48,6 @@ function oppositeSign(sign: string): string {
  */
 export function EclipseMechanicsDiagram({ eclipse }: Props) {
   const isLunar = eclipse.type === 'lunar';
-  const isSolar = eclipse.type === 'solar';
-
   // The sign the MOON is in = eclipse sign
   const moonSign = eclipse.sign;
   // For lunar: Sun is opposite. For solar: Sun is in same sign as Moon (New Moon).
@@ -66,6 +65,7 @@ export function EclipseMechanicsDiagram({ eclipse }: Props) {
   // For solar eclipse: Sun (left) → Moon (center) → Earth (right), Moon blocks Sun
   const cx = 300; // center
   const cy = 180;
+  const [animationSeed, setAnimationSeed] = useState(0);
 
   return (
     <div className="space-y-4">
@@ -74,14 +74,19 @@ export function EclipseMechanicsDiagram({ eclipse }: Props) {
           <span>{isLunar ? '🌕' : '🌑'}</span>
           {eclipse.title || `${eclipse.subtype} ${eclipse.type} eclipse`}
         </h4>
-        <Badge variant="secondary" className="text-xs">
-          {dateStr} · {eclipse.degree}°{String(eclipse.minutes).padStart(2, '0')}' {SIGN_GLYPHS[moonSign]} {moonSign}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="text-xs">
+            {dateStr} · {eclipse.degree}°{String(eclipse.minutes).padStart(2, '0')}' {SIGN_GLYPHS[moonSign]} {moonSign}
+          </Badge>
+          <Button variant="outline" size="sm" className="text-xs" onClick={() => setAnimationSeed((seed) => seed + 1)}>
+            Replay animation
+          </Button>
+        </div>
       </div>
 
       {/* SVG Diagram */}
       <div className="rounded-xl border bg-card overflow-hidden">
-        <svg viewBox="0 0 600 360" className="w-full h-auto" role="img" aria-label={`Diagram of the ${dateStr} ${eclipse.type} eclipse`}>
+        <svg key={`${eclipse.date}-${animationSeed}`} viewBox="0 0 600 360" className="w-full h-auto" role="img" aria-label={`Diagram of the ${dateStr} ${eclipse.type} eclipse`}>
           <defs>
             {/* Sun glow */}
             <radialGradient id="sunGlow">
