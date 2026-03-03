@@ -23,6 +23,7 @@ export interface EclipseAspect {
 
 export interface EclipseEvent {
   date: string;
+  timeUtc?: string; // HH:MM UTC of maximum eclipse
   type: 'solar' | 'lunar';
   subtype: 'total' | 'annular' | 'partial' | 'penumbral' | 'annular-total';
   sign: ZodiacSign;
@@ -91,7 +92,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
     bigPicture: 'The Aries-Libra eclipse series asked us to find the right balance between self-assertion and accommodation. Where had we abandoned ourselves to keep the peace? Where had we been so focused on our own path that we forgot how much we need each other? These eclipses triggered pivotal chapters in relationships, identity reckonings that led to greater authenticity, and moments where partnership dynamics were fundamentally reset.',
     events: [
       {
-        date: '2023-04-20', type: 'solar', subtype: 'annular-total', sign: 'Aries', degree: 29, minutes: 50, nodal: 'north', series: 'Aries-Libra',
+        date: '2023-04-20', timeUtc: '04:12', type: 'solar', subtype: 'annular-total', sign: 'Aries', degree: 29, minutes: 50, nodal: 'north', series: 'Aries-Libra',
         title: 'New Chapter in Identity',
         description: 'A rare hybrid eclipse at the final, most urgent degree of Aries. This opening shot of the Aries-Libra series asked: who are you, really, when no one else is watching?',
         nodalTheme: 'North Node in Aries: The universe is pushing you toward greater independence and self-definition. New beginnings in identity, courage, and personal direction are being activated.',
@@ -100,7 +101,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         reflectionQuestions: ['Where have I been waiting for someone else to give me permission to begin?', 'What version of myself have I been hiding in my relationships?', 'What would I pursue if I stopped measuring myself against others?'],
       },
       {
-        date: '2023-10-14', type: 'solar', subtype: 'annular', sign: 'Libra', degree: 21, minutes: 8, nodal: 'south', series: 'Aries-Libra',
+        date: '2023-10-14', timeUtc: '17:55', type: 'solar', subtype: 'annular', sign: 'Libra', degree: 21, minutes: 8, nodal: 'south', series: 'Aries-Libra',
         title: 'Relationship Audit',
         description: 'A South Node solar eclipse in Libra — existing relationship dynamics, agreements, and social contracts come under review. What partnerships are built on genuine equality, and which are running on outdated terms?',
         nodalTheme: 'South Node in Libra: Old relationship patterns, codependencies, and ways of \'keeping the peace\' at the expense of truth are ready to complete. Endings, revisions, and honest reckonings in partnership.',
@@ -109,7 +110,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         reflectionQuestions: ['Which relationships in my life require me to constantly compromise my truth?', 'Where have I confused keeping the peace with being genuinely at peace?', 'What agreements — spoken or unspoken — am I ready to renegotiate?'],
       },
       {
-        date: '2024-03-25', type: 'lunar', subtype: 'penumbral', sign: 'Libra', degree: 5, minutes: 7, nodal: 'south', series: 'Aries-Libra',
+        date: '2024-03-25', timeUtc: '07:00', type: 'lunar', subtype: 'penumbral', sign: 'Libra', degree: 5, minutes: 7, nodal: 'south', series: 'Aries-Libra',
         title: 'Quiet Emotional Reckoning',
         description: 'A subtle but significant penumbral lunar eclipse in Libra. The shift is internal — emotional clarity arrives softly about what you\'ve been tolerating in your closest relationships.',
         nodalTheme: 'South Node in Libra: Emotional patterns around approval-seeking and relationship dependency surface for gentle but honest review.',
@@ -118,7 +119,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         reflectionQuestions: ['Am I in my relationships because I want to be, or because I\'m afraid of being alone?', 'Where do I override my own emotional needs to avoid conflict?'],
       },
       {
-        date: '2024-04-08', type: 'solar', subtype: 'total', sign: 'Aries', degree: 19, minutes: 24, nodal: 'north', series: 'Aries-Libra',
+        date: '2024-04-08', timeUtc: '18:18', type: 'solar', subtype: 'total', sign: 'Aries', degree: 19, minutes: 24, nodal: 'north', series: 'Aries-Libra',
         title: 'Total Reset in Identity',
         description: 'The most powerful eclipse of this series — a total solar eclipse in Aries. A dramatic new chapter opens in themes of identity, independence, and personal direction. Events triggered here unfold for months.',
         nodalTheme: 'North Node in Aries: A fated acceleration toward greater independence, personal courage, and authentic self-expression. New people, opportunities, and chapters in identity arrive.',
@@ -128,7 +129,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         aspects: [{ planet: 'Chiron', type: 'conjunction', sign: 'Aries', meaning: 'Deep healing available around wounds of self-worth and identity. Old wounds around being seen, valued, and being enough rise for integration.' }],
       },
       {
-        date: '2024-10-02', type: 'solar', subtype: 'annular', sign: 'Libra', degree: 10, minutes: 4, nodal: 'south', series: 'Aries-Libra',
+        date: '2024-10-02', timeUtc: '18:49', type: 'solar', subtype: 'annular', sign: 'Libra', degree: 10, minutes: 4, nodal: 'south', series: 'Aries-Libra',
         title: 'Final Partnership Review',
         description: 'The final major Libra eclipse of this series. Relationship chapters in revision since 2023 now reach a point of resolution. What was renegotiated? What was released?',
         nodalTheme: 'South Node in Libra: This is the conclusion of a long review of your relationship patterns. What have you learned about what you truly need from partnership?',
@@ -137,7 +138,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         reflectionQuestions: ['What relationship lesson from the last two years are you ready to integrate?', 'What do you now know about yourself in relationship that you didn\'t before?'],
       },
       {
-        date: '2025-03-29', type: 'solar', subtype: 'partial', sign: 'Aries', degree: 9, minutes: 0, nodal: 'north', series: 'Aries-Libra',
+        date: '2025-03-29', timeUtc: '10:48', type: 'solar', subtype: 'partial', sign: 'Aries', degree: 9, minutes: 0, nodal: 'north', series: 'Aries-Libra',
         title: 'Closing Chapter, New Beginning',
         description: 'The final eclipse of the Aries-Libra series. A gentle partial solar eclipse — a closing note on the identity and relationship themes activated since 2023.',
         nodalTheme: 'North Node in Aries: One last push toward independent self-expression as this series closes. The seeds of who you\'ve become are ready to be carried forward.',
@@ -156,7 +157,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
     bigPicture: 'The Virgo-Pisces eclipse series asks us to find the right relationship between the tangible and the transcendent — the daily system and the deeper purpose behind it. Virgo asks: what\'s actually working? Pisces asks: why are you doing any of this? Together, they invite us to build lives that are both practically sound and spiritually meaningful. Cause and effect become visible. What we have tended — with care or neglect — now shows its results.',
     events: [
       {
-        date: '2024-09-18', type: 'lunar', subtype: 'partial', sign: 'Pisces', degree: 25, minutes: 41, nodal: 'south', series: 'Virgo-Pisces',
+        date: '2024-09-18', timeUtc: '02:44', type: 'lunar', subtype: 'partial', sign: 'Pisces', degree: 25, minutes: 41, nodal: 'south', series: 'Virgo-Pisces',
         title: 'Letting Go of What We Can\'t Control',
         description: 'The opening lunar eclipse of the Virgo-Pisces series, in Pisces. Emotional completions around themes of loss, sacrifice, and spiritual surrender. What you\'ve been holding that was never truly yours to carry becomes visible.',
         nodalTheme: 'South Node in Pisces: Old patterns of self-dissolution, martyrdom, and escape are ready to complete. Where have you been giving everything away — your energy, your boundaries, your clarity — without replenishment?',
@@ -165,7 +166,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         reflectionQuestions: ['Where have I been the martyr — giving beyond my capacity and resenting it?', 'What am I using as an escape from the practical reality I need to face?', 'Where have I dissolved my own needs into someone else\'s story?'],
       },
       {
-        date: '2025-03-14', type: 'lunar', subtype: 'total', sign: 'Virgo', degree: 23, minutes: 57, nodal: 'north', series: 'Virgo-Pisces',
+        date: '2025-03-14', timeUtc: '06:55', type: 'lunar', subtype: 'total', sign: 'Virgo', degree: 23, minutes: 57, nodal: 'north', series: 'Virgo-Pisces',
         title: 'The Great Realignment',
         description: 'A powerful total lunar eclipse in Virgo — the Moon turns red as the Earth\'s shadow falls across it. Major revelations around health, daily habits, work routines, and the systems structuring your life. What has your daily life actually been producing?',
         nodalTheme: 'North Node in Virgo: Growth is calling you toward greater discernment, healthier daily habits, and a more intentional relationship with your body and work. New chapters in health, service, and practical craft are opening.',
@@ -175,7 +176,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         aspects: [{ planet: 'Saturn', type: 'conjunction', sign: 'Pisces', meaning: 'Saturn conjunct the Sun adds weight and seriousness to what needs to be restructured. Reality checks are stark but clarifying.' }],
       },
       {
-        date: '2025-09-07', type: 'lunar', subtype: 'total', sign: 'Pisces', degree: 15, minutes: 23, nodal: 'south', series: 'Virgo-Pisces',
+        date: '2025-09-07', timeUtc: '18:12', type: 'lunar', subtype: 'total', sign: 'Pisces', degree: 15, minutes: 23, nodal: 'south', series: 'Virgo-Pisces',
         title: 'Emotional Release & Spiritual Completion',
         description: 'A total lunar eclipse in Pisces — emotional, karmic, and deeply felt. Completions in themes of sacrifice, spiritual practice, and the long emotional threads we\'ve been carrying. The Moon in Pisces dissolves what no longer needs to be held.',
         nodalTheme: 'South Node in Pisces: A deep karmic completion. Old stories around victimhood, emotional chaos, or spiritual confusion reach their natural end. What you\'ve been dreaming about without acting on — this eclipse asks why.',
@@ -184,7 +185,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         reflectionQuestions: ['What grief have I been carrying that I haven\'t allowed myself to fully process?', 'Which of my \'dreams\' are genuinely mine — and which belong to who I used to be?', 'Where am I choosing romantic illusion over practical truth?'],
       },
       {
-        date: '2025-09-21', type: 'solar', subtype: 'partial', sign: 'Virgo', degree: 29, minutes: 5, nodal: 'north', series: 'Virgo-Pisces',
+        date: '2025-09-21', timeUtc: '19:54', type: 'solar', subtype: 'partial', sign: 'Virgo', degree: 29, minutes: 5, nodal: 'north', series: 'Virgo-Pisces',
         title: 'New Health & Work Chapter',
         description: 'A partial solar eclipse at the final degree of Virgo — urgent, liminal energy at the threshold of a sign. New chapters in health, daily life, work, and service open. Intentions set here carry powerful forward momentum.',
         nodalTheme: 'North Node in Virgo: A fated opening to new chapters in physical wellbeing, daily practice, and meaningful work. The universe supports building systems that truly serve your health and genuine contribution.',
@@ -193,7 +194,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         reflectionQuestions: ['What one daily habit, if implemented consistently, would most change the trajectory of my health?', 'What kind of work would feel like genuine service — using my real skills?'],
       },
       {
-        date: '2026-03-03', type: 'lunar', subtype: 'total', sign: 'Virgo', degree: 12, minutes: 54, nodal: 'south', series: 'Virgo-Pisces',
+        date: '2026-03-03', timeUtc: '11:34', type: 'lunar', subtype: 'total', sign: 'Virgo', degree: 12, minutes: 54, nodal: 'south', series: 'Virgo-Pisces',
         title: 'The Harvest Audit',
         description: 'A total lunar eclipse in Virgo — the Blood Moon. A South Node eclipse brings what has been forming in the background directly in front of you. The harvest is now visible: what have your daily habits, routines, and systems actually produced? This is not a judgment — it is a revelation. The eclipse illuminates both what is working beautifully and what has been running on autopilot past its expiration date.',
         nodalTheme: 'South Node in Virgo: A cosmic audit of the systems, routines, and habits that have become unconscious. Where have you been efficient at functioning inside someone else\'s expectations while neglecting your own natural rhythm? What is ready to be released, streamlined, or let go entirely?',
@@ -207,7 +208,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         sarosNote: 'Check events from approximately March 2008 for thematic echoes — what was happening in your health, work, or daily life that connects to what surfaces now?',
       },
       {
-        date: '2026-08-28', type: 'lunar', subtype: 'partial', sign: 'Pisces', degree: 4, minutes: 54, nodal: 'south', series: 'Virgo-Pisces',
+        date: '2026-08-28', timeUtc: '04:12', type: 'lunar', subtype: 'partial', sign: 'Pisces', degree: 4, minutes: 54, nodal: 'south', series: 'Virgo-Pisces',
         title: 'Gentle Emotional Release',
         description: 'A partial lunar eclipse in Pisces — a quieter, more internal completion. Emotional threads and spiritual patterns that have been in transition since 2024 reach their gentle conclusion.',
         nodalTheme: 'South Node in Pisces: The softer, final completion of emotional and spiritual patterns this series has been resolving. A time for quiet release, not dramatic endings.',
@@ -216,7 +217,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         reflectionQuestions: ['What emotional weight am I finally ready to set down?', 'How has my relationship to spirituality changed since this series began?'],
       },
       {
-        date: '2027-02-20', type: 'lunar', subtype: 'penumbral', sign: 'Virgo', degree: 2, minutes: 6, nodal: 'north', series: 'Virgo-Pisces',
+        date: '2027-02-20', timeUtc: '23:13', type: 'lunar', subtype: 'penumbral', sign: 'Virgo', degree: 2, minutes: 6, nodal: 'north', series: 'Virgo-Pisces',
         title: 'Quiet Closing Note',
         description: 'Final penumbral lunar eclipse in Virgo — gentle closing of the Virgo-Pisces cycle. The quietest eclipse of the series, sealing the lessons of three years of health, service, and discernment work.',
         nodalTheme: 'North Node in Virgo: A final, gentle nudge toward the practical growth this series has been building. The seeds planted throughout this cycle are now part of your foundation.',
@@ -235,7 +236,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
     bigPicture: 'The Leo-Aquarius series will ask: where do personal creative expression and collective vision meet? Where have you been hiding your light to fit in — and where have you lost yourself in group identity? These eclipses bring new chapters in creative leadership, authentic self-expression, and the question of how individual genius serves the collective good.',
     events: [
       {
-        date: '2026-02-17', type: 'solar', subtype: 'annular', sign: 'Aquarius', degree: 28, minutes: 50, nodal: 'south', series: 'Leo-Aquarius',
+        date: '2026-02-17', timeUtc: '12:01', type: 'solar', subtype: 'annular', sign: 'Aquarius', degree: 28, minutes: 50, nodal: 'south', series: 'Leo-Aquarius',
         title: 'Releasing Collective Conditioning',
         description: 'The opening eclipse of the Leo-Aquarius series. Old group identities, collective belief systems, and social conditioning that have limited your self-expression are ready to be released.',
         nodalTheme: 'South Node in Aquarius: Patterns of conforming to group identity, hiding individuality to fit in, or defining yourself entirely through your tribe are completing.',
@@ -244,7 +245,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         reflectionQuestions: ['Where have I shaped my identity around what my community approves of?', 'What part of me have I kept hidden because it didn\'t fit my group\'s image?'],
       },
       {
-        date: '2026-08-12', type: 'solar', subtype: 'total', sign: 'Leo', degree: 20, minutes: 2, nodal: 'north', series: 'Leo-Aquarius',
+        date: '2026-08-12', timeUtc: '17:47', type: 'solar', subtype: 'total', sign: 'Leo', degree: 20, minutes: 2, nodal: 'north', series: 'Leo-Aquarius',
         title: 'Total Creative Activation',
         description: 'A total solar eclipse in Leo — the most dramatic of this series. A major new chapter opens in creative expression, leadership, romance, joy, and the courage to be fully, unapologetically yourself.',
         nodalTheme: 'North Node in Leo: The universe is activating your creative heart. New chapters in self-expression, creative work, romance, and the courage to be seen in your full radiance are opening.',
@@ -253,7 +254,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         reflectionQuestions: ['What would I create if I stopped worrying about how it would be received?', 'Where have I been waiting for permission to fully show up?', 'What does it mean to lead from love rather than from performance?'],
       },
       {
-        date: '2027-02-06', type: 'solar', subtype: 'annular', sign: 'Aquarius', degree: 17, minutes: 38, nodal: 'south', series: 'Leo-Aquarius',
+        date: '2027-02-06', timeUtc: '15:53', type: 'solar', subtype: 'annular', sign: 'Aquarius', degree: 17, minutes: 38, nodal: 'south', series: 'Leo-Aquarius',
         title: 'Reforming Group Identity',
         description: 'A second South Node eclipse in Aquarius — releasing outdated collective identities and social roles that have limited authentic self-expression.',
         nodalTheme: 'South Node in Aquarius: The group structures and social identities that have defined you are being reformed. What communities, ideologies, or collective roles are you ready to release or renegotiate?',
@@ -262,7 +263,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         reflectionQuestions: ['Which of my communities nurture my full self — and which require me to shrink?', 'Where am I confusing loyalty to a group with living my truth?'],
       },
       {
-        date: '2027-08-02', type: 'solar', subtype: 'total', sign: 'Leo', degree: 9, minutes: 55, nodal: 'north', series: 'Leo-Aquarius',
+        date: '2027-08-02', timeUtc: '10:22', type: 'solar', subtype: 'total', sign: 'Leo', degree: 9, minutes: 55, nodal: 'north', series: 'Leo-Aquarius',
         title: 'Heart in Full Expression',
         description: 'A second total solar eclipse in Leo — the creative, heart-centered chapter deepens. New directions in creative work, romantic love, play, and authentic leadership consolidate and expand.',
         nodalTheme: 'North Node in Leo: The fated acceleration of your creative and expressive life continues. Go further into what lights you up.',
@@ -271,7 +272,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         reflectionQuestions: ['What has my creative life become since August 2026?', 'Where am I expressing myself most fully — and where am I still holding back?'],
       },
       {
-        date: '2027-08-17', type: 'lunar', subtype: 'penumbral', sign: 'Aquarius', degree: 24, minutes: 12, nodal: 'south', series: 'Leo-Aquarius',
+        date: '2027-08-17', timeUtc: '07:29', type: 'lunar', subtype: 'penumbral', sign: 'Aquarius', degree: 24, minutes: 12, nodal: 'south', series: 'Leo-Aquarius',
         title: 'Quiet Collective Completion',
         description: 'A penumbral lunar eclipse in Aquarius — subtle inner shifts around group identity, friendships, and collective purpose. Old community patterns fade quietly.',
         nodalTheme: 'South Node in Aquarius: A gentle completion of old group dynamics and collective patterns.',
@@ -280,7 +281,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         reflectionQuestions: ['Which friendships and communities are growing with me — and which have I outgrown?'],
       },
       {
-        date: '2028-01-26', type: 'solar', subtype: 'annular', sign: 'Aquarius', degree: 6, minutes: 11, nodal: 'south', series: 'Leo-Aquarius',
+        date: '2028-01-26', timeUtc: '15:26', type: 'solar', subtype: 'annular', sign: 'Aquarius', degree: 6, minutes: 11, nodal: 'south', series: 'Leo-Aquarius',
         title: 'Final Chapter of Group Identity',
         description: 'The closing eclipse of the Leo-Aquarius series. What has been learned about individual authenticity and collective belonging reaches its final integration.',
         nodalTheme: 'South Node in Aquarius: The completion of the Leo-Aquarius lesson — you don\'t have to choose between being yourself and belonging. The right communities celebrate your full expression.',
@@ -299,7 +300,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
     bigPicture: 'The Cancer-Capricorn eclipse series will examine the relationship between our private emotional life and our public ambitions. Where have we sacrificed genuine belonging for achievement? Where have we used the comfort of home as a retreat from contribution? These eclipses activate themes of family, emotional foundation, career, legacy, and the question of what truly nourishes us.',
     events: [
       {
-        date: '2027-07-18', type: 'lunar', subtype: 'penumbral', sign: 'Capricorn', degree: 25, minutes: 49, nodal: 'south', series: 'Cancer-Capricorn',
+        date: '2027-07-18', timeUtc: '16:03', type: 'lunar', subtype: 'penumbral', sign: 'Capricorn', degree: 25, minutes: 49, nodal: 'south', series: 'Cancer-Capricorn',
         title: 'Career Patterns Coming to Light',
         description: 'The opening eclipse of the Cancer-Capricorn series. Subtle but real shifts in how you relate to career, authority, and public achievement begin to surface.',
         nodalTheme: 'South Node in Capricorn: Old patterns of achievement for achievement\'s sake, workaholism, and defining worth through status are beginning to surface for review.',
@@ -308,7 +309,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         reflectionQuestions: ['Where have I been climbing toward a goal that no longer feels meaningful?', 'Am I achieving for myself — or performing achievement for external validation?'],
       },
       {
-        date: '2028-01-12', type: 'lunar', subtype: 'partial', sign: 'Cancer', degree: 21, minutes: 28, nodal: 'north', series: 'Cancer-Capricorn',
+        date: '2028-01-12', timeUtc: '04:06', type: 'lunar', subtype: 'partial', sign: 'Cancer', degree: 21, minutes: 28, nodal: 'north', series: 'Cancer-Capricorn',
         title: 'Emotional Foundations Activated',
         description: 'A partial lunar eclipse in Cancer — emotional revelations about home, family, belonging, and what you truly need to feel safe and genuinely nourished.',
         nodalTheme: 'North Node in Cancer: Growth is calling you toward deeper emotional roots, genuine belonging, and the courage to prioritize nourishment over status.',
@@ -317,7 +318,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         reflectionQuestions: ['What do I actually need to feel emotionally safe — and am I allowing myself to have it?', 'How has the pursuit of achievement affected my experience of home and family?'],
       },
       {
-        date: '2028-07-06', type: 'lunar', subtype: 'partial', sign: 'Capricorn', degree: 15, minutes: 11, nodal: 'south', series: 'Cancer-Capricorn',
+        date: '2028-07-06', timeUtc: '18:20', type: 'lunar', subtype: 'partial', sign: 'Capricorn', degree: 15, minutes: 11, nodal: 'south', series: 'Cancer-Capricorn',
         title: 'Authority & Legacy Review',
         description: 'A partial lunar eclipse in Capricorn — old authority structures, career patterns, and legacy frameworks come under review.',
         nodalTheme: 'South Node in Capricorn: The structures of achievement that have defined your public identity are being examined. What legacy do you actually want to leave?',
@@ -326,7 +327,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         reflectionQuestions: ['What would I be doing with my career if no one was watching?', 'What legacy am I actually building — and does it align with what matters most to me?'],
       },
       {
-        date: '2028-07-22', type: 'solar', subtype: 'total', sign: 'Cancer', degree: 29, minutes: 51, nodal: 'north', series: 'Cancer-Capricorn',
+        date: '2028-07-22', timeUtc: '02:02', type: 'solar', subtype: 'total', sign: 'Cancer', degree: 29, minutes: 51, nodal: 'north', series: 'Cancer-Capricorn',
         title: 'Total Emotional Renewal',
         description: 'A total solar eclipse at the final degree of Cancer — the most powerful eclipse of this series. A dramatic new chapter in home, family, emotional foundation, and the question of where you truly belong.',
         nodalTheme: 'North Node in Cancer: A fated new beginning in emotional life, home, family, and genuine belonging. The universe is activating what actually nourishes you.',
@@ -335,7 +336,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         reflectionQuestions: ['What would home feel like if I built it entirely around what nourishes me?', 'Am I ready to let achievement serve my life — rather than be my life?'],
       },
       {
-        date: '2028-12-31', type: 'lunar', subtype: 'total', sign: 'Cancer', degree: 10, minutes: 33, nodal: 'north', series: 'Cancer-Capricorn',
+        date: '2028-12-31', timeUtc: '16:52', type: 'lunar', subtype: 'total', sign: 'Cancer', degree: 10, minutes: 33, nodal: 'north', series: 'Cancer-Capricorn',
         title: 'New Year\'s Eve Blood Moon',
         description: 'A total lunar eclipse in Cancer on New Year\'s Eve — powerfully symbolic. Emotional revelations about home, belonging, and what truly nourishes surface as one year ends and another begins.',
         nodalTheme: 'North Node in Cancer: A profound emotional culmination at the turn of the year. What has this series shown you about what home, family, and genuine belonging mean to you?',
@@ -344,7 +345,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         reflectionQuestions: ['As this year ends, what emotional truth have I been avoiding that I\'m finally ready to face?', 'What does \'home\' mean to me now — and am I living in a way that reflects that?'],
       },
       {
-        date: '2029-06-26', type: 'lunar', subtype: 'total', sign: 'Capricorn', degree: 4, minutes: 50, nodal: 'south', series: 'Cancer-Capricorn',
+        date: '2029-06-26', timeUtc: '03:22', type: 'lunar', subtype: 'total', sign: 'Capricorn', degree: 4, minutes: 50, nodal: 'south', series: 'Cancer-Capricorn',
         title: 'Final Achievement Audit',
         description: 'The closing eclipse of the Cancer-Capricorn series. The final integration of what this series taught about the relationship between ambition and belonging.',
         nodalTheme: 'South Node in Capricorn: The completion of the Cancer-Capricorn lesson: genuine achievement is only meaningful when rooted in genuine belonging.',
