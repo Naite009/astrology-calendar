@@ -581,7 +581,13 @@ function SelectedEclipseSummaryStrip({
             <p className="text-sm font-bold text-foreground truncate">{eclipse.title}</p>
           )}
           <p className="text-sm font-semibold truncate">
-            {subtypeLabel} {typeLabel} • {degreeStr} {getSignGlyph(eclipse.sign)} {eclipse.sign} • {eclipse.nodal === 'north' ? '☊ North' : '☋ South'} Node • {eclipse.date}
+            {subtypeLabel} {typeLabel} • {degreeStr} {getSignGlyph(eclipse.sign)} {eclipse.sign} • {eclipse.nodal === 'north' ? '☊ North' : '☋ South'} Node
+          </p>
+          <p className="text-base font-bold text-foreground">
+            {(() => {
+              const [y, m, d] = eclipse.date.split('-').map(Number);
+              return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            })()}
           </p>
           <div className="flex items-center gap-2 flex-wrap mt-1.5">
             {hitHouse && oppHouse && (
