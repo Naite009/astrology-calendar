@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { EclipseMechanicsDiagram } from './EclipseMechanicsDiagram';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartSelector } from '@/components/ChartSelector';
 import { NatalChart } from '@/hooks/useNatalChart';
@@ -694,58 +695,43 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
                   </Card>
                 </div>
 
-                {/* ── Dynamic Eclipse Lineup ── */}
-                <div className="mt-6 space-y-3">
-                  <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <span>📋</span> Current Eclipse Lineup
-                  </h4>
-                  <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
-                    {allEclipsesSorted.map((e) => {
-                      const dateObj = new Date(e.date + 'T12:00:00');
-                      const now = new Date();
-                      const isPast = dateObj < now;
-                      const twoWeeksFromNow = new Date(now.getTime() + 14 * 86400000);
-                      const isNextUp = !isPast && nextUpcomingEclipse?.date === e.date;
-                      const isApproaching = !isPast && dateObj <= twoWeeksFromNow;
-                      const monthStr = dateObj.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+                {/* ── Current Eclipse Diagram ── */}
+                {(() => {
+                  const now = new Date();
+                  const twoWeeksBefore = (e: { date: string }) => {
+                    const d = new Date(e.date + 'T12:00:00');
+                    return new Date(d.getTime() - 14 * 86400000);
+                  };
+                  // Show the eclipse we're within 2 weeks of, or the next upcoming, or the most recent past
+                  const activeForDiagram = allEclipsesSorted.find(e => {
+                    const d = new Date(e.date + 'T12:00:00');
+                    return now >= twoWeeksBefore(e) && now <= new Date(d.getTime() + 7 * 86400000);
+                  }) || nextUpcomingEclipse || allEclipsesSorted[allEclipsesSorted.length - 1];
 
-                      return (
-                        <button
-                          key={e.date}
-                          onClick={() => handleSelectEclipse(e)}
-                          className={`flex-shrink-0 flex flex-col items-center gap-1 px-3 py-2 rounded-lg border text-center transition-all min-w-[72px] ${
-                            isApproaching
-                              ? 'border-primary bg-primary/15 ring-2 ring-primary/40 shadow-md scale-105'
-                              : isNextUp
-                                ? 'border-primary/60 bg-primary/10'
-                                : isPast
-                                  ? 'border-border/40 bg-muted/30 opacity-50'
-                                  : 'border-border/60 bg-card hover:bg-muted/50'
-                          }`}
-                        >
-                          <span className="text-lg">{e.type === 'solar' ? '🌑' : '🌕'}</span>
-                          <span className="text-[10px] font-medium leading-tight">
-                            {e.sign.slice(0, 3)}
-                          </span>
-                          <span className="text-[9px] text-muted-foreground">{monthStr}</span>
-                          {isApproaching && (
-                            <Badge variant="default" className="text-[8px] px-1 py-0 mt-0.5 animate-pulse">
-                              NEXT
-                            </Badge>
-                          )}
-                          {isNextUp && !isApproaching && (
-                            <Badge variant="secondary" className="text-[8px] px-1 py-0 mt-0.5">
-                              next
-                            </Badge>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <p className="text-[10px] text-muted-foreground italic">
-                    Tap any eclipse to jump to its interpretation. The highlighted eclipse shifts ~2 weeks before each event.
-                  </p>
-                </div>
+                  if (!activeForDiagram) return null;
+                  const eclipseDate = new Date(activeForDiagram.date + 'T12:00:00');
+                  const isToday = now.toDateString() === eclipseDate.toDateString();
+                  const daysUntil = Math.ceil((eclipseDate.getTime() - now.getTime()) / 86400000);
+                  const isActive = daysUntil >= -7 && daysUntil <= 14;
+
+                  return (
+                    <div className="mt-6 space-y-2">
+                      {isToday && (
+                        <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/10 border border-primary/30 animate-pulse">
+                          <span className="text-lg">⚡</span>
+                          <p className="text-xs font-semibold text-primary">This eclipse is happening TODAY</p>
+                        </div>
+                      )}
+                      {!isToday && isActive && daysUntil > 0 && (
+                        <div className="flex items-center gap-2 p-2 rounded-lg bg-accent/10 border border-accent/30">
+                          <span className="text-lg">📡</span>
+                          <p className="text-xs font-medium text-accent-foreground">Next eclipse in {daysUntil} day{daysUntil !== 1 ? 's' : ''}</p>
+                        </div>
+                      )}
+                      <EclipseMechanicsDiagram eclipse={activeForDiagram} />
+                    </div>
+                  );
+                })()}
               </AccordionContent>
             </AccordionItem>
 
