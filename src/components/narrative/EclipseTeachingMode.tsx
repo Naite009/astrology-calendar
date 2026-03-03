@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { format } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -87,6 +88,18 @@ export function EclipseTeachingMode({ eclipse, userNatalChart }: Props) {
     return getSignHouseHabits(eclipse.sign, eclipseHouse);
   }, [eclipse.sign, eclipseHouse]);
 
+  const eclipseLocalTime = useMemo(() => {
+    if (!eclipse.timeUtc || !eclipse.date) return null;
+    try {
+      const [h, m] = eclipse.timeUtc.split(':').map(Number);
+      const [y, mo, d] = eclipse.date.split('-').map(Number);
+      const utcDate = new Date(Date.UTC(y, mo - 1, d, h, m));
+      const localDate = format(utcDate, 'MMMM d, yyyy');
+      const localTime = utcDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
+      return { localDate, localTime, isPast: utcDate < new Date() };
+    } catch { return null; }
+  }, [eclipse.date, eclipse.timeUtc]);
+
   const aspectHits = useMemo(() => {
     if (!natalPoints) return [];
     return getEclipseAspectHits(eclipse, natalPoints, 5);
@@ -156,8 +169,25 @@ export function EclipseTeachingMode({ eclipse, userNatalChart }: Props) {
     const subtypeLabel = eclipse.subtype.charAt(0).toUpperCase() + eclipse.subtype.slice(1);
     const isLunar = eclipse.type === 'lunar';
 
+    const localTimeStr = eclipseLocalTime;
+
     return (
       <div className="space-y-4">
+        {/* Date and time banner */}
+        {localTimeStr && (
+          <div className={`rounded-lg border px-4 py-3 ${localTimeStr.isPast ? 'border-muted bg-muted/30' : 'border-primary/20 bg-primary/5'}`}>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <p className="text-sm font-semibold">{localTimeStr.localDate}</p>
+                <p className="text-xs text-muted-foreground">Maximum eclipse at <strong>{localTimeStr.localTime}</strong></p>
+              </div>
+              <Badge variant={localTimeStr.isPast ? 'secondary' : 'default'} className="text-xs">
+                {localTimeStr.isPast ? 'Past Eclipse' : 'Upcoming'}
+              </Badge>
+            </div>
+          </div>
+        )}
+
         <p className="text-base leading-relaxed">
           This is a <strong>{subtypeLabel} {isLunar ? 'Lunar' : 'Solar'} Eclipse</strong> at{' '}
           <strong>{eclipse.degree}°{eclipse.minutes > 0 ? eclipse.minutes.toString().padStart(2, '0') + "'" : ''} {getSignGlyph(eclipse.sign)} {eclipse.sign}</strong>.
