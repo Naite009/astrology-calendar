@@ -560,11 +560,11 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
     return (
       <Card key={`${e.date}-${idx}`} onClick={() => handleSelectEclipse(e)} className={`border-l-4 cursor-pointer hover:shadow-md transition-shadow ${e.type === 'solar' ? 'border-l-primary' : 'border-l-accent'} ${isPast ? 'opacity-50' : ''} ${isNext ? 'ring-2 ring-primary/30' : ''} ${selectedEclipse?.date === e.date ? 'ring-2 ring-accent' : ''}`}>
         <CardContent className="py-4 flex flex-col sm:flex-row sm:items-start gap-3">
-          <div className="flex items-center gap-2 min-w-[140px]">
+          <div className="flex items-center gap-2 min-w-[160px]">
             <span className="text-2xl">{e.type === 'solar' ? '🌑' : '🌕'}</span>
             <div>
-              <p className="font-semibold text-sm capitalize">{e.subtype} {e.type}</p>
-              <p className="text-xs text-muted-foreground">{formatted}</p>
+              <p className="font-bold text-base">{formatted}</p>
+              <p className="text-xs text-muted-foreground capitalize">{e.subtype} {e.type === 'solar' ? 'Solar' : 'Lunar'} Eclipse</p>
             </div>
           </div>
           <div className="flex-1 space-y-1">

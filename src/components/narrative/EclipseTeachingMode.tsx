@@ -651,7 +651,10 @@ export function EclipseTeachingMode({ eclipse, userNatalChart }: Props) {
             Step {currentStep + 1} of {STEPS.length}
           </p>
           <Badge variant="outline" className="text-xs">
-            {eclipse.degree}° {getSignGlyph(eclipse.sign)} {eclipse.sign} • {eclipse.date}
+            {eclipse.degree}° {getSignGlyph(eclipse.sign)} {eclipse.sign} • {(() => {
+              const [y, m, d] = eclipse.date.split('-').map(Number);
+              return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            })()}
           </Badge>
         </div>
         <Progress value={progress} className="h-2" />
