@@ -57,7 +57,14 @@ export const nodalEducation = {
       "A sense of wrapping up, resolving, or releasing",
       "Old situations resurfacing for final resolution",
       "Clarity about what is no longer aligned with your growth",
+      "Sensations in your body — tension, heaviness, relief — as the pattern becomes conscious",
     ],
+    nervousSystem:
+      "The patterns a South Node eclipse surfaces aren't random — they are nervous system strategies. At some point, your younger self made an unconscious contract: 'If I do THIS, I'll be loved / safe / connected.' People-pleasing, perfectionism, over-giving, withdrawal, hyper-independence — these were survival adaptations. They worked then. They're running on autopilot now. The eclipse makes the contract visible so you can renegotiate it as an adult.",
+    somaticAwareness:
+      "Eclipse revelations don't always arrive as thoughts — they show up in your body first. A tightness in your chest, a heaviness in your gut, restless legs, jaw clenching, a sudden wave of exhaustion. Your body has been holding the pattern your mind learned to ignore. During a South Node eclipse, pay attention to WHERE in your body you feel activation. That's the pattern trying to speak. Don't override it with productivity — sit with it, breathe into it, let the information come.",
+    innerParts:
+      "In Internal Family Systems (IFS), the patterns an eclipse surfaces often come from 'exiles' — younger parts of you still carrying burdens from long ago. The South Node eclipse is an invitation to turn toward these parts with compassion, not to exile them further. The work is not to 'fix' yourself but to remove the burden your younger parts have been holding. When you acknowledge what they've been carrying, something new can finally enter.",
     guidance:
       "Don't fight what's completing. Let the audit happen. The question isn't 'how do I hold on?' — it's 'what have I learned, and what can I release with grace?'",
   },
@@ -75,7 +82,14 @@ export const nodalEducation = {
       "A sense of being pushed toward unfamiliar but meaningful territory",
       "Events that break open a new chapter",
       "The feeling that something important is being set in motion",
+      "Your body might feel activated, energized, or restless — that's the nervous system encountering unfamiliar territory",
     ],
+    nervousSystem:
+      "A North Node eclipse asks you to step OUTSIDE the nervous system strategies that have kept you safe. That's why growth feels uncomfortable — your body reads 'unfamiliar' as 'unsafe.' The tightness, the resistance, the urge to retreat back to what you know — that's not a sign you're doing something wrong. It's your nervous system recalibrating. Growth doesn't happen in the comfort zone. It happens at the edge where your body says 'this is new' and you choose to stay present anyway.",
+    somaticAwareness:
+      "Notice how your body responds to new opportunities during this eclipse. Excitement and anxiety produce nearly identical physical sensations — racing heart, butterflies, heightened alertness. The difference is the story your mind tells about it. During a North Node eclipse, practice reframing body activation as 'readiness' rather than 'danger.' Your body is preparing for expansion, not warning you away from it.",
+    innerParts:
+      "The North Node asks you to develop capacities your younger self didn't have access to. This isn't about abandoning who you were — it's about growing INTO who you are becoming. The parts of you that resist growth are often protectors, trying to keep you safe by keeping you small. Acknowledge their service, then gently show them that you can handle what's next.",
     guidance:
       "Say yes to what feels unfamiliar but resonant. The North Node asks for courage — not recklessness, but the willingness to walk toward what you haven't yet become.",
   },
