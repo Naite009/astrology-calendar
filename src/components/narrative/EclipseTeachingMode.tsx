@@ -91,6 +91,63 @@ function getSignFeltSense(sign: string): string {
   return map[sign] || "heightened awareness in the areas this sign governs";
 }
 
+/** Describe the sign's operating style in concrete behavioral terms */
+function getSignOperatingStyle(sign: string): string {
+  const map: Record<string, string> = {
+    Aries: "acting fast, leading from instinct, and pushing through obstacles with force",
+    Taurus: "building slowly, valuing comfort and consistency, and holding onto what feels secure",
+    Gemini: "gathering information, staying mentally agile, and keeping your options open",
+    Cancer: "nurturing others, creating emotional safety, and reading the room before acting",
+    Leo: "expressing yourself boldly, seeking recognition, and leading with warmth and confidence",
+    Virgo: "analyzing, refining, fixing what's broken, and maintaining systems that keep daily life running smoothly",
+    Libra: "negotiating, balancing perspectives, and prioritizing harmony in relationships",
+    Scorpio: "investigating what's beneath the surface, holding emotional intensity, and refusing to accept shallow answers",
+    Sagittarius: "seeking meaning, chasing bigger experiences, and questioning anything that feels too small",
+    Capricorn: "building structures, taking responsibility, and working toward long-term goals with discipline",
+    Aquarius: "thinking independently, challenging norms, and prioritizing the needs of the group over personal comfort",
+    Pisces: "absorbing others' emotions, following intuition, and dissolving boundaries between self and other",
+  };
+  return map[sign] || "a particular way of managing daily life";
+}
+
+/** Describe what South Node comfort looks like in behavioral terms */
+function getSnComfortPattern(sign: string): string {
+  const map: Record<string, string> = {
+    Aries: "impulsive independence — doing everything yourself because asking for help feels like weakness",
+    Taurus: "staying in the familiar — choosing comfort, routine, and material security over emotional risk",
+    Gemini: "intellectual busyness — researching, talking, and analyzing as a way to avoid committing to anything",
+    Cancer: "emotional caretaking — pouring into others so you never have to face your own unmet needs",
+    Leo: "performing confidence — staying visible and in control so you never have to sit with vulnerability",
+    Virgo: "productive perfectionism — staying busy fixing, organizing, and improving so you always feel useful but never have to ask what you actually want",
+    Libra: "peace-keeping — adjusting yourself to maintain harmony so you never have to risk being disliked",
+    Scorpio: "emotional control — holding everything close, trusting no one fully, and equating vulnerability with danger",
+    Sagittarius: "perpetual expansion — always seeking the next adventure or philosophy so you never have to settle into the messy details",
+    Capricorn: "achievement as identity — climbing, building, and producing so your worth is never in question",
+    Aquarius: "intellectual detachment — observing from the outside so you never have to get emotionally involved",
+    Pisces: "spiritual bypassing — dissolving into compassion and surrender so you never have to set boundaries or take concrete action",
+  };
+  return map[sign] || "the familiar patterns that feel safe but limit growth";
+}
+
+/** Describe what North Node growth looks like as a practical application */
+function getNnGrowthApplication(sign: string): string {
+  const map: Record<string, string> = {
+    Aries: "acting on your own authority, tolerating conflict, and choosing courage over consensus",
+    Taurus: "building something tangible, trusting your own values, and finding security from within rather than from control",
+    Gemini: "staying curious, asking questions, exploring options without needing to be the expert",
+    Cancer: "letting yourself need people, creating genuine emotional bonds, and trusting that vulnerability is strength",
+    Leo: "stepping into the spotlight on your own terms, creating from the heart, and accepting that you deserve to be seen",
+    Virgo: "getting practical, building real skills, and accepting that meaningful contribution often looks unglamorous",
+    Libra: "learning to share power, compromise genuinely, and value partnership as much as independence",
+    Scorpio: "going deeper emotionally, sharing real intimacy, and trusting that transformation — though uncomfortable — is where your power lives",
+    Sagittarius: "following your own truth, expanding beyond the familiar, and trusting that meaning matters more than data",
+    Capricorn: "taking long-term responsibility, building something that lasts, and accepting the weight that comes with real authority",
+    Aquarius: "thinking bigger than yourself, contributing to community, and letting your individuality serve something collective",
+    Pisces: "surrendering control, trusting intuition, and accepting that not everything needs to be fixed — some things need to be felt",
+  };
+  return map[sign] || "the unfamiliar territory where your real growth lives";
+}
+
 interface Props {
   eclipse: EclipseEvent;
   userNatalChart: NatalChart | null;
@@ -510,9 +567,16 @@ export function EclipseTeachingMode({ eclipse, userNatalChart }: Props) {
           </div>
         </div>
 
-        <div className="rounded-lg bg-muted/50 border border-border/50 px-4 py-3">
-          <p className="text-sm text-muted-foreground">
-            <strong>The question this eclipse asks:</strong> Are your {eclipse.sign}-style habits keeping you stuck in {snSign} comfort — or moving you toward {nnSign} depth?
+        <div className="rounded-lg bg-muted/50 border border-border/50 px-4 py-3 space-y-3">
+          <p className="text-sm font-semibold">The question this eclipse asks:</p>
+          <p className="text-sm text-muted-foreground italic">
+            Are your {eclipse.sign}-style habits keeping you stuck in {snSign} comfort — or moving you toward {nnSign} depth?
+          </p>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Here's what that means in plain language: {eclipse.sign} energy shows up as a <strong>specific way of operating</strong> — {getSignOperatingStyle(eclipse.sign as any)}. That operating style isn't the problem. The question is <em>what it's in service of</em>. When it's serving your South Node in {snSign}, it reinforces {getSnComfortPattern(snSign as any)} — the familiar groove that feels productive but keeps you circling the same territory. When it's serving your North Node in {nnSign}, the same {eclipse.sign} skills become tools for {getNnGrowthApplication(nnSign as any)} — which feels less comfortable but is where your real expansion lives.
+          </p>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            You'll know which one is running by how it <strong>feels in your body</strong>: the South Node version feels like relief, like checking a box, like "at least I'm doing something." The North Node version feels like a stretch — slightly vulnerable, slightly unfamiliar, like you're building something you can't fully see yet.
           </p>
         </div>
 
