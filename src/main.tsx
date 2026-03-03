@@ -1,24 +1,65 @@
+import { createElement } from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App.tsx";
 import "./index.css";
 
-const AUTO_RELOAD_KEY = "__vite_preload_auto_reload_at";
-const AUTO_RELOAD_COOLDOWN_MS = 15000;
+const AUTO_RELOAD_KEY = "__lovable_auto_reload_at";
+const AUTO_RELOAD_ATTEMPTS_KEY = "__lovable_auto_reload_attempts";
+const AUTO_RELOAD_COOLDOWN_MS = 2000;
+const MAX_AUTO_RELOADS = 4;
 
-const shouldAutoReload = () => {
-  const lastReloadAt = Number(sessionStorage.getItem(AUTO_RELOAD_KEY) ?? "0");
-  return Number.isFinite(lastReloadAt) && Date.now() - lastReloadAt > AUTO_RELOAD_COOLDOWN_MS;
+const readSessionNumber = (key: string) => {
+  const value = Number(sessionStorage.getItem(key) ?? "0");
+  return Number.isFinite(value) ? value : 0;
 };
 
-const triggerAutoReload = () => {
-  if (!shouldAutoReload()) return;
+const canAutoReload = () => {
+  const attempts = readSessionNumber(AUTO_RELOAD_ATTEMPTS_KEY);
+  const lastReloadAt = readSessionNumber(AUTO_RELOAD_KEY);
+  return attempts < MAX_AUTO_RELOADS && Date.now() - lastReloadAt > AUTO_RELOAD_COOLDOWN_MS;
+};
+
+const buildReloadUrl = () => {
+  const url = new URL(window.location.href);
+  url.searchParams.set("__recover", String(Date.now()));
+  return url.toString();
+};
+
+const triggerAutoReload = (reason: string) => {
+  if (!canAutoReload()) return false;
+
+  const attempts = readSessionNumber(AUTO_RELOAD_ATTEMPTS_KEY) + 1;
+  sessionStorage.setItem(AUTO_RELOAD_ATTEMPTS_KEY, String(attempts));
   sessionStorage.setItem(AUTO_RELOAD_KEY, String(Date.now()));
-  window.location.reload();
+
+  console.warn(`Auto-reloading app (${attempts}/${MAX_AUTO_RELOADS}) due to: ${reason}`);
+  window.location.replace(buildReloadUrl());
+  return true;
+};
+
+const showRecoveryScreen = () => {
+  const root = document.getElementById("root");
+  if (!root) return;
+
+  root.innerHTML = `
+    <div class="min-h-screen bg-background text-foreground grid place-items-center p-6">
+      <div class="max-w-md text-center space-y-3">
+        <h1 class="text-xl font-semibold">Still reconnecting…</h1>
+        <p class="text-sm text-muted-foreground">The preview hit a temporary loading issue. Click below to retry.</p>
+        <button id="recover-reload" class="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors">Reload preview</button>
+      </div>
+    </div>
+  `;
+
+  const retryButton = document.getElementById("recover-reload");
+  retryButton?.addEventListener("click", () => {
+    sessionStorage.removeItem(AUTO_RELOAD_KEY);
+    triggerAutoReload("manual-recovery-button");
+  });
 };
 
 window.addEventListener("vite:preloadError", (event) => {
   event.preventDefault();
-  triggerAutoReload();
+  triggerAutoReload("vite-preload-error");
 });
 
 window.addEventListener(
@@ -38,11 +79,40 @@ window.addEventListener(
       /\/src\/.*\.(ts|tsx|js|jsx)(\?|$)/.test(resourceUrl);
 
     if (isModuleLoadFailure) {
-      triggerAutoReload();
+      triggerAutoReload("module-load-error");
     }
   },
   true,
 );
 
-createRoot(document.getElementById("root")!).render(<App />);
+window.addEventListener("unhandledrejection", (event) => {
+  const reason = String(event.reason ?? "");
+  if (
+    reason.includes("Failed to fetch dynamically imported module") ||
+    reason.includes("Importing a module script failed")
+  ) {
+    event.preventDefault();
+    triggerAutoReload("unhandled-module-rejection");
+  }
+});
+
+const bootstrap = async () => {
+  try {
+    const { default: App } = await import("./App.tsx");
+    const root = document.getElementById("root");
+    if (!root) return;
+
+    createRoot(root).render(createElement(App));
+    sessionStorage.removeItem(AUTO_RELOAD_ATTEMPTS_KEY);
+    sessionStorage.removeItem(AUTO_RELOAD_KEY);
+  } catch (error) {
+    console.error("App bootstrap failed:", error);
+    const reloading = triggerAutoReload("bootstrap-import-failure");
+    if (!reloading) {
+      showRecoveryScreen();
+    }
+  }
+};
+
+void bootstrap();
 
