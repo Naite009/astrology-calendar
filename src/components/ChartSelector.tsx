@@ -51,18 +51,23 @@ export const ChartSelector = ({
     }
   }, [isOpen]);
 
-  // Build deduplicated, sorted chart list: skip charts whose normalized name+birthDate already seen
+  // Build deduplicated, sorted chart list: skip charts whose normalized name already seen
+  // Also filter out solar return charts (they have solarReturnYear) and HD-only charts
   const deduplicatedCharts = useMemo(() => {
     const seen = new Set<string>();
-    // If user chart exists, mark its name as seen
+    // If user chart exists, mark its normalized name as seen
     if (userNatalChart) {
-      seen.add(normalizeName(userNatalChart.name) + '|' + userNatalChart.birthDate);
+      seen.add(normalizeName(userNatalChart.name));
     }
     const result: NatalChart[] = [];
     const sorted = [...savedCharts].sort((a, b) => a.name.localeCompare(b.name));
     for (const chart of sorted) {
-      const key = normalizeName(chart.name) + '|' + chart.birthDate;
-      if (seen.has(key)) continue;
+      // Skip solar return charts that leaked into savedCharts
+      if ((chart as any).solarReturnYear) continue;
+      // Skip HD-only charts
+      if (chart.id.startsWith('hd_')) continue;
+      const key = normalizeName(chart.name);
+      if (!key || seen.has(key)) continue;
       seen.add(key);
       result.push(chart);
     }

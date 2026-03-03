@@ -271,14 +271,25 @@ export const useCloudBackup = (
 
       const deduped = Array.from(byChartId.values());
       const restoredSavedCharts: NatalChart[] = [];
+      const seenNames = new Set<string>();
 
       for (const cloudChart of deduped) {
         const chartData = cloudChart.chart_data as unknown as NatalChart;
 
+        // Skip solar return charts that may have leaked into device_charts
+        if ((chartData as any).solarReturnYear) continue;
+        // Skip HD-only charts
+        if (cloudChart.chart_id.startsWith('hd_')) continue;
+
         if (cloudChart.chart_id === 'user') {
           saveUserNatalChart(chartData);
+          seenNames.add((chartData.name || '').toLowerCase().trim());
           restoredCount++;
         } else {
+          // Deduplicate by normalized name - keep the one with more planet data
+          const normName = (chartData.name || '').toLowerCase().trim();
+          if (seenNames.has(normName)) continue;
+          seenNames.add(normName);
           restoredSavedCharts.push({
             ...chartData,
             id: cloudChart.chart_id,

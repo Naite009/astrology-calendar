@@ -25,9 +25,18 @@ export function FoundationsView({ userNatalChart, savedCharts, onNavigateToView 
 
   const allCharts = useMemo(() => {
     const charts: NatalChart[] = [];
-    if (userNatalChart) charts.push(userNatalChart);
+    const seenNames = new Set<string>();
+    if (userNatalChart) {
+      charts.push(userNatalChart);
+      seenNames.add((userNatalChart.name || '').toLowerCase().trim());
+    }
     savedCharts.forEach(c => {
-      if (!userNatalChart || c.name !== userNatalChart.name) charts.push(c);
+      if ((c as any).solarReturnYear) return; // skip solar returns
+      if (c.id.startsWith('hd_')) return; // skip HD-only
+      const norm = (c.name || '').toLowerCase().trim();
+      if (seenNames.has(norm)) return;
+      seenNames.add(norm);
+      charts.push(c);
     });
     return charts;
   }, [userNatalChart, savedCharts]);
