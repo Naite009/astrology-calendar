@@ -5,8 +5,10 @@ import { ChartSelector } from '@/components/ChartSelector';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EclipseInterpretationLayer, extractNatalPoints } from './EclipseInterpretationLayer';
+import { EclipseTeachingMode } from './EclipseTeachingMode';
 import { buildAxisTeaching, type ZodiacSign } from '@/lib/astrology/signTeacher';
 import { getProximityBadge } from '@/lib/astrology/eclipseAspects';
 import { normalizeEclipseNodal } from '@/lib/astrology/eclipseNodalGuard';
@@ -436,6 +438,7 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
     try { return localStorage.getItem(LS_KEYS.tab) || 'all'; } catch { return 'all'; }
   });
   const [selectedEclipse, setSelectedEclipse] = useState<EclipseEvent | null>(null);
+  const [teachingMode, setTeachingMode] = useState(false);
   const teacherRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
 
@@ -900,15 +903,42 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
         </CardContent>
       </Card>
 
-      {/* ── Interpretation Layer ── */}
+      {/* ── Teaching Mode Toggle + Interpretation Layer ── */}
       <div ref={teacherRef}>
-        <EclipseInterpretationLayer
-          selectedEclipse={activeEclipse}
-          userNatalChart={selectedChart}
-          onBackToTimeline={scrollToTimeline}
-          currentList={currentList}
-          onSelectEclipse={handleSelectEclipse}
-        />
+        {activeEclipse && (
+          <div className="flex items-center gap-3 mb-4">
+            <Button
+              variant={teachingMode ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setTeachingMode(!teachingMode)}
+              className="gap-2"
+            >
+              📖 {teachingMode ? 'Teaching Mode On' : 'Teaching Mode'}
+            </Button>
+            {teachingMode && (
+              <p className="text-xs text-muted-foreground">Step-by-step personalized eclipse walkthrough</p>
+            )}
+          </div>
+        )}
+
+        {teachingMode && activeEclipse ? (
+          <Card className="border-accent/20 bg-gradient-to-br from-background to-accent/5">
+            <CardContent className="pt-6">
+              <EclipseTeachingMode
+                eclipse={activeEclipse}
+                userNatalChart={selectedChart}
+              />
+            </CardContent>
+          </Card>
+        ) : (
+          <EclipseInterpretationLayer
+            selectedEclipse={activeEclipse}
+            userNatalChart={selectedChart}
+            onBackToTimeline={scrollToTimeline}
+            currentList={currentList}
+            onSelectEclipse={handleSelectEclipse}
+          />
+        )}
       </div>
 
       {/* ── Eclipse Timeline by Series ── */}
