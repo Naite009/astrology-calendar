@@ -9,6 +9,7 @@ import { ElementDistributionCard } from '@/components/narrative/ElementDistribut
 import { ChartSelector } from '@/components/ChartSelector';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { computeAllSignals } from '@/lib/narrativeAnalysisEngine';
+import { buildLiveSkyChart } from '@/lib/liveSkyChart';
 
 type SubTab = 'signs' | 'planets' | 'houses' | 'aspects' | 'midpoints' | 'eclipses';
 
@@ -31,9 +32,16 @@ export function FoundationsView({ userNatalChart, savedCharts, onNavigateToView 
     return charts;
   }, [userNatalChart, savedCharts]);
 
-  const selectedChart = selectedChartId
-    ? allCharts.find(c => c.name === selectedChartId) || allCharts[0] || null
-    : allCharts[0] || null;
+  // For houses tab: default to live sky when no chart explicitly selected
+  const liveSkyChart = useMemo(() => buildLiveSkyChart(), []);
+
+  const selectedChart = useMemo(() => {
+    if (selectedChartId === '__live_sky__') return liveSkyChart;
+    if (selectedChartId) return allCharts.find(c => c.name === selectedChartId) || allCharts[0] || null;
+    // Default behavior: houses tab defaults to live sky, others default to first chart
+    if (activeTab === 'houses') return liveSkyChart;
+    return allCharts[0] || null;
+  }, [selectedChartId, allCharts, activeTab, liveSkyChart]);
 
   const planetHouses = useMemo(() => {
     if (!selectedChart || !selectedChart.planets || Object.keys(selectedChart.planets).length < 3) return [];
@@ -57,8 +65,11 @@ export function FoundationsView({ userNatalChart, savedCharts, onNavigateToView 
           <ChartSelector
             userNatalChart={userNatalChart}
             savedCharts={savedCharts}
-            selectedChartId={selectedChart?.name || ''}
+            selectedChartId={activeTab === 'houses' && !selectedChartId ? '__live_sky__' : (selectedChart?.name || '')}
             onSelect={setSelectedChartId}
+            includeGeneral={activeTab === 'houses'}
+            generalLabel="✦ Current Sky (Natural Zodiac)"
+            generalId="__live_sky__"
           />
         </div>
       )}

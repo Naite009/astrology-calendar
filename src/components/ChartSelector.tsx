@@ -10,6 +10,7 @@ interface ChartSelectorProps {
   onSelect: (chartId: string) => void;
   includeGeneral?: boolean;
   generalLabel?: string;
+  generalId?: string;
   label?: string;
   className?: string;
 }
@@ -21,6 +22,7 @@ export const ChartSelector = ({
   onSelect,
   includeGeneral = false,
   generalLabel = 'General Calendar',
+  generalId = 'general',
   label,
   className = '',
 }: ChartSelectorProps) => {
@@ -72,7 +74,7 @@ export const ChartSelector = ({
     const opts: { id: string; name: string; isUser?: boolean; isGeneral?: boolean }[] = [];
     
     if (includeGeneral) {
-      opts.push({ id: 'general', name: generalLabel, isGeneral: true });
+      opts.push({ id: generalId, name: generalLabel, isGeneral: true });
     }
     
     // User's chart always first (after general if present)
