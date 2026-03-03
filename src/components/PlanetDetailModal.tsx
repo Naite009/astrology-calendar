@@ -6,7 +6,8 @@ import { PLANET_IN_SIGN } from '@/lib/planetSignExpressions';
 import { PLANET_ESSENCES, HOUSE_MEANINGS } from '@/lib/detailedInterpretations';
 import { getDecan } from '@/lib/decans';
 import { SABIAN_SYMBOLS } from '@/lib/sabianSymbols';
-import { BookOpen, Star, Moon, Sun, Compass, Sparkles, GraduationCap, Quote } from 'lucide-react';
+import { getPlanetSignInterpretation } from '@/lib/planetSignInterpretations';
+import { BookOpen, Star, Moon, Sun, Compass, Sparkles, GraduationCap, Quote, Zap, CloudLightning } from 'lucide-react';
 
 interface PlanetData {
   name: string;
@@ -102,57 +103,33 @@ const getDignity = (planet: string, sign: string): { status: string; description
 
 // Chris Brennan-style Hellenistic interpretation
 const getHellenisticPerspective = (planet: string, sign: string): string => {
-  const perspectives: Record<string, Record<string, string>> = {
-    Sun: {
-      Aries: "In the Hellenistic tradition, the Sun in Aries occupies the sign of its exaltation. The Sun's significations of spirit, vitality, and the native's essential purpose are amplified through the Aries themes of initiative and new beginnings. The sect light for day charts, the Sun here indicates one whose life force is oriented toward pioneering action.",
-      Taurus: "The Sun in Taurus, a sign ruled by Venus, blends solar vitality with Venusian themes of pleasure, stability, and material security. According to Hellenistic principles, the Sun here indicates the native's core identity is tied to building lasting value and experiencing life through the senses.",
-      Gemini: "The Sun in Gemini, Mercury's diurnal domicile, expresses solar vitality through communication, learning, and intellectual connection. The Hellenistic tradition would note this as an airy placement where the native's spirit animates through words and ideas.",
-      Cancer: "The Sun in Cancer occupies the Moon's domicile, creating a blending of the two luminaries' significations. The solar purpose intertwines with lunar themes of nurturing, protection, and emotional security. The native's vitality is renewed through domestic and familial connections.",
-      Leo: "The Sun in its own domicile of Leo is particularly strong. All solar significations—spirit, authority, creative power, and leadership—express unobstructed. The Hellenistic tradition considers this a powerful testimony of one whose essential purpose shines forth clearly.",
-      Virgo: "The Sun in Virgo, Mercury's nocturnal domicile, expresses through analytical refinement and service. The solar spirit here finds purpose through discernment, improvement, and practical application of intelligence.",
-      Libra: "The Sun in Libra is in its fall according to Hellenistic dignities. Solar themes of individual will must negotiate with Libran principles of balance and partnership. The native's sense of self develops significantly through relationship dynamics.",
-      Scorpio: "The Sun in Scorpio, Mars' nocturnal domicile (traditionally), expresses solar vitality through intensity, investigation, and transformation. The life force here runs deep, oriented toward uncovering hidden truths and regenerating through crisis.",
-      Sagittarius: "The Sun in Sagittarius, Jupiter's diurnal domicile, aligns solar purpose with themes of meaning, philosophy, and expansion. The native's core identity is oriented toward truth-seeking, teaching, and broadening horizons.",
-      Capricorn: "The Sun in Capricorn, Saturn's nocturnal domicile, blends solar vitality with Saturnian themes of structure, ambition, and mastery. The native's essential purpose unfolds through patient achievement and accepting responsibility.",
-      Aquarius: "The Sun in Aquarius is in its detriment—opposite its own sign of Leo. Solar individuality must work within collective frameworks. The native's sense of purpose often develops through contribution to larger causes or communities.",
-      Pisces: "The Sun in Pisces, Jupiter's nocturnal domicile (traditionally), expresses solar vitality through dissolution, compassion, and transcendence. The native's life force finds meaning through spiritual connection and creative imagination.",
-    },
-  };
-  
-  // Default response if specific combination not found
-  const defaultResponse = `The ${planet} in ${sign} represents a significant archetypal combination. In the Hellenistic tradition, we examine the condition of this planet by its essential dignities, sect, and relationship to other planets. This placement shapes how the ${planet}'s core significations manifest in the native's life.`;
-  
-  return perspectives[planet]?.[sign] || defaultResponse;
+  const rich = getPlanetSignInterpretation(planet, sign);
+  if (rich) return rich.hellenistic;
+  return `The ${planet} in ${sign} represents a significant archetypal combination. In the Hellenistic tradition, we examine the condition of this planet by its essential dignities, sect, and relationship to other planets. This placement shapes how the ${planet}'s core significations manifest in the native's life.`;
 };
 
 // Modern psychological perspective
 const getModernPerspective = (planet: string, sign: string): string => {
+  const rich = getPlanetSignInterpretation(planet, sign);
+  if (rich) return rich.modern;
   const expression = PLANET_IN_SIGN[planet]?.[sign];
   if (expression) return expression;
-  
   return `${planet} in ${sign} represents a core archetypal pattern in your psyche. This placement shapes how you express the ${planet}'s function through ${sign} themes and qualities.`;
 };
 
 // Practical guidance
 const getPracticalGuidance = (planet: string, sign: string): string => {
-  const guidance: Record<string, Record<string, string>> = {
-    Sun: {
-      Aries: "Embrace your leadership instincts. Start projects, take initiative. Watch for impatience. Channel competitive energy into personal bests rather than conflicts.",
-      Taurus: "Build slowly and enjoy the process. Your persistence is your superpower. Create beauty, cultivate comfort, but avoid getting stuck in routines.",
-      Gemini: "Feed your curiosity constantly. Write, speak, connect. Guard against scattered energy by finishing what you start. Your versatility is an asset.",
-      Cancer: "Honor your emotional depth. Create sanctuary. Your nurturing nature is healing for others. Set boundaries so your care doesn't deplete you.",
-      Leo: "Shine authentically. Create, perform, lead with heart. Your generosity inspires others. Remember that true confidence doesn't need constant validation.",
-      Virgo: "Perfect your craft. Your attention to detail serves others. Don't let perfectionism paralyze you—done is better than perfect. Rest is productive too.",
-      Libra: "Seek harmony but maintain your center. Relationships teach you about yourself. Make decisions—indecision is a decision. Your diplomacy is needed.",
-      Scorpio: "Go deep. Your intensity transforms. Trust yourself with power. Process emotions fully rather than suppressing them. Your psychological insight helps others.",
-      Sagittarius: "Follow your philosophical quest. Travel mentally and physically. Share your vision but listen too. Your optimism is contagious—use it wisely.",
-      Capricorn: "Build your legacy patiently. Your ambition is admirable—ensure it serves meaning, not just achievement. Rest is not laziness. You're already enough.",
-      Aquarius: "Champion your ideals. Your uniqueness is your contribution. Connect with your tribe. Innovation needs grounding—pair vision with practical steps.",
-      Pisces: "Trust your intuition. Create from your imagination. Boundaries protect your sensitivity. Your compassion heals—but fill your own cup first.",
-    },
-  };
-  
-  return guidance[planet]?.[sign] || `Work with ${planet} in ${sign} by understanding how this archetypal pattern wants to express in your life. Notice when you're aligned with its highest expression versus its shadow.`;
+  const rich = getPlanetSignInterpretation(planet, sign);
+  if (rich) return rich.practical;
+  return `Work with ${planet} in ${sign} by understanding how this archetypal pattern wants to express in your life. Notice when you're aligned with its highest expression versus its shadow.`;
+};
+
+// Superpower & Shadow
+const getSuperpower = (planet: string, sign: string): string | null => {
+  return getPlanetSignInterpretation(planet, sign)?.superpower ?? null;
+};
+const getShadow = (planet: string, sign: string): string | null => {
+  return getPlanetSignInterpretation(planet, sign)?.shadow ?? null;
 };
 
 export const PlanetDetailModal = ({ planet, isOpen, onClose, currentTime }: PlanetDetailModalProps) => {
@@ -175,6 +152,8 @@ export const PlanetDetailModal = ({ planet, isOpen, onClose, currentTime }: Plan
   const hellenisticView = getHellenisticPerspective(planet.name, planet.signName);
   const modernView = getModernPerspective(planet.name, planet.signName);
   const practicalView = getPracticalGuidance(planet.name, planet.signName);
+  const superpower = getSuperpower(planet.name, planet.signName);
+  const shadow = getShadow(planet.name, planet.signName);
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -307,7 +286,6 @@ export const PlanetDetailModal = ({ planet, isOpen, onClose, currentTime }: Plan
               <div className="flex items-center gap-2">
                 <Quote className="text-primary" size={18} />
                 <h3 className="font-serif text-lg">Hellenistic Perspective</h3>
-                <span className="text-xs text-muted-foreground">(Chris Brennan tradition)</span>
               </div>
               <p className="text-muted-foreground leading-relaxed">{hellenisticView}</p>
             </div>
@@ -322,37 +300,46 @@ export const PlanetDetailModal = ({ planet, isOpen, onClose, currentTime }: Plan
               <p className="text-muted-foreground leading-relaxed">{modernView}</p>
             </div>
 
+            {/* Superpower & Shadow */}
+            {(superpower || shadow) && (
+              <>
+                <Separator />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {superpower && (
+                    <div className="p-4 bg-primary/5 rounded-sm border border-primary/20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Zap className="text-primary" size={18} />
+                        <span className="font-medium text-foreground">Superpower</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{superpower}</p>
+                    </div>
+                  )}
+                  {shadow && (
+                    <div className="p-4 bg-accent/5 rounded-sm border border-accent/20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CloudLightning className="text-accent-foreground" size={18} />
+                        <span className="font-medium text-foreground">Shadow</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{shadow}</p>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
             {/* Practical Guidance */}
             <Separator />
-            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-sm border border-green-200 dark:border-green-700">
+            <div className="p-4 bg-primary/5 rounded-sm border border-primary/20">
               <div className="flex items-center gap-2 mb-3">
-                <GraduationCap className="text-green-600" size={18} />
+                <GraduationCap className="text-primary" size={18} />
                 <span className="font-medium text-foreground">Working With This Placement</span>
               </div>
               <p className="text-muted-foreground leading-relaxed">{practicalView}</p>
             </div>
 
-            {/* Retrograde note */}
-            {planet.isRetrograde && (
-              <>
-                <Separator />
-                <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-sm border border-red-200 dark:border-red-700">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xl">℞</span>
-                    <span className="font-medium text-foreground">{planet.name} is Currently Retrograde</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    The {planet.name}'s energy is turned inward during this retrograde period. This is a time for review, 
-                    reflection, and revisiting {planet.name}-related themes from the past. External manifestations may 
-                    feel delayed or require extra patience.
-                  </p>
-                </div>
-              </>
-            )}
-
             {/* Educational Footer */}
             <div className="pt-4 text-xs text-muted-foreground text-center border-t border-border">
-              <p>This interpretation draws from Hellenistic tradition (Chris Brennan, Demetra George), 
+              <p>This interpretation draws from Hellenistic tradition (Demetra George), 
               modern psychological astrology, and the Sabian Symbols (Marc Edmund Jones, Dane Rudhyar).</p>
             </div>
           </div>
