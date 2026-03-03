@@ -265,7 +265,28 @@ export const useNatalChart = () => {
     return readWithRollingBackups<NatalChart | null>('userNatalChart', null, isValidChart);
   });
   const [savedCharts, setSavedCharts] = useState<NatalChart[]>(() => {
-    return readWithRollingBackups<NatalChart[]>('savedCharts', [], isValidChartArray);
+    const raw = readWithRollingBackups<NatalChart[]>('savedCharts', [], isValidChartArray);
+    // Deduplicate by normalized name on load, keeping entries with more planet data
+    // Also filter out solar return charts and HD-only charts
+    const seen = new Map<string, NatalChart>();
+    for (const c of raw) {
+      if ((c as any).solarReturnYear) continue;
+      if (c.id?.startsWith('hd_')) continue;
+      const key = (c.name || '').toLowerCase().trim();
+      if (!key) continue;
+      const existing = seen.get(key);
+      if (!existing) {
+        seen.set(key, c);
+      } else {
+        // Keep the one with more planet data
+        const existingCount = existing.planets ? Object.keys(existing.planets).length : 0;
+        const newCount = c.planets ? Object.keys(c.planets).length : 0;
+        if (newCount > existingCount) {
+          seen.set(key, c);
+        }
+      }
+    }
+    return Array.from(seen.values());
   });
 
   // Determine initial selection: prefer stored value, otherwise default to 'user' if chart exists
