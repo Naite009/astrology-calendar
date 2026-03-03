@@ -693,6 +693,59 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
                     </CardContent>
                   </Card>
                 </div>
+
+                {/* ── Dynamic Eclipse Lineup ── */}
+                <div className="mt-6 space-y-3">
+                  <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <span>📋</span> Current Eclipse Lineup
+                  </h4>
+                  <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+                    {allEclipsesSorted.map((e) => {
+                      const dateObj = new Date(e.date + 'T12:00:00');
+                      const now = new Date();
+                      const isPast = dateObj < now;
+                      const twoWeeksFromNow = new Date(now.getTime() + 14 * 86400000);
+                      const isNextUp = !isPast && nextUpcomingEclipse?.date === e.date;
+                      const isApproaching = !isPast && dateObj <= twoWeeksFromNow;
+                      const monthStr = dateObj.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+
+                      return (
+                        <button
+                          key={e.date}
+                          onClick={() => handleSelectEclipse(e)}
+                          className={`flex-shrink-0 flex flex-col items-center gap-1 px-3 py-2 rounded-lg border text-center transition-all min-w-[72px] ${
+                            isApproaching
+                              ? 'border-primary bg-primary/15 ring-2 ring-primary/40 shadow-md scale-105'
+                              : isNextUp
+                                ? 'border-primary/60 bg-primary/10'
+                                : isPast
+                                  ? 'border-border/40 bg-muted/30 opacity-50'
+                                  : 'border-border/60 bg-card hover:bg-muted/50'
+                          }`}
+                        >
+                          <span className="text-lg">{e.type === 'solar' ? '🌑' : '🌕'}</span>
+                          <span className="text-[10px] font-medium leading-tight">
+                            {e.sign.slice(0, 3)}
+                          </span>
+                          <span className="text-[9px] text-muted-foreground">{monthStr}</span>
+                          {isApproaching && (
+                            <Badge variant="default" className="text-[8px] px-1 py-0 mt-0.5 animate-pulse">
+                              NEXT
+                            </Badge>
+                          )}
+                          {isNextUp && !isApproaching && (
+                            <Badge variant="secondary" className="text-[8px] px-1 py-0 mt-0.5">
+                              next
+                            </Badge>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground italic">
+                    Tap any eclipse to jump to its interpretation. The highlighted eclipse shifts ~2 weeks before each event.
+                  </p>
+                </div>
               </AccordionContent>
             </AccordionItem>
 
