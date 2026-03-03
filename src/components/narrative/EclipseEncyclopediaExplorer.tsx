@@ -501,8 +501,8 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
   }, [userNatalChart, savedCharts]);
 
   const selectedChart = selectedChartId
-    ? allCharts.find(c => c.name === selectedChartId) || allCharts[0] || null
-    : allCharts[0] || null;
+    ? allCharts.find(c => c.name === selectedChartId) || null
+    : null;
 
   const activeSeries = ECLIPSE_SERIES[activeSeriesTab];
 
@@ -903,20 +903,35 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
         </CardContent>
       </Card>
 
-      {/* ── Teaching Mode Toggle + Interpretation Layer ── */}
+      {/* ── Teaching Mode Toggle + Chart Selector + Interpretation Layer ── */}
       <div ref={teacherRef}>
         {activeEclipse && (
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
             <Button
               variant={teachingMode ? 'default' : 'outline'}
               size="sm"
               onClick={() => setTeachingMode(!teachingMode)}
-              className="gap-2"
+              className="gap-2 shrink-0"
             >
               📖 {teachingMode ? 'Teaching Mode On' : 'Teaching Mode'}
             </Button>
-            {teachingMode && (
-              <p className="text-xs text-muted-foreground">Step-by-step personalized eclipse walkthrough</p>
+            {allCharts.length > 0 && (
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <ChartSelector
+                  userNatalChart={userNatalChart}
+                  savedCharts={savedCharts}
+                  selectedChartId={selectedChartId || ''}
+                  onSelect={setSelectedChartId}
+                  label="Personalize for"
+                  className="flex-1 min-w-[160px]"
+                />
+                {!selectedChart && (
+                  <p className="text-xs text-primary shrink-0">← Select a chart to personalize</p>
+                )}
+              </div>
+            )}
+            {teachingMode && selectedChart && (
+              <p className="text-xs text-muted-foreground shrink-0">Personalized for {selectedChart.name}</p>
             )}
           </div>
         )}
