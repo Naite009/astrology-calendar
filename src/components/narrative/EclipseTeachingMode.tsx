@@ -298,11 +298,75 @@ export function EclipseTeachingMode({ eclipse, userNatalChart }: Props) {
         <div className="rounded-lg border border-accent/20 bg-accent/5 p-4 space-y-3">
           <h4 className="font-semibold text-sm">↔ The Axis: {ordinal(eclipseHouse)}–{ordinal(oppositeHouse)} House</h4>
           <p className="text-sm text-muted-foreground">{teaching.axisTeaching}</p>
-          <div className="mt-2 pt-2 border-t border-border/30">
-            <p className="text-xs font-medium text-accent-foreground uppercase tracking-wide mb-1">The Other Side: Your {ordinal(oppositeHouse)} House</p>
+
+          <div className="mt-2 pt-2 border-t border-border/30 space-y-2">
+            <p className="text-xs font-medium text-accent-foreground uppercase tracking-wide">The Other Side: Your {ordinal(oppositeHouse)} House</p>
             <p className="text-sm text-muted-foreground">{oppTeaching.simpleExplanation}</p>
-            <p className="text-sm text-muted-foreground mt-1 italic">Both sides of this equation — {hitInfo.keywords.toLowerCase()} and {oppInfo.keywords.toLowerCase()} — are in play.</p>
           </div>
+
+          <div className="rounded-lg bg-card/50 border border-border/30 p-3 space-y-2">
+            <p className="text-xs font-medium text-primary uppercase tracking-wide">How Axes Work During Eclipses</p>
+            <p className="text-sm text-muted-foreground">
+              Eclipses never hit just one house — they activate an <strong>axis</strong>, which means two opposite life areas are in conversation at the same time. Think of it like a seesaw: when one side gets pressure, the other side lifts. The eclipse lands in your {ordinal(eclipseHouse)} house ({hitInfo.keywords.toLowerCase()}), but it's <em>pulling</em> on your {ordinal(oppositeHouse)} house ({oppInfo.keywords.toLowerCase()}) simultaneously.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              This doesn't mean you lose one to gain the other. It means whatever shifts in your {hitInfo.keywords.toLowerCase().split(',')[0]?.trim()} area will ripple into your {oppInfo.keywords.toLowerCase().split(',')[0]?.trim()} area — and vice versa. The goal isn't choosing sides. It's finding a new balance point between both.
+            </p>
+          </div>
+
+          {/* Nodal overlay — if nodes are on this axis */}
+          {nnHouse && snHouse && (nnHouse === eclipseHouse || nnHouse === oppositeHouse || snHouse === eclipseHouse || snHouse === oppositeHouse) && (
+            <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
+              <p className="text-xs font-medium text-primary uppercase tracking-wide">⚡ Your Nodes Are on This Axis</p>
+              {nnHouse === oppositeHouse ? (
+                <>
+                  <p className="text-sm text-muted-foreground">
+                    Your <strong>North Node is in your {ordinal(oppositeHouse)} house</strong> — this is your growth direction. The eclipse is landing opposite your North Node, which means it's <em>activating your South Node house</em> (the {ordinal(eclipseHouse)} house). This is not about letting go of the people or things in your {ordinal(oppositeHouse)} house. It's the opposite: the eclipse is clearing out old patterns in your {ordinal(eclipseHouse)} house <em>so that</em> you can show up more fully in your {ordinal(oppositeHouse)} house relationships and commitments.
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Think of it this way: whatever the eclipse disrupts in your {hitInfo.keywords.toLowerCase()} is making room for you to grow into your {oppInfo.keywords.toLowerCase()} with less baggage. The {ordinal(oppositeHouse)} house is where you're <em>headed</em>. The {ordinal(eclipseHouse)} house is what you need to release, refine, or restructure to get there.
+                  </p>
+                </>
+              ) : nnHouse === eclipseHouse ? (
+                <>
+                  <p className="text-sm text-muted-foreground">
+                    Your <strong>North Node is in your {ordinal(eclipseHouse)} house</strong> — the same house this eclipse is activating. This is a direct push toward your growth edge. The eclipse is saying: this is exactly where you need to be investing energy, even if it's uncomfortable. The {ordinal(eclipseHouse)} house themes ({hitInfo.keywords.toLowerCase()}) are not just being disrupted — they're being <em>upgraded</em>.
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Your South Node in the {ordinal(oppositeHouse)} house ({oppInfo.keywords.toLowerCase()}) represents the comfort zone the eclipse is pulling you away from. You won't lose what's there — but you'll be asked to stop using it as a hiding place.
+                  </p>
+                </>
+              ) : snHouse === eclipseHouse ? (
+                <>
+                  <p className="text-sm text-muted-foreground">
+                    Your <strong>South Node is in your {ordinal(eclipseHouse)} house</strong> — the house this eclipse is activating. This means the eclipse is directly stirring your past patterns, your comfort zone, and the habits you default to under stress. This can feel intense because the eclipse is illuminating exactly what you need to release or evolve beyond.
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    This isn't punishment. It's the universe pointing a flashlight at the loop. Your North Node in the {ordinal(oppositeHouse)} house is where the growth lives — the eclipse is clearing the path to get there.
+                  </p>
+                </>
+              ) : snHouse === oppositeHouse ? (
+                <>
+                  <p className="text-sm text-muted-foreground">
+                    Your <strong>South Node is in your {ordinal(oppositeHouse)} house</strong> — the opposite side of this eclipse axis. The eclipse lands in your {ordinal(eclipseHouse)} house (North Node territory), pushing you toward growth, while simultaneously stirring the {ordinal(oppositeHouse)} house comfort patterns you tend to fall back on.
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    This is a supportive eclipse for your nodal journey. It's accelerating you toward your North Node direction while making the South Node default less comfortable to maintain.
+                  </p>
+                </>
+              ) : null}
+            </div>
+          )}
+
+          {/* When nodes are NOT on this axis */}
+          {nnHouse && snHouse && nnHouse !== eclipseHouse && nnHouse !== oppositeHouse && snHouse !== eclipseHouse && snHouse !== oppositeHouse && (
+            <div className="rounded-lg border border-border/30 bg-muted/30 p-3 space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Your Nodes & This Axis</p>
+              <p className="text-sm text-muted-foreground">
+                Your nodes are in your {ordinal(nnHouse)}–{ordinal(snHouse)} house axis, not directly on this {ordinal(eclipseHouse)}–{ordinal(oppositeHouse)} axis. This eclipse is working on a different part of your life than your core nodal journey — but the {ordinal(eclipseHouse)} house changes may still indirectly support or challenge your North Node growth, depending on what planets are activated (see Step 6).
+              </p>
+            </div>
+          )}
         </div>
       </div>
     );
