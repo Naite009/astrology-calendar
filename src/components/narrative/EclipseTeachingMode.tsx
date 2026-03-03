@@ -944,27 +944,37 @@ export function EclipseTeachingMode({ eclipse, userNatalChart }: Props) {
             </div>
           )}
 
-          {/* Aspect activations — full felt sense, no truncation */}
+          {/* Aspect activations — with planet meaning and house context */}
           {aspectHits.length > 0 && (
             <div style={{ marginBottom: '18px' }}>
               <div style={{ fontSize: '10px', color: '#6b5b95', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '8px', fontWeight: 600 }}>
                 Natal Planet Activations
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                {aspectHits.slice(0, 6).map((hit, i) => (
-                  <div key={i} style={{ borderRadius: '6px', padding: '10px', border: '1px solid #ddd', background: '#fafafa', fontSize: '11px', lineHeight: 1.6 }}>
-                    <div style={{ fontWeight: 600, marginBottom: '3px', color: '#1a1a1a' }}>
-                      {hit.glyph} {hit.point} — {hit.aspect} ({hit.orbLabel})
-                      {hit.isMinor && <span style={{ color: '#888', fontStyle: 'italic' }}> (minor)</span>}
-                    </div>
-                    <div style={{ color: '#444' }}>{hit.feltSense}</div>
-                    {hit.northNodePath && (
-                      <div style={{ color: '#6b5b95', marginTop: '4px', fontSize: '10px' }}>
-                        <strong>Conscious choice:</strong> {hit.northNodePath}
+                {aspectHits.slice(0, 6).map((hit, i) => {
+                  const planetTheme = POINT_THEMES[hit.point] || hit.point;
+                  const planetHouse = hasHouses && userNatalChart ? getNatalPlanetHouse(hit.point, userNatalChart) : null;
+                  const houseContext = planetHouse && HOUSE_MEANINGS[planetHouse]
+                    ? ` In your chart, this sits in your ${ordinal(planetHouse)} house (${HOUSE_MEANINGS[planetHouse].lifeArea.toLowerCase()}).`
+                    : '';
+                  return (
+                    <div key={i} style={{ borderRadius: '6px', padding: '10px', border: '1px solid #ddd', background: '#fafafa', fontSize: '11px', lineHeight: 1.6 }}>
+                      <div style={{ fontWeight: 600, marginBottom: '3px', color: '#1a1a1a' }}>
+                        {hit.glyph} {hit.point} — {hit.aspect} ({hit.orbLabel})
+                        {hit.isMinor && <span style={{ color: '#888', fontStyle: 'italic' }}> (minor)</span>}
                       </div>
-                    )}
-                  </div>
-                ))}
+                      <div style={{ color: '#555', fontSize: '10px', marginBottom: '4px', fontStyle: 'italic' }}>
+                        {hit.point} represents {planetTheme}.{houseContext}
+                      </div>
+                      <div style={{ color: '#444' }}>{hit.feltSense}</div>
+                      {hit.northNodePath && (
+                        <div style={{ color: '#6b5b95', marginTop: '4px', fontSize: '10px' }}>
+                          <strong>Conscious choice:</strong> {hit.northNodePath}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -1028,6 +1038,15 @@ export function EclipseTeachingMode({ eclipse, userNatalChart }: Props) {
                     nnSign === 'Aquarius' ? 'contribute to the collective, think beyond personal gain, innovate, and honor your uniqueness without losing connection' :
                     'trust your intuition, practice compassion, release the need to fix everything, and surrender to what cannot be controlled'}.
                 </p>
+                {synthesis.sameSignAsNode && (
+                  <p style={{ margin: '0 0 10px 0', padding: '8px 12px', background: synthesis.sameSignAsNode === 'same-as-sn' ? '#fef2f2' : '#f0fdf4', border: `1px solid ${synthesis.sameSignAsNode === 'same-as-sn' ? '#fca5a5' : '#86efac'}`, borderRadius: '6px' }}>
+                    <strong>⚡ Direct nodal activation:</strong>{' '}
+                    {synthesis.sameSignAsNode === 'same-as-sn'
+                      ? `This eclipse is in ${eclipse.sign} — the exact same sign as your natal South Node. Even if the degrees aren't conjunct, this is one of the most personally significant eclipses you can experience. Every ${eclipse.sign} theme this eclipse stirs IS your South Node material. The universe isn't being subtle here: the habits, the perfectionism, the default patterns you run in ${snSign} — this eclipse is shining a direct spotlight on all of it. This is a completion eclipse for your deepest comfort-zone patterns.`
+                      : `This eclipse is in ${eclipse.sign} — the exact same sign as your natal North Node. Even if the degrees aren't conjunct, this eclipse is directly activating your growth direction. Every ${eclipse.sign} theme is YOUR soul curriculum. The universe is amplifying your North Node — lean into the unfamiliar ${nnSign} qualities with everything you have. This is a growth acceleration moment.`
+                    }
+                  </p>
+                )}
                 <p style={{ margin: '0 0 8px 0' }}>
                   <strong>This eclipse specifically:</strong> The {eclipse.sign} energy of this eclipse is
                   {synthesis.elementConnection === 'same-as-sn'
