@@ -621,6 +621,38 @@ export function EclipseTeachingMode({ eclipse, userNatalChart }: Props) {
     );
   };
 
+  const renderAspectCard = (hit: AspectHit, idx: number) => (
+    <div key={idx} className={`rounded-lg border ${hit.isMinor ? 'border-border/30 bg-card/30' : 'border-border/50 bg-card/50'} p-4 space-y-3`}>
+      <div className="flex items-center gap-2 flex-wrap">
+        <Badge variant="outline" className="text-sm font-mono">{hit.glyph}</Badge>
+        <span className="text-sm font-semibold">{hit.point}</span>
+        <Badge variant={hit.isMinor ? "outline" : "secondary"} className="text-xs capitalize">{hit.aspect}</Badge>
+        <span className="text-xs text-muted-foreground font-mono">orb {hit.orbLabel}</span>
+        {hit.isMinor && <span className="text-[10px] text-muted-foreground italic">(minor aspect)</span>}
+      </div>
+
+      {/* What this aspect does */}
+      <p className="text-sm text-muted-foreground leading-relaxed">{hit.interpretation}</p>
+
+      {/* How it feels */}
+      <div className="rounded-md bg-muted/40 px-3 py-2">
+        <p className="text-xs font-medium text-primary uppercase tracking-wide mb-1">How This Feels</p>
+        <p className="text-sm text-muted-foreground leading-relaxed">{hit.feltSense}</p>
+      </div>
+
+      {/* The conscious path */}
+      <div className="rounded-md bg-primary/5 border border-primary/10 px-3 py-2">
+        <p className="text-xs font-medium text-primary uppercase tracking-wide mb-1">☊ The Conscious Choice</p>
+        <p className="text-sm text-muted-foreground leading-relaxed">{hit.northNodePath}</p>
+      </div>
+
+      {/* Aspect audit line */}
+      <p className="text-[10px] text-muted-foreground font-mono text-right">
+        {hit.glyph} ({hit.aspect}, {hit.orbLabel})
+      </p>
+    </div>
+  );
+
   // ── Step 6: Natal Planet Activations ──
   const renderStep6 = () => {
     if (!hasChart) return renderLockedMessage();
@@ -638,23 +670,19 @@ export function EclipseTeachingMode({ eclipse, userNatalChart }: Props) {
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {aspectHits.map((hit, idx) => (
-              <div key={idx} className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-2">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Badge variant="outline" className="text-sm font-mono">{hit.glyph}</Badge>
-                  <span className="text-sm font-semibold">{hit.point}</span>
-                  <Badge variant="secondary" className="text-xs capitalize">{hit.aspect}</Badge>
-                  <span className="text-xs text-muted-foreground font-mono">orb {hit.orbLabel}</span>
-                </div>
-                <p className="text-sm text-muted-foreground">{hit.interpretation}</p>
-                {POINT_THEMES[hit.point] && (
-                  <p className="text-sm text-muted-foreground">
-                    <strong>This adds themes of:</strong> {POINT_THEMES[hit.point]}
-                  </p>
-                )}
+          <div className="space-y-4">
+            {aspectHits.filter(h => !h.isMinor).length > 0 && (
+              <div className="space-y-3">
+                <p className="text-xs font-medium text-primary uppercase tracking-wide">Major Aspects</p>
+                {aspectHits.filter(h => !h.isMinor).map((hit, idx) => renderAspectCard(hit, idx))}
               </div>
-            ))}
+            )}
+            {aspectHits.filter(h => h.isMinor).length > 0 && (
+              <div className="space-y-3">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Minor Aspects</p>
+                {aspectHits.filter(h => h.isMinor).map((hit, idx) => renderAspectCard(hit, idx + 100))}
+              </div>
+            )}
           </div>
         )}
 
