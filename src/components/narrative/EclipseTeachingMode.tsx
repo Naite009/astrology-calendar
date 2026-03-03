@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight, Check, Lock } from 'lucide-react';
 import { buildSignTeaching, getSignGlyph, getSignInfo } from '@/lib/astrology/signTeacher';
 import type { ZodiacSign } from '@/lib/astrology/signTeacher';
 import { signDegreesToLongitude, getHouseForLongitude, HOUSE_MEANINGS, getNatalPlanetHouse } from '@/lib/houseCalculations';
+import { ECLIPSE_HOUSE_TEACHINGS } from '@/lib/eclipseHouseTeachings';
 import { getEclipseAspectHits } from '@/lib/astrology/eclipseAspects';
 import type { NatalPoint, NatalPointKey, AspectHit } from '@/lib/astrology/eclipseAspects';
 import { SPILLER_NODE_DATA, SPILLER_SOURCE } from '@/lib/nodeSpillerData';
@@ -234,36 +235,74 @@ export function EclipseTeachingMode({ eclipse, userNatalChart }: Props) {
 
     const hitInfo = HOUSE_MEANINGS[eclipseHouse];
     const oppInfo = HOUSE_MEANINGS[oppositeHouse];
+    const teaching = ECLIPSE_HOUSE_TEACHINGS[eclipseHouse];
+    const oppTeaching = ECLIPSE_HOUSE_TEACHINGS[oppositeHouse];
     const isLunar = eclipse.type === 'lunar';
 
     return (
       <div className="space-y-4">
+        {/* Simple explanation first — the 3rd grade layer */}
         <p className="text-base leading-relaxed">
           For you, this eclipse falls in your <strong>{ordinal(eclipseHouse)} House</strong> — <em>{hitInfo.keywords}</em>.
         </p>
 
         <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-2">
-          <h4 className="font-semibold text-sm">🏛 Your {ordinal(eclipseHouse)} House</h4>
-          <p className="text-sm text-muted-foreground">{hitInfo.lifeArea}</p>
-          <p className="text-sm text-muted-foreground mt-2">
-            {isLunar
-              ? `This lunar eclipse brings visibility and emotional culmination to these themes. What has been forming in the background is now impossible to ignore.`
-              : `This solar eclipse opens a new chapter in these themes. Something is beginning — even if you can't see its full shape yet.`
-            }
+          <h4 className="font-semibold text-sm">🏛 What IS the {ordinal(eclipseHouse)} House?</h4>
+          <p className="text-sm text-muted-foreground">{teaching.simpleExplanation}</p>
+        </div>
+
+        {/* Deeper meaning — the thesis layer */}
+        <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-2">
+          <h4 className="font-semibold text-sm">📖 The Deeper Layer</h4>
+          <p className="text-sm text-muted-foreground leading-relaxed">{teaching.deeperMeaning}</p>
+        </div>
+
+        {/* What this specific eclipse type does in this house */}
+        <div className={`rounded-lg border p-4 space-y-2 ${isLunar ? 'border-accent/20 bg-accent/5' : 'border-primary/20 bg-primary/5'}`}>
+          <h4 className="font-semibold text-sm">{isLunar ? '🌕' : '🌑'} What a {isLunar ? 'Lunar' : 'Solar'} Eclipse Does Here</h4>
+          <p className="text-sm text-muted-foreground leading-relaxed">{isLunar ? teaching.eclipseLunar : teaching.eclipseSolar}</p>
+        </div>
+
+        {/* The sign + house intersection */}
+        <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-2">
+          <h4 className="font-semibold text-sm">🔍 The {eclipse.sign} Audit in Your {ordinal(eclipseHouse)} House</h4>
+          <p className="text-sm text-muted-foreground">
+            So the {eclipse.sign} themes — <em>{signTeaching.signProfile?.shadow || 'what this eclipse exposes'}</em> — are happening specifically in <strong>{hitInfo.lifeArea}</strong>.
+          </p>
+          <p className="text-sm text-muted-foreground mt-1">
+            This isn't abstract. This is about your actual {hitInfo.lifeArea}. The eclipse is pressure-testing this area of your life and asking whether what you've built here is still serving you.
           </p>
         </div>
 
-        <p className="text-sm text-muted-foreground">
-          So the {eclipse.sign} audit — the {signTeaching.signProfile?.shadow || 'themes this eclipse exposes'} — is happening specifically in <strong>{hitInfo.lifeArea}</strong>.
-        </p>
+        {/* Real-life examples */}
+        <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-2">
+          <h4 className="font-semibold text-sm">💡 What This Can Look Like in Real Life</h4>
+          <ul className="text-sm text-muted-foreground space-y-1.5 list-disc pl-4">
+            {teaching.examples.map((ex, i) => <li key={i}>{ex}</li>)}
+          </ul>
+        </div>
 
-        <div className="rounded-lg border border-accent/20 bg-accent/5 p-4 space-y-2">
-          <h4 className="font-semibold text-sm">↔ Opposite Axis: {ordinal(oppositeHouse)} House</h4>
-          <p className="text-xs text-muted-foreground font-medium">{oppInfo.keywords}</p>
-          <p className="text-sm text-muted-foreground">{oppInfo.lifeArea}</p>
-          <p className="text-sm text-muted-foreground mt-1 italic">
-            The {eclipseHouse}–{oppositeHouse} axis is being stirred. Both sides of this life equation are in play.
-          </p>
+        {/* Soul question */}
+        <div className="rounded-lg bg-muted/50 border border-border/50 px-4 py-3 text-center">
+          <p className="text-xs font-medium text-primary uppercase tracking-wide mb-1">The Question This Eclipse Asks You</p>
+          <p className="text-sm font-medium italic text-muted-foreground">"{teaching.soulQuestion}"</p>
+        </div>
+
+        {/* Danger zone — what happens if you resist */}
+        <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 space-y-2">
+          <h4 className="font-semibold text-sm">⚠️ The Danger Zone (What Resistance Looks Like)</h4>
+          <p className="text-sm text-muted-foreground">{teaching.dangerZone}</p>
+        </div>
+
+        {/* Opposite axis — deep version */}
+        <div className="rounded-lg border border-accent/20 bg-accent/5 p-4 space-y-3">
+          <h4 className="font-semibold text-sm">↔ The Axis: {ordinal(eclipseHouse)}–{ordinal(oppositeHouse)} House</h4>
+          <p className="text-sm text-muted-foreground">{teaching.axisTeaching}</p>
+          <div className="mt-2 pt-2 border-t border-border/30">
+            <p className="text-xs font-medium text-accent-foreground uppercase tracking-wide mb-1">The Other Side: Your {ordinal(oppositeHouse)} House</p>
+            <p className="text-sm text-muted-foreground">{oppTeaching.simpleExplanation}</p>
+            <p className="text-sm text-muted-foreground mt-1 italic">Both sides of this equation — {hitInfo.keywords.toLowerCase()} and {oppInfo.keywords.toLowerCase()} — are in play.</p>
+          </div>
         </div>
       </div>
     );
