@@ -1,52 +1,95 @@
 
-# Integrate Rich Eclipse Content from Uploaded Data
 
-## What's Missing (confirmed by codebase search)
-The current `ECLIPSE_SERIES` in `EclipseEncyclopediaExplorer.tsx` has only a `description` field per eclipse. The uploaded file contains 7 additional per-eclipse fields, series-level `bigPicture` narratives, a `nodalEducation` teaching object, and 8 detailed `signProfiles` -- none of which exist in the app yet.
+# Eclipse Teaching Mode: Personalized Step-by-Step Walkthrough
 
-## Plan
+## What This Builds
 
-### Step 1: Expand the EclipseEvent interface and populate all 25 eclipses
-**File:** `src/components/narrative/EclipseEncyclopediaExplorer.tsx`
+A new "Teaching Mode" component that replaces the current collapsible-module approach with a **linear, step-by-step guided walkthrough** that narrates the eclipse's meaning through the user's personal chart. Each step builds on the previous one, moving from universal → sign-specific → house-specific → natal-node-specific → pattern recognition → action items.
 
-- Add optional fields to `EclipseEvent`: `title`, `nodalTheme`, `releasingThemes`, `buildingThemes`, `reflectionQuestions`, `aspects`, `sarosNote`
-- Add `bigPicture` to the series object type
-- Copy all the rich content from the uploaded file into every eclipse entry and series
-- This is the bulk of the work -- it's a large data paste
+## The 7 Steps
 
-### Step 2: Add the `nodalEducation` object
-**File:** `src/components/narrative/EclipseEncyclopediaExplorer.tsx`
+```text
+Step 1: What This Eclipse IS (type + meaning)
+   "This is a total lunar eclipse. Lunar eclipses reveal what's hidden,
+    outdated, or has run its course..."
 
-Export the `nodalEducation` constant (north/south teachings with headline, shortMeaning, deeperMeaning, howItFeels, guidance) so Module 1 can use it.
+Step 2: The Sign Filter (Virgo themes)
+   "Because it's in Virgo, the themes are: perfectionism, worry,
+    self-criticism, diet, health routines, analysis paralysis..."
 
-### Step 3: Show the new content in the UI
+Step 3: YOUR House (where it lands in your chart)
+   "For you, this falls in your 11th house — community, friendships,
+    hopes for the future. So the Virgo audit is happening in your
+    social world and group commitments..."
 
-**Timeline cards** (`EclipseEncyclopediaExplorer.tsx`):
-- Display `title` as a bold headline on each card
-- Show `bigPicture` at the top of each series tab
+Step 4: YOUR Natal Nodes (the karmic context)
+   "Your North Node is in Scorpio (deep transformation, shared
+    resources, emotional truth). Your South Node is in Taurus
+    (comfort, material security, holding on). This eclipse asks:
+    are your Virgo-style habits (diet, routines, perfectionism)
+    keeping you stuck in Taurus comfort — or moving you toward
+    Scorpio depth?"
+   - Pulls from SPILLER_NODE_DATA for rich context
+   - Connects eclipse sign to natal node axis explicitly
 
-**Module 1 — Nodal Direction** (`EclipseInterpretationLayer.tsx`):
-- Replace generic nodal copy with the per-eclipse `nodalTheme`
-- Use `nodalEducation` for the deeper teaching (howItFeels bullets, guidance quote)
-- Show `releasingThemes` and `buildingThemes` as labeled bullet lists
+Step 5: The Pattern Mirror
+   "Look for this pattern: 'I keep optimizing/fixing/perfecting X
+    but nothing changes.' That's the South Node talking. The eclipse
+    is showing you: the method isn't broken — the goal might be.
+    Scorpio NN says: go deeper, not wider."
 
-**Module 6 — What To Do** (`EclipseInterpretationLayer.tsx`):
-- Use `reflectionQuestions` as the journal prompt section (show all 3 instead of the single generated one)
+Step 6: Natal Planet Activations (aspects)
+   "This eclipse at 12° Virgo makes a [trine/square/etc] to your
+    natal [planet] — which adds [specific theme]..."
 
-**Module 4 — Natal Activations** (`EclipseInterpretationLayer.tsx`):
-- If the eclipse has pre-written `aspects[]`, show them as supplemental context below the computed natal hits
+Step 7: Your Personal Action Plan
+   - What to release (tied to SN + eclipse sign)
+   - What to move toward (tied to NN)
+   - Specific journal prompts synthesizing all steps
+   - "Watch for this in the next 2 weeks..."
+```
 
-**Education accordion** (`EclipseEncyclopediaExplorer.tsx`):
-- Surface `sarosNote` when viewing the relevant eclipse (link to the Saros cycle section)
+## How It Works Technically
 
-### Step 4: Sign profiles -- skip duplication
-Your `signTeacher.ts` already has element/modality data. The uploaded `signProfiles` adds `coreQuestion`, `superpower`, and `shadow` which are unique. Rather than duplicating the whole profile system, we'll add these 3 fields to the sign teaching used in Module 2 (Sign Mechanics), pulling from a small lookup.
+### New Component: `EclipseTeachingMode.tsx`
+- Receives: `eclipse: EclipseEvent`, `userNatalChart: NatalChart | null`
+- State: `currentStep` (0-6), with Next/Back navigation
+- Each step is a dedicated render function that pulls from existing data sources
+- Step progression uses a progress bar showing "Step 3 of 7"
+- Users can jump between steps via clickable step indicators
 
-### Files changed
-- `src/components/narrative/EclipseEncyclopediaExplorer.tsx` (interface expansion + data population + card UI + bigPicture display)
-- `src/components/narrative/EclipseInterpretationLayer.tsx` (Modules 1, 4, 6 enrichment)
+### Data Sources (all existing, no new data files needed)
+- **Step 1**: Eclipse type/subtype from `EclipseEvent` + `nodalEducation` export
+- **Step 2**: `buildSignTeaching()` from `signTeacher.ts` — element, modality, shadow, superpower
+- **Step 3**: `getHouseForLongitude()` + `HOUSE_MEANINGS` from `houseCalculations.ts`
+- **Step 4**: `SPILLER_NODE_DATA` from `nodeSpillerData.ts` — pastLifeStory, tendenciesToLeaveBehind, tendenciesToDevelop + a new **cross-reference function** that connects eclipse sign themes to natal node themes
+- **Step 5**: New synthesis logic that generates "pattern sentences" by combining eclipse sign shadow + SN sign tendencies
+- **Step 6**: `getEclipseAspectHits()` from `eclipseAspects.ts`
+- **Step 7**: Enhanced `generateTakeaway()` that incorporates natal node data
 
-### What stays untouched
-- `eclipseNodalGuard.ts` (normalization still runs on the enriched data)
-- `eclipseAspects.ts` (computed natal hits remain independent)
-- All other modules (2, 3, 5) continue working as-is
+### Cross-Reference Logic (the key new piece)
+A function `synthesizeEclipseWithNodes()` that:
+1. Takes eclipse sign, eclipse house, natal NN sign, natal SN sign, natal NN house, natal SN house
+2. Determines if eclipse sign shares element/modality with NN or SN
+3. Generates specific guidance: "This Virgo eclipse connects to your Taurus SN through the earth element — the pull to optimize your diet IS the South Node pattern. Your Scorpio NN says the real work is emotional, not logistical."
+4. Pulls relevant `tendenciesToLeaveBehind` and `tendenciesToDevelop` from Spiller data
+
+### Integration into EclipseEncyclopediaExplorer
+- Add a toggle button: "📖 Teaching Mode" next to the existing interpretation layer
+- When active, replaces the collapsible modules with the step-by-step walkthrough
+- Falls back gracefully if no natal chart is loaded (Steps 1-2 work without a chart, Steps 3-7 show "Add your birth chart to personalize")
+
+### UI Design
+- Each step: full-width card with step number, title, and rich content
+- Bottom nav: "← Previous Step" / "Next Step →" buttons
+- Top: clickable step dots showing progress
+- Current step highlighted, completed steps get checkmarks
+- Smooth scroll-to-top on step change
+
+## Files to Create/Edit
+
+1. **Create** `src/components/narrative/EclipseTeachingMode.tsx` — the main 7-step component
+2. **Create** `src/lib/eclipseNodeSynthesis.ts` — cross-reference logic connecting eclipse themes to natal nodes
+3. **Edit** `src/components/narrative/EclipseEncyclopediaExplorer.tsx` — add Teaching Mode toggle and render the new component
+4. **Edit** `src/components/narrative/EclipseInterpretationLayer.tsx` — minor: export the `generateTakeaway` function for reuse
+
