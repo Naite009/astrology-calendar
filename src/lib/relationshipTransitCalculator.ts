@@ -96,6 +96,8 @@ export class RelationshipTransitCalculator {
       { name: 'sextile', angle: 60, orb: 6 },
       { name: 'square', angle: 90, orb: 8 },
       { name: 'trine', angle: 120, orb: 8 },
+      { name: 'quincunx', angle: 150, orb: 3 },
+      { name: 'semisextile', angle: 30, orb: 2 },
       { name: 'opposition', angle: 180, orb: 8 }
     ];
     

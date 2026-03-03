@@ -112,6 +112,8 @@ const ASPECT_ORBS: Record<string, { angle: number; orb: number }> = {
   sextile: { angle: 60, orb: 4 },
   square: { angle: 90, orb: 7 },
   trine: { angle: 120, orb: 7 },
+  quincunx: { angle: 150, orb: 3 },
+  semisextile: { angle: 30, orb: 2 },
   opposition: { angle: 180, orb: 8 }
 };
 

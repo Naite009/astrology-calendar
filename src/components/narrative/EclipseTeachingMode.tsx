@@ -197,7 +197,7 @@ export function EclipseTeachingMode({ eclipse, userNatalChart }: Props) {
 
   const aspectHits = useMemo(() => {
     if (!natalPoints) return [];
-    return getEclipseAspectHits(eclipse, natalPoints, 5);
+    return getEclipseAspectHits(eclipse, natalPoints, 7);
   }, [eclipse, natalPoints]);
 
   const nnSign = useMemo(() => {

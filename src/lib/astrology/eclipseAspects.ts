@@ -1,6 +1,6 @@
 import type { ZodiacSign } from "@/lib/astrology/signTeacher";
 
-export type AspectType = "conjunction" | "opposition" | "square" | "trine" | "sextile";
+export type AspectType = "conjunction" | "opposition" | "square" | "trine" | "sextile" | "quincunx" | "semisextile";
 
 export type NatalPointKey =
   | "Sun" | "Moon" | "Mercury" | "Venus" | "Mars"
@@ -42,6 +42,8 @@ const ASPECT_GLYPHS: Record<AspectType, string> = {
   square: "□",
   trine: "△",
   sextile: "⚹",
+  quincunx: "⚻",
+  semisextile: "⚺",
 };
 
 const POINT_GLYPHS: Record<NatalPointKey, string> = {
@@ -72,6 +74,8 @@ const ASPECTS: { type: AspectType; angle: number; orb: number }[] = [
   { type: "square", angle: 90, orb: 2.5 },
   { type: "trine", angle: 120, orb: 2.5 },
   { type: "sextile", angle: 60, orb: 2 },
+  { type: "quincunx", angle: 150, orb: 3 },
+  { type: "semisextile", angle: 30, orb: 2 },
 ];
 
 function interpret(point: NatalPointKey, aspect: AspectType, eclipse: EclipseAspectEvent): string {
@@ -80,6 +84,8 @@ function interpret(point: NatalPointKey, aspect: AspectType, eclipse: EclipseAsp
     aspect === "opposition" ? "Relationship/axis tension and integration" :
     aspect === "square" ? "Pressure that forces adjustment" :
     aspect === "trine" ? "Support and flow (use it deliberately)" :
+    aspect === "quincunx" ? "Awkward tension that demands adjustment — these two areas of life don't speak the same language, forcing creative adaptation" :
+    aspect === "semisextile" ? "Subtle but persistent nudge — a background signal from an adjacent area of life that's easy to dismiss but keeps returning until acknowledged" :
     "Opportunity that requires participation";
 
   const eclipseTone = eclipse.nodal === "south" ? "release/culmination" : "growth/initiating";

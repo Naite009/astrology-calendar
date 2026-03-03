@@ -50,6 +50,8 @@ function getAspect(angle: number): AspectResult | null {
     { angle: 60, orb: 6, type: 'sextile', quality: 'harmonious' as const },
     { angle: 90, orb: 7, type: 'square', quality: 'tense' as const },
     { angle: 120, orb: 8, type: 'trine', quality: 'harmonious' as const },
+    { angle: 150, orb: 3, type: 'quincunx', quality: 'tense' as const },
+    { angle: 30, orb: 2, type: 'semisextile', quality: 'harmonious' as const },
     { angle: 180, orb: 8, type: 'opposition', quality: 'tense' as const }
   ];
   

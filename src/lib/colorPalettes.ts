@@ -190,6 +190,8 @@ const calculateAspect = (lon1: number, lon2: number): { type: string; symbol: st
     { angle: 60, type: 'sextile', symbol: '⚹', orb: 6 },
     { angle: 90, type: 'square', symbol: '□', orb: 8 },
     { angle: 120, type: 'trine', symbol: '△', orb: 8 },
+    { angle: 150, type: 'quincunx', symbol: '⚻', orb: 3 },
+    { angle: 30, type: 'semisextile', symbol: '⚺', orb: 2 },
     { angle: 180, type: 'opposition', symbol: '☍', orb: 8 },
   ];
   

@@ -19,6 +19,8 @@ export const ASPECT_TYPES = [
   { name: 'trine', angle: 120, orb: 8, symbol: '△', color: '#66BB6A', meaning: 'harmony' },
   { name: 'square', angle: 90, orb: 7, symbol: '□', color: '#FFA726', meaning: 'tension' },
   { name: 'sextile', angle: 60, orb: 6, symbol: '⚹', color: '#42A5F5', meaning: 'opportunity' },
+  { name: 'quincunx', angle: 150, orb: 3, symbol: '⚻', color: '#AB47BC', meaning: 'adjustment' },
+  { name: 'semisextile', angle: 30, orb: 2, symbol: '⚺', color: '#78909C', meaning: 'subtle connection' },
 ] as const;
 
 export interface TransitAspect {

@@ -1225,6 +1225,8 @@ export const calculateDailyAspects = (planets: PlanetaryPositions): Aspect[] => 
     { angle: 60, name: 'sextile', symbol: '⚹', orb: 6 },
     { angle: 90, name: 'square', symbol: '□', orb: 8 },
     { angle: 120, name: 'trine', symbol: '△', orb: 8 },
+    { angle: 150, name: 'quincunx', symbol: '⚻', orb: 3 },
+    { angle: 30, name: 'semisextile', symbol: '⚺', orb: 2 },
     { angle: 180, name: 'opposition', symbol: '☍', orb: 8 },
   ];
 
