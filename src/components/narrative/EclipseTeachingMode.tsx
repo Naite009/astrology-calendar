@@ -53,6 +53,44 @@ const POINT_THEMES: Partial<Record<NatalPointKey, string>> = {
   Chiron: 'healing journey and core vulnerability',
 };
 
+/** Explain what "filtered through X's lens" actually means for each sign */
+function getSignLensExplanation(sign: string): string {
+  const map: Record<string, string> = {
+    Aries: "It arrives as urgency — a push to act, to assert, to start something or fight for something. The lens of Aries means everything feels personal and immediate.",
+    Taurus: "It arrives through the body and material world — what you own, what you eat, what feels safe or threatened. The lens of Taurus means the changes show up in tangible, physical ways you can't ignore.",
+    Gemini: "It arrives through information, conversations, and mental restlessness — what you're hearing, reading, and saying. The lens of Gemini means the shifts show up in how you think and communicate.",
+    Cancer: "It arrives through emotional waves, family dynamics, and the felt sense of home. The lens of Cancer means you'll process this in your gut and your private life before you process it intellectually.",
+    Leo: "It arrives through questions of self-expression, recognition, and creative identity. The lens of Leo means you'll feel it as a spotlight — what's being seen, celebrated, or exposed.",
+    Virgo: "It arrives through the body, daily routines, work habits, and the small systems that hold your life together. The lens of Virgo means the shifts show up in practical, tangible ways — your schedule, your health, your sense of usefulness, and whether your current systems are actually working or just keeping you busy.",
+    Libra: "It arrives through relationships, fairness, and the agreements you've made with others. The lens of Libra means you'll feel it in your partnerships and in the gap between peace-keeping and truth-telling.",
+    Scorpio: "It arrives through intensity, power dynamics, and what's been hidden. The lens of Scorpio means you'll feel it as emotional depth — secrets surfacing, trust being tested, or a compulsion to go deeper.",
+    Sagittarius: "It arrives through beliefs, meaning-making, and the urge for expansion. The lens of Sagittarius means you'll feel it as restlessness with anything that feels too small or too certain.",
+    Capricorn: "It arrives through structures, ambition, and accountability. The lens of Capricorn means you'll feel it in your career, your responsibilities, and the question of whether you're building something that actually matters.",
+    Aquarius: "It arrives through community, ideals, and your relationship to the collective. The lens of Aquarius means you'll feel it as tension between fitting in and standing apart.",
+    Pisces: "It arrives through intuition, dreams, and emotional permeability — the things you can't quite name but deeply feel. The lens of Pisces means boundaries dissolve and you may absorb more than you realize.",
+  };
+  return map[sign] || `The lens of ${sign} shapes how you experience and process these changes.`;
+}
+
+/** Describe the felt-sense / somatic experience of this sign's eclipse energy */
+function getSignFeltSense(sign: string): string {
+  const map: Record<string, string> = {
+    Aries: "a surge of adrenaline, impatience with delay, and a fierce need to take action — even before you're sure what the action should be",
+    Taurus: "a tightening in the body around security, a hyper-awareness of comfort vs. discomfort, and resistance to change that feels like stubbornness but is actually self-protection",
+    Gemini: "mental overdrive, scattered attention, an urge to talk it out or research everything, and difficulty sitting still with uncertainty",
+    Cancer: "waves of nostalgia, vulnerability, or protectiveness — a pull toward home, family, or the desire to retreat and nurture yourself before facing the world",
+    Leo: "a heightened need for acknowledgment, creative restlessness, and a sensitivity to being overlooked or undervalued",
+    Virgo: "a hyper-focus on what needs fixing, an anxious audit of your health, habits, and daily routines, and possibly physical symptoms like tension in the stomach or disrupted sleep — your body is the messenger",
+    Libra: "an acute awareness of imbalance in your relationships, an urge to smooth things over, and inner tension between what you want and what you think you should want for harmony's sake",
+    Scorpio: "emotional intensity that sits low in the body, a compulsion to investigate what's really going on, and a feeling that something needs to die so something else can live",
+    Sagittarius: "philosophical restlessness, wanderlust, a questioning of beliefs you used to take for granted, and an allergy to anything that feels confining",
+    Capricorn: "pressure in the shoulders and jaw, a weight of responsibility, and a sober reckoning with whether your ambitions are serving your soul or just your resume",
+    Aquarius: "a buzzing detachment, sudden clarity about group dynamics, and a pull between belonging to the community and needing to break from it entirely",
+    Pisces: "emotional flooding, vivid dreams, compassion fatigue, and a blurring of the line between your feelings and everyone else's — you may need more sleep, more water, more solitude than usual",
+  };
+  return map[sign] || "heightened awareness in the areas this sign governs";
+}
+
 interface Props {
   eclipse: EclipseEvent;
   userNatalChart: NatalChart | null;
@@ -222,7 +260,7 @@ export function EclipseTeachingMode({ eclipse, userNatalChart }: Props) {
     return (
       <div className="space-y-4">
         <p className="text-base leading-relaxed">
-          Because this eclipse is in <strong>{getSignGlyph(eclipse.sign)} {eclipse.sign}</strong>, the themes being activated are filtered through {eclipse.sign}'s lens.
+          Because this eclipse is in <strong>{getSignGlyph(eclipse.sign)} {eclipse.sign}</strong>, the themes being activated are filtered through {eclipse.sign}'s lens — meaning the eclipse energy doesn't arrive in the abstract. {getSignLensExplanation(eclipse.sign)} In practice, you'll feel this as {getSignFeltSense(eclipse.sign)}.
         </p>
 
         <div className="rounded-lg border border-border/50 bg-card/50 p-4 space-y-2">
