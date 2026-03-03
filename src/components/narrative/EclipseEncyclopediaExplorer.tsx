@@ -500,9 +500,12 @@ export function EclipseEncyclopediaExplorer({ userNatalChart, savedCharts }: Pro
     return charts;
   }, [userNatalChart, savedCharts]);
 
-  const selectedChart = selectedChartId
-    ? allCharts.find(c => c.name === selectedChartId) || null
-    : null;
+  const selectedChart = useMemo(() => {
+    if (!selectedChartId) return null;
+    // ChartSelector uses 'user' as id for userNatalChart, chart.id for saved charts
+    if (selectedChartId === 'user' && userNatalChart) return userNatalChart;
+    return allCharts.find(c => c.id === selectedChartId || c.name === selectedChartId) || null;
+  }, [selectedChartId, allCharts, userNatalChart]);
 
   const activeSeries = ECLIPSE_SERIES[activeSeriesTab];
 
