@@ -175,6 +175,14 @@ function getNorthNodePathForPlanet(point: NatalPointKey, aspect: AspectType, ecl
       release: "The past is completing. Thank it, honor what it taught you, and stop returning to it.",
       grow: "Every time you catch yourself defaulting to the old pattern, gently redirect toward the opposite — your North Node.",
     },
+    ASC: {
+      release: "The way you present yourself to the world — your automatic persona, your first impression — is ready for an update. The mask that once protected you may now be hiding you.",
+      grow: "Step into a more authentic self-presentation. How you show up in the world is shifting — let the new version emerge rather than clinging to the familiar public face.",
+    },
+    MC: {
+      release: "Your career path or public role may be completing a chapter. The professional identity you've built may need to evolve — not because it failed, but because you've outgrown it.",
+      grow: "Your public direction is being recalibrated. Lean into the career or life-direction changes that feel right even if they don't match the plan you had five years ago.",
+    },
   };
 
   const entry = paths[point];

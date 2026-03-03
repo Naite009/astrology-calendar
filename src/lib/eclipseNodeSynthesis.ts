@@ -12,6 +12,7 @@ export interface EclipseNodeSynthesis {
   snSpiller: typeof SPILLER_NODE_DATA[string];
   elementConnection: 'same-as-sn' | 'same-as-nn' | 'neither';
   modalityConnection: 'same-as-sn' | 'same-as-nn' | 'neither';
+  sameSignAsNode: 'same-as-sn' | 'same-as-nn' | null;
   connectionNarrative: string;
   patternSentences: string[];
   releaseGuidance: string[];
@@ -65,6 +66,11 @@ export function synthesizeEclipseWithNodes(
   const modalityConnection =
     eclipseInfo.modality === snInfo.modality ? 'same-as-sn' :
     eclipseInfo.modality === nnInfo.modality ? 'same-as-nn' : 'neither';
+
+  // Exact same-sign match (huge deal even if not within conjunction orb)
+  const sameSignAsNode: 'same-as-sn' | 'same-as-nn' | null =
+    eclipseSign === snSign ? 'same-as-sn' :
+    eclipseSign === nnSign ? 'same-as-nn' : null;
 
   // Build connection narrative
   let connectionNarrative = '';
@@ -120,19 +126,23 @@ export function synthesizeEclipseWithNodes(
     );
   }
 
-  // Release guidance (SN + eclipse sign)
+  // Release guidance (SN + eclipse sign) — behavioral and specific
   const releaseGuidance: string[] = [];
   if (eclipseNodal === 'south') {
     releaseGuidance.push(`This is a South Node eclipse — release energy is amplified. What ${eclipseSign} habit has run its course?`);
   }
-  releaseGuidance.push(
-    ...(nnSpiller?.tendenciesToLeaveBehind?.slice(0, 3) || []).map(
-      t => `Release: ${t}`
-    )
-  );
-  if (eclipseShadows.length > 0) {
+  // Add Spiller tendencies with behavioral context
+  const snTendenciesToLeave = nnSpiller?.tendenciesToLeaveBehind?.slice(0, 3) || [];
+  snTendenciesToLeave.forEach(t => {
+    releaseGuidance.push(`${t} — notice when this shows up as your automatic response under stress. That's the pattern completing.`);
+  });
+  if (eclipseShadows.length > 0 && sameSignAsNode === 'same-as-sn') {
     releaseGuidance.push(
-      `Eclipse-specific release: ${eclipseSign} ${eclipseShadows[0]} that's keeping you in ${snSign} patterns`
+      `This eclipse is in ${eclipseSign} — the SAME sign as your South Node. The ${eclipseShadows.slice(0, 2).join(' and ')} patterns aren't just being highlighted, they're being directly released. This is one of the most powerful eclipse alignments for letting go of ${snSign} defaults.`
+    );
+  } else if (eclipseShadows.length > 0) {
+    releaseGuidance.push(
+      `Eclipse-specific release: ${eclipseSign} ${eclipseShadows[0]} that's reinforcing your ${snSign} comfort zone`
     );
   }
 
@@ -170,6 +180,7 @@ export function synthesizeEclipseWithNodes(
     snSpiller,
     elementConnection,
     modalityConnection,
+    sameSignAsNode,
     connectionNarrative,
     patternSentences,
     releaseGuidance,
