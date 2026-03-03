@@ -4,7 +4,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { ChevronLeft, ChevronRight, Check, Lock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, Lock, Download } from 'lucide-react';
+import { useDownloadImage } from '@/hooks/useDownloadImage';
 import { buildSignTeaching, getSignGlyph, getSignInfo } from '@/lib/astrology/signTeacher';
 import type { ZodiacSign } from '@/lib/astrology/signTeacher';
 import { signDegreesToLongitude, getHouseForLongitude, HOUSE_MEANINGS, getNatalPlanetHouse } from '@/lib/houseCalculations';
@@ -155,7 +156,10 @@ interface Props {
 
 export function EclipseTeachingMode({ eclipse, userNatalChart }: Props) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [showSummary, setShowSummary] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const summaryRef = useRef<HTMLDivElement>(null);
+  const { downloadAsImage } = useDownloadImage();
   const hasChart = !!userNatalChart && !!userNatalChart.planets && Object.keys(userNatalChart.planets).length >= 3;
   const hasHouses = hasChart && !!userNatalChart?.houseCusps;
 
@@ -768,6 +772,23 @@ export function EclipseTeachingMode({ eclipse, userNatalChart }: Props) {
             }
           </p>
         </div>
+
+        {/* Download summary button */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full gap-2 mt-2"
+          onClick={async () => {
+            setShowSummary(true);
+            // Wait for render
+            await new Promise(r => setTimeout(r, 100));
+            const eclipseLabel = `${eclipse.degree}° ${eclipse.sign} ${eclipse.type === 'solar' ? 'Solar' : 'Lunar'} Eclipse`;
+            await downloadAsImage(summaryRef.current, `eclipse-summary-${eclipse.sign}-${eclipse.date}`);
+            setShowSummary(false);
+          }}
+        >
+          <Download className="h-4 w-4" /> Download One-Page Summary
+        </Button>
       </div>
     );
   };
@@ -847,6 +868,146 @@ export function EclipseTeachingMode({ eclipse, userNatalChart }: Props) {
           Next <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
+
+      {/* Hidden downloadable summary */}
+      {showSummary && (
+        <div
+          ref={summaryRef}
+          style={{
+            position: 'fixed',
+            left: '-9999px',
+            top: 0,
+            width: '800px',
+            padding: '40px',
+            backgroundColor: '#1a1a2e',
+            color: '#e0e0e0',
+            fontFamily: 'system-ui, -apple-system, sans-serif',
+          }}
+        >
+          {/* Header */}
+          <div style={{ textAlign: 'center', marginBottom: '28px', borderBottom: '2px solid #9b87f540', paddingBottom: '20px' }}>
+            <div style={{ fontSize: '12px', color: '#9b87f5', textTransform: 'uppercase', letterSpacing: '3px', marginBottom: '8px' }}>
+              Eclipse Teaching Summary
+            </div>
+            <div style={{ fontSize: '24px', fontWeight: 700, marginBottom: '6px' }}>
+              {eclipse.type === 'solar' ? '🌑' : '🌕'} {eclipse.degree}° {getSignGlyph(eclipse.sign)} {eclipse.sign} — {eclipse.type === 'solar' ? 'Solar' : 'Lunar'} Eclipse
+            </div>
+            <div style={{ fontSize: '13px', color: '#888' }}>
+              {(() => { const [y,m,d] = eclipse.date.split('-').map(Number); return new Date(y,m-1,d).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}); })()}
+              {' • '}Node: {eclipse.nodal === 'north' ? '☊ North (Growth)' : '☋ South (Release)'}
+            </div>
+          </div>
+
+          {/* Two-column layout */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+            {/* Sign themes */}
+            <div style={{ background: '#ffffff08', borderRadius: '10px', padding: '16px', border: '1px solid #ffffff10' }}>
+              <div style={{ fontSize: '11px', color: '#9b87f5', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '8px' }}>
+                Sign Energy: {eclipse.sign}
+              </div>
+              <div style={{ fontSize: '13px', lineHeight: 1.6 }}>
+                {signTeaching.signProfile?.coreQuestion && (
+                  <div style={{ marginBottom: '8px' }}>
+                    <strong>Core Question:</strong> <em>{signTeaching.signProfile.coreQuestion}</em>
+                  </div>
+                )}
+                <div><strong>Element:</strong> {signTeaching.elementCard.title}</div>
+                <div><strong>Mode:</strong> {signTeaching.modalityCard.title}</div>
+              </div>
+            </div>
+
+            {/* House placement */}
+            <div style={{ background: '#ffffff08', borderRadius: '10px', padding: '16px', border: '1px solid #ffffff10' }}>
+              <div style={{ fontSize: '11px', color: '#9b87f5', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '8px' }}>
+                Your House: {eclipseHouse ? `${ordinal(eclipseHouse)} House` : 'N/A'}
+              </div>
+              <div style={{ fontSize: '13px', lineHeight: 1.6 }}>
+                {eclipseHouse && HOUSE_MEANINGS[eclipseHouse] ? (
+                  <div><strong>{HOUSE_MEANINGS[eclipseHouse].name}:</strong> {HOUSE_MEANINGS[eclipseHouse].lifeArea} — {HOUSE_MEANINGS[eclipseHouse].keywords}</div>
+                ) : <div>Add birth chart with birth time to personalize.</div>}
+              </div>
+            </div>
+          </div>
+
+          {/* Nodal axis */}
+          {nnSign && snSign && (
+            <div style={{ background: '#9b87f510', borderRadius: '10px', padding: '16px', border: '1px solid #9b87f520', marginBottom: '20px' }}>
+              <div style={{ fontSize: '11px', color: '#9b87f5', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '10px' }}>
+                Your Nodal Axis
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '13px', lineHeight: 1.6 }}>
+                <div>
+                  <strong>☊ North Node in {nnSign}:</strong> {synthesis?.nnSpiller?.overview?.slice(0, 150)}...
+                </div>
+                <div>
+                  <strong>☋ South Node in {snSign}:</strong> {synthesis?.nnSpiller?.pastLifeStory?.slice(0, 150)}...
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Aspect activations */}
+          {aspectHits.length > 0 && (
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ fontSize: '11px', color: '#9b87f5', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '10px' }}>
+                Natal Planet Activations
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                {aspectHits.slice(0, 6).map((hit, i) => (
+                  <div key={i} style={{ background: '#ffffff08', borderRadius: '8px', padding: '12px', border: '1px solid #ffffff10', fontSize: '12px', lineHeight: 1.5 }}>
+                    <div style={{ fontWeight: 600, marginBottom: '4px' }}>
+                      {hit.glyph} {hit.point} — {hit.aspect} ({hit.orbLabel})
+                      {hit.isMinor && <span style={{ color: '#888', fontStyle: 'italic' }}> (minor)</span>}
+                    </div>
+                    <div style={{ color: '#aaa' }}>{hit.feltSense.slice(0, 120)}...</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Action plan */}
+          {synthesis && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+              <div style={{ background: '#ff634720', borderRadius: '10px', padding: '16px', border: '1px solid #ff634730' }}>
+                <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '8px', color: '#ff8a80' }}>
+                  ☋ Release
+                </div>
+                <ul style={{ fontSize: '12px', lineHeight: 1.7, paddingLeft: '16px', margin: 0 }}>
+                  {synthesis.releaseGuidance.map((r, i) => <li key={i}>{r}</li>)}
+                </ul>
+              </div>
+              <div style={{ background: '#9b87f520', borderRadius: '10px', padding: '16px', border: '1px solid #9b87f530' }}>
+                <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '8px', color: '#9b87f5' }}>
+                  ☊ Move Toward
+                </div>
+                <ul style={{ fontSize: '12px', lineHeight: 1.7, paddingLeft: '16px', margin: 0 }}>
+                  {synthesis.growthGuidance.map((g, i) => <li key={i}>{g}</li>)}
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {/* Journal prompts */}
+          {synthesis && synthesis.journalPrompts.length > 0 && (
+            <div style={{ background: '#ffffff06', borderRadius: '10px', padding: '16px', border: '1px solid #ffffff10', marginBottom: '20px' }}>
+              <div style={{ fontSize: '11px', color: '#9b87f5', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '10px' }}>
+                📝 Journal Prompts
+              </div>
+              {synthesis.journalPrompts.map((j, i) => (
+                <div key={i} style={{ fontSize: '12px', fontStyle: 'italic', color: '#bbb', lineHeight: 1.6, borderLeft: '2px solid #9b87f530', paddingLeft: '12px', marginBottom: '8px' }}>
+                  {j}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Footer */}
+          <div style={{ textAlign: 'center', fontSize: '10px', color: '#555', borderTop: '1px solid #ffffff10', paddingTop: '12px' }}>
+            Generated by your personal astrology app • {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
