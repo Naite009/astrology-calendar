@@ -679,7 +679,7 @@ export function getVerbsForPlacement(planet: string, sign: string): string[] {
 }
 
 /**
- * Get dominant element
+ * Get dominant element — reports ties (e.g. "Fire/Air")
  */
 function getDominantElement(planetHouses: PlanetHouseInfo[]): string {
   const counts = { Fire: 0, Earth: 0, Air: 0, Water: 0 };
@@ -687,11 +687,14 @@ function getDominantElement(planetHouses: PlanetHouseInfo[]): string {
     const el = getElement(ph.sign);
     if (el in counts) counts[el as keyof typeof counts]++;
   }
-  return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const topCount = sorted[0][1];
+  const tied = sorted.filter(([, c]) => c === topCount).map(([e]) => e);
+  return tied.length > 1 ? tied.join('/') : tied[0];
 }
 
 /**
- * Get dominant modality
+ * Get dominant modality — reports ties (e.g. "Fixed/Mutable")
  */
 function getDominantModality(planetHouses: PlanetHouseInfo[]): string {
   const counts = { Cardinal: 0, Fixed: 0, Mutable: 0 };
@@ -699,7 +702,10 @@ function getDominantModality(planetHouses: PlanetHouseInfo[]): string {
     const mod = getModality(ph.sign);
     if (mod in counts) counts[mod as keyof typeof counts]++;
   }
-  return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const topCount = sorted[0][1];
+  const tied = sorted.filter(([, c]) => c === topCount).map(([e]) => e);
+  return tied.length > 1 ? tied.join('/') : tied[0];
 }
 
 /**
