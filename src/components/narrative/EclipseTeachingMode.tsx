@@ -869,7 +869,7 @@ export function EclipseTeachingMode({ eclipse, userNatalChart }: Props) {
         </Button>
       </div>
 
-      {/* Hidden downloadable summary */}
+      {/* Hidden downloadable summary — printer-friendly light theme */}
       {showSummary && (
         <div
           ref={summaryRef}
@@ -879,35 +879,34 @@ export function EclipseTeachingMode({ eclipse, userNatalChart }: Props) {
             top: 0,
             width: '800px',
             padding: '40px',
-            backgroundColor: '#1a1a2e',
-            color: '#e0e0e0',
+            backgroundColor: '#ffffff',
+            color: '#1a1a1a',
             fontFamily: 'system-ui, -apple-system, sans-serif',
           }}
         >
           {/* Header */}
-          <div style={{ textAlign: 'center', marginBottom: '28px', borderBottom: '2px solid #9b87f540', paddingBottom: '20px' }}>
-            <div style={{ fontSize: '12px', color: '#9b87f5', textTransform: 'uppercase', letterSpacing: '3px', marginBottom: '8px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '24px', borderBottom: '2px solid #6b5b95', paddingBottom: '16px' }}>
+            <div style={{ fontSize: '11px', color: '#6b5b95', textTransform: 'uppercase', letterSpacing: '3px', marginBottom: '6px' }}>
               Eclipse Teaching Summary
             </div>
-            <div style={{ fontSize: '24px', fontWeight: 700, marginBottom: '6px' }}>
+            <div style={{ fontSize: '22px', fontWeight: 700, marginBottom: '4px', color: '#1a1a1a' }}>
               {eclipse.type === 'solar' ? '🌑' : '🌕'} {eclipse.degree}° {getSignGlyph(eclipse.sign)} {eclipse.sign} — {eclipse.type === 'solar' ? 'Solar' : 'Lunar'} Eclipse
             </div>
-            <div style={{ fontSize: '13px', color: '#888' }}>
+            <div style={{ fontSize: '12px', color: '#666' }}>
               {(() => { const [y,m,d] = eclipse.date.split('-').map(Number); return new Date(y,m-1,d).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}); })()}
               {' • '}Node: {eclipse.nodal === 'north' ? '☊ North (Growth)' : '☋ South (Release)'}
             </div>
           </div>
 
-          {/* Two-column layout */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
-            {/* Sign themes */}
-            <div style={{ background: '#ffffff08', borderRadius: '10px', padding: '16px', border: '1px solid #ffffff10' }}>
-              <div style={{ fontSize: '11px', color: '#9b87f5', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '8px' }}>
+          {/* Two-column: Sign + House */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+            <div style={{ borderRadius: '8px', padding: '14px', border: '1px solid #ddd', background: '#fafafa' }}>
+              <div style={{ fontSize: '10px', color: '#6b5b95', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '6px', fontWeight: 600 }}>
                 Sign Energy: {eclipse.sign}
               </div>
-              <div style={{ fontSize: '13px', lineHeight: 1.6 }}>
+              <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#333' }}>
                 {signTeaching.signProfile?.coreQuestion && (
-                  <div style={{ marginBottom: '8px' }}>
+                  <div style={{ marginBottom: '6px' }}>
                     <strong>Core Question:</strong> <em>{signTeaching.signProfile.coreQuestion}</em>
                   </div>
                 )}
@@ -916,12 +915,11 @@ export function EclipseTeachingMode({ eclipse, userNatalChart }: Props) {
               </div>
             </div>
 
-            {/* House placement */}
-            <div style={{ background: '#ffffff08', borderRadius: '10px', padding: '16px', border: '1px solid #ffffff10' }}>
-              <div style={{ fontSize: '11px', color: '#9b87f5', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '8px' }}>
+            <div style={{ borderRadius: '8px', padding: '14px', border: '1px solid #ddd', background: '#fafafa' }}>
+              <div style={{ fontSize: '10px', color: '#6b5b95', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '6px', fontWeight: 600 }}>
                 Your House: {eclipseHouse ? `${ordinal(eclipseHouse)} House` : 'N/A'}
               </div>
-              <div style={{ fontSize: '13px', lineHeight: 1.6 }}>
+              <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#333' }}>
                 {eclipseHouse && HOUSE_MEANINGS[eclipseHouse] ? (
                   <div><strong>{HOUSE_MEANINGS[eclipseHouse].name}:</strong> {HOUSE_MEANINGS[eclipseHouse].lifeArea} — {HOUSE_MEANINGS[eclipseHouse].keywords}</div>
                 ) : <div>Add birth chart with birth time to personalize.</div>}
@@ -929,81 +927,129 @@ export function EclipseTeachingMode({ eclipse, userNatalChart }: Props) {
             </div>
           </div>
 
-          {/* Nodal axis */}
+          {/* Nodal axis — full text, no truncation */}
           {nnSign && snSign && (
-            <div style={{ background: '#9b87f510', borderRadius: '10px', padding: '16px', border: '1px solid #9b87f520', marginBottom: '20px' }}>
-              <div style={{ fontSize: '11px', color: '#9b87f5', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '10px' }}>
+            <div style={{ borderRadius: '8px', padding: '14px', border: '1px solid #c8bfe7', background: '#f5f3ff', marginBottom: '18px' }}>
+              <div style={{ fontSize: '10px', color: '#6b5b95', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '8px', fontWeight: 600 }}>
                 Your Nodal Axis
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '13px', lineHeight: 1.6 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', fontSize: '11px', lineHeight: 1.7, color: '#333' }}>
                 <div>
-                  <strong>☊ North Node in {nnSign}:</strong> {synthesis?.nnSpiller?.overview?.slice(0, 150)}...
+                  <strong>☊ North Node in {nnSign}:</strong> {synthesis?.nnSpiller?.overview}
                 </div>
                 <div>
-                  <strong>☋ South Node in {snSign}:</strong> {synthesis?.nnSpiller?.pastLifeStory?.slice(0, 150)}...
+                  <strong>☋ South Node in {snSign}:</strong> {synthesis?.nnSpiller?.pastLifeStory}
                 </div>
               </div>
             </div>
           )}
 
-          {/* Aspect activations */}
+          {/* Aspect activations — full felt sense, no truncation */}
           {aspectHits.length > 0 && (
-            <div style={{ marginBottom: '20px' }}>
-              <div style={{ fontSize: '11px', color: '#9b87f5', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '10px' }}>
+            <div style={{ marginBottom: '18px' }}>
+              <div style={{ fontSize: '10px', color: '#6b5b95', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '8px', fontWeight: 600 }}>
                 Natal Planet Activations
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 {aspectHits.slice(0, 6).map((hit, i) => (
-                  <div key={i} style={{ background: '#ffffff08', borderRadius: '8px', padding: '12px', border: '1px solid #ffffff10', fontSize: '12px', lineHeight: 1.5 }}>
-                    <div style={{ fontWeight: 600, marginBottom: '4px' }}>
+                  <div key={i} style={{ borderRadius: '6px', padding: '10px', border: '1px solid #ddd', background: '#fafafa', fontSize: '11px', lineHeight: 1.6 }}>
+                    <div style={{ fontWeight: 600, marginBottom: '3px', color: '#1a1a1a' }}>
                       {hit.glyph} {hit.point} — {hit.aspect} ({hit.orbLabel})
                       {hit.isMinor && <span style={{ color: '#888', fontStyle: 'italic' }}> (minor)</span>}
                     </div>
-                    <div style={{ color: '#aaa' }}>{hit.feltSense.slice(0, 120)}...</div>
+                    <div style={{ color: '#444' }}>{hit.feltSense}</div>
+                    {hit.northNodePath && (
+                      <div style={{ color: '#6b5b95', marginTop: '4px', fontSize: '10px' }}>
+                        <strong>Conscious choice:</strong> {hit.northNodePath}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Action plan */}
+          {/* Action plan — Release vs Move Toward */}
           {synthesis && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
-              <div style={{ background: '#ff634720', borderRadius: '10px', padding: '16px', border: '1px solid #ff634730' }}>
-                <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '8px', color: '#ff8a80' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '18px' }}>
+              <div style={{ borderRadius: '8px', padding: '14px', border: '1px solid #e8b4b8', background: '#fdf2f2' }}>
+                <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '6px', color: '#c0392b', fontWeight: 600 }}>
                   ☋ Release
                 </div>
-                <ul style={{ fontSize: '12px', lineHeight: 1.7, paddingLeft: '16px', margin: 0 }}>
+                <ul style={{ fontSize: '11px', lineHeight: 1.7, paddingLeft: '16px', margin: 0, color: '#333' }}>
                   {synthesis.releaseGuidance.map((r, i) => <li key={i}>{r}</li>)}
                 </ul>
               </div>
-              <div style={{ background: '#9b87f520', borderRadius: '10px', padding: '16px', border: '1px solid #9b87f530' }}>
-                <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '8px', color: '#9b87f5' }}>
+              <div style={{ borderRadius: '8px', padding: '14px', border: '1px solid #c8bfe7', background: '#f5f3ff' }}>
+                <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '6px', color: '#6b5b95', fontWeight: 600 }}>
                   ☊ Move Toward
                 </div>
-                <ul style={{ fontSize: '12px', lineHeight: 1.7, paddingLeft: '16px', margin: 0 }}>
+                <ul style={{ fontSize: '11px', lineHeight: 1.7, paddingLeft: '16px', margin: 0, color: '#333' }}>
                   {synthesis.growthGuidance.map((g, i) => <li key={i}>{g}</li>)}
                 </ul>
               </div>
             </div>
           )}
 
-          {/* Journal prompts */}
-          {synthesis && synthesis.journalPrompts.length > 0 && (
-            <div style={{ background: '#ffffff06', borderRadius: '10px', padding: '16px', border: '1px solid #ffffff10', marginBottom: '20px' }}>
-              <div style={{ fontSize: '11px', color: '#9b87f5', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '10px' }}>
-                📝 Journal Prompts
+          {/* Personalized "What This Means For You" — replaces generic journal prompts */}
+          {synthesis && nnSign && snSign && (
+            <div style={{ borderRadius: '8px', padding: '14px', border: '1px solid #ddd', background: '#f9f9f9', marginBottom: '18px' }}>
+              <div style={{ fontSize: '10px', color: '#6b5b95', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '10px', fontWeight: 600 }}>
+                🪞 What This Eclipse Means For You
               </div>
-              {synthesis.journalPrompts.map((j, i) => (
-                <div key={i} style={{ fontSize: '12px', fontStyle: 'italic', color: '#bbb', lineHeight: 1.6, borderLeft: '2px solid #9b87f530', paddingLeft: '12px', marginBottom: '8px' }}>
-                  {j}
-                </div>
-              ))}
+              <div style={{ fontSize: '11px', lineHeight: 1.8, color: '#333' }}>
+                <p style={{ margin: '0 0 8px 0' }}>
+                  <strong>Your pattern:</strong> Your South Node in {snSign} means your default under stress is to
+                  {' '}{snSign === 'Taurus' ? 'seek security through material comfort, hold tighter to what you have, and resist change even when staying put costs more than letting go' :
+                    snSign === 'Aries' ? 'act alone, push through by force, and avoid asking for help' :
+                    snSign === 'Gemini' ? 'stay busy gathering information without committing to any one path' :
+                    snSign === 'Cancer' ? 'retreat into caretaking others while neglecting your own emotional depths' :
+                    snSign === 'Leo' ? 'seek validation and center yourself in the story rather than sharing the stage' :
+                    snSign === 'Virgo' ? 'perfect the details endlessly, criticize yourself, and avoid the messy emotional work' :
+                    snSign === 'Libra' ? 'keep the peace at the expense of your own truth and power' :
+                    snSign === 'Scorpio' ? 'control situations through intensity, secrecy, or emotional withholding' :
+                    snSign === 'Sagittarius' ? 'escape into big ideas, travel, or philosophical certainty rather than sitting with discomfort' :
+                    snSign === 'Capricorn' ? 'overwork, build walls, and measure your worth by achievement alone' :
+                    snSign === 'Aquarius' ? 'intellectualize your feelings, detach from intimacy, and hide in group identity' :
+                    'escape into fantasy, sacrifice yourself for others, or avoid practical reality'}.
+                </p>
+                <p style={{ margin: '0 0 8px 0' }}>
+                  <strong>Your growth direction:</strong> Your North Node in {nnSign} is asking you to
+                  {' '}{nnSign === 'Scorpio' ? 'go deeper — emotionally, psychologically, and in your relationships. Instead of accumulating more, practice releasing what no longer serves you. Let yourself be changed by intimacy. Share resources and power rather than hoarding them. Trust that transformation, while uncomfortable, is where your real strength lives' :
+                    nnSign === 'Taurus' ? 'slow down, trust your body, build something tangible, and find security within yourself rather than through crisis' :
+                    nnSign === 'Aries' ? 'put yourself first, take decisive action, and trust your own instincts without waiting for permission' :
+                    nnSign === 'Gemini' ? 'stay curious, communicate openly, ask questions, and let yourself explore without needing a fixed answer' :
+                    nnSign === 'Cancer' ? 'nurture yourself and others, honor your feelings, build emotional safety, and let vulnerability be strength' :
+                    nnSign === 'Leo' ? 'express yourself boldly, create from the heart, and let yourself be seen without apology' :
+                    nnSign === 'Virgo' ? 'serve others practically, refine your skills, pay attention to the details, and find meaning in humble daily work' :
+                    nnSign === 'Libra' ? 'practice partnership, compromise, see the other side, and find balance between self and other' :
+                    nnSign === 'Sagittarius' ? 'expand your worldview, take risks on faith, speak your truth, and trust that meaning exists beyond what you can control' :
+                    nnSign === 'Capricorn' ? 'take responsibility, build lasting structures, earn authority through discipline, and commit to long-term goals' :
+                    nnSign === 'Aquarius' ? 'contribute to the collective, think beyond personal gain, innovate, and honor your uniqueness without losing connection' :
+                    'trust your intuition, practice compassion, release the need to fix everything, and surrender to what cannot be controlled'}.
+                </p>
+                <p style={{ margin: '0 0 8px 0' }}>
+                  <strong>This eclipse specifically:</strong> The {eclipse.sign} energy of this eclipse is
+                  {synthesis.elementConnection === 'same-as-sn'
+                    ? ` reinforcing your ${snSign} comfort zone — it's showing you exactly where you're defaulting to old habits. The discomfort you feel is the invitation to choose differently.`
+                    : synthesis.elementConnection === 'same-as-nn'
+                    ? ` supporting your growth direction. The universe is opening a door toward your ${nnSign} North Node. Walk through it, even if it feels unfamiliar.`
+                    : ` coming in from a side angle, illuminating your ${snSign}/${nnSign} axis in an unexpected way. Pay attention to what feels stirred up — that's your signal.`
+                  }
+                </p>
+                {eclipseHouse && (
+                  <p style={{ margin: '0' }}>
+                    <strong>Where this lands in your life:</strong> This eclipse activates your {ordinal(eclipseHouse)} house
+                    {HOUSE_MEANINGS[eclipseHouse] ? ` — the area of ${HOUSE_MEANINGS[eclipseHouse].lifeArea.toLowerCase()}` : ''}.
+                    This is where these themes will be most visible and where you'll feel the pull between old patterns and new growth over the coming months.
+                  </p>
+                )}
+              </div>
             </div>
           )}
 
           {/* Footer */}
-          <div style={{ textAlign: 'center', fontSize: '10px', color: '#555', borderTop: '1px solid #ffffff10', paddingTop: '12px' }}>
+          <div style={{ textAlign: 'center', fontSize: '9px', color: '#999', borderTop: '1px solid #e0e0e0', paddingTop: '10px' }}>
             Generated by your personal astrology app • {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
           </div>
         </div>
