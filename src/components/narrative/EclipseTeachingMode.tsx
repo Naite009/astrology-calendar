@@ -12,6 +12,7 @@ import { getEclipseAspectHits } from '@/lib/astrology/eclipseAspects';
 import type { NatalPoint, NatalPointKey, AspectHit } from '@/lib/astrology/eclipseAspects';
 import { SPILLER_NODE_DATA, SPILLER_SOURCE } from '@/lib/nodeSpillerData';
 import { synthesizeEclipseWithNodes } from '@/lib/eclipseNodeSynthesis';
+import { getSignHouseHabits } from '@/lib/eclipseSignHouseHabits';
 import { nodalEducation } from './EclipseEncyclopediaExplorer';
 import type { EclipseEvent } from './EclipseEncyclopediaExplorer';
 import type { NatalChart } from '@/hooks/useNatalChart';
@@ -80,6 +81,11 @@ export function EclipseTeachingMode({ eclipse, userNatalChart }: Props) {
     if (!eclipseHouse) return null;
     return eclipseHouse <= 6 ? eclipseHouse + 6 : eclipseHouse - 6;
   }, [eclipseHouse]);
+
+  const signHouseHabits = useMemo(() => {
+    if (!eclipseHouse) return null;
+    return getSignHouseHabits(eclipse.sign, eclipseHouse);
+  }, [eclipse.sign, eclipseHouse]);
 
   const aspectHits = useMemo(() => {
     if (!natalPoints) return [];
@@ -282,7 +288,28 @@ export function EclipseTeachingMode({ eclipse, userNatalChart }: Props) {
           </ul>
         </div>
 
-        {/* Soul question */}
+        {/* Sign-in-House habit audit */}
+        {signHouseHabits && signHouseHabits.length > 0 && (
+          <div className="rounded-lg border border-accent/20 bg-accent/5 p-4 space-y-3">
+            <h4 className="font-semibold text-sm">🔎 What {eclipse.sign} Habit Has Run Its Course in Your {ordinal(eclipseHouse)} House?</h4>
+            <p className="text-xs text-muted-foreground">
+              Because this eclipse lands in your {ordinal(eclipseHouse)} house, the {eclipse.sign} patterns to watch aren't abstract — they show up specifically in <strong>{hitInfo.lifeArea}</strong>. Read through these and notice which ones land:
+            </p>
+            <ul className="text-sm text-muted-foreground space-y-2 list-none">
+              {signHouseHabits.map((habit, i) => (
+                <li key={i} className="flex gap-2">
+                  <span className="text-accent shrink-0 mt-0.5">•</span>
+                  <span>{habit}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="text-xs text-muted-foreground italic border-t border-border/30 pt-2">
+              If one or two of these hit home — that's the eclipse working. You don't have to fix it tonight. Just notice it. Awareness is the first step.
+            </p>
+          </div>
+        )}
+
+
         <div className="rounded-lg bg-muted/50 border border-border/50 px-4 py-3 text-center">
           <p className="text-xs font-medium text-primary uppercase tracking-wide mb-1">The Question This Eclipse Asks You</p>
           <p className="text-sm font-medium italic text-muted-foreground">"{teaching.soulQuestion}"</p>
