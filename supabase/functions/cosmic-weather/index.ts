@@ -774,7 +774,7 @@ AYURVEDIC SEASON: ${currentSeason}
 
 CRITICAL INSTRUCTIONS:
 1. Use EXACT degrees provided. If a Full Moon is at 13° Cancer, say "Full Moon at 13° Cancer" - not 9° or any other number.
-2. Be direct and practical. No mystical fluff or greetings.
+2. Be direct and practical. Keep the opening in the selected voice style (for Tara: start naturally with "Today is...").
 3. Do NOT include any meal plans, recipes, or food content - that belongs exclusively in the Kitchen tab.
 4. PAY SPECIAL ATTENTION to tight aspects (orb < 2°) - these are the most powerful influences today.
 5. If an aspect is APPLYING, emphasize it's building/intensifying. If SEPARATING, it's releasing/completing.
