@@ -604,8 +604,8 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
         if (!mercuryRxStatus.retrogradeInfo) return null;
         const ri = mercuryRxStatus.retrogradeInfo;
         const sign = ri.sign;
-        const rxStartStr = formatDateForTimezone(ri.start);
-        const rxEndStr = formatDateForTimezone(ri.end);
+        const rxStartStr = formatDateTimeForTimezone(ri.start);
+        const rxEndStr = formatDateTimeForTimezone(ri.end);
         const preStartStr = formatDateForTimezone(ri.preStart);
         const postEndStr = formatDateForTimezone(ri.postEnd);
         
