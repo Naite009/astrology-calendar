@@ -74,6 +74,13 @@ ${Object.entries(allRetrogrades).map(([planet, info]: [string, any]) => `- ${pla
 IMPORTANT: Use these EXACT station direct dates. Do NOT substitute dates from your training data.`
       : 'NO PLANETS ARE CURRENTLY RETROGRADE (other than any mentioned in Mercury Retrograde Status above).';
 
+    // Explicit anti-hallucination: list planets that are NOT retrograde
+    const notRetroText = planetsNotRetrograde && planetsNotRetrograde.length > 0
+      ? `PLANETS THAT ARE **NOT** RETROGRADE (DO NOT say these are retrograde — this is verified from ephemeris):
+${planetsNotRetrograde.map((p: string) => `- ${p} is DIRECT (NOT retrograde)`).join('\n')}
+CRITICAL: If Venus is listed as DIRECT above, do NOT mention "Venus retrograde" anywhere in your response. Same for all other planets listed as DIRECT.`
+      : '';
+
     // Build the astrological context for the prompt
     const stelliumText = stelliums?.length > 0 
       ? `Stelliums: ${stelliums.map((s: any) => `${s.count} planets in ${s.sign} (${s.planets.map((p: any) => p.name).join(', ')})`).join('; ')}`
