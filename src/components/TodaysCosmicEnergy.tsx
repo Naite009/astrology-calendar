@@ -476,9 +476,8 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
       const greeting = localHour < 12 ? 'Good morning' : localHour < 17 ? 'Good afternoon' : 'Good evening';
 
       // Detect user's timezone early (used for ingress times and AI prompt)
-      // If runtime reports UTC (common in some preview environments), fall back to ET for Pennsylvania-focused timing.
       const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const userTimezone = detectedTimezone && detectedTimezone !== 'UTC' ? detectedTimezone : 'America/New_York';
+      const userTimezone = detectedTimezone || 'UTC';
       const userTzAbbr = new Date().toLocaleTimeString('en-US', { timeZone: userTimezone, timeZoneName: 'short' }).split(' ').pop() || 'ET';
       const formatDateForTimezone = (value: Date) => value.toLocaleDateString('en-US', {
         timeZone: userTimezone,
