@@ -851,7 +851,7 @@ export function PlanetRetrogradeGuide({ planet, allCharts, primaryUserName }: Pl
 
   const sections = [
     { id: "learn", label: `Learn ${planet}`, icon: glyph },
-    { id: "retrogrades", label: `${selectedYear} Retrogrades`, icon: "🔄" },
+    { id: "retrogrades", label: "Retrogrades by Year", icon: "🔄" },
     { id: "current", label: "Current Status", icon: currentStatus?.isRetrograde ? "↩️" : "➡️" },
     { id: "guidance", label: "Your Guidance", icon: "✨" },
   ];
