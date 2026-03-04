@@ -682,7 +682,7 @@ export function MercuryRetrogradeGuide({ allCharts, primaryUserName }: MercuryRe
 
   const sections = [
     { id: "learn", label: "Learn Mercury", icon: "☿" },
-    { id: "retrogrades", label: `${selectedYear} Retrogrades`, icon: "🔄" },
+    { id: "retrogrades", label: "Retrogrades by Year", icon: "🔄" },
     { id: "current", label: "Current Cycle", icon: "🌊" },
     { id: "guidance", label: "Your Guidance", icon: "✨" },
   ];
