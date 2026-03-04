@@ -198,7 +198,18 @@ ${eclipseContext}`
       moonJupiterConjunction = `SIGNIFICANT: Moon and Jupiter are BOTH in ${moonPlanet.sign} - this is a powerful conjunction for abundance, optimism, and emotional expansion!`;
     }
 
-    // Build exact lunar phase information if present
+    // Moon sign ruler context — the ruler of the Moon's sign gains extra significance
+    const SIGN_RULERS: Record<string, string> = {
+      Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon',
+      Leo: 'Sun', Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Mars',
+      Sagittarius: 'Jupiter', Capricorn: 'Saturn', Aquarius: 'Saturn', Pisces: 'Jupiter',
+    };
+    const effectiveMoonSign = moonSignChange ? moonSignChange.toSign : moonSign;
+    const moonRuler = SIGN_RULERS[effectiveMoonSign] || '';
+    const moonRulerText = moonRuler
+      ? `MOON SIGN RULER CONTEXT: The Moon is in (or moving into) ${effectiveMoonSign}, which is ruled by ${moonRuler}. This means ANY aspect involving ${moonRuler} today carries EXTRA weight — ${moonRuler} is the emotional tone-setter. Highlight ${moonRuler} aspects prominently.`
+      : '';
+
     let exactPhaseText = '';
     if (exactLunarPhase) {
       if (exactLunarPhase.isToday === false) {
