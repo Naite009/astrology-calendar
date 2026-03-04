@@ -663,7 +663,7 @@ function formatDeg(lon: number): string {
   return `${d}°${String(m).padStart(2,'0')}' ${signs[signIdx]}`;
 }
 
-const MIN_YEAR = 2020;
+const MIN_YEAR = 1970;
 const MAX_YEAR = 2035;
 
 function PlanetYearJumper({ year, onChange, borderClass }: { year: number; onChange: (y: number) => void; borderClass: string }) {
