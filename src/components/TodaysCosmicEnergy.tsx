@@ -476,9 +476,8 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
       const greeting = localHour < 12 ? 'Good morning' : localHour < 17 ? 'Good afternoon' : 'Good evening';
 
       // Detect user's timezone early (used for ingress times and AI prompt)
-      // If runtime reports UTC (common in some preview environments), fall back to ET for Pennsylvania-focused timing.
       const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const userTimezone = detectedTimezone && detectedTimezone !== 'UTC' ? detectedTimezone : 'America/New_York';
+      const userTimezone = detectedTimezone || 'UTC';
       const userTzAbbr = new Date().toLocaleTimeString('en-US', { timeZone: userTimezone, timeZoneName: 'short' }).split(' ').pop() || 'ET';
       const formatDateForTimezone = (value: Date) => value.toLocaleDateString('en-US', {
         timeZone: userTimezone,
@@ -498,7 +497,7 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
             return {
               fromSign: planets.moon?.signName || signGlyphToName[planets.moon?.sign] || 'Unknown',
               toSign: voc.moonEntersSign,
-              time: changeDate.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit' }) + ' ET',
+              time: changeDate.toLocaleTimeString('en-US', { timeZone: userTimezone, hour: 'numeric', minute: '2-digit' }) + ' ' + userTzAbbr,
             };
           }
         }
@@ -509,7 +508,7 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
           return {
             fromSign: planets.moon?.signName || signGlyphToName[planets.moon?.sign] || 'Unknown',
             toSign: nextChange.newSign,
-            time: nextChange.time.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit' }) + ' ET',
+            time: nextChange.time.toLocaleTimeString('en-US', { timeZone: userTimezone, hour: 'numeric', minute: '2-digit' }) + ' ' + userTzAbbr,
           };
         }
         return null;
@@ -727,6 +726,18 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
               }
             }
             return Object.keys(statuses).length > 0 ? statuses : undefined;
+          })(),
+          // Explicit list of planets NOT retrograde to prevent AI hallucinations
+          planetsNotRetrograde: (() => {
+            const allPeriods = getAllRetrogradePeriods(now);
+            const notRetro: string[] = [];
+            for (const [planet] of Object.entries(allPeriods)) {
+              const status = getRetrogradeStatus(now, allPeriods[planet as keyof typeof allPeriods] || []);
+              if (!status.isRetrograde) {
+                notRetro.push(planet);
+              }
+            }
+            return notRetro;
           })(),
           moonSignChange: moonSignChangeToday,
           imminentSignChanges,
