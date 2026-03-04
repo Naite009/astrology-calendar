@@ -727,6 +727,18 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
             }
             return Object.keys(statuses).length > 0 ? statuses : undefined;
           })(),
+          // Explicit list of planets NOT retrograde to prevent AI hallucinations
+          planetsNotRetrograde: (() => {
+            const allPeriods = getAllRetrogradePeriods(now);
+            const notRetro: string[] = [];
+            for (const [planet] of Object.entries(allPeriods)) {
+              const status = getRetrogradeStatus(now, allPeriods[planet as keyof typeof allPeriods] || []);
+              if (!status.isRetrograde) {
+                notRetro.push(planet);
+              }
+            }
+            return notRetro;
+          })(),
           moonSignChange: moonSignChangeToday,
           imminentSignChanges,
           personalizedRetrograde: personalizedRetroInfo,
