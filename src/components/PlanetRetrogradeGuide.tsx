@@ -378,9 +378,14 @@ export function PlanetRetrogradeGuide({ planet, allCharts, primaryUserName }: Pl
 
   const selectedPeriod = periods[selectedPeriodIdx];
 
+  const handleYearChange = (newYear: number) => {
+    setSelectedYear(newYear);
+    setSelectedPeriodIdx(0);
+  };
+
   const sections = [
     { id: "learn", label: `Learn ${planet}`, icon: glyph },
-    { id: "retrogrades", label: "Retrograde Periods", icon: "🔄" },
+    { id: "retrogrades", label: `${selectedYear} Retrogrades`, icon: "🔄" },
     { id: "current", label: "Current Status", icon: currentStatus?.isRetrograde ? "↩️" : "➡️" },
     { id: "guidance", label: "Your Guidance", icon: "✨" },
   ];
