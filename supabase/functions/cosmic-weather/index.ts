@@ -218,6 +218,22 @@ ${eclipseContext}`
       ? `MOON SIGN RULER CONTEXT: The Moon is in (or moving into) ${effectiveMoonSign}, which is ruled by ${moonRuler}. This means ANY aspect involving ${moonRuler} today carries EXTRA weight — ${moonRuler} is the emotional tone-setter. Highlight ${moonRuler} aspects prominently.`
       : '';
 
+    // VOC Moon timing (pre-computed from ephemeris, NOT AI-generated)
+    const vocText = vocMoonData
+      ? `VOID OF COURSE MOON (GROUND TRUTH — computed from ephemeris):
+The Moon goes void of course at ${vocMoonData.lastAspectTime || 'unknown'} after its last aspect: Moon ${vocMoonData.lastAspectSymbol || ''} ${vocMoonData.lastAspectPlanet || 'unknown'} (${vocMoonData.lastAspectType || ''}).
+VOC window: ${vocMoonData.start} to ${vocMoonData.end} (${vocMoonData.durationMinutes ? Math.round(vocMoonData.durationMinutes / 60) + ' hours ' + (vocMoonData.durationMinutes % 60) + ' minutes' : 'unknown duration'}).
+Moon then enters ${vocMoonData.moonEntersSign || 'the next sign'}.
+${vocMoonData.lastAspectMeaning || ''}
+PRACTICAL VOC GUIDANCE: During VOC, avoid starting new projects, making major purchases, or sending important emails. Coast, rest, tie up loose ends. Things initiated during VOC tend to not work out as planned.`
+      : '';
+
+    // Pre-computed aspect interpretations (deterministic, NOT AI-generated)
+    const aspectMeaningsBlock = aspectMeaningsText || '';
+
+    // Moon dispositorship chain (shows where emotional energy flows)
+    const dispositorBlock = moonDispositorChain || '';
+
     let exactPhaseText = '';
     if (exactLunarPhase) {
       if (exactLunarPhase.isToday === false) {
