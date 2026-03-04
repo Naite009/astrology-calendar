@@ -78,7 +78,7 @@ export function FoundationsView({ userNatalChart, savedCharts, onNavigateToView 
           <ChartSelector
             userNatalChart={userNatalChart}
             savedCharts={savedCharts}
-            selectedChartId={activeTab === 'houses' && !selectedChartId ? '__live_sky__' : (selectedChart?.name || '')}
+            selectedChartId={activeTab === 'houses' && !selectedChartId ? '__live_sky__' : (selectedChartId || '')}
             onSelect={setSelectedChartId}
             includeGeneral={activeTab === 'houses'}
             generalLabel="✦ Current Sky (Natural Zodiac)"
