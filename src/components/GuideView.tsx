@@ -1844,8 +1844,8 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
     ),
   },
   mercuryretrograde: {
-    title: "Mercury Retrograde",
-    content: <MercuryRetrogradeGuide allCharts={[]} />,
+    title: "Retrogrades",
+    content: <RetroGradesHub allCharts={[]} />,
   },
 };
 
