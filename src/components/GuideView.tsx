@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MercuryRetrogradeGuide } from "@/components/MercuryRetrogradeGuide";
+import { RetroGradesHub } from "@/components/RetroGradesHub";
 import { ArrowRight, HelpCircle } from "lucide-react";
 import { 
   GuideSection, 
