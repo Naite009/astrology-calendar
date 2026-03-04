@@ -723,7 +723,7 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
             for (const [planet, periods] of Object.entries(allPeriods)) {
               const status = getRetrogradeStatus(now, periods);
               if (status.isRetrograde && status.retrogradeInfo) {
-                statuses[planet] = { isRetrograde: true, sign: status.retrogradeInfo.sign, stationDirect: formatRetrogradeDate(status.retrogradeInfo.end) };
+                statuses[planet] = { isRetrograde: true, sign: status.retrogradeInfo.sign, stationDirect: formatDateForTimezone(status.retrogradeInfo.end) };
               }
             }
             return Object.keys(statuses).length > 0 ? statuses : undefined;
