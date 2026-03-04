@@ -660,6 +660,7 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
           userTimezone,
           userTzAbbr,
           forceRegenerate: forceRefresh,
+          moonPhase: (() => {
             // Avoid labeling adjacent days as "New Moon"/"Full Moon" when the exact phase isn't today
             const exactPhaseToday = getExactLunarPhase(now);
             if (exactPhaseToday) return exactPhaseToday.type;
