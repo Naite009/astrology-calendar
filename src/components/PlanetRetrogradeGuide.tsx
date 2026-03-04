@@ -296,6 +296,8 @@ function AccordionCard({ icon, title, content, accentClass }: { icon: string; ti
 // ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
 
 export function PlanetRetrogradeGuide({ planet, allCharts, primaryUserName }: PlanetRetrogradeGuideProps) {
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedChartId, setSelectedChartId] = useState("none");
   const [activeSection, setActiveSection] = useState("learn");
   const [selectedPeriodIdx, setSelectedPeriodIdx] = useState(0);
@@ -308,11 +310,14 @@ export function PlanetRetrogradeGuide({ planet, allCharts, primaryUserName }: Pl
   const glyph = PLANET_GLYPHS[planet] || "⊕";
   const body = PLANET_BODIES[planet];
 
-  // Compute retrograde periods from ephemeris
+  const MIN_YEAR = 2020;
+  const MAX_YEAR = 2035;
+
+  // Compute retrograde periods for the selected year
   const periods = useMemo(() => {
     if (!body) return [];
-    return getRetrogradePeriods(body, new Date());
-  }, [body]);
+    return getRetrogradePeriodsForYear(body, selectedYear);
+  }, [body, selectedYear]);
 
   // Current status
   const currentStatus = useMemo(() => {
