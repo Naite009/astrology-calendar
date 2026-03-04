@@ -375,7 +375,46 @@ const PLANET_INFO: Record<string, {
     themes: ["Processing past upheavals and sudden changes", "Internal revolution and awakening", "Reviewing relationship to freedom and independence", "Technology and innovation turned inward", "Questioning where you conform vs. rebel", "Integration of radical changes from the past year"],
     keywords: ["Revolution", "Innovation", "Freedom", "Awakening", "Technology", "Rebellion", "Genius", "Disruption", "Independence", "Electricity", "Future", "Eccentric", "Liberation", "Shock"],
     dignity: { domicile: "Aquarius", exaltation: "Scorpio (modern)", detriment: "Leo", fall: "Taurus (modern)" },
-    doList: ["Reflect on changes you've resisted — are they actually liberating?", "Innovate internally before implementing externally", "Question assumptions and habitual thinking", "Embrace your uniqueness and eccentricities", "Review your relationship to technology", "Process any sudden changes from the past months"],
+    dignityTeaching: {
+      intro: "Uranus was discovered in 1781 and assigned rulership of Aquarius in modern astrology. Because the outer planets move so slowly, their dignity placements affect entire generations — you share your Uranus sign with everyone born within a 7-year window. The dignity tells you HOW your generation processes revolution and innovation.",
+      analogy: "Think of Uranus like lightning. In Aquarius, it strikes precisely where the old system is weakest — targeted, brilliant, purposeful. In Leo (detriment), the lightning hits a stage during a performance — disruptive, dramatic, but the performer can't stop performing even as the set burns. In Taurus (fall), lightning hits a stone wall — the force is enormous but the wall barely cracks. Change happens, but at geological speed. In Scorpio (exaltation), lightning strikes underground — invisible on the surface, but it transforms everything beneath.",
+      domicile: [{
+        sign: "Aquarius",
+        title: "Uranus in Aquarius — Revolution at Home",
+        feltSense: "This feels like seeing the matrix — the invisible systems, networks, and structures that everyone else takes for granted become transparent. There's an electric clarity about what's broken and an impatient certainty about how to fix it. Group consciousness shifts feel natural, obvious, inevitable.",
+        psychology: "Uranus in Aquarius is innovation in its purest form. Technology, social structures, and collective consciousness evolve rapidly. The danger is detachment — caring about humanity in theory while struggling with individual humans. When retrograde: 'Am I truly free, or have I just replaced one conformity with another?'",
+        gifts: ["Visionary intelligence", "Natural systems thinking", "Comfort with technology and innovation", "Authentic individuality without performance", "Building networks that transform society"],
+        challenges: ["Emotional detachment from individual people", "Contrarianism as identity", "Destabilizing functional systems out of restlessness", "Intellectual superiority", "Difficulty with intimacy and emotional bonding"],
+        bodyFeeling: "Electric buzz in the nervous system. Ankles and circulatory system activate. A restless, crackling energy that needs mental outlets."
+      }],
+      exaltation: [{
+        sign: "Scorpio",
+        title: "Uranus in Scorpio — Revolution from the Depths",
+        feltSense: "This feels like an earthquake that starts underground. Nothing visible changes at first, but the foundations are shifting. There's an intensity to the need for change — not just reform, but complete transformation. Secrets must come out. Power must be redistributed. The old must die for the new to be born.",
+        psychology: "Uranus in Scorpio transforms at the root level — psychology, sexuality, power, death itself are all subjects of revolution. This generation dismantles taboos. When retrograde: 'Am I transforming myself, or just destroying what scares me?'",
+        gifts: ["Fearless investigation of hidden truths", "Revolutionary approach to psychology and healing", "Transforming shame into power", "Breaking taboos that genuinely harm", "Deep, authentic courage"],
+        challenges: ["Destructiveness mistaken for liberation", "Obsession with exposing others", "Using shock as a weapon", "Difficulty with stability and peace", "Intensity addiction"],
+        bodyFeeling: "Deep pelvic tension. Energy moves in surges from below. An almost volcanic quality — periods of stillness followed by eruption."
+      }],
+      detriment: [{
+        sign: "Leo",
+        title: "Uranus in Leo — The Rebel on Stage",
+        feltSense: "This feels like wanting to be utterly unique while also desperately wanting applause. There's a tension between authentic individuality and performative rebellion. Creativity is electric but can become erratic. The ego and the collective future are in constant negotiation.",
+        psychology: "Uranus in Leo (detriment) forces the revolutionary impulse through the lens of personal identity and self-expression. Revolution becomes personal rather than collective. When retrograde: 'Am I rebelling for freedom or for attention? Is my uniqueness genuine or is it a performance?'",
+        gifts: ["Wildly original creative expression", "Courage to be radically authentic in public", "Inspiring others through personal revolution", "Creative genius that breaks artistic conventions", "Magnetic individuality"],
+        challenges: ["Attention-seeking disguised as revolution", "Ego inflation through being 'different'", "Instability in self-expression", "Difficulty being part of a team", "Drama addiction"],
+        bodyFeeling: "Heart center alternately opens and closes. Energy surges up through the chest into dramatic expression. Upper back tension from the push-pull between self and collective."
+      }],
+      fall: [{
+        sign: "Taurus",
+        title: "Uranus in Taurus — Revolution in Slow Motion",
+        feltSense: "This feels like an earthquake in slow motion. The ground beneath your feet — money, food, the physical body, what you own — is shifting, but so slowly that many people deny it's happening at all. There's a growing discomfort with 'the way things have always been done' but change meets enormous resistance. Material security feels unstable in a new way.",
+        psychology: "Uranus in Taurus (fall, current transit 2018-2026) revolutionizes values, finances, agriculture, and the body itself. Cryptocurrency, AI disrupting work, climate changing food systems — all Uranus in Taurus. When retrograde: 'What do I genuinely value now that the old system is crumbling? Can I find security in change itself?'",
+        gifts: ["Innovating within the physical/material world", "Finding freedom through new relationship to money and body", "Grounding radical ideas into practical form", "Building new economic models", "Patience with revolutionary timelines"],
+        challenges: ["Stubborn resistance to necessary change", "Financial instability from disrupted systems", "Body anxiety from rapidly shifting self-concepts", "Clinging to material security while it transforms", "Generational conflict over values"],
+        bodyFeeling: "Throat tightness (Taurus body part). A sense of the ground being unstable. Body awareness shifts — what felt solid now feels temporary. Nervous energy trapped in a body that wants stability."
+      }],
+    },
     dontList: ["Force radical external changes", "Rebel without a clear purpose", "Make impulsive decisions in the name of freedom", "Ignore the need for stability alongside change", "Dismiss conventional wisdom entirely"],
     signMeanings: {
       Aries: "Uranus retrograde in Aries: Identity revolution internalized. Who are you becoming?",
