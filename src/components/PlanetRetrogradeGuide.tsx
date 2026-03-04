@@ -816,8 +816,7 @@ export function PlanetRetrogradeGuide({ planet, allCharts, primaryUserName }: Pl
   const glyph = PLANET_GLYPHS[planet] || "⊕";
   const body = PLANET_BODIES[planet];
 
-  const MIN_YEAR = 2020;
-  const MAX_YEAR = 2035;
+  // MIN_YEAR and MAX_YEAR defined at module scope above
 
   // Compute retrograde periods for the selected year
   const periods = useMemo(() => {
