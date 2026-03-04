@@ -1024,7 +1024,7 @@ export function PlanetRetrogradeGuide({ planet, allCharts, primaryUserName }: Pl
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-1">
                 <span className="text-2xl">🔄</span>
-                <h2 className="text-xl font-semibold text-white">{selectedYear} {planet} Retrogrades</h2>
+                <h2 className="text-xl font-semibold text-white">{planet} Retrogrades</h2>
               </div>
               <p className={`text-sm ${colors.accent} ml-11`}>Computed from high-precision ephemeris</p>
             </div>
