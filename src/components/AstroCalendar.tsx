@@ -1,5 +1,5 @@
 import { useState, lazy, Suspense } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, ScanSearch, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers, Combine, Diamond, FileText, CalendarClock, Utensils, Sun } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, ScanSearch, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers, Combine, Diamond, FileText, CalendarClock, Utensils, Sun, Home } from "lucide-react";
 import { TodaysCosmicEnergy, CosmicEnergyButton } from "./TodaysCosmicEnergy";
 import { useState as useCosmicState } from "react";
 const ChartDecoderView = lazy(() => import("./ChartDecoderView").then(m => ({ default: m.ChartDecoderView })));
@@ -226,6 +226,16 @@ export const AstroCalendar = () => {
         {/* Header */}
         <header className="mb-10 flex flex-wrap items-center justify-between gap-4 border-b border-border pb-6 md:mb-12">
           <div className="flex flex-wrap items-center gap-4">
+            {viewMode !== "month" && (
+              <button
+                onClick={() => setViewMode("month")}
+                className="flex h-10 w-10 items-center justify-center border border-border bg-transparent text-muted-foreground transition-all duration-200 hover:border-primary hover:bg-secondary rounded-sm"
+                aria-label="Home"
+                title="Back to Calendar"
+              >
+                <Home size={20} />
+              </button>
+            )}
             <h1 className="font-serif text-3xl font-light tracking-wide text-foreground md:text-5xl">
               {getTitle()}
             </h1>
