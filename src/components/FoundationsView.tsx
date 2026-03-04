@@ -21,9 +21,9 @@ interface Props {
 
 export function FoundationsView({ userNatalChart, savedCharts, onNavigateToView }: Props) {
   const [activeTab, setActiveTab] = useState<SubTab>('signs');
-  // Default to user's chart name so the dropdown reflects what's actually shown
+  // Default to 'user' so the dropdown reflects the user's chart is selected
   const [selectedChartId, setSelectedChartId] = useState<string | null>(
-    userNatalChart?.name || null
+    userNatalChart ? 'user' : null
   );
 
   const allCharts = useMemo(() => {
