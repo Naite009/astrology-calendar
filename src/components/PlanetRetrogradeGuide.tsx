@@ -493,7 +493,46 @@ const PLANET_INFO: Record<string, {
     themes: ["Deep psychological transformation processing", "Power dynamics reviewed internally", "Control issues surfacing for release", "Past traumas processing at a deep level", "Shadow work and hidden material surfacing", "Generational and ancestral healing"],
     keywords: ["Transformation", "Power", "Death/Rebirth", "Shadow", "Depth", "Intensity", "Control", "Obsession", "Phoenix", "Underworld", "Taboo", "Wealth", "Regeneration", "Evolution"],
     dignity: { domicile: "Scorpio", exaltation: "Leo (modern)", detriment: "Taurus", fall: "Aquarius (modern)" },
-    doList: ["Engage in deep shadow work and self-inquiry", "Process old traumas with professional support", "Examine power dynamics in your relationships", "Let go of what needs to die — control, grudges, identities", "Research, investigate, and dig deep", "Practice non-attachment to outcomes"],
+    dignityTeaching: {
+      intro: "Pluto was discovered in 1930 and given modern rulership of Scorpio. With an orbit of ~248 years, Pluto spends 12–31 years in each sign (the orbit is elliptical). Pluto's sign placement defines how an entire generation processes power, death, transformation, and the shadow.",
+      analogy: "Think of Pluto like a volcano. In Scorpio, the lava flows freely — transformation is visible, raw, and undeniable. In Taurus (detriment), the volcano is buried under a beautiful meadow — the pressure builds invisibly for decades until it erupts through the surface of what seemed most stable. In Aquarius (fall), the eruption is contained by technology and systems thinking — transformation is intellectualized rather than felt.",
+      domicile: [{
+        sign: "Scorpio",
+        title: "Pluto in Scorpio — Transformation Unleashed",
+        feltSense: "This feels like staring into the abyss and watching it stare back — and not flinching. There's a generation-wide capacity to face death, taboo, and the darkest corners of the psyche without turning away. Sex, death, power, and money are not subjects to avoid but forces to master. The intensity is not a phase — it's an identity.",
+        psychology: "Pluto in Scorpio (1983–1995) is Pluto at maximum transformative power. This generation naturally understands psychology, trauma, power dynamics, and the necessity of destruction for rebirth. When retrograde: 'Am I transforming or self-destructing? Is my intensity authentic or armor?'",
+        gifts: ["Fearless psychological depth", "Capacity to heal generational trauma", "Understanding power without being corrupted by it", "Authentic relationship with death and impermanence", "Emotional honesty that transforms everyone around them"],
+        challenges: ["Self-destructive intensity", "Obsession with darkness for its own sake", "Trust issues at the deepest level", "Power struggles in every relationship", "Difficulty with lightness and play"],
+        bodyFeeling: "Deep pelvic intensity (Scorpio body part). Energy moves from the base upward like kundalini. A sense of something always churning beneath the surface."
+      }],
+      exaltation: [{
+        sign: "Leo",
+        title: "Pluto in Leo — Power Through Self-Expression",
+        feltSense: "This feels like being born into a spotlight and knowing the world is your stage. There's an enormous personal magnetism and an unshakable belief in the power of the individual to transform the world through sheer force of personality. Creativity becomes a weapon — and a gift.",
+        psychology: "Pluto in Leo (1937–1958) transformed through personal power, celebrity culture, nuclear energy (the ultimate 'fire'), and the birth of the civil rights movement. When retrograde: 'Is my personal power serving something larger, or has my ego consumed my purpose?'",
+        gifts: ["Transformative creative vision", "Charismatic leadership", "Courage to express power authentically", "Using personal magnetism for collective transformation", "Generational creative legacy"],
+        challenges: ["Ego-driven power plays", "Confusing personal importance with actual importance", "Authoritarian tendencies", "Drama and spectacle replacing substance", "Difficulty sharing the spotlight"],
+        bodyFeeling: "Heart center intensity (Leo body part). Warmth radiating from the chest. A sense of personal destiny that can feel both empowering and burdensome."
+      }],
+      detriment: [{
+        sign: "Taurus",
+        title: "Pluto in Taurus — Transformation of What You Own",
+        feltSense: "This feels like watching the most solid, reliable things in your world slowly crack. Land, money, food, the body — everything you assumed was permanent reveals itself as impermanent. The transformation is slow, grinding, and often resisted with everything the bull can muster.",
+        psychology: "Pluto in Taurus (detriment) transforms at the material level. Last transit: 1851–1884 (Industrial Revolution transforming land, labor, and material wealth). When retrograde: 'What am I clinging to that needs to die? Can I find power in releasing possessions rather than hoarding them?'",
+        gifts: ["Transforming relationship to material security", "Finding power in simplicity", "Building wealth through destruction of old financial systems", "Deep connection to the earth and body", "Patience with slow, thorough transformation"],
+        challenges: ["Extreme resistance to material change", "Hoarding as a response to transformation anxiety", "Body fixation — cosmetic and health obsessions", "Financial power struggles", "Stubbornness in the face of necessary evolution"],
+        bodyFeeling: "Throat constriction (Taurus body part). A sense of the ground shifting. Physical holding — clenched hands, tight jaw — resisting what's being asked to change."
+      }],
+      fall: [{
+        sign: "Aquarius",
+        title: "Pluto in Aquarius — Transformation of the Collective",
+        feltSense: "This feels like the entire operating system of civilization getting a forced update. AI, digital identity, collective power structures, democracy itself — everything is being reformatted. The individual's relationship to the group is being completely redefined. It's simultaneously thrilling and destabilizing.",
+        psychology: "Pluto in Aquarius (2023–2044) transforms collective structures, technology, and the very concept of humanity. AI revolution, power restructuring, and the tension between individual freedom and collective control define this era. When retrograde: 'Is technology liberating us or controlling us? Are we transforming society or being transformed by it?'",
+        gifts: ["Revolutionary collective transformation", "Technology as tool for power redistribution", "Reimagining democracy and governance", "Breaking down class and power hierarchies", "Networked power replacing centralized authority"],
+        challenges: ["Dehumanization through technology", "Mob mentality replacing individual thought", "Surveillance as control", "Cold intellectual transformation lacking emotional depth", "Tyranny of the collective over the individual"],
+        bodyFeeling: "Nervous system activation (Aquarius body part — circulation and electricity). A buzzing, wired quality. The body processes collective anxiety that doesn't feel personal but IS felt physically."
+      }],
+    },
     dontList: ["Force transformation on others", "Manipulate or use power plays", "Ignore psychological material surfacing", "Resist necessary endings", "Suppress intense emotions — they'll erupt"],
     signMeanings: {
       Aries: "Pluto retrograde in Aries: Identity transformation deepens. Who you're becoming goes through internal purification.",
