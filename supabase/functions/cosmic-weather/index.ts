@@ -926,7 +926,39 @@ CRITICAL INSTRUCTIONS:
     };
 
     const insightVerified = enforceMercuryTiming(insightRaw);
-    const insight = insightVerified;
+
+    // Deterministic post-check: enforce correct planet-sign assignments.
+    // If the AI says "Jupiter in Pisces" but ephemeris says Jupiter is in Cancer, fix it.
+    const enforcePlanetSigns = (text: string): string => {
+      if (!planetPositions?.length) return text;
+      let output = text;
+      const planetSignMap: Record<string, string> = {};
+      for (const p of planetPositions) {
+        planetSignMap[p.name] = p.sign;
+      }
+      // All zodiac signs for regex matching
+      const allSigns = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+      const signPattern = allSigns.join('|');
+
+      for (const [planet, correctSign] of Object.entries(planetSignMap)) {
+        if (!planet || !correctSign) continue;
+        // Skip Moon (changes signs mid-day) and nodes (less critical)
+        if (planet === 'Moon' || planet === 'NorthNode' || planet === 'SouthNode' || planet === 'Lilith') continue;
+        // Match patterns like "Jupiter in Pisces", "Jupiter is in Pisces", "Jupiter (15.2°) in Pisces"
+        const wrongSignRegex = new RegExp(
+          `(${planet})\\s*(\\([^)]*\\))?\\s*(is\\s+)?in\\s+(${signPattern})`,
+          'gi'
+        );
+        output = output.replace(wrongSignRegex, (match, pName, paren, is, foundSign) => {
+          if (foundSign === correctSign) return match; // already correct
+          console.warn(`Planet-sign correction: "${match}" → ${planet} in ${correctSign}`);
+          return `${pName}${paren ? ' ' + paren : ''}${is || ''}in ${correctSign}`;
+        });
+      }
+      return output;
+    };
+
+    const insight = enforcePlanetSigns(insightVerified);
 
     // Save to DB cache (expires at end of day in user's timezone, approximated as 24h)
     if (dateKey && !customPrompt) {
