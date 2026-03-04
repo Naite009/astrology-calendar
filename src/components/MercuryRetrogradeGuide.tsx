@@ -886,30 +886,50 @@ export function MercuryRetrogradeGuide({ allCharts, primaryUserName }: MercuryRe
               </div>
             </div>
 
-            {/* Water Sign Retrograde Specific */}
-            <div className="rounded-2xl border border-sky-500/40 bg-sky-900/20 p-5">
-              <p className="text-xs text-sky-300 font-semibold uppercase tracking-wider mb-3">🌊 For Water Sign Retrogrades Specifically</p>
-              <div className="space-y-2 text-sm text-sky-50">
-                {["Journal your dreams — they carry messages during water retrogrades", "Spend time near water: baths, ocean, rivers, rain", "Allow feelings to arrive without immediately analyzing them", "Practice emotional check-ins instead of intellectual processing", "Trust your intuition over logic when the two disagree", "Use this time to tend emotional relationships with care", "Create: paint, write poetry, sing — right-brain expression is favored"].map((item) => (
-                  <div key={item} className="flex items-start gap-3">
-                    <span className="text-sky-400 mt-0.5 flex-shrink-0">✦</span>
-                    {item}
+            {/* Element-Specific Guidance — dynamic based on selected year */}
+            {(() => {
+              const elGuidance = ELEMENT_GUIDANCE[yearData?.element ?? "Water"];
+              if (!elGuidance) return null;
+              return (
+                <div className={`rounded-2xl border ${elGuidance.borderColor} ${elGuidance.bgColor} p-5`}>
+                  <p className={`text-xs ${elGuidance.textColor} font-semibold uppercase tracking-wider mb-3`}>{elGuidance.icon} {elGuidance.label}</p>
+                  <div className="space-y-2 text-sm text-white/80">
+                    {elGuidance.tips.map((item) => (
+                      <div key={item} className="flex items-start gap-3">
+                        <span className={`${elGuidance.textColor} mt-0.5 flex-shrink-0`}>✦</span>
+                        {item}
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
+              );
+            })()}
 
             {/* Personalized section */}
-            <div className="rounded-2xl border border-fuchsia-500/40 bg-gradient-to-br from-fuchsia-900/30 to-violet-900/30 p-5">
-              <p className="text-xs text-fuchsia-200 font-semibold uppercase tracking-wider mb-3">
-                {risingSign === "none" ? "🔮 Select a Chart for Personalized Guidance" : `✨ Your 2026 Water Retrograde Year — ${chartName}`}
-              </p>
-              {risingSign === "none" ? (
+            {risingSign !== "none" && selectedChart && (
+              <div className="rounded-2xl border border-fuchsia-500/40 bg-gradient-to-br from-fuchsia-900/30 to-violet-900/30 p-5">
+                <p className="text-xs text-fuchsia-200 font-semibold uppercase tracking-wider mb-3">
+                  ✨ {selectedYear} Mercury Retrograde Year — {chartName}
+                </p>
+                <p className="text-fuchsia-50 text-sm leading-relaxed">
+                  {(() => {
+                    // Dynamically compute which houses the year's retrogrades hit
+                    const houses = yearRetrogrades.map(rx => {
+                      const retroSign = rx.sign.toLowerCase();
+                      const house = getHouseOfSign(risingSign, retroSign);
+                      return house ? `${house}${house === 1 ? 'st' : house === 2 ? 'nd' : house === 3 ? 'rd' : 'th'} (${rx.sign})` : null;
+                    }).filter(Boolean);
+                    return `As ${chartName}, the ${selectedYear} Mercury retrogrades activate your ${houses.join(', ')} houses. These are the areas of life where Mercury's review process will be most personally felt throughout the year.`;
+                  })()}
+                </p>
+              </div>
+            )}
+            {risingSign === "none" && (
+              <div className="rounded-2xl border border-fuchsia-500/40 bg-gradient-to-br from-fuchsia-900/30 to-violet-900/30 p-5">
+                <p className="text-xs text-fuchsia-200 font-semibold uppercase tracking-wider mb-3">🔮 Select a Chart for Personalized Guidance</p>
                 <p className="text-violet-200 text-sm">Select a chart using the dropdown at the top of this page to receive guidance personalized to your rising sign.</p>
-              ) : (
-                <p className="text-fuchsia-50 text-sm leading-relaxed">{WATER_PERSONALIZED[risingSign as keyof typeof WATER_PERSONALIZED]}</p>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Closing affirmation */}
             <div className="rounded-2xl border border-violet-500/40 bg-gradient-to-br from-violet-900/40 to-indigo-900/40 p-6 text-center">
