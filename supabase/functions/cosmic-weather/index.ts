@@ -865,25 +865,11 @@ CRITICAL INSTRUCTIONS:
 
     const insightVerified = enforceMercuryTiming(insightRaw);
 
-    // Phase-aware Mercury Timing block
-    const mercuryPhaseLabel = (() => {
-      if (!mercuryRetrogradeInfo) return '';
-      const phase = (mercuryRetrogradeInfo.phase || '').toLowerCase();
-      if (phase.includes('retrograde')) return 'Mercury is RETROGRADE. This is a time for review, revision, and reassessment — not new launches.';
-      if (phase === 'post-shadow') return 'Mercury is direct; post-shadow is for forward movement and integration, not retrograde-style review.';
-      if (phase === 'pre-shadow') return 'Mercury is in pre-shadow. Pay attention to themes surfacing — they will be revisited during retrograde.';
-      return '';
-    })();
-
-    const mercuryTimingBlock = mercuryRetrogradeInfo
-      ? `## Mercury Timing (Verified)\n- Phase: ${mercuryRetrogradeInfo.phase}\n- Station retrograde: ${mercuryRetrogradeInfo.stationRetrograde || 'not provided'}\n- Station direct: ${mercuryRetrogradeInfo.stationDirect || 'not provided'}\n- Post-shadow clear: ${mercuryRetrogradeInfo.postShadowClear || 'not provided'}\n- ${mercuryPhaseLabel}`
-      : '';
-
     const mercuryFactAppendix = mercuryRetrogradeInfo
       ? `\n\n## Ephemeris Fact Check\n- Mercury station retrograde: ${mercuryRetrogradeInfo.stationRetrograde || 'not provided'}\n- Mercury station direct: ${mercuryRetrogradeInfo.stationDirect || 'not provided'}\n- Mercury cazimi: ${mercuryRetrogradeInfo.cazimi || 'not provided'}\n- Mercury post-shadow clears: ${mercuryRetrogradeInfo.postShadowClear || 'not provided'}\n(All times and dates above are computed from ephemeris in the user's local timezone.)`
       : '';
 
-    const insight = `${mercuryTimingBlock ? `${mercuryTimingBlock}\n\n` : ''}${insightVerified}${mercuryFactAppendix}`;
+    const insight = `${insightVerified}${mercuryFactAppendix}`;
 
     // Save to DB cache (expires at end of day in user's timezone, approximated as 24h)
     if (dateKey && !customPrompt) {
