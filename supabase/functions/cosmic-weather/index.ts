@@ -834,6 +834,16 @@ CRITICAL INSTRUCTIONS:
         `phase for forward movement and integration`
       );
 
+      if (stationDirect) {
+        output = output
+          .replace(/review\s+and\s+reconsider/gi, 'integrate and implement')
+          .replace(/period\s+of\s+review/gi, 'period of integration')
+          .replace(/review-oriented/gi, 'implementation-oriented')
+          .replace(/review,\s*when/gi, 'integration, when')
+          .replace(/rather than pushing forward with brand new ventures/gi, 'while moving forward thoughtfully')
+          .replace(/still in the post-shadow phase of Mercury retrograde/gi, "in Mercury's post-shadow integration phase");
+      }
+
       if (postShadowClear && !new RegExp(`post-shadow\\s+clear[s]?\\s+(on\\s+)?${escapeRegex(postShadowClear)}`, "i").test(output)) {
         output = `${output}\n\nMercury post-shadow clears on ${postShadowClear}.`;
       }
