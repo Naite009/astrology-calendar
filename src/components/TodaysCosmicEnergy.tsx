@@ -816,6 +816,24 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
           personalizedRetrograde: personalizedRetroInfo,
           voiceStyle: effectiveVoiceStyle,
           referenceExcerpts: buildRefBlock(),
+          // ── NEW: Deterministic pre-computed narrative blocks ──
+          vocMoonData: voc.isVOC ? {
+            start: voc.start?.toLocaleTimeString('en-US', { timeZone: userTimezone, hour: 'numeric', minute: '2-digit' }) + ' ' + userTzAbbr,
+            end: voc.end?.toLocaleTimeString('en-US', { timeZone: userTimezone, hour: 'numeric', minute: '2-digit' }) + ' ' + userTzAbbr,
+            durationMinutes: voc.durationMinutes,
+            lastAspectPlanet: voc.lastAspect?.planet,
+            lastAspectType: voc.lastAspect?.aspectName,
+            lastAspectSymbol: voc.lastAspect?.symbol,
+            lastAspectTime: voc.lastAspect?.time?.toLocaleTimeString('en-US', { timeZone: userTimezone, hour: 'numeric', minute: '2-digit' }) + ' ' + userTzAbbr,
+            currentMoonSign: voc.currentMoonSign,
+            moonEntersSign: voc.moonEntersSign,
+            lastAspectMeaning: voc.lastAspect ? getLastAspectMeaning(voc.lastAspect.planet, voc.lastAspect.aspectName) : undefined,
+          } : null,
+          aspectMeaningsText: buildAspectNarrative(aspectsWithDetails),
+          moonDispositorChain: getMoonDispositorChain(
+            moonSignChangeToday?.toSign || planets.moon?.signName || signGlyphToName[planets.moon?.sign] || 'Unknown',
+            planetPositions
+          ),
         }
       });
 
