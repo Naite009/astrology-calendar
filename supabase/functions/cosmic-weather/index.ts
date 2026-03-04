@@ -133,37 +133,37 @@ ${aspects.slice(0, 10).map((a: any) => `- ${a.planet1} ${a.symbol} ${a.planet2} 
 ${imminentSignChanges.map((c: any) => `- ${c.planet} is at ${c.degree.toFixed(1)}° ${c.currentSign} - about to enter ${c.nextSign}!${c.ingressTime ? ` EXACT INGRESS TIME: ${c.ingressTime}.` : ''} This is a BIG DEAL. ${c.planet} energy is extremely concentrated right now at the end of ${c.currentSign}. Discuss what it means for ${c.planet} to leave ${c.currentSign} and enter ${c.nextSign}.${c.ingressTime ? ` Use the exact time provided: ${c.ingressTime}.` : ' Do NOT mention a specific time since none was calculated.'}`).join('\n')}`
       : '';
 
-    // Mercury retrograde / shadow info (phase-aware)
-    const mercuryRxText = mercuryRetrogradeInfo
+    // Mercury retrograde / shadow info (phase-aware, preflight-verified)
+    const mercuryRxText = mercuryInfo
       ? (() => {
-          const phase = (mercuryRetrogradeInfo.phase || '').toLowerCase();
+          const phase = (mercuryInfo.phase || '').toLowerCase();
           const isRetrograde = phase.includes('retrograde');
           const isPostShadow = phase === 'post-shadow';
           const isPreShadow = phase === 'pre-shadow';
 
-          const dignityText = mercuryRetrogradeInfo.description?.includes('Pisces')
+          const dignityText = mercuryInfo.description?.includes('Pisces')
             ? `⚠️ MERCURY IN PISCES: Mercury is in detriment + fall (double difficulty), so clarity can still lag and symbolic/intuitive processing is louder than linear logic.`
             : `Mercury has no special dignity challenge in this sign.`;
 
           const phaseGuidance = isRetrograde
             ? `RETROGRADE GUIDANCE:\n- Prioritize review, revisions, and renegotiation over hard launches.\n- Double-check contracts, travel, and critical communication.`
             : isPostShadow
-              ? `POST-SHADOW GUIDANCE (MERCURY IS DIRECT):\n- Retrograde is over. Focus on forward movement, implementation, and execution.\n- Post-shadow (until ${mercuryRetrogradeInfo.postShadowClear || 'the clear date'}) is for integrating lessons and final cleanup, not retrograde-style second-guessing.`
+              ? `POST-SHADOW GUIDANCE (MERCURY IS DIRECT):\n- Retrograde is over. Focus on forward movement, implementation, and execution.\n- Post-shadow (until ${mercuryInfo.postShadowClear || 'the clear date'}) is for integrating lessons and final cleanup, not retrograde-style second-guessing.`
               : isPreShadow
                 ? `PRE-SHADOW GUIDANCE:\n- Early signals are surfacing. Plan carefully and track themes before the station.`
                 : `GUIDANCE:\n- Use the provided station dates exactly as written.`;
 
-          return `MERCURY TIMING STATUS - MUST MENTION: Phase: ${mercuryRetrogradeInfo.phase}. ${mercuryRetrogradeInfo.description}\n${dignityText}\n\n${phaseGuidance}`;
+          return `MERCURY TIMING STATUS (VERIFIED FROM EPHEMERIS): Phase: ${mercuryInfo.phase}. ${mercuryInfo.description || ''}\n${dignityText}\n\n${phaseGuidance}`;
         })()
       : '';
 
-    const mercuryFactCheckText = mercuryRetrogradeInfo
+    const mercuryFactCheckText = mercuryInfo
       ? `MERCURY EPHEMERIS FACT CHECK (NON-NEGOTIABLE):
-- Station retrograde: ${mercuryRetrogradeInfo.stationRetrograde || 'not provided'}
-- Station direct: ${mercuryRetrogradeInfo.stationDirect || 'not provided'}
-- Cazimi (Mercury-Sun conjunction): ${mercuryRetrogradeInfo.cazimi || 'not provided'}
-- Post-shadow clear: ${mercuryRetrogradeInfo.postShadowClear || 'not provided'}
-These are computed from high-precision ephemeris in the user's local timezone. You MUST quote these exact values verbatim. NEVER substitute dates from your training data.`
+- Station retrograde: ${mercuryInfo.stationRetrograde || 'not provided'}
+- Station direct: ${mercuryInfo.stationDirect || 'not provided'}
+- Cazimi (Mercury-Sun conjunction): ${mercuryInfo.cazimi || 'not provided'}
+- Post-shadow clear: ${mercuryInfo.postShadowClear || 'not provided'}
+These are computed from high-precision ephemeris in the user's local timezone and verified before generation. You MUST quote these exact values verbatim. NEVER substitute dates from your training data.`
       : '';
 
     // Personalized retrograde guidance
