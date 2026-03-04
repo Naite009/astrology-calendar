@@ -979,8 +979,8 @@ export const AstroCalendar = () => {
           </Suspense>
         )}
 
-        {viewMode === "mercury-rx" && (
-          <MercuryRetrogradeGuide
+        {viewMode === "retrogrades" && (
+          <RetroGradesHub
             allCharts={[
               ...(userNatalChart ? [userNatalChart] : []),
               ...savedCharts
