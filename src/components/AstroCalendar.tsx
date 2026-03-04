@@ -662,9 +662,9 @@ export const AstroCalendar = () => {
                 Moon
               </button>
               <button
-                onClick={() => setViewMode("mercury-rx")}
+                onClick={() => setViewMode("retrogrades")}
                 className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
-                  viewMode === "mercury-rx"
+                  viewMode === "retrogrades"
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
