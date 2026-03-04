@@ -105,7 +105,15 @@ CRITICAL: If Venus is listed as DIRECT above, do NOT mention "Venus retrograde" 
 
     // Build the astrological context for the prompt
     const stelliumText = stelliums?.length > 0 
-      ? `Stelliums: ${stelliums.map((s: any) => `${s.count} planets in ${s.sign} (${s.planets.map((p: any) => p.name).join(', ')})`).join('; ')}`
+      ? `Stelliums (MAJOR — emphasize these!): ${stelliums.map((s: any) => {
+          const planetNames = s.planets.map((p: any) => p.name).join(', ');
+          const hasNode = s.hasNorthNode;
+          let base = `${s.count} planets in ${s.sign} (${planetNames})`;
+          if (hasNode) {
+            base += ` — ⚠️ THE NORTH NODE IS PART OF THIS STELLIUM. This is HUGE, especially during eclipse season. The North Node represents what we are collectively being called to DEVELOP. A stellium containing the North Node means ALL these planets are fueling the evolutionary direction. In ${s.sign}: emphasize spiritual connection, compassion, intuition, working with guides/angels/unseen support. If a natal chart is selected, connect this to the user's own North Node promise. Encourage them to reflect: "Where is your North Node? What is YOUR nodal promise?" The nodes are extra significant right now because we are in eclipse season.`;
+          }
+          return base;
+        }).join('; ')}`
       : '';
     
     const rareAspectText = rareAspects?.length > 0
