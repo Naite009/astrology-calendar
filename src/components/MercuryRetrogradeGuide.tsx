@@ -837,7 +837,7 @@ export function MercuryRetrogradeGuide({ allCharts, primaryUserName }: MercuryRe
             <SectionHeader icon="🔄" title={`${selectedYear} Mercury Retrogrades`} subtitle="Tap a card to explore details" />
 
             {/* Year Navigator */}
-            <YearNavigator year={selectedYear} onChange={handleYearChange} />
+            <YearJumper year={selectedYear} onChange={handleYearChange} />
 
             {/* Element + Year summary banner */}
             <div className={`rounded-2xl ${elStyle.bg} ${elStyle.border} border p-4`}>
