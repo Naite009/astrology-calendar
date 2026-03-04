@@ -1071,63 +1071,7 @@ export function PlanetRetrogradeGuide({ planet, allCharts, primaryUserName }: Pl
               <p className={`text-sm ${colors.accent} ml-11`}>Computed from high-precision ephemeris</p>
             </div>
 
-            {/* Year Navigator with dropdown */}
-            {(() => {
-              const [yearOpen, setYearOpen] = useState(false);
-              const yearRef = useRef<HTMLDivElement>(null);
-              useEffect(() => {
-                const handler = (e: MouseEvent) => {
-                  if (yearRef.current && !yearRef.current.contains(e.target as Node)) setYearOpen(false);
-                };
-                document.addEventListener('mousedown', handler);
-                return () => document.removeEventListener('mousedown', handler);
-              }, []);
-              const years = Array.from({ length: MAX_YEAR - MIN_YEAR + 1 }, (_, i) => MIN_YEAR + i);
-              return (
-                <div className="flex items-center justify-center gap-3 mb-4">
-                  <button
-                    onClick={() => handleYearChange(selectedYear - 1)}
-                    disabled={selectedYear <= MIN_YEAR}
-                    className={`p-2 rounded-full border ${colors.border} bg-white/5 text-white/70 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all`}
-                    aria-label="Previous year"
-                  >
-                    <ChevronLeftIcon className="w-5 h-5" />
-                  </button>
-                  <div className="relative" ref={yearRef}>
-                    <button
-                      onClick={() => setYearOpen(!yearOpen)}
-                      className="text-2xl font-bold text-white tracking-wider min-w-[80px] text-center px-3 py-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer flex items-center gap-1.5"
-                    >
-                      {selectedYear}
-                      <ChevronDown size={16} className={`text-white/50 transition-transform ${yearOpen ? 'rotate-180' : ''}`} />
-                    </button>
-                    {yearOpen && (
-                      <div className="absolute z-50 mt-1 left-1/2 -translate-x-1/2 bg-slate-900 border border-white/20 rounded-xl shadow-xl overflow-hidden w-28">
-                        <div className="max-h-[250px] overflow-y-auto py-1">
-                          {years.map(y => (
-                            <button
-                              key={y}
-                              onClick={() => { handleYearChange(y); setYearOpen(false); }}
-                              className={`w-full px-4 py-1.5 text-sm text-center transition-colors ${y === selectedYear ? 'bg-white/15 text-white font-bold' : 'text-white/60 hover:bg-white/5'}`}
-                            >
-                              {y}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => handleYearChange(selectedYear + 1)}
-                    disabled={selectedYear >= MAX_YEAR}
-                    className={`p-2 rounded-full border ${colors.border} bg-white/5 text-white/70 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all`}
-                    aria-label="Next year"
-                  >
-                    <ChevronRightIcon className="w-5 h-5" />
-                  </button>
-                </div>
-              );
-            })()}
+            <PlanetYearJumper year={selectedYear} onChange={handleYearChange} borderClass={colors.border} />
 
             {periods.length === 0 ? (
               <div className={`rounded-2xl border ${colors.border} bg-white/[0.03] p-8 text-center`}>
