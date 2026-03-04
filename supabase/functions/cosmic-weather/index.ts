@@ -86,7 +86,12 @@ serve(async (req) => {
     // Build planetary positions text - this is the ground truth
     const planetText = planetPositions?.length > 0
       ? `Current Planetary Positions (VERIFIED ASTRONOMICAL DATA — computed from astronomy-engine ephemeris, NOT from AI training data):
-${planetPositions.map((p: any) => `- ${p.name}: ${p.degree}° ${p.sign}`).join('\n')}`
+${planetPositions.map((p: any) => `- ${p.name}: ${p.degree}° ${p.sign}`).join('\n')}
+
+⚠️ PLANET-SIGN ACCURACY RULE (NON-NEGOTIABLE):
+The positions above are computed from a high-precision astronomical ephemeris. You MUST use ONLY these sign placements.
+${planetPositions.map((p: any) => `- ${p.name} is in ${p.sign}. Do NOT say ${p.name} is in any other sign.`).join('\n')}
+If you mention a stellium, list ONLY the planets whose sign matches above. Do NOT add planets to a stellium that are in a DIFFERENT sign.`
       : '';
 
     // Build all-planet retrograde status text
