@@ -41,7 +41,7 @@ const TransitCalendarView = lazy(() => import("./TransitCalendarView").then(m =>
 import { WeeklyMealPlanCard } from "./WeeklyMealPlanCard";
 const HexagramView = lazy(() => import("./HexagramView").then(m => ({ default: m.HexagramView })));
 const SolarReturnView = lazy(() => import("./SolarReturnView").then(m => ({ default: m.SolarReturnView })));
-import { MercuryRetrogradeGuide } from "./MercuryRetrogradeGuide";
+import { RetroGradesHub } from "./RetroGradesHub";
 import { MoonPhaseEncyclopedia } from "./MoonPhaseEncyclopedia";
 const FoundationsView = lazy(() => import("./FoundationsView").then(m => ({ default: m.FoundationsView })));
 const TarotFunctionsView = lazy(() => import("./TarotFunctionsView").then(m => ({ default: m.TarotFunctionsView })));
