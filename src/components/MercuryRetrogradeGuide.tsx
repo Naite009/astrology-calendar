@@ -2,6 +2,8 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Search, ChevronDown, Check } from "lucide-react";
 import type { NatalChart } from "@/hooks/useNatalChart";
 import { normalizeName } from "@/lib/nameMatching";
+import { getRetrogradePeriodsForYear } from "@/lib/retrogradePatterns";
+import * as Astronomy from "astronomy-engine";
 
 // ─── PROPS ───────────────────────────────────────────────────────────────────
 
