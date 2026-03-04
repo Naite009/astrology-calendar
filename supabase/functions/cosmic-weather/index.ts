@@ -16,6 +16,28 @@ serve(async (req) => {
     
     console.log("Received cosmic weather request:", { date, moonPhase, moonSign, exactLunarPhase, voiceStyle, forceRegenerate, userTimezone, userTzAbbr, mercuryRetrogradeInfo, planetPositions });
     console.log("Aspects received:", aspects?.slice(0, 15));
+
+    // Preflight verification: canonicalize Mercury timing from ephemeris block before AI generation
+    const mercuryInfo = (() => {
+      if (!mercuryRetrogradeInfo && !mercuryEphemerisVerification) return null;
+      const merged = {
+        ...(mercuryRetrogradeInfo || {}),
+        ...(mercuryEphemerisVerification || {}),
+      } as Record<string, any>;
+
+      if (mercuryRetrogradeInfo && mercuryEphemerisVerification) {
+        const keysToCheck = ['phase', 'stationRetrograde', 'stationDirect', 'postShadowClear'];
+        const mismatches = keysToCheck
+          .filter((k) => mercuryRetrogradeInfo?.[k] && mercuryEphemerisVerification?.[k] && mercuryRetrogradeInfo[k] !== mercuryEphemerisVerification[k])
+          .map((k) => ({ field: k, incoming: mercuryRetrogradeInfo[k], canonical: mercuryEphemerisVerification[k] }));
+
+        if (mismatches.length > 0) {
+          console.warn('Mercury preflight mismatch detected. Using canonical ephemeris values:', mismatches);
+        }
+      }
+
+      return merged;
+    })();
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
