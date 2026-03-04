@@ -395,6 +395,13 @@ export const getRetrogradePeriods = (body: Astronomy.Body, forDate: Date): Retro
   return periods;
 };
 
+// Get retrograde periods for a specific year (computes year-1 to year+1, filters to target year)
+export const getRetrogradePeriodsForYear = (body: Astronomy.Body, year: number): RetrogradeInfo[] => {
+  const forDate = new Date(year, 6, 1); // mid-year
+  const allPeriods = getRetrogradePeriods(body, forDate);
+  return allPeriods.filter(p => p.start.getFullYear() === year);
+};
+
 // Get Mercury retrograde periods (dynamically computed)
 export const getMercuryRetrogrades = (forDate: Date): RetrogradeInfo[] => {
   return getRetrogradePeriods(Astronomy.Body.Mercury, forDate);

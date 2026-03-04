@@ -2,8 +2,9 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Search, ChevronDown, Check } from "lucide-react";
 import type { NatalChart } from "@/hooks/useNatalChart";
 import { normalizeName } from "@/lib/nameMatching";
-import { getRetrogradePeriods, getRetrogradeStatus, type RetrogradeInfo } from "@/lib/retrogradePatterns";
+import { getRetrogradePeriodsForYear, getRetrogradeStatus, type RetrogradeInfo } from "@/lib/retrogradePatterns";
 import * as Astronomy from "astronomy-engine";
+import { ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon } from "lucide-react";
 
 // ─── TYPES ──────────────────────────────────────────────────────────────────
 
@@ -295,6 +296,8 @@ function AccordionCard({ icon, title, content, accentClass }: { icon: string; ti
 // ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
 
 export function PlanetRetrogradeGuide({ planet, allCharts, primaryUserName }: PlanetRetrogradeGuideProps) {
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedChartId, setSelectedChartId] = useState("none");
   const [activeSection, setActiveSection] = useState("learn");
   const [selectedPeriodIdx, setSelectedPeriodIdx] = useState(0);
@@ -307,11 +310,14 @@ export function PlanetRetrogradeGuide({ planet, allCharts, primaryUserName }: Pl
   const glyph = PLANET_GLYPHS[planet] || "⊕";
   const body = PLANET_BODIES[planet];
 
-  // Compute retrograde periods from ephemeris
+  const MIN_YEAR = 2020;
+  const MAX_YEAR = 2035;
+
+  // Compute retrograde periods for the selected year
   const periods = useMemo(() => {
     if (!body) return [];
-    return getRetrogradePeriods(body, new Date());
-  }, [body]);
+    return getRetrogradePeriodsForYear(body, selectedYear);
+  }, [body, selectedYear]);
 
   // Current status
   const currentStatus = useMemo(() => {
@@ -372,9 +378,14 @@ export function PlanetRetrogradeGuide({ planet, allCharts, primaryUserName }: Pl
 
   const selectedPeriod = periods[selectedPeriodIdx];
 
+  const handleYearChange = (newYear: number) => {
+    setSelectedYear(newYear);
+    setSelectedPeriodIdx(0);
+  };
+
   const sections = [
     { id: "learn", label: `Learn ${planet}`, icon: glyph },
-    { id: "retrogrades", label: "Retrograde Periods", icon: "🔄" },
+    { id: "retrogrades", label: `${selectedYear} Retrogrades`, icon: "🔄" },
     { id: "current", label: "Current Status", icon: currentStatus?.isRetrograde ? "↩️" : "➡️" },
     { id: "guidance", label: "Your Guidance", icon: "✨" },
   ];
@@ -512,9 +523,30 @@ export function PlanetRetrogradeGuide({ planet, allCharts, primaryUserName }: Pl
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-1">
                 <span className="text-2xl">🔄</span>
-                <h2 className="text-xl font-semibold text-white">{planet} Retrograde Periods</h2>
+                <h2 className="text-xl font-semibold text-white">{selectedYear} {planet} Retrogrades</h2>
               </div>
               <p className={`text-sm ${colors.accent} ml-11`}>Computed from high-precision ephemeris</p>
+            </div>
+
+            {/* Year Navigator */}
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <button
+                onClick={() => handleYearChange(selectedYear - 1)}
+                disabled={selectedYear <= MIN_YEAR}
+                className={`p-2 rounded-full border ${colors.border} bg-white/5 text-white/70 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all`}
+                aria-label="Previous year"
+              >
+                <ChevronLeftIcon className="w-5 h-5" />
+              </button>
+              <span className="text-2xl font-bold text-white tracking-wider min-w-[80px] text-center">{selectedYear}</span>
+              <button
+                onClick={() => handleYearChange(selectedYear + 1)}
+                disabled={selectedYear >= MAX_YEAR}
+                className={`p-2 rounded-full border ${colors.border} bg-white/5 text-white/70 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all`}
+                aria-label="Next year"
+              >
+                <ChevronRightIcon className="w-5 h-5" />
+              </button>
             </div>
 
             {periods.length === 0 ? (

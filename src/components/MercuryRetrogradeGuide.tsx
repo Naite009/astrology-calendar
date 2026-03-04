@@ -2,6 +2,8 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Search, ChevronDown, Check } from "lucide-react";
 import type { NatalChart } from "@/hooks/useNatalChart";
 import { normalizeName } from "@/lib/nameMatching";
+import { getRetrogradePeriodsForYear } from "@/lib/retrogradePatterns";
+import * as Astronomy from "astronomy-engine";
 
 // ─── PROPS ───────────────────────────────────────────────────────────────────
 
@@ -136,7 +138,72 @@ const RETROGRADES_BY_YEAR: Record<number, { element: string; summary: string; re
   },
 };
 
-const AVAILABLE_YEARS = Object.keys(RETROGRADES_BY_YEAR).map(Number).sort();
+const AVAILABLE_CURATED_YEARS = Object.keys(RETROGRADES_BY_YEAR).map(Number).sort();
+const MIN_YEAR = 2020;
+const MAX_YEAR = 2035;
+
+// Build dynamic RxData from ephemeris for years without curated data
+function buildDynamicMercuryYear(year: number): { element: string; summary: string; retrogrades: RxData[] } {
+  const periods = getRetrogradePeriodsForYear(Astronomy.Body.Mercury, year);
+  const SIGN_ELEMENTS: Record<string, string> = {
+    Aries: "Fire", Taurus: "Earth", Gemini: "Air", Cancer: "Water",
+    Leo: "Fire", Virgo: "Earth", Libra: "Air", Scorpio: "Water",
+    Sagittarius: "Fire", Capricorn: "Earth", Aquarius: "Air", Pisces: "Water",
+  };
+  const SIGN_QUALITIES: Record<string, string> = {
+    Aries: "Cardinal Fire — Mars-ruled", Taurus: "Fixed Earth — Venus-ruled", Gemini: "Mutable Air — Mercury-ruled",
+    Cancer: "Cardinal Water — Moon-ruled", Leo: "Fixed Fire — Sun-ruled", Virgo: "Mutable Earth — Mercury-ruled",
+    Libra: "Cardinal Air — Venus-ruled", Scorpio: "Fixed Water — Mars/Pluto-ruled", Sagittarius: "Mutable Fire — Jupiter-ruled",
+    Capricorn: "Cardinal Earth — Saturn-ruled", Aquarius: "Fixed Air — Saturn/Uranus-ruled", Pisces: "Mutable Water — Jupiter/Neptune-ruled",
+  };
+  const DETRIMENT_FALL_SIGNS = new Set(["Sagittarius", "Pisces"]);
+
+  const elements = periods.map(p => SIGN_ELEMENTS[p.sign.split('/')[0]] || "Unknown");
+  const primaryElement = elements.length > 0 ? (elements.filter((e, _, a) => a.filter(x => x === e).length > 1)[0] || elements[0]) : "Mixed";
+
+  const retrogrades: RxData[] = periods.map((p, i) => {
+    const sign = p.sign.split('/')[0];
+    const element = SIGN_ELEMENTS[sign] || "Unknown";
+    const fmtDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    const fmtDeg = (lon: number) => {
+      const signIdx = Math.floor(lon / 30) % 12;
+      const deg = lon % 30;
+      const d = Math.floor(deg);
+      const m = Math.floor((deg - d) * 60);
+      const signs = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+      return `${d}°${String(m).padStart(2,'0')}' ${signs[signIdx]}`;
+    };
+    const isDetriment = DETRIMENT_FALL_SIGNS.has(sign);
+    const now = new Date();
+    return {
+      id: `rx${i + 1}`,
+      name: `Mercury Retrograde #${i + 1}`,
+      sign,
+      element,
+      dates: `${fmtDate(p.start)} – ${fmtDate(p.end)}`,
+      degrees: `${p.rxDegree !== undefined ? fmtDeg(p.rxDegree) : '?'} → ${p.dDegree !== undefined ? fmtDeg(p.dDegree) : '?'}`,
+      preshadow: fmtDate(p.preStart),
+      shadow: fmtDate(p.postEnd),
+      station_rx: `${fmtDate(p.start)}${p.rxDegree !== undefined ? ` at ${fmtDeg(p.rxDegree)}` : ''}`,
+      station_direct: `${fmtDate(p.end)}${p.dDegree !== undefined ? ` at ${fmtDeg(p.dDegree)}` : ''}`,
+      cazimi: p.cazimi ? fmtDate(p.cazimi) : null,
+      current: now >= p.start && now <= p.end,
+      sign_quality: SIGN_QUALITIES[sign] || sign,
+      detriment_fall: isDetriment,
+      detriment_fall_note: isDetriment ? `Mercury is in detriment in ${sign} — opposite its home sign. The analytical mind must work through ${sign}'s lens.` : undefined,
+      jupiter_aspect: "",
+      saturn_note: null,
+      color: "#7c6fa0",
+      gradient: "from-violet-900/40 to-indigo-900/40",
+    };
+  });
+
+  return {
+    element: primaryElement,
+    summary: `${year} Mercury retrogrades computed from high-precision ephemeris data.`,
+    retrogrades,
+  };
+}
 
 const MERCURY_BASICS = [
   { icon: "☿", title: "Who Is Mercury?", content: "Mercury is the winged messenger god — the divine communicator who travels between worlds, carrying messages from the gods to mortals and back again. In astrology, Mercury governs the mind: how we think, speak, learn, and process information. He rules perception, logic, language, short-distance travel, contracts, technology, commerce, and the nervous system. Mercury is quick, curious, clever, and endlessly adaptable — the trickster who loves a puzzle. In your chart, Mercury shows HOW you think, not just what you think about." },
@@ -237,13 +304,11 @@ function AccordionCard({ icon, title, content, defaultOpen = false }: { icon: st
 }
 
 function YearNavigator({ year, onChange }: { year: number; onChange: (y: number) => void }) {
-  const minYear = AVAILABLE_YEARS[0];
-  const maxYear = AVAILABLE_YEARS[AVAILABLE_YEARS.length - 1];
   return (
     <div className="flex items-center justify-center gap-4 mb-4">
       <button
         onClick={() => onChange(year - 1)}
-        disabled={year <= minYear}
+        disabled={year <= MIN_YEAR}
         className="p-2 rounded-full border border-violet-500/40 bg-violet-900/40 text-violet-200 hover:bg-violet-800/60 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
         aria-label="Previous year"
       >
@@ -252,7 +317,7 @@ function YearNavigator({ year, onChange }: { year: number; onChange: (y: number)
       <span className="text-2xl font-bold text-white tracking-wider min-w-[80px] text-center">{year}</span>
       <button
         onClick={() => onChange(year + 1)}
-        disabled={year >= maxYear}
+        disabled={year >= MAX_YEAR}
         className="p-2 rounded-full border border-violet-500/40 bg-violet-900/40 text-violet-200 hover:bg-violet-800/60 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
         aria-label="Next year"
       >
@@ -564,10 +629,12 @@ export function MercuryRetrogradeGuide({ allCharts, primaryUserName }: MercuryRe
   const risingSign = selectedChart ? getAscendantSign(selectedChart) : "none";
   const chartName = selectedChart?.name || "";
 
-  const yearData = RETROGRADES_BY_YEAR[selectedYear];
+  // Use curated data if available, otherwise compute from ephemeris
+  const yearData = RETROGRADES_BY_YEAR[selectedYear] || buildDynamicMercuryYear(selectedYear);
   const yearRetrogrades = yearData?.retrogrades ?? [];
   const selectedRx = yearRetrogrades.find((r) => r.id === selectedRxId) || yearRetrogrades[0];
   const elStyle = ELEMENT_STYLES[yearData?.element ?? "Water"];
+  const isCurated = !!RETROGRADES_BY_YEAR[selectedYear];
 
   const handleYearChange = (newYear: number) => {
     setSelectedYear(newYear);
