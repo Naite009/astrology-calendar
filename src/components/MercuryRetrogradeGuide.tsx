@@ -240,20 +240,59 @@ const DO_DONT = {
   ],
 };
 
-const WATER_PERSONALIZED = {
-  none: "With all 2026 Mercury retrogrades in water signs, the entire year carries an emotional, intuitive undertone. After 2025's fire-sign retrogrades (Aries, Leo, Sagittarius), the shift to water is profound. Themes of memory, feeling, healing, and spiritual sensitivity will run through every Mercury cycle. Logic will yield to intuition again and again. Trust what you feel.",
-  aries: "As an Aries Rising, the water retrogrades activate your 12th (Pisces), 4th (Cancer), and 8th (Scorpio) houses — the three most hidden, private, and transformative areas of your chart. 2026 asks you to heal what hides in your unconscious, your family roots, and your shared depths. Significant inner work awaits.",
-  taurus: "As a Taurus Rising, the water retrogrades light up your 11th (Pisces), 3rd (Cancer), and 7th (Scorpio) houses — community, communication, and partnerships. Old friendships surface, important conversations revisit, and partnership contracts need review. Your social world is being emotionally recalibrated.",
-  gemini: "As a Gemini Rising, the water retrogrades activate your 10th (Pisces), 2nd (Cancer), and 6th (Scorpio) houses — career, income, and health. Your professional direction, financial security, and daily health rhythms are all under emotional review in 2026. What do you truly want to build?",
-  cancer: "As a Cancer Rising, the water retrogrades move through your 9th (Pisces), 1st (Cancer), and 5th (Scorpio) houses — beliefs, self, and creativity. A profound year for spiritual recalibration, personal reinvention, and creative renewal. You are reviewing who you are, what you believe, and what you love to create.",
-  leo: "As a Leo Rising, the water retrogrades activate your 8th (Pisces), 12th (Cancer), and 4th (Scorpio) houses — transformation, the hidden, and home. Deep psychological themes, ancestral patterns, and profound private shifts define 2026 for you. What needs to finally be released?",
-  virgo: "As a Virgo Rising, the water retrogrades move through your 7th (Pisces), 11th (Cancer), and 3rd (Scorpio) houses — partnerships, community, and communication. Relationship dynamics, friendship circles, and the way you communicate emotionally are all under review. Are the people in your life truly aligned with who you've become?",
-  libra: "As a Libra Rising, the water retrogrades activate your 6th (Pisces), 10th (Cancer), and 2nd (Scorpio) houses — health, career, and money. Daily routines, professional legacy, and financial values are all emotionally reviewed in 2026. What structures are worth keeping? What habits no longer serve you?",
-  scorpio: "As a Scorpio Rising, the water retrogrades light up your 5th (Pisces), 9th (Cancer), and 1st (Scorpio) houses — creativity, philosophy, and self. A year of profound creative reclaiming, belief system review, and personal reinvention. The third retrograde in Scorpio activates your entire identity — a reset of the deepest kind.",
-  sagittarius: "As a Sagittarius Rising, the water retrogrades move through your 4th (Pisces), 8th (Cancer), and 12th (Scorpio) houses — home, transformation, and the unseen. Family, inherited patterns, and deep subconscious material are the year's themes. What from your roots is ready to be healed and released?",
-  capricorn: "As a Capricorn Rising, the water retrogrades activate your 3rd (Pisces), 7th (Cancer), and 11th (Scorpio) houses — communication, partnerships, and community. Important conversations revisit all year, partnership dynamics shift emotionally, and your community connections undergo profound review.",
-  aquarius: "As an Aquarius Rising, the water retrogrades light up your 2nd (Pisces), 6th (Cancer), and 10th (Scorpio) houses — money, health, and career. Financial values, health rhythms, and professional transformation are under review all year. 2026 restructures the material and physical dimensions of your life.",
-  pisces: "As a Pisces Rising, the water retrogrades activate your 1st (Pisces), 5th (Cancer), and 9th (Scorpio) houses — self, creativity, and philosophy. An extraordinary year of personal reinvention, creative renaissance, and philosophical expansion. The first retrograde begins in your very sign — this year starts with you.",
+const ELEMENT_GUIDANCE: Record<string, { icon: string; label: string; tips: string[]; borderColor: string; bgColor: string; textColor: string }> = {
+  Water: {
+    icon: "🌊", label: "When Mercury Retrogrades Through Water Signs",
+    tips: [
+      "Journal your dreams — they carry messages during water retrogrades",
+      "Spend time near water: baths, ocean, rivers, rain",
+      "Allow feelings to arrive without immediately analyzing them",
+      "Practice emotional check-ins instead of intellectual processing",
+      "Trust your intuition over logic when the two disagree",
+      "Use this time to tend emotional relationships with care",
+      "Create: paint, write poetry, sing — right-brain expression is favored",
+    ],
+    borderColor: "border-sky-500/40", bgColor: "bg-sky-900/20", textColor: "text-sky-300",
+  },
+  Fire: {
+    icon: "🔥", label: "When Mercury Retrogrades Through Fire Signs",
+    tips: [
+      "Revisit passion projects and creative endeavors with fresh eyes",
+      "Slow your impulses — fire retrogrades tempt hasty words and actions",
+      "Reassess your identity: who are you becoming vs. who you've been?",
+      "Channel restless energy into movement: walk, run, dance while you think",
+      "Watch for ego-driven communications — is this about being right or being understood?",
+      "Old leadership roles or creative visions may return for review",
+      "Practice the pause: count to ten before sending that fiery message",
+    ],
+    borderColor: "border-orange-500/40", bgColor: "bg-orange-900/20", textColor: "text-orange-300",
+  },
+  Air: {
+    icon: "💨", label: "When Mercury Retrogrades Through Air Signs",
+    tips: [
+      "Review all contracts, agreements, and written communications carefully",
+      "Reconnect with old friends, classmates, or intellectual collaborators",
+      "Revisit ideas you abandoned — they may have new relevance now",
+      "Social media miscommunications are especially likely — re-read before posting",
+      "Old debates or unresolved intellectual disagreements may resurface",
+      "Use this time for research, study, and deep reading rather than publishing",
+      "Examine your communication style: are you being heard, or just being clever?",
+    ],
+    borderColor: "border-teal-500/40", bgColor: "bg-teal-900/20", textColor: "text-teal-300",
+  },
+  Earth: {
+    icon: "🌍", label: "When Mercury Retrogrades Through Earth Signs",
+    tips: [
+      "Review financial plans, budgets, and material commitments",
+      "Reassess work systems, routines, and productivity habits",
+      "Old career opportunities or job offers may resurface — evaluate carefully",
+      "Physical organization helps mental clarity: clean, sort, restructure spaces",
+      "Health routines established hastily may need revision — listen to your body",
+      "Examine your relationship to security: what truly makes you feel safe?",
+      "Practical matters need patience: renovations, purchases, and repairs may stall",
+    ],
+    borderColor: "border-emerald-500/40", bgColor: "bg-emerald-900/20", textColor: "text-emerald-300",
+  },
 };
 
 // ─── ELEMENT BADGES ──────────────────────────────────────────────────────────
