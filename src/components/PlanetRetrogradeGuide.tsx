@@ -827,11 +827,47 @@ export function PlanetRetrogradeGuide({ planet, allCharts, primaryUserName }: Pl
     return getRetrogradePeriodsForYear(body, selectedYear);
   }, [body, selectedYear]);
 
-  // Current status
+  // Current status — compute from current-year periods
+  const allCurrentYearPeriods = useMemo(() => {
+    if (!body) return [];
+    const now = new Date();
+    const yr = now.getFullYear();
+    return getRetrogradePeriodsForYear(body, yr);
+  }, [body]);
+
   const currentStatus = useMemo(() => {
     if (!body) return null;
-    return getRetrogradeStatus(new Date(), periods);
-  }, [body, periods]);
+    return getRetrogradeStatus(new Date(), allCurrentYearPeriods);
+  }, [body, allCurrentYearPeriods]);
+
+  // Find last and next retrograde when planet is direct
+  const { lastRetrograde, nextRetrograde } = useMemo(() => {
+    if (!body) return { lastRetrograde: null, nextRetrograde: null };
+    const now = new Date();
+    const yr = now.getFullYear();
+    let last: RetrogradeInfo | null = null;
+    let next: RetrogradeInfo | null = null;
+
+    // Search backward for the most recent past retrograde
+    for (let y = yr; y >= yr - 5; y--) {
+      const ps = y === selectedYear ? periods : getRetrogradePeriodsForYear(body, y);
+      for (let i = ps.length - 1; i >= 0; i--) {
+        if (ps[i].end < now) { last = ps[i]; break; }
+      }
+      if (last) break;
+    }
+
+    // Search forward for the next upcoming retrograde
+    for (let y = yr; y <= yr + 5; y++) {
+      const ps = y === selectedYear ? periods : getRetrogradePeriodsForYear(body, y);
+      for (const p of ps) {
+        if (p.start > now) { next = p; break; }
+      }
+      if (next) break;
+    }
+
+    return { lastRetrograde: last, nextRetrograde: next };
+  }, [body, selectedYear, periods]);
 
   // Deduplicate charts
   const dedupedCharts = useMemo(() => {
