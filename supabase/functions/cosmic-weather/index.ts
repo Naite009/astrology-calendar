@@ -807,10 +807,28 @@ CRITICAL INSTRUCTIONS:
 
     const data = await response.json();
     const insightRaw = data.choices?.[0]?.message?.content || "Unable to generate insights at this time.";
+
+    // Deterministic post-check: if Mercury station direct is mentioned, enforce exact ephemeris date.
+    const enforceMercuryStationDate = (text: string): string => {
+      if (!mercuryRetrogradeInfo?.stationDirect) return text;
+
+      const stationSign = mercuryRetrogradeInfo?.sign ? ` in ${mercuryRetrogradeInfo.sign}` : '';
+      const canonicalSentence = `Mercury stations direct on ${mercuryRetrogradeInfo.stationDirect}${stationSign}.`;
+      const stationSentenceRegex = /Mercury[^.\n]{0,140}stations?\s+direct[^.\n]*\.?/gi;
+
+      if (stationSentenceRegex.test(text)) {
+        return text.replace(stationSentenceRegex, canonicalSentence);
+      }
+
+      return `${text}\n\n${canonicalSentence}`;
+    };
+
+    const insightVerified = enforceMercuryStationDate(insightRaw);
+
     const mercuryFactAppendix = mercuryRetrogradeInfo
       ? `\n\n## Ephemeris Fact Check\n- Mercury station retrograde: ${mercuryRetrogradeInfo.stationRetrograde || 'not provided'}\n- Mercury station direct: ${mercuryRetrogradeInfo.stationDirect || 'not provided'}\n- Mercury cazimi: ${mercuryRetrogradeInfo.cazimi || 'not provided'}\n- Mercury post-shadow clears: ${mercuryRetrogradeInfo.postShadowClear || 'not provided'}\n(All times and dates above are computed from ephemeris in the user's local timezone.)`
       : '';
-    const insight = `${insightRaw}${mercuryFactAppendix}`;
+    const insight = `${insightVerified}${mercuryFactAppendix}`;
 
     // Save to DB cache (expires at end of day in user's timezone, approximated as 24h)
     if (dateKey && !customPrompt) {
