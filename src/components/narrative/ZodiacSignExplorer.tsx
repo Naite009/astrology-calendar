@@ -3,6 +3,69 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ZODIAC_SIGNS_DATA, ELEMENT_COLORS, ZodiacSignData } from '@/lib/zodiacSignEncyclopedia';
+import { buildSignTeaching, type ZodiacSign } from '@/lib/astrology/signTeacher';
+
+function SignTeachingSection({ signName }: { signName: string }) {
+  const teaching = buildSignTeaching(signName as ZodiacSign);
+  if (!teaching) return null;
+
+  const { elementCard, modalityCard, comparison, closingLine, signProfile } = teaching;
+
+  return (
+    <div className="space-y-4 pt-2 border-t border-border">
+      <h4 className="text-sm font-semibold flex items-center gap-2">🔬 How {signName} Works</h4>
+
+      {/* Element teaching */}
+      <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+        <p className="text-xs font-semibold mb-1">{elementCard.icon} {elementCard.title}</p>
+        <p className="text-xs text-muted-foreground leading-relaxed">{elementCard.body}</p>
+      </div>
+
+      {/* Modality teaching */}
+      <div className="p-3 rounded-lg bg-accent/50 border border-accent">
+        <p className="text-xs font-semibold mb-1">⚙ {modalityCard.title}</p>
+        <p className="text-xs text-muted-foreground leading-relaxed">{modalityCard.body}</p>
+      </div>
+
+      {/* Element triad comparison */}
+      <div>
+        <p className="text-xs font-medium mb-2">The {teaching.info.element} Triad — Same Element, Different Jobs</p>
+        <div className="grid grid-cols-1 gap-2">
+          {comparison.map((c) => (
+            <div
+              key={c.sign}
+              className={`p-3 rounded-lg border text-xs ${c.isCurrent ? 'bg-primary/10 border-primary/30 font-medium' : 'bg-muted/30 border-border'}`}
+            >
+              <span className="font-semibold">{c.glyph} {c.title}</span>
+              <p className="text-muted-foreground mt-0.5">{c.body}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground mt-2 italic">{closingLine}</p>
+      </div>
+
+      {/* Sign profile — core question, superpower, shadow */}
+      {signProfile && (
+        <div className="space-y-3">
+          <div className="p-3 rounded-lg bg-secondary/50 border border-secondary">
+            <p className="text-[10px] font-medium text-muted-foreground mb-1">🎯 CORE QUESTION</p>
+            <p className="text-xs italic leading-relaxed">{signProfile.coreQuestion}</p>
+          </div>
+          <div className="grid grid-cols-1 gap-2">
+            <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+              <p className="text-[10px] font-medium text-muted-foreground mb-1">⚡ DEEP SUPERPOWER</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">{signProfile.superpower}</p>
+            </div>
+            <div className="p-3 rounded-lg bg-destructive/5 border border-destructive/10">
+              <p className="text-[10px] font-medium text-muted-foreground mb-1">🌑 DEEP SHADOW</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">{signProfile.shadow}</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function SignDetailModal({ sign, open, onClose }: { sign: ZodiacSignData | null; open: boolean; onClose: () => void }) {
   if (!sign) return null;
@@ -83,6 +146,9 @@ function SignDetailModal({ sign, open, onClose }: { sign: ZodiacSignData | null;
                 <p key={i} className="text-sm leading-relaxed text-muted-foreground">{p}</p>
               ))}
             </div>
+
+            {/* Sign Teaching — element/modality/triad/profile */}
+            <SignTeachingSection signName={sign.name} />
 
             {/* Body region */}
             <div className="p-3 rounded-lg bg-muted/50">
