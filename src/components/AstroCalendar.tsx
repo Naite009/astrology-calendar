@@ -669,7 +669,7 @@ export const AstroCalendar = () => {
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                ☿ Mercury Rx
+                🔄 Retrogrades
               </button>
               <button
                 onClick={() => {
