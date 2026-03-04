@@ -49,11 +49,12 @@ export function FoundationsView({ userNatalChart, savedCharts, onNavigateToView 
 
   const selectedChart = useMemo(() => {
     if (selectedChartId === '__live_sky__') return liveSkyChart;
-    if (selectedChartId) return allCharts.find(c => c.name === selectedChartId) || allCharts[0] || null;
+    if (selectedChartId === 'user') return userNatalChart || allCharts[0] || null;
+    if (selectedChartId) return allCharts.find(c => c.id === selectedChartId || c.name === selectedChartId) || allCharts[0] || null;
     // Default behavior: houses tab defaults to live sky, others default to first chart
     if (activeTab === 'houses') return liveSkyChart;
     return allCharts[0] || null;
-  }, [selectedChartId, allCharts, activeTab, liveSkyChart]);
+  }, [selectedChartId, allCharts, activeTab, liveSkyChart, userNatalChart]);
 
   const planetHouses = useMemo(() => {
     if (!selectedChart || !selectedChart.planets || Object.keys(selectedChart.planets).length < 3) return [];
