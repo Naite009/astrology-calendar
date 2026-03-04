@@ -454,7 +454,7 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
 
       // Send MORE aspects with FULL data including orbs - this prevents AI hallucination
       // Use the symbol from calculateDailyAspects directly (already includes correct glyph)
-      const aspectsWithDetails = aspects.slice(0, 15).map(a => {
+      const aspectsWithDetails = aspects.map(a => {
         const orbValue = 'orb' in a && a.orb != null ? a.orb : 0;
         // Map lowercase type names to symbols (calculateDailyAspects returns lowercase)
         const typeToSymbol: Record<string, string> = {

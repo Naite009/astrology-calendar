@@ -59,7 +59,7 @@ serve(async (req) => {
     
     // Cache key versioning: bump this when prompt/format changes so users don't get stale cached text.
     // This intentionally changes the cache key without requiring any DB schema changes.
-    const PROMPT_VERSION = "2026-03-04-v23-preflight-mercury-ephemeris-verify";
+    const PROMPT_VERSION = "2026-03-04-v24-all-aspects-ruler-context";
 
     const cacheDeviceId = deviceId || 'default';
     const cacheVoiceStyle = `${voiceStyle || ''}@${PROMPT_VERSION}`;
@@ -118,8 +118,8 @@ CRITICAL: If Venus is listed as DIRECT above, do NOT mention "Venus retrograde" 
 
     // Enhanced aspects text with applying/separating status
     const aspectsText = aspects?.length > 0
-      ? `Major Aspects Today:
-${aspects.slice(0, 10).map((a: any) => `- ${a.planet1} ${a.symbol} ${a.planet2} (orb: ${a.orb}°, ${a.applyingSeparating || a.motion || 'status unknown'})`).join('\n')}`
+      ? `ALL Planetary Aspects Today (COMPLETE LIST — do NOT ignore any):
+${aspects.map((a: any) => `- ${a.planet1} ${a.symbol} ${a.planet2} (orb: ${a.orb}°, ${a.applyingSeparating || a.motion || 'status unknown'})`).join('\n')}`
       : '';
 
     // Moon sign change text
@@ -198,7 +198,18 @@ ${eclipseContext}`
       moonJupiterConjunction = `SIGNIFICANT: Moon and Jupiter are BOTH in ${moonPlanet.sign} - this is a powerful conjunction for abundance, optimism, and emotional expansion!`;
     }
 
-    // Build exact lunar phase information if present
+    // Moon sign ruler context — the ruler of the Moon's sign gains extra significance
+    const SIGN_RULERS: Record<string, string> = {
+      Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon',
+      Leo: 'Sun', Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Mars',
+      Sagittarius: 'Jupiter', Capricorn: 'Saturn', Aquarius: 'Saturn', Pisces: 'Jupiter',
+    };
+    const effectiveMoonSign = moonSignChange ? moonSignChange.toSign : moonSign;
+    const moonRuler = SIGN_RULERS[effectiveMoonSign] || '';
+    const moonRulerText = moonRuler
+      ? `MOON SIGN RULER CONTEXT: The Moon is in (or moving into) ${effectiveMoonSign}, which is ruled by ${moonRuler}. This means ANY aspect involving ${moonRuler} today carries EXTRA weight — ${moonRuler} is the emotional tone-setter. Highlight ${moonRuler} aspects prominently.`
+      : '';
+
     let exactPhaseText = '';
     if (exactLunarPhase) {
       if (exactLunarPhase.isToday === false) {
@@ -757,6 +768,7 @@ ${exactPhaseText ? `${exactPhaseText}` : `Moon Phase: ${moonPhase}`}
 Current Moon Sign: ${moonSign}
 ${moonSignChangeText}
 ${moonJupiterConjunction}
+${moonRulerText}
 Mercury Retrograde: ${mercuryRetro ? 'Yes' : 'No'}
 ${mercuryRxText}
 ${mercuryFactCheckText}
