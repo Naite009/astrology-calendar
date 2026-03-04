@@ -808,27 +808,52 @@ CRITICAL INSTRUCTIONS:
     const data = await response.json();
     const insightRaw = data.choices?.[0]?.message?.content || "Unable to generate insights at this time.";
 
-    // Deterministic post-check: if Mercury station direct is mentioned, enforce exact ephemeris date.
-    const enforceMercuryStationDate = (text: string): string => {
-      if (!mercuryRetrogradeInfo?.stationDirect) return text;
+    const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-      const stationSign = mercuryRetrogradeInfo?.sign ? ` in ${mercuryRetrogradeInfo.sign}` : '';
-      const canonicalSentence = `Mercury stations direct on ${mercuryRetrogradeInfo.stationDirect}${stationSign}.`;
-      const stationSentenceRegex = /Mercury[^.\n]{0,140}stations?\s+direct[^.\n]*\.?/gi;
+    // Deterministic post-check: enforce exact Mercury station + post-shadow phrasing from ephemeris.
+    const enforceMercuryTiming = (text: string): string => {
+      if (!mercuryRetrogradeInfo) return text;
 
-      if (stationSentenceRegex.test(text)) {
-        return text.replace(stationSentenceRegex, canonicalSentence);
+      const stationDirect = mercuryRetrogradeInfo.stationDirect;
+      const postShadowClear = mercuryRetrogradeInfo.postShadowClear;
+      const stationSign = mercuryRetrogradeInfo.sign ? ` in ${mercuryRetrogradeInfo.sign}` : "";
+
+      let output = text;
+
+      if (stationDirect) {
+        const canonicalDirectSentence = `Mercury stations direct on ${stationDirect}${stationSign}.`;
+        const stationSentenceRegex = /Mercury[^.\n]{0,180}stations?\s+direct[^.\n]*\.?/gi;
+        output = output.replace(stationSentenceRegex, canonicalDirectSentence);
+
+        if (!new RegExp(`Mercury\\s+stations?\\s+direct\\s+on\\s+${escapeRegex(stationDirect)}`, "i").test(output)) {
+          output = `${canonicalDirectSentence}\n\n${output}`;
+        }
       }
 
-      return `${text}\n\n${canonicalSentence}`;
+      // Prevent incorrect "still reviewing/rethinking" framing after station direct
+      output = output.replace(
+        /(Mercury\s+stations?\s+direct[^.\n]*\.)\s*(Remember[^.\n]*(review|rethink|rethink(?:ing)?|reviewing)[^.\n]*\.)/gi,
+        `$1 Once Mercury is direct, the retrograde phase is over; now the focus is forward movement, implementation, and integration.`
+      );
+
+      if (postShadowClear && !new RegExp(`post-shadow\\s+clear[s]?\\s+(on\\s+)?${escapeRegex(postShadowClear)}`, "i").test(output)) {
+        output = `${output}\n\nMercury post-shadow clears on ${postShadowClear}.`;
+      }
+
+      return output;
     };
 
-    const insightVerified = enforceMercuryStationDate(insightRaw);
+    const insightVerified = enforceMercuryTiming(insightRaw);
+
+    const mercuryTimingBlock = mercuryRetrogradeInfo
+      ? `## Mercury Timing (Verified)\n- Station direct: ${mercuryRetrogradeInfo.stationDirect || 'not provided'}\n- Post-shadow clear: ${mercuryRetrogradeInfo.postShadowClear || 'not provided'}\n- Guidance: Mercury is direct now; this is for forward movement and integration, not retrograde-style review.`
+      : '';
 
     const mercuryFactAppendix = mercuryRetrogradeInfo
       ? `\n\n## Ephemeris Fact Check\n- Mercury station retrograde: ${mercuryRetrogradeInfo.stationRetrograde || 'not provided'}\n- Mercury station direct: ${mercuryRetrogradeInfo.stationDirect || 'not provided'}\n- Mercury cazimi: ${mercuryRetrogradeInfo.cazimi || 'not provided'}\n- Mercury post-shadow clears: ${mercuryRetrogradeInfo.postShadowClear || 'not provided'}\n(All times and dates above are computed from ephemeris in the user's local timezone.)`
       : '';
-    const insight = `${insightVerified}${mercuryFactAppendix}`;
+
+    const insight = `${mercuryTimingBlock ? `${mercuryTimingBlock}\n\n` : ''}${insightVerified}${mercuryFactAppendix}`;
 
     // Save to DB cache (expires at end of day in user's timezone, approximated as 24h)
     if (dateKey && !customPrompt) {
