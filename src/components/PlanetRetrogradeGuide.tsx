@@ -471,6 +471,7 @@ const PLANET_INFO: Record<string, {
         bodyFeeling: "Heaviness in the knees and skeletal system (Capricorn body part). The weight of responsibility pressing on the dreamer. Stiffness where fluidity is needed."
       }],
     },
+    doList: ["Deepen meditation and spiritual practices", "Pay attention to dreams — keep a dream journal", "Create art, music, or poetry", "Practice discernment in relationships", "Address escapist habits honestly", "Spend time near water"],
     dontList: ["Ignore red flags in relationships", "Make major decisions based solely on intuition without grounding", "Increase substance use as escapism", "Sign contracts without careful review (confusion possible)", "Dismiss practical concerns for idealism"],
     signMeanings: {
       Aries: "Neptune retrograde in Aries: The spiritual warrior turns inward. Idealism about identity reviewed.",
