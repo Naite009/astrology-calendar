@@ -783,6 +783,7 @@ ${mercuryFactCheckText}
 ${rareAspectText}
 ${nodeAspectText}
 ${aspectsText}
+${stelliumText}
 ${imminentChangesText}
 ${allRetroText}
 ${notRetroText}
