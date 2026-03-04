@@ -1061,29 +1061,10 @@ export const getPersonalTransits = (planets: PlanetaryPositions, userData: UserD
   return { hasTransits: false, transits: [] };
 };
 
-// Check for major ingresses
-export const checkMajorIngresses = (planets: PlanetaryPositions): Ingress[] => {
-  const ingresses: Ingress[] = [];
-
-  if (planets.saturn.signName === 'Aries') {
-    ingresses.push({
-      planet: 'Saturn',
-      sign: 'Aries',
-      icon: '♄',
-      desc: 'Major 2.5 year cycle begins',
-    });
-  }
-
-  if (planets.neptune.signName === 'Aries') {
-    ingresses.push({
-      planet: 'Neptune',
-      sign: 'Aries',
-      icon: '♆',
-      desc: 'Generational shift for 14 years',
-    });
-  }
-
-  return ingresses;
+// Check for major ingresses — DEPRECATED: now handled by detectPlanetaryIngresses
+// which checks actual sign changes day-over-day instead of "is planet in sign X"
+export const checkMajorIngresses = (_planets: PlanetaryPositions): Ingress[] => {
+  return [];
 };
 
 // Get energy rating
@@ -1712,26 +1693,80 @@ export const detectPlanetaryIngresses = (date: Date, planets: PlanetaryPositions
       // Store for potential reuse (cast to any since we're reusing the cache)
     }
 
-    const planetsToCheck: (keyof PlanetaryPositions)[] = ['mercury', 'venus', 'mars', 'jupiter', 'saturn'];
+    // Check ALL planets including outers
+    const planetsToCheck: (keyof PlanetaryPositions)[] = ['mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
+
+    // Display windows: how many days to show the ingress badge after the actual sign change
+    const INGRESS_WINDOW_DAYS: Record<string, number> = {
+      mercury: 1, venus: 1, mars: 2,
+      jupiter: 3, saturn: 3, uranus: 3, neptune: 3, pluto: 3,
+    };
+
+    const INGRESS_DESCRIPTIONS: Record<string, (sign: string) => string> = {
+      mercury: (s) => `Enters ${s} — shifts in thinking & communication`,
+      venus: (s) => `Enters ${s} — new tone in love & values`,
+      mars: (s) => `Enters ${s} — drive & action change style`,
+      jupiter: (s) => `Enters ${s} — expansion focus shifts (1 year)`,
+      saturn: (s) => `Enters ${s} — new 2.5-year structural chapter`,
+      uranus: (s) => `Enters ${s} — 7-year revolution begins`,
+      neptune: (s) => `Enters ${s} — generational shift (14 years)`,
+      pluto: (s) => `Enters ${s} — transformative era (12-20 years)`,
+    };
 
     planetsToCheck.forEach((planetName) => {
       const todaySign = planets[planetName].signName;
       const yesterdaySign = yesterdayPlanets![planetName].signName;
 
       if (todaySign !== yesterdaySign) {
-        const isMajor = planetName === 'jupiter' || planetName === 'saturn';
-        
-        // Ingress detected via ephemeris comparison (yesterday vs today positions)
         const icon = getPlanetSymbol(planetName);
+        const descFn = INGRESS_DESCRIPTIONS[planetName];
         
         ingresses.push({
           planet: planetName.charAt(0).toUpperCase() + planetName.slice(1),
           sign: todaySign,
           icon,
-          desc: `Enters ${todaySign}`,
+          desc: descFn ? descFn(todaySign) : `Enters ${todaySign}`,
         });
       }
     });
+
+    // If no ingress today, check if we're within the display window of a recent ingress
+    // (so slow-planet ingresses show for a few days, not just 1 day)
+    if (ingresses.length === 0) {
+      planetsToCheck.forEach((planetName) => {
+        const windowDays = INGRESS_WINDOW_DAYS[planetName] || 1;
+        if (windowDays <= 1) return; // fast planets only show on exact day
+        
+        const todaySign = planets[planetName].signName;
+        
+        // Check days back within the window
+        for (let daysBack = 1; daysBack < windowDays; daysBack++) {
+          const checkDate = new Date(date);
+          checkDate.setDate(checkDate.getDate() - daysBack);
+          try {
+            const checkPlanets = getPlanetaryPositions(checkDate);
+            const prevDay = new Date(checkDate);
+            prevDay.setDate(prevDay.getDate() - 1);
+            const prevPlanets = getPlanetaryPositions(prevDay);
+            
+            if (checkPlanets[planetName].signName === todaySign && 
+                prevPlanets[planetName].signName !== todaySign) {
+              // Found the actual ingress date within our window
+              const icon = getPlanetSymbol(planetName);
+              const ingressDate = checkDate;
+              const dateStr = `${ingressDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+              ingresses.push({
+                planet: planetName.charAt(0).toUpperCase() + planetName.slice(1),
+                sign: todaySign,
+                icon,
+                desc: `Entered ${todaySign} on ${dateStr}`,
+              });
+              break;
+            }
+          } catch { /* skip */ }
+        }
+      });
+    }
   } catch (error) {
     console.error('Error detecting ingresses:', error);
   }

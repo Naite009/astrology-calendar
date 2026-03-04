@@ -467,10 +467,10 @@ export const CalendarDay = memo(({ date, day, isToday, userData, onDayClick, act
         </div>
       )}
 
-      {/* Ingress indicator */}
+      {/* Ingress indicators — up to 5 */}
       {allIngresses.length > 0 && (
-        <div className="text-xs text-primary font-medium mt-1">
-          {allIngresses.slice(0, 1).map((ing, i) => (
+        <div className="text-xs text-primary font-medium mt-1 space-y-0.5">
+          {allIngresses.slice(0, 5).map((ing, i) => (
             <div key={i} className="flex items-center gap-1">
               <span className="text-sm">{ing.icon}</span>
               <span>→</span>
