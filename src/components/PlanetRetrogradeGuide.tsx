@@ -511,7 +511,77 @@ function AccordionCard({ icon, title, content, accentClass }: { icon: string; ti
   );
 }
 
-// ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
+function DignityTeachingCard({ entry, catStyles, colors }: {
+  entry: DignityEntry;
+  catStyles: { bg: string; border: string; label: string; icon: string; title: string };
+  colors: { gradient: string; border: string; accent: string };
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`rounded-2xl border ${catStyles.border} ${catStyles.bg} overflow-hidden transition-all duration-300`}>
+      <div
+        className="p-5 cursor-pointer"
+        onClick={() => setOpen(!open)}
+      >
+        <div className="flex items-start justify-between">
+          <div>
+            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${catStyles.bg} ${catStyles.border} border ${catStyles.label}`}>
+              {catStyles.icon} {catStyles.title}
+            </span>
+            <h3 className="text-lg font-semibold text-white mt-2">{entry.title}</h3>
+          </div>
+          <span className={`text-white/40 transition-transform duration-300 text-lg mt-1 ${open ? "rotate-180" : ""}`}>▾</span>
+        </div>
+        <p className="text-white/70 text-sm mt-3 leading-relaxed">{entry.feltSense}</p>
+      </div>
+
+      {open && (
+        <div className="px-5 pb-6 space-y-4">
+          <div className="h-px bg-white/10" />
+
+          {/* Psychology */}
+          <div className="rounded-xl bg-white/5 border border-white/10 p-4">
+            <p className="text-xs text-white/50 font-semibold uppercase mb-2">🧠 The Psychology</p>
+            <p className="text-white/80 text-sm leading-relaxed">{entry.psychology}</p>
+          </div>
+
+          {/* Body Feeling */}
+          <div className="rounded-xl bg-white/5 border border-white/10 p-4">
+            <p className="text-xs text-white/50 font-semibold uppercase mb-2">🫀 How It Feels in the Body</p>
+            <p className="text-white/80 text-sm leading-relaxed">{entry.bodyFeeling}</p>
+          </div>
+
+          {/* Gifts & Challenges side by side */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="rounded-xl bg-emerald-900/20 border border-emerald-500/20 p-4">
+              <p className="text-xs text-emerald-300 font-semibold uppercase mb-2">⚡ Gifts</p>
+              <div className="space-y-1.5">
+                {entry.gifts.map((g) => (
+                  <div key={g} className="flex items-start gap-2 text-sm text-emerald-50">
+                    <span className="text-emerald-400 mt-0.5 flex-shrink-0 text-xs">✦</span>
+                    {g}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-xl bg-rose-900/20 border border-rose-500/20 p-4">
+              <p className="text-xs text-rose-300 font-semibold uppercase mb-2">🌑 Challenges</p>
+              <div className="space-y-1.5">
+                {entry.challenges.map((c) => (
+                  <div key={c} className="flex items-start gap-2 text-sm text-rose-50">
+                    <span className="text-rose-400 mt-0.5 flex-shrink-0 text-xs">✦</span>
+                    {c}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 export function PlanetRetrogradeGuide({ planet, allCharts, primaryUserName }: PlanetRetrogradeGuideProps) {
   const currentYear = new Date().getFullYear();
