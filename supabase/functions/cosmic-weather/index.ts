@@ -799,6 +799,9 @@ ${mercuryFactCheckText}
 ${rareAspectText}
 ${nodeAspectText}
 ${aspectsText}
+${aspectMeaningsBlock}
+${dispositorBlock}
+${vocText}
 ${stelliumText}
 ${imminentChangesText}
 ${allRetroText}
