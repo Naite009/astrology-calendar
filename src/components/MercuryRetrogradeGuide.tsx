@@ -139,7 +139,7 @@ const RETROGRADES_BY_YEAR: Record<number, { element: string; summary: string; re
 };
 
 const AVAILABLE_CURATED_YEARS = Object.keys(RETROGRADES_BY_YEAR).map(Number).sort();
-const MIN_YEAR = 2020;
+const MIN_YEAR = 1970;
 const MAX_YEAR = 2035;
 
 // Build dynamic RxData from ephemeris for years without curated data
