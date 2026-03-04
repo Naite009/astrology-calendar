@@ -629,10 +629,12 @@ export function MercuryRetrogradeGuide({ allCharts, primaryUserName }: MercuryRe
   const risingSign = selectedChart ? getAscendantSign(selectedChart) : "none";
   const chartName = selectedChart?.name || "";
 
-  const yearData = RETROGRADES_BY_YEAR[selectedYear];
+  // Use curated data if available, otherwise compute from ephemeris
+  const yearData = RETROGRADES_BY_YEAR[selectedYear] || buildDynamicMercuryYear(selectedYear);
   const yearRetrogrades = yearData?.retrogrades ?? [];
   const selectedRx = yearRetrogrades.find((r) => r.id === selectedRxId) || yearRetrogrades[0];
   const elStyle = ELEMENT_STYLES[yearData?.element ?? "Water"];
+  const isCurated = !!RETROGRADES_BY_YEAR[selectedYear];
 
   const handleYearChange = (newYear: number) => {
     setSelectedYear(newYear);
