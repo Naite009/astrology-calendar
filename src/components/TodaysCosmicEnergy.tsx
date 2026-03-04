@@ -119,22 +119,48 @@ interface VOCInfo {
   moonEntersSign?: string;
 }
 
-// Simple stellium detection
-function findStelliums(planets: PlanetaryPositions): Array<{ sign: string; planets: string[] }> {
+// Stellium detection — includes North Node (critical for eclipse season)
+function findStelliums(planets: PlanetaryPositions): Array<{ sign: string; planets: string[]; hasNorthNode?: boolean }> {
   const signCounts: Record<string, string[]> = {};
   
+  // Glyph-to-name map so we always store readable sign names
+  const glyphToName: Record<string, string> = {
+    '♈': 'Aries', '♉': 'Taurus', '♊': 'Gemini', '♋': 'Cancer',
+    '♌': 'Leo', '♍': 'Virgo', '♎': 'Libra', '♏': 'Scorpio',
+    '♐': 'Sagittarius', '♑': 'Capricorn', '♒': 'Aquarius', '♓': 'Pisces'
+  };
+
   Object.entries(planets).forEach(([name, data]) => {
-    if (data?.sign) {
-      if (!signCounts[data.sign]) {
-        signCounts[data.sign] = [];
+    if (data?.sign || data?.signName) {
+      const signName = data.signName || glyphToName[data.sign] || data.sign;
+      if (!signCounts[signName]) {
+        signCounts[signName] = [];
       }
-      signCounts[data.sign].push(name);
+      signCounts[signName].push(name);
     }
   });
+
+  // Add North Node from mean node ephemeris
+  try {
+    const j2000 = new Date('2000-01-01T12:00:00Z');
+    const daysSinceJ2000 = (new Date().getTime() - j2000.getTime()) / 86400000;
+    const meanNodeLon = ((125.044522 - 0.0529539 * daysSinceJ2000) % 360 + 360) % 360;
+    const signIdx = Math.floor(meanNodeLon / 30);
+    const ZODIAC = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+    const nodeSign = ZODIAC[signIdx];
+    if (nodeSign) {
+      if (!signCounts[nodeSign]) signCounts[nodeSign] = [];
+      signCounts[nodeSign].push('NorthNode');
+    }
+  } catch { /* ignore */ }
   
   return Object.entries(signCounts)
     .filter(([_, names]) => names.length >= 3)
-    .map(([sign, names]) => ({ sign, planets: names }));
+    .map(([sign, names]) => ({
+      sign,
+      planets: names,
+      hasNorthNode: names.includes('NorthNode'),
+    }));
 }
 
 // Get next 7 days forecast data
