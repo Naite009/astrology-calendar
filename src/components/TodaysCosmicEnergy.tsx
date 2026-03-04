@@ -579,10 +579,10 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
         if (!mercuryRxStatus.retrogradeInfo) return null;
         const ri = mercuryRxStatus.retrogradeInfo;
         const sign = ri.sign;
-        const rxStartStr = formatRetrogradeDate(ri.start);
-        const rxEndStr = formatRetrogradeDate(ri.end);
-        const preStartStr = formatRetrogradeDate(ri.preStart);
-        const postEndStr = formatRetrogradeDate(ri.postEnd);
+        const rxStartStr = formatDateForTimezone(ri.start);
+        const rxEndStr = formatDateForTimezone(ri.end);
+        const preStartStr = formatDateForTimezone(ri.preStart);
+        const postEndStr = formatDateForTimezone(ri.postEnd);
         
         // Compute shadow/rx degree from actual planet position at those dates
         const isPiscesRx = sign.includes('Pisces');
