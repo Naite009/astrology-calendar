@@ -50,6 +50,7 @@ const PLANET_INFO: Record<string, {
   themes: string[];
   keywords: string[];
   dignity: { domicile: string; exaltation: string; detriment: string; fall: string };
+  dignityTeaching?: DignityTeaching;
   doList: string[];
   dontList: string[];
   signMeanings: Record<string, string>;
