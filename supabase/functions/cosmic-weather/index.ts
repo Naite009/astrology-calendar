@@ -834,27 +834,25 @@ CRITICAL INSTRUCTIONS:
 
     const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-    // Deterministic post-check: enforce exact Mercury station + post-shadow phrasing from ephemeris.
+    // Deterministic post-check: enforce exact Mercury timing from preflight-verified ephemeris.
     const enforceMercuryTiming = (text: string): string => {
-      if (!mercuryRetrogradeInfo) return text;
+      if (!mercuryInfo) return text;
 
-      const stationDirect = mercuryRetrogradeInfo.stationDirect;
-      const postShadowClear = mercuryRetrogradeInfo.postShadowClear;
-      const stationSign = mercuryRetrogradeInfo.sign ? ` in ${mercuryRetrogradeInfo.sign}` : "";
-      const phase = (mercuryRetrogradeInfo.phase || '').toLowerCase();
+      const stationDirect = mercuryInfo.stationDirect;
+      const postShadowClear = mercuryInfo.postShadowClear;
+      const stationSign = mercuryInfo.sign ? ` in ${mercuryInfo.sign}` : "";
+      const phase = (mercuryInfo.phase || '').toLowerCase();
       const isCurrentlyRetrograde = phase.includes('retrograde');
       const isPostShadow = phase === 'post-shadow';
 
       let output = text;
 
-      // Enforce correct station direct date
       if (stationDirect) {
         const canonicalDirectSentence = `Mercury stations direct on ${stationDirect}${stationSign}.`;
         const stationSentenceRegex = /Mercury[^.\n]{0,180}stations?\s+direct[^.\n]*\.?/gi;
         output = output.replace(stationSentenceRegex, canonicalDirectSentence);
       }
 
-      // Only replace "review" language with "forward movement" if Mercury IS direct (post-shadow or clear)
       if (isPostShadow) {
         output = output.replace(
           /(phase\s+for\s+)(reviewing|rethinking|review\s+and\s+rethinking)/gi,
@@ -865,18 +863,15 @@ CRITICAL INSTRUCTIONS:
           .replace(/period\s+of\s+review/gi, 'period of integration');
       }
 
-      // If currently retrograde, ensure it does NOT say Mercury is direct
       if (isCurrentlyRetrograde) {
         output = output.replace(/Mercury\s+is\s+direct\s+now/gi, 'Mercury is currently retrograde');
         output = output.replace(/Mercury\s+has\s+stationed\s+direct/gi, `Mercury stations direct on ${stationDirect || 'TBD'}`);
       }
 
-      // Ensure post-shadow date is mentioned
       if (postShadowClear && !new RegExp(`post-shadow\\s+clear[s]?\\s+(on\\s+)?${escapeRegex(postShadowClear)}`, "i").test(output)) {
         output = `${output}\n\nMercury post-shadow clears on ${postShadowClear}.`;
       }
 
-      // Remove any false Venus retrograde mentions if Venus is listed as DIRECT
       if (planetsNotRetrograde?.includes('Venus')) {
         output = output.replace(/Venus\s+(is\s+)?retrograde/gi, 'Venus is direct');
         output = output.replace(/Venus\s+retrograde\s+(is\s+)?wrapping\s+up/gi, 'Venus continues its direct motion');
@@ -886,12 +881,7 @@ CRITICAL INSTRUCTIONS:
     };
 
     const insightVerified = enforceMercuryTiming(insightRaw);
-
-    const mercuryFactAppendix = mercuryRetrogradeInfo
-      ? `\n\n## Ephemeris Fact Check\n- Mercury station retrograde: ${mercuryRetrogradeInfo.stationRetrograde || 'not provided'}\n- Mercury station direct: ${mercuryRetrogradeInfo.stationDirect || 'not provided'}\n- Mercury cazimi: ${mercuryRetrogradeInfo.cazimi || 'not provided'}\n- Mercury post-shadow clears: ${mercuryRetrogradeInfo.postShadowClear || 'not provided'}\n(All times and dates above are computed from ephemeris in the user's local timezone.)`
-      : '';
-
-    const insight = `${insightVerified}${mercuryFactAppendix}`;
+    const insight = insightVerified;
 
     // Save to DB cache (expires at end of day in user's timezone, approximated as 24h)
     if (dateKey && !customPrompt) {
