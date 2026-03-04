@@ -970,7 +970,7 @@ export function MercuryRetrogradeGuide({ allCharts, primaryUserName }: MercuryRe
                 <p className="text-xs text-fuchsia-200 font-semibold uppercase tracking-wider mb-3">🔮 Select a Chart for Personalized Guidance</p>
                 <p className="text-violet-200 text-sm mb-4">Choose your chart below to receive guidance personalized to your rising sign.</p>
                 <div className="flex justify-center">
-                  <ChartSelectorDropdown
+                  <ChartDropdown
                     charts={dedupedCharts}
                     selectedChartId={selectedChartId}
                     onSelect={setSelectedChartId}
