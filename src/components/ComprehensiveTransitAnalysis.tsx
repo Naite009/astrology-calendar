@@ -514,8 +514,72 @@ interface FeelingData {
   duration: string;
 }
 
+// ============================================================================
+// TRANSIT FEELING DATA — Somatic, Psychological, Esoteric
+// ============================================================================
+
+// What each transit planet DOES to whatever it touches
+const TRANSIT_PLANET_FEELING: Record<string, { verb: string; somatic: string; psyche: string; esoteric: string }> = {
+  sun: { verb: 'illuminates', somatic: 'Warmth in the chest, a surge of vitality, heightened awareness of your heartbeat. You feel more SEEN — for better or worse.', psyche: 'Your ego and conscious identity are lit up. You become acutely aware of how you present yourself and whether you are living authentically.', esoteric: 'The Sun is the spotlight of consciousness — it makes visible what was hidden. Nothing can stay in shadow under this light.' },
+  moon: { verb: 'emotionalizes', somatic: 'Stomach flutters, appetite changes, water retention, sensitivity in the chest. Your body responds to feelings before your mind catches up.', psyche: 'Emotions are heightened and reactive. Old memories surface. You feel more vulnerable, more tender, more in need of comfort and safety.', esoteric: 'The Moon governs the instinctual body — the part of you that reacts before thinking. It connects you to ancestral and maternal patterns.' },
+  mercury: { verb: 'activates mentally', somatic: 'Restless hands, rapid thoughts, tension in shoulders and neck. You might talk faster, think in loops, or feel mentally buzzy.', psyche: 'Your mind is stimulated. Ideas come quickly. Communication becomes important — conversations, emails, decisions all carry more weight.', esoteric: 'Mercury is the messenger — it creates connections between ideas and people. It asks you to NAME what you are experiencing.' },
+  venus: { verb: 'softens', somatic: 'Relaxation in the face and jaw, desire for touch and beauty, craving sweet or comforting foods. Your senses become more receptive.', psyche: 'You want harmony, beauty, connection. Relationships come into focus. You evaluate what and who you value — and whether you feel valued in return.', esoteric: 'Venus is the principle of attraction and receptivity — it draws toward you what resonates with your authentic values.' },
+  mars: { verb: 'energizes', somatic: 'Heat in the body, increased pulse, tension in muscles, restless legs. You feel the urge to DO something — move, compete, confront, build.', psyche: 'Your drive and assertiveness are activated. Anger may surface. You feel impatient with anything blocking your way. Desire — sexual and otherwise — intensifies.', esoteric: 'Mars is the warrior principle — it asks where you need to fight, what boundaries need defending, and what you are willing to pursue with full force.' },
+  jupiter: { verb: 'expands', somatic: 'A feeling of spaciousness in the chest, deep breathing, optimism that shows up as physical lightness. Possible overindulgence — too much food, spending, or saying yes.', psyche: 'Hope returns. You see the bigger picture. Opportunities appear. The danger is overconfidence — saying yes to everything without discernment.', esoteric: 'Jupiter is the principle of growth through meaning. It asks: what is this experience teaching you about your place in something larger?' },
+  saturn: { verb: 'constricts', somatic: 'Heaviness in the body, stiff joints, fatigue, feeling like you are carrying weight. Your body tells you to slow down and get serious.', psyche: 'Pressure to get real. Responsibilities increase. You feel tested — not punished, but evaluated. What is solid stays; what is built on sand crumbles. Fear of failure may surface.', esoteric: 'Saturn is the teacher of time and consequence. It builds character through limitation. It asks: are you willing to do the hard work that lasting things require?' },
+  uranus: { verb: 'disrupts', somatic: 'Electric, jittery energy. Heart palpitations or sudden anxiety. Feeling wired but not tired. Sleep disruptions. A physical sensation of restlessness — like your skin does not fit right.', psyche: 'You need freedom NOW. Anything that feels confining becomes unbearable. Sudden insights crack open old patterns. You may act impulsively or make unexpected changes.', esoteric: 'Uranus is the awakener — the lightning bolt that shatters what is outdated so something more authentic can emerge. It liberates through shock.' },
+  neptune: { verb: 'dissolves', somatic: 'Fatigue, brain fog, heightened sensitivity to substances and environments. Feeling spacey, dreamy, or overwhelmed by stimuli. Boundaries between self and others blur. You may feel more psychic or more confused — sometimes both.', psyche: 'Reality becomes less certain. You question what is real. Idealism rises — but so does the potential for deception (of self or others). Spiritual longing intensifies. Creative inspiration flows but practical focus suffers.', esoteric: 'Neptune dissolves the ego\'s boundaries so you can connect to something transcendent. The danger is losing yourself; the gift is finding the divine.' },
+  pluto: { verb: 'transforms', somatic: 'Deep, visceral tension — gut, pelvis, base of spine. A sense of something being pulled from within you. Exhaustion from the intensity. Sleep may bring vivid, sometimes disturbing dreams. The body holds what the mind tries to avoid.', psyche: 'Power dynamics surface. You confront what you have been avoiding — shadow material, control issues, buried rage, grief, or desire. This is a death-and-rebirth process. Something in you must die so something more authentic can live.', esoteric: 'Pluto is the lord of the underworld — it forces descent into your own depths. What you find there, if you face it honestly, becomes your greatest source of power.' },
+  chiron: { verb: 'reopens wounds', somatic: 'A dull ache in the body — often in an area connected to old injuries or chronic issues. Feeling physically vulnerable. The body remembers what the mind has forgotten.', psyche: 'Old wounds resurface — not to punish you, but because you are now ready to heal at a deeper level. Sensitivity increases. You may feel inadequate or broken, but this is the doorway to becoming a healer for others.', esoteric: 'Chiron is the wounded healer. It shows you that your deepest pain contains your greatest gift. The wound that never fully closes becomes the opening through which grace enters.' },
+};
+
+// What each NATAL planet/point represents when activated
+const NATAL_TARGET_FEELING: Record<string, { area: string; when_activated: string; house_flavor: (h: number | null) => string }> = {
+  sun: { area: 'your core identity and sense of self', when_activated: 'Who you ARE is being directly affected. Your confidence, vitality, and life direction are in play.', house_flavor: (h) => h ? `Your identity is being shaped through ${HOUSE_MEANINGS[h].keywords} themes — this is where you are discovering who you really are right now.` : '' },
+  moon: { area: 'your emotional body and inner security', when_activated: 'Your feelings, needs, and sense of safety are activated. Childhood patterns and maternal themes may surface.', house_flavor: (h) => h ? `Your emotional life is focused on ${HOUSE_MEANINGS[h].keywords} — this is where you feel most vulnerable and most in need of nurturing right now.` : '' },
+  mercury: { area: 'your thinking patterns and communication', when_activated: 'How you think, speak, learn, and process information is being reshaped. Important conversations and decisions are likely.', house_flavor: (h) => h ? `Your mental focus is on ${HOUSE_MEANINGS[h].keywords} — expect important communications and decisions in this area.` : '' },
+  venus: { area: 'your relationships and values', when_activated: 'Love, money, beauty, and what you value are in the spotlight. Relationships shift. Your aesthetic sense and self-worth are affected.', house_flavor: (h) => h ? `Your relationships and values are being tested or enriched through ${HOUSE_MEANINGS[h].keywords}. This is where you are learning what truly matters.` : '' },
+  mars: { area: 'your drive, anger, and assertiveness', when_activated: 'Your energy levels, sexual drive, competitive instincts, and capacity for anger are all in play. Conflicts may arise — or you may find new courage.', house_flavor: (h) => h ? `Your energy and assertiveness are directed at ${HOUSE_MEANINGS[h].keywords}. This is where you are fighting, building, or defending right now.` : '' },
+  jupiter: { area: 'your beliefs and sense of meaning', when_activated: 'Your faith, optimism, philosophical outlook, and capacity for growth are being touched. This can feel expansive or destabilizing if beliefs are challenged.', house_flavor: (h) => h ? `Growth and opportunity are coming through ${HOUSE_MEANINGS[h].keywords}. This is where your world is getting bigger.` : '' },
+  saturn: { area: 'your structures, responsibilities, and authority', when_activated: 'Your relationship with rules, limits, career, and maturity is being activated. This can feel heavy but builds lasting foundations.', house_flavor: (h) => h ? `Responsibility and restructuring are focused on ${HOUSE_MEANINGS[h].keywords}. What you build here during this transit will last.` : '' },
+  uranus: { area: 'your need for freedom and authenticity', when_activated: 'The most unconventional, rebellious part of your nature is being triggered. You may feel a powerful urge to break free from restrictions.', house_flavor: (h) => h ? `Your desire for freedom and change is focused on ${HOUSE_MEANINGS[h].keywords}. This is where life is asking you to evolve.` : '' },
+  neptune: { area: 'your spirituality and imagination', when_activated: 'Your connection to the transcendent, your creativity, and your susceptibility to illusion are all heightened.', house_flavor: (h) => h ? `Spiritual sensitivity and creative inspiration flow through ${HOUSE_MEANINGS[h].keywords}. Be discerning — inspiration and illusion are close neighbors here.` : '' },
+  pluto: { area: 'your deepest power and shadow', when_activated: 'Your relationship with power, control, and transformation is being directly engaged. Compulsions and obsessions may intensify.', house_flavor: (h) => h ? `Deep transformation and power dynamics are playing out through ${HOUSE_MEANINGS[h].keywords}. This is where you are being fundamentally changed.` : '' },
+  chiron: { area: 'your core wound and healing gift', when_activated: 'Old pain resurfaces for deeper healing. You may feel more vulnerable than usual, but this sensitivity is the doorway to growth.', house_flavor: (h) => h ? `Healing and vulnerability are centered on ${HOUSE_MEANINGS[h].keywords}. This is where your wound becomes your wisdom.` : '' },
+  ascendant: { area: 'how you present yourself and how others perceive you', when_activated: 'Your physical appearance, first impressions, and the mask you show the world are being directly altered. People may see you differently — or you may feel like a different person.', house_flavor: (h) => `This directly affects your 1st house of self-presentation, physical body, and personal identity. Others notice changes in you before you do.` },
+  midheaven: { area: 'your career direction and public reputation', when_activated: 'Your professional life, public image, and life direction are in the spotlight. Career shifts, recognition, or reevaluation of your path are likely.', house_flavor: (h) => `This directly affects your 10th house of career, public standing, and life direction. Professional changes are unfolding.` },
+  northnode: { area: 'your soul growth direction', when_activated: 'Your karmic path is being activated. Life events are pushing you toward your growth edge — away from comfort and toward destiny.', house_flavor: (h) => h ? `Your soul growth is expressing through ${HOUSE_MEANINGS[h].keywords}. Pay attention — this is where life is guiding you.` : '' },
+  southnode: { area: 'your past-life patterns', when_activated: 'Old habits, comfort zones, and past-life tendencies are surfacing. You are being asked to release what no longer serves your evolution.', house_flavor: (h) => h ? `Past patterns and karmic release are playing out through ${HOUSE_MEANINGS[h].keywords}. What can you let go of here?` : '' },
+};
+
+// How each ASPECT TYPE colors the interaction
+const ASPECT_FEELING_QUALITY: Record<string, { title_verb: string; body_mod: string; emotional_mod: string; duration_mod: string }> = {
+  conjunction: { title_verb: 'Merges With', body_mod: 'The physical sensations are AMPLIFIED — you feel this transit as a direct, personal, undeniable force in your body. This is the most intense aspect.', emotional_mod: 'Emotionally, these two energies fuse into one — you cannot separate them. This feels all-consuming while it lasts. There is no escaping it — only moving through it.', duration_mod: 'Conjunctions are the strongest aspect. You feel them building as the transit planet approaches within 3° of exact, peaking at 0°, and lingering 2-3° past. For outer planets, this can mean months of intensity.' },
+  opposition: { title_verb: 'Confronts', body_mod: 'Your body may feel pulled in two directions — tension between left/right sides, or a sense of being stretched. Headaches and jaw tension are common as you try to hold opposing forces.', emotional_mod: 'You feel torn between two equally important needs. Relationships become the mirror — other people act out the energy you are not owning. The goal is integration, not choosing one side.', duration_mod: 'Oppositions build awareness through contrast. The peak is at exact, but the tension is noticeable within 5° approaching. Outer planet oppositions last months and create major turning points.' },
+  square: { title_verb: 'Pressures', body_mod: 'Friction in the body — tight muscles, clenched jaw, restless energy that demands ACTION. You feel like you must do something but are unsure what. The body is responding to internal conflict.', emotional_mod: 'This feels HARD. Squares create crisis energy — you are forced to change because staying the same becomes too painful. Frustration, anger, and urgency are common. But this friction is exactly what creates growth.', duration_mod: 'Squares feel urgent — the pressure builds within 3-5° of exact and demands resolution. The discomfort peaks at exact and releases slowly. For outer planets, expect weeks to months of active pressure.' },
+  trine: { title_verb: 'Supports', body_mod: 'Ease in the body — smooth energy flow, relaxed muscles, natural vitality. You may not even notice this transit because it feels so natural. Good sleep, good appetite, things just work.', emotional_mod: 'Emotional harmony — things feel aligned without effort. Talent flows. Opportunities arrive easily. The only danger is taking the gifts for granted and not actively using them. Trines give but do not push.', duration_mod: 'Trines are gentle — they operate in the background. You feel them within 3° but they lack urgency. For outer planets, this creates a months-long window of ease and flow in the affected life area.' },
+  sextile: { title_verb: 'Opens Doors For', body_mod: 'A gentle buzz of possibility — lightness in the body, curiosity, openness. You feel receptive to new ideas and connections. Energy is available but not demanding.', emotional_mod: 'A quiet confidence and openness to opportunity. Unlike trines (which deliver gifts), sextiles present doors you must choose to walk through. They reward initiative and curiosity.', duration_mod: 'Sextiles are brief and gentle. You feel them within 2-3° of exact. For inner planets, this lasts days; for outer planets, a few weeks. They reward quick, intentional action.' },
+};
+
+// Duration data based on planet speed
+const TRANSIT_DURATIONS: Record<string, string> = {
+  sun: 'The Sun moves about 1° per day. You feel this transit for about 5-7 days total, with the peak lasting 1-2 days around the exact aspect.',
+  moon: 'The Moon moves about 13° per day. This transit lasts only a few hours — you may feel a brief emotional wave and then it passes. Check the time, not just the date.',
+  mercury: 'Mercury moves 1-2° per day (when direct). This transit lasts about 3-5 days. If Mercury is retrograde, it can pass this point THREE times over 2-3 weeks — intensifying the mental processing.',
+  venus: 'Venus moves about 1° per day. This transit lasts about 5-7 days. If Venus is retrograde (rare), it can revisit this point over several weeks.',
+  mars: 'Mars moves about 0.5° per day. This transit lasts about 1-2 weeks. Mars retrograde (every 2 years) can extend this to 2-3 months of sustained activation.',
+  jupiter: 'Jupiter moves about 0.08° per day (5 arcminutes). This transit is active for about 2-3 months. With retrograde motion, Jupiter can make 3 passes over this point across 6-9 months — each pass bringing a different layer of growth.',
+  saturn: 'Saturn moves about 0.03° per day (2 arcminutes). This transit is active for about 3-4 months per pass. With retrograde, Saturn typically makes 3 passes over 9-12 months. Each pass tests and strengthens different aspects of the theme.',
+  uranus: 'Uranus moves about 0.01° per day. This transit is active for about 6-8 months per pass. With retrograde, Uranus makes 3 passes over 1-2 YEARS. This is a slow, fundamental reshaping of the affected life area.',
+  neptune: 'Neptune moves about 0.006° per day. This transit is active for about 8-12 months per pass. With retrograde, Neptune makes 3 passes over 2-3 YEARS. This is one of the longest transits — a gradual dissolution and spiritual transformation.',
+  pluto: 'Pluto moves about 0.004° per day. This transit is active for 1-2 YEARS per pass. With retrograde, Pluto can make 3-5 passes over 2-4 YEARS at the same degree. This is the deepest, slowest, most transformative transit in astrology.',
+  chiron: 'Chiron moves about 0.02° per day. This transit is active for about 4-6 months per pass. With retrograde, Chiron makes 3 passes over 9-14 months. Each pass opens a deeper layer of the healing process.',
+};
+
 const getFeeling = (transitPlanet: string, natalPlanet: string, aspect: string, natalHouse: number | null): FeelingData => {
-  const feelingsDatabase: Record<string, FeelingData> = {
+  // First check hardcoded specific combos
+  const key = `${transitPlanet.toLowerCase()}-${aspect}-${natalPlanet.toLowerCase()}`;
+  const specificFeelings: Record<string, FeelingData> = {
     'sun-square-pluto': {
       title: 'Power Struggle with Self',
       feeling: 'You feel like your identity is being challenged by deep, buried power. It is uncomfortable. Your ego (Sun) is being forced to confront your shadow (Pluto). You might feel controlling or controlled. Authority issues surface.',
@@ -541,12 +605,12 @@ const getFeeling = (transitPlanet: string, natalPlanet: string, aspect: string, 
       duration: 'Conjunctions are the most powerful aspect. Effects linger for the entire transit period.',
     },
     'saturn-square-saturn': {
-      title: 'Saturn Square - Life Structure Test',
-      feeling: 'Your life structures are being tested. What you built is being challenged. This is the mid-point of your Saturn cycle - a crisis of maturity.',
+      title: 'Saturn Square — Life Structure Test',
+      feeling: 'Your life structures are being tested. What you built is being challenged. This is the mid-point of your Saturn cycle — a crisis of maturity.',
       body: 'Physically: possible fatigue, feeling of weight or burden, needing more rest.',
       emotional: 'Emotionally: serious, possibly depressed, questioning your life direction. Heavy responsibilities.',
       where: natalHouse ? `The pressure is on your ${HOUSE_MEANINGS[natalHouse].short.toLowerCase()} themes.` : 'Look at what structures need to change.',
-      duration: 'Saturn transits last MONTHS. The exact hit is just the peak - you feel this for weeks before and after.',
+      duration: 'Saturn transits last MONTHS. The exact hit is just the peak — you feel this for weeks before and after.',
     },
     'jupiter-conjunction-sun': {
       title: 'Expansion of Self',
@@ -557,26 +621,62 @@ const getFeeling = (transitPlanet: string, natalPlanet: string, aspect: string, 
       duration: 'Jupiter transits are relatively brief but powerful. Make the most of this lucky period!',
     },
   };
-  
-  const key = `${transitPlanet.toLowerCase()}-${aspect}-${natalPlanet.toLowerCase()}`;
-  
-  if (feelingsDatabase[key]) {
-    return feelingsDatabase[key];
+
+  if (specificFeelings[key]) {
+    return specificFeelings[key];
   }
+
+  // Build rich, real astrological content dynamically
+  const tPlanet = TRANSIT_PLANET_FEELING[transitPlanet.toLowerCase()];
+  const nTarget = NATAL_TARGET_FEELING[natalPlanet.toLowerCase()];
+  const aspectQ = ASPECT_FEELING_QUALITY[aspect];
+  const durationData = TRANSIT_DURATIONS[transitPlanet.toLowerCase()];
   
-  // Generic feeling based on aspect type
-  const aspectInfo = ASPECT_MEANINGS[aspect] || { meaning: 'aspects', energy: 'planetary interaction' };
   const transitInfo = PLANET_ESSENCES[transitPlanet.toLowerCase()] || { name: transitPlanet, essence: '' };
   const natalInfo = PLANET_ESSENCES[natalPlanet.toLowerCase()] || { name: natalPlanet, essence: '' };
-  
-  return {
-    title: `${transitInfo.name} ${aspectInfo.meaning} ${natalInfo.name}`,
-    feeling: `Transit ${transitInfo.name} ${aspectInfo.meaning} your natal ${natalInfo.name}. ${aspectInfo.energy}`,
-    body: 'Physical sensations vary by person. Notice where you feel tension or ease in your body.',
-    emotional: 'Emotional responses depend on your personal relationship with these planetary energies.',
-    where: natalHouse ? `This affects your ${HOUSE_MEANINGS[natalHouse].short.toLowerCase()} themes.` : 'Notice which life area is activated.',
-    duration: 'Duration varies by planet speed. Faster planets = shorter transits.',
-  };
+
+  // Build title
+  const title = aspectQ 
+    ? `${transitInfo.name} ${aspectQ.title_verb} ${natalInfo.name}`
+    : `${transitInfo.name} Aspects ${natalInfo.name}`;
+
+  // Build feeling — what is actually happening
+  const feelingParts: string[] = [];
+  if (tPlanet) {
+    feelingParts.push(`${transitInfo.name} ${tPlanet.verb} ${nTarget ? nTarget.area : `your natal ${natalInfo.name}`}.`);
+    feelingParts.push(tPlanet.psyche);
+  }
+  if (nTarget) {
+    feelingParts.push(nTarget.when_activated);
+  }
+  const feeling = feelingParts.join(' ') || `${transitInfo.name} is actively engaging your natal ${natalInfo.name}, reshaping how you experience ${natalInfo.essence.toLowerCase()}`;
+
+  // Build body sensation
+  const bodyParts: string[] = [];
+  if (tPlanet) bodyParts.push(tPlanet.somatic);
+  if (aspectQ) bodyParts.push(aspectQ.body_mod);
+  const body = bodyParts.join(' ') || `Your body registers this transit through the lens of ${transitInfo.name} energy — pay attention to where tension or activation shows up physically.`;
+
+  // Build emotional content
+  const emotionalParts: string[] = [];
+  if (aspectQ) emotionalParts.push(aspectQ.emotional_mod);
+  if (tPlanet) emotionalParts.push(tPlanet.esoteric);
+  const emotional = emotionalParts.join(' ') || `This transit activates the emotional dimension of your ${natalInfo.name} — notice what feelings arise without judging them.`;
+
+  // Build "where" — house-specific
+  let where = '';
+  if (nTarget && natalHouse) {
+    where = nTarget.house_flavor(natalHouse);
+  } else if (natalHouse) {
+    where = `This transit activates your ${HOUSE_MEANINGS[natalHouse].full}. Themes of ${HOUSE_MEANINGS[natalHouse].keywords} are front and center — this is the specific life department where you will feel these changes most concretely.`;
+  } else {
+    where = nTarget ? `This transit touches ${nTarget.area}. Look for which area of your daily life is most activated by these themes.` : 'Notice which life area is most affected by these changes.';
+  }
+
+  // Build duration — real data
+  const duration = durationData || `Check the orbital speed of ${transitInfo.name} for precise timing of this transit.`;
+
+  return { title, feeling, body, emotional, where, duration };
 };
 
 // ============================================================================
