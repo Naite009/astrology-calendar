@@ -438,7 +438,38 @@ const PLANET_INFO: Record<string, {
     themes: ["Illusions and deceptions becoming clearer", "Spiritual practices deepening", "Creative inspiration turning inward", "Boundaries between self and other clarifying", "Addiction patterns surfacing for healing", "Dreams becoming more vivid and meaningful"],
     keywords: ["Dreams", "Intuition", "Spirituality", "Imagination", "Illusion", "Compassion", "Dissolution", "Mysticism", "Art", "Music", "Escapism", "Transcendence", "Ocean", "Fog"],
     dignity: { domicile: "Pisces", exaltation: "Cancer/Leo (debated)", detriment: "Virgo", fall: "Capricorn/Aquarius (debated)" },
-    doList: ["Deepen meditation and spiritual practices", "Pay attention to dreams — keep a dream journal", "Create art, music, or poetry", "Practice discernment in relationships", "Address escapist habits honestly", "Spend time near water"],
+    dignityTeaching: {
+      intro: "Neptune was discovered in 1846 and given modern rulership of Pisces. Like all outer planets, Neptune spends roughly 14 years in each sign, making its dignity effects generational. Neptune's placements show how an entire generation dreams, creates, deceives itself, and seeks the divine.",
+      analogy: "Think of Neptune like the ocean. In Pisces, the ocean is boundless — no shore in sight, infinite depth, complete surrender to the current. In Virgo (detriment), someone's trying to put the ocean in bottles and label them — the magic is quantified into oblivion. In Capricorn (fall), the ocean is dammed and redirected for industrial use — functional but the wildness is gone.",
+      domicile: [{
+        sign: "Pisces",
+        title: "Neptune in Pisces — The Ocean Returns Home",
+        feltSense: "This feels like the membrane between the visible and invisible worlds getting thinner. Intuition amplifies. Art becomes more moving. But so does confusion, addiction, and the inability to distinguish reality from fantasy. Everything feels more — more beautiful, more painful, more mystical, more confusing. The collective unconscious is louder than usual.",
+        psychology: "Neptune in Pisces (2011–2026) is Neptune at full power. Spiritual awakening and spiritual bypassing both increase. The opioid crisis, the rise of meditation apps, virtual reality, and 'post-truth' media are all expressions of this transit. When retrograde: 'What am I escaping from? Where is my compassion genuine vs. performative?'",
+        gifts: ["Unprecedented access to spiritual and creative depth", "Collective healing through art, music, and compassion", "Dissolution of barriers between cultures and consciousness", "Intuitive breakthroughs", "Healing through water, sound, and imagination"],
+        challenges: ["Epidemic escapism — substances, screens, fantasy", "Boundary dissolution — not knowing where reality ends", "Collective delusion and 'post-truth' confusion", "Victim consciousness on a mass scale", "Spiritual materialism — commodifying transcendence"],
+        bodyFeeling: "Feet (Pisces body part) feel uncertain — literally and metaphorically ungrounded. A foggy quality in the head. Lymphatic sluggishness. The body absorbs environmental energy like a sponge."
+      }],
+      exaltation: [],
+      detriment: [{
+        sign: "Virgo",
+        title: "Neptune in Virgo — The Mystic in the Lab",
+        feltSense: "This feels like trying to meditate while someone reads you a spreadsheet. The transcendent and the practical are in constant friction. There's a yearning for something beyond data and measurement, but the tools available are all analytical. Health and service become the pathway to the divine, but only after the fog clears.",
+        psychology: "Neptune in Virgo forces the mystic to work through precision, health, and service. The spiritual becomes practical — or anxiety-producing. When retrograde: 'Am I serving from genuine compassion or from guilt? Can I find the sacred in the mundane?'",
+        gifts: ["Healing through practical service", "Finding spirit in the details of daily life", "Health-conscious spirituality", "Discernment in mystical matters", "Service-oriented compassion"],
+        challenges: ["Anxiety about imperfection replacing trust in the universe", "Health anxiety and hypochondria", "Losing the forest for the trees", "Criticizing spiritual experiences", "Worrying instead of surrendering"],
+        bodyFeeling: "Digestive tension (Virgo body part). Nervous stomach when trying to surrender control. The body tries to organize what can't be organized."
+      }],
+      fall: [{
+        sign: "Capricorn",
+        title: "Neptune in Capricorn — Dreams Meet Reality",
+        feltSense: "This feels like trying to build a cathedral with no blueprint — just a vision. The grand dream must justify itself through structure, profit, and measurable results. Imagination is channeled into institutions, but institutions may also co-opt and corrupt the dream. The tension between 'what could be' and 'what pays' is constant.",
+        psychology: "Neptune in Capricorn (1984–1998) dreamed through structures — corporate spirituality, institutional art, commodified imagination. When retrograde: 'Have I sold my dreams for security? Can I rebuild my vision within reality's constraints?'",
+        gifts: ["Making dreams structurally viable", "Institutional compassion and service", "Long-term vision that survives practical testing", "Building systems that serve the collective spirit", "Grounded idealism"],
+        challenges: ["Cynicism replacing vision", "Institutions absorbing and neutralizing genuine dreams", "Confusing profit with purpose", "Rigid structures crushing creative spirit", "Disenchantment with all authority"],
+        bodyFeeling: "Heaviness in the knees and skeletal system (Capricorn body part). The weight of responsibility pressing on the dreamer. Stiffness where fluidity is needed."
+      }],
+    },
     dontList: ["Ignore red flags in relationships", "Make major decisions based solely on intuition without grounding", "Increase substance use as escapism", "Sign contracts without careful review (confusion possible)", "Dismiss practical concerns for idealism"],
     signMeanings: {
       Aries: "Neptune retrograde in Aries: The spiritual warrior turns inward. Idealism about identity reviewed.",
