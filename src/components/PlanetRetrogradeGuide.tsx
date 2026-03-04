@@ -1263,17 +1263,33 @@ export function PlanetRetrogradeGuide({ planet, allCharts, primaryUserName }: Pl
                 )}
               </div>
             ) : (
-              <div className={`rounded-2xl border ${colors.border} bg-white/[0.03] p-8 text-center`}>
-                <p className="text-3xl mb-3">➡️</p>
-                <p className="text-white text-lg font-medium mb-2">{planet} is Currently Direct</p>
-                <p className="text-white/60 text-sm">
-                  {planet} is moving forward through the zodiac. No retrograde or shadow period is currently active.
-                  {periods.length > 0 && (() => {
-                    const next = periods.find(p => p.preStart > new Date());
-                    if (next) return ` The next ${planet} retrograde pre-shadow begins ${formatDate(next.preStart)}.`;
-                    return '';
-                  })()}
-                </p>
+              <div className={`rounded-2xl border ${colors.border} bg-white/[0.03] p-6 space-y-4`}>
+                <div className="text-center">
+                  <p className="text-3xl mb-3">➡️</p>
+                  <p className="text-white text-lg font-medium mb-2">{planet} is Currently Direct</p>
+                  <p className="text-white/60 text-sm">
+                    {planet} is moving forward through the zodiac. No retrograde or shadow period is currently active.
+                  </p>
+                </div>
+
+                {(lastRetrograde || nextRetrograde) && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                    {lastRetrograde && (
+                      <div className="rounded-xl bg-white/5 border border-white/10 p-4">
+                        <p className="text-xs text-white/50 font-semibold uppercase mb-2">↩️ Last Retrograde</p>
+                        <p className="text-sm font-medium text-white">{formatDate(lastRetrograde.start)} – {formatDate(lastRetrograde.end)}</p>
+                        <p className="text-xs text-white/50 mt-1">in {lastRetrograde.sign}</p>
+                      </div>
+                    )}
+                    {nextRetrograde && (
+                      <div className="rounded-xl bg-white/5 border border-white/10 p-4">
+                        <p className="text-xs text-white/50 font-semibold uppercase mb-2">⏭️ Next Retrograde</p>
+                        <p className="text-sm font-medium text-white">{formatDate(nextRetrograde.start)} – {formatDate(nextRetrograde.end)}</p>
+                        <p className="text-xs text-white/50 mt-1">in {nextRetrograde.sign}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
