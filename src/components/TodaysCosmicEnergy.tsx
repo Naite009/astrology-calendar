@@ -497,7 +497,7 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
             return {
               fromSign: planets.moon?.signName || signGlyphToName[planets.moon?.sign] || 'Unknown',
               toSign: voc.moonEntersSign,
-              time: changeDate.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit' }) + ' ET',
+              time: changeDate.toLocaleTimeString('en-US', { timeZone: userTimezone, hour: 'numeric', minute: '2-digit' }) + ' ' + userTzAbbr,
             };
           }
         }
