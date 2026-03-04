@@ -305,9 +305,6 @@ const ELEMENT_STYLES: Record<string, { bg: string; border: string; text: string;
 };
 
 
-const MIN_YEAR = 2020;
-const MAX_YEAR = 2035;
-
 // ─── SUBCOMPONENTS ──────────────────────────────────────────────────────────
 
 function SectionHeader({ icon, title, subtitle }: { icon: string; title: string; subtitle?: string }) {
