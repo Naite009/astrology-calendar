@@ -415,6 +415,7 @@ const PLANET_INFO: Record<string, {
         bodyFeeling: "Throat tightness (Taurus body part). A sense of the ground being unstable. Body awareness shifts — what felt solid now feels temporary. Nervous energy trapped in a body that wants stability."
       }],
     },
+    doList: ["Reflect on changes you've resisted — are they actually liberating?", "Innovate internally before implementing externally", "Question assumptions and habitual thinking", "Embrace your uniqueness and eccentricities", "Review your relationship to technology", "Process any sudden changes from the past months"],
     dontList: ["Force radical external changes", "Rebel without a clear purpose", "Make impulsive decisions in the name of freedom", "Ignore the need for stability alongside change", "Dismiss conventional wisdom entirely"],
     signMeanings: {
       Aries: "Uranus retrograde in Aries: Identity revolution internalized. Who are you becoming?",
