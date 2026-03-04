@@ -9,7 +9,7 @@ import { useDocumentExcerpts } from "@/hooks/useDocumentExcerpts";
 import { getMoonPhase, getPlanetaryPositions, calculateDailyAspects, PlanetaryPositions, getPlanetSymbol, getExactLunarPhase, findNearestMajorPhaseTime } from "@/lib/astrology";
 import { getVOCMoonDetails, findNextMoonSignChange } from "@/lib/voidOfCourseMoon";
 import { formatLocalDateKey } from "@/lib/localDate";
-import { getMercuryRetrogrades, getRetrogradeStatus, formatRetrogradeDate, getAllRetrogradePeriods } from "@/lib/retrogradePatterns";
+import { getMercuryRetrogrades, getRetrogradeStatus, getAllRetrogradePeriods } from "@/lib/retrogradePatterns";
 import ReactMarkdown from "react-markdown";
 import html2canvas from "html2canvas";
 import { toast } from "@/hooks/use-toast";
