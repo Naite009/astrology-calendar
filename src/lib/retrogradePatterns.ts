@@ -65,6 +65,32 @@ const isPlanetRetrograde = (body: Astronomy.Body, date: Date, intervalHours: num
   }
 };
 
+// Get ecliptic longitude for a planet
+const getPlanetLongitude = (body: Astronomy.Body, date: Date): number => {
+  try {
+    const vector = Astronomy.GeoVector(body, date, false);
+    const ecliptic = Astronomy.Ecliptic(vector);
+    return ecliptic.elon;
+  } catch {
+    return 0;
+  }
+};
+
+// Get zodiac sign from ecliptic longitude
+const getSignFromLongitude = (longitude: number): string => {
+  const signIndex = Math.floor(longitude / 30) % 12;
+  return ZODIAC_SIGNS[signIndex];
+};
+
+// Get the sign a planet is in on a specific date
+const getPlanetSign = (body: Astronomy.Body, date: Date): string => {
+  try {
+    return getSignFromLongitude(getPlanetLongitude(body, date));
+  } catch {
+    return 'Unknown';
+  }
+};
+
 // Compute the instantaneous ecliptic longitude velocity (degrees/hour) at a given moment.
 // Uses a symmetric finite-difference with a tiny delta for high accuracy near stations.
 const getEclipticVelocity = (body: Astronomy.Body, date: Date, deltaMinutes: number = 5): number => {
