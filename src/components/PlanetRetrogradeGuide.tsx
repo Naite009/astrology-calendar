@@ -535,6 +535,7 @@ const PLANET_INFO: Record<string, {
         bodyFeeling: "Nervous system activation (Aquarius body part — circulation and electricity). A buzzing, wired quality. The body processes collective anxiety that doesn't feel personal but IS felt physically."
       }],
     },
+    doList: ["Engage in deep shadow work and self-inquiry", "Process old traumas with professional support", "Examine power dynamics in your relationships", "Let go of what needs to die — control, grudges, identities", "Research, investigate, and dig deep", "Practice non-attachment to outcomes"],
     dontList: ["Force transformation on others", "Manipulate or use power plays", "Ignore psychological material surfacing", "Resist necessary endings", "Suppress intense emotions — they'll erupt"],
     signMeanings: {
       Aries: "Pluto retrograde in Aries: Identity transformation deepens. Who you're becoming goes through internal purification.",
