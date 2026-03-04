@@ -14,7 +14,26 @@ interface PlanetRetrogradeGuideProps {
   primaryUserName?: string;
 }
 
-// ─── PLANET DATA ─────────────────────────────────────────────────────────────
+// ─── TYPES & DATA ───────────────────────────────────────────────────────────
+
+type DignityEntry = {
+  sign: string;
+  title: string;
+  feltSense: string;
+  psychology: string;
+  gifts: string[];
+  challenges: string[];
+  bodyFeeling: string;
+};
+
+type DignityTeaching = {
+  intro: string;
+  analogy: string;
+  domicile: DignityEntry[];
+  exaltation: DignityEntry[];
+  detriment: DignityEntry[];
+  fall: DignityEntry[];
+};
 
 const SIGN_ORDER = ["aries","taurus","gemini","cancer","leo","virgo","libra","scorpio","sagittarius","capricorn","aquarius","pisces"] as const;
 
