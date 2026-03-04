@@ -65,35 +65,30 @@ const isPlanetRetrograde = (body: Astronomy.Body, date: Date, intervalHours: num
   }
 };
 
-// Get ecliptic longitude for a planet
-const getPlanetLongitude = (body: Astronomy.Body, date: Date): number => {
+// Compute the instantaneous ecliptic longitude velocity (degrees/hour) at a given moment.
+// Uses a symmetric finite-difference with a tiny delta for high accuracy near stations.
+const getEclipticVelocity = (body: Astronomy.Body, date: Date, deltaMinutes: number = 5): number => {
   try {
-    const vector = Astronomy.GeoVector(body, date, false);
-    const ecliptic = Astronomy.Ecliptic(vector);
-    return ecliptic.elon;
+    const halfDelta = deltaMinutes * 60000 / 2; // ms
+    const before = new Date(date.getTime() - halfDelta);
+    const after = new Date(date.getTime() + halfDelta);
+    
+    const lonBefore = getPlanetLongitude(body, before);
+    const lonAfter = getPlanetLongitude(body, after);
+    
+    let diff = lonAfter - lonBefore;
+    if (diff > 180) diff -= 360;
+    if (diff < -180) diff += 360;
+    
+    return diff / (deltaMinutes / 60); // degrees per hour
   } catch {
     return 0;
   }
 };
 
-// Get zodiac sign from ecliptic longitude
-const getSignFromLongitude = (longitude: number): string => {
-  const signIndex = Math.floor(longitude / 30) % 12;
-  return ZODIAC_SIGNS[signIndex];
-};
-
-// Get the sign a planet is in on a specific date
-const getPlanetSign = (body: Astronomy.Body, date: Date): string => {
-  try {
-    return getSignFromLongitude(getPlanetLongitude(body, date));
-  } catch {
-    return 'Unknown';
-  }
-};
-
-// Find retrograde station with high precision using binary search.
-// First pass: daily sweep to find the 1-day window where the transition happens.
-// Second pass: binary search within that window down to ~15-minute precision.
+// Find retrograde station with high precision using velocity zero-crossing.
+// Phase 1: daily sweep to find the 1-day window where velocity changes sign.
+// Phase 2: binary search within that window for the velocity zero-crossing (~1 min precision).
 const findStation = (
   body: Astronomy.Body, 
   startDate: Date, 
@@ -103,54 +98,56 @@ const findStation = (
   const start = new Date(startDate);
   const end = new Date(endDate);
   
-  // Phase 1 — coarse daily sweep
+  // Phase 1 — coarse daily sweep looking for velocity sign change
   const current = new Date(start);
-  let prevRetrograde = isPlanetRetrograde(body, current);
+  let prevVelocity = getEclipticVelocity(body, current);
   let windowStart: Date | null = null;
   let windowEnd: Date | null = null;
   
   while (current <= end) {
     const prevTime = new Date(current);
     current.setDate(current.getDate() + 1);
-    const nowRetrograde = isPlanetRetrograde(body, current);
+    const nowVelocity = getEclipticVelocity(body, current);
     
-    if (lookingForRetrograde && !prevRetrograde && nowRetrograde) {
+    // Station retrograde: velocity goes from positive to negative
+    if (lookingForRetrograde && prevVelocity >= 0 && nowVelocity < 0) {
       windowStart = prevTime;
       windowEnd = new Date(current);
       break;
     }
-    if (!lookingForRetrograde && prevRetrograde && !nowRetrograde) {
+    // Station direct: velocity goes from negative to positive
+    if (!lookingForRetrograde && prevVelocity < 0 && nowVelocity >= 0) {
       windowStart = prevTime;
       windowEnd = new Date(current);
       break;
     }
     
-    prevRetrograde = nowRetrograde;
+    prevVelocity = nowVelocity;
   }
   
   if (!windowStart || !windowEnd) return null;
   
-  // Phase 2 — binary search within the 24-hour window to ~15-min precision
-  // Use a 1-hour comparison interval for much more accurate station detection
+  // Phase 2 — binary search within the window for velocity = 0 (~1 minute precision)
   let lo = windowStart.getTime();
   let hi = windowEnd.getTime();
   
-  while (hi - lo > 15 * 60 * 1000) { // 15 minutes
+  while (hi - lo > 60 * 1000) { // 1 minute precision
     const mid = lo + (hi - lo) / 2;
-    const midDate = new Date(mid);
-    const isRetro = isPlanetRetrograde(body, midDate, 1); // 1-hour interval for precision
+    const midVelocity = getEclipticVelocity(body, new Date(mid), 2); // 2-minute delta for precision
     
     if (lookingForRetrograde) {
-      if (isRetro) {
-        hi = mid;
-      } else {
+      // Looking for where velocity crosses from positive to negative
+      if (midVelocity > 0) {
         lo = mid;
+      } else {
+        hi = mid;
       }
     } else {
-      if (!isRetro) {
-        hi = mid;
-      } else {
+      // Looking for where velocity crosses from negative to positive
+      if (midVelocity < 0) {
         lo = mid;
+      } else {
+        hi = mid;
       }
     }
   }
