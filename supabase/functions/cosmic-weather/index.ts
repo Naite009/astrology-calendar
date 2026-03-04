@@ -743,6 +743,7 @@ ${nodeAspectText}
 ${aspectsText}
 ${imminentChangesText}
 ${allRetroText}
+${notRetroText}
 ${upcomingEventsText}
 ${eclipseContextText}
 ${personalizedRetroText}
