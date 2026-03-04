@@ -829,6 +829,10 @@ CRITICAL INSTRUCTIONS:
         /(Mercury\s+stations?\s+direct[^.\n]*\.)\s*(Remember[^.\n]*(review|rethink|rethink(?:ing)?|reviewing)[^.\n]*\.)/gi,
         `$1 Once Mercury is direct, the retrograde phase is over; now the focus is forward movement, implementation, and integration.`
       );
+      output = output.replace(
+        /(phase\s+for\s+)(reviewing|rethinking|review\s+and\s+rethinking)/gi,
+        `phase for forward movement and integration`
+      );
 
       if (postShadowClear && !new RegExp(`post-shadow\\s+clear[s]?\\s+(on\\s+)?${escapeRegex(postShadowClear)}`, "i").test(output)) {
         output = `${output}\n\nMercury post-shadow clears on ${postShadowClear}.`;
