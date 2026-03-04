@@ -192,8 +192,8 @@ export const AstroCalendar = () => {
     if (viewMode === "solar-return") {
       return "Solar Return";
     }
-    if (viewMode === "mercury-rx") {
-      return "Mercury Retrograde";
+    if (viewMode === "retrogrades") {
+      return "Retrogrades";
     }
     if (viewMode === "moon-encyclopedia") {
       return "Moon Phase Encyclopedia";
