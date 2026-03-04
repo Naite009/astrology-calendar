@@ -977,6 +977,7 @@ export function MercuryRetrogradeGuide({ allCharts, primaryUserName }: MercuryRe
                     search={chartSearch}
                     onSearchChange={setChartSearch}
                     primaryUserName={primaryUserName}
+                    filteredCharts={filteredCharts}
                   />
                 </div>
               </div>
