@@ -9,7 +9,7 @@ import { useDocumentExcerpts } from "@/hooks/useDocumentExcerpts";
 import { getMoonPhase, getPlanetaryPositions, calculateDailyAspects, PlanetaryPositions, getPlanetSymbol, getExactLunarPhase, findNearestMajorPhaseTime } from "@/lib/astrology";
 import { getVOCMoonDetails, findNextMoonSignChange } from "@/lib/voidOfCourseMoon";
 import { formatLocalDateKey } from "@/lib/localDate";
-import { getMercuryRetrogrades, getRetrogradeStatus, formatRetrogradeDate, getAllRetrogradePeriods } from "@/lib/retrogradePatterns";
+import { getMercuryRetrogrades, getRetrogradeStatus, getAllRetrogradePeriods } from "@/lib/retrogradePatterns";
 import ReactMarkdown from "react-markdown";
 import html2canvas from "html2canvas";
 import { toast } from "@/hooks/use-toast";
@@ -476,8 +476,16 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
       const greeting = localHour < 12 ? 'Good morning' : localHour < 17 ? 'Good afternoon' : 'Good evening';
 
       // Detect user's timezone early (used for ingress times and AI prompt)
-      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const userTzAbbr = new Date().toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop() || 'ET';
+      // If runtime reports UTC (common in some preview environments), fall back to ET for Pennsylvania-focused timing.
+      const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const userTimezone = detectedTimezone && detectedTimezone !== 'UTC' ? detectedTimezone : 'America/New_York';
+      const userTzAbbr = new Date().toLocaleTimeString('en-US', { timeZone: userTimezone, timeZoneName: 'short' }).split(' ').pop() || 'ET';
+      const formatDateForTimezone = (value: Date) => value.toLocaleDateString('en-US', {
+        timeZone: userTimezone,
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
 
       // --- Moon sign change today ---
       const moonSignChangeToday = (() => {
@@ -571,10 +579,10 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
         if (!mercuryRxStatus.retrogradeInfo) return null;
         const ri = mercuryRxStatus.retrogradeInfo;
         const sign = ri.sign;
-        const rxStartStr = formatRetrogradeDate(ri.start);
-        const rxEndStr = formatRetrogradeDate(ri.end);
-        const preStartStr = formatRetrogradeDate(ri.preStart);
-        const postEndStr = formatRetrogradeDate(ri.postEnd);
+        const rxStartStr = formatDateForTimezone(ri.start);
+        const rxEndStr = formatDateForTimezone(ri.end);
+        const preStartStr = formatDateForTimezone(ri.preStart);
+        const postEndStr = formatDateForTimezone(ri.postEnd);
         
         // Compute shadow/rx degree from actual planet position at those dates
         const isPiscesRx = sign.includes('Pisces');
@@ -707,7 +715,7 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
             planets: s.planets.map(p => ({ name: p }))
           })),
           mercuryRetro: mercuryRxInfo?.phase === 'retrograde-first-half' || mercuryRxInfo?.phase === 'retrograde-second-half',
-          mercuryRetrogradeInfo: mercuryRxInfo ? { phase: mercuryRxInfo.phase, description: mercuryRxInfo.description, shadowDegree: mercuryRxInfo.shadowDegree, rxDegree: mercuryRxInfo.rxDegree, sign: mercuryRxInfo.sign, stationRetrograde: mercuryRxInfo.rxStart ? formatRetrogradeDate(mercuryRxInfo.rxStart) : undefined, stationDirect: mercuryRxInfo.rxEnd ? formatRetrogradeDate(mercuryRxInfo.rxEnd) : undefined, cazimi: undefined, postShadowClear: mercuryRxInfo.postShadowEnd ? formatRetrogradeDate(mercuryRxInfo.postShadowEnd) : undefined } : null,
+          mercuryRetrogradeInfo: mercuryRxInfo ? { phase: mercuryRxInfo.phase, description: mercuryRxInfo.description, shadowDegree: mercuryRxInfo.shadowDegree, rxDegree: mercuryRxInfo.rxDegree, sign: mercuryRxInfo.sign, stationRetrograde: mercuryRxInfo.rxStart ? formatDateForTimezone(mercuryRxInfo.rxStart) : undefined, stationDirect: mercuryRxInfo.rxEnd ? formatDateForTimezone(mercuryRxInfo.rxEnd) : undefined, cazimi: undefined, postShadowClear: mercuryRxInfo.postShadowEnd ? formatDateForTimezone(mercuryRxInfo.postShadowEnd) : undefined } : null,
           // All-planet retrograde status (computed from ephemeris)
           allRetrogrades: (() => {
             const allPeriods = getAllRetrogradePeriods(now);
@@ -715,7 +723,7 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
             for (const [planet, periods] of Object.entries(allPeriods)) {
               const status = getRetrogradeStatus(now, periods);
               if (status.isRetrograde && status.retrogradeInfo) {
-                statuses[planet] = { isRetrograde: true, sign: status.retrogradeInfo.sign, stationDirect: formatRetrogradeDate(status.retrogradeInfo.end) };
+                statuses[planet] = { isRetrograde: true, sign: status.retrogradeInfo.sign, stationDirect: formatDateForTimezone(status.retrogradeInfo.end) };
               }
             }
             return Object.keys(statuses).length > 0 ? statuses : undefined;

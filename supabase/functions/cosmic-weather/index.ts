@@ -14,7 +14,7 @@ serve(async (req) => {
   try {
     const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects, planetPositions, customPrompt, voiceStyle, upcomingEvents, deviceId, forceRegenerate, greeting: reqGreeting, timeOfDay: reqTimeOfDay, moonSignChange, imminentSignChanges, mercuryRetrogradeInfo, personalizedRetrograde, userTimezone, userTzAbbr, allRetrogrades, eclipseContext, referenceExcerpts } = await req.json();
     
-    console.log("Received cosmic weather request:", { date, moonPhase, moonSign, exactLunarPhase, voiceStyle, planetPositions });
+    console.log("Received cosmic weather request:", { date, moonPhase, moonSign, exactLunarPhase, voiceStyle, forceRegenerate, userTimezone, userTzAbbr, mercuryRetrogradeInfo, planetPositions });
     console.log("Aspects received:", aspects?.slice(0, 15));
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -104,34 +104,28 @@ ${aspects.slice(0, 10).map((a: any) => `- ${a.planet1} ${a.symbol} ${a.planet2} 
 ${imminentSignChanges.map((c: any) => `- ${c.planet} is at ${c.degree.toFixed(1)}° ${c.currentSign} - about to enter ${c.nextSign}!${c.ingressTime ? ` EXACT INGRESS TIME: ${c.ingressTime}.` : ''} This is a BIG DEAL. ${c.planet} energy is extremely concentrated right now at the end of ${c.currentSign}. Discuss what it means for ${c.planet} to leave ${c.currentSign} and enter ${c.nextSign}.${c.ingressTime ? ` Use the exact time provided: ${c.ingressTime}.` : ' Do NOT mention a specific time since none was calculated.'}`).join('\n')}`
       : '';
 
-    // Mercury retrograde shadow info
+    // Mercury retrograde / shadow info (phase-aware)
     const mercuryRxText = mercuryRetrogradeInfo
-      ? `MERCURY RETROGRADE STATUS - MUST MENTION: Phase: ${mercuryRetrogradeInfo.phase}. ${mercuryRetrogradeInfo.description}
-Mercury retrograde is about our soul taking another look at something - things show up in daily life that make us rethink HOW we are thinking, communicating, and processing. The shadow degree (${mercuryRetrogradeInfo.shadowDegree}) is where to pay attention in your chart.
+      ? (() => {
+          const phase = (mercuryRetrogradeInfo.phase || '').toLowerCase();
+          const isRetrograde = phase.includes('retrograde');
+          const isPostShadow = phase === 'post-shadow';
+          const isPreShadow = phase === 'pre-shadow';
 
-MERCURY DIGNITY IN THIS SIGN - TEACH THIS:
-${mercuryRetrogradeInfo.description?.includes('Pisces') ? `⚠️ CRITICAL: Mercury is in its WORST possible dignity in Pisces. It is BOTH in detriment (opposite Virgo, Mercury's home sign) AND in fall (opposite Virgo, Mercury's sign of exaltation). This is called "double difficulty" — no other sign weakens Mercury this much. WHY? Because Virgo is both where Mercury rules AND where Mercury is exalted. Pisces, as the opposite sign, is therefore both detriment AND fall simultaneously. This makes the Pisces retrograde the most challenging of the year for clear thinking, precise communication, and logical analysis. The mind works through dreams, feelings, symbols, and intuition rather than facts and data. Miscommunication is AMPLIFIED beyond normal retrograde levels. This is not weakness though — it is a DIFFERENT kind of intelligence. Channeled, received, felt rather than reasoned. Honor the fog. Journal. Create art. Don't sign contracts.` : `Mercury has no special dignity challenge in this sign — standard retrograde caution applies.`}
+          const dignityText = mercuryRetrogradeInfo.description?.includes('Pisces')
+            ? `⚠️ MERCURY IN PISCES: Mercury is in detriment + fall (double difficulty), so clarity can still lag and symbolic/intuitive processing is louder than linear logic.`
+            : `Mercury has no special dignity challenge in this sign.`;
 
-PRACTICAL MERCURY RETROGRADE GUIDANCE (weave naturally into the report):
-🚫 AVOID during Mercury Rx:
-- Signing major contracts, leases, or legal documents (if you must, read fine print 3x and expect revisions later)
-- Making major purchases especially electronics, cars, or appliances (glitches and buyer's remorse are common)
-- Launching new projects, businesses, or initiatives (better to plan now, launch after Rx ends)
-- Making impulsive life decisions — quitting jobs, ending relationships, moving (emotions and confusion are heightened)
-- Taking communication at face value — misunderstandings are rampant, so ask for clarification before reacting
-- Booking travel without backup plans (delays, cancellations, lost luggage are classic Rx themes)
+          const phaseGuidance = isRetrograde
+            ? `RETROGRADE GUIDANCE:\n- Prioritize review, revisions, and renegotiation over hard launches.\n- Double-check contracts, travel, and critical communication.`
+            : isPostShadow
+              ? `POST-SHADOW GUIDANCE (MERCURY IS DIRECT):\n- Retrograde is over. Focus on forward movement, implementation, and execution.\n- Post-shadow (until ${mercuryRetrogradeInfo.postShadowClear || 'the clear date'}) is for integrating lessons and final cleanup, not retrograde-style second-guessing.`
+              : isPreShadow
+                ? `PRE-SHADOW GUIDANCE:\n- Early signals are surfacing. Plan carefully and track themes before the station.`
+                : `GUIDANCE:\n- Use the provided station dates exactly as written.`;
 
-✅ DO during Mercury Rx:
-- Review, revise, and refine existing projects and plans
-- Reconnect with old friends, revisit old ideas, re-read old journals
-- Back up your devices and double-check important files
-- Slow down before hitting send on important emails or texts
-- Finish what you started — tie up loose ends
-- Reflect on whether your current communication patterns serve you
-- Use the "re-" words: reassess, reconsider, revise, revisit, renegotiate
-- If you MUST sign something, a Mercury-Sun cazimi (exact conjunction) is the one favorable window
-
-HOW IT FEELS: Like walking through fog — you THINK you see clearly but details are blurry. Your brain moves faster than reality can keep up. Old memories and people resurface. Technology feels like it has a mind of its own. This is normal. It passes. Use it.${mercuryRetrogradeInfo.description?.includes('Pisces') ? ' IN PISCES SPECIFICALLY: The fog is thicker than usual. Dreams are vivid and may carry messages. You may cry more easily. Words fail where feelings succeed. This is Mercury at its most mystical — and most error-prone.' : ''}`
+          return `MERCURY TIMING STATUS - MUST MENTION: Phase: ${mercuryRetrogradeInfo.phase}. ${mercuryRetrogradeInfo.description}\n${dignityText}\n\n${phaseGuidance}`;
+        })()
       : '';
 
     const mercuryFactCheckText = mercuryRetrogradeInfo
@@ -808,27 +802,66 @@ CRITICAL INSTRUCTIONS:
     const data = await response.json();
     const insightRaw = data.choices?.[0]?.message?.content || "Unable to generate insights at this time.";
 
-    // Deterministic post-check: if Mercury station direct is mentioned, enforce exact ephemeris date.
-    const enforceMercuryStationDate = (text: string): string => {
-      if (!mercuryRetrogradeInfo?.stationDirect) return text;
+    const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-      const stationSign = mercuryRetrogradeInfo?.sign ? ` in ${mercuryRetrogradeInfo.sign}` : '';
-      const canonicalSentence = `Mercury stations direct on ${mercuryRetrogradeInfo.stationDirect}${stationSign}.`;
-      const stationSentenceRegex = /Mercury[^.\n]{0,140}stations?\s+direct[^.\n]*\.?/gi;
+    // Deterministic post-check: enforce exact Mercury station + post-shadow phrasing from ephemeris.
+    const enforceMercuryTiming = (text: string): string => {
+      if (!mercuryRetrogradeInfo) return text;
 
-      if (stationSentenceRegex.test(text)) {
-        return text.replace(stationSentenceRegex, canonicalSentence);
+      const stationDirect = mercuryRetrogradeInfo.stationDirect;
+      const postShadowClear = mercuryRetrogradeInfo.postShadowClear;
+      const stationSign = mercuryRetrogradeInfo.sign ? ` in ${mercuryRetrogradeInfo.sign}` : "";
+
+      let output = text;
+
+      if (stationDirect) {
+        const canonicalDirectSentence = `Mercury stations direct on ${stationDirect}${stationSign}.`;
+        const stationSentenceRegex = /Mercury[^.\n]{0,180}stations?\s+direct[^.\n]*\.?/gi;
+        output = output.replace(stationSentenceRegex, canonicalDirectSentence);
+
+        if (!new RegExp(`Mercury\\s+stations?\\s+direct\\s+on\\s+${escapeRegex(stationDirect)}`, "i").test(output)) {
+          output = `${canonicalDirectSentence}\n\n${output}`;
+        }
       }
 
-      return `${text}\n\n${canonicalSentence}`;
+      // Prevent incorrect "still reviewing/rethinking" framing after station direct
+      output = output.replace(
+        /(Mercury\s+stations?\s+direct[^.\n]*\.)\s*(Remember[^.\n]*(review|rethink|rethink(?:ing)?|reviewing)[^.\n]*\.)/gi,
+        `$1 Once Mercury is direct, the retrograde phase is over; now the focus is forward movement, implementation, and integration.`
+      );
+      output = output.replace(
+        /(phase\s+for\s+)(reviewing|rethinking|review\s+and\s+rethinking)/gi,
+        `phase for forward movement and integration`
+      );
+
+      if (stationDirect) {
+        output = output
+          .replace(/review\s+and\s+reconsider/gi, 'integrate and implement')
+          .replace(/period\s+of\s+review/gi, 'period of integration')
+          .replace(/review-oriented/gi, 'implementation-oriented')
+          .replace(/review,\s*when/gi, 'integration, when')
+          .replace(/rather than pushing forward with brand new ventures/gi, 'while moving forward thoughtfully')
+          .replace(/still in the post-shadow phase of Mercury retrograde/gi, "in Mercury's post-shadow integration phase");
+      }
+
+      if (postShadowClear && !new RegExp(`post-shadow\\s+clear[s]?\\s+(on\\s+)?${escapeRegex(postShadowClear)}`, "i").test(output)) {
+        output = `${output}\n\nMercury post-shadow clears on ${postShadowClear}.`;
+      }
+
+      return output;
     };
 
-    const insightVerified = enforceMercuryStationDate(insightRaw);
+    const insightVerified = enforceMercuryTiming(insightRaw);
+
+    const mercuryTimingBlock = mercuryRetrogradeInfo
+      ? `## Mercury Timing (Verified)\n- Station direct: ${mercuryRetrogradeInfo.stationDirect || 'not provided'}\n- Post-shadow clear: ${mercuryRetrogradeInfo.postShadowClear || 'not provided'}\n- Guidance: Mercury is direct now; this is for forward movement and integration, not retrograde-style review.`
+      : '';
 
     const mercuryFactAppendix = mercuryRetrogradeInfo
       ? `\n\n## Ephemeris Fact Check\n- Mercury station retrograde: ${mercuryRetrogradeInfo.stationRetrograde || 'not provided'}\n- Mercury station direct: ${mercuryRetrogradeInfo.stationDirect || 'not provided'}\n- Mercury cazimi: ${mercuryRetrogradeInfo.cazimi || 'not provided'}\n- Mercury post-shadow clears: ${mercuryRetrogradeInfo.postShadowClear || 'not provided'}\n(All times and dates above are computed from ephemeris in the user's local timezone.)`
       : '';
-    const insight = `${insightVerified}${mercuryFactAppendix}`;
+
+    const insight = `${mercuryTimingBlock ? `${mercuryTimingBlock}\n\n` : ''}${insightVerified}${mercuryFactAppendix}`;
 
     // Save to DB cache (expires at end of day in user's timezone, approximated as 24h)
     if (dateKey && !customPrompt) {
