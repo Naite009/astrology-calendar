@@ -14,7 +14,26 @@ interface PlanetRetrogradeGuideProps {
   primaryUserName?: string;
 }
 
-// ─── PLANET DATA ─────────────────────────────────────────────────────────────
+// ─── TYPES & DATA ───────────────────────────────────────────────────────────
+
+type DignityEntry = {
+  sign: string;
+  title: string;
+  feltSense: string;
+  psychology: string;
+  gifts: string[];
+  challenges: string[];
+  bodyFeeling: string;
+};
+
+type DignityTeaching = {
+  intro: string;
+  analogy: string;
+  domicile: DignityEntry[];
+  exaltation: DignityEntry[];
+  detriment: DignityEntry[];
+  fall: DignityEntry[];
+};
 
 const SIGN_ORDER = ["aries","taurus","gemini","cancer","leo","virgo","libra","scorpio","sagittarius","capricorn","aquarius","pisces"] as const;
 
@@ -50,6 +69,7 @@ const PLANET_INFO: Record<string, {
   themes: string[];
   keywords: string[];
   dignity: { domicile: string; exaltation: string; detriment: string; fall: string };
+  dignityTeaching?: DignityTeaching;
   doList: string[];
   dontList: string[];
   signMeanings: Record<string, string>;
@@ -85,6 +105,72 @@ const PLANET_INFO: Record<string, {
     themes: ["Energy levels fluctuating dramatically", "Past conflicts and anger resurfacing", "Reassessing how you assert yourself", "Sexual desire patterns shifting", "Physical health and exercise review", "Delayed or stalled projects"],
     keywords: ["Action", "Drive", "Anger", "Desire", "Courage", "Competition", "Physical Energy", "Sexuality", "Assertiveness", "Warrior", "Conflict", "Initiative", "Muscle", "Heat"],
     dignity: { domicile: "Aries · Scorpio", exaltation: "Capricorn", detriment: "Libra · Taurus", fall: "Cancer" },
+    dignityTeaching: {
+      intro: "Mars has TWO home signs — Aries and Scorpio — because he fights in two ways: the direct charge (Aries) and the strategic ambush (Scorpio). This means he has TWO detriment signs — Libra and Taurus — where his aggressive, action-oriented energy is most frustrated.",
+      analogy: "Think of Mars like a soldier. In Aries, he's charging into battle with a war cry — direct, fearless, unstoppable. In Scorpio, he's the special ops agent — silent, strategic, lethal in the shadows. In Libra (detriment), someone's asked him to negotiate a peace treaty instead of fighting — he knows how, but it feels like wearing a suit two sizes too small. In Taurus (detriment), he's been told to dig a trench and wait — his muscles ache to move, but the ground won't budge. In Capricorn (exaltation), he's been promoted to general — strategic, disciplined, commanding. In Cancer (fall), he's been told to fight while holding a baby — every aggressive instinct conflicts with the need to protect.",
+      domicile: [
+        {
+          sign: "Aries",
+          title: "Mars in Aries — The Warrior at Home",
+          feltSense: "Pure adrenaline. You feel it as a surge of heat through your body — a readiness to act, to move, to START. Sitting still feels physically uncomfortable. There's a clarity that comes from impulse: you know what you want before you can explain it. It's the feeling of sprinting flat out, wind in your face, zero hesitation.",
+          psychology: "Mars in Aries is Mars at maximum intensity. Action is immediate, instinctive, and unapologetic. This is raw assertion — 'I exist, I want, I act.' Anger is expressed openly and burns hot but brief. There's no strategy here, just pure reaction. When retrograde, the warrior is forced to put down his sword and ask: 'Why do I fight? Is every battle worth fighting?'",
+          gifts: ["Extraordinary courage and initiative", "Natural leadership in crisis", "Honest anger — you always know where you stand", "Physical vitality and athleticism", "Ability to start from nothing"],
+          challenges: ["Impulsiveness — acting before thinking", "Anger that erupts explosively", "Difficulty with patience and long-term projects", "Competitiveness that alienates allies", "Burning bridges that needed crossing"],
+          bodyFeeling: "Heat in the head and face, racing heart, muscles tensed and ready. Anger shows as jaw clenching, fist-making. When blocked, headaches and restless agitation."
+        },
+        {
+          sign: "Scorpio",
+          title: "Mars in Scorpio — The Strategic Warrior",
+          feltSense: "This feels like calm surface water over a powerful undertow. There's an intensity that doesn't show on the outside. You're watching, calculating, feeling everything at maximum depth. When you act, it's decisive and devastating. The feeling is more 'loaded weapon' than 'wild charge.' Power comes from restraint until the perfect moment.",
+          psychology: "Mars in Scorpio is Mars as psychologist-warrior. Every action has emotional depth and strategic purpose. Anger isn't expressed — it's wielded. Sexuality is intense, bonding, and transformative. This Mars never forgets a slight, but also never forgets a kindness. When retrograde, the question becomes: 'Am I using my power to control or to transform? Where am I holding grudges that are poisoning me?'",
+          gifts: ["Unmatched determination and follow-through", "Psychological insight — knowing others' motivations", "Emotional courage to face what others avoid", "Strategic brilliance in conflict", "Deep, transformative sexuality"],
+          challenges: ["Holding grudges and plotting revenge", "Manipulating through emotional intensity", "Obsessive fixation on perceived enemies", "Difficulty letting go of control", "Self-destructive tendencies when anger turns inward"],
+          bodyFeeling: "Intensity in the lower belly and reproductive organs. A coiled, ready-to-strike tension. Jaw tight. Eyes focused. When blocked, the energy turns into resentment you can feel as a heavy weight in your gut."
+        },
+      ],
+      exaltation: [
+        {
+          sign: "Capricorn",
+          title: "Mars in Capricorn — The Exaltation: Disciplined Power",
+          feltSense: "This feels like controlled strength — the difference between a wildfire and a forge. The heat is contained, directed, purposeful. You don't waste energy. Every action serves a long-term goal. There's a quiet authority — people instinctively move aside. It's the feeling of climbing a mountain: slow, steady, certain you'll reach the summit.",
+          psychology: "Mars is exalted in Capricorn because disciplined action produces the most lasting results. This is the CEO, the architect, the military strategist. Ambition is enormous but expressed through patience and planning. When retrograde, Mars asks: 'Am I building something that matters, or am I climbing for the sake of climbing? Has my ambition cost me my humanity?'",
+          gifts: ["Extraordinary self-discipline", "Ability to delay gratification for massive results", "Natural authority and command", "Strategic long-term planning", "Endurance that outlasts everyone"],
+          challenges: ["Workaholism — confusing productivity with worth", "Coldness — suppressing emotion for efficiency", "Using status as a weapon", "Difficulty relaxing or being vulnerable", "Ruthlessness justified as 'necessity'"],
+          bodyFeeling: "Tension in the knees and skeletal system (Capricorn's body parts). A stiffness in posture — upright, controlled. Energy is measured and deliberate. When blocked, the body feels rigid, aged, burdened."
+        },
+      ],
+      detriment: [
+        {
+          sign: "Libra",
+          title: "Mars in Libra — The Warrior in a Peace Treaty",
+          feltSense: "This feels like wanting to punch something but smiling instead. There's a constant negotiation between what you WANT to do and what you SHOULD do. Anger gets swallowed, redirected into passive aggression or icy politeness. You might feel your body tense up in a conflict and then immediately soften your voice and say 'It's fine.' It isn't fine.",
+          psychology: "Mars is in detriment in Libra because Libra is opposite Aries — Mars's most direct home. Instead of 'I act,' Libra says 'Let's discuss this.' The warrior has to fight through compromise, negotiation, and other people's needs. This isn't weakness — it's Mars learning to fight FOR relationship rather than just FOR self. When retrograde, the question is devastatingly honest: 'Where have I abandoned my own needs to keep the peace? What would happen if I actually said what I wanted?'",
+          gifts: ["Fighting for fairness and justice", "Strategic social intelligence", "Ability to assert through charm rather than force", "Creating win-win outcomes", "Standing up for others when they can't stand up for themselves"],
+          challenges: ["Passive aggression instead of direct confrontation", "Chronic people-pleasing that breeds resentment", "Indecisiveness about taking action", "Depending on others to fight your battles", "Resentment buildup from swallowed anger"],
+          bodyFeeling: "Lower back pain and kidney tension (Libra's body parts). A feeling of being 'stuck' — wanting to move forward but feeling held back by social obligation. Shoulders pulled in, making yourself smaller."
+        },
+        {
+          sign: "Taurus",
+          title: "Mars in Taurus — The Warrior in Quicksand",
+          feltSense: "This feels like trying to sprint through mud. There's enormous power here, but it's SLOW. Frustration builds not from lack of strength but from lack of speed. Once you finally get moving, nothing on earth can stop you — but getting started feels like pushing a boulder uphill. Anger doesn't erupt; it accumulates like pressure in a sealed container, and when it finally blows, it's seismic.",
+          psychology: "Mars is in detriment in Taurus because Taurus is opposite Scorpio — Mars's strategic home. Instead of Scorpio's 'strike at the perfect moment,' Taurus says 'I refuse to move until I'm ready.' The warrior's speed is replaced by immovable stubbornness. The gift is endurance that outlasts any opponent. The danger is inertia disguised as patience. When retrograde: 'Where have I stopped moving out of comfort rather than strategy?'",
+          gifts: ["Unstoppable once committed", "Physical strength and endurance", "Patience that wears down any opposition", "Practical, grounded action", "Building things that last"],
+          challenges: ["Extreme stubbornness — unable to change course", "Slow to anger but explosive when triggered", "Laziness masked as 'waiting for the right time'", "Hoarding energy instead of using it", "Possessiveness over resources and territory"],
+          bodyFeeling: "Heaviness in the throat and neck (Taurus's body parts). A physical sensation of being weighed down, anchored. Energy pools in the body rather than flowing. When the anger finally releases, it feels volcanic — full-body trembling."
+        },
+      ],
+      fall: [
+        {
+          sign: "Cancer",
+          title: "Mars in Cancer — The Fall: The Armored Crab",
+          feltSense: "This feels like trying to fight while crying. Emotions and actions are tangled together — you can't assert yourself without FEELING everything. Anger comes out sideways: door-slamming, silent treatment, suddenly cooking an aggressive amount of food. You want to protect more than you want to attack, but when your loved ones are threatened, a ferocity emerges that surprises everyone, including you.",
+          psychology: "Mars is in fall in Cancer because Cancer is opposite Capricorn — where Mars is exalted through disciplined action. Instead of Capricorn's strategic command, Cancer says 'But what about everyone's feelings?' The warrior becomes the protector, and action becomes emotional. This isn't weakness — it's Mars operating through the most powerful force on earth: a mother protecting her young. When retrograde: 'Am I using my emotions as a shield to avoid direct action? Where is my protective instinct actually smothering the people I love?'",
+          gifts: ["Fierce protectiveness of loved ones", "Emotional courage — willingness to be vulnerable", "Intuitive action — acting on gut feelings", "Creating safety for others", "Tenacity — the crab never lets go once it grabs on"],
+          challenges: ["Passive aggression and emotional manipulation", "Mood-dependent energy — can't act when sad", "Taking everything personally", "Retreating into the shell instead of confronting", "Using guilt as a weapon"],
+          bodyFeeling: "Stomach and chest tightness (Cancer rules the chest/stomach). Emotions hit the gut first — nausea when angry, appetite changes with stress. The body holds emotion like water holds shape — it takes the form of whatever container it's in."
+        },
+      ],
+    },
     doList: ["Review physical health routines and fitness goals", "Process old anger through therapy, journaling, or art", "Revisit stalled projects with strategic thinking", "Practice martial arts, yoga, or controlled physical activity", "Address conflict patterns in relationships honestly", "Rest when your body asks — Mars Rx can drain energy"],
     dontList: ["Start major new projects or ventures", "Pick fights or force confrontations", "Have elective surgery if avoidable", "Push through exhaustion — you'll burn out", "Make aggressive financial moves", "Ignore simmering resentments — they'll explode later"],
     signMeanings: {
@@ -109,6 +195,72 @@ const PLANET_INFO: Record<string, {
     themes: ["Inner growth and philosophical reflection", "Reassessing beliefs and faith systems", "Reviewing educational and travel plans", "Questioning what 'abundance' truly means", "Spiritual development turning inward", "Legal matters needing review"],
     keywords: ["Expansion", "Wisdom", "Faith", "Abundance", "Philosophy", "Travel", "Higher Education", "Optimism", "Generosity", "Justice", "Growth", "Vision", "Guru", "Blessing"],
     dignity: { domicile: "Sagittarius · Pisces", exaltation: "Cancer", detriment: "Gemini · Virgo", fall: "Capricorn" },
+    dignityTeaching: {
+      intro: "Jupiter has TWO home signs — Sagittarius and Pisces — because expansion comes in two forms: the intellectual quest for truth (Sagittarius) and the spiritual dissolution into the infinite (Pisces). His TWO detriment signs — Gemini and Virgo — are where his grand vision gets lost in details.",
+      analogy: "Think of Jupiter like a visionary professor. In Sagittarius, he's giving a TED talk to a standing ovation — big ideas, big energy, inspiring millions. In Pisces, he's in silent meditation at a monastery — expanding inward, touching the divine. In Gemini (detriment), he's been asked to proofread a 500-page technical manual — every big idea gets nitpicked into fragments. In Virgo (detriment), he's been put in charge of inventory at a warehouse — the grand vision is replaced by spreadsheets. In Cancer (exaltation), he's gathered the family for a feast — abundance flows through emotional generosity. In Capricorn (fall), he's been told his funding is cut and he must justify every expense — expansion meets restriction.",
+      domicile: [
+        {
+          sign: "Sagittarius",
+          title: "Jupiter in Sagittarius — The Philosopher King",
+          feltSense: "This feels like standing on a mountaintop with the whole world spread before you. Everything is possible. Your mind is racing with connections, possibilities, grand plans. There's a restless joy — you want to explore, learn, teach, travel. The horizon keeps pulling you forward. Optimism isn't a choice; it's your default state.",
+          psychology: "Jupiter in Sagittarius is expansion at full throttle. Every experience becomes a lesson, every person a teacher. The mind craves meaning — not data, but wisdom. Faith comes naturally. When retrograde: 'Have I been preaching instead of learning? Is my optimism genuine or is it avoiding pain?'",
+          gifts: ["Infectious enthusiasm and optimism", "Natural teaching ability", "Philosophical depth combined with humor", "Adventurous spirit — physical and intellectual", "Ability to find meaning in any experience"],
+          challenges: ["Over-promising and under-delivering", "Self-righteousness — believing your truth is THE truth", "Restlessness and inability to commit", "Exaggeration and excess in all things", "Bypassing difficult emotions with positive thinking"],
+          bodyFeeling: "Expansion in the hips and thighs (Sagittarius's body parts). A physical urge to move — walk, run, travel. Energy radiates outward. Laughter comes from the belly."
+        },
+        {
+          sign: "Pisces",
+          title: "Jupiter in Pisces — The Mystic's Expansion",
+          feltSense: "This feels like your consciousness is dissolving into something vast and oceanic. The boundaries of self become permeable. You feel OTHER people's joy and pain as your own. Music, art, and nature produce states of awe that are physically overwhelming. Compassion isn't a virtue you practice — it's a state you can't escape.",
+          psychology: "Jupiter in Pisces expands through dissolution — the ego gets bigger by getting smaller. Spiritual growth, creativity, and compassion are boundless. But so is self-deception, escapism, and boundary confusion. When retrograde: 'Am I genuinely expanding my compassion, or am I losing myself? Is my spirituality grounded or is it escapism?'",
+          gifts: ["Boundless compassion and empathy", "Profound spiritual and mystical experiences", "Creative genius — art, music, poetry", "Healing presence that transforms others", "Faith that endures even in darkness"],
+          challenges: ["Spiritual bypassing — using transcendence to avoid reality", "Enabling destructive behaviors out of compassion", "Boundary confusion — where do I end and you begin?", "Escapism through substances, fantasy, or chronic idealism", "Impracticality taken to extremes"],
+          bodyFeeling: "Feet and lymphatic system (Pisces's body parts). A floating, dreamy quality — as if you're not fully in your body. Tears flow easily. The body feels porous, absorbing the environment."
+        },
+      ],
+      exaltation: [
+        {
+          sign: "Cancer",
+          title: "Jupiter in Cancer — The Exaltation: Abundant Nurturing",
+          feltSense: "This feels like coming home to a table overflowing with food, surrounded by people who love you unconditionally. Warmth radiates from the center of your chest. Generosity flows naturally through emotional care — cooking for people, remembering their stories, creating spaces where everyone belongs. Abundance here is measured in love, not money.",
+          psychology: "Jupiter is exalted in Cancer because the greatest expansion happens through emotional connection and nurturing. This is the wise grandmother — enormous life experience expressed through care, food, and family. When retrograde: 'Am I expanding my family's foundation, or am I smothering them? Is my generosity genuine or am I buying love?'",
+          gifts: ["Creating abundance through emotional intelligence", "Building family and community bonds", "Generous, nurturing hospitality", "Wisdom rooted in lived emotional experience", "Intuitive understanding of others' needs"],
+          challenges: ["Overfeeding — emotional and literal", "Clannishness — 'my people' vs. 'outsiders'", "Sentimentality replacing genuine wisdom", "Using food/comfort as emotional manipulation", "Difficulty setting limits on giving"],
+          bodyFeeling: "Warmth in the chest and stomach. A fullness — not bloating, but a satisfied, nourished feeling. The body wants to hold, feed, comfort. When imbalanced, digestive issues from emotional eating."
+        },
+      ],
+      detriment: [
+        {
+          sign: "Gemini",
+          title: "Jupiter in Gemini — The Philosopher in a Chat Room",
+          feltSense: "This feels like your mind is in 47 browser tabs at once. Every idea sparks three more. You want to learn EVERYTHING — but finish NOTHING. Conversations are brilliant but scattered. You can talk about anything to anyone, but depth keeps eluding you. The mind buzzes with stimulation, and silence feels unbearable.",
+          psychology: "Jupiter in Gemini is detriment because the big picture gets fragmented into data points. Instead of one profound truth, you have a thousand interesting facts. When retrograde: 'Am I learning for wisdom or just collecting information? Can I go deep instead of wide?'",
+          gifts: ["Extraordinary versatility and adaptability", "Connecting ideas across disciplines", "Engaging communication and teaching", "Intellectual curiosity that never dies", "Seeing multiple perspectives simultaneously"],
+          challenges: ["Superficiality — knowing a little about everything", "Information addiction — scrolling, reading, consuming without integrating", "Inability to commit to one path", "Saying 'yes' to everything", "Mistaking cleverness for wisdom"],
+          bodyFeeling: "Restlessness in the hands and arms (Gemini's body parts). A nervous, chattery energy. The mind races ahead of the body. Difficulty sleeping from overstimulation."
+        },
+        {
+          sign: "Virgo",
+          title: "Jupiter in Virgo — The Visionary with a Clipboard",
+          feltSense: "This feels like trying to see the forest while someone keeps pointing out bark beetles on individual trees. You KNOW there's a bigger picture, but the details keep pulling you down. There's a frustrating gap between what you envision and what you can practically execute. Perfectionism meets expansive vision, and neither wins.",
+          psychology: "Jupiter in Virgo is detriment because grand vision gets filtered through critical analysis. Every dream must pass a feasibility study. When retrograde: 'Am I using analysis as growth, or am I using it to avoid the risk of expanding? Can I trust something before I've verified every detail?'",
+          gifts: ["Making big ideas actually work", "Growth through service and practical improvement", "Expanding through helping others solve problems", "Meticulous planning that supports vision", "Health-focused wisdom"],
+          challenges: ["Paralysis by analysis", "Criticizing every imperfection in a grand plan", "Missing opportunities while perfecting the pitch", "Anxiety about growth — what if it's not perfect?", "Over-working as substitute for genuine expansion"],
+          bodyFeeling: "Digestive tension and gut anxiety (Virgo's body parts). A sense of constriction around the waist. The body tightens when the mind encounters something it can't organize or categorize."
+        },
+      ],
+      fall: [
+        {
+          sign: "Capricorn",
+          title: "Jupiter in Capricorn — The Fall: Expansion Meets the Gate",
+          feltSense: "This feels like trying to throw a party in an accountant's office. The impulse to celebrate, expand, and be generous keeps bumping into rules, restrictions, and 'the budget.' There's a heaviness to optimism here — you believe things CAN get better, but only through hard work, discipline, and patience. The easy faith of Sagittarius or Cancer is replaced by earned faith.",
+          psychology: "Jupiter in Capricorn is in fall because Saturn's sign restricts Jupiter's natural exuberance. Expansion must justify itself. Every opportunity is weighed against risk. When retrograde: 'Have I been so cautious that I've missed the blessing? Am I confusing pessimism with realism?'",
+          gifts: ["Sustainable, earned success", "Growth through discipline and patience", "Wisdom from experience, not theory", "Building empires that last", "Teaching through example rather than words"],
+          challenges: ["Pessimism masquerading as practicality", "Missing opportunities by over-analyzing risk", "Meanness with resources — emotional and financial", "Difficulty trusting in luck or grace", "Measuring everything in terms of productivity"],
+          bodyFeeling: "Tension in the knees and bones (Capricorn's body parts). A sense of weight on the shoulders. The body feels older, stiffer. When balanced, it's the quiet power of a tree that's weathered many storms."
+        },
+      ],
+    },
     doList: ["Reflect on your personal philosophy and beliefs", "Journal about what abundance truly means to you", "Review educational goals and study plans", "Develop inner faith and spiritual practices", "Reassess financial growth strategies", "Travel inwardly — meditation, retreats, contemplation"],
     dontList: ["Over-expand or take excessive risks", "Sign up for programs without thorough research", "Assume luck will carry you — do the work", "Ignore philosophical doubts — they're growth signals", "Make major legal decisions without careful review"],
     signMeanings: {
@@ -133,6 +285,72 @@ const PLANET_INFO: Record<string, {
     themes: ["Reviewing responsibilities and commitments", "Reassessing career structures and authority", "Karmic patterns surfacing for resolution", "Boundaries needing redefinition", "Authority relationships under review", "Time management and life priorities reconsidered"],
     keywords: ["Discipline", "Structure", "Responsibility", "Karma", "Time", "Authority", "Maturity", "Limitation", "Boundaries", "Mastery", "Patience", "Legacy", "Father", "Bones"],
     dignity: { domicile: "Capricorn · Aquarius", exaltation: "Libra", detriment: "Cancer · Leo", fall: "Aries" },
+    dignityTeaching: {
+      intro: "Saturn has TWO home signs — Capricorn and Aquarius — representing two kinds of structure: the personal empire (Capricorn) and the social framework (Aquarius). His TWO detriment signs — Cancer and Leo — are where his cold discipline clashes most with warmth and self-expression.",
+      analogy: "Think of Saturn like a master architect. In Capricorn, he's building his magnum opus — a cathedral that will stand for a thousand years, every stone placed with purpose. In Aquarius, he's designing the city plan — systems, infrastructure, rules that serve the collective. In Cancer (detriment), he's been asked to build a nursery — he keeps making the walls too thick, the crib too rigid, confusing protection with control. In Leo (detriment), he's building a stage for performers — but he keeps reinforcing the structure while the performers beg for spotlight and applause. In Libra (exaltation), he's designing a courthouse — structure serves justice, fairness given form. In Aries (fall), someone handed him a skateboard and said 'just improvise' — every spontaneous bone in his body screams in protest.",
+      domicile: [
+        {
+          sign: "Capricorn",
+          title: "Saturn in Capricorn — The Master Builder",
+          feltSense: "This feels like standing at the base of a mountain you've been training to climb your whole life. There's no question of turning back. Every step is deliberate. The air is cold, the path is steep, and the discipline required is immense — but you were built for this. There's a deep, quiet pride in your own endurance.",
+          psychology: "Saturn in Capricorn is structure in its purest form. Ambition is enormous but expressed through patience, not force. Authority is earned through demonstrated competence. When retrograde: 'Is the empire I'm building the one I actually want? Have I confused status with meaning?'",
+          gifts: ["Mastery through long apprenticeship", "Natural authority — people trust your competence", "Building institutions that outlast you", "Strategic patience and timing", "Leading by example, not by words"],
+          challenges: ["Emotional coldness justified as professionalism", "Workaholism as identity", "Difficulty asking for help — 'I should handle this alone'", "Rigidity and resistance to change", "Measuring human worth by achievement"],
+          bodyFeeling: "Tension in the knees, bones, and teeth (Capricorn's body parts). The body feels compressed, dense, like gravity is stronger than usual. Posture is rigid and upright. When balanced, it's the solidity of an old tree."
+        },
+        {
+          sign: "Aquarius",
+          title: "Saturn in Aquarius — The Social Architect",
+          feltSense: "This feels like seeing the system — every rule, every structure, every invisible framework that society runs on — and knowing exactly where it's broken. There's a detached clarity. Emotions don't cloud the analysis. You can hold the biggest, most radical vision while simultaneously building the step-by-step plan to make it real.",
+          psychology: "Saturn in Aquarius structures the collective. Rules serve humanity, not hierarchy. Innovation is disciplined. When retrograde: 'Am I building systems that truly serve everyone, or am I using intellectual detachment to avoid feeling? Where have my structures become as rigid as the ones I wanted to replace?'",
+          gifts: ["Visionary pragmatism — radical ideas that actually work", "Fair-minded and impartial judgment", "Building communities and organizations", "Innovative thinking within structured frameworks", "Standing firm on principle without emotional bias"],
+          challenges: ["Cold detachment from human feelings", "Intellectual superiority — 'I know better'", "Rigidity in unconventional positions — becoming what you oppose", "Difficulty with intimacy and personal warmth", "Sacrificing individuals for 'the greater good'"],
+          bodyFeeling: "Tension in the ankles and circulatory system (Aquarius's body parts). A coolness throughout the body — neither hot nor cold, just neutral. The mind dominates the body. When imbalanced, circulation problems, cold extremities."
+        },
+      ],
+      exaltation: [
+        {
+          sign: "Libra",
+          title: "Saturn in Libra — The Exaltation: Structure Serves Justice",
+          feltSense: "This feels like standing in a perfectly balanced courtroom where the scales are true. There's a profound satisfaction in fairness — not theoretical fairness, but the hard-won kind that comes from listening to both sides, weighing evidence, and making a decision that you can stand behind. Relationships are commitments, not experiments.",
+          psychology: "Saturn is exalted in Libra because the best structures serve balance and justice. Commitment deepens rather than restricts. When retrograde: 'Am I committed out of love or out of duty? Is my fairness genuine or am I using rules to avoid making hard choices?'",
+          gifts: ["Commitment that deepens over decades", "Fair arbitration and mediation", "Building lasting partnerships through mutual respect", "Elegance that comes from structural integrity", "Diplomatic leadership"],
+          challenges: ["Staying in relationships out of obligation", "Rigidity about 'how things should be done'", "Using fairness rules to avoid emotional messiness", "Fear of being alone drives over-commitment", "Judging relationships by external standards"],
+          bodyFeeling: "Lower back and kidneys (Libra's body parts). A centered, balanced feeling in the core. When imbalanced, lower back pain from carrying the weight of trying to keep everything 'fair.'"
+        },
+      ],
+      detriment: [
+        {
+          sign: "Cancer",
+          title: "Saturn in Cancer — The Armored Heart",
+          feltSense: "This feels like wearing a suit of armor around your heart. You WANT to feel, to nurture, to be soft — but something inside says it isn't safe. Emotions are experienced as dangerous. Vulnerability feels like a trap. You might find yourself building emotional walls and then feeling desperately lonely behind them. Caring for others feels easier than letting others care for you.",
+          psychology: "Saturn in Cancer puts structure around the softest part of the psyche — the emotions. Family becomes a source of obligation rather than comfort. Nurturing becomes dutiful rather than instinctive. When retrograde: 'Where did I learn that feelings are dangerous? Who taught me that needing comfort is weakness?'",
+          gifts: ["Emotional maturity beyond your years", "Fierce protectiveness of family", "Building emotional security through effort", "Teaching others to be emotionally resilient", "Deep loyalty born from hard-won trust"],
+          challenges: ["Emotional suppression — 'I don't need anyone'", "Cold or distant parenting from fear of spoiling", "Difficulty receiving comfort or help", "Using family obligations to avoid intimacy", "Chronic loneliness behind a composed exterior"],
+          bodyFeeling: "Tightness in the chest and stomach (Cancer's body parts). The body armors around the heart center. Difficulty taking deep breaths. When the armor cracks, tears may come uncontrollably — years of stored emotion releasing at once."
+        },
+        {
+          sign: "Leo",
+          title: "Saturn in Leo — The Reluctant Star",
+          feltSense: "This feels like standing in a spotlight and wanting to disappear. There's a deep desire to shine, create, and be seen — but an equally powerful fear of being judged, mocked, or found inadequate. Joy feels earned, not given. You might watch others play freely and feel a painful mix of envy and restraint. Self-expression comes with a censor attached.",
+          psychology: "Saturn in Leo puts restriction on self-expression, creativity, and joy. The inner child was told to grow up too fast. When retrograde: 'Who told me I wasn't allowed to play? Where did my creative joy go? What would happen if I let myself be SEEN without performing?'",
+          gifts: ["Disciplined creativity — mastery through practice", "Earned authority and leadership", "Authenticity tested through fire", "Creative work that endures and inspires", "Dignity under pressure"],
+          challenges: ["Fear of humiliation paralyzes creative expression", "Joy deficit — difficulty having fun spontaneously", "Need for external validation of worth", "Controlling creative projects out of fear", "Using authority to avoid vulnerability"],
+          bodyFeeling: "Tension in the upper back and heart area (Leo's body parts). The chest constricts when attention is on you. A stiffness in how you hold yourself — performative posture rather than natural ease. When the fear releases, a warmth spreads through the chest like sunlight."
+        },
+      ],
+      fall: [
+        {
+          sign: "Aries",
+          title: "Saturn in Aries — The Fall: Structure vs. Impulse",
+          feltSense: "This feels like having the brakes and the accelerator pressed at the same time. There's an urgent desire to act, to move, to START — but an equally strong voice saying 'not yet, not ready, be careful.' It's exhausting. Every spontaneous impulse is immediately questioned. You might feel old before your time, or like you need permission to assert yourself.",
+          psychology: "Saturn in Aries puts restriction on the will itself. Initiative requires permission. Assertion feels dangerous. When retrograde: 'Am I holding myself back out of wisdom or out of fear? What would I do if I knew I couldn't fail?'",
+          gifts: ["Courage tested and proven through hardship", "Self-discipline in action — strategic rather than impulsive", "Earned independence and self-reliance", "Leadership forged through overcoming obstacles", "Patience with the process of becoming"],
+          challenges: ["Chronic self-doubt about taking initiative", "Anger suppressed until it explodes", "Difficulty asserting needs — feeling undeserving", "Headaches and jaw tension from restrained impulse", "Comparing your pace to others' and feeling behind"],
+          bodyFeeling: "Head and jaw tension (Aries's body parts). Teeth grinding. A compressed, coiled feeling like a spring that can't release. Energy gets stuck at the top of the body. When the restriction lifts, there's a rush of heat and forward motion."
+        },
+      ],
+    },
     doList: ["Review your commitments — are they aligned with your values?", "Reassess career goals and professional boundaries", "Address authority issues with maturity", "Practice self-discipline without self-punishment", "Reflect on karmic patterns repeating in your life", "Build internal structure rather than relying on external rules"],
     dontList: ["Start new major business ventures", "Make binding commitments without thorough review", "Ignore responsibilities — they compound", "Resist necessary endings", "Fight authority for the sake of rebellion"],
     signMeanings: {
@@ -157,6 +375,46 @@ const PLANET_INFO: Record<string, {
     themes: ["Processing past upheavals and sudden changes", "Internal revolution and awakening", "Reviewing relationship to freedom and independence", "Technology and innovation turned inward", "Questioning where you conform vs. rebel", "Integration of radical changes from the past year"],
     keywords: ["Revolution", "Innovation", "Freedom", "Awakening", "Technology", "Rebellion", "Genius", "Disruption", "Independence", "Electricity", "Future", "Eccentric", "Liberation", "Shock"],
     dignity: { domicile: "Aquarius", exaltation: "Scorpio (modern)", detriment: "Leo", fall: "Taurus (modern)" },
+    dignityTeaching: {
+      intro: "Uranus was discovered in 1781 and assigned rulership of Aquarius in modern astrology. Because the outer planets move so slowly, their dignity placements affect entire generations — you share your Uranus sign with everyone born within a 7-year window. The dignity tells you HOW your generation processes revolution and innovation.",
+      analogy: "Think of Uranus like lightning. In Aquarius, it strikes precisely where the old system is weakest — targeted, brilliant, purposeful. In Leo (detriment), the lightning hits a stage during a performance — disruptive, dramatic, but the performer can't stop performing even as the set burns. In Taurus (fall), lightning hits a stone wall — the force is enormous but the wall barely cracks. Change happens, but at geological speed. In Scorpio (exaltation), lightning strikes underground — invisible on the surface, but it transforms everything beneath.",
+      domicile: [{
+        sign: "Aquarius",
+        title: "Uranus in Aquarius — Revolution at Home",
+        feltSense: "This feels like seeing the matrix — the invisible systems, networks, and structures that everyone else takes for granted become transparent. There's an electric clarity about what's broken and an impatient certainty about how to fix it. Group consciousness shifts feel natural, obvious, inevitable.",
+        psychology: "Uranus in Aquarius is innovation in its purest form. Technology, social structures, and collective consciousness evolve rapidly. The danger is detachment — caring about humanity in theory while struggling with individual humans. When retrograde: 'Am I truly free, or have I just replaced one conformity with another?'",
+        gifts: ["Visionary intelligence", "Natural systems thinking", "Comfort with technology and innovation", "Authentic individuality without performance", "Building networks that transform society"],
+        challenges: ["Emotional detachment from individual people", "Contrarianism as identity", "Destabilizing functional systems out of restlessness", "Intellectual superiority", "Difficulty with intimacy and emotional bonding"],
+        bodyFeeling: "Electric buzz in the nervous system. Ankles and circulatory system activate. A restless, crackling energy that needs mental outlets."
+      }],
+      exaltation: [{
+        sign: "Scorpio",
+        title: "Uranus in Scorpio — Revolution from the Depths",
+        feltSense: "This feels like an earthquake that starts underground. Nothing visible changes at first, but the foundations are shifting. There's an intensity to the need for change — not just reform, but complete transformation. Secrets must come out. Power must be redistributed. The old must die for the new to be born.",
+        psychology: "Uranus in Scorpio transforms at the root level — psychology, sexuality, power, death itself are all subjects of revolution. This generation dismantles taboos. When retrograde: 'Am I transforming myself, or just destroying what scares me?'",
+        gifts: ["Fearless investigation of hidden truths", "Revolutionary approach to psychology and healing", "Transforming shame into power", "Breaking taboos that genuinely harm", "Deep, authentic courage"],
+        challenges: ["Destructiveness mistaken for liberation", "Obsession with exposing others", "Using shock as a weapon", "Difficulty with stability and peace", "Intensity addiction"],
+        bodyFeeling: "Deep pelvic tension. Energy moves in surges from below. An almost volcanic quality — periods of stillness followed by eruption."
+      }],
+      detriment: [{
+        sign: "Leo",
+        title: "Uranus in Leo — The Rebel on Stage",
+        feltSense: "This feels like wanting to be utterly unique while also desperately wanting applause. There's a tension between authentic individuality and performative rebellion. Creativity is electric but can become erratic. The ego and the collective future are in constant negotiation.",
+        psychology: "Uranus in Leo (detriment) forces the revolutionary impulse through the lens of personal identity and self-expression. Revolution becomes personal rather than collective. When retrograde: 'Am I rebelling for freedom or for attention? Is my uniqueness genuine or is it a performance?'",
+        gifts: ["Wildly original creative expression", "Courage to be radically authentic in public", "Inspiring others through personal revolution", "Creative genius that breaks artistic conventions", "Magnetic individuality"],
+        challenges: ["Attention-seeking disguised as revolution", "Ego inflation through being 'different'", "Instability in self-expression", "Difficulty being part of a team", "Drama addiction"],
+        bodyFeeling: "Heart center alternately opens and closes. Energy surges up through the chest into dramatic expression. Upper back tension from the push-pull between self and collective."
+      }],
+      fall: [{
+        sign: "Taurus",
+        title: "Uranus in Taurus — Revolution in Slow Motion",
+        feltSense: "This feels like an earthquake in slow motion. The ground beneath your feet — money, food, the physical body, what you own — is shifting, but so slowly that many people deny it's happening at all. There's a growing discomfort with 'the way things have always been done' but change meets enormous resistance. Material security feels unstable in a new way.",
+        psychology: "Uranus in Taurus (fall, current transit 2018-2026) revolutionizes values, finances, agriculture, and the body itself. Cryptocurrency, AI disrupting work, climate changing food systems — all Uranus in Taurus. When retrograde: 'What do I genuinely value now that the old system is crumbling? Can I find security in change itself?'",
+        gifts: ["Innovating within the physical/material world", "Finding freedom through new relationship to money and body", "Grounding radical ideas into practical form", "Building new economic models", "Patience with revolutionary timelines"],
+        challenges: ["Stubborn resistance to necessary change", "Financial instability from disrupted systems", "Body anxiety from rapidly shifting self-concepts", "Clinging to material security while it transforms", "Generational conflict over values"],
+        bodyFeeling: "Throat tightness (Taurus body part). A sense of the ground being unstable. Body awareness shifts — what felt solid now feels temporary. Nervous energy trapped in a body that wants stability."
+      }],
+    },
     doList: ["Reflect on changes you've resisted — are they actually liberating?", "Innovate internally before implementing externally", "Question assumptions and habitual thinking", "Embrace your uniqueness and eccentricities", "Review your relationship to technology", "Process any sudden changes from the past months"],
     dontList: ["Force radical external changes", "Rebel without a clear purpose", "Make impulsive decisions in the name of freedom", "Ignore the need for stability alongside change", "Dismiss conventional wisdom entirely"],
     signMeanings: {
@@ -181,6 +439,38 @@ const PLANET_INFO: Record<string, {
     themes: ["Illusions and deceptions becoming clearer", "Spiritual practices deepening", "Creative inspiration turning inward", "Boundaries between self and other clarifying", "Addiction patterns surfacing for healing", "Dreams becoming more vivid and meaningful"],
     keywords: ["Dreams", "Intuition", "Spirituality", "Imagination", "Illusion", "Compassion", "Dissolution", "Mysticism", "Art", "Music", "Escapism", "Transcendence", "Ocean", "Fog"],
     dignity: { domicile: "Pisces", exaltation: "Cancer/Leo (debated)", detriment: "Virgo", fall: "Capricorn/Aquarius (debated)" },
+    dignityTeaching: {
+      intro: "Neptune was discovered in 1846 and given modern rulership of Pisces. Like all outer planets, Neptune spends roughly 14 years in each sign, making its dignity effects generational. Neptune's placements show how an entire generation dreams, creates, deceives itself, and seeks the divine.",
+      analogy: "Think of Neptune like the ocean. In Pisces, the ocean is boundless — no shore in sight, infinite depth, complete surrender to the current. In Virgo (detriment), someone's trying to put the ocean in bottles and label them — the magic is quantified into oblivion. In Capricorn (fall), the ocean is dammed and redirected for industrial use — functional but the wildness is gone.",
+      domicile: [{
+        sign: "Pisces",
+        title: "Neptune in Pisces — The Ocean Returns Home",
+        feltSense: "This feels like the membrane between the visible and invisible worlds getting thinner. Intuition amplifies. Art becomes more moving. But so does confusion, addiction, and the inability to distinguish reality from fantasy. Everything feels more — more beautiful, more painful, more mystical, more confusing. The collective unconscious is louder than usual.",
+        psychology: "Neptune in Pisces (2011–2026) is Neptune at full power. Spiritual awakening and spiritual bypassing both increase. The opioid crisis, the rise of meditation apps, virtual reality, and 'post-truth' media are all expressions of this transit. When retrograde: 'What am I escaping from? Where is my compassion genuine vs. performative?'",
+        gifts: ["Unprecedented access to spiritual and creative depth", "Collective healing through art, music, and compassion", "Dissolution of barriers between cultures and consciousness", "Intuitive breakthroughs", "Healing through water, sound, and imagination"],
+        challenges: ["Epidemic escapism — substances, screens, fantasy", "Boundary dissolution — not knowing where reality ends", "Collective delusion and 'post-truth' confusion", "Victim consciousness on a mass scale", "Spiritual materialism — commodifying transcendence"],
+        bodyFeeling: "Feet (Pisces body part) feel uncertain — literally and metaphorically ungrounded. A foggy quality in the head. Lymphatic sluggishness. The body absorbs environmental energy like a sponge."
+      }],
+      exaltation: [],
+      detriment: [{
+        sign: "Virgo",
+        title: "Neptune in Virgo — The Mystic in the Lab",
+        feltSense: "This feels like trying to meditate while someone reads you a spreadsheet. The transcendent and the practical are in constant friction. There's a yearning for something beyond data and measurement, but the tools available are all analytical. Health and service become the pathway to the divine, but only after the fog clears.",
+        psychology: "Neptune in Virgo forces the mystic to work through precision, health, and service. The spiritual becomes practical — or anxiety-producing. When retrograde: 'Am I serving from genuine compassion or from guilt? Can I find the sacred in the mundane?'",
+        gifts: ["Healing through practical service", "Finding spirit in the details of daily life", "Health-conscious spirituality", "Discernment in mystical matters", "Service-oriented compassion"],
+        challenges: ["Anxiety about imperfection replacing trust in the universe", "Health anxiety and hypochondria", "Losing the forest for the trees", "Criticizing spiritual experiences", "Worrying instead of surrendering"],
+        bodyFeeling: "Digestive tension (Virgo body part). Nervous stomach when trying to surrender control. The body tries to organize what can't be organized."
+      }],
+      fall: [{
+        sign: "Capricorn",
+        title: "Neptune in Capricorn — Dreams Meet Reality",
+        feltSense: "This feels like trying to build a cathedral with no blueprint — just a vision. The grand dream must justify itself through structure, profit, and measurable results. Imagination is channeled into institutions, but institutions may also co-opt and corrupt the dream. The tension between 'what could be' and 'what pays' is constant.",
+        psychology: "Neptune in Capricorn (1984–1998) dreamed through structures — corporate spirituality, institutional art, commodified imagination. When retrograde: 'Have I sold my dreams for security? Can I rebuild my vision within reality's constraints?'",
+        gifts: ["Making dreams structurally viable", "Institutional compassion and service", "Long-term vision that survives practical testing", "Building systems that serve the collective spirit", "Grounded idealism"],
+        challenges: ["Cynicism replacing vision", "Institutions absorbing and neutralizing genuine dreams", "Confusing profit with purpose", "Rigid structures crushing creative spirit", "Disenchantment with all authority"],
+        bodyFeeling: "Heaviness in the knees and skeletal system (Capricorn body part). The weight of responsibility pressing on the dreamer. Stiffness where fluidity is needed."
+      }],
+    },
     doList: ["Deepen meditation and spiritual practices", "Pay attention to dreams — keep a dream journal", "Create art, music, or poetry", "Practice discernment in relationships", "Address escapist habits honestly", "Spend time near water"],
     dontList: ["Ignore red flags in relationships", "Make major decisions based solely on intuition without grounding", "Increase substance use as escapism", "Sign contracts without careful review (confusion possible)", "Dismiss practical concerns for idealism"],
     signMeanings: {
@@ -205,6 +495,46 @@ const PLANET_INFO: Record<string, {
     themes: ["Deep psychological transformation processing", "Power dynamics reviewed internally", "Control issues surfacing for release", "Past traumas processing at a deep level", "Shadow work and hidden material surfacing", "Generational and ancestral healing"],
     keywords: ["Transformation", "Power", "Death/Rebirth", "Shadow", "Depth", "Intensity", "Control", "Obsession", "Phoenix", "Underworld", "Taboo", "Wealth", "Regeneration", "Evolution"],
     dignity: { domicile: "Scorpio", exaltation: "Leo (modern)", detriment: "Taurus", fall: "Aquarius (modern)" },
+    dignityTeaching: {
+      intro: "Pluto was discovered in 1930 and given modern rulership of Scorpio. With an orbit of ~248 years, Pluto spends 12–31 years in each sign (the orbit is elliptical). Pluto's sign placement defines how an entire generation processes power, death, transformation, and the shadow.",
+      analogy: "Think of Pluto like a volcano. In Scorpio, the lava flows freely — transformation is visible, raw, and undeniable. In Taurus (detriment), the volcano is buried under a beautiful meadow — the pressure builds invisibly for decades until it erupts through the surface of what seemed most stable. In Aquarius (fall), the eruption is contained by technology and systems thinking — transformation is intellectualized rather than felt.",
+      domicile: [{
+        sign: "Scorpio",
+        title: "Pluto in Scorpio — Transformation Unleashed",
+        feltSense: "This feels like staring into the abyss and watching it stare back — and not flinching. There's a generation-wide capacity to face death, taboo, and the darkest corners of the psyche without turning away. Sex, death, power, and money are not subjects to avoid but forces to master. The intensity is not a phase — it's an identity.",
+        psychology: "Pluto in Scorpio (1983–1995) is Pluto at maximum transformative power. This generation naturally understands psychology, trauma, power dynamics, and the necessity of destruction for rebirth. When retrograde: 'Am I transforming or self-destructing? Is my intensity authentic or armor?'",
+        gifts: ["Fearless psychological depth", "Capacity to heal generational trauma", "Understanding power without being corrupted by it", "Authentic relationship with death and impermanence", "Emotional honesty that transforms everyone around them"],
+        challenges: ["Self-destructive intensity", "Obsession with darkness for its own sake", "Trust issues at the deepest level", "Power struggles in every relationship", "Difficulty with lightness and play"],
+        bodyFeeling: "Deep pelvic intensity (Scorpio body part). Energy moves from the base upward like kundalini. A sense of something always churning beneath the surface."
+      }],
+      exaltation: [{
+        sign: "Leo",
+        title: "Pluto in Leo — Power Through Self-Expression",
+        feltSense: "This feels like being born into a spotlight and knowing the world is your stage. There's an enormous personal magnetism and an unshakable belief in the power of the individual to transform the world through sheer force of personality. Creativity becomes a weapon — and a gift.",
+        psychology: "Pluto in Leo (1937–1958) transformed through personal power, celebrity culture, nuclear energy (the ultimate 'fire'), and the birth of the civil rights movement. When retrograde: 'Is my personal power serving something larger, or has my ego consumed my purpose?'",
+        gifts: ["Transformative creative vision", "Charismatic leadership", "Courage to express power authentically", "Using personal magnetism for collective transformation", "Generational creative legacy"],
+        challenges: ["Ego-driven power plays", "Confusing personal importance with actual importance", "Authoritarian tendencies", "Drama and spectacle replacing substance", "Difficulty sharing the spotlight"],
+        bodyFeeling: "Heart center intensity (Leo body part). Warmth radiating from the chest. A sense of personal destiny that can feel both empowering and burdensome."
+      }],
+      detriment: [{
+        sign: "Taurus",
+        title: "Pluto in Taurus — Transformation of What You Own",
+        feltSense: "This feels like watching the most solid, reliable things in your world slowly crack. Land, money, food, the body — everything you assumed was permanent reveals itself as impermanent. The transformation is slow, grinding, and often resisted with everything the bull can muster.",
+        psychology: "Pluto in Taurus (detriment) transforms at the material level. Last transit: 1851–1884 (Industrial Revolution transforming land, labor, and material wealth). When retrograde: 'What am I clinging to that needs to die? Can I find power in releasing possessions rather than hoarding them?'",
+        gifts: ["Transforming relationship to material security", "Finding power in simplicity", "Building wealth through destruction of old financial systems", "Deep connection to the earth and body", "Patience with slow, thorough transformation"],
+        challenges: ["Extreme resistance to material change", "Hoarding as a response to transformation anxiety", "Body fixation — cosmetic and health obsessions", "Financial power struggles", "Stubbornness in the face of necessary evolution"],
+        bodyFeeling: "Throat constriction (Taurus body part). A sense of the ground shifting. Physical holding — clenched hands, tight jaw — resisting what's being asked to change."
+      }],
+      fall: [{
+        sign: "Aquarius",
+        title: "Pluto in Aquarius — Transformation of the Collective",
+        feltSense: "This feels like the entire operating system of civilization getting a forced update. AI, digital identity, collective power structures, democracy itself — everything is being reformatted. The individual's relationship to the group is being completely redefined. It's simultaneously thrilling and destabilizing.",
+        psychology: "Pluto in Aquarius (2023–2044) transforms collective structures, technology, and the very concept of humanity. AI revolution, power restructuring, and the tension between individual freedom and collective control define this era. When retrograde: 'Is technology liberating us or controlling us? Are we transforming society or being transformed by it?'",
+        gifts: ["Revolutionary collective transformation", "Technology as tool for power redistribution", "Reimagining democracy and governance", "Breaking down class and power hierarchies", "Networked power replacing centralized authority"],
+        challenges: ["Dehumanization through technology", "Mob mentality replacing individual thought", "Surveillance as control", "Cold intellectual transformation lacking emotional depth", "Tyranny of the collective over the individual"],
+        bodyFeeling: "Nervous system activation (Aquarius body part — circulation and electricity). A buzzing, wired quality. The body processes collective anxiety that doesn't feel personal but IS felt physically."
+      }],
+    },
     doList: ["Engage in deep shadow work and self-inquiry", "Process old traumas with professional support", "Examine power dynamics in your relationships", "Let go of what needs to die — control, grudges, identities", "Research, investigate, and dig deep", "Practice non-attachment to outcomes"],
     dontList: ["Force transformation on others", "Manipulate or use power plays", "Ignore psychological material surfacing", "Resist necessary endings", "Suppress intense emotions — they'll erupt"],
     signMeanings: {
@@ -293,7 +623,77 @@ function AccordionCard({ icon, title, content, accentClass }: { icon: string; ti
   );
 }
 
-// ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
+function DignityTeachingCard({ entry, catStyles, colors }: {
+  entry: DignityEntry;
+  catStyles: { bg: string; border: string; label: string; icon: string; title: string };
+  colors: { gradient: string; border: string; accent: string };
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`rounded-2xl border ${catStyles.border} ${catStyles.bg} overflow-hidden transition-all duration-300`}>
+      <div
+        className="p-5 cursor-pointer"
+        onClick={() => setOpen(!open)}
+      >
+        <div className="flex items-start justify-between">
+          <div>
+            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${catStyles.bg} ${catStyles.border} border ${catStyles.label}`}>
+              {catStyles.icon} {catStyles.title}
+            </span>
+            <h3 className="text-lg font-semibold text-white mt-2">{entry.title}</h3>
+          </div>
+          <span className={`text-white/40 transition-transform duration-300 text-lg mt-1 ${open ? "rotate-180" : ""}`}>▾</span>
+        </div>
+        <p className="text-white/70 text-sm mt-3 leading-relaxed">{entry.feltSense}</p>
+      </div>
+
+      {open && (
+        <div className="px-5 pb-6 space-y-4">
+          <div className="h-px bg-white/10" />
+
+          {/* Psychology */}
+          <div className="rounded-xl bg-white/5 border border-white/10 p-4">
+            <p className="text-xs text-white/50 font-semibold uppercase mb-2">🧠 The Psychology</p>
+            <p className="text-white/80 text-sm leading-relaxed">{entry.psychology}</p>
+          </div>
+
+          {/* Body Feeling */}
+          <div className="rounded-xl bg-white/5 border border-white/10 p-4">
+            <p className="text-xs text-white/50 font-semibold uppercase mb-2">🫀 How It Feels in the Body</p>
+            <p className="text-white/80 text-sm leading-relaxed">{entry.bodyFeeling}</p>
+          </div>
+
+          {/* Gifts & Challenges side by side */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="rounded-xl bg-emerald-900/20 border border-emerald-500/20 p-4">
+              <p className="text-xs text-emerald-300 font-semibold uppercase mb-2">⚡ Gifts</p>
+              <div className="space-y-1.5">
+                {entry.gifts.map((g) => (
+                  <div key={g} className="flex items-start gap-2 text-sm text-emerald-50">
+                    <span className="text-emerald-400 mt-0.5 flex-shrink-0 text-xs">✦</span>
+                    {g}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-xl bg-rose-900/20 border border-rose-500/20 p-4">
+              <p className="text-xs text-rose-300 font-semibold uppercase mb-2">🌑 Challenges</p>
+              <div className="space-y-1.5">
+                {entry.challenges.map((c) => (
+                  <div key={c} className="flex items-start gap-2 text-sm text-rose-50">
+                    <span className="text-rose-400 mt-0.5 flex-shrink-0 text-xs">✦</span>
+                    {c}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 export function PlanetRetrogradeGuide({ planet, allCharts, primaryUserName }: PlanetRetrogradeGuideProps) {
   const currentYear = new Date().getFullYear();
@@ -501,6 +901,41 @@ export function PlanetRetrogradeGuide({ planet, allCharts, primaryUserName }: Pl
                 </div>
               </div>
             </div>
+
+            {/* Dignity Deep Dive Teaching */}
+            {info.dignityTeaching && (
+              <div className="space-y-4">
+                <div className={`rounded-2xl border ${colors.border} bg-white/[0.03] p-5`}>
+                  <p className={`text-xs ${colors.accent} font-semibold uppercase tracking-wider mb-3`}>🎓 How {planet} Feels in Each Dignity — A Teaching Guide</p>
+                  <p className="text-white/80 text-sm leading-relaxed mb-4">{info.dignityTeaching.intro}</p>
+                  <div className="rounded-xl bg-white/5 border border-white/10 p-4">
+                    <p className="text-xs text-white/50 font-semibold uppercase mb-2">💡 The Analogy</p>
+                    <p className="text-white/80 text-sm leading-relaxed italic">{info.dignityTeaching.analogy}</p>
+                  </div>
+                </div>
+
+                {/* Render each dignity category */}
+                {(["domicile", "exaltation", "detriment", "fall"] as const).map((category) => {
+                  const entries = info.dignityTeaching![category];
+                  if (!entries || entries.length === 0) return null;
+                  const catStyles = {
+                    domicile: { bg: "bg-emerald-900/20", border: "border-emerald-500/30", label: "text-emerald-300", icon: "🏠", title: "Domicile — At Home" },
+                    exaltation: { bg: "bg-blue-900/20", border: "border-blue-500/30", label: "text-blue-300", icon: "👑", title: "Exaltation — Honored Guest" },
+                    detriment: { bg: "bg-rose-900/20", border: "border-rose-500/30", label: "text-rose-300", icon: "⚡", title: "Detriment — The Challenge" },
+                    fall: { bg: "bg-amber-900/20", border: "border-amber-500/30", label: "text-amber-300", icon: "🌊", title: "Fall — The Struggle" },
+                  }[category];
+
+                  return entries.map((entry) => (
+                    <DignityTeachingCard
+                      key={entry.sign}
+                      entry={entry}
+                      catStyles={catStyles}
+                      colors={colors}
+                    />
+                  ));
+                })}
+              </div>
+            )}
 
             {/* Themes */}
             <div className={`rounded-2xl border ${colors.border} bg-white/[0.03] p-5`}>
