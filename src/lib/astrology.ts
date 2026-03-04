@@ -1061,29 +1061,10 @@ export const getPersonalTransits = (planets: PlanetaryPositions, userData: UserD
   return { hasTransits: false, transits: [] };
 };
 
-// Check for major ingresses
-export const checkMajorIngresses = (planets: PlanetaryPositions): Ingress[] => {
-  const ingresses: Ingress[] = [];
-
-  if (planets.saturn.signName === 'Aries') {
-    ingresses.push({
-      planet: 'Saturn',
-      sign: 'Aries',
-      icon: '♄',
-      desc: 'Major 2.5 year cycle begins',
-    });
-  }
-
-  if (planets.neptune.signName === 'Aries') {
-    ingresses.push({
-      planet: 'Neptune',
-      sign: 'Aries',
-      icon: '♆',
-      desc: 'Generational shift for 14 years',
-    });
-  }
-
-  return ingresses;
+// Check for major ingresses — DEPRECATED: now handled by detectPlanetaryIngresses
+// which checks actual sign changes day-over-day instead of "is planet in sign X"
+export const checkMajorIngresses = (_planets: PlanetaryPositions): Ingress[] => {
+  return [];
 };
 
 // Get energy rating
