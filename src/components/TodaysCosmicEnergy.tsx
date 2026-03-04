@@ -715,7 +715,7 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
             planets: s.planets.map(p => ({ name: p }))
           })),
           mercuryRetro: mercuryRxInfo?.phase === 'retrograde-first-half' || mercuryRxInfo?.phase === 'retrograde-second-half',
-          mercuryRetrogradeInfo: mercuryRxInfo ? { phase: mercuryRxInfo.phase, description: mercuryRxInfo.description, shadowDegree: mercuryRxInfo.shadowDegree, rxDegree: mercuryRxInfo.rxDegree, sign: mercuryRxInfo.sign, stationRetrograde: mercuryRxInfo.rxStart ? formatRetrogradeDate(mercuryRxInfo.rxStart) : undefined, stationDirect: mercuryRxInfo.rxEnd ? formatRetrogradeDate(mercuryRxInfo.rxEnd) : undefined, cazimi: undefined, postShadowClear: mercuryRxInfo.postShadowEnd ? formatRetrogradeDate(mercuryRxInfo.postShadowEnd) : undefined } : null,
+          mercuryRetrogradeInfo: mercuryRxInfo ? { phase: mercuryRxInfo.phase, description: mercuryRxInfo.description, shadowDegree: mercuryRxInfo.shadowDegree, rxDegree: mercuryRxInfo.rxDegree, sign: mercuryRxInfo.sign, stationRetrograde: mercuryRxInfo.rxStart ? formatDateForTimezone(mercuryRxInfo.rxStart) : undefined, stationDirect: mercuryRxInfo.rxEnd ? formatDateForTimezone(mercuryRxInfo.rxEnd) : undefined, cazimi: undefined, postShadowClear: mercuryRxInfo.postShadowEnd ? formatDateForTimezone(mercuryRxInfo.postShadowEnd) : undefined } : null,
           // All-planet retrograde status (computed from ephemeris)
           allRetrogrades: (() => {
             const allPeriods = getAllRetrogradePeriods(now);
