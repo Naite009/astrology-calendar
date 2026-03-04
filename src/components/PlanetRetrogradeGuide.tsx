@@ -720,6 +720,41 @@ export function PlanetRetrogradeGuide({ planet, allCharts, primaryUserName }: Pl
               </div>
             </div>
 
+            {/* Dignity Deep Dive Teaching */}
+            {info.dignityTeaching && (
+              <div className="space-y-4">
+                <div className={`rounded-2xl border ${colors.border} bg-white/[0.03] p-5`}>
+                  <p className={`text-xs ${colors.accent} font-semibold uppercase tracking-wider mb-3`}>🎓 How {planet} Feels in Each Dignity — A Teaching Guide</p>
+                  <p className="text-white/80 text-sm leading-relaxed mb-4">{info.dignityTeaching.intro}</p>
+                  <div className="rounded-xl bg-white/5 border border-white/10 p-4">
+                    <p className="text-xs text-white/50 font-semibold uppercase mb-2">💡 The Analogy</p>
+                    <p className="text-white/80 text-sm leading-relaxed italic">{info.dignityTeaching.analogy}</p>
+                  </div>
+                </div>
+
+                {/* Render each dignity category */}
+                {(["domicile", "exaltation", "detriment", "fall"] as const).map((category) => {
+                  const entries = info.dignityTeaching![category];
+                  if (!entries || entries.length === 0) return null;
+                  const catStyles = {
+                    domicile: { bg: "bg-emerald-900/20", border: "border-emerald-500/30", label: "text-emerald-300", icon: "🏠", title: "Domicile — At Home" },
+                    exaltation: { bg: "bg-blue-900/20", border: "border-blue-500/30", label: "text-blue-300", icon: "👑", title: "Exaltation — Honored Guest" },
+                    detriment: { bg: "bg-rose-900/20", border: "border-rose-500/30", label: "text-rose-300", icon: "⚡", title: "Detriment — The Challenge" },
+                    fall: { bg: "bg-amber-900/20", border: "border-amber-500/30", label: "text-amber-300", icon: "🌊", title: "Fall — The Struggle" },
+                  }[category];
+
+                  return entries.map((entry) => (
+                    <DignityTeachingCard
+                      key={entry.sign}
+                      entry={entry}
+                      catStyles={catStyles}
+                      colors={colors}
+                    />
+                  ));
+                })}
+              </div>
+            )}
+
             {/* Themes */}
             <div className={`rounded-2xl border ${colors.border} bg-white/[0.03] p-5`}>
               <p className={`text-xs ${colors.accent} font-semibold uppercase tracking-wider mb-3`}>🌊 Retrograde Themes</p>
