@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MercuryRetrogradeGuide } from "@/components/MercuryRetrogradeGuide";
+import { RetroGradesHub } from "@/components/RetroGradesHub";
 import { ArrowRight, HelpCircle } from "lucide-react";
 import { 
   GuideSection, 
@@ -1844,8 +1844,8 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
     ),
   },
   mercuryretrograde: {
-    title: "Mercury Retrograde",
-    content: <MercuryRetrogradeGuide allCharts={[]} />,
+    title: "Retrogrades",
+    content: <RetroGradesHub allCharts={[]} />,
   },
 };
 

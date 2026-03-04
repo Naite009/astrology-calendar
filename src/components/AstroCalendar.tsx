@@ -41,14 +41,14 @@ const TransitCalendarView = lazy(() => import("./TransitCalendarView").then(m =>
 import { WeeklyMealPlanCard } from "./WeeklyMealPlanCard";
 const HexagramView = lazy(() => import("./HexagramView").then(m => ({ default: m.HexagramView })));
 const SolarReturnView = lazy(() => import("./SolarReturnView").then(m => ({ default: m.SolarReturnView })));
-import { MercuryRetrogradeGuide } from "./MercuryRetrogradeGuide";
+import { RetroGradesHub } from "./RetroGradesHub";
 import { MoonPhaseEncyclopedia } from "./MoonPhaseEncyclopedia";
 const FoundationsView = lazy(() => import("./FoundationsView").then(m => ({ default: m.FoundationsView })));
 const TarotFunctionsView = lazy(() => import("./TarotFunctionsView").then(m => ({ default: m.TarotFunctionsView })));
 
 
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "mercury-rx" | "moon-encyclopedia" | "foundations" | "tarot-functions";
+type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "retrogrades" | "moon-encyclopedia" | "foundations" | "tarot-functions";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -192,8 +192,8 @@ export const AstroCalendar = () => {
     if (viewMode === "solar-return") {
       return "Solar Return";
     }
-    if (viewMode === "mercury-rx") {
-      return "Mercury Retrograde";
+    if (viewMode === "retrogrades") {
+      return "Retrogrades";
     }
     if (viewMode === "moon-encyclopedia") {
       return "Moon Phase Encyclopedia";
@@ -662,14 +662,14 @@ export const AstroCalendar = () => {
                 Moon
               </button>
               <button
-                onClick={() => setViewMode("mercury-rx")}
+                onClick={() => setViewMode("retrogrades")}
                 className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
-                  viewMode === "mercury-rx"
+                  viewMode === "retrogrades"
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                ☿ Mercury Rx
+                🔄 Retrogrades
               </button>
               <button
                 onClick={() => {
@@ -979,8 +979,8 @@ export const AstroCalendar = () => {
           </Suspense>
         )}
 
-        {viewMode === "mercury-rx" && (
-          <MercuryRetrogradeGuide
+        {viewMode === "retrogrades" && (
+          <RetroGradesHub
             allCharts={[
               ...(userNatalChart ? [userNatalChart] : []),
               ...savedCharts
