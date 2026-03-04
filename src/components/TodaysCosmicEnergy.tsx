@@ -477,14 +477,40 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
 
       // Detect user's timezone early (used for ingress times and AI prompt)
       const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const userTimezone = detectedTimezone || 'UTC';
-      const userTzAbbr = new Date().toLocaleTimeString('en-US', { timeZone: userTimezone, timeZoneName: 'short' }).split(' ').pop() || 'ET';
+      const preferredProfileTimezone = (() => {
+        try {
+          const saved = localStorage.getItem('astroUserData');
+          if (!saved) return null;
+          const parsed = JSON.parse(saved);
+          return typeof parsed?.timezone === 'string' ? parsed.timezone : null;
+        } catch {
+          return null;
+        }
+      })();
+      const userTimezone = preferredProfileTimezone || detectedTimezone || 'UTC';
+      const userTzAbbr = new Date().toLocaleTimeString('en-US', { timeZone: userTimezone, timeZoneName: 'short' }).split(' ').pop() || 'UTC';
       const formatDateForTimezone = (value: Date) => value.toLocaleDateString('en-US', {
         timeZone: userTimezone,
         month: 'short',
         day: 'numeric',
         year: 'numeric',
       });
+      const formatDateTimeForTimezone = (value: Date) => {
+        const datePart = value.toLocaleDateString('en-US', {
+          timeZone: userTimezone,
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric',
+        });
+        const timePart = value.toLocaleTimeString('en-US', {
+          timeZone: userTimezone,
+          hour: 'numeric',
+          minute: '2-digit',
+          timeZoneName: 'short',
+        });
+        return `${datePart} at ${timePart}`;
+      };
 
       // --- Moon sign change today ---
       const moonSignChangeToday = (() => {
