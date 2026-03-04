@@ -819,41 +819,45 @@ CRITICAL INSTRUCTIONS:
       const stationDirect = mercuryRetrogradeInfo.stationDirect;
       const postShadowClear = mercuryRetrogradeInfo.postShadowClear;
       const stationSign = mercuryRetrogradeInfo.sign ? ` in ${mercuryRetrogradeInfo.sign}` : "";
+      const phase = (mercuryRetrogradeInfo.phase || '').toLowerCase();
+      const isCurrentlyRetrograde = phase.includes('retrograde');
+      const isPostShadow = phase === 'post-shadow';
 
       let output = text;
 
+      // Enforce correct station direct date
       if (stationDirect) {
         const canonicalDirectSentence = `Mercury stations direct on ${stationDirect}${stationSign}.`;
         const stationSentenceRegex = /Mercury[^.\n]{0,180}stations?\s+direct[^.\n]*\.?/gi;
         output = output.replace(stationSentenceRegex, canonicalDirectSentence);
-
-        if (!new RegExp(`Mercury\\s+stations?\\s+direct\\s+on\\s+${escapeRegex(stationDirect)}`, "i").test(output)) {
-          output = `${canonicalDirectSentence}\n\n${output}`;
-        }
       }
 
-      // Prevent incorrect "still reviewing/rethinking" framing after station direct
-      output = output.replace(
-        /(Mercury\s+stations?\s+direct[^.\n]*\.)\s*(Remember[^.\n]*(review|rethink|rethink(?:ing)?|reviewing)[^.\n]*\.)/gi,
-        `$1 Once Mercury is direct, the retrograde phase is over; now the focus is forward movement, implementation, and integration.`
-      );
-      output = output.replace(
-        /(phase\s+for\s+)(reviewing|rethinking|review\s+and\s+rethinking)/gi,
-        `phase for forward movement and integration`
-      );
-
-      if (stationDirect) {
+      // Only replace "review" language with "forward movement" if Mercury IS direct (post-shadow or clear)
+      if (isPostShadow) {
+        output = output.replace(
+          /(phase\s+for\s+)(reviewing|rethinking|review\s+and\s+rethinking)/gi,
+          'phase for forward movement and integration'
+        );
         output = output
           .replace(/review\s+and\s+reconsider/gi, 'integrate and implement')
-          .replace(/period\s+of\s+review/gi, 'period of integration')
-          .replace(/review-oriented/gi, 'implementation-oriented')
-          .replace(/review,\s*when/gi, 'integration, when')
-          .replace(/rather than pushing forward with brand new ventures/gi, 'while moving forward thoughtfully')
-          .replace(/still in the post-shadow phase of Mercury retrograde/gi, "in Mercury's post-shadow integration phase");
+          .replace(/period\s+of\s+review/gi, 'period of integration');
       }
 
+      // If currently retrograde, ensure it does NOT say Mercury is direct
+      if (isCurrentlyRetrograde) {
+        output = output.replace(/Mercury\s+is\s+direct\s+now/gi, 'Mercury is currently retrograde');
+        output = output.replace(/Mercury\s+has\s+stationed\s+direct/gi, `Mercury stations direct on ${stationDirect || 'TBD'}`);
+      }
+
+      // Ensure post-shadow date is mentioned
       if (postShadowClear && !new RegExp(`post-shadow\\s+clear[s]?\\s+(on\\s+)?${escapeRegex(postShadowClear)}`, "i").test(output)) {
         output = `${output}\n\nMercury post-shadow clears on ${postShadowClear}.`;
+      }
+
+      // Remove any false Venus retrograde mentions if Venus is listed as DIRECT
+      if (planetsNotRetrograde?.includes('Venus')) {
+        output = output.replace(/Venus\s+(is\s+)?retrograde/gi, 'Venus is direct');
+        output = output.replace(/Venus\s+retrograde\s+(is\s+)?wrapping\s+up/gi, 'Venus continues its direct motion');
       }
 
       return output;
@@ -861,8 +865,18 @@ CRITICAL INSTRUCTIONS:
 
     const insightVerified = enforceMercuryTiming(insightRaw);
 
+    // Phase-aware Mercury Timing block
+    const mercuryPhaseLabel = (() => {
+      if (!mercuryRetrogradeInfo) return '';
+      const phase = (mercuryRetrogradeInfo.phase || '').toLowerCase();
+      if (phase.includes('retrograde')) return 'Mercury is RETROGRADE. This is a time for review, revision, and reassessment — not new launches.';
+      if (phase === 'post-shadow') return 'Mercury is direct; post-shadow is for forward movement and integration, not retrograde-style review.';
+      if (phase === 'pre-shadow') return 'Mercury is in pre-shadow. Pay attention to themes surfacing — they will be revisited during retrograde.';
+      return '';
+    })();
+
     const mercuryTimingBlock = mercuryRetrogradeInfo
-      ? `## Mercury Timing (Verified)\n- Station direct: ${mercuryRetrogradeInfo.stationDirect || 'not provided'}\n- Post-shadow clear: ${mercuryRetrogradeInfo.postShadowClear || 'not provided'}\n- Guidance: Mercury is direct now; this is for forward movement and integration, not retrograde-style review.`
+      ? `## Mercury Timing (Verified)\n- Phase: ${mercuryRetrogradeInfo.phase}\n- Station retrograde: ${mercuryRetrogradeInfo.stationRetrograde || 'not provided'}\n- Station direct: ${mercuryRetrogradeInfo.stationDirect || 'not provided'}\n- Post-shadow clear: ${mercuryRetrogradeInfo.postShadowClear || 'not provided'}\n- ${mercuryPhaseLabel}`
       : '';
 
     const mercuryFactAppendix = mercuryRetrogradeInfo
