@@ -763,7 +763,8 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
           stelliums: stelliums.map(s => ({
             sign: s.sign,
             count: s.planets.length,
-            planets: s.planets.map(p => ({ name: p }))
+            planets: s.planets.map(p => ({ name: p })),
+            hasNorthNode: s.hasNorthNode || false,
           })),
           mercuryRetro: mercuryRxInfo?.phase === 'retrograde-first-half' || mercuryRxInfo?.phase === 'retrograde-second-half',
           mercuryRetrogradeInfo: mercuryRxInfo ? {
