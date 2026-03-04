@@ -12,10 +12,32 @@ serve(async (req) => {
   }
 
   try {
-    const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects, planetPositions, customPrompt, voiceStyle, upcomingEvents, deviceId, forceRegenerate, greeting: reqGreeting, timeOfDay: reqTimeOfDay, moonSignChange, imminentSignChanges, mercuryRetrogradeInfo, personalizedRetrograde, userTimezone, userTzAbbr, allRetrogrades, eclipseContext, referenceExcerpts, planetsNotRetrograde } = await req.json();
+    const { date, moonPhase, moonSign, exactLunarPhase, stelliums, rareAspects, nodeAspects, mercuryRetro, aspects, planetPositions, customPrompt, voiceStyle, upcomingEvents, deviceId, forceRegenerate, greeting: reqGreeting, timeOfDay: reqTimeOfDay, moonSignChange, imminentSignChanges, mercuryRetrogradeInfo, mercuryEphemerisVerification, personalizedRetrograde, userTimezone, userTzAbbr, allRetrogrades, eclipseContext, referenceExcerpts, planetsNotRetrograde } = await req.json();
     
     console.log("Received cosmic weather request:", { date, moonPhase, moonSign, exactLunarPhase, voiceStyle, forceRegenerate, userTimezone, userTzAbbr, mercuryRetrogradeInfo, planetPositions });
     console.log("Aspects received:", aspects?.slice(0, 15));
+
+    // Preflight verification: canonicalize Mercury timing from ephemeris block before AI generation
+    const mercuryInfo = (() => {
+      if (!mercuryRetrogradeInfo && !mercuryEphemerisVerification) return null;
+      const merged = {
+        ...(mercuryRetrogradeInfo || {}),
+        ...(mercuryEphemerisVerification || {}),
+      } as Record<string, any>;
+
+      if (mercuryRetrogradeInfo && mercuryEphemerisVerification) {
+        const keysToCheck = ['phase', 'stationRetrograde', 'stationDirect', 'postShadowClear'];
+        const mismatches = keysToCheck
+          .filter((k) => mercuryRetrogradeInfo?.[k] && mercuryEphemerisVerification?.[k] && mercuryRetrogradeInfo[k] !== mercuryEphemerisVerification[k])
+          .map((k) => ({ field: k, incoming: mercuryRetrogradeInfo[k], canonical: mercuryEphemerisVerification[k] }));
+
+        if (mismatches.length > 0) {
+          console.warn('Mercury preflight mismatch detected. Using canonical ephemeris values:', mismatches);
+        }
+      }
+
+      return merged;
+    })();
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -37,7 +59,7 @@ serve(async (req) => {
     
     // Cache key versioning: bump this when prompt/format changes so users don't get stale cached text.
     // This intentionally changes the cache key without requiring any DB schema changes.
-    const PROMPT_VERSION = "2026-03-04-v22-anti-hallucination-retrogrades";
+    const PROMPT_VERSION = "2026-03-04-v23-preflight-mercury-ephemeris-verify";
 
     const cacheDeviceId = deviceId || 'default';
     const cacheVoiceStyle = `${voiceStyle || ''}@${PROMPT_VERSION}`;
@@ -111,37 +133,37 @@ ${aspects.slice(0, 10).map((a: any) => `- ${a.planet1} ${a.symbol} ${a.planet2} 
 ${imminentSignChanges.map((c: any) => `- ${c.planet} is at ${c.degree.toFixed(1)}° ${c.currentSign} - about to enter ${c.nextSign}!${c.ingressTime ? ` EXACT INGRESS TIME: ${c.ingressTime}.` : ''} This is a BIG DEAL. ${c.planet} energy is extremely concentrated right now at the end of ${c.currentSign}. Discuss what it means for ${c.planet} to leave ${c.currentSign} and enter ${c.nextSign}.${c.ingressTime ? ` Use the exact time provided: ${c.ingressTime}.` : ' Do NOT mention a specific time since none was calculated.'}`).join('\n')}`
       : '';
 
-    // Mercury retrograde / shadow info (phase-aware)
-    const mercuryRxText = mercuryRetrogradeInfo
+    // Mercury retrograde / shadow info (phase-aware, preflight-verified)
+    const mercuryRxText = mercuryInfo
       ? (() => {
-          const phase = (mercuryRetrogradeInfo.phase || '').toLowerCase();
+          const phase = (mercuryInfo.phase || '').toLowerCase();
           const isRetrograde = phase.includes('retrograde');
           const isPostShadow = phase === 'post-shadow';
           const isPreShadow = phase === 'pre-shadow';
 
-          const dignityText = mercuryRetrogradeInfo.description?.includes('Pisces')
+          const dignityText = mercuryInfo.description?.includes('Pisces')
             ? `⚠️ MERCURY IN PISCES: Mercury is in detriment + fall (double difficulty), so clarity can still lag and symbolic/intuitive processing is louder than linear logic.`
             : `Mercury has no special dignity challenge in this sign.`;
 
           const phaseGuidance = isRetrograde
             ? `RETROGRADE GUIDANCE:\n- Prioritize review, revisions, and renegotiation over hard launches.\n- Double-check contracts, travel, and critical communication.`
             : isPostShadow
-              ? `POST-SHADOW GUIDANCE (MERCURY IS DIRECT):\n- Retrograde is over. Focus on forward movement, implementation, and execution.\n- Post-shadow (until ${mercuryRetrogradeInfo.postShadowClear || 'the clear date'}) is for integrating lessons and final cleanup, not retrograde-style second-guessing.`
+              ? `POST-SHADOW GUIDANCE (MERCURY IS DIRECT):\n- Retrograde is over. Focus on forward movement, implementation, and execution.\n- Post-shadow (until ${mercuryInfo.postShadowClear || 'the clear date'}) is for integrating lessons and final cleanup, not retrograde-style second-guessing.`
               : isPreShadow
                 ? `PRE-SHADOW GUIDANCE:\n- Early signals are surfacing. Plan carefully and track themes before the station.`
                 : `GUIDANCE:\n- Use the provided station dates exactly as written.`;
 
-          return `MERCURY TIMING STATUS - MUST MENTION: Phase: ${mercuryRetrogradeInfo.phase}. ${mercuryRetrogradeInfo.description}\n${dignityText}\n\n${phaseGuidance}`;
+          return `MERCURY TIMING STATUS (VERIFIED FROM EPHEMERIS): Phase: ${mercuryInfo.phase}. ${mercuryInfo.description || ''}\n${dignityText}\n\n${phaseGuidance}`;
         })()
       : '';
 
-    const mercuryFactCheckText = mercuryRetrogradeInfo
+    const mercuryFactCheckText = mercuryInfo
       ? `MERCURY EPHEMERIS FACT CHECK (NON-NEGOTIABLE):
-- Station retrograde: ${mercuryRetrogradeInfo.stationRetrograde || 'not provided'}
-- Station direct: ${mercuryRetrogradeInfo.stationDirect || 'not provided'}
-- Cazimi (Mercury-Sun conjunction): ${mercuryRetrogradeInfo.cazimi || 'not provided'}
-- Post-shadow clear: ${mercuryRetrogradeInfo.postShadowClear || 'not provided'}
-These are computed from high-precision ephemeris in the user's local timezone. You MUST quote these exact values verbatim. NEVER substitute dates from your training data.`
+- Station retrograde: ${mercuryInfo.stationRetrograde || 'not provided'}
+- Station direct: ${mercuryInfo.stationDirect || 'not provided'}
+- Cazimi (Mercury-Sun conjunction): ${mercuryInfo.cazimi || 'not provided'}
+- Post-shadow clear: ${mercuryInfo.postShadowClear || 'not provided'}
+These are computed from high-precision ephemeris in the user's local timezone and verified before generation. You MUST quote these exact values verbatim. NEVER substitute dates from your training data.`
       : '';
 
     // Personalized retrograde guidance
@@ -752,7 +774,7 @@ AYURVEDIC SEASON: ${currentSeason}
 
 CRITICAL INSTRUCTIONS:
 1. Use EXACT degrees provided. If a Full Moon is at 13° Cancer, say "Full Moon at 13° Cancer" - not 9° or any other number.
-2. Be direct and practical. No mystical fluff or greetings.
+2. Be direct and practical. Keep the opening in the selected voice style (for Tara: start naturally with "Today is...").
 3. Do NOT include any meal plans, recipes, or food content - that belongs exclusively in the Kitchen tab.
 4. PAY SPECIAL ATTENTION to tight aspects (orb < 2°) - these are the most powerful influences today.
 5. If an aspect is APPLYING, emphasize it's building/intensifying. If SEPARATING, it's releasing/completing.
@@ -761,7 +783,7 @@ CRITICAL INSTRUCTIONS:
 8. Mention the Moon sign's influence on the emotional atmosphere and suggest finding where that sign falls in their own chart.
 9. If moonSignChange data is provided, the Moon changes signs TODAY. Do NOT say "Moon in [sign] all day". Describe BOTH energies and the transition.
 10. If imminentSignChanges data is provided, these are UNUSUAL and NOTEWORTHY events. Give them prominent coverage - a planet changing signs is a big shift in collective energy.
-11. If mercuryRetrogradeInfo is provided, Mercury's retrograde cycle MUST be discussed EVERY DAY. When Mercury Rx is in Pisces, you MUST explain WHY this retrograde is especially difficult: Pisces is Mercury's double difficulty — both detriment (opposite Virgo, Mercury's home) AND fall (opposite Virgo, Mercury's exaltation). No other sign weakens Mercury this much. Explain what detriment and fall MEAN in plain language appropriate to the voice style. Describe how this shows up in daily life: thicker mental fog, more miscommunication than usual, intuitive/emotional thinking overriding logic, vivid dreams, words failing where feelings succeed. This is the most challenging Mercury retrograde of the year BECAUSE of the dignity, and the user needs to understand that.
+11. If mercuryRetrogradeInfo is provided, include it BRIEFLY (1-2 sentences) in "What's Noteworthy" or "Coming Up". Do NOT lead "The Day at a Glance" with Mercury unless a Mercury station happens within 24 hours of the current date. Use only the verified station dates provided in the ephemeris block.
 12. If personalizedRetrograde data is provided, include a personalized section about how Mercury retrograde affects THIS person's chart specifically, layered through the phases.`;
 
     // Append reference material from user's uploaded books if available
@@ -812,27 +834,25 @@ CRITICAL INSTRUCTIONS:
 
     const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-    // Deterministic post-check: enforce exact Mercury station + post-shadow phrasing from ephemeris.
+    // Deterministic post-check: enforce exact Mercury timing from preflight-verified ephemeris.
     const enforceMercuryTiming = (text: string): string => {
-      if (!mercuryRetrogradeInfo) return text;
+      if (!mercuryInfo) return text;
 
-      const stationDirect = mercuryRetrogradeInfo.stationDirect;
-      const postShadowClear = mercuryRetrogradeInfo.postShadowClear;
-      const stationSign = mercuryRetrogradeInfo.sign ? ` in ${mercuryRetrogradeInfo.sign}` : "";
-      const phase = (mercuryRetrogradeInfo.phase || '').toLowerCase();
+      const stationDirect = mercuryInfo.stationDirect;
+      const postShadowClear = mercuryInfo.postShadowClear;
+      const stationSign = mercuryInfo.sign ? ` in ${mercuryInfo.sign}` : "";
+      const phase = (mercuryInfo.phase || '').toLowerCase();
       const isCurrentlyRetrograde = phase.includes('retrograde');
       const isPostShadow = phase === 'post-shadow';
 
       let output = text;
 
-      // Enforce correct station direct date
       if (stationDirect) {
         const canonicalDirectSentence = `Mercury stations direct on ${stationDirect}${stationSign}.`;
         const stationSentenceRegex = /Mercury[^.\n]{0,180}stations?\s+direct[^.\n]*\.?/gi;
         output = output.replace(stationSentenceRegex, canonicalDirectSentence);
       }
 
-      // Only replace "review" language with "forward movement" if Mercury IS direct (post-shadow or clear)
       if (isPostShadow) {
         output = output.replace(
           /(phase\s+for\s+)(reviewing|rethinking|review\s+and\s+rethinking)/gi,
@@ -843,18 +863,15 @@ CRITICAL INSTRUCTIONS:
           .replace(/period\s+of\s+review/gi, 'period of integration');
       }
 
-      // If currently retrograde, ensure it does NOT say Mercury is direct
       if (isCurrentlyRetrograde) {
         output = output.replace(/Mercury\s+is\s+direct\s+now/gi, 'Mercury is currently retrograde');
         output = output.replace(/Mercury\s+has\s+stationed\s+direct/gi, `Mercury stations direct on ${stationDirect || 'TBD'}`);
       }
 
-      // Ensure post-shadow date is mentioned
       if (postShadowClear && !new RegExp(`post-shadow\\s+clear[s]?\\s+(on\\s+)?${escapeRegex(postShadowClear)}`, "i").test(output)) {
         output = `${output}\n\nMercury post-shadow clears on ${postShadowClear}.`;
       }
 
-      // Remove any false Venus retrograde mentions if Venus is listed as DIRECT
       if (planetsNotRetrograde?.includes('Venus')) {
         output = output.replace(/Venus\s+(is\s+)?retrograde/gi, 'Venus is direct');
         output = output.replace(/Venus\s+retrograde\s+(is\s+)?wrapping\s+up/gi, 'Venus continues its direct motion');
@@ -864,12 +881,7 @@ CRITICAL INSTRUCTIONS:
     };
 
     const insightVerified = enforceMercuryTiming(insightRaw);
-
-    const mercuryFactAppendix = mercuryRetrogradeInfo
-      ? `\n\n## Ephemeris Fact Check\n- Mercury station retrograde: ${mercuryRetrogradeInfo.stationRetrograde || 'not provided'}\n- Mercury station direct: ${mercuryRetrogradeInfo.stationDirect || 'not provided'}\n- Mercury cazimi: ${mercuryRetrogradeInfo.cazimi || 'not provided'}\n- Mercury post-shadow clears: ${mercuryRetrogradeInfo.postShadowClear || 'not provided'}\n(All times and dates above are computed from ephemeris in the user's local timezone.)`
-      : '';
-
-    const insight = `${insightVerified}${mercuryFactAppendix}`;
+    const insight = insightVerified;
 
     // Save to DB cache (expires at end of day in user's timezone, approximated as 24h)
     if (dateKey && !customPrompt) {
