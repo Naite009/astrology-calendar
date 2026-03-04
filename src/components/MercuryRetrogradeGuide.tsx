@@ -304,6 +304,7 @@ const ELEMENT_STYLES: Record<string, { bg: string; border: string; text: string;
   Earth: { bg: "bg-emerald-950/50", border: "border-emerald-500/40", text: "text-emerald-200", badge: "🌍 Earth" },
 };
 
+
 // ─── SUBCOMPONENTS ──────────────────────────────────────────────────────────
 
 function SectionHeader({ icon, title, subtitle }: { icon: string; title: string; subtitle?: string }) {
@@ -314,6 +315,68 @@ function SectionHeader({ icon, title, subtitle }: { icon: string; title: string;
         <h2 className="text-xl font-semibold tracking-wide text-white">{title}</h2>
       </div>
       {subtitle && <p className="text-sm text-violet-300 ml-11">{subtitle}</p>}
+    </div>
+  );
+}
+
+function YearJumper({ year, onChange }: { year: number; onChange: (y: number) => void }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setIsOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const years = Array.from({ length: MAX_YEAR - MIN_YEAR + 1 }, (_, i) => MIN_YEAR + i);
+
+  return (
+    <div className="flex items-center justify-center gap-3 mb-4">
+      <button
+        onClick={() => onChange(year - 1)}
+        disabled={year <= MIN_YEAR}
+        className="p-2 rounded-full border border-violet-500/40 bg-violet-900/40 text-violet-200 hover:bg-violet-800/60 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+        aria-label="Previous year"
+      >
+        <ChevronLeft className="w-5 h-5" />
+      </button>
+
+      <div className="relative" ref={ref}>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="text-2xl font-bold text-white tracking-wider min-w-[80px] text-center px-3 py-1 rounded-lg hover:bg-violet-800/40 transition-colors cursor-pointer flex items-center gap-1.5"
+        >
+          {year}
+          <ChevronDown size={16} className={`text-violet-300 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        </button>
+        {isOpen && (
+          <div className="absolute z-50 mt-1 left-1/2 -translate-x-1/2 bg-slate-900 border border-violet-500/50 rounded-xl shadow-xl overflow-hidden w-28">
+            <div className="max-h-[250px] overflow-y-auto py-1">
+              {years.map(y => (
+                <button
+                  key={y}
+                  onClick={() => { onChange(y); setIsOpen(false); }}
+                  className={`w-full px-4 py-1.5 text-sm text-center transition-colors ${y === year ? 'bg-violet-700/50 text-white font-bold' : 'text-violet-200 hover:bg-violet-800/40'}`}
+                >
+                  {y}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <button
+        onClick={() => onChange(year + 1)}
+        disabled={year >= MAX_YEAR}
+        className="p-2 rounded-full border border-violet-500/40 bg-violet-900/40 text-violet-200 hover:bg-violet-800/60 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+        aria-label="Next year"
+      >
+        <ChevronRight className="w-5 h-5" />
+      </button>
     </div>
   );
 }
@@ -342,29 +405,7 @@ function AccordionCard({ icon, title, content, defaultOpen = false }: { icon: st
   );
 }
 
-function YearNavigator({ year, onChange }: { year: number; onChange: (y: number) => void }) {
-  return (
-    <div className="flex items-center justify-center gap-4 mb-4">
-      <button
-        onClick={() => onChange(year - 1)}
-        disabled={year <= MIN_YEAR}
-        className="p-2 rounded-full border border-violet-500/40 bg-violet-900/40 text-violet-200 hover:bg-violet-800/60 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-        aria-label="Previous year"
-      >
-        <ChevronLeft className="w-5 h-5" />
-      </button>
-      <span className="text-2xl font-bold text-white tracking-wider min-w-[80px] text-center">{year}</span>
-      <button
-        onClick={() => onChange(year + 1)}
-        disabled={year >= MAX_YEAR}
-        className="p-2 rounded-full border border-violet-500/40 bg-violet-900/40 text-violet-200 hover:bg-violet-800/60 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-        aria-label="Next year"
-      >
-        <ChevronRight className="w-5 h-5" />
-      </button>
-    </div>
-  );
-}
+// YearNavigator replaced by YearJumper above
 
 function RxCard({ rx, onClick, isSelected }: { rx: RxData; onClick: (id: string) => void; isSelected: boolean }) {
   return (
@@ -682,7 +723,7 @@ export function MercuryRetrogradeGuide({ allCharts, primaryUserName }: MercuryRe
 
   const sections = [
     { id: "learn", label: "Learn Mercury", icon: "☿" },
-    { id: "retrogrades", label: `${selectedYear} Retrogrades`, icon: "🔄" },
+    { id: "retrogrades", label: "Retrogrades by Year", icon: "🔄" },
     { id: "current", label: "Current Cycle", icon: "🌊" },
     { id: "guidance", label: "Your Guidance", icon: "✨" },
   ];
@@ -796,7 +837,7 @@ export function MercuryRetrogradeGuide({ allCharts, primaryUserName }: MercuryRe
             <SectionHeader icon="🔄" title={`${selectedYear} Mercury Retrogrades`} subtitle="Tap a card to explore details" />
 
             {/* Year Navigator */}
-            <YearNavigator year={selectedYear} onChange={handleYearChange} />
+            <YearJumper year={selectedYear} onChange={handleYearChange} />
 
             {/* Element + Year summary banner */}
             <div className={`rounded-2xl ${elStyle.bg} ${elStyle.border} border p-4`}>

@@ -663,6 +663,49 @@ function formatDeg(lon: number): string {
   return `${d}°${String(m).padStart(2,'0')}' ${signs[signIdx]}`;
 }
 
+const MIN_YEAR = 2020;
+const MAX_YEAR = 2035;
+
+function PlanetYearJumper({ year, onChange, borderClass }: { year: number; onChange: (y: number) => void; borderClass: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setIsOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+  const years = Array.from({ length: MAX_YEAR - MIN_YEAR + 1 }, (_, i) => MIN_YEAR + i);
+  return (
+    <div className="flex items-center justify-center gap-3 mb-4">
+      <button onClick={() => onChange(year - 1)} disabled={year <= MIN_YEAR}
+        className={`p-2 rounded-full border ${borderClass} bg-white/5 text-white/70 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all`}
+        aria-label="Previous year"><ChevronLeftIcon className="w-5 h-5" /></button>
+      <div className="relative" ref={ref}>
+        <button onClick={() => setIsOpen(!isOpen)}
+          className="text-2xl font-bold text-white tracking-wider min-w-[80px] text-center px-3 py-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer flex items-center gap-1.5">
+          {year}
+          <ChevronDown size={16} className={`text-white/50 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        </button>
+        {isOpen && (
+          <div className="absolute z-50 mt-1 left-1/2 -translate-x-1/2 bg-slate-900 border border-white/20 rounded-xl shadow-xl overflow-hidden w-28">
+            <div className="max-h-[250px] overflow-y-auto py-1">
+              {years.map(y => (
+                <button key={y} onClick={() => { onChange(y); setIsOpen(false); }}
+                  className={`w-full px-4 py-1.5 text-sm text-center transition-colors ${y === year ? 'bg-white/15 text-white font-bold' : 'text-white/60 hover:bg-white/5'}`}>{y}</button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      <button onClick={() => onChange(year + 1)} disabled={year >= MAX_YEAR}
+        className={`p-2 rounded-full border ${borderClass} bg-white/5 text-white/70 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all`}
+        aria-label="Next year"><ChevronRightIcon className="w-5 h-5" /></button>
+    </div>
+  );
+}
+
 // ─── SUBCOMPONENTS ──────────────────────────────────────────────────────────
 
 function AccordionCard({ icon, title, content, accentClass }: { icon: string; title: string; content: string; accentClass: string }) {
@@ -776,8 +819,7 @@ export function PlanetRetrogradeGuide({ planet, allCharts, primaryUserName }: Pl
   const glyph = PLANET_GLYPHS[planet] || "⊕";
   const body = PLANET_BODIES[planet];
 
-  const MIN_YEAR = 2020;
-  const MAX_YEAR = 2035;
+  // MIN_YEAR and MAX_YEAR defined at module scope above
 
   // Compute retrograde periods for the selected year
   const periods = useMemo(() => {
@@ -851,7 +893,7 @@ export function PlanetRetrogradeGuide({ planet, allCharts, primaryUserName }: Pl
 
   const sections = [
     { id: "learn", label: `Learn ${planet}`, icon: glyph },
-    { id: "retrogrades", label: `${selectedYear} Retrogrades`, icon: "🔄" },
+    { id: "retrogrades", label: "Retrogrades by Year", icon: "🔄" },
     { id: "current", label: "Current Status", icon: currentStatus?.isRetrograde ? "↩️" : "➡️" },
     { id: "guidance", label: "Your Guidance", icon: "✨" },
   ];
@@ -1024,31 +1066,12 @@ export function PlanetRetrogradeGuide({ planet, allCharts, primaryUserName }: Pl
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-1">
                 <span className="text-2xl">🔄</span>
-                <h2 className="text-xl font-semibold text-white">{selectedYear} {planet} Retrogrades</h2>
+                <h2 className="text-xl font-semibold text-white">{planet} Retrogrades</h2>
               </div>
               <p className={`text-sm ${colors.accent} ml-11`}>Computed from high-precision ephemeris</p>
             </div>
 
-            {/* Year Navigator */}
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <button
-                onClick={() => handleYearChange(selectedYear - 1)}
-                disabled={selectedYear <= MIN_YEAR}
-                className={`p-2 rounded-full border ${colors.border} bg-white/5 text-white/70 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all`}
-                aria-label="Previous year"
-              >
-                <ChevronLeftIcon className="w-5 h-5" />
-              </button>
-              <span className="text-2xl font-bold text-white tracking-wider min-w-[80px] text-center">{selectedYear}</span>
-              <button
-                onClick={() => handleYearChange(selectedYear + 1)}
-                disabled={selectedYear >= MAX_YEAR}
-                className={`p-2 rounded-full border ${colors.border} bg-white/5 text-white/70 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all`}
-                aria-label="Next year"
-              >
-                <ChevronRightIcon className="w-5 h-5" />
-              </button>
-            </div>
+            <PlanetYearJumper year={selectedYear} onChange={handleYearChange} borderClass={colors.border} />
 
             {periods.length === 0 ? (
               <div className={`rounded-2xl border ${colors.border} bg-white/[0.03] p-8 text-center`}>
