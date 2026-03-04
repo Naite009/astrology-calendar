@@ -304,13 +304,11 @@ function AccordionCard({ icon, title, content, defaultOpen = false }: { icon: st
 }
 
 function YearNavigator({ year, onChange }: { year: number; onChange: (y: number) => void }) {
-  const minYear = AVAILABLE_YEARS[0];
-  const maxYear = AVAILABLE_YEARS[AVAILABLE_YEARS.length - 1];
   return (
     <div className="flex items-center justify-center gap-4 mb-4">
       <button
         onClick={() => onChange(year - 1)}
-        disabled={year <= minYear}
+        disabled={year <= MIN_YEAR}
         className="p-2 rounded-full border border-violet-500/40 bg-violet-900/40 text-violet-200 hover:bg-violet-800/60 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
         aria-label="Previous year"
       >
@@ -319,7 +317,7 @@ function YearNavigator({ year, onChange }: { year: number; onChange: (y: number)
       <span className="text-2xl font-bold text-white tracking-wider min-w-[80px] text-center">{year}</span>
       <button
         onClick={() => onChange(year + 1)}
-        disabled={year >= maxYear}
+        disabled={year >= MAX_YEAR}
         className="p-2 rounded-full border border-violet-500/40 bg-violet-900/40 text-violet-200 hover:bg-violet-800/60 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
         aria-label="Next year"
       >
