@@ -2,8 +2,9 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Search, ChevronDown, Check } from "lucide-react";
 import type { NatalChart } from "@/hooks/useNatalChart";
 import { normalizeName } from "@/lib/nameMatching";
-import { getRetrogradePeriods, getRetrogradeStatus, type RetrogradeInfo } from "@/lib/retrogradePatterns";
+import { getRetrogradePeriodsForYear, getRetrogradeStatus, type RetrogradeInfo } from "@/lib/retrogradePatterns";
 import * as Astronomy from "astronomy-engine";
+import { ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon } from "lucide-react";
 
 // ─── TYPES ──────────────────────────────────────────────────────────────────
 
