@@ -59,7 +59,7 @@ serve(async (req) => {
     
     // Cache key versioning: bump this when prompt/format changes so users don't get stale cached text.
     // This intentionally changes the cache key without requiring any DB schema changes.
-    const PROMPT_VERSION = "2026-03-04-v26-aspect-meanings-voc-dispositor";
+    const PROMPT_VERSION = "2026-03-04-v27-planet-sign-accuracy";
 
     const cacheDeviceId = deviceId || 'default';
     const cacheVoiceStyle = `${voiceStyle || ''}@${PROMPT_VERSION}`;
@@ -86,7 +86,12 @@ serve(async (req) => {
     // Build planetary positions text - this is the ground truth
     const planetText = planetPositions?.length > 0
       ? `Current Planetary Positions (VERIFIED ASTRONOMICAL DATA — computed from astronomy-engine ephemeris, NOT from AI training data):
-${planetPositions.map((p: any) => `- ${p.name}: ${p.degree}° ${p.sign}`).join('\n')}`
+${planetPositions.map((p: any) => `- ${p.name}: ${p.degree}° ${p.sign}`).join('\n')}
+
+⚠️ PLANET-SIGN ACCURACY RULE (NON-NEGOTIABLE):
+The positions above are computed from a high-precision astronomical ephemeris. You MUST use ONLY these sign placements.
+${planetPositions.map((p: any) => `- ${p.name} is in ${p.sign}. Do NOT say ${p.name} is in any other sign.`).join('\n')}
+If you mention a stellium, list ONLY the planets whose sign matches above. Do NOT add planets to a stellium that are in a DIFFERENT sign.`
       : '';
 
     // Build all-planet retrograde status text
@@ -921,7 +926,39 @@ CRITICAL INSTRUCTIONS:
     };
 
     const insightVerified = enforceMercuryTiming(insightRaw);
-    const insight = insightVerified;
+
+    // Deterministic post-check: enforce correct planet-sign assignments.
+    // If the AI says "Jupiter in Pisces" but ephemeris says Jupiter is in Cancer, fix it.
+    const enforcePlanetSigns = (text: string): string => {
+      if (!planetPositions?.length) return text;
+      let output = text;
+      const planetSignMap: Record<string, string> = {};
+      for (const p of planetPositions) {
+        planetSignMap[p.name] = p.sign;
+      }
+      // All zodiac signs for regex matching
+      const allSigns = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+      const signPattern = allSigns.join('|');
+
+      for (const [planet, correctSign] of Object.entries(planetSignMap)) {
+        if (!planet || !correctSign) continue;
+        // Skip Moon (changes signs mid-day) and nodes (less critical)
+        if (planet === 'Moon' || planet === 'NorthNode' || planet === 'SouthNode' || planet === 'Lilith') continue;
+        // Match patterns like "Jupiter in Pisces", "Jupiter is in Pisces", "Jupiter (15.2°) in Pisces"
+        const wrongSignRegex = new RegExp(
+          `(${planet})\\s*(\\([^)]*\\))?\\s*(is\\s+)?in\\s+(${signPattern})`,
+          'gi'
+        );
+        output = output.replace(wrongSignRegex, (match, pName, paren, is, foundSign) => {
+          if (foundSign === correctSign) return match; // already correct
+          console.warn(`Planet-sign correction: "${match}" → ${planet} in ${correctSign}`);
+          return `${pName}${paren ? ' ' + paren : ''}${is || ''}in ${correctSign}`;
+        });
+      }
+      return output;
+    };
+
+    const insight = enforcePlanetSigns(insightVerified);
 
     // Save to DB cache (expires at end of day in user's timezone, approximated as 24h)
     if (dateKey && !customPrompt) {
