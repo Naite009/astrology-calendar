@@ -118,8 +118,8 @@ CRITICAL: If Venus is listed as DIRECT above, do NOT mention "Venus retrograde" 
 
     // Enhanced aspects text with applying/separating status
     const aspectsText = aspects?.length > 0
-      ? `Major Aspects Today:
-${aspects.slice(0, 10).map((a: any) => `- ${a.planet1} ${a.symbol} ${a.planet2} (orb: ${a.orb}°, ${a.applyingSeparating || a.motion || 'status unknown'})`).join('\n')}`
+      ? `ALL Planetary Aspects Today (COMPLETE LIST — do NOT ignore any):
+${aspects.map((a: any) => `- ${a.planet1} ${a.symbol} ${a.planet2} (orb: ${a.orb}°, ${a.applyingSeparating || a.motion || 'status unknown'})`).join('\n')}`
       : '';
 
     // Moon sign change text
