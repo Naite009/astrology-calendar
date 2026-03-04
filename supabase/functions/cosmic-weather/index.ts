@@ -768,6 +768,7 @@ ${exactPhaseText ? `${exactPhaseText}` : `Moon Phase: ${moonPhase}`}
 Current Moon Sign: ${moonSign}
 ${moonSignChangeText}
 ${moonJupiterConjunction}
+${moonRulerText}
 Mercury Retrograde: ${mercuryRetro ? 'Yes' : 'No'}
 ${mercuryRxText}
 ${mercuryFactCheckText}
