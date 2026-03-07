@@ -428,13 +428,17 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
     const phase = getMoonPhase(now);
     const positions = getPlanetaryPositions(now);
     const moonPos = positions.moon;
+    const sign = moonPos?.signName || 'Unknown';
+    const phaseName = phase.phaseName;
+    const archetype = getKalderaArchetype(phaseName, sign);
     return {
-      sign: moonPos?.signName || 'Unknown',
+      sign,
       degree: moonPos?.degree ?? 0,
       minutes: moonPos?.minutes ?? 0,
-      phaseName: phase.phaseName,
-      emoji: PHASE_EMOJIS[phase.phaseName] || '🌙',
+      phaseName,
+      emoji: PHASE_EMOJIS[phaseName] || '🌙',
       illumination: phase.illumination,
+      archetype,
     };
   }, []);
 
