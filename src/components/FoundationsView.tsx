@@ -6,12 +6,14 @@ import { AspectEncyclopediaExplorer } from '@/components/narrative/AspectEncyclo
 import { EclipseEncyclopediaExplorer, EclipseTimingRulesCard } from '@/components/narrative/EclipseEncyclopediaExplorer';
 import { MidpointExplorer } from '@/components/narrative/MidpointExplorer';
 import { ElementDistributionCard } from '@/components/narrative/ElementDistributionCard';
+import { SunMoonDegreeChart } from '@/components/narrative/SunMoonDegreeChart';
+import { MoonFacesTeachings } from '@/components/narrative/MoonFacesTeachings';
 import { ChartSelector } from '@/components/ChartSelector';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { computeAllSignals } from '@/lib/narrativeAnalysisEngine';
 import { buildLiveSkyChart } from '@/lib/liveSkyChart';
 
-type SubTab = 'signs' | 'planets' | 'houses' | 'aspects' | 'midpoints' | 'eclipses';
+type SubTab = 'signs' | 'planets' | 'houses' | 'aspects' | 'midpoints' | 'eclipses' | 'moon';
 
 interface Props {
   userNatalChart: NatalChart | null;
@@ -65,6 +67,7 @@ export function FoundationsView({ userNatalChart, savedCharts, onNavigateToView 
     { key: 'signs', label: 'Signs', icon: '♈' },
     { key: 'planets', label: 'Planets', icon: '☿' },
     { key: 'houses', label: 'Houses', icon: '🏛' },
+    { key: 'moon', label: 'Moon', icon: '☽' },
     { key: 'aspects', label: 'Aspects', icon: '△' },
     { key: 'midpoints', label: 'Midpoints', icon: '⊕' },
     { key: 'eclipses', label: 'Eclipses', icon: '🌑' },
@@ -73,7 +76,7 @@ export function FoundationsView({ userNatalChart, savedCharts, onNavigateToView 
   return (
     <div className="max-w-5xl mx-auto">
       {/* Chart selector for personalization */}
-      {allCharts.length > 0 && (activeTab === 'signs' || activeTab === 'planets' || activeTab === 'houses' || activeTab === 'eclipses' || activeTab === 'midpoints') && activeTab !== 'midpoints' && (
+      {allCharts.length > 0 && (activeTab === 'signs' || activeTab === 'planets' || activeTab === 'houses' || activeTab === 'eclipses' || activeTab === 'midpoints' || activeTab === 'moon') && activeTab !== 'midpoints' && activeTab !== 'moon' && (
         <div className="mb-6">
           <ChartSelector
             userNatalChart={userNatalChart}
@@ -133,6 +136,16 @@ export function FoundationsView({ userNatalChart, savedCharts, onNavigateToView 
           userNatalChart={userNatalChart}
           savedCharts={savedCharts}
         />
+      )}
+
+      {activeTab === 'moon' && (
+        <div className="space-y-8">
+          <SunMoonDegreeChart
+            userNatalChart={userNatalChart}
+            savedCharts={savedCharts}
+          />
+          <MoonFacesTeachings />
+        </div>
       )}
 
       {activeTab === 'eclipses' && (

@@ -428,13 +428,17 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
     const phase = getMoonPhase(now);
     const positions = getPlanetaryPositions(now);
     const moonPos = positions.moon;
+    const sign = moonPos?.signName || 'Unknown';
+    const phaseName = phase.phaseName;
+    const archetype = getKalderaArchetype(phaseName, sign);
     return {
-      sign: moonPos?.signName || 'Unknown',
+      sign,
       degree: moonPos?.degree ?? 0,
       minutes: moonPos?.minutes ?? 0,
-      phaseName: phase.phaseName,
-      emoji: PHASE_EMOJIS[phase.phaseName] || '🌙',
+      phaseName,
+      emoji: PHASE_EMOJIS[phaseName] || '🌙',
       illumination: phase.illumination,
+      archetype,
     };
   }, []);
 
@@ -461,8 +465,8 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
         />
       </div>
 
-      {/* "Find My Moon" Banner — prominent clickable card */}
-      {myArchetype && selectedChart && (
+      {/* "Find My Moon" Banner — prominent clickable card with explanation */}
+      {myArchetype && selectedChart && natalPhaseResult && (
         <Card
           className="border-primary/40 bg-primary/5 cursor-pointer hover:border-primary/60 hover:shadow-lg transition-all"
           onClick={() => setMyMoonModal(true)}
@@ -484,8 +488,21 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
                   <span className="font-medium text-foreground">{myArchetype.phase}</span> in <span className="font-medium text-foreground">{SIGN_GLYPHS[myArchetype.sign]} {myArchetype.sign}</span>
                   {' · '}{PHASE_CHAPTER_TITLES[myArchetype.phase] && <span className="italic">"{PHASE_CHAPTER_TITLES[myArchetype.phase]}"</span>}
                 </p>
-                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{myArchetype.archetype.essence}</p>
-                <p className="text-xs text-primary mt-2 font-medium">Tap to read your full Moon archetype →</p>
+
+                {/* Explanation of where the name comes from */}
+                <div className="mt-3 p-3 rounded-lg bg-secondary/50 border border-border text-xs text-muted-foreground leading-relaxed">
+                  <p className="font-medium text-foreground mb-1">Where does "{myArchetype.archetype.name}" come from?</p>
+                  <p>
+                    Raven Kaldera's <em>Moon Phase Astrology</em> identifies 96 unique lunar archetypes — one for each combination of the 8 Moon phases × 12 zodiac signs. 
+                    Your Sun–Moon separation is <span className="font-mono text-foreground">{natalPhaseResult.separation}°</span>, placing you in the <strong className="text-foreground">{myArchetype.phase}</strong> phase 
+                    ({PHASE_ORDER.find(p => p.phase === myArchetype.phase)?.degreeRange}). 
+                    Combined with your Moon in <strong className="text-foreground">{SIGN_GLYPHS[myArchetype.sign]} {myArchetype.sign}</strong>, 
+                    your specific archetype is <strong className="text-primary">{myArchetype.archetype.name}</strong>.
+                  </p>
+                </div>
+
+                <p className="text-sm text-muted-foreground mt-3 leading-relaxed">{myArchetype.archetype.essence}</p>
+                <p className="text-xs text-primary mt-2 font-medium">Tap to read your full Moon archetype deep dive →</p>
               </div>
             </div>
           </CardContent>
@@ -503,10 +520,10 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
         />
       )}
 
-      {/* Today's Transiting Moon */}
+      {/* Today's Transiting Moon — with archetype */}
       <Card className="border-accent/30 bg-accent/5">
         <CardContent className="p-5">
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-start gap-3 flex-wrap">
             <span className="text-3xl">{transitingMoon.emoji}</span>
             <div className="flex-1">
               <div className="flex items-center gap-2 flex-wrap">
@@ -519,12 +536,23 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
               <p className="text-sm text-muted-foreground mt-0.5">
                 <span className="text-foreground font-medium">{transitingMoon.phaseName}</span>
                 {' in '}
-                <span className="text-foreground font-medium">{transitingMoon.sign}</span>
+                <span className="text-foreground font-medium">{SIGN_GLYPHS[transitingMoon.sign]} {transitingMoon.sign}</span>
                 {' · '}
                 <span className="font-mono text-xs">{transitingMoon.degree}°{transitingMoon.minutes.toString().padStart(2, '0')}'</span>
                 {' · '}
                 {Math.round(transitingMoon.illumination * 100)}% illuminated
               </p>
+              {transitingMoon.archetype && (
+                <div className="mt-3 p-3 rounded-lg bg-accent/20 border border-accent/30">
+                  <p className="text-xs font-medium text-foreground mb-1">
+                    Today's Archetype: <span className="font-serif text-primary">{transitingMoon.archetype.name}</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{transitingMoon.archetype.essence}</p>
+                  <p className="text-[10px] text-muted-foreground mt-1 italic">
+                    The collective mood today carries the energy of the {transitingMoon.archetype.name} — {transitingMoon.phaseName} in {transitingMoon.sign}.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
