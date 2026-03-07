@@ -1,95 +1,96 @@
 
 
-# Eclipse Teaching Mode: Personalized Step-by-Step Walkthrough
+# Enrich Moon Phase Encyclopedia with Kaldera + Forrest + McCartney Content
 
-## What This Builds
+## What the user is asking
+Yes — the "Moon Phase Astrology" book by Raven Kaldera assigns a unique mythic archetype name to each combination of Moon phase + zodiac sign (8 phases × 12 signs = 96 "named Moons"). Examples: "Infant's Moon" (New Moon in Aries), "Warrior's Moon" (Full Moon in Aries), "Mystic's Moon" (Balsamic in Pisces). The user wants all of this plus Forrest and McCartney content integrated in a clickable, easy-to-understand way.
 
-A new "Teaching Mode" component that replaces the current collapsible-module approach with a **linear, step-by-step guided walkthrough** that narrates the eclipse's meaning through the user's personal chart. Each step builds on the previous one, moving from universal → sign-specific → house-specific → natal-node-specific → pattern recognition → action items.
+## Plan
 
-## The 7 Steps
+### 1. Create data file: 96 Kaldera Moon Archetypes
+**File:** `src/data/moonPhaseSignArchetypes.ts`
 
-```text
-Step 1: What This Eclipse IS (type + meaning)
-   "This is a total lunar eclipse. Lunar eclipses reveal what's hidden,
-    outdated, or has run its course..."
+A lookup map: `phase × sign → { name, description }` for all 96 combinations extracted from the book's table of contents. Each entry gets the archetype name and a one-line essence. Structure:
 
-Step 2: The Sign Filter (Virgo themes)
-   "Because it's in Virgo, the themes are: perfectionism, worry,
-    self-criticism, diet, health routines, analysis paralysis..."
-
-Step 3: YOUR House (where it lands in your chart)
-   "For you, this falls in your 11th house — community, friendships,
-    hopes for the future. So the Virgo audit is happening in your
-    social world and group commitments..."
-
-Step 4: YOUR Natal Nodes (the karmic context)
-   "Your North Node is in Scorpio (deep transformation, shared
-    resources, emotional truth). Your South Node is in Taurus
-    (comfort, material security, holding on). This eclipse asks:
-    are your Virgo-style habits (diet, routines, perfectionism)
-    keeping you stuck in Taurus comfort — or moving you toward
-    Scorpio depth?"
-   - Pulls from SPILLER_NODE_DATA for rich context
-   - Connects eclipse sign to natal node axis explicitly
-
-Step 5: The Pattern Mirror
-   "Look for this pattern: 'I keep optimizing/fixing/perfecting X
-    but nothing changes.' That's the South Node talking. The eclipse
-    is showing you: the method isn't broken — the goal might be.
-    Scorpio NN says: go deeper, not wider."
-
-Step 6: Natal Planet Activations (aspects)
-   "This eclipse at 12° Virgo makes a [trine/square/etc] to your
-    natal [planet] — which adds [specific theme]..."
-
-Step 7: Your Personal Action Plan
-   - What to release (tied to SN + eclipse sign)
-   - What to move toward (tied to NN)
-   - Specific journal prompts synthesizing all steps
-   - "Watch for this in the next 2 weeks..."
+```typescript
+export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, { name: string; essence: string }>> = {
+  'New Moon': {
+    Aries: { name: "Infant's Moon", essence: "Pure impulse, the spark of new life..." },
+    Taurus: { name: "Dryad's Moon", essence: "..." },
+    // all 12 signs
+  },
+  'Waxing Crescent': { ... }, // Torch-Bearer's, Gardener's, etc.
+  // all 8 phases
+};
 ```
 
-## How It Works Technically
+### 2. Create data file: Forrest Moon Signs + Houses
+**File:** `src/data/moonForrestData.ts`
 
-### New Component: `EclipseTeachingMode.tsx`
-- Receives: `eclipse: EclipseEvent`, `userNatalChart: NatalChart | null`
-- State: `currentStep` (0-6), with Next/Back navigation
-- Each step is a dedicated render function that pulls from existing data sources
-- Step progression uses a progress bar showing "Step 3 of 7"
-- Users can jump between steps via clickable step indicators
+Contains Moon-in-sign (12 entries) and Moon-in-house (12 entries) from Steven Forrest's "Book of the Moon":
 
-### Data Sources (all existing, no new data files needed)
-- **Step 1**: Eclipse type/subtype from `EclipseEvent` + `nodalEducation` export
-- **Step 2**: `buildSignTeaching()` from `signTeacher.ts` — element, modality, shadow, superpower
-- **Step 3**: `getHouseForLongitude()` + `HOUSE_MEANINGS` from `houseCalculations.ts`
-- **Step 4**: `SPILLER_NODE_DATA` from `nodeSpillerData.ts` — pastLifeStory, tendenciesToLeaveBehind, tendenciesToDevelop + a new **cross-reference function** that connects eclipse sign themes to natal node themes
-- **Step 5**: New synthesis logic that generates "pattern sentences" by combining eclipse sign shadow + SN sign tendencies
-- **Step 6**: `getEclipseAspectHits()` from `eclipseAspects.ts`
-- **Step 7**: Enhanced `generateTakeaway()` that incorporates natal node data
+- **Moon Signs:** Evolutionary Goal, Mood, Reigning Need, Secret of Happiness & Healing, Shadow
+- **Moon Houses:** Soul Intention, Mood Sensitivity, Reigning Need, Critical Whimsy, Soul-cage
 
-### Cross-Reference Logic (the key new piece)
-A function `synthesizeEclipseWithNodes()` that:
-1. Takes eclipse sign, eclipse house, natal NN sign, natal SN sign, natal NN house, natal SN house
-2. Determines if eclipse sign shares element/modality with NN or SN
-3. Generates specific guidance: "This Virgo eclipse connects to your Taurus SN through the earth element — the pull to optimize your diet IS the South Node pattern. Your Scorpio NN says the real work is emotional, not logistical."
-4. Pulls relevant `tendenciesToLeaveBehind` and `tendenciesToDevelop` from Spiller data
+### 3. Create data file: Forrest Phase Enrichments
+**File:** `src/data/moonPhaseForrest.ts`
 
-### Integration into EclipseEncyclopediaExplorer
-- Add a toggle button: "📖 Teaching Mode" next to the existing interpretation layer
-- When active, replaces the collapsible modules with the step-by-step walkthrough
-- Falls back gracefully if no natal chart is loaded (Steps 1-2 work without a chart, Steps 3-7 show "Add your birth chart to personalize")
+8 entries with Forrest's evolutionary keywords and insights per phase, complementing the existing `birthConditions.ts` data.
 
-### UI Design
-- Each step: full-width card with step number, title, and rich content
-- Bottom nav: "← Previous Step" / "Next Step →" buttons
-- Top: clickable step dots showing progress
-- Current step highlighted, completed steps get checkmarks
-- Smooth scroll-to-top on step change
+### 4. Create data file: Eclipse & Phase Timing Rules
+**File:** `src/data/eclipseTimingRules.ts`
 
-## Files to Create/Edit
+McCartney's practical timing data:
+- New Moon influence = 1 month; Full Moon = 2 weeks; Quarter = 1 week
+- Solar Eclipse = 1 year; Lunar Eclipse = 6 months
+- Watch transiting planets aspecting eclipse degree
+- VOC interpretive text
 
-1. **Create** `src/components/narrative/EclipseTeachingMode.tsx` — the main 7-step component
-2. **Create** `src/lib/eclipseNodeSynthesis.ts` — cross-reference logic connecting eclipse themes to natal nodes
-3. **Edit** `src/components/narrative/EclipseEncyclopediaExplorer.tsx` — add Teaching Mode toggle and render the new component
-4. **Edit** `src/components/narrative/EclipseInterpretationLayer.tsx` — minor: export the `generateTakeaway` function for reuse
+### 5. Enhance Moon Phase Encyclopedia UI
+**File:** `src/components/MoonPhaseEncyclopedia.tsx`
+
+When a phase card is expanded:
+- **New section: "Your Moon Archetype"** — If a chart is selected, show the Kaldera archetype name for their phase+sign combo (e.g., "You are the Warrior's Moon — Full Moon in Aries") with a clickable card
+- **New section: "All 12 Archetypes"** — Collapsible grid showing all 12 sign archetypes for that phase, each clickable to reveal the essence
+- **New section: "Steven Forrest's Insight"** — Forrest's evolutionary keyword + paragraph for that phase
+- If chart selected, also show Forrest's Moon-in-sign and Moon-in-house data below the natal phase banner
+
+### 6. Add Kaldera Archetypes to Zodiac Sign Explorer
+**File:** `src/components/narrative/ZodiacSignExplorer.tsx`
+
+In the `SignDetailModal`, add a new collapsible section "☽ Moon Phase Archetypes" showing the 8 Kaldera archetype names for that sign (one per phase) as clickable badges.
+
+### 7. Add McCartney timing to Eclipse Encyclopedia
+**File:** `src/components/narrative/EclipseEncyclopediaExplorer.tsx`
+
+Add a small info card or tooltip with the timing rules (Solar = 1 year, Lunar = 6 months) and the guidance about watching transiting planets aspecting eclipse degrees.
+
+### 8. Enhance VOC display
+**File:** `src/lib/voidOfCourseMoon.ts` + `src/components/DayDetail.tsx`
+
+Add McCartney/Forrest interpretive text constants for VOC: "Moon's instincts are on hold — best for routine, meditation, reflection. Not ideal for initiating new plans."
+
+## UI Design Principles
+- Every archetype name is **clickable** to reveal its description
+- Use the existing card/badge/collapsible patterns from the codebase
+- Archetype names displayed as stylized badges with the moon phase emoji
+- Source attribution shown as small text (e.g., "— Raven Kaldera")
+- Keep the data browsable: users can explore all 96 moons without needing a chart selected
+
+## Files Created
+| File | Purpose |
+|------|---------|
+| `src/data/moonPhaseSignArchetypes.ts` | 96 Kaldera named Moons |
+| `src/data/moonForrestData.ts` | Moon signs + houses from Forrest |
+| `src/data/moonPhaseForrest.ts` | 8 phase enrichments from Forrest |
+| `src/data/eclipseTimingRules.ts` | McCartney timing rules |
+
+## Files Edited
+| File | Changes |
+|------|---------|
+| `src/components/MoonPhaseEncyclopedia.tsx` | Add Kaldera archetypes + Forrest insights to expanded cards |
+| `src/components/narrative/ZodiacSignExplorer.tsx` | Add Moon archetypes section per sign |
+| `src/components/narrative/EclipseEncyclopediaExplorer.tsx` | Add timing rules |
+| `src/lib/voidOfCourseMoon.ts` | Add interpretive text |
+| `src/components/DayDetail.tsx` | Show VOC meaning text |
 
