@@ -1,120 +1,95 @@
 
 
-# Make Solar Return Section More Robust
+# Eclipse Teaching Mode: Personalized Step-by-Step Walkthrough
 
-## Source Material Summary
+## What This Builds
 
-Six documents provide rich content to expand the Solar Return feature:
+A new "Teaching Mode" component that replaces the current collapsible-module approach with a **linear, step-by-step guided walkthrough** that narrates the eclipse's meaning through the user's personal chart. Each step builds on the previous one, moving from universal → sign-specific → house-specific → natal-node-specific → pattern recognition → action items.
 
-1. **"A Complete Guide on Solar Returns"** — SR Ascendant sign interpretations (all 12), SR Ascendant in natal house (all 12), Sun-Moon aspect interpretations, Sun aspects with all SR planets, critical degrees (29°/0°), and the concept of "natal house brought to the SR Ascendant"
-2. **Brian Clark — "Working with Solar Returns"** — A professional 12-step delineation framework (Ascendant, MC, Angular Planets, Transits to Sun, Moon, Lunation Phase, Planets, Aspect Patterns, Chart Shapes, Elements/Modes, Retrogrades, Intercepted Signs), planetary annual movement cycles (MC advances ~90° per year, Moon's 19-year cycle, Venus's 8-year cycle), and the concept of the SR as a biographical tool
-3. **"Keys to Interpreting Solar Returns"** — Same source as #1 but shorter; already covered
-4. **Ray Merriman — "Solar Return Report"** — The sacred moment of the SR, SR planet aspects to horizon (ASC/DSC), SR planet aspects to meridian (MC/IC), "return to natal" gender compatibility analysis, house ruler aspects, progressed SR Moon timing (with dates), progressed SR angles (1°/day technique), and transiting Sun through SR houses
-5. **"Childbirth in Solar Returns"** — Statistical research on childbirth indicators (Moon sextile/trine Mars, 5th house ruler in 5th, Jupiter semi-sextile North Node, etc.) — a specialized reference module
-6. **Mary Fortier Shea — "Solar Returns: A Study"** — Tropical vs sidereal methodology, precession discussion, why house position > sign for SR planets, Sun-Moon in same house = new beginning, Venus's 8 positions, Mars as the only "free" planet
+## The 7 Steps
 
-## What Currently Exists
+```text
+Step 1: What This Eclipse IS (type + meaning)
+   "This is a total lunar eclipse. Lunar eclipses reveal what's hidden,
+    outdated, or has run its course..."
 
-The SR feature already has:
-- SR chart input form (manual + drag/drop parsing)
-- Overview tab: Year Theme (ASC sign + ruler), Lord of the Year, Annual Profection, Sun/Moon house + sign interpretations, Angular Planets, Moon Phase, Stelliums, Element/Modality Balance, Retrogrades, Saturn/Nodes, Hemispheric Emphasis, Repeated Themes, AI Year-Ahead Narrative
-- House Overlay tab: SR planet → natal house mapping
-- Aspects tab: SR-to-natal and SR internal aspects
-- Relocation tab: basic relocation tips
+Step 2: The Sign Filter (Virgo themes)
+   "Because it's in Virgo, the themes are: perfectionism, worry,
+    self-criticism, diet, health routines, analysis paralysis..."
 
-## What to Add
+Step 3: YOUR House (where it lands in your chart)
+   "For you, this falls in your 11th house — community, friendships,
+    hopes for the future. So the Virgo audit is happening in your
+    social world and group commitments..."
 
-### 1. New Data File: SR Ascendant Sign Interpretations (Extended)
-**File:** `src/data/solarReturnAscendantData.ts`
+Step 4: YOUR Natal Nodes (the karmic context)
+   "Your North Node is in Scorpio (deep transformation, shared
+    resources, emotional truth). Your South Node is in Taurus
+    (comfort, material security, holding on). This eclipse asks:
+    are your Virgo-style habits (diet, routines, perfectionism)
+    keeping you stuck in Taurus comfort — or moving you toward
+    Scorpio depth?"
+   - Pulls from SPILLER_NODE_DATA for rich context
+   - Connects eclipse sign to natal node axis explicitly
 
-The current `yearTheme` in `solarReturnAnalysis.ts` generates a generic theme. Replace with rich, multi-paragraph interpretations for each of the 12 SR Ascendant signs from the "Complete Guide" — covering temperament, health tendencies, relationship dynamics, and who you attract. Also add SR Ascendant in natal house interpretations (12 entries) for the "natal house brought to the Ascendant" technique.
+Step 5: The Pattern Mirror
+   "Look for this pattern: 'I keep optimizing/fixing/perfecting X
+    but nothing changes.' That's the South Node talking. The eclipse
+    is showing you: the method isn't broken — the goal might be.
+    Scorpio NN says: go deeper, not wider."
 
-### 2. New Data File: SR Sun Aspect Interpretations
-**File:** `src/data/solarReturnAspectData.ts`
+Step 6: Natal Planet Activations (aspects)
+   "This eclipse at 12° Virgo makes a [trine/square/etc] to your
+    natal [planet] — which adds [specific theme]..."
 
-Add interpretations for SR Sun aspects to all other SR planets (Sun-Moon, Sun-Mercury, Sun-Venus, Sun-Mars, Sun-Jupiter, Sun-Saturn, Sun-Uranus, Sun-Neptune, Sun-Pluto) in conjunction, opposition, square, trine, and sextile — from the "Complete Guide." Also add SR planet-to-horizon and SR planet-to-meridian interpretations from Merriman for the 10 planets.
+Step 7: Your Personal Action Plan
+   - What to release (tied to SN + eclipse sign)
+   - What to move toward (tied to NN)
+   - Specific journal prompts synthesizing all steps
+   - "Watch for this in the next 2 weeks..."
+```
 
-### 3. New Data File: Planetary Cycles in SR
-**File:** `src/data/solarReturnCycles.ts`
+## How It Works Technically
 
-Brian Clark's annual movement data as structured reference:
-- MC advances ~87-93° per year; repeats natal angles at age 29 or 33
-- Moon follows elements in sequence; 19-year Metonic cycle
-- Sun moves ~3 houses clockwise per year through quadrants
-- Venus has 8 positions repeating every 8 years
-- Mercury near natal position at ages 13, 33, 46; retrograde every 6th SR
-- Mars is the only "free" planet changing sign regularly
-- Outer planet direction changes noted
+### New Component: `EclipseTeachingMode.tsx`
+- Receives: `eclipse: EclipseEvent`, `userNatalChart: NatalChart | null`
+- State: `currentStep` (0-6), with Next/Back navigation
+- Each step is a dedicated render function that pulls from existing data sources
+- Step progression uses a progress bar showing "Step 3 of 7"
+- Users can jump between steps via clickable step indicators
 
-### 4. New Data File: Childbirth Indicators
-**File:** `src/data/solarReturnChildbirthData.ts`
+### Data Sources (all existing, no new data files needed)
+- **Step 1**: Eclipse type/subtype from `EclipseEvent` + `nodalEducation` export
+- **Step 2**: `buildSignTeaching()` from `signTeacher.ts` — element, modality, shadow, superpower
+- **Step 3**: `getHouseForLongitude()` + `HOUSE_MEANINGS` from `houseCalculations.ts`
+- **Step 4**: `SPILLER_NODE_DATA` from `nodeSpillerData.ts` — pastLifeStory, tendenciesToLeaveBehind, tendenciesToDevelop + a new **cross-reference function** that connects eclipse sign themes to natal node themes
+- **Step 5**: New synthesis logic that generates "pattern sentences" by combining eclipse sign shadow + SN sign tendencies
+- **Step 6**: `getEclipseAspectHits()` from `eclipseAspects.ts`
+- **Step 7**: Enhanced `generateTakeaway()` that incorporates natal node data
 
-Statistical indicators from the research paper (Moon sextile/trine Mars, 5th house ruler in 5th, Jupiter semi-sextile North Node, etc.) with chi-square significance scores. Display as a specialized "Fertility & Childbirth Indicators" section.
+### Cross-Reference Logic (the key new piece)
+A function `synthesizeEclipseWithNodes()` that:
+1. Takes eclipse sign, eclipse house, natal NN sign, natal SN sign, natal NN house, natal SN house
+2. Determines if eclipse sign shares element/modality with NN or SN
+3. Generates specific guidance: "This Virgo eclipse connects to your Taurus SN through the earth element — the pull to optimize your diet IS the South Node pattern. Your Scorpio NN says the real work is emotional, not logistical."
+4. Pulls relevant `tendenciesToLeaveBehind` and `tendenciesToDevelop` from Spiller data
 
-### 5. Enhanced Analysis Engine
-**File:** `src/lib/solarReturnAnalysis.ts` — Edit
+### Integration into EclipseEncyclopediaExplorer
+- Add a toggle button: "📖 Teaching Mode" next to the existing interpretation layer
+- When active, replaces the collapsible modules with the step-by-step walkthrough
+- Falls back gracefully if no natal chart is loaded (Steps 1-2 work without a chart, Steps 3-7 show "Add your birth chart to personalize")
 
-Add these new analysis sections to `SolarReturnAnalysis`:
-- `ascendantNarrativeExtended`: Rich multi-paragraph ASC interpretation from new data
-- `natalHouseBroughtToASC`: Which natal house the SR ASC falls in + interpretation
-- `sunAspects`: SR Sun aspects with interpretations from new data
-- `planetaryCycleNotes`: Age-based notes from Clark's cycle data (e.g., "At age 39, your SR Moon repeats its position from age 20")
-- `chartShape`: Jones pattern detection (Bundle, Bowl, Bucket, Locomotive, Seesaw, Splash, Splay) from Clark
-- `interceptedSigns`: Detect and interpret intercepted sign polarities
-- `childbirthIndicators`: Check the statistical indicators and score them (optional section)
-- `srMCAnalysis`: MC sign + planets conjunct MC/IC + interpretation from Clark/Merriman
-- `criticalDegrees`: Flag any planet or angle at 29° or 0° with significance note
+### UI Design
+- Each step: full-width card with step number, title, and rich content
+- Bottom nav: "← Previous Step" / "Next Step →" buttons
+- Top: clickable step dots showing progress
+- Current step highlighted, completed steps get checkmarks
+- Smooth scroll-to-top on step change
 
-### 6. Enhanced SR View — New Tabs & Sections
-**File:** `src/components/SolarReturnView.tsx` — Edit
+## Files to Create/Edit
 
-**New tab: "The Year's Story"** — A guided walkthrough combining:
-- Extended ASC narrative (from new data)
-- Natal house brought to ASC
-- MC analysis and angular planets on the meridian
-- SR Sun aspects to other SR planets
-- Chart shape identification with interpretation
-- Intercepted signs (if any)
-- Critical degrees flagged
-
-**New tab: "Cycles & Timing"** — Combining:
-- Brian Clark's planetary cycle notes personalized to the user's age
-- Moon's 19-year cycle: "Your SR Moon was in this same sector at ages X, Y, Z"
-- Venus's 8-year cycle position
-- Mercury retrograde frequency check
-- Direction changes from previous SR
-
-**New section in Overview: "Childbirth Indicators"** — Only shown when relevant indicators exist, with chi-square significance scores and a clear disclaimer that these are statistical correlations, not predictions.
-
-**Enhanced Relocation tab** — Add Merriman's "sacred moment" guidance about preparing for the SR moment with intention, meditation, and ritual.
-
-### 7. Enhanced AI Narrative Prompt
-**File:** `supabase/functions/generate-sr-narrative/index.ts` — Edit
-
-Inject the new extended data into the AI prompt so the year-ahead narrative synthesis incorporates:
-- The chart shape and what it means
-- MC analysis
-- Sun aspects
-- Natal house brought to ASC
-- Cycle position notes
-- Intercepted signs
-
-## Files Created
-| File | Purpose |
-|------|---------|
-| `src/data/solarReturnAscendantData.ts` | 12 ASC sign + 12 natal house interpretations |
-| `src/data/solarReturnAspectData.ts` | Sun aspects + horizon/meridian aspects |
-| `src/data/solarReturnCycles.ts` | Planetary annual movement cycles |
-| `src/data/solarReturnChildbirthData.ts` | Statistical childbirth indicators |
-
-## Files Edited
-| File | Changes |
-|------|---------|
-| `src/lib/solarReturnAnalysis.ts` | Add chart shape, MC analysis, natal house to ASC, Sun aspects, critical degrees, intercepted signs, cycle notes, childbirth indicators |
-| `src/components/SolarReturnView.tsx` | Add "Year's Story" tab, "Cycles & Timing" tab, childbirth section, enhanced relocation with sacred moment guidance |
-| `src/lib/solarReturnInterpretations.ts` | Add MC sign interpretations, chart shape narratives |
-| `supabase/functions/generate-sr-narrative/index.ts` | Inject new data fields into AI prompt |
-
-## Attribution
-All new data entries include source attribution (Brian Clark, Ray Merriman, Mary Fortier Shea, CosmiTec Research).
+1. **Create** `src/components/narrative/EclipseTeachingMode.tsx` — the main 7-step component
+2. **Create** `src/lib/eclipseNodeSynthesis.ts` — cross-reference logic connecting eclipse themes to natal nodes
+3. **Edit** `src/components/narrative/EclipseEncyclopediaExplorer.tsx` — add Teaching Mode toggle and render the new component
+4. **Edit** `src/components/narrative/EclipseInterpretationLayer.tsx` — minor: export the `generateTakeaway` function for reuse
 
