@@ -4,11 +4,16 @@ import { NatalChart } from '@/hooks/useNatalChart';
 import { calculateBirthMoonPhase, BirthMoonPhase } from '@/lib/birthConditions';
 import { calculateSecondaryProgressions, getProgressedMoonInfo } from '@/lib/secondaryProgressions';
 import { getMoonPhase, getPlanetaryPositions } from '@/lib/astrology';
+import { getNatalPlanetHouse } from '@/lib/houseCalculations';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ChevronDown, ChevronUp, MapPin, Moon } from 'lucide-react';
 import { format, addMonths } from 'date-fns';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { getArchetypesForPhase, getKalderaArchetype, PHASE_CHAPTER_TITLES } from '@/data/moonPhaseSignArchetypes';
+import { getForrestPhaseData } from '@/data/moonPhaseForrest';
+import { getForrestMoonSign, getForrestMoonHouse } from '@/data/moonForrestData';
 
 interface MoonPhaseEncyclopediaProps {
   userNatalChart: NatalChart | null;
@@ -56,6 +61,143 @@ const JOURNEY_STAGES: Record<string, { q1: string; q2: string; q3: string; q4: s
   Pisces: { q1: "The veil thins. Dreams are vivid. Intuition is sharp. Boundaries blur.", q2: "Swimming in the collective unconscious. Art and spirituality feed your soul.", q3: "Spiritual depth is profound. Forgiveness becomes the great gift.", q4: "The cycle completes. Old identities release. A new beginning forms. Aries is coming." },
 };
 
+const SIGN_GLYPHS: Record<string, string> = {
+  Aries: '♈', Taurus: '♉', Gemini: '♊', Cancer: '♋', Leo: '♌', Virgo: '♍',
+  Libra: '♎', Scorpio: '♏', Sagittarius: '♐', Capricorn: '♑', Aquarius: '♒', Pisces: '♓',
+};
+
+/** Kaldera archetypes grid for an expanded phase card */
+function KalderaArchetypesSection({ phase, userMoonSign }: { phase: string; userMoonSign?: string }) {
+  const [open, setOpen] = useState(false);
+  const archetypes = getArchetypesForPhase(phase);
+  const chapterTitle = PHASE_CHAPTER_TITLES[phase];
+  const userArchetype = userMoonSign ? getKalderaArchetype(phase, userMoonSign) : null;
+
+  return (
+    <div className="space-y-3">
+      {/* User's personal archetype */}
+      {userArchetype && userMoonSign && (
+        <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
+          <p className="text-[10px] font-medium text-primary uppercase tracking-wide mb-1">☽ Your Moon Archetype</p>
+          <p className="text-sm font-serif font-semibold text-foreground">
+            {userArchetype.name} <span className="text-muted-foreground font-normal text-xs">({phase} in {userMoonSign})</span>
+          </p>
+          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{userArchetype.essence}</p>
+          <p className="text-[10px] text-muted-foreground mt-1 italic">— Raven Kaldera</p>
+        </div>
+      )}
+
+      {/* Browse all 12 */}
+      <Collapsible open={open} onOpenChange={setOpen}>
+        <CollapsibleTrigger className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer w-full">
+          <span>☽ All 12 {chapterTitle ? `"${chapterTitle}"` : phase} Archetypes</span>
+          {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
+            {archetypes.map(({ sign, archetype }) => {
+              const isUser = sign === userMoonSign;
+              return (
+                <div
+                  key={sign}
+                  className={`p-2.5 rounded-lg border text-xs transition-colors ${
+                    isUser ? 'bg-primary/10 border-primary/30' : 'bg-muted/30 border-border hover:border-muted-foreground/30'
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="text-sm">{SIGN_GLYPHS[sign] || ''}</span>
+                    <span className="font-semibold text-foreground">{archetype.name}</span>
+                    {isUser && <Badge variant="default" className="text-[8px] px-1 py-0">You</Badge>}
+                  </div>
+                  <p className="text-muted-foreground leading-relaxed">{archetype.essence}</p>
+                </div>
+              );
+            })}
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-2 italic">— Raven Kaldera, Moon Phase Astrology</p>
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
+  );
+}
+
+/** Forrest phase insight section */
+function ForrestPhaseInsight({ phase }: { phase: string }) {
+  const data = getForrestPhaseData(phase);
+  if (!data) return null;
+
+  return (
+    <div className="space-y-3">
+      <div className="p-3 rounded-lg bg-accent/50 border border-accent">
+        <div className="flex items-center gap-2 mb-2">
+          <Badge variant="outline" className="text-[10px]">{data.evolutionaryKeyword}</Badge>
+          <span className="text-[10px] text-muted-foreground">Evolutionary Keyword</span>
+        </div>
+        <p className="text-xs text-foreground leading-relaxed">{data.forrestInsight}</p>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+          <p className="text-[10px] font-medium text-muted-foreground mb-1">✦ HIGH EXPRESSION</p>
+          <p className="text-xs text-foreground leading-relaxed">{data.highExpression}</p>
+        </div>
+        <div className="p-3 rounded-lg bg-destructive/5 border border-destructive/10">
+          <p className="text-[10px] font-medium text-muted-foreground mb-1">🌑 SHADOW</p>
+          <p className="text-xs text-foreground leading-relaxed">{data.darkSide}</p>
+        </div>
+      </div>
+      <p className="text-[10px] text-muted-foreground italic">
+        🔗 {data.rudhyarLineage}
+      </p>
+      <p className="text-[10px] text-muted-foreground italic">— Steven Forrest, The Book of the Moon</p>
+    </div>
+  );
+}
+
+/** Forrest Moon-in-sign + Moon-in-house section for natal chart */
+function ForrestNatalMoonSection({ chart }: { chart: NatalChart }) {
+  const moonSign = chart.planets.Moon?.sign;
+  const moonHouseNum = getNatalPlanetHouse('Moon', chart);
+  const signData = moonSign ? getForrestMoonSign(moonSign) : undefined;
+  const houseData = typeof moonHouseNum === 'number' ? getForrestMoonHouse(moonHouseNum) : undefined;
+
+  if (!signData && !houseData) return null;
+
+  return (
+    <div className="space-y-3">
+      <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
+        Steven Forrest's Evolutionary Moon
+      </h4>
+
+      {signData && (
+        <div className="p-3 rounded-lg bg-secondary/50 border border-secondary space-y-2">
+          <p className="text-xs font-semibold text-foreground">☽ Moon in {signData.sign}</p>
+          <div className="grid grid-cols-1 gap-1.5 text-xs">
+            <div><span className="text-muted-foreground">Evolutionary Goal:</span> <span className="text-foreground">{signData.evolutionaryGoal}</span></div>
+            <div><span className="text-muted-foreground">Mood:</span> <span className="text-foreground">{signData.mood}</span></div>
+            <div><span className="text-muted-foreground">Reigning Need:</span> <span className="text-foreground">{signData.reigningNeed}</span></div>
+            <div><span className="text-muted-foreground">Secret of Happiness:</span> <span className="text-foreground">{signData.secretOfHappiness}</span></div>
+            <div><span className="text-muted-foreground">Shadow:</span> <span className="text-foreground">{signData.shadow}</span></div>
+          </div>
+        </div>
+      )}
+
+      {houseData && (
+        <div className="p-3 rounded-lg bg-accent/30 border border-accent space-y-2">
+          <p className="text-xs font-semibold text-foreground">☽ Moon in the {houseData.house}{houseData.house === 1 ? 'st' : houseData.house === 2 ? 'nd' : houseData.house === 3 ? 'rd' : 'th'} House</p>
+          <div className="grid grid-cols-1 gap-1.5 text-xs">
+            <div><span className="text-muted-foreground">Soul Intention:</span> <span className="text-foreground">{houseData.soulIntention}</span></div>
+            <div><span className="text-muted-foreground">Mood Sensitive To:</span> <span className="text-foreground">{houseData.moodSensitiveTo}</span></div>
+            <div><span className="text-muted-foreground">Reigning Need:</span> <span className="text-foreground">{houseData.reigningNeed}</span></div>
+            <div><span className="text-muted-foreground">Critical Whimsy:</span> <span className="text-foreground">{houseData.criticalWhimsy}</span></div>
+            <div><span className="text-muted-foreground">Soul-cage:</span> <span className="text-foreground">{houseData.soulCage}</span></div>
+          </div>
+        </div>
+      )}
+      <p className="text-[10px] text-muted-foreground italic">— Steven Forrest, The Book of the Moon</p>
+    </div>
+  );
+}
+
 export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhaseEncyclopediaProps) => {
   const [selectedChartId, setSelectedChartId] = useState<string>(userNatalChart ? 'user' : '');
   const [expandedPhase, setExpandedPhase] = useState<BirthMoonPhase | null>(null);
@@ -80,7 +222,6 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
 
     const result = calculateBirthMoonPhase(sun.sign, sun.degree, moon.sign, moon.degree);
 
-    // Calculate raw separation degree
     const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
                    'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
     const sunAbs = signs.indexOf(sun.sign) * 30 + sun.degree;
@@ -91,7 +232,6 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
     return { ...result, separation: Math.round(separation * 10) / 10 };
   }, [selectedChart]);
 
-  // Progressed Moon calculation
   const progressedMoonInfo = useMemo(() => {
     if (!selectedChart) return null;
     try {
@@ -103,7 +243,6 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
     }
   }, [selectedChart]);
 
-  // Journey milestones
   const journeyMilestones = useMemo(() => {
     if (!progressedMoonInfo) return null;
     const currentDeg = progressedMoonInfo.exactDegree;
@@ -133,7 +272,6 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
     ? (progressedMoonInfo.exactDegree < 7.5 ? 'q1' : progressedMoonInfo.exactDegree < 15 ? 'q2' : progressedMoonInfo.exactDegree < 22.5 ? 'q3' : 'q4')
     : null;
 
-  // Today's transiting moon
   const transitingMoon = useMemo(() => {
     const now = new Date();
     const phase = getMoonPhase(now);
@@ -153,6 +291,8 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
       illumination: phase.illumination,
     };
   }, []);
+
+  const userMoonSign = selectedChart?.planets.Moon?.sign;
 
   return (
     <div className="space-y-8">
@@ -214,6 +354,9 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
         </Card>
       )}
 
+      {/* Forrest Moon-in-sign + Moon-in-house for selected chart */}
+      {selectedChart && <ForrestNatalMoonSection chart={selectedChart} />}
+
       {/* Progressed Moon Journey Timeline */}
       {progressedMoonInfo && journeyMilestones && selectedChart && (
         <Card className="border-primary/20">
@@ -234,7 +377,6 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
 
             <Separator />
 
-            {/* Timeline */}
             <div className="relative pl-6 space-y-0">
               <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-border" />
               {journeyMilestones.map((m, i) => {
@@ -266,7 +408,6 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
               })}
             </div>
 
-            {/* Current stage highlight */}
             {currentQuarter && JOURNEY_STAGES[progressedMoonInfo.sign] && (
               <div className="bg-primary/5 border border-primary/20 p-4 rounded-md">
                 <h5 className="text-xs font-medium text-primary uppercase tracking-wide mb-2">
@@ -315,7 +456,7 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
                 </div>
 
                 {isExpanded && (
-                  <div className="mt-4 pt-4 border-t border-border space-y-4 text-sm" onClick={e => e.stopPropagation()}>
+                  <div className="mt-4 pt-4 border-t border-border space-y-5 text-sm" onClick={e => e.stopPropagation()}>
                     <div>
                       <h4 className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Soul Purpose</h4>
                       <p className="text-foreground leading-relaxed">{phaseData.soulPurpose}</p>
@@ -340,7 +481,7 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
                     </div>
 
                     {isNatal && natalPhaseResult && (
-                      <div className="mt-3 p-3 rounded bg-primary/5 border border-primary/20">
+                      <div className="p-3 rounded bg-primary/5 border border-primary/20">
                         <h4 className="text-xs uppercase tracking-widest text-primary mb-1">
                           Your Position: {getPositionLabel(natalPhaseResult.separation, minDeg, maxDeg)} {phase}
                         </h4>
@@ -350,6 +491,14 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
                         </p>
                       </div>
                     )}
+
+                    {/* Forrest Phase Insight */}
+                    <Separator />
+                    <ForrestPhaseInsight phase={phase} />
+
+                    {/* Kaldera Archetypes */}
+                    <Separator />
+                    <KalderaArchetypesSection phase={phase} userMoonSign={userMoonSign} />
                   </div>
                 )}
               </CardContent>
