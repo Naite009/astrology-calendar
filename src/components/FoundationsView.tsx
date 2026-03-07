@@ -67,6 +67,7 @@ export function FoundationsView({ userNatalChart, savedCharts, onNavigateToView 
     { key: 'signs', label: 'Signs', icon: '♈' },
     { key: 'planets', label: 'Planets', icon: '☿' },
     { key: 'houses', label: 'Houses', icon: '🏛' },
+    { key: 'moon', label: 'Moon', icon: '☽' },
     { key: 'aspects', label: 'Aspects', icon: '△' },
     { key: 'midpoints', label: 'Midpoints', icon: '⊕' },
     { key: 'eclipses', label: 'Eclipses', icon: '🌑' },
