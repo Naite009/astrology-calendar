@@ -138,6 +138,16 @@ export function FoundationsView({ userNatalChart, savedCharts, onNavigateToView 
         />
       )}
 
+      {activeTab === 'moon' && (
+        <div className="space-y-8">
+          <SunMoonDegreeChart
+            userNatalChart={userNatalChart}
+            savedCharts={savedCharts}
+          />
+          <MoonFacesTeachings />
+        </div>
+      )}
+
       {activeTab === 'eclipses' && (
         <div className="space-y-6">
           <EclipseTimingRulesCard />

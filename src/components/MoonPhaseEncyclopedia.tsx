@@ -520,10 +520,10 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
         />
       )}
 
-      {/* Today's Transiting Moon */}
+      {/* Today's Transiting Moon — with archetype */}
       <Card className="border-accent/30 bg-accent/5">
         <CardContent className="p-5">
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-start gap-3 flex-wrap">
             <span className="text-3xl">{transitingMoon.emoji}</span>
             <div className="flex-1">
               <div className="flex items-center gap-2 flex-wrap">
@@ -536,12 +536,23 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
               <p className="text-sm text-muted-foreground mt-0.5">
                 <span className="text-foreground font-medium">{transitingMoon.phaseName}</span>
                 {' in '}
-                <span className="text-foreground font-medium">{transitingMoon.sign}</span>
+                <span className="text-foreground font-medium">{SIGN_GLYPHS[transitingMoon.sign]} {transitingMoon.sign}</span>
                 {' · '}
                 <span className="font-mono text-xs">{transitingMoon.degree}°{transitingMoon.minutes.toString().padStart(2, '0')}'</span>
                 {' · '}
                 {Math.round(transitingMoon.illumination * 100)}% illuminated
               </p>
+              {transitingMoon.archetype && (
+                <div className="mt-3 p-3 rounded-lg bg-accent/20 border border-accent/30">
+                  <p className="text-xs font-medium text-foreground mb-1">
+                    Today's Archetype: <span className="font-serif text-primary">{transitingMoon.archetype.name}</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{transitingMoon.archetype.essence}</p>
+                  <p className="text-[10px] text-muted-foreground mt-1 italic">
+                    The collective mood today carries the energy of the {transitingMoon.archetype.name} — {transitingMoon.phaseName} in {transitingMoon.sign}.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
