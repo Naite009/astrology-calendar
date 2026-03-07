@@ -136,10 +136,13 @@ export function FoundationsView({ userNatalChart, savedCharts, onNavigateToView 
       )}
 
       {activeTab === 'eclipses' && (
-        <EclipseEncyclopediaExplorer
-          userNatalChart={userNatalChart}
-          savedCharts={savedCharts}
-        />
+        <div className="space-y-6">
+          <EclipseTimingRulesCard />
+          <EclipseEncyclopediaExplorer
+            userNatalChart={userNatalChart}
+            savedCharts={savedCharts}
+          />
+        </div>
       )}
     </div>
   );
