@@ -249,6 +249,12 @@ function SignDetailModal({ sign, open, onClose }: { sign: ZodiacSignData | null;
                 </ul>
               </div>
             </div>
+
+            {/* Forrest Moon-in-Sign */}
+            <ForrestMoonSignSection signName={sign.name} />
+
+            {/* Kaldera Moon Phase Archetypes */}
+            <KalderaSignSection signName={sign.name} />
           </div>
         </ScrollArea>
       </DialogContent>
