@@ -8,10 +8,12 @@ import { getNatalPlanetHouse } from '@/lib/houseCalculations';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { ChevronDown, ChevronUp, MapPin, Moon } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { ChevronDown, ChevronUp, MapPin, Moon, Sparkles } from 'lucide-react';
 import { format, addMonths } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { getArchetypesForPhase, getKalderaArchetype, PHASE_CHAPTER_TITLES } from '@/data/moonPhaseSignArchetypes';
+import { getArchetypesForPhase, getKalderaArchetype, PHASE_CHAPTER_TITLES, MoonArchetype } from '@/data/moonPhaseSignArchetypes';
 import { getForrestPhaseData } from '@/data/moonPhaseForrest';
 import { getForrestMoonSign, getForrestMoonHouse } from '@/data/moonForrestData';
 
@@ -30,6 +32,12 @@ const PHASE_ORDER: { phase: BirthMoonPhase; degreeRange: string; minDeg: number;
   { phase: 'Last Quarter', degreeRange: '270° – 315°', minDeg: 270, maxDeg: 315 },
   { phase: 'Balsamic', degreeRange: '315° – 360°', minDeg: 315, maxDeg: 360 },
 ];
+
+const PHASE_EMOJIS: Record<string, string> = {
+  'New Moon': '🌑', 'Waxing Crescent': '🌒', 'First Quarter': '🌓',
+  'Waxing Gibbous': '🌔', 'Full Moon': '🌕', 'Waning Gibbous': '🌖',
+  'Last Quarter': '🌗', 'Waning Crescent': '🌘', 'Balsamic': '🌘',
+};
 
 function getPositionLabel(degree: number, minDeg: number, maxDeg: number): string {
   const range = maxDeg - minDeg;
@@ -66,9 +74,85 @@ const SIGN_GLYPHS: Record<string, string> = {
   Libra: '♎', Scorpio: '♏', Sagittarius: '♐', Capricorn: '♑', Aquarius: '♒', Pisces: '♓',
 };
 
+/** Archetype Detail Modal */
+function ArchetypeDetailModal({ archetype, phase, sign, open, onClose }: {
+  archetype: MoonArchetype | null;
+  phase: string;
+  sign: string;
+  open: boolean;
+  onClose: () => void;
+}) {
+  if (!archetype) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-lg max-h-[85vh]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-lg">
+            <span className="text-2xl">{PHASE_EMOJIS[phase] || '🌙'}</span>
+            <span className="font-serif">{archetype.name}</span>
+          </DialogTitle>
+          <div className="flex items-center gap-2 pt-1">
+            <Badge variant="outline" className="text-[10px]">{phase}</Badge>
+            <Badge variant="secondary" className="text-[10px]">{SIGN_GLYPHS[sign]} {sign}</Badge>
+            {PHASE_CHAPTER_TITLES[phase] && (
+              <span className="text-[10px] text-muted-foreground italic">"{PHASE_CHAPTER_TITLES[phase]}"</span>
+            )}
+          </div>
+        </DialogHeader>
+        <ScrollArea className="max-h-[60vh] pr-4">
+          <div className="space-y-5">
+            {/* Description */}
+            <p className="text-sm leading-relaxed text-foreground">{archetype.description}</p>
+
+            {/* Gifts & Challenges */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+                <p className="text-[10px] font-medium text-muted-foreground mb-2">✦ GIFTS</p>
+                <ul className="space-y-1">
+                  {archetype.gifts.map((g, i) => (
+                    <li key={i} className="text-xs text-foreground flex items-start gap-1.5">
+                      <span className="text-primary mt-0.5">•</span> {g}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="p-3 rounded-lg bg-destructive/5 border border-destructive/10">
+                <p className="text-[10px] font-medium text-muted-foreground mb-2">⚠ CHALLENGES</p>
+                <ul className="space-y-1">
+                  {archetype.challenges.map((c, i) => (
+                    <li key={i} className="text-xs text-foreground flex items-start gap-1.5">
+                      <span className="text-destructive mt-0.5">•</span> {c}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Soul Lesson */}
+            <div className="p-3 rounded-lg bg-accent/50 border border-accent">
+              <p className="text-[10px] font-medium text-muted-foreground mb-1">🔮 SOUL LESSON</p>
+              <p className="text-sm text-foreground leading-relaxed italic">{archetype.soulLesson}</p>
+            </div>
+
+            {/* In Relationships */}
+            <div className="p-3 rounded-lg bg-secondary/50 border border-secondary">
+              <p className="text-[10px] font-medium text-muted-foreground mb-1">💕 IN RELATIONSHIPS</p>
+              <p className="text-sm text-foreground leading-relaxed">{archetype.inRelationships}</p>
+            </div>
+
+            <p className="text-[10px] text-muted-foreground italic">— Raven Kaldera, Moon Phase Astrology</p>
+          </div>
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 /** Kaldera archetypes grid for an expanded phase card */
 function KalderaArchetypesSection({ phase, userMoonSign }: { phase: string; userMoonSign?: string }) {
   const [open, setOpen] = useState(false);
+  const [selectedArchetype, setSelectedArchetype] = useState<{ archetype: MoonArchetype; sign: string } | null>(null);
   const archetypes = getArchetypesForPhase(phase);
   const chapterTitle = PHASE_CHAPTER_TITLES[phase];
   const userArchetype = userMoonSign ? getKalderaArchetype(phase, userMoonSign) : null;
@@ -77,8 +161,11 @@ function KalderaArchetypesSection({ phase, userMoonSign }: { phase: string; user
     <div className="space-y-3">
       {/* User's personal archetype */}
       {userArchetype && userMoonSign && (
-        <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
-          <p className="text-[10px] font-medium text-primary uppercase tracking-wide mb-1">☽ Your Moon Archetype</p>
+        <div
+          className="p-3 rounded-lg bg-primary/5 border border-primary/20 cursor-pointer hover:border-primary/40 transition-colors"
+          onClick={() => setSelectedArchetype({ archetype: userArchetype, sign: userMoonSign })}
+        >
+          <p className="text-[10px] font-medium text-primary uppercase tracking-wide mb-1">☽ Your Moon Archetype — tap to read more</p>
           <p className="text-sm font-serif font-semibold text-foreground">
             {userArchetype.name} <span className="text-muted-foreground font-normal text-xs">({phase} in {userMoonSign})</span>
           </p>
@@ -100,7 +187,8 @@ function KalderaArchetypesSection({ phase, userMoonSign }: { phase: string; user
               return (
                 <div
                   key={sign}
-                  className={`p-2.5 rounded-lg border text-xs transition-colors ${
+                  onClick={() => setSelectedArchetype({ archetype, sign })}
+                  className={`p-2.5 rounded-lg border text-xs transition-colors cursor-pointer hover:shadow-md ${
                     isUser ? 'bg-primary/10 border-primary/30' : 'bg-muted/30 border-border hover:border-muted-foreground/30'
                   }`}
                 >
@@ -110,6 +198,7 @@ function KalderaArchetypesSection({ phase, userMoonSign }: { phase: string; user
                     {isUser && <Badge variant="default" className="text-[8px] px-1 py-0">You</Badge>}
                   </div>
                   <p className="text-muted-foreground leading-relaxed">{archetype.essence}</p>
+                  <p className="text-[9px] text-primary mt-1">Tap to read more →</p>
                 </div>
               );
             })}
@@ -117,6 +206,14 @@ function KalderaArchetypesSection({ phase, userMoonSign }: { phase: string; user
           <p className="text-[10px] text-muted-foreground mt-2 italic">— Raven Kaldera, Moon Phase Astrology</p>
         </CollapsibleContent>
       </Collapsible>
+
+      <ArchetypeDetailModal
+        archetype={selectedArchetype?.archetype ?? null}
+        phase={phase}
+        sign={selectedArchetype?.sign ?? ''}
+        open={!!selectedArchetype}
+        onClose={() => setSelectedArchetype(null)}
+      />
     </div>
   );
 }
@@ -201,6 +298,7 @@ function ForrestNatalMoonSection({ chart }: { chart: NatalChart }) {
 export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhaseEncyclopediaProps) => {
   const [selectedChartId, setSelectedChartId] = useState<string>(userNatalChart ? 'user' : '');
   const [expandedPhase, setExpandedPhase] = useState<BirthMoonPhase | null>(null);
+  const [myMoonModal, setMyMoonModal] = useState(false);
 
   const allCharts = useMemo(() => {
     const charts: NatalChart[] = [];
@@ -277,11 +375,6 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
     const phase = getMoonPhase(now);
     const positions = getPlanetaryPositions(now);
     const moonPos = positions.moon;
-    const PHASE_EMOJIS: Record<string, string> = {
-      'New Moon': '🌑', 'Waxing Crescent': '🌒', 'First Quarter': '🌓',
-      'Waxing Gibbous': '🌔', 'Full Moon': '🌕', 'Waning Gibbous': '🌖',
-      'Last Quarter': '🌗', 'Waning Crescent': '🌘', 'Balsamic': '🌘',
-    };
     return {
       sign: moonPos?.signName || 'Unknown',
       degree: moonPos?.degree ?? 0,
@@ -293,6 +386,14 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
   }, []);
 
   const userMoonSign = selectedChart?.planets.Moon?.sign;
+
+  // "Find My Moon" archetype for the selected chart
+  const myArchetype = useMemo(() => {
+    if (!natalPhaseResult || !userMoonSign) return null;
+    const archetype = getKalderaArchetype(natalPhaseResult.phase, userMoonSign);
+    if (!archetype) return null;
+    return { archetype, phase: natalPhaseResult.phase, sign: userMoonSign };
+  }, [natalPhaseResult, userMoonSign]);
 
   return (
     <div className="space-y-8">
@@ -306,6 +407,48 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
           onSelect={setSelectedChartId}
         />
       </div>
+
+      {/* "Find My Moon" Banner — prominent clickable card */}
+      {myArchetype && selectedChart && (
+        <Card
+          className="border-primary/40 bg-primary/5 cursor-pointer hover:border-primary/60 hover:shadow-lg transition-all"
+          onClick={() => setMyMoonModal(true)}
+        >
+          <CardContent className="p-5">
+            <div className="flex items-start gap-4">
+              <span className="text-4xl">{PHASE_EMOJIS[myArchetype.phase] || '🌙'}</span>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <Badge variant="default" className="text-[10px]">
+                    <Sparkles size={10} className="mr-1" />
+                    Your Moon Archetype
+                  </Badge>
+                </div>
+                <h3 className="font-serif text-xl text-foreground mb-1">
+                  {selectedChart.name} — <span className="text-primary">{myArchetype.archetype.name}</span>
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">{myArchetype.phase}</span> in <span className="font-medium text-foreground">{SIGN_GLYPHS[myArchetype.sign]} {myArchetype.sign}</span>
+                  {' · '}{PHASE_CHAPTER_TITLES[myArchetype.phase] && <span className="italic">"{PHASE_CHAPTER_TITLES[myArchetype.phase]}"</span>}
+                </p>
+                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{myArchetype.archetype.essence}</p>
+                <p className="text-xs text-primary mt-2 font-medium">Tap to read your full Moon archetype →</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* My Moon detail modal */}
+      {myArchetype && (
+        <ArchetypeDetailModal
+          archetype={myArchetype.archetype}
+          phase={myArchetype.phase}
+          sign={myArchetype.sign}
+          open={myMoonModal}
+          onClose={() => setMyMoonModal(false)}
+        />
+      )}
 
       {/* Today's Transiting Moon */}
       <Card className="border-accent/30 bg-accent/5">
