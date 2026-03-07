@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { ECLIPSE_TIMING_RULES, ECLIPSE_DEGREE_TRIGGERS, MCCARTNEY_SOURCE } from '@/data/eclipseTimingRules';
 import { EclipseMechanicsDiagram } from './EclipseMechanicsDiagram';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartSelector } from '@/components/ChartSelector';
