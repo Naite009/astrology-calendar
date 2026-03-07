@@ -4,6 +4,68 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ZODIAC_SIGNS_DATA, ELEMENT_COLORS, ZodiacSignData } from '@/lib/zodiacSignEncyclopedia';
 import { buildSignTeaching, type ZodiacSign } from '@/lib/astrology/signTeacher';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import { getArchetypesForSign, PHASE_CHAPTER_TITLES } from '@/data/moonPhaseSignArchetypes';
+import { getForrestMoonSign } from '@/data/moonForrestData';
+
+const PHASE_EMOJIS: Record<string, string> = {
+  'New Moon': '🌑', 'Waxing Crescent': '🌒', 'First Quarter': '🌓',
+  'Waxing Gibbous': '🌔', 'Full Moon': '🌕', 'Waning Gibbous': '🌖',
+  'Last Quarter': '🌗', 'Balsamic': '🌘',
+};
+
+function KalderaSignSection({ signName }: { signName: string }) {
+  const [open, setOpen] = useState(false);
+  const archetypes = getArchetypesForSign(signName);
+  if (archetypes.length === 0) return null;
+
+  return (
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <CollapsibleTrigger className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer w-full pt-2 border-t border-border">
+        <span>☽ Moon Phase Archetypes for {signName}</span>
+        {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <p className="text-[10px] text-muted-foreground mt-1 mb-2">
+          Eight unique Moon archetypes — one for each phase when the Moon is in {signName}.
+        </p>
+        <div className="grid grid-cols-1 gap-2">
+          {archetypes.map(({ phase, archetype }) => (
+            <div key={phase} className="p-2.5 rounded-lg border border-border bg-muted/30 hover:border-muted-foreground/30 transition-colors">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <span className="text-sm">{PHASE_EMOJIS[phase] || '🌙'}</span>
+                <span className="text-xs font-semibold text-foreground">{archetype.name}</span>
+                <span className="text-[10px] text-muted-foreground">· {PHASE_CHAPTER_TITLES[phase] || phase}</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">{archetype.essence}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-[10px] text-muted-foreground mt-2 italic">— Raven Kaldera, Moon Phase Astrology</p>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
+function ForrestMoonSignSection({ signName }: { signName: string }) {
+  const data = getForrestMoonSign(signName);
+  if (!data) return null;
+
+  return (
+    <div className="space-y-2 pt-2 border-t border-border">
+      <h4 className="text-xs font-medium flex items-center gap-1.5">☽ Moon in {signName} <span className="text-muted-foreground font-normal">— Evolutionary Astrology</span></h4>
+      <div className="p-3 rounded-lg bg-secondary/50 border border-secondary space-y-1.5 text-xs">
+        <div><span className="text-muted-foreground">Evolutionary Goal:</span> <span className="text-foreground">{data.evolutionaryGoal}</span></div>
+        <div><span className="text-muted-foreground">Mood:</span> <span className="text-foreground">{data.mood}</span></div>
+        <div><span className="text-muted-foreground">Reigning Need:</span> <span className="text-foreground">{data.reigningNeed}</span></div>
+        <div><span className="text-muted-foreground">Secret of Happiness:</span> <span className="text-foreground">{data.secretOfHappiness}</span></div>
+        <div><span className="text-muted-foreground">Shadow:</span> <span className="text-foreground">{data.shadow}</span></div>
+      </div>
+      <p className="text-[10px] text-muted-foreground italic">— Steven Forrest, The Book of the Moon</p>
+    </div>
+  );
+}
 
 function SignTeachingSection({ signName }: { signName: string }) {
   const teaching = buildSignTeaching(signName as ZodiacSign);
