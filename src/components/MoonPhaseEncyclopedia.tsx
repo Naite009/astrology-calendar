@@ -74,6 +74,105 @@ const SIGN_GLYPHS: Record<string, string> = {
   Libra: '♎', Scorpio: '♏', Sagittarius: '♐', Capricorn: '♑', Aquarius: '♒', Pisces: '♓',
 };
 
+// ─── Planetary rulers for Shadowing Moons ───
+// Kaldera's concept: a planet closely aspecting your natal Moon "shadows" it,
+// adding a secondary layer from the sign(s) that planet rules.
+const PLANET_RULED_SIGNS: Record<string, string[]> = {
+  Sun: ['Leo'],
+  Mercury: ['Gemini', 'Virgo'],
+  Venus: ['Taurus', 'Libra'],
+  Mars: ['Aries', 'Scorpio'],
+  Jupiter: ['Sagittarius', 'Pisces'],
+  Saturn: ['Capricorn', 'Aquarius'],
+  Uranus: ['Aquarius'],
+  Neptune: ['Pisces'],
+  Pluto: ['Scorpio'],
+  Chiron: ['Virgo'], // often associated
+  NorthNode: [],
+};
+
+const PLANET_SYMBOLS: Record<string, string> = {
+  Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀', Mars: '♂',
+  Jupiter: '♃', Saturn: '♄', Uranus: '♅', Neptune: '♆', Pluto: '♇',
+  Chiron: '⚷', NorthNode: '☊',
+};
+
+const ASPECT_SYMBOLS: Record<string, string> = {
+  conjunction: '☌', opposition: '☍', square: '□', trine: '△', sextile: '⚹',
+};
+
+const SHADOWING_EXPLANATION: Record<string, string> = {
+  conjunction: 'merges directly with your Moon — this planet IS part of your emotional nature. Its ruled sign archetype is deeply woven into your lunar identity.',
+  opposition: 'stands across from your Moon — you encounter this energy through others, partnerships, and projection. The ruled sign archetype is something you attract or must integrate through relationship.',
+  square: 'creates friction with your Moon — this planet challenges your emotional comfort zone. The ruled sign archetype represents a growth edge you can\'t avoid.',
+  trine: 'flows harmoniously with your Moon — this planet supports your emotional nature easily. The ruled sign archetype is a natural gift you may take for granted.',
+  sextile: 'offers opportunities to your Moon — this planet opens doors when you make the effort. The ruled sign archetype is available as a resource.',
+};
+
+interface ShadowingMoon {
+  planet: string;
+  aspect: string;
+  orb: number;
+  ruledSigns: string[];
+  archetypes: { sign: string; archetype: MoonArchetype }[];
+}
+
+function computeShadowingMoons(chart: NatalChart, phase: string): ShadowingMoon[] {
+  const planets = chart.planets;
+  const moonPos = planets.Moon;
+  if (!moonPos) return [];
+
+  const ZODIAC_ORDER = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+    'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+  const moonAbs = ZODIAC_ORDER.indexOf(moonPos.sign) * 30 + moonPos.degree;
+
+  const ASPECT_ANGLES: { name: string; angle: number; orb: number }[] = [
+    { name: 'conjunction', angle: 0, orb: 10 },
+    { name: 'opposition', angle: 180, orb: 8 },
+    { name: 'square', angle: 90, orb: 8 },
+    { name: 'trine', angle: 120, orb: 8 },
+    { name: 'sextile', angle: 60, orb: 6 },
+  ];
+
+  const shadows: ShadowingMoon[] = [];
+  const checkPlanets = ['Sun', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Chiron'];
+
+  for (const pName of checkPlanets) {
+    const pos = planets[pName as keyof typeof planets];
+    if (!pos) continue;
+    const pAbs = ZODIAC_ORDER.indexOf(pos.sign) * 30 + pos.degree;
+    let diff = Math.abs(moonAbs - pAbs);
+    if (diff > 180) diff = 360 - diff;
+
+    for (const asp of ASPECT_ANGLES) {
+      const orb = Math.abs(diff - asp.angle);
+      if (orb <= asp.orb) {
+        const ruledSigns = PLANET_RULED_SIGNS[pName] || [];
+        const archetypes = ruledSigns
+          .map(sign => {
+            const arch = getKalderaArchetype(phase, sign);
+            return arch ? { sign, archetype: arch } : null;
+          })
+          .filter(Boolean) as { sign: string; archetype: MoonArchetype }[];
+
+        if (archetypes.length > 0) {
+          shadows.push({
+            planet: pName,
+            aspect: asp.name,
+            orb: Math.round(orb * 10) / 10,
+            ruledSigns,
+            archetypes,
+          });
+        }
+        break;
+      }
+    }
+  }
+
+  shadows.sort((a, b) => a.orb - b.orb);
+  return shadows;
+}
+
 /** Archetype Detail Modal */
 function ArchetypeDetailModal({ archetype, phase, sign, open, onClose }: {
   archetype: MoonArchetype | null;
@@ -102,31 +201,22 @@ function ArchetypeDetailModal({ archetype, phase, sign, open, onClose }: {
         </DialogHeader>
         <ScrollArea className="max-h-[60vh] pr-4">
           <div className="space-y-5">
-            {/* Essence */}
             <p className="text-sm font-medium italic text-primary/80">{archetype.essence}</p>
-
-            {/* Description */}
             {archetype.description.split('\n\n').map((para, i) => (
               <p key={i} className="text-sm leading-relaxed text-foreground">{para}</p>
             ))}
-
-            {/* Core Wound */}
             {archetype.coreWound && (
               <div className="p-3 rounded-lg bg-destructive/5 border border-destructive/10">
                 <p className="text-[10px] font-medium text-muted-foreground mb-1">💔 CORE WOUND</p>
                 <p className="text-sm text-foreground leading-relaxed">{archetype.coreWound}</p>
               </div>
             )}
-
-            {/* Healing Path */}
             {archetype.healingPath && (
               <div className="p-3 rounded-lg bg-green-500/5 border border-green-500/10">
                 <p className="text-[10px] font-medium text-muted-foreground mb-1">🌿 HEALING PATH</p>
                 <p className="text-sm text-foreground leading-relaxed">{archetype.healingPath}</p>
               </div>
             )}
-
-            {/* Gifts & Challenges */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
                 <p className="text-[10px] font-medium text-muted-foreground mb-2">✦ GIFTS</p>
@@ -149,56 +239,134 @@ function ArchetypeDetailModal({ archetype, phase, sign, open, onClose }: {
                 </ul>
               </div>
             </div>
-
-            {/* In the Body */}
             {archetype.inTheBody && (
               <div className="p-3 rounded-lg bg-secondary/50 border border-secondary">
                 <p className="text-[10px] font-medium text-muted-foreground mb-1">🫀 IN THE BODY</p>
                 <p className="text-sm text-foreground leading-relaxed">{archetype.inTheBody}</p>
               </div>
             )}
-
-            {/* Soul Lesson */}
             <div className="p-3 rounded-lg bg-accent/50 border border-accent">
               <p className="text-[10px] font-medium text-muted-foreground mb-1">🔮 SOUL LESSON</p>
               <p className="text-sm text-foreground leading-relaxed italic">{archetype.soulLesson}</p>
             </div>
-
-            {/* In Relationships */}
             <div className="p-3 rounded-lg bg-secondary/50 border border-secondary">
               <p className="text-[10px] font-medium text-muted-foreground mb-1">💕 IN RELATIONSHIPS</p>
               <p className="text-sm text-foreground leading-relaxed">{archetype.inRelationships}</p>
             </div>
-
-            {/* Sacred Purpose */}
             {archetype.sacredPurpose && (
               <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
                 <p className="text-[10px] font-medium text-muted-foreground mb-1">🌟 SACRED PURPOSE</p>
                 <p className="text-sm text-foreground leading-relaxed">{archetype.sacredPurpose}</p>
               </div>
             )}
-
-            {/* Shadow Expression */}
             {archetype.shadowExpression && (
               <div className="p-3 rounded-lg bg-muted/50 border border-border">
                 <p className="text-[10px] font-medium text-muted-foreground mb-1">🌑 SHADOW EXPRESSION</p>
                 <p className="text-sm text-foreground leading-relaxed">{archetype.shadowExpression}</p>
               </div>
             )}
-
-            {/* Affirmation */}
             {archetype.affirmation && (
               <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 text-center">
                 <p className="text-[10px] font-medium text-muted-foreground mb-2">✨ AFFIRMATION</p>
                 <p className="text-base font-serif italic text-foreground leading-relaxed">"{archetype.affirmation}"</p>
               </div>
             )}
-
             <p className="text-[10px] text-muted-foreground italic">— Raven Kaldera, Moon Phase Astrology</p>
           </div>
         </ScrollArea>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/** Shadowing Moons section — planets aspecting the natal Moon add secondary archetypal layers */
+function ShadowingMoonsSection({ chart, phase }: { chart: NatalChart; phase: string }) {
+  const shadows = useMemo(() => computeShadowingMoons(chart, phase), [chart, phase]);
+  const [expandedShadow, setExpandedShadow] = useState<string | null>(null);
+  const [selectedArchetype, setSelectedArchetype] = useState<{ archetype: MoonArchetype; sign: string } | null>(null);
+
+  if (shadows.length === 0) return null;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 mb-1">
+        <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
+          🌒 Shadowing Moons — Secondary Archetypal Layers
+        </h4>
+      </div>
+      <div className="p-3 rounded-lg bg-muted/30 border border-border text-xs text-muted-foreground leading-relaxed">
+        <p>
+          <strong className="text-foreground">What are Shadowing Moons?</strong> In Kaldera's system, planets that aspect your natal Moon cast a "shadow" — 
+          they add a secondary layer of archetypal energy to your primary Moon archetype. The planet's <em>ruled sign</em> becomes an additional 
+          archetype you carry. The closer the aspect (tighter orb), the stronger the shadow. A conjunction means the planet IS part of your Moon; 
+          an opposition means you encounter it through others; a square creates friction and growth.
+        </p>
+      </div>
+
+      {shadows.map((shadow) => (
+        <div key={shadow.planet} className="border border-border rounded-lg overflow-hidden">
+          <button
+            onClick={() => setExpandedShadow(prev => prev === shadow.planet ? null : shadow.planet)}
+            className="w-full flex items-center justify-between p-3 text-left hover:bg-muted/30 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-lg">{PLANET_SYMBOLS[shadow.planet] || '•'}</span>
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  {shadow.planet} {ASPECT_SYMBOLS[shadow.aspect] || ''} Moon
+                  <span className="text-muted-foreground font-normal text-xs ml-2">
+                    ({shadow.aspect}, {shadow.orb}° orb)
+                  </span>
+                </p>
+                <p className="text-[10px] text-muted-foreground">
+                  Shadows from: {shadow.ruledSigns.map(s => `${SIGN_GLYPHS[s]} ${s}`).join(' & ')}
+                  {' → '}{shadow.archetypes.map(a => a.archetype.name).join(' & ')}
+                </p>
+              </div>
+            </div>
+            {expandedShadow === shadow.planet ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground" />}
+          </button>
+
+          {expandedShadow === shadow.planet && (
+            <div className="px-3 pb-3 space-y-3">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                <strong className="text-foreground">{shadow.planet}</strong> {SHADOWING_EXPLANATION[shadow.aspect]}
+              </p>
+
+              {shadow.archetypes.map(({ sign, archetype }) => (
+                <div
+                  key={sign}
+                  className="p-3 rounded-lg bg-accent/30 border border-accent/40 cursor-pointer hover:border-primary/40 transition-colors"
+                  onClick={() => setSelectedArchetype({ archetype, sign })}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm">{SIGN_GLYPHS[sign]}</span>
+                    <span className="text-sm font-serif font-semibold text-foreground">{archetype.name}</span>
+                    <Badge variant="outline" className="text-[8px]">Shadow</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{archetype.essence}</p>
+                  <p className="text-[10px] text-primary mt-1.5">
+                    This {shadow.aspect} from {shadow.planet} means you also carry the energy of the {archetype.name}. Tap to read the full archetype →
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+
+      <ArchetypeDetailModal
+        archetype={selectedArchetype?.archetype ?? null}
+        phase={phase}
+        sign={selectedArchetype?.sign ?? ''}
+        open={!!selectedArchetype}
+        onClose={() => setSelectedArchetype(null)}
+      />
+
+      <p className="text-[10px] text-muted-foreground italic">
+        — Raven Kaldera, Moon Phase Astrology · "Shadowing Moons" concept
+      </p>
+    </div>
   );
 }
 
@@ -212,7 +380,6 @@ function KalderaArchetypesSection({ phase, userMoonSign }: { phase: string; user
 
   return (
     <div className="space-y-3">
-      {/* User's personal archetype */}
       {userArchetype && userMoonSign && (
         <div
           className="p-3 rounded-lg bg-primary/5 border border-primary/20 cursor-pointer hover:border-primary/40 transition-colors"
@@ -227,7 +394,6 @@ function KalderaArchetypesSection({ phase, userMoonSign }: { phase: string; user
         </div>
       )}
 
-      {/* Browse all 12 */}
       <Collapsible open={open} onOpenChange={setOpen}>
         <CollapsibleTrigger className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer w-full">
           <span>☽ All 12 {chapterTitle ? `"${chapterTitle}"` : phase} Archetypes</span>
@@ -352,6 +518,7 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
   const [selectedChartId, setSelectedChartId] = useState<string>(userNatalChart ? 'user' : '');
   const [expandedPhase, setExpandedPhase] = useState<BirthMoonPhase | null>(null);
   const [myMoonModal, setMyMoonModal] = useState(false);
+  const [myMoonDeepDiveOpen, setMyMoonDeepDiveOpen] = useState(false);
 
   const allCharts = useMemo(() => {
     const charts: NatalChart[] = [];
@@ -452,6 +619,12 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
     return { archetype, phase: natalPhaseResult.phase, sign: userMoonSign };
   }, [natalPhaseResult, userMoonSign]);
 
+  // Shadowing moons for selected chart
+  const shadowingMoons = useMemo(() => {
+    if (!selectedChart || !myArchetype) return [];
+    return computeShadowingMoons(selectedChart, myArchetype.phase);
+  }, [selectedChart, myArchetype]);
+
   return (
     <div className="space-y-8">
       {/* Chart Selector */}
@@ -465,12 +638,9 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
         />
       </div>
 
-      {/* "Find My Moon" Banner — prominent clickable card with explanation */}
+      {/* "Find My Moon" Banner — with Kaldera name prominently shown */}
       {myArchetype && selectedChart && natalPhaseResult && (
-        <Card
-          className="border-primary/40 bg-primary/5 cursor-pointer hover:border-primary/60 hover:shadow-lg transition-all"
-          onClick={() => setMyMoonModal(true)}
-        >
+        <Card className="border-primary/40 bg-primary/5">
           <CardContent className="p-5">
             <div className="flex items-start gap-4">
               <span className="text-4xl">{PHASE_EMOJIS[myArchetype.phase] || '🌙'}</span>
@@ -493,31 +663,116 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
                 <div className="mt-3 p-3 rounded-lg bg-secondary/50 border border-border text-xs text-muted-foreground leading-relaxed">
                   <p className="font-medium text-foreground mb-1">Where does "{myArchetype.archetype.name}" come from?</p>
                   <p>
-                    Raven Kaldera's <em>Moon Phase Astrology</em> identifies 96 unique lunar archetypes — one for each combination of the 8 Moon phases × 12 zodiac signs. 
-                    Your Sun–Moon separation is <span className="font-mono text-foreground">{natalPhaseResult.separation}°</span>, placing you in the <strong className="text-foreground">{myArchetype.phase}</strong> phase 
-                    ({PHASE_ORDER.find(p => p.phase === myArchetype.phase)?.degreeRange}). 
-                    Combined with your Moon in <strong className="text-foreground">{SIGN_GLYPHS[myArchetype.sign]} {myArchetype.sign}</strong>, 
+                    Raven Kaldera's <em>Moon Phase Astrology</em> identifies 96 unique lunar archetypes — one for each combination of the 8 Moon phases × 12 zodiac signs.
+                    Your Sun–Moon separation is <span className="font-mono text-foreground">{natalPhaseResult.separation}°</span>, placing you in the <strong className="text-foreground">{myArchetype.phase}</strong> phase
+                    ({PHASE_ORDER.find(p => p.phase === myArchetype.phase)?.degreeRange}).
+                    Combined with your Moon in <strong className="text-foreground">{SIGN_GLYPHS[myArchetype.sign]} {myArchetype.sign}</strong>,
                     your specific archetype is <strong className="text-primary">{myArchetype.archetype.name}</strong>.
+                  </p>
+                  <p className="mt-2">
+                    The generic Balsamic phase archetype is sometimes called "The Mystic" — but that's the <em>phase-level</em> label (all Balsamic Moons share mystical, completion-oriented energy).
+                    Your <em>specific</em> archetype — <strong className="text-primary">{myArchetype.archetype.name}</strong> — is unique to {myArchetype.phase} + {myArchetype.sign} and carries
+                    its own distinct gifts, wounds, and sacred purpose. The Mystic's Moon (Balsamic Pisces) is a different archetype entirely.
                   </p>
                 </div>
 
                 <p className="text-sm text-muted-foreground mt-3 leading-relaxed">{myArchetype.archetype.essence}</p>
-                <p className="text-xs text-primary mt-2 font-medium">Tap to read your full Moon archetype deep dive →</p>
+
+                {/* Collapsible deep dive */}
+                <Collapsible open={myMoonDeepDiveOpen} onOpenChange={setMyMoonDeepDiveOpen}>
+                  <CollapsibleTrigger className="flex items-center gap-2 text-sm text-primary font-medium mt-3 cursor-pointer hover:underline">
+                    {myMoonDeepDiveOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                    {myMoonDeepDiveOpen ? 'Collapse deep dive' : `Read your full ${myArchetype.archetype.name} deep dive ↓`}
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="mt-4 space-y-4">
+                      {myArchetype.archetype.description.split('\n\n').map((para, i) => (
+                        <p key={i} className="text-sm leading-relaxed text-foreground">{para}</p>
+                      ))}
+
+                      {myArchetype.archetype.coreWound && (
+                        <div className="p-3 rounded-lg bg-destructive/5 border border-destructive/10">
+                          <p className="text-[10px] font-medium text-muted-foreground mb-1">💔 CORE WOUND</p>
+                          <p className="text-sm text-foreground leading-relaxed">{myArchetype.archetype.coreWound}</p>
+                        </div>
+                      )}
+                      {myArchetype.archetype.healingPath && (
+                        <div className="p-3 rounded-lg bg-green-500/5 border border-green-500/10">
+                          <p className="text-[10px] font-medium text-muted-foreground mb-1">🌿 HEALING PATH</p>
+                          <p className="text-sm text-foreground leading-relaxed">{myArchetype.archetype.healingPath}</p>
+                        </div>
+                      )}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+                          <p className="text-[10px] font-medium text-muted-foreground mb-2">✦ GIFTS</p>
+                          <ul className="space-y-1">
+                            {myArchetype.archetype.gifts.map((g, i) => (
+                              <li key={i} className="text-xs text-foreground flex items-start gap-1.5">
+                                <span className="text-primary mt-0.5">•</span> {g}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div className="p-3 rounded-lg bg-destructive/5 border border-destructive/10">
+                          <p className="text-[10px] font-medium text-muted-foreground mb-2">⚠ CHALLENGES</p>
+                          <ul className="space-y-1">
+                            {myArchetype.archetype.challenges.map((c, i) => (
+                              <li key={i} className="text-xs text-foreground flex items-start gap-1.5">
+                                <span className="text-destructive mt-0.5">•</span> {c}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                      {myArchetype.archetype.inTheBody && (
+                        <div className="p-3 rounded-lg bg-secondary/50 border border-secondary">
+                          <p className="text-[10px] font-medium text-muted-foreground mb-1">🫀 IN THE BODY</p>
+                          <p className="text-sm text-foreground leading-relaxed">{myArchetype.archetype.inTheBody}</p>
+                        </div>
+                      )}
+                      <div className="p-3 rounded-lg bg-accent/50 border border-accent">
+                        <p className="text-[10px] font-medium text-muted-foreground mb-1">🔮 SOUL LESSON</p>
+                        <p className="text-sm text-foreground leading-relaxed italic">{myArchetype.archetype.soulLesson}</p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-secondary/50 border border-secondary">
+                        <p className="text-[10px] font-medium text-muted-foreground mb-1">💕 IN RELATIONSHIPS</p>
+                        <p className="text-sm text-foreground leading-relaxed">{myArchetype.archetype.inRelationships}</p>
+                      </div>
+                      {myArchetype.archetype.sacredPurpose && (
+                        <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+                          <p className="text-[10px] font-medium text-muted-foreground mb-1">🌟 SACRED PURPOSE</p>
+                          <p className="text-sm text-foreground leading-relaxed">{myArchetype.archetype.sacredPurpose}</p>
+                        </div>
+                      )}
+                      {myArchetype.archetype.shadowExpression && (
+                        <div className="p-3 rounded-lg bg-muted/50 border border-border">
+                          <p className="text-[10px] font-medium text-muted-foreground mb-1">🌑 SHADOW EXPRESSION</p>
+                          <p className="text-sm text-foreground leading-relaxed">{myArchetype.archetype.shadowExpression}</p>
+                        </div>
+                      )}
+                      {myArchetype.archetype.affirmation && (
+                        <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 text-center">
+                          <p className="text-[10px] font-medium text-muted-foreground mb-2">✨ AFFIRMATION</p>
+                          <p className="text-base font-serif italic text-foreground leading-relaxed">"{myArchetype.archetype.affirmation}"</p>
+                        </div>
+                      )}
+                      <p className="text-[10px] text-muted-foreground italic">— Raven Kaldera, Moon Phase Astrology</p>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
               </div>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* My Moon detail modal */}
-      {myArchetype && (
-        <ArchetypeDetailModal
-          archetype={myArchetype.archetype}
-          phase={myArchetype.phase}
-          sign={myArchetype.sign}
-          open={myMoonModal}
-          onClose={() => setMyMoonModal(false)}
-        />
+      {/* Shadowing Moons — planets aspecting natal Moon */}
+      {selectedChart && myArchetype && shadowingMoons.length > 0 && (
+        <Card className="border-accent/30">
+          <CardContent className="p-5">
+            <ShadowingMoonsSection chart={selectedChart} phase={myArchetype.phase} />
+          </CardContent>
+        </Card>
       )}
 
       {/* Today's Transiting Moon — with archetype */}
@@ -567,10 +822,18 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
               <div>
                 <p className="font-serif text-lg text-foreground">
                   {selectedChart.name} — <span className="text-primary font-semibold">{natalPhaseResult.phase}</span>
+                  {myArchetype && (
+                    <span className="text-muted-foreground text-sm font-normal ml-2">
+                      ({myArchetype.archetype.name})
+                    </span>
+                  )}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Sun–Moon separation: <span className="font-mono text-foreground">{natalPhaseResult.separation}°</span>
-                  {' · '}{natalPhaseResult.archetype}
+                  {' · '}Phase archetype: {natalPhaseResult.archetype}
+                  {myArchetype && natalPhaseResult.archetype !== myArchetype.archetype.name && (
+                    <span> · Kaldera archetype: <span className="text-primary font-medium">{myArchetype.archetype.name}</span></span>
+                  )}
                 </p>
               </div>
             </div>
@@ -716,11 +979,9 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
                       </div>
                     )}
 
-                    {/* Forrest Phase Insight */}
                     <Separator />
                     <ForrestPhaseInsight phase={phase} />
 
-                    {/* Kaldera Archetypes */}
                     <Separator />
                     <KalderaArchetypesSection phase={phase} userMoonSign={userMoonSign} />
                   </div>
