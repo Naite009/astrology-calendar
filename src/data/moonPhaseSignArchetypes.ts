@@ -1,5 +1,7 @@
 // 96 Moon Archetypes — Raven Kaldera, "Moon Phase Astrology: The Lunar Key to Your Destiny"
 // Each combination of Moon phase + zodiac sign produces a unique archetype name.
+// Enhanced with deeper teachings on core wound, healing path, body wisdom, sacred purpose,
+// and how each archetype serves the collective.
 
 export interface MoonArchetype {
   name: string;
@@ -9,6 +11,18 @@ export interface MoonArchetype {
   challenges: string[];
   soulLesson: string;
   inRelationships: string;
+  /** Deep teaching: the core wound or struggle this archetype grapples with */
+  coreWound?: string;
+  /** Deep teaching: how this archetype heals — their medicine, modality, or path */
+  healingPath?: string;
+  /** Deep teaching: how this archetype lives in the body — somatic awareness */
+  inTheBody?: string;
+  /** Deep teaching: what this archetype teaches the collective / their sacred purpose */
+  sacredPurpose?: string;
+  /** Deep teaching: the shadow expression when this archetype is unconscious */
+  shadowExpression?: string;
+  /** Affirmation or mantra for this archetype */
+  affirmation?: string;
 }
 
 /**
@@ -29,7 +43,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Fearless initiative", "Raw honesty", "Ability to start fresh without baggage", "Infectious enthusiasm"],
       challenges: ["Impatience with slower processes", "Can burn out quickly", "May struggle to finish what you start", "Difficulty seeing others' perspectives"],
       soulLesson: "Learning that courage includes vulnerability — that the bravest thing you can do is sometimes to wait, to listen, to let someone else lead.",
-      inRelationships: "You bring electric energy to partnerships. You fall fast and love fiercely. Your challenge is learning that love isn't a sprint — it's a dance that requires letting your partner lead sometimes."
+      inRelationships: "You bring electric energy to partnerships. You fall fast and love fiercely. Your challenge is learning that love isn't a sprint — it's a dance that requires letting your partner lead sometimes.",
+      coreWound: "The wound of irrelevance — a deep fear that if you stop moving, you'll be forgotten. The Infant fears that stillness equals nonexistence.",
+      healingPath: "Through the body in motion. Running, martial arts, dance, anything that lets raw energy move through you without needing a story attached. Healing happens when you learn that you can be still and still matter.",
+      inTheBody: "You feel everything as a jolt — adrenaline surges, sudden heat, the impulse to move before you've finished thinking. Your body is always slightly ahead of your mind. Pay attention to the head, the adrenals, the muscles that fire first.",
+      sacredPurpose: "To remind the collective that beginning is holy — that every great journey starts with a single, impulsive step. You model the courage to start.",
+      shadowExpression: "When unconscious, the Infant's Moon becomes the perpetual beginner who never finishes, the rage-filled child who destroys what they can't control, or the daredevil who confuses recklessness with bravery.",
+      affirmation: "I trust my instincts. I am allowed to begin again, and again, and again."
     },
     Taurus: {
       name: "Dryad's Moon",
@@ -38,7 +58,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Deep sensory intelligence", "Natural patience", "Ability to create beauty and comfort", "Grounding presence for others"],
       challenges: ["Resistance to change", "Can mistake comfort for purpose", "May cling to possessions as security", "Slow to adapt when circumstances shift"],
       soulLesson: "Learning that true security comes from within — that you can trust your body's wisdom without clinging to the external things that make you feel safe.",
-      inRelationships: "You are the most loyal, steady partner imaginable. You love through DOING — cooking, touching, providing. Your challenge is learning that emotional presence matters as much as physical comfort."
+      inRelationships: "You are the most loyal, steady partner imaginable. You love through DOING — cooking, touching, providing. Your challenge is learning that emotional presence matters as much as physical comfort.",
+      coreWound: "The wound of scarcity — a primal fear that there won't be enough. Enough food, enough love, enough beauty. The Dryad clings because losing feels like dying.",
+      healingPath: "Through the senses, consciously. Slow meals, gardening, bodywork, clay or textile arts. Healing happens when you realize the Earth is generous and you are part of that generosity.",
+      inTheBody: "You live in the throat, the jaw (clenching against loss), the neck, and the hands that want to hold and build. Tension gathers where you resist letting go. Pleasure opens you.",
+      sacredPurpose: "To anchor the collective in the body — to remind a disembodied world that sensory experience IS spiritual experience. You model presence.",
+      shadowExpression: "When unconscious, the Dryad becomes the hoarder, the glutton, the person so terrified of change they'd rather suffocate in comfort than grow.",
+      affirmation: "I am rooted. There is always enough. My body knows the way."
     },
     Gemini: {
       name: "Little Brother's Moon",
@@ -47,7 +73,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Lightning-fast learning", "Social adaptability", "Ability to translate complex ideas simply", "Eternal youthfulness of spirit"],
       challenges: ["Difficulty committing to one path", "Nervousness and mental restlessness", "May talk instead of feel", "Can scatter energy across too many interests"],
       soulLesson: "Learning that depth and breadth are not enemies — that you can be curious about everything while still going deep into something.",
-      inRelationships: "You bring sparkle, conversation, and mental stimulation. You need a partner who can keep up with your mind. Your challenge is staying present when the conversation (or the relationship) gets uncomfortably deep."
+      inRelationships: "You bring sparkle, conversation, and mental stimulation. You need a partner who can keep up with your mind. Your challenge is staying present when the conversation (or the relationship) gets uncomfortably deep.",
+      coreWound: "The wound of being unheard — a fear that your voice doesn't matter, so you must keep talking, keep proving you have something to say. Silence feels like disappearing.",
+      healingPath: "Through writing, journaling, or any form of structured self-expression. Healing comes when you learn that your thoughts have weight even when unspoken.",
+      inTheBody: "Nervous energy lives in the hands, shoulders, and lungs. You may fidget, gesture constantly, or hold tension in the arms. Breathwork grounds the scattered mind.",
+      sacredPurpose: "To cross-pollinate — carrying ideas between worlds, translating the untranslatable, connecting people who would never meet without you.",
+      shadowExpression: "When unconscious, the Little Brother becomes the gossip, the know-it-all, the anxiety-driven chatterbox who uses words to avoid feeling.",
+      affirmation: "My curiosity is sacred. I can go deep without losing my wings."
     },
     Cancer: {
       name: "Mother's Daughter Moon",
@@ -56,7 +88,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Profound empathy", "Intuitive emotional intelligence", "Creating safe spaces for others", "Deep, lasting loyalty"],
       challenges: ["Over-identifying with others' pain", "Difficulty with boundaries", "Mood swings tied to environment", "Can use nurturing as a way to control"],
       soulLesson: "Learning that self-care is not selfish — that the best way to love others is from a full cup, not an empty one.",
-      inRelationships: "You love with your whole being. Home and family are sacred to you. Your challenge is allowing your partner their own emotional space without interpreting distance as rejection."
+      inRelationships: "You love with your whole being. Home and family are sacred to you. Your challenge is allowing your partner their own emotional space without interpreting distance as rejection.",
+      coreWound: "The wound of abandonment — a primal terror that love will be withdrawn. You may have felt emotionally invisible as a child, even if you were physically cared for.",
+      healingPath: "Through creating home — for yourself first. Cooking, nesting, ritual baths, water ceremonies. Healing comes when you learn to mother yourself with the same devotion you give others.",
+      inTheBody: "The chest, the stomach, the breasts — the body's nurturing centers. Emotional distress may manifest as digestive issues or chest tightness. Water soothes you. The moon affects your body literally.",
+      sacredPurpose: "To teach the collective what it means to feel safe — to model emotional generosity without emotional collapse.",
+      shadowExpression: "When unconscious, the Mother's Daughter becomes the smotherer, the emotional manipulator who uses guilt as a leash, the one who confuses love with control.",
+      affirmation: "I am held. I am safe to feel. My tenderness is my power."
     },
     Leo: {
       name: "Sun Child's Moon",
@@ -65,7 +103,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Natural charisma", "Creative self-expression", "Ability to inspire joy in others", "Generous heart"],
       challenges: ["Need for constant validation", "Can dominate without realizing it", "May confuse attention with love", "Wounded deeply by being ignored"],
       soulLesson: "Learning that your worth is inherent — that the Sun doesn't need applause to rise each morning.",
-      inRelationships: "You bring warmth, drama, and grand romantic gestures. You make your partner feel like the most important person in the world. Your challenge is sharing the spotlight and celebrating your partner's shine too."
+      inRelationships: "You bring warmth, drama, and grand romantic gestures. You make your partner feel like the most important person in the world. Your challenge is sharing the spotlight and celebrating your partner's shine too.",
+      coreWound: "The wound of invisibility — a deep terror of being ordinary. You may have learned early that love was conditional on performance, and now your identity is tangled with your output.",
+      healingPath: "Through creative play WITHOUT an audience. Painting for yourself, dancing alone, singing in the shower. Healing comes when you create from joy rather than hunger.",
+      inTheBody: "The heart, the spine, the back. You carry yourself with natural pride, but when wounded, you may slump or experience heart-related anxiety. Sunlight and warmth are literal medicine for you.",
+      sacredPurpose: "To remind the collective that JOY is a birthright — that creativity and play are not luxuries but necessities for the soul.",
+      shadowExpression: "When unconscious, the Sun Child becomes the narcissist, the drama queen who sucks all oxygen from the room, or the wounded child who punishes the world for not adoring them enough.",
+      affirmation: "I shine because I AM light. I don't need an audience to exist."
     },
     Virgo: {
       name: "Maiden's Moon",
@@ -74,7 +118,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Precise observation", "Practical problem-solving", "Humble service", "Discernment and good judgment"],
       challenges: ["Perfectionism and self-criticism", "Anxiety about getting things wrong", "Difficulty receiving praise", "Can focus on flaws and miss the beauty"],
       soulLesson: "Learning that imperfection is not failure — that the most sacred service includes being gentle with your own humanity.",
-      inRelationships: "You show love through acts of service — remembering preferences, fixing problems, being reliably present. Your challenge is learning to receive as generously as you give."
+      inRelationships: "You show love through acts of service — remembering preferences, fixing problems, being reliably present. Your challenge is learning to receive as generously as you give.",
+      coreWound: "The wound of inadequacy — a relentless inner critic that whispers you're not good enough, not clean enough, not organized enough. You may have internalized the message that love must be earned through usefulness.",
+      healingPath: "Through ritual and rhythm. Structured healing practices — herbalism, yoga, daily walks, journaling at the same time every day. Healing comes through the body's wisdom, not the mind's judgment.",
+      inTheBody: "The gut, the intestines, the nervous system. Anxiety manifests as digestive distress, skin issues, or chronic tension. Your body is exquisitely sensitive to what it takes in — food, information, energy.",
+      sacredPurpose: "To embody sacred discernment — teaching the collective that attention to detail IS devotion, that the humble task done with love IS holy.",
+      shadowExpression: "When unconscious, the Maiden becomes the hypercritical perfectionist, the hypochondriac, the person so busy fixing everything they can't enjoy anything.",
+      affirmation: "I am enough exactly as I am. My care for the world is a form of prayer."
     },
     Libra: {
       name: "White Knight's Moon",
@@ -83,7 +133,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Natural sense of justice", "Eye for beauty and harmony", "Diplomatic skill", "Ability to see all sides"],
       challenges: ["Indecisiveness from seeing too many perspectives", "People-pleasing to avoid conflict", "Can sacrifice self for others' comfort", "May mistake peace for avoidance"],
       soulLesson: "Learning that standing up for yourself IS an act of justice — that your needs matter as much as everyone else's.",
-      inRelationships: "You are the partner everyone dreams of — attentive, romantic, dedicated to making the relationship work. Your challenge is speaking up when things AREN'T working, even if it disrupts the harmony."
+      inRelationships: "You are the partner everyone dreams of — attentive, romantic, dedicated to making the relationship work. Your challenge is speaking up when things AREN'T working, even if it disrupts the harmony.",
+      coreWound: "The wound of unworthiness through isolation — a deep belief that you only have value in relationship to others. When alone, you may feel as though you don't quite exist. Worth is measured through others' eyes.",
+      healingPath: "Through developing a private aesthetic life — creating beauty that no one else sees. Healing comes when you learn to be your own beloved, to court YOURSELF with the same devotion you lavish on others.",
+      inTheBody: "The kidneys, the lower back, the adrenals that fire from chronic people-pleasing. You may hold tension in the hips from suppressing your own needs. Beauty — flowers, music, art — is literal medicine for your nervous system.",
+      sacredPurpose: "To hold the vision of a just and beautiful world — not as naïveté but as radical faith. You model the belief that fairness is possible.",
+      shadowExpression: "When unconscious, the White Knight becomes the passive-aggressive peacekeeper, the co-dependent who disappears into the other person, or the one who keeps score of every kindness given.",
+      affirmation: "I am worthy of the same fairness I offer the world. My peace begins within."
     },
     Scorpio: {
       name: "Raging Moon",
@@ -92,7 +148,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Emotional fearlessness", "Ability to transform through crisis", "Unflinching honesty", "Profound psychological insight"],
       challenges: ["Overwhelming emotional intensity", "Difficulty trusting others", "Can push people away to test them", "May mistake intensity for intimacy"],
       soulLesson: "Learning that vulnerability is the ultimate power — that letting someone see your soft underbelly takes more courage than any battle.",
-      inRelationships: "You love with a totality that can be breathtaking. You want to merge completely. Your challenge is allowing your partner their own depths without trying to plumb every secret."
+      inRelationships: "You love with a totality that can be breathtaking. You want to merge completely. Your challenge is allowing your partner their own depths without trying to plumb every secret.",
+      coreWound: "The wound of betrayal — you may have experienced profound breach of trust, either in this life or carried from past lives. The result is a soul that tests everyone, constantly searching for proof that people cannot be trusted.",
+      healingPath: "Through controlled intensity — depth psychology, tantric practices, breathwork, shadow work. Healing comes not through softening but through finding safe containers for the volcanic energy.",
+      inTheBody: "The reproductive organs, the pelvis, the colon — the body's deepest, most hidden places. Emotional repression may manifest as chronic pelvic tension, hormonal disruption, or issues with elimination. Your body holds secrets.",
+      sacredPurpose: "To show the collective that intensity is not pathology — that feeling deeply is the price of being fully alive, and that price is worth paying.",
+      shadowExpression: "When unconscious, the Raging Moon becomes the emotional terrorist, the one who weaponizes vulnerability, the partner who confuses jealousy with love and control with protection.",
+      affirmation: "My intensity is my power. I trust myself enough to let others in."
     },
     Sagittarius: {
       name: "Gypsy's Moon",
@@ -101,7 +163,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Adventurous spirit", "Philosophical breadth", "Infectious optimism", "Ability to inspire others to expand"],
       challenges: ["Commitment phobia", "Can mistake motion for progress", "May preach without practicing", "Difficulty with routine and detail"],
       soulLesson: "Learning that the greatest adventure is going deep — that the explored life is as rich as the explored world.",
-      inRelationships: "You bring adventure, humor, and big-picture vision. You need a partner who has their own life and won't clip your wings. Your challenge is showing up for the ordinary days, not just the extraordinary ones."
+      inRelationships: "You bring adventure, humor, and big-picture vision. You need a partner who has their own life and won't clip your wings. Your challenge is showing up for the ordinary days, not just the extraordinary ones.",
+      coreWound: "The wound of confinement — you carry cellular memory of being trapped, caged, or denied freedom. Even mild routine can trigger a claustrophobic panic that sends you running.",
+      healingPath: "Through purposeful travel — pilgrimages, retreats, studying abroad. Healing happens when movement becomes intentional rather than reactive, when you run TOWARD something instead of FROM something.",
+      inTheBody: "The hips, the thighs, the liver — the body's centers of expansion and forward motion. You may carry tension in the hips from suppressed restlessness, or liver issues from excess.",
+      sacredPurpose: "To expand the collective's horizon — to prove by example that the world is bigger, kinder, and more interesting than fear would have us believe.",
+      shadowExpression: "When unconscious, the Gypsy becomes the perpetual escapist, the guru who teaches freedom but can't commit, the adventurer running from their own shadow.",
+      affirmation: "Every road leads home if I'm present on it. Freedom lives inside me."
     },
     Capricorn: {
       name: "Forgotten One's Moon",
@@ -110,7 +178,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Self-reliance", "Natural authority", "Ability to endure and persist", "Strategic long-term thinking"],
       challenges: ["Emotional guardedness", "Difficulty asking for help", "Can mistake isolation for independence", "May judge others as weak"],
       soulLesson: "Learning that connection is not dependency — that letting others carry some of the weight makes you stronger, not weaker.",
-      inRelationships: "You are the rock. You provide stability, structure, and quiet devotion. Your challenge is letting your partner see the vulnerable child behind the competent adult."
+      inRelationships: "You are the rock. You provide stability, structure, and quiet devotion. Your challenge is letting your partner see the vulnerable child behind the competent adult.",
+      coreWound: "The wound of neglect — not necessarily dramatic abuse, but a quieter pain: the sense that no one was really there. You learned to need nothing because needing felt dangerous.",
+      healingPath: "Through gradual, safe dependency. Allow one person — a therapist, a partner, a friend — to witness your vulnerability. Healing happens in tiny increments, each time you ask for help and receive it.",
+      inTheBody: "The bones, the knees, the teeth, the skin — the body's structural support system. Under stress, these are where you'll feel it first. Your body carries the weight of everything you've shouldered alone.",
+      sacredPurpose: "To model genuine self-reliance without isolation — to show the collective that strength includes the courage to need.",
+      shadowExpression: "When unconscious, the Forgotten One becomes the cold authoritarian, the workaholic who uses achievement as a substitute for love, or the person who punishes others for needing what they were never given.",
+      affirmation: "I am seen. I am held. Asking for help is an act of courage, not weakness."
     },
     Aquarius: {
       name: "Father's Son Moon",
@@ -119,7 +193,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Original thinking", "Ability to see the future", "Humanitarian vision", "Comfort with being different"],
       challenges: ["Emotional detachment", "Can intellectualize feelings", "May feel alienated from family", "Difficulty with one-on-one intimacy"],
       soulLesson: "Learning that the mind and the heart are not enemies — that your most revolutionary act might be falling in love.",
-      inRelationships: "You bring intellectual stimulation, freedom, and progressive values. You need space and respect for your individuality. Your challenge is showing up emotionally, not just ideologically."
+      inRelationships: "You bring intellectual stimulation, freedom, and progressive values. You need space and respect for your individuality. Your challenge is showing up emotionally, not just ideologically.",
+      coreWound: "The wound of alienation — the persistent feeling that you belong nowhere, that your true tribe doesn't exist on this planet. Loneliness disguised as superiority.",
+      healingPath: "Through finding your people — communities, groups, movements where your oddness is valued. Healing happens when you discover that connection doesn't require conformity.",
+      inTheBody: "The ankles, the circulatory system, the nervous system's electrical pathways. You may experience sudden, electric anxiety, circulatory issues, or a sense of being 'wired differently' at a physiological level.",
+      sacredPurpose: "To serve as the collective's antenna — picking up frequencies from the future that haven't arrived yet, and translating them into ideas the present can use.",
+      shadowExpression: "When unconscious, the Father's Son becomes the cold intellectual who uses ideology as a shield against feeling, the contrarian who disagrees on principle, or the eccentric who mistakes loneliness for enlightenment.",
+      affirmation: "I belong to the future, and the future belongs to everyone. My differences are my contribution."
     },
     Pisces: {
       name: "Dreamer's Moon",
@@ -128,7 +208,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Spiritual sensitivity", "Artistic vision", "Unconditional compassion", "Access to the collective unconscious"],
       challenges: ["Boundary dissolution", "Escapist tendencies", "Can absorb others' emotions as your own", "Difficulty with practical demands"],
       soulLesson: "Learning that incarnation is not imprisonment — that you chose this body, this life, for a reason, and that reason requires your full presence.",
-      inRelationships: "You love without conditions and see the best in everyone. You create a magical, romantic atmosphere. Your challenge is staying grounded when the relationship requires practical decisions rather than beautiful feelings."
+      inRelationships: "You love without conditions and see the best in everyone. You create a magical, romantic atmosphere. Your challenge is staying grounded when the relationship requires practical decisions rather than beautiful feelings.",
+      coreWound: "The wound of overwhelm — the world is too loud, too harsh, too dense for a soul this porous. You may have learned to escape (through substances, fantasy, sleep, or dissociation) because being fully present hurt too much.",
+      healingPath: "Through creative expression that gives form to the formless — music, painting, poetry, dance. Also through water: baths, swimming, being near the ocean. Healing comes when you find a container for your infinite sensitivity.",
+      inTheBody: "The feet, the lymphatic system, the immune system. Your body's boundaries are as permeable as your emotional ones. You may be sensitive to medications, alcohol, and environmental toxins. Your feet connect you to the earth you sometimes forget you live on.",
+      sacredPurpose: "To remind the collective that the invisible world is real — that dreams, intuitions, and spiritual experiences are as valid as spreadsheets and bank statements.",
+      shadowExpression: "When unconscious, the Dreamer becomes the addict, the victim, the martyr who uses suffering as a spiritual bypass, or the escapist who checks out of life entirely.",
+      affirmation: "I am here on purpose. My sensitivity is my superpower, not my weakness."
     },
   },
 
@@ -143,7 +229,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Moral courage", "Pioneer energy", "Ability to inspire action in others", "Willingness to go first"],
       challenges: ["Can burn yourself out carrying others' burdens", "Difficulty delegating", "May see retreat as failure", "Prone to crusading"],
       soulLesson: "Learning that the torch can be shared — that your strength inspires others to light their own flame.",
-      inRelationships: "You are the protector, the one who fights for the relationship. Your challenge is letting your partner be strong too."
+      inRelationships: "You are the protector, the one who fights for the relationship. Your challenge is letting your partner be strong too.",
+      coreWound: "The wound of lone responsibility — the belief that if you put down the torch, everyone will be lost in darkness. You carry the weight of the world's courage on your shoulders.",
+      healingPath: "Through learning to rest without guilt. Teaching others to carry their own light. Healing comes when you realize the darkness isn't as complete as you feared.",
+      inTheBody: "Inflammation, overheated conditions, tension in the shoulders from carrying the torch. Your body runs hot and needs cooling — both literally and metaphorically.",
+      sacredPurpose: "To go first into the unknown, proving by your example that the path is passable. Your courage gives others permission to follow.",
+      shadowExpression: "When unconscious, the Torch-Bearer becomes the zealot who forces light into places that need darkness, or the burnout case who collapses from carrying everyone's fire.",
+      affirmation: "I light the way, and others light their own. I am allowed to rest."
     },
     Taurus: {
       name: "Gardener's Moon",
@@ -152,7 +244,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Extraordinary patience", "Practical wisdom", "Ability to nurture growth over time", "Physical resilience"],
       challenges: ["Can become stuck in routines", "May resist necessary change", "Difficulty with spontaneity", "Can prioritize security over growth"],
       soulLesson: "Learning that some seasons require letting the garden lie fallow — that rest is part of the growth cycle.",
-      inRelationships: "You are the steady, nurturing partner who builds a beautiful life brick by brick. Your challenge is allowing wild, unexpected growth alongside the carefully tended rows."
+      inRelationships: "You are the steady, nurturing partner who builds a beautiful life brick by brick. Your challenge is allowing wild, unexpected growth alongside the carefully tended rows.",
+      coreWound: "The wound of wasted effort — a deep fear that what you plant won't grow, that your patience will be for nothing. You may have experienced having your careful work destroyed by forces beyond your control.",
+      healingPath: "Through composting — literally and metaphorically. Learning that even failed harvests feed the soil. Nothing you've invested in is truly wasted.",
+      inTheBody: "The throat and neck (Taurus rules the voice and throat), but also the hands — the gardener's primary tool. You may carry tension in the jaw from clenching against uncertainty.",
+      sacredPurpose: "To model the radical act of patience in an impatient world — to prove that slow, steady devotion produces the most nourishing fruit.",
+      shadowExpression: "When unconscious, the Gardener becomes possessive of their 'garden' (people, places, things), refusing to let anything change or anyone leave.",
+      affirmation: "I trust the seasons. What I plant with love will grow in its own time."
     },
     Gemini: {
       name: "Little Sister's Moon",
@@ -161,7 +259,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Social intelligence", "Rapid adaptation", "Verbal brilliance", "Ability to connect diverse people and ideas"],
       challenges: ["Can use charm to avoid depth", "May not trust straightforward communication", "Restless when things settle", "Can scatter energy to avoid vulnerability"],
       soulLesson: "Learning that you can drop the clever mask and still be loved — that your truest self is more interesting than any performance.",
-      inRelationships: "You keep things light, fun, and mentally engaging. You're the partner who always has something interesting to say. Your challenge is staying when the conversation turns painful."
+      inRelationships: "You keep things light, fun, and mentally engaging. You're the partner who always has something interesting to say. Your challenge is staying when the conversation turns painful.",
+      coreWound: "The wound of invalidation — you learned that direct expression of needs was dangerous or ineffective, so you developed indirect strategies. Your cleverness is a survival adaptation.",
+      healingPath: "Through honest, unembellished communication — saying what you mean without spin. Healing comes when directness feels as safe as cleverness.",
+      inTheBody: "The nervous system, the hands, the respiratory system. You may experience anxiety as breathlessness or tingling in the extremities. Your body processes emotion as nervous energy.",
+      sacredPurpose: "To teach the collective that intelligence is a form of love — that understanding someone is the first step to helping them.",
+      shadowExpression: "When unconscious, the Little Sister becomes the manipulator, the one who uses understanding of people as leverage, or the chameleon who has no center.",
+      affirmation: "I am safe to be direct. My truth is more powerful than any strategy."
     },
     Cancer: {
       name: "Mother's Son Moon",
@@ -170,7 +274,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Fierce loyalty", "Emotional courage", "Creating safe emotional environments", "Ability to nurture without enabling"],
       challenges: ["Can be overprotective", "May struggle to leave the nest", "Difficulty with emotional boundaries", "Can absorb family patterns uncritically"],
       soulLesson: "Learning that the best protection is teaching others to protect themselves — that love grows stronger when given room.",
-      inRelationships: "You create a sanctuary for your partner. Home is your love language. Your challenge is allowing your partner to venture out without interpreting it as abandonment."
+      inRelationships: "You create a sanctuary for your partner. Home is your love language. Your challenge is allowing your partner to venture out without interpreting it as abandonment.",
+      coreWound: "The wound of the unprotected — you may have been the one who had to protect the family emotionally, taking on the guardian role before you were old enough. Now you can't stop guarding.",
+      healingPath: "Through receiving protection from others. Letting yourself be mothered. Healing comes when you allow someone else to hold the walls while you rest inside them.",
+      inTheBody: "The stomach, the chest cavity, the breasts. You may carry tension in the upper abdomen — the 'gut feeling' center. Emotional stress often manifests as nausea or appetite changes.",
+      sacredPurpose: "To model protective love that empowers rather than imprisons — showing that the strongest walls have doors.",
+      shadowExpression: "When unconscious, the Mother's Son becomes the helicopter parent of relationships, the one whose protection becomes a cage, suffocating the very thing they love.",
+      affirmation: "I am safe. Those I love are safe. I can put down my shield."
     },
     Leo: {
       name: "Clown's Moon",
@@ -179,7 +289,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Healing humor", "Ability to lighten heavy situations", "Creative expression through performance", "Making others feel included and seen"],
       challenges: ["Using humor to avoid pain", "Difficulty being taken seriously", "May perform instead of connect", "Can deflect with jokes when vulnerability is needed"],
       soulLesson: "Learning that your truest comedy comes from your truest tears — that the Clown's power lies in honesty, not evasion.",
-      inRelationships: "You bring laughter, play, and creative spark. You make every day an adventure. Your challenge is being present for the serious conversations without reaching for a joke."
+      inRelationships: "You bring laughter, play, and creative spark. You make every day an adventure. Your challenge is being present for the serious conversations without reaching for a joke.",
+      coreWound: "The wound of dismissal — you learned that your feelings weren't welcome, so you wrapped them in humor. Beneath every great comedian is a child who wasn't allowed to cry.",
+      healingPath: "Through tears. Not comedy improv but authentic grief work. Healing comes when you discover that your audience still loves you even when you're not funny.",
+      inTheBody: "The heart (Leo's domain), but also the diaphragm — the muscle of laughter AND crying. You may carry tension in the solar plexus from holding back genuine emotion.",
+      sacredPurpose: "To prove that laughter and tears are the same medicine, administered differently — that joy is not the opposite of depth but its companion.",
+      shadowExpression: "When unconscious, the Clown becomes the class clown who can't stop performing, the bitter comedian whose humor has become a weapon, or the partner who jokes through every crisis.",
+      affirmation: "My joy is real. My pain is real. Both are welcome here."
     },
     Virgo: {
       name: "Apprentice's Moon",
@@ -188,7 +304,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Dedication to craft", "Willingness to learn", "Attention to detail", "Service-oriented excellence"],
       challenges: ["Can defer to authority too long", "May never feel 'ready enough'", "Self-criticism that blocks progress", "Difficulty claiming expertise"],
       soulLesson: "Learning that you already know more than you think — that at some point, the apprentice must become the master.",
-      inRelationships: "You show love through devoted attention — learning your partner's needs and meeting them precisely. Your challenge is stepping into equal partnership rather than always serving."
+      inRelationships: "You show love through devoted attention — learning your partner's needs and meeting them precisely. Your challenge is stepping into equal partnership rather than always serving.",
+      coreWound: "The wound of not-enough-ness — the perpetual sense that you need more training, more study, more preparation before you're qualified. The apprenticeship never ends because readiness feels dangerous.",
+      healingPath: "Through teaching. When you must teach what you know, you discover how much you've actually learned. Healing comes through claiming your expertise, however imperfect.",
+      inTheBody: "The hands (skilled hands), the digestive system, the nervous system's fine motor pathways. Perfectionism may manifest as repetitive strain, digestive sensitivity, or obsessive-compulsive tendencies.",
+      sacredPurpose: "To embody the sacred student — teaching the collective that humility and mastery are not opposites but married pairs.",
+      shadowExpression: "When unconscious, the Apprentice becomes the eternal student who uses learning as a way to avoid doing, or the self-flagellating worker who can never acknowledge their own skill.",
+      affirmation: "I am ready. My skill is real. I have earned the right to trust myself."
     },
     Libra: {
       name: "Dancer's Moon",
@@ -197,7 +319,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Social grace", "Ability to find beauty in difficulty", "Natural rhythm in relationships", "Aesthetic intelligence"],
       challenges: ["Can prioritize appearance over substance", "Difficulty standing still or alone", "May dance around problems instead of facing them", "Can lose yourself in the performance"],
       soulLesson: "Learning that the most powerful dance is the one performed for no audience — that grace is an internal quality, not an external performance.",
-      inRelationships: "You bring elegance, romance, and flowing partnership. You intuitively know when to lead and when to follow. Your challenge is having the hard conversations that can't be danced around."
+      inRelationships: "You bring elegance, romance, and flowing partnership. You intuitively know when to lead and when to follow. Your challenge is having the hard conversations that can't be danced around.",
+      coreWound: "The wound of disrupted harmony — you may have grown up in an environment of conflict and learned to be the peacemaker, the one who smoothed things over. Stillness feels like the silence before a storm.",
+      healingPath: "Through actual physical dance or movement practice — something that lets you feel your own rhythm rather than always adjusting to others'. Healing comes when you move for YOURSELF.",
+      inTheBody: "The lower back (kidney area), the hips, the inner ear (balance). You may experience vertigo or lower back pain when life feels unbalanced. Your body literally craves equilibrium.",
+      sacredPurpose: "To show the collective that grace under pressure is a form of power — that beauty in motion is not frivolity but a survival strategy refined to an art.",
+      shadowExpression: "When unconscious, the Dancer becomes the people-pleaser who has choreographed away their own desires, or the one who performs harmony while suppressing rage.",
+      affirmation: "I move to my own rhythm. My stillness is as beautiful as my dance."
     },
     Scorpio: {
       name: "Blood Moon",
@@ -206,7 +334,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Unbreakable resilience", "Deep truth-telling", "Ability to transform crisis into growth", "Fearlessness about darkness"],
       challenges: ["Can create crises unconsciously", "Difficulty trusting calm periods", "May mistake drama for meaning", "Can push people to their limits to test them"],
       soulLesson: "Learning that survival mode can become a prison — that you are allowed to thrive, not just endure.",
-      inRelationships: "You love with fierce intensity and complete commitment. You want truth above all. Your challenge is allowing light, easy moments without suspecting what lurks beneath."
+      inRelationships: "You love with fierce intensity and complete commitment. You want truth above all. Your challenge is allowing light, easy moments without suspecting what lurks beneath.",
+      coreWound: "The wound of annihilation — not just abandonment but complete destruction. You carry the memory (ancestral or personal) of having everything taken away. Trust feels life-threatening.",
+      healingPath: "Through controlled descent — therapy that goes deep safely, ritual death/rebirth ceremonies, plant medicine under proper guidance. Healing comes when you choose your transformations rather than having them forced on you.",
+      inTheBody: "The reproductive system, the elimination organs, the pelvis. You may carry enormous tension in the pelvic floor — the body's deepest holding pattern. Sexual energy and creative energy may feel dangerously intertwined.",
+      sacredPurpose: "To model survival as a spiritual practice — to show the collective that what doesn't kill you doesn't just make you stronger, it makes you WISER.",
+      shadowExpression: "When unconscious, the Blood Moon becomes the person who manufactures crises to feel alive, the emotional vampire, or the one who equates intensity with love.",
+      affirmation: "I have survived the worst. Now I learn to live the best."
     },
     Sagittarius: {
       name: "Traveler's Moon",
@@ -215,7 +349,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Faith in life's journey", "Philosophical depth", "Cultural openness", "Ability to find meaning in experience"],
       challenges: ["Can overcommit to the search and miss the finding", "Difficulty being present", "May romanticize distance and otherness", "Restless with the familiar"],
       soulLesson: "Learning that the journey and the destination are not opposites — that you can arrive somewhere and still be a traveler.",
-      inRelationships: "You bring vision, adventure, and intellectual passion. You need a partner who values growth. Your challenge is being fully present for the quiet, ordinary moments."
+      inRelationships: "You bring vision, adventure, and intellectual passion. You need a partner who values growth. Your challenge is being fully present for the quiet, ordinary moments.",
+      coreWound: "The wound of meaninglessness — beneath the adventurous exterior is a terror that life might not mean anything. You travel to escape the void, to fill it with experiences.",
+      healingPath: "Through pilgrimimage with intention — travel that serves a purpose beyond escape. Healing comes when you discover that meaning isn't found but MADE.",
+      inTheBody: "The hips and thighs (Sagittarius' domain), the liver, the sciatic nerve. Restlessness manifests physically — you may need to MOVE to process emotion. Sitting still can feel painful.",
+      sacredPurpose: "To expand the collective's sense of what's possible — to bring back stories from the edges of the known world.",
+      shadowExpression: "When unconscious, the Traveler becomes the eternal tourist who skims surfaces, the commitment-phobe who uses 'freedom' as an excuse, or the spiritual seeker addicted to peak experiences.",
+      affirmation: "I am already home. The journey continues within."
     },
     Capricorn: {
       name: "Mountain Climber's Moon",
@@ -224,7 +364,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Strategic persistence", "Emotional resilience in adversity", "Natural leadership through example", "Long-term vision"],
       challenges: ["Can sacrifice joy for achievement", "Difficulty with detours or delays", "May judge yourself by external metrics", "Can be rigid in approach"],
       soulLesson: "Learning that the mountain was always a metaphor — that what you're really climbing toward is self-acceptance.",
-      inRelationships: "You are the partner who builds a solid future. You show love through provision and planning. Your challenge is pausing the climb long enough to play, laugh, and be foolish together."
+      inRelationships: "You are the partner who builds a solid future. You show love through provision and planning. Your challenge is pausing the climb long enough to play, laugh, and be foolish together.",
+      coreWound: "The wound of conditional love — you learned that love is earned through achievement, and every resting point feels like it could be taken away. The climb is driven by the fear of falling.",
+      healingPath: "Through play. Unstructured, goal-less, ridiculous play. Healing comes when you discover that your worth exists independent of your altitude.",
+      inTheBody: "The skeleton (especially the knees and spine), the joints, the teeth. Your body carries the weight of ambition — joint problems may reflect the burden of always climbing.",
+      sacredPurpose: "To show the collective that persistence is sacred — that showing up day after day, especially when no one's watching, is its own form of heroism.",
+      shadowExpression: "When unconscious, the Mountain Climber becomes the ruthless striver who climbs over others, the one who reaches the summit and finds it empty, or the person who can't stop climbing even when there's nowhere left to go.",
+      affirmation: "I am worthy at base camp. The summit is a bonus, not a requirement."
     },
     Aquarius: {
       name: "Father's Daughter Moon",
@@ -233,7 +379,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Intellectual courage", "Ability to build on tradition", "Revolutionary thinking rooted in deep knowledge", "Independence of thought"],
       challenges: ["Can reject the past too harshly", "May struggle with emotional inheritance", "Difficulty acknowledging debts to mentors", "Can be ideologically rigid"],
       soulLesson: "Learning that honoring your roots doesn't diminish your wings — that the most original ideas often grow from the deepest soil.",
-      inRelationships: "You bring intellectual partnership and visionary planning. You need a partner who respects your independence. Your challenge is letting your guard down enough to be emotionally dependent."
+      inRelationships: "You bring intellectual partnership and visionary planning. You need a partner who respects your independence. Your challenge is letting your guard down enough to be emotionally dependent.",
+      coreWound: "The wound of the inherited burden — you carry not just your own vision but the weight of what came before. You may feel responsible for completing someone else's revolution.",
+      healingPath: "Through choosing your own cause, independent of lineage. Healing comes when you fight for something you discovered yourself, not something you inherited.",
+      inTheBody: "The ankles, the shins, the electrical system of the nervous system. You may experience sudden jolts of insight that feel almost physical — or conversely, a strange emotional numbness that's actually overwhelm.",
+      sacredPurpose: "To evolve ideas across generations — to take what was given and make it better, proving that progress is built on respect.",
+      shadowExpression: "When unconscious, the Father's Daughter becomes the ideologue who can't distinguish her own thoughts from her intellectual inheritance, or the rebel without a cause who opposes everything on principle.",
+      affirmation: "I honor where I come from. I choose where I'm going."
     },
     Pisces: {
       name: "Mermaid Moon",
@@ -242,7 +394,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Dual-world awareness", "Emotional and practical intelligence", "Ability to translate between worlds", "Creative fluidity"],
       challenges: ["Feeling split between two realities", "Difficulty fully committing to either", "Can feel homeless in both worlds", "May sacrifice depth for adaptability"],
       soulLesson: "Learning that you don't have to choose — that your gift IS the bridge, and bridges belong to both sides.",
-      inRelationships: "You bring magic, emotional depth, and practical adaptability. You can meet your partner wherever they are. Your challenge is showing them where YOU are — your true home beneath the surface."
+      inRelationships: "You bring magic, emotional depth, and practical adaptability. You can meet your partner wherever they are. Your challenge is showing them where YOU are — your true home beneath the surface.",
+      coreWound: "The wound of not belonging — you don't fit neatly into either world. Too practical for the mystics, too mystical for the practical people. You may feel perpetually on the outside.",
+      healingPath: "Through art that bridges worlds — music, dance, painting, anything that makes the invisible visible. Healing comes when you stop trying to choose and embrace your dual nature.",
+      inTheBody: "The feet (connecting to earth), the lymphatic system (moving between systems), the skin (the boundary between inner and outer). You may be sensitive to temperature, texture, and subtle environmental changes.",
+      sacredPurpose: "To be the living bridge between the mundane and the mystical — proving that practical and spiritual are not opposites but partners.",
+      shadowExpression: "When unconscious, the Mermaid becomes the shape-shifter who has no true form, the one who adapts so completely they lose themselves, or the daydreamer who abandons the shore entirely.",
+      affirmation: "I belong to both worlds. My dual nature is my gift."
     },
   },
 
@@ -257,7 +415,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Courage under fire", "Ability to act decisively in crisis", "Protective instinct for the underdog", "Willingness to defy unjust authority"],
       challenges: ["Can become addicted to conflict", "Difficulty distinguishing personal anger from righteous anger", "May create enemies unnecessarily", "Struggle with peacetime"],
       soulLesson: "Learning that the greatest battle is the one you don't have to fight — that true courage sometimes means putting down the sword.",
-      inRelationships: "You are fiercely protective and passionate. You fight for your relationship. Your challenge is not fighting WITH your partner — turning your warrior energy toward the world, not each other."
+      inRelationships: "You are fiercely protective and passionate. You fight for your relationship. Your challenge is not fighting WITH your partner — turning your warrior energy toward the world, not each other.",
+      coreWound: "The wound of injustice suffered — you carry the memory of unfairness so deep it has become instinct. Every authority figure is suspect until proven otherwise.",
+      healingPath: "Through channeling warrior energy into advocacy — legal work, activism, martial arts. Healing comes when rage finds a constructive target.",
+      inTheBody: "The adrenals (constantly firing), the jaw (clenched against authority), the fists. Your body is in perpetual fight-or-flight. You need physical outlets for the battle energy.",
+      sacredPurpose: "To be the protector of those who cannot protect themselves — but from wisdom, not rage.",
+      shadowExpression: "When unconscious, the Brigand becomes the bully, the one who fights for fighting's sake, or the person who sees enemies everywhere.",
+      affirmation: "I choose my battles wisely. My strength serves justice, not anger."
     },
     Taurus: {
       name: "Woodcutter's Moon",
@@ -266,7 +430,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Work ethic", "Practical strength", "Ability to clear obstacles methodically", "Patience with hard processes"],
       challenges: ["Can work beyond the point of necessity", "Difficulty resting or celebrating", "May mistake busyness for productivity", "Resistance to help"],
       soulLesson: "Learning that the forest also needs some trees standing — that clearing everything leaves you with nothing to build from.",
-      inRelationships: "You are the partner who does the work — literally and emotionally. You clear obstacles for the relationship. Your challenge is resting together in the clearing you've made."
+      inRelationships: "You are the partner who does the work — literally and emotionally. You clear obstacles for the relationship. Your challenge is resting together in the clearing you've made.",
+      coreWound: "The wound of never being done — a persistent sense that there's always more to do, that rest is laziness. You may have been conditioned to equate worth with productivity.",
+      healingPath: "Through deliberate rest and pleasure. Not 'earned' rest but radical, unproductive stillness. Healing happens when you sit in the clearing and do absolutely nothing.",
+      inTheBody: "The neck and shoulders (carrying the load), the lower back (the body's workhorse), the hands (calloused from effort). Your body keeps working even when your mind wants to stop.",
+      sacredPurpose: "To clear the way for others — your hard work creates the space where beauty can eventually grow.",
+      shadowExpression: "When unconscious, the Woodcutter becomes the workaholic who destroys forests instead of clearing them, or the one who works so hard they forget what they're building toward.",
+      affirmation: "The clearing is enough. I am allowed to rest in what I've created."
     },
     Gemini: {
       name: "Liar's Moon",
@@ -275,7 +445,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Understanding language's power", "Ability to reframe reality", "Verbal agility and intelligence", "Seeing through others' deceptions"],
       challenges: ["Temptation to manipulate with words", "Difficulty with simple, direct truth", "Can spin narratives instead of facing facts", "May not trust others' words"],
       soulLesson: "Learning that the most powerful word is the honest one — that truth spoken simply needs no cleverness to support it.",
-      inRelationships: "You are articulate and perceptive, able to name what others can't. Your challenge is using your verbal gifts to build bridges, not walls — to speak truth with kindness, not as a weapon."
+      inRelationships: "You are articulate and perceptive, able to name what others can't. Your challenge is using your verbal gifts to build bridges, not walls — to speak truth with kindness, not as a weapon.",
+      coreWound: "The wound of broken promises — someone's words betrayed you, and now you question all language, including your own. You may lie to protect yourself from the vulnerability of truth.",
+      healingPath: "Through radical honesty practice — saying exactly what you mean, without embellishment. Healing comes when you discover that truth, however awkward, builds stronger bridges than any clever story.",
+      inTheBody: "The throat, the hands, the lungs. You may experience throat constriction when lying or withholding truth. The body knows when words and feelings are misaligned.",
+      sacredPurpose: "To master the sacred power of language — using words to heal, to illuminate, to connect. The Liar's Moon redeemed becomes the Truth-Speaker.",
+      shadowExpression: "When unconscious, the Liar's Moon becomes the compulsive liar, the gaslighter, the one who rewrites reality until no one (including themselves) knows what's real.",
+      affirmation: "My words carry power. I choose truth, even when it's uncomfortable."
     },
     Cancer: {
       name: "Weeping Moon",
@@ -284,7 +460,13 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Profound emotional depth", "Compassion born from suffering", "Ability to hold space for others' grief", "Emotional authenticity"],
       challenges: ["Can become overwhelmed by feeling", "Difficulty with emotional boundaries", "May wallow instead of process", "Tendency to absorb collective pain"],
       soulLesson: "Learning that tears water the garden — that grief, fully felt and honored, transforms into the deepest compassion.",
-      inRelationships: "You create profound emotional intimacy. You are unafraid of the depths. Your challenge is not drowning your partner in your ocean — giving them room to feel their own feelings alongside yours."
+      inRelationships: "You create profound emotional intimacy. You are unafraid of the depths. Your challenge is not drowning your partner in your ocean — giving them room to feel their own feelings alongside yours.",
+      coreWound: "The wound of unmourned loss — grief that was never fully processed, perhaps from childhood or ancestral patterns. The tears that flow now may be tears from many lifetimes.",
+      healingPath: "Through grief ritual — sacred, witnessed weeping. Not therapy only, but ceremony. Healing comes when tears become holy water rather than helpless overflow.",
+      inTheBody: "The eyes, the sinuses, the stomach (the body's emotional reservoir). You may experience chronic sinus issues, stomach sensitivity, or the feeling of carrying water weight — the body holding unprocessed tears.",
+      sacredPurpose: "To hold the space for collective grief — to weep the tears the world is too proud or too frightened to cry.",
+      shadowExpression: "When unconscious, the Weeping Moon becomes the emotional manipulator who uses tears as weapons, or the one so consumed by grief they can't function.",
+      affirmation: "My tears are sacred. They water the garden of compassion."
     },
     Leo: {
       name: "Actor's Moon",
@@ -293,70 +475,118 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       gifts: ["Creative self-expression", "Ability to embody different energies", "Understanding of human character", "Natural stage presence"],
       challenges: ["Identity confusion", "Difficulty knowing your authentic self", "Can perform love instead of feeling it", "Fear of being seen without the mask"],
       soulLesson: "Learning that the greatest role you'll ever play is yourself — that authenticity is the ultimate performance art.",
-      inRelationships: "You bring passion, creativity, and an understanding of human nature. Your challenge is letting your partner see the person behind ALL the masks — the one who's just as scared and confused as everyone else."
+      inRelationships: "You bring passion, creativity, and an understanding of human nature. Your challenge is letting your partner see the person behind ALL the masks — the one who's just as scared and confused as everyone else.",
+      coreWound: "The wound of the false self — the fear that if you stop performing, there's nothing underneath. You may have been loved for what you could do, not who you were.",
+      healingPath: "Through private authentic expression — journaling, solo creative practice, therapy focused on identity. Healing comes when you discover that the person behind the mask is more interesting than any character.",
+      inTheBody: "The heart, the upper back (the 'stage presence' muscles), the solar plexus. You may carry tension from holding a 'performance posture' even when off stage.",
+      sacredPurpose: "To show the collective that authenticity IS the ultimate art — that being yourself is the hardest, bravest, most creative act.",
+      shadowExpression: "When unconscious, the Actor becomes the narcissist who can't distinguish self from character, or the emotional chameleon who has no center.",
+      affirmation: "Behind every mask is my true face. That face is enough."
     },
     Virgo: {
       name: "Counting Moon",
       essence: "Crisis of precision — when every detail matters and nothing can be wasted.",
-      description: "The Counting Moon is the soul in the grip of the ultimate analytical crisis: the realization that details MATTER, that precision has consequences, that getting it wrong isn't just an inconvenience — it's a moral failing. This intense focus on accuracy can look like anxiety, and sometimes it is. But at its best, the Counting Moon produces the soul who catches the error that saves the project, the healer who notices the symptom that everyone else missed, the accountant whose diligence protects the vulnerable. The crisis is in learning when precision serves life and when it imprisons it.",
+      description: "The Counting Moon is the soul in the grip of the ultimate analytical crisis: the realization that details MATTER, that precision has consequences, that getting it wrong isn't just an inconvenience — it's a moral failing. This intense focus on accuracy can look like anxiety, and sometimes it is. But at its best, the Counting Moon produces the soul who catches the error that saves the project, the healer who notices the symptom that everyone else missed, the accountant whose diligence protects the vulnerable.",
       gifts: ["Extraordinary attention to detail", "Ethical precision", "Ability to catch critical errors", "Service through accuracy"],
       challenges: ["Paralysis by analysis", "Anxiety about imperfection", "Can't see the forest for the trees", "May focus on controlling details when life feels uncontrollable"],
       soulLesson: "Learning that sometimes 'good enough' IS perfect — that life is not a ledger that must balance to the penny.",
-      inRelationships: "You pay attention like no other partner — you notice and remember everything. Your challenge is not keeping score — allowing the relationship to be beautifully imprecise."
+      inRelationships: "You pay attention like no other partner — you notice and remember everything. Your challenge is not keeping score — allowing the relationship to be beautifully imprecise.",
+      coreWound: "The wound of catastrophic error — the belief that one mistake could ruin everything. You may carry memory of a time when imprecision had devastating consequences.",
+      healingPath: "Through deliberate imperfection — practices like wabi-sabi, freeform art, cooking without recipes. Healing comes when you discover that 'messy' and 'good' can coexist.",
+      inTheBody: "The intestines, the nervous system, the endocrine system. Anxiety about precision may manifest as digestive issues, compulsive behaviors, or chronic tension in the hands.",
+      sacredPurpose: "To hold the collective accountable to precision where it matters — while modeling the wisdom to know where it doesn't.",
+      shadowExpression: "When unconscious, the Counting Moon becomes the obsessive-compulsive checker, the one who uses perfectionism to avoid living, or the critic who counts everyone else's flaws while ignoring their own.",
+      affirmation: "Imperfection is not failure. Some things are better left uncounted."
     },
     Libra: {
       name: "Black Knight's Moon",
       essence: "The dark side of justice — fighting for balance through uncomfortable confrontation.",
-      description: "The Black Knight's Moon is the shadow side of Libra's quest for justice — the moment when the White Knight realizes that fairness sometimes requires a sword. You've tried diplomacy. You've tried compromise. And now you're learning that some situations cannot be balanced through niceness alone. The crisis is in accepting that you — the lover of harmony — must sometimes be the one who disrupts it. The Black Knight fights for justice BECAUSE they love peace, not in spite of it. Your challenge is wielding the sword without losing your soul.",
+      description: "The Black Knight's Moon is the shadow side of Libra's quest for justice — the moment when the White Knight realizes that fairness sometimes requires a sword. You've tried diplomacy. You've tried compromise. And now you're learning that some situations cannot be balanced through niceness alone. The crisis is in accepting that you — the lover of harmony — must sometimes be the one who disrupts it. The Black Knight fights for justice BECAUSE they love peace, not in spite of it.",
       gifts: ["Courage to fight for fairness", "Willingness to be uncomfortable for justice", "Ability to confront without cruelty", "Understanding both light and shadow sides of justice"],
       challenges: ["Can become what you fight against", "Difficulty returning to peace after battle", "May swing between avoidance and aggression", "Struggle with moral ambiguity"],
       soulLesson: "Learning that justice and mercy are partners, not opponents — that the strongest sword is sheathed in compassion.",
-      inRelationships: "You bring honesty and a willingness to address what's unfair. Your challenge is knowing when to fight and when to forgive — and not punishing your partner for the world's injustices."
+      inRelationships: "You bring honesty and a willingness to address what's unfair. Your challenge is knowing when to fight and when to forgive — and not punishing your partner for the world's injustices.",
+      coreWound: "The wound of enforced niceness — you were taught that anger was ugly, that conflict was wrong, that 'nice' people don't fight. Your shadow knight emerged because your white knight was silenced.",
+      healingPath: "Through learning to express anger cleanly — not as explosion or suppression but as clear, boundaried assertion. Healing comes when you discover that confrontation can be loving.",
+      inTheBody: "The kidneys and adrenals (exhausted from chronic peacemaking), the jaw (clenched against unsaid truths), the fists (wanting to strike but conditioned not to).",
+      sacredPurpose: "To demonstrate that true peace requires warriors — that justice without confrontation is just compliance.",
+      shadowExpression: "When unconscious, the Black Knight becomes the person who starts fights under the banner of 'fairness,' or the passive-aggressive partner who punishes through silence.",
+      affirmation: "I can fight for what's right AND return to peace. My anger serves justice."
     },
     Scorpio: {
       name: "Executioner's Moon",
       essence: "Ruthless pruning — cutting away what is dead so the living can flourish.",
-      description: "The Executioner's Moon is the most feared and most necessary archetype in the zodiac. You carry the blade that separates the living from the dead — in relationships, in careers, in beliefs, in identities. This isn't cruelty; it's the surgeon's precision applied to emotional and spiritual life. Something must die so something else can live, and you are the one willing to make that cut. The crisis is in bearing the weight of that responsibility — in accepting that the one who cuts also bleeds.",
+      description: "The Executioner's Moon is the most feared and most necessary archetype in the zodiac. You carry the blade that separates the living from the dead — in relationships, in careers, in beliefs, in identities. This isn't cruelty; it's the surgeon's precision applied to emotional and spiritual life. Something must die so something else can live, and you are the one willing to make that cut.",
       gifts: ["Ability to end what needs ending", "Emotional surgery precision", "Courage to face death and transformation", "Clearing space for new life"],
       challenges: ["Can cut too deep or too fast", "Difficulty with mercy", "May become identified with the role of destroyer", "Can cut off parts of yourself that still have life"],
       soulLesson: "Learning that the executioner is also the midwife — that every ending you facilitate is also a beginning.",
-      inRelationships: "You bring transformative honesty and the willingness to prune what isn't working. Your challenge is remembering that some things need nurturing, not cutting — that love sometimes grows from the messy parts."
+      inRelationships: "You bring transformative honesty and the willingness to prune what isn't working. Your challenge is remembering that some things need nurturing, not cutting.",
+      coreWound: "The wound of forced endings — you may have had things taken from you abruptly, and now you preemptively cut before you can be cut. Control through destruction.",
+      healingPath: "Through learning to nurture alongside pruning. Gardening (literal or metaphorical) that balances cutting with growing. Healing comes when you trust that some things can survive your intensity.",
+      inTheBody: "The pelvis, the colon, the eliminative organs. Your body is designed for release — but chronic tension here means you may be holding onto what needs to go.",
+      sacredPurpose: "To carry the sacred blade that separates the living from the dead — performing the psychic surgery that the collective needs but fears.",
+      shadowExpression: "When unconscious, the Executioner cuts for the pleasure of cutting, destroys what they love to test if it can survive, or becomes the serial relationship-ender.",
+      affirmation: "I cut with precision and compassion. Not everything needs the blade."
     },
     Sagittarius: {
       name: "Seeker's Moon",
       essence: "The crisis of meaning — when old beliefs shatter and new truth must be found.",
-      description: "The Seeker's Moon marks the crisis of belief — the moment when the comfortable story you've been telling yourself about how the world works suddenly falls apart. This is not a gentle questioning; it's a COLLAPSE. The old meaning structure crumbles, and you're left standing in the rubble, asking the most terrifying question a Sagittarian can face: WHAT IF NOTHING MEANS ANYTHING? The gift of this crisis is that it forces you to find meaning that can't be shattered — truth so deep that no experience can destroy it. But finding that takes courage.",
+      description: "The Seeker's Moon marks the crisis of belief — the moment when the comfortable story you've been telling yourself about how the world works suddenly falls apart. This is not a gentle questioning; it's a COLLAPSE. The old meaning structure crumbles, and you're left standing in the rubble, asking the most terrifying question: WHAT IF NOTHING MEANS ANYTHING? The gift is that it forces you to find meaning that can't be shattered.",
       gifts: ["Willingness to question everything", "Ability to rebuild belief from the ground up", "Philosophical courage", "Deep authenticity"],
       challenges: ["Can become nihilistic during the search", "Difficulty trusting any belief system", "May swing between fanaticism and skepticism", "Existential anxiety"],
       soulLesson: "Learning that meaning is not discovered but CREATED — that you are the author of your own sacred text.",
-      inRelationships: "You bring depth, questioning, and a refusal to settle for surface answers. Your challenge is not subjecting your partner to constant philosophical interrogation — allowing some things to simply BE."
+      inRelationships: "You bring depth, questioning, and a refusal to settle for surface answers. Your challenge is not subjecting your partner to constant philosophical interrogation.",
+      coreWound: "The wound of shattered faith — a belief system you trusted completely was revealed to be incomplete or false. The ground under your feet disappeared.",
+      healingPath: "Through building your own philosophy from direct experience — not inheriting beliefs but testing them against reality. Healing comes when you trust your own meaning-making ability.",
+      inTheBody: "The hips and thighs (restlessness), the liver (processing the 'toxins' of disillusionment). You may feel physically ungrounded during spiritual crises.",
+      sacredPurpose: "To model the courage to question — showing the collective that faith that survives doubt is stronger than faith that's never been tested.",
+      shadowExpression: "When unconscious, the Seeker becomes the cynical philosopher who demolishes everyone else's beliefs, or the serial convert who jumps from system to system.",
+      affirmation: "My questions are as sacred as any answer. Doubt is a form of devotion."
     },
     Capricorn: {
       name: "Miner's Moon",
       essence: "Digging deep into the earth — extracting treasure from the most resistant rock.",
-      description: "The Miner's Moon goes DOWN when everyone else is looking UP. You understand that the real treasure is buried deep — in the earth, in the psyche, in the hardest parts of human experience. You're willing to descend into darkness, to work in cramped conditions, to chip away at resistant rock, because you know that diamonds form under pressure. The crisis of this Moon is the claustrophobia of the descent — the moments when you wonder if you'll ever see daylight again. But you always do, and you always come back with treasure.",
+      description: "The Miner's Moon goes DOWN when everyone else is looking UP. You understand that the real treasure is buried deep — in the earth, in the psyche, in the hardest parts of human experience. You're willing to descend into darkness, to work in cramped conditions, to chip away at resistant rock, because you know that diamonds form under pressure.",
       gifts: ["Willingness to do the deep work", "Endurance in difficult conditions", "Ability to find value in darkness", "Extracting wisdom from hard experience"],
       challenges: ["Can get trapped in the descent", "Difficulty asking for light", "May mistake suffering for progress", "Tendency to work alone in darkness"],
       soulLesson: "Learning that the mine has an exit — that going deep doesn't mean staying buried.",
-      inRelationships: "You bring depth, persistence, and an ability to work through the hardest relationship challenges. Your challenge is coming up for air — sharing the treasure you've found instead of hoarding it."
+      inRelationships: "You bring depth, persistence, and an ability to work through the hardest relationship challenges. Your challenge is coming up for air.",
+      coreWound: "The wound of depth as isolation — you go so deep that no one can follow. Your treasures are real, but the cost is loneliness.",
+      healingPath: "Through bringing what you find in the depths back to the surface — sharing your hard-won wisdom. Healing comes when the mine becomes a gift shop, not a prison.",
+      inTheBody: "The bones, the joints, the skeleton's deepest structures. You may carry chronic joint pain or bone density issues — the body reflecting the weight of going deep.",
+      sacredPurpose: "To extract the treasures that others are afraid to dig for — the psychological gold buried in the hardest places.",
+      shadowExpression: "When unconscious, the Miner becomes the person who uses depth as a wall, going so far underground that no relationship can reach them.",
+      affirmation: "I bring my treasures into the light. The depths serve the surface."
     },
     Aquarius: {
       name: "Rebel Moon",
       essence: "The revolutionary crisis — when conformity becomes intolerable and freedom demands action.",
-      description: "The Rebel Moon is the soul in full revolution — the moment when 'going along to get along' becomes a form of spiritual death. You cannot pretend to agree anymore. You cannot smile at injustice anymore. You cannot be polite about things that are killing the world. The crisis is in the LONELINESS of rebellion — the realization that standing for what's right often means standing alone. The Rebel's journey is learning to build community among other outcasts, to transform individual revolt into collective revolution.",
+      description: "The Rebel Moon is the soul in full revolution — the moment when 'going along to get along' becomes a form of spiritual death. You cannot pretend to agree anymore. You cannot smile at injustice anymore. The crisis is in the LONELINESS of rebellion — the realization that standing for what's right often means standing alone.",
       gifts: ["Moral courage", "Willingness to stand alone for principles", "Ability to inspire collective action", "Clear vision of injustice"],
       challenges: ["Can become defined by opposition", "Difficulty cooperating even with allies", "May reject everything mainstream on principle", "Loneliness of the perpetual outsider"],
       soulLesson: "Learning that the most radical act is sometimes building, not destroying — that the rebel must eventually become the architect.",
-      inRelationships: "You bring authenticity, passion, and refusal to settle for a conventional relationship. Your challenge is not rebelling against your partner — saving your revolutionary energy for the systems that actually need overthrowing."
+      inRelationships: "You bring authenticity, passion, and refusal to settle for a conventional relationship. Your challenge is not rebelling against your partner.",
+      coreWound: "The wound of forced conformity — you were made to fit a mold that didn't fit, and the memory of that compression fuels every rebellion.",
+      healingPath: "Through building, not just breaking. Creating alternative structures rather than only opposing existing ones. Healing comes when revolution has a blueprint.",
+      inTheBody: "The nervous system (overstimulated from constant opposition), the ankles (wanting to run), the circulatory system (blood pressure from sustained outrage).",
+      sacredPurpose: "To be the collective's alarm system — the one who sounds the warning when conformity becomes compliance with injustice.",
+      shadowExpression: "When unconscious, the Rebel becomes the person who opposes everything on principle, who can't cooperate even with allies, or who defines themselves entirely through what they're against.",
+      affirmation: "I rebel with purpose. My freedom builds, not just breaks."
     },
     Pisces: {
       name: "Martyr's Moon",
       essence: "Sacrificial crisis — learning the difference between sacred offering and self-destruction.",
-      description: "The Martyr's Moon faces the most dangerous crisis in the Piscean journey: the temptation to sacrifice yourself completely for others. There is something genuinely holy in your willingness to give everything — your time, your energy, your identity — for those you love or for causes you believe in. The crisis comes when that giving crosses the line from sacred offering to self-destruction. The Martyr must learn that a sacrifice given from an empty cup is not holy — it's just death. True sacrifice means offering what you can AFFORD to give while keeping enough to sustain your own life.",
+      description: "The Martyr's Moon faces the most dangerous crisis in the Piscean journey: the temptation to sacrifice yourself completely for others. There is something genuinely holy in your willingness to give everything. The crisis comes when that giving crosses the line from sacred offering to self-destruction. The Martyr must learn that a sacrifice given from an empty cup is not holy — it's just death.",
       gifts: ["Selfless service", "Ability to sacrifice for higher purposes", "Spiritual courage", "Inspiring compassion in others"],
       challenges: ["Self-destructive tendencies", "Difficulty distinguishing service from codependency", "May seek meaning through suffering", "Can lose identity in service to others"],
       soulLesson: "Learning that the greatest sacrifice is learning to LIVE fully — that the world needs you alive and whole, not emptied and broken.",
-      inRelationships: "You give without counting. You love without conditions. Your challenge is learning that your partner wants a PARTNER, not a sacrifice — that they need you whole, not hollowed out."
+      inRelationships: "You give without counting. You love without conditions. Your challenge is learning that your partner wants a PARTNER, not a sacrifice.",
+      coreWound: "The wound of worthlessness redeemed through suffering — a deep belief that you only have value when you're giving yourself away. Your worth is measured in pain endured.",
+      healingPath: "Through receiving. Being served, being given to, being the one who sits while others stand. Healing comes when you accept love you haven't 'earned' through sacrifice.",
+      inTheBody: "The immune system (depleted from giving), the feet (standing on behalf of others), the lymphatic system (absorbing everyone else's toxins).",
+      sacredPurpose: "To model the difference between sacred service and self-destruction — to show that the martyr's greatest act is choosing to LIVE.",
+      shadowExpression: "When unconscious, the Martyr becomes the codependent who uses sacrifice as manipulation, the one who suffers publicly for validation, or the person who makes others feel guilty for not suffering enough.",
+      affirmation: "I serve best when I am whole. My life is the offering."
     },
   },
 
@@ -367,110 +597,182 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
     Aries: {
       name: "Adventurer's Moon",
       essence: "Refining courage — the warrior who learns strategy alongside bravery.",
-      description: "The Adventurer's Moon has moved beyond raw courage into something more sustainable: strategic bravery. You've learned that running headfirst into danger isn't always effective — that sometimes the bravest thing is to PREPARE, to think, to approach the challenge with both heart and mind. This Moon marks the warrior who has survived enough battles to develop wisdom. You still love adventure, but now your adventures have PURPOSE. You're refining your courage into something the world can truly use.",
+      description: "The Adventurer's Moon has moved beyond raw courage into something more sustainable: strategic bravery. You've learned that running headfirst into danger isn't always effective — that sometimes the bravest thing is to PREPARE. This Moon marks the warrior who has survived enough battles to develop wisdom. You still love adventure, but now your adventures have PURPOSE.",
       gifts: ["Strategic courage", "Ability to plan adventures that serve growth", "Inspiring others through calculated risks", "Turning experience into wisdom"],
       challenges: ["Impatience with the refinement process", "Can feel trapped by the need to plan", "May lose spontaneity", "Temptation to return to pure instinct"],
       soulLesson: "Learning that the greatest adventure is the one that transforms not just you, but everyone around you.",
-      inRelationships: "You bring adventure and growth to partnerships. You push both of you to evolve. Your challenge is appreciating the quiet, safe moments without itching for the next summit."
+      inRelationships: "You bring adventure and growth to partnerships. You push both of you to evolve. Your challenge is appreciating the quiet, safe moments.",
+      coreWound: "The wound of purposeless action — the nagging feeling that bravery without direction is just adrenaline addiction.",
+      healingPath: "Through mentoring — sharing your battle-won wisdom with those who haven't fought yet. Healing comes when your experience becomes someone else's map.",
+      inTheBody: "The muscles (honed, not just strong), the cardiovascular system (sustained effort rather than bursts). Your body is refining its fire into endurance.",
+      sacredPurpose: "To prove that courage can be sustainable — that the refined warrior serves longer and better than the reckless one.",
+      shadowExpression: "When unconscious, the Adventurer becomes the thrill-seeker who needs escalating risks to feel alive, or the one who mistakes calculated risk for cowardice.",
+      affirmation: "My courage has grown wise. Strategic bravery is still brave."
     },
     Taurus: {
       name: "Farmer's Moon",
       essence: "Perfecting abundance — the patient cultivator who tends crops with devotion.",
-      description: "The Farmer's Moon is the gardener who has graduated to full cultivation — managing an entire farm, understanding seasons and cycles, working in harmony with nature's rhythms. You've moved beyond planting seeds into the full art of sustainable abundance. Every skill you've developed, every lesson you've learned about patience and timing and care, now comes together in the creation of something that can FEED others. This is service through abundance — generosity rooted in competence.",
+      description: "The Farmer's Moon is the gardener who has graduated to full cultivation — managing an entire farm, understanding seasons and cycles, working in harmony with nature's rhythms. You've moved beyond planting seeds into the full art of sustainable abundance. Every skill you've developed now comes together in the creation of something that can FEED others.",
       gifts: ["Sustainable abundance", "Deep practical wisdom", "Ability to feed and nourish many", "Harmony with natural cycles"],
       challenges: ["Can become overly attached to the farm", "Difficulty with innovation", "May resist change even when soil is depleted", "Risk of becoming conservative"],
       soulLesson: "Learning that the greatest harvest is the one you share — that abundance hoarded is abundance wasted.",
-      inRelationships: "You create a life of deep comfort and material security. Your love is nourishing and reliable. Your challenge is being open to new ways of growing alongside your partner."
+      inRelationships: "You create a life of deep comfort and material security. Your love is nourishing and reliable. Your challenge is being open to new ways of growing.",
+      coreWound: "The wound of the depleted field — the fear that your resources (emotional, material, energetic) will run out if you share too generously.",
+      healingPath: "Through generous giving without expectation of return. Healing comes when you discover that sharing multiplies rather than depletes.",
+      inTheBody: "The throat (Taurus), the stomach, the body's metabolic system. You process nourishment with exquisite efficiency — but may hold onto weight (physical and emotional) as insurance against scarcity.",
+      sacredPurpose: "To feed the collective — not just physically but with the nourishing truth that patient work produces the most abundant harvest.",
+      shadowExpression: "When unconscious, the Farmer becomes the miser who hoards abundance, or the one who clings to outdated methods because 'this is how we've always done it.'",
+      affirmation: "My abundance grows when shared. The harvest feeds everyone."
     },
     Gemini: {
       name: "Mercenary's Moon",
       essence: "Honing the mind's edge — intelligence applied with precision and purpose.",
-      description: "The Mercenary's Moon has refined Gemini's scattered brilliance into a focused instrument. You've learned to apply your intelligence with precision and purpose — not just knowing things, but knowing HOW and WHEN to deploy what you know. This isn't mercenary in the negative sense; it's the professional who has honed their skills to the point where those skills have genuine value. You think clearly, communicate effectively, and solve problems others can't even define. The refinement here is in moving from cleverness to wisdom.",
-      gifts: ["Precision of mind", "Ability to apply knowledge effectively", "Strategic communication", "Professional expertise in communication"],
+      description: "The Mercenary's Moon has refined Gemini's scattered brilliance into a focused instrument. You've learned to apply your intelligence with precision and purpose — not just knowing things, but knowing HOW and WHEN to deploy what you know. This isn't mercenary in the negative sense; it's the professional who has honed their skills to the point where those skills have genuine value.",
+      gifts: ["Precision of mind", "Ability to apply knowledge effectively", "Strategic communication", "Professional expertise"],
       challenges: ["Can become calculating", "May lose playfulness in pursuit of precision", "Difficulty with emotional imprecision", "Risk of using people as puzzles to solve"],
       soulLesson: "Learning that the sharpest mind is one tempered by heart — that wisdom includes things that can't be analyzed.",
-      inRelationships: "You are the partner who understands dynamics, communicates clearly, and solves problems efficiently. Your challenge is remembering that love isn't a problem to be solved — it's a mystery to be lived."
+      inRelationships: "You are the partner who understands dynamics, communicates clearly, and solves problems efficiently. Your challenge is remembering that love isn't a problem to be solved.",
+      coreWound: "The wound of unused potential — the sense that all your intelligence doesn't matter unless it's applied to something that makes a difference.",
+      healingPath: "Through using your refined skills in service of something you genuinely care about — not for hire but from the heart.",
+      inTheBody: "The hands (now skilled instruments), the respiratory system (measured rather than anxious breathing). Your body has refined its nervous energy into precision.",
+      sacredPurpose: "To demonstrate that intellect in service of purpose is one of humanity's greatest tools — that a trained mind can heal the world.",
+      shadowExpression: "When unconscious, the Mercenary sells their skills to the highest bidder regardless of ethics, or uses intelligence to manipulate rather than illuminate.",
+      affirmation: "My mind serves my heart. Precision without compassion is empty."
     },
     Cancer: {
       name: "Life-Giver's Moon",
       essence: "Perfecting the art of nurture — creating life and sustaining it with devotion.",
-      description: "The Life-Giver's Moon has refined nurturing into a true art form. You don't just care for others — you CREATE environments where life can flourish. This might manifest as parenthood, but it's bigger than that: you are the one who makes the garden grow, who makes the community thrive, who makes the organization hum with life. Your nurturing is no longer instinctive — it's SKILLED, refined through experience, and enormously effective. You know exactly what each person needs and how to provide it without depleting yourself.",
+      description: "The Life-Giver's Moon has refined nurturing into a true art form. You don't just care for others — you CREATE environments where life can flourish. Your nurturing is no longer instinctive — it's SKILLED, refined through experience, and enormously effective. You know exactly what each person needs.",
       gifts: ["Skilled nurturing", "Creating life-giving environments", "Emotional wisdom from experience", "Sustainable caregiving"],
       challenges: ["Can over-identify with the caregiver role", "Difficulty letting others nurture themselves", "May define self entirely through service", "Risk of burnout despite skill"],
       soulLesson: "Learning that the greatest life you can give is your OWN — that self-care is the foundation of all other care.",
-      inRelationships: "You create a thriving, life-affirming home. Your partner and family flourish under your care. Your challenge is allowing yourself to be cared for — stepping out of the giver role long enough to receive."
+      inRelationships: "You create a thriving, life-affirming home. Your partner and family flourish under your care. Your challenge is allowing yourself to be cared for.",
+      coreWound: "The wound of being needed — you may have learned that your value lies in being indispensable, and the thought of people not needing you feels like death.",
+      healingPath: "Through stepping back and watching life flourish without your intervention. Healing comes when you see that what you've nurtured can survive on its own.",
+      inTheBody: "The breasts, the womb (regardless of gender — the creative center), the stomach. Your body is designed for nurturing and may suffer when that function is denied or exhausted.",
+      sacredPurpose: "To show the collective what conscious, sustainable nurturing looks like — not the depleting martyr kind, but the kind that fills as it gives.",
+      shadowExpression: "When unconscious, the Life-Giver becomes the helicopter parent, the smothering partner, or the one who can't let go because their identity IS the caretaking.",
+      affirmation: "I give life — including to myself. My nurturing sustains me too."
     },
     Leo: {
       name: "Singer's Moon",
       essence: "Refining self-expression — the voice that has learned to move hearts.",
-      description: "The Singer's Moon has moved beyond performing for applause to expressing something ESSENTIAL. Your voice — whether literal or metaphorical — has been refined by experience until it carries real emotional weight. You no longer sing to be heard; you sing because the song MUST be sung. This is creative self-expression at its most refined: authentic, polished, and deeply moving. The Singer's Moon has found the place where personal truth and universal truth overlap, and sings from that sacred intersection.",
+      description: "The Singer's Moon has moved beyond performing for applause to expressing something ESSENTIAL. Your voice — whether literal or metaphorical — has been refined by experience until it carries real emotional weight. You no longer sing to be heard; you sing because the song MUST be sung.",
       gifts: ["Authentic self-expression", "Ability to move others emotionally", "Creative confidence earned through practice", "Voice that carries truth"],
       challenges: ["Perfectionism about the craft", "Can lose spontaneity in refinement", "May compare self to other 'singers'", "Fear that refining means losing authenticity"],
       soulLesson: "Learning that the most beautiful song is the one only you can sing — that your unique voice IS your gift to the world.",
-      inRelationships: "You bring beauty, romance, and genuine emotional expression. Your love is a song that makes your partner feel truly seen. Your challenge is listening to THEIR song with the same reverence."
+      inRelationships: "You bring beauty, romance, and genuine emotional expression. Your love is a song. Your challenge is listening to THEIR song with the same reverence.",
+      coreWound: "The wound of the unreceived song — you've poured your heart into your expression only to have it ignored or misunderstood.",
+      healingPath: "Through singing for yourself — creating without an audience. Healing comes when the act of expression becomes its own reward.",
+      inTheBody: "The heart, the throat (the literal voice), the upper back. Your body is a resonating chamber — tension anywhere affects the quality of your 'song.'",
+      sacredPurpose: "To remind the collective that authentic self-expression is not vanity but NECESSITY — that each person's unique voice is needed in the chorus.",
+      shadowExpression: "When unconscious, the Singer becomes the perfectionist who never releases their work, or the one who silences themselves because the world doesn't deserve their art.",
+      affirmation: "My voice is needed. My song changes the air it moves through."
     },
     Virgo: {
       name: "Housewife's Moon",
       essence: "Sacred service perfected — finding divinity in the humble routines of care.",
-      description: "The Housewife's Moon (regardless of gender) has discovered something that our culture has forgotten: that maintaining a home, a body, a garden, a community is SACRED work. You've refined the art of daily care to the point where it becomes a spiritual practice. Every meal prepared with love, every room cleaned with intention, every routine maintained with devotion — these are not lesser tasks. They are the foundation upon which all great work rests. You've found God in the details.",
+      description: "The Housewife's Moon (regardless of gender) has discovered something our culture has forgotten: that maintaining a home, a body, a garden, a community is SACRED work. You've refined the art of daily care to the point where it becomes a spiritual practice. Every meal prepared with love, every room cleaned with intention — these are not lesser tasks.",
       gifts: ["Sacred daily practice", "Mastery of practical care", "Creating order from chaos", "Finding meaning in humble work"],
       challenges: ["May be undervalued by a culture that prizes flashiness", "Difficulty claiming the significance of your work", "Can become lost in routine", "Risk of martyrdom through service"],
       soulLesson: "Learning that your work IS worship — and that you deserve to be seen, honored, and appreciated for it.",
-      inRelationships: "You create a home that is a sanctuary. Your love shows in a thousand small, daily acts. Your challenge is insisting on being seen and valued for this sacred labor, not taking it for granted."
+      inRelationships: "You create a home that is a sanctuary. Your love shows in a thousand small, daily acts. Your challenge is insisting on being seen and valued for this sacred labor.",
+      coreWound: "The wound of invisible labor — the sense that your constant, quiet care goes unnoticed and unappreciated. You serve beautifully, but no one sees the devotion in the details.",
+      healingPath: "Through claiming the sacredness of your work OUT LOUD — naming it, honoring it, demanding that others honor it too. Healing comes when you stop being the invisible engine.",
+      inTheBody: "The hands (worn from work), the lower back (from bending to serve), the digestive system (processing for everyone). Your body is the temple you tend most faithfully.",
+      sacredPurpose: "To reclaim the holiness of domestic labor — to prove that the most sacred work happens not in cathedrals but in kitchens.",
+      shadowExpression: "When unconscious, the Housewife becomes the passive-aggressive server who martyrs themselves and then resents it, or the one who uses service as a way to control the household.",
+      affirmation: "My work is holy. The humble task done with love IS the prayer."
     },
     Libra: {
       name: "Lover's Moon",
       essence: "Perfecting relationship — the art of giving and receiving love in balance.",
-      description: "The Lover's Moon is Libra at its most refined — the soul that has learned through experience how to love and BE loved in equal measure. You've moved beyond the fantasy of perfect relationship into the reality of genuine partnership: two whole people choosing to share their lives. This Moon knows that love is a SKILL, not just a feeling — that it requires practice, patience, adjustment, and a willingness to grow. You've perfected the art of meeting someone exactly where they are.",
+      description: "The Lover's Moon is Libra at its most refined — the soul that has learned through experience how to love and BE loved in equal measure. You've moved beyond the fantasy of perfect relationship into the reality of genuine partnership: two whole people choosing to share their lives. This Moon knows that love is a SKILL, not just a feeling.",
       gifts: ["Mastery of partnership dynamics", "Ability to balance giving and receiving", "Deep relational intelligence", "Creating harmony without sacrificing truth"],
       challenges: ["Can over-analyze relationships", "May seek the 'perfect' partner endlessly", "Difficulty with being alone", "Risk of defining self through relationships"],
       soulLesson: "Learning that the most perfect relationship begins with the one you have with yourself.",
-      inRelationships: "You are the ideal partner — attentive, balanced, emotionally intelligent. Your challenge is allowing the relationship to be messy and imperfect sometimes, knowing that's where the real growth happens."
+      inRelationships: "You are the ideal partner — attentive, balanced, emotionally intelligent. Your challenge is allowing the relationship to be messy and imperfect sometimes.",
+      coreWound: "The wound of the unreciprocated — you give love with exquisite skill but may not trust that the same quality of love is coming back. You may over-function in relationships to ensure they work.",
+      healingPath: "Through receiving without giving back immediately — learning to sit in the discomfort of being loved without needing to earn it. Healing comes when you let love be a gift, not a transaction.",
+      inTheBody: "The lower back, the kidneys, the skin. Your body responds to relational harmony or disharmony almost immediately — stress manifests as skin issues, kidney tension, or lower back pain.",
+      sacredPurpose: "To model healthy, balanced partnership for the collective — showing that love is not just passion but daily practice, not just feeling but SKILL.",
+      shadowExpression: "When unconscious, the Lover becomes the relationship addict who can't exist outside of partnership, or the one who gives love as currency to purchase safety.",
+      affirmation: "I am complete alone. Partnership is a choice, not a need."
     },
     Scorpio: {
       name: "Cloaked One's Moon",
       essence: "Refining power — the adept who has learned to wield intensity wisely.",
-      description: "The Cloaked One's Moon is Scorpio mastered — the soul that has learned to wield emotional intensity as a precision instrument rather than a blunt weapon. You've been through the fire enough times to know how to use it without being consumed. Your power is no longer something that frightens you or others; it's a refined, controlled force that you can apply with surgical precision. The cloak is not deception — it's DISCRETION. You've learned that power shared wisely is power multiplied.",
+      description: "The Cloaked One's Moon is Scorpio mastered — the soul that has learned to wield emotional intensity as a precision instrument rather than a blunt weapon. Your power is no longer something that frightens you or others; it's a refined, controlled force that you can apply with surgical precision. The cloak is not deception — it's DISCRETION.",
       gifts: ["Controlled intensity", "Emotional precision", "Deep psychological insight used wisely", "Ability to transform situations with minimal force"],
       challenges: ["Can become too controlling", "Difficulty letting go of hard-won power", "May become secretive out of habit", "Risk of manipulation through subtlety"],
       soulLesson: "Learning that the greatest power is the power you choose NOT to use — that restraint is the mark of true mastery.",
-      inRelationships: "You bring depth, wisdom, and transformative insight. You see your partner more clearly than they see themselves. Your challenge is using that vision to empower, not to control."
+      inRelationships: "You bring depth, wisdom, and transformative insight. You see your partner more clearly than they see themselves. Your challenge is using that vision to empower, not to control.",
+      coreWound: "The wound of misused power — you may have experienced power being used against you, or used your own power destructively. Now you must learn to trust yourself with the intensity you carry.",
+      healingPath: "Through sacred use of power — directing your transformative energy toward healing rather than control. Healing comes when power becomes service.",
+      inTheBody: "The reproductive system, the endocrine system (hormonal power), the eyes (piercing gaze). Your body carries magnetic intensity that others can literally feel.",
+      sacredPurpose: "To demonstrate that power can be wielded wisely — that intensity controlled is more transformative than intensity unleashed.",
+      shadowExpression: "When unconscious, the Cloaked One becomes the puppet master, the emotionally controlling partner, or the one who withholds truth as a form of power.",
+      affirmation: "My power serves transformation. I choose when to reveal and when to cloak."
     },
     Sagittarius: {
       name: "Scholar's Moon",
       essence: "Perfecting understanding — the seeker who organizes wisdom into teaching.",
-      description: "The Scholar's Moon has moved from seeking to SYNTHESIZING. You've traveled far enough, read enough, experienced enough to begin organizing what you've learned into teachable wisdom. This isn't dry academia — it's LIVED knowledge, wisdom earned through experience and refined through reflection. You are the seeker who has found enough to begin sharing, the student who is becoming the teacher. Your gift is making the complex accessible without dumbing it down.",
+      description: "The Scholar's Moon has moved from seeking to SYNTHESIZING. You've traveled far enough, read enough, experienced enough to begin organizing what you've learned into teachable wisdom. This isn't dry academia — it's LIVED knowledge, wisdom earned through experience and refined through reflection.",
       gifts: ["Synthesis of diverse knowledge", "Ability to teach from experience", "Philosophical depth made accessible", "Bridge between theory and practice"],
       challenges: ["Can become overly systematic", "May lose the spark of adventure in analysis", "Difficulty with subjects that resist categorization", "Risk of becoming dogmatic"],
       soulLesson: "Learning that the greatest teacher is the one who keeps learning — that wisdom includes knowing how much you don't know.",
-      inRelationships: "You bring growth, perspective, and stimulating conversation. You see the big picture of the relationship. Your challenge is not always being the teacher — sometimes just being the student of your partner's wisdom."
+      inRelationships: "You bring growth, perspective, and stimulating conversation. Your challenge is not always being the teacher — sometimes just being the student of your partner's wisdom.",
+      coreWound: "The wound of unexpressed wisdom — you've gathered so much knowledge but fear it's not organized enough, not complete enough to share. The scholar who never publishes.",
+      healingPath: "Through teaching imperfectly — sharing what you know before it's polished. Healing comes when you release the need for your wisdom to be finished before it's useful.",
+      inTheBody: "The liver (processing the intake of experience), the hips (carrying philosophical weight), the vision (literal and metaphorical far-sightedness).",
+      sacredPurpose: "To translate experience into accessible wisdom — to be the bridge between the adventurer's raw stories and the student's structured understanding.",
+      shadowExpression: "When unconscious, the Scholar becomes the academic who uses knowledge as a wall, or the teacher who can't stop lecturing long enough to listen.",
+      affirmation: "My wisdom is ready to be shared. Imperfect teaching is still teaching."
     },
     Capricorn: {
       name: "Smith's Moon",
       essence: "Mastering the craft — forging raw material into something enduring and useful.",
-      description: "The Smith's Moon is the master craftsperson — the soul that has refined its skills to the point where raw material becomes art. Like a blacksmith at the forge, you understand that beautiful things are made through heat, pressure, and patient hammering. You don't rush the process because you know that the finest blades are tempered slowly. Your work has reached a level where it speaks for itself — no marketing needed, no fanfare required. The quality IS the statement.",
+      description: "The Smith's Moon is the master craftsperson — the soul that has refined its skills to the point where raw material becomes art. Like a blacksmith at the forge, you understand that beautiful things are made through heat, pressure, and patient hammering. Your work has reached a level where it speaks for itself.",
       gifts: ["Master craftsmanship", "Ability to create lasting value", "Patient, skilled transformation", "Quality that speaks for itself"],
       challenges: ["Perfectionism that delays completion", "Can undervalue work that isn't 'perfect'", "Difficulty with delegation", "May sacrifice timeliness for quality"],
       soulLesson: "Learning that the masterpiece is the MAKING, not the made — that the joy is in the forge, not just the finished blade.",
-      inRelationships: "You build a relationship of extraordinary quality and durability. Your love improves with time. Your challenge is remembering that a relationship is a living thing, not a finished product."
+      inRelationships: "You build a relationship of extraordinary quality and durability. Your love improves with time. Your challenge is remembering that a relationship is a living thing, not a finished product.",
+      coreWound: "The wound of the unfinished masterpiece — the fear that your work will never reach the standard you hold for it. The forge is always hot, the blade never sharp enough.",
+      healingPath: "Through releasing work before it's 'perfect.' Healing comes when you discover that the work serves its purpose even with imperfections.",
+      inTheBody: "The joints and bones (structure under pressure), the teeth (grinding), the hands (skilled but tired). Your body carries the weight of craftsmanship in its very structure.",
+      sacredPurpose: "To demonstrate that mastery is devotion — that the highest form of love is the care put into work that will outlast you.",
+      shadowExpression: "When unconscious, the Smith becomes the perfectionist who never finishes, or the taskmaster who holds everyone to impossible standards.",
+      affirmation: "My craft is my devotion. The blade is sharp enough. I can lay down the hammer."
     },
     Aquarius: {
       name: "Trickster's Moon",
       essence: "Refining genius — the innovator who perfects the art of disruption.",
-      description: "The Trickster's Moon is the genius who has learned to package revolutionary ideas in forms the world can actually USE. You've moved beyond mere rebellion into creative disruption — not just breaking things, but breaking them OPEN to reveal new possibilities. Like Prometheus stealing fire from the gods, you bring forbidden knowledge to the people, but now you've learned to deliver it in ways that don't get you chained to a rock. Your genius is refined enough to be effective.",
+      description: "The Trickster's Moon is the genius who has learned to package revolutionary ideas in forms the world can actually USE. You've moved beyond mere rebellion into creative disruption — not just breaking things, but breaking them OPEN to reveal new possibilities.",
       gifts: ["Creative disruption", "Packaging innovation for mass adoption", "Strategic subversion", "Ability to change systems from within"],
-      challenges: ["Can become manipulative with genius", "May lose sight of human impact in pursuit of change", "Difficulty with emotional consequences of disruption", "Risk of becoming the system you're disrupting"],
+      challenges: ["Can become manipulative with genius", "May lose sight of human impact", "Difficulty with emotional consequences of disruption", "Risk of becoming the system you're disrupting"],
       soulLesson: "Learning that the best trick is the one that benefits everyone — that genius in service of ego is just cleverness.",
-      inRelationships: "You bring excitement, innovation, and refusal to let things stagnate. Your challenge is being stable enough for your partner to feel safe, even while you're reinventing everything else."
+      inRelationships: "You bring excitement, innovation, and refusal to let things stagnate. Your challenge is being stable enough for your partner to feel safe.",
+      coreWound: "The wound of unappreciated genius — your innovations may have been stolen, ignored, or arrived before the world was ready. Now you disguise your gifts in trickster form.",
+      healingPath: "Through collaboration — joining your genius with others' skills. Healing comes when you discover that the greatest innovations are co-created.",
+      inTheBody: "The nervous system (electrically charged), the ankles and calves (built for sudden movement), the circulatory system (ideas flowing like blood).",
+      sacredPurpose: "To smuggle transformation into the mainstream — using humor, surprise, and subversion to bypass the collective's resistance to change.",
+      shadowExpression: "When unconscious, the Trickster becomes the con artist, the one who uses ingenuity to take advantage of others, or the prankster who disrupts without purpose.",
+      affirmation: "My genius serves the whole. The best trick heals what it disrupts."
     },
     Pisces: {
       name: "Poet's Moon",
       essence: "Perfecting vision — translating the ineffable into words that touch the soul.",
-      description: "The Poet's Moon has refined Pisces' formless sensitivity into an art form. You've learned to take the vast, wordless ocean of feeling and spiritual awareness and give it FORM — through words, through images, through music, through whatever medium becomes the vessel for the unspeakable. This isn't just artistic talent; it's a sacred gift of translation. You make the invisible visible, the unspoken spoken, the felt understood. The world needs your poetry more than it knows.",
+      description: "The Poet's Moon has refined Pisces' formless sensitivity into an art form. You've learned to take the vast, wordless ocean of feeling and spiritual awareness and give it FORM — through words, through images, through whatever medium becomes the vessel for the unspeakable.",
       gifts: ["Translating the ineffable into art", "Emotional precision in expression", "Spiritual vision given form", "Touching others' souls through creative work"],
       challenges: ["Perfectionism about the art", "Difficulty with the gap between vision and execution", "Can become lost in the creative process", "May sacrifice worldly needs for artistic pursuit"],
       soulLesson: "Learning that the poem doesn't have to be perfect to be TRUE — that your imperfect expression still carries the divine.",
-      inRelationships: "You bring poetry, beauty, and soulful depth to your relationship. You see and express what others can't. Your challenge is being as present in the practical world as you are in the poetic one."
+      inRelationships: "You bring poetry, beauty, and soulful depth. You see and express what others can't. Your challenge is being as present in the practical world as you are in the poetic one.",
+      coreWound: "The wound of the inexpressible — the anguish of carrying vast inner worlds that language can never fully capture. Your suffering is the gap between vision and form.",
+      healingPath: "Through accepting the gap — knowing that every poem is an approximation of the infinite, and that's enough. Healing comes when you release perfection and embrace the attempt.",
+      inTheBody: "The feet (connection to earth), the pineal gland (vision), the lymphatic system (carrying what can't be spoken). Your body may be highly sensitive to substances and environments.",
+      sacredPurpose: "To give the collective a voice for what it feels but cannot say — to be the translator between the unseen and the spoken.",
+      shadowExpression: "When unconscious, the Poet becomes the tortured artist who romanticizes suffering, or the dreamer who produces nothing while drowning in vision.",
+      affirmation: "My imperfect expression carries divine truth. I release the poem into the world."
     },
   },
 
@@ -481,110 +783,182 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
     Aries: {
       name: "Warrior's Moon",
       essence: "Courage fully illuminated — the battle is won or lost, but the warrior stands revealed.",
-      description: "The Warrior's Moon is courage at full power — the soul that has been tested in battle and stands fully revealed in the light of the Full Moon. There are no more hiding places. Everyone can see who you are: your strength, your scars, your victories, and your defeats. The Full Moon demands total visibility, and the Warrior meets that demand with unflinching honesty. This is the archetype of the person who has earned their courage through action, not theory. You are the living proof that bravery is not the absence of fear but the willingness to act despite it.",
+      description: "The Warrior's Moon is courage at full power — the soul that has been tested in battle and stands fully revealed in the light of the Full Moon. There are no more hiding places. Everyone can see who you are: your strength, your scars, your victories, and your defeats. This is the archetype of the person who has earned their courage through action, not theory.",
       gifts: ["Tested courage", "Complete authenticity", "Ability to lead in crisis", "Inspiring others through visible bravery"],
       challenges: ["Difficulty with peace and quiet", "May seek conflict for identity", "Can be exhausted by constant visibility", "Struggle with vulnerability"],
       soulLesson: "Learning that the warrior's greatest victory is the one that leads to peace — that strength includes the power to lay down the sword.",
-      inRelationships: "You are fierce, loyal, and completely honest. Your partner always knows where they stand. Your challenge is allowing softness — learning that a warrior's arms can hold as well as fight."
+      inRelationships: "You are fierce, loyal, and completely honest. Your partner always knows where they stand. Your challenge is allowing softness.",
+      coreWound: "The wound of exposure — the Full Moon leaves no shadow to hide in. Every scar, every fear, every weakness is visible. You've been seen at your worst and must make peace with that.",
+      healingPath: "Through vulnerability as strength. Letting yourself be seen in weakness, not just strength. Healing comes when you discover that softness is the warrior's final frontier.",
+      inTheBody: "The muscles, the adrenals, the head. Your body is battle-ready at all times — the challenge is teaching it to stand down. Chronic tension, headaches, or burnout from perpetual readiness.",
+      sacredPurpose: "To embody courage in its fullest, most visible form — showing the collective that real bravery includes the willingness to be completely seen.",
+      shadowExpression: "When unconscious, the Warrior's Moon becomes the aggressor who picks fights for stimulation, or the burned-out soldier who can't stop fighting even in peacetime.",
+      affirmation: "I am seen in my fullness — strength AND softness. Both are brave."
     },
     Taurus: {
       name: "Earth Mother's Moon",
       essence: "Abundance made manifest — the harvest is in, the table is set, the body is honored.",
-      description: "The Earth Mother's Moon is abundance in its fullest expression — the soul that has cultivated, tended, and now HARVESTS. The table is set, the house is warm, the pantry is full. You embody the generosity of the earth itself: endlessly giving, endlessly nourishing, endlessly patient. This isn't passive abundance; it's the result of lifetimes of careful cultivation. You know what it costs to bring food to the table because you've done every step of the work. Your gift is making abundance look effortless when it's anything but.",
+      description: "The Earth Mother's Moon is abundance in its fullest expression — the soul that has cultivated, tended, and now HARVESTS. The table is set, the house is warm, the pantry is full. You embody the generosity of the earth itself: endlessly giving, endlessly nourishing, endlessly patient.",
       gifts: ["Generous abundance", "Embodied wisdom", "Creating nourishing environments", "Making the practical beautiful"],
       challenges: ["Over-identification with the provider role", "Difficulty receiving", "Can equate love with material provision", "May resist change that threatens stability"],
       soulLesson: "Learning that the greatest abundance is an open hand — that clinging to what you've grown prevents new seeds from taking root.",
-      inRelationships: "You create a life of sensual abundance. Your home is a haven, your table is full, your arms are always open. Your challenge is receiving love as generously as you give it."
+      inRelationships: "You create a life of sensual abundance. Your home is a haven, your table is full, your arms are always open. Your challenge is receiving love as generously as you give it.",
+      coreWound: "The wound of depletion — the fear that giving so generously will eventually leave you empty. The Earth Mother gives and gives and wonders who feeds her.",
+      healingPath: "Through receiving from the earth itself — lying on the ground, gardening without gloves, walking barefoot. Healing comes when you remember that you are not the SOURCE of abundance but a CHANNEL for it.",
+      inTheBody: "The throat, the reproductive system, the entire torso. Your body IS the earth — fertile, strong, designed for nurturing. Honor it with the same care you give everything else.",
+      sacredPurpose: "To embody the abundance of the natural world — showing the collective that there IS enough, that generosity creates more than hoarding.",
+      shadowExpression: "When unconscious, the Earth Mother becomes the possessive matriarch who uses provision as control, or the depleted giver who resents everyone she feeds.",
+      affirmation: "The earth feeds me as I feed others. Receiving IS giving."
     },
     Gemini: {
       name: "Storyteller's Moon",
       essence: "Communication at its peak — the tale is told, the audience is rapt, the truth is spoken.",
-      description: "The Storyteller's Moon is Gemini at full power — the voice that can hold a room spellbound. You don't just communicate; you WEAVE reality through language. Stories, in your hands, become medicine — they heal, they teach, they transform. The Full Moon illuminates the Storyteller's deepest gift: the ability to make the invisible visible through narrative. You understand that stories are how humans make meaning, and you wield that understanding with the skill of a master craftsperson.",
+      description: "The Storyteller's Moon is Gemini at full power — the voice that can hold a room spellbound. You don't just communicate; you WEAVE reality through language. Stories, in your hands, become medicine — they heal, they teach, they transform.",
       gifts: ["Master narrative ability", "Healing through story", "Making meaning through language", "Holding attention and creating understanding"],
       challenges: ["Can become addicted to the story's power", "Difficulty with silence", "May embellish truth for dramatic effect", "Risk of living in narrative rather than reality"],
       soulLesson: "Learning that the most powerful story is the one you live, not the one you tell — that your LIFE is your greatest narrative.",
-      inRelationships: "You bring conversation, humor, and the ability to narrate your shared story beautifully. Your challenge is listening as masterfully as you speak."
+      inRelationships: "You bring conversation, humor, and the ability to narrate your shared story beautifully. Your challenge is listening as masterfully as you speak.",
+      coreWound: "The wound of the untold story — the feeling that your most important truth has never been fully heard or understood.",
+      healingPath: "Through deep listening — becoming the audience as powerfully as you are the performer. Healing comes when you discover that being heard begins with hearing others.",
+      inTheBody: "The lungs, the hands, the vocal cords. Your body is a communication instrument — tune it through breathwork, singing, or physical storytelling like dance.",
+      sacredPurpose: "To weave the stories that hold the collective together — to narrate meaning into existence.",
+      shadowExpression: "When unconscious, the Storyteller becomes the liar who believes their own fiction, or the one who talks so much they never listen.",
+      affirmation: "My stories carry truth. My silence carries wisdom."
     },
     Cancer: {
       name: "Sea Mother's Moon",
       essence: "Emotional fullness — the great tidal wave of feeling that nourishes all it touches.",
-      description: "The Sea Mother's Moon is Cancer at its most expansive — the emotional ocean at high tide, nourishing everything it touches. You feel with the full force of the moon's pull, and your emotions are not small, private things — they are tidal, collective, archetypal. When you weep, you weep for the world. When you love, your love is big enough to hold everyone in it. This isn't emotional incontinence; it's emotional SOVEREIGNTY — the soul that has become so comfortable with the full range of human feeling that nothing can overwhelm it anymore.",
+      description: "The Sea Mother's Moon is Cancer at its most expansive — the emotional ocean at high tide, nourishing everything it touches. You feel with the full force of the moon's pull, and your emotions are not small, private things — they are tidal, collective, archetypal.",
       gifts: ["Vast emotional capacity", "Ability to hold space for collective feeling", "Nurturing wisdom earned through experience", "Emotional sovereignty"],
       challenges: ["Can overwhelm others with emotional intensity", "Difficulty with boundaries at this scale", "May absorb collective grief", "Risk of emotional exhaustion"],
       soulLesson: "Learning that the ocean doesn't need to hold every drop — that even the Sea Mother must let some tides go out.",
-      inRelationships: "You love with oceanic depth and power. Your partner is held in something vast and warm. Your challenge is not flooding them — giving them space to swim on their own."
+      inRelationships: "You love with oceanic depth and power. Your partner is held in something vast and warm. Your challenge is not flooding them — giving them space to swim on their own.",
+      coreWound: "The wound of the endlessly giving ocean — you nourish everything but who nourishes you? The sea gives rain but no one waters the sea.",
+      healingPath: "Through boundaries that feel like shorelines — defining where your ocean ends and another's begins. Healing comes when you realize that healthy boundaries make your love MORE powerful, not less.",
+      inTheBody: "The breasts, the womb, the fluids of the body. You are literally tidal — your moods, your energy, your physical symptoms may follow lunar cycles.",
+      sacredPurpose: "To hold the emotional truth of the collective — to be the great ocean of feeling that the world needs but fears.",
+      shadowExpression: "When unconscious, the Sea Mother becomes the emotional flood — overwhelming, drowning, unable to contain her own tides.",
+      affirmation: "My ocean has shores. Boundaries make my love deeper, not smaller."
     },
     Leo: {
       name: "Queen's Moon",
       essence: "Royal power fulfilled — the sovereign who has earned her throne through authentic self-expression.",
-      description: "The Queen's Moon is Leo at its crowning moment — the soul that has earned its authority through genuine, tested self-expression. This isn't inherited power; it's power EARNED through the courage to be completely, vulnerably, authentically yourself in front of the world. The Queen doesn't need to prove anything — her presence IS the proof. She rules not through force but through the magnetic attraction of a fully embodied human being. People follow not because they're commanded to, but because they're INSPIRED to.",
+      description: "The Queen's Moon is Leo at its crowning moment — the soul that has earned its authority through genuine, tested self-expression. This isn't inherited power; it's power EARNED through the courage to be completely, vulnerably, authentically yourself in front of the world.",
       gifts: ["Natural authority earned through authenticity", "Magnetic presence", "Inspiring leadership", "Grace under the spotlight"],
       challenges: ["The loneliness of leadership", "Difficulty showing weakness", "May be surrounded by courtiers rather than friends", "Burden of always being 'on'"],
       soulLesson: "Learning that the crown is heaviest when worn for others' approval — that true sovereignty means ruling yourself first.",
-      inRelationships: "You bring regal generosity, loyalty, and the ability to make your partner feel like royalty. Your challenge is sharing the throne — letting your partner be equally powerful."
+      inRelationships: "You bring regal generosity, loyalty, and the ability to make your partner feel like royalty. Your challenge is sharing the throne.",
+      coreWound: "The wound of lonely sovereignty — the crown isolates. You may feel that showing vulnerability would destroy the very thing that holds the kingdom together.",
+      healingPath: "Through letting the mask of royalty slip — being ridiculous, being weak, being unsovereign. Healing comes when you discover that the kingdom doesn't collapse when the queen cries.",
+      inTheBody: "The heart (Leo's domain), the spine (standing tall), the circulatory system. Your body demands generous living — restriction of joy may manifest as heart or back issues.",
+      sacredPurpose: "To model authentic power — proving that the most magnetic authority comes from being fully, vulnerably yourself.",
+      shadowExpression: "When unconscious, the Queen becomes the tyrant who confuses authority with control, or the diva who demands worship instead of earning respect.",
+      affirmation: "My power is authentic. I rule by being myself, not by performing royalty."
     },
     Virgo: {
       name: "Spinner's Moon",
       essence: "Service perfected — the sacred thread that connects heaven and earth through humble work.",
-      description: "The Spinner's Moon is Virgo at its most sacred — the soul whose humble, daily work has become a thread connecting heaven and earth. Like the Spinner at her wheel, you create something continuous and strong from raw fiber — transforming the chaotic threads of daily life into fabric that can shelter, clothe, and warm. This is service elevated to art, work elevated to prayer. The Spinner understands that every thread matters, that the fabric of life depends on each humble contribution.",
+      description: "The Spinner's Moon is Virgo at its most sacred — the soul whose humble, daily work has become a thread connecting heaven and earth. Like the Spinner at her wheel, you create something continuous and strong from raw fiber — transforming the chaotic threads of daily life into fabric that can shelter and warm.",
       gifts: ["Transforming humble work into sacred practice", "Creating continuity and connection", "Finding meaning in daily routine", "Serving the whole through tending the parts"],
       challenges: ["Can become invisible in service", "Difficulty stopping the spinning", "May lose self in the work", "Risk of devaluing your contribution"],
       soulLesson: "Learning that the Spinner's thread is her own life — that the fabric you create tells YOUR story as much as anyone else's.",
-      inRelationships: "You weave the relationship together through a thousand daily acts of care. Your challenge is stepping back from the loom long enough to SEE the beautiful fabric you've created."
+      inRelationships: "You weave the relationship together through a thousand daily acts of care. Your challenge is stepping back from the loom long enough to SEE the beautiful fabric you've created.",
+      coreWound: "The wound of the invisible thread — your contribution is so woven into the fabric of daily life that no one sees it as separate, as worthy, as sacred.",
+      healingPath: "Through making your work visible — naming it, framing it, insisting on its recognition. Healing comes when you claim the beauty of what you've woven.",
+      inTheBody: "The hands (spinning), the digestive system (processing), the nervous system (the fine motor skills of precision work). Your body is a precision instrument — honor it with precise care.",
+      sacredPurpose: "To demonstrate that the fabric of civilization is woven from humble daily acts — that the spinner's thread IS the sacred connection.",
+      shadowExpression: "When unconscious, the Spinner becomes the martyr lost in the loom, the one whose life is consumed by service that no one asked for.",
+      affirmation: "My thread is visible. My daily work IS the sacred fabric."
     },
     Libra: {
       name: "Artist's Moon",
       essence: "Beauty fully expressed — the masterwork revealed, the balance achieved, the aesthetic complete.",
-      description: "The Artist's Moon is Libra's crowning achievement — the soul that has created a masterwork of beauty and balance. This isn't decoration; it's the creation of MEANING through aesthetic form. You understand that beauty is not superficial — it's how the soul communicates. A perfectly balanced composition, a moment of pure harmony, a relationship of exquisite reciprocity — these are not luxuries. They are the highest expressions of what it means to be human. The Artist's Moon creates beauty that changes how people see the world.",
+      description: "The Artist's Moon is Libra's crowning achievement — the soul that has created a masterwork of beauty and balance. This isn't decoration; it's the creation of MEANING through aesthetic form. You understand that beauty is not superficial — it's how the soul communicates.",
       gifts: ["Creating transcendent beauty", "Achieving dynamic balance", "Communicating meaning through aesthetics", "Making the ordinary extraordinary"],
       challenges: ["Can be paralyzed by the pursuit of perfection", "Difficulty with ugliness and disorder", "May prioritize form over content", "Risk of aestheticizing pain"],
       soulLesson: "Learning that the most beautiful art includes imperfection — that the crack is where the light gets in.",
-      inRelationships: "You create a relationship that is itself a work of art. Every detail is considered, every moment composed. Your challenge is embracing the beautiful mess that real intimacy requires."
+      inRelationships: "You create a relationship that is itself a work of art. Every detail is considered, every moment composed. Your challenge is embracing the beautiful mess that real intimacy requires.",
+      coreWound: "The wound of ugliness — a deep, visceral pain at the world's disorder, injustice, and aesthetic carelessness. You feel physical pain when things are out of balance.",
+      healingPath: "Through wabi-sabi — finding beauty in imperfection, asymmetry, and aging. Healing comes when you discover that the most beautiful art is the kind that includes the crack.",
+      inTheBody: "The kidneys, the lower back, the skin (the body's canvas). Your body responds to beauty as medicine and to ugliness as toxin. Beautiful environments literally heal you.",
+      sacredPurpose: "To show the collective that beauty is not luxury but necessity — that aesthetic harmony heals at the cellular level.",
+      shadowExpression: "When unconscious, the Artist becomes the aesthete who uses beauty as armor against feeling, or the one who can't tolerate any imperfection in themselves or others.",
+      affirmation: "Beauty includes the broken. The crack is where the light enters."
     },
     Scorpio: {
       name: "Priestess's Moon",
       essence: "Mystery fully embodied — the keeper of secrets who stands at the threshold between worlds.",
-      description: "The Priestess's Moon is Scorpio at its most powerful — the soul that has become the living threshold between the visible and invisible worlds. You have walked through death enough times to know it as an ally, not an enemy. You hold secrets — not gossip, but genuine MYSTERIES — the kind of knowledge that can only be transmitted from initiate to initiate. Your presence alone transforms the energy in a room. People feel both drawn to you and slightly awed, because you carry a charge that comes from direct contact with the sacred.",
+      description: "The Priestess's Moon is Scorpio at its most powerful — the soul that has become the living threshold between the visible and invisible worlds. You have walked through death enough times to know it as an ally. You hold secrets — not gossip, but genuine MYSTERIES.",
       gifts: ["Direct access to the mysteries", "Transformative presence", "Holding sacred space", "Initiating others into deeper truth"],
       challenges: ["Isolation from 'normal' life", "Difficulty with light, casual connection", "May become consumed by the mysteries", "Others' projections and fears"],
       soulLesson: "Learning that the greatest mystery is ordinary life — that the sacred isn't separate from the mundane but woven through it.",
-      inRelationships: "You bring transformation, depth, and an almost mystical connection. Your challenge is not making your partner your acolyte — meeting them as an equal, not as a teacher."
+      inRelationships: "You bring transformation, depth, and an almost mystical connection. Your challenge is not making your partner your acolyte — meeting them as an equal.",
+      coreWound: "The wound of the initiated — once you've seen behind the veil, you can never go back to innocence. The cost of knowing is the loss of not-knowing.",
+      healingPath: "Through grounding mysteries in daily life — cooking, gardening, practical magic. Healing comes when the sacred and mundane merge rather than split.",
+      inTheBody: "The reproductive system, the eliminative organs, the endocrine system. Your body is a temple of transformation — hormonal, cyclical, deeply attuned to death-and-rebirth processes.",
+      sacredPurpose: "To guard the threshold — to hold the mysteries that the collective needs but isn't ready to face, and to initiate those who ARE ready.",
+      shadowExpression: "When unconscious, the Priestess becomes the occult manipulator, the one who hoards secrets for power, or the mystic so consumed by the invisible they neglect the visible.",
+      affirmation: "The mysteries serve life. I guard the threshold with love, not fear."
     },
     Sagittarius: {
       name: "Priest's Moon",
       essence: "Truth proclaimed — the teacher who has walked the path and can now guide others.",
-      description: "The Priest's Moon is Sagittarius at its highest expression — the soul that has traveled far enough, sought deeply enough, and understood broadly enough to become a genuine teacher of truth. You don't teach from books alone; you teach from LIFE. Every lesson you offer has been paid for in experience. Your gift is making the highest truths accessible without diminishing them — being the bridge between the divine and the human, the cosmic and the personal.",
+      description: "The Priest's Moon is Sagittarius at its highest expression — the soul that has traveled far enough, sought deeply enough, and understood broadly enough to become a genuine teacher of truth. You don't teach from books alone; you teach from LIFE.",
       gifts: ["Teaching from lived experience", "Making truth accessible", "Bridging the cosmic and personal", "Inspiring faith through example"],
       challenges: ["Risk of guru syndrome", "Difficulty admitting ignorance", "May confuse personal truth with universal truth", "Burden of others' spiritual projections"],
       soulLesson: "Learning that the greatest sermon is a life well-lived — that your most powerful teaching is who you ARE, not what you say.",
-      inRelationships: "You bring wisdom, vision, and the ability to see your partner's highest potential. Your challenge is being a partner, not a prophet — loving them as they are, not as they could be."
+      inRelationships: "You bring wisdom, vision, and the ability to see your partner's highest potential. Your challenge is being a partner, not a prophet.",
+      coreWound: "The wound of the false prophet — the fear that your truth is not true enough, that your teaching might lead someone astray. The weight of others' trust.",
+      healingPath: "Through teaching vulnerability — sharing your doubts alongside your certainties. Healing comes when you discover that honest uncertainty is more powerful than confident dogma.",
+      inTheBody: "The hips and thighs (the traveler's base), the liver (processing the intake of wisdom), the vision (literal far-sightedness). Your body is built for journeying — spiritual and physical.",
+      sacredPurpose: "To translate cosmic truth into human language — to make the vast, incomprehensible nature of existence accessible to ordinary people.",
+      shadowExpression: "When unconscious, the Priest becomes the cult leader, the preacher who doesn't practice, or the teacher who punishes doubt in their students.",
+      affirmation: "My truth is lived, not just spoken. I teach best through who I am."
     },
     Capricorn: {
       name: "Grandmother's Moon",
       essence: "Authority earned through experience — the elder whose wisdom commands natural respect.",
-      description: "The Grandmother's Moon is Capricorn at its most mature — the authority figure who needs no title, no office, no credentials because their PRESENCE commands natural respect. You've lived long enough (in soul-years if not calendar years) to have seen patterns repeat, predictions come true, and hard work pay off. Your wisdom isn't theoretical — it's been earned through decades of doing, failing, learning, and persisting. People don't follow you because they have to; they follow you because they'd be fools not to.",
+      description: "The Grandmother's Moon is Capricorn at its most mature — the authority figure who needs no title because their PRESENCE commands natural respect. You've lived long enough to have seen patterns repeat, predictions come true, and hard work pay off.",
       gifts: ["Earned authority", "Pattern recognition from experience", "Natural respect without force", "Wisdom that serves the community"],
       challenges: ["Can become rigid with age", "Difficulty with changing times", "May dismiss younger perspectives", "Risk of clinging to outdated methods"],
       soulLesson: "Learning that the grandmother's greatest legacy is her grandchildren's FREEDOM — that true authority empowers rather than controls.",
-      inRelationships: "You bring stability, wisdom, and a long-term perspective that grounds the relationship. Your challenge is staying open to your partner's new ideas — aging gracefully while continuing to grow."
+      inRelationships: "You bring stability, wisdom, and a long-term perspective. Your challenge is staying open to your partner's new ideas.",
+      coreWound: "The wound of the irrelevant elder — the fear that your experience no longer matters, that the world has moved beyond your wisdom.",
+      healingPath: "Through mentoring the next generation without trying to control them. Healing comes when your wisdom is freely given without expectation of obedience.",
+      inTheBody: "The bones, the joints, the skin — the body's most visible signs of accumulated experience. Honor your body's history rather than fighting it.",
+      sacredPurpose: "To be the living library of experience — to hold the wisdom of what HAS BEEN so the collective doesn't repeat its worst mistakes.",
+      shadowExpression: "When unconscious, the Grandmother becomes the controlling matriarch who uses experience as a weapon, or the bitter elder who punishes youth for its freshness.",
+      affirmation: "My experience is a gift, not a command. I empower the next generation."
     },
     Aquarius: {
       name: "Friendship Moon",
       essence: "Connection beyond blood — the tribe united by shared vision rather than DNA.",
-      description: "The Friendship Moon is Aquarius at its most beautiful — the soul that has discovered that the deepest bonds are chosen, not given. You create tribe from strangers, family from friends, community from shared vision. This isn't loneliness disguised as independence; it's a genuine EXPANSION of what 'belonging' means. You understand that the human family is bigger than any bloodline, that ideas can bind people more tightly than genetics, and that the community of the future will be built on choice, not obligation.",
+      description: "The Friendship Moon is Aquarius at its most beautiful — the soul that has discovered that the deepest bonds are chosen, not given. You create tribe from strangers, family from friends, community from shared vision.",
       gifts: ["Creating chosen family", "Building community around shared vision", "Honoring diverse connections", "Understanding that friendship IS love"],
       challenges: ["Can deprioritize intimate partnerships", "Difficulty with exclusive bonds", "May spread connection too thin", "Risk of avoiding depth through breadth"],
       soulLesson: "Learning that the deepest friendship includes the willingness to be hurt — that real connection requires vulnerability, not just shared ideals.",
-      inRelationships: "You bring freedom, respect for individuality, and a vision of partnership based on choice, not need. Your challenge is prioritizing the one alongside the many — going deep with your partner while staying wide with the world."
+      inRelationships: "You bring freedom, respect for individuality, and a vision of partnership based on choice, not need. Your challenge is prioritizing the one alongside the many.",
+      coreWound: "The wound of the outsider who built a tribe — your community was created because you couldn't find belonging elsewhere. Now the tribe is everything, and one-on-one intimacy feels like a threat to it.",
+      healingPath: "Through one-on-one vulnerability. Letting a single person matter more than the group. Healing comes when you discover that depth doesn't threaten breadth.",
+      inTheBody: "The circulatory system (connection), the ankles (group mobility), the nervous system (networked energy). Your body is literally electric — attuned to group energy and collective frequency.",
+      sacredPurpose: "To redefine belonging for the collective — to prove that chosen family is as sacred as blood family, and that community can be built from vision.",
+      shadowExpression: "When unconscious, the Friendship Moon becomes the social butterfly who uses breadth to avoid depth, or the commune leader who can't tolerate one-on-one intimacy.",
+      affirmation: "I can go deep with one AND wide with many. Intimacy and community coexist."
     },
     Pisces: {
       name: "Healer's Moon",
       essence: "Compassion made whole — the wounded healer whose own suffering becomes medicine for others.",
-      description: "The Healer's Moon is Pisces at its highest calling — the wounded healer who has transformed personal suffering into medicine for the world. You haven't transcended pain; you've ALCHEMIZED it. Every wound you've carried has become a portal through which you can reach others in their suffering. Your compassion isn't theoretical — it's been forged in the fire of your own experience. When you hold someone in their darkest moment, they feel held by someone who KNOWS, who has been there, who survived and found the light.",
+      description: "The Healer's Moon is Pisces at its highest calling — the wounded healer who has transformed personal suffering into medicine for the world. You haven't transcended pain; you've ALCHEMIZED it. Every wound you've carried has become a portal through which you can reach others in their suffering.",
       gifts: ["Healing through lived compassion", "Alchemizing personal pain into medicine", "Creating sanctuary for others' healing", "Access to transpersonal love"],
       challenges: ["Risk of re-wounding through empathy", "Difficulty maintaining boundaries in healing work", "Can absorb others' pain", "May neglect own healing in service of others"],
       soulLesson: "Learning that the healer must continually heal themselves — that the medicine flows THROUGH you, not FROM you.",
-      inRelationships: "You bring unconditional acceptance and an ability to heal through love. Your partner feels truly seen and held. Your challenge is being healed BY your partner — receiving the medicine you so freely give."
+      inRelationships: "You bring unconditional acceptance and an ability to heal through love. Your challenge is being healed BY your partner — receiving the medicine you so freely give.",
+      coreWound: "The wound of empathic overload — you feel everyone's pain, and the weight of the collective's suffering can be physically crushing. You may have confused your own pain with the world's.",
+      healingPath: "Through energetic boundaries and self-healing practice. Daily clearing, water rituals, creative expression. Healing comes when you learn to return to yourself after each healing encounter.",
+      inTheBody: "The lymphatic system (processing collective toxins), the immune system (boundaries), the feet (grounding). Your body is a sponge — it absorbs what others release. Cleansing is not optional, it's survival.",
+      sacredPurpose: "To be the collective's living proof that suffering can be transformed into medicine — that the wound IS the gift when properly honored.",
+      shadowExpression: "When unconscious, the Healer becomes the martyr-healer who needs others to be broken so they can feel useful, or the empath who drowns in everyone else's pain.",
+      affirmation: "I heal by being whole, not by being broken. The medicine flows through me."
     },
   },
 
@@ -595,110 +969,170 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
     Aries: {
       name: "Soldier's Moon",
       essence: "Courage in service — the warrior who fights not for glory but for others' freedom.",
-      description: "The Soldier's Moon has moved beyond personal bravery into service. You fight not for glory, not for recognition, but because someone has to stand between the vulnerable and the threat. This is courage without ego — the hardest kind. You've seen enough of battle to have lost any romance about it, but you still show up because the cause matters more than your comfort. The Soldier's Moon is the guardian who asks for nothing in return.",
+      description: "The Soldier's Moon has moved beyond personal bravery into service. You fight not for glory, not for recognition, but because someone has to stand between the vulnerable and the threat. This is courage without ego — the hardest kind.",
       gifts: ["Selfless courage", "Protecting others without seeking glory", "Discipline in service", "Translating warrior energy into guardianship"],
       challenges: ["Can lose self in service", "Difficulty with peacetime identity", "May not know who they are without a cause", "Risk of service becoming martyrdom"],
       soulLesson: "Learning that the bravest act is sometimes laying down the sword and teaching the next generation not to need one.",
-      inRelationships: "You are the quiet protector — the one who shows up without being asked. Your challenge is letting your partner protect YOU sometimes."
+      inRelationships: "You are the quiet protector. Your challenge is letting your partner protect YOU sometimes.",
+      coreWound: "The wound of the forgotten soldier — you serve without recognition, and the silence around your sacrifice can become its own kind of loneliness.",
+      healingPath: "Through receiving honors — not false modesty but genuine acceptance of gratitude. Healing comes when you let others acknowledge your service.",
+      sacredPurpose: "To embody selfless protection — showing the collective that the truest courage asks for nothing in return.",
+      shadowExpression: "When unconscious, the Soldier becomes the one who can't stop serving, who uses duty as an excuse to avoid their own life.",
+      affirmation: "My service matters. I am allowed to be served in return."
     },
     Taurus: {
       name: "Builder's Moon",
       essence: "Creating structures that outlast the maker — legacy through lasting work.",
-      description: "The Builder's Moon creates for eternity. You're no longer building for yourself — you're building for generations you'll never meet. Bridges, institutions, communities, traditions — the structures you create are meant to outlast you. There is a profound generosity in this Moon: the willingness to do work whose benefits you may never see. You understand that the truest legacy isn't what you keep but what you leave behind.",
+      description: "The Builder's Moon creates for eternity. You're no longer building for yourself — you're building for generations you'll never meet. There is a profound generosity in this Moon: the willingness to do work whose benefits you may never see.",
       gifts: ["Creating lasting structures", "Generational thinking", "Building for the common good", "Legacy through practical contribution"],
       challenges: ["Difficulty letting go of what you've built", "Can be rigid about methods", "May sacrifice present joy for future legacy", "Risk of building monuments to ego"],
       soulLesson: "Learning that the greatest structure is the one that can stand without you — that true building includes planning your own obsolescence.",
-      inRelationships: "You build a relationship meant to last forever. Your love is expressed through creating a lasting life together. Your challenge is enjoying the house while you're building it."
+      inRelationships: "You build a relationship meant to last forever. Your challenge is enjoying the house while you're building it.",
+      coreWound: "The wound of impermanence — a deep knowledge that even the strongest structures eventually fall. You build to defy entropy, but entropy always wins.",
+      healingPath: "Through creating with full awareness of impermanence — building not to last forever but to serve beautifully for its time.",
+      sacredPurpose: "To build the infrastructure of the future — physical, emotional, or social structures that serve the collective good.",
+      shadowExpression: "When unconscious, the Builder becomes the monument-maker who builds for ego, or the one who can't stop building because stopping means facing mortality.",
+      affirmation: "I build for love, not for permanence. The gift is the building."
     },
     Gemini: {
       name: "Scribe's Moon",
       essence: "Recording wisdom for future generations — the keeper of knowledge who writes it down.",
-      description: "The Scribe's Moon is the keeper of collective memory. You understand that knowledge not recorded is knowledge lost, and you've taken on the sacred task of preserving wisdom for those who come after. This might manifest as literal writing, but it's bigger than that — you're the one who documents, archives, teaches, and transmits. Your gift is making knowledge accessible and enduring. Without the Scribe, every generation would start from scratch.",
-      gifts: ["Preserving and transmitting knowledge", "Making wisdom accessible", "Creating lasting records", "Connecting past wisdom to present needs"],
-      challenges: ["Can hide behind the words", "Difficulty with oral, embodied knowledge", "May prefer recording to living", "Risk of becoming detached from experience"],
-      soulLesson: "Learning that some wisdom can only be transmitted through PRESENCE — that not everything important can be written down.",
-      inRelationships: "You document your love story beautifully — through words, memories, and shared narratives. Your challenge is being as present in the moment as you are in the recording of it."
+      description: "The Scribe's Moon has the sacred task of recording — not just facts, but WISDOM. You understand that knowledge unwritten is knowledge lost, and you've dedicated your gifts to ensuring that what has been learned survives beyond its learners.",
+      gifts: ["Recording wisdom", "Making knowledge accessible", "Creating educational legacy", "Translating complex truth into lasting form"],
+      challenges: ["Can become detached recorder rather than participant", "May prioritize documentation over experience", "Risk of burying wisdom under words", "Difficulty with the unrecordable"],
+      soulLesson: "Learning that some wisdom can only be transmitted through presence, not pages — that the Scribe's greatest text might be their life.",
+      inRelationships: "You bring clarity, communication skills, and the ability to document and honor your shared journey. Your challenge is living the story, not just writing it.",
+      coreWound: "The wound of the lost text — the fear that what you've recorded won't be read, that wisdom committed to paper will be forgotten anyway.",
+      healingPath: "Through oral tradition — speaking wisdom, teaching face-to-face. Healing comes when you discover that your presence transmits what your pen cannot.",
+      sacredPurpose: "To be the collective's memory — ensuring that hard-won wisdom survives for future generations.",
+      shadowExpression: "When unconscious, the Scribe becomes the pedantic archivist who documents everything but understands nothing, or the writer who hides behind words.",
+      affirmation: "My words carry wisdom across time. My presence carries it right now."
     },
     Cancer: {
-      name: "Shield-Father's Moon",
-      essence: "Protective nurture extended to community — the guardian of the vulnerable.",
-      description: "The Shield-Father's Moon (regardless of gender) extends the protective instinct beyond family to embrace the entire community. You are the guardian of the vulnerable — the one who creates safe spaces not just for your own children but for ALL children, all vulnerable beings, all those who need shelter. Your nurturing has expanded to a community scale, and your protective instinct has become a form of social service.",
-      gifts: ["Community-scale nurturing", "Protecting the vulnerable", "Creating institutional safety nets", "Expanding the definition of family"],
-      challenges: ["Can be overprotective of community", "Difficulty with tough love at scale", "May neglect inner circle for outer mission", "Risk of burnout from caring too widely"],
-      soulLesson: "Learning that the greatest protection is empowerment — that shielding others forever prevents them from growing strong.",
-      inRelationships: "You extend your protective love to your partner's entire world. Your challenge is keeping the intimate connection strong while your care radiates outward."
+      name: "Crone's Moon",
+      essence: "Elder wisdom of the heart — the grandmother who has loved enough to know everything.",
+      description: "The Crone's Moon is Cancer at its wisest — the soul that has loved so deeply, lost so much, and survived it all that they've become a repository of emotional wisdom. You are the emotional elder, the one who has navigated every storm and can guide others through their own.",
+      gifts: ["Vast emotional wisdom", "Ability to guide others through loss", "Understanding the cycles of love and grief", "Deep acceptance of all human feeling"],
+      challenges: ["Can carry too much emotional weight", "Difficulty with new emotional experiences", "May project past patterns onto present situations", "Risk of emotional fatigue"],
+      soulLesson: "Learning that the crone's wisdom is lightest when shared — that you don't have to carry the collective's emotional history alone.",
+      inRelationships: "You bring unshakable emotional wisdom and the ability to weather any storm. Your challenge is allowing yourself to be SURPRISED by love — not assuming you know what's coming.",
+      coreWound: "The wound of over-knowing — you've seen so much that novelty feels impossible. The cost of emotional wisdom is the loss of emotional innocence.",
+      healingPath: "Through seeking new emotional experience — surprise, delight, the unknown. Healing comes when the crone allows herself to be a beginner again.",
+      sacredPurpose: "To hold the collective's emotional memory with wisdom — to be the grandmother who says 'I know, I've been there' and means it.",
+      shadowExpression: "When unconscious, the Crone becomes the bitter elder whose wisdom has curdled into cynicism, or the emotional hoarder who won't let anyone learn from their own mistakes.",
+      affirmation: "My wisdom is earned. My innocence is still possible."
     },
     Leo: {
-      name: "King's Moon",
-      essence: "Leadership through generosity — the ruler who gives more than he takes.",
-      description: "The King's Moon is Leo in its highest expression of leadership — the sovereign who has discovered that true power flows DOWNWARD, from ruler to people, not upward. You lead by giving — your time, your resources, your energy, your light — and this generosity creates a loyalty that force could never achieve. The King's Moon understands that the crown is not a privilege but a responsibility, and wears it accordingly.",
-      gifts: ["Generous leadership", "Creating loyalty through giving", "Inspiring others to their best", "Using personal power for collective benefit"],
-      challenges: ["Can give beyond capacity", "Difficulty receiving from subjects", "May lose personal desires in service to the kingdom", "Burden of constant visibility"],
-      soulLesson: "Learning that even kings must rest — that sustaining the kingdom requires sustaining the king.",
-      inRelationships: "You are magnanimous, generous, and deeply loyal. You treat your partner like royalty. Your challenge is allowing yourself to be cared for — kings need tenderness too."
+      name: "Elder Lion's Moon",
+      essence: "Creative legacy — the aging sovereign who passes power through art and teaching.",
+      description: "The Elder Lion's Moon is Leo's final generous act — the passing of creative power to the next generation. You've shone brightly, created magnificently, and now your greatest work is empowering others to find their own light.",
+      gifts: ["Empowering others' creativity", "Generous mentorship", "Creative legacy", "Magnanimous leadership in sunset years"],
+      challenges: ["Difficulty releasing the spotlight", "May feel threatened by proteges' success", "Can cling to past creative glory", "Fear of irrelevance"],
+      soulLesson: "Learning that the sun's greatest gift is making other things grow — that your light was always meant to illuminate others.",
+      inRelationships: "You bring generosity, warmth, and the wisdom of someone who has loved deeply. Your challenge is celebrating your partner's shine without competing.",
+      coreWound: "The wound of the fading star — the fear that stepping out of the spotlight means the show is over, that your light only matters when it's the brightest.",
+      healingPath: "Through teaching and mentoring — discovering that lighting others' candles doesn't diminish your flame. Healing comes when you find joy in others' shine.",
+      sacredPurpose: "To pass the creative flame — ensuring that the light continues beyond your own lifetime through those you've inspired.",
+      shadowExpression: "When unconscious, the Elder Lion becomes the jealous mentor who sabotages proteges, or the aging performer who can't exit the stage gracefully.",
+      affirmation: "My light lives on in everyone I've illuminated. The sun sets to rise again."
     },
     Virgo: {
-      name: "Weaver's Moon",
-      essence: "Connecting disparate threads — service that creates patterns of wholeness.",
-      description: "The Weaver's Moon connects what has been separated. You see patterns where others see chaos, and your gift is bringing disparate elements together into functional, beautiful wholes. This might manifest as community organizing, healing work, systems thinking, or literally weaving — any activity where separate threads become a unified fabric. Your service creates wholeness from fragmentation.",
-      gifts: ["Pattern recognition", "Creating wholeness from fragments", "Systems thinking", "Connecting people and ideas into functional wholes"],
-      challenges: ["Can become overwhelmed by disconnection", "Difficulty with loose ends", "May sacrifice personal expression for the pattern", "Risk of becoming invisible within the weave"],
-      soulLesson: "Learning that some threads are meant to hang loose — that wholeness includes space for mystery and incompleteness.",
-      inRelationships: "You weave your partner's world into yours with extraordinary skill. Your challenge is leaving some threads loose — allowing mystery and independence within the beautiful fabric."
+      name: "Wise Woman's Moon",
+      essence: "Healing wisdom earned through practice — the herbalist whose remedies have been tested by time.",
+      description: "The Wise Woman's Moon is Virgo's highest service expression — the healer whose methods have been refined through decades of practice. Your knowledge isn't academic; it's been tested on hundreds of bodies, thousands of symptoms, years of dedicated observation.",
+      gifts: ["Practical healing wisdom", "Tested remedies", "Ability to diagnose through observation", "Service refined to art"],
+      challenges: ["Can become too attached to methods", "Difficulty with cases that resist treatment", "May judge those who don't follow health advice", "Risk of professional exhaustion"],
+      soulLesson: "Learning that some ailments are not meant to be cured but understood — that the Wise Woman's greatest medicine might be compassionate witnessing.",
+      inRelationships: "You bring health wisdom and devotion. Your challenge is not trying to 'fix' your partner — loving them in their brokenness as much as their wholeness.",
+      coreWound: "The wound of the incurable — the cases you couldn't heal, the problems you couldn't solve. The limits of your competence haunt you.",
+      healingPath: "Through accepting the mystery of suffering — knowing that some things are beyond fixing, and that compassionate presence is its own medicine.",
+      sacredPurpose: "To be the collective's practical healer — offering tested, refined remedies for the body, mind, and spirit.",
+      shadowExpression: "When unconscious, the Wise Woman becomes the health fanatic who judges everyone's choices, or the healer so invested in fixing that she can't let patients find their own way.",
+      affirmation: "My healing serves life. I trust the mystery of what I cannot cure."
     },
     Libra: {
-      name: "Ambassador's Moon",
-      essence: "Diplomacy as sacred art — bridging divides through grace and understanding.",
-      description: "The Ambassador's Moon carries Libra's gift of balance into the wider world. You are the bridge-builder, the peacemaker, the one who can enter hostile territory and find common ground. This isn't people-pleasing — it's a genuine diplomatic gift that requires courage, intelligence, and an unshakable commitment to the possibility of peace. You represent the best of humanity: the belief that even enemies can find understanding.",
-      gifts: ["Diplomatic courage", "Finding common ground in hostile situations", "Representing peace convincingly", "Creating understanding between opposed groups"],
-      challenges: ["Exhaustion from constant mediation", "Difficulty taking sides when necessary", "May sacrifice personal truth for diplomatic mission", "Can be used by both sides"],
-      soulLesson: "Learning that some conflicts cannot be mediated — that sometimes the ambassador must become a witness rather than a bridge.",
-      inRelationships: "You bring peace, understanding, and an ability to navigate any conflict. Your challenge is having your OWN opinions, not just mediating between others'."
+      name: "Peacemaker's Moon",
+      essence: "Justice in service — using balance and beauty to heal collective wounds.",
+      description: "The Peacemaker's Moon is Libra's highest calling — the soul that uses its exquisite sense of balance not for personal harmony but for collective healing. You bring beauty, fairness, and grace to situations that desperately need them.",
+      gifts: ["Mediating collective conflicts", "Creating beauty that heals", "Applying justice to systemic issues", "Bringing harmony to communities"],
+      challenges: ["Can lose yourself in others' conflicts", "Difficulty saying no to requests for mediation", "May sacrifice personal life for collective harmony", "Risk of burnout from constant peacemaking"],
+      soulLesson: "Learning that peace begins at home — that you cannot heal the world's imbalances while neglecting your own.",
+      inRelationships: "You bring extraordinary relationship wisdom and the ability to navigate any conflict with grace. Your challenge is creating peace in your own relationship, not just everyone else's.",
+      coreWound: "The wound of the mediator's loneliness — everyone comes to you for balance, but no one asks how YOU are. You hold the middle ground, but the middle ground holds no one.",
+      healingPath: "Through taking sides — your OWN side. Healing comes when you learn that true peace includes the courage to advocate for yourself.",
+      sacredPurpose: "To apply the art of balance to collective healing — using beauty and justice to mend what division has broken.",
+      shadowExpression: "When unconscious, the Peacemaker becomes the conflict-avoider who suppresses truth for false harmony, or the mediator who has no life of their own.",
+      affirmation: "Peace includes me. I advocate for my own balance first."
     },
     Scorpio: {
-      name: "Witch's Moon",
-      essence: "Power shared as healing — the practitioner who teaches transformation.",
-      description: "The Witch's Moon is Scorpio's power turned outward as SERVICE — the practitioner who has mastered the dark arts of transformation and now uses them to heal others. You understand the shadow because you've lived in it. You know the medicine that grows in the darkest soil. And now, instead of hoarding that knowledge, you share it with those who are ready. The Witch heals what medicine cannot reach — the soul-level wounds that no rational treatment can touch.",
-      gifts: ["Healing through shadow work", "Teaching transformation", "Working with hidden forces", "Transforming others' pain into power"],
-      challenges: ["Being misunderstood or feared", "Carrying others' darkness", "Difficulty with light, surface interactions", "Risk of ego inflation through power"],
-      soulLesson: "Learning that the greatest magic is love — that all the shadow work in the world serves one purpose: to clear the path to the heart.",
-      inRelationships: "You bring transformative healing power to your relationships. You see and love your partner's shadow. Your challenge is allowing lightness and play — not everything needs to be healed."
+      name: "Shaman's Moon",
+      essence: "Healing through descent — the one who goes into darkness and brings back medicine.",
+      description: "The Shaman's Moon is Scorpio's gift to the collective — the soul willing to descend into the underworld on behalf of others. You go where others fear to tread: into the shadow, the wound, the death. And you bring back MEDICINE. Your healing isn't gentle — it's the kind that requires going INTO the pain, not around it.",
+      gifts: ["Deep transformative healing", "Descent on behalf of others", "Bringing medicine from the shadow", "Fearless therapeutic presence"],
+      challenges: ["Can over-identify with the healer role", "Risk of absorbing others' darkness", "Difficulty maintaining personal life alongside sacred work", "May burn out from repeated descent"],
+      soulLesson: "Learning that the shaman must return from every descent — that going deep without coming back serves no one.",
+      inRelationships: "You bring profound healing and transformation. Your partner is changed by knowing you. Your challenge is maintaining your own wholeness while facilitating others' transformation.",
+      coreWound: "The wound of the one who goes too deep — you may have descended so far into darkness (your own or others') that you forgot the way back to the light.",
+      healingPath: "Through ritual return — structured practices that bring you back from every descent. Healing comes when the journey has a round trip ticket.",
+      sacredPurpose: "To carry the collective's shadow medicine — going into the darkness that others fear and returning with the cure.",
+      shadowExpression: "When unconscious, the Shaman becomes the dark healer who keeps clients dependent, or the one so immersed in shadow work they've forgotten that light exists.",
+      affirmation: "I descend to heal, and I always return. The medicine works both ways."
     },
     Sagittarius: {
-      name: "Philosopher's Moon",
-      essence: "Wisdom distilled and shared — the sage who makes the complex accessible.",
-      description: "The Philosopher's Moon is Sagittarius at its most generous — the thinker who has spent a lifetime gathering wisdom and now offers it freely to anyone who will listen. You've moved beyond seeking truth for yourself to sharing truth for the benefit of all. Your philosophy isn't abstract — it's LIVED, tested against reality, refined through experience. When you speak, people listen, because they can feel the authenticity behind every word.",
-      gifts: ["Accessible wisdom", "Teaching through storytelling", "Making philosophy practical", "Inspiring others to think deeply"],
-      challenges: ["Can become preachy", "Difficulty with people who won't listen", "May oversimplify complex truths", "Risk of thinking you've found THE answer"],
-      soulLesson: "Learning that wisdom includes silence — that sometimes the most philosophical act is to listen.",
-      inRelationships: "You bring perspective, meaning, and the ability to see your relationship in a cosmic context. Your challenge is not philosophizing about the relationship when your partner just needs a hug."
+      name: "Missionary's Moon",
+      essence: "Spreading truth — the teacher whose message has outgrown personal boundaries.",
+      description: "The Missionary's Moon is Sagittarius in full service — the soul whose truth has grown too big to keep to themselves. Your message demands to be shared, not from ego but from genuine conviction that what you've discovered can help others.",
+      gifts: ["Spreading truth effectively", "Cross-cultural communication", "Inspiring others toward higher meaning", "Living the teaching"],
+      challenges: ["Can become preachy", "Difficulty respecting others' paths", "May confuse enthusiasm with pushing", "Risk of believing their path is THE path"],
+      soulLesson: "Learning that truth shared with humility travels further than truth shouted with conviction — that the best missionary converts no one.",
+      inRelationships: "You bring purpose, meaning, and a sense of shared mission. Your challenge is allowing your partner their own truth, even if it differs from yours.",
+      coreWound: "The wound of the ignored message — you carry truth that the world needs, but the world isn't always listening. The frustration of knowing something vital and being unable to transmit it.",
+      healingPath: "Through living the message rather than preaching it. Healing comes when your life becomes the sermon and you stop needing anyone to 'convert.'",
+      sacredPurpose: "To disseminate truth that serves the collective good — not through force but through the infectious power of a life well-lived.",
+      shadowExpression: "When unconscious, the Missionary becomes the zealot who believes conversion is compassion, or the fundamentalist who confuses their truth with THE truth.",
+      affirmation: "I share my truth and honor yours. My life is the teaching."
     },
     Capricorn: {
-      name: "Grandfather's Moon",
-      essence: "Authority offered as mentorship — the elder who builds the next generation.",
-      description: "The Grandfather's Moon is Capricorn's authority transformed into mentorship. You've achieved enough to have nothing left to prove. Your power is no longer about climbing; it's about reaching down to help others climb. The Grandfather doesn't compete with the young — he equips them. His authority is offered as a gift, not wielded as a weapon. This is the elder who builds the next generation not in his own image, but in THEIR own image.",
-      gifts: ["Mentoring the next generation", "Earned authority offered freely", "Building others' capacity", "Legacy through people, not structures"],
-      challenges: ["Difficulty letting go of control", "Can be paternalistic", "May try to live through younger people", "Risk of offering outdated advice"],
-      soulLesson: "Learning that the greatest mentor creates people who surpass them — that your success is measured by their independence, not their gratitude.",
-      inRelationships: "You bring wisdom, stability, and a generational perspective. Your challenge is being a partner, not a parent — meeting your loved one as an equal, regardless of age or experience."
+      name: "Senator's Moon",
+      essence: "Authority in public service — using structural power for the collective good.",
+      description: "The Senator's Moon is Capricorn's gift to society — the soul whose authority and organizational genius are directed toward the common good. You understand power from the inside, and you use that understanding to build systems that serve everyone.",
+      gifts: ["Structural wisdom in service", "Using authority for collective benefit", "Organizational genius", "Building institutions that endure"],
+      challenges: ["Can become corrupted by power", "Difficulty maintaining personal life in public service", "May confuse institutional needs with human needs", "Risk of becoming the system"],
+      soulLesson: "Learning that the greatest public service is remaining privately humble — that power serves best when it doesn't serve itself.",
+      inRelationships: "You bring stability, protection, and the resources of genuine authority. Your challenge is being present as a PERSON, not just a provider.",
+      coreWound: "The wound of power's corruption — the knowledge that authority changes people, and the fear that it will change you. You may resist power to avoid its corrupting influence.",
+      healingPath: "Through transparent power — wielding authority openly, with accountability. Healing comes when you discover that power shared is power purified.",
+      sacredPurpose: "To build and maintain the structures that protect the vulnerable — to be the architect of just institutions.",
+      shadowExpression: "When unconscious, the Senator becomes the career politician who serves the system instead of the people, or the authority figure who uses their position for personal gain.",
+      affirmation: "My authority serves the common good. Power shared is power purified."
     },
     Aquarius: {
-      name: "Apostle's Moon",
-      essence: "Vision spread to the world — the radical teacher whose ideas change everything.",
-      description: "The Apostle's Moon carries the revolutionary vision of Aquarius out into the world with missionary zeal. You're not content to have ideas — you need those ideas to SPREAD, to change lives, to transform society. Like the original apostles, you travel (literally or metaphorically) to share a message that challenges everything people thought they knew. Your gift is the ability to communicate radical ideas with enough passion and clarity to convert even skeptics.",
-      gifts: ["Spreading transformative ideas", "Converting skeptics through passion", "Building movements around vision", "Making the radical accessible"],
-      challenges: ["Zealotry", "Difficulty with doubt or questioning", "May alienate potential allies", "Risk of ego wrapped in mission"],
-      soulLesson: "Learning that the most powerful message is the one you LIVE — that your life should be your best argument.",
-      inRelationships: "You bring vision, passion, and a shared sense of purpose. Your challenge is not making your relationship a mission field — loving your partner for who they are, not what they could become."
+      name: "Reformer's Moon",
+      essence: "Visionary change for all — the revolutionary whose innovations serve the many.",
+      description: "The Reformer's Moon is Aquarius directed toward collective benefit — the soul whose revolutionary energy is aimed not at destruction but at IMPROVEMENT. You see what's broken in the system, and you have the vision AND the practical sense to fix it.",
+      gifts: ["Practical visionary thinking", "Reforming systems from within", "Making innovation serve the many", "Balancing revolution with responsibility"],
+      challenges: ["Can become frustrated with the pace of change", "Difficulty with political realities", "May alienate potential allies through impatience", "Risk of burnout from systemic battles"],
+      soulLesson: "Learning that reform is a marathon, not a sprint — that the most lasting changes are the ones that bring everyone along.",
+      inRelationships: "You bring vision, purpose, and a sense that your relationship serves something bigger. Your challenge is being present for the relationship itself, not just the cause.",
+      coreWound: "The wound of the ahead-of-their-time reformer — your vision is clear, but the world moves slowly. The gap between what IS and what COULD BE is physically painful.",
+      healingPath: "Through celebrating incremental progress. Healing comes when you learn to find joy in small victories rather than waiting for the revolution.",
+      sacredPurpose: "To reform systems for the collective good — to be the practical visionary who bridges the gap between what is and what should be.",
+      shadowExpression: "When unconscious, the Reformer becomes the perpetual critic who tears down without building, or the impatient revolutionary who abandons progress for perfection.",
+      affirmation: "Every small reform matters. Change happens one system at a time."
     },
     Pisces: {
-      name: "Moon of the Angel of Mercy",
-      essence: "Unconditional compassion — the healer who asks nothing in return.",
-      description: "The Moon of the Angel of Mercy is perhaps the most selfless archetype in the entire system. You offer compassion without condition, healing without invoice, love without expectation. This isn't martyrdom — you've evolved past that. This is genuine, sustainable compassion that flows through you like water through a channel. You've learned that you are not the SOURCE of the love — you are the VESSEL through which divine compassion reaches the world. This makes your service sustainable because you're not giving from your own reserves.",
-      gifts: ["Sustainable unconditional compassion", "Channeling divine love", "Healing presence without ego", "Inspiring mercy in others"],
-      challenges: ["Others may take advantage", "Difficulty with judgment when it's needed", "May lose discernment in compassion", "Risk of spiritual bypassing"],
+      name: "Bodhisattva's Moon",
+      essence: "Compassion in service of all beings — the enlightened soul who chooses to remain and help.",
+      description: "The Bodhisattva's Moon is the most selfless archetype in the Waning Gibbous phase — the soul that could transcend but CHOOSES to remain in the world to serve. Your compassion is so vast that it includes all beings, and your commitment to their liberation is greater than your desire for your own peace.",
+      gifts: ["Vast, inclusive compassion", "Choosing service over transcendence", "Holding space for collective suffering", "Inspiring others through selfless love"],
+      challenges: ["Risk of spiritual exhaustion", "Difficulty with personal needs", "May neglect own journey for others'", "Can carry so much that they collapse"],
       soulLesson: "Learning that mercy includes boundaries — that saying 'no' to one person may be saying 'yes' to many others.",
-      inRelationships: "You love without conditions or expectations. Your partner feels accepted at the deepest level. Your challenge is accepting love in return — allowing yourself to be served as generously as you serve."
+      inRelationships: "You love without conditions or expectations. Your partner feels accepted at the deepest level. Your challenge is accepting love in return.",
+      coreWound: "The wound of the one who can't leave — you stay because leaving would mean abandoning those who need you. Your compassion is both your gift and your chain.",
+      healingPath: "Through receiving help and allowing others to serve YOU. Healing comes when you discover that being served is itself an act of service — it teaches others to give.",
+      sacredPurpose: "To hold the space of universal compassion — to remind the collective that the highest spiritual attainment is choosing to stay and help.",
+      shadowExpression: "When unconscious, the Bodhisattva becomes the spiritual martyr who uses selflessness as a way to avoid their own healing, or the one who gives so much they have nothing left.",
+      affirmation: "I serve by receiving too. My wholeness serves more than my emptiness."
     },
   },
 
@@ -709,110 +1143,170 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
     Aries: {
       name: "Survivor's Moon",
       essence: "The crisis of letting go of battle — the warrior who must learn peace.",
-      description: "The Survivor's Moon faces the most counter-intuitive crisis for an Aries soul: the realization that the battle is OVER and yet you're still fighting. You've survived. You've won. But your nervous system doesn't know it yet. The crisis is in laying down the sword when your entire identity has been built around holding it. The Survivor must learn that peace is not weakness, that rest is not defeat, and that the greatest courage of all may be allowing yourself to be SAFE.",
+      description: "The Survivor's Moon faces the most counter-intuitive crisis for an Aries soul: the realization that the battle is OVER and yet you're still fighting. You've survived. You've won. But your nervous system doesn't know it yet. The Survivor must learn that peace is not weakness, that rest is not defeat.",
       gifts: ["Resilience wisdom", "Understanding the cost of battle", "Ability to help others transition from war to peace", "Post-traumatic growth"],
       challenges: ["PTSD-like patterns", "Difficulty trusting peace", "May create conflict from habit", "Identity crisis without a fight"],
       soulLesson: "Learning that survival is not the same as living — that you've earned the right to THRIVE.",
-      inRelationships: "You bring tested strength and hard-won wisdom. Your challenge is trusting that your partner is safe — that you don't need to be on guard in your own home."
+      inRelationships: "You bring tested strength and hard-won wisdom. Your challenge is trusting that your partner is safe — that you don't need to be on guard.",
+      coreWound: "The wound of perpetual vigilance — your nervous system has been on high alert so long that peace feels more dangerous than war.",
+      healingPath: "Through somatic therapy — teaching the body that safety is real. Healing comes through the nervous system, not the mind. Yoga, EMDR, bodywork.",
+      sacredPurpose: "To model post-traumatic growth — showing the collective that surviving is just the beginning, and THRIVING is the real victory.",
+      shadowExpression: "When unconscious, the Survivor creates crises to feel alive, or punishes loved ones for trying to create peace.",
+      affirmation: "I am safe now. The war is over. I am allowed to live, not just survive."
     },
     Taurus: {
       name: "Merchant's Moon",
       essence: "Re-evaluating what has value — releasing attachment to material security.",
-      description: "The Merchant's Moon faces the crisis of VALUE — the moment when everything you've accumulated must be weighed and much of it released. You've spent lifetimes building, collecting, securing — and now you're being asked to evaluate what truly matters versus what you've been clinging to out of habit or fear. The Merchant must learn that the most valuable things often can't be bought, sold, or stored — they can only be EXPERIENCED.",
+      description: "The Merchant's Moon faces the crisis of VALUE — the moment when everything you've accumulated must be weighed and much of it released. You've spent lifetimes building, collecting, securing — and now you're being asked to evaluate what truly matters.",
       gifts: ["Understanding true value", "Ability to distinguish needs from wants", "Wisdom about attachment", "Generosity born from abundance"],
       challenges: ["Fear of letting go of security", "Crisis of identity without possessions", "Difficulty distinguishing value from price", "Resistance to downsizing"],
       soulLesson: "Learning that you are more than what you own — that your worth was never in the warehouse.",
-      inRelationships: "You bring stability and generosity. Your challenge is learning that your partner values your PRESENCE more than your provision — that who you are matters more than what you have."
+      inRelationships: "You bring stability and generosity. Your challenge is learning that your partner values your PRESENCE more than your provision.",
+      coreWound: "The wound of material identity — the fear that without your possessions, accomplishments, or financial security, you are nothing.",
+      healingPath: "Through voluntary simplicity — giving away what you don't need. Healing comes when you discover that you still exist without your stuff.",
+      sacredPurpose: "To teach the collective the difference between value and price — that the most valuable things cannot be bought.",
+      shadowExpression: "When unconscious, the Merchant hoards compulsively, or swings to the other extreme and destroys all security to prove they don't need it.",
+      affirmation: "My worth is inherent. I am more than what I own."
     },
     Gemini: {
       name: "Magician's Moon",
       essence: "The crisis of truth vs. illusion — using knowledge to transform rather than deceive.",
-      description: "The Magician's Moon faces the ultimate test of Gemini's power: the choice between using knowledge to illuminate or to manipulate. You understand how reality works — how perception shapes experience, how words create worlds, how attention determines what exists. This knowledge gives you enormous power, and the crisis is in how you choose to wield it. The Magician who chooses truth becomes a healer. The Magician who chooses illusion becomes a trickster at best, a destroyer at worst.",
+      description: "The Magician's Moon faces the ultimate test of Gemini's power: the choice between using knowledge to illuminate or to manipulate. You understand how reality works — how perception shapes experience, how words create worlds. The crisis is in how you choose to wield this power.",
       gifts: ["Understanding perception and reality", "Ability to transform consciousness", "Mastery of symbolic communication", "Teaching through demonstration"],
       challenges: ["Temptation to manipulate", "Knowing too much about human weakness", "Difficulty with trust", "Crisis of integrity"],
       soulLesson: "Learning that the greatest magic is transparency — that showing people HOW you do it is more powerful than keeping it secret.",
-      inRelationships: "You bring insight, intelligence, and an ability to transform situations through understanding. Your challenge is using your power to BUILD trust, not to test it."
+      inRelationships: "You bring insight and an ability to transform situations through understanding. Your challenge is using your power to BUILD trust, not to test it.",
+      coreWound: "The wound of the illusionist — you can see behind the curtain of every performance, including your own. The question haunting you: is anything REAL?",
+      healingPath: "Through radical authenticity — performing no tricks, using no illusions. Healing comes when reality without embellishment turns out to be more magical than any spell.",
+      sacredPurpose: "To use the power of perception for collective healing — to be the magician who reveals the trick and thereby makes it MORE miraculous.",
+      shadowExpression: "When unconscious, the Magician becomes the gaslighter, the con artist, or the person so skilled at illusion they've lost touch with what's genuine.",
+      affirmation: "My greatest magic is truth. Transparency is the ultimate power."
     },
     Cancer: {
       name: "Widow's Moon",
       essence: "Releasing old bonds — the grief that liberates by finally letting go of the past.",
-      description: "The Widow's Moon faces the most painful crisis of the Cancer journey: the release of bonds that once defined you. Whether through literal loss or metaphorical death of old identities, you are being asked to let go of who you WERE in order to become who you're BECOMING. The grief is real, and it must be honored — but it cannot be lived in forever. The Widow's journey is learning that love survives loss, that bonds transcend death, and that letting go of the form doesn't mean letting go of the love.",
+      description: "The Widow's Moon faces the most painful crisis of the Cancer journey: the release of bonds that once defined you. Whether through literal loss or metaphorical death of old identities, you are being asked to let go of who you WERE.",
       gifts: ["Wisdom through loss", "Understanding that love survives death", "Ability to help others grieve", "Deep emotional resilience"],
       challenges: ["Difficulty releasing the past", "May cling to grief as identity", "Risk of emotional isolation", "Difficulty forming new bonds after loss"],
       soulLesson: "Learning that letting go is not forgetting — that you can honor the past while walking into the future.",
-      inRelationships: "You bring depth, loyalty, and an understanding of love's permanence. Your challenge is fully showing up for new love without comparing it to what was lost."
+      inRelationships: "You bring depth, loyalty, and an understanding of love's permanence. Your challenge is fully showing up for new love.",
+      coreWound: "The wound of the unleft — you may be holding onto bonds that have already died, mourning a version of yourself or a relationship that no longer exists.",
+      healingPath: "Through grief ceremony — formal, ritualized release. Not 'getting over it' but 'getting through it.' Healing comes when mourning has a container.",
+      sacredPurpose: "To teach the collective that grief is not pathology but LOVE — that mourning is the price we pay for deep attachment, and it's worth paying.",
+      shadowExpression: "When unconscious, the Widow becomes the one who can't stop mourning, who uses grief as a shield against new love, or who builds a shrine to the past that blocks the future.",
+      affirmation: "I release with love. Letting go is an act of devotion, not betrayal."
     },
     Leo: {
       name: "Usurper's Moon",
       essence: "The crisis of ego — when authority must be surrendered so something new can reign.",
-      description: "The Usurper's Moon faces the Leo soul's most terrifying prospect: abdication. Not because you've failed, but because your reign is COMPLETE. You've done what you came to do, and now the throne must pass to someone else. The crisis is in accepting that stepping down is not stepping backward — that some of the greatest leaders in history are remembered not for how they seized power but for how gracefully they released it.",
+      description: "The Usurper's Moon faces Leo's most terrifying prospect: abdication. Not because you've failed, but because your reign is COMPLETE. The crisis is in accepting that stepping down is not stepping backward.",
       gifts: ["Grace in transition", "Understanding the cycle of power", "Ability to empower successors", "Ego maturity"],
       challenges: ["Fear of irrelevance", "Difficulty with diminished spotlight", "May sabotage successors", "Identity crisis without power"],
       soulLesson: "Learning that your light doesn't dim when you step off stage — that the sun still shines whether anyone's watching or not.",
-      inRelationships: "You bring wisdom about ego and power dynamics. Your challenge is sharing leadership of the relationship gracefully — and finding your identity in being loved, not just admired."
+      inRelationships: "You bring wisdom about ego and power dynamics. Your challenge is sharing leadership gracefully.",
+      coreWound: "The wound of the dethroned — the terror that without your role, your power, your stage, you are nobody. Abdication feels like annihilation.",
+      healingPath: "Through graceful exit — planned, intentional stepping-down with ceremony and dignity. Healing comes when you discover who you are without the crown.",
+      sacredPurpose: "To model graceful transition of power — showing the collective that stepping down can be the most powerful act of all.",
+      shadowExpression: "When unconscious, the Usurper clings to power past its expiration, sabotages successors, or destroys the kingdom rather than hand it over.",
+      affirmation: "I step down with grace. My identity survives the throne."
     },
     Virgo: {
       name: "Fate's Moon",
       essence: "Acceptance of imperfection — releasing the need to fix everything.",
-      description: "Fate's Moon faces the Virgoan crisis of RELEASE — the moment when you must accept that not everything can be fixed, healed, organized, or improved. Some things are simply how they are. Some suffering exists beyond the reach of any remedy. The crisis is in accepting imperfection as a fundamental feature of existence, not a personal failure. This is the moment when the perfectionist makes peace with the universe's refusal to be perfect.",
+      description: "Fate's Moon faces the Virgoan crisis of RELEASE — accepting that not everything can be fixed, healed, organized, or improved. Some things are simply how they are.",
       gifts: ["Acceptance of imperfection", "Wisdom about limits of control", "Peace through surrender", "Helping others accept what cannot be changed"],
       challenges: ["Existential crisis about purpose", "Difficulty with 'good enough'", "May swing between perfectionism and apathy", "Fear that acceptance means giving up"],
       soulLesson: "Learning that acceptance is not resignation — that sometimes the most healing thing is to stop trying to heal.",
-      inRelationships: "You bring acceptance and the ability to love your partner's imperfections. Your challenge is extending that acceptance to yourself — loving your own messiness as generously."
+      inRelationships: "You bring acceptance and the ability to love your partner's imperfections. Your challenge is extending that acceptance to yourself.",
+      coreWound: "The wound of powerlessness — the devastating realization that some things cannot be fixed, no matter how precise, how dedicated, how perfect your effort.",
+      healingPath: "Through surrender practice — meditation, prayer, letting-go rituals. Healing comes when you discover that acceptance is its own form of mastery.",
+      sacredPurpose: "To teach the collective that some things are not meant to be fixed but WITNESSED — that compassionate acceptance heals what effort cannot.",
+      shadowExpression: "When unconscious, Fate's Moon swings between obsessive fixing and complete apathy — either trying to control everything or giving up entirely.",
+      affirmation: "I accept what I cannot change. My acceptance IS the healing."
     },
     Libra: {
       name: "Judge's Moon",
       essence: "The crisis of fairness — when balance requires difficult verdicts.",
-      description: "The Judge's Moon faces the hardest Libran crisis: the moment when balance requires a VERDICT. You can no longer see both sides — you must CHOOSE a side. This goes against every instinct you have, but the crisis demands it. True justice, you're learning, sometimes requires unbalanced action. The Judge must rule, and ruling means someone will be unhappy. The wisdom here is learning to make difficult decisions from a place of conscience rather than calculation.",
+      description: "The Judge's Moon faces the hardest Libran crisis: the moment when balance requires a VERDICT. You can no longer see both sides — you must CHOOSE a side. True justice sometimes requires unbalanced action.",
       gifts: ["Moral clarity under pressure", "Ability to make fair but difficult decisions", "Balancing mercy with justice", "Integrity in judgment"],
       challenges: ["Agony of decision-making", "Fear of being wrong", "Can become judgmental as overcompensation", "Difficulty living with verdicts"],
       soulLesson: "Learning that every judgment includes mercy — that the wisest judge remembers that they too will be judged.",
-      inRelationships: "You bring fairness and moral clarity. Your challenge is not judging your partner — applying mercy at home even when you must apply justice in the world."
+      inRelationships: "You bring fairness and moral clarity. Your challenge is not judging your partner — applying mercy at home even when you must apply justice in the world.",
+      coreWound: "The wound of the impossible choice — the agony of knowing that any verdict will hurt someone. The judge who suffers from every sentence they pass.",
+      healingPath: "Through forgiving yourself for imperfect judgments. Healing comes when you accept that every verdict is flawed, and that's the nature of human justice.",
+      sacredPurpose: "To carry the weight of judgment for the collective — to make the hard calls that others avoid, and to make them with as much mercy as justice.",
+      shadowExpression: "When unconscious, the Judge becomes the hanging judge who punishes everyone (including themselves), or the one who avoids all judgment and lets injustice stand.",
+      affirmation: "I judge with mercy. Imperfect justice is still justice."
     },
     Scorpio: {
       name: "Madwoman's Moon",
       essence: "The crisis of control — when power must be surrendered to transformation.",
-      description: "The Madwoman's Moon is the most intense crisis in the Last Quarter — the moment when Scorpio's iron control SHATTERS. You've held it together for so long, so tightly, with such ferocious discipline — and now the container cracks. This isn't breakdown; it's BREAKTHROUGH. The 'madness' is actually a liberation — the wild, untamed energy that has been imprisoned by your need for control finally breaking free. The Madwoman's journey is learning that some of your most sacred power lives in the parts of yourself you've been most afraid of.",
+      description: "The Madwoman's Moon is the most intense crisis in the Last Quarter — when Scorpio's iron control SHATTERS. The 'madness' is actually a liberation — the wild, untamed energy that has been imprisoned by your need for control finally breaking free.",
       gifts: ["Liberation through release", "Access to untamed power", "Breaking free from control patterns", "Authentic wildness"],
       challenges: ["Terrifying loss of control", "Difficulty trusting the process", "Others' fear of your wildness", "Risk of genuinely destructive behavior"],
       soulLesson: "Learning that control was the cage, not the safety — that your wild self is not your enemy but your deepest ally.",
-      inRelationships: "You bring authentic rawness and the willingness to be completely unmasked. Your challenge is giving your partner time to adjust — your liberation can feel like an earthquake to those around you."
+      inRelationships: "You bring authentic rawness and willingness to be completely unmasked. Your challenge is giving your partner time to adjust.",
+      coreWound: "The wound of the tightly held — you controlled everything because loss of control once meant catastrophe. Now the container is cracking from internal pressure.",
+      healingPath: "Through controlled release — ecstatic dance, primal scream, cathartic breathwork. Healing comes when you discover that wildness and sanity can coexist.",
+      sacredPurpose: "To show the collective that 'madness' is often liberation — that what looks like breakdown is frequently breakthrough.",
+      shadowExpression: "When unconscious, the Madwoman's energy becomes genuinely destructive — burning bridges, relationships, and opportunities in an unconscious bid for freedom.",
+      affirmation: "My wildness is sacred. Breaking free is not breaking down."
     },
     Sagittarius: {
       name: "Hunter's Moon",
       essence: "The crisis of belief — when old truths are released to make room for new understanding.",
-      description: "The Hunter's Moon tracks not prey but TRUTH — and the crisis comes when the truth you've been tracking turns out to be different from what you expected. Every belief system you've built, every philosophy you've championed, every grand narrative you've constructed — all must be re-examined. Some will survive; some won't. The Hunter's courage lies in following the trail even when it leads to the death of cherished beliefs.",
+      description: "The Hunter's Moon tracks not prey but TRUTH — and the crisis comes when the truth you've been tracking turns out to be different from what you expected. Every belief system must be re-examined.",
       gifts: ["Courage to follow truth wherever it leads", "Releasing outdated beliefs", "Intellectual honesty", "Finding new truth in unexpected places"],
       challenges: ["Grief for lost beliefs", "Difficulty trusting new ideas", "May swing between cynicism and credulity", "Loneliness of intellectual honesty"],
       soulLesson: "Learning that the hunt for truth never ends — that the greatest truth is the willingness to keep looking.",
-      inRelationships: "You bring radical honesty and the courage to question everything, including your own relationship assumptions. Your challenge is not destabilizing your partner with constant philosophical upheaval."
+      inRelationships: "You bring radical honesty and the courage to question everything. Your challenge is not destabilizing your partner with constant philosophical upheaval.",
+      coreWound: "The wound of the shattered certainty — you believed something with your whole being, and it turned out to be wrong. Now you question everything, including your ability to know.",
+      healingPath: "Through rebuilding belief from scratch — not adopting someone else's truth but discovering your own through direct experience.",
+      sacredPurpose: "To track truth relentlessly for the collective — to be the one who follows the trail even when it leads to uncomfortable places.",
+      shadowExpression: "When unconscious, the Hunter becomes the cynical destroyer of others' beliefs, or the truth-seeker so committed to the hunt that they can't settle on anything.",
+      affirmation: "I follow truth wherever it leads. My doubts are as sacred as my certainties."
     },
     Capricorn: {
       name: "Miser's Moon",
       essence: "Releasing attachment to status — when accomplishments must be let go.",
-      description: "The Miser's Moon faces Capricorn's deepest fear: the loss of everything you've worked for. Not because you failed, but because the universe is asking you to RELEASE it. Your career, your status, your carefully constructed life — all must be re-evaluated through the lens of this question: does this still serve the soul? The Miser's crisis is in the clinging — and the liberation is in the releasing. What remains after you let go of status is your authentic self.",
+      description: "The Miser's Moon faces Capricorn's deepest fear: the loss of everything you've worked for. Not because you failed, but because the universe is asking you to RELEASE it.",
       gifts: ["Understanding the true cost of ambition", "Wisdom about attachment and status", "Generosity from a place of fullness", "Freedom from the achievement treadmill"],
       challenges: ["Terror of losing status", "Difficulty distinguishing self from accomplishments", "May hoard out of fear", "Crisis of identity without achievement"],
       soulLesson: "Learning that you are not your résumé — that the soul's value has nothing to do with worldly success.",
-      inRelationships: "You bring the wisdom of someone who has learned what truly matters. Your challenge is not projecting achievement anxiety onto your partner — loving them for who they are, not what they've accomplished."
+      inRelationships: "You bring the wisdom of someone who has learned what truly matters. Your challenge is not projecting achievement anxiety onto your partner.",
+      coreWound: "The wound of the empty trophy case — the terror that without your achievements, titles, and status, you are nothing. You ARE your résumé.",
+      healingPath: "Through voluntary simplification — giving away status symbols, stepping down from positions. Healing comes when you discover that you exist independent of your accomplishments.",
+      sacredPurpose: "To show the collective that identity survives the loss of achievement — that who you ARE is not what you've DONE.",
+      shadowExpression: "When unconscious, the Miser hoards compulsively, or destroys their own achievements out of terror of losing them.",
+      affirmation: "I am more than my achievements. My worth is inherent, not earned."
     },
     Aquarius: {
       name: "Heretic's Moon",
       essence: "The revolutionary crisis of conscience — challenging even one's own revolution.",
-      description: "The Heretic's Moon faces the most uncomfortable crisis for an Aquarian soul: questioning your OWN ideology. It's one thing to rebel against the establishment — it's another to rebel against your own rebellion. The Heretic realizes that every revolution eventually becomes its own establishment, that every ideology eventually becomes its own dogma. The crisis is in maintaining intellectual honesty even when it means admitting that your side is wrong too.",
+      description: "The Heretic's Moon faces the most uncomfortable crisis for an Aquarian soul: questioning your OWN ideology. It's one thing to rebel against the establishment — it's another to rebel against your own rebellion.",
       gifts: ["Intellectual honesty at the highest level", "Ability to question all systems, including your own", "True independence of thought", "Integrity beyond ideology"],
       challenges: ["Alienation from former allies", "Feeling like you belong nowhere", "Risk of perpetual contrarianism", "Loneliness of true independence"],
       soulLesson: "Learning that the deepest freedom is freedom from your own fixed ideas — that the most revolutionary act is changing your mind.",
-      inRelationships: "You bring brutal intellectual honesty and true independence. Your challenge is not heresy-testing your partner — building something together even while questioning everything."
+      inRelationships: "You bring brutal intellectual honesty and true independence. Your challenge is not heresy-testing your partner.",
+      coreWound: "The wound of the betrayed revolutionary — you discovered that your own cause has become the thing it fought against. The disillusionment is soul-deep.",
+      healingPath: "Through building a new vision that includes what you've learned from the failure of the old one. Healing comes when you stop defining yourself by what you oppose.",
+      sacredPurpose: "To be the collective's immune system — the one who questions even the good guys, ensuring that no revolution becomes its own tyranny.",
+      shadowExpression: "When unconscious, the Heretic becomes the perpetual contrarian who opposes everything, or the disillusioned idealist who trusts nothing and no one.",
+      affirmation: "I question with love. Changing my mind is the ultimate freedom."
     },
     Pisces: {
       name: "Moon of Lost Souls",
       essence: "The crisis of dissolution — surrendering identity to the collective ocean.",
-      description: "The Moon of Lost Souls is the most dissolved archetype in the system — the soul at the edge of the ocean, about to merge with the infinite. This isn't pathology; it's the natural end of the Piscean journey. The ego is dissolving, the boundaries are gone, and you're becoming transparent to the divine. The crisis is in the TERROR of dissolution — the fear that if you let go completely, there will be nothing left. But the truth is that what remains after ego dissolves is something MORE, not less.",
+      description: "The Moon of Lost Souls is the most dissolved archetype — the soul at the edge of the ocean, about to merge with the infinite. The ego is dissolving, the boundaries are gone, and you're becoming transparent to the divine.",
       gifts: ["Transparency to the divine", "Complete ego surrender", "Access to collective consciousness", "Mystical union"],
       challenges: ["Loss of individual identity", "Difficulty functioning in the material world", "May appear 'lost' to others", "Risk of genuine dissolution without return"],
       soulLesson: "Learning that dissolution is not destruction — that you are the ocean pretending to be a wave, and remembering that is coming HOME.",
-      inRelationships: "You bring mystical depth and an ability to merge completely. Your challenge is maintaining enough sense of self to be a partner — you can't love someone if you've dissolved completely."
+      inRelationships: "You bring mystical depth and an ability to merge completely. Your challenge is maintaining enough sense of self to be a partner.",
+      coreWound: "The wound of the dissolving self — the terror and ecstasy of losing the boundaries that define 'you.' You're not sure where you end and everything else begins.",
+      healingPath: "Through grounding practices that maintain a thread of individual identity while allowing cosmic expansion. Healing comes when dissolution becomes a CHOICE, not a collapse.",
+      sacredPurpose: "To show the collective that ego death is not actual death — that what lies beyond the individual self is vaster, not emptier.",
+      shadowExpression: "When unconscious, the Moon of Lost Souls becomes the one who disappears entirely — into substances, fantasy, madness, or spiritual bypass.",
+      affirmation: "I dissolve into the ocean AND return to the shore. Both are me."
     },
   },
 
@@ -823,110 +1317,182 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
     Aries: {
       name: "Veteran's Moon",
       essence: "The elder warrior — courage refined into wisdom, scars worn as badges of honor.",
-      description: "The Veteran's Moon is the warrior at the end of the journey — scarred, wise, and at peace. You've fought every battle there is to fight, and now you understand something that younger warriors can't: that the greatest victories are invisible, the hardest battles are internal, and the truest courage is the kind that comes AFTER the war. You carry your scars not as wounds but as wisdom. Your presence alone is a form of protection — not because you're still dangerous, but because you've BEEN dangerous, and now you've chosen peace.",
+      description: "The Veteran's Moon is the warrior at the end of the journey — scarred, wise, and at peace. You've fought every battle there is to fight, and now you understand something that younger warriors can't: that the greatest victories are invisible, the hardest battles are internal, and the truest courage is the kind that comes AFTER the war.",
       gifts: ["Wisdom earned through battle", "Peace after war", "Mentoring younger warriors", "Courage refined into gentleness"],
       challenges: ["Old wounds that resurface", "Difficulty with gentleness after lifetimes of fighting", "May feel purposeless in peacetime", "Carrying others' war stories"],
       soulLesson: "Learning that the final battle is with yourself — and the victory is in surrender.",
-      inRelationships: "You bring hard-won wisdom and genuine tenderness. Your challenge is allowing yourself to be held — letting your partner see the tired warrior beneath the armor."
+      inRelationships: "You bring hard-won wisdom and genuine tenderness. Your challenge is allowing yourself to be held.",
+      coreWound: "The wound of the never-ending war — part of you believes peace is just the pause between battles. You're waiting for the other shoe to drop.",
+      healingPath: "Through letting the war be OVER. Ceremony, ritual ending, formal discharge. Healing comes when your body finally believes the fighting is done.",
+      inTheBody: "Old injuries, chronic tension patterns from years of vigilance, the scarred tissues of a life lived at full intensity. Your body carries its history in its very structure.",
+      sacredPurpose: "To embody the wisdom that comes after war — to mentor the next generation of warriors in the art of peace.",
+      shadowExpression: "When unconscious, the Veteran becomes the old soldier who glorifies war, or the one so traumatized they can't accept peace as real.",
+      affirmation: "The war is over. I lay down my weapons and rest in the peace I've earned."
     },
     Taurus: {
       name: "Ancestor's Moon",
       essence: "The keeper of roots — connected to the land and the lineage that came before.",
-      description: "The Ancestor's Moon is connected to the deepest roots — the soil, the bloodline, the ancient rhythms of earth and season that existed long before humans had words for them. You carry ancestral memory in your body, in your bones, in your relationship with the land. This isn't nostalgia; it's a genuine CHANNELING of wisdom that flows up through generations. You know things you were never taught because the knowledge lives in your cells. Your gift to the world is remembering what everyone else has forgotten.",
+      description: "The Ancestor's Moon is connected to the deepest roots — the soil, the bloodline, the ancient rhythms of earth and season that existed long before humans had words for them. You carry ancestral memory in your body, in your bones, in your relationship with the land.",
       gifts: ["Ancestral connection", "Earth wisdom", "Memory of ancient knowledge", "Grounding presence rooted in deep time"],
       challenges: ["Weight of ancestral patterns", "Difficulty with modernity", "May idealize the past", "Carrying generational trauma"],
       soulLesson: "Learning that honoring the ancestors includes HEALING their wounds — that you can be the one who breaks the old patterns while keeping the old wisdom.",
-      inRelationships: "You bring rootedness, ancestral wisdom, and a deep connection to place and tradition. Your challenge is being open to your partner's different roots — creating new traditions alongside the ancient ones."
+      inRelationships: "You bring rootedness, ancestral wisdom, and a deep connection to place and tradition. Your challenge is being open to your partner's different roots.",
+      coreWound: "The wound of inherited pain — you carry not just your own suffering but the unhealed wounds of your lineage. Generational trauma lives in your cells.",
+      healingPath: "Through ancestral healing work — family constellations, genealogy with intention, land-based ceremony. Healing comes when you become the ancestor who heals the line.",
+      inTheBody: "The bones (ancestral structure), the DNA, the gut (where ancestral memory is stored). You may feel things that belong to your lineage rather than your personal history.",
+      sacredPurpose: "To be the bridge between past and future — honoring what was while healing what hurt, so the next generation inherits wisdom without trauma.",
+      shadowExpression: "When unconscious, the Ancestor becomes the one who can't move forward because the past won't release them, or the one who forces old ways onto new generations.",
+      affirmation: "I honor my roots. I heal the lineage. I am the ancestor my descendants will thank."
     },
     Gemini: {
       name: "Teacher's Moon",
       essence: "Wisdom distilled to simplicity — the mind that has traveled far enough to speak plainly.",
-      description: "The Teacher's Moon is Gemini at its most distilled — the brilliant mind that has traveled so far it has come full circle to simplicity. After a lifetime of gathering, sorting, analyzing, and communicating, you've arrived at the place where the most complex truths can be spoken in the simplest words. You don't need to prove your intelligence anymore — your clarity IS the proof. The Teacher's Moon has the rarest gift of all: the ability to make the profound accessible without dumbing it down.",
+      description: "The Teacher's Moon is Gemini at its most distilled — the brilliant mind that has traveled so far it has come full circle to simplicity. After a lifetime of gathering, sorting, analyzing, and communicating, you've arrived at the place where the most complex truths can be spoken in the simplest words.",
       gifts: ["Clarity of communication", "Distilling complexity to simplicity", "Teaching from deep experience", "Bridge between knowledge and understanding"],
       challenges: ["May oversimplify out of weariness", "Difficulty with students who aren't ready", "Can feel their wisdom is undervalued", "Tired of explaining"],
       soulLesson: "Learning that the final lesson you teach is your own silence — that sometimes the most powerful teaching is BEING, not explaining.",
-      inRelationships: "You bring wisdom, clarity, and an ability to understand your partner at the deepest level. Your challenge is just BEING with them, without always teaching or explaining."
+      inRelationships: "You bring wisdom, clarity, and an ability to understand your partner at the deepest level. Your challenge is just BEING with them, without always teaching or explaining.",
+      coreWound: "The wound of the unheard teacher — you've distilled lifetimes of learning into clarity, and the world is too busy, too distracted, too shallow to listen.",
+      healingPath: "Through accepting that your teaching has already seeded more than you know. Healing comes when you trust that the seeds you've planted are growing in soil you can't see.",
+      inTheBody: "The throat (refined from years of teaching), the hands (writer's hands), the nervous system (finally calm after a lifetime of seeking). Your body has settled into the quiet that follows understanding.",
+      sacredPurpose: "To distill the complex into the accessible — to speak the truth so simply that even a child can understand it.",
+      shadowExpression: "When unconscious, the Teacher becomes the lecturing elder who won't let others discover for themselves, or the one so tired of talking they've given up on communication entirely.",
+      affirmation: "My simplest words carry my deepest wisdom. Silence teaches too."
     },
     Cancer: {
       name: "Keeper of Memories Moon",
       essence: "Guardian of the emotional treasury — the soul that remembers everything and forgives everything.",
-      description: "The Keeper of Memories is the soul entrusted with the emotional history of the family, the community, the lineage. You remember — not just facts, but FEELINGS. The joy at the wedding, the grief at the funeral, the laughter at the dinner table, the tears shed in the dark. You carry these memories not as burdens but as sacred trusts. Your gift is that nothing is lost — every love, every loss, every moment of connection is held in your vast emotional memory. And the miracle is that you've learned to hold it all with tenderness rather than pain.",
+      description: "The Keeper of Memories is the soul entrusted with the emotional history of the family, the community, the lineage. You remember — not just facts, but FEELINGS. The joy at the wedding, the grief at the funeral, the laughter at the dinner table, the tears shed in the dark.",
       gifts: ["Vast emotional memory", "Ability to hold collective history", "Tenderness with the past", "Healing through remembering"],
       challenges: ["Weight of all those memories", "Difficulty living in the present", "May drown in nostalgia", "Others' projection of their own memories onto you"],
       soulLesson: "Learning that memories are not prisons — that you can hold the past in an open hand rather than a clenched fist.",
-      inRelationships: "You remember every detail of your shared history. You hold the emotional archive of the relationship. Your challenge is being as present for new memories as you are devoted to old ones."
+      inRelationships: "You remember every detail of your shared history. Your challenge is being as present for new memories as you are devoted to old ones.",
+      coreWound: "The wound of the endlessly remembering heart — you can't forget, and the sheer volume of emotional memory can be crushing. Every love, every loss, every joy is simultaneously present.",
+      healingPath: "Through sacred storytelling — sharing memories rather than hoarding them. Healing comes when the memories become gifts given rather than burdens carried.",
+      inTheBody: "The chest (where memories are held), the stomach (where emotions are processed), the water balance of the body. You may retain fluid when retaining emotions.",
+      sacredPurpose: "To be the collective's emotional archive — ensuring that nothing felt is ever truly lost.",
+      shadowExpression: "When unconscious, the Keeper becomes the one who can't stop living in the past, or the emotional hoarder who uses memories to manipulate or guilt-trip.",
+      affirmation: "My memories are gifts, not chains. I remember with love, not with clinging."
     },
     Leo: {
       name: "Bard's Moon",
       essence: "The final performance — art created not for applause but as an offering to eternity.",
-      description: "The Bard's Moon is Leo's final, most magnificent creative act — the performance given not for an audience but for the AGES. You've moved beyond needing applause, beyond caring about reviews, beyond performing for recognition. What remains is pure creative expression — art for art's sake, beauty for beauty's sake, truth told not because anyone is listening but because it must be told. The Bard sings at the edge of the world, and the song echoes into eternity.",
+      description: "The Bard's Moon is Leo's final, most magnificent creative act — the performance given not for an audience but for the AGES. You've moved beyond needing applause, beyond caring about reviews. What remains is pure creative expression — art for art's sake.",
       gifts: ["Art as spiritual offering", "Creating beyond ego", "Timeless self-expression", "Inspiring others through pure creative integrity"],
       challenges: ["May feel unheard", "Difficulty with worldly irrelevance", "Can be lonely at the edge of the world", "Risk of withdrawal from life"],
       soulLesson: "Learning that the song was always for yourself — that your truest audience has always been your own soul.",
-      inRelationships: "You bring soulful creativity and the beauty of a love expressed without agenda. Your challenge is remembering that your partner is HERE, in this life, and needs your presence as much as your poetry."
+      inRelationships: "You bring soulful creativity and the beauty of a love expressed without agenda. Your challenge is remembering that your partner is HERE, in this life.",
+      coreWound: "The wound of the unseen masterpiece — you've created something beautiful and eternal, and no one may see it in your lifetime. The agony of art made for the ages.",
+      healingPath: "Through creating with no intention of being seen — art as prayer, expression as offering to the void. Healing comes when the act of creation becomes its own reward.",
+      inTheBody: "The heart (always Leo's domain), the vocal cords, the creative center. Your body is a living instrument, played not for the world but for the divine.",
+      sacredPurpose: "To create the art that outlives the artist — to sing the song that echoes after the singer is gone.",
+      shadowExpression: "When unconscious, the Bard withdraws entirely, creating in isolation and resentment, or clings to the need for recognition even in the twilight phase.",
+      affirmation: "I create for eternity. The song sings itself through me."
     },
     Virgo: {
       name: "Monk's Moon",
       essence: "Sacred simplicity — service stripped of ego, devotion purified to its essence.",
-      description: "The Monk's Moon is Virgo reduced to its essence — service so pure it becomes prayer, routine so sacred it becomes ritual. You've stripped away everything unnecessary until only the essential remains: the simple, devoted act of showing up, day after day, to serve something greater than yourself. This isn't deprivation; it's LIBERATION. By releasing everything that doesn't matter, you've discovered what does. The Monk's life is simple — and that simplicity is the most profound statement of faith.",
+      description: "The Monk's Moon is Virgo reduced to its essence — service so pure it becomes prayer, routine so sacred it becomes ritual. You've stripped away everything unnecessary until only the essential remains.",
       gifts: ["Sacred simplicity", "Devotion without ego", "Finding the divine in daily routine", "Inspiring others through example"],
       challenges: ["Can become too austere", "Difficulty with pleasure and abundance", "May judge others' complexity", "Risk of spiritual pride in simplicity"],
       soulLesson: "Learning that the most sacred act is the simplest one performed with complete presence — that washing dishes can be as holy as prayer.",
-      inRelationships: "You bring devotion, simplicity, and unwavering presence. Your challenge is allowing your partner's complexity and messiness — not requiring them to match your austerity."
+      inRelationships: "You bring devotion, simplicity, and unwavering presence. Your challenge is allowing your partner's complexity and messiness.",
+      coreWound: "The wound of the too-simple — in a world that values complexity, your simplicity may be dismissed as naïveté. You may doubt whether simplicity is wise or just limited.",
+      healingPath: "Through celebrating simplicity as spiritual attainment — not as lack but as refinement. Healing comes when you recognize that stripping away is an act of mastery.",
+      inTheBody: "The digestive system (purified), the hands (devoted to simple tasks), the gut (clean and clear). Your body reflects your spiritual practice — it thrives on simplicity.",
+      sacredPurpose: "To model sacred simplicity for a complex world — to prove that the most profound life can be the most unadorned.",
+      shadowExpression: "When unconscious, the Monk becomes the ascetic who uses simplicity as armor against feeling, or the one who judges everyone for their 'unnecessary' complexity.",
+      affirmation: "My simplicity is my strength. The sacred lives in the ordinary."
     },
     Libra: {
       name: "Sacred Whore's Moon",
-      essence: "Love beyond judgment — the soul that has loved enough to transcend all conditions.",
-      description: "The Sacred Whore's Moon (this is Kaldera's term from temple priestess traditions) represents love in its most radical form — love that has transcended ALL conditions, judgments, and limitations. You've loved so many, so deeply, in so many forms, that you've arrived at a place where love itself is your identity. Not romantic love, not sexual love, not parental love — just LOVE, in its purest, most unconditional form. You see the divine in everyone, and your presence reminds others of their own divinity.",
-      gifts: ["Unconditional love", "Seeing the divine in everyone", "Love as a spiritual practice", "Liberating others from shame"],
-      challenges: ["Being misunderstood", "Others projecting their shame onto you", "Difficulty with conventional relationships", "Vulnerability to exploitation"],
-      soulLesson: "Learning that the highest form of love includes loving YOURSELF with the same unconditional acceptance you offer everyone else.",
-      inRelationships: "You bring love so deep it can transform your partner at the soul level. Your challenge is finding a partner who can receive that depth without being overwhelmed by it."
+      essence: "Love beyond judgment — the soul that has loved enough to transcend all conditions and heal through the vibration of beauty itself.",
+      description: "The Sacred Whore's Moon (Kaldera draws this name from ancient temple priestess traditions — the hierodule, the sacred feminine, the one who heals through love's most radical form) represents love that has transcended ALL conditions, judgments, and limitations. You've loved so many, so deeply, in so many forms, that you've arrived at a place where love itself is your identity. Not romantic love, not sexual love, not parental love — just LOVE, in its purest, most unconditional form.\n\nBut here is the deeper teaching: of all the Libra Moons, the Sacred Whore is the most concerned with VALUE and SELF-VALUE. Where other Libra phases struggle with the question of worth through the lens of partnership, appearance, or fairness, the Balsamic Libra Moon's struggle is intensely personal. When there is a lesson, you must get it exactly right. You tilt the scales between justice and beauty, between what is fair and what is aesthetically, spiritually TRUE. Nothing approximate will satisfy this Moon.\n\nPeople born under this Moon need to develop a strong sense of self-worth that does NOT depend on the opinion of others — yet takes their feelings into account in a higher, transpersonal way. This is the paradox of the Sacred Whore: to love completely while remaining completely yourself.\n\nOf all the Libra Moons, this one is the most drawn to the healing of others. Yet unlike the Pisces Moon archetypes (where healing flows through dissolution and merging), the Sacred Whore's healing is accomplished through an expression of beauty, harmony, and the vibration of Venus so strong that it can break through old wounds and heal the needy. Your very PRESENCE is medicine — not because you do anything specific, but because you carry the frequency of unconditional beauty. You see the divine in everyone, and your presence reminds others of their own divinity. The beauty you embody is not cosmetic but cosmic — it is the beauty of a soul that has loved without limits and survived with grace.\n\nYour journey through the Balsamic phase means you carry ancient knowledge about love — knowledge that sometimes feels heavy, sometimes feels like a gift, and always feels like a responsibility. You have been the lover, the beloved, the abandoned, the rescuer, and the healed. Now you are becoming something beyond all roles: the living frequency of love itself.",
+      gifts: ["Unconditional love that transforms at the cellular level", "Seeing the divine in everyone without exception", "Love as a spiritual practice beyond personal attachment", "Liberating others from shame through radical acceptance", "Healing through beauty and the vibration of Venus", "The ability to hold space for others' darkness without losing your light", "Natural understanding of sacred sexuality and the body as temple"],
+      challenges: ["Being profoundly misunderstood by a culture that doesn't understand sacred love", "Others projecting their shame, desire, and shadow onto you", "Difficulty with conventional relationships that require you to be smaller", "Vulnerability to exploitation by those who mistake your openness for weakness", "The exhaustion of loving without limit in a world that places conditions on everything", "Perfectionism about getting the lesson 'exactly right' — the scales must balance PERFECTLY"],
+      soulLesson: "Learning that the highest form of love includes loving YOURSELF with the same unconditional acceptance you offer everyone else. The Sacred Whore's final initiation is turning that transformative gaze inward — loving her own imperfection with the same fierce tenderness she offers the world.",
+      inRelationships: "You bring love so deep it can transform your partner at the soul level — not through effort but through PRESENCE. Your challenge is finding a partner who can receive that depth without being overwhelmed by it, who can match your frequency rather than being consumed by it. You need someone who sees YOU, not just the love you radiate.",
+      coreWound: "The wound of conditional self-worth — the deep, paradoxical pain of a soul that can love everyone unconditionally except themselves. You may have internalized the message that your worth lies in what you give, how beautifully you love, how perfectly you balance the scales for others. When no one is watching, when no one needs your healing presence, you may feel hollow. The Sacred Whore's deepest work is filling that hollow with self-regard that doesn't depend on being needed.",
+      healingPath: "Through beauty directed inward — creating beauty for yourself, adorning yourself, turning the healing gaze on your own wounds. Surround yourself with Venus medicine: art, music, flowers, fabric, the aesthetics of self-care. But also through developing opinions, preferences, and boundaries that exist independent of others' reactions. Healing comes when you realize that 'tilting the scales exactly right' includes the scale between self and other — and that scale has been tipped toward others your entire life. The correction is radical self-love.",
+      inTheBody: "The kidneys and lower back (Venus/Libra's domain — chronically stressed from holding balance for everyone else), the throat (wanting to speak beauty into the world), the skin (the boundary between your love and the world's need). You may be exquisitely sensitive to beauty and ugliness at a physiological level — beautiful environments literally heal you, while discord makes you physically ill. Your body responds to music, vibration, and harmony as medicine. Touch is sacred to you, and the quality of touch matters enormously — rough or careless contact may feel like violence. Sound healing, color therapy, and aromatic medicine work powerfully on your system because Venus governs vibration, and you ARE vibration.",
+      sacredPurpose: "To carry the ancient frequency of unconditional love into a world that has forgotten it exists. You are proof that love is not a transaction but a VIBRATION — and that when that vibration is strong enough, it can break through old wounds and heal what nothing else can reach. Your purpose is not to fix or counsel or therapize — it is simply to BE the frequency, to embody beauty and love so purely that others remember their own divinity in your presence.",
+      shadowExpression: "When unconscious, the Sacred Whore's Moon becomes the people-pleaser who gives love to earn love, the co-dependent who confuses being needed with being valued, the perfectionist who can never get the lesson 'right enough,' or the one who loves everyone except themselves. In shadow, you may use your beauty and healing presence as currency — trading love for worth, grace for safety. The deepest shadow is the belief that you have no value when you're NOT loving, healing, or balancing someone else's needs.",
+      affirmation: "I am worthy of the love I give. My beauty begins with how I see myself. The scales are balanced when I am on them too."
     },
     Scorpio: {
       name: "Phoenix Moon",
       essence: "Death and rebirth mastered — the soul that rises from its own ashes, again and again.",
-      description: "The Phoenix Moon is Scorpio's ultimate archetype — the soul that has died and been reborn so many times that the process itself has become a trusted ally. You don't fear death anymore — not literal death, not ego death, not the death of relationships, careers, identities, or beliefs. You know from EXPERIENCE that something always rises from the ashes. That knowledge makes you the most fearless soul in the zodiac, because you know the secret: NOTHING truly dies. It only transforms.",
+      description: "The Phoenix Moon is Scorpio's ultimate archetype — the soul that has died and been reborn so many times that the process itself has become a trusted ally. You don't fear death anymore — not literal death, not ego death. You know from EXPERIENCE that something always rises from the ashes.",
       gifts: ["Mastery of transformation", "Fearlessness about endings", "Ability to help others through their 'deaths'", "Deep trust in the cycle of renewal"],
       challenges: ["Can become detached from life", "May unconsciously create destruction", "Difficulty with stability and permanence", "Others' fear of your comfort with death"],
       soulLesson: "Learning that the final death is the death of the need to die — that the Phoenix's ultimate transformation is learning to LIVE without needing to burn.",
-      inRelationships: "You bring profound understanding of transformation and an ability to love through the darkest times. Your challenge is not burning down the relationship to test if it can be reborn."
+      inRelationships: "You bring profound understanding of transformation. Your challenge is not burning down the relationship to test if it can be reborn.",
+      coreWound: "The wound of endless cycles — the exhaustion of transformation after transformation. You may wonder: is there a version of me that gets to simply EXIST without burning?",
+      healingPath: "Through choosing stability — deliberately not transforming, not dying, not rising from ashes. Healing comes when you discover that staying the same is its own form of courage.",
+      inTheBody: "The regenerative systems — bone marrow, immune function, cellular renewal. Your body is literally designed for transformation. Honor the cycles but also honor the REST between them.",
+      sacredPurpose: "To be the collective's living proof that death is not the end — that transformation is the fundamental law of existence, and it is trustworthy.",
+      shadowExpression: "When unconscious, the Phoenix burns for the sake of burning — creating destruction not from necessity but from addiction to intensity. Or detaches so completely from life that nothing can touch them.",
+      affirmation: "I have risen enough times to know I can rest. Living without burning is my final transformation."
     },
     Sagittarius: {
       name: "Shaman's Moon",
       essence: "Walking between worlds — the traveler who has journeyed so far inward they can heal others.",
-      description: "The Shaman's Moon is the Sagittarian who has traveled so far that the journey turned inward. You started as a traveler of the outer world and became a traveler of the INNER world — the visionary who walks between dimensions, who speaks with spirits, who brings back medicine from the unseen realms. This isn't metaphor — at least, not entirely. Your consciousness genuinely operates on multiple levels simultaneously, and your gift is bringing healing wisdom from one level to another.",
+      description: "The Shaman's Moon is the Sagittarian who has traveled so far that the journey turned inward. You started as a traveler of the outer world and became a traveler of the INNER world — the visionary who walks between dimensions, who speaks with spirits, who brings back medicine from the unseen realms.",
       gifts: ["Interdimensional awareness", "Healing through spiritual travel", "Bridging seen and unseen worlds", "Teaching through vision"],
       challenges: ["Difficulty staying grounded", "Others' skepticism about your experience", "Risk of spiritual inflation", "Can feel alienated from 'normal' reality"],
       soulLesson: "Learning that the shaman's ultimate journey is the return — that the medicine only works when brought back to the village.",
-      inRelationships: "You bring spiritual depth and an awareness that transcends the ordinary. Your challenge is being fully present in the HERE — meeting your partner in the physical world, not just the spiritual one."
+      inRelationships: "You bring spiritual depth and transcendent awareness. Your challenge is being fully present in the HERE.",
+      coreWound: "The wound of the between-worlds traveler — you belong to neither this world nor the spirit world. You carry the loneliness of the threshold.",
+      healingPath: "Through grounding the spiritual in the physical — cooking, gardening, physical touch. Healing comes when you bring the medicine fully into the body.",
+      inTheBody: "The pineal gland (vision), the hips (the traveler's base), the liver. Your body is a vehicle for interdimensional travel — keep it maintained with earthly care.",
+      sacredPurpose: "To be the bridge between worlds — carrying healing wisdom from dimensions that others cannot access, translating it into forms the village can use.",
+      shadowExpression: "When unconscious, the Shaman becomes the spiritual bypasser who uses transcendence to avoid reality, or the delusional mystic who has lost their tether to the physical world.",
+      affirmation: "I travel between worlds AND return home. The medicine works here, in THIS body."
     },
     Capricorn: {
       name: "Dragon's Moon",
       essence: "Ancient power guarding ancient treasure — the soul that has earned its authority through lifetimes.",
-      description: "The Dragon's Moon is the oldest, most powerful archetype in the Capricorn series — the soul that has accumulated power and wisdom over what feels like LIFETIMES. Like the dragon of mythology, you guard treasure — not gold, but ancient wisdom, tested truths, hard-won understanding. Your authority doesn't come from a title or a position; it comes from the sheer weight of your experience. People sense it when they meet you — the feeling that this person has BEEN here, has SEEN things, and knows more than they're saying.",
+      description: "The Dragon's Moon is the oldest, most powerful archetype in the Capricorn series — the soul that has accumulated power and wisdom over what feels like LIFETIMES. Like the dragon of mythology, you guard treasure — not gold, but ancient wisdom.",
       gifts: ["Ancient authority", "Guarding sacred wisdom", "Profound life experience", "Presence that commands respect without words"],
       challenges: ["Can become hoarding with wisdom", "Difficulty with lightness and play", "May intimidate others unintentionally", "Risk of isolation through power"],
       soulLesson: "Learning that the dragon's treasure was always meant to be shared — that hoarding wisdom serves no one, least of all the dragon.",
-      inRelationships: "You bring depth, gravitas, and the safety of ancient power. Your challenge is letting your partner see the soft belly beneath the scales — the dragon who wants to be loved, not just respected."
+      inRelationships: "You bring depth, gravitas, and the safety of ancient power. Your challenge is letting your partner see the soft belly beneath the scales.",
+      coreWound: "The wound of ancient isolation — you've guarded the treasure so long that you've forgotten there are people outside the cave who could use it. Your power isolates as much as it protects.",
+      healingPath: "Through opening the cave — sharing wisdom without requiring worthiness from the recipients. Healing comes when the dragon discovers that treasure shared is treasure multiplied.",
+      inTheBody: "The skeleton (ancient structure), the joints (worn from lifetimes of holding), the spine (carrying the weight of accumulated authority). Your body carries your history in its very bones.",
+      sacredPurpose: "To be the guardian of deep wisdom — holding it safely until the world is ready, and then releasing it with ancient generosity.",
+      shadowExpression: "When unconscious, the Dragon becomes the power hoarder, the intimidating elder who uses wisdom as a weapon, or the isolate who guards an empty cave.",
+      affirmation: "I open the cave. My treasure serves the world. My power includes vulnerability."
     },
     Aquarius: {
       name: "Prophet's Moon",
       essence: "Vision beyond time — the seer whose radical ideas will only be understood in the future.",
-      description: "The Prophet's Moon sees what cannot yet be seen — the future that is trying to be born through you. Your visions, your ideas, your understanding of where humanity is heading — these are so far ahead of the collective that they may not be understood in your lifetime. This is both your gift and your burden: to see so clearly, and to be so misunderstood. The Prophet doesn't seek followers; the Prophet seeks TRUTH, and trusts that truth will find its audience in time.",
+      description: "The Prophet's Moon sees what cannot yet be seen — the future that is trying to be born through you. Your visions, your ideas, your understanding of where humanity is heading — these are so far ahead of the collective that they may not be understood in your lifetime.",
       gifts: ["Vision of the future", "Seeing truths before their time", "Holding space for what's emerging", "Inspiring future generations"],
       challenges: ["Being ahead of your time", "Loneliness of the visionary", "Frustration with the present", "Risk of disconnecting from present life"],
       soulLesson: "Learning that the prophet's peace comes from trusting the SEED, not needing to see the TREE — that your work will bear fruit you may never taste.",
-      inRelationships: "You bring a sense of cosmic purpose and future vision. Your challenge is being present with your partner NOW — loving what IS rather than what WILL BE."
+      inRelationships: "You bring a sense of cosmic purpose and future vision. Your challenge is being present with your partner NOW.",
+      coreWound: "The wound of premature vision — you see what's coming, but no one believes you. The Cassandra complex: right about the future, unheard in the present.",
+      healingPath: "Through planting seeds without attachment to harvest. Healing comes when you trust that your vision will be received — if not by this generation, then by the next.",
+      inTheBody: "The nervous system (electrically attuned to incoming frequencies), the eyes (far-sighted literally and metaphorically), the circulatory system (carrying future currents through a present body).",
+      sacredPurpose: "To receive and transmit the future's signal — to be the antenna that picks up what's coming so the collective can prepare.",
+      shadowExpression: "When unconscious, the Prophet becomes the doomsayer who uses future knowledge to terrify the present, or the disconnected visionary who lives entirely in the future.",
+      affirmation: "I see what's coming AND I live in the now. My vision serves the present too."
     },
     Pisces: {
       name: "Mystic's Moon",
       essence: "Transparent to the divine — the soul that has dissolved so completely it becomes a pure channel.",
-      description: "The Mystic's Moon is the final archetype in the entire 96-Moon system — the soul that has journeyed through every phase, every sign, every crisis, and every triumph, and has arrived at the place of ultimate transparency. You are no longer separate from the divine — you ARE the divine, experiencing itself through a temporary human form. This isn't ego inflation; it's ego DISSOLUTION. The mystic has no need for identity because they've discovered that they ARE everything. And from that place of cosmic unity, paradoxically, they become the most uniquely, beautifully human beings of all.",
+      description: "The Mystic's Moon is the final archetype in the entire 96-Moon system — the soul that has journeyed through every phase, every sign, every crisis, and has arrived at the place of ultimate transparency. You are no longer separate from the divine — you ARE the divine, experiencing itself through a temporary human form.",
       gifts: ["Direct divine connection", "Complete spiritual transparency", "Being a channel for grace", "Inspiring awe through simple presence"],
       challenges: ["Functioning in the material world", "Being understood by others", "Maintaining physical health and boundaries", "The loneliness of total unity"],
       soulLesson: "Learning that the mystic's final lesson is the simplest one: be here, be now, be love.",
-      inRelationships: "You bring a love so vast it feels cosmic. Your partner experiences being loved by something greater than a person. Your challenge is also being the person — the one who takes out the trash, argues about bills, and falls asleep watching TV."
+      inRelationships: "You bring a love so vast it feels cosmic. Your partner experiences being loved by something greater than a person. Your challenge is also being the person — the one who takes out the trash.",
+      coreWound: "The wound of the returning mystic — having touched the infinite, the finite feels unbearably small. Coming back to a body, a name, a life after tasting cosmic unity is the final grief.",
+      healingPath: "Through embodiment — fully inhabiting the body, the senses, the mundane. Healing comes when you discover that the divine is AS present in dish soap as in meditation.",
+      inTheBody: "The feet (connecting the mystic to earth), the crown (open to the cosmos), the entire body as a vehicle for grace. Your physical health depends on grounding practices that anchor spirit in matter.",
+      sacredPurpose: "To be the living proof that the divine exists IN the human — that enlightenment is not escape from the body but full presence within it.",
+      shadowExpression: "When unconscious, the Mystic becomes the spiritual bypasser who uses transcendence to avoid human responsibility, or the one so dissolved they've abandoned their incarnation entirely.",
+      affirmation: "I am the divine in a body. The mundane IS the sacred. I am here on purpose."
     },
   },
 };
