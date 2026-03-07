@@ -465,8 +465,8 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
         />
       </div>
 
-      {/* "Find My Moon" Banner — prominent clickable card */}
-      {myArchetype && selectedChart && (
+      {/* "Find My Moon" Banner — prominent clickable card with explanation */}
+      {myArchetype && selectedChart && natalPhaseResult && (
         <Card
           className="border-primary/40 bg-primary/5 cursor-pointer hover:border-primary/60 hover:shadow-lg transition-all"
           onClick={() => setMyMoonModal(true)}
@@ -488,8 +488,21 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
                   <span className="font-medium text-foreground">{myArchetype.phase}</span> in <span className="font-medium text-foreground">{SIGN_GLYPHS[myArchetype.sign]} {myArchetype.sign}</span>
                   {' · '}{PHASE_CHAPTER_TITLES[myArchetype.phase] && <span className="italic">"{PHASE_CHAPTER_TITLES[myArchetype.phase]}"</span>}
                 </p>
-                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{myArchetype.archetype.essence}</p>
-                <p className="text-xs text-primary mt-2 font-medium">Tap to read your full Moon archetype →</p>
+
+                {/* Explanation of where the name comes from */}
+                <div className="mt-3 p-3 rounded-lg bg-secondary/50 border border-border text-xs text-muted-foreground leading-relaxed">
+                  <p className="font-medium text-foreground mb-1">Where does "{myArchetype.archetype.name}" come from?</p>
+                  <p>
+                    Raven Kaldera's <em>Moon Phase Astrology</em> identifies 96 unique lunar archetypes — one for each combination of the 8 Moon phases × 12 zodiac signs. 
+                    Your Sun–Moon separation is <span className="font-mono text-foreground">{natalPhaseResult.separation}°</span>, placing you in the <strong className="text-foreground">{myArchetype.phase}</strong> phase 
+                    ({PHASE_ORDER.find(p => p.phase === myArchetype.phase)?.degreeRange}). 
+                    Combined with your Moon in <strong className="text-foreground">{SIGN_GLYPHS[myArchetype.sign]} {myArchetype.sign}</strong>, 
+                    your specific archetype is <strong className="text-primary">{myArchetype.archetype.name}</strong>.
+                  </p>
+                </div>
+
+                <p className="text-sm text-muted-foreground mt-3 leading-relaxed">{myArchetype.archetype.essence}</p>
+                <p className="text-xs text-primary mt-2 font-medium">Tap to read your full Moon archetype deep dive →</p>
               </div>
             </div>
           </CardContent>
