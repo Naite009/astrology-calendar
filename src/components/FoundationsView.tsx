@@ -3,7 +3,7 @@ import { ZodiacSignExplorer } from '@/components/narrative/ZodiacSignExplorer';
 import { PlanetEncyclopediaExplorer } from '@/components/narrative/PlanetEncyclopediaExplorer';
 import { HouseEncyclopediaExplorer } from '@/components/narrative/HouseEncyclopediaExplorer';
 import { AspectEncyclopediaExplorer } from '@/components/narrative/AspectEncyclopediaExplorer';
-import { EclipseEncyclopediaExplorer } from '@/components/narrative/EclipseEncyclopediaExplorer';
+import { EclipseEncyclopediaExplorer, EclipseTimingRulesCard } from '@/components/narrative/EclipseEncyclopediaExplorer';
 import { MidpointExplorer } from '@/components/narrative/MidpointExplorer';
 import { ElementDistributionCard } from '@/components/narrative/ElementDistributionCard';
 import { ChartSelector } from '@/components/ChartSelector';
@@ -136,10 +136,13 @@ export function FoundationsView({ userNatalChart, savedCharts, onNavigateToView 
       )}
 
       {activeTab === 'eclipses' && (
-        <EclipseEncyclopediaExplorer
-          userNatalChart={userNatalChart}
-          savedCharts={savedCharts}
-        />
+        <div className="space-y-6">
+          <EclipseTimingRulesCard />
+          <EclipseEncyclopediaExplorer
+            userNatalChart={userNatalChart}
+            savedCharts={savedCharts}
+          />
+        </div>
       )}
     </div>
   );
