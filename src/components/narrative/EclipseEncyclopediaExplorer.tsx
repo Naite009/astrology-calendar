@@ -96,6 +96,34 @@ export const nodalEducation = {
   },
 };
 
+// ── Eclipse Timing Rules Card (McCartney) ──
+export function EclipseTimingRulesCard() {
+  return (
+    <Card className="border-accent/30 bg-accent/5">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm flex items-center gap-2">⏱ Eclipse Timing Rules</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {ECLIPSE_TIMING_RULES.map((rule) => (
+          <div key={rule.type} className="p-3 rounded-lg border border-border bg-background">
+            <div className="flex items-center gap-2 mb-1">
+              <Badge variant="outline" className="text-[10px]">{rule.type === 'solar' ? '☀ Solar' : '☽ Lunar'}</Badge>
+              <span className="text-xs font-semibold text-foreground">Influence: {rule.influencePeriod}</span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">{rule.meaning}</p>
+            <p className="text-xs text-foreground mt-1 leading-relaxed">{rule.practicalGuidance}</p>
+          </div>
+        ))}
+        <div className="p-3 rounded-lg border border-primary/10 bg-primary/5">
+          <p className="text-[10px] font-medium text-primary uppercase tracking-wide mb-1">🔑 Eclipse Degree Triggers</p>
+          <p className="text-xs text-muted-foreground leading-relaxed">{ECLIPSE_DEGREE_TRIGGERS.description}</p>
+          <p className="text-xs text-foreground mt-1 leading-relaxed">{ECLIPSE_DEGREE_TRIGGERS.mostImportant}</p>
+        </div>
+        <p className="text-[10px] text-muted-foreground italic">— {MCCARTNEY_SOURCE}</p>
+      </CardContent>
+    </Card>
+  );
+}
 // ── Eclipse Series Data ──
 const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: string; status: string; description: string; bigPicture?: string; events: EclipseEvent[] }> = {
   'Aries-Libra': {
