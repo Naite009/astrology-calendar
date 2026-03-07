@@ -102,8 +102,29 @@ function ArchetypeDetailModal({ archetype, phase, sign, open, onClose }: {
         </DialogHeader>
         <ScrollArea className="max-h-[60vh] pr-4">
           <div className="space-y-5">
+            {/* Essence */}
+            <p className="text-sm font-medium italic text-primary/80">{archetype.essence}</p>
+
             {/* Description */}
-            <p className="text-sm leading-relaxed text-foreground">{archetype.description}</p>
+            {archetype.description.split('\n\n').map((para, i) => (
+              <p key={i} className="text-sm leading-relaxed text-foreground">{para}</p>
+            ))}
+
+            {/* Core Wound */}
+            {archetype.coreWound && (
+              <div className="p-3 rounded-lg bg-destructive/5 border border-destructive/10">
+                <p className="text-[10px] font-medium text-muted-foreground mb-1">💔 CORE WOUND</p>
+                <p className="text-sm text-foreground leading-relaxed">{archetype.coreWound}</p>
+              </div>
+            )}
+
+            {/* Healing Path */}
+            {archetype.healingPath && (
+              <div className="p-3 rounded-lg bg-green-500/5 border border-green-500/10">
+                <p className="text-[10px] font-medium text-muted-foreground mb-1">🌿 HEALING PATH</p>
+                <p className="text-sm text-foreground leading-relaxed">{archetype.healingPath}</p>
+              </div>
+            )}
 
             {/* Gifts & Challenges */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -129,6 +150,14 @@ function ArchetypeDetailModal({ archetype, phase, sign, open, onClose }: {
               </div>
             </div>
 
+            {/* In the Body */}
+            {archetype.inTheBody && (
+              <div className="p-3 rounded-lg bg-secondary/50 border border-secondary">
+                <p className="text-[10px] font-medium text-muted-foreground mb-1">🫀 IN THE BODY</p>
+                <p className="text-sm text-foreground leading-relaxed">{archetype.inTheBody}</p>
+              </div>
+            )}
+
             {/* Soul Lesson */}
             <div className="p-3 rounded-lg bg-accent/50 border border-accent">
               <p className="text-[10px] font-medium text-muted-foreground mb-1">🔮 SOUL LESSON</p>
@@ -140,6 +169,30 @@ function ArchetypeDetailModal({ archetype, phase, sign, open, onClose }: {
               <p className="text-[10px] font-medium text-muted-foreground mb-1">💕 IN RELATIONSHIPS</p>
               <p className="text-sm text-foreground leading-relaxed">{archetype.inRelationships}</p>
             </div>
+
+            {/* Sacred Purpose */}
+            {archetype.sacredPurpose && (
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+                <p className="text-[10px] font-medium text-muted-foreground mb-1">🌟 SACRED PURPOSE</p>
+                <p className="text-sm text-foreground leading-relaxed">{archetype.sacredPurpose}</p>
+              </div>
+            )}
+
+            {/* Shadow Expression */}
+            {archetype.shadowExpression && (
+              <div className="p-3 rounded-lg bg-muted/50 border border-border">
+                <p className="text-[10px] font-medium text-muted-foreground mb-1">🌑 SHADOW EXPRESSION</p>
+                <p className="text-sm text-foreground leading-relaxed">{archetype.shadowExpression}</p>
+              </div>
+            )}
+
+            {/* Affirmation */}
+            {archetype.affirmation && (
+              <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 text-center">
+                <p className="text-[10px] font-medium text-muted-foreground mb-2">✨ AFFIRMATION</p>
+                <p className="text-base font-serif italic text-foreground leading-relaxed">"{archetype.affirmation}"</p>
+              </div>
+            )}
 
             <p className="text-[10px] text-muted-foreground italic">— Raven Kaldera, Moon Phase Astrology</p>
           </div>
