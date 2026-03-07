@@ -6,7 +6,7 @@ import { ZODIAC_SIGNS_DATA, ELEMENT_COLORS, ZodiacSignData } from '@/lib/zodiacS
 import { buildSignTeaching, type ZodiacSign } from '@/lib/astrology/signTeacher';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { getArchetypesForSign, PHASE_CHAPTER_TITLES } from '@/data/moonPhaseSignArchetypes';
+import { getArchetypesForSign, PHASE_CHAPTER_TITLES, MoonArchetype } from '@/data/moonPhaseSignArchetypes';
 import { getForrestMoonSign } from '@/data/moonForrestData';
 
 const PHASE_EMOJIS: Record<string, string> = {
@@ -15,36 +15,128 @@ const PHASE_EMOJIS: Record<string, string> = {
   'Last Quarter': '🌗', 'Balsamic': '🌘',
 };
 
+/** Archetype Detail Modal (shared) */
+function ArchetypeDetailModal({ archetype, phase, sign, open, onClose }: {
+  archetype: MoonArchetype | null;
+  phase: string;
+  sign: string;
+  open: boolean;
+  onClose: () => void;
+}) {
+  if (!archetype) return null;
+
+  const SIGN_GLYPHS: Record<string, string> = {
+    Aries: '♈', Taurus: '♉', Gemini: '♊', Cancer: '♋', Leo: '♌', Virgo: '♍',
+    Libra: '♎', Scorpio: '♏', Sagittarius: '♐', Capricorn: '♑', Aquarius: '♒', Pisces: '♓',
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-lg max-h-[85vh]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-lg">
+            <span className="text-2xl">{PHASE_EMOJIS[phase] || '🌙'}</span>
+            <span className="font-serif">{archetype.name}</span>
+          </DialogTitle>
+          <div className="flex items-center gap-2 pt-1">
+            <Badge variant="outline" className="text-[10px]">{phase}</Badge>
+            <Badge variant="secondary" className="text-[10px]">{SIGN_GLYPHS[sign]} {sign}</Badge>
+            {PHASE_CHAPTER_TITLES[phase] && (
+              <span className="text-[10px] text-muted-foreground italic">"{PHASE_CHAPTER_TITLES[phase]}"</span>
+            )}
+          </div>
+        </DialogHeader>
+        <ScrollArea className="max-h-[60vh] pr-4">
+          <div className="space-y-5">
+            <p className="text-sm leading-relaxed text-foreground">{archetype.description}</p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+                <p className="text-[10px] font-medium text-muted-foreground mb-2">✦ GIFTS</p>
+                <ul className="space-y-1">
+                  {archetype.gifts.map((g, i) => (
+                    <li key={i} className="text-xs text-foreground flex items-start gap-1.5">
+                      <span className="text-primary mt-0.5">•</span> {g}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="p-3 rounded-lg bg-destructive/5 border border-destructive/10">
+                <p className="text-[10px] font-medium text-muted-foreground mb-2">⚠ CHALLENGES</p>
+                <ul className="space-y-1">
+                  {archetype.challenges.map((c, i) => (
+                    <li key={i} className="text-xs text-foreground flex items-start gap-1.5">
+                      <span className="text-destructive mt-0.5">•</span> {c}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-lg bg-accent/50 border border-accent">
+              <p className="text-[10px] font-medium text-muted-foreground mb-1">🔮 SOUL LESSON</p>
+              <p className="text-sm text-foreground leading-relaxed italic">{archetype.soulLesson}</p>
+            </div>
+
+            <div className="p-3 rounded-lg bg-secondary/50 border border-secondary">
+              <p className="text-[10px] font-medium text-muted-foreground mb-1">💕 IN RELATIONSHIPS</p>
+              <p className="text-sm text-foreground leading-relaxed">{archetype.inRelationships}</p>
+            </div>
+
+            <p className="text-[10px] text-muted-foreground italic">— Raven Kaldera, Moon Phase Astrology</p>
+          </div>
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function KalderaSignSection({ signName }: { signName: string }) {
   const [open, setOpen] = useState(false);
+  const [selectedArchetype, setSelectedArchetype] = useState<{ archetype: MoonArchetype; phase: string } | null>(null);
   const archetypes = getArchetypesForSign(signName);
   if (archetypes.length === 0) return null;
 
   return (
-    <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer w-full pt-2 border-t border-border">
-        <span>☽ Moon Phase Archetypes for {signName}</span>
-        {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-      </CollapsibleTrigger>
-      <CollapsibleContent>
-        <p className="text-[10px] text-muted-foreground mt-1 mb-2">
-          Eight unique Moon archetypes — one for each phase when the Moon is in {signName}.
-        </p>
-        <div className="grid grid-cols-1 gap-2">
-          {archetypes.map(({ phase, archetype }) => (
-            <div key={phase} className="p-2.5 rounded-lg border border-border bg-muted/30 hover:border-muted-foreground/30 transition-colors">
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <span className="text-sm">{PHASE_EMOJIS[phase] || '🌙'}</span>
-                <span className="text-xs font-semibold text-foreground">{archetype.name}</span>
-                <span className="text-[10px] text-muted-foreground">· {PHASE_CHAPTER_TITLES[phase] || phase}</span>
+    <>
+      <Collapsible open={open} onOpenChange={setOpen}>
+        <CollapsibleTrigger className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer w-full pt-2 border-t border-border">
+          <span>☽ Moon Phase Archetypes for {signName}</span>
+          {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <p className="text-[10px] text-muted-foreground mt-1 mb-2">
+            Eight unique Moon archetypes — one for each phase when the Moon is in {signName}. Tap any to read the full description.
+          </p>
+          <div className="grid grid-cols-1 gap-2">
+            {archetypes.map(({ phase, archetype }) => (
+              <div
+                key={phase}
+                onClick={() => setSelectedArchetype({ archetype, phase })}
+                className="p-2.5 rounded-lg border border-border bg-muted/30 hover:border-primary/30 hover:shadow-md transition-all cursor-pointer"
+              >
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="text-sm">{PHASE_EMOJIS[phase] || '🌙'}</span>
+                  <span className="text-xs font-semibold text-foreground">{archetype.name}</span>
+                  <Badge variant="outline" className="text-[9px] px-1 py-0">{phase}</Badge>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">{archetype.essence}</p>
+                <p className="text-[9px] text-primary mt-1">Tap to read more →</p>
               </div>
-              <p className="text-[11px] text-muted-foreground leading-relaxed">{archetype.essence}</p>
-            </div>
-          ))}
-        </div>
-        <p className="text-[10px] text-muted-foreground mt-2 italic">— Raven Kaldera, Moon Phase Astrology</p>
-      </CollapsibleContent>
-    </Collapsible>
+            ))}
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-2 italic">— Raven Kaldera, Moon Phase Astrology</p>
+        </CollapsibleContent>
+      </Collapsible>
+
+      <ArchetypeDetailModal
+        archetype={selectedArchetype?.archetype ?? null}
+        phase={selectedArchetype?.phase ?? ''}
+        sign={signName}
+        open={!!selectedArchetype}
+        onClose={() => setSelectedArchetype(null)}
+      />
+    </>
   );
 }
 
@@ -77,19 +169,16 @@ function SignTeachingSection({ signName }: { signName: string }) {
     <div className="space-y-4 pt-2 border-t border-border">
       <h4 className="text-sm font-semibold flex items-center gap-2">🔬 How {signName} Works</h4>
 
-      {/* Element teaching */}
       <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
         <p className="text-xs font-semibold mb-1">{elementCard.icon} {elementCard.title}</p>
         <p className="text-xs text-muted-foreground leading-relaxed">{elementCard.body}</p>
       </div>
 
-      {/* Modality teaching */}
       <div className="p-3 rounded-lg bg-accent/50 border border-accent">
         <p className="text-xs font-semibold mb-1">⚙ {modalityCard.title}</p>
         <p className="text-xs text-muted-foreground leading-relaxed">{modalityCard.body}</p>
       </div>
 
-      {/* Element triad comparison */}
       <div>
         <p className="text-xs font-medium mb-2">The {teaching.info.element} Triad — Same Element, Different Jobs</p>
         <div className="grid grid-cols-1 gap-2">
@@ -106,7 +195,6 @@ function SignTeachingSection({ signName }: { signName: string }) {
         <p className="text-xs text-muted-foreground mt-2 italic">{closingLine}</p>
       </div>
 
-      {/* Sign profile — core question, superpower, shadow */}
       {signProfile && (
         <div className="space-y-3">
           <div className="p-3 rounded-lg bg-secondary/50 border border-secondary">
@@ -145,7 +233,6 @@ function SignDetailModal({ sign, open, onClose }: { sign: ZodiacSignData | null;
         </DialogHeader>
         <ScrollArea className="max-h-[65vh] pr-4">
           <div className="space-y-5">
-            {/* Quick badges */}
             <div className="flex flex-wrap gap-2">
               <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${ec.badge}`}>
                 {sign.element}
@@ -155,18 +242,15 @@ function SignDetailModal({ sign, open, onClose }: { sign: ZodiacSignData | null;
               <Badge variant="outline">{sign.planetSymbol} {sign.rulingPlanet}</Badge>
             </div>
 
-            {/* Mantra */}
             <div className="text-center py-3">
               <p className="text-lg font-serif italic text-primary">"{sign.mantra}"</p>
             </div>
 
-            {/* Mnemonic */}
             <div className={`p-4 rounded-lg border ${ec.border} ${ec.bg}`}>
               <p className="text-xs font-medium text-muted-foreground mb-1">🧠 Memory Device</p>
               <p className="text-sm font-medium">{sign.mnemonic}</p>
             </div>
 
-            {/* Affirmation & Shadow */}
             <div className="grid grid-cols-2 gap-3">
               <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
                 <p className="text-[10px] font-medium text-muted-foreground mb-1">✦ AFFIRMATION</p>
@@ -178,7 +262,6 @@ function SignDetailModal({ sign, open, onClose }: { sign: ZodiacSignData | null;
               </div>
             </div>
 
-            {/* Keywords — High Road & Low Road */}
             <div className="space-y-3">
               <h4 className="text-sm font-medium">Keywords</h4>
               <div className="grid grid-cols-1 gap-3">
@@ -201,7 +284,6 @@ function SignDetailModal({ sign, open, onClose }: { sign: ZodiacSignData | null;
               </div>
             </div>
 
-            {/* Essence */}
             <div className="space-y-3">
               <h4 className="text-sm font-medium">Essence</h4>
               {sign.essence.map((p, i) => (
@@ -209,16 +291,13 @@ function SignDetailModal({ sign, open, onClose }: { sign: ZodiacSignData | null;
               ))}
             </div>
 
-            {/* Sign Teaching — element/modality/triad/profile */}
             <SignTeachingSection signName={sign.name} />
 
-            {/* Body region */}
             <div className="p-3 rounded-lg bg-muted/50">
               <p className="text-xs font-medium mb-1">🫀 Body Region</p>
               <p className="text-sm">{sign.bodyRegion}</p>
             </div>
 
-            {/* Needs */}
             <div>
               <p className="text-xs font-medium mb-2">Core Needs</p>
               <div className="flex flex-wrap gap-1.5">
@@ -228,13 +307,11 @@ function SignDetailModal({ sign, open, onClose }: { sign: ZodiacSignData | null;
               </div>
             </div>
 
-            {/* Creative Expression */}
             <div>
               <p className="text-xs font-medium mb-1">🎨 Creative Expression</p>
               <p className="text-sm text-muted-foreground">{sign.creativeExpression}</p>
             </div>
 
-            {/* Superpower & Areas to work on */}
             <div className="grid grid-cols-2 gap-3">
               <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
                 <p className="text-[10px] font-medium text-muted-foreground mb-1">⚡ SUPERPOWER</p>
@@ -250,10 +327,7 @@ function SignDetailModal({ sign, open, onClose }: { sign: ZodiacSignData | null;
               </div>
             </div>
 
-            {/* Forrest Moon-in-Sign */}
             <ForrestMoonSignSection signName={sign.name} />
-
-            {/* Kaldera Moon Phase Archetypes */}
             <KalderaSignSection signName={sign.name} />
           </div>
         </ScrollArea>
