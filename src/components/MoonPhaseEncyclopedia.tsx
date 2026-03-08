@@ -101,12 +101,32 @@ const ASPECT_SYMBOLS: Record<string, string> = {
   conjunction: '☌', opposition: '☍', square: '□', trine: '△', sextile: '⚹',
 };
 
-const SHADOWING_EXPLANATION: Record<string, string> = {
-  conjunction: 'merges directly with your Moon — this planet IS part of your emotional nature. Its ruled sign archetype is deeply woven into your lunar identity.',
-  opposition: 'stands across from your Moon — you encounter this energy through others, partnerships, and projection. The ruled sign archetype is something you attract or must integrate through relationship.',
-  square: 'creates friction with your Moon — this planet challenges your emotional comfort zone. The ruled sign archetype represents a growth edge you can\'t avoid.',
-  trine: 'flows harmoniously with your Moon — this planet supports your emotional nature easily. The ruled sign archetype is a natural gift you may take for granted.',
-  sextile: 'offers opportunities to your Moon — this planet opens doors when you make the effort. The ruled sign archetype is available as a resource.',
+const SHADOWING_EXPLANATION: Record<string, { simple: string; felt: string; guru: string }> = {
+  conjunction: {
+    simple: 'is glued to your Moon. It\'s not separate from your feelings — it IS your feelings. You were born with this planet sitting right on top of your Moon, so its energy is baked into how you feel about everything.',
+    felt: 'You feel this as a constant companion in your emotional body. When you get sad, happy, scared, or excited, this planet\'s energy is always there coloring the experience. It\'s like wearing tinted glasses you can never take off — you don\'t even notice the tint because it\'s all you\'ve ever known.',
+    guru: 'The conjunction is the most potent shadow. The aspecting planet\'s archetypal energy is indistinguishable from the lunar function itself. In Kaldera\'s framework, the ruled sign of this planet becomes a co-primary archetype — you don\'t just "have" this energy, you ARE this energy. Others see it in you before you see it in yourself. The shadow archetype operates with the same intensity as your birth Moon archetype.',
+  },
+  opposition: {
+    simple: 'sits on the opposite side of the sky from your Moon. This means you often see this energy in OTHER people rather than in yourself. Partners, close friends, even rivals carry this energy and reflect it back to you like a mirror.',
+    felt: 'You feel this as attraction and sometimes frustration with certain types of people. You might think "why do I always end up with people who are so [intense/controlling/dreamy/etc.]?" — that\'s this opposition at work. The qualities you notice most in others are the ones this shadow is asking you to own.',
+    guru: 'The opposition shadow manifests through projection and relational dynamics. The ruled sign archetype represents disowned lunar material — emotional capacities you possess but have externalized onto partners and intimate others. Integration requires recognizing that what magnetizes or irritates you in relationships is your own unlived Moon energy seeking expression. Kaldera teaches that opposition shadows become conscious only through sustained intimate encounter.',
+  },
+  square: {
+    simple: 'is pushing against your Moon at a 90° angle — like two people trying to walk through the same doorway at the same time. This creates real tension, but that tension is what makes you grow. You can\'t ignore it.',
+    felt: 'You feel this as an inner tug-of-war. Part of you wants one thing emotionally, and this planet pulls you in a completely different direction. It shows up as restlessness, frustration, or that nagging feeling that something needs to change but you don\'t know what. The friction is uncomfortable but productive — it\'s the grit that makes the pearl.',
+    guru: 'The square shadow is the growth engine. Unlike the flowing aspects, the square demands conscious work. The ruled sign archetype represents emotional territory that feels foreign and threatening to your comfort zone, yet is precisely what your soul requires for evolution. Kaldera describes square shadows as "the teacher you didn\'t choose" — they create crises that force integration. The discomfort never fully resolves; it transforms into creative tension that fuels purpose.',
+  },
+  trine: {
+    simple: 'flows easily with your Moon — like a river that naturally feeds into a lake. This energy supports you so effortlessly that you might not even realize it\'s there. It\'s a gift, but because it comes so easily, you might forget to use it on purpose.',
+    felt: 'You feel this as a natural ease in certain emotional situations. While others struggle with this type of energy, it comes to you like breathing. The danger is that you coast — you have access to this beautiful resource but you treat it like background music instead of the symphony it could be.',
+    guru: 'The trine shadow represents innate emotional talent — archetypal energy that flows into the lunar function without resistance. Kaldera warns that trine shadows are the most easily wasted: because they require no effort to access, they often remain unconscious gifts rather than developed strengths. The ruled sign archetype is a natural extension of your Moon that operates on autopilot. Conscious engagement with trine shadows transforms passive talent into active mastery.',
+  },
+  sextile: {
+    simple: 'is offering your Moon a helping hand — but you have to reach out and grab it. The support is there, but it won\'t force itself on you. Think of it like a door that\'s unlocked but not open — you still have to turn the handle.',
+    felt: 'You feel this as moments of opportunity — flashes where you think "oh, I could do that" or "that feels right." The energy is available when you actively engage with it. It\'s gentler than a trine, more like a suggestion than an automatic gift. When you make the effort to connect with this energy, it responds generously.',
+    guru: 'The sextile shadow is the aspect of conscious opportunity. Unlike the trine\'s automatic flow, the sextile requires intentional activation — the ruled sign archetype is available as a resource but must be deliberately cultivated. Kaldera positions sextile shadows as "allies waiting to be called" — their archetypal energy enriches the Moon when the native makes effort to integrate it. This is the shadow most responsive to ritual, practice, and conscious engagement.',
+  },
 };
 
 interface ShadowingMoon {
@@ -294,16 +314,30 @@ function ShadowingMoonsSection({ chart, phase }: { chart: NatalChart; phase: str
           🌒 Shadowing Moons — Secondary Archetypal Layers
         </h4>
       </div>
-      <div className="p-3 rounded-lg bg-muted/30 border border-border text-xs text-muted-foreground leading-relaxed">
-        <p>
-          <strong className="text-foreground">What are Shadowing Moons?</strong> In Kaldera's system, planets that aspect your natal Moon cast a "shadow" — 
-          they add a secondary layer of archetypal energy to your primary Moon archetype. The planet's <em>ruled sign</em> becomes an additional 
-          archetype you carry. The closer the aspect (tighter orb), the stronger the shadow. A conjunction means the planet IS part of your Moon; 
-          an opposition means you encounter it through others; a square creates friction and growth.
-        </p>
+      <div className="p-4 rounded-lg bg-muted/30 border border-border text-sm text-muted-foreground leading-relaxed space-y-3">
+        <div>
+          <p className="text-foreground font-semibold text-base mb-1">🧸 The Simple Version</p>
+          <p>
+            Imagine your Moon is a person sitting in a room. <strong className="text-foreground">Shadowing Moons</strong> are other planets that are close enough to knock on the door, 
+            peek through the window, or even sit right next to your Moon on the couch. Each planet that "touches" your Moon adds its own flavor to how you feel things. 
+            Your primary Moon archetype is still YOU — but these shadows add extra colors to your emotional palette. Think of it like this: your Moon is chocolate ice cream, 
+            and each shadowing planet sprinkles something on top — caramel, nuts, sea salt. You're still chocolate, but you taste different because of what's on you.
+          </p>
+        </div>
+        <div>
+          <p className="text-foreground font-semibold text-base mb-1">🔮 The Deeper Truth</p>
+          <p>
+            In Raven Kaldera's system, any planet forming a major aspect (conjunction, opposition, square, trine, or sextile) to your natal Moon casts an archetypal "shadow." 
+            The planet's <em>ruled sign(s)</em> become secondary archetypes layered onto your primary birth Moon. These shadows don't replace your Moon — they 
+            <strong className="text-foreground"> complicate it, enrich it, and sometimes challenge it</strong>. A tighter orb (fewer degrees of separation) means a stronger, 
+            more unavoidable shadow. The type of aspect determines <em>how</em> you experience that shadow — read each one below to understand exactly how it works in your body and life.
+          </p>
+        </div>
       </div>
 
-      {shadows.map((shadow) => (
+      {shadows.map((shadow) => {
+        const explanation = SHADOWING_EXPLANATION[shadow.aspect];
+        return (
         <div key={shadow.planet} className="border border-border rounded-lg overflow-hidden">
           <button
             onClick={() => setExpandedShadow(prev => prev === shadow.planet ? null : shadow.planet)}
@@ -327,11 +361,31 @@ function ShadowingMoonsSection({ chart, phase }: { chart: NatalChart; phase: str
             {expandedShadow === shadow.planet ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground" />}
           </button>
 
-          {expandedShadow === shadow.planet && (
+          {expandedShadow === shadow.planet && explanation && (
             <div className="px-3 pb-3 space-y-3">
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                <strong className="text-foreground">{shadow.planet}</strong> {SHADOWING_EXPLANATION[shadow.aspect]}
-              </p>
+              {/* Simple explanation */}
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
+                <p className="text-[10px] font-medium text-primary uppercase tracking-wide mb-1">🧸 In Simple Terms</p>
+                <p className="text-sm text-foreground leading-relaxed">
+                  <strong>{shadow.planet}</strong> {explanation.simple}
+                </p>
+              </div>
+
+              {/* How you feel it */}
+              <div className="p-3 rounded-lg bg-accent/20 border border-accent/30">
+                <p className="text-[10px] font-medium text-accent-foreground uppercase tracking-wide mb-1">💫 How You Feel It</p>
+                <p className="text-sm text-foreground leading-relaxed">
+                  {explanation.felt}
+                </p>
+              </div>
+
+              {/* Guru deep dive */}
+              <div className="p-3 rounded-lg bg-muted/40 border border-border">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mb-1">📚 The Full Teaching</p>
+                <p className="text-xs text-muted-foreground leading-relaxed italic">
+                  {explanation.guru}
+                </p>
+              </div>
 
               {shadow.archetypes.map(({ sign, archetype }) => (
                 <div
@@ -353,7 +407,8 @@ function ShadowingMoonsSection({ chart, phase }: { chart: NatalChart; phase: str
             </div>
           )}
         </div>
-      ))}
+        );
+      })}
 
       <ArchetypeDetailModal
         archetype={selectedArchetype?.archetype ?? null}
