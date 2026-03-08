@@ -745,10 +745,13 @@ export const HexagramView = () => {
   const [lines, setLines] = useState<HexagramLine[]>([]);
   const [question, setQuestion] = useState('');
   const [casting, setCasting] = useState(false);
+  const [castKey, setCastKey] = useState(0);
 
   const reset = () => {
     setLines([]);
+    setQuestion('');
     setCasting(false);
+    setCastKey(k => k + 1);
   };
 
   // Auto cast all 6 lines
@@ -1012,6 +1015,13 @@ export const HexagramView = () => {
           {/* Result */}
           {result && (
             <div className="space-y-4">
+              <button
+                onClick={reset}
+                className="flex items-center gap-2 rounded border border-primary bg-primary/10 px-5 py-3 text-[11px] uppercase tracking-widest text-primary hover:bg-primary hover:text-primary-foreground transition-colors w-full justify-center"
+              >
+                <Dices size={16} />
+                Cast a New Reading
+              </button>
               {question && (
                 <div className="rounded border border-primary/30 bg-primary/5 p-4">
                   <span className="text-[10px] uppercase tracking-widest text-primary">Your Question</span>
