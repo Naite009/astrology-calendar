@@ -407,7 +407,8 @@ function ShadowingMoonsSection({ chart, phase }: { chart: NatalChart; phase: str
             </div>
           )}
         </div>
-      ))}
+        );
+      })}
 
       <ArchetypeDetailModal
         archetype={selectedArchetype?.archetype ?? null}
