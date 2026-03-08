@@ -314,16 +314,30 @@ function ShadowingMoonsSection({ chart, phase }: { chart: NatalChart; phase: str
           🌒 Shadowing Moons — Secondary Archetypal Layers
         </h4>
       </div>
-      <div className="p-3 rounded-lg bg-muted/30 border border-border text-xs text-muted-foreground leading-relaxed">
-        <p>
-          <strong className="text-foreground">What are Shadowing Moons?</strong> In Kaldera's system, planets that aspect your natal Moon cast a "shadow" — 
-          they add a secondary layer of archetypal energy to your primary Moon archetype. The planet's <em>ruled sign</em> becomes an additional 
-          archetype you carry. The closer the aspect (tighter orb), the stronger the shadow. A conjunction means the planet IS part of your Moon; 
-          an opposition means you encounter it through others; a square creates friction and growth.
-        </p>
+      <div className="p-4 rounded-lg bg-muted/30 border border-border text-sm text-muted-foreground leading-relaxed space-y-3">
+        <div>
+          <p className="text-foreground font-semibold text-base mb-1">🧸 The Simple Version</p>
+          <p>
+            Imagine your Moon is a person sitting in a room. <strong className="text-foreground">Shadowing Moons</strong> are other planets that are close enough to knock on the door, 
+            peek through the window, or even sit right next to your Moon on the couch. Each planet that "touches" your Moon adds its own flavor to how you feel things. 
+            Your primary Moon archetype is still YOU — but these shadows add extra colors to your emotional palette. Think of it like this: your Moon is chocolate ice cream, 
+            and each shadowing planet sprinkles something on top — caramel, nuts, sea salt. You're still chocolate, but you taste different because of what's on you.
+          </p>
+        </div>
+        <div>
+          <p className="text-foreground font-semibold text-base mb-1">🔮 The Deeper Truth</p>
+          <p>
+            In Raven Kaldera's system, any planet forming a major aspect (conjunction, opposition, square, trine, or sextile) to your natal Moon casts an archetypal "shadow." 
+            The planet's <em>ruled sign(s)</em> become secondary archetypes layered onto your primary birth Moon. These shadows don't replace your Moon — they 
+            <strong className="text-foreground"> complicate it, enrich it, and sometimes challenge it</strong>. A tighter orb (fewer degrees of separation) means a stronger, 
+            more unavoidable shadow. The type of aspect determines <em>how</em> you experience that shadow — read each one below to understand exactly how it works in your body and life.
+          </p>
+        </div>
       </div>
 
-      {shadows.map((shadow) => (
+      {shadows.map((shadow) => {
+        const explanation = SHADOWING_EXPLANATION[shadow.aspect];
+        return (
         <div key={shadow.planet} className="border border-border rounded-lg overflow-hidden">
           <button
             onClick={() => setExpandedShadow(prev => prev === shadow.planet ? null : shadow.planet)}
@@ -347,11 +361,31 @@ function ShadowingMoonsSection({ chart, phase }: { chart: NatalChart; phase: str
             {expandedShadow === shadow.planet ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground" />}
           </button>
 
-          {expandedShadow === shadow.planet && (
+          {expandedShadow === shadow.planet && explanation && (
             <div className="px-3 pb-3 space-y-3">
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                <strong className="text-foreground">{shadow.planet}</strong> {SHADOWING_EXPLANATION[shadow.aspect]}
-              </p>
+              {/* Simple explanation */}
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
+                <p className="text-[10px] font-medium text-primary uppercase tracking-wide mb-1">🧸 In Simple Terms</p>
+                <p className="text-sm text-foreground leading-relaxed">
+                  <strong>{shadow.planet}</strong> {explanation.simple}
+                </p>
+              </div>
+
+              {/* How you feel it */}
+              <div className="p-3 rounded-lg bg-accent/20 border border-accent/30">
+                <p className="text-[10px] font-medium text-accent-foreground uppercase tracking-wide mb-1">💫 How You Feel It</p>
+                <p className="text-sm text-foreground leading-relaxed">
+                  {explanation.felt}
+                </p>
+              </div>
+
+              {/* Guru deep dive */}
+              <div className="p-3 rounded-lg bg-muted/40 border border-border">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mb-1">📚 The Full Teaching</p>
+                <p className="text-xs text-muted-foreground leading-relaxed italic">
+                  {explanation.guru}
+                </p>
+              </div>
 
               {shadow.archetypes.map(({ sign, archetype }) => (
                 <div
