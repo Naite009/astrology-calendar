@@ -745,10 +745,13 @@ export const HexagramView = () => {
   const [lines, setLines] = useState<HexagramLine[]>([]);
   const [question, setQuestion] = useState('');
   const [casting, setCasting] = useState(false);
+  const [castKey, setCastKey] = useState(0);
 
   const reset = () => {
     setLines([]);
+    setQuestion('');
     setCasting(false);
+    setCastKey(k => k + 1);
   };
 
   // Auto cast all 6 lines
