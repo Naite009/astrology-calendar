@@ -30,8 +30,71 @@ import { getOuterTransitTiming, type OuterTransitTiming } from "@/lib/outerPlane
 
 // Outer planets that are most significant for transits
 const OUTER_PLANETS = ['Saturn', 'Jupiter', 'Neptune', 'Pluto', 'Uranus'];
+const SLOWEST_PLANETS = ['Pluto', 'Neptune', 'Uranus']; // planets slow enough to warrant timing box
 // Personal points that matter most when aspected
 const PERSONAL_POINTS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Ascendant', 'IC', 'MC', 'Descendant'];
+
+// Compact timing box for slow outer planet transits
+const OuterPlanetTimingBox = memo(({ asp, referenceDate }: { asp: TransitAspect; referenceDate: Date }) => {
+  const timing = useMemo(() => {
+    if (!SLOWEST_PLANETS.includes(asp.transitPlanet)) return null;
+    const aspectDef = ASPECT_TYPES.find(a => a.name === asp.aspect);
+    if (!aspectDef) return null;
+    return getOuterTransitTiming(
+      asp.transitPlanet,
+      asp.natalPlanet,
+      asp.natalLongitude,
+      asp.aspect,
+      aspectDef.angle,
+      referenceDate,
+    );
+  }, [asp.transitPlanet, asp.natalPlanet, asp.natalLongitude, asp.aspect, referenceDate]);
+
+  if (!timing) return null;
+
+  const fmtShort = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const fmtFull = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+  const planetColors: Record<string, { bg: string; border: string; text: string }> = {
+    Pluto: { bg: 'bg-purple-50 dark:bg-purple-900/30', border: 'border-purple-300 dark:border-purple-700', text: 'text-purple-700 dark:text-purple-300' },
+    Neptune: { bg: 'bg-blue-50 dark:bg-blue-900/30', border: 'border-blue-300 dark:border-blue-700', text: 'text-blue-700 dark:text-blue-300' },
+    Uranus: { bg: 'bg-teal-50 dark:bg-teal-900/30', border: 'border-teal-300 dark:border-teal-700', text: 'text-teal-700 dark:text-teal-300' },
+  };
+  const colors = planetColors[asp.transitPlanet] || planetColors.Pluto;
+
+  return (
+    <div className={cn("mt-1 p-1.5 rounded-sm border text-[9px] leading-relaxed", colors.bg, colors.border)}>
+      <div className={cn("font-semibold mb-0.5", colors.text)}>
+        {timing.motion === 'applying' ? '↗' : '↘'} {timing.currentOrb.toFixed(1)}° orb
+        {timing.motion === 'applying' ? ' (tightening)' : ' (loosening)'}
+      </div>
+      {timing.exactPasses.length > 0 && (
+        <div className="space-y-0.5">
+          {timing.exactPasses.map((pass, i) => (
+            <div key={i} className={cn("flex items-center gap-1", colors.text)}>
+              <span>⭐</span>
+              <span className="font-semibold">{fmtFull(pass.date)}</span>
+              <span className="opacity-70">({pass.label})</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {timing.orbThresholds.length > 0 && (
+        <div className="mt-0.5 space-y-0.5 opacity-80">
+          {timing.orbThresholds.map((t) => (
+            <div key={t.orb} className={cn("flex items-center gap-1", colors.text)}>
+              <span>{t.orb}° orb:</span>
+              {t.enterDate && <span>{fmtShort(t.enterDate)}</span>}
+              {t.enterDate && t.exitDate && <span>→</span>}
+              {t.exitDate && <span>{fmtShort(t.exitDate)}</span>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+});
+
 
 // Simple in-memory cache to avoid re-running astronomy-engine work for the same timestamps.
 // Keyed by full ISO string so it works for both day cells and exact lunation timestamps.
