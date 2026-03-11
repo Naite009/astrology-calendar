@@ -420,7 +420,12 @@ export const CalendarDay = memo(({ date, day, isToday, userData, onDayClick, act
             Key Transits ({primary.length})
           </div>
           {primary.map((asp, i) => (
-            <TransitLine key={i} asp={asp} />
+            <div key={i}>
+              <TransitLine asp={asp} />
+              {SLOWEST_PLANETS.includes(asp.transitPlanet) && isToday && (
+                <OuterPlanetTimingBox asp={asp} referenceDate={date} />
+              )}
+            </div>
           ))}
         </div>
       )}
