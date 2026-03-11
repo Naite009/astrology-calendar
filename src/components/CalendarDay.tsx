@@ -20,12 +20,13 @@ import {
 import { cn } from "@/lib/utils";
 import { UserData } from "@/hooks/useUserData";
 import { NatalChart } from "@/hooks/useNatalChart";
-import { calculateTransitAspects, getTopTransitAspects, getTransitPlanetSymbol, getHouseLabel, type TransitAspect } from "@/lib/transitAspects";
+import { calculateTransitAspects, getTopTransitAspects, getTransitPlanetSymbol, getHouseLabel, type TransitAspect, ASPECT_TYPES } from "@/lib/transitAspects";
 import { ChevronDown, ChevronRight, Mic } from "lucide-react";
 import { isVenusStarPointDay } from "@/lib/venusStarPoint";
 import { getVOCMoonDetails, formatVOCTime } from "@/lib/voidOfCourseMoon";
 import { getCurrentPlanetaryHour, getDayRuler } from "@/lib/planetaryHours";
 import { VoiceMemo, getCategoryColor } from "@/hooks/useVoiceMemos";
+import { getOuterTransitTiming, type OuterTransitTiming } from "@/lib/outerPlanetTransitTiming";
 
 // Outer planets that are most significant for transits
 const OUTER_PLANETS = ['Saturn', 'Jupiter', 'Neptune', 'Pluto', 'Uranus'];
