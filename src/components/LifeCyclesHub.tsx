@@ -1146,6 +1146,197 @@ const LifeCycleTimelinePersonalized = ({ chart }: { chart: NatalChart }) => {
     </div>
   );
 };
+// ---- Planetary Returns Tracker ----
+
+const RETURN_PLANETS: { name: string; symbol: string; body: Astronomy.Body; period: number; stepDays: number; color: string; meaning: string }[] = [
+  { name: 'Moon', symbol: '☽', body: Astronomy.Body.Moon, period: 27.3, stepDays: 0.25, color: 'hsl(var(--primary))', meaning: 'Emotional reset. Your feelings "come home." A chance to reconnect with your core emotional needs and instincts. Lasts a few hours.' },
+  { name: 'Mercury', symbol: '☿', body: Astronomy.Body.Mercury, period: 365.25, stepDays: 1, color: 'hsl(var(--accent-foreground))', meaning: 'Your mind returns to its native frequency. Communication style resets. Great for important conversations, writing, or signing agreements that align with who you truly are.' },
+  { name: 'Venus', symbol: '♀', body: Astronomy.Body.Venus, period: 365.25, stepDays: 1, color: 'hsl(var(--primary))', meaning: 'Your love language and values refresh. What you find beautiful and worthy of desire recalibrates. A mini-birthday for your heart — ideal for self-care rituals or romantic gestures.' },
+  { name: 'Sun', symbol: '☉', body: Astronomy.Body.Sun, period: 365.25, stepDays: 1, color: 'hsl(var(--primary))', meaning: 'Your Solar Return — your astrological birthday! The Sun returns to the exact degree it was when you were born. This sets the theme for your entire next year.' },
+  { name: 'Mars', symbol: '♂', body: Astronomy.Body.Mars, period: 687, stepDays: 2, color: 'hsl(var(--destructive))', meaning: 'Your drive, ambition, and anger style reset to factory settings. A surge of vitality and motivation. You feel most like your fighting self again — for about 2 weeks around exact.' },
+  { name: 'Jupiter', symbol: '♃', body: Astronomy.Body.Jupiter, period: 4333, stepDays: 7, color: 'hsl(var(--primary))', meaning: 'Every ~12 years Jupiter returns. A major expansion cycle — doors open, faith renews, and life gets bigger. Your personal "growth season."' },
+  { name: 'Saturn', symbol: '♄', body: Astronomy.Body.Saturn, period: 10759, stepDays: 14, color: 'hsl(var(--muted-foreground))', meaning: 'Every ~29.5 years. The most significant maturation milestone. You are tested, restructured, and initiated into the next chapter of adulthood. Not punishment — graduation.' },
+];
+
+function findNextPlanetaryReturn(
+  body: Astronomy.Body, natalDegree: number, fromDate: Date, stepDays: number, maxSearchDays: number
+): { date: Date; daysAway: number } | null {
+  const startTime = fromDate.getTime();
+  const msPerDay = 24 * 60 * 60 * 1000;
+  let prevDiff = 999;
+  
+  for (let d = 0; d < maxSearchDays; d += stepDays) {
+    const testDate = new Date(startTime + d * msPerDay);
+    const lon = getPlanetLongitude(body, testDate);
+    let diff = lon - natalDegree;
+    while (diff > 180) diff -= 360;
+    while (diff < -180) diff += 360;
+    
+    if (d > 0 && prevDiff !== 999 && ((prevDiff < 0 && diff >= 0) || (prevDiff > 0 && diff <= 0) || Math.abs(diff) < 0.5)) {
+      const refineStart = new Date(startTime + (d - stepDays) * msPerDay);
+      const refineStep = Math.max(stepDays / 100, 0.01);
+      let bestDate = testDate;
+      let bestDiff = Math.abs(diff);
+      for (let r = 0; r <= stepDays; r += refineStep) {
+        const rDate = new Date(refineStart.getTime() + r * msPerDay);
+        const rLon = getPlanetLongitude(body, rDate);
+        let rDiff = Math.abs(rLon - natalDegree);
+        if (rDiff > 180) rDiff = 360 - rDiff;
+        if (rDiff < bestDiff) { bestDiff = rDiff; bestDate = rDate; }
+      }
+      if (bestDiff < 1) return { date: bestDate, daysAway: Math.round((bestDate.getTime() - startTime) / msPerDay) };
+    }
+    prevDiff = diff;
+  }
+  return null;
+}
+
+function findPreviousReturn(
+  body: Astronomy.Body, natalDegree: number, fromDate: Date, stepDays: number, maxSearchDays: number
+): { date: Date; daysAgo: number } | null {
+  const startTime = fromDate.getTime();
+  const msPerDay = 24 * 60 * 60 * 1000;
+  let prevDiff = 999;
+  
+  for (let d = 0; d < maxSearchDays; d += stepDays) {
+    const testDate = new Date(startTime - d * msPerDay);
+    const lon = getPlanetLongitude(body, testDate);
+    let diff = lon - natalDegree;
+    while (diff > 180) diff -= 360;
+    while (diff < -180) diff += 360;
+    
+    if (d > 0 && prevDiff !== 999 && ((prevDiff < 0 && diff >= 0) || (prevDiff > 0 && diff <= 0) || Math.abs(diff) < 0.5)) {
+      const refineStart = new Date(startTime - d * msPerDay);
+      const refineStep = Math.max(stepDays / 100, 0.01);
+      let bestDate = testDate;
+      let bestDiff = Math.abs(diff);
+      for (let r = 0; r <= stepDays; r += refineStep) {
+        const rDate = new Date(refineStart.getTime() + r * msPerDay);
+        const rLon = getPlanetLongitude(body, rDate);
+        let rDiff = Math.abs(rLon - natalDegree);
+        if (rDiff > 180) rDiff = 360 - rDiff;
+        if (rDiff < bestDiff) { bestDiff = rDiff; bestDate = rDate; }
+      }
+      if (bestDiff < 1) return { date: bestDate, daysAgo: Math.round((startTime - bestDate.getTime()) / msPerDay) };
+    }
+    prevDiff = diff;
+  }
+  return null;
+}
+
+const PlanetaryReturnsTracker: React.FC<{ chart: NatalChart; currentDate: Date }> = ({ chart, currentDate }) => {
+  const [expandedPlanet, setExpandedPlanet] = useState<string | null>(null);
+  
+  const returns = useMemo(() => {
+    return RETURN_PLANETS.map(p => {
+      const natalDeg = getNatalPlanetLongitude(chart, p.name);
+      if (natalDeg === null) return { ...p, natalDegree: null, natalSign: '', next: null, previous: null };
+      const natalSign = getSignFromDegree(natalDeg);
+      const maxSearch = Math.ceil(p.period * 1.5);
+      const next = findNextPlanetaryReturn(p.body, natalDeg, currentDate, p.stepDays, maxSearch);
+      const previous = findPreviousReturn(p.body, natalDeg, currentDate, p.stepDays, maxSearch);
+      return { ...p, natalDegree: natalDeg, natalSign, next, previous };
+    });
+  }, [chart, currentDate]);
+  
+  const marsReturn = returns.find(r => r.name === 'Mars');
+  const marsIsNow = marsReturn?.next && marsReturn.next.daysAway <= 14;
+  const marsJustHappened = marsReturn?.previous && marsReturn.previous.daysAgo <= 14;
+  
+  return (
+    <div className="space-y-4">
+      <div className="p-4 rounded-sm bg-accent/30 border border-accent">
+        <h3 className="text-sm font-semibold text-foreground mb-1">🔄 Planetary Returns</h3>
+        <p className="text-xs text-muted-foreground">
+          A "return" is when a planet comes back to the exact degree it was at your birth — a reset and renewal of that planet's energy in your life.
+        </p>
+      </div>
+      
+      {(marsIsNow || marsJustHappened) && (
+        <div className="p-4 rounded-sm bg-destructive/10 border-2 border-destructive/40">
+          <div className="text-sm font-bold text-destructive flex items-center gap-2">
+            <Zap size={16} /> ♂ Mars Return {marsIsNow ? 'Approaching!' : 'Just Happened!'}
+          </div>
+          <p className="text-xs text-foreground mt-1">
+            {marsIsNow 
+              ? `Exact in ${marsReturn!.next!.daysAway} days (${format(marsReturn!.next!.date, 'MMM d, yyyy')}). Energy and drive are ramping up.`
+              : `Was exact ${marsReturn!.previous!.daysAgo} days ago (${format(marsReturn!.previous!.date, 'MMM d, yyyy')}). Still feeling the surge.`
+            }
+          </p>
+        </div>
+      )}
+      
+      <div className="space-y-2">
+        {returns.map(r => {
+          if (r.natalDegree === null) return null;
+          const isExpanded = expandedPlanet === r.name;
+          const isActive = (r.next && r.next.daysAway <= 14) || (r.previous && r.previous.daysAgo <= 14);
+          
+          return (
+            <Card key={r.name} className={`overflow-hidden ${isActive ? 'border-primary/50 shadow-md' : ''}`}>
+              <button
+                onClick={() => setExpandedPlanet(isExpanded ? null : r.name)}
+                className="w-full p-4 text-left flex items-center gap-3"
+              >
+                <span className="text-2xl" style={{ color: r.color }}>{r.symbol}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    {r.name} Return
+                    {isActive && <Badge variant="default" className="text-[9px] px-1.5 py-0">ACTIVE</Badge>}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Natal: {formatDegreePositionFull(r.natalDegree!)} • Every ~{r.period < 100 ? `${Math.round(r.period)} days` : r.period < 800 ? '1 year' : `${Math.round(r.period / 365.25)} years`}
+                  </div>
+                </div>
+                <div className="text-right">
+                  {r.next && (
+                    <>
+                      <div className="text-xs font-medium text-primary">
+                        {r.next.daysAway === 0 ? 'TODAY!' : r.next.daysAway === 1 ? 'Tomorrow' : `in ${r.next.daysAway} days`}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground">{format(r.next.date, 'MMM d, yyyy')}</div>
+                    </>
+                  )}
+                </div>
+                {isExpanded ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground" />}
+              </button>
+              
+              {isExpanded && (
+                <div className="px-4 pb-4 space-y-3 border-t border-border pt-3">
+                  <div className="p-3 rounded-sm bg-accent/30">
+                    <p className="text-sm text-foreground leading-relaxed">{r.meaning}</p>
+                  </div>
+                  {r.next && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-primary" />
+                      <div>
+                        <div className="text-xs font-semibold text-foreground">Next Return</div>
+                        <div className="text-xs text-muted-foreground">
+                          {format(r.next.date, 'EEEE, MMMM d, yyyy')} — {r.next.daysAway === 0 ? 'happening now' : `${r.next.daysAway} days from now`}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {r.previous && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-muted-foreground" />
+                      <div>
+                        <div className="text-xs font-semibold text-foreground">Most Recent Return</div>
+                        <div className="text-xs text-muted-foreground">
+                          {format(r.previous.date, 'EEEE, MMMM d, yyyy')} — {r.previous.daysAgo} days ago
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </Card>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
 
 export const LifeCyclesHub: React.FC<LifeCyclesHubProps> = ({ chart, currentDate = new Date() }) => {
   const [activeTab, setActiveTab] = useState('overview');
