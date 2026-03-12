@@ -1,6 +1,7 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { X, ChevronDown, ChevronUp } from 'lucide-react';
 import { TransitListModal } from './TransitListModal';
+import { ChartSelector } from './ChartSelector';
 import { 
   DayData, 
   getPlanetSymbol, 
@@ -110,6 +111,10 @@ interface DayDetailProps {
   userData: UserData | null;
   onClose: () => void;
   activeChart?: NatalChart | null;
+  userNatalChart?: NatalChart | null;
+  savedCharts?: NatalChart[];
+  selectedChartId?: string;
+  onChartSelect?: (chartId: string) => void;
 }
 
 // Detailed Transit Card Component with expandable sections
@@ -305,7 +310,7 @@ const DetailedTransitCard = ({ aspect }: { aspect: TransitAspect }) => {
   );
 };
 
-export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => {
+export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, savedCharts = [], selectedChartId = 'general', onChartSelect }: DayDetailProps) => {
   const { date, planets, moonPhase, mercuryRetro, personalTransits, majorIngresses, aspects, voc, exactLunarPhase } = dayData;
   const colorExplanation = getColorExplanation(aspects || [], moonPhase);
   
@@ -418,9 +423,23 @@ export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => 
           <X size={24} />
         </button>
 
-        <h2 className="font-serif text-2xl font-light text-foreground md:text-3xl mb-6">
+        <h2 className="font-serif text-2xl font-light text-foreground md:text-3xl mb-2">
           {date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
         </h2>
+
+        {/* Chart Selector - switch charts without closing */}
+        {onChartSelect && (userNatalChart || savedCharts.length > 0) && (
+          <div className="mb-6">
+            <ChartSelector
+              userNatalChart={userNatalChart || null}
+              savedCharts={savedCharts}
+              selectedChartId={selectedChartId}
+              onSelect={onChartSelect}
+              includeGeneral={true}
+              label="Viewing as:"
+            />
+          </div>
+        )}
 
         {/* DAY OVERVIEW - Color blocks + Day Type at TOP */}
         <DayOverviewSection 

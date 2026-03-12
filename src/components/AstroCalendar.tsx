@@ -1032,6 +1032,10 @@ export const AstroCalendar = () => {
           userData={userData}
           onClose={() => setSelectedDay(null)}
           activeChart={activeChart}
+          userNatalChart={userNatalChart}
+          savedCharts={savedCharts}
+          selectedChartId={selectedChartForTiming}
+          onChartSelect={selectChartForTiming}
         />
       )}
 
