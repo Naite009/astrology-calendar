@@ -1516,7 +1516,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
               Planet Spotlight — Expert Analysis
             </h3>
             <p className="text-[10px] text-muted-foreground italic">
-              Deep interpretations for key personal planets in your SR houses. Sources: Ciro Discepolo, Mary Fortier Shea, Brian Clark.
+              Deep interpretations for key personal planets in your SR houses.
             </p>
             {spotlightPlanets.map(planet => {
               const h = analysis.planetSRHouses[planet]!;
