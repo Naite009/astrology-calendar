@@ -6,7 +6,7 @@ import { analyzeSolarReturn, SolarReturnAnalysis } from '@/lib/solarReturnAnalys
 import { srSunInHouse, srMoonInHouse, srMoonInSign, srOverlayNarrative, srPlanetInHouse, rulerConditionNarrative, angularPlanetMeaning } from '@/lib/solarReturnInterpretations';
 import { srMoonInHouseDeep, srMoonPhaseInterp, srMoonAngularity, srMoonAspects } from '@/lib/solarReturnMoonData';
 import { vertexInSign, vertexInHouse, vertexAspectMeanings } from '@/lib/solarReturnVertex';
-import { srJupiterInHouseDeep, srMercuryInHouseDeep, srVenusInHouseDeep, srMarsInHouseDeep, type SRPlanetHouseDeep } from '@/lib/solarReturnPlanetInHouseDeep';
+import { srJupiterInHouseDeep, srMercuryInHouseDeep, srVenusInHouseDeep, srMarsInHouseDeep, srSaturnInHouseDeep, srUranusInHouseDeep, srNeptuneInHouseDeep, srPlutoInHouseDeep, type SRPlanetHouseDeep } from '@/lib/solarReturnPlanetInHouseDeep';
 import { generateSRtoNatalInterpretation, aspectTypeMeanings, planetLifeMeanings } from '@/lib/solarReturnAspectInterp';
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -1504,12 +1504,16 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
       {/* ── Planet Spotlight: Jupiter, Mercury, Venus, Mars ── */}
       {(() => {
         const deepData: Record<string, Record<number, SRPlanetHouseDeep>> = {
-          Jupiter: srJupiterInHouseDeep,
           Mercury: srMercuryInHouseDeep,
           Venus: srVenusInHouseDeep,
           Mars: srMarsInHouseDeep,
+          Jupiter: srJupiterInHouseDeep,
+          Saturn: srSaturnInHouseDeep,
+          Uranus: srUranusInHouseDeep,
+          Neptune: srNeptuneInHouseDeep,
+          Pluto: srPlutoInHouseDeep,
         };
-        const spotlightPlanets = ['Jupiter', 'Mercury', 'Venus', 'Mars'].filter(p => {
+        const spotlightPlanets = ['Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'].filter(p => {
           const h = analysis.planetSRHouses[p];
           return h !== null && h !== undefined && deepData[p]?.[h];
         });
