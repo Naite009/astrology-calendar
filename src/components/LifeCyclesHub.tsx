@@ -1378,6 +1378,25 @@ const PlanetaryReturnsTracker: React.FC<{ chart: NatalChart; currentDate: Date }
                   <div className="p-3 rounded-sm bg-accent/30">
                     <p className="text-sm text-foreground leading-relaxed">{r.meaning}</p>
                   </div>
+                  {/* Felt-Sense: What It Feels Like */}
+                  {(() => {
+                    const feltData = RETURN_FELT_SENSE[r.name];
+                    if (!feltData) return null;
+                    const signSpecific = r.natalSign ? feltData[r.natalSign] : null;
+                    const general = feltData._default;
+                    return (
+                      <div className="p-3 rounded-sm bg-primary/5 border border-primary/20">
+                        <div className="text-xs font-bold text-primary mb-1.5 flex items-center gap-1.5">
+                          <Zap size={12} /> What It Actually Feels Like
+                        </div>
+                        {signSpecific ? (
+                          <p className="text-sm text-foreground leading-relaxed">{signSpecific}</p>
+                        ) : (
+                          <p className="text-sm text-foreground leading-relaxed">{general}</p>
+                        )}
+                      </div>
+                    );
+                  })()}
                   {r.next && (
                     <div className="flex items-center gap-3">
                       <div className="w-2 h-2 rounded-full bg-primary" />
