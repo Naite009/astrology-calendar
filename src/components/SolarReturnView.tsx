@@ -1492,7 +1492,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         </div>
       )}
 
-      {/* ── Planet Spotlight: Jupiter, Mercury, Venus, Mars ── */}
+      {/* ── Planet Spotlight — Beautiful Cards ── */}
       {(() => {
         const deepData: Record<string, Record<number, SRPlanetHouseDeep>> = {
           Mercury: srMercuryInHouseDeep,
@@ -1510,42 +1510,53 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         });
         if (spotlightPlanets.length === 0) return null;
         return (
-          <div className="border border-primary/20 rounded-sm p-5 bg-card space-y-5">
-            <h3 className="text-sm uppercase tracking-widest font-medium text-foreground flex items-center gap-2">
-              <Sparkles size={16} className="text-primary" />
-              Planet Spotlight — Expert Analysis
-            </h3>
-            <p className="text-[10px] text-muted-foreground italic">
-              Deep interpretations for key personal planets in your SR houses.
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Sparkles size={18} className="text-primary" />
+              <h3 className="text-sm uppercase tracking-widest font-medium text-foreground">
+                Planet Spotlight — Expert Analysis
+              </h3>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Deep interpretations for each planet in your Solar Return houses. These describe how that planet's energy specifically manifests for you this year.
             </p>
-            {spotlightPlanets.map(planet => {
-              const h = analysis.planetSRHouses[planet]!;
-              const data = deepData[planet][h];
-              if (!data) return null;
-              const overlay = analysis.houseOverlays.find(o => o.planet === planet);
-              return (
-                <details key={planet} className="border border-border rounded-sm bg-muted/20">
-                  <summary className="p-3 cursor-pointer hover:bg-muted/40 transition-colors">
-                    <span className="text-sm font-medium text-foreground">
-                      {PLANET_SYMBOLS[planet]} {planet} in SR House {h}
-                      {overlay?.natalHouse && overlay.natalHouse !== h ? ` → Natal House ${overlay.natalHouse}` : ''}
-                      <span className="text-muted-foreground font-normal"> — {data.title}</span>
-                    </span>
-                  </summary>
-                  <div className="p-4 pt-0 space-y-3">
-                    <p className="text-sm text-muted-foreground leading-relaxed">{data.overview}</p>
-                    <div className="bg-secondary/50 rounded-sm p-3">
-                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-1">Practical Manifestation</p>
-                      <p className="text-xs text-foreground leading-relaxed">{data.practical}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {spotlightPlanets.map(planet => {
+                const h = analysis.planetSRHouses[planet]!;
+                const data = deepData[planet][h];
+                if (!data) return null;
+                const overlay = analysis.houseOverlays.find(o => o.planet === planet);
+                return (
+                  <div key={planet} className="border border-primary/15 rounded-lg bg-gradient-to-br from-card to-secondary/20 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    {/* Header bar with planet symbol */}
+                    <div className="bg-primary/8 border-b border-primary/10 px-4 py-3 flex items-center gap-3">
+                      <span className="text-2xl">{PLANET_SYMBOLS[planet]}</span>
+                      <div>
+                        <h4 className="text-sm font-semibold text-foreground">{planet} in SR House {h}</h4>
+                        {overlay?.natalHouse && overlay.natalHouse !== h && (
+                          <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                            <ArrowRight size={10} /> Natal House {overlay.natalHouse}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div className="bg-destructive/5 border border-destructive/10 rounded-sm p-3">
-                      <p className="text-[10px] uppercase tracking-widest text-destructive font-medium mb-1">Caution</p>
-                      <p className="text-xs text-foreground leading-relaxed">{data.caution}</p>
+                    {/* Body */}
+                    <div className="p-4 space-y-3">
+                      <p className="text-xs font-semibold text-primary">{data.title}</p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{data.overview}</p>
+                      <div className="bg-secondary/40 rounded-sm p-3">
+                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-1">Practical Manifestation</p>
+                        <p className="text-xs text-foreground leading-relaxed">{data.practical}</p>
+                      </div>
+                      <div className="bg-destructive/5 border border-destructive/10 rounded-sm p-3">
+                        <p className="text-[10px] uppercase tracking-widest text-destructive font-medium mb-1">Caution</p>
+                        <p className="text-xs text-foreground leading-relaxed">{data.caution}</p>
+                      </div>
                     </div>
                   </div>
-                </details>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         );
       })()}

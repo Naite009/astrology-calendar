@@ -4,6 +4,7 @@ import { NatalChart } from '@/hooks/useNatalChart';
 import { Download, Loader2 } from 'lucide-react';
 import { vertexInSign, vertexInHouse } from '@/lib/solarReturnVertex';
 import { srJupiterInHouseDeep, srMercuryInHouseDeep, srVenusInHouseDeep, srMarsInHouseDeep, srSaturnInHouseDeep, srUranusInHouseDeep, srNeptuneInHouseDeep, srPlutoInHouseDeep } from '@/lib/solarReturnPlanetInHouseDeep';
+import { generateSRtoNatalInterpretation, planetLifeMeanings } from '@/lib/solarReturnAspectInterp';
 import { useState } from 'react';
 
 const P: Record<string, string> = {
@@ -21,12 +22,10 @@ const S: Record<string, string> = {
 /** Format a date string to MM-DD-YYYY */
 const formatDate = (dateStr: string | undefined): string => {
   if (!dateStr) return '--';
-  // Handle YYYY-MM-DD format
   const parts = dateStr.split('-');
   if (parts.length === 3 && parts[0].length === 4) {
     return `${parts[1]}-${parts[2]}-${parts[0]}`;
   }
-  // Try parsing as a date
   try {
     const d = new Date(dateStr);
     if (!isNaN(d.getTime())) {
@@ -45,6 +44,38 @@ const MAJOR_BODIES = new Set(['Sun','Moon','Mercury','Venus','Mars','Jupiter','S
 // Correct planetary order
 const PLANET_ORDER = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','Chiron','NorthNode'];
 const SPOTLIGHT_ORDER = ['Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
+
+// Moon sign change felt-sense interpretations
+const moonSignChangeFelt: Record<string, string> = {
+  'Aries': 'Your emotional responses are fast, direct, and instinctive. You react before thinking and need physical outlets for feelings. Impatience and courage define your inner landscape.',
+  'Taurus': 'Your emotions move slowly and seek stability. You need physical comfort, routine, and sensory pleasure to feel safe. Change feels threatening; beauty feels essential.',
+  'Gemini': 'Your emotions process through words and ideas. You need to talk about feelings to understand them. Mental stimulation keeps you emotionally balanced; boredom makes you anxious.',
+  'Cancer': 'Your emotions run deep and protective. You absorb others\' moods like a sponge. Home, family, and belonging are emotional necessities. Vulnerability is your strength and your tender spot.',
+  'Leo': 'Your emotions are warm, dramatic, and expressive. You need recognition and creative outlets to feel alive. Generosity flows naturally but wounded pride cuts deep.',
+  'Virgo': 'Your emotions express through service and practical care. You process feelings by analyzing and fixing things. Anxiety lives in the details; calm comes from useful work.',
+  'Libra': 'Your emotions seek harmony and partnership. You process feelings through relationships and struggle with conflict. Beauty and balance are emotional needs, not luxuries.',
+  'Scorpio': 'Your emotions are intense, private, and transformative. You feel everything at maximum depth. Trust is earned slowly, but once given, your loyalty is fierce and permanent.',
+  'Sagittarius': 'Your emotions are buoyant, philosophical, and freedom-seeking. You process feelings through adventure, humor, and big-picture meaning. Confinement of any kind feels suffocating.',
+  'Capricorn': 'Your emotions are controlled, serious, and goal-oriented. You process feelings through achievement and responsibility. Emotional vulnerability feels risky; earned accomplishment feels safe.',
+  'Aquarius': 'Your emotions are detached, intellectual, and humanitarian. You process feelings through ideas and community rather than personal intimacy. Freedom and authenticity are emotional requirements.',
+  'Pisces': 'Your emotions are boundless, intuitive, and deeply empathic. You absorb the collective mood and need solitude to decompress. Creativity and spirituality are emotional lifelines.',
+};
+
+// Stellium felt-sense additions
+const stelliumFeltSense: Record<string, string> = {
+  'Aries': 'You will physically feel this as restless energy in your body, a constant urge to START something. Your patience drops. Your courage surges. You wake up ready to fight for what matters. The danger is exhaustion from never slowing down.',
+  'Taurus': 'You will physically feel this as a deep craving for stability, comfort, and sensory pleasure. Your body wants good food, soft textures, and financial security. There is a stubbornness in your bones that refuses to be rushed. The danger is getting stuck.',
+  'Gemini': 'You will physically feel this as mental overstimulation, racing thoughts, and an inability to sit still with one idea. Your hands want to text, write, gesture. Your mind is a browser with 40 tabs open. The danger is saying yes to everything and finishing nothing.',
+  'Cancer': 'You will physically feel this as emotional waves, sensitivity to atmosphere, and a powerful pull toward home and family. Your gut tells you things before your mind catches up. Tears come more easily, both from joy and from overwhelm. The danger is retreating too far inward.',
+  'Leo': 'You will physically feel this as a warm expansion in your chest, a need to create and be seen. Your heart opens wider. Your desire for recognition intensifies. You radiate warmth naturally. The danger is confusing applause with love.',
+  'Virgo': 'You will physically feel this as tension in your stomach and shoulders, a compulsion to organize, fix, and perfect. Your eyes notice every flaw. Your body demands better habits. Anxiety spikes when things are messy. The danger is paralyzing perfectionism.',
+  'Libra': 'You will physically feel this as a heightened sensitivity to discord and ugliness. You crave harmony in your environment and relationships. Decisions feel agonizing because you see every side. Your body softens around beauty. The danger is losing yourself in others\' preferences.',
+  'Scorpio': 'You will physically feel this as intensity in your gut, a magnetic pull toward hidden truths and transformative experiences. Superficial interactions feel intolerable. Your instincts sharpen. Power dynamics become visible everywhere. The danger is obsession and control.',
+  'Sagittarius': 'You will physically feel this as restlessness in your legs, an urge to GO somewhere, learn something, expand beyond current limits. Optimism floods your system. Small talk feels insufferable. The danger is overcommitment and escapism through constant motion.',
+  'Capricorn': 'You will physically feel this as weight on your shoulders, a sobering awareness of time and responsibility. Your spine straightens. Ambition crystallizes. You want to build something REAL. The danger is working yourself into isolation or emotional suppression.',
+  'Aquarius': 'You will physically feel this as an electric buzzing under your skin, sudden insights, and an urge to break free from anything conventional. Your nervous system speeds up. You want to innovate, rebel, connect with your tribe. The danger is detachment from your own emotions.',
+  'Pisces': 'You will physically feel this as a dissolving of your normal boundaries, heightened empathy, and vivid dreams. Your intuition becomes almost psychic. Music, art, and water soothe you. The danger is losing yourself in others\' pain or escaping into fantasy.',
+};
 
 interface Props {
   analysis: SolarReturnAnalysis;
@@ -67,7 +98,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       const contentW = pw - margin * 2;
       let y = margin;
 
-      // ── Color palette ──────────────────────────────────────────
+      // -- Color palette --
       const gold: [number, number, number] = [162, 128, 72];
       const darkText: [number, number, number] = [30, 28, 26];
       const bodyText: [number, number, number] = [60, 55, 50];
@@ -76,6 +107,8 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       const creamBg: [number, number, number] = [250, 247, 242];
       const softGold: [number, number, number] = [245, 238, 225];
       const deepBrown: [number, number, number] = [90, 70, 45];
+      const softBlue: [number, number, number] = [230, 240, 250];
+      const accentGreen: [number, number, number] = [34, 120, 80];
 
       const checkPage = (needed: number) => {
         if (y + needed > ph - 50) {
@@ -84,7 +117,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         }
       };
 
-      // ── Drawing helpers ──────────────────────────────────────
+      // -- Drawing helpers --
       const drawHorizontalRule = (color: [number, number, number] = warmBorder, width = 0.5) => {
         doc.setDrawColor(...color);
         doc.setLineWidth(width);
@@ -154,12 +187,27 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         y += 14;
       };
 
-      // ─── PAGE 1: TITLE ───────────────────────────────────────
+      // Draw a beautiful card with gold left accent
+      const drawCard = (renderContent: () => void) => {
+        const cardStartY = y;
+        y += 12;
+        renderContent();
+        y += 10;
+        const cardH = y - cardStartY;
+        doc.setDrawColor(...warmBorder);
+        doc.setLineWidth(0.5);
+        doc.roundedRect(margin, cardStartY, contentW, cardH, 4, 4, 'S');
+        doc.setDrawColor(...gold);
+        doc.setLineWidth(2.5);
+        doc.line(margin + 1, cardStartY + 2, margin + 1, cardStartY + cardH - 2);
+        y += 6;
+      };
+
+      // --- PAGE 1: TITLE ---
       const a = analysis;
       const name = natalChart.name || 'Chart';
       const year = srChart.solarReturnYear;
 
-      // Decorative top line
       y = 60;
       doc.setDrawColor(...gold);
       doc.setLineWidth(2);
@@ -168,7 +216,6 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       doc.setLineWidth(0.5);
       doc.line(margin, y + 2, pw - margin, y + 2);
 
-      // Title
       y += 40;
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(11);
@@ -187,7 +234,6 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       const ornW = 60;
       doc.line(pw / 2 - ornW, y, pw / 2 - 8, y);
       doc.line(pw / 2 + 8, y, pw / 2 + ornW, y);
-      // Small diamond ornament
       const cx = pw / 2, cy = y;
       doc.setFillColor(...gold);
       doc.triangle(cx, cy - 3, cx - 3, cy, cx + 3, cy, 'F');
@@ -210,7 +256,6 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         doc.text(`Solar Return Location: ${srChart.solarReturnLocation}`, pw / 2, y, { align: 'center' });
       }
 
-      // Bottom decorative line
       y += 12;
       doc.setDrawColor(...gold);
       doc.setLineWidth(0.5);
@@ -218,13 +263,10 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
 
       y += 30;
 
-      // ─── YEAR AT A GLANCE ───────────────────────────────────
+      // --- YEAR AT A GLANCE ---
       sectionTitle('Year at a Glance');
 
-      // Measure content first, then draw box behind it
-      const glanceItems: Array<() => void> = [];
       const glanceStartY = y;
-
       y += 12;
       if (a.yearlyTheme) {
         writeLabel('SR Ascendant:', `${a.yearlyTheme.ascendantSign} Rising`);
@@ -234,7 +276,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       if (a.srAscRulerInNatal) {
         writeBold('Where This Year Plays Out', deepBrown, 9);
         y += 2;
-        writeBody(`${P[a.srAscRulerInNatal.rulerPlanet] || a.srAscRulerInNatal.rulerPlanet} in ${a.srAscRulerInNatal.rulerNatalSign || '--'} — Natal House ${a.srAscRulerInNatal.rulerNatalHouse || '--'}`, darkText, 9);
+        writeBody(`${P[a.srAscRulerInNatal.rulerPlanet] || a.srAscRulerInNatal.rulerPlanet} in ${a.srAscRulerInNatal.rulerNatalSign || '--'} -- Natal House ${a.srAscRulerInNatal.rulerNatalHouse || '--'}`, darkText, 9);
         writeBody(a.srAscRulerInNatal.rulerNatalHouseTheme || '', dimText, 8);
         y += 2;
         writeBody(a.srAscRulerInNatal.interpretation, bodyText, 8);
@@ -248,18 +290,73 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       writeLabel('Moon:', `${a.moonSign} in SR House ${a.moonHouse?.house || '--'}   ${a.moonPhase?.phase || ''}`);
       y += 12;
 
-      // Draw box BEHIND content — using pages trick: save content, draw box on earlier layer
-      // jsPDF doesn't support z-ordering, so we use a clean approach: colored box first is impossible since we need to measure.
-      // Instead, we'll use a left accent bar approach
       const glanceEndY = y;
       doc.setDrawColor(...gold);
       doc.setLineWidth(2.5);
       doc.line(margin, glanceStartY, margin, glanceEndY);
 
-      // ─── SR vs NATAL COMPARISON TABLE ────────────────────────
-      sectionTitle('Solar Return vs Natal — Side by Side');
+      // --- MOON SIGN CHANGE TABLE ---
+      const natalMoonSign = natalChart.planets.Moon?.sign;
+      const srMoonSign = a.moonSign;
+      if (natalMoonSign && srMoonSign) {
+        sectionTitle('Moon Sign Shift -- Your Emotional Year');
 
-      // Table header
+        checkPage(140);
+        // Two-column layout
+        const halfW = (contentW - 16) / 2;
+
+        // Natal Moon box
+        const moonBoxY = y;
+        drawContentBox(margin, moonBoxY, halfW, 80, softGold);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.setTextColor(...deepBrown);
+        doc.text('NATAL MOON', margin + 10, moonBoxY + 14);
+        doc.setFontSize(13);
+        doc.setTextColor(...gold);
+        doc.text(natalMoonSign.toUpperCase(), margin + 10, moonBoxY + 32);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.5);
+        doc.setTextColor(...bodyText);
+        const natalMoonLines = doc.splitTextToSize(moonSignChangeFelt[natalMoonSign] || '', halfW - 20);
+        natalMoonLines.slice(0, 4).forEach((line: string, i: number) => {
+          doc.text(line, margin + 10, moonBoxY + 44 + i * 10);
+        });
+
+        // SR Moon box
+        const srBoxX = margin + halfW + 16;
+        drawContentBox(srBoxX, moonBoxY, halfW, 80, softBlue);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.setTextColor(...deepBrown);
+        doc.text('SR MOON (THIS YEAR)', srBoxX + 10, moonBoxY + 14);
+        doc.setFontSize(13);
+        doc.setTextColor(...gold);
+        doc.text(srMoonSign.toUpperCase(), srBoxX + 10, moonBoxY + 32);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.5);
+        doc.setTextColor(...bodyText);
+        const srMoonLines = doc.splitTextToSize(moonSignChangeFelt[srMoonSign] || '', halfW - 20);
+        srMoonLines.slice(0, 4).forEach((line: string, i: number) => {
+          doc.text(line, srBoxX + 10, moonBoxY + 44 + i * 10);
+        });
+
+        y = moonBoxY + 88;
+
+        // Arrow between them
+        if (natalMoonSign !== srMoonSign) {
+          writeBold(`The Shift: ${natalMoonSign} --> ${srMoonSign}`, deepBrown, 9);
+          writeBody(`Your emotional baseline shifts this year. Where you normally process feelings through ${natalMoonSign} instincts, this year asks you to develop ${srMoonSign} emotional responses. This doesn't replace your natal Moon -- it layers a new emotional frequency on top. Pay attention to situations where your usual emotional reactions don't quite fit; that's the SR Moon asking you to try a different approach.`, bodyText, 8);
+        } else {
+          writeBold(`Moon Stays in ${natalMoonSign} -- Emotional Continuity`, deepBrown, 9);
+          writeBody(`Your SR Moon matches your natal Moon sign. This year your emotional instincts are reinforced rather than challenged. You feel at home in your own skin emotionally. Trust your gut more than usual -- it's running on native software.`, bodyText, 8);
+        }
+        y += 8;
+      }
+
+      // --- SR vs NATAL COMPARISON TABLE ---
+      sectionTitle('Solar Return vs Natal -- Side by Side');
+
       const cols = [margin + 4, margin + 65, margin + 178, margin + 220, margin + 333, margin + 375];
 
       checkPage(16);
@@ -274,9 +371,6 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       drawHorizontalRule(warmBorder, 0.5);
       y += 10;
 
-      // Arrow character for shift column
-      const arrow = ' → ';
-
       for (const p of PLANET_ORDER) {
         const srPos = srChart.planets[p as keyof typeof srChart.planets];
         const natPos = natalChart.planets[p as keyof typeof natalChart.planets];
@@ -285,11 +379,10 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         const overlay = a.houseOverlays.find(o => o.planet === p);
         const natH = overlay?.natalHouse;
         const shift = srPos?.sign && natPos?.sign
-          ? (srPos.sign === natPos.sign ? 'Same' : `${S[natPos.sign] || natPos.sign}${arrow}${S[srPos.sign] || srPos.sign}`)
+          ? (srPos.sign === natPos.sign ? 'Same' : `${S[natPos.sign] || natPos.sign} --> ${S[srPos.sign] || srPos.sign}`)
           : '';
 
         checkPage(13);
-        // Alternate row shading
         const rowIdx = PLANET_ORDER.indexOf(p);
         if (rowIdx % 2 === 0) {
           doc.setFillColor(252, 250, 247);
@@ -304,9 +397,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8);
         doc.setTextColor(...bodyText);
-        doc.text(srPos ? `${srPos.sign} ${srPos.degree}° ${srPos.minutes || 0}'` : '--', cols[1], y);
+        doc.text(srPos ? `${srPos.sign} ${srPos.degree}' ${srPos.minutes || 0}'` : '--', cols[1], y);
         doc.text(srH != null ? `H${srH}` : '--', cols[2], y);
-        doc.text(natPos ? `${natPos.sign} ${natPos.degree}° ${natPos.minutes || 0}'` : '--', cols[3], y);
+        doc.text(natPos ? `${natPos.sign} ${natPos.degree}' ${natPos.minutes || 0}'` : '--', cols[3], y);
         doc.text(natH != null ? `H${natH}` : '--', cols[4], y);
         doc.setTextColor(...dimText);
         doc.text(shift, cols[5], y);
@@ -314,9 +407,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       }
       y += 6;
 
-      // ─── HOUSE OVERLAYS TABLE ────────────────────────────────
+      // --- HOUSE OVERLAYS TABLE ---
       if (a.houseOverlays.length > 0) {
-        sectionTitle('House Overlays — SR Planets in Natal Houses');
+        sectionTitle('House Overlays -- SR Planets in Natal Houses');
         const oc = [margin + 4, margin + 75, margin + 190, margin + 260, margin + 340];
         
         checkPage(16);
@@ -330,7 +423,6 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         drawHorizontalRule(warmBorder, 0.5);
         y += 10;
 
-        // Sort overlays by planetary order
         const sortedOverlays = [...a.houseOverlays].sort((a, b) => {
           const ai = PLANET_ORDER.indexOf(a.planet);
           const bi = PLANET_ORDER.indexOf(b.planet);
@@ -361,73 +453,213 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         y += 6;
       }
 
-      // ─── STELLIUMS ───────────────────────────────────────────
+      // --- STELLIUMS ---
       if (a.stelliums.length > 0) {
-        sectionTitle('Stelliums');
+        sectionTitle('Stelliums -- Concentrated Energy');
         for (const s of a.stelliums) {
           const planets = s.planets.map(pp => P[pp] || pp).join(', ');
-          checkPage(40);
-          const boxStartY = y;
-          y += 10;
-          writeBold(`${s.planets.length}-Planet Stellium in ${s.location}`, deepBrown, 9);
-          writeBody(planets, gold, 8);
-          y += 2;
-          writeBody(s.interpretation, bodyText, 8);
-          y += 10;
-          // Left accent bar
-          doc.setDrawColor(...gold);
-          doc.setLineWidth(2);
-          doc.line(margin, boxStartY, margin, y);
+          // Ensure enough space for the full card (title + planets + interp + felt sense)
+          checkPage(160);
+          
+          drawCard(() => {
+            writeBold(`${s.planets.length}-Planet Stellium in ${s.location}`, deepBrown, 10);
+            y += 2;
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(8.5);
+            doc.setTextColor(...gold);
+            doc.text(planets, margin + 14, y);
+            y += 14;
+            
+            writeBody(s.interpretation, bodyText, 8);
+            y += 4;
+
+            // Sign meaning
+            if (s.signMeaning) {
+              writeBold(`What ${s.location} Dominance Means`, gold, 8);
+              writeBody(s.signMeaning, bodyText, 8);
+              y += 4;
+            }
+
+            // FELT SENSE -- how the native physically feels this
+            const felt = stelliumFeltSense[s.location];
+            if (felt) {
+              writeBold('How You Will Feel This', accentGreen, 8);
+              writeBody(felt, bodyText, 8);
+              y += 4;
+            }
+
+            // Blend meaning
+            if (s.blendMeaning) {
+              writeBold('This Specific Combination', gold, 8);
+              const paras = s.blendMeaning.split('\n\n');
+              for (const para of paras) {
+                writeBody(para, bodyText, 8);
+                y += 2;
+              }
+            }
+          });
         }
       }
 
-      // ─── SR-TO-NATAL ASPECTS ─────────────────────────────────
+      // --- ELEMENT & MODALITY BALANCE (beautiful visual) ---
+      if (a.elementBalance) {
+        sectionTitle('Element & Modality Balance');
+        const eb = a.elementBalance;
+        const mb = a.modalityBalance;
+
+        checkPage(180);
+
+        // Element balance -- 4 boxes in a row
+        const elemW = (contentW - 24) / 4;
+        const elemH = 65;
+        const elements = [
+          { name: 'Fire', val: eb.fire, planets: eb.firePlanets, bg: [255, 245, 235] as [number, number, number] },
+          { name: 'Earth', val: eb.earth, planets: eb.earthPlanets, bg: [240, 248, 240] as [number, number, number] },
+          { name: 'Air', val: eb.air, planets: eb.airPlanets, bg: [240, 245, 255] as [number, number, number] },
+          { name: 'Water', val: eb.water, planets: eb.waterPlanets, bg: [235, 243, 255] as [number, number, number] },
+        ];
+
+        const elemStartY = y;
+        elements.forEach((el, i) => {
+          const x = margin + i * (elemW + 8);
+          const isDominant = el.name.toLowerCase() === eb.dominant;
+          
+          // Box with border highlight for dominant
+          doc.setFillColor(...el.bg);
+          doc.setDrawColor(...(isDominant ? gold : warmBorder));
+          doc.setLineWidth(isDominant ? 1.5 : 0.5);
+          doc.roundedRect(x, elemStartY, elemW, elemH, 3, 3, 'FD');
+
+          // Count (large)
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(18);
+          doc.setTextColor(...(isDominant ? gold : darkText));
+          doc.text(String(el.val), x + elemW / 2, elemStartY + 24, { align: 'center' });
+
+          // Element name
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8);
+          doc.setTextColor(...bodyText);
+          doc.text(el.name, x + elemW / 2, elemStartY + 36, { align: 'center' });
+
+          // Planet symbols
+          if (el.planets.length > 0) {
+            doc.setFontSize(7);
+            doc.setTextColor(...dimText);
+            const symbolStr = el.planets.map(p => P[p] || p).join(', ');
+            const symLines = doc.splitTextToSize(symbolStr, elemW - 8);
+            symLines.slice(0, 2).forEach((line: string, li: number) => {
+              doc.text(line, x + elemW / 2, elemStartY + 48 + li * 9, { align: 'center' });
+            });
+          }
+        });
+        y = elemStartY + elemH + 8;
+
+        // Interpretation
+        writeBody(eb.interpretation, bodyText, 8);
+        y += 8;
+
+        // Modality balance -- 3 boxes in a row
+        const modW = (contentW - 16) / 3;
+        const modH = 55;
+        const modalities = [
+          { name: 'Cardinal', val: mb.cardinal, planets: mb.cardinalPlanets },
+          { name: 'Fixed', val: mb.fixed, planets: mb.fixedPlanets },
+          { name: 'Mutable', val: mb.mutable, planets: mb.mutablePlanets },
+        ];
+
+        const modStartY = y;
+        modalities.forEach((mod, i) => {
+          const x = margin + i * (modW + 8);
+          const isDominant = mod.name.toLowerCase() === mb.dominant;
+
+          doc.setFillColor(...softGold);
+          doc.setDrawColor(...(isDominant ? gold : warmBorder));
+          doc.setLineWidth(isDominant ? 1.5 : 0.5);
+          doc.roundedRect(x, modStartY, modW, modH, 3, 3, 'FD');
+
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(16);
+          doc.setTextColor(...(isDominant ? gold : darkText));
+          doc.text(String(mod.val), x + modW / 2, modStartY + 22, { align: 'center' });
+
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8);
+          doc.setTextColor(...bodyText);
+          doc.text(mod.name, x + modW / 2, modStartY + 34, { align: 'center' });
+
+          if (mod.planets.length > 0) {
+            doc.setFontSize(7);
+            doc.setTextColor(...dimText);
+            doc.text(mod.planets.map(p => P[p] || p).join(', '), x + modW / 2, modStartY + 46, { align: 'center' });
+          }
+        });
+        y = modStartY + modH + 8;
+
+        writeBody(mb.interpretation, bodyText, 8);
+        y += 6;
+      }
+
+      // --- SR-TO-NATAL ASPECTS (with felt interpretations) ---
       if (a.srToNatalAspects.length > 0) {
-        // Filter out Sun conjunct Sun
         const allAspects = a.srToNatalAspects.filter(
           asp => !(asp.planet1 === 'Sun' && asp.planet2 === 'Sun' && asp.type === 'Conjunction')
         );
 
-        // Split into major vs minor bodies
         const majorAspects = allAspects.filter(asp => MAJOR_BODIES.has(asp.planet1) && MAJOR_BODIES.has(asp.planet2));
         const minorAspects = allAspects.filter(asp => !MAJOR_BODIES.has(asp.planet1) || !MAJOR_BODIES.has(asp.planet2));
 
+        // Ensure title + header + first few rows stay together
         sectionTitle('Key SR-to-Natal Aspects');
         
-        const ac = [margin + 4, margin + 110, margin + 200, margin + 330];
-        checkPage(16);
-        doc.setFillColor(...softGold);
-        doc.rect(margin, y - 10, contentW, 14, 'F');
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(7);
-        doc.setTextColor(...deepBrown);
-        ['SR PLANET', 'ASPECT', 'NATAL PLANET', 'ORB'].forEach((h, i) => doc.text(h, ac[i], y));
-        y += 8;
-        drawHorizontalRule(warmBorder, 0.5);
-        y += 10;
-
+        // Two-column layout: left = aspect, right = what it feels like
         for (let i = 0; i < Math.min(majorAspects.length, 15); i++) {
           const asp = majorAspects[i];
-          checkPage(13);
-          if (i % 2 === 0) {
-            doc.setFillColor(252, 250, 247);
-            doc.rect(margin, y - 9, contentW, 12, 'F');
-          }
+          const interp = generateSRtoNatalInterpretation(asp.planet1, asp.planet2, asp.type, asp.orb);
+          
+          // Each aspect as a mini card
+          checkPage(70);
+          const cardY = y;
+          y += 8;
+          
+          // Left: aspect name
           doc.setFont('helvetica', 'bold');
-          doc.setFontSize(8);
+          doc.setFontSize(9);
           doc.setTextColor(...darkText);
-          doc.text(`SR ${P[asp.planet1] || asp.planet1}`, ac[0], y);
+          doc.text(`SR ${P[asp.planet1] || asp.planet1}  ${asp.type}  Natal ${P[asp.planet2] || asp.planet2}`, margin + 12, y);
+          
+          // Orb badge
           doc.setFont('helvetica', 'normal');
-          doc.setTextColor(...gold);
-          doc.text(asp.type, ac[1], y);
-          doc.setTextColor(...darkText);
-          doc.text(`Natal ${P[asp.planet2] || asp.planet2}`, ac[2], y);
+          doc.setFontSize(7);
           doc.setTextColor(...dimText);
-          doc.text(`${asp.orb}°`, ac[3], y);
-          y += 12;
+          doc.text(`(${asp.orb}' orb)`, margin + 12 + doc.getTextWidth(`SR ${P[asp.planet1] || asp.planet1}  ${asp.type}  Natal ${P[asp.planet2] || asp.planet2}`) + 6, y);
+          y += 13;
+
+          // Right-side: how it feels
+          doc.setFont('helvetica', 'italic');
+          doc.setFontSize(7.5);
+          doc.setTextColor(...gold);
+          doc.text('How it feels:', margin + 12, y);
+          y += 10;
+          writeBody(interp.howItFeels, bodyText, 7.5, 11);
+          y += 4;
+
+          // Draw card border
+          const cardH = y - cardY;
+          doc.setDrawColor(...warmBorder);
+          doc.setLineWidth(0.3);
+          doc.roundedRect(margin + 2, cardY, contentW - 4, cardH, 3, 3, 'S');
+
+          // Gold left accent
+          const isHard = ['Square', 'Opposition', 'Quincunx'].includes(asp.type);
+          doc.setDrawColor(...(isHard ? [180, 100, 60] as [number, number, number] : gold));
+          doc.setLineWidth(2);
+          doc.line(margin + 3, cardY + 2, margin + 3, cardY + cardH - 2);
+
+          y += 4;
         }
 
-        // Minor body aspects (Ceres, Vesta, Pallas, Juno, Lilith)
+        // Minor body aspects
         if (minorAspects.length > 0) {
           y += 8;
           writeBold('Asteroid & Minor Body Aspects', dimText, 8);
@@ -437,17 +669,17 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(7.5);
             doc.setTextColor(...bodyText);
-            doc.text(`SR ${P[asp.planet1] || asp.planet1} ${asp.type} Natal ${P[asp.planet2] || asp.planet2} (${asp.orb}°)`, margin + 12, y);
+            doc.text(`SR ${P[asp.planet1] || asp.planet1} ${asp.type} Natal ${P[asp.planet2] || asp.planet2} (${asp.orb}')`, margin + 12, y);
             y += 11;
           }
         }
         y += 6;
       }
 
-      // ─── NATAL DEGREE CONNECTIONS ────────────────────────────
+      // --- NATAL DEGREE CONNECTIONS ---
       if (a.natalDegreeConduits.length > 0) {
         sectionTitle('Natal Degree Connections');
-        writeBody('When a Solar Return planet lands on the same degree as a natal planet, it creates a powerful direct link — activating that natal planet\'s themes throughout the year.', dimText, 8);
+        writeBody('When a Solar Return planet lands on the same degree as a natal planet, it creates a powerful direct link -- activating that natal planet\'s themes throughout the year.', dimText, 8);
         y += 6;
         for (const cd of a.natalDegreeConduits) {
           checkPage(14);
@@ -458,20 +690,20 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           doc.text(srText, margin + 8, y);
           const srW = doc.getTextWidth(srText);
           doc.setTextColor(...gold);
-          doc.text('  →  ', margin + 8 + srW, y);
-          const arrowW = doc.getTextWidth('  →  ');
+          doc.text('  -->  ', margin + 8 + srW, y);
+          const arrowW = doc.getTextWidth('  -->  ');
           doc.setFont('helvetica', 'normal');
           doc.setTextColor(...bodyText);
-          doc.text(`Natal ${P[cd.natalPlanet] || cd.natalPlanet} (${cd.orb.toFixed(1)}°)`, margin + 8 + srW + arrowW, y);
+          doc.text(`Natal ${P[cd.natalPlanet] || cd.natalPlanet} (${cd.orb.toFixed(1)}')`, margin + 8 + srW + arrowW, y);
           y += 13;
         }
         y += 6;
       }
 
-      // ─── MOON TIMING ────────────────────────────────────────
+      // --- MOON TIMING ---
       if (a.moonTimingEvents.length > 0) {
-        sectionTitle('Moon Timing — When Things Happen');
-        writeBody('The SR Moon advances approximately 1° per month from your birthday. When it perfects an aspect to another planet, that month becomes a turning point.', dimText, 8);
+        sectionTitle('Moon Timing -- When Things Happen');
+        writeBody('The SR Moon advances approximately 1 degree per month from your birthday. When it perfects an aspect to another planet, that month becomes a turning point.', dimText, 8);
         y += 6;
 
         const mc = [margin + 4, margin + 85, margin + 240];
@@ -508,90 +740,34 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         y += 6;
       }
 
-      // ─── ELEMENT & MODALITY ──────────────────────────────────
-      if (a.elementBalance) {
-        sectionTitle('Element & Modality Balance');
-        const eb = a.elementBalance;
-        const mb = a.modalityBalance;
-
-        // Two mini boxes side by side
-        const boxW = (contentW - 12) / 2;
-        const boxH = 60;
-        checkPage(boxH + 10);
-
-        // Element box
-        drawContentBox(margin, y, boxW, boxH, softGold);
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(8);
-        doc.setTextColor(...deepBrown);
-        doc.text('DOMINANT ELEMENT', margin + 10, y + 14);
-        doc.setFontSize(12);
-        doc.setTextColor(...gold);
-        doc.text(eb.dominant.toUpperCase(), margin + 10, y + 30);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(7.5);
-        doc.setTextColor(...bodyText);
-        doc.text(`Fire ${eb.fire}  |  Earth ${eb.earth}  |  Air ${eb.air}  |  Water ${eb.water}`, margin + 10, y + 44);
-
-        // Modality box
-        const box2X = margin + boxW + 12;
-        drawContentBox(box2X, y, boxW, boxH, softGold);
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(8);
-        doc.setTextColor(...deepBrown);
-        doc.text('DOMINANT MODALITY', box2X + 10, y + 14);
-        doc.setFontSize(12);
-        doc.setTextColor(...gold);
-        doc.text(mb.dominant.toUpperCase(), box2X + 10, y + 30);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(7.5);
-        doc.setTextColor(...bodyText);
-        doc.text(`Cardinal ${mb.cardinal}  |  Fixed ${mb.fixed}  |  Mutable ${mb.mutable}`, box2X + 10, y + 44);
-
-        y += boxH + 8;
-        if (eb.missing.length > 0) {
-          writeBody(`Missing elements: ${eb.missing.join(', ')}`, dimText, 7.5);
-        }
-        writeBody(eb.interpretation, bodyText, 8);
-        y += 4;
-        writeBody(mb.interpretation, bodyText, 8);
-        y += 6;
-      }
-
-      // ─── SATURN & NODE — EXPLAINED ───────────────────────────
+      // --- SATURN & NORTH NODE ---
       if (a.saturnFocus || a.nodesFocus) {
-        sectionTitle('Saturn & North Node — Year\'s Structural Themes');
+        sectionTitle('Saturn & North Node -- Year\'s Structural Themes');
         
-        writeBody('Saturn and the North Node are singled out because they define the year\'s deepest structural lessons. Saturn shows where maturity, discipline, and hard-won growth are required — the area of life where you cannot cut corners. The North Node reveals your evolutionary direction — the growth edge calling you forward, often uncomfortable but always meaningful.', bodyText, 8);
+        writeBody('Saturn and the North Node are singled out because they define the year\'s deepest structural lessons. Saturn shows where maturity, discipline, and hard-won growth are required -- the area of life where you cannot cut corners. The North Node reveals your evolutionary direction -- the growth edge calling you forward, often uncomfortable but always meaningful.', bodyText, 8);
         y += 8;
 
         if (a.saturnFocus) {
-          checkPage(50);
-          const satStartY = y;
-          y += 10;
-          writeBold(`Saturn in ${a.saturnFocus.sign} — SR House ${a.saturnFocus.house || '--'}, Natal House ${a.saturnFocus.natalHouse || '--'}${a.saturnFocus.isRetrograde ? ' (Rx)' : ''}`, deepBrown, 9);
-          y += 2;
-          writeBody(a.saturnFocus.interpretation, bodyText, 8);
-          y += 10;
-          doc.setDrawColor(...gold);
-          doc.setLineWidth(2);
-          doc.line(margin, satStartY, margin, y);
+          checkPage(80);
+          drawCard(() => {
+            writeBold('Saturn\'s Assignment', gold, 9);
+            writeBold(`${a.saturnFocus!.sign} -- SR House ${a.saturnFocus!.house || '--'}, Natal House ${a.saturnFocus!.natalHouse || '--'}${a.saturnFocus!.isRetrograde ? ' (Rx)' : ''}`, deepBrown, 9);
+            y += 2;
+            writeBody(a.saturnFocus!.interpretation, bodyText, 8);
+          });
         }
         if (a.nodesFocus) {
-          checkPage(50);
-          const nodeStartY = y;
-          y += 10;
-          writeBold(`North Node in ${a.nodesFocus.sign} — SR House ${a.nodesFocus.house || '--'}`, deepBrown, 9);
-          y += 2;
-          writeBody(a.nodesFocus.interpretation, bodyText, 8);
-          y += 10;
-          doc.setDrawColor(...gold);
-          doc.setLineWidth(2);
-          doc.line(margin, nodeStartY, margin, y);
+          checkPage(80);
+          drawCard(() => {
+            writeBold('Growth Edge (North Node)', gold, 9);
+            writeBold(`${a.nodesFocus!.sign} -- SR House ${a.nodesFocus!.house || '--'}`, deepBrown, 9);
+            y += 2;
+            writeBody(a.nodesFocus!.interpretation, bodyText, 8);
+          });
         }
       }
 
-      // ─── RETROGRADES ─────────────────────────────────────────
+      // --- RETROGRADES ---
       if (a.retrogrades && a.retrogrades.count > 0) {
         sectionTitle('Retrograde Planets');
         const retList = a.retrogrades.planets.map(pp => P[pp] || pp).join(', ');
@@ -600,38 +776,40 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         y += 6;
       }
 
-      // ─── VERTEX ────────────────────────────────────────────
+      // --- VERTEX ---
       if (a.vertex) {
-        sectionTitle('Vertex — Fated Encounters');
-        writeBold(`Vertex: ${a.vertex.sign} ${a.vertex.degree}° ${a.vertex.minutes}' ${a.vertex.house ? `(SR House ${a.vertex.house})` : ''}`, deepBrown, 9);
-        const vSign = vertexInSign[a.vertex.sign];
-        if (vSign) {
-          writeBody(vSign.fatedTheme, bodyText, 8);
-          y += 4;
-          writeBold('Who May Appear:', gold, 8);
-          writeBody(vSign.encounters, bodyText, 8);
-          y += 4;
-          writeBold('The Lesson:', gold, 8);
-          writeBody(vSign.lesson, bodyText, 8);
-          y += 4;
-        }
-        if (a.vertex.house && vertexInHouse[a.vertex.house]) {
-          const vH = vertexInHouse[a.vertex.house];
-          writeBold(`${vH.title} (House ${a.vertex.house})`, darkText, 8);
-          writeBody(vH.description, bodyText, 8);
-          writeBody(`Fated Areas: ${vH.fatedArea}`, dimText, 7);
-          y += 4;
-        }
-        if (a.vertex.aspects.length > 0) {
-          writeBold('Planets Aspecting Vertex:', gold, 8);
-          for (const asp of a.vertex.aspects.slice(0, 6)) {
-            writeBody(`${P[asp.planet.replace('Natal ', '')] || asp.planet} ${asp.aspectType} Vertex (${asp.orb}°)`, bodyText, 8);
+        sectionTitle('Vertex -- Fated Encounters');
+        checkPage(80);
+        drawCard(() => {
+          writeBold(`Vertex: ${a.vertex!.sign} ${a.vertex!.degree}' ${a.vertex!.minutes}' ${a.vertex!.house ? `(SR House ${a.vertex!.house})` : ''}`, deepBrown, 9);
+          const vSign = vertexInSign[a.vertex!.sign];
+          if (vSign) {
+            writeBody(vSign.fatedTheme, bodyText, 8);
+            y += 4;
+            writeBold('Who May Appear:', gold, 8);
+            writeBody(vSign.encounters, bodyText, 8);
+            y += 4;
+            writeBold('The Lesson:', gold, 8);
+            writeBody(vSign.lesson, bodyText, 8);
+            y += 4;
           }
-          y += 4;
-        }
+          if (a.vertex!.house && vertexInHouse[a.vertex!.house]) {
+            const vH = vertexInHouse[a.vertex!.house];
+            writeBold(`${vH.title} (House ${a.vertex!.house})`, darkText, 8);
+            writeBody(vH.description, bodyText, 8);
+            writeBody(`Fated Areas: ${vH.fatedArea}`, dimText, 7);
+            y += 4;
+          }
+          if (a.vertex!.aspects.length > 0) {
+            writeBold('Planets Aspecting Vertex:', gold, 8);
+            for (const asp of a.vertex!.aspects.slice(0, 6)) {
+              writeBody(`${P[asp.planet.replace('Natal ', '')] || asp.planet} ${asp.aspectType} Vertex (${asp.orb}')`, bodyText, 8);
+            }
+          }
+        });
       }
 
-      // ─── PLANET SPOTLIGHT ────────────────────────────────────
+      // --- PLANET SPOTLIGHT ---
       const deepData: Record<string, Record<number, any>> = {
         Mercury: srMercuryInHouseDeep,
         Venus: srVenusInHouseDeep,
@@ -647,53 +825,37 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         return h !== null && h !== undefined && deepData[p]?.[h];
       });
       if (spotlightPlanets.length > 0) {
-        sectionTitle('Planet Spotlight — Expert Analysis');
+        sectionTitle('Planet Spotlight -- Expert Analysis');
         for (const planet of spotlightPlanets) {
           const h = a.planetSRHouses[planet]!;
           const data = deepData[planet][h];
           if (!data) continue;
-          checkPage(80);
+          checkPage(100);
 
-          // Beautiful card-style box
-          const cardStartY = y;
-          y += 14;
+          drawCard(() => {
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10);
+            doc.setTextColor(...gold);
+            doc.text(`${P[planet] || planet} in SR House ${h}`, margin + 14, y);
+            y += 14;
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(9);
+            doc.setTextColor(...darkText);
+            doc.text(data.title, margin + 14, y);
+            y += 12;
 
-          // Planet name + house title
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(10);
-          doc.setTextColor(...gold);
-          doc.text(`${P[planet] || planet} in SR House ${h}`, margin + 14, y);
-          y += 14;
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(9);
-          doc.setTextColor(...darkText);
-          doc.text(data.title, margin + 14, y);
-          y += 12;
-
-          writeBody(data.overview, bodyText, 8);
-          y += 4;
-          writeBold('Practical:', gold, 8);
-          writeBody(data.practical, bodyText, 8);
-          y += 4;
-          writeBold('Caution:', gold, 8);
-          writeBody(data.caution, bodyText, 8);
-          y += 10;
-
-          // Draw card border
-          const cardH = y - cardStartY;
-          doc.setDrawColor(...warmBorder);
-          doc.setLineWidth(0.5);
-          doc.roundedRect(margin, cardStartY, contentW, cardH, 4, 4, 'S');
-          // Gold top accent line
-          doc.setDrawColor(...gold);
-          doc.setLineWidth(2);
-          doc.line(margin + 1, cardStartY, margin + 1, cardStartY + cardH);
-
-          y += 6;
+            writeBody(data.overview, bodyText, 8);
+            y += 4;
+            writeBold('Practical:', gold, 8);
+            writeBody(data.practical, bodyText, 8);
+            y += 4;
+            writeBold('Caution:', gold, 8);
+            writeBody(data.caution, bodyText, 8);
+          });
         }
       }
 
-      // ─── SR MOON ASPECTS ─────────────────────────────────────
+      // --- SR MOON ASPECTS ---
       const moonSRAspects = a.srInternalAspects.filter(
         asp => asp.planet1 === 'Moon' || asp.planet2 === 'Moon'
       );
@@ -705,7 +867,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           for (const asp of moonSRAspects.slice(0, 8)) {
             const other = asp.planet1 === 'Moon' ? asp.planet2 : asp.planet1;
             const isHard = ['Square', 'Opposition', 'Quincunx'].includes(asp.type);
-            writeBody(`Moon ${asp.type} ${P[other] || other} (${asp.orb}°) — ${isHard ? 'Hard' : 'Soft'}`, bodyText, 8);
+            writeBody(`Moon ${asp.type} ${P[other] || other} (${asp.orb}') -- ${isHard ? 'Hard' : 'Soft'}`, bodyText, 8);
           }
           y += 4;
         }
@@ -713,13 +875,13 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           writeBold('SR Moon Aspects to Natal Planets:', gold, 8);
           for (const asp of moonNatalAspects.slice(0, 8)) {
             const isHard = ['Square', 'Opposition', 'Quincunx'].includes(asp.type);
-            writeBody(`SR Moon ${asp.type} Natal ${P[asp.planet2] || asp.planet2} (${asp.orb}°) — ${isHard ? 'Hard' : 'Soft'}`, bodyText, 8);
+            writeBody(`SR Moon ${asp.type} Natal ${P[asp.planet2] || asp.planet2} (${asp.orb}') -- ${isHard ? 'Hard' : 'Soft'}`, bodyText, 8);
           }
           y += 4;
         }
       }
 
-      // ─── YEAR-AHEAD NARRATIVE ────────────────────────────────
+      // --- YEAR-AHEAD NARRATIVE ---
       if (narrative) {
         sectionTitle('Year-Ahead Reading');
         const lines = narrative.split('\n');
@@ -746,7 +908,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         }
       }
 
-      // ─── FOOTER ──────────────────────────────────────────────
+      // --- FOOTER ---
       y += 20;
       checkPage(30);
       drawGoldRule();
@@ -759,19 +921,17 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         pw / 2, y, { align: 'center' }
       );
 
-      // Page numbers with decorative style
+      // Page numbers
       const totalPages = doc.getNumberOfPages();
       for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
-        // Bottom gold line
         doc.setDrawColor(...gold);
         doc.setLineWidth(0.5);
         doc.line(margin, ph - 32, pw - margin, ph - 32);
-        // Page number
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(7);
         doc.setTextColor(...dimText);
-        doc.text(`— ${i} of ${totalPages} —`, pw / 2, ph - 20, { align: 'center' });
+        doc.text(`-- ${i} of ${totalPages} --`, pw / 2, ph - 20, { align: 'center' });
       }
 
       doc.save(`Solar-Return-${year}-${name.replace(/\s+/g, '-')}.pdf`);
