@@ -54,7 +54,7 @@ export const useCloudBackup = (
     hasCloudData: false,
     isAuthenticated: false,
   });
-  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialCheckDoneRef = useRef(false);
   const hasShownRestoreToastRef = useRef(false);
   

@@ -331,7 +331,7 @@ export const ChartLibrary = ({
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [isDragOver, setIsDragOver] = useState(false);
   const [cardDragOver, setCardDragOver] = useState<string | null>(null); // Track which card has drag-over
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isNewChartRef = useRef(false);
   // Track if form has been explicitly opened to prevent auto-save on mount
   const hasFormOpenedRef = useRef(false);

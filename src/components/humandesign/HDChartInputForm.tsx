@@ -105,7 +105,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
   const isEditMode = !!initialData?.id;
   
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const locationDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  const locationDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Check if main user data is available and can be used
   const canUseMainUserData = mainUserData && mainUserData.name && mainUserData.birthDate && mainUserData.birthTime;
