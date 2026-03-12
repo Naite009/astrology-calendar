@@ -525,6 +525,7 @@ export const analyzeSolarReturn = (
         rulerPlanet: ruler,
         rulerSRSign: rulerSRPos.sign,
         rulerSRHouse,
+        rulerNatalSign: rulerNatalPos?.sign || '',
         rulerNatalHouse,
         rulerNatalHouseTheme: natalTheme,
         interpretation,
