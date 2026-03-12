@@ -1232,9 +1232,6 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
             <p className="text-xs text-muted-foreground leading-relaxed">
               Think of the Moon as a spotlight moving through the year, illuminating each planet it touches. Conjunctions and oppositions mark the strongest activations; trines and sextiles bring opportunities; squares bring turning points that demand action.
             </p>
-            <p className="text-[10px] text-muted-foreground italic">
-              Source: Lynn Bell — "Cycles of Light"; Mary Fortier Shea — "Planets in Solar Returns"
-            </p>
           </div>
           <div className="space-y-3">
             {analysis.moonTimingEvents.slice(0, 12).map((evt, i) => (
