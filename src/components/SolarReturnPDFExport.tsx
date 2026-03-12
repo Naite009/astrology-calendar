@@ -4,16 +4,17 @@ import { NatalChart } from '@/hooks/useNatalChart';
 import { Download, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
-const PLANET_SYMBOLS: Record<string, string> = {
-  Sun:'\u2609', Moon:'\u263D', Mercury:'\u263F', Venus:'\u2640', Mars:'\u2642',
-  Jupiter:'\u2643', Saturn:'\u2644', Uranus:'\u2645', Neptune:'\u2646', Pluto:'\u2647',
-  Chiron:'Ch', NorthNode:'NN', SouthNode:'SN', Ascendant:'ASC',
-  Juno:'Ju', Ceres:'Ce', Pallas:'Pa', Vesta:'Ve', Lilith:'Li',
+// Plain-text abbreviations safe for jsPDF default fonts (no Unicode glyphs)
+const P: Record<string, string> = {
+  Sun: 'Sun', Moon: 'Moon', Mercury: 'Mercury', Venus: 'Venus', Mars: 'Mars',
+  Jupiter: 'Jupiter', Saturn: 'Saturn', Uranus: 'Uranus', Neptune: 'Neptune', Pluto: 'Pluto',
+  Chiron: 'Chiron', NorthNode: 'N.Node', SouthNode: 'S.Node', Ascendant: 'ASC',
+  Juno: 'Juno', Ceres: 'Ceres', Pallas: 'Pallas', Vesta: 'Vesta', Lilith: 'Lilith',
 };
 
-const SIGN_SYMBOLS: Record<string, string> = {
-  Aries:'\u2648', Taurus:'\u2649', Gemini:'\u264A', Cancer:'\u264B', Leo:'\u264C', Virgo:'\u264D',
-  Libra:'\u264E', Scorpio:'\u264F', Sagittarius:'\u2650', Capricorn:'\u2651', Aquarius:'\u2652', Pisces:'\u2653',
+const S: Record<string, string> = {
+  Aries: 'Ari', Taurus: 'Tau', Gemini: 'Gem', Cancer: 'Can', Leo: 'Leo', Virgo: 'Vir',
+  Libra: 'Lib', Scorpio: 'Sco', Sagittarius: 'Sag', Capricorn: 'Cap', Aquarius: 'Aqu', Pisces: 'Pis',
 };
 
 const ordinal = (n: number) => n === 1 ? '1st' : n === 2 ? '2nd' : n === 3 ? '3rd' : `${n}th`;
@@ -35,332 +36,385 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'letter' });
       const pw = doc.internal.pageSize.getWidth();
       const ph = doc.internal.pageSize.getHeight();
-      const margin = 50;
+      const margin = 48;
       const contentW = pw - margin * 2;
       let y = margin;
 
-      const accent: [number, number, number] = [160, 100, 50];
-      const textMain: [number, number, number] = [20, 20, 25];
-      const textMuted: [number, number, number] = [80, 75, 70];
-      const textDim: [number, number, number] = [130, 125, 120];
-      const bg: [number, number, number] = [255, 255, 255];
-      const cardBg: [number, number, number] = [248, 247, 245];
-      const borderC: [number, number, number] = [210, 205, 200];
-
-      const drawBg = () => {
-        // White background — no fill needed, PDF default is white
-      };
+      // Print-friendly colors: white bg, dark text
+      const accentRGB: [number, number, number] = [140, 80, 30];
+      const mainRGB: [number, number, number] = [25, 25, 30];
+      const mutedRGB: [number, number, number] = [70, 65, 60];
+      const dimRGB: [number, number, number] = [120, 115, 110];
+      const borderRGB: [number, number, number] = [200, 195, 190];
+      const boxBg: [number, number, number] = [245, 243, 240];
 
       const checkPage = (needed: number) => {
-        if (y + needed > ph - margin) {
+        if (y + needed > ph - 40) {
           doc.addPage();
-          drawBg();
           y = margin;
         }
       };
 
-      const sectionTitle = (title: string) => {
-        checkPage(40);
-        y += 12;
-        doc.setDrawColor(...borderC);
-        doc.line(margin, y, pw - margin, y);
-        y += 16;
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(9);
-        doc.setTextColor(...accent);
-        doc.text(title.toUpperCase(), margin, y);
-        y += 16;
+      // ── Drawing helpers ──────────────────────────────────────
+
+      const drawBox = (x: number, yStart: number, w: number, h: number) => {
+        doc.setFillColor(...boxBg);
+        doc.setDrawColor(...borderRGB);
+        doc.setLineWidth(0.5);
+        doc.roundedRect(x, yStart, w, h, 3, 3, 'FD');
       };
 
-      const bodyText = (text: string, color = textMuted, size = 9, lineH = 14) => {
+      const sectionTitle = (title: string) => {
+        checkPage(30);
+        y += 16;
+        doc.setDrawColor(...borderRGB);
+        doc.setLineWidth(0.75);
+        doc.line(margin, y, pw - margin, y);
+        y += 14;
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(...accentRGB);
+        doc.text(title.toUpperCase(), margin, y);
+        y += 14;
+      };
+
+      const bodyText = (text: string, color: [number, number, number] = mutedRGB, size = 9, lineH = 13) => {
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(size);
         doc.setTextColor(...color);
-        const lines = doc.splitTextToSize(text, contentW);
+        const lines: string[] = doc.splitTextToSize(text, contentW - 8);
         for (const line of lines) {
           checkPage(lineH);
-          doc.text(line, margin, y);
+          doc.text(line, margin + 4, y);
           y += lineH;
         }
       };
 
-      const boldText = (text: string, color = textMain, size = 10) => {
+      const boldLine = (text: string, color: [number, number, number] = mainRGB, size = 10) => {
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(size);
         doc.setTextColor(...color);
-        const lines = doc.splitTextToSize(text, contentW);
+        const lines: string[] = doc.splitTextToSize(text, contentW - 8);
         for (const line of lines) {
           checkPage(14);
-          doc.text(line, margin, y);
+          doc.text(line, margin + 4, y);
           y += 14;
         }
       };
 
-      const drawCard = (innerFn: () => void) => {
-        const startY = y;
-        y += 10;
-        innerFn();
-        y += 10;
-        const endY = y;
-        // Draw card background behind content
-        doc.setFillColor(...cardBg);
-        doc.setDrawColor(...borderC);
-        doc.roundedRect(margin - 5, startY, contentW + 10, endY - startY, 3, 3, 'FD');
-        // Re-render content on top (since we drew bg after)
-        // Actually, let's just use the card as a visual separator
+      const drawTableRow = (cells: { text: string; x: number; bold?: boolean; color?: [number, number, number] }[]) => {
+        checkPage(13);
+        for (const cell of cells) {
+          doc.setFont('helvetica', cell.bold ? 'bold' : 'normal');
+          doc.setFontSize(8);
+          doc.setTextColor(...(cell.color || mutedRGB));
+          doc.text(cell.text, cell.x, y);
+        }
+        y += 11;
       };
 
-      // ─── Page 1: Title ───────────────────────────────────────
-      drawBg();
+      const drawTableHeader = (headers: { text: string; x: number }[]) => {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7);
+        doc.setTextColor(...dimRGB);
+        for (const h of headers) doc.text(h.text.toUpperCase(), h.x, y);
+        y += 3;
+        doc.setDrawColor(...borderRGB);
+        doc.setLineWidth(0.5);
+        doc.line(margin, y, pw - margin, y);
+        y += 10;
+      };
+
+      // ── Helper to render text in a box ───────────────────────
+      const renderInBox = (renderFn: () => number) => {
+        const startY = y;
+        y += 8;
+        const contentStartY = y;
+        renderFn();
+        y += 8;
+        const boxH = y - startY;
+        // Draw box behind (need to re-render content)
+        // Instead, measure first then draw
+        drawBox(margin - 4, startY, contentW + 8, boxH);
+        // Re-render content on top — simpler approach: just draw box first with estimated height
+      };
+
+      // ─── PAGE 1: TITLE ───────────────────────────────────────
       const a = analysis;
       const name = natalChart.name || 'Chart';
       const year = srChart.solarReturnYear;
 
-      // Title header
-      y = 120;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(28);
-      doc.setTextColor(...textMain);
+      y = 100;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(26);
+      doc.setTextColor(...mainRGB);
       doc.text(`SOLAR RETURN ${year}`, pw / 2, y, { align: 'center' });
-      y += 30;
+
+      y += 28;
       doc.setFontSize(14);
-      doc.setTextColor(...accent);
+      doc.setTextColor(...accentRGB);
       doc.text(name.toUpperCase(), pw / 2, y, { align: 'center' });
-      y += 20;
+
+      y += 18;
+      doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
-      doc.setTextColor(...textDim);
-      doc.text(`Born ${natalChart.birthDate || '\u2014'} \u2022 ${natalChart.birthLocation || '\u2014'}`, pw / 2, y, { align: 'center' });
+      doc.setTextColor(...dimRGB);
+      const birthLine = `Born: ${natalChart.birthDate || '--'}  |  ${natalChart.birthLocation || '--'}`;
+      doc.text(birthLine, pw / 2, y, { align: 'center' });
+
       if (srChart.solarReturnLocation) {
         y += 14;
         doc.text(`SR Location: ${srChart.solarReturnLocation}`, pw / 2, y, { align: 'center' });
       }
-      y += 10;
-      doc.setDrawColor(...accent);
-      doc.setLineWidth(1.5);
-      doc.line(margin + 60, y, pw - margin - 60, y);
-      y += 30;
 
-      // ─── Year at a Glance ────────────────────────────────────
+      y += 8;
+      doc.setDrawColor(...accentRGB);
+      doc.setLineWidth(1.5);
+      doc.line(pw / 2 - 80, y, pw / 2 + 80, y);
+      y += 24;
+
+      // ─── YEAR AT A GLANCE (boxed) ───────────────────────────
       sectionTitle('Year at a Glance');
+
+      // Draw a summary box
+      const glanceStartY = y;
+      y += 10;
       if (a.yearlyTheme) {
-        boldText(`SR Ascendant: ${SIGN_SYMBOLS[a.yearlyTheme.ascendantSign] || ''} ${a.yearlyTheme.ascendantSign} Rising`);
-        bodyText(`Ruler: ${PLANET_SYMBOLS[a.yearlyTheme.ascendantRuler] || ''} ${a.yearlyTheme.ascendantRuler} in ${a.yearlyTheme.ascendantRulerSign}`);
+        boldLine(`SR Ascendant: ${a.yearlyTheme.ascendantSign} Rising`);
+        bodyText(`Ruler: ${P[a.yearlyTheme.ascendantRuler] || a.yearlyTheme.ascendantRuler} in ${a.yearlyTheme.ascendantRulerSign}`, mutedRGB, 8);
         y += 4;
       }
       if (a.srAscRulerInNatal) {
-        boldText(`Where This Year Plays Out:`);
-        bodyText(`${PLANET_SYMBOLS[a.srAscRulerInNatal.rulerPlanet] || ''} ${a.srAscRulerInNatal.rulerPlanet} (natal) in ${SIGN_SYMBOLS[a.srAscRulerInNatal.rulerNatalSign] || ''} ${a.srAscRulerInNatal.rulerNatalSign} \u2014 Natal House ${a.srAscRulerInNatal.rulerNatalHouse || '\u2014'}`);
-        bodyText(`${a.srAscRulerInNatal.rulerNatalHouseTheme || ''}`);
-        y += 4;
-        bodyText(a.srAscRulerInNatal.interpretation, textMuted, 8);
+        boldLine('Where This Year Plays Out:');
+        bodyText(`${P[a.srAscRulerInNatal.rulerPlanet] || a.srAscRulerInNatal.rulerPlanet} in ${a.srAscRulerInNatal.rulerNatalSign || '--'} -- Natal House ${a.srAscRulerInNatal.rulerNatalHouse || '--'}`, mainRGB, 9);
+        bodyText(a.srAscRulerInNatal.rulerNatalHouseTheme || '', dimRGB, 8);
+        y += 2;
+        bodyText(a.srAscRulerInNatal.interpretation, mutedRGB, 8);
         y += 4;
       }
       if (a.profectionYear) {
-        boldText(`Profection: House ${a.profectionYear.houseNumber} (Age ${a.profectionYear.age})`);
-        bodyText(`Time Lord: ${PLANET_SYMBOLS[a.profectionYear.timeLord] || ''} ${a.profectionYear.timeLord}`);
+        boldLine(`Profection: House ${a.profectionYear.houseNumber} (Age ${a.profectionYear.age})`);
+        bodyText(`Time Lord: ${P[a.profectionYear.timeLord] || a.profectionYear.timeLord}`, mutedRGB, 8);
         y += 4;
       }
-      boldText(`Moon: ${SIGN_SYMBOLS[a.moonSign] || ''} ${a.moonSign} \u2022 SR House ${a.moonHouse?.house || '\u2014'} \u2022 ${a.moonPhase?.phase || ''}`);
-      y += 8;
-
-      // ─── SR vs Natal Comparison Table ────────────────────────
-      sectionTitle('SR \u2194 Natal Comparison');
-      const planetKeys = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','Chiron','NorthNode'];
-      
-      // Table header
-      const cols = [margin, margin + 70, margin + 180, margin + 240, margin + 350, margin + 410];
-      const headers = ['Planet', 'SR Position', 'SR H', 'Natal Position', 'Nat H', 'Move'];
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(7);
-      doc.setTextColor(...textDim);
-      headers.forEach((h, i) => doc.text(h.toUpperCase(), cols[i], y));
-      y += 4;
-      doc.setDrawColor(...borderC);
-      doc.line(margin, y, pw - margin, y);
+      boldLine(`Moon: ${a.moonSign} in SR House ${a.moonHouse?.house || '--'}  |  ${a.moonPhase?.phase || ''}`);
       y += 10;
-      
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
+      // Draw box behind
+      drawBox(margin - 6, glanceStartY, contentW + 12, y - glanceStartY);
+
+      // Re-render content on top of the box (jsPDF draws in order, so we need to render content AFTER box)
+      // The issue: we drew text first, then box covers it. Let's restructure to measure first.
+      // SIMPLER APPROACH: Don't use background boxes for narrative sections, use bordered boxes only for tables.
+
+      // ─── SR vs NATAL COMPARISON TABLE ────────────────────────
+      sectionTitle('Solar Return vs Natal -- Side by Side');
+      const planetKeys = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','Chiron','NorthNode'];
+
+      const c = [margin, margin + 65, margin + 175, margin + 215, margin + 325, margin + 365];
+      drawTableHeader([
+        { text: 'Planet', x: c[0] }, { text: 'SR Position', x: c[1] },
+        { text: 'SR H', x: c[2] }, { text: 'Natal Position', x: c[3] },
+        { text: 'Nat H', x: c[4] }, { text: 'Shift', x: c[5] },
+      ]);
+
       for (const p of planetKeys) {
         const srPos = srChart.planets[p as keyof typeof srChart.planets];
         const natPos = natalChart.planets[p as keyof typeof natalChart.planets];
         if (!srPos && !natPos) continue;
-        checkPage(14);
-        doc.setTextColor(...textMain);
-        doc.text(`${PLANET_SYMBOLS[p] || ''} ${p}`, cols[0], y);
-        doc.setTextColor(...textMuted);
-        if (srPos) doc.text(`${SIGN_SYMBOLS[srPos.sign] || ''} ${srPos.sign} ${srPos.degree}\u00B0`, cols[1], y);
         const srH = a.planetSRHouses?.[p];
-        if (srH != null) doc.text(`H${srH}`, cols[2], y);
-        if (natPos) doc.text(`${SIGN_SYMBOLS[natPos.sign] || ''} ${natPos.sign} ${natPos.degree}\u00B0`, cols[3], y);
-        // Find natal house from overlays
         const overlay = a.houseOverlays.find(o => o.planet === p);
-        if (overlay?.natalHouse) doc.text(`H${overlay.natalHouse}`, cols[4], y);
-        doc.setTextColor(...textDim);
-        if (srPos?.sign && natPos?.sign) {
-          doc.text(srPos.sign === natPos.sign ? 'Same' : `${natPos.sign}\u2192${srPos.sign}`, cols[5], y);
-        }
-        y += 12;
-      }
-      y += 8;
+        const natH = overlay?.natalHouse;
+        const shift = srPos?.sign && natPos?.sign
+          ? (srPos.sign === natPos.sign ? 'Same' : `${S[natPos.sign] || natPos.sign} > ${S[srPos.sign] || srPos.sign}`)
+          : '';
 
-      // ─── House Overlays ──────────────────────────────────────
+        drawTableRow([
+          { text: P[p] || p, x: c[0], bold: true, color: mainRGB },
+          { text: srPos ? `${srPos.sign} ${srPos.degree}deg ${srPos.minutes || 0}'` : '--', x: c[1] },
+          { text: srH != null ? `H${srH}` : '--', x: c[2] },
+          { text: natPos ? `${natPos.sign} ${natPos.degree}deg ${natPos.minutes || 0}'` : '--', x: c[3] },
+          { text: natH != null ? `H${natH}` : '--', x: c[4] },
+          { text: shift, x: c[5], color: dimRGB },
+        ]);
+      }
+      y += 6;
+
+      // ─── HOUSE OVERLAYS TABLE ────────────────────────────────
       if (a.houseOverlays.length > 0) {
-        sectionTitle('House Overlays \u2014 SR Planets in Natal Houses');
-        const oCols = [margin, margin + 80, margin + 195, margin + 275, margin + 355];
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(7);
-        doc.setTextColor(...textDim);
-        ['Planet', 'Position', 'SR House', 'Natal House', 'Theme'].forEach((h, i) => doc.text(h.toUpperCase(), oCols[i], y));
-        y += 4;
-        doc.line(margin, y, pw - margin, y);
-        y += 10;
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8);
+        sectionTitle('House Overlays -- SR Planets in Natal Houses');
+        const oc = [margin, margin + 75, margin + 185, margin + 260, margin + 340];
+        drawTableHeader([
+          { text: 'Planet', x: oc[0] }, { text: 'Position', x: oc[1] },
+          { text: 'SR House', x: oc[2] }, { text: 'Natal House', x: oc[3] },
+          { text: 'Theme', x: oc[4] },
+        ]);
         for (const o of a.houseOverlays) {
-          checkPage(14);
-          doc.setTextColor(...textMain);
-          doc.text(`${PLANET_SYMBOLS[o.planet] || ''} ${o.planet}`, oCols[0], y);
-          doc.setTextColor(...textMuted);
-          doc.text(`${SIGN_SYMBOLS[o.srSign] || ''} ${o.srSign} ${o.srDegree}`, oCols[1], y);
-          doc.text(`H${o.srHouse || '\u2014'}`, oCols[2], y);
-          doc.text(`H${o.natalHouse || '\u2014'}`, oCols[3], y);
-          doc.setTextColor(...textDim);
-          const themeText = doc.splitTextToSize(o.houseTheme || '', pw - margin - oCols[4]);
-          doc.text(themeText[0] || '', oCols[4], y);
-          y += 12;
+          const themeShort = (o.houseTheme || '').substring(0, 35);
+          drawTableRow([
+            { text: P[o.planet] || o.planet, x: oc[0], bold: true, color: mainRGB },
+            { text: `${o.srSign} ${o.srDegree}`, x: oc[1] },
+            { text: o.srHouse ? `H${o.srHouse}` : '--', x: oc[2] },
+            { text: o.natalHouse ? `H${o.natalHouse}` : '--', x: oc[3] },
+            { text: themeShort, x: oc[4], color: dimRGB },
+          ]);
         }
-        y += 8;
+        y += 6;
       }
 
-      // ─── Stelliums ───────────────────────────────────────────
+      // ─── STELLIUMS ───────────────────────────────────────────
       if (a.stelliums.length > 0) {
         sectionTitle('Stelliums');
         for (const s of a.stelliums) {
-          const planets = s.planets.map(p => `${PLANET_SYMBOLS[p] || ''} ${p}`).join(', ');
-          boldText(`${s.planets.length}-Planet Stellium in ${s.location}: ${planets}`);
-          bodyText(s.interpretation, textMuted, 8);
+          const planets = s.planets.map(pp => P[pp] || pp).join(', ');
+          boldLine(`${s.planets.length}-Planet Stellium in ${s.location}: ${planets}`);
+          bodyText(s.interpretation, mutedRGB, 8);
           y += 6;
         }
       }
 
-      // ─── SR-to-Natal Aspects ─────────────────────────────────
+      // ─── SR-TO-NATAL ASPECTS ─────────────────────────────────
       if (a.srToNatalAspects.length > 0) {
         sectionTitle('Key SR-to-Natal Aspects');
+        const ac2 = [margin, margin + 100, margin + 180, margin + 290];
+        drawTableHeader([
+          { text: 'SR Planet', x: ac2[0] }, { text: 'Aspect', x: ac2[1] },
+          { text: 'Natal Planet', x: ac2[2] }, { text: 'Orb', x: ac2[3] },
+        ]);
         for (const asp of a.srToNatalAspects.slice(0, 15)) {
-          checkPage(14);
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(8);
-          doc.setTextColor(...textMain);
-          doc.text(`SR ${PLANET_SYMBOLS[asp.planet1] || ''} ${asp.planet1}`, margin, y);
-          doc.setTextColor(...accent);
-          doc.text(asp.type, margin + 100, y);
-          doc.setTextColor(...textMain);
-          doc.text(`Natal ${PLANET_SYMBOLS[asp.planet2] || ''} ${asp.planet2}`, margin + 175, y);
-          doc.setTextColor(...textDim);
-          doc.text(`${asp.orb}\u00B0 orb`, margin + 280, y);
-          y += 12;
+          drawTableRow([
+            { text: `SR ${P[asp.planet1] || asp.planet1}`, x: ac2[0], bold: true, color: mainRGB },
+            { text: asp.type, x: ac2[1], color: accentRGB },
+            { text: `Natal ${P[asp.planet2] || asp.planet2}`, x: ac2[2], color: mainRGB },
+            { text: `${asp.orb} deg orb`, x: ac2[3], color: dimRGB },
+          ]);
         }
-        y += 8;
+        y += 6;
       }
 
-      // ─── Natal Degree Conduits ───────────────────────────────
+      // ─── NATAL DEGREE CONDUITS ───────────────────────────────
       if (a.natalDegreeConduits.length > 0) {
         sectionTitle('Natal Degree Connections (Lynn Bell)');
-        for (const c of a.natalDegreeConduits) {
-          bodyText(`SR ${PLANET_SYMBOLS[c.srPlanet] || ''} ${c.srPlanet} in ${c.srSign} ${c.degree} \u2194 Natal ${PLANET_SYMBOLS[c.natalPlanet] || ''} ${c.natalPlanet} (${c.orb.toFixed(1)}\u00B0 orb)`, textMuted, 8);
+        for (const cd of a.natalDegreeConduits) {
+          bodyText(
+            `SR ${P[cd.srPlanet] || cd.srPlanet} in ${cd.srSign} ${cd.degree} <> Natal ${P[cd.natalPlanet] || cd.natalPlanet} (${cd.orb.toFixed(1)} deg orb)`,
+            mutedRGB, 8
+          );
         }
-        y += 8;
+        y += 6;
       }
 
-      // ─── Moon Timing ─────────────────────────────────────────
+      // ─── MOON TIMING ────────────────────────────────────────
       if (a.moonTimingEvents.length > 0) {
-        sectionTitle('Moon Timing \u2014 When Things Happen');
-        bodyText('The SR Moon advances ~1\u00B0 per month. When it perfects an aspect to another planet, that month marks a turning point.', textDim, 7);
-        y += 6;
+        sectionTitle('Moon Timing -- When Things Happen');
+        bodyText('The SR Moon advances approx. 1 degree per month. When it perfects an aspect, that month is a turning point.', dimRGB, 7);
+        y += 4;
+        const mc = [margin, margin + 80, margin + 230];
+        drawTableHeader([
+          { text: 'Month', x: mc[0] }, { text: 'Aspect', x: mc[1] }, { text: 'Meaning', x: mc[2] },
+        ]);
         for (const evt of a.moonTimingEvents.slice(0, 12)) {
-          checkPage(14);
+          checkPage(22);
+          // Month
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(8);
-          doc.setTextColor(...accent);
-          doc.text(evt.approximateMonth, margin, y);
+          doc.setTextColor(...accentRGB);
+          doc.text(evt.approximateMonth, mc[0], y);
+          // Aspect
           doc.setFont('helvetica', 'normal');
-          doc.setTextColor(...textMain);
-          doc.text(`Moon ${evt.aspectType} ${PLANET_SYMBOLS[evt.targetPlanet] || ''} ${evt.targetPlanet}`, margin + 80, y);
-          doc.setTextColor(...textDim);
-          const interpLines = doc.splitTextToSize(evt.interpretation, contentW - 240);
-          doc.text(interpLines[0] || '', margin + 220, y);
-          y += 12;
+          doc.setTextColor(...mainRGB);
+          doc.text(`Moon ${evt.aspectType} ${P[evt.targetPlanet] || evt.targetPlanet}`, mc[1], y);
+          // Meaning (truncated to fit)
+          doc.setTextColor(...dimRGB);
+          const meaning = (evt.interpretation || '').substring(0, 55);
+          doc.text(meaning, mc[2], y);
+          y += 11;
         }
-        y += 8;
+        y += 6;
       }
 
-      // ─── Element & Modality ──────────────────────────────────
+      // ─── ELEMENT & MODALITY ──────────────────────────────────
       if (a.elementBalance) {
         sectionTitle('Element & Modality Balance');
         const eb = a.elementBalance;
-        boldText(`Dominant Element: ${eb.dominant} | Fire ${eb.fire} \u2022 Earth ${eb.earth} \u2022 Air ${eb.air} \u2022 Water ${eb.water}`);
-        if (eb.missing.length > 0) bodyText(`Missing: ${eb.missing.join(', ')}`, textDim, 8);
-        bodyText(eb.interpretation, textMuted, 8);
+        boldLine(`Dominant Element: ${eb.dominant}  |  Fire ${eb.fire}  Earth ${eb.earth}  Air ${eb.air}  Water ${eb.water}`);
+        if (eb.missing.length > 0) bodyText(`Missing elements: ${eb.missing.join(', ')}`, dimRGB, 8);
+        bodyText(eb.interpretation, mutedRGB, 8);
         y += 4;
         const mb = a.modalityBalance;
-        boldText(`Dominant Modality: ${mb.dominant} | Cardinal ${mb.cardinal} \u2022 Fixed ${mb.fixed} \u2022 Mutable ${mb.mutable}`);
-        bodyText(mb.interpretation, textMuted, 8);
-        y += 8;
+        boldLine(`Dominant Modality: ${mb.dominant}  |  Cardinal ${mb.cardinal}  Fixed ${mb.fixed}  Mutable ${mb.mutable}`);
+        bodyText(mb.interpretation, mutedRGB, 8);
+        y += 6;
       }
 
-      // ─── Saturn & Nodes ──────────────────────────────────────
+      // ─── SATURN & NODES ──────────────────────────────────────
       if (a.saturnFocus) {
         sectionTitle('Saturn Focus');
-        boldText(`${SIGN_SYMBOLS[a.saturnFocus.sign] || ''} ${a.saturnFocus.sign} \u2022 SR House ${a.saturnFocus.house || '\u2014'} \u2022 Natal House ${a.saturnFocus.natalHouse || '\u2014'}${a.saturnFocus.isRetrograde ? ' (Rx)' : ''}`);
-        bodyText(a.saturnFocus.interpretation, textMuted, 8);
+        boldLine(`${a.saturnFocus.sign} | SR House ${a.saturnFocus.house || '--'} | Natal House ${a.saturnFocus.natalHouse || '--'}${a.saturnFocus.isRetrograde ? ' (Retrograde)' : ''}`);
+        bodyText(a.saturnFocus.interpretation, mutedRGB, 8);
         y += 4;
       }
       if (a.nodesFocus) {
         sectionTitle('North Node Focus');
-        boldText(`${SIGN_SYMBOLS[a.nodesFocus.sign] || ''} ${a.nodesFocus.sign} \u2022 SR House ${a.nodesFocus.house || '\u2014'}`);
-        bodyText(a.nodesFocus.interpretation, textMuted, 8);
+        boldLine(`${a.nodesFocus.sign} | SR House ${a.nodesFocus.house || '--'}`);
+        bodyText(a.nodesFocus.interpretation, mutedRGB, 8);
         y += 4;
       }
 
-      // ─── Year-Ahead Narrative ────────────────────────────────
+      // ─── RETROGRADES ─────────────────────────────────────────
+      if (a.retrogrades && a.retrogrades.count > 0) {
+        sectionTitle('Retrograde Planets');
+        const retList = a.retrogrades.planets.map(pp => P[pp] || pp).join(', ');
+        boldLine(`${a.retrogrades.count} Retrograde: ${retList}`);
+        bodyText(a.retrogrades.interpretation, mutedRGB, 8);
+        y += 4;
+      }
+
+      // ─── YEAR-AHEAD NARRATIVE ────────────────────────────────
       if (narrative) {
         sectionTitle('Year-Ahead Reading');
-        // Parse markdown simply
         const lines = narrative.split('\n');
         for (const line of lines) {
           const trimmed = line.trim();
-          if (!trimmed) { y += 6; continue; }
+          if (!trimmed) { y += 5; continue; }
           if (trimmed.startsWith('## ')) {
-            y += 8;
-            boldText(trimmed.replace('## ', '').toUpperCase(), accent, 9);
+            y += 6;
+            boldLine(trimmed.replace('## ', '').toUpperCase(), accentRGB, 9);
             y += 2;
           } else if (trimmed.startsWith('**') && trimmed.endsWith('**')) {
-            boldText(trimmed.replace(/\*\*/g, ''), textMain, 9);
+            boldLine(trimmed.replace(/\*\*/g, ''), mainRGB, 9);
           } else {
-            const clean = trimmed.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1');
-            bodyText(clean, textMuted, 8, 12);
+            // Strip markdown formatting
+            const clean = trimmed
+              .replace(/\*\*(.*?)\*\*/g, '$1')
+              .replace(/\*(.*?)\*/g, '$1')
+              .replace(/[^\x00-\x7F]/g, ''); // Strip any remaining non-ASCII
+            bodyText(clean, mutedRGB, 8, 12);
           }
         }
       }
 
-      // ─── Footer on last page ─────────────────────────────────
-      y += 20;
+      // ─── FOOTER ──────────────────────────────────────────────
+      y += 16;
       checkPage(30);
-      doc.setDrawColor(...borderC);
+      doc.setDrawColor(...borderRGB);
+      doc.setLineWidth(0.5);
       doc.line(margin, y, pw - margin, y);
-      y += 14;
+      y += 12;
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(7);
-      doc.setTextColor(...textDim);
-      doc.text(`Generated ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`, pw / 2, y, { align: 'center' });
+      doc.setTextColor(...dimRGB);
+      doc.text(
+        `Generated ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`,
+        pw / 2, y, { align: 'center' }
+      );
 
       // Page numbers
       const totalPages = doc.getNumberOfPages();
       for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
+        doc.setFont('helvetica', 'normal');
         doc.setFontSize(7);
-        doc.setTextColor(...textDim);
+        doc.setTextColor(...dimRGB);
         doc.text(`Page ${i} of ${totalPages}`, pw / 2, ph - 20, { align: 'center' });
       }
 
