@@ -1941,7 +1941,7 @@ const AspectsTab = ({ analysis }: { analysis: SolarReturnAnalysis }) => {
           <p className="text-sm text-muted-foreground">No major aspects detected.</p>
         ) : (
           <div className="space-y-2">
-            {analysis.srToNatalAspects.slice(0, 20).map((asp, i) => {
+            {analysis.srToNatalAspects.filter(a => !(a.planet1 === 'Sun' && a.planet2 === 'Sun' && a.type === 'Conjunction')).slice(0, 20).map((asp, i) => {
               const interp = generateSRtoNatalInterpretation(asp.planet1, asp.planet2, asp.type, asp.orb);
               const aspInfo = aspectTypeMeanings[asp.type];
               const isExpanded = expandedAspect === i;
