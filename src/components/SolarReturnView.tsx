@@ -795,36 +795,42 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
           <div className="mt-4">
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Annual Profection Wheel</p>
             <div className="flex justify-center">
-              <svg viewBox="0 0 300 300" width="280" height="280" className="max-w-full">
+               <svg viewBox="0 0 500 500" className="w-full max-w-[520px]">
                 {Array.from({ length: 12 }, (_, i) => {
                   const houseNum = i + 1;
                   const isActive = houseNum === analysis.profectionYear!.houseNumber;
-                  // Position each house as a segment on the wheel
-                  // House 1 at 9 o'clock (left / ASC), going counter-clockwise
-                  const startAngle = 180 - i * 30; // degrees from 3 o'clock
+                  const startAngle = 180 - i * 30;
                   const endAngle = startAngle - 30;
                   const midAngle = (startAngle + endAngle) / 2;
                   const toRad = (deg: number) => (deg * Math.PI) / 180;
-                  const cx = 150, cy = 150, r = 120, rInner = 60;
-                  // Outer arc
+                  const cx = 250, cy = 250, r = 210, rInner = 90;
                   const x1 = cx + r * Math.cos(toRad(startAngle));
                   const y1 = cy - r * Math.sin(toRad(startAngle));
                   const x2 = cx + r * Math.cos(toRad(endAngle));
                   const y2 = cy - r * Math.sin(toRad(endAngle));
-                  // Inner arc
                   const x3 = cx + rInner * Math.cos(toRad(endAngle));
                   const y3 = cy - rInner * Math.sin(toRad(endAngle));
                   const x4 = cx + rInner * Math.cos(toRad(startAngle));
                   const y4 = cy - rInner * Math.sin(toRad(startAngle));
-                  // Label position
-                  const labelR = (r + rInner) / 2;
-                  const lx = cx + labelR * Math.cos(toRad(midAngle));
-                  const ly = cy - labelR * Math.sin(toRad(midAngle));
-                  // Sample ages that land on this house (age mod 12 + 1 = houseNum)
-                  const baseAge = houseNum - 1; // age 0 → house 1
-                  const sampleAges = [baseAge, baseAge + 12, baseAge + 24, baseAge + 36, baseAge + 48, baseAge + 60, baseAge + 72, baseAge + 84, baseAge + 96].filter(a => a >= 0 && a <= 100);
+                  const baseAge = houseNum - 1;
+                  const allAges = Array.from({ length: 9 }, (_, j) => baseAge + j * 12).filter(a => a <= 99);
+                  // Position house label near outer edge, ages near middle
+                  const houseLabelR = r - 18;
+                  const hlx = cx + houseLabelR * Math.cos(toRad(midAngle));
+                  const hly = cy - houseLabelR * Math.sin(toRad(midAngle));
+                  // Ages in two rows in the middle band
+                  const agesR1 = (r + rInner) / 2 + 12;
+                  const agesR2 = (r + rInner) / 2 - 12;
+                  const a1x = cx + agesR1 * Math.cos(toRad(midAngle));
+                  const a1y = cy - agesR1 * Math.sin(toRad(midAngle));
+                  const a2x = cx + agesR2 * Math.cos(toRad(midAngle));
+                  const a2y = cy - agesR2 * Math.sin(toRad(midAngle));
+                  const row1 = allAges.slice(0, 5);
+                  const row2 = allAges.slice(5);
 
                   const path = `M ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2} L ${x3} ${y3} A ${rInner} ${rInner} 0 0 0 ${x4} ${y4} Z`;
+                  const currentAge = analysis.profectionYear!.age;
+                  const hasCurrentAge = allAges.includes(currentAge);
                   return (
                     <g key={i}>
                       <path
@@ -834,35 +840,34 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
                         strokeWidth="1"
                         opacity={isActive ? 1 : 0.5}
                       />
-                      <text
-                        x={lx}
-                        y={ly - 5}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                        fontSize="11"
-                        fontWeight={isActive ? 'bold' : 'normal'}
-                        fill={isActive ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))'}
-                      >
+                      {/* House number near outer ring */}
+                      <text x={hlx} y={hly} textAnchor="middle" dominantBaseline="middle"
+                        fontSize="11" fontWeight="bold"
+                        fill={isActive ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))'}>
                         H{houseNum}
                       </text>
-                      <text
-                        x={lx}
-                        y={ly + 8}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                        fontSize="7"
-                        fill={isActive ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))'}
-                      >
-                        {sampleAges.slice(0, 3).join(', ')}
+                      {/* Ages row 1 */}
+                      <text x={a1x} y={a1y} textAnchor="middle" dominantBaseline="middle"
+                        fontSize="8"
+                        fill={isActive ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))'}>
+                        {row1.map(a => a === currentAge ? `[${a}]` : a).join(' ')}
                       </text>
+                      {/* Ages row 2 */}
+                      {row2.length > 0 && (
+                        <text x={a2x} y={a2y} textAnchor="middle" dominantBaseline="middle"
+                          fontSize="8"
+                          fill={isActive ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))'}>
+                          {row2.map(a => a === currentAge ? `[${a}]` : a).join(' ')}
+                        </text>
+                      )}
                     </g>
                   );
                 })}
                 {/* Center label */}
-                <text x="150" y="145" textAnchor="middle" dominantBaseline="middle" fontSize="12" fontWeight="bold" fill="hsl(var(--foreground))">
+                <text x="250" y="240" textAnchor="middle" dominantBaseline="middle" fontSize="14" fontWeight="bold" fill="hsl(var(--foreground))">
                   Age {analysis.profectionYear!.age}
                 </text>
-                <text x="150" y="162" textAnchor="middle" dominantBaseline="middle" fontSize="9" fill="hsl(var(--muted-foreground))">
+                <text x="250" y="260" textAnchor="middle" dominantBaseline="middle" fontSize="10" fill="hsl(var(--muted-foreground))">
                   {analysis.profectionYear!.houseNumber}{analysis.profectionYear!.houseNumber === 1 ? 'st' : analysis.profectionYear!.houseNumber === 2 ? 'nd' : analysis.profectionYear!.houseNumber === 3 ? 'rd' : 'th'} House Year
                 </text>
               </svg>
