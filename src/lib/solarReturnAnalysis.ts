@@ -1197,6 +1197,44 @@ export const analyzeSolarReturn = (
     }
   }
 
+  // ─── Vertex Calculation ─────────────────────────────────────────────
+  let vertex: SRVertexData | null = null;
+  const srMC = srChart.houseCusps?.house10;
+  const locationStr = srChart.solarReturnLocation || srChart.birthLocation || '';
+  const latitude = parseLatitudeFromLocation(locationStr);
+  if (srMC && latitude !== null) {
+    const vPos = calculateVertex(srMC.sign, srMC.degree, (srMC as any).minutes || 0, latitude);
+    if (vPos) {
+      const vAbsDeg = SIGNS.indexOf(vPos.sign) * 30 + vPos.degree + vPos.minutes / 60;
+      const vHouse = findSRHouse(vAbsDeg, srChart);
+      // Find aspects to Vertex
+      const vAspects: { planet: string; aspectType: string; orb: number }[] = [];
+      for (const p of [...ALL_PLANETS, 'Ascendant', 'NorthNode'] as const) {
+        const pPos = srChart.planets[p as keyof typeof srChart.planets];
+        if (!pPos) continue;
+        const pDeg = toAbsDeg(pPos);
+        if (pDeg === null) continue;
+        const asp = detectAspect(vAbsDeg, pDeg);
+        if (asp && asp.orb <= 5) {
+          vAspects.push({ planet: p, aspectType: asp.type, orb: asp.orb });
+        }
+      }
+      // Also check natal planets aspecting SR Vertex
+      for (const p of [...ALL_PLANETS, 'Ascendant', 'NorthNode'] as const) {
+        const pPos = natalChart.planets[p as keyof typeof natalChart.planets];
+        if (!pPos) continue;
+        const pDeg = toAbsDeg(pPos);
+        if (pDeg === null) continue;
+        const asp = detectAspect(vAbsDeg, pDeg);
+        if (asp && asp.orb <= 3) {
+          vAspects.push({ planet: `Natal ${p}`, aspectType: asp.type, orb: asp.orb });
+        }
+      }
+      vAspects.sort((a, b) => a.orb - b.orb);
+      vertex = { sign: vPos.sign, degree: vPos.degree, minutes: vPos.minutes, house: vHouse, aspects: vAspects };
+    }
+  }
+
   return {
     yearlyTheme,
     srAscRulerInNatal,
@@ -1224,6 +1262,7 @@ export const analyzeSolarReturn = (
     srAscInNatalHouse,
     natalDegreeConduits,
     moonTimingEvents,
+    vertex,
     planetSRHouses,
   };
 };
