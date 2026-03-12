@@ -7,6 +7,7 @@ import { srSunInHouse, srMoonInHouse, srMoonInSign, srOverlayNarrative, srPlanet
 import { srMoonInHouseDeep, srMoonPhaseInterp, srMoonAngularity, srMoonAspects } from '@/lib/solarReturnMoonData';
 import { vertexInSign, vertexInHouse, vertexAspectMeanings } from '@/lib/solarReturnVertex';
 import { srJupiterInHouseDeep, srMercuryInHouseDeep, srVenusInHouseDeep, srMarsInHouseDeep, type SRPlanetHouseDeep } from '@/lib/solarReturnPlanetInHouseDeep';
+import { generateSRtoNatalInterpretation, aspectTypeMeanings, planetLifeMeanings } from '@/lib/solarReturnAspectInterp';
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
