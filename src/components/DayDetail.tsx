@@ -1,6 +1,7 @@
 import { useState, useRef, useMemo } from 'react';
 import { X, ChevronDown, ChevronUp } from 'lucide-react';
 import { TransitListModal } from './TransitListModal';
+import { ChartSelector } from './ChartSelector';
 import { 
   DayData, 
   getPlanetSymbol, 
