@@ -28,6 +28,19 @@ serve(async (req) => {
       dataContext += `SR ASCENDANT: ${a.yearlyTheme.ascendantSign} Rising, ruled by ${a.yearlyTheme.ascendantRuler} in ${a.yearlyTheme.ascendantRulerSign}${a.yearlyTheme.ascendantRulerHouse ? ` (SR House ${a.yearlyTheme.ascendantRulerHouse})` : ''}\n`;
     }
 
+    // SR Ascendant Ruler in Natal Houses (J-B Morin technique)
+    if (a.srAscRulerInNatal) {
+      dataContext += `SR ASC RULER IN NATAL: ${a.srAscRulerInNatal.rulerPlanet} (ruler of ${a.srAscRulerInNatal.srAscSign}) in ${a.srAscRulerInNatal.rulerSRSign}${a.srAscRulerInNatal.rulerSRHouse ? ` (SR House ${a.srAscRulerInNatal.rulerSRHouse})` : ''} → falls in Natal House ${a.srAscRulerInNatal.rulerNatalHouse || '—'} (${a.srAscRulerInNatal.rulerNatalHouseTheme || ''})\n`;
+      if (a.srAscRulerInNatal.interpretation) {
+        dataContext += `  Interpretation: ${a.srAscRulerInNatal.interpretation}\n`;
+      }
+    }
+
+    // SR Ascendant degree in Natal House (Lynn Bell)
+    if (a.srAscInNatalHouse) {
+      dataContext += `SR ASC DEGREE IN NATAL: The SR Ascendant falls in Natal House ${a.srAscInNatalHouse.natalHouse} (${a.srAscInNatalHouse.natalHouseTheme || ''})\n`;
+    }
+
     // Lord of the Year
     if (a.lordOfTheYear) {
       dataContext += `LORD OF THE YEAR: ${a.lordOfTheYear.planet} in ${a.lordOfTheYear.srSign} ${a.lordOfTheYear.srDegree}${a.lordOfTheYear.srHouse ? ` (SR House ${a.lordOfTheYear.srHouse})` : ''} — ${a.lordOfTheYear.dignity}${a.lordOfTheYear.isRetrograde ? ' Rx' : ''}\n`;
@@ -55,7 +68,13 @@ serve(async (req) => {
 
     // Stelliums
     if (a.stelliums?.length > 0) {
-      dataContext += `STELLIUMS: ${a.stelliums.map((s: any) => `${s.planets.join(', ')} in ${s.location}`).join('; ')}\n`;
+      dataContext += `STELLIUMS: ${a.stelliums.map((s: any) => {
+        let desc = `${s.planets.join(', ')} in ${s.location}`;
+        if (s.extraBodies?.length > 0) {
+          desc += ` (also present: ${s.extraBodies.join(', ')})`;
+        }
+        return desc;
+      }).join('; ')}\n`;
     }
 
     // Element & Modality
@@ -91,6 +110,22 @@ serve(async (req) => {
       dataContext += `HEMISPHERES: Upper ${a.hemisphericEmphasis.upper}, Lower ${a.hemisphericEmphasis.lower}, East ${a.hemisphericEmphasis.east}, West ${a.hemisphericEmphasis.west}\n`;
     }
 
+    // Natal Degree Conduits (Lynn Bell)
+    if (a.natalDegreeConduits?.length > 0) {
+      dataContext += `\nNATAL DEGREE CONDUITS (SR planet on natal planet's degree ±2°):\n`;
+      a.natalDegreeConduits.forEach((c: any) => {
+        dataContext += `- SR ${c.srPlanet} at ${c.srDegree}° ${c.srSign} sits on Natal ${c.natalPlanet} at ${c.natalDegree}° ${c.natalSign} (${c.orbDiff}° orb)\n`;
+      });
+    }
+
+    // Moon Timing Events (Lynn Bell: 1° per month)
+    if (a.moonTimingEvents?.length > 0) {
+      dataContext += `\nMOON TIMING (SR Moon advances ~1° per month, activating aspects):\n`;
+      a.moonTimingEvents.slice(0, 8).forEach((e: any) => {
+        dataContext += `- Month ${e.month}: Moon perfects ${e.aspectType} to ${e.targetPlanet} (${e.targetSource})\n`;
+      });
+    }
+
     // Top SR-to-Natal aspects
     if (a.srToNatalAspects?.length > 0) {
       const topAspects = a.srToNatalAspects.slice(0, 10);
@@ -111,9 +146,9 @@ serve(async (req) => {
 
     // House overlays
     if (a.houseOverlays?.length > 0) {
-      dataContext += `\nHOUSE OVERLAYS:\n`;
+      dataContext += `\nHOUSE OVERLAYS (SR planets in natal houses):\n`;
       a.houseOverlays.forEach((o: any) => {
-        dataContext += `- ${o.planet}: ${o.srSign} ${o.srDegree} → SR House ${o.srHouse || '—'}, Natal House ${o.natalHouse || '—'}\n`;
+        dataContext += `- ${o.planet}: ${o.srSign} ${o.srDegree} → SR House ${o.srHouse || '—'}, Natal House ${o.natalHouse || '—'} (${o.houseTheme || ''})\n`;
       });
     }
 
