@@ -423,9 +423,23 @@ export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, saved
           <X size={24} />
         </button>
 
-        <h2 className="font-serif text-2xl font-light text-foreground md:text-3xl mb-6">
+        <h2 className="font-serif text-2xl font-light text-foreground md:text-3xl mb-2">
           {date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
         </h2>
+
+        {/* Chart Selector - switch charts without closing */}
+        {onChartSelect && (userNatalChart || savedCharts.length > 0) && (
+          <div className="mb-6">
+            <ChartSelector
+              userNatalChart={userNatalChart || null}
+              savedCharts={savedCharts}
+              selectedChartId={selectedChartId}
+              onSelect={onChartSelect}
+              includeGeneral={true}
+              label="Viewing as:"
+            />
+          </div>
+        )}
 
         {/* DAY OVERVIEW - Color blocks + Day Type at TOP */}
         <DayOverviewSection 
