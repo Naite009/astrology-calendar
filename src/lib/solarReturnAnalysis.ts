@@ -338,6 +338,8 @@ export interface SolarReturnAnalysis {
     targetPlanet: string;
     aspectType: string;
     monthsFromBirthday: number;
+    approximateMonth: string; // e.g. "June" or "early July"
+    targetSRHouse: number | null;
     interpretation: string;
   }[];
   // Helper: map planet name → SR house for display
