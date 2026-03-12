@@ -759,9 +759,6 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
           </p>
 
           <p className="text-sm text-muted-foreground leading-relaxed">{analysis.srAscRulerInNatal.interpretation}</p>
-          <p className="text-[10px] text-muted-foreground mt-3 italic">
-            Source: J-B Morin, Lynn Bell ("Planetary Threads"), Mel Priestley, Elena Lumen
-          </p>
         </div>
       )}
 
@@ -1192,9 +1189,6 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
           </p>
           <p className="text-xs text-primary mb-2">{analysis.srAscInNatalHouse.natalHouseTheme}</p>
           <p className="text-sm text-muted-foreground leading-relaxed">{analysis.srAscInNatalHouse.interpretation}</p>
-          <p className="text-[10px] text-muted-foreground mt-2 italic">
-            Source: Lynn Bell — "Cycles of Light." The natal house where the SR Ascendant lands shows which area of life is most activated by the year's themes.
-          </p>
         </div>
       )}
 
@@ -1205,7 +1199,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
             <Target size={14} className="text-primary" /> Natal Degree Connections
           </h4>
           <p className="text-xs text-muted-foreground mb-3">
-            When a Solar Return planet lands on the same degree as a natal planet (within 2°), it becomes a "conduit" — reawakening that natal energy all year. These are among the most significant indicators in a Solar Return. (Source: Lynn Bell)
+            When a Solar Return planet lands on the same degree as a natal planet (within 2°), it becomes a "conduit" — reawakening that natal energy all year. These are among the most significant indicators in a Solar Return.
           </p>
           <div className="space-y-2">
             {analysis.natalDegreeConduits.map((c, i) => (
@@ -1237,9 +1231,6 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
             </p>
             <p className="text-xs text-muted-foreground leading-relaxed">
               Think of the Moon as a spotlight moving through the year, illuminating each planet it touches. Conjunctions and oppositions mark the strongest activations; trines and sextiles bring opportunities; squares bring turning points that demand action.
-            </p>
-            <p className="text-[10px] text-muted-foreground italic">
-              Source: Lynn Bell — "Cycles of Light"; Mary Fortier Shea — "Planets in Solar Returns"
             </p>
           </div>
           <div className="space-y-3">
@@ -1435,7 +1426,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
             Vertex — Fated Encounters This Year
           </h3>
           <p className="text-[10px] text-muted-foreground italic">
-            The Vertex is the intersection of the Prime Vertical with the Ecliptic — it marks where destiny, fated encounters, and events beyond conscious control enter your life. (Sources: L. Edward Johndro, Charles Jayne, Brian Clark)
+            The Vertex is the intersection of the Prime Vertical with the Ecliptic — it marks where destiny, fated encounters, and events beyond conscious control enter your life.
           </p>
 
           <div className="flex items-center gap-3 flex-wrap">
@@ -1525,7 +1516,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
               Planet Spotlight — Expert Analysis
             </h3>
             <p className="text-[10px] text-muted-foreground italic">
-              Deep interpretations for key personal planets in your SR houses. Sources: Ciro Discepolo, Mary Fortier Shea, Brian Clark.
+              Deep interpretations for key personal planets in your SR houses.
             </p>
             {spotlightPlanets.map(planet => {
               const h = analysis.planetSRHouses[planet]!;
@@ -1551,9 +1542,6 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
                       <p className="text-[10px] uppercase tracking-widest text-destructive font-medium mb-1">Caution</p>
                       <p className="text-xs text-foreground leading-relaxed">{data.caution}</p>
                     </div>
-                    {data.source && (
-                      <p className="text-[10px] text-muted-foreground italic">Source: {data.source}</p>
-                    )}
                   </div>
                 </details>
               );
