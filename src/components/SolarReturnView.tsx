@@ -1504,12 +1504,16 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
       {/* ── Planet Spotlight: Jupiter, Mercury, Venus, Mars ── */}
       {(() => {
         const deepData: Record<string, Record<number, SRPlanetHouseDeep>> = {
-          Jupiter: srJupiterInHouseDeep,
           Mercury: srMercuryInHouseDeep,
           Venus: srVenusInHouseDeep,
           Mars: srMarsInHouseDeep,
+          Jupiter: srJupiterInHouseDeep,
+          Saturn: srSaturnInHouseDeep,
+          Uranus: srUranusInHouseDeep,
+          Neptune: srNeptuneInHouseDeep,
+          Pluto: srPlutoInHouseDeep,
         };
-        const spotlightPlanets = ['Jupiter', 'Mercury', 'Venus', 'Mars'].filter(p => {
+        const spotlightPlanets = ['Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'].filter(p => {
           const h = analysis.planetSRHouses[p];
           return h !== null && h !== undefined && deepData[p]?.[h];
         });
