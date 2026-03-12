@@ -957,11 +957,7 @@ export const analyzeSolarReturn = (
   }
 
   // ─── 17. Hemispheric Emphasis ─────────────────────────────────────
-  let hemisphericEmphasis: SRHemisphericEmphasis | null = null;
-  {
-    const { analyzeSRHemispheres } = await import('./solarReturnHemispheres');
-    hemisphericEmphasis = analyzeSRHemispheres(planetSRHouses, [...PLANETS_CORE]);
-  }
+  const hemisphericEmphasis: SRHemisphericEmphasis = analyzeSRHemispheres(planetSRHouses, [...PLANETS_CORE]);
 
   // ─── 18. Saturn Focus ─────────────────────────────────────────────
   let saturnFocus: SRSaturnFocus | null = null;
