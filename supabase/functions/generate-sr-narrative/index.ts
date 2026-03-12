@@ -28,6 +28,19 @@ serve(async (req) => {
       dataContext += `SR ASCENDANT: ${a.yearlyTheme.ascendantSign} Rising, ruled by ${a.yearlyTheme.ascendantRuler} in ${a.yearlyTheme.ascendantRulerSign}${a.yearlyTheme.ascendantRulerHouse ? ` (SR House ${a.yearlyTheme.ascendantRulerHouse})` : ''}\n`;
     }
 
+    // SR Ascendant Ruler in Natal Houses (J-B Morin technique)
+    if (a.srAscRulerInNatal) {
+      dataContext += `SR ASC RULER IN NATAL: ${a.srAscRulerInNatal.rulerPlanet} (ruler of ${a.srAscRulerInNatal.srAscSign}) in ${a.srAscRulerInNatal.rulerSRSign}${a.srAscRulerInNatal.rulerSRHouse ? ` (SR House ${a.srAscRulerInNatal.rulerSRHouse})` : ''} → falls in Natal House ${a.srAscRulerInNatal.rulerNatalHouse || '—'} (${a.srAscRulerInNatal.rulerNatalHouseTheme || ''})\n`;
+      if (a.srAscRulerInNatal.interpretation) {
+        dataContext += `  Interpretation: ${a.srAscRulerInNatal.interpretation}\n`;
+      }
+    }
+
+    // SR Ascendant degree in Natal House (Lynn Bell)
+    if (a.srAscInNatalHouse) {
+      dataContext += `SR ASC DEGREE IN NATAL: The SR Ascendant falls in Natal House ${a.srAscInNatalHouse.natalHouse} (${a.srAscInNatalHouse.natalHouseTheme || ''})\n`;
+    }
+
     // Lord of the Year
     if (a.lordOfTheYear) {
       dataContext += `LORD OF THE YEAR: ${a.lordOfTheYear.planet} in ${a.lordOfTheYear.srSign} ${a.lordOfTheYear.srDegree}${a.lordOfTheYear.srHouse ? ` (SR House ${a.lordOfTheYear.srHouse})` : ''} — ${a.lordOfTheYear.dignity}${a.lordOfTheYear.isRetrograde ? ' Rx' : ''}\n`;
@@ -55,7 +68,13 @@ serve(async (req) => {
 
     // Stelliums
     if (a.stelliums?.length > 0) {
-      dataContext += `STELLIUMS: ${a.stelliums.map((s: any) => `${s.planets.join(', ')} in ${s.location}`).join('; ')}\n`;
+      dataContext += `STELLIUMS: ${a.stelliums.map((s: any) => {
+        let desc = `${s.planets.join(', ')} in ${s.location}`;
+        if (s.extraBodies?.length > 0) {
+          desc += ` (also present: ${s.extraBodies.join(', ')})`;
+        }
+        return desc;
+      }).join('; ')}\n`;
     }
 
     // Element & Modality
@@ -91,6 +110,22 @@ serve(async (req) => {
       dataContext += `HEMISPHERES: Upper ${a.hemisphericEmphasis.upper}, Lower ${a.hemisphericEmphasis.lower}, East ${a.hemisphericEmphasis.east}, West ${a.hemisphericEmphasis.west}\n`;
     }
 
+    // Natal Degree Conduits (Lynn Bell)
+    if (a.natalDegreeConduits?.length > 0) {
+      dataContext += `\nNATAL DEGREE CONDUITS (SR planet on natal planet's degree ±2°):\n`;
+      a.natalDegreeConduits.forEach((c: any) => {
+        dataContext += `- SR ${c.srPlanet} at ${c.srDegree}° ${c.srSign} sits on Natal ${c.natalPlanet} at ${c.natalDegree}° ${c.natalSign} (${c.orbDiff}° orb)\n`;
+      });
+    }
+
+    // Moon Timing Events (Lynn Bell: 1° per month)
+    if (a.moonTimingEvents?.length > 0) {
+      dataContext += `\nMOON TIMING (SR Moon advances ~1° per month, activating aspects):\n`;
+      a.moonTimingEvents.slice(0, 8).forEach((e: any) => {
+        dataContext += `- Month ${e.month}: Moon perfects ${e.aspectType} to ${e.targetPlanet} (${e.targetSource})\n`;
+      });
+    }
+
     // Top SR-to-Natal aspects
     if (a.srToNatalAspects?.length > 0) {
       const topAspects = a.srToNatalAspects.slice(0, 10);
@@ -111,9 +146,9 @@ serve(async (req) => {
 
     // House overlays
     if (a.houseOverlays?.length > 0) {
-      dataContext += `\nHOUSE OVERLAYS:\n`;
+      dataContext += `\nHOUSE OVERLAYS (SR planets in natal houses):\n`;
       a.houseOverlays.forEach((o: any) => {
-        dataContext += `- ${o.planet}: ${o.srSign} ${o.srDegree} → SR House ${o.srHouse || '—'}, Natal House ${o.natalHouse || '—'}\n`;
+        dataContext += `- ${o.planet}: ${o.srSign} ${o.srDegree} → SR House ${o.srHouse || '—'}, Natal House ${o.natalHouse || '—'} (${o.houseTheme || ''})\n`;
       });
     }
 
@@ -130,14 +165,20 @@ Write a cohesive year-ahead narrative that SYNTHESIZES all the data below into a
 
 Start with the overall energy and tone of the year (1-2 paragraphs drawing from SR Ascendant, Moon Phase, and element/modality balance).
 
-## Where Life Is Taking You
-Focus on Sun house, Lord of the Year house, and Profection themes. Weave these together into a narrative about WHERE energy flows this year.
+## Where This Year's Energy Lands
+Focus on the SR Ascendant ruler and where it falls in the NATAL chart — this is the J-B Morin technique and is THE most important indicator of where the year plays out. Also weave in the SR Ascendant degree's natal house overlay (Lynn Bell), Sun house, Lord of the Year house, and Profection themes. These together tell the story of WHERE energy flows this year.
 
 ## Emotional Landscape
 Moon sign, house, and phase. What emotional climate to expect and how to work with it.
 
 ## Key Players & Power Points
-Angular planets, stelliums, and the most significant SR-to-natal aspects. What is being activated in the natal chart?
+Angular planets, stelliums (including any extra bodies like Chiron or North Node that amplify the stellium), and the most significant SR-to-natal aspects. What is being activated in the natal chart?
+
+## Natal Degree Connections
+If any SR planets sit on natal planet degrees (conduits), explain how these reawaken natal themes — these are among the strongest activations in any Solar Return.
+
+## House Overlays — SR Planets in Your Natal Houses
+Briefly describe where each major SR planet falls in the natal houses. This shows which life areas each planet's energy flows into for the year.
 
 ## Saturn's Assignment
 What Saturn demands this year — the area of responsibility and growth.
@@ -148,6 +189,9 @@ North Node focus — where the soul is being pulled toward evolution.
 ## Retrogrades & Review Periods
 If retrogrades exist, what areas need revision. If none, note the forward momentum.
 
+## Moon Timing — When Things Happen
+If Moon timing events are provided, describe when key aspects perfect through the year (the SR Moon advances ~1° per month). This gives the client a month-by-month sense of activation.
+
 ## What to Watch For
 2-3 specific, concrete things to pay attention to this year based on the strongest patterns.
 
@@ -155,14 +199,15 @@ If retrogrades exist, what areas need revision. If none, note the forward moment
 A punchy 2-3 sentence summary capturing the essence of the entire year.
 
 RULES:
-- Maximum 800 words total
+- Maximum 1200 words total
 - Use bold for key planet/sign names
 - Every claim must come directly from the data provided — NO fabricated placements
 - Use plain language with technical terms explained naturally
 - Be specific about house themes — don't just say "relationships" when you can say "partnerships, contracts, and how you show up for others"
-- If a repeated natal theme exists, emphasize it as a confirmed/reinforced energy`;
+- If a repeated natal theme exists, emphasize it as a confirmed/reinforced energy
+- When discussing the SR Ascendant ruler in natal houses, make it clear this is the CENTRAL technique for reading the SR`;
 
-    const response = await fetch("https://api.lovable.dev/api/v3/chat", {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -175,6 +220,7 @@ RULES:
           { role: "user", content: dataContext },
         ],
         temperature: 0.4,
+        stream: false,
       }),
     });
 
