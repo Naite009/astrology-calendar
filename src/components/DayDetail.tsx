@@ -117,6 +117,52 @@ interface DayDetailProps {
   onChartSelect?: (chartId: string) => void;
 }
 
+// Somatic felt-sense descriptions for how a transit physically/emotionally lands
+const PLANET_FELT_SENSE: Record<string, { body: string; emotion: string; urge: string }> = {
+  Sun: { body: "a warmth in your chest, like standing in sunlight", emotion: "a quiet confidence or need to be seen", urge: "to step forward and claim something as yours" },
+  Moon: { body: "a flutter in your stomach, tender and raw", emotion: "waves of feeling that rise without warning", urge: "to retreat somewhere safe and soft" },
+  Mercury: { body: "a buzzing in your head, thoughts racing", emotion: "restlessness, like your mind won't quiet down", urge: "to talk it out, write it down, or figure something out" },
+  Venus: { body: "a softening in your body, craving comfort", emotion: "longing for beauty, closeness, or pleasure", urge: "to reach for someone, buy something lovely, or indulge" },
+  Mars: { body: "heat rising, tension in your jaw or fists", emotion: "impatience, desire, or a flash of anger", urge: "to act now, push through, or compete" },
+  Jupiter: { body: "an expansive feeling, like you can breathe deeper", emotion: "optimism and faith that things will work out", urge: "to say yes to everything and overcommit" },
+  Saturn: { body: "heaviness in your shoulders, a tightness", emotion: "pressure to get it right, fear of falling short", urge: "to buckle down, set a boundary, or face hard truth" },
+  Uranus: { body: "electric jolts, restless legs, can't sit still", emotion: "sudden clarity or rebellion against routine", urge: "to break free, change something drastically, shock yourself" },
+  Neptune: { body: "brain fog, fatigue, or a dreamy floatiness", emotion: "longing for something you can't name", urge: "to escape into fantasy, music, sleep, or spirituality" },
+  Pluto: { body: "a deep gut clench, intensity you can't ignore", emotion: "obsessive focus or a sense that something must change", urge: "to dig deeper, confront what's hidden, transform or purge" },
+  Chiron: { body: "a dull ache in an old wound spot", emotion: "vulnerability and the memory of past hurt", urge: "to heal, help others, or finally face what you've avoided" },
+  Ascendant: { body: "heightened self-awareness, noticing how you carry yourself", emotion: "feeling exposed or newly visible", urge: "to adjust your presentation or reclaim your identity" },
+  MC: { body: "a pull toward your public role, career tension", emotion: "ambition mixed with 'am I on the right path?'", urge: "to make a move in your career or reputation" },
+  IC: { body: "a tug toward home, roots, inner privacy", emotion: "nostalgia or need for emotional foundation", urge: "to nest, process family patterns, or go inward" },
+  Descendant: { body: "awareness of others, a magnetic pull toward someone", emotion: "relationship hunger or projection onto a partner", urge: "to merge, compromise, or confront a dynamic" },
+};
+
+const ASPECT_FEEL: Record<string, string> = {
+  conjunction: "This hits you all at once — the two energies fuse and you can't separate them. It's intense and singular.",
+  opposition: "You feel pulled in two directions, like two parts of yourself are arguing. The tension demands you find a middle ground.",
+  square: "This creates friction you can't ignore — like an itch you must scratch. It's uncomfortable but forces growth.",
+  trine: "This flows so naturally you might not even notice it's happening. Things click into place with an easy, supportive rhythm.",
+  sextile: "A gentle nudge, an open door. You feel a spark of opportunity but you have to choose to walk through it.",
+  quincunx: "An awkward, off-kilter feeling — like wearing shoes on the wrong feet. Something needs adjusting but it's hard to name what.",
+  "semi-sextile": "A low background hum, subtle but persistent. Something is slightly off and quietly asking for your attention.",
+};
+
+function getTransitFeltSense(transitPlanet: string, natalPlanet: string, aspectType: string): string {
+  const transit = PLANET_FELT_SENSE[transitPlanet];
+  const natal = PLANET_FELT_SENSE[natalPlanet];
+  const aspectFeel = ASPECT_FEEL[aspectType.toLowerCase()] || ASPECT_FEEL['conjunction'];
+  
+  if (transit && natal) {
+    return `In your body: ${transit.body}. Emotionally: ${natal.emotion}. ${aspectFeel}`;
+  }
+  if (transit) {
+    return `In your body: ${transit.body}. The urge: ${transit.urge}. ${aspectFeel}`;
+  }
+  if (natal) {
+    return `Emotionally: ${natal.emotion}. The urge: ${natal.urge}. ${aspectFeel}`;
+  }
+  return aspectFeel;
+}
+
 // Detailed Transit Card Component with expandable sections
 const DetailedTransitCard = ({ aspect }: { aspect: TransitAspect }) => {
   const [isExpanded, setIsExpanded] = useState(false);
