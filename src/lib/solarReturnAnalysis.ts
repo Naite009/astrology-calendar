@@ -316,6 +316,28 @@ export interface SolarReturnAnalysis {
   hemisphericEmphasis: SRHemisphericEmphasis | null;
   saturnFocus: SRSaturnFocus | null;
   nodesFocus: SRNodesFocus | null;
+  /** Where the SR Ascendant degree falls in the natal chart houses (Lynn Bell technique) */
+  srAscInNatalHouse: {
+    natalHouse: number;
+    natalHouseTheme: string;
+    interpretation: string;
+  } | null;
+  /** SR planets within 2° of natal planet degrees — "conduit" connections (Lynn Bell) */
+  natalDegreeConduits: {
+    srPlanet: string;
+    natalPlanet: string;
+    srSign: string;
+    degree: string;
+    orb: number;
+    interpretation: string;
+  }[];
+  /** Moon timing: key aspects the SR Moon will perfect during the year (1°/month) */
+  moonTimingEvents: {
+    targetPlanet: string;
+    aspectType: string;
+    monthsFromBirthday: number;
+    interpretation: string;
+  }[];
   // Helper: map planet name → SR house for display
   planetSRHouses: Record<string, number | null>;
 }
@@ -750,7 +772,7 @@ export const analyzeSolarReturn = (
   // ─── 12. Stelliums (3+ TRUE PLANETS in same sign or house) ─────────
   // Only Sun through Pluto count for stellium detection; asteroids are noted separately
   const STELLIUM_PLANETS = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'] as const;
-  const EXTRA_BODIES = ['Chiron','Juno','Ceres','Pallas','Vesta','Lilith','Eris'] as const;
+  const EXTRA_BODIES = ['Chiron','NorthNode','Juno','Ceres','Pallas','Vesta','Lilith','Eris'] as const;
   const stelliums: SRStellium[] = [];
 
   // By sign
@@ -1006,6 +1028,99 @@ export const analyzeSolarReturn = (
     };
   }
 
+  // ─── SR Ascendant falling in natal house (Lynn Bell: "the SR Ascendant is in the 8th house") ──
+  let srAscInNatalHouse: SolarReturnAnalysis['srAscInNatalHouse'] = null;
+  if (srAsc) {
+    const srAscDeg = toAbsDeg(srAsc);
+    if (srAscDeg !== null) {
+      const nh = findNatalHouse(srAscDeg, natalChart);
+      if (nh) {
+        const theme = houseThemes[nh] || '';
+        const srAscNatalHouseInterps: Record<number, string> = {
+          1: 'The SR Ascendant falls in your natal 1st house — the year\'s themes land directly on your identity. This is personal. You are the protagonist, and the events of the year shape how you see yourself.',
+          2: 'The SR Ascendant falls in your natal 2nd house — the year\'s energy flows into money, possessions, and self-worth. Financial matters and questions of value are where the year\'s story plays out.',
+          3: 'The SR Ascendant falls in your natal 3rd house — communication, learning, siblings, and your immediate environment absorb the year\'s energy. Words, ideas, and local connections matter more than usual.',
+          4: 'The SR Ascendant falls in your natal 4th house — home, family, roots, and emotional foundations are the stage for the year\'s themes. Domestic life and inner security are central.',
+          5: 'The SR Ascendant falls in your natal 5th house — creativity, romance, children, and joy are where the year\'s energy lands. Self-expression and what brings you alive are front and center.',
+          6: 'The SR Ascendant falls in your natal 6th house — daily routines, health, and work absorb the year\'s themes. How you show up day-to-day and care for your body defines the year.',
+          7: 'The SR Ascendant falls in your natal 7th house — partnerships and significant others are the primary arena. Another person plays a defining role in your year.',
+          8: 'The SR Ascendant falls in your natal 8th house — transformation, shared resources, intimacy, and psychological depth are activated. Something needs to change at a fundamental level.',
+          9: 'The SR Ascendant falls in your natal 9th house — travel, higher learning, philosophy, and expansion of your worldview absorb the year\'s themes. A quest for meaning drives the year.',
+          10: 'The SR Ascendant falls in your natal 10th house — career, public reputation, and your legacy are where the year\'s energy concentrates. You are visible and your professional identity is in focus.',
+          11: 'The SR Ascendant falls in your natal 11th house — community, friendships, and your vision for the future absorb the year\'s themes. Groups and collective purpose define the year.',
+          12: 'The SR Ascendant falls in your natal 12th house — the year\'s energy is directed inward, toward solitude, spirituality, and hidden processes. What happens behind the scenes matters most.',
+        };
+        srAscInNatalHouse = {
+          natalHouse: nh,
+          natalHouseTheme: theme,
+          interpretation: srAscNatalHouseInterps[nh] || `The SR Ascendant falls in your natal ${nh}th house — ${theme.toLowerCase()}.`,
+        };
+      }
+    }
+  }
+
+  // ─── Natal Degree Conduits (Lynn Bell: SR planet on natal degree = "conduit") ──
+  const natalDegreeConduits: SolarReturnAnalysis['natalDegreeConduits'] = [];
+  const CONDUIT_ORB = 2;
+  for (const srPlanet of ALL_PLANETS) {
+    const srPos = srChart.planets[srPlanet as keyof typeof srChart.planets];
+    if (!srPos) continue;
+    const srDeg = toAbsDeg(srPos);
+    if (srDeg === null) continue;
+    for (const natPlanet of [...ALL_PLANETS, 'Ascendant' as const, 'NorthNode' as const]) {
+      if (srPlanet === natPlanet) continue;
+      const natPos = natalChart.planets[natPlanet as keyof typeof natalChart.planets];
+      if (!natPos) continue;
+      const natDeg = toAbsDeg(natPos);
+      if (natDeg === null) continue;
+      let diff = Math.abs(srDeg - natDeg);
+      if (diff > 180) diff = 360 - diff;
+      if (diff <= CONDUIT_ORB) {
+        natalDegreeConduits.push({
+          srPlanet,
+          natalPlanet: natPlanet,
+          srSign: srPos.sign,
+          degree: `${srPos.degree}°${(srPos as any).minutes || 0}'`,
+          orb: Math.round(diff * 10) / 10,
+          interpretation: `SR ${srPlanet} sits on the degree of your natal ${natPlanet} — it becomes a conduit for that natal energy this year. The themes of ${natPlanet} in your birth chart are reawakened and channeled through ${srPlanet}'s expression.`,
+        });
+      }
+    }
+  }
+  natalDegreeConduits.sort((a, b) => a.orb - b.orb);
+
+  // ─── Moon Timing (Lynn Bell: 1° per month) ──
+  const moonTimingEvents: SolarReturnAnalysis['moonTimingEvents'] = [];
+  if (moonPos) {
+    const moonDeg = toAbsDeg(moonPos);
+    if (moonDeg !== null) {
+      for (const planet of ALL_PLANETS) {
+        if (planet === 'Moon') continue;
+        const pos = srChart.planets[planet as keyof typeof srChart.planets];
+        if (!pos) continue;
+        const pDeg = toAbsDeg(pos);
+        if (pDeg === null) continue;
+        for (const asp of ASPECT_ANGLES) {
+          let diff = Math.abs(moonDeg - pDeg);
+          if (diff > 180) diff = 360 - diff;
+          const gap = diff - asp.angle;
+          if (gap > 0 && gap <= 12) {
+            const monthsAway = Math.round(gap * 10) / 10;
+            if (monthsAway <= 12) {
+              moonTimingEvents.push({
+                targetPlanet: planet,
+                aspectType: asp.name,
+                monthsFromBirthday: monthsAway,
+                interpretation: `~${Math.round(monthsAway)} month${Math.round(monthsAway) !== 1 ? 's' : ''} after your birthday, the SR Moon perfects a ${asp.name.toLowerCase()} to ${planet} — activating ${planet} themes.`,
+              });
+            }
+          }
+        }
+      }
+      moonTimingEvents.sort((a, b) => a.monthsFromBirthday - b.monthsFromBirthday);
+    }
+  }
+
   return {
     yearlyTheme,
     srAscRulerInNatal,
@@ -1030,6 +1145,9 @@ export const analyzeSolarReturn = (
     hemisphericEmphasis,
     saturnFocus,
     nodesFocus,
+    srAscInNatalHouse,
+    natalDegreeConduits,
+    moonTimingEvents,
     planetSRHouses,
   };
 };

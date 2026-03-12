@@ -990,6 +990,74 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         </div>
       )}
 
+      {/* SR Ascendant in Natal House (Lynn Bell) */}
+      {analysis.srAscInNatalHouse && (
+        <div className="border border-primary/20 rounded-sm p-5 bg-card">
+          <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
+            <MapPin size={14} className="text-primary" /> SR Ascendant in Your Natal Chart
+          </h4>
+          <p className="text-sm font-medium text-foreground mb-1">
+            The SR Ascendant falls in your natal {analysis.srAscInNatalHouse.natalHouse}{analysis.srAscInNatalHouse.natalHouse === 1 ? 'st' : analysis.srAscInNatalHouse.natalHouse === 2 ? 'nd' : analysis.srAscInNatalHouse.natalHouse === 3 ? 'rd' : 'th'} house
+          </p>
+          <p className="text-xs text-primary mb-2">{analysis.srAscInNatalHouse.natalHouseTheme}</p>
+          <p className="text-sm text-muted-foreground leading-relaxed">{analysis.srAscInNatalHouse.interpretation}</p>
+          <p className="text-[10px] text-muted-foreground mt-2 italic">
+            Source: Lynn Bell — "Cycles of Light." The natal house where the SR Ascendant lands shows which area of life is most activated by the year's themes.
+          </p>
+        </div>
+      )}
+
+      {/* Natal Degree Conduits (Lynn Bell: SR planet on natal degree) */}
+      {analysis.natalDegreeConduits.length > 0 && (
+        <div className="border border-primary/20 rounded-sm p-5 bg-card">
+          <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
+            <Target size={14} className="text-primary" /> Natal Degree Connections
+          </h4>
+          <p className="text-xs text-muted-foreground mb-3">
+            When a Solar Return planet lands on the same degree as a natal planet (within 2°), it becomes a "conduit" — reawakening that natal energy all year. These are among the most significant indicators in a Solar Return. (Source: Lynn Bell)
+          </p>
+          <div className="space-y-2">
+            {analysis.natalDegreeConduits.map((c, i) => (
+              <div key={i} className="bg-secondary/40 rounded-sm p-3">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <span className="text-sm font-medium text-foreground">
+                    SR {PLANET_SYMBOLS[c.srPlanet]} {c.srPlanet} → Natal {PLANET_SYMBOLS[c.natalPlanet]} {c.natalPlanet}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">
+                    {SIGN_SYMBOLS[c.srSign]} {c.degree} (orb: {c.orb}°)
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">{c.interpretation}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Moon Timing Events (Lynn Bell: 1° per month) */}
+      {analysis.moonTimingEvents.length > 0 && (
+        <div className="border border-primary/20 rounded-sm p-5 bg-card">
+          <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
+            <Moon size={14} className="text-primary" /> Moon Timing — When Things Happen
+          </h4>
+          <p className="text-xs text-muted-foreground mb-3">
+            Using the SR Moon as a timer: advancing 1° per month, these are the approximate months when the Moon perfects major aspects to other SR planets — marking key turning points during the year. (Source: Lynn Bell — "Cycles of Light")
+          </p>
+          <div className="space-y-1.5">
+            {analysis.moonTimingEvents.slice(0, 8).map((evt, i) => (
+              <div key={i} className="flex items-start gap-2 text-sm">
+                <span className="text-xs font-medium text-primary shrink-0 w-16">
+                  ~{Math.round(evt.monthsFromBirthday)} mo
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  ☽ {evt.aspectType} {PLANET_SYMBOLS[evt.targetPlanet]} {evt.targetPlanet}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Stelliums */}
       {analysis.stelliums.length > 0 && (
         <div className="border border-primary/20 rounded-sm p-5 bg-card space-y-4">
