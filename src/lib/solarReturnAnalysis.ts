@@ -181,6 +181,23 @@ export interface SRYearlyTheme {
   yearTheme: string;
 }
 
+export interface SRAscRulerInNatal {
+  /** The SR Ascendant sign */
+  srAscSign: string;
+  /** The ruler planet of the SR Ascendant */
+  rulerPlanet: string;
+  /** Where that planet sits in the SR chart (sign) */
+  rulerSRSign: string;
+  /** Where that planet sits in the SR chart (house) */
+  rulerSRHouse: number | null;
+  /** Where that planet sits in the NATAL chart (house) — the key insight */
+  rulerNatalHouse: number | null;
+  /** Natal house theme */
+  rulerNatalHouseTheme: string;
+  /** Narrative interpretation */
+  interpretation: string;
+}
+
 export interface SRHouseOverlay {
   planet: string;
   srSign: string;
