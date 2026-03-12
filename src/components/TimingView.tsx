@@ -454,11 +454,11 @@ const RightNowSection = ({
 
       {/* Life Cycles Hub */}
       {activeChart && (
-        <VisibleRender fallback={<Skeleton className="h-40 w-full rounded-lg mt-6" />}>
+        <Suspense fallback={<Skeleton className="h-40 w-full rounded-lg mt-6" />}>
           <div className="mt-6">
             <LifeCyclesHub chart={activeChart} currentDate={currentTime} />
           </div>
-        </VisibleRender>
+        </Suspense>
       )}
     </div>
   );
