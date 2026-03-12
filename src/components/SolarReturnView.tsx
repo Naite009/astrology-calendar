@@ -258,7 +258,7 @@ interface SRInputFormProps {
 const SRInputForm = ({ natalChart, existingSR, onSave, onCancel }: SRInputFormProps) => {
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState(existingSR?.solarReturnYear || currentYear);
-  const [location, setLocation] = useState(existingSR?.solarReturnLocation || natalChart.birthLocation || '');
+  const [location, setLocation] = useState(existingSR?.solarReturnLocation || '');
   const [srDateTime, setSrDateTime] = useState(existingSR?.solarReturnDateTime || '');
   const [planets, setPlanets] = useState<Record<string, { sign: string; degree: number; minutes: number; isRetrograde?: boolean }>>(
     existingSR?.planets ? { ...existingSR.planets } as any : {}
