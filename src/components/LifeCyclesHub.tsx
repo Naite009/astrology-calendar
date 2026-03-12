@@ -1332,8 +1332,15 @@ const PlanetaryReturnsTracker: React.FC<{ chart: NatalChart; currentDate: Date }
           <p className="text-xs text-foreground mt-1">
             {marsIsNow 
               ? `Exact in ${marsReturn!.next!.daysAway} days (${format(marsReturn!.next!.date, 'MMM d, yyyy')}). Energy and drive are ramping up.`
-              : `Was exact ${marsReturn!.previous!.daysAgo} days ago (${format(marsReturn!.previous!.date, 'MMM d, yyyy')}). Still feeling the surge.`
+              : `Was exact ${marsReturn!.previous!.daysAgo} days ago (${format(marsReturn!.previous!.date, 'MMM d, yyyy')}).`
             }
+          </p>
+          <p className="text-xs text-foreground/80 mt-2 leading-relaxed">
+            <strong>The surge:</strong> {(() => {
+              const feltData = RETURN_FELT_SENSE.Mars;
+              const sign = marsReturn?.natalSign;
+              return sign && feltData[sign] ? feltData[sign] : feltData._default;
+            })()}
           </p>
         </div>
       )}
