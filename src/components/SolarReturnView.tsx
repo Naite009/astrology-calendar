@@ -1334,8 +1334,8 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
                 <th className="text-left py-2 px-2 text-[10px] uppercase tracking-widest text-muted-foreground">Planet</th>
                 <th className="text-left py-2 px-2 text-[10px] uppercase tracking-widest text-primary/80">SR Position</th>
                 <th className="text-left py-2 px-2 text-[10px] uppercase tracking-widest text-primary/80">SR House</th>
-                <th className="text-left py-2 px-2 text-[10px] uppercase tracking-widest text-amber-500/80">Natal Position</th>
-                <th className="text-left py-2 px-2 text-[10px] uppercase tracking-widest text-amber-500/80">Natal House</th>
+                <th className="text-left py-2 px-2 text-[10px] uppercase tracking-widest text-accent-foreground/60">Natal Position</th>
+                <th className="text-left py-2 px-2 text-[10px] uppercase tracking-widest text-accent-foreground/60">Natal House</th>
                 <th className="text-left py-2 px-2 text-[10px] uppercase tracking-widest text-muted-foreground">Movement</th>
               </tr>
             </thead>
