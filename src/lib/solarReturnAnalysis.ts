@@ -273,6 +273,14 @@ export interface SRNodesFocus {
   interpretation: string;
 }
 
+export interface SRVertexData {
+  sign: string;
+  degree: number;
+  minutes: number;
+  house: number | null;
+  aspects: { planet: string; aspectType: string; orb: number }[];
+}
+
 export interface SolarReturnAnalysis {
   yearlyTheme: SRYearlyTheme | null;
   srAscRulerInNatal: SRAscRulerInNatal | null;
@@ -335,10 +343,12 @@ export interface SolarReturnAnalysis {
     targetPlanet: string;
     aspectType: string;
     monthsFromBirthday: number;
-    approximateMonth: string; // e.g. "June" or "early July"
+    approximateMonth: string;
     targetSRHouse: number | null;
     interpretation: string;
   }[];
+  /** Vertex — fated encounters point */
+  vertex: SRVertexData | null;
   // Helper: map planet name → SR house for display
   planetSRHouses: Record<string, number | null>;
 }
