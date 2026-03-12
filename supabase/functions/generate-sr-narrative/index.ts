@@ -165,14 +165,20 @@ Write a cohesive year-ahead narrative that SYNTHESIZES all the data below into a
 
 Start with the overall energy and tone of the year (1-2 paragraphs drawing from SR Ascendant, Moon Phase, and element/modality balance).
 
-## Where Life Is Taking You
-Focus on Sun house, Lord of the Year house, and Profection themes. Weave these together into a narrative about WHERE energy flows this year.
+## Where This Year's Energy Lands
+Focus on the SR Ascendant ruler and where it falls in the NATAL chart — this is the J-B Morin technique and is THE most important indicator of where the year plays out. Also weave in the SR Ascendant degree's natal house overlay (Lynn Bell), Sun house, Lord of the Year house, and Profection themes. These together tell the story of WHERE energy flows this year.
 
 ## Emotional Landscape
 Moon sign, house, and phase. What emotional climate to expect and how to work with it.
 
 ## Key Players & Power Points
-Angular planets, stelliums, and the most significant SR-to-natal aspects. What is being activated in the natal chart?
+Angular planets, stelliums (including any extra bodies like Chiron or North Node that amplify the stellium), and the most significant SR-to-natal aspects. What is being activated in the natal chart?
+
+## Natal Degree Connections
+If any SR planets sit on natal planet degrees (conduits), explain how these reawaken natal themes — these are among the strongest activations in any Solar Return.
+
+## House Overlays — SR Planets in Your Natal Houses
+Briefly describe where each major SR planet falls in the natal houses. This shows which life areas each planet's energy flows into for the year.
 
 ## Saturn's Assignment
 What Saturn demands this year — the area of responsibility and growth.
@@ -183,6 +189,9 @@ North Node focus — where the soul is being pulled toward evolution.
 ## Retrogrades & Review Periods
 If retrogrades exist, what areas need revision. If none, note the forward momentum.
 
+## Moon Timing — When Things Happen
+If Moon timing events are provided, describe when key aspects perfect through the year (the SR Moon advances ~1° per month). This gives the client a month-by-month sense of activation.
+
 ## What to Watch For
 2-3 specific, concrete things to pay attention to this year based on the strongest patterns.
 
@@ -190,14 +199,15 @@ If retrogrades exist, what areas need revision. If none, note the forward moment
 A punchy 2-3 sentence summary capturing the essence of the entire year.
 
 RULES:
-- Maximum 800 words total
+- Maximum 1200 words total
 - Use bold for key planet/sign names
 - Every claim must come directly from the data provided — NO fabricated placements
 - Use plain language with technical terms explained naturally
 - Be specific about house themes — don't just say "relationships" when you can say "partnerships, contracts, and how you show up for others"
-- If a repeated natal theme exists, emphasize it as a confirmed/reinforced energy`;
+- If a repeated natal theme exists, emphasize it as a confirmed/reinforced energy
+- When discussing the SR Ascendant ruler in natal houses, make it clear this is the CENTRAL technique for reading the SR`;
 
-    const response = await fetch("https://api.lovable.dev/api/v3/chat", {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -210,6 +220,7 @@ RULES:
           { role: "user", content: dataContext },
         ],
         temperature: 0.4,
+        stream: false,
       }),
     });
 
