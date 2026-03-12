@@ -521,7 +521,7 @@ export const analyzeSolarReturn = (
       srAscRulerInNatal = {
         srAscSign: srAsc.sign,
         rulerPlanet: ruler,
-        rulerSRSign: rulerPos.sign,
+        rulerSRSign: rulerSRPos.sign,
         rulerSRHouse,
         rulerNatalHouse,
         rulerNatalHouseTheme: natalTheme,
