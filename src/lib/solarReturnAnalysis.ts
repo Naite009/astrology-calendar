@@ -276,6 +276,7 @@ export interface SRNodesFocus {
 
 export interface SolarReturnAnalysis {
   yearlyTheme: SRYearlyTheme | null;
+  srAscRulerInNatal: SRAscRulerInNatal | null;
   sunHouse: { house: number | null; theme: string };
   sunNatalHouse: { house: number | null; theme: string };
   moonSign: string;
