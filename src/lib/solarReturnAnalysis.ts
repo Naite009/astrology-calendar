@@ -257,7 +257,7 @@ export interface SRRepeatedTheme {
   significance: string;
 }
 
-export type { SRHemisphericResult as SRHemisphericEmphasis } from './solarReturnHemispheres';
+export type SRHemisphericEmphasis = SRHemisphericResult;
 
 export interface SRSaturnFocus {
   sign: string;
