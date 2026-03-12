@@ -600,6 +600,192 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         y += 6;
       }
 
+      // --- HEMISPHERIC EMPHASIS (beautiful 4-quadrant visual) ---
+      if (a.hemisphericEmphasis) {
+        sectionTitle('Hemispheric Emphasis -- Where Your Energy Lives');
+        const hem = a.hemisphericEmphasis;
+        const total = hem.totalCounted;
+
+        checkPage(200);
+
+        // Build planet lists per quadrant from planetSRHouses
+        const quadPlanets: Record<string, string[]> = { upper: [], lower: [], east: [], west: [] };
+        for (const p of PLANET_ORDER) {
+          const h = a.planetSRHouses?.[p];
+          if (h == null) continue;
+          if (h >= 7 && h <= 12) quadPlanets.upper.push(P[p] || p);
+          else quadPlanets.lower.push(P[p] || p);
+          if (h >= 10 || h <= 3) quadPlanets.east.push(P[p] || p);
+          else quadPlanets.west.push(P[p] || p);
+        }
+
+        // 2x2 grid layout
+        const boxW = (contentW - 12) / 2;
+        const boxH = 80;
+        const gridData = [
+          { label: 'UPPER HEMISPHERE', sub: 'Houses 7-12 -- Public & Visible', count: hem.upper, planets: quadPlanets.upper, bg: [245, 248, 255] as [number, number, number], row: 0, col: 0 },
+          { label: 'LOWER HEMISPHERE', sub: 'Houses 1-6 -- Private & Internal', count: hem.lower, planets: quadPlanets.lower, bg: [255, 250, 242] as [number, number, number], row: 0, col: 1 },
+          { label: 'EASTERN HEMISPHERE', sub: 'Houses 10-3 -- Self-Initiated', count: hem.east, planets: quadPlanets.east, bg: [242, 255, 248] as [number, number, number], row: 1, col: 0 },
+          { label: 'WESTERN HEMISPHERE', sub: 'Houses 4-9 -- Other-Oriented', count: hem.west, planets: quadPlanets.west, bg: [255, 245, 248] as [number, number, number], row: 1, col: 1 },
+        ];
+
+        const gridStartY = y;
+        for (const g of gridData) {
+          const x = margin + g.col * (boxW + 12);
+          const by = gridStartY + g.row * (boxH + 8);
+          const isDom = g.count > total / 2;
+
+          doc.setFillColor(...g.bg);
+          doc.setDrawColor(...(isDom ? gold : warmBorder));
+          doc.setLineWidth(isDom ? 1.5 : 0.5);
+          doc.roundedRect(x, by, boxW, boxH, 4, 4, 'FD');
+
+          // Count badge
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(22);
+          doc.setTextColor(...(isDom ? gold : darkText));
+          doc.text(String(g.count), x + 16, by + 28);
+
+          // Label
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(8);
+          doc.setTextColor(...deepBrown);
+          doc.text(g.label, x + 46, by + 18);
+
+          // Sub
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(7);
+          doc.setTextColor(...dimText);
+          doc.text(g.sub, x + 46, by + 30);
+
+          // Pct bar
+          const pct = total > 0 ? g.count / total : 0;
+          const barW = boxW - 60;
+          doc.setFillColor(230, 225, 218);
+          doc.roundedRect(x + 46, by + 38, barW, 6, 2, 2, 'F');
+          if (pct > 0) {
+            doc.setFillColor(...gold);
+            doc.roundedRect(x + 46, by + 38, barW * pct, 6, 2, 2, 'F');
+          }
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(7);
+          doc.setTextColor(...gold);
+          doc.text(`${Math.round(pct * 100)}%`, x + 48 + barW * pct + 4, by + 43);
+
+          // Planet list
+          if (g.planets.length > 0) {
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(7);
+            doc.setTextColor(...bodyText);
+            const pStr = g.planets.join(', ');
+            const pLines = doc.splitTextToSize(pStr, boxW - 24);
+            pLines.slice(0, 2).forEach((line: string, li: number) => {
+              doc.text(line, x + 14, by + 58 + li * 9);
+            });
+          }
+        }
+        y = gridStartY + (boxH + 8) * 2 + 6;
+
+        // Labels
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.setTextColor(...deepBrown);
+        doc.text(`Vertical: ${hem.verticalLabel}`, margin + 8, y);
+        doc.text(`Horizontal: ${hem.horizontalLabel}`, margin + contentW / 2, y);
+        y += 14;
+
+        // Interpretation cards
+        checkPage(120);
+        drawCard(() => {
+          writeBold(hem.verticalDetail.title, gold, 9);
+          writeBody(hem.verticalDetail.summary, bodyText, 8);
+          y += 4;
+          if (hem.verticalDetail.practicalAdvice.length > 0) {
+            writeBold('Practical Advice:', deepBrown, 8);
+            for (const tip of hem.verticalDetail.practicalAdvice.slice(0, 3)) {
+              writeBody(`  --> ${tip}`, bodyText, 7.5, 11);
+            }
+          }
+        });
+
+        checkPage(120);
+        drawCard(() => {
+          writeBold(hem.horizontalDetail.title, gold, 9);
+          writeBody(hem.horizontalDetail.summary, bodyText, 8);
+          y += 4;
+          if (hem.horizontalDetail.practicalAdvice.length > 0) {
+            writeBold('Practical Advice:', deepBrown, 8);
+            for (const tip of hem.horizontalDetail.practicalAdvice.slice(0, 3)) {
+              writeBody(`  --> ${tip}`, bodyText, 7.5, 11);
+            }
+          }
+        });
+
+        // Combined insight
+        if (hem.combinedInsight) {
+          y += 4;
+          writeBold('Combined Reading:', gold, 8);
+          writeBody(hem.combinedInsight, bodyText, 8);
+        }
+        y += 8;
+      }
+
+      // --- ANGULAR PLANETS ---
+      if (a.angularPlanets && a.angularPlanets.length > 0) {
+        sectionTitle('Angular Planets -- Year\'s Most Powerful Players');
+        writeBody('Planets on the angles (1st, 4th, 7th, 10th house cusps) are the most powerful forces in any Solar Return. They act with maximum volume -- they cannot be ignored.', dimText, 8);
+        y += 6;
+        const angularList = a.angularPlanets.map(p => P[p] || p).join(', ');
+        checkPage(50);
+        drawCard(() => {
+          writeBold(`Angular: ${angularList}`, gold, 10);
+          writeBody(`${a.angularPlanets.length} planet${a.angularPlanets.length > 1 ? 's sit' : ' sits'} on the angles of this Solar Return, making ${a.angularPlanets.length > 1 ? 'them' : 'it'} the loudest voice in your year. Whatever these planets represent will demand attention and produce visible results.`, bodyText, 8);
+        });
+      }
+
+      // --- LORD OF THE YEAR ---
+      if (a.lordOfTheYear) {
+        sectionTitle('Lord of the Year (Profection)');
+        const lord = a.lordOfTheYear;
+        checkPage(90);
+        drawCard(() => {
+          writeBold(`${P[lord.planet] || lord.planet} -- Time Lord for This Year`, gold, 10);
+          y += 2;
+          writeLabel('Position:', `${lord.srSign} (SR House ${lord.srHouse || '--'})`);
+          writeLabel('Dignity:', lord.dignity);
+          if (lord.isRetrograde) writeLabel('Status:', 'Retrograde -- revisiting old themes');
+          y += 4;
+          writeBody(lord.interpretation, bodyText, 8);
+        });
+      }
+
+      // --- SR ASCENDANT IN NATAL HOUSE ---
+      if (a.srAscInNatalHouse) {
+        sectionTitle('SR Ascendant in Your Natal Chart');
+        const ascNat = a.srAscInNatalHouse;
+        checkPage(70);
+        drawCard(() => {
+          writeBold(`SR Ascendant Falls in Natal House ${ascNat.natalHouse}`, gold, 10);
+          writeLabel('Natal House Theme:', ascNat.natalHouseTheme);
+          y += 4;
+          writeBody(ascNat.interpretation, bodyText, 8);
+        });
+      }
+
+      // --- REPEATED THEMES ---
+      if (a.repeatedThemes && a.repeatedThemes.length > 0) {
+        sectionTitle('Repeated Themes -- The Year\'s Core Messages');
+        writeBody('When the same theme appears through multiple independent techniques, it is no longer a suggestion -- it is the year\'s central message. These are the threads that weave through every layer of your Solar Return.', dimText, 8);
+        y += 6;
+        for (const theme of a.repeatedThemes) {
+          checkPage(60);
+          drawCard(() => {
+            writeBold(theme.description, gold, 9);
+            writeBody(theme.significance, bodyText, 8);
+          });
+        }
+      }
+
       // --- SR-TO-NATAL ASPECTS (with felt interpretations) ---
       if (a.srToNatalAspects.length > 0) {
         const allAspects = a.srToNatalAspects.filter(
