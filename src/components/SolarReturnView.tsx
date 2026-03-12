@@ -4,6 +4,7 @@ import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChar
 import { SolarReturnChart, useSolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { analyzeSolarReturn, SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { srSunInHouse, srMoonInHouse, srMoonInSign, srOverlayNarrative, srPlanetInHouse, rulerConditionNarrative, angularPlanetMeaning } from '@/lib/solarReturnInterpretations';
+import { srMoonInHouseDeep, srMoonPhaseInterp, srMoonAngularity } from '@/lib/solarReturnMoonData';
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
