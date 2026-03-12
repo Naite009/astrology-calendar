@@ -190,6 +190,8 @@ export interface SRAscRulerInNatal {
   rulerSRSign: string;
   /** Where that planet sits in the SR chart (house) */
   rulerSRHouse: number | null;
+  /** Where that planet sits in the NATAL chart (sign) — e.g. Neptune in Scorpio */
+  rulerNatalSign: string;
   /** Where that planet sits in the NATAL chart (house) — the key insight */
   rulerNatalHouse: number | null;
   /** Natal house theme */
