@@ -108,6 +108,9 @@ serve(async (req) => {
     // Hemispheric
     if (a.hemisphericEmphasis) {
       dataContext += `HEMISPHERES: Upper ${a.hemisphericEmphasis.upper}, Lower ${a.hemisphericEmphasis.lower}, East ${a.hemisphericEmphasis.east}, West ${a.hemisphericEmphasis.west}\n`;
+      dataContext += `Vertical: ${a.hemisphericEmphasis.verticalLabel || ''}\n`;
+      dataContext += `Horizontal: ${a.hemisphericEmphasis.horizontalLabel || ''}\n`;
+      if (a.hemisphericEmphasis.combinedInsight) dataContext += `Combined: ${a.hemisphericEmphasis.combinedInsight}\n`;
     }
 
     // Natal Degree Conduits (Lynn Bell)

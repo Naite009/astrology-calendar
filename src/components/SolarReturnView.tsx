@@ -1308,17 +1308,110 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         )}
       </div>
 
-      {/* Hemispheric Emphasis */}
+      {/* Hemispheric Emphasis — Expert Analysis */}
       {analysis.hemisphericEmphasis && (
-        <div className="border border-border rounded-sm p-4 bg-card">
-          <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Hemispheric Emphasis</h4>
-          <div className="flex gap-4 mb-2 text-xs text-muted-foreground">
-            <span>Upper: {analysis.hemisphericEmphasis.upper}</span>
-            <span>Lower: {analysis.hemisphericEmphasis.lower}</span>
-            <span>East: {analysis.hemisphericEmphasis.east}</span>
-            <span>West: {analysis.hemisphericEmphasis.west}</span>
+        <div className="border border-primary/20 rounded-sm p-5 bg-card space-y-5">
+          <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+            <Compass size={14} className="text-primary" /> Hemispheric Emphasis — Expert Analysis
+          </h4>
+
+          {/* Counts bar */}
+          <div className="grid grid-cols-4 gap-2 text-center">
+            {[
+              { label: 'Upper', value: analysis.hemisphericEmphasis.upper, desc: 'Houses 7–12' },
+              { label: 'Lower', value: analysis.hemisphericEmphasis.lower, desc: 'Houses 1–6' },
+              { label: 'East', value: analysis.hemisphericEmphasis.east, desc: 'Houses 10–3' },
+              { label: 'West', value: analysis.hemisphericEmphasis.west, desc: 'Houses 4–9' },
+            ].map(item => (
+              <div key={item.label} className="border border-border rounded-sm p-2 bg-muted/30">
+                <div className="text-lg font-semibold text-foreground">{item.value}</div>
+                <div className="text-[10px] font-medium text-muted-foreground">{item.label}</div>
+                <div className="text-[9px] text-muted-foreground/70">{item.desc}</div>
+              </div>
+            ))}
           </div>
-          <p className="text-xs text-muted-foreground leading-relaxed">{analysis.hemisphericEmphasis.interpretation}</p>
+
+          {/* Vertical axis (upper/lower) */}
+          <div className="border border-border rounded-sm p-4 bg-muted/20 space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] uppercase tracking-widest font-medium text-primary">{analysis.hemisphericEmphasis.verticalLabel}</span>
+            </div>
+            <h5 className="text-sm font-semibold text-foreground">{analysis.hemisphericEmphasis.verticalDetail.title}</h5>
+            <p className="text-xs font-medium text-muted-foreground leading-relaxed">{analysis.hemisphericEmphasis.verticalDetail.summary}</p>
+            {analysis.hemisphericEmphasis.verticalDetail.bodyParagraphs.map((p, i) => (
+              <p key={i} className="text-xs text-muted-foreground leading-relaxed">{p}</p>
+            ))}
+            <div className="grid gap-3 sm:grid-cols-3 mt-3">
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-primary mb-1.5">Focus Areas</div>
+                <ul className="space-y-1">
+                  {analysis.hemisphericEmphasis.verticalDetail.focusAreas.map((f, i) => (
+                    <li key={i} className="text-[11px] text-muted-foreground leading-snug">• {f}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-primary mb-1.5">Challenges</div>
+                <ul className="space-y-1">
+                  {analysis.hemisphericEmphasis.verticalDetail.challenges.map((c, i) => (
+                    <li key={i} className="text-[11px] text-muted-foreground leading-snug">• {c}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-primary mb-1.5">Practical Advice</div>
+                <ul className="space-y-1">
+                  {analysis.hemisphericEmphasis.verticalDetail.practicalAdvice.map((a, i) => (
+                    <li key={i} className="text-[11px] text-muted-foreground leading-snug">• {a}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Horizontal axis (east/west) */}
+          <div className="border border-border rounded-sm p-4 bg-muted/20 space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] uppercase tracking-widest font-medium text-primary">{analysis.hemisphericEmphasis.horizontalLabel}</span>
+            </div>
+            <h5 className="text-sm font-semibold text-foreground">{analysis.hemisphericEmphasis.horizontalDetail.title}</h5>
+            <p className="text-xs font-medium text-muted-foreground leading-relaxed">{analysis.hemisphericEmphasis.horizontalDetail.summary}</p>
+            {analysis.hemisphericEmphasis.horizontalDetail.bodyParagraphs.map((p, i) => (
+              <p key={i} className="text-xs text-muted-foreground leading-relaxed">{p}</p>
+            ))}
+            <div className="grid gap-3 sm:grid-cols-3 mt-3">
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-primary mb-1.5">Focus Areas</div>
+                <ul className="space-y-1">
+                  {analysis.hemisphericEmphasis.horizontalDetail.focusAreas.map((f, i) => (
+                    <li key={i} className="text-[11px] text-muted-foreground leading-snug">• {f}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-primary mb-1.5">Challenges</div>
+                <ul className="space-y-1">
+                  {analysis.hemisphericEmphasis.horizontalDetail.challenges.map((c, i) => (
+                    <li key={i} className="text-[11px] text-muted-foreground leading-snug">• {c}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-primary mb-1.5">Practical Advice</div>
+                <ul className="space-y-1">
+                  {analysis.hemisphericEmphasis.horizontalDetail.practicalAdvice.map((a, i) => (
+                    <li key={i} className="text-[11px] text-muted-foreground leading-snug">• {a}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Combined cross-axis insight */}
+          <div className="border border-primary/30 rounded-sm p-4 bg-primary/5">
+            <div className="text-[10px] uppercase tracking-widest text-primary mb-2">Combined Axis Synthesis</div>
+            <p className="text-xs text-foreground leading-relaxed">{analysis.hemisphericEmphasis.combinedInsight}</p>
+          </div>
         </div>
       )}
 

@@ -1,5 +1,6 @@
 import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
+import { analyzeSRHemispheres, type SRHemisphericResult } from './solarReturnHemispheres';
 
 // ─── helpers ────────────────────────────────────────────────────────
 const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
@@ -256,11 +257,7 @@ export interface SRRepeatedTheme {
   significance: string;
 }
 
-export interface SRHemisphericEmphasis {
-  upper: number; lower: number;
-  east: number; west: number;
-  interpretation: string;
-}
+export type SRHemisphericEmphasis = SRHemisphericResult;
 
 export interface SRSaturnFocus {
   sign: string;
@@ -315,7 +312,7 @@ export interface SolarReturnAnalysis {
   modalityBalance: SRModalityBalance;
   retrogrades: SRRetrogradeReport;
   repeatedThemes: SRRepeatedTheme[];
-  hemisphericEmphasis: SRHemisphericEmphasis | null;
+  hemisphericEmphasis: SRHemisphericEmphasis;
   saturnFocus: SRSaturnFocus | null;
   nodesFocus: SRNodesFocus | null;
   /** Where the SR Ascendant degree falls in the natal chart houses (Lynn Bell technique) */
@@ -960,25 +957,7 @@ export const analyzeSolarReturn = (
   }
 
   // ─── 17. Hemispheric Emphasis ─────────────────────────────────────
-  let hemisphericEmphasis: SRHemisphericEmphasis | null = null;
-  const srCusps = extractCusps(srChart);
-  if (srCusps) {
-    let upper = 0, lower = 0, east = 0, west = 0;
-    for (const planet of PLANETS_CORE) {
-      const h = planetSRHouses[planet];
-      if (h == null) continue;
-      if (h >= 7 && h <= 12) upper++; else lower++;
-      if (h >= 10 || h <= 3) east++; else west++;
-    }
-    const total = upper + lower;
-    let interp = '';
-    if (upper > lower + 2) interp = 'Planets cluster above the horizon — this is a public, visible year. Career, reputation, and social standing are emphasized.';
-    else if (lower > upper + 2) interp = 'Planets cluster below the horizon — this is a private, interior year. Home, family, and personal foundations are the focus.';
-    if (east > west + 2) interp += (interp ? ' ' : '') + 'Eastern emphasis — you are in the driver\'s seat this year. Self-determination and personal initiative lead.';
-    else if (west > east + 2) interp += (interp ? ' ' : '') + 'Western emphasis — others play a significant role this year. Partnerships, collaborations, and responses to external events shape your path.';
-    if (!interp) interp = 'Planets are relatively balanced across hemispheres — a mix of public and private, self-directed and other-oriented themes.';
-    hemisphericEmphasis = { upper, lower, east, west, interpretation: interp };
-  }
+  const hemisphericEmphasis: SRHemisphericEmphasis = analyzeSRHemispheres(planetSRHouses, [...PLANETS_CORE]);
 
   // ─── 18. Saturn Focus ─────────────────────────────────────────────
   let saturnFocus: SRSaturnFocus | null = null;
