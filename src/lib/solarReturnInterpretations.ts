@@ -327,3 +327,77 @@ export const angularPlanetMeaning: Record<string, string> = {
   Pluto: 'Transformation, power dynamics, and psychological intensity are at the forefront. A year of profound change.',
   Chiron: 'Healing themes are prominent. Your wounds are visible, creating opportunities for deep healing and helping others.',
 };
+
+// ─── SR MC (Midheaven) in House interpretations ─────────────────────
+// Source: Brian Clark "The Year Ahead" & Ray Merriman
+
+export const srMCInHouse: Record<number, string> = {
+  1: 'Your public reputation and career direction are deeply personal this year. Professional identity and personal identity are nearly inseparable. How you present yourself IS your career statement. Self-promotion is natural and necessary.',
+  2: 'Career direction is driven by financial considerations. Earning potential influences professional decisions. Your reputation is linked to your material success or your values. Building financial credibility is part of your public story.',
+  3: 'Communication, writing, teaching, or media work defines your public profile. Your reputation is built through your ideas and words. Networking within your local environment advances career goals. Intellectual credibility matters.',
+  4: 'Career and home are intertwined — working from home, family business, or real estate career. Your professional reputation is private or locally focused. What happens behind closed doors affects your public standing.',
+  5: 'Creative self-expression defines your public role. Career involves art, entertainment, children, or personal performance. Your reputation is colorful and charismatic. Being seen for your unique creative voice.',
+  6: 'Your daily work IS your career this year — the grind matters more than the title. Reputation is built through competence, reliability, and service. Health-related career paths. Being known for what you DO, not what you claim.',
+  7: 'Partnership is central to career — business partners, clients, or a spouse influence your professional path. Your reputation is shaped by your relationships and your ability to collaborate. Legal matters affect public standing.',
+  8: 'Career involves transformation, research, finance, psychology, or dealing with crisis. Your professional reputation involves depth and intensity. Power dynamics in the workplace are significant. Joint ventures define the year.',
+  9: 'International career expansion, higher education, publishing, or philosophy shapes your public life. Your reputation extends beyond local boundaries. Teaching, traveling, or advocating for beliefs defines your professional year.',
+  10: 'The MC is at home — career is the dominant theme, and everything you do professionally is maximally visible. This is the strongest year for career advancement, public recognition, and legacy-building. What you achieve now defines you for years.',
+  11: 'Career is linked to community, networks, technology, or social causes. Your professional reputation grows through group affiliations and forward-thinking vision. Innovation and collaboration define your public identity.',
+  12: 'Career operates behind the scenes — institutional work, retreat, research, or spiritual service. Your public reputation may be quiet or sacrificial. What you accomplish in private has more lasting impact than public performance.',
+};
+
+// ─── SR Sun Aspect Interpretations (Ray Merriman / Mary Fortier Shea) ──
+
+export const srSunAspectInterps: Record<string, Record<string, string>> = {
+  Moon: {
+    Conjunction: 'Sun conjunct Moon in the SR creates a powerful new beginning — your conscious will and emotional needs are perfectly aligned. This is a year of singular focus and emotional clarity. What you want and what you need are the same thing. A new chapter begins with full inner conviction.',
+    Opposition: 'Sun opposite Moon creates tension between your public ambitions and private emotional needs. You may feel pulled between career and home, duty and desire. Relationships mirror this split — a partner may embody what you are neglecting. Integration requires honoring both sides.',
+    Trine: 'Sun trine Moon is one of the most harmonious SR aspects — your willpower and emotions flow together effortlessly. Decisions feel natural, relationships are supportive, and you are at peace with yourself. A year of grace and inner alignment.',
+    Square: 'Sun square Moon creates internal friction — your goals and your feelings are at cross-purposes. What you think you should do differs from what you feel you need. This tension drives growth but demands conscious effort to reconcile.',
+    Sextile: 'Sun sextile Moon offers opportunities for emotional and creative growth. Your inner world and outer actions support each other when you make the effort. Relationships are cooperative. A productive, emotionally grounded year.',
+  },
+  Mercury: {
+    Conjunction: 'Sun conjunct Mercury sharpens your mind and communication skills. This is a year of important conversations, decisions, and intellectual activity. Your identity is linked to your ideas — what you think and say defines you.',
+    Opposition: 'Sun opposite Mercury in the SR often means important negotiations or communication challenges with partners. Others may disagree with your thinking. Listen as much as you speak.',
+    Square: 'Sun square Mercury creates mental restlessness. Overthinking, nervous energy, and communication mishaps are possible. Slow down before important decisions. Your mind works faster than circumstances allow.',
+  },
+  Venus: {
+    Conjunction: 'Sun conjunct Venus is a beautiful SR aspect — love, beauty, pleasure, and social grace are enhanced all year. Relationships improve, creativity flows, and you attract good things. One of the most pleasant years possible.',
+    Opposition: 'Sun opposite Venus highlights relationship dynamics. A partner or significant other reflects your own values back to you. Compromise is necessary. Financial negotiations with others are likely.',
+    Trine: 'Sun trine Venus brings ease in love, creativity, and finances. Social life is enjoyable. Artistic expression comes naturally. A gentle, pleasant year where things flow without force.',
+    Square: 'Sun square Venus creates tension in relationships or between desire and responsibility. You may want something (or someone) you cannot easily have. Indulgence vs. discipline is the year\'s theme.',
+  },
+  Mars: {
+    Conjunction: 'Sun conjunct Mars is a high-energy, assertive year. You are driven, competitive, and willing to fight for what you want. Physical energy peaks. The danger is aggression, accidents, or burning out. Channel this fire intentionally.',
+    Opposition: 'Sun opposite Mars often brings conflict with others — a partner, competitor, or authority figure pushes back against you. Anger management is critical. The opposition demands you assert yourself without dominating.',
+    Trine: 'Sun trine Mars is a powerfully productive aspect — your will and your energy work together smoothly. Physical vitality is high. You accomplish goals efficiently. Courage comes naturally.',
+    Square: 'Sun square Mars is one of the most challenging SR aspects. Frustration, anger, accidents, and conflict are possible. You feel blocked and want to push through obstacles forcefully. Patience and strategic action prevent damage.',
+  },
+  Jupiter: {
+    Conjunction: 'Sun conjunct Jupiter is the "lucky year" aspect. Expansion, optimism, travel, education, and opportunity flow toward you. Generosity increases — from you and toward you. The only risk is overextension and excess.',
+    Opposition: 'Sun opposite Jupiter can mean conflict with authority over beliefs, legal matters, or excessive promises. Others may be more generous than practical. Balance optimism with realism.',
+    Trine: 'Sun trine Jupiter is gently expansive — opportunities arrive without fanfare but with real substance. Travel, education, and growth are favored. A quietly fortunate year.',
+    Square: 'Sun square Jupiter brings restlessness, overcommitment, and the temptation to take on too much. Legal or educational challenges. Growth comes through learning to say no.',
+  },
+  Saturn: {
+    Conjunction: 'Sun conjunct Saturn is a demanding but rewarding year. Responsibilities increase, freedoms decrease, but what you build now LASTS. This is a year of maturity, discipline, and earning respect through hard work. Loneliness is possible but purposeful.',
+    Opposition: 'Sun opposite Saturn brings external pressure — from bosses, institutions, or circumstances beyond your control. You feel tested. Relationships with authority figures are strained. Perseverance is required.',
+    Trine: 'Sun trine Saturn brings structured growth. Your efforts are rewarded. Authority figures support you. Long-term plans solidify. A year of steady, reliable progress without drama.',
+    Square: 'Sun square Saturn is one of the hardest SR aspects. Obstacles, delays, and feelings of inadequacy. A parent or boss creates pressure. Depression is possible. But the growth that comes from endurance is permanent.',
+  },
+  Uranus: {
+    Conjunction: 'Sun conjunct Uranus brings a year of radical change. Your identity undergoes a revolution. Sudden events alter your life direction. Freedom becomes a non-negotiable need. Nothing stays the same.',
+    Opposition: 'Sun opposite Uranus — others disrupt your plans. A partner or external force introduces chaos. Flexibility is survival. What you resist persists; what you embrace transforms you.',
+    Square: 'Sun square Uranus creates tension between stability and freedom. Rebellious urges conflict with responsibilities. Sudden events force adaptation. The year demands you become more authentically yourself.',
+  },
+  Neptune: {
+    Conjunction: 'Sun conjunct Neptune dissolves your usual boundaries and certainties. Spiritual sensitivity peaks but so does confusion. Creative inspiration is extraordinary. Reality testing is essential — not everything is as it appears.',
+    Opposition: 'Sun opposite Neptune — others may deceive you, or you may deceive yourself about a relationship. Idealization leads to disillusionment. Artistic collaboration can be beautiful if boundaries are maintained.',
+    Square: 'Sun square Neptune brings confusion, escapism, and the temptation to avoid reality. Health may be affected by sensitivity to substances. The gift is heightened intuition — if you can distinguish it from wishful thinking.',
+  },
+  Pluto: {
+    Conjunction: 'Sun conjunct Pluto is the most transformative SR aspect. Your identity is destroyed and rebuilt. Power dynamics are intense. You emerge fundamentally changed. There is no going back to who you were.',
+    Opposition: 'Sun opposite Pluto brings power struggles with others. Someone may try to control you, or you may become controlling. The lesson is empowerment without domination. Deep psychological work is required.',
+    Square: 'Sun square Pluto brings compulsive behavior, power struggles, and the forced exposure of hidden truths. What you have been avoiding demands confrontation. Transformation through crisis.',
+  },
+};
