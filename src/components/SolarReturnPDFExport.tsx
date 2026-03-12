@@ -39,10 +39,10 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       const contentW = pw - margin * 2;
       let y = margin;
 
-      const accent = [196, 149, 106]; // #c4956a
-      const textMain = [232, 224, 212];
-      const textMuted = [154, 148, 144];
-      const textDim = [106, 101, 96];
+      const accent: [number, number, number] = [196, 149, 106];
+      const textMain: [number, number, number] = [232, 224, 212];
+      const textMuted: [number, number, number] = [154, 148, 144];
+      const textDim: [number, number, number] = [106, 101, 96];
       const bg: [number, number, number] = [10, 10, 15];
       const cardBg: [number, number, number] = [18, 18, 26];
       const borderC: [number, number, number] = [42, 42, 53];
