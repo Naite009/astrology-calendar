@@ -190,6 +190,8 @@ export interface SRAscRulerInNatal {
   rulerSRSign: string;
   /** Where that planet sits in the SR chart (house) */
   rulerSRHouse: number | null;
+  /** Where that planet sits in the NATAL chart (sign) — e.g. Neptune in Scorpio */
+  rulerNatalSign: string;
   /** Where that planet sits in the NATAL chart (house) — the key insight */
   rulerNatalHouse: number | null;
   /** Natal house theme */
@@ -488,10 +490,14 @@ export const analyzeSolarReturn = (
   let srAscRulerInNatal: SRAscRulerInNatal | null = null;
   if (yearlyTheme && srAsc) {
     const ruler = yearlyTheme.ascendantRuler;
-    const rulerPos = srChart.planets[ruler as keyof typeof srChart.planets];
-    if (rulerPos) {
-      const rulerDeg = toAbsDeg(rulerPos);
-      const rulerNatalHouse = rulerDeg !== null ? findNatalHouse(rulerDeg, natalChart) : null;
+    const rulerSRPos = srChart.planets[ruler as keyof typeof srChart.planets];
+    // CORRECT TECHNIQUE (J-B Morin / Lynn Bell): Find where the ruler sits in the NATAL chart,
+    // not where the SR version overlays onto natal houses. E.g., SR Asc = Pisces → ruler = Neptune →
+    // look at where NATAL Neptune sits → that natal house is where the year's energy plays out.
+    const rulerNatalPos = natalChart.planets[ruler as keyof typeof natalChart.planets];
+    if (rulerSRPos) {
+      const natalDeg = rulerNatalPos ? toAbsDeg(rulerNatalPos) : null;
+      const rulerNatalHouse = natalDeg !== null ? findNatalHouse(natalDeg, natalChart) : null;
       const rulerSRHouse = planetSRHouses[ruler] ?? null;
       const natalTheme = rulerNatalHouse ? (houseThemes[rulerNatalHouse] || '') : '';
 
@@ -517,8 +523,9 @@ export const analyzeSolarReturn = (
       srAscRulerInNatal = {
         srAscSign: srAsc.sign,
         rulerPlanet: ruler,
-        rulerSRSign: rulerPos.sign,
+        rulerSRSign: rulerSRPos.sign,
         rulerSRHouse,
+        rulerNatalSign: rulerNatalPos?.sign || '',
         rulerNatalHouse,
         rulerNatalHouseTheme: natalTheme,
         interpretation,

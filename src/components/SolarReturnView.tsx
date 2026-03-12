@@ -725,9 +725,9 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
                 {analysis.srAscRulerInNatal.srAscSign} Rising → {analysis.srAscRulerInNatal.rulerPlanet} rules the year
               </p>
               <p className="text-xs text-muted-foreground">
-                {PLANET_SYMBOLS[analysis.srAscRulerInNatal.rulerPlanet]} {analysis.srAscRulerInNatal.rulerPlanet} is in {SIGN_SYMBOLS[analysis.srAscRulerInNatal.rulerSRSign]} {analysis.srAscRulerInNatal.rulerSRSign}
-                {analysis.srAscRulerInNatal.rulerSRHouse && ` (SR ${analysis.srAscRulerInNatal.rulerSRHouse}${analysis.srAscRulerInNatal.rulerSRHouse === 1 ? 'st' : analysis.srAscRulerInNatal.rulerSRHouse === 2 ? 'nd' : analysis.srAscRulerInNatal.rulerSRHouse === 3 ? 'rd' : 'th'} house)`}
-                {analysis.srAscRulerInNatal.rulerNatalHouse && ` → falls in your natal ${analysis.srAscRulerInNatal.rulerNatalHouse}${analysis.srAscRulerInNatal.rulerNatalHouse === 1 ? 'st' : analysis.srAscRulerInNatal.rulerNatalHouse === 2 ? 'nd' : analysis.srAscRulerInNatal.rulerNatalHouse === 3 ? 'rd' : 'th'} house`}
+                Your natal {PLANET_SYMBOLS[analysis.srAscRulerInNatal.rulerPlanet]} {analysis.srAscRulerInNatal.rulerPlanet} is in {analysis.srAscRulerInNatal.rulerNatalSign ? `${SIGN_SYMBOLS[analysis.srAscRulerInNatal.rulerNatalSign] || ''} ${analysis.srAscRulerInNatal.rulerNatalSign}` : '—'}
+                {analysis.srAscRulerInNatal.rulerNatalHouse && ` in your natal ${analysis.srAscRulerInNatal.rulerNatalHouse}${analysis.srAscRulerInNatal.rulerNatalHouse === 1 ? 'st' : analysis.srAscRulerInNatal.rulerNatalHouse === 2 ? 'nd' : analysis.srAscRulerInNatal.rulerNatalHouse === 3 ? 'rd' : 'th'} house`}
+                {' '}— this is where the year plays out
               </p>
             </div>
           </div>
