@@ -1285,7 +1285,7 @@ const PlanetaryReturnsTracker: React.FC<{ chart: NatalChart; currentDate: Date }
                     {isActive && <Badge variant="default" className="text-[9px] px-1.5 py-0">ACTIVE</Badge>}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Natal: {formatDegreePositionFull(r.natalDegree!)} • Every ~{r.period < 100 ? `${Math.round(r.period)} days` : r.period < 800 ? '1 year' : `${Math.round(r.period / 365.25)} years`}
+                    Natal: {formatDegree(r.natalDegree!)} • Every ~{r.period < 100 ? `${Math.round(r.period)} days` : r.period < 800 ? '1 year' : `${Math.round(r.period / 365.25)} years`}
                   </div>
                 </div>
                 <div className="text-right">
