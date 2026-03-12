@@ -222,13 +222,8 @@ function getSRNatalPairInterp(srPlanet: string, natalPlanet: string, aspectType:
 } | null {
   const key = `${srPlanet}-${natalPlanet}-${aspectType}`;
   const interps: Record<string, { headline: string; howItFeels: string; whatItMeans: string; whatToDo: string }> = {
-    // ── Sun combinations ──
-    'Sun-Sun-Conjunction': {
-      headline: 'Solar Return: Your Core Identity Renewed',
-      howItFeels: 'This is your birthday chart activating your very essence. You feel a surge of "this is ME" energy — clarity about who you are and what you want. It\'s like your internal compass recalibrating to true north.',
-      whatItMeans: 'The SR Sun conjunct your natal Sun means this year\'s themes hit you right at the CENTER of who you are. Your vitality, confidence, and life direction are all being refreshed. Whatever house this falls in becomes YOUR personal spotlight this year.',
-      whatToDo: 'Set powerful intentions around your birthday. This is literally the "new year" for your soul. What do you want the next chapter of your life story to be about?',
-    },
+    // Sun☌Sun omitted — always present in every Solar Return by definition
+    //
     'Sun-Moon-Conjunction': {
       headline: 'Head and Heart Become One',
       howItFeels: 'Your will and your feelings are fused this year. What you WANT and what you NEED are the same thing. There\'s an emotional intensity to everything you pursue — you feel things deeply and personally.',
