@@ -1426,13 +1426,19 @@ const SRNarrativeBox = ({ analysis, srChart, natalChart }: {
           <div className="prose prose-sm max-w-none text-foreground prose-headings:text-foreground prose-headings:text-sm prose-headings:uppercase prose-headings:tracking-widest prose-headings:font-medium prose-p:text-muted-foreground prose-p:leading-relaxed prose-strong:text-foreground prose-li:text-muted-foreground">
             <ReactMarkdown>{narrative}</ReactMarkdown>
           </div>
-          <div className="flex gap-2 pt-3 border-t border-border">
+          <div className="flex gap-2 pt-3 border-t border-border flex-wrap">
             <button
               onClick={generateNarrative}
               className="text-[11px] uppercase tracking-widest px-3 py-1.5 border border-border rounded-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
             >
               <RotateCcw size={12} /> Regenerate
             </button>
+            <SolarReturnPDFExport
+              analysis={analysis}
+              srChart={srChart}
+              natalChart={natalChart}
+              narrative={narrative}
+            />
           </div>
         </div>
       )}
