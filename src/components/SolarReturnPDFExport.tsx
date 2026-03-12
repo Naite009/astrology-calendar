@@ -780,16 +780,8 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         for (const theme of a.repeatedThemes) {
           checkPage(60);
           drawCard(() => {
-            writeBold(theme.theme, gold, 9);
-            writeBody(theme.description, bodyText, 8);
-            if (theme.sources && theme.sources.length > 0) {
-              y += 2;
-              doc.setFont('helvetica', 'normal');
-              doc.setFontSize(7);
-              doc.setTextColor(...dimText);
-              doc.text(`Appears in: ${theme.sources.join(', ')}`, margin + 14, y);
-              y += 10;
-            }
+            writeBold(theme.description, gold, 9);
+            writeBody(theme.significance, bodyText, 8);
           });
         }
       }
