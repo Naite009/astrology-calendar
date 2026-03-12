@@ -1089,20 +1089,36 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
       {analysis.moonTimingEvents.length > 0 && (
         <div className="border border-primary/20 rounded-sm p-5 bg-card">
           <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
-            <Moon size={14} className="text-primary" /> Moon Timing — When Things Happen
+            <Moon size={14} className="text-primary" /> Moon Timing — When Things Happen This Year
           </h4>
-          <p className="text-xs text-muted-foreground mb-3">
-            Using the SR Moon as a timer: advancing 1° per month, these are the approximate months when the Moon perfects major aspects to other SR planets — marking key turning points during the year. (Source: Lynn Bell — "Cycles of Light")
-          </p>
-          <div className="space-y-1.5">
-            {analysis.moonTimingEvents.slice(0, 8).map((evt, i) => (
-              <div key={i} className="flex items-start gap-2 text-sm">
-                <span className="text-xs font-medium text-primary shrink-0 w-16">
-                  ~{Math.round(evt.monthsFromBirthday)} mo
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  ☽ {evt.aspectType} {PLANET_SYMBOLS[evt.targetPlanet]} {evt.targetPlanet}
-                </span>
+          <div className="bg-secondary/40 rounded-sm p-3 mb-4 space-y-2">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              <strong className="text-foreground">Why this matters:</strong> The SR Moon is the year's internal clock. It advances approximately 1° per month from its birthday position. When it perfects an aspect to another SR planet, that month marks a <em>turning point</em> — events connected to that planet's themes activate. This is one of the most practical timing tools in Solar Return work.
+            </p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Think of the Moon as a spotlight moving through the year, illuminating each planet it touches. Conjunctions and oppositions mark the strongest activations; trines and sextiles bring opportunities; squares bring turning points that demand action.
+            </p>
+            <p className="text-[10px] text-muted-foreground italic">
+              Source: Lynn Bell — "Cycles of Light"; Mary Fortier Shea — "Planets in Solar Returns"
+            </p>
+          </div>
+          <div className="space-y-3">
+            {analysis.moonTimingEvents.slice(0, 12).map((evt, i) => (
+              <div key={i} className="border border-border/50 rounded-sm p-3 bg-card hover:bg-muted/20 transition-colors">
+                <div className="flex items-center gap-3 mb-1.5 flex-wrap">
+                  <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-sm shrink-0">
+                    {evt.approximateMonth}
+                  </span>
+                  <span className="text-xs text-foreground font-medium">
+                    ☽ {evt.aspectType} {PLANET_SYMBOLS[evt.targetPlanet]} {evt.targetPlanet}
+                  </span>
+                  {evt.targetSRHouse && (
+                    <span className="text-[10px] text-muted-foreground">
+                      (SR House {evt.targetSRHouse})
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">{evt.interpretation}</p>
               </div>
             ))}
           </div>
