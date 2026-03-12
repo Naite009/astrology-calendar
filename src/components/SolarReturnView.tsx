@@ -759,9 +759,6 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
           </p>
 
           <p className="text-sm text-muted-foreground leading-relaxed">{analysis.srAscRulerInNatal.interpretation}</p>
-          <p className="text-[10px] text-muted-foreground mt-3 italic">
-            Source: J-B Morin, Lynn Bell ("Planetary Threads"), Mel Priestley, Elena Lumen
-          </p>
         </div>
       )}
 
