@@ -181,6 +181,23 @@ export interface SRYearlyTheme {
   yearTheme: string;
 }
 
+export interface SRAscRulerInNatal {
+  /** The SR Ascendant sign */
+  srAscSign: string;
+  /** The ruler planet of the SR Ascendant */
+  rulerPlanet: string;
+  /** Where that planet sits in the SR chart (sign) */
+  rulerSRSign: string;
+  /** Where that planet sits in the SR chart (house) */
+  rulerSRHouse: number | null;
+  /** Where that planet sits in the NATAL chart (house) — the key insight */
+  rulerNatalHouse: number | null;
+  /** Natal house theme */
+  rulerNatalHouseTheme: string;
+  /** Narrative interpretation */
+  interpretation: string;
+}
+
 export interface SRHouseOverlay {
   planet: string;
   srSign: string;
@@ -259,6 +276,7 @@ export interface SRNodesFocus {
 
 export interface SolarReturnAnalysis {
   yearlyTheme: SRYearlyTheme | null;
+  srAscRulerInNatal: SRAscRulerInNatal | null;
   sunHouse: { house: number | null; theme: string };
   sunNatalHouse: { house: number | null; theme: string };
   moonSign: string;
@@ -440,6 +458,50 @@ export const analyzeSolarReturn = (
       ascendantRulerHouse: rulerHouse,
       yearTheme: themeDesc,
     };
+  }
+
+  // 1b. SR Ascendant Ruler in NATAL houses (J-B Morin / Mel Priestley technique)
+  // The SR Ascendant ruler's position in the natal chart shows WHERE in your life
+  // the year's themes will play out most strongly.
+  let srAscRulerInNatal: SRAscRulerInNatal | null = null;
+  if (yearlyTheme && srAsc) {
+    const ruler = yearlyTheme.ascendantRuler;
+    const rulerPos = srChart.planets[ruler as keyof typeof srChart.planets];
+    if (rulerPos) {
+      const rulerDeg = toAbsDeg(rulerPos);
+      const rulerNatalHouse = rulerDeg !== null ? findNatalHouse(rulerDeg, natalChart) : null;
+      const rulerSRHouse = planetSRHouses[ruler] ?? null;
+      const natalTheme = rulerNatalHouse ? (houseThemes[rulerNatalHouse] || '') : '';
+
+      const srAscRulerNatalHouseInterps: Record<number, string> = {
+        1: `${ruler} rules your SR Ascendant and lands in your natal 1st house — this year's energy flows directly into your identity, appearance, and how you present yourself. You ARE the project. The way you carry yourself and the first impression you make are where the year's story lives.`,
+        2: `${ruler} rules your SR Ascendant and lands in your natal 2nd house — this year's energy flows into your money, possessions, and self-worth. How you earn, spend, and value yourself is where the year's themes play out. Building material security or reassessing what you truly value becomes central.`,
+        3: `${ruler} rules your SR Ascendant and lands in your natal 3rd house — this year's energy flows into communication, learning, writing, and your immediate environment. Siblings, neighbors, short trips, and how you process and share information become the stage for the year's main themes.`,
+        4: `${ruler} rules your SR Ascendant and lands in your natal 4th house — this year's energy flows into home, family, roots, and your private inner world. Your living situation, a parent, or your emotional foundation is where the year's story unfolds. Building from the inside out.`,
+        5: `${ruler} rules your SR Ascendant and lands in your natal 5th house — this year's energy flows into creativity, romance, children, and self-expression. Joy, play, and putting your authentic stamp on the world is where the year's themes come alive. Follow what excites you.`,
+        6: `${ruler} rules your SR Ascendant and lands in your natal 6th house — this year's energy flows into daily routines, health, work habits, and service. How you show up every day — your body, your job, your rituals — is where the year's story plays out. Small, consistent improvements create big change.`,
+        7: `${ruler} rules your SR Ascendant and lands in your natal 7th house — this year's energy flows into partnerships, marriage, contracts, and one-on-one relationships. Another person — romantic, business, or even an adversary — is central to how the year's themes manifest.`,
+        8: `${ruler} rules your SR Ascendant and lands in your natal 8th house — this year's energy flows into transformation, shared resources, intimacy, and psychological depth. Joint finances, power dynamics, and letting go of what no longer serves you is where the year's story lives.`,
+        9: `${ruler} rules your SR Ascendant and lands in your natal 9th house — this year's energy flows into travel, higher education, philosophy, and expanding your worldview. A journey — physical or intellectual — is where the year's themes play out. Your beliefs are evolving.`,
+        10: `${ruler} rules your SR Ascendant and lands in your natal 10th house — this year's energy flows into career, public reputation, and your legacy. Professional ambition and how the world sees you is where the year's story unfolds. You are building something visible.`,
+        11: `${ruler} rules your SR Ascendant and lands in your natal 11th house — this year's energy flows into community, friendships, networks, and your vision for the future. Groups, social causes, and your hopes and dreams are where the year's themes manifest.`,
+        12: `${ruler} rules your SR Ascendant and lands in your natal 12th house — this year's energy flows into solitude, spirituality, hidden matters, and inner processing. What happens behind the scenes, in dreams, or in retreat is where the year's story lives. Rest is productive work.`,
+      };
+
+      const interpretation = rulerNatalHouse
+        ? (srAscRulerNatalHouseInterps[rulerNatalHouse] || `${ruler} rules your SR Ascendant and falls in your natal ${rulerNatalHouse}th house — the year's themes play out through ${natalTheme.toLowerCase()}.`)
+        : `${ruler} rules your SR Ascendant. Add house cusps to your natal chart to see which area of your life this year's energy flows into.`;
+
+      srAscRulerInNatal = {
+        srAscSign: srAsc.sign,
+        rulerPlanet: ruler,
+        rulerSRSign: rulerPos.sign,
+        rulerSRHouse,
+        rulerNatalHouse,
+        rulerNatalHouseTheme: natalTheme,
+        interpretation,
+      };
+    }
   }
 
   // 2. Sun — SR house (primary) + natal overlay
@@ -946,6 +1008,7 @@ export const analyzeSolarReturn = (
 
   return {
     yearlyTheme,
+    srAscRulerInNatal,
     sunHouse,
     sunNatalHouse,
     moonSign,
