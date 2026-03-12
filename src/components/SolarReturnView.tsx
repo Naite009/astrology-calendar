@@ -1,10 +1,12 @@
 import { useState, useMemo, useRef } from 'react';
-import { Sun, MapPin, ArrowRight, Compass, Star, Globe, ChevronDown, ChevronUp, Info, Upload, Loader2, Moon, Flame, Droplets, Wind, Mountain, RotateCcw, Repeat, Layers, Target, Sparkles } from 'lucide-react';
+import { Sun, MapPin, ArrowRight, Compass, Star, Globe, ChevronDown, ChevronUp, Info, Upload, Loader2, Moon, Flame, Droplets, Wind, Mountain, RotateCcw, Repeat, Layers, Target, Sparkles, Zap } from 'lucide-react';
 import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChart';
 import { SolarReturnChart, useSolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { analyzeSolarReturn, SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { srSunInHouse, srMoonInHouse, srMoonInSign, srOverlayNarrative, srPlanetInHouse, rulerConditionNarrative, angularPlanetMeaning } from '@/lib/solarReturnInterpretations';
 import { srMoonInHouseDeep, srMoonPhaseInterp, srMoonAngularity } from '@/lib/solarReturnMoonData';
+import { vertexInSign, vertexInHouse, vertexAspectMeanings } from '@/lib/solarReturnVertex';
+import { srJupiterInHouseDeep, srMercuryInHouseDeep, srVenusInHouseDeep, srMarsInHouseDeep, type SRPlanetHouseDeep } from '@/lib/solarReturnPlanetInHouseDeep';
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
@@ -1347,7 +1349,137 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         )}
       </div>
 
-      {/* Hemispheric Emphasis — Expert Analysis */}
+      {/* ── Vertex — Fated Encounters ── */}
+      {analysis.vertex && (
+        <div className="border border-primary/20 rounded-sm p-5 bg-card space-y-4">
+          <h3 className="text-sm uppercase tracking-widest font-medium text-foreground mb-1 flex items-center gap-2">
+            <Zap size={16} className="text-primary" />
+            Vertex — Fated Encounters This Year
+          </h3>
+          <p className="text-[10px] text-muted-foreground italic">
+            The Vertex is the intersection of the Prime Vertical with the Ecliptic — it marks where destiny, fated encounters, and events beyond conscious control enter your life. (Sources: L. Edward Johndro, Charles Jayne, Brian Clark)
+          </p>
+
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-2xl font-serif text-primary">
+              Vx {SIGN_SYMBOLS[analysis.vertex.sign] || ''} {analysis.vertex.sign} {analysis.vertex.degree}°{String(analysis.vertex.minutes).padStart(2, '0')}'
+            </span>
+            {analysis.vertex.house && (
+              <span className="text-xs bg-muted px-2 py-1 rounded-sm text-muted-foreground">SR House {analysis.vertex.house}</span>
+            )}
+          </div>
+
+          {/* Vertex in Sign */}
+          {vertexInSign[analysis.vertex.sign] && (
+            <div className="space-y-2 border-t border-border pt-3">
+              <h4 className="text-xs font-semibold text-foreground">{vertexInSign[analysis.vertex.sign].title}</h4>
+              <p className="text-sm text-muted-foreground leading-relaxed">{vertexInSign[analysis.vertex.sign].fatedTheme}</p>
+              <div className="bg-secondary/50 rounded-sm p-3 space-y-1">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Who May Appear</p>
+                <p className="text-xs text-foreground leading-relaxed">{vertexInSign[analysis.vertex.sign].encounters}</p>
+              </div>
+              <div className="bg-primary/5 border border-primary/10 rounded-sm p-3">
+                <p className="text-[10px] uppercase tracking-widest text-primary font-medium mb-1">The Lesson</p>
+                <p className="text-xs text-foreground leading-relaxed">{vertexInSign[analysis.vertex.sign].lesson}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Vertex in House */}
+          {analysis.vertex.house && vertexInHouse[analysis.vertex.house] && (
+            <div className="border-t border-border pt-3 space-y-2">
+              <h4 className="text-xs font-semibold text-foreground">{vertexInHouse[analysis.vertex.house].title} (House {analysis.vertex.house})</h4>
+              <p className="text-sm text-muted-foreground leading-relaxed">{vertexInHouse[analysis.vertex.house].description}</p>
+              <p className="text-[10px] text-muted-foreground"><strong>Fated Areas:</strong> {vertexInHouse[analysis.vertex.house].fatedArea}</p>
+            </div>
+          )}
+
+          {/* Vertex Aspects */}
+          {analysis.vertex.aspects.length > 0 && (
+            <div className="border-t border-border pt-3 space-y-2">
+              <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground">Planets Aspecting Your Vertex</h4>
+              <div className="space-y-2">
+                {analysis.vertex.aspects.slice(0, 8).map((asp, i) => {
+                  const cleanPlanet = asp.planet.replace('Natal ', '');
+                  const isNatal = asp.planet.startsWith('Natal ');
+                  return (
+                    <div key={i} className="border border-border rounded-sm p-3 bg-muted/20">
+                      <div className="flex items-center gap-2 text-sm">
+                        <span>{PLANET_SYMBOLS[cleanPlanet] || cleanPlanet.slice(0, 3)} {asp.planet}</span>
+                        <span className={`font-medium ${asp.aspectType === 'Conjunction' ? 'text-primary' : asp.aspectType === 'Trine' || asp.aspectType === 'Sextile' ? 'text-green-500' : 'text-red-400'}`}>
+                          {asp.aspectType}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground ml-auto">orb {asp.orb}°</span>
+                      </div>
+                      {vertexAspectMeanings[cleanPlanet] && (
+                        <p className="text-xs text-muted-foreground mt-1">{isNatal ? '(Natal) ' : ''}{vertexAspectMeanings[cleanPlanet]}</p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Planet Spotlight: Jupiter, Mercury, Venus, Mars ── */}
+      {(() => {
+        const deepData: Record<string, Record<number, SRPlanetHouseDeep>> = {
+          Jupiter: srJupiterInHouseDeep,
+          Mercury: srMercuryInHouseDeep,
+          Venus: srVenusInHouseDeep,
+          Mars: srMarsInHouseDeep,
+        };
+        const spotlightPlanets = ['Jupiter', 'Mercury', 'Venus', 'Mars'].filter(p => {
+          const h = analysis.planetSRHouses[p];
+          return h !== null && h !== undefined && deepData[p]?.[h];
+        });
+        if (spotlightPlanets.length === 0) return null;
+        return (
+          <div className="border border-primary/20 rounded-sm p-5 bg-card space-y-5">
+            <h3 className="text-sm uppercase tracking-widest font-medium text-foreground flex items-center gap-2">
+              <Sparkles size={16} className="text-primary" />
+              Planet Spotlight — Expert Analysis
+            </h3>
+            <p className="text-[10px] text-muted-foreground italic">
+              Deep interpretations for key personal planets in your SR houses. Sources: Ciro Discepolo, Mary Fortier Shea, Brian Clark.
+            </p>
+            {spotlightPlanets.map(planet => {
+              const h = analysis.planetSRHouses[planet]!;
+              const data = deepData[planet][h];
+              if (!data) return null;
+              const overlay = analysis.houseOverlays.find(o => o.planet === planet);
+              return (
+                <details key={planet} className="border border-border rounded-sm bg-muted/20">
+                  <summary className="p-3 cursor-pointer hover:bg-muted/40 transition-colors">
+                    <span className="text-sm font-medium text-foreground">
+                      {PLANET_SYMBOLS[planet]} {planet} in SR House {h}
+                      {overlay?.natalHouse && overlay.natalHouse !== h ? ` → Natal House ${overlay.natalHouse}` : ''}
+                      <span className="text-muted-foreground font-normal"> — {data.title}</span>
+                    </span>
+                  </summary>
+                  <div className="p-4 pt-0 space-y-3">
+                    <p className="text-sm text-muted-foreground leading-relaxed">{data.overview}</p>
+                    <div className="bg-secondary/50 rounded-sm p-3">
+                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-1">Practical Manifestation</p>
+                      <p className="text-xs text-foreground leading-relaxed">{data.practical}</p>
+                    </div>
+                    <div className="bg-destructive/5 border border-destructive/10 rounded-sm p-3">
+                      <p className="text-[10px] uppercase tracking-widest text-destructive font-medium mb-1">Caution</p>
+                      <p className="text-xs text-foreground leading-relaxed">{data.caution}</p>
+                    </div>
+                    {data.source && (
+                      <p className="text-[10px] text-muted-foreground italic">Source: {data.source}</p>
+                    )}
+                  </div>
+                </details>
+              );
+            })}
+          </div>
+        );
+      })()}
+
       {analysis.hemisphericEmphasis && (
         <div className="border border-primary/20 rounded-sm p-5 bg-card space-y-5">
           <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-2">
