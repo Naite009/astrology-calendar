@@ -2,6 +2,8 @@ import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { Download, Loader2 } from 'lucide-react';
+import { vertexInSign, vertexInHouse } from '@/lib/solarReturnVertex';
+import { srJupiterInHouseDeep, srMercuryInHouseDeep, srVenusInHouseDeep, srMarsInHouseDeep } from '@/lib/solarReturnPlanetInHouseDeep';
 import { useState } from 'react';
 
 // Plain-text abbreviations safe for jsPDF default fonts (no Unicode glyphs)
