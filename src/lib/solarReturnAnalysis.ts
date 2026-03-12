@@ -957,23 +957,9 @@ export const analyzeSolarReturn = (
 
   // ─── 17. Hemispheric Emphasis ─────────────────────────────────────
   let hemisphericEmphasis: SRHemisphericEmphasis | null = null;
-  const srCusps = extractCusps(srChart);
-  if (srCusps) {
-    let upper = 0, lower = 0, east = 0, west = 0;
-    for (const planet of PLANETS_CORE) {
-      const h = planetSRHouses[planet];
-      if (h == null) continue;
-      if (h >= 7 && h <= 12) upper++; else lower++;
-      if (h >= 10 || h <= 3) east++; else west++;
-    }
-    const total = upper + lower;
-    let interp = '';
-    if (upper > lower + 2) interp = 'Planets cluster above the horizon — this is a public, visible year. Career, reputation, and social standing are emphasized.';
-    else if (lower > upper + 2) interp = 'Planets cluster below the horizon — this is a private, interior year. Home, family, and personal foundations are the focus.';
-    if (east > west + 2) interp += (interp ? ' ' : '') + 'Eastern emphasis — you are in the driver\'s seat this year. Self-determination and personal initiative lead.';
-    else if (west > east + 2) interp += (interp ? ' ' : '') + 'Western emphasis — others play a significant role this year. Partnerships, collaborations, and responses to external events shape your path.';
-    if (!interp) interp = 'Planets are relatively balanced across hemispheres — a mix of public and private, self-directed and other-oriented themes.';
-    hemisphericEmphasis = { upper, lower, east, west, interpretation: interp };
+  {
+    const { analyzeSRHemispheres } = await import('./solarReturnHemispheres');
+    hemisphericEmphasis = analyzeSRHemispheres(planetSRHouses, [...PLANETS_CORE]);
   }
 
   // ─── 18. Saturn Focus ─────────────────────────────────────────────
