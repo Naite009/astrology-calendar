@@ -1,6 +1,7 @@
 // ─── Deep Solar Return Interpretations ──────────────────────────────
 // Professional-grade content modeled on Astrology University, Brian Clark,
-// Lynn Bell, and Mary Fortier Shea methodologies.
+// Lynn Bell, Mary Fortier Shea, and Ray Merriman methodologies.
+// Outer planet interpretations sourced from Erin Sullivan and Liz Greene.
 
 // ─── Sun in SR House (multi-paragraph, actionable) ──────────────────
 
@@ -227,6 +228,62 @@ export const srPlanetInHouse: Record<string, Record<number, string>> = {
     11: 'Social isolation or responsibility within groups. Friendships are tested. Long-term goals face obstacles. Only true friends remain.',
     12: 'Solitude feels burdensome. Institutional responsibilities. Hidden fears surface. Spiritual discipline is necessary. A difficult but ultimately liberating year.',
   },
+  Uranus: {
+    1: 'A year of sudden personal reinvention. Your appearance, identity, or lifestyle may change dramatically and unpredictably. Others see you as more eccentric or liberated. You crave freedom from anything that confines you.',
+    2: 'Financial instability or unexpected income shifts. Unconventional earning methods. A sudden windfall or sudden expense. Your values undergo a radical reassessment — what mattered yesterday may not matter tomorrow.',
+    3: 'Revolutionary ideas, breakthrough communication, or disruptive learning. Technology features heavily. Unexpected news from siblings or neighbors. Your thinking becomes more original and less conventional.',
+    4: 'Disruption at home — sudden moves, renovations, or family upheavals. A parent acts unpredictably. You may feel restless at home, craving a different environment. Inner emotional breakthroughs are possible.',
+    5: 'Unexpected romance, unconventional creative expression, or surprise pregnancy. Children may be a source of disruption or delight. You take creative risks you would not normally take.',
+    6: 'Sudden health developments, job changes, or radical overhaul of daily routines. Technology transforms your work. Unusual health modalities appeal. The daily grind becomes anything but routine.',
+    7: 'Relationship upheaval — sudden attractions, unexpected separations, or a partner who behaves unpredictably. If a relationship survives Uranus here, it does so through radical honesty and freedom.',
+    8: 'Sudden financial changes involving others\' money — inheritance, insurance, taxes. Psychological breakthroughs through crisis. Sexual liberation or taboo-breaking. Deep transformation through shock.',
+    9: 'Sudden travel, unexpected educational opportunities, or radical shift in worldview. A philosophy or belief system you relied on may shatter, replaced by something more authentic.',
+    10: 'Career upheaval — sudden job change, unexpected recognition, or radical professional reinvention. You may break free from a career path that was never truly yours. Freedom matters more than security.',
+    11: 'Your social circle transforms. New friends appear suddenly; old friendships may end abruptly. Group dynamics are electric. Your vision for the future becomes more radical and innovative.',
+    12: 'Spiritual awakening through unexpected channels. Sudden insights from dreams or meditation. Hidden matters are exposed unexpectedly. Institutional disruption. Liberation through surrendering control.',
+  },
+  Neptune: {
+    1: 'Your sense of self becomes more fluid, artistic, and spiritually sensitive. Others may idealize you or project onto you. Boundaries between self and world dissolve. Confusion about identity is possible but so is creative genius.',
+    2: 'Financial confusion or idealism about money. Income through artistic, spiritual, or healing work. Beware of fraud, unclear contracts, or lending money that will not be repaid. Your values become more spiritual than material.',
+    3: 'Communication becomes more poetic, intuitive, and sometimes unclear. Misunderstandings are likely. Writing, music, or art as communication. Daydreaming replaces analytical thinking. Siblings may be a source of confusion.',
+    4: 'Home becomes a sanctuary or a source of confusion. Water damage, gas leaks, or boundary issues with neighbors are literal possibilities. Longing for an ideal home or family. Escapism through domestic retreat.',
+    5: 'Romantic idealization — falling in love with who you wish someone were, not who they are. Creative inspiration is at a peak. Artistic expression becomes transcendent. Children may be a source of worry or spiritual connection.',
+    6: 'Health issues that are hard to diagnose or treat. Sensitivity to medications, substances, and environment. Work feels meaningless unless it involves service or healing. Daily routine becomes more fluid and less structured.',
+    7: 'Idealization or disillusionment in partnerships. You may attract a soulmate or a con artist — discernment is critical. Marriage may feel dreamy or confusing. Co-dependency is the primary risk.',
+    8: 'Dissolution of financial boundaries with others. Inheritance confusion. Spiritual experiences around death or transformation. Psychic sensitivity heightens. Substance vulnerability increases.',
+    9: 'Spiritual pilgrimage, mystical experiences through travel, or confusion about beliefs. Higher education in arts, healing, or spirituality. Legal matters are murky — read the fine print carefully.',
+    10: 'Career in arts, healing, or spiritual service is favored. Professional reputation may be idealized or undermined through gossip. Confusion about career direction. Sacrifice for professional ideals.',
+    11: 'Friendships based on spiritual connection or shared ideals. Group involvement in humanitarian or artistic causes. Beware of false friends or groups that demand too much. Community as spiritual family.',
+    12: 'Neptune is at home here — this is a profoundly spiritual year. Meditation, retreat, and inner exploration reach new depths. The danger is escapism, addiction, or emotional overwhelm. Art and healing emerge from solitude.',
+  },
+  Pluto: {
+    1: 'A year of personal transformation so deep others can see it in your eyes. You shed an old version of yourself. Power dynamics are personal — who controls your life? Intensity radiates from you.',
+    2: 'Financial power plays — gaining or losing significant resources. Your relationship with money and possessions undergoes a complete transformation. What you once valued may become meaningless; new values emerge.',
+    3: 'Communication becomes a tool of power. Investigative thinking, research, and uncovering secrets. Words can heal or destroy. Relationships with siblings undergo transformation. Obsessive learning.',
+    4: 'Deep family transformation — secrets unearthed, power dynamics with parents, or a complete restructuring of your home life. Psychological excavation of childhood patterns. Moving to transform your foundation.',
+    5: 'Intense creative power, obsessive romance, or transformative experiences through children. Your creative output has unusual depth and impact. Love affairs involve power, jealousy, or profound bonding.',
+    6: 'Work involves power dynamics — office politics, control struggles, or a complete transformation of your daily routine. Health crises that force lifestyle change. Healing through crisis.',
+    7: 'A partnership undergoes deep transformation — or ends through power struggles. You attract intense, powerful people. Manipulation and control issues in relationships demand awareness. Deep bonding or deep conflict.',
+    8: 'Pluto is at home here — expect major transformation, financial shifts involving others, and psychological rebirth. Death (literal or metaphorical) is a theme. You emerge permanently changed. No going back.',
+    9: 'Your worldview dies and is reborn. Travel to transformative places. Legal battles involving power. Education that changes everything you believe. Fanaticism is the shadow; wisdom is the gift.',
+    10: 'Career transformation — you may gain or lose power professionally. Public reputation undergoes a major shift. Authority figures are either allies or adversaries. You climb or fall — nothing stays the same.',
+    11: 'Group dynamics involve power struggles. You may become a powerful leader in an organization or be pushed out. Friendships are tested by intensity. Your vision for the future becomes obsessive and transformative.',
+    12: 'Profound unconscious transformation. Hidden enemies or hidden power. Institutional power dynamics. Spiritual death and rebirth through solitude. Therapeutic breakthroughs from the depths. The shadow self demands integration.',
+  },
+  Chiron: {
+    1: 'Your core wound is visible — and this vulnerability becomes your greatest teaching tool. Healing through authenticity and showing others it is okay to be imperfect. Body image or identity wounds resurface for integration.',
+    2: 'Wounds around money, self-worth, and feeling "not enough." Financial healing through facing scarcity fears. Teaching others about values and worthiness. Income through healing or counseling work.',
+    3: 'Communication wounds — feeling unheard, misunderstood, or intellectually inadequate. Healing through writing, teaching, or mentoring. Sibling relationships carry old wounds that can now heal.',
+    4: 'Family wounds resurface — childhood pain, parental inadequacy, or home instability. Healing comes through creating the home and family you needed but did not have. Ancestral healing work.',
+    5: 'Creative wounds or blocks around self-expression and joy. Difficulty allowing yourself to play or be seen. Healing through art, children, or romance that accepts your imperfections.',
+    6: 'Health wounds or chronic conditions demand attention. Work as a wounded healer — your own suffering qualifies you to help others. Daily routine must include self-care as a non-negotiable.',
+    7: 'Relationship wounds — fear of abandonment, rejection, or being unseen by a partner. Healing through a relationship that holds space for vulnerability. Therapeutic partnerships.',
+    8: 'Deep psychological wounds around trust, intimacy, and shared power. Healing through therapy, shadow work, or transformative crisis. Financial healing through addressing shame and secrecy.',
+    9: 'Wounds around faith, meaning, and belonging to a larger story. Healing through travel, education, or finding a philosophy that accommodates suffering. Teaching from direct experience of pain.',
+    10: 'Career wounds — imposter syndrome, professional failure, or authority issues. Healing through accepting your unique professional path. Your wound becomes your public offering.',
+    11: 'Social wounds — feeling like an outsider, rejection by groups, or fear of belonging. Healing through finding your true community. Your difference is your contribution.',
+    12: 'The deepest wounds — spiritual pain, existential grief, or wounds too ancient to name. Healing through surrender, meditation, and acceptance. The wound teacher works in silence.',
+  },
 };
 
 // ─── SR Ascendant ruler condition narrative ──────────────────────────
@@ -269,4 +326,78 @@ export const angularPlanetMeaning: Record<string, string> = {
   Neptune: 'Spiritual sensitivity, confusion, and idealism are amplified. Creative or spiritual breakthroughs — or disillusionment.',
   Pluto: 'Transformation, power dynamics, and psychological intensity are at the forefront. A year of profound change.',
   Chiron: 'Healing themes are prominent. Your wounds are visible, creating opportunities for deep healing and helping others.',
+};
+
+// ─── SR MC (Midheaven) in House interpretations ─────────────────────
+// Source: Brian Clark "The Year Ahead" & Ray Merriman
+
+export const srMCInHouse: Record<number, string> = {
+  1: 'Your public reputation and career direction are deeply personal this year. Professional identity and personal identity are nearly inseparable. How you present yourself IS your career statement. Self-promotion is natural and necessary.',
+  2: 'Career direction is driven by financial considerations. Earning potential influences professional decisions. Your reputation is linked to your material success or your values. Building financial credibility is part of your public story.',
+  3: 'Communication, writing, teaching, or media work defines your public profile. Your reputation is built through your ideas and words. Networking within your local environment advances career goals. Intellectual credibility matters.',
+  4: 'Career and home are intertwined — working from home, family business, or real estate career. Your professional reputation is private or locally focused. What happens behind closed doors affects your public standing.',
+  5: 'Creative self-expression defines your public role. Career involves art, entertainment, children, or personal performance. Your reputation is colorful and charismatic. Being seen for your unique creative voice.',
+  6: 'Your daily work IS your career this year — the grind matters more than the title. Reputation is built through competence, reliability, and service. Health-related career paths. Being known for what you DO, not what you claim.',
+  7: 'Partnership is central to career — business partners, clients, or a spouse influence your professional path. Your reputation is shaped by your relationships and your ability to collaborate. Legal matters affect public standing.',
+  8: 'Career involves transformation, research, finance, psychology, or dealing with crisis. Your professional reputation involves depth and intensity. Power dynamics in the workplace are significant. Joint ventures define the year.',
+  9: 'International career expansion, higher education, publishing, or philosophy shapes your public life. Your reputation extends beyond local boundaries. Teaching, traveling, or advocating for beliefs defines your professional year.',
+  10: 'The MC is at home — career is the dominant theme, and everything you do professionally is maximally visible. This is the strongest year for career advancement, public recognition, and legacy-building. What you achieve now defines you for years.',
+  11: 'Career is linked to community, networks, technology, or social causes. Your professional reputation grows through group affiliations and forward-thinking vision. Innovation and collaboration define your public identity.',
+  12: 'Career operates behind the scenes — institutional work, retreat, research, or spiritual service. Your public reputation may be quiet or sacrificial. What you accomplish in private has more lasting impact than public performance.',
+};
+
+// ─── SR Sun Aspect Interpretations (Ray Merriman / Mary Fortier Shea) ──
+
+export const srSunAspectInterps: Record<string, Record<string, string>> = {
+  Moon: {
+    Conjunction: 'Sun conjunct Moon in the SR creates a powerful new beginning — your conscious will and emotional needs are perfectly aligned. This is a year of singular focus and emotional clarity. What you want and what you need are the same thing. A new chapter begins with full inner conviction.',
+    Opposition: 'Sun opposite Moon creates tension between your public ambitions and private emotional needs. You may feel pulled between career and home, duty and desire. Relationships mirror this split — a partner may embody what you are neglecting. Integration requires honoring both sides.',
+    Trine: 'Sun trine Moon is one of the most harmonious SR aspects — your willpower and emotions flow together effortlessly. Decisions feel natural, relationships are supportive, and you are at peace with yourself. A year of grace and inner alignment.',
+    Square: 'Sun square Moon creates internal friction — your goals and your feelings are at cross-purposes. What you think you should do differs from what you feel you need. This tension drives growth but demands conscious effort to reconcile.',
+    Sextile: 'Sun sextile Moon offers opportunities for emotional and creative growth. Your inner world and outer actions support each other when you make the effort. Relationships are cooperative. A productive, emotionally grounded year.',
+  },
+  Mercury: {
+    Conjunction: 'Sun conjunct Mercury sharpens your mind and communication skills. This is a year of important conversations, decisions, and intellectual activity. Your identity is linked to your ideas — what you think and say defines you.',
+    Opposition: 'Sun opposite Mercury in the SR often means important negotiations or communication challenges with partners. Others may disagree with your thinking. Listen as much as you speak.',
+    Square: 'Sun square Mercury creates mental restlessness. Overthinking, nervous energy, and communication mishaps are possible. Slow down before important decisions. Your mind works faster than circumstances allow.',
+  },
+  Venus: {
+    Conjunction: 'Sun conjunct Venus is a beautiful SR aspect — love, beauty, pleasure, and social grace are enhanced all year. Relationships improve, creativity flows, and you attract good things. One of the most pleasant years possible.',
+    Opposition: 'Sun opposite Venus highlights relationship dynamics. A partner or significant other reflects your own values back to you. Compromise is necessary. Financial negotiations with others are likely.',
+    Trine: 'Sun trine Venus brings ease in love, creativity, and finances. Social life is enjoyable. Artistic expression comes naturally. A gentle, pleasant year where things flow without force.',
+    Square: 'Sun square Venus creates tension in relationships or between desire and responsibility. You may want something (or someone) you cannot easily have. Indulgence vs. discipline is the year\'s theme.',
+  },
+  Mars: {
+    Conjunction: 'Sun conjunct Mars is a high-energy, assertive year. You are driven, competitive, and willing to fight for what you want. Physical energy peaks. The danger is aggression, accidents, or burning out. Channel this fire intentionally.',
+    Opposition: 'Sun opposite Mars often brings conflict with others — a partner, competitor, or authority figure pushes back against you. Anger management is critical. The opposition demands you assert yourself without dominating.',
+    Trine: 'Sun trine Mars is a powerfully productive aspect — your will and your energy work together smoothly. Physical vitality is high. You accomplish goals efficiently. Courage comes naturally.',
+    Square: 'Sun square Mars is one of the most challenging SR aspects. Frustration, anger, accidents, and conflict are possible. You feel blocked and want to push through obstacles forcefully. Patience and strategic action prevent damage.',
+  },
+  Jupiter: {
+    Conjunction: 'Sun conjunct Jupiter is the "lucky year" aspect. Expansion, optimism, travel, education, and opportunity flow toward you. Generosity increases — from you and toward you. The only risk is overextension and excess.',
+    Opposition: 'Sun opposite Jupiter can mean conflict with authority over beliefs, legal matters, or excessive promises. Others may be more generous than practical. Balance optimism with realism.',
+    Trine: 'Sun trine Jupiter is gently expansive — opportunities arrive without fanfare but with real substance. Travel, education, and growth are favored. A quietly fortunate year.',
+    Square: 'Sun square Jupiter brings restlessness, overcommitment, and the temptation to take on too much. Legal or educational challenges. Growth comes through learning to say no.',
+  },
+  Saturn: {
+    Conjunction: 'Sun conjunct Saturn is a demanding but rewarding year. Responsibilities increase, freedoms decrease, but what you build now LASTS. This is a year of maturity, discipline, and earning respect through hard work. Loneliness is possible but purposeful.',
+    Opposition: 'Sun opposite Saturn brings external pressure — from bosses, institutions, or circumstances beyond your control. You feel tested. Relationships with authority figures are strained. Perseverance is required.',
+    Trine: 'Sun trine Saturn brings structured growth. Your efforts are rewarded. Authority figures support you. Long-term plans solidify. A year of steady, reliable progress without drama.',
+    Square: 'Sun square Saturn is one of the hardest SR aspects. Obstacles, delays, and feelings of inadequacy. A parent or boss creates pressure. Depression is possible. But the growth that comes from endurance is permanent.',
+  },
+  Uranus: {
+    Conjunction: 'Sun conjunct Uranus brings a year of radical change. Your identity undergoes a revolution. Sudden events alter your life direction. Freedom becomes a non-negotiable need. Nothing stays the same.',
+    Opposition: 'Sun opposite Uranus — others disrupt your plans. A partner or external force introduces chaos. Flexibility is survival. What you resist persists; what you embrace transforms you.',
+    Square: 'Sun square Uranus creates tension between stability and freedom. Rebellious urges conflict with responsibilities. Sudden events force adaptation. The year demands you become more authentically yourself.',
+  },
+  Neptune: {
+    Conjunction: 'Sun conjunct Neptune dissolves your usual boundaries and certainties. Spiritual sensitivity peaks but so does confusion. Creative inspiration is extraordinary. Reality testing is essential — not everything is as it appears.',
+    Opposition: 'Sun opposite Neptune — others may deceive you, or you may deceive yourself about a relationship. Idealization leads to disillusionment. Artistic collaboration can be beautiful if boundaries are maintained.',
+    Square: 'Sun square Neptune brings confusion, escapism, and the temptation to avoid reality. Health may be affected by sensitivity to substances. The gift is heightened intuition — if you can distinguish it from wishful thinking.',
+  },
+  Pluto: {
+    Conjunction: 'Sun conjunct Pluto is the most transformative SR aspect. Your identity is destroyed and rebuilt. Power dynamics are intense. You emerge fundamentally changed. There is no going back to who you were.',
+    Opposition: 'Sun opposite Pluto brings power struggles with others. Someone may try to control you, or you may become controlling. The lesson is empowerment without domination. Deep psychological work is required.',
+    Square: 'Sun square Pluto brings compulsive behavior, power struggles, and the forced exposure of hidden truths. What you have been avoiding demands confrontation. Transformation through crisis.',
+  },
 };
