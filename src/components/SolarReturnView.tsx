@@ -1189,9 +1189,6 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
           </p>
           <p className="text-xs text-primary mb-2">{analysis.srAscInNatalHouse.natalHouseTheme}</p>
           <p className="text-sm text-muted-foreground leading-relaxed">{analysis.srAscInNatalHouse.interpretation}</p>
-          <p className="text-[10px] text-muted-foreground mt-2 italic">
-            Source: Lynn Bell — "Cycles of Light." The natal house where the SR Ascendant lands shows which area of life is most activated by the year's themes.
-          </p>
         </div>
       )}
 
