@@ -1426,7 +1426,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
             Vertex — Fated Encounters This Year
           </h3>
           <p className="text-[10px] text-muted-foreground italic">
-            The Vertex is the intersection of the Prime Vertical with the Ecliptic — it marks where destiny, fated encounters, and events beyond conscious control enter your life. (Sources: L. Edward Johndro, Charles Jayne, Brian Clark)
+            The Vertex is the intersection of the Prime Vertical with the Ecliptic — it marks where destiny, fated encounters, and events beyond conscious control enter your life.
           </p>
 
           <div className="flex items-center gap-3 flex-wrap">
