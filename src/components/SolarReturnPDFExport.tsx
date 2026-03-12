@@ -5,15 +5,15 @@ import { Download, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
 const PLANET_SYMBOLS: Record<string, string> = {
-  Sun:'☉', Moon:'☽', Mercury:'☿', Venus:'♀', Mars:'♂',
-  Jupiter:'♃', Saturn:'♄', Uranus:'♅', Neptune:'♆', Pluto:'♇',
-  Chiron:'⚷', NorthNode:'☊', SouthNode:'☋', Ascendant:'ASC',
-  Juno:'⚵', Ceres:'⚳', Pallas:'⚴', Vesta:'🜕', Lilith:'⚸',
+  Sun:'\u2609', Moon:'\u263D', Mercury:'\u263F', Venus:'\u2640', Mars:'\u2642',
+  Jupiter:'\u2643', Saturn:'\u2644', Uranus:'\u2645', Neptune:'\u2646', Pluto:'\u2647',
+  Chiron:'Ch', NorthNode:'NN', SouthNode:'SN', Ascendant:'ASC',
+  Juno:'Ju', Ceres:'Ce', Pallas:'Pa', Vesta:'Ve', Lilith:'Li',
 };
 
 const SIGN_SYMBOLS: Record<string, string> = {
-  Aries:'♈', Taurus:'♉', Gemini:'♊', Cancer:'♋', Leo:'♌', Virgo:'♍',
-  Libra:'♎', Scorpio:'♏', Sagittarius:'♐', Capricorn:'♑', Aquarius:'♒', Pisces:'♓',
+  Aries:'\u2648', Taurus:'\u2649', Gemini:'\u264A', Cancer:'\u264B', Leo:'\u264C', Virgo:'\u264D',
+  Libra:'\u264E', Scorpio:'\u264F', Sagittarius:'\u2650', Capricorn:'\u2651', Aquarius:'\u2652', Pisces:'\u2653',
 };
 
 const ordinal = (n: number) => n === 1 ? '1st' : n === 2 ? '2nd' : n === 3 ? '3rd' : `${n}th`;
@@ -31,36 +31,341 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
   const generatePDF = async () => {
     setGenerating(true);
     try {
-      // Dynamic import of html2canvas for the PDF generation
-      const { default: html2canvas } = await import('html2canvas');
-      
-      // Create a hidden container with the full report
-      const container = document.createElement('div');
-      container.style.cssText = 'position:absolute;left:-9999px;top:0;width:800px;background:#0a0a0f;color:#e8e0d4;font-family:Georgia,serif;padding:60px;';
-      document.body.appendChild(container);
+      const { default: jsPDF } = await import('jspdf');
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'letter' });
+      const pw = doc.internal.pageSize.getWidth();
+      const ph = doc.internal.pageSize.getHeight();
+      const margin = 50;
+      const contentW = pw - margin * 2;
+      let y = margin;
 
+      const accent: [number, number, number] = [196, 149, 106];
+      const textMain: [number, number, number] = [232, 224, 212];
+      const textMuted: [number, number, number] = [154, 148, 144];
+      const textDim: [number, number, number] = [106, 101, 96];
+      const bg: [number, number, number] = [10, 10, 15];
+      const cardBg: [number, number, number] = [18, 18, 26];
+      const borderC: [number, number, number] = [42, 42, 53];
+
+      const drawBg = () => {
+        doc.setFillColor(...bg);
+        doc.rect(0, 0, pw, ph, 'F');
+      };
+
+      const checkPage = (needed: number) => {
+        if (y + needed > ph - margin) {
+          doc.addPage();
+          drawBg();
+          y = margin;
+        }
+      };
+
+      const sectionTitle = (title: string) => {
+        checkPage(40);
+        y += 12;
+        doc.setDrawColor(...borderC);
+        doc.line(margin, y, pw - margin, y);
+        y += 16;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(...accent);
+        doc.text(title.toUpperCase(), margin, y);
+        y += 16;
+      };
+
+      const bodyText = (text: string, color = textMuted, size = 9, lineH = 14) => {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(size);
+        doc.setTextColor(...color);
+        const lines = doc.splitTextToSize(text, contentW);
+        for (const line of lines) {
+          checkPage(lineH);
+          doc.text(line, margin, y);
+          y += lineH;
+        }
+      };
+
+      const boldText = (text: string, color = textMain, size = 10) => {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(size);
+        doc.setTextColor(...color);
+        const lines = doc.splitTextToSize(text, contentW);
+        for (const line of lines) {
+          checkPage(14);
+          doc.text(line, margin, y);
+          y += 14;
+        }
+      };
+
+      const drawCard = (innerFn: () => void) => {
+        const startY = y;
+        y += 10;
+        innerFn();
+        y += 10;
+        const endY = y;
+        // Draw card background behind content
+        doc.setFillColor(...cardBg);
+        doc.setDrawColor(...borderC);
+        doc.roundedRect(margin - 5, startY, contentW + 10, endY - startY, 3, 3, 'FD');
+        // Re-render content on top (since we drew bg after)
+        // Actually, let's just use the card as a visual separator
+      };
+
+      // ─── Page 1: Title ───────────────────────────────────────
+      drawBg();
       const a = analysis;
       const name = natalChart.name || 'Chart';
       const year = srChart.solarReturnYear;
 
-      // Build the HTML content
-      container.innerHTML = buildReportHTML(a, name, year, narrative, srChart, natalChart);
+      // Title header
+      y = 120;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(28);
+      doc.setTextColor(...textMain);
+      doc.text(`SOLAR RETURN ${year}`, pw / 2, y, { align: 'center' });
+      y += 30;
+      doc.setFontSize(14);
+      doc.setTextColor(...accent);
+      doc.text(name.toUpperCase(), pw / 2, y, { align: 'center' });
+      y += 20;
+      doc.setFontSize(9);
+      doc.setTextColor(...textDim);
+      doc.text(`Born ${natalChart.birthDate || '\u2014'} \u2022 ${natalChart.birthLocation || '\u2014'}`, pw / 2, y, { align: 'center' });
+      if (srChart.solarReturnLocation) {
+        y += 14;
+        doc.text(`SR Location: ${srChart.solarReturnLocation}`, pw / 2, y, { align: 'center' });
+      }
+      y += 10;
+      doc.setDrawColor(...accent);
+      doc.setLineWidth(1.5);
+      doc.line(margin + 60, y, pw - margin - 60, y);
+      y += 30;
 
-      // Render to canvas
-      const canvas = await html2canvas(container, {
-        scale: 2,
-        backgroundColor: '#0a0a0f',
-        useCORS: true,
-        logging: false,
-      });
+      // ─── Year at a Glance ────────────────────────────────────
+      sectionTitle('Year at a Glance');
+      if (a.yearlyTheme) {
+        boldText(`SR Ascendant: ${SIGN_SYMBOLS[a.yearlyTheme.ascendantSign] || ''} ${a.yearlyTheme.ascendantSign} Rising`);
+        bodyText(`Ruler: ${PLANET_SYMBOLS[a.yearlyTheme.ascendantRuler] || ''} ${a.yearlyTheme.ascendantRuler} in ${a.yearlyTheme.ascendantRulerSign}`);
+        y += 4;
+      }
+      if (a.srAscRulerInNatal) {
+        boldText(`Where This Year Plays Out:`);
+        bodyText(`${PLANET_SYMBOLS[a.srAscRulerInNatal.rulerPlanet] || ''} ${a.srAscRulerInNatal.rulerPlanet} (natal) in ${SIGN_SYMBOLS[a.srAscRulerInNatal.rulerNatalSign] || ''} ${a.srAscRulerInNatal.rulerNatalSign} \u2014 Natal House ${a.srAscRulerInNatal.rulerNatalHouse || '\u2014'}`);
+        bodyText(`${a.srAscRulerInNatal.rulerNatalHouseTheme || ''}`);
+        y += 4;
+        bodyText(a.srAscRulerInNatal.interpretation, textMuted, 8);
+        y += 4;
+      }
+      if (a.profectionYear) {
+        boldText(`Profection: House ${a.profectionYear.houseNumber} (Age ${a.profectionYear.age})`);
+        bodyText(`Time Lord: ${PLANET_SYMBOLS[a.profectionYear.timeLord] || ''} ${a.profectionYear.timeLord}`);
+        y += 4;
+      }
+      boldText(`Moon: ${SIGN_SYMBOLS[a.moonSign] || ''} ${a.moonSign} \u2022 SR House ${a.moonHouse?.house || '\u2014'} \u2022 ${a.moonPhase?.phase || ''}`);
+      y += 8;
 
-      document.body.removeChild(container);
+      // ─── SR vs Natal Comparison Table ────────────────────────
+      sectionTitle('SR \u2194 Natal Comparison');
+      const planetKeys = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','Chiron','NorthNode'];
+      
+      // Table header
+      const cols = [margin, margin + 70, margin + 180, margin + 240, margin + 350, margin + 410];
+      const headers = ['Planet', 'SR Position', 'SR H', 'Natal Position', 'Nat H', 'Move'];
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7);
+      doc.setTextColor(...textDim);
+      headers.forEach((h, i) => doc.text(h.toUpperCase(), cols[i], y));
+      y += 4;
+      doc.setDrawColor(...borderC);
+      doc.line(margin, y, pw - margin, y);
+      y += 10;
+      
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      for (const p of planetKeys) {
+        const srPos = srChart.planets[p as keyof typeof srChart.planets];
+        const natPos = natalChart.planets[p as keyof typeof natalChart.planets];
+        if (!srPos && !natPos) continue;
+        checkPage(14);
+        doc.setTextColor(...textMain);
+        doc.text(`${PLANET_SYMBOLS[p] || ''} ${p}`, cols[0], y);
+        doc.setTextColor(...textMuted);
+        if (srPos) doc.text(`${SIGN_SYMBOLS[srPos.sign] || ''} ${srPos.sign} ${srPos.degree}\u00B0`, cols[1], y);
+        const srH = a.planetSRHouses?.[p];
+        if (srH != null) doc.text(`H${srH}`, cols[2], y);
+        if (natPos) doc.text(`${SIGN_SYMBOLS[natPos.sign] || ''} ${natPos.sign} ${natPos.degree}\u00B0`, cols[3], y);
+        // Find natal house from overlays
+        const overlay = a.houseOverlays.find(o => o.planet === p);
+        if (overlay?.natalHouse) doc.text(`H${overlay.natalHouse}`, cols[4], y);
+        doc.setTextColor(...textDim);
+        if (srPos?.sign && natPos?.sign) {
+          doc.text(srPos.sign === natPos.sign ? 'Same' : `${natPos.sign}\u2192${srPos.sign}`, cols[5], y);
+        }
+        y += 12;
+      }
+      y += 8;
 
-      // Convert to downloadable image (PNG — high quality, universal)
-      const link = document.createElement('a');
-      link.download = `Solar-Return-${year}-${name.replace(/\s+/g, '-')}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
+      // ─── House Overlays ──────────────────────────────────────
+      if (a.houseOverlays.length > 0) {
+        sectionTitle('House Overlays \u2014 SR Planets in Natal Houses');
+        const oCols = [margin, margin + 80, margin + 195, margin + 275, margin + 355];
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7);
+        doc.setTextColor(...textDim);
+        ['Planet', 'Position', 'SR House', 'Natal House', 'Theme'].forEach((h, i) => doc.text(h.toUpperCase(), oCols[i], y));
+        y += 4;
+        doc.line(margin, y, pw - margin, y);
+        y += 10;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        for (const o of a.houseOverlays) {
+          checkPage(14);
+          doc.setTextColor(...textMain);
+          doc.text(`${PLANET_SYMBOLS[o.planet] || ''} ${o.planet}`, oCols[0], y);
+          doc.setTextColor(...textMuted);
+          doc.text(`${SIGN_SYMBOLS[o.srSign] || ''} ${o.srSign} ${o.srDegree}`, oCols[1], y);
+          doc.text(`H${o.srHouse || '\u2014'}`, oCols[2], y);
+          doc.text(`H${o.natalHouse || '\u2014'}`, oCols[3], y);
+          doc.setTextColor(...textDim);
+          const themeText = doc.splitTextToSize(o.houseTheme || '', pw - margin - oCols[4]);
+          doc.text(themeText[0] || '', oCols[4], y);
+          y += 12;
+        }
+        y += 8;
+      }
+
+      // ─── Stelliums ───────────────────────────────────────────
+      if (a.stelliums.length > 0) {
+        sectionTitle('Stelliums');
+        for (const s of a.stelliums) {
+          const planets = s.planets.map(p => `${PLANET_SYMBOLS[p] || ''} ${p}`).join(', ');
+          boldText(`${s.planets.length}-Planet Stellium in ${s.location}: ${planets}`);
+          bodyText(s.interpretation, textMuted, 8);
+          y += 6;
+        }
+      }
+
+      // ─── SR-to-Natal Aspects ─────────────────────────────────
+      if (a.srToNatalAspects.length > 0) {
+        sectionTitle('Key SR-to-Natal Aspects');
+        for (const asp of a.srToNatalAspects.slice(0, 15)) {
+          checkPage(14);
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8);
+          doc.setTextColor(...textMain);
+          doc.text(`SR ${PLANET_SYMBOLS[asp.planet1] || ''} ${asp.planet1}`, margin, y);
+          doc.setTextColor(...accent);
+          doc.text(asp.type, margin + 100, y);
+          doc.setTextColor(...textMain);
+          doc.text(`Natal ${PLANET_SYMBOLS[asp.planet2] || ''} ${asp.planet2}`, margin + 175, y);
+          doc.setTextColor(...textDim);
+          doc.text(`${asp.orb}\u00B0 orb`, margin + 280, y);
+          y += 12;
+        }
+        y += 8;
+      }
+
+      // ─── Natal Degree Conduits ───────────────────────────────
+      if (a.natalDegreeConduits.length > 0) {
+        sectionTitle('Natal Degree Connections (Lynn Bell)');
+        for (const c of a.natalDegreeConduits) {
+          bodyText(`SR ${PLANET_SYMBOLS[c.srPlanet] || ''} ${c.srPlanet} in ${c.srSign} ${c.degree} \u2194 Natal ${PLANET_SYMBOLS[c.natalPlanet] || ''} ${c.natalPlanet} (${c.orb.toFixed(1)}\u00B0 orb)`, textMuted, 8);
+        }
+        y += 8;
+      }
+
+      // ─── Moon Timing ─────────────────────────────────────────
+      if (a.moonTimingEvents.length > 0) {
+        sectionTitle('Moon Timing \u2014 When Things Happen');
+        bodyText('The SR Moon advances ~1\u00B0 per month. When it perfects an aspect to another planet, that month marks a turning point.', textDim, 7);
+        y += 6;
+        for (const evt of a.moonTimingEvents.slice(0, 12)) {
+          checkPage(14);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(8);
+          doc.setTextColor(...accent);
+          doc.text(evt.approximateMonth, margin, y);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(...textMain);
+          doc.text(`Moon ${evt.aspectType} ${PLANET_SYMBOLS[evt.targetPlanet] || ''} ${evt.targetPlanet}`, margin + 80, y);
+          doc.setTextColor(...textDim);
+          const interpLines = doc.splitTextToSize(evt.interpretation, contentW - 240);
+          doc.text(interpLines[0] || '', margin + 220, y);
+          y += 12;
+        }
+        y += 8;
+      }
+
+      // ─── Element & Modality ──────────────────────────────────
+      if (a.elementBalance) {
+        sectionTitle('Element & Modality Balance');
+        const eb = a.elementBalance;
+        boldText(`Dominant Element: ${eb.dominant} | Fire ${eb.fire} \u2022 Earth ${eb.earth} \u2022 Air ${eb.air} \u2022 Water ${eb.water}`);
+        if (eb.missing.length > 0) bodyText(`Missing: ${eb.missing.join(', ')}`, textDim, 8);
+        bodyText(eb.interpretation, textMuted, 8);
+        y += 4;
+        const mb = a.modalityBalance;
+        boldText(`Dominant Modality: ${mb.dominant} | Cardinal ${mb.cardinal} \u2022 Fixed ${mb.fixed} \u2022 Mutable ${mb.mutable}`);
+        bodyText(mb.interpretation, textMuted, 8);
+        y += 8;
+      }
+
+      // ─── Saturn & Nodes ──────────────────────────────────────
+      if (a.saturnFocus) {
+        sectionTitle('Saturn Focus');
+        boldText(`${SIGN_SYMBOLS[a.saturnFocus.sign] || ''} ${a.saturnFocus.sign} \u2022 SR House ${a.saturnFocus.house || '\u2014'} \u2022 Natal House ${a.saturnFocus.natalHouse || '\u2014'}${a.saturnFocus.isRetrograde ? ' (Rx)' : ''}`);
+        bodyText(a.saturnFocus.interpretation, textMuted, 8);
+        y += 4;
+      }
+      if (a.nodesFocus) {
+        sectionTitle('North Node Focus');
+        boldText(`${SIGN_SYMBOLS[a.nodesFocus.sign] || ''} ${a.nodesFocus.sign} \u2022 SR House ${a.nodesFocus.house || '\u2014'}`);
+        bodyText(a.nodesFocus.interpretation, textMuted, 8);
+        y += 4;
+      }
+
+      // ─── Year-Ahead Narrative ────────────────────────────────
+      if (narrative) {
+        sectionTitle('Year-Ahead Reading');
+        // Parse markdown simply
+        const lines = narrative.split('\n');
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed) { y += 6; continue; }
+          if (trimmed.startsWith('## ')) {
+            y += 8;
+            boldText(trimmed.replace('## ', '').toUpperCase(), accent, 9);
+            y += 2;
+          } else if (trimmed.startsWith('**') && trimmed.endsWith('**')) {
+            boldText(trimmed.replace(/\*\*/g, ''), textMain, 9);
+          } else {
+            const clean = trimmed.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1');
+            bodyText(clean, textMuted, 8, 12);
+          }
+        }
+      }
+
+      // ─── Footer on last page ─────────────────────────────────
+      y += 20;
+      checkPage(30);
+      doc.setDrawColor(...borderC);
+      doc.line(margin, y, pw - margin, y);
+      y += 14;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7);
+      doc.setTextColor(...textDim);
+      doc.text(`Generated ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`, pw / 2, y, { align: 'center' });
+
+      // Page numbers
+      const totalPages = doc.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(7);
+        doc.setTextColor(...textDim);
+        doc.text(`Page ${i} of ${totalPages}`, pw / 2, ph - 20, { align: 'center' });
+      }
+
+      doc.save(`Solar-Return-${year}-${name.replace(/\s+/g, '-')}.pdf`);
     } catch (err) {
       console.error('PDF export error:', err);
     } finally {
@@ -75,246 +380,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       className="text-[11px] uppercase tracking-widest px-3 py-1.5 border border-border rounded-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1 disabled:opacity-50"
     >
       {generating ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
-      {generating ? 'Generating...' : 'Download Report'}
+      {generating ? 'Generating PDF...' : 'Download PDF Report'}
     </button>
   );
 };
-
-function buildReportHTML(
-  a: SolarReturnAnalysis,
-  name: string,
-  year: number,
-  narrative: string,
-  srChart: SolarReturnChart,
-  natalChart: NatalChart,
-): string {
-  const accent = '#c4956a';
-  const bg = '#0a0a0f';
-  const cardBg = '#12121a';
-  const borderColor = '#2a2a35';
-  const textMain = '#e8e0d4';
-  const textMuted = '#9a9490';
-  const textDim = '#6a6560';
-
-  const sectionTitle = (title: string) => `
-    <div style="margin-top:40px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid ${borderColor};">
-      <h2 style="font-size:13px;letter-spacing:3px;text-transform:uppercase;color:${accent};margin:0;font-weight:500;">${title}</h2>
-    </div>`;
-
-  const card = (content: string) => `
-    <div style="background:${cardBg};border:1px solid ${borderColor};border-radius:4px;padding:20px;margin-bottom:12px;">
-      ${content}
-    </div>`;
-
-  const planetRow = (planet: string, sign: string, degree: string, house: string | number | null) => `
-    <tr style="border-bottom:1px solid ${borderColor};">
-      <td style="padding:6px 12px;font-size:13px;color:${textMain};">${PLANET_SYMBOLS[planet] || ''} ${planet}</td>
-      <td style="padding:6px 12px;font-size:13px;color:${textMuted};">${SIGN_SYMBOLS[sign] || ''} ${sign}</td>
-      <td style="padding:6px 12px;font-size:13px;color:${textMuted};">${degree}</td>
-      <td style="padding:6px 12px;font-size:13px;color:${textMuted};">${house ? `House ${house}` : '—'}</td>
-    </tr>`;
-
-  // Build planet positions table
-  const planetKeys = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','Chiron','NorthNode'];
-  let planetRows = '';
-  for (const p of planetKeys) {
-    const pos = srChart.planets[p as keyof typeof srChart.planets];
-    if (pos?.sign) {
-      const deg = `${pos.degree}°${pos.minutes ? pos.minutes + "'" : ''}`;
-      const house = a.planetSRHouses[p] ?? null;
-      planetRows += planetRow(p, pos.sign, deg, house);
-    }
-  }
-
-  // Build house overlays table
-  let overlayRows = '';
-  if (a.houseOverlays?.length > 0) {
-    for (const o of a.houseOverlays) {
-      overlayRows += `
-        <tr style="border-bottom:1px solid ${borderColor};">
-          <td style="padding:6px 12px;font-size:12px;color:${textMain};">${PLANET_SYMBOLS[o.planet] || ''} ${o.planet}</td>
-          <td style="padding:6px 12px;font-size:12px;color:${textMuted};">${o.srSign} ${o.srDegree}</td>
-          <td style="padding:6px 12px;font-size:12px;color:${textMuted};">SR House ${o.srHouse || '—'}</td>
-          <td style="padding:6px 12px;font-size:12px;color:${textMuted};">Natal House ${o.natalHouse || '—'}</td>
-          <td style="padding:6px 8px;font-size:11px;color:${textDim};">${o.houseTheme || ''}</td>
-        </tr>`;
-    }
-  }
-
-  // Moon timing rows
-  let moonTimingRows = '';
-  if (a.moonTimingEvents?.length > 0) {
-    for (const evt of a.moonTimingEvents.slice(0, 12)) {
-      moonTimingRows += `
-        <tr style="border-bottom:1px solid ${borderColor};">
-          <td style="padding:6px 12px;font-size:12px;color:${accent};font-weight:600;">${evt.approximateMonth}</td>
-          <td style="padding:6px 12px;font-size:12px;color:${textMain};">☽ ${evt.aspectType} ${PLANET_SYMBOLS[evt.targetPlanet] || ''} ${evt.targetPlanet}</td>
-          <td style="padding:6px 12px;font-size:11px;color:${textMuted};">${evt.interpretation}</td>
-        </tr>`;
-    }
-  }
-
-  // Stellium block
-  let stelliumBlock = '';
-  if (a.stelliums?.length > 0) {
-    stelliumBlock = a.stelliums.map(s => {
-      const planets = s.planets.map(p => `${PLANET_SYMBOLS[p] || ''} ${p}`).join(', ');
-      const extras = s.extras?.length > 0 ? ` (also present: ${s.extras.map(e => `${PLANET_SYMBOLS[e] || ''} ${e}`).join(', ')})` : '';
-      return `<p style="font-size:13px;color:${textMain};margin:4px 0;"><strong>${s.planets.length}-Planet Stellium in ${s.location}</strong>: ${planets}${extras}</p>`;
-    }).join('');
-  }
-
-  // SR-to-Natal aspects
-  let aspectRows = '';
-  if (a.srToNatalAspects?.length > 0) {
-    for (const asp of a.srToNatalAspects.slice(0, 12)) {
-      aspectRows += `
-        <tr style="border-bottom:1px solid ${borderColor};">
-          <td style="padding:4px 12px;font-size:12px;color:${textMain};">SR ${PLANET_SYMBOLS[asp.planet1] || ''} ${asp.planet1}</td>
-          <td style="padding:4px 12px;font-size:12px;color:${accent};">${asp.type}</td>
-          <td style="padding:4px 12px;font-size:12px;color:${textMain};">Natal ${PLANET_SYMBOLS[asp.planet2] || ''} ${asp.planet2}</td>
-          <td style="padding:4px 12px;font-size:12px;color:${textDim};">${asp.orb}° orb</td>
-        </tr>`;
-    }
-  }
-
-  // Natal degree conduits
-  let conduitRows = '';
-  if (a.natalDegreeConduits?.length > 0) {
-    for (const c of a.natalDegreeConduits) {
-      conduitRows += `<p style="font-size:12px;color:${textMuted};margin:4px 0;">SR ${PLANET_SYMBOLS[c.srPlanet] || ''} ${c.srPlanet} in ${c.srSign} ${c.degree} ↔ Natal ${PLANET_SYMBOLS[c.natalPlanet] || ''} ${c.natalPlanet} (${c.orb.toFixed(1)}° orb)</p>`;
-    }
-  }
-
-  // Convert markdown narrative to simple HTML
-  const narrativeHTML = narrative
-    .replace(/## (.*)/g, `<h3 style="font-size:14px;letter-spacing:2px;text-transform:uppercase;color:${accent};margin-top:24px;margin-bottom:8px;font-weight:500;">$1</h3>`)
-    .replace(/\*\*(.*?)\*\*/g, `<strong style="color:${textMain};">$1</strong>`)
-    .replace(/\*(.*?)\*/g, `<em>$1</em>`)
-    .replace(/\n\n/g, '</p><p style="font-size:13px;line-height:1.8;color:' + textMuted + ';margin:8px 0;">')
-    .replace(/\n/g, '<br/>');
-
-  return `
-    <!-- Header -->
-    <div style="text-align:center;padding-bottom:30px;border-bottom:2px solid ${accent};">
-      <h1 style="font-size:28px;letter-spacing:6px;text-transform:uppercase;color:${textMain};margin:0 0 8px 0;font-weight:300;">Solar Return ${year}</h1>
-      <p style="font-size:16px;color:${accent};letter-spacing:2px;margin:0 0 4px 0;">${name}</p>
-      <p style="font-size:11px;color:${textDim};margin:0;">Born ${natalChart.birthDate || '—'} • ${natalChart.birthLocation || '—'}</p>
-      ${srChart.solarReturnLocation ? `<p style="font-size:11px;color:${textDim};margin:4px 0 0 0;">SR Location: ${srChart.solarReturnLocation}</p>` : ''}
-    </div>
-
-    <!-- Key Indicators -->
-    ${sectionTitle('Year at a Glance')}
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      ${card(`
-        <p style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${textDim};margin:0 0 4px 0;">SR Ascendant</p>
-        <p style="font-size:18px;color:${textMain};margin:0;">${SIGN_SYMBOLS[a.yearlyTheme?.ascendantSign || ''] || ''} ${a.yearlyTheme?.ascendantSign || '—'} Rising</p>
-        <p style="font-size:11px;color:${textMuted};margin:4px 0 0 0;">Ruler: ${PLANET_SYMBOLS[a.yearlyTheme?.ascendantRuler || ''] || ''} ${a.yearlyTheme?.ascendantRuler || ''} in ${a.yearlyTheme?.ascendantRulerSign || ''}</p>
-      `)}
-      ${card(`
-        <p style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${textDim};margin:0 0 4px 0;">SR Ruler in Natal Chart</p>
-        ${a.srAscRulerInNatal ? `
-          <p style="font-size:18px;color:${textMain};margin:0;">${PLANET_SYMBOLS[a.srAscRulerInNatal.rulerPlanet] || ''} in Natal House ${a.srAscRulerInNatal.rulerNatalHouse || '—'}</p>
-          <p style="font-size:11px;color:${textMuted};margin:4px 0 0 0;">${a.srAscRulerInNatal.rulerNatalHouseTheme || ''}</p>
-        ` : '<p style="font-size:14px;color:' + textMuted + ';margin:0;">—</p>'}
-      `)}
-      ${card(`
-        <p style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${textDim};margin:0 0 4px 0;">Profection Year</p>
-        ${a.profectionYear ? `
-          <p style="font-size:18px;color:${textMain};margin:0;">House ${a.profectionYear.houseNumber} (Age ${a.profectionYear.age})</p>
-          <p style="font-size:11px;color:${textMuted};margin:4px 0 0 0;">Time Lord: ${PLANET_SYMBOLS[a.profectionYear.timeLord] || ''} ${a.profectionYear.timeLord}</p>
-        ` : '<p style="font-size:14px;color:' + textMuted + ';margin:0;">—</p>'}
-      `)}
-      ${card(`
-        <p style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${textDim};margin:0 0 4px 0;">Moon</p>
-        <p style="font-size:18px;color:${textMain};margin:0;">${SIGN_SYMBOLS[a.moonSign] || ''} ${a.moonSign}</p>
-        <p style="font-size:11px;color:${textMuted};margin:4px 0 0 0;">SR House ${a.moonHouse?.house || '—'} • ${a.moonPhase?.phase || ''}</p>
-      `)}
-    </div>
-
-    <!-- SR Planet Positions -->
-    ${sectionTitle('Solar Return Planet Positions')}
-    <table style="width:100%;border-collapse:collapse;background:${cardBg};border:1px solid ${borderColor};border-radius:4px;">
-      <thead>
-        <tr style="border-bottom:2px solid ${borderColor};">
-          <th style="padding:8px 12px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${textDim};text-align:left;">Planet</th>
-          <th style="padding:8px 12px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${textDim};text-align:left;">Sign</th>
-          <th style="padding:8px 12px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${textDim};text-align:left;">Degree</th>
-          <th style="padding:8px 12px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${textDim};text-align:left;">House</th>
-        </tr>
-      </thead>
-      <tbody>${planetRows}</tbody>
-    </table>
-
-    ${stelliumBlock ? sectionTitle('Stelliums') + card(stelliumBlock) : ''}
-
-    <!-- Where This Year Plays Out -->
-    ${a.srAscRulerInNatal ? sectionTitle('Where This Year Plays Out') + card(`
-      <p style="font-size:14px;color:${textMain};margin:0 0 8px 0;">
-        ${SIGN_SYMBOLS[a.srAscRulerInNatal.srAscSign] || ''} ${a.srAscRulerInNatal.srAscSign} Rising → ${PLANET_SYMBOLS[a.srAscRulerInNatal.rulerPlanet] || ''} ${a.srAscRulerInNatal.rulerPlanet} rules the year
-      </p>
-      <p style="font-size:12px;color:${textMuted};margin:0 0 8px 0;">
-        Your natal ${a.srAscRulerInNatal.rulerPlanet} is in ${SIGN_SYMBOLS[a.srAscRulerInNatal.rulerNatalSign] || ''} ${a.srAscRulerInNatal.rulerNatalSign} in your natal ${ordinal(a.srAscRulerInNatal.rulerNatalHouse || 0)} house
-      </p>
-      <p style="font-size:13px;color:${textMuted};line-height:1.7;">${a.srAscRulerInNatal.interpretation}</p>
-    `) : ''}
-
-    <!-- House Overlays -->
-    ${overlayRows ? sectionTitle('House Overlays — SR Planets in Natal Houses') + `
-    <table style="width:100%;border-collapse:collapse;background:${cardBg};border:1px solid ${borderColor};border-radius:4px;">
-      <thead>
-        <tr style="border-bottom:2px solid ${borderColor};">
-          <th style="padding:6px 12px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:${textDim};text-align:left;">Planet</th>
-          <th style="padding:6px 12px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:${textDim};text-align:left;">Position</th>
-          <th style="padding:6px 12px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:${textDim};text-align:left;">SR House</th>
-          <th style="padding:6px 12px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:${textDim};text-align:left;">Natal House</th>
-          <th style="padding:6px 8px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:${textDim};text-align:left;">Theme</th>
-        </tr>
-      </thead>
-      <tbody>${overlayRows}</tbody>
-    </table>` : ''}
-
-    <!-- Natal Degree Conduits -->
-    ${conduitRows ? sectionTitle('Natal Degree Connections') + card(conduitRows) : ''}
-
-    <!-- SR-to-Natal Aspects -->
-    ${aspectRows ? sectionTitle('Key SR-to-Natal Aspects') + `
-    <table style="width:100%;border-collapse:collapse;background:${cardBg};border:1px solid ${borderColor};border-radius:4px;">
-      <thead>
-        <tr style="border-bottom:2px solid ${borderColor};">
-          <th style="padding:6px 12px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:${textDim};text-align:left;">SR Planet</th>
-          <th style="padding:6px 12px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:${textDim};text-align:left;">Aspect</th>
-          <th style="padding:6px 12px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:${textDim};text-align:left;">Natal Planet</th>
-          <th style="padding:6px 12px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:${textDim};text-align:left;">Orb</th>
-        </tr>
-      </thead>
-      <tbody>${aspectRows}</tbody>
-    </table>` : ''}
-
-    <!-- Moon Timing -->
-    ${moonTimingRows ? sectionTitle('Moon Timing — When Things Happen') + `
-    <p style="font-size:11px;color:${textDim};margin-bottom:12px;">The SR Moon advances ~1° per month. When it perfects an aspect to another planet, that month marks a turning point.</p>
-    <table style="width:100%;border-collapse:collapse;background:${cardBg};border:1px solid ${borderColor};border-radius:4px;">
-      <thead>
-        <tr style="border-bottom:2px solid ${borderColor};">
-          <th style="padding:6px 12px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:${textDim};text-align:left;">Month</th>
-          <th style="padding:6px 12px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:${textDim};text-align:left;">Aspect</th>
-          <th style="padding:6px 12px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:${textDim};text-align:left;">Meaning</th>
-        </tr>
-      </thead>
-      <tbody>${moonTimingRows}</tbody>
-    </table>` : ''}
-
-    <!-- Year-Ahead Narrative -->
-    ${narrative ? sectionTitle('Year-Ahead Reading') + card(`
-      <div style="font-size:13px;line-height:1.8;color:${textMuted};">
-        <p style="font-size:13px;line-height:1.8;color:${textMuted};margin:8px 0;">${narrativeHTML}</p>
-      </div>
-    `) : ''}
-
-    <!-- Footer -->
-    <div style="margin-top:40px;padding-top:20px;border-top:1px solid ${borderColor};text-align:center;">
-      <p style="font-size:10px;color:${textDim};letter-spacing:2px;text-transform:uppercase;margin:0;">Generated ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
-    </div>
-  `;
-}

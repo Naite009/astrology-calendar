@@ -1324,23 +1324,60 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         </div>
       )}
 
-      {/* SR planet positions summary — with house numbers */}
+      {/* SR vs Natal Biwheel Comparison Table */}
       <div className="border border-border rounded-sm p-4 bg-card">
-        <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">SR Chart Positions</h4>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-          {ALL_DISPLAY_PLANETS.map(planet => {
-            const pos = srChart.planets[planet as keyof typeof srChart.planets];
-            if (!pos) return null;
-            const srH = analysis.planetSRHouses?.[planet];
-            return (
-              <div key={planet} className="flex items-center gap-2 text-sm">
-                <span className="text-muted-foreground w-6 text-center">{PLANET_SYMBOLS[planet] || planet.slice(0, 2)}</span>
-                <span className="text-foreground">{SIGN_SYMBOLS[pos.sign]} {pos.degree}°{pos.minutes}'</span>
-                {pos.isRetrograde && <span className="text-[10px] text-destructive">Rx</span>}
-                {srH != null && <span className="text-[10px] text-muted-foreground">· H{srH}</span>}
-              </div>
-            );
-          })}
+        <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">SR ↔ Natal Comparison</h4>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs border-collapse">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left py-2 px-2 text-[10px] uppercase tracking-widest text-muted-foreground">Planet</th>
+                <th className="text-left py-2 px-2 text-[10px] uppercase tracking-widest text-primary/80">SR Position</th>
+                <th className="text-left py-2 px-2 text-[10px] uppercase tracking-widest text-primary/80">SR House</th>
+                <th className="text-left py-2 px-2 text-[10px] uppercase tracking-widest text-accent-foreground/60">Natal Position</th>
+                <th className="text-left py-2 px-2 text-[10px] uppercase tracking-widest text-accent-foreground/60">Natal House</th>
+                <th className="text-left py-2 px-2 text-[10px] uppercase tracking-widest text-muted-foreground">Movement</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ALL_DISPLAY_PLANETS.map(planet => {
+                const srPos = srChart.planets[planet as keyof typeof srChart.planets];
+                const natPos = natalChart.planets[planet as keyof typeof natalChart.planets];
+                if (!srPos && !natPos) return null;
+                const srH = analysis.planetSRHouses?.[planet];
+                // Find natal house
+                const natH = (() => {
+                  if (!natPos?.sign || !natalChart.houseCusps) return null;
+                  const overlay = analysis.houseOverlays.find(o => o.planet === planet);
+                  return overlay?.natalHouse ?? null;
+                })();
+                const sameSign = srPos?.sign && natPos?.sign && srPos.sign === natPos.sign;
+                return (
+                  <tr key={planet} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                    <td className="py-1.5 px-2 font-medium text-foreground">
+                      {PLANET_SYMBOLS[planet] || planet.slice(0,2)} {planet}
+                      {srPos?.isRetrograde && <span className="text-destructive ml-1 text-[9px]">Rx</span>}
+                    </td>
+                    <td className="py-1.5 px-2 text-foreground">
+                      {srPos ? `${SIGN_SYMBOLS[srPos.sign] || ''} ${srPos.sign} ${srPos.degree}°${srPos.minutes || 0}'` : '—'}
+                    </td>
+                    <td className="py-1.5 px-2 text-muted-foreground">{srH != null ? `H${srH}` : '—'}</td>
+                    <td className="py-1.5 px-2 text-foreground">
+                      {natPos ? `${SIGN_SYMBOLS[natPos.sign] || ''} ${natPos.sign} ${natPos.degree}°${natPos.minutes || 0}'` : '—'}
+                    </td>
+                    <td className="py-1.5 px-2 text-muted-foreground">{natH != null ? `H${natH}` : '—'}</td>
+                    <td className="py-1.5 px-2">
+                      {sameSign ? (
+                        <span className="text-primary text-[9px]">Same sign</span>
+                      ) : srPos?.sign && natPos?.sign ? (
+                        <span className="text-muted-foreground text-[9px]">{natPos.sign} → {srPos.sign}</span>
+                      ) : null}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
 
