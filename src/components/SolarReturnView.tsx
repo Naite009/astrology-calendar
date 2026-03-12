@@ -4,7 +4,7 @@ import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChar
 import { SolarReturnChart, useSolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { analyzeSolarReturn, SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { srSunInHouse, srMoonInHouse, srMoonInSign, srOverlayNarrative, srPlanetInHouse, rulerConditionNarrative, angularPlanetMeaning } from '@/lib/solarReturnInterpretations';
-import { srMoonInHouseDeep, srMoonPhaseInterp, srMoonAngularity } from '@/lib/solarReturnMoonData';
+import { srMoonInHouseDeep, srMoonPhaseInterp, srMoonAngularity, srMoonAspects } from '@/lib/solarReturnMoonData';
 import { vertexInSign, vertexInHouse, vertexAspectMeanings } from '@/lib/solarReturnVertex';
 import { srJupiterInHouseDeep, srMercuryInHouseDeep, srVenusInHouseDeep, srMarsInHouseDeep, type SRPlanetHouseDeep } from '@/lib/solarReturnPlanetInHouseDeep';
 
@@ -1062,6 +1062,83 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
             </p>
           </div>
         )}
+
+        {/* ── SR Moon Aspects to SR Planets ── */}
+        {(() => {
+          const moonSRAspects = analysis.srInternalAspects.filter(
+            a => a.planet1 === 'Moon' || a.planet2 === 'Moon'
+          );
+          if (moonSRAspects.length === 0) return null;
+          return (
+            <div className="border-t border-border pt-4 space-y-3">
+              <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <Moon size={14} className="text-primary" /> SR Moon Aspects to SR Planets
+              </h4>
+              <p className="text-[10px] text-muted-foreground italic">
+                These aspects shape your emotional experience all year — they describe how your feelings interact with other planetary forces within the Solar Return chart.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {moonSRAspects.slice(0, 10).map((asp, i) => {
+                  const otherPlanet = asp.planet1 === 'Moon' ? asp.planet2 : asp.planet1;
+                  const isHard = ['Square', 'Opposition', 'Quincunx'].includes(asp.type);
+                  const moonAspData = srMoonAspects[otherPlanet];
+                  const interp = moonAspData ? (isHard ? moonAspData.hard : moonAspData.soft) : null;
+                  return (
+                    <div key={i} className={`border rounded-sm p-3 space-y-2 ${isHard ? 'border-destructive/20 bg-destructive/5' : 'border-green-500/20 bg-green-500/5'}`}>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-medium text-foreground">
+                          ☽ {asp.type} {PLANET_SYMBOLS[otherPlanet]} {otherPlanet}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground ml-auto">orb {asp.orb}°</span>
+                        <span className={`text-[10px] uppercase tracking-widest px-1.5 py-0.5 rounded-sm ${isHard ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600'}`}>
+                          {isHard ? 'Hard' : 'Soft'}
+                        </span>
+                      </div>
+                      {interp && <p className="text-xs text-muted-foreground leading-relaxed">{interp}</p>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* ── SR Moon Aspects to Natal Planets ── */}
+        {(() => {
+          const moonNatalAspects = analysis.srToNatalAspects.filter(a => a.planet1 === 'Moon');
+          if (moonNatalAspects.length === 0) return null;
+          return (
+            <div className="border-t border-border pt-4 space-y-3">
+              <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <Moon size={14} className="text-primary" /> SR Moon Aspects to Your Natal Planets
+              </h4>
+              <p className="text-[10px] text-muted-foreground italic">
+                These show how this year's emotional energy activates your birth chart — which natal planets are being "touched" by the SR Moon's emotional force.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {moonNatalAspects.slice(0, 10).map((asp, i) => {
+                  const isHard = ['Square', 'Opposition', 'Quincunx'].includes(asp.type);
+                  const moonAspData = srMoonAspects[asp.planet2];
+                  const interp = moonAspData ? (isHard ? moonAspData.hard : moonAspData.soft) : null;
+                  return (
+                    <div key={i} className={`border rounded-sm p-3 space-y-2 ${isHard ? 'border-destructive/20 bg-destructive/5' : 'border-green-500/20 bg-green-500/5'}`}>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-medium text-foreground">
+                          SR ☽ {asp.type} Natal {PLANET_SYMBOLS[asp.planet2]} {asp.planet2}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground ml-auto">orb {asp.orb}°</span>
+                        <span className={`text-[10px] uppercase tracking-widest px-1.5 py-0.5 rounded-sm ${isHard ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600'}`}>
+                          {isHard ? 'Hard' : 'Soft'}
+                        </span>
+                      </div>
+                      {interp && <p className="text-xs text-muted-foreground leading-relaxed">{interp}</p>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Angular Planets */}

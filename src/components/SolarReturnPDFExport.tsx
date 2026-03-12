@@ -2,6 +2,8 @@ import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { Download, Loader2 } from 'lucide-react';
+import { vertexInSign, vertexInHouse } from '@/lib/solarReturnVertex';
+import { srJupiterInHouseDeep, srMercuryInHouseDeep, srVenusInHouseDeep, srMarsInHouseDeep } from '@/lib/solarReturnPlanetInHouseDeep';
 import { useState } from 'react';
 
 // Plain-text abbreviations safe for jsPDF default fonts (no Unicode glyphs)
@@ -367,6 +369,94 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         boldLine(`${a.retrogrades.count} Retrograde: ${retList}`);
         bodyText(a.retrogrades.interpretation, mutedRGB, 8);
         y += 4;
+      }
+
+      // ─── VERTEX ────────────────────────────────────────────
+      if (a.vertex) {
+        sectionTitle('Vertex -- Fated Encounters');
+        boldLine(`Vertex: ${a.vertex.sign} ${a.vertex.degree}deg ${a.vertex.minutes}' ${a.vertex.house ? `(SR House ${a.vertex.house})` : ''}`);
+        const vSign = vertexInSign[a.vertex.sign];
+        if (vSign) {
+          bodyText(vSign.fatedTheme, mutedRGB, 8);
+          y += 4;
+          boldLine('Who May Appear:', mainRGB, 8);
+          bodyText(vSign.encounters, mutedRGB, 8);
+          y += 4;
+          boldLine('The Lesson:', mainRGB, 8);
+          bodyText(vSign.lesson, mutedRGB, 8);
+          y += 4;
+        }
+        if (a.vertex.house && vertexInHouse[a.vertex.house]) {
+          const vH = vertexInHouse[a.vertex.house];
+          boldLine(`${vH.title} (House ${a.vertex.house})`, mainRGB, 8);
+          bodyText(vH.description, mutedRGB, 8);
+          bodyText(`Fated Areas: ${vH.fatedArea}`, dimRGB, 7);
+          y += 4;
+        }
+        if (a.vertex.aspects.length > 0) {
+          boldLine('Planets Aspecting Vertex:', mainRGB, 8);
+          for (const asp of a.vertex.aspects.slice(0, 6)) {
+            bodyText(`${P[asp.planet.replace('Natal ', '')] || asp.planet} ${asp.aspectType} Vertex (orb ${asp.orb} deg)`, mutedRGB, 8);
+          }
+          y += 4;
+        }
+      }
+
+      // ─── PLANET SPOTLIGHT ────────────────────────────────────
+      const deepData: Record<string, Record<number, any>> = {
+        Jupiter: srJupiterInHouseDeep,
+        Mercury: srMercuryInHouseDeep,
+        Venus: srVenusInHouseDeep,
+        Mars: srMarsInHouseDeep,
+      };
+      const spotlightPlanets = ['Jupiter', 'Mercury', 'Venus', 'Mars'].filter(p => {
+        const h = a.planetSRHouses?.[p];
+        return h !== null && h !== undefined && deepData[p]?.[h];
+      });
+      if (spotlightPlanets.length > 0) {
+        sectionTitle('Planet Spotlight -- Expert Analysis');
+        for (const planet of spotlightPlanets) {
+          const h = a.planetSRHouses[planet]!;
+          const data = deepData[planet][h];
+          if (!data) continue;
+          checkPage(60);
+          boldLine(`${P[planet] || planet} in SR House ${h} -- ${data.title}`);
+          bodyText(data.overview, mutedRGB, 8);
+          y += 2;
+          boldLine('Practical:', mainRGB, 8);
+          bodyText(data.practical, mutedRGB, 8);
+          y += 2;
+          boldLine('Caution:', mainRGB, 8);
+          bodyText(data.caution, mutedRGB, 8);
+          if (data.source) bodyText(`Source: ${data.source}`, dimRGB, 7);
+          y += 6;
+        }
+      }
+
+      // ─── SR MOON ASPECTS ─────────────────────────────────────
+      const moonSRAspects = a.srInternalAspects.filter(
+        asp => asp.planet1 === 'Moon' || asp.planet2 === 'Moon'
+      );
+      const moonNatalAspects = a.srToNatalAspects.filter(asp => asp.planet1 === 'Moon');
+      if (moonSRAspects.length > 0 || moonNatalAspects.length > 0) {
+        sectionTitle('SR Moon Aspects');
+        if (moonSRAspects.length > 0) {
+          boldLine('Moon Aspects to SR Planets:', mainRGB, 8);
+          for (const asp of moonSRAspects.slice(0, 8)) {
+            const other = asp.planet1 === 'Moon' ? asp.planet2 : asp.planet1;
+            const isHard = ['Square', 'Opposition', 'Quincunx'].includes(asp.type);
+            bodyText(`Moon ${asp.type} ${P[other] || other} (${asp.orb} deg) -- ${isHard ? 'Hard' : 'Soft'}`, mutedRGB, 8);
+          }
+          y += 4;
+        }
+        if (moonNatalAspects.length > 0) {
+          boldLine('SR Moon Aspects to Natal Planets:', mainRGB, 8);
+          for (const asp of moonNatalAspects.slice(0, 8)) {
+            const isHard = ['Square', 'Opposition', 'Quincunx'].includes(asp.type);
+            bodyText(`SR Moon ${asp.type} Natal ${P[asp.planet2] || asp.planet2} (${asp.orb} deg) -- ${isHard ? 'Hard' : 'Soft'}`, mutedRGB, 8);
+          }
+          y += 4;
+        }
       }
 
       // ─── YEAR-AHEAD NARRATIVE ────────────────────────────────
