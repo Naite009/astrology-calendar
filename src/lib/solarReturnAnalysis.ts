@@ -750,7 +750,7 @@ export const analyzeSolarReturn = (
   // ─── 12. Stelliums (3+ TRUE PLANETS in same sign or house) ─────────
   // Only Sun through Pluto count for stellium detection; asteroids are noted separately
   const STELLIUM_PLANETS = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'] as const;
-  const EXTRA_BODIES = ['Chiron','Juno','Ceres','Pallas','Vesta','Lilith','Eris'] as const;
+  const EXTRA_BODIES = ['Chiron','NorthNode','Juno','Ceres','Pallas','Vesta','Lilith','Eris'] as const;
   const stelliums: SRStellium[] = [];
 
   // By sign
