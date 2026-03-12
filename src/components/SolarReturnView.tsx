@@ -711,6 +711,40 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         </div>
       )}
 
+      {/* SR Ascendant Ruler in Natal Houses — the J-B Morin technique */}
+      {analysis.srAscRulerInNatal && (
+        <div className="border border-primary/20 rounded-sm p-5 bg-card">
+          <h3 className="text-sm uppercase tracking-widest font-medium text-foreground mb-3 flex items-center gap-2">
+            <Compass size={16} className="text-primary" />
+            Where This Year Plays Out in YOUR Life
+          </h3>
+          <div className="flex items-center gap-3 mb-3 flex-wrap">
+            <span className="text-2xl">{PLANET_SYMBOLS[analysis.srAscRulerInNatal.rulerPlanet] || analysis.srAscRulerInNatal.rulerPlanet}</span>
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                {analysis.srAscRulerInNatal.srAscSign} Rising → {analysis.srAscRulerInNatal.rulerPlanet} rules the year
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {PLANET_SYMBOLS[analysis.srAscRulerInNatal.rulerPlanet]} {analysis.srAscRulerInNatal.rulerPlanet} is in {SIGN_SYMBOLS[analysis.srAscRulerInNatal.rulerSRSign]} {analysis.srAscRulerInNatal.rulerSRSign}
+                {analysis.srAscRulerInNatal.rulerSRHouse && ` (SR ${analysis.srAscRulerInNatal.rulerSRHouse}${analysis.srAscRulerInNatal.rulerSRHouse === 1 ? 'st' : analysis.srAscRulerInNatal.rulerSRHouse === 2 ? 'nd' : analysis.srAscRulerInNatal.rulerSRHouse === 3 ? 'rd' : 'th'} house)`}
+                {analysis.srAscRulerInNatal.rulerNatalHouse && ` → falls in your natal ${analysis.srAscRulerInNatal.rulerNatalHouse}${analysis.srAscRulerInNatal.rulerNatalHouse === 1 ? 'st' : analysis.srAscRulerInNatal.rulerNatalHouse === 2 ? 'nd' : analysis.srAscRulerInNatal.rulerNatalHouse === 3 ? 'rd' : 'th'} house`}
+              </p>
+            </div>
+          </div>
+          {analysis.srAscRulerInNatal.rulerNatalHouse && (
+            <div className="bg-primary/5 border border-primary/10 rounded-sm p-3 mb-3">
+              <p className="text-xs font-medium text-primary uppercase tracking-widest mb-1">
+                Natal {analysis.srAscRulerInNatal.rulerNatalHouse}{analysis.srAscRulerInNatal.rulerNatalHouse === 1 ? 'st' : analysis.srAscRulerInNatal.rulerNatalHouse === 2 ? 'nd' : analysis.srAscRulerInNatal.rulerNatalHouse === 3 ? 'rd' : 'th'} House — {analysis.srAscRulerInNatal.rulerNatalHouseTheme}
+              </p>
+            </div>
+          )}
+          <p className="text-sm text-muted-foreground leading-relaxed">{analysis.srAscRulerInNatal.interpretation}</p>
+          <p className="text-[10px] text-muted-foreground mt-3 italic">
+            Technique: The ruler of the Solar Return Ascendant shows the year's driving force. Where that planet falls in your natal chart reveals which area of YOUR life absorbs that energy. (Source: J-B Morin, Mel Priestley, Elena Lumen)
+          </p>
+        </div>
+      )}
+
       {/* Lord of the Year */}
       {analysis.lordOfTheYear && (
         <div className="border border-primary/20 rounded-sm p-5 bg-card">
