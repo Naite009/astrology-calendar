@@ -867,6 +867,57 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
               </svg>
             </div>
           </div>
+
+          {/* Profection Age Table — All ages 0-99 */}
+          <details className="mt-4">
+            <summary className="text-[10px] uppercase tracking-widest text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
+              Full Profection Table (Ages 0–99)
+            </summary>
+            <div className="mt-2 max-h-64 overflow-y-auto border border-border rounded-sm">
+              <table className="w-full text-xs">
+                <thead className="sticky top-0 bg-card">
+                  <tr className="border-b border-border">
+                    <th className="px-2 py-1.5 text-left text-muted-foreground font-medium">Age</th>
+                    <th className="px-2 py-1.5 text-left text-muted-foreground font-medium">House</th>
+                    <th className="px-2 py-1.5 text-left text-muted-foreground font-medium">Theme</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Array.from({ length: 100 }, (_, age) => {
+                    const house = (age % 12) + 1;
+                    const isCurrentAge = age === analysis.profectionYear!.age;
+                    const themes: Record<number, string> = {
+                      1: 'Self, identity, new beginnings',
+                      2: 'Finances, values, self-worth',
+                      3: 'Communication, siblings, learning',
+                      4: 'Home, family, roots',
+                      5: 'Creativity, romance, children',
+                      6: 'Health, daily routines, service',
+                      7: 'Partnerships, marriage, contracts',
+                      8: 'Transformation, shared resources',
+                      9: 'Travel, higher learning, philosophy',
+                      10: 'Career, reputation, public life',
+                      11: 'Friends, community, hopes',
+                      12: 'Spirituality, solitude, endings',
+                    };
+                    return (
+                      <tr key={age} className={`border-b border-border/50 ${isCurrentAge ? 'bg-primary/10 font-medium' : age % 2 === 0 ? 'bg-muted/20' : ''}`}>
+                        <td className={`px-2 py-1 ${isCurrentAge ? 'text-primary font-bold' : 'text-foreground'}`}>
+                          {age}{isCurrentAge ? ' ←' : ''}
+                        </td>
+                        <td className={`px-2 py-1 ${isCurrentAge ? 'text-primary' : 'text-foreground'}`}>
+                          House {house}
+                        </td>
+                        <td className={`px-2 py-1 ${isCurrentAge ? 'text-primary' : 'text-muted-foreground'}`}>
+                          {themes[house]}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </details>
         </div>
       )}
 
