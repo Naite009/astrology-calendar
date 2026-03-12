@@ -168,6 +168,11 @@ const DetailedTransitCard = ({ aspect }: { aspect: TransitAspect }) => {
         <div className="text-sm text-foreground leading-relaxed">
           {aspect.interpretation}
         </div>
+        {/* Felt-sense: how you physically/emotionally feel this transit */}
+        <div className="mt-2 px-3 py-2 rounded-sm bg-accent/50 border border-accent text-sm text-muted-foreground italic leading-relaxed">
+          <span className="not-italic">💫 </span>
+          {getTransitFeltSense(aspect.transitPlanet, aspect.natalPlanet, aspect.aspect)}
+        </div>
       </div>
       
       {/* Expanded detailed content */}
