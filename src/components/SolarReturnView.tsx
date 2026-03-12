@@ -719,29 +719,44 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
             <Compass size={16} className="text-primary" />
             Where This Year Plays Out in YOUR Life
           </h3>
-          <div className="flex items-center gap-3 mb-3 flex-wrap">
-            <span className="text-2xl">{PLANET_SYMBOLS[analysis.srAscRulerInNatal.rulerPlanet] || analysis.srAscRulerInNatal.rulerPlanet}</span>
-            <div>
-              <p className="text-sm font-medium text-foreground">
-                {analysis.srAscRulerInNatal.srAscSign} Rising → {analysis.srAscRulerInNatal.rulerPlanet} rules the year
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Your natal {PLANET_SYMBOLS[analysis.srAscRulerInNatal.rulerPlanet]} {analysis.srAscRulerInNatal.rulerPlanet} is in {analysis.srAscRulerInNatal.rulerNatalSign ? `${SIGN_SYMBOLS[analysis.srAscRulerInNatal.rulerNatalSign] || ''} ${analysis.srAscRulerInNatal.rulerNatalSign}` : '—'}
-                {analysis.srAscRulerInNatal.rulerNatalHouse && ` in your natal ${analysis.srAscRulerInNatal.rulerNatalHouse}${analysis.srAscRulerInNatal.rulerNatalHouse === 1 ? 'st' : analysis.srAscRulerInNatal.rulerNatalHouse === 2 ? 'nd' : analysis.srAscRulerInNatal.rulerNatalHouse === 3 ? 'rd' : 'th'} house`}
-                {' '}— this is where the year plays out
-              </p>
-            </div>
+
+          {/* Step-by-step logic so it's crystal clear */}
+          <div className="bg-secondary/50 rounded-sm p-3 mb-4 space-y-1.5">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-2">How this works (J-B Morin / Lynn Bell technique):</p>
+            <p className="text-xs text-foreground">
+              <span className="text-primary font-semibold">Step 1:</span> Your Solar Return Ascendant is {SIGN_SYMBOLS[analysis.srAscRulerInNatal.srAscSign] || ''} <strong>{analysis.srAscRulerInNatal.srAscSign}</strong> Rising
+            </p>
+            <p className="text-xs text-foreground">
+              <span className="text-primary font-semibold">Step 2:</span> {analysis.srAscRulerInNatal.srAscSign} is ruled by <strong>{PLANET_SYMBOLS[analysis.srAscRulerInNatal.rulerPlanet]} {analysis.srAscRulerInNatal.rulerPlanet}</strong> — this planet drives the entire year
+            </p>
+            <p className="text-xs text-foreground">
+              <span className="text-primary font-semibold">Step 3:</span> We look at where {analysis.srAscRulerInNatal.rulerPlanet} sits <em>in your birth chart</em> (not the SR chart)
+            </p>
+            <p className="text-xs text-foreground">
+              <span className="text-primary font-semibold">Result:</span> Your <strong>natal</strong> {PLANET_SYMBOLS[analysis.srAscRulerInNatal.rulerPlanet]} {analysis.srAscRulerInNatal.rulerPlanet} is in{' '}
+              {analysis.srAscRulerInNatal.rulerNatalSign ? <><strong>{SIGN_SYMBOLS[analysis.srAscRulerInNatal.rulerNatalSign] || ''} {analysis.srAscRulerInNatal.rulerNatalSign}</strong></> : '—'}{' '}
+              {analysis.srAscRulerInNatal.rulerNatalHouse && <>in your <strong>natal {analysis.srAscRulerInNatal.rulerNatalHouse}{analysis.srAscRulerInNatal.rulerNatalHouse === 1 ? 'st' : analysis.srAscRulerInNatal.rulerNatalHouse === 2 ? 'nd' : analysis.srAscRulerInNatal.rulerNatalHouse === 3 ? 'rd' : 'th'} house</strong></>}
+            </p>
           </div>
+
+          {/* The key insight */}
           {analysis.srAscRulerInNatal.rulerNatalHouse && (
             <div className="bg-primary/5 border border-primary/10 rounded-sm p-3 mb-3">
               <p className="text-xs font-medium text-primary uppercase tracking-widest mb-1">
-                Natal {analysis.srAscRulerInNatal.rulerNatalHouse}{analysis.srAscRulerInNatal.rulerNatalHouse === 1 ? 'st' : analysis.srAscRulerInNatal.rulerNatalHouse === 2 ? 'nd' : analysis.srAscRulerInNatal.rulerNatalHouse === 3 ? 'rd' : 'th'} House — {analysis.srAscRulerInNatal.rulerNatalHouseTheme}
+                The year plays out in your natal {analysis.srAscRulerInNatal.rulerNatalHouse}{analysis.srAscRulerInNatal.rulerNatalHouse === 1 ? 'st' : analysis.srAscRulerInNatal.rulerNatalHouse === 2 ? 'nd' : analysis.srAscRulerInNatal.rulerNatalHouse === 3 ? 'rd' : 'th'} House — {analysis.srAscRulerInNatal.rulerNatalHouseTheme}
               </p>
             </div>
           )}
+
+          {/* SR position noted separately for context */}
+          <p className="text-[10px] text-muted-foreground mb-3">
+            (For reference: in this year's SR chart, {analysis.srAscRulerInNatal.rulerPlanet} is currently transiting {SIGN_SYMBOLS[analysis.srAscRulerInNatal.rulerSRSign] || ''} {analysis.srAscRulerInNatal.rulerSRSign}
+            {analysis.srAscRulerInNatal.rulerSRHouse ? ` in SR House ${analysis.srAscRulerInNatal.rulerSRHouse}` : ''} — but for this technique, we use the natal position.)
+          </p>
+
           <p className="text-sm text-muted-foreground leading-relaxed">{analysis.srAscRulerInNatal.interpretation}</p>
           <p className="text-[10px] text-muted-foreground mt-3 italic">
-            Technique: The ruler of the Solar Return Ascendant shows the year's driving force. Where that planet falls in your natal chart reveals which area of YOUR life absorbs that energy. (Source: J-B Morin, Mel Priestley, Elena Lumen)
+            Source: J-B Morin, Lynn Bell ("Planetary Threads"), Mel Priestley, Elena Lumen
           </p>
         </div>
       )}
