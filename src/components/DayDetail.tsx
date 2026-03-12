@@ -309,7 +309,7 @@ const DetailedTransitCard = ({ aspect }: { aspect: TransitAspect }) => {
   );
 };
 
-export const DayDetail = ({ dayData, onClose, activeChart }: DayDetailProps) => {
+export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, savedCharts = [], selectedChartId = 'general', onChartSelect }: DayDetailProps) => {
   const { date, planets, moonPhase, mercuryRetro, personalTransits, majorIngresses, aspects, voc, exactLunarPhase } = dayData;
   const colorExplanation = getColorExplanation(aspects || [], moonPhase);
   
