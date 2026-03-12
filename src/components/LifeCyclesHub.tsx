@@ -1164,8 +1164,9 @@ export const LifeCyclesHub: React.FC<LifeCyclesHubProps> = ({ chart, currentDate
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="returns">Returns</TabsTrigger>
           <TabsTrigger value="cycles">Key Cycles</TabsTrigger>
           <TabsTrigger value="midlife">Midlife</TabsTrigger>
           <TabsTrigger value="elder">50+</TabsTrigger>
@@ -1190,6 +1191,10 @@ export const LifeCyclesHub: React.FC<LifeCyclesHubProps> = ({ chart, currentDate
               <LifeCycleTimelinePersonalized chart={chart} />
             </CardContent>
           </Card>
+        </TabsContent>
+        
+        <TabsContent value="returns" className="mt-4">
+          <PlanetaryReturnsTracker chart={chart} currentDate={currentDate} />
         </TabsContent>
         
         <TabsContent value="cycles" className="mt-4">
