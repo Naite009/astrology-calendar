@@ -4,6 +4,7 @@ import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChar
 import { SolarReturnChart, useSolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { analyzeSolarReturn, SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { srSunInHouse, srMoonInHouse, srMoonInSign, srOverlayNarrative, srPlanetInHouse, rulerConditionNarrative, angularPlanetMeaning } from '@/lib/solarReturnInterpretations';
+import { srMoonInHouseDeep, srMoonPhaseInterp, srMoonAngularity } from '@/lib/solarReturnMoonData';
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
@@ -990,7 +991,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
       </div>
 
       {/* ── Moon Deep Dive ── */}
-      <div className="border border-primary/20 rounded-sm p-5 bg-card">
+      <div className="border border-primary/20 rounded-sm p-5 bg-card space-y-4">
         <h3 className="text-sm uppercase tracking-widest font-medium text-foreground mb-3 flex items-center gap-2">
           <Moon size={16} className="text-primary" />
           ☽ The Moon — Your Emotional Landscape This Year
@@ -1002,20 +1003,54 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
             <span className="text-sm text-muted-foreground">· SR House {analysis.moonHouse.house}</span>
           )}
         </div>
+
+        {/* Moon angularity assessment */}
+        {analysis.moonHouse.house && (() => {
+          const ang = srMoonAngularity(analysis.moonHouse.house);
+          return (
+            <div className="bg-primary/5 rounded-sm p-3 mb-1">
+              <span className="text-[10px] uppercase tracking-widest font-medium text-primary">{ang.position}</span>
+              <p className="text-xs text-muted-foreground leading-relaxed mt-1">{ang.meaning}</p>
+            </div>
+          );
+        })()}
+
         {/* Moon sign interpretation */}
         {srMoonInSign[analysis.moonSign] && (
-          <div className="mb-3">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Emotional Temperament</p>
+          <div className="mb-1">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Emotional Temperament ({analysis.moonSign})</p>
             <p className="text-sm text-muted-foreground leading-relaxed">{srMoonInSign[analysis.moonSign]}</p>
           </div>
         )}
-        {/* Moon house interpretation */}
-        {analysis.moonHouse.house && srMoonInHouse[analysis.moonHouse.house] && (
-          <div className="bg-secondary/40 rounded-sm p-3 mb-3">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Where Emotions Live (SR House {analysis.moonHouse.house})</p>
-            <p className="text-sm text-muted-foreground leading-relaxed">{srMoonInHouse[analysis.moonHouse.house]}</p>
-          </div>
-        )}
+
+        {/* Moon house DEEP interpretation */}
+        {analysis.moonHouse.house && srMoonInHouseDeep[analysis.moonHouse.house] && (() => {
+          const deep = srMoonInHouseDeep[analysis.moonHouse.house];
+          return (
+            <div className="border border-border rounded-sm p-4 bg-muted/20 space-y-3">
+              <div>
+                <span className="text-[10px] uppercase tracking-widest font-medium text-primary">SR House {analysis.moonHouse.house}</span>
+                <h5 className="text-sm font-semibold text-foreground mt-0.5">{deep.title}</h5>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">{deep.overview}</p>
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-primary mb-1">Emotional Theme</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">{deep.emotionalTheme}</p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-primary mb-1">Focus</p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">{deep.focus}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-primary mb-1">Caution</p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">{deep.caution}</p>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Moon overlay */}
         {analysis.moonHouse.house && analysis.moonNatalHouse.house && analysis.moonHouse.house !== analysis.moonNatalHouse.house && (
           <div className="pt-3 border-t border-border">
@@ -1048,19 +1083,23 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         </div>
       )}
 
-      {/* Moon Phase */}
-      {analysis.moonPhase && (
-        <div className="border border-primary/20 rounded-sm p-5 bg-card">
-          <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
-            <Moon size={14} className="text-primary" /> SR Moon Phase
-          </h4>
-          <p className="text-lg font-serif text-foreground mb-1">{analysis.moonPhase.phase}</p>
-          {analysis.moonPhase.isEclipse && (
-            <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-destructive/10 text-destructive rounded-sm">Near Eclipse Axis</span>
-          )}
-          <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{analysis.moonPhase.description}</p>
-        </div>
-      )}
+      {/* Moon Phase — Enhanced */}
+      {analysis.moonPhase && (() => {
+        const phaseInterp = srMoonPhaseInterp[analysis.moonPhase.phase];
+        return (
+          <div className="border border-primary/20 rounded-sm p-5 bg-card">
+            <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
+              <Moon size={14} className="text-primary" /> SR Moon Phase
+            </h4>
+            <p className="text-lg font-serif text-foreground mb-1">{analysis.moonPhase.phase}</p>
+            {phaseInterp && <p className="text-xs font-medium text-primary mb-1">{phaseInterp.theme}</p>}
+            {analysis.moonPhase.isEclipse && (
+              <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-destructive/10 text-destructive rounded-sm">Near Eclipse Axis</span>
+            )}
+            <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{phaseInterp?.description || analysis.moonPhase.description}</p>
+          </div>
+        );
+      })()}
 
       {/* SR Ascendant in Natal House (Lynn Bell) */}
       {analysis.srAscInNatalHouse && (
