@@ -1008,6 +1008,7 @@ export const analyzeSolarReturn = (
 
   return {
     yearlyTheme,
+    srAscRulerInNatal,
     sunHouse,
     sunNatalHouse,
     moonSign,
