@@ -39,17 +39,16 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       const contentW = pw - margin * 2;
       let y = margin;
 
-      const accent: [number, number, number] = [196, 149, 106];
-      const textMain: [number, number, number] = [232, 224, 212];
-      const textMuted: [number, number, number] = [154, 148, 144];
-      const textDim: [number, number, number] = [106, 101, 96];
-      const bg: [number, number, number] = [10, 10, 15];
-      const cardBg: [number, number, number] = [18, 18, 26];
-      const borderC: [number, number, number] = [42, 42, 53];
+      const accent: [number, number, number] = [160, 100, 50];
+      const textMain: [number, number, number] = [20, 20, 25];
+      const textMuted: [number, number, number] = [80, 75, 70];
+      const textDim: [number, number, number] = [130, 125, 120];
+      const bg: [number, number, number] = [255, 255, 255];
+      const cardBg: [number, number, number] = [248, 247, 245];
+      const borderC: [number, number, number] = [210, 205, 200];
 
       const drawBg = () => {
-        doc.setFillColor(...bg);
-        doc.rect(0, 0, pw, ph, 'F');
+        // White background — no fill needed, PDF default is white
       };
 
       const checkPage = (needed: number) => {
