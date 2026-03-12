@@ -1542,9 +1542,6 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
                       <p className="text-[10px] uppercase tracking-widest text-destructive font-medium mb-1">Caution</p>
                       <p className="text-xs text-foreground leading-relaxed">{data.caution}</p>
                     </div>
-                    {data.source && (
-                      <p className="text-[10px] text-muted-foreground italic">Source: {data.source}</p>
-                    )}
                   </div>
                 </details>
               );
