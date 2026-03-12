@@ -1099,7 +1099,78 @@ export const analyzeSolarReturn = (
   natalDegreeConduits.sort((a, b) => a.orb - b.orb);
 
   // ─── Moon Timing (Lynn Bell: 1° per month) ──
+  // The SR Moon acts as the year's internal clock. It advances ~1° per month from its
+  // position at the birthday. When it perfects an aspect to another SR planet, that month
+  // marks a turning point — events connected to that planet's themes activate.
+  // This is one of the most practical timing tools in Solar Return work.
   const moonTimingEvents: SolarReturnAnalysis['moonTimingEvents'] = [];
+  const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const birthMonth = natalChart.birthDate ? parseInt(natalChart.birthDate.slice(5, 7), 10) - 1 : 0; // 0-indexed
+
+  const moonTimingInterpretations: Record<string, Record<string, string>> = {
+    Conjunction: {
+      Sun: 'A peak moment of visibility and purpose — you feel most like yourself',
+      Moon: '',
+      Mercury: 'Important news, conversations, or decisions arrive',
+      Venus: 'A beautiful moment for love, beauty, or financial opportunity',
+      Mars: 'A burst of energy, action, or confrontation — things come to a head',
+      Jupiter: 'Expansion, luck, or an opportunity opens up',
+      Saturn: 'A reality check, commitment, or milestone — something solidifies',
+      Uranus: 'A surprise, breakthrough, or sudden change of direction',
+      Neptune: 'Heightened intuition, creativity, or confusion — trust slowly',
+      Pluto: 'A powerful transformation, ending, or deep revelation',
+      Chiron: 'A healing moment or old wound surfaces for attention',
+    },
+    Opposition: {
+      Sun: 'A culmination or confrontation around identity and direction',
+      Mercury: 'A communication tension or important negotiation',
+      Venus: 'Relationship decisions or values come into question',
+      Mars: 'Conflict or the need to assert boundaries',
+      Jupiter: 'Over-extension or a crossroads of opportunity',
+      Saturn: 'External pressure or a test of commitment',
+      Uranus: 'Disruption that forces freedom or authenticity',
+      Neptune: 'Disillusionment or the need to face reality',
+      Pluto: 'Power struggles or deep emotional reckoning',
+      Chiron: 'Relationship mirrors a wound that needs healing',
+    },
+    Trine: {
+      Sun: 'A harmonious flow of confidence and creative energy',
+      Mercury: 'Easy communication, learning, or travel',
+      Venus: 'Grace in relationships, social ease, financial flow',
+      Mars: 'Productive energy, things move forward easily',
+      Jupiter: 'Natural expansion, generosity, and good fortune',
+      Saturn: 'Steady progress, earned rewards, or structural support',
+      Uranus: 'Positive change that feels exciting rather than disruptive',
+      Neptune: 'Spiritual insight, artistic inspiration, compassion',
+      Pluto: 'Empowerment, deep insight, transformation with ease',
+      Chiron: 'Healing that comes naturally through acceptance',
+    },
+    Square: {
+      Sun: 'Tension around identity — you are pushed to grow',
+      Mercury: 'Miscommunication or mental stress that demands clarity',
+      Venus: 'Relationship friction or a values conflict',
+      Mars: 'Frustration, anger, or blocked action that needs redirection',
+      Jupiter: 'Overcommitment or philosophical tension',
+      Saturn: 'Restriction, delays, or hard lessons',
+      Uranus: 'Restlessness or disruptive change that forces adaptation',
+      Neptune: 'Confusion, escapism, or boundary issues come to a head',
+      Pluto: 'Control issues, intensity, or a power crisis',
+      Chiron: 'A wound is triggered — growth through difficulty',
+    },
+    Sextile: {
+      Sun: 'An opportunity to express yourself or take initiative',
+      Mercury: 'A helpful conversation, learning opportunity, or connection',
+      Venus: 'Social opportunities, creative openings, or romantic potential',
+      Mars: 'Motivation and energy to act on an opportunity',
+      Jupiter: 'A door opens — travel, education, or growth beckons',
+      Saturn: 'A chance to build something lasting with effort',
+      Uranus: 'An innovative idea or exciting new possibility',
+      Neptune: 'Creative inspiration or spiritual opening',
+      Pluto: 'An opportunity for deep change or empowerment',
+      Chiron: 'An opening for healing through connection',
+    },
+  };
+
   if (moonPos) {
     const moonDeg = toAbsDeg(moonPos);
     if (moonDeg !== null) {
@@ -1109,6 +1180,7 @@ export const analyzeSolarReturn = (
         if (!pos) continue;
         const pDeg = toAbsDeg(pos);
         if (pDeg === null) continue;
+        const targetHouse = planetSRHouses[planet] ?? null;
         for (const asp of ASPECT_ANGLES) {
           let diff = Math.abs(moonDeg - pDeg);
           if (diff > 180) diff = 360 - diff;
@@ -1116,11 +1188,16 @@ export const analyzeSolarReturn = (
           if (gap > 0 && gap <= 12) {
             const monthsAway = Math.round(gap * 10) / 10;
             if (monthsAway <= 12) {
+              const calMonthIdx = (birthMonth + Math.round(monthsAway)) % 12;
+              const approxMonth = MONTH_NAMES[calMonthIdx];
+              const specific = moonTimingInterpretations[asp.name]?.[planet] || `${planet} themes are activated`;
               moonTimingEvents.push({
                 targetPlanet: planet,
                 aspectType: asp.name,
                 monthsFromBirthday: monthsAway,
-                interpretation: `~${Math.round(monthsAway)} month${Math.round(monthsAway) !== 1 ? 's' : ''} after your birthday, the SR Moon perfects a ${asp.name.toLowerCase()} to ${planet} — activating ${planet} themes.`,
+                approximateMonth: approxMonth,
+                targetSRHouse: targetHouse,
+                interpretation: `Around ${approxMonth} (~${Math.round(monthsAway)} months after your birthday), the SR Moon perfects a ${asp.name.toLowerCase()} to ${planet}${targetHouse ? ` (SR House ${targetHouse})` : ''}. ${specific}.`,
               });
             }
           }
