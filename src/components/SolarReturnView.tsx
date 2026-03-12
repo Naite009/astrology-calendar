@@ -1368,7 +1368,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
                     <td className="py-1.5 px-2 text-muted-foreground">{natH != null ? `H${natH}` : '—'}</td>
                     <td className="py-1.5 px-2">
                       {sameSign ? (
-                        <span className="text-green-500 text-[9px]">Same sign</span>
+                        <span className="text-primary text-[9px]">Same sign</span>
                       ) : srPos?.sign && natPos?.sign ? (
                         <span className="text-muted-foreground text-[9px]">{natPos.sign} → {srPos.sign}</span>
                       ) : null}
