@@ -62,12 +62,10 @@ export const ChartSelector = ({
     const result: NatalChart[] = [];
     const sorted = [...savedCharts].sort((a, b) => a.name.localeCompare(b.name));
     for (const chart of sorted) {
-      // Skip solar return charts that leaked into savedCharts
-      if ((chart as any).solarReturnYear) { console.log('[ChartSelector] Skipping SR:', chart.name, chart.id); continue; }
-      // Skip HD-only charts
-      if (chart.id.startsWith('hd_')) { console.log('[ChartSelector] Skipping HD:', chart.name, chart.id); continue; }
+      if ((chart as any).solarReturnYear) continue;
+      if (chart.id.startsWith('hd_')) continue;
       const key = normalizeName(chart.name);
-      if (!key || seen.has(key)) { console.log('[ChartSelector] Skipping dedup:', chart.name, key, 'seen:', [...seen]); continue; }
+      if (!key || seen.has(key)) continue;
       seen.add(key);
       result.push(chart);
     }
