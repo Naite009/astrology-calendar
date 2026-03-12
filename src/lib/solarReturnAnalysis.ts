@@ -256,11 +256,7 @@ export interface SRRepeatedTheme {
   significance: string;
 }
 
-export interface SRHemisphericEmphasis {
-  upper: number; lower: number;
-  east: number; west: number;
-  interpretation: string;
-}
+export type { SRHemisphericResult as SRHemisphericEmphasis } from './solarReturnHemispheres';
 
 export interface SRSaturnFocus {
   sign: string;
