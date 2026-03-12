@@ -89,7 +89,7 @@ export const useHumanDesignChart = () => {
 
   const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
   const cloudSyncDoneRef = useRef(false);
-  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // --- Cloud sync helpers ---
 

@@ -95,7 +95,7 @@ export const useSolarReturnChart = () => {
   const deviceId = useRef(getDeviceId());
   const userIdRef = useRef<string | null>(null);
   const cloudRestoreDone = useRef(false);
-  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Track auth
   useEffect(() => {
