@@ -1199,7 +1199,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
             <Target size={14} className="text-primary" /> Natal Degree Connections
           </h4>
           <p className="text-xs text-muted-foreground mb-3">
-            When a Solar Return planet lands on the same degree as a natal planet (within 2°), it becomes a "conduit" — reawakening that natal energy all year. These are among the most significant indicators in a Solar Return. (Source: Lynn Bell)
+            When a Solar Return planet lands on the same degree as a natal planet (within 2°), it becomes a "conduit" — reawakening that natal energy all year. These are among the most significant indicators in a Solar Return.
           </p>
           <div className="space-y-2">
             {analysis.natalDegreeConduits.map((c, i) => (
