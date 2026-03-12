@@ -182,7 +182,7 @@ function buildReportHTML(
   let conduitRows = '';
   if (a.natalDegreeConduits?.length > 0) {
     for (const c of a.natalDegreeConduits) {
-      conduitRows += `<p style="font-size:12px;color:${textMuted};margin:4px 0;">SR ${PLANET_SYMBOLS[c.srPlanet] || ''} ${c.srPlanet} at ${c.srDegree}° ${c.srSign} ↔ Natal ${PLANET_SYMBOLS[c.natalPlanet] || ''} ${c.natalPlanet} at ${c.natalDegree}° ${c.natalSign} (${c.orb.toFixed(1)}° orb)</p>`;
+      conduitRows += `<p style="font-size:12px;color:${textMuted};margin:4px 0;">SR ${PLANET_SYMBOLS[c.srPlanet] || ''} ${c.srPlanet} in ${c.srSign} ${c.degree} ↔ Natal ${PLANET_SYMBOLS[c.natalPlanet] || ''} ${c.natalPlanet} (${c.orb.toFixed(1)}° orb)</p>`;
     }
   }
 
