@@ -4,7 +4,7 @@ import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChar
 import { SolarReturnChart, useSolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { analyzeSolarReturn, SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { srSunInHouse, srMoonInHouse, srMoonInSign, srOverlayNarrative, srPlanetInHouse, rulerConditionNarrative, angularPlanetMeaning } from '@/lib/solarReturnInterpretations';
-import { srMoonInHouseDeep, srMoonPhaseInterp, srMoonAngularity } from '@/lib/solarReturnMoonData';
+import { srMoonInHouseDeep, srMoonPhaseInterp, srMoonAngularity, srMoonAspects } from '@/lib/solarReturnMoonData';
 import { vertexInSign, vertexInHouse, vertexAspectMeanings } from '@/lib/solarReturnVertex';
 import { srJupiterInHouseDeep, srMercuryInHouseDeep, srVenusInHouseDeep, srMarsInHouseDeep, type SRPlanetHouseDeep } from '@/lib/solarReturnPlanetInHouseDeep';
 
