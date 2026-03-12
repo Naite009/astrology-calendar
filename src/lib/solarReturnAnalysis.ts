@@ -316,6 +316,28 @@ export interface SolarReturnAnalysis {
   hemisphericEmphasis: SRHemisphericEmphasis | null;
   saturnFocus: SRSaturnFocus | null;
   nodesFocus: SRNodesFocus | null;
+  /** Where the SR Ascendant degree falls in the natal chart houses (Lynn Bell technique) */
+  srAscInNatalHouse: {
+    natalHouse: number;
+    natalHouseTheme: string;
+    interpretation: string;
+  } | null;
+  /** SR planets within 2° of natal planet degrees — "conduit" connections (Lynn Bell) */
+  natalDegreeConduits: {
+    srPlanet: string;
+    natalPlanet: string;
+    srSign: string;
+    degree: string;
+    orb: number;
+    interpretation: string;
+  }[];
+  /** Moon timing: key aspects the SR Moon will perfect during the year (1°/month) */
+  moonTimingEvents: {
+    targetPlanet: string;
+    aspectType: string;
+    monthsFromBirthday: number;
+    interpretation: string;
+  }[];
   // Helper: map planet name → SR house for display
   planetSRHouses: Record<string, number | null>;
 }
