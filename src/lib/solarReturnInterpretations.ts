@@ -1,6 +1,7 @@
 // ─── Deep Solar Return Interpretations ──────────────────────────────
 // Professional-grade content modeled on Astrology University, Brian Clark,
-// Lynn Bell, and Mary Fortier Shea methodologies.
+// Lynn Bell, Mary Fortier Shea, and Ray Merriman methodologies.
+// Outer planet interpretations sourced from Erin Sullivan and Liz Greene.
 
 // ─── Sun in SR House (multi-paragraph, actionable) ──────────────────
 
