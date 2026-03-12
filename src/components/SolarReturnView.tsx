@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useDocumentExcerpts } from '@/hooks/useDocumentExcerpts';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
+import { SolarReturnPDFExport } from '@/components/SolarReturnPDFExport';
 
 const ZODIAC_SIGNS = [
   'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
