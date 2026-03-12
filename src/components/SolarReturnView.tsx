@@ -7,6 +7,7 @@ import { srSunInHouse, srMoonInHouse, srMoonInSign, srOverlayNarrative, srPlanet
 import { srMoonInHouseDeep, srMoonPhaseInterp, srMoonAngularity, srMoonAspects } from '@/lib/solarReturnMoonData';
 import { vertexInSign, vertexInHouse, vertexAspectMeanings } from '@/lib/solarReturnVertex';
 import { srJupiterInHouseDeep, srMercuryInHouseDeep, srVenusInHouseDeep, srMarsInHouseDeep, type SRPlanetHouseDeep } from '@/lib/solarReturnPlanetInHouseDeep';
+import { generateSRtoNatalInterpretation, aspectTypeMeanings, planetLifeMeanings } from '@/lib/solarReturnAspectInterp';
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
@@ -1920,48 +1921,165 @@ const aspectColor = (type: string): string => {
 };
 
 const AspectsTab = ({ analysis }: { analysis: SolarReturnAnalysis }) => {
+  const [expandedAspect, setExpandedAspect] = useState<number | null>(null);
+  const [expandedInternal, setExpandedInternal] = useState<number | null>(null);
+
+  const aspectBg = (type: string) => {
+    if (['Square', 'Opposition', 'Quincunx'].includes(type)) return 'bg-red-950/20 border-red-900/30';
+    if (['Trine', 'Sextile'].includes(type)) return 'bg-emerald-950/20 border-emerald-900/30';
+    if (type === 'Conjunction') return 'bg-amber-950/20 border-amber-900/30';
+    return 'bg-card border-border';
+  };
+
   return (
     <div className="space-y-6 mt-4">
-      {/* SR to Natal */}
+      {/* SR to Natal — Expert Deep Dive */}
       <div>
-        <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">SR Planets → Natal Chart Aspects</h4>
+        <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">SR Planets → Your Natal Chart</h4>
+        <p className="text-xs text-muted-foreground mb-3">Tap any aspect to see what it means for YOU — how it feels, why it matters, and what to do about it.</p>
         {analysis.srToNatalAspects.length === 0 ? (
           <p className="text-sm text-muted-foreground">No major aspects detected.</p>
         ) : (
           <div className="space-y-2">
-            {analysis.srToNatalAspects.slice(0, 20).map((asp, i) => (
-              <div key={i} className="border border-border rounded-sm p-3 bg-card">
-                <div className="flex items-center gap-2 text-sm">
-                  <span>{PLANET_SYMBOLS[asp.planet1] || asp.planet1.slice(0, 3)} SR {asp.planet1}</span>
-                  <span className={`font-medium ${aspectColor(asp.type)}`}>{asp.type}</span>
-                  <span>{PLANET_SYMBOLS[asp.planet2] || asp.planet2.slice(0, 3)} Natal {asp.planet2}</span>
-                  <span className="text-[10px] text-muted-foreground ml-auto">orb {asp.orb}°</span>
+            {analysis.srToNatalAspects.slice(0, 20).map((asp, i) => {
+              const interp = generateSRtoNatalInterpretation(asp.planet1, asp.planet2, asp.type, asp.orb);
+              const aspInfo = aspectTypeMeanings[asp.type];
+              const isExpanded = expandedAspect === i;
+
+              return (
+                <div key={i} className={`border rounded-md overflow-hidden transition-all ${aspectBg(asp.type)}`}>
+                  {/* Header — always visible */}
+                  <button
+                    onClick={() => setExpandedAspect(isExpanded ? null : i)}
+                    className="w-full p-3 flex items-center gap-2 text-left hover:bg-white/5 transition-colors"
+                  >
+                    <span className="text-base">{PLANET_SYMBOLS[asp.planet1] || asp.planet1.slice(0, 2)}</span>
+                    <span className="text-xs text-muted-foreground">SR {asp.planet1}</span>
+                    <span className={`text-sm font-semibold ${aspectColor(asp.type)}`}>
+                      {aspInfo?.glyph || ''} {asp.type}
+                    </span>
+                    <span className="text-base">{PLANET_SYMBOLS[asp.planet2] || asp.planet2.slice(0, 2)}</span>
+                    <span className="text-xs text-muted-foreground">Natal {asp.planet2}</span>
+                    <span className="text-[10px] text-muted-foreground ml-auto mr-2">orb {asp.orb}°</span>
+                    {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />}
+                  </button>
+
+                  {/* Expanded — full expert interpretation */}
+                  {isExpanded && (
+                    <div className="px-4 pb-4 space-y-3 border-t border-border/30">
+                      {/* What this aspect type means */}
+                      {aspInfo && (
+                        <div className="mt-3 p-3 rounded bg-background/50">
+                          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">What is a {asp.type}?</p>
+                          <p className="text-xs leading-relaxed">{aspInfo.childExplain}</p>
+                        </div>
+                      )}
+
+                      {/* Planet meanings side by side */}
+                      <div className="grid grid-cols-2 gap-2">
+                        {[{ planet: asp.planet1, label: 'SR', data: planetLifeMeanings[asp.planet1] },
+                          { planet: asp.planet2, label: 'Natal', data: planetLifeMeanings[asp.planet2] }
+                        ].map(({ planet, label, data }) => data && (
+                          <div key={planet + label} className="p-2.5 rounded bg-background/50">
+                            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">{PLANET_SYMBOLS[planet] || ''} {label} {planet}</p>
+                            <p className="text-[10px] font-medium text-primary mb-1">{data.rules}</p>
+                            <p className="text-[11px] leading-relaxed text-muted-foreground">{data.inYourLife}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* How it feels */}
+                      <div className="p-3 rounded bg-background/50">
+                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">🫀 How You'll Feel This Year</p>
+                        <p className="text-xs leading-relaxed">{interp.howItFeels}</p>
+                      </div>
+
+                      {/* What it means */}
+                      <div className="p-3 rounded bg-background/50">
+                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">📖 What It Really Means</p>
+                        <p className="text-xs leading-relaxed">{interp.whatItMeans}</p>
+                      </div>
+
+                      {/* What to do */}
+                      <div className="p-3 rounded bg-primary/10 border border-primary/20">
+                        <p className="text-[10px] uppercase tracking-widest text-primary mb-1">✦ What To Do About It</p>
+                        <p className="text-xs leading-relaxed">{interp.whatToDo}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">{asp.interpretation}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
 
-      {/* SR internal */}
+      {/* SR internal — same expandable treatment */}
       <div>
-        <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">SR Internal Aspects</h4>
+        <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">SR Internal Aspects</h4>
+        <p className="text-xs text-muted-foreground mb-3">How the planets in THIS year's chart talk to each other — the internal dynamics of your solar return.</p>
         {analysis.srInternalAspects.length === 0 ? (
           <p className="text-sm text-muted-foreground">No major internal aspects.</p>
         ) : (
           <div className="space-y-2">
-            {analysis.srInternalAspects.slice(0, 15).map((asp, i) => (
-              <div key={i} className="border border-border rounded-sm p-3 bg-card">
-                <div className="flex items-center gap-2 text-sm">
-                  <span>{PLANET_SYMBOLS[asp.planet1] || asp.planet1.slice(0, 3)} {asp.planet1}</span>
-                  <span className={`font-medium ${aspectColor(asp.type)}`}>{asp.type}</span>
-                  <span>{PLANET_SYMBOLS[asp.planet2] || asp.planet2.slice(0, 3)} {asp.planet2}</span>
-                  <span className="text-[10px] text-muted-foreground ml-auto">orb {asp.orb}°</span>
+            {analysis.srInternalAspects.slice(0, 15).map((asp, i) => {
+              const interp = generateSRtoNatalInterpretation(asp.planet1, asp.planet2, asp.type, asp.orb);
+              const aspInfo = aspectTypeMeanings[asp.type];
+              const isExpanded = expandedInternal === i;
+
+              return (
+                <div key={i} className={`border rounded-md overflow-hidden transition-all ${aspectBg(asp.type)}`}>
+                  <button
+                    onClick={() => setExpandedInternal(isExpanded ? null : i)}
+                    className="w-full p-3 flex items-center gap-2 text-left hover:bg-white/5 transition-colors"
+                  >
+                    <span className="text-base">{PLANET_SYMBOLS[asp.planet1] || asp.planet1.slice(0, 2)}</span>
+                    <span className="text-xs text-muted-foreground">{asp.planet1}</span>
+                    <span className={`text-sm font-semibold ${aspectColor(asp.type)}`}>
+                      {aspInfo?.glyph || ''} {asp.type}
+                    </span>
+                    <span className="text-base">{PLANET_SYMBOLS[asp.planet2] || asp.planet2.slice(0, 2)}</span>
+                    <span className="text-xs text-muted-foreground">{asp.planet2}</span>
+                    <span className="text-[10px] text-muted-foreground ml-auto mr-2">orb {asp.orb}°</span>
+                    {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />}
+                  </button>
+
+                  {isExpanded && (
+                    <div className="px-4 pb-4 space-y-3 border-t border-border/30">
+                      {aspInfo && (
+                        <div className="mt-3 p-3 rounded bg-background/50">
+                          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">What is a {asp.type}?</p>
+                          <p className="text-xs leading-relaxed">{aspInfo.childExplain}</p>
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-2 gap-2">
+                        {[asp.planet1, asp.planet2].map(planet => {
+                          const data = planetLifeMeanings[planet];
+                          return data ? (
+                            <div key={planet} className="p-2.5 rounded bg-background/50">
+                              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">{PLANET_SYMBOLS[planet] || ''} {planet}</p>
+                              <p className="text-[10px] font-medium text-primary mb-1">{data.rules}</p>
+                              <p className="text-[11px] leading-relaxed text-muted-foreground">{data.inYourLife}</p>
+                            </div>
+                          ) : null;
+                        })}
+                      </div>
+
+                      <div className="p-3 rounded bg-background/50">
+                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">🫀 How This Plays Out</p>
+                        <p className="text-xs leading-relaxed">{interp.howItFeels}</p>
+                      </div>
+
+                      <div className="p-3 rounded bg-primary/10 border border-primary/20">
+                        <p className="text-[10px] uppercase tracking-widest text-primary mb-1">✦ What To Do About It</p>
+                        <p className="text-xs leading-relaxed">{interp.whatToDo}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">{asp.interpretation}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
