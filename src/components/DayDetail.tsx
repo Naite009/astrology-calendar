@@ -110,6 +110,10 @@ interface DayDetailProps {
   userData: UserData | null;
   onClose: () => void;
   activeChart?: NatalChart | null;
+  userNatalChart?: NatalChart | null;
+  savedCharts?: NatalChart[];
+  selectedChartId?: string;
+  onChartSelect?: (chartId: string) => void;
 }
 
 // Detailed Transit Card Component with expandable sections
