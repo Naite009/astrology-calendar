@@ -40,7 +40,7 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   if (a.vertex) sections.push({ title: 'Vertex', desc: 'Fated encounters and destined meetings' });
   sections.push({ title: 'Planet Spotlight', desc: 'Deep dive into key planets by house placement' });
   if (narrative) sections.push({ title: 'Year-Ahead Reading', desc: 'AI-generated narrative synthesis of your year' });
-  sections.push({ title: 'Best Months & Highlights', desc: 'Peak months for love, luck, and action' });
+  sections.push({ title: 'Best Months and Highlights', desc: 'Peak months for love, luck, and action' });
   if (birthdayMode) sections.push({ title: 'Birthday Affirmation Card', desc: 'A personalized affirmation to carry with you all year' });
 
   // Render in two columns for cleaner layout
