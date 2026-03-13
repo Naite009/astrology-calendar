@@ -281,8 +281,9 @@ export function generateKeyDatesSection(
       doc.text(`${tlName} ${event.aspectName} Natal ${natalName}`, margin + 16, ctx.y + 24);
       
       // Nature badge
-      const natureBadge = event.nature.toUpperCase();
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(7);
+      // Nature badge — Green Light or Pressure Point
+      const natureBadge = isHard ? '■ PRESSURE POINT' : isFlow ? '● GREEN LIGHT' : event.nature.toUpperCase();
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
       doc.setTextColor(...accentColor);
       doc.text(natureBadge, pw - margin - 16, ctx.y + 10, { align: 'right' });
       
@@ -297,24 +298,4 @@ export function generateKeyDatesSection(
       ctx.writeBody(doc, event.interpretation, colors.bodyText, 9.5, 13);
     }, accentColor);
   }
-
-  // Summary card at the bottom
-  ctx.checkPage(100);
-  ctx.drawCard(doc, () => {
-    ctx.writeBold(doc, 'How To Use These Dates', colors.gold, 11);
-    ctx.y += 2;
-    const flowDates = events.filter(e => ['flow', 'opportunity'].includes(e.nature));
-    const hardDates = events.filter(e => ['challenge', 'tension'].includes(e.nature));
-    
-    if (flowDates.length > 0) {
-      ctx.writeCardSection(doc, 'Green Light Periods',
-        `${flowDates.map(e => `${months[e.date.getMonth()]} ${e.date.getDate()}`).join(', ')} — These are when ${tlName}'s agenda supports your natal planets. Initiate, commit, and act with confidence.`,
-        colors.accentGreen);
-    }
-    if (hardDates.length > 0) {
-      ctx.writeCardSection(doc, 'Pressure Points',
-        `${hardDates.map(e => `${months[e.date.getMonth()]} ${e.date.getDate()}`).join(', ')} — These are when ${tlName} creates friction. Don't avoid these dates — they are when growth happens. Prepare, be patient, and do the real work.`,
-        colors.accentRust);
-    }
-  });
 }
