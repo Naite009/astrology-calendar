@@ -197,8 +197,7 @@ function getPersonalizedStelliumText(sign: string, house: number | null, planets
   return signPersonal[sign] || `${planetNames} are clustered in ${sign}${houseContext}, concentrating this year's energy into a focused area.`;
 }
 
-
-  const [generating, setGenerating] = useState(false);
+export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative }: Props) => {
   const [birthdayMode, setBirthdayMode] = useState(false);
   const [personalMessage, setPersonalMessage] = useState('');
   const [goldBorders, setGoldBorders] = useState(false);
