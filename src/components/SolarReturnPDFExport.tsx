@@ -561,7 +561,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             const isDom = mod.name.toLowerCase() === mb.dominant;
             doc.setFillColor(...ctx.colors.softGold);
             doc.setDrawColor(...(isDom ? ctx.colors.gold : ctx.colors.warmBorder));
-            doc.setLineWidth(isDom ? 2.5 : 0.5);
+            doc.setLineWidth(isDom ? 1.5 : 0.3);
             doc.roundedRect(x, modStartY, modW, modH, 6, 6, 'FD');
             doc.setFont('helvetica', 'bold'); doc.setFontSize(22);
             doc.setTextColor(...(isDom ? ctx.colors.gold : ctx.colors.darkText));
