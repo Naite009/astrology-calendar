@@ -202,7 +202,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // PAGE 2: TABLE OF CONTENTS
       // =============================================
       doc.addPage(); ctx.y = margin;
-      generatePDFTableOfContents(ctx, doc, analysis, narrative);
+      generatePDFTableOfContents(ctx, doc, analysis, narrative, birthdayMode);
 
       // =============================================
       // PERSONAL STRENGTHS PORTRAIT (birthday mode)
