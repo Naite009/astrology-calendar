@@ -8,7 +8,7 @@ import { generateSRtoNatalInterpretation, planetLifeMeanings } from '@/lib/solar
 import { useState } from 'react';
 import { moonSignDeep, moonShiftNarrative } from '@/lib/moonSignShiftData';
 import { generatePDFCover } from '@/lib/pdfSections/cover';
-import { generatePDFTableOfContents } from '@/lib/pdfSections/tableOfContents';
+import { generatePDFTableOfContents, addTOCLinks } from '@/lib/pdfSections/tableOfContents';
 import { generatePDFYearAtAGlance } from '@/lib/pdfSections/yearAtAGlance';
 import { drawProfectionWheel } from '@/lib/pdfSections/profectionWheel';
 import { PDFContext, createPDFContext } from '@/lib/pdfSections/pdfContext';
