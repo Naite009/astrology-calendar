@@ -843,6 +843,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         }
       }
 
+      // Add clickable links to the Table of Contents
+      addTOCLinks(doc, tocPageNumber, tocEntries, ctx);
+
       const name2 = natalChart.name || 'Chart';
       doc.save(`Solar-Return-${srChart.solarReturnYear}-${name2.replace(/\s+/g, '-')}.pdf`);
     } catch (err) {
