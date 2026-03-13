@@ -8,6 +8,26 @@ import { generateSRtoNatalInterpretation, planetLifeMeanings } from '@/lib/solar
 import { useState } from 'react';
 import { moonSignDeep, moonShiftNarrative } from '@/lib/moonSignShiftData';
 
+// Cake image imports
+import cakeAries from '@/assets/cakes/aries.png';
+import cakeTaurus from '@/assets/cakes/taurus.png';
+import cakeGemini from '@/assets/cakes/gemini.png';
+import cakeCancer from '@/assets/cakes/cancer.png';
+import cakeLeo from '@/assets/cakes/leo.png';
+import cakeVirgo from '@/assets/cakes/virgo.png';
+import cakeLibra from '@/assets/cakes/libra.png';
+import cakeScorpio from '@/assets/cakes/scorpio.png';
+import cakeSagittarius from '@/assets/cakes/sagittarius.png';
+import cakeCapricorn from '@/assets/cakes/capricorn.png';
+import cakeAquarius from '@/assets/cakes/aquarius.png';
+import cakePisces from '@/assets/cakes/pisces.png';
+
+const CAKE_IMAGES: Record<string, string> = {
+  Aries: cakeAries, Taurus: cakeTaurus, Gemini: cakeGemini, Cancer: cakeCancer,
+  Leo: cakeLeo, Virgo: cakeVirgo, Libra: cakeLibra, Scorpio: cakeScorpio,
+  Sagittarius: cakeSagittarius, Capricorn: cakeCapricorn, Aquarius: cakeAquarius, Pisces: cakePisces,
+};
+
 const P: Record<string, string> = {
   Sun: 'Sun', Moon: 'Moon', Mercury: 'Mercury', Venus: 'Venus', Mars: 'Mars',
   Jupiter: 'Jupiter', Saturn: 'Saturn', Uranus: 'Uranus', Neptune: 'Neptune', Pluto: 'Pluto',
@@ -20,16 +40,16 @@ const S: Record<string, string> = {
   Libra: 'Lib', Scorpio: 'Sco', Sagittarius: 'Sag', Capricorn: 'Cap', Aquarius: 'Aqu', Pisces: 'Pis',
 };
 
-const SIGN_SYMBOLS: Record<string, string> = {
-  Aries: '♈', Taurus: '♉', Gemini: '♊', Cancer: '♋', Leo: '♌', Virgo: '♍',
-  Libra: '♎', Scorpio: '♏', Sagittarius: '♐', Capricorn: '♑', Aquarius: '♒', Pisces: '♓',
-};
-
-// Grid positions for each sign in the 4x3 cake image
-const CAKE_GRID: Record<string, { row: number; col: number }> = {
-  Aries: { row: 0, col: 0 }, Taurus: { row: 0, col: 1 }, Gemini: { row: 0, col: 2 }, Cancer: { row: 0, col: 3 },
-  Leo: { row: 1, col: 0 }, Virgo: { row: 1, col: 1 }, Libra: { row: 1, col: 2 }, Scorpio: { row: 1, col: 3 },
-  Sagittarius: { row: 2, col: 0 }, Capricorn: { row: 2, col: 1 }, Aquarius: { row: 2, col: 2 }, Pisces: { row: 2, col: 3 },
+const MOON_PHASE_EXPLANATIONS: Record<string, string> = {
+  'New Moon': 'Fresh start energy. This is a year of planting seeds, beginning new chapters, and trusting instinct over evidence. You may feel invisible or uncertain — that is the new moon doing its job. Act on impulse toward what feels genuinely alive.',
+  'Waxing Crescent': 'Gathering momentum. The seeds planted are starting to sprout but still fragile. Push through doubt. This year rewards early effort and showing up before you feel ready.',
+  'First Quarter': 'Crisis of action. Obstacles force you to commit or quit. This is not a passive year — decisions are required, and sitting on the fence creates more stress than choosing.',
+  'Waxing Gibbous': 'Refining and adjusting. Almost there but not quite. The gap between where you are and where you want to be is uncomfortable but productive. Perfectionism is the trap; useful editing is the gift.',
+  'Full Moon': 'Peak illumination. Everything becomes visible — relationships, results, truths you have been avoiding. Highly emotional year. What was hidden comes to light. Culmination of something that began years ago.',
+  'Waning Gibbous': 'Disseminating wisdom. You have something to teach or share. This year rewards giving back, mentoring, and distributing what you have learned. Generosity opens unexpected doors.',
+  'Last Quarter': 'Crisis of consciousness. Old structures that no longer serve you become intolerable. You may leave a job, relationship, or belief system. The discomfort is purposeful — it is pushing you to evolve.',
+  'Balsamic': 'Completion and surrender. The quietest, most inward moon phase. This is a year for rest, reflection, tying up loose ends, and releasing what is finished. Trying to start something brand new will feel like pushing a boulder uphill. Honor the ending. What comes next will arrive on its own timing.',
+  'Balsamic Moon': 'Completion and surrender. The quietest, most inward moon phase. This is a year for rest, reflection, tying up loose ends, and releasing what is finished. Trying to start something brand new will feel like pushing a boulder uphill. Honor the ending. What comes next will arrive on its own timing.',
 };
 
 const formatDate = (dateStr: string | undefined): string => {
@@ -44,6 +64,35 @@ const formatDate = (dateStr: string | undefined): string => {
   } catch { /* fall through */ }
   return dateStr;
 };
+
+/** Capitalize each word in a location string */
+const capitalizeLocation = (loc: string | undefined): string => {
+  if (!loc) return '--';
+  return loc.replace(/\b\w+/g, word => {
+    // Keep state abbreviations uppercase
+    if (word.length <= 2) return word.toUpperCase();
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+  });
+};
+
+/** Load an image as a data URL for jsPDF */
+async function loadImageDataUrl(src: string): Promise<string | null> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { resolve(null); return; }
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
 
 const MAJOR_BODIES = new Set(['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','Chiron','NorthNode','SouthNode','Ascendant']);
 const PLANET_ORDER = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','Chiron','NorthNode'];
@@ -109,30 +158,6 @@ const nodeHouseMeaning: Record<number, string> = {
   11: 'Growth: community, friendship, collective purpose. Connect personal goals to a larger vision.',
   12: 'Growth: surrender and releasing control. Meditate. Rest. Deepest wisdom arrives in stillness.',
 };
-
-/** Crop a specific sign's cake from the grid image */
-async function getCakeImageDataUrl(sunSign: string): Promise<string | null> {
-  const grid = CAKE_GRID[sunSign];
-  if (!grid) return null;
-
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const cellW = img.width / 4;
-      const cellH = img.height / 3;
-      const canvas = document.createElement('canvas');
-      canvas.width = cellW;
-      canvas.height = cellH;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) { resolve(null); return; }
-      ctx.drawImage(img, grid.col * cellW, grid.row * cellH, cellW, cellH, 0, 0, cellW, cellH);
-      resolve(canvas.toDataURL('image/png'));
-    };
-    img.onerror = () => resolve(null);
-    img.src = '/images/zodiac-cakes.png';
-  });
-}
 
 interface Props {
   analysis: SolarReturnAnalysis;
@@ -232,34 +257,33 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         writeBold(label, labelColor, 8); writeBody(text, bodyText, 8); y += 3;
       };
 
-      // ═══════════════════════════════════════════════
+      // =============================================
       // PAGE 1: COVER PAGE
-      // ═══════════════════════════════════════════════
+      // =============================================
       const a = analysis;
       const name = natalChart.name || 'Chart';
       const year = srChart.solarReturnYear;
 
-      // Get the sun sign for the cake
       const sunSign = natalChart.planets.Sun?.sign || '';
       const moonSign = natalChart.planets.Moon?.sign || '';
       const risingSign = natalChart.planets.Ascendant?.sign || '';
 
       y = 50;
 
-      // --- BIRTHDAY HEADER with cake image ---
+      // --- BIRTHDAY HEADER with individual cake image ---
       if (birthdayMode) {
-        // Load cake image
-        const cakeDataUrl = await getCakeImageDataUrl(sunSign);
+        const cakeImgSrc = CAKE_IMAGES[sunSign];
+        let cakeDataUrl: string | null = null;
+        if (cakeImgSrc) {
+          cakeDataUrl = await loadImageDataUrl(cakeImgSrc);
+        }
 
-        // Decorative top line
         doc.setDrawColor(...gold); doc.setLineWidth(1.5);
         doc.line(margin, y, pw - margin, y);
         y += 30;
 
-        // Layout: cake on left, Happy Birthday + Big 3 on right
-        const cakeSize = 140;
+        const cakeSize = 160;
         const textStartX = margin + cakeSize + 24;
-        const textW = contentW - cakeSize - 24;
 
         if (cakeDataUrl) {
           doc.addImage(cakeDataUrl, 'PNG', margin, y - 10, cakeSize, cakeSize);
@@ -275,20 +299,20 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
 
         // Sparkle line
         doc.setFontSize(14); doc.setTextColor(...gold);
-        doc.text('✦  ·  ✦  ·  ✦', textStartX, y + 76);
+        doc.text('*  .  *  .  *', textStartX, y + 76);
 
-        // Big 3 display
+        // Big 3 display — CLEAN TEXT, no Unicode glyphs
         const big3Y = y + 96;
         doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
         doc.setTextColor(...deepBrown);
         if (sunSign) {
-          doc.text(`☉  ${sunSign} Sun`, textStartX, big3Y);
+          doc.text(`${sunSign} Sun`, textStartX, big3Y);
         }
         if (moonSign) {
-          doc.text(`☽  ${moonSign} Moon`, textStartX, big3Y + 16);
+          doc.text(`${moonSign} Moon`, textStartX, big3Y + 16);
         }
         if (risingSign) {
-          doc.text(`↑  ${risingSign} Rising`, textStartX, big3Y + 32);
+          doc.text(`${risingSign} Rising`, textStartX, big3Y + 32);
         }
 
         y += cakeSize + 10;
@@ -306,7 +330,6 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           y += msgH + 12;
         }
 
-        // Decorative bottom line
         doc.setDrawColor(...gold); doc.setLineWidth(1.5);
         doc.line(margin, y, pw - margin, y);
         y += 20;
@@ -344,40 +367,44 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       doc.text(name.toUpperCase(), pw / 2, y, { align: 'center' });
       y += 20;
 
-      // Big 3 on cover page (always show, not just birthday mode)
+      // Big 3 on cover page — CLEAN TEXT LABELS
       if (sunSign || moonSign || risingSign) {
-        const big3BoxW = 180;
-        const big3BoxH = 60;
+        const big3BoxW = 200;
+        const big3BoxH = 68;
         const big3X = (pw - big3BoxW) / 2;
         doc.setFillColor(...softGold); doc.setDrawColor(...gold); doc.setLineWidth(1);
         doc.roundedRect(big3X, y, big3BoxW, big3BoxH, 6, 6, 'FD');
-        
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(...deepBrown);
-        let by = y + 18;
+
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+        doc.setTextColor(...deepBrown);
+        let by = y + 20;
         if (sunSign) {
-          doc.text(`☉  ${sunSign}`, pw / 2, by, { align: 'center' }); by += 16;
+          doc.text(`SUN:  ${sunSign}`, pw / 2, by, { align: 'center' }); by += 18;
         }
         if (moonSign) {
-          doc.text(`☽  ${moonSign}`, pw / 2, by, { align: 'center' }); by += 16;
+          doc.text(`MOON:  ${moonSign}`, pw / 2, by, { align: 'center' }); by += 18;
         }
         if (risingSign) {
-          doc.text(`↑  ${risingSign} Rising`, pw / 2, by, { align: 'center' });
+          doc.text(`RISING:  ${risingSign}`, pw / 2, by, { align: 'center' });
         }
         y += big3BoxH + 12;
       }
 
-      // Birth info
+      // Birth info — proper capitalization and consistent formatting
+      const birthLoc = capitalizeLocation(natalChart.birthLocation);
+      const srLoc = capitalizeLocation(srChart.solarReturnLocation);
+
       doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...dimText);
-      doc.text(`Born: ${formatDate(natalChart.birthDate)}   ${natalChart.birthLocation || ''}`, pw / 2, y, { align: 'center' });
+      doc.text(`Born: ${formatDate(natalChart.birthDate)}   |   ${birthLoc}`, pw / 2, y, { align: 'center' });
       if (srChart.solarReturnLocation) {
         y += 12;
-        doc.text(`SR Location: ${srChart.solarReturnLocation}`, pw / 2, y, { align: 'center' });
+        doc.text(`SR Location: ${srLoc}`, pw / 2, y, { align: 'center' });
       }
       y += 20;
 
-      // ═══════════════════════════════════════════════
+      // =============================================
       // YEAR AT A GLANCE
-      // ═══════════════════════════════════════════════
+      // =============================================
       sectionTitle('Year at a Glance');
 
       const glanceStartY = y; y += 12;
@@ -396,16 +423,33 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         writeLabel('Profection:', `House ${a.profectionYear.houseNumber} (Age ${a.profectionYear.age})`);
         writeLabel('Time Lord:', P[a.profectionYear.timeLord] || a.profectionYear.timeLord);
       }
-      writeLabel('Moon:', `${a.moonSign} in SR House ${a.moonHouse?.house || '--'}   ${a.moonPhase?.phase || ''}`);
+
+      // Moon line with phase — clean text
+      const moonPhaseText = a.moonPhase?.phase || '';
+      writeLabel('Moon:', `${a.moonSign} in SR House ${a.moonHouse?.house || '--'}   ${moonPhaseText}`);
+
+      // MOON PHASE EXPLANATION
+      if (moonPhaseText) {
+        const phaseExplanation = MOON_PHASE_EXPLANATIONS[moonPhaseText] || MOON_PHASE_EXPLANATIONS[moonPhaseText.replace(' Moon', '')] || MOON_PHASE_EXPLANATIONS[moonPhaseText + ' Moon'];
+        if (phaseExplanation) {
+          y += 4;
+          checkPage(80);
+          drawCard(() => {
+            writeBold(`Moon Phase: ${moonPhaseText}`, gold, 9);
+            y += 2;
+            writeBody(phaseExplanation, bodyText, 8);
+          });
+        }
+      }
       y += 8;
 
       const glanceEndY = y;
       doc.setDrawColor(...gold); doc.setLineWidth(2.5);
       doc.line(margin, glanceStartY, margin, glanceEndY);
 
-      // ═══════════════════════════════════════════════
+      // =============================================
       // MOON SIGN SHIFT
-      // ═══════════════════════════════════════════════
+      // =============================================
       const natalMoonSign = natalChart.planets.Moon?.sign;
       const srMoonSign = a.moonSign;
       if (natalMoonSign && srMoonSign) {
@@ -423,7 +467,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(...deepBrown);
         doc.text('NATAL MOON', margin + 10, moonBoxY + 14);
         doc.setFontSize(13); doc.setTextColor(...gold);
-        doc.text(`${SIGN_SYMBOLS[natalMoonSign] || ''} ${natalMoonSign.toUpperCase()}`, margin + 10, moonBoxY + 30);
+        doc.text(natalMoonSign.toUpperCase(), margin + 10, moonBoxY + 30);
         doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(...bodyText);
         const natalMoonLines = doc.splitTextToSize(natalDeep?.emotional || '', halfW - 20);
         natalMoonLines.slice(0, 6).forEach((line: string, i: number) => {
@@ -436,7 +480,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(...deepBrown);
         doc.text('THIS YEAR\'S MOON', srBoxX + 10, moonBoxY + 14);
         doc.setFontSize(13); doc.setTextColor(...gold);
-        doc.text(`${SIGN_SYMBOLS[srMoonSign] || ''} ${srMoonSign.toUpperCase()}`, srBoxX + 10, moonBoxY + 30);
+        doc.text(srMoonSign.toUpperCase(), srBoxX + 10, moonBoxY + 30);
         doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(...bodyText);
         const srMoonLines = doc.splitTextToSize(srDeep?.emotional || '', halfW - 20);
         srMoonLines.slice(0, 6).forEach((line: string, i: number) => {
@@ -465,15 +509,15 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           checkPage(60);
           drawCard(() => {
             writeBold(`Moon Stays in ${natalMoonSign} -- Emotional Continuity`, deepBrown, 10);
-            writeBody(`Your SR Moon matches natal. This year amplifies your emotional instincts. Trust your gut — it\'s running on native software.`, bodyText, 8);
+            writeBody('Your SR Moon matches natal. This year amplifies your emotional instincts. Trust your gut -- it is running on native software.', bodyText, 8);
           });
         }
         y += 6;
       }
 
-      // ═══════════════════════════════════════════════
-      // COMPARISON TABLE (compact)
-      // ═══════════════════════════════════════════════
+      // =============================================
+      // COMPARISON TABLE
+      // =============================================
       sectionTitle('Solar Return vs Natal');
 
       const cols = [margin + 4, margin + 65, margin + 178, margin + 220, margin + 333, margin + 375];
@@ -509,9 +553,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       }
       y += 6;
 
-      // ═══════════════════════════════════════════════
-      // STELLIUMS (shortened)
-      // ═══════════════════════════════════════════════
+      // =============================================
+      // STELLIUMS
+      // =============================================
       if (a.stelliums.length > 0) {
         sectionTitle('Stelliums');
         for (const s of a.stelliums) {
@@ -529,9 +573,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         }
       }
 
-      // ═══════════════════════════════════════════════
-      // ELEMENTS & MODALITY (visual only, minimal text)
-      // ═══════════════════════════════════════════════
+      // =============================================
+      // ELEMENTS & MODALITY
+      // =============================================
       if (a.elementBalance) {
         sectionTitle('Element & Modality');
         const eb = a.elementBalance;
@@ -563,7 +607,6 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         });
         y = elemStartY + elemH + 8;
 
-        // Modality — same visual approach
         const modW = (contentW - 16) / 3;
         const modH = 45;
         const modalities = [
@@ -590,9 +633,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         y = modStartY + modH + 8;
       }
 
-      // ═══════════════════════════════════════════════
-      // HEMISPHERIC (visual 2x2 grid, no long explanations)
-      // ═══════════════════════════════════════════════
+      // =============================================
+      // HEMISPHERIC
+      // =============================================
       if (a.hemisphericEmphasis) {
         sectionTitle('Where Your Energy Lives');
         const hem = a.hemisphericEmphasis;
@@ -643,9 +686,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         y = gridStartY + (boxH + 8) * 2 + 8;
       }
 
-      // ═══════════════════════════════════════════════
-      // ANGULAR PLANETS (short)
-      // ═══════════════════════════════════════════════
+      // =============================================
+      // ANGULAR PLANETS
+      // =============================================
       if (a.angularPlanets && a.angularPlanets.length > 0) {
         sectionTitle('Angular Planets -- Most Powerful This Year');
         const angularList = a.angularPlanets.map(p => P[p] || p).join(', ');
@@ -664,9 +707,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         });
       }
 
-      // ═══════════════════════════════════════════════
+      // =============================================
       // LORD OF THE YEAR
-      // ═══════════════════════════════════════════════
+      // =============================================
       if (a.lordOfTheYear) {
         sectionTitle('Lord of the Year');
         const lord = a.lordOfTheYear;
@@ -683,9 +726,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         });
       }
 
-      // ═══════════════════════════════════════════════
-      // SATURN & NORTH NODE (shortened)
-      // ═══════════════════════════════════════════════
+      // =============================================
+      // SATURN & NORTH NODE
+      // =============================================
       if (a.saturnFocus || a.nodesFocus) {
         sectionTitle('Saturn & North Node');
 
@@ -708,9 +751,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         }
       }
 
-      // ═══════════════════════════════════════════════
-      // KEY ASPECTS (top 8 only, concise cards)
-      // ═══════════════════════════════════════════════
+      // =============================================
+      // KEY ASPECTS (top 8)
+      // =============================================
       if (a.srToNatalAspects.length > 0) {
         const allAspects = a.srToNatalAspects.filter(
           asp => !(asp.planet1 === 'Sun' && asp.planet2 === 'Sun' && asp.type === 'Conjunction')
@@ -734,9 +777,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         }
       }
 
-      // ═══════════════════════════════════════════════
-      // MOON TIMING (table only, no explanation)
-      // ═══════════════════════════════════════════════
+      // =============================================
+      // MOON TIMING
+      // =============================================
       if (a.moonTimingEvents.length > 0) {
         sectionTitle('Moon Timing -- When Things Happen');
         const mc = [margin + 4, margin + 85, margin + 240];
@@ -761,9 +804,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         y += 6;
       }
 
-      // ═══════════════════════════════════════════════
-      // VERTEX (shortened)
-      // ═══════════════════════════════════════════════
+      // =============================================
+      // VERTEX
+      // =============================================
       if (a.vertex) {
         sectionTitle('Vertex -- Fated Encounters');
         checkPage(100);
@@ -777,9 +820,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         });
       }
 
-      // ═══════════════════════════════════════════════
-      // PLANET SPOTLIGHT (top 4 only)
-      // ═══════════════════════════════════════════════
+      // =============================================
+      // PLANET SPOTLIGHT (top 5)
+      // =============================================
       const deepData: Record<string, Record<number, any>> = {
         Mercury: srMercuryInHouseDeep, Venus: srVenusInHouseDeep, Mars: srMarsInHouseDeep,
         Jupiter: srJupiterInHouseDeep, Saturn: srSaturnInHouseDeep, Uranus: srUranusInHouseDeep,
@@ -805,9 +848,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         }
       }
 
-      // ═══════════════════════════════════════════════
-      // NARRATIVE (if generated)
-      // ═══════════════════════════════════════════════
+      // =============================================
+      // NARRATIVE
+      // =============================================
       if (narrative) {
         sectionTitle('Year-Ahead Reading');
         const lines = narrative.split('\n');
@@ -845,7 +888,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             className="rounded border-border accent-primary w-4 h-4"
           />
           <span className="text-[11px] uppercase tracking-widest text-muted-foreground">
-            🎂 Birthday Gift Mode
+            Birthday Gift Mode
           </span>
         </label>
       </div>
