@@ -32,7 +32,7 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   const sections: { title: string; desc: string }[] = [];
 
   sections.push({ title: 'How To Read This Report', desc: 'Key concepts explained in plain language' });
-  if (birthdayMode) sections.push({ title: 'Your Natal Foundation', desc: 'Your natal gifts -- the foundation your year builds upon' });
+  if (birthdayMode) sections.push({ title: 'Your Strengths & This Year', desc: 'Your natal gifts and how the year ahead activates them' });
   sections.push({ title: 'Year at a Glance', desc: 'SR Ascendant, ruler, profection, time lord, and moon phase' });
   sections.push({ title: 'Profection Wheel', desc: 'Visual diagram of your annual profection and activated house' });
   if (a.moonSign) sections.push({ title: 'Moon Sign Shift', desc: 'How your emotional processing changes this year' });
@@ -99,20 +99,20 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
 export function addTOCLinks(doc: jsPDF, tocPageNumber: number, tocEntries: TOCEntry[], ctx: PDFContext) {
   const { margin, contentW, sectionPages } = ctx;
 
-  // Normalize title matching: TOC titles are mixed case, sectionPages keys are UPPERCASE
-  // Also handle titles that don't go through sectionTitle (manually registered)
+  // Normalize: strip ampersands vs "and", trim, uppercase for robust matching
+  const normalize = (s: string) => s.toUpperCase().replace(/&/g, 'AND').replace(/\s+/g, ' ').trim();
+
   for (const entry of tocEntries) {
-    const upperTitle = entry.title.toUpperCase();
-    // Try exact match first, then partial match
-    let targetPage: number | undefined = sectionPages.get(upperTitle);
-    
-    if (!targetPage) {
-      // Try matching with " -- " separator stripped
-      for (const [key, page] of sectionPages) {
-        if (key.includes(upperTitle) || upperTitle.includes(key.split(' -- ')[0])) {
-          targetPage = page;
-          break;
-        }
+    const normTitle = normalize(entry.title);
+    let targetPage: number | undefined;
+
+    // Try all sectionPages keys with normalized comparison
+    for (const [key, page] of sectionPages) {
+      const normKey = normalize(key);
+      const normKeyBase = normKey.split(' -- ')[0].trim();
+      if (normKey === normTitle || normKeyBase === normTitle || normKey.includes(normTitle) || normTitle.includes(normKeyBase)) {
+        targetPage = page;
+        break;
       }
     }
 
