@@ -1009,7 +1009,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
                   <span className="text-sm text-primary font-medium">SR House {analysis.moonHouse.house}</span>
                 )}
                 {(() => {
-                  const moonPos = selectedSR!.planets.Moon;
+                  const moonPos = srChart.planets.Moon;
                   if (!moonPos) return null;
                   return <span className="text-xs text-muted-foreground">{moonPos.degree}° {moonPos.sign}</span>;
                 })()}
