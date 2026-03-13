@@ -89,7 +89,7 @@ export function generatePDFYearAtAGlance(
     doc.text(`House ${a.profectionYear.houseNumber}`, boxL + 12, ctx.y + 36);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
     doc.setTextColor(colors.bodyText[0], colors.bodyText[1], colors.bodyText[2]);
-    doc.text(`Age ${a.profectionYear.age}`, margin + 12, ctx.y + 50);
+    doc.text(`Age ${a.profectionYear.age}`, boxL + 12, ctx.y + 50);
     // House focus label
     const focusLabel = HOUSE_FOCUS[a.profectionYear.houseNumber] || '';
     doc.setFont('helvetica', 'italic'); doc.setFontSize(8);
