@@ -1296,6 +1296,7 @@ export const analyzeSolarReturn = (
     moonTimingEvents,
     srMoonAspects,
     moonAngularity,
+    moonVOC,
     moonLateDegree,
     moonMetonicAges,
     vertex,
