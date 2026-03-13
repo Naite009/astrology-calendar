@@ -802,6 +802,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // YEAR-AHEAD HIGHLIGHTS & MONTHLY FORECASTS
       // =============================================
       doc.addPage(); ctx.y = margin;
+      ctx.sectionPages.set('BEST MONTHS AND HIGHLIGHTS', doc.getNumberOfPages());
       generateHighlightsPage(ctx, doc, analysis);
 
       // =============================================
@@ -809,6 +810,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // =============================================
       if (birthdayMode) {
         doc.addPage(); ctx.y = margin;
+        ctx.sectionPages.set('BIRTHDAY AFFIRMATION CARD', doc.getNumberOfPages());
         generateAffirmationCard(ctx, doc, analysis, natalChart);
       }
 
