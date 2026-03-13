@@ -122,6 +122,9 @@ serve(async (req) => {
     }
 
     // SR Moon Aspects (frozen snapshot — emotional climate for the year)
+    if (a.moonVOC) {
+      dataContext += `\nSR MOON VOID OF COURSE (UNASPECTED): The SR Moon makes NO major aspects to any other SR planet. This is rare and significant — the emotional life this year operates in isolation, without planetary dialogue. Feelings are vivid but untethered. The person must consciously name and honor emotional needs, as the world won't automatically reflect them back. Creative expression, journaling, and therapy become essential containers.\n`;
+    }
     if (a.srMoonAspects?.length > 0) {
       dataContext += `\nSR MOON ASPECTS (emotional climate — these are static aspects at the SR moment, NOT advancing):\n`;
       a.srMoonAspects.slice(0, 8).forEach((e: any) => {
@@ -178,7 +181,7 @@ Start with the overall energy and tone of the year (1-2 paragraphs drawing from 
 Focus on the SR Ascendant ruler and where it falls in the NATAL chart — this is the J-B Morin technique and is THE most important indicator of where the year plays out. Also weave in the SR Ascendant degree's natal house overlay (Lynn Bell), Sun house, Lord of the Year house, and Profection themes. These together tell the story of WHERE energy flows this year.
 
 ## Emotional Landscape
-Moon sign, house, and phase. What emotional climate to expect and how to work with it.
+Moon sign, house, and phase. What emotional climate to expect and how to work with it. If the Moon is Void of Course (unaspected), this is a MAJOR theme — dedicate significant attention to what it means to have an emotionally independent year where feelings run on their own track without planetary support or challenge.
 
 ## Key Players & Power Points
 Angular planets, stelliums (including any extra bodies like Chiron or North Node that amplify the stellium), and the most significant SR-to-natal aspects. What is being activated in the natal chart?

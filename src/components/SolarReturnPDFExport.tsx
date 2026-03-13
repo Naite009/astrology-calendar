@@ -846,6 +846,18 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // Add clickable links to the Table of Contents
       addTOCLinks(doc, tocPageNumber, tocEntries, ctx);
 
+      // Add page numbers to every page (skip cover page 1; skip in birthday mode for clean frameable pages)
+      if (!birthdayMode) {
+        const totalPages = doc.getNumberOfPages();
+        for (let i = 2; i <= totalPages; i++) {
+          doc.setPage(i);
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8);
+          doc.setTextColor(...ctx.colors.dimText);
+          doc.text(`${i}`, pw / 2, ph - 28, { align: 'center' });
+        }
+      }
+
       const name2 = natalChart.name || 'Chart';
       doc.save(`Solar-Return-${srChart.solarReturnYear}-${name2.replace(/\s+/g, '-')}.pdf`);
     } catch (err) {
