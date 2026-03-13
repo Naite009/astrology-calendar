@@ -32,19 +32,30 @@ export interface PDFContext {
   drawGoldRule: (doc: jsPDF) => void;
 }
 
-export function createPDFContext(doc: jsPDF, pw: number, ph: number, margin: number, contentW: number): PDFContext {
+export interface ColorOverrides {
+  gold?: Color;
+  softGold?: Color;
+  deepBrown?: Color;
+  warmBorder?: Color;
+  creamBg?: Color;
+  accentGreen?: Color;
+  accentRust?: Color;
+  softBlue?: Color;
+}
+
+export function createPDFContext(doc: jsPDF, pw: number, ph: number, margin: number, contentW: number, overrides?: ColorOverrides): PDFContext {
   const colors = {
-    gold: [162, 128, 72] as Color,
+    gold: overrides?.gold || [162, 128, 72] as Color,
     darkText: [30, 28, 26] as Color,
     bodyText: [55, 50, 45] as Color,
     dimText: [120, 112, 105] as Color,
-    warmBorder: [210, 200, 185] as Color,
-    creamBg: [250, 247, 242] as Color,
-    softGold: [245, 238, 225] as Color,
-    deepBrown: [90, 70, 45] as Color,
-    softBlue: [230, 240, 250] as Color,
-    accentGreen: [34, 120, 80] as Color,
-    accentRust: [160, 90, 50] as Color,
+    warmBorder: overrides?.warmBorder || [210, 200, 185] as Color,
+    creamBg: overrides?.creamBg || [250, 247, 242] as Color,
+    softGold: overrides?.softGold || [245, 238, 225] as Color,
+    deepBrown: overrides?.deepBrown || [90, 70, 45] as Color,
+    softBlue: overrides?.softBlue || [230, 240, 250] as Color,
+    accentGreen: overrides?.accentGreen || [34, 120, 80] as Color,
+    accentRust: overrides?.accentRust || [160, 90, 50] as Color,
   };
 
   const ctx: PDFContext = {
