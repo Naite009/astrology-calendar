@@ -160,18 +160,18 @@ export function createPDFContext(doc: jsPDF, pw: number, ph: number, margin: num
         d.setPage(startPage);
         const firstPageBottom = ph - 40;
         const firstH = firstPageBottom - cardStartY;
-        d.setDrawColor(colors.warmBorder[0], colors.warmBorder[1], colors.warmBorder[2]); d.setLineWidth(0.5);
+        d.setDrawColor(colors.warmBorder[0], colors.warmBorder[1], colors.warmBorder[2]); d.setLineWidth(0.4);
         d.roundedRect(margin, cardStartY, contentW, firstH, 6, 6, 'S');
-        d.setDrawColor(accentColor[0], accentColor[1], accentColor[2]); d.setLineWidth(3);
-        d.line(margin + 1.5, cardStartY + 1, margin + 1.5, cardStartY + firstH - 1);
+        d.setDrawColor(accentColor[0], accentColor[1], accentColor[2]); d.setLineWidth(2);
+        d.line(margin + 1, cardStartY + 1, margin + 1, cardStartY + firstH - 1);
         
         // Last page: from top margin to ctx.y
         d.setPage(endPage);
         const lastH = ctx.y - margin;
-        d.setDrawColor(colors.warmBorder[0], colors.warmBorder[1], colors.warmBorder[2]); d.setLineWidth(0.5);
+        d.setDrawColor(colors.warmBorder[0], colors.warmBorder[1], colors.warmBorder[2]); d.setLineWidth(0.4);
         d.roundedRect(margin, margin, contentW, lastH, 6, 6, 'S');
-        d.setDrawColor(accentColor[0], accentColor[1], accentColor[2]); d.setLineWidth(3);
-        d.line(margin + 1.5, margin + 1, margin + 1.5, margin + lastH - 1);
+        d.setDrawColor(accentColor[0], accentColor[1], accentColor[2]); d.setLineWidth(2);
+        d.line(margin + 1, margin + 1, margin + 1, margin + lastH - 1);
       }
       ctx.y += 8;
     },
