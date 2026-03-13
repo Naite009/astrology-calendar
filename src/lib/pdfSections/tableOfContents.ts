@@ -101,7 +101,7 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
  * Maps TOC entry titles → section page numbers tracked in ctx.sectionPages.
  */
 export function addTOCLinks(doc: jsPDF, tocPageNumber: number, tocEntries: TOCEntry[], ctx: PDFContext) {
-  const { margin, contentW, sectionPages } = ctx;
+  const { pw, margin, contentW, sectionPages } = ctx;
 
   // Normalize: strip ampersands vs "and", trim, uppercase for robust matching
   const normalize = (s: string) => s.toUpperCase().replace(/&/g, 'AND').replace(/\s+/g, ' ').trim();
