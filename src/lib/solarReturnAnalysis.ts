@@ -339,7 +339,15 @@ export interface SolarReturnAnalysis {
     orb: number;
     interpretation: string;
   }[];
-  /** Moon timing: key aspects the SR Moon will perfect during the year (1°/month) */
+  /** SR Moon aspects to other SR planets (frozen snapshot at the moment of the return) */
+  srMoonAspects: {
+    targetPlanet: string;
+    aspectType: string;
+    orb: number;
+    targetSRHouse: number | null;
+    interpretation: string;
+  }[];
+  /** Moon timing: key aspects the SR Moon will perfect during the year (1°/month) — DEPRECATED, kept for compat */
   moonTimingEvents: {
     targetPlanet: string;
     aspectType: string;
@@ -348,6 +356,12 @@ export interface SolarReturnAnalysis {
     targetSRHouse: number | null;
     interpretation: string;
   }[];
+  /** SR Moon angular position category */
+  moonAngularity: 'angular' | 'succedent' | 'cadent' | null;
+  /** Whether the SR Moon is in late degrees (25+), signaling change */
+  moonLateDegree: boolean;
+  /** The 19-year Metonic cycle — ages when the SR Moon was in the same sign */
+  moonMetonicAges: number[];
   /** Vertex — fated encounters point */
   vertex: SRVertexData | null;
   // Helper: map planet name → SR house for display
