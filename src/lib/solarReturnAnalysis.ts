@@ -1197,11 +1197,12 @@ export const analyzeSolarReturn = (
   }
 
   // ─── Moon Angularity ──
-  const angularHouses = [1, 4, 7, 10];
-  const succedentHouses = [2, 5, 8, 11];
-  const moonAngularity: SolarReturnAnalysis['moonAngularity'] = moonHouse
-    ? angularHouses.includes(moonHouse) ? 'angular'
-      : succedentHouses.includes(moonHouse) ? 'succedent'
+  const angularHousesSet = [1, 4, 7, 10];
+  const succedentHousesSet = [2, 5, 8, 11];
+  const moonHouseNum = moonHouse?.house ?? null;
+  const moonAngularity: SolarReturnAnalysis['moonAngularity'] = moonHouseNum
+    ? angularHousesSet.includes(moonHouseNum) ? 'angular'
+      : succedentHousesSet.includes(moonHouseNum) ? 'succedent'
       : 'cadent'
     : null;
 
