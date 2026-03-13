@@ -118,6 +118,8 @@ interface Props {
 
 export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative }: Props) => {
   const [generating, setGenerating] = useState(false);
+  const [birthdayMode, setBirthdayMode] = useState(false);
+  const [personalMessage, setPersonalMessage] = useState('');
 
   const generatePDF = async () => {
     setGenerating(true);
