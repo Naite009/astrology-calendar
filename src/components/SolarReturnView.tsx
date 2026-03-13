@@ -1024,6 +1024,124 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
           </div>
         )}
 
+        {/* ── Moon Sign Shift — 4-Field Deep Card ── */}
+        {(() => {
+          const natalMoonSign = natalChart.planets.Moon?.sign;
+          const srMoonSign = analysis.moonSign;
+          if (!natalMoonSign || !srMoonSign) return null;
+          const natalDeep = moonSignDeep[natalMoonSign];
+          const srDeep = moonSignDeep[srMoonSign];
+          const shiftNarr = moonShiftNarrative[natalMoonSign]?.[srMoonSign];
+
+          if (natalMoonSign === srMoonSign) {
+            return (
+              <div className="border border-primary/20 rounded-lg p-4 bg-primary/5">
+                <h4 className="text-[10px] uppercase tracking-widest text-primary mb-2">☽ Moon Stays in {natalMoonSign} — Emotional Continuity</h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Your SR Moon matches your natal Moon sign. This year reinforces your emotional instincts rather than challenging them. You feel at home in your own skin emotionally. Trust your gut more than usual — it is running on native software.
+                </p>
+                {natalDeep && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                    <div className="bg-card border border-border rounded-sm p-3">
+                      <p className="text-[10px] uppercase tracking-widest text-primary mb-1">Emotional Processing</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{natalDeep.emotional}</p>
+                    </div>
+                    <div className="bg-card border border-border rounded-sm p-3">
+                      <p className="text-[10px] uppercase tracking-widest text-primary mb-1">Body Sensations</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{natalDeep.body}</p>
+                    </div>
+                    <div className="bg-card border border-border rounded-sm p-3">
+                      <p className="text-[10px] uppercase tracking-widest text-primary mb-1">How To Apply</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{natalDeep.apply}</p>
+                    </div>
+                    <div className="bg-card border border-border rounded-sm p-3">
+                      <p className="text-[10px] uppercase tracking-widest text-primary mb-1">What It Looks Like</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{natalDeep.looksLike}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          return (
+            <div className="space-y-4">
+              {/* Two side-by-side sign cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Natal Moon */}
+                <div className="border border-border rounded-lg overflow-hidden">
+                  <div className="bg-secondary/60 border-b border-border px-4 py-2">
+                    <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground">Your Natal Moon</h4>
+                    <p className="text-lg font-serif text-foreground flex items-center gap-2">
+                      {SIGN_SYMBOLS[natalMoonSign]} {natalMoonSign}
+                    </p>
+                  </div>
+                  {natalDeep && (
+                    <div className="p-4 space-y-3">
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest text-primary mb-1">Emotional Processing</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{natalDeep.emotional}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest text-primary mb-1">Body Sensations</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{natalDeep.body}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest text-primary mb-1">How To Apply</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{natalDeep.apply}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest text-primary mb-1">What It Looks Like</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{natalDeep.looksLike}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* SR Moon */}
+                <div className="border border-primary/20 rounded-lg overflow-hidden">
+                  <div className="bg-primary/10 border-b border-primary/20 px-4 py-2">
+                    <h4 className="text-[10px] uppercase tracking-widest text-primary">This Year's Moon</h4>
+                    <p className="text-lg font-serif text-foreground flex items-center gap-2">
+                      {SIGN_SYMBOLS[srMoonSign]} {srMoonSign}
+                    </p>
+                  </div>
+                  {srDeep && (
+                    <div className="p-4 space-y-3">
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest text-primary mb-1">Emotional Processing</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{srDeep.emotional}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest text-primary mb-1">Body Sensations</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{srDeep.body}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest text-primary mb-1">How To Apply</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{srDeep.apply}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest text-primary mb-1">What It Looks Like</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{srDeep.looksLike}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* The shift narrative */}
+              <div className="border-l-4 border-primary bg-primary/5 rounded-r-lg p-4">
+                <h4 className="text-[10px] uppercase tracking-widest text-primary mb-2 flex items-center gap-2">
+                  The Shift: {natalMoonSign} → {srMoonSign}
+                </h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {shiftNarr || `Your natal ${natalMoonSign} Moon is your emotional home base: ${natalDeep?.emotional || ''} This year, the SR ${srMoonSign} Moon layers a completely different emotional frequency on top: ${srDeep?.emotional || ''}`}
+                </p>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Moon house DEEP interpretation */}
         {analysis.moonHouse.house && srMoonInHouseDeep[analysis.moonHouse.house] && (() => {
           const deep = srMoonInHouseDeep[analysis.moonHouse.house];
