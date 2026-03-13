@@ -496,91 +496,11 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       }
 
       // =============================================
-      // ELEMENT & MODALITY — own page
+      // ELEMENT & MODALITY + WHERE YOUR ENERGY LIVES + ANGULAR — one page
       // =============================================
       if (analysis.elementBalance) {
-        doc.addPage(); ctx.y = margin;
+        ctx.sectionTitle(doc, 'ELEMENT & MODALITY');
         ctx.sectionPages.set('ELEMENT AND MODALITY', doc.getNumberOfPages());
-        ctx.drawGoldRule(doc); ctx.y += 20;
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-        doc.setTextColor(...ctx.colors.gold);
-        doc.text('ELEMENT & MODALITY', margin, ctx.y); ctx.y += 20;
-
-        const eb = analysis.elementBalance;
-        const mb = analysis.modalityBalance;
-
-        // Elements card
-        ctx.drawCard(doc, () => {
-          ctx.writeBold(doc, 'Elemental Balance', ctx.colors.gold, 12);
-          ctx.y += 10;
-          const elemW = (contentW - 56) / 4;
-          const elemH = 65;
-          const elements = [
-            { name: 'Fire', val: eb.fire, bg: [255, 240, 230] as [number, number, number] },
-            { name: 'Earth', val: eb.earth, bg: [235, 245, 230] as [number, number, number] },
-            { name: 'Air', val: eb.air, bg: [232, 240, 252] as [number, number, number] },
-            { name: 'Water', val: eb.water, bg: [230, 240, 252] as [number, number, number] },
-          ];
-          const elemStartY = ctx.y;
-          elements.forEach((el, i) => {
-            const x = margin + 12 + i * (elemW + 10);
-            const isDom = el.name.toLowerCase() === eb.dominant;
-            doc.setFillColor(...el.bg);
-            doc.setDrawColor(...(isDom ? ctx.colors.gold : ctx.colors.warmBorder));
-            doc.setLineWidth(isDom ? 2.5 : 0.5);
-            doc.roundedRect(x, elemStartY, elemW, elemH, 6, 6, 'FD');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(28);
-            doc.setTextColor(...(isDom ? ctx.colors.gold : ctx.colors.darkText));
-            doc.text(String(el.val), x + elemW / 2, elemStartY + 30, { align: 'center' });
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
-            doc.setTextColor(...ctx.colors.bodyText);
-            doc.text(el.name, x + elemW / 2, elemStartY + 48, { align: 'center' });
-            if (isDom) {
-              doc.setFont('helvetica', 'bold'); doc.setFontSize(7);
-              doc.setTextColor(...ctx.colors.gold);
-              doc.text('DOMINANT', x + elemW / 2, elemStartY + 60, { align: 'center' });
-            }
-          });
-          ctx.y = elemStartY + elemH + 14;
-
-          // Modalities
-          ctx.writeBold(doc, 'Modality Balance', ctx.colors.gold, 12);
-          ctx.y += 10;
-          const modW = (contentW - 44) / 3;
-          const modH = 60;
-          const modalities = [
-            { name: 'Cardinal', val: mb.cardinal, desc: 'Initiating' },
-            { name: 'Fixed', val: mb.fixed, desc: 'Sustaining' },
-            { name: 'Mutable', val: mb.mutable, desc: 'Adapting' },
-          ];
-          const modStartY = ctx.y;
-          modalities.forEach((mod, i) => {
-            const x = margin + 12 + i * (modW + 10);
-            const isDom = mod.name.toLowerCase() === mb.dominant;
-            doc.setFillColor(...ctx.colors.softGold);
-            doc.setDrawColor(...(isDom ? ctx.colors.gold : ctx.colors.warmBorder));
-            doc.setLineWidth(isDom ? 2.5 : 0.5);
-            doc.roundedRect(x, modStartY, modW, modH, 6, 6, 'FD');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(26);
-            doc.setTextColor(...(isDom ? ctx.colors.gold : ctx.colors.darkText));
-            doc.text(String(mod.val), x + modW / 2, modStartY + 26, { align: 'center' });
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
-            doc.setTextColor(...ctx.colors.bodyText);
-            doc.text(mod.name, x + modW / 2, modStartY + 42, { align: 'center' });
-            doc.setFont('helvetica', 'italic'); doc.setFontSize(8);
-            doc.setTextColor(...ctx.colors.dimText);
-            doc.text(mod.desc, x + modW / 2, modStartY + 52, { align: 'center' });
-          });
-          ctx.y = modStartY + modH + 4;
-        });
-      }
-
-      // =============================================
-      // WHERE YOUR ENERGY LIVES + ANGULAR PLANETS — same page
-      // =============================================
-      if (analysis.hemisphericEmphasis) {
-        doc.addPage(); ctx.y = margin;
-        ctx.sectionPages.set('WHERE YOUR ENERGY LIVES', doc.getNumberOfPages());
         ctx.drawGoldRule(doc); ctx.y += 20;
         doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
         doc.setTextColor(...ctx.colors.gold);
