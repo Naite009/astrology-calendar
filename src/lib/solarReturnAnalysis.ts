@@ -360,6 +360,8 @@ export interface SolarReturnAnalysis {
   moonAngularity: 'angular' | 'succedent' | 'cadent' | null;
   /** Whether the SR Moon is in late degrees (25+), signaling change */
   moonLateDegree: boolean;
+  /** Whether the SR Moon is Void of Course — no major aspects to any SR planet (unaspected Moon) */
+  moonVOC: boolean;
   /** The 19-year Metonic cycle — ages when the SR Moon was in the same sign */
   moonMetonicAges: number[];
   /** Vertex — fated encounters point */
