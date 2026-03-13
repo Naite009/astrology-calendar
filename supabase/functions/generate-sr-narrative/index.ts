@@ -122,11 +122,13 @@ serve(async (req) => {
     }
 
     // SR Moon Aspects (frozen snapshot — emotional climate for the year)
+    // CRITICAL: The SR Moon is a STATIC SNAPSHOT — it does NOT advance 1°/month.
+    // Do NOT send moonTimingEvents to the AI — that data is deprecated and inaccurate.
     if (a.moonVOC) {
       dataContext += `\nSR MOON VOID OF COURSE (UNASPECTED): The SR Moon makes NO major aspects to any other SR planet. This is rare and significant — the emotional life this year operates in isolation, without planetary dialogue. Feelings are vivid but untethered. The person must consciously name and honor emotional needs, as the world won't automatically reflect them back. Creative expression, journaling, and therapy become essential containers.\n`;
     }
     if (a.srMoonAspects?.length > 0) {
-      dataContext += `\nSR MOON ASPECTS (emotional climate — these are static aspects at the SR moment, NOT advancing):\n`;
+      dataContext += `\nSR MOON ASPECTS (STATIC emotional climate — these aspects exist at the moment of the Solar Return and describe the YEAR-LONG emotional tone, NOT month-by-month timing):\n`;
       a.srMoonAspects.slice(0, 8).forEach((e: any) => {
         dataContext += `- Moon ${e.aspectType} ${e.targetPlanet} (${e.orb}' orb): ${e.interpretation}\n`;
       });
@@ -137,6 +139,7 @@ serve(async (req) => {
     if (a.moonLateDegree) {
       dataContext += `Moon is in late degrees (25+) — signals emotional endings or transitions\n`;
     }
+    dataContext += `\nCRITICAL ACCURACY NOTE: The SR Moon does NOT advance 1 degree per month. It is a frozen snapshot. Do NOT create a "Moon Timing" section or suggest the Moon "moves" through aspects during the year. The Moon's aspects in the SR chart describe the ENTIRE year's emotional climate, not specific monthly timing.\n`;
 
     // Top SR-to-Natal aspects
     if (a.srToNatalAspects?.length > 0) {
