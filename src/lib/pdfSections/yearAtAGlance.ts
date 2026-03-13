@@ -25,7 +25,9 @@ export function generatePDFYearAtAGlance(
   doc.line(pw / 2 - 40, ctx.y, pw / 2 + 40, ctx.y);
   ctx.y += 24;
 
-  // Left column info + right column will be profection wheel (drawn separately)
+  // Left column info — inset from margin to clear the gold accent bar
+  const boxL = margin + 8; // left edge of boxes (inset from accent bar)
+  const boxW = contentW - 8; // narrower to stay within page
   const glanceStartY = ctx.y;
 
   // --- SR Ascendant ---
