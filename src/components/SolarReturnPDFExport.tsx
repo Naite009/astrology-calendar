@@ -800,6 +800,37 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             ctx.y += 34;
             const nodeMeaning = nodeHouseMeaning[analysis.nodesFocus!.house];
             if (nodeMeaning) ctx.writeBody(doc, nodeMeaning, ctx.colors.bodyText, 10, 14);
+            
+            // Node sign-specific growth direction
+            const nodeSignGrowth: Record<string, string> = {
+              Aries: 'The North Node in Aries says: stop deferring, start asserting. Your soul growth requires putting yourself first — not selfishly, but as a necessary correction. Independence is the lesson.',
+              Taurus: 'The North Node in Taurus says: slow down, build something real. Your growth comes through material stability, sensory presence, and learning to trust your own values over others\' opinions.',
+              Gemini: 'The North Node in Gemini says: stay curious, communicate more. Growth comes through asking questions, learning new skills, and engaging with your immediate environment rather than clinging to ideology.',
+              Cancer: 'The North Node in Cancer says: let yourself feel. Growth comes through vulnerability, nurturing, and creating emotional safety — for yourself and others.',
+              Leo: 'The North Node in Leo says: step into the spotlight. Growth comes through creative self-expression, taking emotional risks, and allowing yourself to be seen without hiding behind the group.',
+              Virgo: 'The North Node in Virgo says: master the details. Growth comes through practical service, health routines, and bringing order to chaos — not through grand visions but daily discipline.',
+              Libra: 'The North Node in Libra says: learn to partner. Growth comes through collaboration, diplomacy, and considering others\' needs as seriously as your own.',
+              Scorpio: 'The North Node in Scorpio says: go deeper. Growth comes through emotional vulnerability, shared resources, and allowing transformation even when it feels like loss.',
+              Sagittarius: 'The North Node in Sagittarius says: expand your world. Growth comes through travel, education, and forming your own philosophy based on direct experience rather than data.',
+              Capricorn: 'The North Node in Capricorn says: take responsibility. Growth comes through career ambition, public contribution, and building structures that outlast your comfort zone.',
+              Aquarius: 'The North Node in Aquarius says: serve the collective. Growth comes through community involvement, innovation, and detaching from personal drama to focus on the bigger picture.',
+              Pisces: 'The North Node in Pisces says: trust the unseen. Growth comes through faith, artistic expression, and surrendering the need to control every outcome.',
+            };
+            const nodeSign = analysis.nodesFocus!.sign;
+            if (nodeSignGrowth[nodeSign]) {
+              ctx.y += 6;
+              ctx.writeCardSection(doc, `Growth Direction: ${nodeSign}`, nodeSignGrowth[nodeSign], ctx.colors.accentGreen);
+            }
+          });
+        }
+        
+        // Saturn-Node synthesis when both exist
+        if (analysis.saturnFocus && analysis.nodesFocus) {
+          ctx.checkPage(120);
+          ctx.drawCard(doc, () => {
+            ctx.writeBold(doc, 'Saturn + North Node: The Tension That Drives Growth', ctx.colors.gold, 11);
+            ctx.y += 2;
+            ctx.writeBody(doc, `Saturn in House ${analysis.saturnFocus!.house || '--'} tests you through ${analysis.saturnFocus!.house ? (analysis.saturnFocus!.house <= 6 ? 'personal' : 'interpersonal') : 'specific'} demands: structure, accountability, and hard work. The North Node in House ${analysis.nodesFocus!.house || '--'} pulls your soul toward unfamiliar growth territory. The dynamic: Saturn is WHERE you are being made stronger through difficulty. The Node is WHERE you are being made wiser through new experience. They are not the same — and that tension between duty and growth is the engine of your year.`, ctx.colors.bodyText, 10, 14);
           });
         }
       }
