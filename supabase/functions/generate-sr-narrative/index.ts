@@ -204,8 +204,8 @@ North Node focus — where the data points toward evolution and unfamiliar terri
 ## Retrogrades & Review Periods
 If retrogrades exist, what areas need revision. If none, note the forward momentum.
 
-## Moon Timing — When Things Happen
-If Moon timing events are provided, describe when key aspects perfect through the year (the SR Moon advances ~1° per month). This gives a month-by-month sense of activation.
+## IMPORTANT — NO Moon Timing Section
+DO NOT write a "Moon Timing" or "When Things Happen" section. The SR Moon is a STATIC SNAPSHOT captured at the exact moment of the Solar Return. It does NOT advance 1 degree per month. That is a common misconception. The Moon's aspects describe the emotional CLIMATE for the entire year — not a monthly timeline. Any suggestion that "around month X the Moon will trine Y" is FABRICATED and INACCURATE. Instead, discuss the Moon's aspects as a year-long emotional backdrop in the Emotional Landscape section.
 
 ## What to Watch For
 2-3 specific, concrete things to pay attention to this year based on the strongest patterns.
