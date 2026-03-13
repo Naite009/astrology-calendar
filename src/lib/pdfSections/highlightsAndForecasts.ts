@@ -273,7 +273,7 @@ export function generateHighlightsPage(
   const { pw, margin, contentW, colors } = ctx;
 
   // ── SECTION HEADER ──
-  doc.setDrawColor(...colors.gold); doc.setLineWidth(2);
+  doc.setDrawColor(...colors.gold); doc.setLineWidth(1);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
   ctx.y += 24;
   doc.setFont('helvetica', 'bold'); doc.setFontSize(16);

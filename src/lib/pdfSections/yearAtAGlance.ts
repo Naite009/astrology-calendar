@@ -11,7 +11,7 @@ export function generatePDFYearAtAGlance(
   const { pw, margin, contentW, colors } = ctx;
 
   // Elegant page header
-  doc.setDrawColor(colors.gold[0], colors.gold[1], colors.gold[2]); doc.setLineWidth(2);
+  doc.setDrawColor(colors.gold[0], colors.gold[1], colors.gold[2]); doc.setLineWidth(1);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
   ctx.y += 24;
 
