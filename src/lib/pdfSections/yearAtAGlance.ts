@@ -126,7 +126,7 @@ export function generatePDFYearAtAGlance(
   const moonPhaseText = a.moonPhase?.phase || '';
 
   doc.setFillColor(colors.softGold[0], colors.softGold[1], colors.softGold[2]);
-  doc.setDrawColor(colors.gold[0], colors.gold[1], colors.gold[2]); doc.setLineWidth(1);
+  doc.setDrawColor(colors.warmBorder[0], colors.warmBorder[1], colors.warmBorder[2]); doc.setLineWidth(0.5);
   const moonBoxH = 50;
   doc.roundedRect(boxL, ctx.y, boxW, moonBoxH, 6, 6, 'FD');
   doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
