@@ -294,7 +294,7 @@ export function generateHighlightsPage(
 
     const boxY = ctx.y;
     doc.setFillColor(...colors.softGold);
-    doc.setDrawColor(...colors.gold); doc.setLineWidth(0.8);
+    doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.4);
     doc.roundedRect(margin, boxY, contentW, cardH, 6, 6, 'FD');
 
     // Icon badge
