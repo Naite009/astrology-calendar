@@ -63,10 +63,17 @@ export function generatePDFYearAtAGlance(
     });
   }
 
-  // --- Profection + Time Lord (side by side boxes) ---
+  // --- Profection + Time Lord (side by side boxes with explanations) ---
   if (a.profectionYear) {
     const halfW = (contentW - 12) / 2;
-    const boxH = 60;
+    const boxH = 76;
+
+    const HOUSE_FOCUS: Record<number, string> = {
+      1: 'Identity & Self', 2: 'Money & Values', 3: 'Communication', 4: 'Home & Family',
+      5: 'Creativity, Romance & Children', 6: 'Health & Daily Work', 7: 'Partnerships',
+      8: 'Transformation & Shared Resources', 9: 'Travel & Higher Learning', 10: 'Career & Public Life',
+      11: 'Friends & Community', 12: 'Spirituality & Inner Work',
+    };
 
     // Profection box
     doc.setFillColor(colors.softGold[0], colors.softGold[1], colors.softGold[2]);
@@ -77,10 +84,18 @@ export function generatePDFYearAtAGlance(
     doc.text('PROFECTION YEAR', margin + 12, ctx.y + 16);
     doc.setFontSize(18);
     doc.setTextColor(colors.gold[0], colors.gold[1], colors.gold[2]);
-    doc.text(`House ${a.profectionYear.houseNumber}`, margin + 12, ctx.y + 38);
+    doc.text(`House ${a.profectionYear.houseNumber}`, margin + 12, ctx.y + 36);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
     doc.setTextColor(colors.bodyText[0], colors.bodyText[1], colors.bodyText[2]);
-    doc.text(`Age ${a.profectionYear.age}`, margin + 12, ctx.y + 52);
+    doc.text(`Age ${a.profectionYear.age}`, margin + 12, ctx.y + 50);
+    // House focus label
+    const focusLabel = HOUSE_FOCUS[a.profectionYear.houseNumber] || '';
+    doc.setFont('helvetica', 'italic'); doc.setFontSize(8);
+    doc.setTextColor(colors.deepBrown[0], colors.deepBrown[1], colors.deepBrown[2]);
+    const focusLines = doc.splitTextToSize(`Focus: ${focusLabel}`, halfW - 24);
+    focusLines.forEach((line: string, i: number) => {
+      doc.text(line, margin + 12, ctx.y + 62 + i * 10);
+    });
 
     // Time Lord box
     const tlX = margin + halfW + 12;
@@ -92,10 +107,15 @@ export function generatePDFYearAtAGlance(
     doc.text('TIME LORD', tlX + 12, ctx.y + 16);
     doc.setFontSize(18);
     doc.setTextColor(colors.gold[0], colors.gold[1], colors.gold[2]);
-    doc.text(P[a.profectionYear.timeLord] || a.profectionYear.timeLord, tlX + 12, ctx.y + 38);
+    doc.text(P[a.profectionYear.timeLord] || a.profectionYear.timeLord, tlX + 12, ctx.y + 36);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
     doc.setTextColor(colors.bodyText[0], colors.bodyText[1], colors.bodyText[2]);
-    doc.text('Planet running your year', tlX + 12, ctx.y + 52);
+    doc.text('Planet running your year', tlX + 12, ctx.y + 50);
+    // Why this planet
+    doc.setFont('helvetica', 'italic'); doc.setFontSize(8);
+    doc.setTextColor(colors.deepBrown[0], colors.deepBrown[1], colors.deepBrown[2]);
+    const tlExplain = `Rules the sign on natal House ${a.profectionYear.houseNumber} cusp`;
+    doc.text(tlExplain, tlX + 12, ctx.y + 62);
 
     ctx.y += boxH + 10;
   }
