@@ -96,7 +96,7 @@ export function generatePDFYearAtAGlance(
     doc.setTextColor(colors.deepBrown[0], colors.deepBrown[1], colors.deepBrown[2]);
     const focusLines = doc.splitTextToSize(`Focus: ${focusLabel}`, halfW - 24);
     focusLines.forEach((line: string, i: number) => {
-      doc.text(line, margin + 12, ctx.y + 62 + i * 10);
+      doc.text(line, boxL + 12, ctx.y + 62 + i * 10);
     });
 
     // Time Lord box
