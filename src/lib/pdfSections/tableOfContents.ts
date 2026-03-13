@@ -2,30 +2,31 @@ import jsPDF from 'jspdf';
 import { PDFContext } from './pdfContext';
 import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 
-export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: SolarReturnAnalysis, narrative: string) {
+export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: SolarReturnAnalysis, narrative: string, birthdayMode?: boolean) {
   const { pw, margin, contentW, colors } = ctx;
 
-  // Title
-  doc.setDrawColor(colors.gold[0], colors.gold[1], colors.gold[2]); doc.setLineWidth(1.5);
+  // Title with elegant spacing
+  ctx.y += 20;
+  doc.setDrawColor(...colors.gold); doc.setLineWidth(1.5);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 30;
+  ctx.y += 28;
 
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(18);
-  doc.setTextColor(colors.gold[0], colors.gold[1], colors.gold[2]);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
+  doc.setTextColor(...colors.gold);
   doc.text('TABLE OF CONTENTS', pw / 2, ctx.y, { align: 'center' });
-  ctx.y += 12;
+  ctx.y += 10;
 
   // Ornament
-  doc.setDrawColor(colors.gold[0], colors.gold[1], colors.gold[2]); doc.setLineWidth(0.5);
-  doc.line(pw / 2 - 50, ctx.y, pw / 2 + 50, ctx.y);
-  ctx.y += 30;
+  doc.setDrawColor(...colors.gold); doc.setLineWidth(0.5);
+  doc.line(pw / 2 - 40, ctx.y, pw / 2 + 40, ctx.y);
+  ctx.y += 24;
 
   // Build sections list
-  const sections: { title: string; desc: string }[] = [
-    { title: 'Year at a Glance', desc: 'SR Ascendant, ruler, profection, time lord, and moon phase' },
-    { title: 'Profection Wheel', desc: 'Visual diagram of your annual profection and activated house' },
-  ];
+  const sections: { title: string; desc: string }[] = [];
 
+  if (birthdayMode) sections.push({ title: 'Personal Strengths Portrait', desc: 'Your natal gifts — the foundation your year builds upon' });
+  sections.push({ title: 'Year at a Glance', desc: 'SR Ascendant, ruler, profection, time lord, and moon phase' });
+  sections.push({ title: 'Profection Wheel', desc: 'Visual diagram of your annual profection and activated house' });
   if (a.moonSign) sections.push({ title: 'Moon Sign Shift', desc: 'How your emotional processing changes this year' });
   sections.push({ title: 'Solar Return vs Natal', desc: 'Side-by-side comparison of all planet positions' });
   if (a.stelliums.length > 0) sections.push({ title: 'Stelliums', desc: 'Where 3+ planets cluster — your year\'s power zones' });
@@ -39,50 +40,54 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   if (a.vertex) sections.push({ title: 'Vertex', desc: 'Fated encounters and destined meetings' });
   sections.push({ title: 'Planet Spotlight', desc: 'Deep dive into key planets by house placement' });
   if (narrative) sections.push({ title: 'Year-Ahead Reading', desc: 'AI-generated narrative synthesis of your year' });
+  sections.push({ title: 'Best Months & Highlights', desc: 'Peak months for love, luck, and action' });
+  if (birthdayMode) sections.push({ title: 'Birthday Affirmation Card', desc: 'A personalized affirmation to carry with you all year' });
 
-  // Render
-  let num = 1;
-  for (const section of sections) {
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
-    doc.setTextColor(colors.deepBrown[0], colors.deepBrown[1], colors.deepBrown[2]);
+  // Render in two columns for cleaner layout
+  const colW = (contentW - 30) / 2;
+  const leftX = margin;
+  const rightX = margin + colW + 30;
+  const itemH = 38; // height per item
+  const half = Math.ceil(sections.length / 2);
 
-    // Number circle
-    doc.setFillColor(colors.softGold[0], colors.softGold[1], colors.softGold[2]);
-    doc.setDrawColor(colors.gold[0], colors.gold[1], colors.gold[2]); doc.setLineWidth(0.5);
-    doc.circle(margin + 12, ctx.y - 3, 10, 'FD');
-    doc.setFontSize(9);
-    doc.setTextColor(colors.gold[0], colors.gold[1], colors.gold[2]);
-    doc.text(String(num), margin + 12, ctx.y, { align: 'center' });
+  for (let i = 0; i < sections.length; i++) {
+    const section = sections[i];
+    const isRight = i >= half;
+    const col = isRight ? 1 : 0;
+    const row = isRight ? i - half : i;
+    const x = col === 0 ? leftX : rightX;
+    const itemY = ctx.y + row * itemH;
+
+    // Check page
+    if (itemY + itemH > ctx.ph - 55) break;
+
+    // Number badge
+    const badgeX = x + 14;
+    const badgeY = itemY + 6;
+    doc.setFillColor(...colors.softGold);
+    doc.setDrawColor(...colors.gold); doc.setLineWidth(0.8);
+    doc.roundedRect(badgeX - 11, badgeY - 9, 22, 18, 4, 4, 'FD');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+    doc.setTextColor(...colors.gold);
+    doc.text(String(i + 1), badgeX, badgeY + 2, { align: 'center' });
 
     // Title
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
-    doc.setTextColor(colors.deepBrown[0], colors.deepBrown[1], colors.deepBrown[2]);
-    doc.text(section.title, margin + 30, ctx.y);
-
-    // Dots
-    const titleW = doc.getTextWidth(section.title);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-    doc.setTextColor(colors.warmBorder[0], colors.warmBorder[1], colors.warmBorder[2]);
-    const dotsStart = margin + 32 + titleW;
-    const dotsEnd = pw - margin - 10;
-    if (dotsEnd > dotsStart + 10) {
-      let dx = dotsStart;
-      while (dx < dotsEnd) { doc.text('.', dx, ctx.y); dx += 4; }
-    }
-
-    ctx.y += 4;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
+    doc.setTextColor(...colors.deepBrown);
+    doc.text(section.title, x + 30, itemY + 6);
 
     // Description
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
-    doc.setTextColor(colors.dimText[0], colors.dimText[1], colors.dimText[2]);
-    doc.text(section.desc, margin + 30, ctx.y);
-
-    ctx.y += 22;
-    num++;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
+    doc.setTextColor(...colors.dimText);
+    const descLines = doc.splitTextToSize(section.desc, colW - 34);
+    descLines.slice(0, 2).forEach((line: string, li: number) => {
+      doc.text(line, x + 30, itemY + 18 + li * 10);
+    });
   }
 
+  ctx.y += half * itemH + 16;
+
   // Bottom ornament
-  ctx.y += 10;
-  doc.setDrawColor(colors.gold[0], colors.gold[1], colors.gold[2]); doc.setLineWidth(1.5);
+  doc.setDrawColor(...colors.gold); doc.setLineWidth(1.5);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
 }
