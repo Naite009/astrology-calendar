@@ -682,6 +682,20 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       }
 
       // =============================================
+      // YEAR-AHEAD HIGHLIGHTS & MONTHLY FORECASTS
+      // =============================================
+      doc.addPage(); ctx.y = margin;
+      generateHighlightsPage(ctx, doc, analysis);
+
+      // =============================================
+      // BIRTHDAY AFFIRMATION CARD (birthday mode)
+      // =============================================
+      if (birthdayMode) {
+        doc.addPage(); ctx.y = margin;
+        generateAffirmationCard(ctx, doc, analysis, natalChart);
+      }
+
+      // =============================================
       // GOLD BORDERS on all pages
       // =============================================
       if (goldBorders) {
