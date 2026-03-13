@@ -9,21 +9,21 @@ export function generateHowToReadPage(ctx: PDFContext, doc: jsPDF) {
   // Title
   doc.setDrawColor(...colors.gold); doc.setLineWidth(2);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 20;
+  ctx.y += 22;
 
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
   doc.setTextColor(...colors.gold);
   doc.text('HOW TO READ THIS REPORT', pw / 2, ctx.y, { align: 'center' });
-  ctx.y += 5;
+  ctx.y += 6;
   doc.setLineWidth(0.5); doc.line(pw / 2 - 50, ctx.y, pw / 2 + 50, ctx.y);
-  ctx.y += 14;
+  ctx.y += 16;
 
-  doc.setFont('helvetica', 'italic'); doc.setFontSize(9);
+  doc.setFont('helvetica', 'italic'); doc.setFontSize(10.5);
   doc.setTextColor(...colors.bodyText);
   const intro = 'This report is your personal map for the year. Here are the key concepts you will encounter — no astrology background needed.';
   const introLines = doc.splitTextToSize(intro, contentW - 16);
-  introLines.forEach((line: string) => { doc.text(line, margin + 8, ctx.y); ctx.y += 12; });
-  ctx.y += 6;
+  introLines.forEach((line: string) => { doc.text(line, margin + 8, ctx.y); ctx.y += 14; });
+  ctx.y += 8;
 
   const concepts: { title: string; body: string }[] = [
     {
@@ -54,9 +54,9 @@ export function generateHowToReadPage(ctx: PDFContext, doc: jsPDF) {
 
   for (const c of concepts) {
     ctx.drawCard(doc, () => {
-      ctx.writeBold(doc, c.title, colors.gold, 10);
-      ctx.y += 2;
-      ctx.writeBody(doc, c.body, colors.bodyText, 9, 12);
+      ctx.writeBold(doc, c.title, colors.gold, 11.5);
+      ctx.y += 3;
+      ctx.writeBody(doc, c.body, colors.bodyText, 10, 13.5);
     });
   }
 
