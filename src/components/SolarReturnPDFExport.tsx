@@ -214,14 +214,11 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       generateHowToReadPage(ctx, doc);
 
       // =============================================
-      // PERSONAL STRENGTHS PORTRAIT (birthday mode)
+      // BIG THREE (birthday mode) or always
       // =============================================
-      if (birthdayMode) {
-        doc.addPage(); ctx.y = margin;
-        ctx.sectionPages.set('YOUR STRENGTHS AND THIS YEAR', doc.getNumberOfPages());
-        const srSunHouse = analysis.planetSRHouses?.['Sun'];
-        generateStrengthsPortrait(ctx, doc, natalChart, srSunHouse ?? undefined);
-      }
+      doc.addPage(); ctx.y = margin;
+      ctx.sectionPages.set('YOUR BIG THREE', doc.getNumberOfPages());
+      generateStrengthsPortrait(ctx, doc, natalChart, analysis);
 
       // =============================================
       // PAGE 3+: YEAR AT A GLANCE (own page, beautiful)
@@ -238,15 +235,24 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         ctx.sectionPages.set('PROFECTION WHEEL', doc.getNumberOfPages());
         drawProfectionWheel(ctx, doc, analysis.profectionYear.age, analysis.profectionYear.houseNumber, analysis.profectionYear.timeLord);
 
-        // Profection explanation
+        // Brief profection explanation
         ctx.y += 12;
         ctx.drawCard(doc, () => {
           ctx.writeBold(doc, 'What Is a Profection Year?', ctx.colors.gold, 11);
-          ctx.writeBody(doc, 'Annual Profections are a Hellenistic timing technique that assigns one house of your chart to each year of life. Starting at House 1 when you\'re born, each birthday advances to the next house. At age 12 you\'re back to House 1, and the cycle repeats. The house activated this year tells you WHERE life is asking you to focus — it\'s like a spotlight shining on one department of your life.');
+          ctx.writeBody(doc, 'Annual Profections are a Hellenistic timing technique that assigns one house of your chart to each year of life. Starting at House 1 when you\'re born, each birthday advances to the next house. At age 12 you\'re back to House 1, and the cycle repeats. The activated house tells you WHERE life is asking you to focus.');
           ctx.y += 4;
           ctx.writeBold(doc, 'What Is a Time Lord?', ctx.colors.gold, 11);
-          ctx.writeBody(doc, 'The planet that RULES your activated profection house becomes your "Time Lord" — the planet running the show this year. Every transit to or from your Time Lord hits harder. Every aspect involving your Time Lord matters more. Think of the Time Lord as the CEO of your year: all the other planets are employees, but the Time Lord sets the agenda. When you see your Time Lord show up in aspects, transits, or SR placements, pay extra attention — that\'s where the year\'s most important story is being told.');
+          ctx.writeBody(doc, 'The planet that RULES your activated profection house becomes your "Time Lord" — the planet running the show this year. Every transit to or from your Time Lord hits harder. Every aspect involving your Time Lord matters more.');
         });
+
+        // PERSONAL PROFECTION DEEP DIVE
+        generateProfectionPersonalSection(ctx, doc,
+          analysis.profectionYear.houseNumber,
+          analysis.profectionYear.timeLord,
+          analysis.profectionYear.age,
+          analysis.profectionYear.timeLordSRHouse ?? null,
+          analysis.profectionYear.timeLordSRSign || ''
+        );
       }
 
       // =============================================
