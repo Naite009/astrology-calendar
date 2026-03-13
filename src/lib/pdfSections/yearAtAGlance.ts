@@ -80,7 +80,7 @@ export function generatePDFYearAtAGlance(
     // Profection box
     doc.setFillColor(colors.softGold[0], colors.softGold[1], colors.softGold[2]);
     doc.setDrawColor(colors.gold[0], colors.gold[1], colors.gold[2]); doc.setLineWidth(1);
-    doc.roundedRect(margin, ctx.y, halfW, boxH, 6, 6, 'FD');
+    doc.roundedRect(boxL, ctx.y, halfW, boxH, 6, 6, 'FD');
     doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
     doc.setTextColor(colors.dimText[0], colors.dimText[1], colors.dimText[2]);
     doc.text('PROFECTION YEAR', margin + 12, ctx.y + 16);
