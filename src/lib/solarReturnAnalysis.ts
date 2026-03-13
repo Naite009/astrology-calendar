@@ -1102,76 +1102,71 @@ export const analyzeSolarReturn = (
   }
   natalDegreeConduits.sort((a, b) => a.orb - b.orb);
 
-  // ─── Moon Timing (Lynn Bell: 1° per month) ──
-  // The SR Moon acts as the year's internal clock. It advances ~1° per month from its
-  // position at the birthday. When it perfects an aspect to another SR planet, that month
-  // marks a turning point — events connected to that planet's themes activate.
-  // This is one of the most practical timing tools in Solar Return work.
-  const moonTimingEvents: SolarReturnAnalysis['moonTimingEvents'] = [];
-  const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const birthMonth = natalChart.birthDate ? parseInt(natalChart.birthDate.slice(5, 7), 10) - 1 : 0; // 0-indexed
+  // ─── SR Moon Aspects (frozen snapshot at the SR moment) ──
+  // The SR Moon's aspects to other SR planets describe the emotional climate for the year.
+  // These are STATIC aspects — the Moon does NOT advance through the chart.
+  const srMoonAspects: SolarReturnAnalysis['srMoonAspects'] = [];
 
-  const moonTimingInterpretations: Record<string, Record<string, string>> = {
+  const moonAspectInterpretations: Record<string, Record<string, string>> = {
     Conjunction: {
-      Sun: 'A peak moment of visibility and purpose — you feel most like yourself',
-      Moon: '',
-      Mercury: 'Important news, conversations, or decisions arrive',
-      Venus: 'A beautiful moment for love, beauty, or financial opportunity',
-      Mars: 'A burst of energy, action, or confrontation — things come to a head',
-      Jupiter: 'Expansion, luck, or an opportunity opens up',
-      Saturn: 'A reality check, commitment, or milestone — something solidifies',
-      Uranus: 'A surprise, breakthrough, or sudden change of direction',
-      Neptune: 'Heightened intuition, creativity, or confusion — trust slowly',
-      Pluto: 'A powerful transformation, ending, or deep revelation',
-      Chiron: 'A healing moment or old wound surfaces for attention',
+      Sun: 'New Moon energy — a year of fresh emotional beginnings, strong instinct to start new chapters',
+      Mercury: 'Emotions and thinking are fused — you process feelings through words, writing, and conversation',
+      Venus: 'Emotional needs and values are aligned — a year of pleasure, beauty, and relational ease',
+      Mars: 'Emotions run hot — strong impulses, quick reactions, courage mixed with impatience',
+      Jupiter: 'Emotional expansion and optimism — the year feels generous, hopeful, and emotionally nourishing',
+      Saturn: 'Emotional restraint — feelings are controlled, mature, and tied to responsibility. Heavy but grounding.',
+      Uranus: 'Emotional volatility — sudden mood shifts, need for freedom, unconventional emotional expression',
+      Neptune: 'Heightened sensitivity, porous boundaries, vivid dreams. Intuition is powerful but clarity is elusive.',
+      Pluto: 'Emotional intensity — deep feelings, compulsive undercurrents, potential for profound psychological insight',
+      Chiron: 'An old wound surfaces for healing — emotional vulnerability becomes a source of wisdom',
     },
     Opposition: {
-      Sun: 'A culmination or confrontation around identity and direction',
-      Mercury: 'A communication tension or important negotiation',
-      Venus: 'Relationship decisions or values come into question',
-      Mars: 'Conflict or the need to assert boundaries',
-      Jupiter: 'Over-extension or a crossroads of opportunity',
-      Saturn: 'External pressure or a test of commitment',
-      Uranus: 'Disruption that forces freedom or authenticity',
-      Neptune: 'Disillusionment or the need to face reality',
-      Pluto: 'Power struggles or deep emotional reckoning',
-      Chiron: 'Relationship mirrors a wound that needs healing',
+      Sun: 'Full Moon energy — a year of emotional culmination, awareness through contrast, relationships in the spotlight',
+      Mercury: 'Tension between feelings and rational thinking — decisions feel emotionally charged',
+      Venus: 'Emotional needs may conflict with what you value or who you love — relationship recalibration',
+      Mars: 'Emotional conflict and assertion — anger or passion needs a conscious outlet',
+      Jupiter: 'Emotional over-extension — generosity tested by overcommitment or unrealistic optimism',
+      Saturn: 'Emotional pressure from responsibilities — obligation vs. emotional needs',
+      Uranus: 'Emotional disruption — unexpected changes force emotional independence',
+      Neptune: 'Emotional confusion or disillusionment — seeing clearly requires effort',
+      Pluto: 'Power struggles in emotional life — intensity demands honesty about control dynamics',
+      Chiron: 'Relationships mirror core wounds — healing through confrontation with old pain',
     },
     Trine: {
-      Sun: 'A harmonious flow of confidence and creative energy',
-      Mercury: 'Easy communication, learning, or travel',
-      Venus: 'Grace in relationships, social ease, financial flow',
-      Mars: 'Productive energy, things move forward easily',
-      Jupiter: 'Natural expansion, generosity, and good fortune',
-      Saturn: 'Steady progress, earned rewards, or structural support',
-      Uranus: 'Positive change that feels exciting rather than disruptive',
-      Neptune: 'Spiritual insight, artistic inspiration, compassion',
-      Pluto: 'Empowerment, deep insight, transformation with ease',
-      Chiron: 'Healing that comes naturally through acceptance',
+      Sun: 'Emotional confidence — your feelings and identity flow together naturally',
+      Mercury: 'Easy communication of feelings — emotional intelligence is high this year',
+      Venus: 'Emotional grace — relationships and pleasures feel harmonious and easy',
+      Mars: 'Productive emotional energy — feelings fuel action without friction',
+      Jupiter: 'Natural emotional growth and good fortune — optimism and generosity flow',
+      Saturn: 'Emotional stability — feelings are grounded, mature, and reliable',
+      Uranus: 'Positive emotional changes — freedom and excitement feel natural, not disruptive',
+      Neptune: 'Spiritual and creative flow — intuition, compassion, and imagination are gifts',
+      Pluto: 'Deep emotional empowerment — transformation feels natural rather than forced',
+      Chiron: 'Healing comes naturally — emotional acceptance and integration',
     },
     Square: {
-      Sun: 'Tension around identity — you are pushed to grow',
-      Mercury: 'Miscommunication or mental stress that demands clarity',
-      Venus: 'Relationship friction or a values conflict',
-      Mars: 'Frustration, anger, or blocked action that needs redirection',
-      Jupiter: 'Overcommitment or philosophical tension',
-      Saturn: 'Restriction, delays, or hard lessons',
-      Uranus: 'Restlessness or disruptive change that forces adaptation',
-      Neptune: 'Confusion, escapism, or boundary issues come to a head',
-      Pluto: 'Control issues, intensity, or a power crisis',
-      Chiron: 'A wound is triggered — growth through difficulty',
+      Sun: 'Tension between emotional needs and conscious purpose — inner friction drives growth',
+      Mercury: 'Emotional stress in communication — misunderstandings or mental overwhelm',
+      Venus: 'Friction between what you feel and what you value — relationship adjustments needed',
+      Mars: 'Emotional frustration — anger or blocked feelings demand a healthy release',
+      Jupiter: 'Emotional restlessness or overcommitment — growth through managing excess',
+      Saturn: 'Emotional restriction — heaviness, delayed gratification, or isolation that forces maturity',
+      Uranus: 'Emotional instability — sudden disruptions or restlessness push you out of comfort zones',
+      Neptune: 'Emotional confusion — boundaries dissolve, escapism tempts, clarity requires discipline',
+      Pluto: 'Emotional power struggles — compulsive feelings surface for transformation',
+      Chiron: 'Emotional wound activated — growth through confronting what hurts',
     },
     Sextile: {
-      Sun: 'An opportunity to express yourself or take initiative',
-      Mercury: 'A helpful conversation, learning opportunity, or connection',
-      Venus: 'Social opportunities, creative openings, or romantic potential',
-      Mars: 'Motivation and energy to act on an opportunity',
-      Jupiter: 'A door opens — travel, education, or growth beckons',
-      Saturn: 'A chance to build something lasting with effort',
-      Uranus: 'An innovative idea or exciting new possibility',
-      Neptune: 'Creative inspiration or spiritual opening',
-      Pluto: 'An opportunity for deep change or empowerment',
-      Chiron: 'An opening for healing through connection',
+      Sun: 'Opportunities for emotional expression and confidence — take initiative',
+      Mercury: 'Helpful conversations and emotional insights — communication opens doors',
+      Venus: 'Social and romantic opportunities — emotional openness attracts good connections',
+      Mars: 'Emotional motivation — feelings fuel productive action when you choose to act',
+      Jupiter: 'Emotional growth opportunities — learning, travel, or philosophical expansion beckons',
+      Saturn: 'Chance to build emotional stability — effort creates lasting security',
+      Uranus: 'Exciting emotional possibilities — innovation and fresh approaches to feelings',
+      Neptune: 'Creative and spiritual openings — intuition guides you toward meaningful experiences',
+      Pluto: 'Opportunity for deep emotional insight — transformation through willing engagement',
+      Chiron: 'Opening for emotional healing — connection and vulnerability lead to growth',
     },
   };
 
@@ -1185,31 +1180,45 @@ export const analyzeSolarReturn = (
         const pDeg = toAbsDeg(pos);
         if (pDeg === null) continue;
         const targetHouse = planetSRHouses[planet] ?? null;
-        for (const asp of ASPECT_ANGLES) {
-          let diff = Math.abs(moonDeg - pDeg);
-          if (diff > 180) diff = 360 - diff;
-          const gap = diff - asp.angle;
-          if (gap > 0 && gap <= 12) {
-            const monthsAway = Math.round(gap * 10) / 10;
-            if (monthsAway <= 12) {
-              const calMonthIdx = (birthMonth + Math.round(monthsAway)) % 12;
-              const approxMonth = MONTH_NAMES[calMonthIdx];
-              const specific = moonTimingInterpretations[asp.name]?.[planet] || `${planet} themes are activated`;
-              moonTimingEvents.push({
-                targetPlanet: planet,
-                aspectType: asp.name,
-                monthsFromBirthday: monthsAway,
-                approximateMonth: approxMonth,
-                targetSRHouse: targetHouse,
-                interpretation: `Around ${approxMonth} (~${Math.round(monthsAway)} months after your birthday), the SR Moon perfects a ${asp.name.toLowerCase()} to ${planet}${targetHouse ? ` (SR House ${targetHouse})` : ''}. ${specific}.`,
-              });
-            }
-          }
+        const asp = detectAspect(moonDeg, pDeg);
+        if (asp && asp.orb <= 8) {
+          const specific = moonAspectInterpretations[asp.type]?.[planet] || `${planet} themes color your emotional life this year`;
+          srMoonAspects.push({
+            targetPlanet: planet,
+            aspectType: asp.type,
+            orb: asp.orb,
+            targetSRHouse: targetHouse,
+            interpretation: specific,
+          });
         }
       }
-      moonTimingEvents.sort((a, b) => a.monthsFromBirthday - b.monthsFromBirthday);
+      srMoonAspects.sort((a, b) => a.orb - b.orb);
     }
   }
+
+  // ─── Moon Angularity ──
+  const angularHouses = [1, 4, 7, 10];
+  const succedentHouses = [2, 5, 8, 11];
+  const moonAngularity: SolarReturnAnalysis['moonAngularity'] = moonHouse
+    ? angularHouses.includes(moonHouse) ? 'angular'
+      : succedentHouses.includes(moonHouse) ? 'succedent'
+      : 'cadent'
+    : null;
+
+  // ─── Moon Late Degree ──
+  const moonLateDegree = moonPos ? parseInt(String(moonPos.degree)) >= 25 : false;
+
+  // ─── Moon 19-Year Metonic Cycle ──
+  const currentAge = profectionYear?.age ?? 0;
+  const moonMetonicAges: number[] = [];
+  if (currentAge > 0) {
+    for (let a = currentAge % 19; a < currentAge; a += 19) {
+      if (a > 0) moonMetonicAges.push(a);
+    }
+  }
+
+  // Keep moonTimingEvents empty (deprecated — the technique was incorrectly attributed)
+  const moonTimingEvents: SolarReturnAnalysis['moonTimingEvents'] = [];
 
   // ─── Vertex Calculation ─────────────────────────────────────────────
   let vertex: SRVertexData | null = null;
