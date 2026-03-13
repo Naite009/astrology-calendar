@@ -1173,32 +1173,6 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         }
       }
 
-      // --- FOOTER ---
-      y += 20;
-      checkPage(30);
-      drawGoldRule();
-      y += 14;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7);
-      doc.setTextColor(...dimText);
-      doc.text(
-        `Generated ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`,
-        pw / 2, y, { align: 'center' }
-      );
-
-      // Page numbers
-      const totalPages = doc.getNumberOfPages();
-      for (let i = 1; i <= totalPages; i++) {
-        doc.setPage(i);
-        doc.setDrawColor(...gold);
-        doc.setLineWidth(0.5);
-        doc.line(margin, ph - 32, pw - margin, ph - 32);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(7);
-        doc.setTextColor(...dimText);
-        doc.text(`-- ${i} of ${totalPages} --`, pw / 2, ph - 20, { align: 'center' });
-      }
-
       doc.save(`Solar-Return-${year}-${name.replace(/\s+/g, '-')}.pdf`);
     } catch (err) {
       console.error('PDF export error:', err);
@@ -1208,13 +1182,44 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
   };
 
   return (
-    <button
-      onClick={generatePDF}
-      disabled={generating}
-      className="text-[11px] uppercase tracking-widest px-3 py-1.5 border border-border rounded-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1 disabled:opacity-50"
-    >
-      {generating ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
-      {generating ? 'Generating PDF...' : 'Download PDF Report'}
-    </button>
+    <div className="space-y-3">
+      {/* Birthday mode toggle + personal message */}
+      <div className="flex items-start gap-3">
+        <label className="flex items-center gap-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={birthdayMode}
+            onChange={(e) => setBirthdayMode(e.target.checked)}
+            className="rounded border-border accent-primary w-4 h-4"
+          />
+          <span className="text-[11px] uppercase tracking-widest text-muted-foreground">
+            🎂 Birthday Gift Mode
+          </span>
+        </label>
+      </div>
+
+      {birthdayMode && (
+        <div className="border border-primary/20 rounded-sm p-3 bg-primary/5 space-y-2">
+          <label className="text-[10px] uppercase tracking-widest text-primary block">Personal Message</label>
+          <textarea
+            value={personalMessage}
+            onChange={(e) => setPersonalMessage(e.target.value)}
+            placeholder="Happy birthday! Wishing you an amazing year ahead filled with cosmic magic..."
+            rows={3}
+            className="w-full border border-border bg-background text-foreground rounded-sm px-3 py-2 text-sm resize-none placeholder:text-muted-foreground/50"
+          />
+          <p className="text-[10px] text-muted-foreground">This message will appear at the top of the PDF under "Happy Birthday!"</p>
+        </div>
+      )}
+
+      <button
+        onClick={generatePDF}
+        disabled={generating}
+        className="text-[11px] uppercase tracking-widest px-3 py-1.5 border border-border rounded-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1 disabled:opacity-50"
+      >
+        {generating ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
+        {generating ? 'Generating PDF...' : birthdayMode ? 'Download Birthday Gift PDF' : 'Download PDF Report'}
+      </button>
+    </div>
   );
 };
