@@ -690,7 +690,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
 
         // Header box with key info
         doc.setFillColor(...ctx.colors.softGold);
-        doc.setDrawColor(...ctx.colors.gold); doc.setLineWidth(2);
+        doc.setDrawColor(...ctx.colors.warmBorder); doc.setLineWidth(0.5);
         doc.roundedRect(margin, ctx.y, contentW, 60, 6, 6, 'FD');
         doc.setFont('helvetica', 'bold'); doc.setFontSize(20);
         doc.setTextColor(...ctx.colors.gold);
