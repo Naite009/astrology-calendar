@@ -67,7 +67,7 @@ export function generatePDFYearAtAGlance(
 
   // --- Profection + Time Lord (side by side boxes with explanations) ---
   if (a.profectionYear) {
-    const halfW = (contentW - 12) / 2;
+    const halfW = (boxW - 12) / 2;
     const boxH = 76;
 
     const HOUSE_FOCUS: Record<number, string> = {
