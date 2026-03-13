@@ -34,7 +34,7 @@ export function generatePDFYearAtAGlance(
   if (a.yearlyTheme) {
     doc.setFillColor(colors.softGold[0], colors.softGold[1], colors.softGold[2]);
     doc.setDrawColor(colors.gold[0], colors.gold[1], colors.gold[2]); doc.setLineWidth(1);
-    doc.roundedRect(margin, ctx.y, contentW, 54, 6, 6, 'FD');
+    doc.roundedRect(boxL, ctx.y, boxW, 54, 6, 6, 'FD');
 
     doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
     doc.setTextColor(colors.dimText[0], colors.dimText[1], colors.dimText[2]);
