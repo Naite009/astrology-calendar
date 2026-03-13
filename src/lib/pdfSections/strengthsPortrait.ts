@@ -166,95 +166,116 @@ export function generateStrengthsPortrait(
   ctx: PDFContext, doc: jsPDF, natalChart: NatalChart, analysis: SolarReturnAnalysis
 ) {
   const { pw, margin, contentW, colors } = ctx;
-  const name = natalChart.name || 'You';
   const sunSign = natalChart.planets?.Sun?.sign || '';
   const moonSign = natalChart.planets?.Moon?.sign || '';
   const risingSign = natalChart.houseCusps?.house1?.sign || '';
   const srSunHouse = analysis.planetSRHouses?.['Sun'];
   const srMoonHouse = analysis.planetSRHouses?.['Moon'];
   const srAscSign = analysis.yearlyTheme?.ascendantSign || '';
+  const srMoonSign = analysis.moonSign || '';
 
-  // Title
-  doc.setDrawColor(...colors.gold); doc.setLineWidth(2);
+  // Compact title
+  ctx.y += 6;
+  doc.setDrawColor(...colors.gold); doc.setLineWidth(1.5);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 24;
+  ctx.y += 16;
 
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
   doc.setTextColor(...colors.gold);
   doc.text('YOUR BIG THREE', pw / 2, ctx.y, { align: 'center' });
-  ctx.y += 6;
-  doc.setLineWidth(0.5); doc.line(pw / 2 - 50, ctx.y, pw / 2 + 50, ctx.y);
-  ctx.y += 14;
-
-  // Intro
-  doc.setFont('helvetica', 'italic'); doc.setFontSize(10);
-  doc.setTextColor(...colors.bodyText);
-  const affirmText = `${name}'s natal Sun, Moon, and Rising — strengths, shadow patterns, and how this Solar Return year activates each one.`;
-  const affirmLines = doc.splitTextToSize(affirmText, contentW - 20);
-  affirmLines.forEach((line: string) => {
-    doc.text(line, pw / 2, ctx.y, { align: 'center' });
-    ctx.y += 13;
-  });
+  ctx.y += 5;
+  doc.setLineWidth(0.5); doc.line(pw / 2 - 40, ctx.y, pw / 2 + 40, ctx.y);
   ctx.y += 8;
+
+  doc.setFont('helvetica', 'italic'); doc.setFontSize(9);
+  doc.setTextColor(...colors.bodyText);
+  doc.text('Natal strengths, shadow patterns, and how this Solar Return year activates each one.', pw / 2, ctx.y, { align: 'center' });
+  ctx.y += 10;
+
+  // --- Compact card helper ---
+  const tinyBody = (text: string, color: [number, number, number] = colors.bodyText) => {
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+    doc.setTextColor(...color);
+    const lines: string[] = doc.splitTextToSize(text, contentW - 12);
+    for (const line of lines) { doc.text(line, margin + 6, ctx.y); ctx.y += 10; }
+  };
+  const tinyLabel = (label: string, text: string, labelColor: [number, number, number]) => {
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+    doc.setTextColor(...labelColor);
+    doc.text(label + ':', margin + 6, ctx.y);
+    const lw = doc.getTextWidth(label + ': ');
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+    doc.setTextColor(...colors.bodyText);
+    const availW = contentW - 12 - lw;
+    const lines: string[] = doc.splitTextToSize(text, availW > 60 ? contentW - 12 : contentW - 12);
+    if (availW > 60) {
+      // First line continues after label
+      doc.text(lines[0], margin + 6 + lw, ctx.y);
+      ctx.y += 10;
+      for (let j = 1; j < lines.length; j++) { doc.text(lines[j], margin + 6, ctx.y); ctx.y += 10; }
+    } else {
+      ctx.y += 10;
+      for (const line of lines) { doc.text(line, margin + 6, ctx.y); ctx.y += 10; }
+    }
+  };
+  const compactCard = (renderFn: () => void) => {
+    const startY = ctx.y; ctx.y += 8;
+    renderFn(); ctx.y += 6;
+    const h = ctx.y - startY;
+    doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.5);
+    doc.roundedRect(margin, startY, contentW, h, 4, 4, 'S');
+    doc.setDrawColor(...colors.gold); doc.setLineWidth(2.5);
+    doc.line(margin + 1, startY + 2, margin + 1, startY + h - 2);
+    ctx.y += 4;
+  };
 
   // --- SUN ---
   if (sunSign && sunStrength[sunSign]) {
-    ctx.drawCard(doc, () => {
-      const houseLabel = srSunHouse ? ` — SR House ${srSunHouse}` : '';
-      ctx.writeBold(doc, `SUN IN ${sunSign.toUpperCase()}${houseLabel}`, colors.gold, 12);
-      ctx.y += 2;
-      ctx.writeCardSection(doc, 'Strength', sunStrength[sunSign], colors.accentGreen);
-      if (sunShadow[sunSign]) {
-        ctx.writeCardSection(doc, 'Shadow', sunShadow[sunSign], colors.accentRust);
-      }
-      if (srSunHouse && sunYearAhead[srSunHouse]) {
-        ctx.writeCardSection(doc, 'This Year', sunYearAhead[srSunHouse], colors.gold);
-      }
+    compactCard(() => {
+      const houseLabel = srSunHouse ? `  ·  SR House ${srSunHouse}` : '';
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+      doc.setTextColor(...colors.gold);
+      doc.text(`☉ SUN IN ${sunSign.toUpperCase()}${houseLabel}`, margin + 6, ctx.y); ctx.y += 12;
+      tinyLabel('Strength', sunStrength[sunSign], colors.accentGreen);
+      if (sunShadow[sunSign]) tinyLabel('Shadow', sunShadow[sunSign], colors.accentRust);
+      if (srSunHouse && sunYearAhead[srSunHouse]) tinyLabel('This Year', sunYearAhead[srSunHouse], colors.gold);
     });
   }
 
   // --- MOON ---
   if (moonSign && moonStrength[moonSign]) {
-    ctx.checkPage(180);
-    const srMoonSign = analysis.moonSign || '';
-    ctx.drawCard(doc, () => {
-      ctx.writeBold(doc, `NATAL MOON IN ${moonSign.toUpperCase()}`, colors.gold, 12);
+    compactCard(() => {
+      const srHouseLabel = srMoonHouse ? ` in the ${srMoonHouse}${getOrdinalSuffix(srMoonHouse)} House` : '';
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+      doc.setTextColor(...colors.gold);
+      doc.text(`☽ NATAL MOON IN ${moonSign.toUpperCase()}`, margin + 6, ctx.y);
       if (srMoonSign) {
-        const srHouseLabel = srMoonHouse ? ` in the ${srMoonHouse}${getOrdinalSuffix(srMoonHouse)} House` : '';
-        ctx.writeBold(doc, `Solar Return Moon in ${srMoonSign}${srHouseLabel}`, colors.deepBrown, 10);
+        const subtext = `SR Moon in ${srMoonSign}${srHouseLabel}`;
+        const mainW = doc.getTextWidth(`☽ NATAL MOON IN ${moonSign.toUpperCase()}  ·  `);
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
+        doc.setTextColor(...colors.deepBrown);
+        doc.text(`·  ${subtext}`, margin + 6 + mainW, ctx.y);
       }
-      ctx.y += 2;
-      ctx.writeCardSection(doc, 'Natal Strength', moonStrength[moonSign], colors.accentGreen);
-      if (moonShadow[moonSign]) {
-        ctx.writeCardSection(doc, 'Natal Shadow', moonShadow[moonSign], colors.accentRust);
-      }
-      // SR Moon sign activation — how this year's Moon sign challenges/activates natal patterns
-      if (srMoonSign && srMoonSignActivation[srMoonSign]) {
-        ctx.writeCardSection(doc, 'How This Year Activates You', srMoonSignActivation[srMoonSign](moonSign), colors.gold);
-      }
-      // SR Moon house — where the emotional action plays out
-      if (srMoonHouse && moonYearAhead[srMoonHouse]) {
-        ctx.writeCardSection(doc, `Where It Plays Out (House ${srMoonHouse})`, moonYearAhead[srMoonHouse], colors.deepBrown);
-      }
+      ctx.y += 12;
+      tinyLabel('Natal Strength', moonStrength[moonSign], colors.accentGreen);
+      if (moonShadow[moonSign]) tinyLabel('Natal Shadow', moonShadow[moonSign], colors.accentRust);
+      if (srMoonSign && srMoonSignActivation[srMoonSign]) tinyLabel('How This Year Activates You', srMoonSignActivation[srMoonSign](moonSign), colors.gold);
+      if (srMoonHouse && moonYearAhead[srMoonHouse]) tinyLabel(`Where It Plays Out (House ${srMoonHouse})`, moonYearAhead[srMoonHouse], colors.deepBrown);
     });
   }
 
   // --- RISING ---
   if (risingSign && risingStrength[risingSign]) {
-    ctx.checkPage(180);
-    ctx.drawCard(doc, () => {
-      const srLabel = srAscSign ? ` — SR Rising: ${srAscSign}` : '';
-      ctx.writeBold(doc, `${risingSign.toUpperCase()} RISING${srLabel}`, colors.gold, 12);
-      ctx.y += 2;
-      ctx.writeCardSection(doc, 'Strength', risingStrength[risingSign], colors.accentGreen);
-      if (risingShadow[risingSign]) {
-        ctx.writeCardSection(doc, 'Shadow', risingShadow[risingSign], colors.accentRust);
-      }
-      if (srAscSign && risingYearAhead[srAscSign]) {
-        ctx.writeCardSection(doc, 'This Year', risingYearAhead[srAscSign], colors.gold);
-      }
+    compactCard(() => {
+      const srLabel = srAscSign ? `  ·  SR Rising: ${srAscSign}` : '';
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+      doc.setTextColor(...colors.gold);
+      doc.text(`↑ ${risingSign.toUpperCase()} RISING${srLabel}`, margin + 6, ctx.y); ctx.y += 12;
+      tinyLabel('Strength', risingStrength[risingSign], colors.accentGreen);
+      if (risingShadow[risingSign]) tinyLabel('Shadow', risingShadow[risingSign], colors.accentRust);
+      if (srAscSign && risingYearAhead[srAscSign]) tinyLabel('This Year', risingYearAhead[srAscSign], colors.gold);
     });
   }
 
-  ctx.y += 10;
+  ctx.y += 6;
 }
