@@ -25,21 +25,23 @@ export function generatePDFYearAtAGlance(
   doc.line(pw / 2 - 40, ctx.y, pw / 2 + 40, ctx.y);
   ctx.y += 24;
 
-  // Left column info + right column will be profection wheel (drawn separately)
+  // Left column info — inset from margin to clear the gold accent bar
+  const boxL = margin + 8; // left edge of boxes (inset from accent bar)
+  const boxW = contentW - 8; // narrower to stay within page
   const glanceStartY = ctx.y;
 
   // --- SR Ascendant ---
   if (a.yearlyTheme) {
     doc.setFillColor(colors.softGold[0], colors.softGold[1], colors.softGold[2]);
     doc.setDrawColor(colors.gold[0], colors.gold[1], colors.gold[2]); doc.setLineWidth(1);
-    doc.roundedRect(margin, ctx.y, contentW, 54, 6, 6, 'FD');
+    doc.roundedRect(boxL, ctx.y, boxW, 54, 6, 6, 'FD');
 
     doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
     doc.setTextColor(colors.dimText[0], colors.dimText[1], colors.dimText[2]);
-    doc.text('SR ASCENDANT', margin + 14, ctx.y + 18);
+    doc.text('SR ASCENDANT', boxL + 14, ctx.y + 18);
     doc.setFontSize(16);
     doc.setTextColor(colors.gold[0], colors.gold[1], colors.gold[2]);
-    doc.text(`${a.yearlyTheme.ascendantSign} Rising`, margin + 14, ctx.y + 38);
+    doc.text(`${a.yearlyTheme.ascendantSign} Rising`, boxL + 14, ctx.y + 38);
 
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
     doc.setTextColor(colors.dimText[0], colors.dimText[1], colors.dimText[2]);
@@ -65,7 +67,7 @@ export function generatePDFYearAtAGlance(
 
   // --- Profection + Time Lord (side by side boxes with explanations) ---
   if (a.profectionYear) {
-    const halfW = (contentW - 12) / 2;
+    const halfW = (boxW - 12) / 2;
     const boxH = 76;
 
     const HOUSE_FOCUS: Record<number, string> = {
@@ -78,27 +80,27 @@ export function generatePDFYearAtAGlance(
     // Profection box
     doc.setFillColor(colors.softGold[0], colors.softGold[1], colors.softGold[2]);
     doc.setDrawColor(colors.gold[0], colors.gold[1], colors.gold[2]); doc.setLineWidth(1);
-    doc.roundedRect(margin, ctx.y, halfW, boxH, 6, 6, 'FD');
+    doc.roundedRect(boxL, ctx.y, halfW, boxH, 6, 6, 'FD');
     doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
     doc.setTextColor(colors.dimText[0], colors.dimText[1], colors.dimText[2]);
-    doc.text('PROFECTION YEAR', margin + 12, ctx.y + 16);
+    doc.text('PROFECTION YEAR', boxL + 12, ctx.y + 16);
     doc.setFontSize(18);
     doc.setTextColor(colors.gold[0], colors.gold[1], colors.gold[2]);
-    doc.text(`House ${a.profectionYear.houseNumber}`, margin + 12, ctx.y + 36);
+    doc.text(`House ${a.profectionYear.houseNumber}`, boxL + 12, ctx.y + 36);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
     doc.setTextColor(colors.bodyText[0], colors.bodyText[1], colors.bodyText[2]);
-    doc.text(`Age ${a.profectionYear.age}`, margin + 12, ctx.y + 50);
+    doc.text(`Age ${a.profectionYear.age}`, boxL + 12, ctx.y + 50);
     // House focus label
     const focusLabel = HOUSE_FOCUS[a.profectionYear.houseNumber] || '';
     doc.setFont('helvetica', 'italic'); doc.setFontSize(8);
     doc.setTextColor(colors.deepBrown[0], colors.deepBrown[1], colors.deepBrown[2]);
     const focusLines = doc.splitTextToSize(`Focus: ${focusLabel}`, halfW - 24);
     focusLines.forEach((line: string, i: number) => {
-      doc.text(line, margin + 12, ctx.y + 62 + i * 10);
+      doc.text(line, boxL + 12, ctx.y + 62 + i * 10);
     });
 
     // Time Lord box
-    const tlX = margin + halfW + 12;
+    const tlX = boxL + halfW + 12;
     doc.setFillColor(242, 248, 255);
     doc.setDrawColor(colors.gold[0], colors.gold[1], colors.gold[2]); doc.setLineWidth(1);
     doc.roundedRect(tlX, ctx.y, halfW, boxH, 6, 6, 'FD');
@@ -126,13 +128,13 @@ export function generatePDFYearAtAGlance(
   doc.setFillColor(colors.softGold[0], colors.softGold[1], colors.softGold[2]);
   doc.setDrawColor(colors.gold[0], colors.gold[1], colors.gold[2]); doc.setLineWidth(1);
   const moonBoxH = 50;
-  doc.roundedRect(margin, ctx.y, contentW, moonBoxH, 6, 6, 'FD');
+  doc.roundedRect(boxL, ctx.y, boxW, moonBoxH, 6, 6, 'FD');
   doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
   doc.setTextColor(colors.dimText[0], colors.dimText[1], colors.dimText[2]);
-  doc.text('SR MOON', margin + 14, ctx.y + 18);
+  doc.text('SR MOON', boxL + 14, ctx.y + 18);
   doc.setFontSize(14);
   doc.setTextColor(colors.gold[0], colors.gold[1], colors.gold[2]);
-  doc.text(`${a.moonSign} in House ${a.moonHouse?.house || '--'}`, margin + 14, ctx.y + 36);
+  doc.text(`${a.moonSign} in House ${a.moonHouse?.house || '--'}`, boxL + 14, ctx.y + 36);
 
   if (moonPhaseText) {
     doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
