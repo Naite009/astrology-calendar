@@ -203,12 +203,14 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // PAGE 2: TABLE OF CONTENTS
       // =============================================
       doc.addPage(); ctx.y = margin;
-      generatePDFTableOfContents(ctx, doc, analysis, narrative, birthdayMode);
+      const tocPageNumber = doc.getNumberOfPages();
+      const tocEntries = generatePDFTableOfContents(ctx, doc, analysis, narrative, birthdayMode);
 
       // =============================================
       // HOW TO READ THIS REPORT
       // =============================================
       doc.addPage(); ctx.y = margin;
+      ctx.sectionPages.set('HOW TO READ THIS REPORT', doc.getNumberOfPages());
       generateHowToReadPage(ctx, doc);
 
       // =============================================
