@@ -86,7 +86,7 @@ export function generatePDFYearAtAGlance(
     doc.text('PROFECTION YEAR', boxL + 12, ctx.y + 16);
     doc.setFontSize(18);
     doc.setTextColor(colors.gold[0], colors.gold[1], colors.gold[2]);
-    doc.text(`House ${a.profectionYear.houseNumber}`, margin + 12, ctx.y + 36);
+    doc.text(`House ${a.profectionYear.houseNumber}`, boxL + 12, ctx.y + 36);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
     doc.setTextColor(colors.bodyText[0], colors.bodyText[1], colors.bodyText[2]);
     doc.text(`Age ${a.profectionYear.age}`, margin + 12, ctx.y + 50);
