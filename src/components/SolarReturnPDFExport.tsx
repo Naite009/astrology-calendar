@@ -16,6 +16,7 @@ import { signColorThemes } from '@/lib/pdfSections/signColorThemes';
 import { generateStrengthsPortrait } from '@/lib/pdfSections/strengthsPortrait';
 import { generateHighlightsPage } from '@/lib/pdfSections/highlightsAndForecasts';
 import { generateAffirmationCard } from '@/lib/pdfSections/affirmationCard';
+import { generateHowToReadPage } from '@/lib/pdfSections/howToRead';
 
 // Cake image imports
 import cakeAries from '@/assets/cakes/aries.png';
