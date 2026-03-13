@@ -52,39 +52,40 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   sections.push({ title: 'Best Months and Highlights', desc: 'Peak months for love, luck, and action' });
   if (birthdayMode) sections.push({ title: 'Birthday Affirmation Card', desc: 'A personalized affirmation to carry with you all year' });
 
-  // Single-column numbered list — clean, readable, no overlap
+  // Single-column numbered list — compact to fit on one page
   for (let i = 0; i < sections.length; i++) {
     const section = sections[i];
-    ctx.checkPage(36);
+    ctx.checkPage(22);
 
     const entryY = ctx.y;
 
-    // Number circle
-    const circleX = margin + 14;
-    const circleY = ctx.y + 2;
-    doc.setFillColor(...colors.softGold);
-    doc.setDrawColor(...colors.gold); doc.setLineWidth(0.8);
-    doc.circle(circleX, circleY, 9, 'FD');
+    // Number — small inline, no circle to save space
     doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
     doc.setTextColor(...colors.gold);
-    doc.text(String(i + 1), circleX, circleY + 3, { align: 'center' });
+    doc.text(String(i + 1).padStart(2, ' ') + '.', margin + 4, ctx.y + 2);
 
     // Title
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
     doc.setTextColor(...colors.deepBrown);
-    doc.text(section.title, margin + 30, ctx.y + 2);
+    doc.text(section.title, margin + 20, ctx.y + 2);
 
-    // Description — same line or just below
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+    // Description — inline after title
+    const titleW = doc.getTextWidth(section.title);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
     doc.setTextColor(...colors.dimText);
-    doc.text(section.desc, margin + 30, ctx.y + 14);
+    const descX = margin + 20 + titleW + 6;
+    const availW = pw - margin - descX;
+    if (availW > 40) {
+      const descLines = doc.splitTextToSize('— ' + section.desc, availW);
+      doc.text(descLines[0], descX, ctx.y + 2);
+    }
 
     tocEntries.push({ title: section.title, desc: section.desc, y: entryY });
 
-    ctx.y += 32;
+    ctx.y += 16;
   }
 
-  ctx.y += 10;
+  ctx.y += 6;
 
   // Bottom ornament
   doc.setDrawColor(...colors.gold); doc.setLineWidth(1.5);
