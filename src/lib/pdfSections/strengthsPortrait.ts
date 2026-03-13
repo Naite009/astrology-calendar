@@ -219,13 +219,35 @@ export function generateStrengthsPortrait(
     }
   };
   const compactCard = (renderFn: () => void) => {
+    // Ensure at least 120pt available before starting a card; otherwise new page
+    ctx.checkPage(120);
+    const startPage = doc.getNumberOfPages();
     const startY = ctx.y; ctx.y += 8;
     renderFn(); ctx.y += 6;
-    const h = ctx.y - startY;
-    doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.5);
-    doc.roundedRect(margin, startY, contentW, h, 4, 4, 'S');
-    doc.setDrawColor(...colors.gold); doc.setLineWidth(2.5);
-    doc.line(margin + 1.25, startY + 1, margin + 1.25, startY + h - 1);
+    const endPage = doc.getNumberOfPages();
+
+    if (endPage === startPage) {
+      const h = ctx.y - startY;
+      doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.5);
+      doc.roundedRect(margin, startY, contentW, h, 4, 4, 'S');
+      doc.setDrawColor(...colors.gold); doc.setLineWidth(2.5);
+      doc.line(margin + 1.25, startY + 1, margin + 1.25, startY + h - 1);
+    } else {
+      // Card spans pages — draw border segments
+      doc.setPage(startPage);
+      const firstH = ph - 40 - startY;
+      doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.5);
+      doc.roundedRect(margin, startY, contentW, firstH, 4, 4, 'S');
+      doc.setDrawColor(...colors.gold); doc.setLineWidth(2.5);
+      doc.line(margin + 1.25, startY + 1, margin + 1.25, startY + firstH - 1);
+
+      doc.setPage(endPage);
+      const lastH = ctx.y - margin;
+      doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.5);
+      doc.roundedRect(margin, margin, contentW, lastH, 4, 4, 'S');
+      doc.setDrawColor(...colors.gold); doc.setLineWidth(2.5);
+      doc.line(margin + 1.25, margin + 1, margin + 1.25, margin + lastH - 1);
+    }
     ctx.y += 4;
   };
 
