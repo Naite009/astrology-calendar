@@ -991,40 +991,101 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         )}
       </div>
 
-      {/* ── Moon Deep Dive ── */}
-      <div className="border border-primary/20 rounded-sm p-5 bg-card space-y-4">
-        <h3 className="text-sm uppercase tracking-widest font-medium text-foreground mb-3 flex items-center gap-2">
+      {/* ── The Moon — Comprehensive Section ── */}
+      <div className="border border-primary/20 rounded-sm p-5 bg-card space-y-5">
+        <h3 className="text-sm uppercase tracking-widest font-medium text-foreground flex items-center gap-2">
           <Moon size={16} className="text-primary" />
-          ☽ The Moon — Your Emotional Landscape This Year
+          ☽ The Moon — Your Emotional Year
         </h3>
-        <div className="flex items-center gap-3 mb-3 flex-wrap">
-          <span className="text-2xl">{SIGN_SYMBOLS[analysis.moonSign]}</span>
-          <span className="text-lg font-serif text-foreground">Moon in {analysis.moonSign}</span>
-          {analysis.moonHouse.house && (
-            <span className="text-sm text-muted-foreground">· SR House {analysis.moonHouse.house}</span>
-          )}
+
+        {/* ── Hero: Moon placement at a glance ── */}
+        <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 space-y-3">
+          <div className="flex items-center gap-4 flex-wrap">
+            <span className="text-4xl">{SIGN_SYMBOLS[analysis.moonSign]}</span>
+            <div>
+              <p className="text-xl font-serif text-foreground">Moon in {analysis.moonSign}</p>
+              <div className="flex items-center gap-2 flex-wrap mt-1">
+                {analysis.moonHouse.house && (
+                  <span className="text-sm text-primary font-medium">SR House {analysis.moonHouse.house}</span>
+                )}
+                {(() => {
+                  const moonPos = srChart.planets.Moon;
+                  if (!moonPos) return null;
+                  return <span className="text-xs text-muted-foreground">{moonPos.degree}° {moonPos.sign}</span>;
+                })()}
+                {analysis.moonAngularity && (
+                  <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-sm font-medium ${
+                    analysis.moonAngularity === 'angular' ? 'bg-primary/10 text-primary' :
+                    analysis.moonAngularity === 'succedent' ? 'bg-secondary text-foreground' :
+                    'bg-muted text-muted-foreground'
+                  }`}>{analysis.moonAngularity}</span>
+                )}
+                {analysis.moonLateDegree && (
+                  <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-sm bg-amber-500/10 text-amber-600 font-medium">Late Degree</span>
+                )}
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed italic">
+            The Moon in your Solar Return is the single most important planet for understanding how you will <em>feel</em> this year. It does not move — it is a frozen snapshot of the emotional weather at the moment of your birthday. Everything below unpacks what this placement means for you.
+          </p>
         </div>
 
-        {/* Moon angularity assessment */}
+        {/* ── Angularity Deep Teaching ── */}
         {analysis.moonHouse.house && (() => {
           const ang = srMoonAngularity(analysis.moonHouse.house);
           return (
-            <div className="bg-primary/5 rounded-sm p-3 mb-1">
-              <span className="text-[10px] uppercase tracking-widest font-medium text-primary">{ang.position}</span>
-              <p className="text-xs text-muted-foreground leading-relaxed mt-1">{ang.meaning}</p>
+            <div className="border border-border rounded-sm p-4 bg-muted/10 space-y-2">
+              <p className="text-[10px] uppercase tracking-widest font-medium text-primary">{ang.position} Moon — What This Means</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">{ang.meaning}</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {analysis.moonAngularity === 'angular'
+                  ? 'Angular Moons produce event-driven years. Your emotions are on the surface and trigger visible changes in your life. Other people can see what you are feeling. Major life events — moves, new relationships, career shifts — tend to correlate with angular Moon years.'
+                  : analysis.moonAngularity === 'succedent'
+                  ? 'Succedent Moons produce years of consolidation. You are building on what already exists rather than starting something new. Emotional satisfaction comes from deepening commitments — to a relationship, a creative project, a financial goal. Stability is the keyword.'
+                  : 'Cadent Moons produce years of inner work. The most important changes happen inside you — shifts in perspective, processing old grief, spiritual breakthroughs. You may feel invisible or overlooked, but the growth happening beneath the surface is profound. Therapy, meditation, or artistic expression become essential.'}
+              </p>
             </div>
           );
         })()}
 
-        {/* Moon sign interpretation */}
+        {/* ── Late Degree Teaching ── */}
+        {analysis.moonLateDegree && (
+          <div className="border border-amber-500/30 rounded-sm p-4 bg-amber-500/5 space-y-2">
+            <p className="text-[10px] uppercase tracking-widest font-medium text-amber-600">Late-Degree Moon (25°+) — Completion Energy</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              When the SR Moon falls in the final 5 degrees of a sign, you are at the <em>end</em> of an emotional chapter. Something that has been building for years reaches its conclusion. There is often a "been there, done that" quality — you may feel emotionally exhausted by themes connected to this sign's energy. This is not a crisis; it is a graduation. Next year's Moon will likely be in a new sign, bringing fresh emotional territory.
+            </p>
+          </div>
+        )}
+
+        {/* ── Moon Phase ── */}
+        {analysis.moonPhase && (() => {
+          const phaseInterp = srMoonPhaseInterp[analysis.moonPhase.phase];
+          return (
+            <div className="border border-border rounded-sm p-4 bg-muted/10 space-y-2">
+              <div className="flex items-center gap-3 flex-wrap">
+                <p className="text-[10px] uppercase tracking-widest font-medium text-primary">SR Moon Phase</p>
+                {analysis.moonPhase.isEclipse && (
+                  <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-destructive/10 text-destructive rounded-sm">Near Eclipse Axis</span>
+                )}
+              </div>
+              <p className="text-base font-serif text-foreground">{analysis.moonPhase.phase}</p>
+              {phaseInterp && <p className="text-xs font-medium text-primary">{phaseInterp.theme}</p>}
+              <p className="text-xs text-muted-foreground leading-relaxed">{phaseInterp?.description || analysis.moonPhase.description}</p>
+            </div>
+          );
+        })()}
+
+        {/* ── Moon Sign: Emotional Temperament ── */}
         {srMoonInSign[analysis.moonSign] && (
-          <div className="mb-1">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Emotional Temperament ({analysis.moonSign})</p>
+          <div className="space-y-1">
+            <p className="text-[10px] uppercase tracking-widest text-primary font-medium">Emotional Temperament — Moon in {analysis.moonSign}</p>
             <p className="text-sm text-muted-foreground leading-relaxed">{srMoonInSign[analysis.moonSign]}</p>
           </div>
         )}
 
-        {/* ── Moon Sign Shift — 4-Field Deep Card ── */}
+        {/* ── Moon Sign Shift — Natal vs SR (4-Field Deep Card) ── */}
         {(() => {
           const natalMoonSign = natalChart.planets.Moon?.sign;
           const srMoonSign = analysis.moonSign;
@@ -1066,9 +1127,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
 
           return (
             <div className="space-y-4">
-              {/* Two side-by-side sign cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Natal Moon */}
                 <div className="border border-border rounded-lg overflow-hidden">
                   <div className="bg-secondary/60 border-b border-border px-4 py-2">
                     <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground">Your Natal Moon</h4>
@@ -1098,7 +1157,6 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
                   )}
                 </div>
 
-                {/* SR Moon */}
                 <div className="border border-primary/20 rounded-lg overflow-hidden">
                   <div className="bg-primary/10 border-b border-primary/20 px-4 py-2">
                     <h4 className="text-[10px] uppercase tracking-widest text-primary">This Year's Moon</h4>
@@ -1129,7 +1187,6 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
                 </div>
               </div>
 
-              {/* The shift narrative */}
               <div className="border-l-4 border-primary bg-primary/5 rounded-r-lg p-4">
                 <h4 className="text-[10px] uppercase tracking-widest text-primary mb-2 flex items-center gap-2">
                   The Shift: {natalMoonSign} → {srMoonSign}
@@ -1142,13 +1199,13 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
           );
         })()}
 
-        {/* Moon house DEEP interpretation */}
+        {/* ── Moon House — Where Feelings Concentrate ── */}
         {analysis.moonHouse.house && srMoonInHouseDeep[analysis.moonHouse.house] && (() => {
           const deep = srMoonInHouseDeep[analysis.moonHouse.house];
           return (
             <div className="border border-border rounded-sm p-4 bg-muted/20 space-y-3">
               <div>
-                <span className="text-[10px] uppercase tracking-widest font-medium text-primary">SR House {analysis.moonHouse.house}</span>
+                <span className="text-[10px] uppercase tracking-widest font-medium text-primary">SR House {analysis.moonHouse.house} — Where Your Heart Lives This Year</span>
                 <h5 className="text-sm font-semibold text-foreground mt-0.5">{deep.title}</h5>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">{deep.overview}</p>
@@ -1170,11 +1227,11 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
           );
         })()}
 
-        {/* Moon overlay */}
+        {/* ── House Overlay ── */}
         {analysis.moonHouse.house && analysis.moonNatalHouse.house && analysis.moonHouse.house !== analysis.moonNatalHouse.house && (
-          <div className="pt-3 border-t border-border">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">House Overlay</p>
-            <p className="text-sm text-muted-foreground leading-relaxed">
+          <div className="border border-border/50 rounded-sm p-3 bg-muted/10">
+            <p className="text-[10px] uppercase tracking-widest text-primary mb-1">House Overlay — SR House {analysis.moonHouse.house} in Natal House {analysis.moonNatalHouse.house}</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
               {srOverlayNarrative('The Moon', analysis.moonHouse.house, analysis.moonNatalHouse.house)}
             </p>
           </div>
@@ -1188,12 +1245,14 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
           if (moonSRAspects.length === 0) return null;
           return (
             <div className="border-t border-border pt-4 space-y-3">
-              <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                <Moon size={14} className="text-primary" /> SR Moon Aspects to SR Planets
-              </h4>
-              <p className="text-[10px] text-muted-foreground italic">
-                These aspects shape your emotional experience all year — they describe how your feelings interact with other planetary forces within the Solar Return chart.
-              </p>
+              <div>
+                <h4 className="text-[10px] uppercase tracking-widest text-primary font-medium flex items-center gap-2">
+                  <Moon size={14} /> Moon Aspects Within the Solar Return
+                </h4>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  These are the planetary conversations your Moon is having <em>within</em> the SR chart. They describe the emotional texture of the entire year — not events, but the <em>feeling tone</em> that colors everything.
+                </p>
+              </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 {moonSRAspects.slice(0, 10).map((asp, i) => {
                   const otherPlanet = asp.planet1 === 'Moon' ? asp.planet2 : asp.planet1;
@@ -1226,12 +1285,14 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
           if (moonNatalAspects.length === 0) return null;
           return (
             <div className="border-t border-border pt-4 space-y-3">
-              <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                <Moon size={14} className="text-primary" /> SR Moon Aspects to Your Natal Planets
-              </h4>
-              <p className="text-[10px] text-muted-foreground italic">
-                These show how this year's emotional energy activates your birth chart — which natal planets are being "touched" by the SR Moon's emotional force.
-              </p>
+              <div>
+                <h4 className="text-[10px] uppercase tracking-widest text-primary font-medium flex items-center gap-2">
+                  <Moon size={14} /> SR Moon Touching Your Natal Planets
+                </h4>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  When the SR Moon aspects a natal planet, that natal planet's themes become emotionally charged all year. These are the parts of your birth chart that get <em>activated</em> by this year's emotional energy.
+                </p>
+              </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 {moonNatalAspects.slice(0, 10).map((asp, i) => {
                   const isHard = ['Square', 'Opposition', 'Quincunx'].includes(asp.type);
@@ -1256,6 +1317,21 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
             </div>
           );
         })()}
+
+        {/* ── 19-Year Metonic Cycle ── */}
+        {analysis.moonMetonicAges.length > 0 && (
+          <div className="border-t border-border pt-4">
+            <div className="border border-border/50 rounded-sm p-4 bg-muted/10 space-y-2">
+              <p className="text-[10px] uppercase tracking-widest font-medium text-primary">The 19-Year Metonic Echo</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                The Moon returns to the same zodiac sign approximately every 19 years (the Metonic cycle). This means you experienced a similar emotional flavor — Moon in {analysis.moonSign} — at age{analysis.moonMetonicAges.length > 1 ? 's' : ''} <strong className="text-foreground">{analysis.moonMetonicAges.join(', ')}</strong>.
+              </p>
+              <p className="text-xs text-muted-foreground leading-relaxed italic">
+                Reflect on what was happening emotionally at those ages. The same emotional themes are cycling back — but you are meeting them with everything you have learned since then. This is not repetition; it is a spiral.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Angular Planets */}
@@ -1279,23 +1355,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         </div>
       )}
 
-      {/* Moon Phase — Enhanced */}
-      {analysis.moonPhase && (() => {
-        const phaseInterp = srMoonPhaseInterp[analysis.moonPhase.phase];
-        return (
-          <div className="border border-primary/20 rounded-sm p-5 bg-card">
-            <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
-              <Moon size={14} className="text-primary" /> SR Moon Phase
-            </h4>
-            <p className="text-lg font-serif text-foreground mb-1">{analysis.moonPhase.phase}</p>
-            {phaseInterp && <p className="text-xs font-medium text-primary mb-1">{phaseInterp.theme}</p>}
-            {analysis.moonPhase.isEclipse && (
-              <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-destructive/10 text-destructive rounded-sm">Near Eclipse Axis</span>
-            )}
-            <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{phaseInterp?.description || analysis.moonPhase.description}</p>
-          </div>
-        );
-      })()}
+      {/* Moon Phase moved into Moon section above */}
 
       {/* SR Ascendant in Natal House (Lynn Bell) */}
       {analysis.srAscInNatalHouse && (
@@ -1338,88 +1398,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         </div>
       )}
 
-      {/* SR Moon Emotional Climate Summary */}
-      {(analysis.srMoonAspects.length > 0 || analysis.moonAngularity || analysis.moonLateDegree || analysis.moonMetonicAges.length > 0) && (
-        <div className="border border-primary/20 rounded-sm p-5 bg-card space-y-4">
-          <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
-            <Moon size={14} className="text-primary" /> Your Moon This Year — Emotional Climate
-          </h4>
-          <div className="bg-secondary/40 rounded-sm p-3 space-y-2">
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              <strong className="text-foreground">How to read this:</strong> The SR Moon is a <em>frozen snapshot</em> of your emotional state at the moment of your birthday. It does not advance through the chart — it describes the emotional climate for the <em>entire</em> year. Its sign shows how you process feelings; its house shows where those feelings concentrate; its aspects show what triggers or supports your emotional life.
-            </p>
-          </div>
-
-          {/* Angularity */}
-          {analysis.moonAngularity && (
-            <div className="flex items-start gap-3 p-3 border border-border/50 rounded-sm bg-muted/20">
-              <span className="text-lg mt-0.5">📍</span>
-              <div>
-                <p className="text-xs font-medium text-foreground capitalize">{analysis.moonAngularity} Moon</p>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {analysis.moonAngularity === 'angular'
-                    ? 'Your emotions are highly visible and reactive this year. Feelings drive action immediately — you cannot hide what you feel. Events happen quickly in response to emotional impulses.'
-                    : analysis.moonAngularity === 'succedent'
-                    ? 'Your emotional life is steady and stabilizing this year. Feelings build slowly and have staying power. You seek emotional security and consistency above all.'
-                    : 'Your emotional processing is internal and reflective this year. Feelings are processed privately — journaling, therapy, or spiritual practice become essential outlets. Others may not see what you are going through.'}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Late Degree Warning */}
-          {analysis.moonLateDegree && (
-            <div className="flex items-start gap-3 p-3 border border-amber-500/30 rounded-sm bg-amber-500/5">
-              <span className="text-lg mt-0.5">⚠️</span>
-              <div>
-                <p className="text-xs font-medium text-foreground">Late-Degree Moon (25°+)</p>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  A late-degree SR Moon signals emotional completion and transition. Something from your emotional past is wrapping up this year. You may feel a sense of urgency or "running out of time" around the Moon's house themes. This often precedes a major emotional reset the following year.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* SR Moon Aspects from analysis engine */}
-          {analysis.srMoonAspects.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Emotional Aspects Active All Year</p>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {analysis.srMoonAspects.map((asp, i) => {
-                  const isHard = ['square', 'opposition', 'quincunx'].includes(asp.aspectType.toLowerCase());
-                  return (
-                    <div key={i} className={`border rounded-sm p-3 space-y-1.5 ${isHard ? 'border-destructive/20 bg-destructive/5' : 'border-green-500/20 bg-green-500/5'}`}>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-medium text-foreground">
-                          ☽ {asp.aspectType} {PLANET_SYMBOLS[asp.targetPlanet]} {asp.targetPlanet}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground ml-auto">orb {asp.orb.toFixed(1)}°</span>
-                      </div>
-                      {asp.targetSRHouse && (
-                        <span className="text-[10px] text-muted-foreground">SR House {asp.targetSRHouse}</span>
-                      )}
-                      <p className="text-xs text-muted-foreground leading-relaxed">{asp.interpretation}</p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Metonic Cycle */}
-          {analysis.moonMetonicAges.length > 0 && (
-            <div className="flex items-start gap-3 p-3 border border-border/50 rounded-sm bg-muted/20">
-              <span className="text-lg mt-0.5">🔄</span>
-              <div>
-                <p className="text-xs font-medium text-foreground">19-Year Metonic Echo</p>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  The Moon returns to the same sign every 19 years. You experienced a similar emotional flavor at age{analysis.moonMetonicAges.length > 1 ? 's' : ''} <strong>{analysis.moonMetonicAges.join(', ')}</strong>. Reflect on what was happening emotionally at those times — recurring themes may resurface with new maturity.
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+      {/* Emotional Climate data now merged into Moon section above */}
 
       {/* Stelliums */}
       {analysis.stelliums.length > 0 && (
