@@ -218,8 +218,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // =============================================
       if (birthdayMode) {
         doc.addPage(); ctx.y = margin;
-        ctx.sectionPages.set('YOUR NATAL FOUNDATION', doc.getNumberOfPages());
-        generateStrengthsPortrait(ctx, doc, natalChart);
+        ctx.sectionPages.set('YOUR STRENGTHS AND THIS YEAR', doc.getNumberOfPages());
+        const srSunHouse = analysis.planetSRHouses?.['Sun'];
+        generateStrengthsPortrait(ctx, doc, natalChart, srSunHouse ?? undefined);
       }
 
       // =============================================
