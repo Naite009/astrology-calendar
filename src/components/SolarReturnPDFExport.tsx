@@ -660,8 +660,22 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // =============================================
       // SR MOON EMOTIONAL CLIMATE (replaces old Moon Timing)
       // =============================================
-      if (analysis.srMoonAspects && analysis.srMoonAspects.length > 0) {
+      if (analysis.srMoonAspects || analysis.moonVOC || analysis.moonAngularity) {
         ctx.sectionTitle(doc, 'Your Moon This Year -- Emotional Climate');
+
+        // Moon VOC — Unaspected Moon (must come first, before aspects)
+        if (analysis.moonVOC) {
+          ctx.drawCard(doc, () => {
+            ctx.writeBold(doc, 'Moon Void of Course — The Unaspected Moon', [180, 130, 40], 11);
+            ctx.y += 2;
+            ctx.writeBody(doc, 'Your Solar Return Moon makes no major aspects to any other planet in the SR chart. This is a rare and significant condition.', ctx.colors.darkText, 10);
+            ctx.y += 4;
+            ctx.writeCardSection(doc, 'What This Means', 'An unaspected SR Moon operates in isolation — your emotional life this year runs on its own track, without direct planetary support or challenge. Feelings are vivid but disconnected from the rest of the chart\'s story. You may feel emotionally "untethered" — deeply feeling but unsure what to do with those feelings.', [180, 130, 40]);
+            ctx.writeCardSection(doc, 'The Gift', 'Without planetary aspects pulling it in different directions, the Moon is free. Your emotional compass this year is entirely your own — uncorrupted by external pressures. This can bring a rare emotional clarity and independence.', ctx.colors.accentGreen);
+            ctx.writeCardSection(doc, 'The Challenge', 'Without aspects to ground or activate the Moon, emotional needs may go unmet unless you consciously name and honor them. Others may not instinctively "get" what you need this year.', ctx.colors.accentRust);
+            ctx.writeCardSection(doc, 'How to Work With It', 'Journaling, therapy, and creative expression become essential outlets. The unaspected Moon often produces artists, writers, and deep feelers who channel emotion into form. Give your feelings a container — they won\'t find one automatically this year.', ctx.colors.gold);
+          }, [180, 130, 40]);
+        }
 
         // Angularity description
         if (analysis.moonAngularity) {
@@ -688,21 +702,23 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         }
 
         // SR Moon aspects to other SR planets
-        ctx.y += 4;
-        for (const asp of analysis.srMoonAspects.slice(0, 6)) {
-          const isHard = ['Square', 'Opposition', 'Quincunx'].includes(asp.aspectType);
-          ctx.checkPage(80);
-          ctx.drawCard(doc, () => {
-            ctx.writeBold(doc, `Moon ${asp.aspectType} ${P[asp.targetPlanet] || asp.targetPlanet} (${asp.orb}')`, ctx.colors.darkText, 10);
-            if (asp.targetSRHouse) {
-              doc.setFont('helvetica', 'italic'); doc.setFontSize(8.5);
-              doc.setTextColor(...ctx.colors.dimText);
-              doc.text(`${P[asp.targetPlanet] || asp.targetPlanet} in SR House ${asp.targetSRHouse}`, margin + 8, ctx.y);
-              ctx.y += 12;
-            }
-            ctx.y += 2;
-            ctx.writeBody(doc, asp.interpretation, ctx.colors.bodyText, 9.5);
-          }, isHard ? [180, 100, 60] : ctx.colors.gold);
+        if (analysis.srMoonAspects && analysis.srMoonAspects.length > 0) {
+          ctx.y += 4;
+          for (const asp of analysis.srMoonAspects.slice(0, 6)) {
+            const isHard = ['Square', 'Opposition', 'Quincunx'].includes(asp.aspectType);
+            ctx.checkPage(80);
+            ctx.drawCard(doc, () => {
+              ctx.writeBold(doc, `Moon ${asp.aspectType} ${P[asp.targetPlanet] || asp.targetPlanet} (${asp.orb}')`, ctx.colors.darkText, 10);
+              if (asp.targetSRHouse) {
+                doc.setFont('helvetica', 'italic'); doc.setFontSize(8.5);
+                doc.setTextColor(...ctx.colors.dimText);
+                doc.text(`${P[asp.targetPlanet] || asp.targetPlanet} in SR House ${asp.targetSRHouse}`, margin + 8, ctx.y);
+                ctx.y += 12;
+              }
+              ctx.y += 2;
+              ctx.writeBody(doc, asp.interpretation, ctx.colors.bodyText, 9.5);
+            }, isHard ? [180, 100, 60] : ctx.colors.gold);
+          }
         }
       }
 
