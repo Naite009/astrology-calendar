@@ -34,7 +34,7 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   if (a.hemisphericEmphasis) sections.push({ title: 'Where Your Energy Lives', desc: 'Upper/Lower and Eastern/Western planet distribution' });
   if (a.angularPlanets?.length) sections.push({ title: 'Angular Planets', desc: 'The most powerful and visible planets this year' });
   if (a.lordOfTheYear) sections.push({ title: 'Lord of the Year', desc: 'Your Time Lord — the planet running the show' });
-  if (a.saturnFocus || a.nodesFocus) sections.push({ title: 'Saturn & North Node', desc: 'Where you\'re being tested and where your soul is growing' });
+  if (a.saturnFocus || a.nodesFocus) sections.push({ title: 'Saturn and North Node', desc: 'Where you\'re being tested and where your soul is growing' });
   if (a.srToNatalAspects.length > 0) sections.push({ title: 'Key Aspects', desc: 'How SR planets activate your natal chart' });
   if (a.moonTimingEvents.length > 0) sections.push({ title: 'Moon Timing', desc: 'Month-by-month activation calendar' });
   if (a.vertex) sections.push({ title: 'Vertex', desc: 'Fated encounters and destined meetings' });
