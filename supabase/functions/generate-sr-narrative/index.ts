@@ -122,6 +122,9 @@ serve(async (req) => {
     }
 
     // SR Moon Aspects (frozen snapshot — emotional climate for the year)
+    if (a.moonVOC) {
+      dataContext += `\nSR MOON VOID OF COURSE (UNASPECTED): The SR Moon makes NO major aspects to any other SR planet. This is rare and significant — the emotional life this year operates in isolation, without planetary dialogue. Feelings are vivid but untethered. The person must consciously name and honor emotional needs, as the world won't automatically reflect them back. Creative expression, journaling, and therapy become essential containers.\n`;
+    }
     if (a.srMoonAspects?.length > 0) {
       dataContext += `\nSR MOON ASPECTS (emotional climate — these are static aspects at the SR moment, NOT advancing):\n`;
       a.srMoonAspects.slice(0, 8).forEach((e: any) => {
