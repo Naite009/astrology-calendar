@@ -360,6 +360,8 @@ export interface SolarReturnAnalysis {
   moonAngularity: 'angular' | 'succedent' | 'cadent' | null;
   /** Whether the SR Moon is in late degrees (25+), signaling change */
   moonLateDegree: boolean;
+  /** Whether the SR Moon is Void of Course — no major aspects to any SR planet (unaspected Moon) */
+  moonVOC: boolean;
   /** The 19-year Metonic cycle — ages when the SR Moon was in the same sign */
   moonMetonicAges: number[];
   /** Vertex — fated encounters point */
@@ -1196,6 +1198,12 @@ export const analyzeSolarReturn = (
     }
   }
 
+  // ─── Moon Void of Course (Unaspected in SR) ──
+  // If the SR Moon makes no major aspects (conjunction, sextile, square, trine, opposition)
+  // to any other SR planet within orb, it is considered "void of course" in the SR chart.
+  // This is a significant condition: the Moon operates independently, without planetary dialogue.
+  const moonVOC = srMoonAspects.length === 0 && moonPos !== undefined;
+
   // ─── Moon Angularity ──
   const angularHousesSet = [1, 4, 7, 10];
   const succedentHousesSet = [2, 5, 8, 11];
@@ -1288,6 +1296,7 @@ export const analyzeSolarReturn = (
     moonTimingEvents,
     srMoonAspects,
     moonAngularity,
+    moonVOC,
     moonLateDegree,
     moonMetonicAges,
     vertex,

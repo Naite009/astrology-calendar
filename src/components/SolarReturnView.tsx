@@ -1237,6 +1237,49 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
           </div>
         )}
 
+        {/* ── Moon Void of Course (Unaspected) ── */}
+        {analysis.moonVOC && (
+          <div className="border-t border-border pt-4">
+            <div className="border-2 border-amber-500/30 rounded-sm p-5 bg-amber-500/5 space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🌑</span>
+                <h4 className="text-[10px] uppercase tracking-widest font-semibold text-amber-600 dark:text-amber-400">
+                  Moon Void of Course — The Unaspected Moon
+                </h4>
+              </div>
+              <p className="text-sm text-foreground leading-relaxed font-medium">
+                Your Solar Return Moon makes no major aspects to any other planet in the SR chart. This is a rare and significant condition.
+              </p>
+              <div className="space-y-2">
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-1">What This Means</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    An unaspected SR Moon operates in isolation — your emotional life this year runs on its own track, without direct planetary support or challenge. Feelings are vivid but disconnected from the rest of the chart's story. You may feel emotionally "untethered" — deeply feeling but unsure what to do with those feelings, as if your inner life and outer circumstances are speaking different languages.
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-1">The Gift</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Without planetary aspects pulling it in different directions, the Moon is free. Your emotional compass this year is entirely your own — uncorrupted by external pressures. This can bring a rare emotional clarity and independence. You trust your gut because nothing else is competing with it.
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-1">The Challenge</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Without aspects to ground or activate the Moon, emotional needs may go unmet unless you consciously name and honor them. Others may not instinctively "get" what you need this year. You'll need to articulate your feelings rather than expecting the world to reflect them back to you.
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-1">How to Work With It</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Journaling, therapy, and creative expression become essential outlets. The unaspected Moon often produces artists, writers, and deep feelers who channel emotion into form. Give your feelings a container — they won't find one automatically this year.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ── SR Moon Aspects to SR Planets ── */}
         {(() => {
           const moonSRAspects = analysis.srInternalAspects.filter(
