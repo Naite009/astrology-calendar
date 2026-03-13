@@ -529,7 +529,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             const isDom = el.name.toLowerCase() === eb.dominant;
             doc.setFillColor(...el.bg);
             doc.setDrawColor(...(isDom ? ctx.colors.gold : ctx.colors.warmBorder));
-            doc.setLineWidth(isDom ? 2.5 : 0.5);
+            doc.setLineWidth(isDom ? 1.5 : 0.3);
             doc.roundedRect(x, elemStartY, elemW, elemH, 6, 6, 'FD');
             doc.setFont('helvetica', 'bold'); doc.setFontSize(24);
             doc.setTextColor(...(isDom ? ctx.colors.gold : ctx.colors.darkText));
@@ -561,7 +561,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             const isDom = mod.name.toLowerCase() === mb.dominant;
             doc.setFillColor(...ctx.colors.softGold);
             doc.setDrawColor(...(isDom ? ctx.colors.gold : ctx.colors.warmBorder));
-            doc.setLineWidth(isDom ? 2.5 : 0.5);
+            doc.setLineWidth(isDom ? 1.5 : 0.3);
             doc.roundedRect(x, modStartY, modW, modH, 6, 6, 'FD');
             doc.setFont('helvetica', 'bold'); doc.setFontSize(22);
             doc.setTextColor(...(isDom ? ctx.colors.gold : ctx.colors.darkText));
@@ -605,7 +605,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             const isDom = g.count > total / 2;
             doc.setFillColor(...g.bg);
             doc.setDrawColor(...(isDom ? ctx.colors.gold : ctx.colors.warmBorder));
-            doc.setLineWidth(isDom ? 2.5 : 0.5);
+            doc.setLineWidth(isDom ? 1.5 : 0.3);
             doc.roundedRect(x, by, boxW, boxH, 6, 6, 'FD');
             doc.setFont('helvetica', 'bold'); doc.setFontSize(22);
             doc.setTextColor(...(isDom ? ctx.colors.gold : ctx.colors.darkText));
@@ -690,7 +690,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
 
         // Header box with key info
         doc.setFillColor(...ctx.colors.softGold);
-        doc.setDrawColor(...ctx.colors.gold); doc.setLineWidth(2);
+        doc.setDrawColor(...ctx.colors.warmBorder); doc.setLineWidth(0.5);
         doc.roundedRect(margin, ctx.y, contentW, 60, 6, 6, 'FD');
         doc.setFont('helvetica', 'bold'); doc.setFontSize(20);
         doc.setTextColor(...ctx.colors.gold);

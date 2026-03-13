@@ -67,7 +67,7 @@ export async function generatePDFCover(
     let cakeDataUrl: string | null = null;
     if (cakeImgSrc) cakeDataUrl = await loadImageDataUrl(cakeImgSrc);
 
-    doc.setDrawColor(...colors.gold); doc.setLineWidth(2);
+    doc.setDrawColor(...colors.gold); doc.setLineWidth(1);
     doc.line(margin, ctx.y, pw - margin, ctx.y);
     ctx.y += 30;
 
@@ -109,7 +109,7 @@ export async function generatePDFCover(
       ctx.y += msgH + 12;
     }
 
-    doc.setDrawColor(...colors.gold); doc.setLineWidth(2);
+    doc.setDrawColor(...colors.gold); doc.setLineWidth(1);
     doc.line(margin, ctx.y, pw - margin, ctx.y);
     ctx.y += 24;
   }
@@ -155,7 +155,7 @@ export async function generatePDFCover(
 
   // Natal box
   doc.setFillColor(...colors.softGold);
-  doc.setDrawColor(...colors.gold); doc.setLineWidth(1.5);
+  doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.5);
   doc.roundedRect(startX, ctx.y, boxW, boxH, 8, 8, 'FD');
 
   doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
@@ -172,7 +172,7 @@ export async function generatePDFCover(
   // SR box
   const srBoxX = startX + boxW + gap;
   doc.setFillColor(...colors.softBlue);
-  doc.setDrawColor(...colors.gold); doc.setLineWidth(1.5);
+  doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.5);
   doc.roundedRect(srBoxX, ctx.y, boxW, boxH, 8, 8, 'FD');
 
   doc.setFont('helvetica', 'bold'); doc.setFontSize(8);

@@ -107,7 +107,7 @@ export function drawProfectionWheel(ctx: PDFContext, doc: jsPDF, age: number, ac
 
   // Active house callout
   doc.setFillColor(colors.softGold[0], colors.softGold[1], colors.softGold[2]);
-  doc.setDrawColor(colors.gold[0], colors.gold[1], colors.gold[2]); doc.setLineWidth(1);
+  doc.setDrawColor(colors.warmBorder[0], colors.warmBorder[1], colors.warmBorder[2]); doc.setLineWidth(0.5);
   doc.roundedRect(margin, ctx.y, contentW, 44, 6, 6, 'FD');
   doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
   doc.setTextColor(colors.gold[0], colors.gold[1], colors.gold[2]);

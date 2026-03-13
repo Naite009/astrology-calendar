@@ -273,7 +273,7 @@ export function generateHighlightsPage(
   const { pw, margin, contentW, colors } = ctx;
 
   // ── SECTION HEADER ──
-  doc.setDrawColor(...colors.gold); doc.setLineWidth(2);
+  doc.setDrawColor(...colors.gold); doc.setLineWidth(1);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
   ctx.y += 24;
   doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
@@ -294,7 +294,7 @@ export function generateHighlightsPage(
 
     const boxY = ctx.y;
     doc.setFillColor(...colors.softGold);
-    doc.setDrawColor(...colors.gold); doc.setLineWidth(0.8);
+    doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.4);
     doc.roundedRect(margin, boxY, contentW, cardH, 6, 6, 'FD');
 
     // Icon badge
@@ -328,7 +328,7 @@ export function generateHighlightsPage(
   ctx.y += 8;
   doc.addPage(); ctx.y = margin;
 
-  doc.setDrawColor(...colors.gold); doc.setLineWidth(1.5);
+  doc.setDrawColor(...colors.gold); doc.setLineWidth(1);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
   ctx.y += 18;
   doc.setFont('helvetica', 'bold'); doc.setFontSize(14);

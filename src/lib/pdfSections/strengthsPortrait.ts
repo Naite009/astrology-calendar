@@ -176,7 +176,7 @@ export function generateStrengthsPortrait(
 
   // Compact title
   ctx.y += 6;
-  doc.setDrawColor(...colors.gold); doc.setLineWidth(1.5);
+  doc.setDrawColor(...colors.gold); doc.setLineWidth(1);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
   ctx.y += 16;
 
@@ -228,25 +228,25 @@ export function generateStrengthsPortrait(
 
     if (endPage === startPage) {
       const h = ctx.y - startY;
-      doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.5);
+      doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.4);
       doc.roundedRect(margin, startY, contentW, h, 4, 4, 'S');
-      doc.setDrawColor(...colors.gold); doc.setLineWidth(2.5);
-      doc.line(margin + 1.25, startY + 1, margin + 1.25, startY + h - 1);
+      doc.setDrawColor(...colors.gold); doc.setLineWidth(2);
+      doc.line(margin + 1, startY + 1, margin + 1, startY + h - 1);
     } else {
       // Card spans pages — draw border segments
       doc.setPage(startPage);
       const firstH = ph - 40 - startY;
-      doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.5);
+      doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.4);
       doc.roundedRect(margin, startY, contentW, firstH, 4, 4, 'S');
-      doc.setDrawColor(...colors.gold); doc.setLineWidth(2.5);
-      doc.line(margin + 1.25, startY + 1, margin + 1.25, startY + firstH - 1);
+      doc.setDrawColor(...colors.gold); doc.setLineWidth(2);
+      doc.line(margin + 1, startY + 1, margin + 1, startY + firstH - 1);
 
       doc.setPage(endPage);
       const lastH = ctx.y - margin;
-      doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.5);
+      doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.4);
       doc.roundedRect(margin, margin, contentW, lastH, 4, 4, 'S');
-      doc.setDrawColor(...colors.gold); doc.setLineWidth(2.5);
-      doc.line(margin + 1.25, margin + 1, margin + 1.25, margin + lastH - 1);
+      doc.setDrawColor(...colors.gold); doc.setLineWidth(2);
+      doc.line(margin + 1, margin + 1, margin + 1, margin + lastH - 1);
     }
     ctx.y += 4;
   };
