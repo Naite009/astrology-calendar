@@ -21,6 +21,8 @@ export interface PDFContext {
     accentGreen: Color;
     accentRust: Color;
   };
+  /** Maps section title (uppercase) → page number (1-indexed) for clickable TOC */
+  sectionPages: Map<string, number>;
   checkPage: (needed: number) => void;
   sectionTitle: (doc: jsPDF, title: string) => void;
   writeBody: (doc: jsPDF, text: string, color?: Color, size?: number, lineH?: number) => void;
