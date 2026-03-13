@@ -18,6 +18,7 @@ import { generateHighlightsPage } from '@/lib/pdfSections/highlightsAndForecasts
 import { generateAffirmationCard } from '@/lib/pdfSections/affirmationCard';
 import { generateHowToReadPage } from '@/lib/pdfSections/howToRead';
 import { generateProfectionPersonalSection } from '@/lib/pdfSections/profectionPersonal';
+import { generateKeyDatesSection } from '@/lib/pdfSections/keyDates';
 
 // Cake image imports
 import cakeAries from '@/assets/cakes/aries.png';
