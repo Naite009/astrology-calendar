@@ -218,6 +218,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // =============================================
       if (birthdayMode) {
         doc.addPage(); ctx.y = margin;
+        ctx.sectionPages.set('YOUR NATAL FOUNDATION', doc.getNumberOfPages());
         generateStrengthsPortrait(ctx, doc, natalChart);
       }
 
@@ -225,6 +226,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // PAGE 3+: YEAR AT A GLANCE (own page, beautiful)
       // =============================================
       doc.addPage(); ctx.y = margin;
+      ctx.sectionPages.set('YEAR AT A GLANCE', doc.getNumberOfPages());
       generatePDFYearAtAGlance(ctx, doc, analysis, srChart, natalChart);
 
       // =============================================
