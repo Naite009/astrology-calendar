@@ -146,12 +146,11 @@ export async function generatePDFCover(
   doc.text(name.toUpperCase(), pw / 2, ctx.y, { align: 'center' });
   ctx.y += 28;
 
-  // --- NATAL BIG 3 BOX ---
-  const boxW = 200;
-  const boxH = 90;
+  // --- NATAL & SR BIG 3 BOXES ---
   const gap = 16;
-  const totalW = boxW * 2 + gap;
-  const startX = (pw - totalW) / 2;
+  const boxW = (contentW - gap) / 2;
+  const boxH = 90;
+  const startX = margin;
 
   // Natal box
   doc.setFillColor(...colors.softGold);
@@ -165,9 +164,9 @@ export async function generatePDFCover(
   doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
   doc.setTextColor(...colors.deepBrown);
   let ny = ctx.y + 34;
-  if (natalSun) { doc.text(`☉  ${natalSun} Sun`, startX + boxW / 2, ny, { align: 'center' }); ny += 18; }
-  if (natalMoon) { doc.text(`☽  ${natalMoon} Moon`, startX + boxW / 2, ny, { align: 'center' }); ny += 18; }
-  if (natalRising) { doc.text(`↑  ${natalRising} Rising`, startX + boxW / 2, ny, { align: 'center' }); }
+  if (natalSun) { doc.text(`${natalSun} Sun`, startX + boxW / 2, ny, { align: 'center' }); ny += 18; }
+  if (natalMoon) { doc.text(`${natalMoon} Moon`, startX + boxW / 2, ny, { align: 'center' }); ny += 18; }
+  if (natalRising) { doc.text(`${natalRising} Rising`, startX + boxW / 2, ny, { align: 'center' }); }
 
   // SR box
   const srBoxX = startX + boxW + gap;
@@ -182,9 +181,9 @@ export async function generatePDFCover(
   doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
   doc.setTextColor(...colors.deepBrown);
   let sy = ctx.y + 34;
-  if (srSunSign) { doc.text(`☉  ${srSunSign} Sun`, srBoxX + boxW / 2, sy, { align: 'center' }); sy += 18; }
-  if (srMoonSign) { doc.text(`☽  ${srMoonSign} Moon`, srBoxX + boxW / 2, sy, { align: 'center' }); sy += 18; }
-  if (srRisingSign) { doc.text(`↑  ${srRisingSign} Rising`, srBoxX + boxW / 2, sy, { align: 'center' }); }
+  if (srSunSign) { doc.text(`${srSunSign} Sun`, srBoxX + boxW / 2, sy, { align: 'center' }); sy += 18; }
+  if (srMoonSign) { doc.text(`${srMoonSign} Moon`, srBoxX + boxW / 2, sy, { align: 'center' }); sy += 18; }
+  if (srRisingSign) { doc.text(`${srRisingSign} Rising`, srBoxX + boxW / 2, sy, { align: 'center' }); }
 
   ctx.y += boxH + 18;
 
