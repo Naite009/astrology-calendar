@@ -38,7 +38,7 @@ export function generatePDFYearAtAGlance(
 
     doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
     doc.setTextColor(colors.dimText[0], colors.dimText[1], colors.dimText[2]);
-    doc.text('SR ASCENDANT', margin + 14, ctx.y + 18);
+    doc.text('SR ASCENDANT', boxL + 14, ctx.y + 18);
     doc.setFontSize(16);
     doc.setTextColor(colors.gold[0], colors.gold[1], colors.gold[2]);
     doc.text(`${a.yearlyTheme.ascendantSign} Rising`, margin + 14, ctx.y + 38);
