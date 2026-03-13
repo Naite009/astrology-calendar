@@ -47,8 +47,8 @@ export function generateHowToReadPage(ctx: PDFContext, doc: jsPDF) {
       body: 'Aspects are geometric angles between planets. A conjunction (0 degrees) blends energies. A trine (120 degrees) creates flow and ease. A square (90 degrees) creates tension that forces action. An opposition (180 degrees) creates awareness through contrast. None are "good" or "bad" — they describe HOW energies interact.',
     },
     {
-      title: 'The Moon — Your Emotional Clock',
-      body: 'The Moon in a Solar Return shows your emotional processing style for the year. Its sign tells you HOW you will feel; its house tells you WHERE those feelings get activated. The Moon also acts as a timing device — advancing roughly one degree per month through the chart, triggering aspects as it goes.',
+      title: 'The Moon — Your Emotional Compass',
+      body: 'The Moon in a Solar Return is a snapshot of your emotional world for the entire year. Unlike the Progressed Moon (which moves slowly over decades), the SR Moon is frozen at the moment of your birthday — it does not advance through the chart. Its SIGN tells you how you will process emotions this year. Its HOUSE tells you where your heart will be most invested. Its ASPECTS to other SR planets describe the emotional climate — whether the year feels supportive, tense, or transformative. The Moon\'s phase relative to the Sun (New, Full, Balsamic, etc.) sets the overall arc: are you beginning something, harvesting, or releasing? The Moon also follows a 19-year cycle (the Metonic cycle), meaning your SR Moon returns to approximately the same position every 19 years, linking this year emotionally to those earlier chapters of your life.',
     },
   ];
 

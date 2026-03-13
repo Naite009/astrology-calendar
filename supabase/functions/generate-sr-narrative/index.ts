@@ -121,12 +121,18 @@ serve(async (req) => {
       });
     }
 
-    // Moon Timing Events (Lynn Bell: 1° per month)
-    if (a.moonTimingEvents?.length > 0) {
-      dataContext += `\nMOON TIMING (SR Moon advances ~1° per month, activating aspects):\n`;
-      a.moonTimingEvents.slice(0, 8).forEach((e: any) => {
-        dataContext += `- Month ${e.month}: Moon perfects ${e.aspectType} to ${e.targetPlanet} (${e.targetSource})\n`;
+    // SR Moon Aspects (frozen snapshot — emotional climate for the year)
+    if (a.srMoonAspects?.length > 0) {
+      dataContext += `\nSR MOON ASPECTS (emotional climate — these are static aspects at the SR moment, NOT advancing):\n`;
+      a.srMoonAspects.slice(0, 8).forEach((e: any) => {
+        dataContext += `- Moon ${e.aspectType} ${e.targetPlanet} (${e.orb}' orb): ${e.interpretation}\n`;
       });
+    }
+    if (a.moonAngularity) {
+      dataContext += `Moon Angularity: ${a.moonAngularity} (${a.moonAngularity === 'angular' ? 'reactive, instinctive' : a.moonAngularity === 'succedent' ? 'stable, grounded' : 'adaptive, internal'})\n`;
+    }
+    if (a.moonLateDegree) {
+      dataContext += `Moon is in late degrees (25+) — signals emotional endings or transitions\n`;
     }
 
     // Top SR-to-Natal aspects

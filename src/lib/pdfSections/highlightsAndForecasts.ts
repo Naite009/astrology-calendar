@@ -17,59 +17,50 @@ interface YearHighlight {
 function buildHighlights(a: SolarReturnAnalysis): YearHighlight[] {
   const highlights: YearHighlight[] = [];
 
-  // Best months from Moon timing
-  if (a.moonTimingEvents.length > 0) {
-    // Find Jupiter aspects = best opportunities
-    const jupiterHit = a.moonTimingEvents.find(e => e.targetPlanet === 'Jupiter');
-    if (jupiterHit) {
+  // Build highlights from SR Moon aspects (frozen emotional climate)
+  if (a.srMoonAspects && a.srMoonAspects.length > 0) {
+    const jupiterAsp = a.srMoonAspects.find(e => e.targetPlanet === 'Jupiter');
+    if (jupiterAsp) {
       highlights.push({
-        label: 'Best Month for Opportunities',
-        timing: jupiterHit.approximateMonth,
-        reason: `Moon activates Jupiter — doors open, luck peaks, say YES to invitations`,
+        label: 'Emotional Expansion',
+        timing: `Moon ${jupiterAsp.aspectType} Jupiter`,
+        reason: jupiterAsp.interpretation,
         icon: 'LUCK',
       });
     }
-
-    // Venus aspect = best for love
-    const venusHit = a.moonTimingEvents.find(e => e.targetPlanet === 'Venus');
-    if (venusHit) {
+    const venusAsp = a.srMoonAspects.find(e => e.targetPlanet === 'Venus');
+    if (venusAsp) {
       highlights.push({
-        label: 'Best Month for Love & Beauty',
-        timing: venusHit.approximateMonth,
-        reason: `Moon activates Venus — romance, beauty, social connections at their peak`,
+        label: 'Love & Relationships',
+        timing: `Moon ${venusAsp.aspectType} Venus`,
+        reason: venusAsp.interpretation,
         icon: 'LOVE',
       });
     }
-
-    // Mars aspect = best for action
-    const marsHit = a.moonTimingEvents.find(e => e.targetPlanet === 'Mars');
-    if (marsHit) {
+    const marsAsp = a.srMoonAspects.find(e => e.targetPlanet === 'Mars');
+    if (marsAsp) {
       highlights.push({
-        label: 'Best Month for Bold Action',
-        timing: marsHit.approximateMonth,
-        reason: `Moon activates Mars — energy, courage, and initiative are supercharged`,
+        label: 'Emotional Drive',
+        timing: `Moon ${marsAsp.aspectType} Mars`,
+        reason: marsAsp.interpretation,
         icon: 'ACTION',
       });
     }
-
-    // Saturn aspect = most challenging
-    const saturnHit = a.moonTimingEvents.find(e => e.targetPlanet === 'Saturn');
-    if (saturnHit) {
+    const saturnAsp = a.srMoonAspects.find(e => e.targetPlanet === 'Saturn');
+    if (saturnAsp) {
       highlights.push({
-        label: 'Most Important Growth Month',
-        timing: saturnHit.approximateMonth,
-        reason: `Moon meets Saturn — a turning point that rewards discipline and honesty`,
+        label: 'Emotional Growth Edge',
+        timing: `Moon ${saturnAsp.aspectType} Saturn`,
+        reason: saturnAsp.interpretation,
         icon: 'GROWTH',
       });
     }
-
-    // Sun aspect = most visible
-    const sunHit = a.moonTimingEvents.find(e => e.targetPlanet === 'Sun');
-    if (sunHit) {
+    const plutoAsp = a.srMoonAspects.find(e => e.targetPlanet === 'Pluto');
+    if (plutoAsp) {
       highlights.push({
-        label: 'Peak Visibility Month',
-        timing: sunHit.approximateMonth,
-        reason: `Moon activates the Sun — you are seen, recognized, and your light shines brightest`,
+        label: 'Deep Transformation',
+        timing: `Moon ${plutoAsp.aspectType} Pluto`,
+        reason: plutoAsp.interpretation,
         icon: 'SHINE',
       });
     }
@@ -101,21 +92,21 @@ function buildMonthlyForecasts(a: SolarReturnAnalysis): { month: string; forecas
 
   // Build 12 months of forecasts
   const forecasts: { month: string; forecast: string }[] = [];
-  const timingMap = new Map<string, string>();
-  for (const evt of a.moonTimingEvents) {
-    if (!timingMap.has(evt.approximateMonth)) {
-      const planet = P[evt.targetPlanet] || evt.targetPlanet;
-      timingMap.set(evt.approximateMonth, `Moon activates ${planet} — ${(evt.interpretation || '').substring(0, 60)}`);
+  // SR Moon aspects provide thematic color, not monthly timing
+  const aspectThemes: string[] = [];
+  if (a.srMoonAspects) {
+    for (const asp of a.srMoonAspects.slice(0, 3)) {
+      const planet = P[asp.targetPlanet] || asp.targetPlanet;
+      aspectThemes.push(`Moon ${asp.aspectType} ${planet}: ${asp.interpretation.substring(0, 50)}`);
     }
   }
 
   for (let i = 0; i < 12; i++) {
     const mIdx = (srDate.getMonth() + i) % 12;
     const mName = monthNames[mIdx];
-    const fromTiming = timingMap.get(mName);
     forecasts.push({
       month: mName.substring(0, 3).toUpperCase(),
-      forecast: fromTiming || monthThemes[i + 1] || 'A month of steady progress.',
+      forecast: monthThemes[i + 1] || 'A month of steady progress.',
     });
   }
   return forecasts;
