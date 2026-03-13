@@ -328,7 +328,7 @@ export function generateHighlightsPage(
   ctx.y += 8;
   doc.addPage(); ctx.y = margin;
 
-  doc.setDrawColor(...colors.gold); doc.setLineWidth(1.5);
+  doc.setDrawColor(...colors.gold); doc.setLineWidth(1);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
   ctx.y += 18;
   doc.setFont('helvetica', 'bold'); doc.setFontSize(14);

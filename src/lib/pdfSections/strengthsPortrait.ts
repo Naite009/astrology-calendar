@@ -176,7 +176,7 @@ export function generateStrengthsPortrait(
 
   // Compact title
   ctx.y += 6;
-  doc.setDrawColor(...colors.gold); doc.setLineWidth(1.5);
+  doc.setDrawColor(...colors.gold); doc.setLineWidth(1);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
   ctx.y += 16;
 
