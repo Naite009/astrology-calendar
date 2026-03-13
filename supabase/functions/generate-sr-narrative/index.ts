@@ -249,7 +249,15 @@ RULES:
     }
 
     const result = await response.json();
-    const narrative = result.choices?.[0]?.message?.content || result.message?.content || '';
+    let narrative = result.choices?.[0]?.message?.content || result.message?.content || '';
+
+    // ── POST-CORRECTION: Strip Moon timing hallucinations ──
+    // Remove any "Moon Timing" section the AI may have generated despite instructions
+    narrative = narrative.replace(/## Moon Timing[^\n]*\n[\s\S]*?(?=##|$)/gi, '');
+    // Remove sentences claiming the Moon advances 1°/month in the SR
+    narrative = narrative.replace(/[^.]*(?:moon advances|moon moves|moon progresses|1[°\s]*(?:degree|deg)[\s/]*(?:per\s)?month|month[s]?\s+(?:in|from|after)\s+(?:the\s+)?(?:solar\s+)?return)[^.]*\./gi, '');
+    // Remove "Around X months in" timing patterns
+    narrative = narrative.replace(/[^.]*(?:around\s+\d+[-–]\d+\s+months?\s+in|early\s+in\s+the\s+year.*?SR\s+Moon|months?\s+(?:from|after)\s+(?:your\s+)?birthday)[^.]*\./gi, '');
 
     return new Response(
       JSON.stringify({ narrative }),
