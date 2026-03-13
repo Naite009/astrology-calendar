@@ -2,8 +2,15 @@ import jsPDF from 'jspdf';
 import { PDFContext } from './pdfContext';
 import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 
-export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: SolarReturnAnalysis, narrative: string, birthdayMode?: boolean) {
+export interface TOCEntry {
+  title: string;
+  desc: string;
+  y: number; // Y position of the entry on the TOC page
+}
+
+export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: SolarReturnAnalysis, narrative: string, birthdayMode?: boolean): TOCEntry[] {
   const { pw, margin, contentW, colors } = ctx;
+  const tocEntries: TOCEntry[] = [];
 
   // Title with elegant spacing
   ctx.y += 20;
@@ -49,6 +56,8 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
     const section = sections[i];
     ctx.checkPage(36);
 
+    const entryY = ctx.y;
+
     // Number circle
     const circleX = margin + 14;
     const circleY = ctx.y + 2;
@@ -69,6 +78,8 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
     doc.setTextColor(...colors.dimText);
     doc.text(section.desc, margin + 30, ctx.y + 14);
 
+    tocEntries.push({ title: section.title, desc: section.desc, y: entryY });
+
     ctx.y += 32;
   }
 
@@ -77,4 +88,38 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   // Bottom ornament
   doc.setDrawColor(...colors.gold); doc.setLineWidth(1.5);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
+
+  return tocEntries;
+}
+
+/**
+ * After the full PDF is generated, go back to the TOC page and add clickable internal links.
+ * Maps TOC entry titles → section page numbers tracked in ctx.sectionPages.
+ */
+export function addTOCLinks(doc: jsPDF, tocPageNumber: number, tocEntries: TOCEntry[], ctx: PDFContext) {
+  const { margin, contentW, sectionPages } = ctx;
+
+  // Normalize title matching: TOC titles are mixed case, sectionPages keys are UPPERCASE
+  // Also handle titles that don't go through sectionTitle (manually registered)
+  for (const entry of tocEntries) {
+    const upperTitle = entry.title.toUpperCase();
+    // Try exact match first, then partial match
+    let targetPage: number | undefined = sectionPages.get(upperTitle);
+    
+    if (!targetPage) {
+      // Try matching with " -- " separator stripped
+      for (const [key, page] of sectionPages) {
+        if (key.includes(upperTitle) || upperTitle.includes(key.split(' -- ')[0])) {
+          targetPage = page;
+          break;
+        }
+      }
+    }
+
+    if (targetPage) {
+      // Add an internal link on the TOC page at this entry's Y position
+      doc.setPage(tocPageNumber);
+      doc.link(margin + 28, entry.y - 8, contentW - 28, 28, { pageNumber: targetPage });
+    }
+  }
 }
