@@ -87,18 +87,34 @@ const moonShadow: Record<string, string> = {
 };
 
 const moonYearAhead: Record<number, string> = {
-  1: 'SR Moon activates House 1: Your emotional needs are front and center. Others perceive your moods more clearly. The body reflects emotional states directly.',
-  2: 'SR Moon activates House 2: Emotional security is tied to finances and material stability this year. Spending may reflect emotional states.',
-  3: 'SR Moon activates House 3: Emotional processing happens through conversation and writing. Sibling relationships carry emotional weight.',
-  4: 'SR Moon activates House 4: Home and family are the emotional center. Domestic changes affect everything. Need for a safe base is amplified.',
-  5: 'SR Moon activates House 5: Emotional fulfillment comes through creativity, romance, and play. Heart-led decisions dominate.',
-  6: 'SR Moon activates House 6: Emotional state directly affects physical health. Daily routines are emotionally significant. Work environment matters deeply.',
-  7: 'SR Moon activates House 7: Emotional needs are met (or frustrated) through partnerships. Relationship dynamics are the primary emotional teacher.',
-  8: 'SR Moon activates House 8: Deep emotional processing, intimacy, and shared vulnerability define the year. Emotional intensity is high.',
-  9: 'SR Moon activates House 9: Emotional growth through travel, study, or exposure to different worldviews. Restlessness signals the need for expansion.',
-  10: 'SR Moon activates House 10: Emotional investment in career and public role. Professional life carries personal emotional weight.',
-  11: 'SR Moon activates House 11: Emotional fulfillment through friendships and community. Social connections carry unusual emotional significance. The group you belong to reflects your inner state.',
-  12: 'SR Moon activates House 12: Emotions are internalized. Solitude is needed for processing. Dreams, meditation, and unconscious patterns are active.',
+  1: 'Emotional needs are front and center. Others perceive your moods more clearly. The body reflects emotional states directly.',
+  2: 'Emotional security is tied to finances and material stability this year. Spending may reflect emotional states.',
+  3: 'Emotional processing happens through conversation and writing. Sibling relationships carry emotional weight.',
+  4: 'Home and family are the emotional center. Domestic changes affect everything. Need for a safe base is amplified.',
+  5: 'Emotional fulfillment comes through creativity, romance, and play. Heart-led decisions dominate.',
+  6: 'Emotional state directly affects physical health. Daily routines are emotionally significant. Work environment matters deeply.',
+  7: 'Emotional needs are met (or frustrated) through partnerships. Relationship dynamics are the primary emotional teacher.',
+  8: 'Deep emotional processing, intimacy, and shared vulnerability define the year. Emotional intensity is high.',
+  9: 'Emotional growth through travel, study, or exposure to different worldviews. Restlessness signals the need for expansion.',
+  10: 'Emotional investment in career and public role. Professional life carries personal emotional weight.',
+  11: 'Emotional fulfillment through friendships and community. Social connections carry unusual emotional significance. The group you belong to reflects your inner state.',
+  12: 'Emotions are internalized. Solitude is needed for processing. Dreams, meditation, and unconscious patterns are active.',
+};
+
+/** How the SR Moon SIGN activates or challenges natal Moon patterns */
+const srMoonSignActivation: Record<string, (natalSign: string) => string> = {
+  Aries: (natal) => `Your SR Moon in Aries pushes your natal ${natal} Moon toward action and independence. Emotions come fast and demand immediate expression. You may feel impatient with your usual emotional patterns — this year rewards directness over deliberation.`,
+  Taurus: (natal) => `Your SR Moon in Taurus grounds your natal ${natal} Moon in physical comfort and stability. Emotions slow down this year — you need tangible proof of safety. Routines, good food, and sensory pleasure become emotional medicine.`,
+  Gemini: (natal) => `Your SR Moon in Gemini activates your natal ${natal} Moon through communication. You process feelings by talking, texting, and writing this year. Mental stimulation IS emotional nourishment. Restlessness replaces stagnation.`,
+  Cancer: (natal) => `Your SR Moon in Cancer amplifies your natal ${natal} Moon's deepest needs. Home, family, and belonging are the emotional arena. Vulnerability feels more accessible. You may feel more sensitive than usual — that sensitivity is data, not weakness.`,
+  Leo: (natal) => `Your SR Moon in Leo activates your natal ${natal} Moon through creative self-expression and visibility. Your emotional needs include being seen and appreciated. Generosity flows naturally but so does the need for recognition.`,
+  Virgo: (natal) => `Your SR Moon in Virgo channels your natal ${natal} Moon into practical service and self-improvement. Emotions are processed through doing useful things. Health routines become emotionally stabilizing. The shadow: anxiety masquerading as productivity.`,
+  Libra: (natal) => `Your SR Moon in Libra filters your natal ${natal} Moon through relationships. Emotional balance depends on partnership harmony this year. You feel best when things are fair and beautiful. The shadow: suppressing your own needs to keep the peace.`,
+  Scorpio: (natal) => `Your SR Moon in Scorpio intensifies your natal ${natal} Moon dramatically. Emotional depth is unavoidable this year. You feel everything at full volume — jealousy, desire, loyalty, rage. Superficial emotional exchanges feel intolerable. Transformation through emotional honesty.`,
+  Sagittarius: (natal) => `Your SR Moon in Sagittarius expands your natal ${natal} Moon toward adventure and meaning. Emotional claustrophobia is real — you need space, travel, or philosophical exploration to feel okay. Optimism is your emotional default, but avoid using it to bypass genuine pain.`,
+  Capricorn: (natal) => `Your SR Moon in Capricorn disciplines your natal ${natal} Moon. Emotions are managed through structure, responsibility, and achievement. You may feel emotionally reserved or stoic — not cold, but serious. Emotional maturity is the assignment. You process feelings by taking responsibility and building something lasting.`,
+  Aquarius: (natal) => `Your SR Moon in Aquarius detaches your natal ${natal} Moon just enough to see patterns clearly. Emotional processing is intellectual this year. Community and friendship matter more than romance. You need space to feel free.`,
+  Pisces: (natal) => `Your SR Moon in Pisces dissolves boundaries around your natal ${natal} Moon. Intuition is heightened, empathy is amplified, and you absorb the emotions of everyone around you. Creative and spiritual channels are essential emotional outlets. The shadow: losing yourself in others' feelings.`,
 };
 
 const risingStrength: Record<string, string> = {
