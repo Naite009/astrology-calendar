@@ -1355,23 +1355,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         </div>
       )}
 
-      {/* Moon Phase — Enhanced */}
-      {analysis.moonPhase && (() => {
-        const phaseInterp = srMoonPhaseInterp[analysis.moonPhase.phase];
-        return (
-          <div className="border border-primary/20 rounded-sm p-5 bg-card">
-            <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
-              <Moon size={14} className="text-primary" /> SR Moon Phase
-            </h4>
-            <p className="text-lg font-serif text-foreground mb-1">{analysis.moonPhase.phase}</p>
-            {phaseInterp && <p className="text-xs font-medium text-primary mb-1">{phaseInterp.theme}</p>}
-            {analysis.moonPhase.isEclipse && (
-              <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-destructive/10 text-destructive rounded-sm">Near Eclipse Axis</span>
-            )}
-            <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{phaseInterp?.description || analysis.moonPhase.description}</p>
-          </div>
-        );
-      })()}
+      {/* Moon Phase moved into Moon section above */}
 
       {/* SR Ascendant in Natal House (Lynn Bell) */}
       {analysis.srAscInNatalHouse && (
