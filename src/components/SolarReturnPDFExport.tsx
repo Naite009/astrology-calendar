@@ -664,9 +664,11 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       }
 
       // =============================================
-      // LORD OF THE YEAR — own page
+      // LORD OF THE YEAR — uses profection Time Lord (the correct Hellenistic concept)
+      // lordOfTheYear is actually the natal chart ruler — a fixed planet, NOT yearly
+      // The true "Lord of the Year" in Hellenistic astrology = profection Time Lord
       // =============================================
-      if (analysis.lordOfTheYear) {
+      if (analysis.profectionYear?.timeLord) {
         doc.addPage(); ctx.y = margin;
         ctx.sectionPages.set('LORD OF THE YEAR', doc.getNumberOfPages());
         ctx.drawGoldRule(doc); ctx.y += 20;
@@ -674,7 +676,17 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         doc.setTextColor(...ctx.colors.gold);
         doc.text('LORD OF THE YEAR', margin, ctx.y); ctx.y += 20;
 
-        const lord = analysis.lordOfTheYear;
+        const tlPlanet = analysis.profectionYear.timeLord;
+        const tlSRHouse = analysis.profectionYear.timeLordSRHouse;
+        const tlSRSign = analysis.profectionYear.timeLordSRSign;
+        const houseNum = analysis.profectionYear.houseNumber;
+        
+        // Get dignity and retrograde from SR chart position
+        const tlSRPos = srChart.planets[tlPlanet as keyof typeof srChart.planets];
+        const tlIsRetro = !!(tlSRPos as any)?.isRetrograde;
+        // Reuse lordOfTheYear dignity if same planet, otherwise leave blank
+        const tlDignity = (analysis.lordOfTheYear && analysis.lordOfTheYear.planet === tlPlanet) 
+          ? analysis.lordOfTheYear.dignity : '';
 
         // Header box with key info
         doc.setFillColor(...ctx.colors.softGold);
@@ -682,22 +694,32 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         doc.roundedRect(margin, ctx.y, contentW, 60, 6, 6, 'FD');
         doc.setFont('helvetica', 'bold'); doc.setFontSize(20);
         doc.setTextColor(...ctx.colors.gold);
-        doc.text(`${P[lord.planet] || lord.planet}`, margin + 20, ctx.y + 28);
+        doc.text(`${P[tlPlanet] || tlPlanet}`, margin + 20, ctx.y + 28);
         doc.setFont('helvetica', 'normal'); doc.setFontSize(11);
         doc.setTextColor(...ctx.colors.bodyText);
-        doc.text(`${lord.srSign} — SR House ${lord.srHouse || '--'}`, margin + 20, ctx.y + 46);
+        doc.text(`${tlSRSign || '--'} — SR House ${tlSRHouse || '--'}`, margin + 20, ctx.y + 46);
         // Dignity + Rx badges on right
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-        doc.setTextColor(...ctx.colors.deepBrown);
-        doc.text(`Dignity: ${lord.dignity}`, pw - margin - 120, ctx.y + 28);
-        if (lord.isRetrograde) {
+        if (tlDignity) {
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+          doc.setTextColor(...ctx.colors.deepBrown);
+          doc.text(`Dignity: ${tlDignity}`, pw - margin - 120, ctx.y + 28);
+        }
+        if (tlIsRetro) {
           doc.setTextColor(...ctx.colors.accentRust);
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
           doc.text('RETROGRADE', pw - margin - 120, ctx.y + 42);
         }
         ctx.y += 70;
 
+        // Why this planet — link to profection
+        ctx.drawCard(doc, () => {
+          ctx.writeBold(doc, `Why ${P[tlPlanet] || tlPlanet} Is Your Lord of the Year`, ctx.colors.gold, 11);
+          ctx.y += 2;
+          ctx.writeBody(doc, `You are ${analysis.profectionYear!.age} years old, placing you in a ${houseNum}${houseNum === 1 ? 'st' : houseNum === 2 ? 'nd' : houseNum === 3 ? 'rd' : 'th'} house profection year. The traditional ruler of your natal ${houseNum}${houseNum === 1 ? 'st' : houseNum === 2 ? 'nd' : houseNum === 3 ? 'rd' : 'th'} house cusp is ${P[tlPlanet] || tlPlanet}, making it the planet running the show — every transit to or from ${P[tlPlanet] || tlPlanet} hits harder this year.`, ctx.colors.bodyText, 10, 14);
+        });
+
         // Detailed meaning
-        const detailedMeaning = timeLordDetailedMeaning[lord.planet];
+        const detailedMeaning = timeLordDetailedMeaning[tlPlanet];
         if (detailedMeaning) {
           ctx.drawCard(doc, () => {
             ctx.writeBold(doc, 'What This Means For Your Year', ctx.colors.accentGreen, 11);
@@ -706,7 +728,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           });
         }
 
-        const pm = planetLifeMeanings[lord.planet];
+        const pm = planetLifeMeanings[tlPlanet];
         if (pm) {
           ctx.drawCard(doc, () => {
             ctx.writeCardSection(doc, 'What It Rules', pm.inYourLife, ctx.colors.gold);
@@ -714,10 +736,10 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           });
         }
 
-        // Where the Lord sits natally — the activation area
-        if (lord.srHouse) {
+        // Where the Lord sits in the SR chart
+        if (tlSRHouse) {
           ctx.drawCard(doc, () => {
-            ctx.writeBold(doc, `${P[lord.planet] || lord.planet} in SR House ${lord.srHouse} — Where the Year Plays Out`, ctx.colors.gold, 11);
+            ctx.writeBold(doc, `${P[tlPlanet] || tlPlanet} in SR House ${tlSRHouse} — Where the Year Plays Out`, ctx.colors.gold, 11);
             ctx.y += 2;
             const lordHouseInterp: Record<number, string> = {
               1: 'The Lord of the Year in your 1st house means YOUR identity, body, and personal direction are the main arena. Every decision this year is filtered through "who am I becoming?" You are visibly the main character.',
@@ -733,27 +755,27 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
               11: 'The Lord of the Year in your 11th house channels the year through friendships, community, and collective purpose. Your social circle is being restructured. The quality of your connections determines the quality of your year.',
               12: 'The Lord of the Year in your 12th house turns the year inward. Solitude, spiritual practice, and unconscious patterns are the focus. Rest, dreams, and inner work are not extras — they are the assignment.',
             };
-            const hInterp = lordHouseInterp[lord.srHouse!];
+            const hInterp = lordHouseInterp[tlSRHouse!];
             if (hInterp) ctx.writeBody(doc, hInterp, ctx.colors.bodyText, 10, 14);
           });
         }
 
-        if (lord.dignity === 'Detriment' || lord.dignity === 'Fall') {
+        if (tlDignity === 'Detriment' || tlDignity === 'Fall') {
           ctx.drawCard(doc, () => {
             ctx.writeBold(doc, 'Dignity Warning', ctx.colors.accentRust, 10);
-            ctx.writeBody(doc, `Your Time Lord is in ${lord.dignity}. This means ${P[lord.planet] || lord.planet} is working outside its comfort zone — plans may require more effort, communication needs extra clarity. The growth is deeper and the lessons stick.`, ctx.colors.bodyText, 10);
+            ctx.writeBody(doc, `Your Lord of the Year is in ${tlDignity}. This means ${P[tlPlanet] || tlPlanet} is working outside its comfort zone — plans may require more effort, communication needs extra clarity. The growth is deeper and the lessons stick.`, ctx.colors.bodyText, 10);
           }, ctx.colors.accentRust);
         }
-        if (lord.dignity === 'Domicile' || lord.dignity === 'Exaltation') {
+        if (tlDignity === 'Domicile' || tlDignity === 'Exaltation') {
           ctx.drawCard(doc, () => {
             ctx.writeBold(doc, 'Dignity Advantage', ctx.colors.accentGreen, 10);
-            ctx.writeBody(doc, `Your Time Lord is in ${lord.dignity} — this is ${P[lord.planet] || lord.planet} at ${lord.dignity === 'Domicile' ? 'full strength, operating in its own sign' : 'peak performance, elevated and supported by sign'}. The year's agenda flows more naturally. ${P[lord.planet] || lord.planet}'s themes are expressed with clarity and authority. Results come with less friction.`, ctx.colors.bodyText, 10);
+            ctx.writeBody(doc, `Your Lord of the Year is in ${tlDignity} — this is ${P[tlPlanet] || tlPlanet} at ${tlDignity === 'Domicile' ? 'full strength, operating in its own sign' : 'peak performance, elevated and supported by sign'}. The year's agenda flows more naturally. ${P[tlPlanet] || tlPlanet}'s themes are expressed with clarity and authority. Results come with less friction.`, ctx.colors.bodyText, 10);
           }, ctx.colors.accentGreen);
         }
-        if (lord.isRetrograde) {
+        if (tlIsRetro) {
           ctx.drawCard(doc, () => {
             ctx.writeBold(doc, 'Retrograde Effect', ctx.colors.accentRust, 10);
-            ctx.writeBody(doc, `${P[lord.planet] || lord.planet} retrograde as Time Lord means this year has a built-in "review and revise" quality. Things from the past resurface — old projects, unfinished conversations, former connections. What comes back around deserves a second look. New initiatives may stall until you address what was left incomplete. The retrograde does not block progress — it redirects it through revision.`, ctx.colors.bodyText, 10);
+            ctx.writeBody(doc, `${P[tlPlanet] || tlPlanet} retrograde as Lord of the Year means this year has a built-in "review and revise" quality. Things from the past resurface — old projects, unfinished conversations, former connections. What comes back around deserves a second look. New initiatives may stall until you address what was left incomplete. The retrograde does not block progress — it redirects it through revision.`, ctx.colors.bodyText, 10);
           }, ctx.colors.accentRust);
         }
       }
