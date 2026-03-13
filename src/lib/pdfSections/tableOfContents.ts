@@ -110,7 +110,6 @@ export function addTOCLinks(doc: jsPDF, tocPageNumber: number, tocEntries: TOCEn
     const normTitle = normalize(entry.title);
     let targetPage: number | undefined;
 
-    // Try all sectionPages keys with normalized comparison
     for (const [key, page] of sectionPages) {
       const normKey = normalize(key);
       const normKeyBase = normKey.split(' -- ')[0].trim();
@@ -121,9 +120,13 @@ export function addTOCLinks(doc: jsPDF, tocPageNumber: number, tocEntries: TOCEn
     }
 
     if (targetPage) {
-      // Add an internal link on the TOC page at this entry's Y position
       doc.setPage(tocPageNumber);
-      doc.link(margin + 28, entry.y - 8, contentW - 28, 28, { pageNumber: targetPage });
+      // Print page number right-aligned
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+      doc.setTextColor(...ctx.colors.deepBrown);
+      doc.text(`${targetPage}`, pw - margin - 4, entry.y + 2, { align: 'right' });
+      // Clickable link over the whole row
+      doc.link(margin, entry.y - 4, contentW, 16, { pageNumber: targetPage });
     }
   }
 }
