@@ -301,15 +301,21 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       }
 
       // =============================================
-      // COMPARISON TABLE
+      // COMPARISON TABLE — Beautiful card style
       // =============================================
       ctx.sectionTitle(doc, 'Solar Return vs Natal');
-      const cols = [margin + 4, margin + 65, margin + 178, margin + 220, margin + 333, margin + 375];
+      
+      // Table with rounded container
+      const tableStartY = ctx.y;
       ctx.checkPage(16);
-      doc.setFillColor(...ctx.colors.softGold); doc.rect(margin, ctx.y - 10, contentW, 16, 'F');
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.deepBrown);
+      
+      // Header row with full-width gold background
+      doc.setFillColor(...ctx.colors.gold);
+      doc.roundedRect(margin, ctx.y - 12, contentW, 20, 4, 4, 'F');
+      const cols = [margin + 8, margin + 68, margin + 180, margin + 222, margin + 335, margin + 378];
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(255, 255, 255);
       ['PLANET', 'SR POSITION', 'SR H', 'NATAL POSITION', 'NAT H', 'SHIFT'].forEach((h, i) => doc.text(h, cols[i], ctx.y));
-      ctx.y += 10; doc.setDrawColor(...ctx.colors.warmBorder); doc.setLineWidth(0.5); doc.line(margin, ctx.y, pw - margin, ctx.y); ctx.y += 12;
+      ctx.y += 14;
 
       for (const p of PLANET_ORDER) {
         const srPos = srChart.planets[p as keyof typeof srChart.planets];
@@ -319,22 +325,32 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         const overlay = analysis.houseOverlays.find(o => o.planet === p);
         const natH = overlay?.natalHouse;
         const shift = srPos?.sign && natPos?.sign
-          ? (srPos.sign === natPos.sign ? 'Same' : `${S[natPos.sign] || natPos.sign} --> ${S[srPos.sign] || srPos.sign}`)
+          ? (srPos.sign === natPos.sign ? 'Same' : `${S[natPos.sign] || natPos.sign} → ${S[srPos.sign] || srPos.sign}`)
           : '';
-        ctx.checkPage(14);
+        ctx.checkPage(18);
         const rowIdx = PLANET_ORDER.indexOf(p);
-        if (rowIdx % 2 === 0) { doc.setFillColor(252, 250, 247); doc.rect(margin, ctx.y - 10, contentW, 14, 'F'); }
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.darkText);
+        if (rowIdx % 2 === 0) { 
+          doc.setFillColor(...ctx.colors.softGold); 
+          doc.rect(margin, ctx.y - 11, contentW, 17, 'F'); 
+        }
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.deepBrown);
         doc.text(P[p] || p, cols[0], ctx.y);
         doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.bodyText);
         doc.text(srPos ? `${srPos.sign} ${srPos.degree}'` : '--', cols[1], ctx.y);
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.gold);
         doc.text(srH != null ? `H${srH}` : '--', cols[2], ctx.y);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.bodyText);
         doc.text(natPos ? `${natPos.sign} ${natPos.degree}'` : '--', cols[3], ctx.y);
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.gold);
         doc.text(natH != null ? `H${natH}` : '--', cols[4], ctx.y);
-        doc.setTextColor(...ctx.colors.dimText); doc.text(shift, cols[5], ctx.y);
-        ctx.y += 14;
+        doc.setFont('helvetica', 'italic'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.dimText); 
+        doc.text(shift, cols[5], ctx.y);
+        ctx.y += 17;
       }
-      ctx.y += 8;
+      // Table border
+      doc.setDrawColor(...ctx.colors.warmBorder); doc.setLineWidth(0.5);
+      doc.roundedRect(margin, tableStartY - 12, contentW, ctx.y - tableStartY + 16, 4, 4, 'S');
+      ctx.y += 10;
 
       // =============================================
       // STELLIUMS
