@@ -12,21 +12,21 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   const { pw, margin, contentW, colors } = ctx;
   const tocEntries: TOCEntry[] = [];
 
-  // Title with elegant spacing
-  ctx.y += 20;
+  // Title — compact spacing to fit all entries on one page
+  ctx.y += 8;
   doc.setDrawColor(...colors.gold); doc.setLineWidth(1.5);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 28;
+  ctx.y += 16;
 
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
   doc.setTextColor(...colors.gold);
   doc.text('TABLE OF CONTENTS', pw / 2, ctx.y, { align: 'center' });
-  ctx.y += 10;
+  ctx.y += 6;
 
   // Ornament
   doc.setDrawColor(...colors.gold); doc.setLineWidth(0.5);
   doc.line(pw / 2 - 40, ctx.y, pw / 2 + 40, ctx.y);
-  ctx.y += 24;
+  ctx.y += 12;
 
   // Build sections list — MUST match actual page order in SolarReturnPDFExport.tsx
   const sections: { title: string; desc: string }[] = [];
