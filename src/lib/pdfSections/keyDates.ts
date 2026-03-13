@@ -281,8 +281,9 @@ export function generateKeyDatesSection(
       doc.text(`${tlName} ${event.aspectName} Natal ${natalName}`, margin + 16, ctx.y + 24);
       
       // Nature badge
-      const natureBadge = event.nature.toUpperCase();
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(7);
+      // Nature badge — Green Light or Pressure Point
+      const natureBadge = isHard ? '■ PRESSURE POINT' : isFlow ? '● GREEN LIGHT' : event.nature.toUpperCase();
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
       doc.setTextColor(...accentColor);
       doc.text(natureBadge, pw - margin - 16, ctx.y + 10, { align: 'right' });
       
