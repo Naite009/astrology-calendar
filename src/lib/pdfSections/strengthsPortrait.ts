@@ -254,10 +254,10 @@ export function generateStrengthsPortrait(
   // --- SUN ---
   if (sunSign && sunStrength[sunSign]) {
     compactCard(() => {
-      const houseLabel = srSunHouse ? `  ·  SR House ${srSunHouse}` : '';
+      const houseLabel = srSunHouse ? `  --  SR House ${srSunHouse}` : '';
       doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
       doc.setTextColor(...colors.gold);
-      doc.text(`☉ SUN IN ${sunSign.toUpperCase()}${houseLabel}`, margin + 6, ctx.y); ctx.y += 12;
+      doc.text(`SUN IN ${sunSign.toUpperCase()}${houseLabel}`, margin + 6, ctx.y); ctx.y += 12;
       tinyLabel('Strength', sunStrength[sunSign], colors.accentGreen);
       if (sunShadow[sunSign]) tinyLabel('Shadow', sunShadow[sunSign], colors.accentRust);
       if (srSunHouse && sunYearAhead[srSunHouse]) tinyLabel('This Year', sunYearAhead[srSunHouse], colors.gold);
@@ -267,18 +267,16 @@ export function generateStrengthsPortrait(
   // --- MOON ---
   if (moonSign && moonStrength[moonSign]) {
     compactCard(() => {
-      const srHouseLabel = srMoonHouse ? ` in the ${srMoonHouse}${getOrdinalSuffix(srMoonHouse)} House` : '';
       doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
       doc.setTextColor(...colors.gold);
-      doc.text(`☽ NATAL MOON IN ${moonSign.toUpperCase()}`, margin + 6, ctx.y);
+      const srHouseLabel = srMoonHouse ? `, ${srMoonHouse}${getOrdinalSuffix(srMoonHouse)} House` : '';
+      const mainTitle = `NATAL MOON IN ${moonSign.toUpperCase()}`;
+      doc.text(mainTitle, margin + 6, ctx.y); ctx.y += 12;
       if (srMoonSign) {
-        const subtext = `SR Moon in ${srMoonSign}${srHouseLabel}`;
-        const mainW = doc.getTextWidth(`☽ NATAL MOON IN ${moonSign.toUpperCase()}  ·  `);
         doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
         doc.setTextColor(...colors.deepBrown);
-        doc.text(`·  ${subtext}`, margin + 6 + mainW, ctx.y);
+        doc.text(`SR Moon: ${srMoonSign}${srHouseLabel}`, margin + 6, ctx.y); ctx.y += 11;
       }
-      ctx.y += 12;
       tinyLabel('Natal Strength', moonStrength[moonSign], colors.accentGreen);
       if (moonShadow[moonSign]) tinyLabel('Natal Shadow', moonShadow[moonSign], colors.accentRust);
       if (srMoonSign && srMoonSignActivation[srMoonSign]) tinyLabel('How This Year Activates You', srMoonSignActivation[srMoonSign](moonSign), colors.gold);
@@ -289,10 +287,15 @@ export function generateStrengthsPortrait(
   // --- RISING ---
   if (risingSign && risingStrength[risingSign]) {
     compactCard(() => {
-      const srLabel = srAscSign ? `  ·  SR Rising: ${srAscSign}` : '';
       doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
       doc.setTextColor(...colors.gold);
-      doc.text(`↑ ${risingSign.toUpperCase()} RISING${srLabel}`, margin + 6, ctx.y); ctx.y += 12;
+      const mainTitle = `${risingSign.toUpperCase()} RISING`;
+      doc.text(mainTitle, margin + 6, ctx.y); ctx.y += 12;
+      if (srAscSign) {
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
+        doc.setTextColor(...colors.deepBrown);
+        doc.text(`SR Rising: ${srAscSign}`, margin + 6, ctx.y); ctx.y += 11;
+      }
       tinyLabel('Strength', risingStrength[risingSign], colors.accentGreen);
       if (risingShadow[risingSign]) tinyLabel('Shadow', risingShadow[risingSign], colors.accentRust);
       if (srAscSign && risingYearAhead[srAscSign]) tinyLabel('This Year', risingYearAhead[srAscSign], colors.gold);
