@@ -59,8 +59,8 @@ export const MOON_PHASE_EXPLANATIONS: Record<string, string> = {
   'Full Moon': 'Peak illumination. Everything becomes visible — relationships, results, truths. Culmination of something that began years ago.',
   'Waning Gibbous': 'Time to teach and share. Generosity opens unexpected doors. You have something the world needs.',
   'Last Quarter': 'Old structures that no longer serve you become intolerable. The discomfort is pushing you to evolve.',
-  'Balsamic': 'Completion and surrender. The quietest, most inward phase. This is a year for rest, reflection, and tying up loose ends. Honor the ending — what comes next will arrive on its own timing.',
-  'Balsamic Moon': 'Completion and surrender. The quietest, most inward phase. This is a year for rest, reflection, and tying up loose ends. Honor the ending — what comes next will arrive on its own timing.',
+  'Balsamic': 'Completion phase. The Sun-Moon cycle is ending, and a new one begins next year. Balsamic years are historically associated with tying up unfinished business, releasing what no longer serves the next chapter, and consolidating lessons from the past several years. Energy is lower — not because something is wrong, but because the system is preparing for a reset. Practically: finish projects rather than starting new ones, reduce overcommitments, and make space. The Balsamic phase precedes a New Moon year, which will bring fresh momentum.',
+  'Balsamic Moon': 'Completion phase. The Sun-Moon cycle is ending, and a new one begins next year. Balsamic years are historically associated with tying up unfinished business, releasing what no longer serves the next chapter, and consolidating lessons from the past several years. Energy is lower — not because something is wrong, but because the system is preparing for a reset. Practically: finish projects rather than starting new ones, reduce overcommitments, and make space. The Balsamic phase precedes a New Moon year, which will bring fresh momentum.',
 };
 
 export const stelliumPlanetRoles: Record<string, string> = {
