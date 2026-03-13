@@ -621,9 +621,13 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           if (!data) continue;
           ctx.checkPage(100);
           ctx.drawCard(doc, () => {
-            ctx.writeBold(doc, `${P[planet] || planet} in House ${h}: ${data.title}`, ctx.colors.gold, 11);
-            ctx.y += 2;
-            ctx.writeBody(doc, data.practical, ctx.colors.bodyText, 9.5);
+            ctx.writeBold(doc, `${P[planet] || planet} in House ${h}: ${data.title}`, ctx.colors.gold, 12);
+            ctx.y += 4;
+            if (data.overview) {
+              ctx.writeBody(doc, data.overview, ctx.colors.darkText, 10, 15);
+              ctx.y += 6;
+            }
+            ctx.writeCardSection(doc, 'What This Looks Like', data.practical, ctx.colors.accentGreen);
             if (data.caution) ctx.writeCardSection(doc, 'Watch For', data.caution, ctx.colors.accentRust);
           });
         }

@@ -194,10 +194,10 @@ export const srMercuryInHouseDeep: Record<number, SRPlanetHouseDeep> = {
 
 export const srVenusInHouseDeep: Record<number, SRPlanetHouseDeep> = {
   1: {
-    title: 'The Year You Shine',
-    overview: 'Venus in the 1st house of your Solar Return is one of the most personally favorable placements. You are more attractive, charming, and socially magnetic. Your appearance improves — through effort or simply through an inner glow that others respond to.',
-    practical: 'Investments in appearance pay off: new wardrobe, haircut, skincare, fitness. Social invitations increase. People are drawn to you without effort. Diplomacy comes naturally. Starting new relationships is favored. Art, beauty, and aesthetic pleasures become central to your identity.',
-    caution: 'Vanity and superficiality. Relying on charm rather than substance. Attracting people for the wrong reasons — beauty without depth creates shallow connections.',
+    title: 'The Year You Radiate',
+    overview: 'Venus in the 1st house of your Solar Return is one of the most personally favorable placements of the year. There is a warmth radiating from you that others respond to immediately — not because you are trying, but because Venus here softens your edges and makes you genuinely approachable. People want to be around you. Social doors open. You carry a quiet magnetism that draws opportunities, friendships, and romantic interest without force.',
+    practical: 'This is the year people remember meeting you. First impressions land beautifully — job interviews, dates, networking events, introductions all go more smoothly than usual. You naturally mediate conflicts and bring harmony to tense situations. New relationships (romantic or platonic) that begin this year have a Venusian quality: they feel easy, mutual, and pleasurable. Creative projects that express your personal aesthetic gain traction. If you have been wanting to update your look, this year the changes feel aligned rather than forced — you are growing into a truer version of yourself.',
+    caution: 'The ease of this placement can become a crutch. When everything comes easily through likability, the temptation is to coast — to let charm do the work that substance should be doing. The real growth here is using this magnetic year to build something lasting, not just collecting compliments. Ask yourself: are people drawn to who I actually am, or just the pleasant surface?',
     source: 'Mary Fortier Shea, Ciro Discepolo',
   },
   2: {
