@@ -174,6 +174,29 @@ const MAJOR_BODIES = new Set(['Sun','Moon','Mercury','Venus','Mars','Jupiter','S
 const PLANET_ORDER = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','Chiron','NorthNode'];
 const SPOTLIGHT_ORDER = ['Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
 
+// Personalized stellium interpretation based on sign + house + planets
+function getPersonalizedStelliumText(sign: string, house: number | null, planets: string[]): string {
+  const planetNames = planets.map(p => P[p] || p).join(', ');
+  const houseContext = house ? ` in your ${house}${house === 1 ? 'st' : house === 2 ? 'nd' : house === 3 ? 'rd' : 'th'} house` : '';
+  
+  const signPersonal: Record<string, string> = {
+    'Aries': `With ${planetNames} clustered in Aries${houseContext}, your identity is being rebuilt from the ground up this year. Decisions come faster. Patience drops. Everything feels personal: career decisions feel like identity decisions, relationship conversations feel like self-definition moments. Your body may feel restless, charged, or like it needs to MOVE. The risk is impulsivity. The gift is courage you did not know you had.`,
+    'Taurus': `With ${planetNames} clustered in Taurus${houseContext}, material reality is the main event. Your body, your bank account, your physical space — these are the arenas. You will feel a deep pull toward stability and things you can TOUCH. The challenge: resistance to necessary change. The gift: anything you build this year has staying power.`,
+    'Gemini': `With ${planetNames} clustered in Gemini${houseContext}, your mind is the main character. You will feel mentally overstimulated — processing multiple streams of information, having conversations that shift your perspective. Writing, teaching, and networking are amplified. The challenge: scattered attention. The gift: ideas that connect dots no one else sees.`,
+    'Cancer': `With ${planetNames} clustered in Cancer${houseContext}, home, family, and emotional foundations dominate. Gut instincts are louder, emotional reactions are stronger, and your need for safety is non-negotiable. Family dynamics may require your full attention. The challenge: mood swings and emotional overwhelm. The gift: deep emotional wisdom and the ability to create sanctuary.`,
+    'Leo': `With ${planetNames} clustered in Leo${houseContext}, creative self-expression and visibility are the assignment. You will feel an expanding warmth, a need to CREATE and be SEEN. Whether through art, romance, children, or leadership — step forward. The challenge: needing external validation. The gift: authentic creative power that inspires.`,
+    'Virgo': `With ${planetNames} clustered in Virgo${houseContext}, systems, health, and daily function are under review. You will feel a compulsion to organize, fix, and improve. Your analytical powers are at peak strength. The body sends clear messages. The challenge: paralysis through perfectionism. The gift: mastery of the practical.`,
+    'Libra': `With ${planetNames} clustered in Libra${houseContext}, relationships and balance are central. You will feel heightened sensitivity to discord. Partnership decisions carry enormous weight. The challenge: people-pleasing. The gift: the ability to create genuine harmony.`,
+    'Scorpio': `With ${planetNames} clustered in Scorpio${houseContext}, transformation and intensity define the year. You are pulled toward hidden truths and situations that demand depth. Surface-level engagement is not an option. The challenge: controlling tendencies. The gift: profound psychological insight and capacity for rebirth.`,
+    'Sagittarius': `With ${planetNames} clustered in Sagittarius${houseContext}, your worldview is expanding. You will feel restlessness — a physical urge to GO, learn, find MEANING. Travel, education, and philosophical exploration absorb your energy. The challenge: overcommitting. The gift: breakthroughs in understanding.`,
+    'Capricorn': `With ${planetNames} clustered in Capricorn${houseContext}, ambition, structure, and lasting achievement are the focus. You will feel the weight of responsibility — in your shoulders, jaw, and spine. Professional demands increase. The challenge: emotional suppression. The gift: building something that lasts.`,
+    'Aquarius': `With ${planetNames} clustered in Aquarius${houseContext}, your place in the collective is being restructured. Sudden insights, unconventional ideas, and a pull toward innovation. The challenge: emotional detachment. The gift: original thinking that solves problems no one else can.`,
+    'Pisces': `With ${planetNames} clustered in Pisces${houseContext}, your sensitivity is amplified — this does NOT mean your identity dissolves. It means you absorb the emotional frequency of every room. Creativity, intuition, and spiritual awareness are heightened. Dreams may be vivid and meaningful. The challenge: knowing which feelings are yours vs someone else's. Boundaries require conscious effort. The gift: access to compassion and creative vision most people never reach. Practically: you may need more solitude, and meditation or artistic expression become essential rather than optional.`,
+  };
+  
+  return signPersonal[sign] || `${planetNames} are clustered in ${sign}${houseContext}, concentrating this year's energy into a focused area.`;
+}
+
 export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative }: Props) => {
   const [generating, setGenerating] = useState(false);
   const [birthdayMode, setBirthdayMode] = useState(false);
@@ -257,18 +280,23 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       }
 
       // =============================================
-      // MOON SIGN SHIFT
+      // =============================================
+      // MOON SIGN SHIFT — own page
       // =============================================
       const natalMoonSign = natalChart.planets.Moon?.sign;
       const srMoonSignFull = analysis.moonSign;
       if (natalMoonSign && srMoonSignFull) {
-        ctx.sectionTitle(doc, 'Moon Sign Shift -- Your Emotional Year');
+        doc.addPage(); ctx.y = margin;
+        ctx.sectionPages.set('MOON SIGN SHIFT', doc.getNumberOfPages());
+        ctx.drawGoldRule(doc); ctx.y += 20;
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+        doc.setTextColor(...ctx.colors.gold);
+        doc.text('MOON SIGN SHIFT — YOUR EMOTIONAL YEAR', margin, ctx.y); ctx.y += 20;
 
         const halfW = (contentW - 16) / 2;
         const natalDeep = moonSignDeep[natalMoonSign];
         const srDeep = moonSignDeep[srMoonSignFull];
         const boxH = 110;
-        ctx.checkPage(boxH + 180);
         const moonBoxY = ctx.y;
 
         ctx.drawContentBox(doc, margin, moonBoxY, halfW, boxH, ctx.colors.softGold);
@@ -297,7 +325,6 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         ctx.y = moonBoxY + boxH + 12;
 
         if (natalMoonSign !== srMoonSignFull) {
-          ctx.checkPage(160);
           ctx.drawCard(doc, () => {
             ctx.writeBold(doc, `The Shift: ${natalMoonSign} --> ${srMoonSignFull}`, ctx.colors.deepBrown, 11);
             ctx.y += 2;
@@ -311,23 +338,25 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             }
           });
         } else {
-          ctx.checkPage(60);
           ctx.drawCard(doc, () => {
-            ctx.writeBold(doc, `Moon Stays in ${natalMoonSign} -- Emotional Continuity`, ctx.colors.deepBrown, 11);
+            ctx.writeBold(doc, `Moon Stays in ${natalMoonSign} — Emotional Continuity`, ctx.colors.deepBrown, 11);
             ctx.writeBody(doc, 'Your SR Moon matches natal. This year amplifies your emotional instincts. Trust your gut.');
           });
         }
-        ctx.y += 6;
       }
 
       // =============================================
-      // COMPARISON TABLE — Beautiful card style
+      // SOLAR RETURN VS NATAL — own page
       // =============================================
-      ctx.sectionTitle(doc, 'Solar Return vs Natal');
+      doc.addPage(); ctx.y = margin;
+      ctx.sectionPages.set('SOLAR RETURN VS NATAL', doc.getNumberOfPages());
+      ctx.drawGoldRule(doc); ctx.y += 20;
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+      doc.setTextColor(...ctx.colors.gold);
+      doc.text('SOLAR RETURN VS NATAL', margin, ctx.y); ctx.y += 20;
       
       // Table with rounded container
       const tableStartY = ctx.y;
-      ctx.checkPage(16);
       
       // Header row with full-width gold background
       doc.setFillColor(...ctx.colors.gold);
@@ -373,62 +402,110 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       ctx.y += 10;
 
       // =============================================
-      // STELLIUMS
+      // STELLIUMS — personalized with house context
       // =============================================
       if (analysis.stelliums.length > 0) {
-        ctx.sectionTitle(doc, 'Stelliums');
+        doc.addPage(); ctx.y = margin;
+        ctx.sectionPages.set('STELLIUMS', doc.getNumberOfPages());
+        ctx.drawGoldRule(doc); ctx.y += 20;
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+        doc.setTextColor(...ctx.colors.gold);
+        doc.text('STELLIUMS — YOUR POWER ZONES', margin, ctx.y); ctx.y += 20;
+
         for (const s of analysis.stelliums) {
           const planets = s.planets.map(pp => P[pp] || pp).join(', ');
           const isHouseStellium = /^\d+$/.test(String(s.location)) || s.location.startsWith('House');
           const houseNum = parseInt(String(s.location).replace('House ', '').replace('House', ''));
-          ctx.checkPage(200);
+          
+          // Find what house(s) these planets are in for personalized interpretation
+          const planetHouses = s.planets.map(pp => analysis.planetSRHouses?.[pp]).filter(Boolean) as number[];
+          const primaryHouse = planetHouses.length > 0 ? planetHouses[0] : null;
+          
+          ctx.checkPage(300);
           ctx.drawCard(doc, () => {
-            ctx.writeBold(doc, `${s.planets.length}-Planet Stellium in ${isHouseStellium ? 'House ' + houseNum : s.location}`, ctx.colors.deepBrown, 12);
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...ctx.colors.gold);
-            doc.text(planets, margin + 14, ctx.y); ctx.y += 16;
+            ctx.writeBold(doc, `${s.planets.length}-Planet Stellium in ${isHouseStellium ? 'House ' + houseNum : s.location}`, ctx.colors.gold, 13);
+            ctx.y += 4;
+
+            // Planet chips in a highlight box
+            doc.setFillColor(...ctx.colors.softGold);
+            doc.roundedRect(margin + 6, ctx.y, contentW - 12, 28, 4, 4, 'F');
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(...ctx.colors.deepBrown);
+            doc.text(planets, margin + 16, ctx.y + 18);
+            ctx.y += 38;
+
             if (!isHouseStellium) {
-              const signMeaning = stelliumSignMeaning[s.location];
-              if (signMeaning) ctx.writeCardSection(doc, 'Theme', signMeaning, ctx.colors.gold);
-              const felt = stelliumFeltSense[s.location];
-              if (felt) ctx.writeCardSection(doc, 'Felt Sense', felt, ctx.colors.accentGreen);
+              // Personalized stellium interpretation
+              const signName = s.location;
+              const signHouse = primaryHouse;
+              
+              // WHAT THIS MEANS FOR YOU — personalized synthesis
+              ctx.writeBold(doc, 'What This Means For You', ctx.colors.deepBrown, 11);
               ctx.y += 2;
-              ctx.writeBold(doc, 'What These Planets Bring Together:', ctx.colors.accentRust, 9.5);
+              
+              // Generate personalized interpretation combining sign + house
+              const personalizedStellium = getPersonalizedStelliumText(signName, signHouse, s.planets);
+              ctx.writeBody(doc, personalizedStellium, ctx.colors.bodyText, 10, 14);
+              ctx.y += 6;
+
+              // How You'll Feel It
+              const felt = stelliumFeltSense[s.location];
+              if (felt) {
+                ctx.writeCardSection(doc, 'How You Will Feel This', felt, ctx.colors.accentGreen);
+              }
+
+              // Planet-by-planet in boxes
+              ctx.y += 4;
+              ctx.writeBold(doc, 'Each Planet\'s Role in This Stellium:', ctx.colors.gold, 10);
+              ctx.y += 4;
               for (const pp of s.planets) {
                 const role = stelliumPlanetRoles[pp];
                 if (role) {
-                  doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.deepBrown);
-                  ctx.checkPage(14);
-                  doc.text(`${P[pp] || pp}:`, margin + 16, ctx.y);
-                  const labelW = doc.getTextWidth(`${P[pp] || pp}: `);
-                  doc.setFont('helvetica', 'normal'); doc.setTextColor(...ctx.colors.bodyText);
-                  const roleLines = doc.splitTextToSize(role, contentW - 32 - labelW);
-                  doc.text(roleLines[0] || '', margin + 16 + labelW, ctx.y);
-                  ctx.y += 14;
+                  const ppH = analysis.planetSRHouses?.[pp];
+                  ctx.checkPage(50);
+                  // Mini card for each planet
+                  const cardY = ctx.y;
+                  doc.setFillColor(...ctx.colors.softGold);
+                  doc.roundedRect(margin + 6, cardY, contentW - 12, 36, 4, 4, 'F');
+                  doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...ctx.colors.gold);
+                  doc.text(`${P[pp] || pp}`, margin + 16, cardY + 14);
+                  if (ppH) {
+                    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.dimText);
+                    doc.text(`SR House ${ppH}`, margin + 16 + doc.getTextWidth(`${P[pp] || pp}  `), cardY + 14);
+                  }
+                  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.bodyText);
+                  const roleLines = doc.splitTextToSize(role, contentW - 36);
+                  doc.text(roleLines[0] || '', margin + 16, cardY + 28);
+                  ctx.y = cardY + 42;
                 }
               }
             } else if (!isNaN(houseNum)) {
               const houseMeaning = stelliumHouseMeaning[houseNum];
-              if (houseMeaning) ctx.writeBody(doc, houseMeaning);
+              if (houseMeaning) ctx.writeBody(doc, houseMeaning, ctx.colors.bodyText, 10, 14);
             }
           });
         }
       }
 
       // =============================================
-      // ELEMENTS & MODALITY — Polished card style
+      // ELEMENT & MODALITY — own page
       // =============================================
       if (analysis.elementBalance) {
-        ctx.sectionTitle(doc, 'Element & Modality');
+        doc.addPage(); ctx.y = margin;
+        ctx.sectionPages.set('ELEMENT AND MODALITY', doc.getNumberOfPages());
+        ctx.drawGoldRule(doc); ctx.y += 20;
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+        doc.setTextColor(...ctx.colors.gold);
+        doc.text('ELEMENT & MODALITY', margin, ctx.y); ctx.y += 20;
+
         const eb = analysis.elementBalance;
         const mb = analysis.modalityBalance;
 
         // Elements card
-        ctx.checkPage(160);
         ctx.drawCard(doc, () => {
-          ctx.writeBold(doc, 'Elemental Balance', ctx.colors.gold, 11);
-          ctx.y += 8;
+          ctx.writeBold(doc, 'Elemental Balance', ctx.colors.gold, 12);
+          ctx.y += 10;
           const elemW = (contentW - 56) / 4;
-          const elemH = 60;
+          const elemH = 65;
           const elements = [
             { name: 'Fire', val: eb.fire, bg: [255, 240, 230] as [number, number, number] },
             { name: 'Earth', val: eb.earth, bg: [235, 245, 230] as [number, number, number] },
@@ -443,25 +520,25 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             doc.setDrawColor(...(isDom ? ctx.colors.gold : ctx.colors.warmBorder));
             doc.setLineWidth(isDom ? 2.5 : 0.5);
             doc.roundedRect(x, elemStartY, elemW, elemH, 6, 6, 'FD');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(26);
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(28);
             doc.setTextColor(...(isDom ? ctx.colors.gold : ctx.colors.darkText));
-            doc.text(String(el.val), x + elemW / 2, elemStartY + 28, { align: 'center' });
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+            doc.text(String(el.val), x + elemW / 2, elemStartY + 30, { align: 'center' });
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
             doc.setTextColor(...ctx.colors.bodyText);
-            doc.text(el.name, x + elemW / 2, elemStartY + 46, { align: 'center' });
+            doc.text(el.name, x + elemW / 2, elemStartY + 48, { align: 'center' });
             if (isDom) {
               doc.setFont('helvetica', 'bold'); doc.setFontSize(7);
               doc.setTextColor(...ctx.colors.gold);
-              doc.text('DOMINANT', x + elemW / 2, elemStartY + 56, { align: 'center' });
+              doc.text('DOMINANT', x + elemW / 2, elemStartY + 60, { align: 'center' });
             }
           });
-          ctx.y = elemStartY + elemH + 12;
+          ctx.y = elemStartY + elemH + 14;
 
           // Modalities
-          ctx.writeBold(doc, 'Modality Balance', ctx.colors.gold, 11);
-          ctx.y += 8;
+          ctx.writeBold(doc, 'Modality Balance', ctx.colors.gold, 12);
+          ctx.y += 10;
           const modW = (contentW - 44) / 3;
-          const modH = 55;
+          const modH = 60;
           const modalities = [
             { name: 'Cardinal', val: mb.cardinal, desc: 'Initiating' },
             { name: 'Fixed', val: mb.fixed, desc: 'Sustaining' },
@@ -475,25 +552,31 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             doc.setDrawColor(...(isDom ? ctx.colors.gold : ctx.colors.warmBorder));
             doc.setLineWidth(isDom ? 2.5 : 0.5);
             doc.roundedRect(x, modStartY, modW, modH, 6, 6, 'FD');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(24);
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(26);
             doc.setTextColor(...(isDom ? ctx.colors.gold : ctx.colors.darkText));
-            doc.text(String(mod.val), x + modW / 2, modStartY + 24, { align: 'center' });
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+            doc.text(String(mod.val), x + modW / 2, modStartY + 26, { align: 'center' });
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
             doc.setTextColor(...ctx.colors.bodyText);
-            doc.text(mod.name, x + modW / 2, modStartY + 38, { align: 'center' });
-            doc.setFont('helvetica', 'italic'); doc.setFontSize(7.5);
+            doc.text(mod.name, x + modW / 2, modStartY + 42, { align: 'center' });
+            doc.setFont('helvetica', 'italic'); doc.setFontSize(8);
             doc.setTextColor(...ctx.colors.dimText);
-            doc.text(mod.desc, x + modW / 2, modStartY + 48, { align: 'center' });
+            doc.text(mod.desc, x + modW / 2, modStartY + 52, { align: 'center' });
           });
           ctx.y = modStartY + modH + 4;
         });
       }
 
       // =============================================
-      // HEMISPHERIC — Polished card style
+      // WHERE YOUR ENERGY LIVES + ANGULAR PLANETS — same page
       // =============================================
       if (analysis.hemisphericEmphasis) {
-        ctx.sectionTitle(doc, 'Where Your Energy Lives');
+        doc.addPage(); ctx.y = margin;
+        ctx.sectionPages.set('WHERE YOUR ENERGY LIVES', doc.getNumberOfPages());
+        ctx.drawGoldRule(doc); ctx.y += 20;
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+        doc.setTextColor(...ctx.colors.gold);
+        doc.text('WHERE YOUR ENERGY LIVES', margin, ctx.y); ctx.y += 20;
+
         const hem = analysis.hemisphericEmphasis;
         const total = hem.totalCounted;
         const quadPlanets: Record<string, string[]> = { upper: [], lower: [], east: [], west: [] };
@@ -504,13 +587,10 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           if (h >= 10 || h <= 3) quadPlanets.east.push(P[p] || p); else quadPlanets.west.push(P[p] || p);
         }
 
-        // 2x2 grid inside a card
-        ctx.checkPage(250);
+        // 2x2 grid
         ctx.drawCard(doc, () => {
-          ctx.writeBold(doc, 'Hemispheric Distribution', ctx.colors.gold, 11);
-          ctx.y += 10;
           const boxW = (contentW - 40) / 2;
-          const boxH = 85;
+          const boxH = 80;
           const gridData = [
             { label: 'UPPER', sub: 'Public & Visible', count: hem.upper, planets: quadPlanets.upper, bg: [240, 245, 255] as [number, number, number], row: 0, col: 0 },
             { label: 'LOWER', sub: 'Private & Internal', count: hem.lower, planets: quadPlanets.lower, bg: [255, 248, 240] as [number, number, number], row: 0, col: 1 },
@@ -526,24 +606,20 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             doc.setDrawColor(...(isDom ? ctx.colors.gold : ctx.colors.warmBorder));
             doc.setLineWidth(isDom ? 2.5 : 0.5);
             doc.roundedRect(x, by, boxW, boxH, 6, 6, 'FD');
-            // Count
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(28);
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(26);
             doc.setTextColor(...(isDom ? ctx.colors.gold : ctx.colors.darkText));
-            doc.text(String(g.count), x + 18, by + 30);
-            // Label
+            doc.text(String(g.count), x + 18, by + 28);
             doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
             doc.setTextColor(...ctx.colors.deepBrown);
-            doc.text(g.label, x + 52, by + 20);
-            // Sub
+            doc.text(g.label, x + 52, by + 18);
             doc.setFont('helvetica', 'italic'); doc.setFontSize(8.5);
             doc.setTextColor(...ctx.colors.dimText);
-            doc.text(g.sub, x + 52, by + 32);
-            // Planets
+            doc.text(g.sub, x + 52, by + 30);
             if (g.planets.length > 0) {
               doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
               doc.setTextColor(...ctx.colors.bodyText);
               const planetLines = doc.splitTextToSize(g.planets.join(', '), boxW - 30);
-              planetLines.forEach((line: string, li: number) => doc.text(line, x + 18, by + 50 + li * 11));
+              planetLines.forEach((line: string, li: number) => doc.text(line, x + 18, by + 46 + li * 11));
             }
             if (isDom) {
               doc.setFont('helvetica', 'bold'); doc.setFontSize(7);
@@ -553,183 +629,263 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           }
           ctx.y = gridStartY + (boxH + 8) * 2 + 4;
         });
-      }
 
-      // =============================================
-      // ANGULAR PLANETS
-      // =============================================
-      if (analysis.angularPlanets && analysis.angularPlanets.length > 0) {
-        ctx.sectionTitle(doc, 'Angular Planets -- Most Powerful This Year');
-        const angularList = analysis.angularPlanets.map(p => P[p] || p).join(', ');
-        ctx.checkPage(100);
-        ctx.drawCard(doc, () => {
-          ctx.writeBold(doc, angularList, ctx.colors.gold, 13);
-          ctx.y += 2;
-          ctx.writeBody(doc, 'Planets on the angles (houses 1, 4, 7, 10) produce visible, undeniable results all year.', ctx.colors.dimText);
-          for (const ap of analysis.angularPlanets) {
+        // Angular Planets — on same page
+        if (analysis.angularPlanets && analysis.angularPlanets.length > 0) {
+          ctx.y += 10;
+          ctx.writeBold(doc, 'ANGULAR PLANETS — Most Powerful This Year', ctx.colors.gold, 12);
+          ctx.y += 8;
+          
+          // Render each angular planet as a mini box
+          const angBoxW = (contentW - 16) / Math.min(analysis.angularPlanets.length, 3);
+          const angBoxH = 90;
+          const angStartY = ctx.y;
+          
+          analysis.angularPlanets.forEach((ap, i) => {
+            const col = i % 3;
+            const row = Math.floor(i / 3);
+            const x = margin + col * (angBoxW + 8);
+            const by = angStartY + row * (angBoxH + 8);
+            
+            ctx.drawContentBox(doc, x, by, angBoxW - 8, angBoxH, ctx.colors.softGold);
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(...ctx.colors.gold);
+            doc.text(P[ap] || ap, x + 10, by + 20);
+            
             const pm = planetLifeMeanings[ap] || planetLifeMeanings[ap.replace('NorthNode','North Node')];
             if (pm) {
-              ctx.y += 4; ctx.writeBold(doc, `${P[ap] || ap}:`, ctx.colors.deepBrown, 10);
-              ctx.writeBody(doc, `${pm.inYourLife} ${pm.bodyFeeling}`, ctx.colors.bodyText, 9.5);
+              doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.bodyText);
+              const pmLines = doc.splitTextToSize(pm.inYourLife, angBoxW - 28);
+              pmLines.slice(0, 5).forEach((line: string, li: number) => doc.text(line, x + 10, by + 36 + li * 10));
             }
-          }
-        });
+          });
+          ctx.y = angStartY + (Math.ceil(analysis.angularPlanets.length / 3)) * (angBoxH + 8);
+        }
       }
 
       // =============================================
-      // LORD OF THE YEAR — EXPANDED
+      // LORD OF THE YEAR — own page
       // =============================================
       if (analysis.lordOfTheYear) {
-        ctx.sectionTitle(doc, 'Lord of the Year');
+        doc.addPage(); ctx.y = margin;
+        ctx.sectionPages.set('LORD OF THE YEAR', doc.getNumberOfPages());
+        ctx.drawGoldRule(doc); ctx.y += 20;
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+        doc.setTextColor(...ctx.colors.gold);
+        doc.text('LORD OF THE YEAR', margin, ctx.y); ctx.y += 20;
+
         const lord = analysis.lordOfTheYear;
-        ctx.checkPage(200);
-        ctx.drawCard(doc, () => {
-          ctx.writeBold(doc, `${P[lord.planet] || lord.planet} -- Time Lord`, ctx.colors.gold, 13);
-          ctx.writeLabel(doc, 'Position:', `${lord.srSign} (SR House ${lord.srHouse || '--'})`);
-          ctx.writeLabel(doc, 'Dignity:', lord.dignity);
-          if (lord.isRetrograde) ctx.writeLabel(doc, 'Status:', 'Retrograde');
-          ctx.y += 4;
-          const detailedMeaning = timeLordDetailedMeaning[lord.planet];
-          if (detailedMeaning) ctx.writeCardSection(doc, 'What This Means For Your Year', detailedMeaning, ctx.colors.accentGreen);
-          const pm = planetLifeMeanings[lord.planet];
-          if (pm) {
-            ctx.writeCardSection(doc, 'Rules', pm.inYourLife, ctx.colors.gold);
-            ctx.writeCardSection(doc, 'Body Sensation', pm.bodyFeeling, ctx.colors.accentRust);
-          }
-          if (lord.dignity === 'Detriment' || lord.dignity === 'Fall') {
-            ctx.y += 4;
-            ctx.writeBold(doc, 'Dignity Warning:', ctx.colors.accentRust, 10);
-            ctx.writeBody(doc, `Your Time Lord is in ${lord.dignity}. This means ${P[lord.planet] || lord.planet} is working outside its comfort zone — plans may require more effort, communication needs extra clarity. This is not "bad" — the growth is deeper and the lessons stick.`, ctx.colors.bodyText, 9.5);
-          }
-          if (lord.isRetrograde) {
-            ctx.y += 4;
-            ctx.writeBold(doc, 'Retrograde Effect:', ctx.colors.accentRust, 10);
-            ctx.writeBody(doc, `${P[lord.planet] || lord.planet} retrograde as Time Lord means this year has a built-in "review and revise" quality. Things from the past resurface. What comes back around deserves a second look.`, ctx.colors.bodyText, 9.5);
-          }
-        });
+
+        // Header box with key info
+        doc.setFillColor(...ctx.colors.softGold);
+        doc.setDrawColor(...ctx.colors.gold); doc.setLineWidth(2);
+        doc.roundedRect(margin, ctx.y, contentW, 60, 6, 6, 'FD');
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(20);
+        doc.setTextColor(...ctx.colors.gold);
+        doc.text(`${P[lord.planet] || lord.planet}`, margin + 20, ctx.y + 28);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(11);
+        doc.setTextColor(...ctx.colors.bodyText);
+        doc.text(`${lord.srSign} — SR House ${lord.srHouse || '--'}`, margin + 20, ctx.y + 46);
+        // Dignity + Rx badges on right
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+        doc.setTextColor(...ctx.colors.deepBrown);
+        doc.text(`Dignity: ${lord.dignity}`, pw - margin - 120, ctx.y + 28);
+        if (lord.isRetrograde) {
+          doc.setTextColor(...ctx.colors.accentRust);
+          doc.text('RETROGRADE', pw - margin - 120, ctx.y + 42);
+        }
+        ctx.y += 70;
+
+        // Detailed meaning
+        const detailedMeaning = timeLordDetailedMeaning[lord.planet];
+        if (detailedMeaning) {
+          ctx.drawCard(doc, () => {
+            ctx.writeBold(doc, 'What This Means For Your Year', ctx.colors.accentGreen, 11);
+            ctx.y += 2;
+            ctx.writeBody(doc, detailedMeaning, ctx.colors.bodyText, 10, 14);
+          });
+        }
+
+        const pm = planetLifeMeanings[lord.planet];
+        if (pm) {
+          ctx.drawCard(doc, () => {
+            ctx.writeCardSection(doc, 'What It Rules', pm.inYourLife, ctx.colors.gold);
+            ctx.writeCardSection(doc, 'How You Feel It', pm.bodyFeeling, ctx.colors.accentRust);
+          });
+        }
+
+        if (lord.dignity === 'Detriment' || lord.dignity === 'Fall') {
+          ctx.drawCard(doc, () => {
+            ctx.writeBold(doc, 'Dignity Warning', ctx.colors.accentRust, 10);
+            ctx.writeBody(doc, `Your Time Lord is in ${lord.dignity}. This means ${P[lord.planet] || lord.planet} is working outside its comfort zone — plans may require more effort, communication needs extra clarity. The growth is deeper and the lessons stick.`, ctx.colors.bodyText, 10);
+          }, ctx.colors.accentRust);
+        }
+        if (lord.isRetrograde) {
+          ctx.drawCard(doc, () => {
+            ctx.writeBold(doc, 'Retrograde Effect', ctx.colors.accentRust, 10);
+            ctx.writeBody(doc, `${P[lord.planet] || lord.planet} retrograde as Time Lord means this year has a built-in "review and revise" quality. Things from the past resurface. What comes back around deserves a second look.`, ctx.colors.bodyText, 10);
+          }, ctx.colors.accentRust);
+        }
       }
 
       // =============================================
-      // SATURN & NORTH NODE — with rich WHY explanations
+      // SATURN & NORTH NODE — own page
       // =============================================
       if (analysis.saturnFocus || analysis.nodesFocus) {
-        ctx.sectionTitle(doc, 'Saturn & North Node');
-        // WHY section
+        doc.addPage(); ctx.y = margin;
+        ctx.sectionPages.set('SATURN AND NORTH NODE', doc.getNumberOfPages());
+        ctx.drawGoldRule(doc); ctx.y += 20;
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+        doc.setTextColor(...ctx.colors.gold);
+        doc.text('SATURN & NORTH NODE', margin, ctx.y); ctx.y += 20;
+
+        // Brief why card
         ctx.drawCard(doc, () => {
-          ctx.writeBold(doc, 'Why Saturn and the North Node Matter in Your Solar Return', ctx.colors.gold, 11);
-          ctx.writeBody(doc, 'Saturn and the North Node are singled out because they represent the two most important growth axes in any year. Saturn shows WHERE YOU ARE BEING TESTED — the area of life where shortcuts fail, where you must build something real through effort and discipline. Saturn\'s house placement reveals your hardest assignment but also your most lasting achievement. The North Node shows WHERE YOUR SOUL IS BEING PULLED — the direction of growth that feels unfamiliar but is exactly what you need. Together, they answer two essential questions: "What must I master?" (Saturn) and "What must I become?" (North Node). Ignoring either one creates the feeling of a year spent treading water.');
+          ctx.writeBold(doc, 'Why These Two Matter', ctx.colors.gold, 11);
+          ctx.writeBody(doc, 'Saturn = WHERE YOU ARE TESTED. The area of life where shortcuts fail and real work produces lasting results. North Node = WHERE YOUR SOUL IS GROWING. The direction that feels unfamiliar but is exactly what this year requires.', ctx.colors.bodyText, 10, 14);
         });
 
         if (analysis.saturnFocus) {
-          ctx.checkPage(100);
           ctx.drawCard(doc, () => {
-            ctx.writeBold(doc, `Saturn: ${analysis.saturnFocus!.sign} -- House ${analysis.saturnFocus!.house || '--'}${analysis.saturnFocus!.isRetrograde ? ' (Rx)' : ''}`, ctx.colors.gold, 11);
+            // Saturn header box
+            doc.setFillColor(...ctx.colors.softGold);
+            doc.roundedRect(margin + 6, ctx.y - 4, contentW - 12, 30, 4, 4, 'F');
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(...ctx.colors.gold);
+            doc.text(`Saturn in ${analysis.saturnFocus!.sign} — House ${analysis.saturnFocus!.house || '--'}${analysis.saturnFocus!.isRetrograde ? ' (Rx)' : ''}`, margin + 16, ctx.y + 14);
+            ctx.y += 34;
             const satMeaning = saturnHouseMeaning[analysis.saturnFocus!.house];
-            if (satMeaning) ctx.writeBody(doc, satMeaning);
+            if (satMeaning) ctx.writeBody(doc, satMeaning, ctx.colors.bodyText, 10, 14);
           });
         }
         if (analysis.nodesFocus) {
-          ctx.checkPage(100);
+          ctx.checkPage(150);
           ctx.drawCard(doc, () => {
-            ctx.writeBold(doc, `North Node: ${analysis.nodesFocus!.sign} -- House ${analysis.nodesFocus!.house || '--'}`, ctx.colors.gold, 11);
+            doc.setFillColor(...ctx.colors.softBlue);
+            doc.roundedRect(margin + 6, ctx.y - 4, contentW - 12, 30, 4, 4, 'F');
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(...ctx.colors.gold);
+            doc.text(`North Node in ${analysis.nodesFocus!.sign} — House ${analysis.nodesFocus!.house || '--'}`, margin + 16, ctx.y + 14);
+            ctx.y += 34;
             const nodeMeaning = nodeHouseMeaning[analysis.nodesFocus!.house];
-            if (nodeMeaning) ctx.writeBody(doc, nodeMeaning);
+            if (nodeMeaning) ctx.writeBody(doc, nodeMeaning, ctx.colors.bodyText, 10, 14);
           });
         }
       }
 
       // =============================================
-      // KEY ASPECTS
+      // KEY ASPECTS — own page with box layout
       // =============================================
       if (analysis.srToNatalAspects.length > 0) {
         const allAspects = analysis.srToNatalAspects.filter(asp => !(asp.planet1 === 'Sun' && asp.planet2 === 'Sun' && asp.type === 'Conjunction'));
         const majorAspects = allAspects.filter(asp => MAJOR_BODIES.has(asp.planet1) && MAJOR_BODIES.has(asp.planet2));
-        ctx.sectionTitle(doc, 'Key Aspects');
+        
+        doc.addPage(); ctx.y = margin;
+        ctx.sectionPages.set('KEY ASPECTS', doc.getNumberOfPages());
+        ctx.drawGoldRule(doc); ctx.y += 20;
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+        doc.setTextColor(...ctx.colors.gold);
+        doc.text('KEY ASPECTS', margin, ctx.y); ctx.y += 8;
+        doc.setFont('helvetica', 'italic'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.dimText);
+        doc.text('How Solar Return planets activate your natal chart', margin, ctx.y); ctx.y += 16;
+
         for (let i = 0; i < Math.min(majorAspects.length, 8); i++) {
           const asp = majorAspects[i];
           const interp = generateSRtoNatalInterpretation(asp.planet1, asp.planet2, asp.type, asp.orb);
           const isHard = ['Square', 'Opposition', 'Quincunx'].includes(asp.type);
-          // Add house context
           const srH = analysis.planetSRHouses?.[asp.planet1];
           const natalH = natalChart.planets?.[asp.planet2]?.house;
-          const houseContext = (srH || natalH) ? ` — SR ${P[asp.planet1] || asp.planet1}${srH ? ` in SR House ${srH}` : ''}${natalH ? `, Natal ${P[asp.planet2] || asp.planet2} in Natal House ${natalH}` : ''}` : '';
-          ctx.checkPage(140);
+          
+          ctx.checkPage(160);
+          
+          // Aspect header with colored accent
+          const accentColor = isHard ? [180, 100, 60] as [number, number, number] : ctx.colors.gold;
           ctx.drawCard(doc, () => {
-            ctx.writeBold(doc, `SR ${P[asp.planet1] || asp.planet1}  ${asp.type}  Natal ${P[asp.planet2] || asp.planet2}  (${asp.orb}')`, ctx.colors.darkText, 10);
-            if (houseContext) {
-              doc.setFont('helvetica', 'italic'); doc.setFontSize(8.5);
-              doc.setTextColor(...ctx.colors.dimText);
-              const hcLines = doc.splitTextToSize(houseContext, contentW - 16);
-              hcLines.forEach((line: string) => { ctx.checkPage(12); doc.text(line, margin + 8, ctx.y); ctx.y += 12; });
-            }
-            ctx.y += 4;
+            // Title bar
+            doc.setFillColor(...(isHard ? [255, 245, 240] as [number, number, number] : ctx.colors.softGold));
+            doc.roundedRect(margin + 6, ctx.y - 4, contentW - 12, 26, 4, 4, 'F');
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5);
+            doc.setTextColor(...accentColor);
+            doc.text(`SR ${P[asp.planet1] || asp.planet1}  ${asp.type}  Natal ${P[asp.planet2] || asp.planet2}`, margin + 16, ctx.y + 10);
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.dimText);
+            const orbHouse = `${asp.orb}' orb${srH ? `  |  SR H${srH}` : ''}${natalH ? `  |  Natal H${natalH}` : ''}`;
+            doc.text(orbHouse, pw - margin - 12, ctx.y + 10, { align: 'right' });
+            ctx.y += 30;
+
             ctx.writeCardSection(doc, 'How It Feels', interp.howItFeels, ctx.colors.accentGreen);
             ctx.writeCardSection(doc, 'What It Means', interp.whatItMeans, ctx.colors.gold);
             ctx.writeCardSection(doc, 'What To Do', interp.whatToDo, ctx.colors.accentRust);
-          }, isHard ? [180, 100, 60] : ctx.colors.gold);
+          }, accentColor);
         }
       }
 
       // =============================================
-      // SR MOON EMOTIONAL CLIMATE (replaces old Moon Timing)
+      // YOUR MOON THIS YEAR — own page
       // =============================================
       if (analysis.srMoonAspects || analysis.moonVOC || analysis.moonAngularity) {
-        ctx.sectionTitle(doc, 'Your Moon This Year -- Emotional Climate');
+        doc.addPage(); ctx.y = margin;
+        ctx.sectionPages.set('YOUR MOON THIS YEAR', doc.getNumberOfPages());
+        ctx.drawGoldRule(doc); ctx.y += 20;
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+        doc.setTextColor(...ctx.colors.gold);
+        doc.text('YOUR MOON THIS YEAR — EMOTIONAL CLIMATE', margin, ctx.y); ctx.y += 20;
 
-        // Moon VOC — Unaspected Moon (must come first, before aspects)
+        // Moon VOC
         if (analysis.moonVOC) {
           ctx.drawCard(doc, () => {
-            ctx.writeBold(doc, 'Moon Void of Course — The Unaspected Moon', [180, 130, 40], 11);
-            ctx.y += 2;
+            doc.setFillColor(255, 248, 235);
+            doc.roundedRect(margin + 6, ctx.y - 4, contentW - 12, 26, 4, 4, 'F');
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(180, 130, 40);
+            doc.text('Moon Void of Course — The Unaspected Moon', margin + 16, ctx.y + 10);
+            ctx.y += 30;
             ctx.writeBody(doc, 'Your Solar Return Moon makes no major aspects to any other planet in the SR chart. This is a rare and significant condition.', ctx.colors.darkText, 10);
             ctx.y += 4;
-            ctx.writeCardSection(doc, 'What This Means', 'An unaspected SR Moon operates in isolation — your emotional life this year runs on its own track, without direct planetary support or challenge. Feelings are vivid but disconnected from the rest of the chart\'s story. You may feel emotionally "untethered" — deeply feeling but unsure what to do with those feelings.', [180, 130, 40]);
-            ctx.writeCardSection(doc, 'The Gift', 'Without planetary aspects pulling it in different directions, the Moon is free. Your emotional compass this year is entirely your own — uncorrupted by external pressures. This can bring a rare emotional clarity and independence.', ctx.colors.accentGreen);
-            ctx.writeCardSection(doc, 'The Challenge', 'Without aspects to ground or activate the Moon, emotional needs may go unmet unless you consciously name and honor them. Others may not instinctively "get" what you need this year.', ctx.colors.accentRust);
-            ctx.writeCardSection(doc, 'How to Work With It', 'Journaling, therapy, and creative expression become essential outlets. The unaspected Moon often produces artists, writers, and deep feelers who channel emotion into form. Give your feelings a container — they won\'t find one automatically this year.', ctx.colors.gold);
+            ctx.writeCardSection(doc, 'What This Means', 'An unaspected SR Moon operates in isolation — your emotional life this year runs on its own track. Feelings are vivid but disconnected from the rest of the chart\'s story.', [180, 130, 40]);
+            ctx.writeCardSection(doc, 'The Gift', 'Without planetary aspects pulling it in different directions, the Moon is free. Your emotional compass this year is entirely your own.', ctx.colors.accentGreen);
+            ctx.writeCardSection(doc, 'The Challenge', 'Without aspects to ground or activate the Moon, emotional needs may go unmet unless you consciously name and honor them.', ctx.colors.accentRust);
           }, [180, 130, 40]);
         }
 
-        // Angularity description
+        // Angularity
         if (analysis.moonAngularity) {
           const angDesc: Record<string, string> = {
-            angular: 'Your SR Moon is angular (close to an angle). Emotional responses this year are instinctive, automatic, and highly reactive. You are close to every situation — perspective is harder to achieve, but your feelings are powerfully felt and visible to others.',
-            succedent: 'Your SR Moon is in a succedent house. Emotional responses are more stable and grounded this year. You can step back and examine situations without being overwhelmed. Emotional resilience is a strength.',
-            cadent: 'Your SR Moon is in a cadent house. Emotional responses are more passive and adaptive this year. You may process feelings internally, preparing for what comes next rather than reacting in the moment.',
+            angular: 'Your SR Moon is angular (close to an angle). Emotional responses are instinctive, automatic, and highly reactive. You are close to every situation — perspective is harder, but feelings are powerfully felt and visible to others.',
+            succedent: 'Your SR Moon is in a succedent house. Emotional responses are stable and grounded this year. You can step back and examine situations without being overwhelmed.',
+            cadent: 'Your SR Moon is in a cadent house. Emotional responses are more adaptive this year. You process feelings internally, preparing rather than reacting.',
           };
           ctx.drawCard(doc, () => {
-            ctx.writeBold(doc, `Moon Position: ${analysis.moonSign || ''} in House ${analysis.moonHouse?.house || '--'}`, ctx.colors.gold, 11);
-            ctx.y += 4;
-            ctx.writeBody(doc, angDesc[analysis.moonAngularity!], ctx.colors.bodyText, 9.5);
+            doc.setFillColor(...ctx.colors.softGold);
+            doc.roundedRect(margin + 6, ctx.y - 4, contentW - 12, 26, 4, 4, 'F');
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(...ctx.colors.gold);
+            doc.text(`Moon: ${analysis.moonSign || ''} in House ${analysis.moonHouse?.house || '--'}`, margin + 16, ctx.y + 10);
+            ctx.y += 30;
+            ctx.writeBody(doc, angDesc[analysis.moonAngularity!], ctx.colors.bodyText, 10, 14);
             if (analysis.moonLateDegree) {
               ctx.y += 4;
-              ctx.writeBold(doc, 'Late-Degree Moon', ctx.colors.accentRust, 10);
-              ctx.writeBody(doc, 'Your SR Moon is in the late degrees of its sign (25+). This often signals that something emotional is reaching completion or is about to change. Endings, transitions, and a sense of "moving on" may characterize the year.', ctx.colors.bodyText, 9.5);
+              ctx.writeCardSection(doc, 'Late-Degree Moon', 'Your SR Moon is in the late degrees of its sign (25+). Something emotional is reaching completion or about to change. Endings, transitions, and a sense of "moving on" characterize the year.', ctx.colors.accentRust);
             }
             if (analysis.moonMetonicAges && analysis.moonMetonicAges.length > 0) {
               ctx.y += 4;
-              ctx.writeBold(doc, '19-Year Metonic Cycle', ctx.colors.gold, 10);
-              ctx.writeBody(doc, `Your SR Moon was in approximately this same position at age${analysis.moonMetonicAges.length > 1 ? 's' : ''} ${analysis.moonMetonicAges.join(', ')}. The emotional themes of this year echo those earlier chapters. What was happening in your life then? The threads connect.`, ctx.colors.bodyText, 9.5);
+              ctx.writeCardSection(doc, '19-Year Metonic Cycle', `Your SR Moon was in approximately this position at age${analysis.moonMetonicAges.length > 1 ? 's' : ''} ${analysis.moonMetonicAges.join(', ')}. The emotional themes of this year echo those earlier chapters.`, ctx.colors.gold);
             }
           });
         }
 
-        // SR Moon aspects to other SR planets
+        // SR Moon aspects
         if (analysis.srMoonAspects && analysis.srMoonAspects.length > 0) {
-          ctx.y += 4;
+          ctx.y += 6;
+          ctx.writeBold(doc, 'Moon Aspects This Year', ctx.colors.gold, 11);
+          ctx.y += 6;
           for (const asp of analysis.srMoonAspects.slice(0, 6)) {
             const isHard = ['Square', 'Opposition', 'Quincunx'].includes(asp.aspectType);
             ctx.checkPage(80);
             ctx.drawCard(doc, () => {
-              ctx.writeBold(doc, `Moon ${asp.aspectType} ${P[asp.targetPlanet] || asp.targetPlanet} (${asp.orb}')`, ctx.colors.darkText, 10);
-              if (asp.targetSRHouse) {
-                doc.setFont('helvetica', 'italic'); doc.setFontSize(8.5);
-                doc.setTextColor(...ctx.colors.dimText);
-                doc.text(`${P[asp.targetPlanet] || asp.targetPlanet} in SR House ${asp.targetSRHouse}`, margin + 8, ctx.y);
-                ctx.y += 12;
-              }
-              ctx.y += 2;
-              ctx.writeBody(doc, asp.interpretation, ctx.colors.bodyText, 9.5);
+              doc.setFillColor(...(isHard ? [255, 245, 240] as [number, number, number] : ctx.colors.softGold));
+              doc.roundedRect(margin + 6, ctx.y - 4, contentW - 12, 22, 4, 4, 'F');
+              doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+              doc.setTextColor(...(isHard ? [180, 100, 60] as [number, number, number] : ctx.colors.gold));
+              doc.text(`Moon ${asp.aspectType} ${P[asp.targetPlanet] || asp.targetPlanet}`, margin + 16, ctx.y + 10);
+              doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.dimText);
+              doc.text(`${asp.orb}' orb${asp.targetSRHouse ? `  |  H${asp.targetSRHouse}` : ''}`, pw - margin - 12, ctx.y + 10, { align: 'right' });
+              ctx.y += 26;
+              ctx.writeBody(doc, asp.interpretation, ctx.colors.bodyText, 9.5, 13);
             }, isHard ? [180, 100, 60] : ctx.colors.gold);
           }
         }
@@ -739,8 +895,13 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // VERTEX
       // =============================================
       if (analysis.vertex) {
-        ctx.sectionTitle(doc, 'Vertex -- Fated Encounters');
-        ctx.checkPage(100);
+        ctx.checkPage(200);
+        if (ctx.y > margin + 100) { doc.addPage(); ctx.y = margin; }
+        ctx.sectionPages.set('VERTEX', doc.getNumberOfPages());
+        ctx.drawGoldRule(doc); ctx.y += 20;
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+        doc.setTextColor(...ctx.colors.gold);
+        doc.text('VERTEX — FATED ENCOUNTERS', margin, ctx.y); ctx.y += 20;
         ctx.drawCard(doc, () => {
           ctx.writeBold(doc, `Vertex: ${analysis.vertex!.sign} ${analysis.vertex!.degree}' ${analysis.vertex!.house ? `(House ${analysis.vertex!.house})` : ''}`, ctx.colors.deepBrown, 11);
           const vSign = vertexInSign[analysis.vertex!.sign];
@@ -752,7 +913,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       }
 
       // =============================================
-      // PLANET SPOTLIGHT
+      // PLANET SPOTLIGHT — own page with box layout
       // =============================================
       const deepData: Record<string, Record<number, any>> = {
         Mercury: srMercuryInHouseDeep, Venus: srVenusInHouseDeep, Mars: srMarsInHouseDeep,
@@ -764,17 +925,33 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         return h !== null && h !== undefined && deepData[p]?.[h];
       });
       if (spotlightPlanets.length > 0) {
-        ctx.sectionTitle(doc, 'Planet Spotlight');
+        doc.addPage(); ctx.y = margin;
+        ctx.sectionPages.set('PLANET SPOTLIGHT', doc.getNumberOfPages());
+        ctx.drawGoldRule(doc); ctx.y += 20;
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+        doc.setTextColor(...ctx.colors.gold);
+        doc.text('PLANET SPOTLIGHT', margin, ctx.y); ctx.y += 8;
+        doc.setFont('helvetica', 'italic'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.dimText);
+        doc.text('Each planet\'s placement in your Solar Return and what it means for the year', margin, ctx.y); ctx.y += 16;
+
         for (const planet of spotlightPlanets) {
           const h = analysis.planetSRHouses[planet]!;
           const data = deepData[planet][h];
           if (!data) continue;
-          ctx.checkPage(100);
+          ctx.checkPage(180);
           ctx.drawCard(doc, () => {
-            ctx.writeBold(doc, `${P[planet] || planet} in House ${h}: ${data.title}`, ctx.colors.gold, 12);
-            ctx.y += 4;
+            // Planet header box
+            doc.setFillColor(...ctx.colors.softGold);
+            doc.roundedRect(margin + 6, ctx.y - 4, contentW - 12, 26, 4, 4, 'F');
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+            doc.setTextColor(...ctx.colors.gold);
+            doc.text(`${P[planet] || planet} in House ${h}`, margin + 16, ctx.y + 10);
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.deepBrown);
+            doc.text(data.title || '', pw - margin - 12, ctx.y + 10, { align: 'right' });
+            ctx.y += 32;
+
             if (data.overview) {
-              ctx.writeBody(doc, data.overview, ctx.colors.darkText, 10, 15);
+              ctx.writeBody(doc, data.overview, ctx.colors.darkText, 10, 14);
               ctx.y += 6;
             }
             ctx.writeCardSection(doc, 'What This Looks Like', data.practical, ctx.colors.accentGreen);
@@ -787,7 +964,13 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // NARRATIVE
       // =============================================
       if (narrative) {
-        ctx.sectionTitle(doc, 'Year-Ahead Reading');
+        doc.addPage(); ctx.y = margin;
+        ctx.sectionPages.set('YEAR-AHEAD READING', doc.getNumberOfPages());
+        ctx.drawGoldRule(doc); ctx.y += 20;
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+        doc.setTextColor(...ctx.colors.gold);
+        doc.text('YEAR-AHEAD READING', margin, ctx.y); ctx.y += 20;
+
         const lines = narrative.split('\n');
         for (const line of lines) {
           const trimmed = line.trim();
