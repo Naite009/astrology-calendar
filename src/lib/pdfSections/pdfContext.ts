@@ -150,10 +150,10 @@ export function createPDFContext(doc: jsPDF, pw: number, ph: number, margin: num
       if (endPage === startPage) {
         // Normal case: card fits on one page
         const cardH = ctx.y - cardStartY;
-        d.setDrawColor(colors.warmBorder[0], colors.warmBorder[1], colors.warmBorder[2]); d.setLineWidth(0.5);
+        d.setDrawColor(colors.warmBorder[0], colors.warmBorder[1], colors.warmBorder[2]); d.setLineWidth(0.4);
         d.roundedRect(margin, cardStartY, contentW, cardH, 6, 6, 'S');
-        d.setDrawColor(accentColor[0], accentColor[1], accentColor[2]); d.setLineWidth(3);
-        d.line(margin + 1.5, cardStartY + 1, margin + 1.5, cardStartY + cardH - 1);
+        d.setDrawColor(accentColor[0], accentColor[1], accentColor[2]); d.setLineWidth(2);
+        d.line(margin + 1, cardStartY + 1, margin + 1, cardStartY + cardH - 1);
       } else {
         // Card spans pages — draw border on each page segment
         // First page: from cardStartY to bottom
