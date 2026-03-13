@@ -128,33 +128,33 @@ export const stelliumFeltSense: Record<string, string> = {
 };
 
 export const saturnHouseMeaning: Record<number, string> = {
-  1: 'YOU are the project. Body, appearance, sense of self restructured. The gift: genuine self-authority.',
-  2: 'Finances, values, self-worth tested. The real lesson: what you genuinely value vs. what you spend on out of habit.',
-  3: 'Communication requires more effort. Words carry weight. Difficult conversations or challenging learning.',
-  4: 'Home and family are the classroom. You may renovate, move, or confront deep family patterns.',
-  5: 'Creativity, romance, fun require WORK. Joy doesn\'t come easily — you have to earn it.',
-  6: 'Daily routines, work habits, health restructured. Bad habits catch up. Build better systems.',
-  7: 'Partnerships tested. Relationships lacking real commitment may end. Solid ones deepen.',
-  8: 'Deep transformation, shared finances, psychological patterns under review.',
-  9: 'Beliefs tested against reality. Higher education demands serious commitment.',
-  10: 'Career and reputation are the priority. Professional responsibilities increase.',
-  11: 'Friendships restructured. Fair-weather friends fall away.',
-  12: 'Inner life and unconscious patterns under review. Deeply private year.',
+  1: 'YOU are the project. Your body, appearance, and sense of self are being restructured from the ground up. You feel heavier, more serious, older. Others may perceive you as more authoritative. Health demands attention — dental work, bones, skin, chronic issues. The gift: genuine self-authority that no one can take from you. The test: doing the hard inner work instead of performing confidence.',
+  2: 'Finances, values, and self-worth are under Saturn\'s microscope. You may earn less, spend more carefully, or face financial limits that force you to distinguish needs from wants. The real lesson: what you genuinely value vs. what you spend on out of habit or anxiety. Building a real budget, paying off debt, or establishing financial independence are the assignments.',
+  3: 'Communication requires more effort and carries more weight. You may struggle to express yourself clearly, deal with difficult conversations, or face a demanding learning curve. Sibling or neighbor relationships may feel strained. The growth: learning to say what matters with precision and authority.',
+  4: 'Home and family are the classroom. You may renovate, move, deal with aging parents, or confront deep family patterns that have shaped you. The domestic sphere feels heavy but productive. Building real emotional foundations — not just decorating the surface — is the assignment.',
+  5: 'Creativity, romance, and fun require WORK. Joy doesn\'t come easily — spontaneity feels blocked. Dating is serious, creative projects need discipline, and your relationship to pleasure is being matured. Children may demand more responsibility. The reward: creative output with real substance and lasting relationships built on reality.',
+  6: 'Daily routines, work habits, and health are being restructured. Bad habits catch up. The body insists on better care. Work may feel burdensome or demand systems you\'ve been avoiding. Building sustainable health practices and efficient work systems is the assignment.',
+  7: 'Partnerships are tested. Relationships lacking real commitment or genuine reciprocity may end. Solid partnerships deepen through shared struggle. You may attract a more serious partner, or an existing partner becomes more demanding. The lesson: what does real partnership actually require?',
+  8: 'Deep transformation. Shared finances, debts, inheritances, and psychological patterns are under review. Power dynamics in intimate relationships demand honest reckoning. Therapy works harder this year. The area where you\'ve been avoiding depth is exactly where Saturn insists you go.',
+  9: 'Beliefs are tested against reality. Higher education demands serious commitment. Travel may be restricted or purposeful rather than recreational. You are being asked: do you actually believe what you say you believe?',
+  10: 'Career and professional reputation are THE priority. Responsibilities increase — you may be promoted, scrutinized, or given more authority than you feel ready for. Professional standards are higher. The world is watching. Build something real.',
+  11: 'Friendships restructured. Fair-weather friends fall away. The groups you belong to either prove their worth or become obligations. You may feel isolated or take on leadership. Quality over quantity in every social connection.',
+  12: 'The most deeply internal Saturn placement. Unconscious patterns, hidden fears, and spiritual foundations are under review. Solitude may be imposed. Dreams may be heavy. Therapy, meditation, and inner work are productive but demanding.',
 };
 
 export const nodeHouseMeaning: Record<number, string> = {
-  1: 'Growth edge: SELF-assertion. Stop deferring. The universe rewards independence.',
-  2: 'Growth: building financial independence and clarifying values.',
-  3: 'Growth: communication and learning. Speak up.',
-  4: 'Growth: home, family, emotional foundations. Put down roots.',
-  5: 'Growth: creative self-expression and taking emotional risks.',
-  6: 'Growth: daily habits, health, service.',
-  7: 'Growth: partnership and collaboration. Stop doing everything alone.',
-  8: 'Growth: emotional depth and shared vulnerability.',
-  9: 'Growth: expanding your worldview.',
-  10: 'Growth: career and stepping into authority.',
-  11: 'Growth: community, friendship, collective purpose.',
-  12: 'Growth: surrender and releasing control.',
+  1: 'Growth edge: SELF-assertion. Your soul is being pulled toward independence and defining yourself on your own terms. Stop deferring to others. The universe rewards you every time you choose yourself — not selfishly, but authentically. What do YOU want?',
+  2: 'Growth: building financial independence and clarifying your values. What is worth your time, money, and energy? Stop borrowing from others\' value systems. Develop your own resources and trust your own worth.',
+  3: 'Growth: communication, learning, and intellectual curiosity. Speak up. Write. Teach. Ask questions. The growth happens in everyday conversations, not grand gestures. Your local environment holds the lessons.',
+  4: 'Growth: home, family, emotional foundations. Put down roots — emotionally and literally. Stop chasing external achievement at the expense of inner security. What does "home" mean to you on a soul level?',
+  5: 'Growth: creative self-expression, romance, and taking emotional risks. Stop playing it safe. Create something. Love someone. Let yourself be seen in your joy and your vulnerability.',
+  6: 'Growth: daily habits, health, and service to others. Mastery of the mundane IS the spiritual path this year. Your body is your teacher. Build routines that actually serve your wellbeing.',
+  7: 'Growth: partnership, collaboration, and learning to receive. Stop doing everything alone. The lesson is in the mirror of relationship — what a committed other shows you about yourself.',
+  8: 'Growth: emotional depth, shared vulnerability, and letting someone truly know you. Intimacy requires surrender. Financial entanglements teach you about trust. Let something old die so something real can live.',
+  9: 'Growth: expanding your worldview through travel, education, or encounter with the unfamiliar. Your current perspective is too small. Something out there — a place, an idea, a teacher — will crack you open.',
+  10: 'Growth: stepping into authority and accepting public responsibility. You are being called to lead, to build, to create a legacy. Stop hiding behind others\' authority.',
+  11: 'Growth: community, friendship, and collective purpose. Your individual ambitions are being redirected toward something larger. Find your people. Contribute to a cause bigger than yourself.',
+  12: 'Growth: surrender, release, and spiritual trust. The ego\'s agenda is being dissolved — not destroyed, but softened. Meditation, dreams, and quiet contemplation reveal what striving cannot.',
 };
 
 interface Props {
@@ -548,13 +548,23 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           const asp = majorAspects[i];
           const interp = generateSRtoNatalInterpretation(asp.planet1, asp.planet2, asp.type, asp.orb);
           const isHard = ['Square', 'Opposition', 'Quincunx'].includes(asp.type);
-          ctx.checkPage(120);
+          // Add house context
+          const srH = analysis.planetSRHouses?.[asp.planet1];
+          const natalH = natalChart.planets?.[asp.planet2]?.house;
+          const houseContext = (srH || natalH) ? ` — SR ${P[asp.planet1] || asp.planet1}${srH ? ` in SR House ${srH}` : ''}${natalH ? `, Natal ${P[asp.planet2] || asp.planet2} in Natal House ${natalH}` : ''}` : '';
+          ctx.checkPage(140);
           ctx.drawCard(doc, () => {
             ctx.writeBold(doc, `SR ${P[asp.planet1] || asp.planet1}  ${asp.type}  Natal ${P[asp.planet2] || asp.planet2}  (${asp.orb}')`, ctx.colors.darkText, 10);
+            if (houseContext) {
+              doc.setFont('helvetica', 'italic'); doc.setFontSize(8.5);
+              doc.setTextColor(...ctx.colors.dimText);
+              const hcLines = doc.splitTextToSize(houseContext, contentW - 16);
+              hcLines.forEach((line: string) => { ctx.checkPage(12); doc.text(line, margin + 8, ctx.y); ctx.y += 12; });
+            }
             ctx.y += 4;
-            ctx.writeCardSection(doc, 'Feels', interp.howItFeels, ctx.colors.accentGreen);
-            ctx.writeCardSection(doc, 'Means', interp.whatItMeans, ctx.colors.gold);
-            ctx.writeCardSection(doc, 'Do', interp.whatToDo, ctx.colors.accentRust);
+            ctx.writeCardSection(doc, 'How It Feels', interp.howItFeels, ctx.colors.accentGreen);
+            ctx.writeCardSection(doc, 'What It Means', interp.whatItMeans, ctx.colors.gold);
+            ctx.writeCardSection(doc, 'What To Do', interp.whatToDo, ctx.colors.accentRust);
           }, isHard ? [180, 100, 60] : ctx.colors.gold);
         }
       }
@@ -621,9 +631,13 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           if (!data) continue;
           ctx.checkPage(100);
           ctx.drawCard(doc, () => {
-            ctx.writeBold(doc, `${P[planet] || planet} in House ${h}: ${data.title}`, ctx.colors.gold, 11);
-            ctx.y += 2;
-            ctx.writeBody(doc, data.practical, ctx.colors.bodyText, 9.5);
+            ctx.writeBold(doc, `${P[planet] || planet} in House ${h}: ${data.title}`, ctx.colors.gold, 12);
+            ctx.y += 4;
+            if (data.overview) {
+              ctx.writeBody(doc, data.overview, ctx.colors.darkText, 10, 15);
+              ctx.y += 6;
+            }
+            ctx.writeCardSection(doc, 'What This Looks Like', data.practical, ctx.colors.accentGreen);
             if (data.caution) ctx.writeCardSection(doc, 'Watch For', data.caution, ctx.colors.accentRust);
           });
         }
