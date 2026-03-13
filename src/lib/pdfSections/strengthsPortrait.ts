@@ -5,6 +5,12 @@ import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 
 /** YOUR BIG THREE — strengths, shadow, and how the SR year activates each */
 
+function getOrdinalSuffix(n: number): string {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return s[(v - 20) % 10] || s[v] || s[0];
+}
+
 const sunStrength: Record<string, string> = {
   Aries: 'Initiative, courage, and the drive to start what others only imagine. You act first and think later — and it usually works.',
   Taurus: 'Steadiness, sensory awareness, and the patience to build things that endure. You are the rock others lean on.',
