@@ -403,84 +403,95 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // STELLIUMS — personalized with house context
       // =============================================
       if (analysis.stelliums.length > 0) {
-        doc.addPage(); ctx.y = margin;
-        ctx.sectionPages.set('STELLIUMS', doc.getNumberOfPages());
-        ctx.drawGoldRule(doc); ctx.y += 20;
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-        doc.setTextColor(...ctx.colors.gold);
-        doc.text('STELLIUMS — YOUR POWER ZONES', margin, ctx.y); ctx.y += 20;
+        // Separate stelliums into sign vs house groups
+        const signStelliums = analysis.stelliums.filter(s => !/^\d+$/.test(String(s.location)) && !s.location.startsWith('House'));
+        const houseStelliums = analysis.stelliums.filter(s => /^\d+$/.test(String(s.location)) || s.location.startsWith('House'));
 
-        for (const s of analysis.stelliums) {
+        // Helper to render a single stellium card (compact)
+        const renderStelliumCard = (s: typeof analysis.stelliums[0]) => {
           const planets = s.planets.map(pp => P[pp] || pp).join(', ');
           const isHouseStellium = /^\d+$/.test(String(s.location)) || s.location.startsWith('House');
           const houseNum = parseInt(String(s.location).replace('House ', '').replace('House', ''));
-          
-          // Find what house(s) these planets are in for personalized interpretation
           const planetHouses = s.planets.map(pp => analysis.planetSRHouses?.[pp]).filter(Boolean) as number[];
           const primaryHouse = planetHouses.length > 0 ? planetHouses[0] : null;
-          
-          ctx.checkPage(300);
-          ctx.drawCard(doc, () => {
-            ctx.writeBold(doc, `${s.planets.length}-Planet Stellium in ${isHouseStellium ? 'House ' + houseNum : s.location}`, ctx.colors.gold, 13);
-            ctx.y += 4;
 
-            // Planet chips in a highlight box
+          ctx.drawCard(doc, () => {
+            ctx.writeBold(doc, `${s.planets.length}-Planet Stellium in ${isHouseStellium ? 'House ' + houseNum : s.location}`, ctx.colors.gold, 12);
+            ctx.y += 2;
+
+            // Planet chips inline
             doc.setFillColor(...ctx.colors.softGold);
-            doc.roundedRect(margin + 6, ctx.y, contentW - 12, 28, 4, 4, 'F');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(...ctx.colors.deepBrown);
-            doc.text(planets, margin + 16, ctx.y + 18);
-            ctx.y += 38;
+            doc.roundedRect(margin + 6, ctx.y, contentW - 12, 22, 4, 4, 'F');
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...ctx.colors.deepBrown);
+            doc.text(planets, margin + 16, ctx.y + 15);
+            ctx.y += 28;
 
             if (!isHouseStellium) {
-              // Personalized stellium interpretation
               const signName = s.location;
               const signHouse = primaryHouse;
-              
-              // WHAT THIS MEANS FOR YOU — personalized synthesis
-              ctx.writeBold(doc, 'What This Means For You', ctx.colors.deepBrown, 11);
-              ctx.y += 2;
-              
-              // Generate personalized interpretation combining sign + house
+              ctx.writeBold(doc, 'What This Means For You', ctx.colors.deepBrown, 10);
               const personalizedStellium = getPersonalizedStelliumText(signName, signHouse, s.planets);
-              ctx.writeBody(doc, personalizedStellium, ctx.colors.bodyText, 10, 14);
-              ctx.y += 6;
+              ctx.writeBody(doc, personalizedStellium, ctx.colors.bodyText, 9.5, 13);
+              ctx.y += 4;
 
-              // How You'll Feel It
               const felt = stelliumFeltSense[s.location];
               if (felt) {
                 ctx.writeCardSection(doc, 'How You Will Feel This', felt, ctx.colors.accentGreen);
               }
 
-              // Planet-by-planet in boxes
-              ctx.y += 4;
-              ctx.writeBold(doc, 'Each Planet\'s Role in This Stellium:', ctx.colors.gold, 10);
-              ctx.y += 4;
-              for (const pp of s.planets) {
+              // Compact planet roles — inline list instead of individual boxes
+              const roleLines = s.planets.map(pp => {
                 const role = stelliumPlanetRoles[pp];
-                if (role) {
-                  const ppH = analysis.planetSRHouses?.[pp];
-                  ctx.checkPage(50);
-                  // Mini card for each planet
-                  const cardY = ctx.y;
-                  doc.setFillColor(...ctx.colors.softGold);
-                  doc.roundedRect(margin + 6, cardY, contentW - 12, 36, 4, 4, 'F');
-                  doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...ctx.colors.gold);
-                  doc.text(`${P[pp] || pp}`, margin + 16, cardY + 14);
-                  if (ppH) {
-                    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.dimText);
-                    doc.text(`SR House ${ppH}`, margin + 16 + doc.getTextWidth(`${P[pp] || pp}  `), cardY + 14);
-                  }
-                  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.bodyText);
-                  const roleLines = doc.splitTextToSize(role, contentW - 36);
-                  doc.text(roleLines[0] || '', margin + 16, cardY + 28);
-                  ctx.y = cardY + 42;
+                const ppH = analysis.planetSRHouses?.[pp];
+                const houseTag = ppH ? ` (SR House ${ppH})` : '';
+                return role ? `${P[pp] || pp}${houseTag}: ${role}` : null;
+              }).filter(Boolean);
+              
+              if (roleLines.length > 0) {
+                ctx.writeBold(doc, 'Planet Roles:', ctx.colors.gold, 9.5);
+                for (const line of roleLines) {
+                  ctx.writeBody(doc, `• ${line}`, ctx.colors.bodyText, 9, 12);
                 }
               }
             } else if (!isNaN(houseNum)) {
               const houseMeaning = stelliumHouseMeaning[houseNum];
-              if (houseMeaning) ctx.writeBody(doc, houseMeaning, ctx.colors.bodyText, 10, 14);
+              if (houseMeaning) ctx.writeBody(doc, houseMeaning, ctx.colors.bodyText, 9.5, 13);
             }
           });
+          ctx.y += 4; // minimal gap between cards
+        };
+
+        // --- SIGN STELLIUMS ---
+        if (signStelliums.length > 0) {
+          ctx.sectionTitle(doc, 'STELLIUMS — YOUR POWER ZONES');
+          ctx.sectionPages.set('STELLIUMS', doc.getNumberOfPages());
+          
+          if (signStelliums.length > 1) {
+            ctx.writeBody(doc, `You have ${signStelliums.length} sign stelliums this year — concentrated energy demanding attention.`, ctx.colors.dimText, 9.5);
+            ctx.y += 6;
+          }
+          for (const s of signStelliums) {
+            renderStelliumCard(s);
+          }
+        }
+
+        // --- HOUSE STELLIUMS (new page only if sign stelliums already used space) ---
+        if (houseStelliums.length > 0) {
+          if (signStelliums.length > 0) {
+            // Check if there's room, otherwise new page
+            ctx.checkPage(200);
+            ctx.y += 10;
+            ctx.drawGoldRule(doc); ctx.y += 16;
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+            doc.setTextColor(...ctx.colors.gold);
+            doc.text('STELLIUMS BY HOUSE', margin, ctx.y); ctx.y += 16;
+          } else {
+            ctx.sectionTitle(doc, 'STELLIUMS — YOUR POWER ZONES');
+            ctx.sectionPages.set('STELLIUMS', doc.getNumberOfPages());
+          }
+          for (const s of houseStelliums) {
+            renderStelliumCard(s);
+          }
         }
       }
 
