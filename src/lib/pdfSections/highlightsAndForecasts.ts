@@ -104,10 +104,9 @@ function buildMonthlyForecasts(a: SolarReturnAnalysis): { month: string; forecas
   for (let i = 0; i < 12; i++) {
     const mIdx = (srDate.getMonth() + i) % 12;
     const mName = monthNames[mIdx];
-    const fromTiming = timingMap.get(mName);
     forecasts.push({
       month: mName.substring(0, 3).toUpperCase(),
-      forecast: fromTiming || monthThemes[i + 1] || 'A month of steady progress.',
+      forecast: monthThemes[i + 1] || 'A month of steady progress.',
     });
   }
   return forecasts;
