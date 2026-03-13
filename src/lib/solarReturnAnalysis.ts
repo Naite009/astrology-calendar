@@ -1286,6 +1286,10 @@ export const analyzeSolarReturn = (
     srAscInNatalHouse,
     natalDegreeConduits,
     moonTimingEvents,
+    srMoonAspects,
+    moonAngularity,
+    moonLateDegree,
+    moonMetonicAges,
     vertex,
     planetSRHouses,
   };
