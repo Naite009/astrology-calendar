@@ -25,22 +25,23 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   const sections: { title: string; desc: string }[] = [];
 
   if (birthdayMode) sections.push({ title: 'Personal Strengths Portrait', desc: 'Your natal gifts — the foundation your year builds upon' });
+  sections.push({ title: 'How To Read This Report', desc: 'Key concepts explained in plain language' });
   sections.push({ title: 'Year at a Glance', desc: 'SR Ascendant, ruler, profection, time lord, and moon phase' });
   sections.push({ title: 'Profection Wheel', desc: 'Visual diagram of your annual profection and activated house' });
   if (a.moonSign) sections.push({ title: 'Moon Sign Shift', desc: 'How your emotional processing changes this year' });
   sections.push({ title: 'Solar Return vs Natal', desc: 'Side-by-side comparison of all planet positions' });
   if (a.stelliums.length > 0) sections.push({ title: 'Stelliums', desc: 'Where 3+ planets cluster — your year\'s power zones' });
-  if (a.elementBalance) sections.push({ title: 'Element & Modality', desc: 'Fire/Earth/Air/Water and Cardinal/Fixed/Mutable balance' });
+  if (a.elementBalance) sections.push({ title: 'Element and Modality', desc: 'Fire/Earth/Air/Water and Cardinal/Fixed/Mutable balance' });
   if (a.hemisphericEmphasis) sections.push({ title: 'Where Your Energy Lives', desc: 'Upper/Lower and Eastern/Western planet distribution' });
   if (a.angularPlanets?.length) sections.push({ title: 'Angular Planets', desc: 'The most powerful and visible planets this year' });
   if (a.lordOfTheYear) sections.push({ title: 'Lord of the Year', desc: 'Your Time Lord — the planet running the show' });
-  if (a.saturnFocus || a.nodesFocus) sections.push({ title: 'Saturn & North Node', desc: 'Where you\'re being tested and where your soul is growing' });
+  if (a.saturnFocus || a.nodesFocus) sections.push({ title: 'Saturn and North Node', desc: 'Where you\'re being tested and where your soul is growing' });
   if (a.srToNatalAspects.length > 0) sections.push({ title: 'Key Aspects', desc: 'How SR planets activate your natal chart' });
   if (a.moonTimingEvents.length > 0) sections.push({ title: 'Moon Timing', desc: 'Month-by-month activation calendar' });
   if (a.vertex) sections.push({ title: 'Vertex', desc: 'Fated encounters and destined meetings' });
   sections.push({ title: 'Planet Spotlight', desc: 'Deep dive into key planets by house placement' });
   if (narrative) sections.push({ title: 'Year-Ahead Reading', desc: 'AI-generated narrative synthesis of your year' });
-  sections.push({ title: 'Best Months & Highlights', desc: 'Peak months for love, luck, and action' });
+  sections.push({ title: 'Best Months and Highlights', desc: 'Peak months for love, luck, and action' });
   if (birthdayMode) sections.push({ title: 'Birthday Affirmation Card', desc: 'A personalized affirmation to carry with you all year' });
 
   // Render in two columns for cleaner layout

@@ -16,6 +16,7 @@ import { signColorThemes } from '@/lib/pdfSections/signColorThemes';
 import { generateStrengthsPortrait } from '@/lib/pdfSections/strengthsPortrait';
 import { generateHighlightsPage } from '@/lib/pdfSections/highlightsAndForecasts';
 import { generateAffirmationCard } from '@/lib/pdfSections/affirmationCard';
+import { generateHowToReadPage } from '@/lib/pdfSections/howToRead';
 
 // Cake image imports
 import cakeAries from '@/assets/cakes/aries.png';
@@ -203,6 +204,12 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // =============================================
       doc.addPage(); ctx.y = margin;
       generatePDFTableOfContents(ctx, doc, analysis, narrative, birthdayMode);
+
+      // =============================================
+      // HOW TO READ THIS REPORT
+      // =============================================
+      doc.addPage(); ctx.y = margin;
+      generateHowToReadPage(ctx, doc);
 
       // =============================================
       // PERSONAL STRENGTHS PORTRAIT (birthday mode)
@@ -656,7 +663,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       });
       if (spotlightPlanets.length > 0) {
         ctx.sectionTitle(doc, 'Planet Spotlight');
-        for (const planet of spotlightPlanets.slice(0, 5)) {
+        for (const planet of spotlightPlanets) {
           const h = analysis.planetSRHouses[planet]!;
           const data = deepData[planet][h];
           if (!data) continue;
@@ -716,18 +723,29 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // =============================================
       if (goldBorders) {
         const totalPages = doc.getNumberOfPages();
+        const realGold: [number, number, number] = [190, 155, 80];
         for (let i = 1; i <= totalPages; i++) {
           doc.setPage(i);
-          doc.setDrawColor(...ctx.colors.gold); doc.setLineWidth(2);
-          doc.rect(20, 20, pw - 40, ph - 40);
-          doc.setLineWidth(0.5);
-          doc.rect(24, 24, pw - 48, ph - 48);
+          doc.setDrawColor(...realGold); doc.setLineWidth(2.5);
+          doc.rect(18, 18, pw - 36, ph - 36);
+          doc.setLineWidth(0.8);
+          doc.rect(23, 23, pw - 46, ph - 46);
           // Corner ornaments
-          const corners = [[28, 28], [pw - 28, 28], [28, ph - 28], [pw - 28, ph - 28]];
-          doc.setFillColor(...ctx.colors.gold);
+          const corners = [[27, 27], [pw - 27, 27], [27, ph - 27], [pw - 27, ph - 27]];
+          doc.setFillColor(...realGold);
           for (const [cx2, cy2] of corners) {
-            doc.circle(cx2, cy2, 3, 'F');
+            doc.circle(cx2, cy2, 3.5, 'F');
           }
+          // Small diamond ornaments at midpoints
+          const midX = pw / 2;
+          const midY = ph / 2;
+          doc.setFillColor(...realGold);
+          // Top center
+          doc.triangle(midX, 15, midX - 4, 20, midX + 4, 20, 'F');
+          doc.triangle(midX, 25, midX - 4, 20, midX + 4, 20, 'F');
+          // Bottom center
+          doc.triangle(midX, ph - 15, midX - 4, ph - 20, midX + 4, ph - 20, 'F');
+          doc.triangle(midX, ph - 25, midX - 4, ph - 20, midX + 4, ph - 20, 'F');
         }
       }
 
