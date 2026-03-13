@@ -78,10 +78,11 @@ export function createPDFContext(doc: jsPDF, pw: number, ph: number, margin: num
 
     sectionTitle(d: jsPDF, title: string) {
       ctx.checkPage(120);
-      // Record page number for this section (for clickable TOC)
       const pageNum = d.getNumberOfPages();
       sectionPages.set(title.toUpperCase(), pageNum);
-      ctx.y += 24; ctx.drawGoldRule(d); ctx.y += 20;
+      // If near top of page, use minimal spacing; otherwise standard
+      const topPad = ctx.y < margin + 20 ? 8 : 24;
+      ctx.y += topPad; ctx.drawGoldRule(d); ctx.y += 20;
       d.setFont('helvetica', 'bold'); d.setFontSize(14);
       d.setTextColor(colors.gold[0], colors.gold[1], colors.gold[2]);
       d.text(title.toUpperCase(), margin, ctx.y); ctx.y += 20;
@@ -91,14 +92,41 @@ export function createPDFContext(doc: jsPDF, pw: number, ph: number, margin: num
       d.setFont('helvetica', 'normal'); d.setFontSize(size);
       d.setTextColor(color[0], color[1], color[2]);
       const lines: string[] = d.splitTextToSize(text, contentW - 16);
-      for (const line of lines) { ctx.checkPage(lineH); d.text(line, margin + 8, ctx.y); ctx.y += lineH; }
+      const totalH = lines.length * lineH;
+      const remaining = ph - 55 - ctx.y;
+      
+      // If the whole block fits, just render it
+      if (totalH <= remaining) {
+        for (const line of lines) { d.text(line, margin + 8, ctx.y); ctx.y += lineH; }
+        return;
+      }
+      
+      // How many lines fit on this page?
+      const linesFit = Math.floor(remaining / lineH);
+      
+      // If fewer than 4 lines would be orphaned on next page, OR fewer than 4 lines fit here,
+      // move the entire block to the next page to keep the thought together
+      const linesRemaining = lines.length - linesFit;
+      if (linesFit < 4 || linesRemaining < 4) {
+        doc.addPage(); ctx.y = margin;
+        for (const line of lines) { d.text(line, margin + 8, ctx.y); ctx.y += lineH; }
+        return;
+      }
+      
+      // Otherwise split at a natural point — render what fits, then continue on next page
+      for (let i = 0; i < linesFit; i++) { d.text(lines[i], margin + 8, ctx.y); ctx.y += lineH; }
+      doc.addPage(); ctx.y = margin;
+      for (let i = linesFit; i < lines.length; i++) { d.text(lines[i], margin + 8, ctx.y); ctx.y += lineH; }
     },
 
     writeBold(d: jsPDF, text: string, color: Color = colors.darkText, size = 11) {
       d.setFont('helvetica', 'bold'); d.setFontSize(size);
       d.setTextColor(color[0], color[1], color[2]);
       const lines: string[] = d.splitTextToSize(text, contentW - 16);
-      for (const line of lines) { ctx.checkPage(16); d.text(line, margin + 8, ctx.y); ctx.y += 15; }
+      // Keep bold text blocks together
+      const totalH = lines.length * 15;
+      if (ctx.y + totalH > ph - 55) { doc.addPage(); ctx.y = margin; }
+      for (const line of lines) { d.text(line, margin + 8, ctx.y); ctx.y += 15; }
     },
 
     writeLabel(d: jsPDF, label: string, value: string, labelColor: Color = colors.dimText, valueColor: Color = colors.darkText) {
