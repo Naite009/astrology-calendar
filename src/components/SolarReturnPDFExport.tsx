@@ -188,7 +188,10 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       const margin = 50;
       const contentW = pw - margin * 2;
 
-      const ctx = createPDFContext(doc, pw, ph, margin, contentW);
+      // Apply sign-specific color theme if birthday mode
+      const sunSign = natalChart.planets?.Sun?.sign || '';
+      const signTheme = birthdayMode && sunSign ? signColorThemes[sunSign] : undefined;
+      const ctx = createPDFContext(doc, pw, ph, margin, contentW, signTheme);
 
       // =============================================
       // PAGE 1: COVER
@@ -200,6 +203,14 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // =============================================
       doc.addPage(); ctx.y = margin;
       generatePDFTableOfContents(ctx, doc, analysis, narrative);
+
+      // =============================================
+      // PERSONAL STRENGTHS PORTRAIT (birthday mode)
+      // =============================================
+      if (birthdayMode) {
+        doc.addPage(); ctx.y = margin;
+        generateStrengthsPortrait(ctx, doc, natalChart);
+      }
 
       // =============================================
       // PAGE 3+: YEAR AT A GLANCE (own page, beautiful)
