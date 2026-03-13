@@ -443,8 +443,8 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
               const roleLines = s.planets.map(pp => {
                 const role = stelliumPlanetRoles[pp];
                 const ppH = analysis.planetSRHouses?.[pp];
-                const houseTag = ppH ? ` (SR House ${ppH})` : '';
-                return role ? `${P[pp] || pp}${houseTag}: ${role}` : null;
+                const houseTag = ppH ? `  •  SR House ${ppH}` : '';
+                return role ? `${P[pp] || pp}${houseTag} — ${role}` : null;
               }).filter(Boolean);
               
               if (roleLines.length > 0) {
