@@ -90,9 +90,9 @@ export async function generatePDFCover(
     doc.text('YOUR NATAL CHART', textStartX, big3Y);
     doc.setFont('helvetica', 'bold'); doc.setFontSize(13);
     doc.setTextColor(...colors.deepBrown);
-    if (natalSun) doc.text(`☉  ${natalSun} Sun`, textStartX, big3Y + 16);
-    if (natalMoon) doc.text(`☽  ${natalMoon} Moon`, textStartX, big3Y + 32);
-    if (natalRising) doc.text(`↑  ${natalRising} Rising`, textStartX, big3Y + 48);
+    if (natalSun) doc.text(`${natalSun} Sun`, textStartX, big3Y + 16);
+    if (natalMoon) doc.text(`${natalMoon} Moon`, textStartX, big3Y + 32);
+    if (natalRising) doc.text(`${natalRising} Rising`, textStartX, big3Y + 48);
 
     ctx.y += cakeH + 10;
 
