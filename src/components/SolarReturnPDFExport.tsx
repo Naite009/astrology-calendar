@@ -18,6 +18,7 @@ import { generateHighlightsPage } from '@/lib/pdfSections/highlightsAndForecasts
 import { generateAffirmationCard } from '@/lib/pdfSections/affirmationCard';
 import { generateHowToReadPage } from '@/lib/pdfSections/howToRead';
 import { generateProfectionPersonalSection } from '@/lib/pdfSections/profectionPersonal';
+import { generateKeyDatesSection } from '@/lib/pdfSections/keyDates';
 
 // Cake image imports
 import cakeAries from '@/assets/cakes/aries.png';
@@ -280,7 +281,13 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       }
 
       // =============================================
+      // KEY DATES — When Time Lord activates natal planets
       // =============================================
+      if (analysis.profectionYear) {
+        generateKeyDatesSection(ctx, doc, analysis.profectionYear.timeLord, natalChart, srChart);
+      }
+
+      // ==============================================
       // MOON SIGN SHIFT — own page
       // =============================================
       const natalMoonSign = natalChart.planets.Moon?.sign;
@@ -713,16 +720,46 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           });
         }
 
+        // Where the Lord sits natally — the activation area
+        if (lord.srHouse) {
+          ctx.drawCard(doc, () => {
+            ctx.writeBold(doc, `${P[lord.planet] || lord.planet} in SR House ${lord.srHouse} — Where the Year Plays Out`, ctx.colors.gold, 11);
+            ctx.y += 2;
+            const lordHouseInterp: Record<number, string> = {
+              1: 'The Lord of the Year in your 1st house means YOUR identity, body, and personal direction are the main arena. Every decision this year is filtered through "who am I becoming?" You are visibly the main character.',
+              2: 'The Lord of the Year in your 2nd house directs the year\'s energy toward money, possessions, and self-worth. Financial decisions carry unusual weight. The question: what do you actually value enough to work for?',
+              3: 'The Lord of the Year in your 3rd house channels the year through communication, learning, and your immediate environment. Your words carry more power. Sibling or neighbor dynamics may be unusually significant.',
+              4: 'The Lord of the Year in your 4th house roots this year\'s story in home, family, and emotional foundations. You may move, renovate, or face family dynamics that demand resolution. Build from the inside out.',
+              5: 'The Lord of the Year in your 5th house directs the year toward creativity, romance, children, and self-expression. Joy is not optional — it is the curriculum. Create something. Take an emotional risk.',
+              6: 'The Lord of the Year in your 6th house channels the year through daily routines, health, and work. The mundane IS the meaningful. Your body sends messages. Sustainable systems produce the biggest results.',
+              7: 'The Lord of the Year in your 7th house means partnerships define the year. Relationships — romantic, business, or legal — are where growth happens. The mirror of another person shows you what you cannot see alone.',
+              8: 'The Lord of the Year in your 8th house directs the year toward transformation, shared resources, and psychological depth. Something needs to end so something real can begin. Therapy and deep honesty are productive.',
+              9: 'The Lord of the Year in your 9th house expands the year through travel, education, and philosophical exploration. Your current worldview is too small. Something out there will crack it open.',
+              10: 'The Lord of the Year in your 10th house puts career and public reputation at the center. You are more visible than usual. Professional decisions have outsized impact. Build something the world can see.',
+              11: 'The Lord of the Year in your 11th house channels the year through friendships, community, and collective purpose. Your social circle is being restructured. The quality of your connections determines the quality of your year.',
+              12: 'The Lord of the Year in your 12th house turns the year inward. Solitude, spiritual practice, and unconscious patterns are the focus. Rest, dreams, and inner work are not extras — they are the assignment.',
+            };
+            const hInterp = lordHouseInterp[lord.srHouse!];
+            if (hInterp) ctx.writeBody(doc, hInterp, ctx.colors.bodyText, 10, 14);
+          });
+        }
+
         if (lord.dignity === 'Detriment' || lord.dignity === 'Fall') {
           ctx.drawCard(doc, () => {
             ctx.writeBold(doc, 'Dignity Warning', ctx.colors.accentRust, 10);
             ctx.writeBody(doc, `Your Time Lord is in ${lord.dignity}. This means ${P[lord.planet] || lord.planet} is working outside its comfort zone — plans may require more effort, communication needs extra clarity. The growth is deeper and the lessons stick.`, ctx.colors.bodyText, 10);
           }, ctx.colors.accentRust);
         }
+        if (lord.dignity === 'Domicile' || lord.dignity === 'Exaltation') {
+          ctx.drawCard(doc, () => {
+            ctx.writeBold(doc, 'Dignity Advantage', ctx.colors.accentGreen, 10);
+            ctx.writeBody(doc, `Your Time Lord is in ${lord.dignity} — this is ${P[lord.planet] || lord.planet} at ${lord.dignity === 'Domicile' ? 'full strength, operating in its own sign' : 'peak performance, elevated and supported by sign'}. The year's agenda flows more naturally. ${P[lord.planet] || lord.planet}'s themes are expressed with clarity and authority. Results come with less friction.`, ctx.colors.bodyText, 10);
+          }, ctx.colors.accentGreen);
+        }
         if (lord.isRetrograde) {
           ctx.drawCard(doc, () => {
             ctx.writeBold(doc, 'Retrograde Effect', ctx.colors.accentRust, 10);
-            ctx.writeBody(doc, `${P[lord.planet] || lord.planet} retrograde as Time Lord means this year has a built-in "review and revise" quality. Things from the past resurface. What comes back around deserves a second look.`, ctx.colors.bodyText, 10);
+            ctx.writeBody(doc, `${P[lord.planet] || lord.planet} retrograde as Time Lord means this year has a built-in "review and revise" quality. Things from the past resurface — old projects, unfinished conversations, former connections. What comes back around deserves a second look. New initiatives may stall until you address what was left incomplete. The retrograde does not block progress — it redirects it through revision.`, ctx.colors.bodyText, 10);
           }, ctx.colors.accentRust);
         }
       }
@@ -754,6 +791,33 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             ctx.y += 34;
             const satMeaning = saturnHouseMeaning[analysis.saturnFocus!.house];
             if (satMeaning) ctx.writeBody(doc, satMeaning, ctx.colors.bodyText, 10, 14);
+            
+            // Saturn sign-specific behavior
+            const satSignBehavior: Record<string, string> = {
+              Aries: 'Saturn in Aries tests your ability to act independently without being reckless. Patience and impulsivity are at war. Leadership must be earned through accountability, not aggression.',
+              Taurus: 'Saturn in Taurus demands financial discipline and forces you to distinguish real security from comfort-seeking. Material foundations are being stress-tested.',
+              Gemini: 'Saturn in Gemini requires mental discipline. Superficial learning is not enough — depth and precision in communication are demanded. Contracts and written agreements need extra care.',
+              Cancer: 'Saturn in Cancer tests emotional boundaries. Family obligations feel heavier. Building genuine emotional security — not just avoiding vulnerability — is the work.',
+              Leo: 'Saturn in Leo tests creative confidence. Self-expression feels risky or blocked. The work: creating something real without needing applause to keep going.',
+              Virgo: 'Saturn in Virgo amplifies perfectionism — useful for detail work, destructive when paralysis sets in. Health routines and daily systems need restructuring from the ground up.',
+              Libra: 'Saturn in Libra (exalted) tests relationships through fairness and accountability. Partnerships that are genuinely equitable strengthen; those built on convenience dissolve. Justice themes are prominent.',
+              Scorpio: 'Saturn in Scorpio demands emotional honesty at the deepest level. Power dynamics, financial entanglements, and psychological patterns you have been avoiding are no longer avoidable.',
+              Sagittarius: 'Saturn in Sagittarius tests your beliefs against reality. Dogma collapses. Education and travel require commitment, not just enthusiasm. Wisdom must be earned through experience.',
+              Capricorn: 'Saturn in Capricorn (domicile) is Saturn at full strength. Ambition is focused, disciplined, and relentless. Career structures solidify. Authority is earned through consistent effort. This is Saturn doing exactly what Saturn does.',
+              Aquarius: 'Saturn in Aquarius (traditional domicile) restructures your relationship to community and collective purpose. Social circles are audited. Innovation requires discipline to become real.',
+              Pisces: 'Saturn in Pisces brings structure to the spiritual and creative. Boundaries around empathy are essential. Escapism is punished; disciplined imagination produces lasting art, healing, or spiritual growth.',
+            };
+            const satSign = analysis.saturnFocus!.sign;
+            if (satSignBehavior[satSign]) {
+              ctx.y += 6;
+              ctx.writeCardSection(doc, `Saturn in ${satSign} — Sign Behavior`, satSignBehavior[satSign], ctx.colors.accentRust);
+            }
+            
+            // Retrograde Saturn note
+            if (analysis.saturnFocus!.isRetrograde) {
+              ctx.y += 4;
+              ctx.writeCardSection(doc, 'Saturn Retrograde in the SR', 'Saturn retrograde in the Solar Return means the testing is INTERNAL. External authority figures are less prominent — the examiner is your own conscience. Standards you have been avoiding or compromises you have been making are no longer sustainable. The restructuring happens from the inside out.', ctx.colors.accentRust);
+            }
           });
         }
         if (analysis.nodesFocus) {
@@ -766,6 +830,37 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             ctx.y += 34;
             const nodeMeaning = nodeHouseMeaning[analysis.nodesFocus!.house];
             if (nodeMeaning) ctx.writeBody(doc, nodeMeaning, ctx.colors.bodyText, 10, 14);
+            
+            // Node sign-specific growth direction
+            const nodeSignGrowth: Record<string, string> = {
+              Aries: 'The North Node in Aries says: stop deferring, start asserting. Your soul growth requires putting yourself first — not selfishly, but as a necessary correction. Independence is the lesson.',
+              Taurus: 'The North Node in Taurus says: slow down, build something real. Your growth comes through material stability, sensory presence, and learning to trust your own values over others\' opinions.',
+              Gemini: 'The North Node in Gemini says: stay curious, communicate more. Growth comes through asking questions, learning new skills, and engaging with your immediate environment rather than clinging to ideology.',
+              Cancer: 'The North Node in Cancer says: let yourself feel. Growth comes through vulnerability, nurturing, and creating emotional safety — for yourself and others.',
+              Leo: 'The North Node in Leo says: step into the spotlight. Growth comes through creative self-expression, taking emotional risks, and allowing yourself to be seen without hiding behind the group.',
+              Virgo: 'The North Node in Virgo says: master the details. Growth comes through practical service, health routines, and bringing order to chaos — not through grand visions but daily discipline.',
+              Libra: 'The North Node in Libra says: learn to partner. Growth comes through collaboration, diplomacy, and considering others\' needs as seriously as your own.',
+              Scorpio: 'The North Node in Scorpio says: go deeper. Growth comes through emotional vulnerability, shared resources, and allowing transformation even when it feels like loss.',
+              Sagittarius: 'The North Node in Sagittarius says: expand your world. Growth comes through travel, education, and forming your own philosophy based on direct experience rather than data.',
+              Capricorn: 'The North Node in Capricorn says: take responsibility. Growth comes through career ambition, public contribution, and building structures that outlast your comfort zone.',
+              Aquarius: 'The North Node in Aquarius says: serve the collective. Growth comes through community involvement, innovation, and detaching from personal drama to focus on the bigger picture.',
+              Pisces: 'The North Node in Pisces says: trust the unseen. Growth comes through faith, artistic expression, and surrendering the need to control every outcome.',
+            };
+            const nodeSign = analysis.nodesFocus!.sign;
+            if (nodeSignGrowth[nodeSign]) {
+              ctx.y += 6;
+              ctx.writeCardSection(doc, `Growth Direction: ${nodeSign}`, nodeSignGrowth[nodeSign], ctx.colors.accentGreen);
+            }
+          });
+        }
+        
+        // Saturn-Node synthesis when both exist
+        if (analysis.saturnFocus && analysis.nodesFocus) {
+          ctx.checkPage(120);
+          ctx.drawCard(doc, () => {
+            ctx.writeBold(doc, 'Saturn + North Node: The Tension That Drives Growth', ctx.colors.gold, 11);
+            ctx.y += 2;
+            ctx.writeBody(doc, `Saturn in House ${analysis.saturnFocus!.house || '--'} tests you through ${analysis.saturnFocus!.house ? (analysis.saturnFocus!.house <= 6 ? 'personal' : 'interpersonal') : 'specific'} demands: structure, accountability, and hard work. The North Node in House ${analysis.nodesFocus!.house || '--'} pulls your soul toward unfamiliar growth territory. The dynamic: Saturn is WHERE you are being made stronger through difficulty. The Node is WHERE you are being made wiser through new experience. They are not the same — and that tension between duty and growth is the engine of your year.`, ctx.colors.bodyText, 10, 14);
           });
         }
       }
