@@ -122,11 +122,13 @@ serve(async (req) => {
     }
 
     // SR Moon Aspects (frozen snapshot — emotional climate for the year)
+    // CRITICAL: The SR Moon is a STATIC SNAPSHOT — it does NOT advance 1°/month.
+    // Do NOT send moonTimingEvents to the AI — that data is deprecated and inaccurate.
     if (a.moonVOC) {
       dataContext += `\nSR MOON VOID OF COURSE (UNASPECTED): The SR Moon makes NO major aspects to any other SR planet. This is rare and significant — the emotional life this year operates in isolation, without planetary dialogue. Feelings are vivid but untethered. The person must consciously name and honor emotional needs, as the world won't automatically reflect them back. Creative expression, journaling, and therapy become essential containers.\n`;
     }
     if (a.srMoonAspects?.length > 0) {
-      dataContext += `\nSR MOON ASPECTS (emotional climate — these are static aspects at the SR moment, NOT advancing):\n`;
+      dataContext += `\nSR MOON ASPECTS (STATIC emotional climate — these aspects exist at the moment of the Solar Return and describe the YEAR-LONG emotional tone, NOT month-by-month timing):\n`;
       a.srMoonAspects.slice(0, 8).forEach((e: any) => {
         dataContext += `- Moon ${e.aspectType} ${e.targetPlanet} (${e.orb}' orb): ${e.interpretation}\n`;
       });
@@ -137,6 +139,7 @@ serve(async (req) => {
     if (a.moonLateDegree) {
       dataContext += `Moon is in late degrees (25+) — signals emotional endings or transitions\n`;
     }
+    dataContext += `\nCRITICAL ACCURACY NOTE: The SR Moon does NOT advance 1 degree per month. It is a frozen snapshot. Do NOT create a "Moon Timing" section or suggest the Moon "moves" through aspects during the year. The Moon's aspects in the SR chart describe the ENTIRE year's emotional climate, not specific monthly timing.\n`;
 
     // Top SR-to-Natal aspects
     if (a.srToNatalAspects?.length > 0) {
@@ -201,8 +204,8 @@ North Node focus — where the data points toward evolution and unfamiliar terri
 ## Retrogrades & Review Periods
 If retrogrades exist, what areas need revision. If none, note the forward momentum.
 
-## Moon Timing — When Things Happen
-If Moon timing events are provided, describe when key aspects perfect through the year (the SR Moon advances ~1° per month). This gives a month-by-month sense of activation.
+## IMPORTANT — NO Moon Timing Section
+DO NOT write a "Moon Timing" or "When Things Happen" section. The SR Moon is a STATIC SNAPSHOT captured at the exact moment of the Solar Return. It does NOT advance 1 degree per month. That is a common misconception. The Moon's aspects describe the emotional CLIMATE for the entire year — not a monthly timeline. Any suggestion that "around month X the Moon will trine Y" is FABRICATED and INACCURATE. Instead, discuss the Moon's aspects as a year-long emotional backdrop in the Emotional Landscape section.
 
 ## What to Watch For
 2-3 specific, concrete things to pay attention to this year based on the strongest patterns.
@@ -246,7 +249,15 @@ RULES:
     }
 
     const result = await response.json();
-    const narrative = result.choices?.[0]?.message?.content || result.message?.content || '';
+    let narrative = result.choices?.[0]?.message?.content || result.message?.content || '';
+
+    // ── POST-CORRECTION: Strip Moon timing hallucinations ──
+    // Remove any "Moon Timing" section the AI may have generated despite instructions
+    narrative = narrative.replace(/## Moon Timing[^\n]*\n[\s\S]*?(?=##|$)/gi, '');
+    // Remove sentences claiming the Moon advances 1°/month in the SR
+    narrative = narrative.replace(/[^.]*(?:moon advances|moon moves|moon progresses|1[°\s]*(?:degree|deg)[\s/]*(?:per\s)?month|month[s]?\s+(?:in|from|after)\s+(?:the\s+)?(?:solar\s+)?return)[^.]*\./gi, '');
+    // Remove "Around X months in" timing patterns
+    narrative = narrative.replace(/[^.]*(?:around\s+\d+[-–]\d+\s+months?\s+in|early\s+in\s+the\s+year.*?SR\s+Moon|months?\s+(?:from|after)\s+(?:your\s+)?birthday)[^.]*\./gi, '');
 
     return new Response(
       JSON.stringify({ narrative }),
