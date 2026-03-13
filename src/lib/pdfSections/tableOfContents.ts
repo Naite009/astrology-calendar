@@ -30,7 +30,7 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   if (a.moonSign) sections.push({ title: 'Moon Sign Shift', desc: 'How your emotional processing changes this year' });
   sections.push({ title: 'Solar Return vs Natal', desc: 'Side-by-side comparison of all planet positions' });
   if (a.stelliums.length > 0) sections.push({ title: 'Stelliums', desc: 'Where 3+ planets cluster — your year\'s power zones' });
-  if (a.elementBalance) sections.push({ title: 'Element & Modality', desc: 'Fire/Earth/Air/Water and Cardinal/Fixed/Mutable balance' });
+  if (a.elementBalance) sections.push({ title: 'Element and Modality', desc: 'Fire/Earth/Air/Water and Cardinal/Fixed/Mutable balance' });
   if (a.hemisphericEmphasis) sections.push({ title: 'Where Your Energy Lives', desc: 'Upper/Lower and Eastern/Western planet distribution' });
   if (a.angularPlanets?.length) sections.push({ title: 'Angular Planets', desc: 'The most powerful and visible planets this year' });
   if (a.lordOfTheYear) sections.push({ title: 'Lord of the Year', desc: 'Your Time Lord — the planet running the show' });
