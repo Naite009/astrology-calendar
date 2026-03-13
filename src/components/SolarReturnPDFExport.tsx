@@ -681,10 +681,10 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         const tlSRSign = analysis.profectionYear.timeLordSRSign;
         const houseNum = analysis.profectionYear.houseNumber;
         
-        // Get dignity from SR position
-        const tlPos = analysis.srPlanetPositions?.[tlPlanet];
-        const tlDignity = tlPos ? getDignity(tlPlanet, tlPos.sign) : '';
-        const tlIsRetro = tlPos ? !!(tlPos as any).isRetrograde : false;
+        // Get dignity — reuse lordOfTheYear data if same planet, otherwise check SR chart
+        const lordData = analysis.lordOfTheYear;
+        const tlDignity = (lordData && lordData.planet === tlPlanet) ? lordData.dignity : '';
+        const tlIsRetro = (lordData && lordData.planet === tlPlanet) ? lordData.isRetrograde : false;
 
         // Header box with key info
         doc.setFillColor(...ctx.colors.softGold);
