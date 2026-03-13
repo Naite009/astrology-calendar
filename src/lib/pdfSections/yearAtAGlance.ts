@@ -100,7 +100,7 @@ export function generatePDFYearAtAGlance(
     });
 
     // Time Lord box
-    const tlX = margin + halfW + 12;
+    const tlX = boxL + halfW + 12;
     doc.setFillColor(242, 248, 255);
     doc.setDrawColor(colors.gold[0], colors.gold[1], colors.gold[2]); doc.setLineWidth(1);
     doc.roundedRect(tlX, ctx.y, halfW, boxH, 6, 6, 'FD');
