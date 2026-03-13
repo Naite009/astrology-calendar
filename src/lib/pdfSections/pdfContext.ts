@@ -127,6 +127,7 @@ export function createPDFContext(doc: jsPDF, pw: number, ph: number, margin: num
       const totalH = lines.length * 15;
       if (ctx.y + totalH > ph - 55) { doc.addPage(); ctx.y = margin; }
       for (const line of lines) { d.text(line, margin + 8, ctx.y); ctx.y += 15; }
+      ctx.y += 4; // breathing room below heading
     },
 
     writeLabel(d: jsPDF, label: string, value: string, labelColor: Color = colors.dimText, valueColor: Color = colors.darkText) {
