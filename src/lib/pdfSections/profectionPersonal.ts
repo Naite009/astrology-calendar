@@ -66,8 +66,8 @@ export function generateProfectionPersonalSection(
     }
   });
 
-  // WHY is this planet the Time Lord
-  ctx.checkPage(200);
+  // WHY is this planet the Time Lord — start on new page if needed for clean layout
+  doc.addPage(); ctx.y = ctx.margin;
   ctx.drawCard(doc, () => {
     const tlName = P[timeLord] || timeLord;
     ctx.writeBold(doc, `Why ${tlName} Is Your Time Lord`, colors.gold, 12);
