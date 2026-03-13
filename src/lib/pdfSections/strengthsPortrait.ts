@@ -224,12 +224,17 @@ export function generateStrengthsPortrait(
         ctx.writeBold(doc, `Solar Return Moon in ${srMoonSign}${srHouseLabel}`, colors.deepBrown, 10);
       }
       ctx.y += 2;
-      ctx.writeCardSection(doc, 'Strength', moonStrength[moonSign], colors.accentGreen);
+      ctx.writeCardSection(doc, 'Natal Strength', moonStrength[moonSign], colors.accentGreen);
       if (moonShadow[moonSign]) {
-        ctx.writeCardSection(doc, 'Shadow', moonShadow[moonSign], colors.accentRust);
+        ctx.writeCardSection(doc, 'Natal Shadow', moonShadow[moonSign], colors.accentRust);
       }
+      // SR Moon sign activation — how this year's Moon sign challenges/activates natal patterns
+      if (srMoonSign && srMoonSignActivation[srMoonSign]) {
+        ctx.writeCardSection(doc, 'How This Year Activates You', srMoonSignActivation[srMoonSign](moonSign), colors.gold);
+      }
+      // SR Moon house — where the emotional action plays out
       if (srMoonHouse && moonYearAhead[srMoonHouse]) {
-        ctx.writeCardSection(doc, 'This Year', moonYearAhead[srMoonHouse], colors.gold);
+        ctx.writeCardSection(doc, `Where It Plays Out (House ${srMoonHouse})`, moonYearAhead[srMoonHouse], colors.deepBrown);
       }
     });
   }
