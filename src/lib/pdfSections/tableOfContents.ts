@@ -26,6 +26,7 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
 
   if (birthdayMode) sections.push({ title: 'Personal Strengths Portrait', desc: 'Your natal gifts — the foundation your year builds upon' });
   sections.push({ title: 'How To Read This Report', desc: 'Key concepts explained in plain language' });
+  sections.push({ title: 'Year at a Glance', desc: 'SR Ascendant, ruler, profection, time lord, and moon phase' });
   sections.push({ title: 'Profection Wheel', desc: 'Visual diagram of your annual profection and activated house' });
   if (a.moonSign) sections.push({ title: 'Moon Sign Shift', desc: 'How your emotional processing changes this year' });
   sections.push({ title: 'Solar Return vs Natal', desc: 'Side-by-side comparison of all planet positions' });
