@@ -79,7 +79,7 @@ export function generatePDFYearAtAGlance(
 
     // Profection box
     doc.setFillColor(colors.softGold[0], colors.softGold[1], colors.softGold[2]);
-    doc.setDrawColor(colors.gold[0], colors.gold[1], colors.gold[2]); doc.setLineWidth(1);
+    doc.setDrawColor(colors.warmBorder[0], colors.warmBorder[1], colors.warmBorder[2]); doc.setLineWidth(0.5);
     doc.roundedRect(boxL, ctx.y, halfW, boxH, 6, 6, 'FD');
     doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
     doc.setTextColor(colors.dimText[0], colors.dimText[1], colors.dimText[2]);
@@ -102,7 +102,7 @@ export function generatePDFYearAtAGlance(
     // Time Lord box
     const tlX = boxL + halfW + 12;
     doc.setFillColor(242, 248, 255);
-    doc.setDrawColor(colors.gold[0], colors.gold[1], colors.gold[2]); doc.setLineWidth(1);
+    doc.setDrawColor(colors.warmBorder[0], colors.warmBorder[1], colors.warmBorder[2]); doc.setLineWidth(0.5);
     doc.roundedRect(tlX, ctx.y, halfW, boxH, 6, 6, 'FD');
     doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
     doc.setTextColor(colors.dimText[0], colors.dimText[1], colors.dimText[2]);
