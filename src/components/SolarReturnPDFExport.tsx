@@ -332,7 +332,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         const overlay = analysis.houseOverlays.find(o => o.planet === p);
         const natH = overlay?.natalHouse;
         const shift = srPos?.sign && natPos?.sign
-          ? (srPos.sign === natPos.sign ? 'Same' : `${S[natPos.sign] || natPos.sign} → ${S[srPos.sign] || srPos.sign}`)
+          ? (srPos.sign === natPos.sign ? 'Same' : `${S[natPos.sign] || natPos.sign} > ${S[srPos.sign] || srPos.sign}`)
           : '';
         ctx.checkPage(18);
         const rowIdx = PLANET_ORDER.indexOf(p);

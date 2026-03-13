@@ -44,49 +44,35 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   sections.push({ title: 'Best Months and Highlights', desc: 'Peak months for love, luck, and action' });
   if (birthdayMode) sections.push({ title: 'Birthday Affirmation Card', desc: 'A personalized affirmation to carry with you all year' });
 
-  // Render in two columns for cleaner layout
-  const colW = (contentW - 30) / 2;
-  const leftX = margin;
-  const rightX = margin + colW + 30;
-  const itemH = 38; // height per item
-  const half = Math.ceil(sections.length / 2);
-
+  // Single-column numbered list — clean, readable, no overlap
   for (let i = 0; i < sections.length; i++) {
     const section = sections[i];
-    const isRight = i >= half;
-    const col = isRight ? 1 : 0;
-    const row = isRight ? i - half : i;
-    const x = col === 0 ? leftX : rightX;
-    const itemY = ctx.y + row * itemH;
+    ctx.checkPage(36);
 
-    // Check page
-    if (itemY + itemH > ctx.ph - 55) break;
-
-    // Number badge
-    const badgeX = x + 14;
-    const badgeY = itemY + 6;
+    // Number circle
+    const circleX = margin + 14;
+    const circleY = ctx.y + 2;
     doc.setFillColor(...colors.softGold);
     doc.setDrawColor(...colors.gold); doc.setLineWidth(0.8);
-    doc.roundedRect(badgeX - 11, badgeY - 9, 22, 18, 4, 4, 'FD');
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+    doc.circle(circleX, circleY, 9, 'FD');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
     doc.setTextColor(...colors.gold);
-    doc.text(String(i + 1), badgeX, badgeY + 2, { align: 'center' });
+    doc.text(String(i + 1), circleX, circleY + 3, { align: 'center' });
 
     // Title
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
     doc.setTextColor(...colors.deepBrown);
-    doc.text(section.title, x + 30, itemY + 6);
+    doc.text(section.title, margin + 30, ctx.y + 2);
 
-    // Description
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
+    // Description — same line or just below
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
     doc.setTextColor(...colors.dimText);
-    const descLines = doc.splitTextToSize(section.desc, colW - 34);
-    descLines.slice(0, 2).forEach((line: string, li: number) => {
-      doc.text(line, x + 30, itemY + 18 + li * 10);
-    });
+    doc.text(section.desc, margin + 30, ctx.y + 14);
+
+    ctx.y += 32;
   }
 
-  ctx.y += half * itemH + 16;
+  ctx.y += 10;
 
   // Bottom ornament
   doc.setDrawColor(...colors.gold); doc.setLineWidth(1.5);
