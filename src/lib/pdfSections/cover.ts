@@ -81,7 +81,8 @@ export async function generatePDFCover(
     doc.setFontSize(50); doc.text('Birthday!', textStartX, ctx.y + 70);
 
     doc.setFontSize(14); doc.setTextColor(...colors.gold);
-    doc.text('✦  ·  ✦  ·  ✦', textStartX, ctx.y + 90);
+    doc.setLineWidth(0.5);
+    doc.line(textStartX, ctx.y + 88, textStartX + 120, ctx.y + 88);
 
     // Natal Big 3 on cover (right of cake)
     const big3Y = ctx.y + 108;
