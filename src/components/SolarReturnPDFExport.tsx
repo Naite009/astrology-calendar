@@ -663,7 +663,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       });
       if (spotlightPlanets.length > 0) {
         ctx.sectionTitle(doc, 'Planet Spotlight');
-        for (const planet of spotlightPlanets.slice(0, 5)) {
+        for (const planet of spotlightPlanets) {
           const h = analysis.planetSRHouses[planet]!;
           const data = deepData[planet][h];
           if (!data) continue;
