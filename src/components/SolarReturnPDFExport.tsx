@@ -253,7 +253,46 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       const name = natalChart.name || 'Chart';
       const year = srChart.solarReturnYear;
 
-      y = 60;
+      y = 50;
+
+      // --- BIRTHDAY HEADER (optional) ---
+      if (birthdayMode) {
+        // Fun decorative "Happy Birthday!" in a warm script-like style
+        doc.setFont('times', 'bolditalic');
+        doc.setFontSize(42);
+        doc.setTextColor(188, 120, 60);
+        doc.text('Happy Birthday!', pw / 2, y + 10, { align: 'center' });
+        y += 30;
+
+        // Decorative stars/sparkles
+        doc.setFontSize(16);
+        doc.setTextColor(...gold);
+        doc.text('✦  ·  ✦  ·  ✦', pw / 2, y + 6, { align: 'center' });
+        y += 20;
+
+        // Personal message in an elegant box
+        if (personalMessage.trim()) {
+          const msgLines: string[] = doc.splitTextToSize(personalMessage.trim(), contentW - 60);
+          const msgH = msgLines.length * 14 + 30;
+          
+          // Soft rounded box
+          doc.setFillColor(252, 248, 240);
+          doc.setDrawColor(...gold);
+          doc.setLineWidth(1);
+          doc.roundedRect(margin + 20, y, contentW - 40, msgH, 6, 6, 'FD');
+          
+          doc.setFont('times', 'italic');
+          doc.setFontSize(10);
+          doc.setTextColor(100, 80, 50);
+          let msgY = y + 18;
+          for (const line of msgLines) {
+            doc.text(line, pw / 2, msgY, { align: 'center' });
+            msgY += 14;
+          }
+          y += msgH + 16;
+        }
+      }
+
       doc.setDrawColor(...gold);
       doc.setLineWidth(2);
       doc.line(margin, y, pw - margin, y);
