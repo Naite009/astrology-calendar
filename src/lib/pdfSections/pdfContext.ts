@@ -60,9 +60,12 @@ export function createPDFContext(doc: jsPDF, pw: number, ph: number, margin: num
     accentRust: overrides?.accentRust || [160, 90, 50] as Color,
   };
 
+  const sectionPages = new Map<string, number>();
+
   const ctx: PDFContext = {
     y: margin,
     pw, ph, margin, contentW, colors,
+    sectionPages,
 
     checkPage(needed: number) {
       if (ctx.y + needed > ph - 55) { doc.addPage(); ctx.y = margin; }
@@ -75,6 +78,9 @@ export function createPDFContext(doc: jsPDF, pw: number, ph: number, margin: num
 
     sectionTitle(d: jsPDF, title: string) {
       ctx.checkPage(120);
+      // Record page number for this section (for clickable TOC)
+      const pageNum = d.getNumberOfPages();
+      sectionPages.set(title.toUpperCase(), pageNum);
       ctx.y += 24; ctx.drawGoldRule(d); ctx.y += 20;
       d.setFont('helvetica', 'bold'); d.setFontSize(14);
       d.setTextColor(colors.gold[0], colors.gold[1], colors.gold[2]);
