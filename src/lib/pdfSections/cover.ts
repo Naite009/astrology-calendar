@@ -67,7 +67,7 @@ export async function generatePDFCover(
     let cakeDataUrl: string | null = null;
     if (cakeImgSrc) cakeDataUrl = await loadImageDataUrl(cakeImgSrc);
 
-    doc.setDrawColor(...colors.gold); doc.setLineWidth(2);
+    doc.setDrawColor(...colors.gold); doc.setLineWidth(1);
     doc.line(margin, ctx.y, pw - margin, ctx.y);
     ctx.y += 30;
 
