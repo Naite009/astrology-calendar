@@ -548,13 +548,23 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           const asp = majorAspects[i];
           const interp = generateSRtoNatalInterpretation(asp.planet1, asp.planet2, asp.type, asp.orb);
           const isHard = ['Square', 'Opposition', 'Quincunx'].includes(asp.type);
-          ctx.checkPage(120);
+          // Add house context
+          const srH = analysis.planetSRHouses?.[asp.planet1];
+          const natalH = natalChart.planets?.[asp.planet2]?.house;
+          const houseContext = (srH || natalH) ? ` — SR ${P[asp.planet1] || asp.planet1}${srH ? ` in SR House ${srH}` : ''}${natalH ? `, Natal ${P[asp.planet2] || asp.planet2} in Natal House ${natalH}` : ''}` : '';
+          ctx.checkPage(140);
           ctx.drawCard(doc, () => {
             ctx.writeBold(doc, `SR ${P[asp.planet1] || asp.planet1}  ${asp.type}  Natal ${P[asp.planet2] || asp.planet2}  (${asp.orb}')`, ctx.colors.darkText, 10);
+            if (houseContext) {
+              doc.setFont('helvetica', 'italic'); doc.setFontSize(8.5);
+              doc.setTextColor(...ctx.colors.dimText);
+              const hcLines = doc.splitTextToSize(houseContext, contentW - 16);
+              hcLines.forEach((line: string) => { ctx.checkPage(12); doc.text(line, margin + 8, ctx.y); ctx.y += 12; });
+            }
             ctx.y += 4;
-            ctx.writeCardSection(doc, 'Feels', interp.howItFeels, ctx.colors.accentGreen);
-            ctx.writeCardSection(doc, 'Means', interp.whatItMeans, ctx.colors.gold);
-            ctx.writeCardSection(doc, 'Do', interp.whatToDo, ctx.colors.accentRust);
+            ctx.writeCardSection(doc, 'How It Feels', interp.howItFeels, ctx.colors.accentGreen);
+            ctx.writeCardSection(doc, 'What It Means', interp.whatItMeans, ctx.colors.gold);
+            ctx.writeCardSection(doc, 'What To Do', interp.whatToDo, ctx.colors.accentRust);
           }, isHard ? [180, 100, 60] : ctx.colors.gold);
         }
       }
