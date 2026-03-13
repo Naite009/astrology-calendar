@@ -75,8 +75,8 @@ export function generateProfectionPersonalSection(
     ctx.writeBody(doc, `Your natal ${houseNumber}${houseNumber === 1 ? 'st' : houseNumber === 2 ? 'nd' : houseNumber === 3 ? 'rd' : 'th'} house cusp falls in a sign ruled by ${tlName}. In Hellenistic astrology, the planet that rules the sign on your activated profection house cusp becomes the "Time Lord" — the planet whose agenda dominates the year. Every transit to ${tlName}, every aspect involving ${tlName}, and ${tlName}'s condition in both your natal and Solar Return charts carry amplified significance.`, colors.bodyText, 10, 14);
   });
 
-  // Time Lord detailed meaning
-  ctx.checkPage(200);
+  // Time Lord detailed meaning — ensure fresh page for long content
+  doc.addPage(); ctx.y = ctx.margin;
   ctx.drawCard(doc, () => {
     const tlName = P[timeLord] || timeLord;
     ctx.writeBold(doc, `${tlName} as Time Lord — Your Year in Detail`, colors.gold, 12);
