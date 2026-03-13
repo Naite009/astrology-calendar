@@ -194,9 +194,13 @@ export function generateStrengthsPortrait(
   // --- MOON ---
   if (moonSign && moonStrength[moonSign]) {
     ctx.checkPage(180);
+    const srMoonSign = analysis.moonSign || '';
     ctx.drawCard(doc, () => {
-      const houseLabel = srMoonHouse ? ` — SR Moon in House ${srMoonHouse}` : '';
-      ctx.writeBold(doc, `MOON IN ${moonSign.toUpperCase()}${houseLabel}`, colors.gold, 12);
+      ctx.writeBold(doc, `NATAL MOON IN ${moonSign.toUpperCase()}`, colors.gold, 12);
+      if (srMoonSign) {
+        const srHouseLabel = srMoonHouse ? ` in the ${srMoonHouse}${getOrdinalSuffix(srMoonHouse)} House` : '';
+        ctx.writeBold(doc, `Solar Return Moon in ${srMoonSign}${srHouseLabel}`, colors.deepBrown, 10);
+      }
       ctx.y += 2;
       ctx.writeCardSection(doc, 'Strength', moonStrength[moonSign], colors.accentGreen);
       if (moonShadow[moonSign]) {
