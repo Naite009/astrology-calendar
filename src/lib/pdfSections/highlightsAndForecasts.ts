@@ -92,11 +92,12 @@ function buildMonthlyForecasts(a: SolarReturnAnalysis): { month: string; forecas
 
   // Build 12 months of forecasts
   const forecasts: { month: string; forecast: string }[] = [];
-  const timingMap = new Map<string, string>();
-  for (const evt of a.moonTimingEvents) {
-    if (!timingMap.has(evt.approximateMonth)) {
-      const planet = P[evt.targetPlanet] || evt.targetPlanet;
-      timingMap.set(evt.approximateMonth, `Moon activates ${planet} — ${(evt.interpretation || '').substring(0, 60)}`);
+  // SR Moon aspects provide thematic color, not monthly timing
+  const aspectThemes: string[] = [];
+  if (a.srMoonAspects) {
+    for (const asp of a.srMoonAspects.slice(0, 3)) {
+      const planet = P[asp.targetPlanet] || asp.targetPlanet;
+      aspectThemes.push(`Moon ${asp.aspectType} ${planet}: ${asp.interpretation.substring(0, 50)}`);
     }
   }
 
