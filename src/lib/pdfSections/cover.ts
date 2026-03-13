@@ -172,7 +172,7 @@ export async function generatePDFCover(
   // SR box
   const srBoxX = startX + boxW + gap;
   doc.setFillColor(...colors.softBlue);
-  doc.setDrawColor(...colors.gold); doc.setLineWidth(1.5);
+  doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.5);
   doc.roundedRect(srBoxX, ctx.y, boxW, boxH, 8, 8, 'FD');
 
   doc.setFont('helvetica', 'bold'); doc.setFontSize(8);

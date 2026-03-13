@@ -72,7 +72,7 @@ export function createPDFContext(doc: jsPDF, pw: number, ph: number, margin: num
     },
 
     drawGoldRule(d: jsPDF) {
-      d.setDrawColor(colors.gold[0], colors.gold[1], colors.gold[2]); d.setLineWidth(1.5);
+      d.setDrawColor(colors.gold[0], colors.gold[1], colors.gold[2]); d.setLineWidth(1);
       d.line(margin, ctx.y, pw - margin, ctx.y);
     },
 
