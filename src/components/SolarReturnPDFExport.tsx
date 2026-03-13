@@ -6,6 +6,7 @@ import { vertexInSign, vertexInHouse } from '@/lib/solarReturnVertex';
 import { srJupiterInHouseDeep, srMercuryInHouseDeep, srVenusInHouseDeep, srMarsInHouseDeep, srSaturnInHouseDeep, srUranusInHouseDeep, srNeptuneInHouseDeep, srPlutoInHouseDeep } from '@/lib/solarReturnPlanetInHouseDeep';
 import { generateSRtoNatalInterpretation, planetLifeMeanings } from '@/lib/solarReturnAspectInterp';
 import { useState } from 'react';
+import { moonSignDeep, moonShiftNarrative } from '@/lib/moonSignShiftData';
 
 const P: Record<string, string> = {
   Sun: 'Sun', Moon: 'Moon', Mercury: 'Mercury', Venus: 'Venus', Mars: 'Mars',
