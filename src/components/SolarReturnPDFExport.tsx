@@ -234,6 +234,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // =============================================
       if (analysis.profectionYear) {
         ctx.checkPage(280);
+        ctx.sectionPages.set('PROFECTION WHEEL', doc.getNumberOfPages());
         drawProfectionWheel(ctx, doc, analysis.profectionYear.age, analysis.profectionYear.houseNumber, analysis.profectionYear.timeLord);
 
         // Profection explanation
