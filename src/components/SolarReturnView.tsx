@@ -1338,40 +1338,86 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         </div>
       )}
 
-      {/* Moon Timing Events (Lynn Bell: 1° per month) */}
-      {analysis.moonTimingEvents.length > 0 && (
-        <div className="border border-primary/20 rounded-sm p-5 bg-card">
+      {/* SR Moon Emotional Climate Summary */}
+      {(analysis.srMoonAspects.length > 0 || analysis.moonAngularity || analysis.moonLateDegree || analysis.moonMetonicAges.length > 0) && (
+        <div className="border border-primary/20 rounded-sm p-5 bg-card space-y-4">
           <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
-            <Moon size={14} className="text-primary" /> Moon Timing — When Things Happen This Year
+            <Moon size={14} className="text-primary" /> Your Moon This Year — Emotional Climate
           </h4>
-          <div className="bg-secondary/40 rounded-sm p-3 mb-4 space-y-2">
+          <div className="bg-secondary/40 rounded-sm p-3 space-y-2">
             <p className="text-xs text-muted-foreground leading-relaxed">
-              <strong className="text-foreground">Why this matters:</strong> The SR Moon is the year's internal clock. It advances approximately 1° per month from its birthday position. When it perfects an aspect to another SR planet, that month marks a <em>turning point</em> — events connected to that planet's themes activate. This is one of the most practical timing tools in Solar Return work.
-            </p>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Think of the Moon as a spotlight moving through the year, illuminating each planet it touches. Conjunctions and oppositions mark the strongest activations; trines and sextiles bring opportunities; squares bring turning points that demand action.
+              <strong className="text-foreground">How to read this:</strong> The SR Moon is a <em>frozen snapshot</em> of your emotional state at the moment of your birthday. It does not advance through the chart — it describes the emotional climate for the <em>entire</em> year. Its sign shows how you process feelings; its house shows where those feelings concentrate; its aspects show what triggers or supports your emotional life.
             </p>
           </div>
-          <div className="space-y-3">
-            {analysis.moonTimingEvents.slice(0, 12).map((evt, i) => (
-              <div key={i} className="border border-border/50 rounded-sm p-3 bg-card hover:bg-muted/20 transition-colors">
-                <div className="flex items-center gap-3 mb-1.5 flex-wrap">
-                  <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-sm shrink-0">
-                    {evt.approximateMonth}
-                  </span>
-                  <span className="text-xs text-foreground font-medium">
-                    ☽ {evt.aspectType} {PLANET_SYMBOLS[evt.targetPlanet]} {evt.targetPlanet}
-                  </span>
-                  {evt.targetSRHouse && (
-                    <span className="text-[10px] text-muted-foreground">
-                      (SR House {evt.targetSRHouse})
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground leading-relaxed">{evt.interpretation}</p>
+
+          {/* Angularity */}
+          {analysis.moonAngularity && (
+            <div className="flex items-start gap-3 p-3 border border-border/50 rounded-sm bg-muted/20">
+              <span className="text-lg mt-0.5">📍</span>
+              <div>
+                <p className="text-xs font-medium text-foreground capitalize">{analysis.moonAngularity} Moon</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {analysis.moonAngularity === 'angular'
+                    ? 'Your emotions are highly visible and reactive this year. Feelings drive action immediately — you cannot hide what you feel. Events happen quickly in response to emotional impulses.'
+                    : analysis.moonAngularity === 'succedent'
+                    ? 'Your emotional life is steady and stabilizing this year. Feelings build slowly and have staying power. You seek emotional security and consistency above all.'
+                    : 'Your emotional processing is internal and reflective this year. Feelings are processed privately — journaling, therapy, or spiritual practice become essential outlets. Others may not see what you are going through.'}
+                </p>
               </div>
-            ))}
-          </div>
+            </div>
+          )}
+
+          {/* Late Degree Warning */}
+          {analysis.moonLateDegree && (
+            <div className="flex items-start gap-3 p-3 border border-amber-500/30 rounded-sm bg-amber-500/5">
+              <span className="text-lg mt-0.5">⚠️</span>
+              <div>
+                <p className="text-xs font-medium text-foreground">Late-Degree Moon (25°+)</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  A late-degree SR Moon signals emotional completion and transition. Something from your emotional past is wrapping up this year. You may feel a sense of urgency or "running out of time" around the Moon's house themes. This often precedes a major emotional reset the following year.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* SR Moon Aspects from analysis engine */}
+          {analysis.srMoonAspects.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Emotional Aspects Active All Year</p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {analysis.srMoonAspects.map((asp, i) => {
+                  const isHard = ['square', 'opposition', 'quincunx'].includes(asp.aspectType.toLowerCase());
+                  return (
+                    <div key={i} className={`border rounded-sm p-3 space-y-1.5 ${isHard ? 'border-destructive/20 bg-destructive/5' : 'border-green-500/20 bg-green-500/5'}`}>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-medium text-foreground">
+                          ☽ {asp.aspectType} {PLANET_SYMBOLS[asp.targetPlanet]} {asp.targetPlanet}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground ml-auto">orb {asp.orb.toFixed(1)}°</span>
+                      </div>
+                      {asp.targetSRHouse && (
+                        <span className="text-[10px] text-muted-foreground">SR House {asp.targetSRHouse}</span>
+                      )}
+                      <p className="text-xs text-muted-foreground leading-relaxed">{asp.interpretation}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Metonic Cycle */}
+          {analysis.moonMetonicAges.length > 0 && (
+            <div className="flex items-start gap-3 p-3 border border-border/50 rounded-sm bg-muted/20">
+              <span className="text-lg mt-0.5">🔄</span>
+              <div>
+                <p className="text-xs font-medium text-foreground">19-Year Metonic Echo</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  The Moon returns to the same sign every 19 years. You experienced a similar emotional flavor at age{analysis.moonMetonicAges.length > 1 ? 's' : ''} <strong>{analysis.moonMetonicAges.join(', ')}</strong>. Reflect on what was happening emotionally at those times — recurring themes may resurface with new maturity.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
