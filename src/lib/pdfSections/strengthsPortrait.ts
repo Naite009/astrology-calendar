@@ -5,6 +5,12 @@ import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 
 /** YOUR BIG THREE — strengths, shadow, and how the SR year activates each */
 
+function getOrdinalSuffix(n: number): string {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return s[(v - 20) % 10] || s[v] || s[0];
+}
+
 const sunStrength: Record<string, string> = {
   Aries: 'Initiative, courage, and the drive to start what others only imagine. You act first and think later — and it usually works.',
   Taurus: 'Steadiness, sensory awareness, and the patience to build things that endure. You are the rock others lean on.',
@@ -194,9 +200,13 @@ export function generateStrengthsPortrait(
   // --- MOON ---
   if (moonSign && moonStrength[moonSign]) {
     ctx.checkPage(180);
+    const srMoonSign = analysis.moonSign || '';
     ctx.drawCard(doc, () => {
-      const houseLabel = srMoonHouse ? ` — SR Moon in House ${srMoonHouse}` : '';
-      ctx.writeBold(doc, `MOON IN ${moonSign.toUpperCase()}${houseLabel}`, colors.gold, 12);
+      ctx.writeBold(doc, `NATAL MOON IN ${moonSign.toUpperCase()}`, colors.gold, 12);
+      if (srMoonSign) {
+        const srHouseLabel = srMoonHouse ? ` in the ${srMoonHouse}${getOrdinalSuffix(srMoonHouse)} House` : '';
+        ctx.writeBold(doc, `Solar Return Moon in ${srMoonSign}${srHouseLabel}`, colors.deepBrown, 10);
+      }
       ctx.y += 2;
       ctx.writeCardSection(doc, 'Strength', moonStrength[moonSign], colors.accentGreen);
       if (moonShadow[moonSign]) {
