@@ -12,6 +12,10 @@ import { generatePDFTableOfContents } from '@/lib/pdfSections/tableOfContents';
 import { generatePDFYearAtAGlance } from '@/lib/pdfSections/yearAtAGlance';
 import { drawProfectionWheel } from '@/lib/pdfSections/profectionWheel';
 import { PDFContext, createPDFContext } from '@/lib/pdfSections/pdfContext';
+import { signColorThemes } from '@/lib/pdfSections/signColorThemes';
+import { generateStrengthsPortrait } from '@/lib/pdfSections/strengthsPortrait';
+import { generateHighlightsPage } from '@/lib/pdfSections/highlightsAndForecasts';
+import { generateAffirmationCard } from '@/lib/pdfSections/affirmationCard';
 
 // Cake image imports
 import cakeAries from '@/assets/cakes/aries.png';
