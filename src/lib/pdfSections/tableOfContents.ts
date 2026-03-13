@@ -53,7 +53,7 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   if (birthdayMode) sections.push({ title: 'Birthday Affirmation Card', desc: 'A personalized affirmation to carry with you all year' });
 
   // Numbered list with bold titles — page numbers added in second pass
-  const entryH = Math.min(14, Math.max(11, Math.floor((ph - ctx.y - 30) / sections.length)));
+  const entryH = Math.min(14, Math.max(11, Math.floor((ctx.ph - ctx.y - 30) / sections.length)));
 
   for (let i = 0; i < sections.length; i++) {
     const section = sections[i];
