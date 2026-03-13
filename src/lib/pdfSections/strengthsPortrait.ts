@@ -225,7 +225,7 @@ export function generateStrengthsPortrait(
     doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.5);
     doc.roundedRect(margin, startY, contentW, h, 4, 4, 'S');
     doc.setDrawColor(...colors.gold); doc.setLineWidth(2.5);
-    doc.line(margin + 1, startY + 2, margin + 1, startY + h - 2);
+    doc.line(margin + 1.25, startY + 1, margin + 1.25, startY + h - 1);
     ctx.y += 4;
   };
 
