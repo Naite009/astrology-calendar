@@ -52,37 +52,39 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   sections.push({ title: 'Best Months and Highlights', desc: 'Peak months for love, luck, and action' });
   if (birthdayMode) sections.push({ title: 'Birthday Affirmation Card', desc: 'A personalized affirmation to carry with you all year' });
 
-  // Single-column numbered list — compact to fit on one page
+  // Numbered list with bold titles — page numbers added in second pass
+  const entryH = Math.min(14, Math.max(11, Math.floor((ph - ctx.y - 30) / sections.length)));
+
   for (let i = 0; i < sections.length; i++) {
     const section = sections[i];
-    ctx.checkPage(22);
+    ctx.checkPage(entryH + 2);
 
     const entryY = ctx.y;
 
-    // Number — small inline, no circle to save space
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+    // Number
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
     doc.setTextColor(...colors.gold);
     doc.text(String(i + 1).padStart(2, ' ') + '.', margin + 4, ctx.y + 2);
 
     // Title
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
     doc.setTextColor(...colors.deepBrown);
-    doc.text(section.title, margin + 20, ctx.y + 2);
+    doc.text(section.title, margin + 22, ctx.y + 2);
 
-    // Description — inline after title
+    // Dot leader + "Page __" placeholder area (right-aligned, filled in addTOCLinks)
     const titleW = doc.getTextWidth(section.title);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
-    doc.setTextColor(...colors.dimText);
-    const descX = margin + 20 + titleW + 6;
-    const availW = pw - margin - descX;
-    if (availW > 40) {
-      const descLines = doc.splitTextToSize('— ' + section.desc, availW);
-      doc.text(descLines[0], descX, ctx.y + 2);
+    const dotsStart = margin + 22 + titleW + 4;
+    const dotsEnd = pw - margin - 30;
+    if (dotsEnd > dotsStart + 10) {
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
+      doc.setTextColor(...colors.dimText);
+      const dotStr = '.'.repeat(Math.floor((dotsEnd - dotsStart) / 2.2));
+      doc.text(dotStr, dotsStart, ctx.y + 2);
     }
 
     tocEntries.push({ title: section.title, desc: section.desc, y: entryY });
 
-    ctx.y += 16;
+    ctx.y += entryH;
   }
 
   ctx.y += 6;
