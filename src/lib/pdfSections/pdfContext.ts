@@ -177,7 +177,7 @@ export function createPDFContext(doc: jsPDF, pw: number, ph: number, margin: num
     },
 
     writeCardSection(d: jsPDF, label: string, text: string, labelColor: Color = colors.accentGreen) {
-      ctx.writeBold(d, label, labelColor, 9.5); ctx.writeBody(d, text, colors.bodyText, 9.5); ctx.y += 4;
+      ctx.writeBold(d, label, labelColor, 9.5); ctx.writeBody(d, text, colors.bodyText, 9.5); ctx.y += 6;
     },
 
     drawContentBox(d: jsPDF, x: number, yStart: number, w: number, h: number, bg: Color = colors.creamBg) {

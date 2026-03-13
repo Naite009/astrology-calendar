@@ -109,7 +109,7 @@ export async function generatePDFCover(
       ctx.y += msgH + 12;
     }
 
-    doc.setDrawColor(...colors.gold); doc.setLineWidth(2);
+    doc.setDrawColor(...colors.gold); doc.setLineWidth(1);
     doc.line(margin, ctx.y, pw - margin, ctx.y);
     ctx.y += 24;
   }
