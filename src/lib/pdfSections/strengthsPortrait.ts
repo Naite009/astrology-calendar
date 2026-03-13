@@ -165,7 +165,7 @@ const risingYearAhead: Record<string, string> = {
 export function generateStrengthsPortrait(
   ctx: PDFContext, doc: jsPDF, natalChart: NatalChart, analysis: SolarReturnAnalysis
 ) {
-  const { pw, margin, contentW, colors } = ctx;
+  const { pw, ph, margin, contentW, colors } = ctx;
   const sunSign = natalChart.planets?.Sun?.sign || '';
   const moonSign = natalChart.planets?.Moon?.sign || '';
   const risingSign = natalChart.houseCusps?.house1?.sign || '';
