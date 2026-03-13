@@ -131,10 +131,10 @@ export function generatePDFYearAtAGlance(
   doc.roundedRect(boxL, ctx.y, boxW, moonBoxH, 6, 6, 'FD');
   doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
   doc.setTextColor(colors.dimText[0], colors.dimText[1], colors.dimText[2]);
-  doc.text('SR MOON', margin + 14, ctx.y + 18);
+  doc.text('SR MOON', boxL + 14, ctx.y + 18);
   doc.setFontSize(14);
   doc.setTextColor(colors.gold[0], colors.gold[1], colors.gold[2]);
-  doc.text(`${a.moonSign} in House ${a.moonHouse?.house || '--'}`, margin + 14, ctx.y + 36);
+  doc.text(`${a.moonSign} in House ${a.moonHouse?.house || '--'}`, boxL + 14, ctx.y + 36);
 
   if (moonPhaseText) {
     doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
