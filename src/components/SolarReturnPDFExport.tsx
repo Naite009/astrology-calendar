@@ -1105,7 +1105,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // =============================================
       doc.addPage(); ctx.y = margin;
       ctx.sectionPages.set('BEST MONTHS AND HIGHLIGHTS', doc.getNumberOfPages());
-      generateHighlightsPage(ctx, doc, analysis);
+      generateHighlightsPage(ctx, doc, analysis, srChart, natalChart);
 
       // =============================================
       // BIRTHDAY AFFIRMATION CARD (birthday mode)
