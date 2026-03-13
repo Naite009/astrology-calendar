@@ -24,10 +24,10 @@ export function drawProfectionWheel(ctx: PDFContext, doc: jsPDF, age: number, ac
   ctx.sectionTitle(doc, 'Profection Wheel');
 
   const centerX = pw / 2;
-  const centerY = ctx.y + 120;
-  const outerR = 110;
-  const innerR = 55;
-  const labelR = 85;
+  const centerY = ctx.y + 110;
+  const outerR = 100;
+  const innerR = 50;
+  const labelR = 78;
 
   // Draw outer circle
   doc.setDrawColor(colors.gold[0], colors.gold[1], colors.gold[2]); doc.setLineWidth(2);
@@ -38,8 +38,7 @@ export function drawProfectionWheel(ctx: PDFContext, doc: jsPDF, age: number, ac
   // Draw 12 segments
   for (let i = 0; i < 12; i++) {
     const house = i + 1;
-    const angle = (i * 30 - 90) * Math.PI / 180; // start at top
-    const nextAngle = ((i + 1) * 30 - 90) * Math.PI / 180;
+    const angle = (i * 30 - 90) * Math.PI / 180;
 
     // Spoke lines
     const x1 = centerX + innerR * Math.cos(angle);
@@ -52,7 +51,6 @@ export function drawProfectionWheel(ctx: PDFContext, doc: jsPDF, age: number, ac
     // Highlight active house
     const isActive = house === activeHouse;
     if (isActive) {
-      // Fill the segment
       const midAngle = ((i * 30 + 15) - 90) * Math.PI / 180;
       const fillX = centerX + labelR * Math.cos(midAngle);
       const fillY = centerY + labelR * Math.sin(midAngle);
@@ -74,8 +72,8 @@ export function drawProfectionWheel(ctx: PDFContext, doc: jsPDF, age: number, ac
     }
     doc.text(String(house), numX, numY + 3, { align: 'center' });
 
-    // House theme outside the wheel
-    const themeR = outerR + 16;
+    // House theme outside the wheel — pushed further out
+    const themeR = outerR + 28;
     const themeX = centerX + themeR * Math.cos(midAngle);
     const themeY = centerY + themeR * Math.sin(midAngle);
     const theme = HOUSE_THEMES[house] || '';
@@ -98,14 +96,14 @@ export function drawProfectionWheel(ctx: PDFContext, doc: jsPDF, age: number, ac
 
   // Center: Age display
   doc.setFillColor(colors.gold[0], colors.gold[1], colors.gold[2]);
-  doc.circle(centerX, centerY, 22, 'F');
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+  doc.circle(centerX, centerY, 20, 'F');
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(7);
   doc.setTextColor(255, 255, 255);
-  doc.text('AGE', centerX, centerY - 6, { align: 'center' });
-  doc.setFontSize(18);
-  doc.text(String(age), centerX, centerY + 10, { align: 'center' });
+  doc.text('AGE', centerX, centerY - 5, { align: 'center' });
+  doc.setFontSize(16);
+  doc.text(String(age), centerX, centerY + 9, { align: 'center' });
 
-  ctx.y = centerY + outerR + 30;
+  ctx.y = centerY + outerR + 40;
 
   // Active house callout
   doc.setFillColor(colors.softGold[0], colors.softGold[1], colors.softGold[2]);

@@ -32,9 +32,10 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   const sections: { title: string; desc: string }[] = [];
 
   sections.push({ title: 'How To Read This Report', desc: 'Key concepts explained in plain language' });
-  if (birthdayMode) sections.push({ title: 'Your Strengths & This Year', desc: 'Your natal gifts and how the year ahead activates them' });
+  sections.push({ title: 'Your Big Three', desc: 'Sun, Moon, and Rising — strengths, shadow, and how the year activates them' });
   sections.push({ title: 'Year at a Glance', desc: 'SR Ascendant, ruler, profection, time lord, and moon phase' });
   sections.push({ title: 'Profection Wheel', desc: 'Visual diagram of your annual profection and activated house' });
+  if (a.profectionYear) sections.push({ title: 'Your Profection Year — What To Expect', desc: 'Detailed analysis of your profection house and Time Lord for the year' });
   if (a.moonSign) sections.push({ title: 'Moon Sign Shift', desc: 'How your emotional processing changes this year' });
   sections.push({ title: 'Solar Return vs Natal', desc: 'Side-by-side comparison of all planet positions' });
   if (a.stelliums.length > 0) sections.push({ title: 'Stelliums', desc: 'Where 3+ planets cluster -- your year\'s power zones' });
