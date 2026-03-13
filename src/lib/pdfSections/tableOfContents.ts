@@ -37,7 +37,7 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   if (a.lordOfTheYear) sections.push({ title: 'Lord of the Year', desc: 'Your Time Lord -- the planet running the show' });
   if (a.saturnFocus || a.nodesFocus) sections.push({ title: 'Saturn and North Node', desc: 'Where you\'re being tested and where your soul is growing' });
   if (a.srToNatalAspects.length > 0) sections.push({ title: 'Key Aspects', desc: 'How SR planets activate your natal chart' });
-  if (a.moonTimingEvents.length > 0) sections.push({ title: 'Moon Timing', desc: 'Month-by-month activation calendar' });
+  sections.push({ title: 'Your Moon This Year', desc: 'Emotional climate, angularity, and SR Moon aspects' });
   if (a.vertex) sections.push({ title: 'Vertex', desc: 'Fated encounters and destined meetings' });
   sections.push({ title: 'Planet Spotlight', desc: 'Deep dive into key planets by house placement' });
   if (narrative) sections.push({ title: 'Year-Ahead Reading', desc: 'Narrative synthesis of your year' });
