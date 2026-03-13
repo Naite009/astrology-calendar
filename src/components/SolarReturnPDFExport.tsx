@@ -761,6 +761,33 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             ctx.y += 34;
             const satMeaning = saturnHouseMeaning[analysis.saturnFocus!.house];
             if (satMeaning) ctx.writeBody(doc, satMeaning, ctx.colors.bodyText, 10, 14);
+            
+            // Saturn sign-specific behavior
+            const satSignBehavior: Record<string, string> = {
+              Aries: 'Saturn in Aries tests your ability to act independently without being reckless. Patience and impulsivity are at war. Leadership must be earned through accountability, not aggression.',
+              Taurus: 'Saturn in Taurus demands financial discipline and forces you to distinguish real security from comfort-seeking. Material foundations are being stress-tested.',
+              Gemini: 'Saturn in Gemini requires mental discipline. Superficial learning is not enough — depth and precision in communication are demanded. Contracts and written agreements need extra care.',
+              Cancer: 'Saturn in Cancer tests emotional boundaries. Family obligations feel heavier. Building genuine emotional security — not just avoiding vulnerability — is the work.',
+              Leo: 'Saturn in Leo tests creative confidence. Self-expression feels risky or blocked. The work: creating something real without needing applause to keep going.',
+              Virgo: 'Saturn in Virgo amplifies perfectionism — useful for detail work, destructive when paralysis sets in. Health routines and daily systems need restructuring from the ground up.',
+              Libra: 'Saturn in Libra (exalted) tests relationships through fairness and accountability. Partnerships that are genuinely equitable strengthen; those built on convenience dissolve. Justice themes are prominent.',
+              Scorpio: 'Saturn in Scorpio demands emotional honesty at the deepest level. Power dynamics, financial entanglements, and psychological patterns you have been avoiding are no longer avoidable.',
+              Sagittarius: 'Saturn in Sagittarius tests your beliefs against reality. Dogma collapses. Education and travel require commitment, not just enthusiasm. Wisdom must be earned through experience.',
+              Capricorn: 'Saturn in Capricorn (domicile) is Saturn at full strength. Ambition is focused, disciplined, and relentless. Career structures solidify. Authority is earned through consistent effort. This is Saturn doing exactly what Saturn does.',
+              Aquarius: 'Saturn in Aquarius (traditional domicile) restructures your relationship to community and collective purpose. Social circles are audited. Innovation requires discipline to become real.',
+              Pisces: 'Saturn in Pisces brings structure to the spiritual and creative. Boundaries around empathy are essential. Escapism is punished; disciplined imagination produces lasting art, healing, or spiritual growth.',
+            };
+            const satSign = analysis.saturnFocus!.sign;
+            if (satSignBehavior[satSign]) {
+              ctx.y += 6;
+              ctx.writeCardSection(doc, `Saturn in ${satSign} — Sign Behavior`, satSignBehavior[satSign], ctx.colors.accentRust);
+            }
+            
+            // Retrograde Saturn note
+            if (analysis.saturnFocus!.isRetrograde) {
+              ctx.y += 4;
+              ctx.writeCardSection(doc, 'Saturn Retrograde in the SR', 'Saturn retrograde in the Solar Return means the testing is INTERNAL. External authority figures are less prominent — the examiner is your own conscience. Standards you have been avoiding or compromises you have been making are no longer sustainable. The restructuring happens from the inside out.', ctx.colors.accentRust);
+            }
           });
         }
         if (analysis.nodesFocus) {
