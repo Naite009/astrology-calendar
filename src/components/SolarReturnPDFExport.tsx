@@ -434,56 +434,6 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       }
       y += 24;
 
-      // Ornament
-      doc.setDrawColor(...gold); doc.setLineWidth(0.5);
-      const ornW = 60;
-      doc.line(pw / 2 - ornW, y, pw / 2 - 8, y);
-      doc.line(pw / 2 + 8, y, pw / 2 + ornW, y);
-      const cx = pw / 2, cy = y;
-      doc.setFillColor(...gold);
-      doc.triangle(cx, cy - 3, cx - 3, cy, cx + 3, cy, 'F');
-      doc.triangle(cx, cy + 3, cx - 3, cy, cx + 3, cy, 'F');
-      y += 22;
-
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(16); doc.setTextColor(...deepBrown);
-      doc.text(name.toUpperCase(), pw / 2, y, { align: 'center' });
-      y += 20;
-
-      // Big 3 on cover page — CLEAN TEXT LABELS
-      if (sunSign || moonSign || risingSign) {
-        const big3BoxW = 200;
-        const big3BoxH = 68;
-        const big3X = (pw - big3BoxW) / 2;
-        doc.setFillColor(...softGold); doc.setDrawColor(...gold); doc.setLineWidth(1);
-        doc.roundedRect(big3X, y, big3BoxW, big3BoxH, 6, 6, 'FD');
-
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
-        doc.setTextColor(...deepBrown);
-        let by = y + 20;
-        if (sunSign) {
-          doc.text(`SUN:  ${sunSign}`, pw / 2, by, { align: 'center' }); by += 18;
-        }
-        if (moonSign) {
-          doc.text(`MOON:  ${moonSign}`, pw / 2, by, { align: 'center' }); by += 18;
-        }
-        if (risingSign) {
-          doc.text(`RISING:  ${risingSign}`, pw / 2, by, { align: 'center' });
-        }
-        y += big3BoxH + 12;
-      }
-
-      // Birth info — proper capitalization and consistent formatting
-      const birthLoc = capitalizeLocation(natalChart.birthLocation);
-      const srLoc = capitalizeLocation(srChart.solarReturnLocation);
-
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...dimText);
-      doc.text(`Born: ${formatDate(natalChart.birthDate)}   |   ${birthLoc}`, pw / 2, y, { align: 'center' });
-      if (srChart.solarReturnLocation) {
-        y += 12;
-        doc.text(`SR Location: ${srLoc}`, pw / 2, y, { align: 'center' });
-      }
-      y += 20;
-
       // =============================================
       // YEAR AT A GLANCE
       // =============================================
