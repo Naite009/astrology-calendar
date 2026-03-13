@@ -402,53 +402,82 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       }
 
       // =============================================
-      // ELEMENTS & MODALITY
+      // ELEMENTS & MODALITY — Polished card style
       // =============================================
       if (analysis.elementBalance) {
         ctx.sectionTitle(doc, 'Element & Modality');
         const eb = analysis.elementBalance;
         const mb = analysis.modalityBalance;
-        ctx.checkPage(100);
-        const elemW = (contentW - 24) / 4;
-        const elemH = 55;
-        const elements = [
-          { name: 'Fire', val: eb.fire, bg: [255, 245, 235] as [number, number, number] },
-          { name: 'Earth', val: eb.earth, bg: [240, 248, 240] as [number, number, number] },
-          { name: 'Air', val: eb.air, bg: [240, 245, 255] as [number, number, number] },
-          { name: 'Water', val: eb.water, bg: [235, 243, 255] as [number, number, number] },
-        ];
-        const elemStartY = ctx.y;
-        elements.forEach((el, i) => {
-          const x = margin + i * (elemW + 8);
-          const isDom = el.name.toLowerCase() === eb.dominant;
-          doc.setFillColor(...el.bg); doc.setDrawColor(...(isDom ? ctx.colors.gold : ctx.colors.warmBorder)); doc.setLineWidth(isDom ? 2 : 0.5);
-          doc.roundedRect(x, elemStartY, elemW, elemH, 4, 4, 'FD');
-          doc.setFont('helvetica', 'bold'); doc.setFontSize(22); doc.setTextColor(...(isDom ? ctx.colors.gold : ctx.colors.darkText));
-          doc.text(String(el.val), x + elemW / 2, elemStartY + 26, { align: 'center' });
-          doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(...ctx.colors.bodyText);
-          doc.text(el.name, x + elemW / 2, elemStartY + 42, { align: 'center' });
+
+        // Elements card
+        ctx.checkPage(160);
+        ctx.drawCard(doc, () => {
+          ctx.writeBold(doc, 'Elemental Balance', ctx.colors.gold, 11);
+          ctx.y += 8;
+          const elemW = (contentW - 56) / 4;
+          const elemH = 60;
+          const elements = [
+            { name: 'Fire', val: eb.fire, bg: [255, 240, 230] as [number, number, number] },
+            { name: 'Earth', val: eb.earth, bg: [235, 245, 230] as [number, number, number] },
+            { name: 'Air', val: eb.air, bg: [232, 240, 252] as [number, number, number] },
+            { name: 'Water', val: eb.water, bg: [230, 240, 252] as [number, number, number] },
+          ];
+          const elemStartY = ctx.y;
+          elements.forEach((el, i) => {
+            const x = margin + 12 + i * (elemW + 10);
+            const isDom = el.name.toLowerCase() === eb.dominant;
+            doc.setFillColor(...el.bg);
+            doc.setDrawColor(...(isDom ? ctx.colors.gold : ctx.colors.warmBorder));
+            doc.setLineWidth(isDom ? 2.5 : 0.5);
+            doc.roundedRect(x, elemStartY, elemW, elemH, 6, 6, 'FD');
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(26);
+            doc.setTextColor(...(isDom ? ctx.colors.gold : ctx.colors.darkText));
+            doc.text(String(el.val), x + elemW / 2, elemStartY + 28, { align: 'center' });
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+            doc.setTextColor(...ctx.colors.bodyText);
+            doc.text(el.name, x + elemW / 2, elemStartY + 46, { align: 'center' });
+            if (isDom) {
+              doc.setFont('helvetica', 'bold'); doc.setFontSize(7);
+              doc.setTextColor(...ctx.colors.gold);
+              doc.text('DOMINANT', x + elemW / 2, elemStartY + 56, { align: 'center' });
+            }
+          });
+          ctx.y = elemStartY + elemH + 12;
+
+          // Modalities
+          ctx.writeBold(doc, 'Modality Balance', ctx.colors.gold, 11);
+          ctx.y += 8;
+          const modW = (contentW - 44) / 3;
+          const modH = 55;
+          const modalities = [
+            { name: 'Cardinal', val: mb.cardinal, desc: 'Initiating' },
+            { name: 'Fixed', val: mb.fixed, desc: 'Sustaining' },
+            { name: 'Mutable', val: mb.mutable, desc: 'Adapting' },
+          ];
+          const modStartY = ctx.y;
+          modalities.forEach((mod, i) => {
+            const x = margin + 12 + i * (modW + 10);
+            const isDom = mod.name.toLowerCase() === mb.dominant;
+            doc.setFillColor(...ctx.colors.softGold);
+            doc.setDrawColor(...(isDom ? ctx.colors.gold : ctx.colors.warmBorder));
+            doc.setLineWidth(isDom ? 2.5 : 0.5);
+            doc.roundedRect(x, modStartY, modW, modH, 6, 6, 'FD');
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(24);
+            doc.setTextColor(...(isDom ? ctx.colors.gold : ctx.colors.darkText));
+            doc.text(String(mod.val), x + modW / 2, modStartY + 24, { align: 'center' });
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+            doc.setTextColor(...ctx.colors.bodyText);
+            doc.text(mod.name, x + modW / 2, modStartY + 38, { align: 'center' });
+            doc.setFont('helvetica', 'italic'); doc.setFontSize(7.5);
+            doc.setTextColor(...ctx.colors.dimText);
+            doc.text(mod.desc, x + modW / 2, modStartY + 48, { align: 'center' });
+          });
+          ctx.y = modStartY + modH + 4;
         });
-        ctx.y = elemStartY + elemH + 10;
-        const modW = (contentW - 16) / 3;
-        const modH = 50;
-        const modalities = [{ name: 'Cardinal', val: mb.cardinal }, { name: 'Fixed', val: mb.fixed }, { name: 'Mutable', val: mb.mutable }];
-        ctx.checkPage(modH + 20);
-        const modStartY = ctx.y;
-        modalities.forEach((mod, i) => {
-          const x = margin + i * (modW + 8);
-          const isDom = mod.name.toLowerCase() === mb.dominant;
-          doc.setFillColor(...ctx.colors.softGold); doc.setDrawColor(...(isDom ? ctx.colors.gold : ctx.colors.warmBorder)); doc.setLineWidth(isDom ? 2 : 0.5);
-          doc.roundedRect(x, modStartY, modW, modH, 4, 4, 'FD');
-          doc.setFont('helvetica', 'bold'); doc.setFontSize(20); doc.setTextColor(...(isDom ? ctx.colors.gold : ctx.colors.darkText));
-          doc.text(String(mod.val), x + modW / 2, modStartY + 24, { align: 'center' });
-          doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(...ctx.colors.bodyText);
-          doc.text(mod.name, x + modW / 2, modStartY + 40, { align: 'center' });
-        });
-        ctx.y = modStartY + modH + 10;
       }
 
       // =============================================
-      // HEMISPHERIC
+      // HEMISPHERIC — Polished card style
       // =============================================
       if (analysis.hemisphericEmphasis) {
         ctx.sectionTitle(doc, 'Where Your Energy Lives');
@@ -461,35 +490,56 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           if (h >= 7 && h <= 12) quadPlanets.upper.push(P[p] || p); else quadPlanets.lower.push(P[p] || p);
           if (h >= 10 || h <= 3) quadPlanets.east.push(P[p] || p); else quadPlanets.west.push(P[p] || p);
         }
-        ctx.checkPage(200);
-        const boxW = (contentW - 16) / 2;
-        const boxH = 80;
-        const gridData = [
-          { label: 'UPPER', sub: 'Public & Visible', count: hem.upper, planets: quadPlanets.upper, bg: [245, 248, 255] as [number, number, number], row: 0, col: 0 },
-          { label: 'LOWER', sub: 'Private & Internal', count: hem.lower, planets: quadPlanets.lower, bg: [255, 250, 242] as [number, number, number], row: 0, col: 1 },
-          { label: 'EASTERN', sub: 'Self-Initiated', count: hem.east, planets: quadPlanets.east, bg: [242, 255, 248] as [number, number, number], row: 1, col: 0 },
-          { label: 'WESTERN', sub: 'Other-Oriented', count: hem.west, planets: quadPlanets.west, bg: [255, 245, 248] as [number, number, number], row: 1, col: 1 },
-        ];
-        const gridStartY = ctx.y;
-        for (const g of gridData) {
-          const x = margin + g.col * (boxW + 16);
-          const by = gridStartY + g.row * (boxH + 10);
-          const isDom = g.count > total / 2;
-          doc.setFillColor(...g.bg); doc.setDrawColor(...(isDom ? ctx.colors.gold : ctx.colors.warmBorder)); doc.setLineWidth(isDom ? 2 : 0.5);
-          doc.roundedRect(x, by, boxW, boxH, 6, 6, 'FD');
-          doc.setFont('helvetica', 'bold'); doc.setFontSize(24); doc.setTextColor(...(isDom ? ctx.colors.gold : ctx.colors.darkText));
-          doc.text(String(g.count), x + 16, by + 28);
-          doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...ctx.colors.deepBrown);
-          doc.text(g.label, x + 50, by + 18);
-          doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(...ctx.colors.dimText);
-          doc.text(g.sub, x + 50, by + 30);
-          if (g.planets.length > 0) {
-            doc.setFontSize(8.5); doc.setTextColor(...ctx.colors.bodyText);
-            const planetLines = doc.splitTextToSize(g.planets.join(', '), boxW - 30);
-            planetLines.forEach((line: string, li: number) => doc.text(line, x + 16, by + 48 + li * 11));
+
+        // 2x2 grid inside a card
+        ctx.checkPage(250);
+        ctx.drawCard(doc, () => {
+          ctx.writeBold(doc, 'Hemispheric Distribution', ctx.colors.gold, 11);
+          ctx.y += 10;
+          const boxW = (contentW - 40) / 2;
+          const boxH = 85;
+          const gridData = [
+            { label: 'UPPER', sub: 'Public & Visible', count: hem.upper, planets: quadPlanets.upper, bg: [240, 245, 255] as [number, number, number], row: 0, col: 0 },
+            { label: 'LOWER', sub: 'Private & Internal', count: hem.lower, planets: quadPlanets.lower, bg: [255, 248, 240] as [number, number, number], row: 0, col: 1 },
+            { label: 'EASTERN', sub: 'Self-Initiated', count: hem.east, planets: quadPlanets.east, bg: [240, 252, 245] as [number, number, number], row: 1, col: 0 },
+            { label: 'WESTERN', sub: 'Other-Oriented', count: hem.west, planets: quadPlanets.west, bg: [252, 242, 245] as [number, number, number], row: 1, col: 1 },
+          ];
+          const gridStartY = ctx.y;
+          for (const g of gridData) {
+            const x = margin + 8 + g.col * (boxW + 12);
+            const by = gridStartY + g.row * (boxH + 8);
+            const isDom = g.count > total / 2;
+            doc.setFillColor(...g.bg);
+            doc.setDrawColor(...(isDom ? ctx.colors.gold : ctx.colors.warmBorder));
+            doc.setLineWidth(isDom ? 2.5 : 0.5);
+            doc.roundedRect(x, by, boxW, boxH, 6, 6, 'FD');
+            // Count
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(28);
+            doc.setTextColor(...(isDom ? ctx.colors.gold : ctx.colors.darkText));
+            doc.text(String(g.count), x + 18, by + 30);
+            // Label
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+            doc.setTextColor(...ctx.colors.deepBrown);
+            doc.text(g.label, x + 52, by + 20);
+            // Sub
+            doc.setFont('helvetica', 'italic'); doc.setFontSize(8.5);
+            doc.setTextColor(...ctx.colors.dimText);
+            doc.text(g.sub, x + 52, by + 32);
+            // Planets
+            if (g.planets.length > 0) {
+              doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+              doc.setTextColor(...ctx.colors.bodyText);
+              const planetLines = doc.splitTextToSize(g.planets.join(', '), boxW - 30);
+              planetLines.forEach((line: string, li: number) => doc.text(line, x + 18, by + 50 + li * 11));
+            }
+            if (isDom) {
+              doc.setFont('helvetica', 'bold'); doc.setFontSize(7);
+              doc.setTextColor(...ctx.colors.gold);
+              doc.text('DOMINANT', x + boxW - 8, by + 12, { align: 'right' });
+            }
           }
-        }
-        ctx.y = gridStartY + (boxH + 10) * 2 + 10;
+          ctx.y = gridStartY + (boxH + 8) * 2 + 4;
+        });
       }
 
       // =============================================
