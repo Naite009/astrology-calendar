@@ -68,7 +68,7 @@ function buildHighlights(a: SolarReturnAnalysis, srChart: SolarReturnChart, nata
     const strongest = a.srToNatalAspects[0];
     highlights.push({
       label: `YEAR-DEFINING ASPECT`,
-      timing: `SR ${P[strongest.planet1] || strongest.planet1} ${strongest.aspectType} Natal ${P[strongest.planet2] || strongest.planet2}`,
+      timing: `SR ${P[strongest.planet1] || strongest.planet1} ${strongest.type} Natal ${P[strongest.planet2] || strongest.planet2}`,
       body: strongest.interpretation,
       icon: 'SHIFT',
     });
