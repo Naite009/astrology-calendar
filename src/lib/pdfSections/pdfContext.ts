@@ -113,13 +113,37 @@ export function createPDFContext(doc: jsPDF, pw: number, ph: number, margin: num
     },
 
     drawCard(d: jsPDF, renderContent: () => void, accentColor: Color = colors.gold) {
+      const startPage = d.getNumberOfPages();
       const cardStartY = ctx.y; ctx.y += 14;
       renderContent(); ctx.y += 12;
-      const cardH = ctx.y - cardStartY;
-      d.setDrawColor(colors.warmBorder[0], colors.warmBorder[1], colors.warmBorder[2]); d.setLineWidth(0.5);
-      d.roundedRect(margin, cardStartY, contentW, cardH, 6, 6, 'S');
-      d.setDrawColor(accentColor[0], accentColor[1], accentColor[2]); d.setLineWidth(3);
-      d.line(margin + 1, cardStartY + 3, margin + 1, cardStartY + cardH - 3);
+      const endPage = d.getNumberOfPages();
+      
+      if (endPage === startPage) {
+        // Normal case: card fits on one page
+        const cardH = ctx.y - cardStartY;
+        d.setDrawColor(colors.warmBorder[0], colors.warmBorder[1], colors.warmBorder[2]); d.setLineWidth(0.5);
+        d.roundedRect(margin, cardStartY, contentW, cardH, 6, 6, 'S');
+        d.setDrawColor(accentColor[0], accentColor[1], accentColor[2]); d.setLineWidth(3);
+        d.line(margin + 1.5, cardStartY + 1, margin + 1.5, cardStartY + cardH - 1);
+      } else {
+        // Card spans pages — draw border on each page segment
+        // First page: from cardStartY to bottom
+        d.setPage(startPage);
+        const firstPageBottom = ph - 40;
+        const firstH = firstPageBottom - cardStartY;
+        d.setDrawColor(colors.warmBorder[0], colors.warmBorder[1], colors.warmBorder[2]); d.setLineWidth(0.5);
+        d.roundedRect(margin, cardStartY, contentW, firstH, 6, 6, 'S');
+        d.setDrawColor(accentColor[0], accentColor[1], accentColor[2]); d.setLineWidth(3);
+        d.line(margin + 1.5, cardStartY + 1, margin + 1.5, cardStartY + firstH - 1);
+        
+        // Last page: from top margin to ctx.y
+        d.setPage(endPage);
+        const lastH = ctx.y - margin;
+        d.setDrawColor(colors.warmBorder[0], colors.warmBorder[1], colors.warmBorder[2]); d.setLineWidth(0.5);
+        d.roundedRect(margin, margin, contentW, lastH, 6, 6, 'S');
+        d.setDrawColor(accentColor[0], accentColor[1], accentColor[2]); d.setLineWidth(3);
+        d.line(margin + 1.5, margin + 1, margin + 1.5, margin + lastH - 1);
+      }
       ctx.y += 8;
     },
 
