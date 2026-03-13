@@ -1111,9 +1111,13 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // BIRTHDAY AFFIRMATION CARD (birthday mode)
       // =============================================
       if (birthdayMode) {
-        doc.addPage(); ctx.y = margin;
+        // Only add a new page if we're not already at the top of one
+        if (ctx.y > margin + 10) {
+          doc.addPage();
+        }
+        ctx.y = margin;
         ctx.sectionPages.set('BIRTHDAY AFFIRMATION CARD', doc.getNumberOfPages());
-        generateAffirmationCard(ctx, doc, analysis, natalChart);
+        generateAffirmationCard(ctx, doc, analysis, natalChart, srChart);
       }
 
       // =============================================
