@@ -658,29 +658,52 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       }
 
       // =============================================
-      // MOON TIMING
+      // SR MOON EMOTIONAL CLIMATE (replaces old Moon Timing)
       // =============================================
-      if (analysis.moonTimingEvents.length > 0) {
-        ctx.sectionTitle(doc, 'Moon Timing -- When Things Happen');
-        const mc = [margin + 4, margin + 90, margin + 250];
-        ctx.checkPage(16);
-        doc.setFillColor(...ctx.colors.softGold); doc.rect(margin, ctx.y - 10, contentW, 16, 'F');
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(...ctx.colors.deepBrown);
-        ['MONTH', 'ASPECT', 'SIGNIFICANCE'].forEach((h, i) => doc.text(h, mc[i], ctx.y));
-        ctx.y += 10; doc.setDrawColor(...ctx.colors.warmBorder); doc.setLineWidth(0.5); doc.line(margin, ctx.y, pw - margin, ctx.y); ctx.y += 12;
-        for (let i = 0; i < Math.min(analysis.moonTimingEvents.length, 12); i++) {
-          const evt = analysis.moonTimingEvents[i];
-          ctx.checkPage(14);
-          if (i % 2 === 0) { doc.setFillColor(252, 250, 247); doc.rect(margin, ctx.y - 10, contentW, 14, 'F'); }
-          doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.gold);
-          doc.text(evt.approximateMonth, mc[0], ctx.y);
-          doc.setFont('helvetica', 'normal'); doc.setTextColor(...ctx.colors.darkText);
-          doc.text(`Moon ${evt.aspectType} ${P[evt.targetPlanet] || evt.targetPlanet}`, mc[1], ctx.y);
-          doc.setTextColor(...ctx.colors.dimText); doc.setFontSize(8);
-          doc.text((evt.interpretation || '').substring(0, 50), mc[2], ctx.y);
-          ctx.y += 14;
+      if (analysis.srMoonAspects && analysis.srMoonAspects.length > 0) {
+        ctx.sectionTitle(doc, 'Your Moon This Year -- Emotional Climate');
+
+        // Angularity description
+        if (analysis.moonAngularity) {
+          const angDesc: Record<string, string> = {
+            angular: 'Your SR Moon is angular (close to an angle). Emotional responses this year are instinctive, automatic, and highly reactive. You are close to every situation — perspective is harder to achieve, but your feelings are powerfully felt and visible to others.',
+            succedent: 'Your SR Moon is in a succedent house. Emotional responses are more stable and grounded this year. You can step back and examine situations without being overwhelmed. Emotional resilience is a strength.',
+            cadent: 'Your SR Moon is in a cadent house. Emotional responses are more passive and adaptive this year. You may process feelings internally, preparing for what comes next rather than reacting in the moment.',
+          };
+          ctx.drawCard(doc, () => {
+            ctx.writeBold(doc, `Moon Position: ${analysis.moonSign || ''} in House ${analysis.moonHouse?.house || '--'}`, ctx.colors.gold, 11);
+            ctx.y += 4;
+            ctx.writeBody(doc, angDesc[analysis.moonAngularity!], ctx.colors.bodyText, 9.5);
+            if (analysis.moonLateDegree) {
+              ctx.y += 4;
+              ctx.writeBold(doc, 'Late-Degree Moon', ctx.colors.accentRust, 10);
+              ctx.writeBody(doc, 'Your SR Moon is in the late degrees of its sign (25+). This often signals that something emotional is reaching completion or is about to change. Endings, transitions, and a sense of "moving on" may characterize the year.', ctx.colors.bodyText, 9.5);
+            }
+            if (analysis.moonMetonicAges && analysis.moonMetonicAges.length > 0) {
+              ctx.y += 4;
+              ctx.writeBold(doc, '19-Year Metonic Cycle', ctx.colors.gold, 10);
+              ctx.writeBody(doc, `Your SR Moon was in approximately this same position at age${analysis.moonMetonicAges.length > 1 ? 's' : ''} ${analysis.moonMetonicAges.join(', ')}. The emotional themes of this year echo those earlier chapters. What was happening in your life then? The threads connect.`, ctx.colors.bodyText, 9.5);
+            }
+          });
         }
-        ctx.y += 8;
+
+        // SR Moon aspects to other SR planets
+        ctx.y += 4;
+        for (const asp of analysis.srMoonAspects.slice(0, 6)) {
+          const isHard = ['Square', 'Opposition', 'Quincunx'].includes(asp.aspectType);
+          ctx.checkPage(80);
+          ctx.drawCard(doc, () => {
+            ctx.writeBold(doc, `Moon ${asp.aspectType} ${P[asp.targetPlanet] || asp.targetPlanet} (${asp.orb}')`, ctx.colors.darkText, 10);
+            if (asp.targetSRHouse) {
+              doc.setFont('helvetica', 'italic'); doc.setFontSize(8.5);
+              doc.setTextColor(...ctx.colors.dimText);
+              doc.text(`${P[asp.targetPlanet] || asp.targetPlanet} in SR House ${asp.targetSRHouse}`, margin + 8, ctx.y);
+              ctx.y += 12;
+            }
+            ctx.y += 2;
+            ctx.writeBody(doc, asp.interpretation, ctx.colors.bodyText, 9.5);
+          }, isHard ? [180, 100, 60] : ctx.colors.gold);
+        }
       }
 
       // =============================================
