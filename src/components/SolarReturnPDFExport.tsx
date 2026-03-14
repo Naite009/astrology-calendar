@@ -1049,17 +1049,14 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         // Moon VOC
         if (analysis.moonVOC) {
           ctx.drawCard(doc, () => {
-            doc.setFillColor(255, 248, 235);
-            doc.roundedRect(margin + 6, ctx.y - 4, contentW - 12, 26, 4, 4, 'F');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(180, 130, 40);
-            doc.text('Moon Void of Course — The Unaspected Moon', margin + 16, ctx.y + 10);
-            ctx.y += 30;
-            ctx.writeBody(doc, 'Your Solar Return Moon makes no major aspects to any other planet in the SR chart. This is a rare and significant condition.', ctx.colors.darkText, 10);
+            ctx.writeBold(doc, 'Moon Void of Course — The Unaspected Moon');
+            ctx.y += 6;
+            ctx.writeBody(doc, 'Your Solar Return Moon makes no major aspects to any other planet in the SR chart. This is a rare and significant condition.');
             ctx.y += 4;
-            ctx.writeCardSection(doc, 'What This Means', 'An unaspected SR Moon operates in isolation — your emotional life this year runs on its own track. Feelings are vivid but disconnected from the rest of the chart\'s story.', [180, 130, 40]);
-            ctx.writeCardSection(doc, 'The Gift', 'Without planetary aspects pulling it in different directions, the Moon is free. Your emotional compass this year is entirely your own.', ctx.colors.accentGreen);
-            ctx.writeCardSection(doc, 'The Challenge', 'Without aspects to ground or activate the Moon, emotional needs may go unmet unless you consciously name and honor them.', ctx.colors.accentRust);
-          }, [180, 130, 40]);
+            ctx.writeCardSection(doc, 'What This Means', 'An unaspected SR Moon operates in isolation — your emotional life this year runs on its own track. Feelings are vivid but disconnected from the rest of the chart\'s story.');
+            ctx.writeCardSection(doc, 'The Gift', 'Without planetary aspects pulling it in different directions, the Moon is free. Your emotional compass this year is entirely your own.');
+            ctx.writeCardSection(doc, 'The Challenge', 'Without aspects to ground or activate the Moon, emotional needs may go unmet unless you consciously name and honor them.');
+          });
         }
 
         // Angularity
