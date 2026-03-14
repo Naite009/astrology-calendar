@@ -3,13 +3,14 @@ import { SignColorTheme } from './signColorThemes';
 
 type Color = [number, number, number];
 
-// ─── EDITORIAL PALETTE ──────────────────────────────────────────────
-const CREAM:  Color = [250, 247, 242];
-const INK:    Color = [18,  16,  14];
-const MUTED:  Color = [130, 125, 118];
-const ACCENT: Color = [90,  80,  68];
-const RULE:   Color = [200, 195, 188];
-const DARK:   Color = [38,  34,  30];
+// ─── V3 EDITORIAL PALETTE ───────────────────────────────────────────
+const CREAM:   Color = [250, 247, 242];
+const CARD_BG: Color = [245, 241, 234]; // slightly warmer than page
+const INK:     Color = [18,  16,  14];
+const MUTED:   Color = [130, 125, 118];
+const GOLD:    Color = [184, 150, 62];  // warm gold for accents & labels
+const RULE:    Color = [200, 195, 188];
+const DARK:    Color = [38,  34,  30];
 
 export interface PDFContext {
   y: number;
@@ -19,15 +20,16 @@ export interface PDFContext {
   contentW: number;
   colors: {
     cream: Color;
+    cardBg: Color;
     ink: Color;
     muted: Color;
+    gold: Color;
     accent: Color;
     rule: Color;
     dark: Color;
     // Legacy aliases kept for backward compat
     deep: Color;
     purple: Color;
-    gold: Color;
     lilac: Color;
     rust: Color;
     warm: Color;
@@ -55,9 +57,7 @@ export interface PDFContext {
   drawContentBox: (doc: jsPDF, x: number, yStart: number, w: number, h: number, bg?: Color) => void;
   drawGoldRule: (doc: jsPDF) => void;
   drawRule: (doc: jsPDF) => void;
-  /** Tracked caps label — editorial style */
   trackedLabel: (doc: jsPDF, text: string, x: number, y: number, opts?: { align?: 'left' | 'center' | 'right'; size?: number; charSpace?: number }) => void;
-  /** Cream page background */
   pageBg: (doc: jsPDF) => void;
 }
 
@@ -76,18 +76,18 @@ export function createPDFContext(
   doc: jsPDF, pw: number, ph: number, margin: number, contentW: number,
   _themeOrOverrides?: SignColorTheme | ColorOverrides,
 ): PDFContext {
-  // All themes now map to the editorial palette
   const colors = {
     cream: CREAM,
+    cardBg: CARD_BG,
     ink: INK,
     muted: MUTED,
-    accent: ACCENT,
+    gold: GOLD,
+    accent: GOLD,
     rule: RULE,
     dark: DARK,
-    // Legacy aliases — all mapped to editorial equivalents
+    // Legacy aliases — all mapped to v3 equivalents
     deep: INK,
-    purple: ACCENT,
-    gold: ACCENT,
+    purple: GOLD,
     lilac: MUTED,
     rust: DARK,
     warm: CREAM,
@@ -95,12 +95,12 @@ export function createPDFContext(
     dimText: MUTED,
     bodyText: INK,
     darkText: INK,
-    softGold: CREAM,
+    softGold: CARD_BG,
     deepBrown: DARK,
     warmBorder: RULE,
     creamBg: CREAM,
-    softBlue: CREAM,
-    accentGreen: ACCENT,
+    softBlue: CARD_BG,
+    accentGreen: GOLD,
     accentRust: DARK,
   };
 
@@ -125,8 +125,8 @@ export function createPDFContext(
       const align = opts?.align || 'left';
       const size = opts?.size || 7.5;
       const cs = opts?.charSpace || 3.5;
-      d.setFont('times', 'normal'); d.setFontSize(size);
-      d.setTextColor(...MUTED);
+      d.setFont('times', 'bold'); d.setFontSize(size);
+      d.setTextColor(...GOLD);
       d.setCharSpace(cs);
       d.text(text, x, y, { align });
       d.setCharSpace(0);
@@ -150,21 +150,25 @@ export function createPDFContext(
       const topPad = ctx.y < margin + 20 ? 8 : 24;
       ctx.y += topPad;
 
-      // Tracked caps section label
+      // Tracked caps section label in gold
       const numStr = String(ctx.sectionNum).padStart(2, '0');
       const labelText = `${numStr} · ${title.toUpperCase()}`;
       ctx.trackedLabel(d, labelText, margin, ctx.y);
-
-      if (subtitle) {
-        d.setFont('times', 'italic'); d.setFontSize(8);
-        d.setTextColor(...MUTED);
-        d.text(subtitle, pw - margin, ctx.y, { align: 'right' });
-      }
-
       ctx.y += 8;
+
+      // Hairline rule
       d.setDrawColor(...RULE); d.setLineWidth(0.3);
       d.line(margin, ctx.y, pw - margin, ctx.y);
-      ctx.y += 16;
+      ctx.y += 18;
+
+      // Large serif display title
+      if (subtitle) {
+        d.setFont('times', 'normal'); d.setFontSize(24);
+        d.setTextColor(...INK);
+        const subLines: string[] = d.splitTextToSize(subtitle, contentW);
+        for (const line of subLines) { d.text(line, margin, ctx.y); ctx.y += 30; }
+        ctx.y += 6;
+      }
     },
 
     writeBody(d: jsPDF, text: string, _color: Color = INK, size = 10, lineH = 15) {
@@ -174,19 +178,19 @@ export function createPDFContext(
       const totalH = lines.length * lineH;
       const remaining = ph - 55 - ctx.y;
       if (totalH <= remaining) {
-        for (const line of lines) { d.text(line, margin + 8, ctx.y); ctx.y += lineH; }
+        for (const line of lines) { d.text(line, margin + 14, ctx.y); ctx.y += lineH; }
         return;
       }
       const linesFit = Math.floor(remaining / lineH);
       const linesRemaining = lines.length - linesFit;
       if (linesFit < 4 || linesRemaining < 4) {
         doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
-        for (const line of lines) { d.text(line, margin + 8, ctx.y); ctx.y += lineH; }
+        for (const line of lines) { d.text(line, margin + 14, ctx.y); ctx.y += lineH; }
         return;
       }
-      for (let i = 0; i < linesFit; i++) { d.text(lines[i], margin + 8, ctx.y); ctx.y += lineH; }
+      for (let i = 0; i < linesFit; i++) { d.text(lines[i], margin + 14, ctx.y); ctx.y += lineH; }
       doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
-      for (let i = linesFit; i < lines.length; i++) { d.text(lines[i], margin + 8, ctx.y); ctx.y += lineH; }
+      for (let i = linesFit; i < lines.length; i++) { d.text(lines[i], margin + 14, ctx.y); ctx.y += lineH; }
     },
 
     writeBold(d: jsPDF, text: string, _color: Color = INK, size = 11) {
@@ -195,7 +199,7 @@ export function createPDFContext(
       const lines: string[] = d.splitTextToSize(text, contentW - 28);
       const totalH = lines.length * 15;
       if (ctx.y + totalH > ph - 55) { doc.addPage(); ctx.y = margin; ctx.pageBg(doc); }
-      for (const line of lines) { d.text(line, margin + 8, ctx.y); ctx.y += 15; }
+      for (const line of lines) { d.text(line, margin + 14, ctx.y); ctx.y += 15; }
       ctx.y += 4;
     },
 
@@ -203,35 +207,100 @@ export function createPDFContext(
       ctx.checkPage(16);
       d.setFont('times', 'normal'); d.setFontSize(9);
       d.setTextColor(...MUTED);
-      d.text(label, margin + 8, ctx.y);
+      d.text(label, margin + 14, ctx.y);
       const labelW = d.getTextWidth(label);
       d.setFont('times', 'bold'); d.setFontSize(10.5);
       d.setTextColor(...INK);
-      d.text(value, margin + 8 + labelW + 6, ctx.y); ctx.y += 16;
+      d.text(value, margin + 14 + labelW + 6, ctx.y); ctx.y += 16;
     },
 
-    drawCard(d: jsPDF, renderContent: () => void, _accentColor: Color = ACCENT) {
-      // Editorial: no card borders, just content with hairline rule after
+    drawCard(d: jsPDF, renderContent: () => void, _accentColor: Color = GOLD) {
       const startY = ctx.y;
-      ctx.y += 8;
+
+      // 1. Draw cream background with generous estimated height
+      const estimatedH = Math.min(500, ph - startY - 10);
+      d.setFillColor(...CARD_BG);
+      d.roundedRect(margin, startY, contentW, estimatedH, 3, 3, 'F');
+
+      // 2. Gold left accent bar (3pt wide)
+      d.setFillColor(...GOLD);
+      d.rect(margin, startY, 3, estimatedH, 'F');
+
+      // 3. Render content on top with padding
+      ctx.y = startY + 16;
       renderContent();
-      ctx.y += 8;
-      // Hairline rule below
-      d.setDrawColor(...RULE); d.setLineWidth(0.25);
-      d.line(margin, ctx.y, pw - margin, ctx.y);
-      ctx.y += 8;
+      ctx.y += 14;
+
+      // 4. Calculate actual card height
+      const actualH = ctx.y - startY;
+
+      // 5. Erase excess background below actual card
+      d.setFillColor(...CREAM);
+      d.rect(margin - 1, startY + actualH, contentW + 2, estimatedH - actualH + 10, 'F');
+
+      // 6. Draw border at actual height
+      d.setDrawColor(...RULE);
+      d.setLineWidth(0.3);
+      d.roundedRect(margin, startY, contentW, actualH, 3, 3, 'S');
+
+      // 7. Redraw gold accent bar at correct height
+      d.setFillColor(...GOLD);
+      d.rect(margin, startY, 3, actualH, 'F');
+
+      ctx.y += 10; // spacing after card
     },
 
-    writeCardSection(d: jsPDF, label: string, text: string, _labelColor: Color = MUTED) {
-      // Tracked caps label + body
-      ctx.trackedLabel(d, label.toUpperCase(), margin + 8, ctx.y, { size: 7, charSpace: 3 });
-      ctx.y += 10;
-      ctx.writeBody(d, text, INK, 9.5);
+    writeCardSection(d: jsPDF, label: string, text: string, _labelColor: Color = GOLD) {
+      // Nested card section with gold tracked label
+      const nestedStartY = ctx.y;
+
+      // Draw nested cream bg
+      const nestedEstH = Math.min(300, ph - ctx.y - 10);
+      d.setFillColor(...CARD_BG);
+      d.roundedRect(margin + 10, nestedStartY, contentW - 20, nestedEstH, 2, 2, 'F');
+
+      // Gold accent bar on nested card
+      d.setFillColor(...GOLD);
+      d.rect(margin + 10, nestedStartY, 2.5, nestedEstH, 'F');
+
+      ctx.y = nestedStartY + 10;
+
+      // Gold tracked caps label
+      ctx.trackedLabel(d, label.toUpperCase(), margin + 18, ctx.y, { size: 7, charSpace: 3 });
+      ctx.y += 12;
+
+      // Body text
+      d.setFont('times', 'normal'); d.setFontSize(9.5);
+      d.setTextColor(...INK);
+      const lines: string[] = d.splitTextToSize(text, contentW - 40);
+      for (const line of lines) { d.text(line, margin + 18, ctx.y); ctx.y += 14; }
+
+      ctx.y += 8;
+      const nestedH = ctx.y - nestedStartY;
+
+      // Erase excess
+      d.setFillColor(...CARD_BG); // erase with parent card bg
+      d.rect(margin + 9, nestedStartY + nestedH, contentW - 18, nestedEstH - nestedH + 5, 'F');
+
+      // Border
+      d.setDrawColor(...RULE);
+      d.setLineWidth(0.25);
+      d.roundedRect(margin + 10, nestedStartY, contentW - 20, nestedH, 2, 2, 'S');
+
+      // Redraw nested accent
+      d.setFillColor(...GOLD);
+      d.rect(margin + 10, nestedStartY, 2.5, nestedH, 'F');
+
       ctx.y += 6;
     },
 
-    drawContentBox(_d: jsPDF, _x: number, _yStart: number, _w: number, _h: number, _bg: Color = CREAM) {
-      // No-op in editorial design — no filled boxes
+    drawContentBox(d: jsPDF, x: number, yStart: number, w: number, h: number, _bg: Color = CARD_BG) {
+      // Cream filled box with border
+      d.setFillColor(...CARD_BG);
+      d.roundedRect(x, yStart, w, h, 3, 3, 'F');
+      d.setDrawColor(...RULE);
+      d.setLineWidth(0.3);
+      d.roundedRect(x, yStart, w, h, 3, 3, 'S');
     },
   };
 
