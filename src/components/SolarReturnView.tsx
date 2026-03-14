@@ -234,9 +234,9 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             analysis={analysis}
             natalChart={selectedNatal}
             solarReturnChart={selectedSR}
+            onSelectTier={(tier) => setSelectedTier(tier as 't1' | null)}
             onDownloadTier={(tier) => {
               if (tier === 't1') {
-                // Trigger Tier 1 download — delegate to the OverviewTab's PDF export
                 const btn = document.querySelector('[data-tier1-download]') as HTMLButtonElement;
                 if (btn) btn.click();
               } else if (tier === 't4' || tier === 't5') {
@@ -247,21 +247,37 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             }}
           />
 
-          <TabsContent value="overview">
-            <OverviewTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} onEdit={() => { setEditingSRId(selectedSR.id); setShowInputForm(true); }} onDelete={() => { deleteSolarReturn(selectedSR.id); setSelectedSRId(null); }} />
-          </TabsContent>
+          {/* Tier 1 full preview replaces tab content */}
+          {selectedTier === 't1' ? (
+            <Tier1Preview
+              analysis={analysis}
+              srChart={selectedSR}
+              natalChart={selectedNatal}
+              onBack={() => setSelectedTier(null)}
+              onDownload={() => {
+                const btn = document.querySelector('[data-tier1-download]') as HTMLButtonElement;
+                if (btn) btn.click();
+              }}
+            />
+          ) : (
+            <>
+              <TabsContent value="overview">
+                <OverviewTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} onEdit={() => { setEditingSRId(selectedSR.id); setShowInputForm(true); }} onDelete={() => { deleteSolarReturn(selectedSR.id); setSelectedSRId(null); }} />
+              </TabsContent>
 
-          <TabsContent value="houses">
-            <HouseOverlayTab analysis={analysis} />
-          </TabsContent>
+              <TabsContent value="houses">
+                <HouseOverlayTab analysis={analysis} />
+              </TabsContent>
 
-          <TabsContent value="aspects">
-            <AspectsTab analysis={analysis} />
-          </TabsContent>
+              <TabsContent value="aspects">
+                <AspectsTab analysis={analysis} />
+              </TabsContent>
 
-          <TabsContent value="relocation">
-            <RelocationTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} />
-          </TabsContent>
+              <TabsContent value="relocation">
+                <RelocationTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} />
+              </TabsContent>
+            </>
+          )}
         </Tabs>
       )}
     </div>
