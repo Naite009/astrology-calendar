@@ -18,7 +18,6 @@ export interface PDFContext {
   ph: number;
   margin: number;
   contentW: number;
-  cardCount: number;
   colors: {
     cream: Color; cardBg: Color; ink: Color; muted: Color; gold: Color;
     accent: Color; rule: Color; dark: Color;
@@ -68,7 +67,6 @@ export function createPDFContext(
     pw, ph, margin, contentW, colors,
     sectionPages,
     sectionNum: 0,
-    cardCount: 0,
 
     checkPage(needed: number) {
       if (ctx.y + needed > ph - 55) {
@@ -106,7 +104,6 @@ export function createPDFContext(
     sectionTitle(d: jsPDF, title: string, subtitle?: string) {
       ctx.checkPage(140);
       ctx.sectionNum++;
-      ctx.cardCount = 0; // reset card alternation per section
       const pageNum = d.getNumberOfPages();
       sectionPages.set(title.toUpperCase(), pageNum);
 
@@ -184,14 +181,11 @@ export function createPDFContext(
     },
 
     drawCard(d: jsPDF, renderContent: () => void, _accentColor: Color = GOLD) {
-      ctx.cardCount++;
-      const isShaded = ctx.cardCount % 2 === 1; // odd = shaded, even = white
-      const cardBgColor: Color = isShaded ? CARD_BG : CREAM;
       const startY     = ctx.y;
       const estimatedH = Math.min(500, ph - startY - 10);
 
-      // Card background — alternates shaded/white
-      d.setFillColor(...cardBgColor);
+      // Card background
+      d.setFillColor(...CARD_BG);
       d.roundedRect(margin, startY, contentW, estimatedH, 3, 3, 'F');
 
       // Gold left accent bar
@@ -217,7 +211,7 @@ export function createPDFContext(
       d.setFillColor(...GOLD);
       d.rect(margin, startY, 3, actualH, 'F');
 
-      ctx.y += 16; // space after card
+      ctx.y += 14; // space after card
     },
 
     writeCardSection(d: jsPDF, label: string, text: string, _labelColor: Color = GOLD) {
