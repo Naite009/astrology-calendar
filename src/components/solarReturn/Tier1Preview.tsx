@@ -162,6 +162,41 @@ function getBigThreeRisingHeadline(natalRising: string, srRising: string): strin
   return `Your presence ${q[srRising] || 'takes on a new quality'}`;
 }
 
+// ─── Auto-generated birthday message ────────────────────────────────
+function generateBirthdayMessage(firstName: string, sunSign: string, profHouse: number): string {
+  const gifts: Record<string, string> = {
+    Aries: 'the courage to begin before anyone else is ready',
+    Taurus: 'the patience to build things that last',
+    Gemini: 'a mind that makes connections others miss',
+    Cancer: 'the ability to make people feel safe',
+    Leo: 'the kind of warmth that makes people feel celebrated',
+    Virgo: 'the eye that catches what everyone else overlooks',
+    Libra: 'the grace to hold two sides of anything without losing yourself',
+    Scorpio: 'the willingness to go where others are afraid to look',
+    Sagittarius: 'a faith that life is leading you somewhere meaningful',
+    Capricorn: 'the discipline to show up even when no one is watching',
+    Aquarius: 'the vision to see what the world could be',
+    Pisces: 'a sensitivity that changes the people around you',
+  };
+  const invitations: Record<number, string> = {
+    1: 'step into the newest version of yourself',
+    2: 'honor what truly matters to you',
+    3: 'speak up and stay curious',
+    4: 'come home to yourself',
+    5: 'follow what genuinely delights you',
+    6: 'build a rhythm that sustains you',
+    7: 'deepen the relationships that matter most',
+    8: 'trust what is transforming',
+    9: 'expand your world in a way that feels right',
+    10: 'let your purpose become visible',
+    11: 'find your people and dream together',
+    12: 'rest, and let what needs to heal, heal',
+  };
+  const gift = gifts[sunSign] || 'something the world genuinely needs';
+  const invitation = invitations[profHouse] || 'trust what emerges';
+  return `Happy birthday, ${firstName}. You were born with ${gift}. This year invites you to ${invitation}. Wishing you a beautiful year ahead.`;
+}
+
 // ─── Component ──────────────────────────────────────────────────────
 
 interface Props {
