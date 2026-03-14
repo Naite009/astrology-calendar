@@ -299,11 +299,13 @@ export const Tier1Preview = ({ analysis, srChart, natalChart, onBack, onDownload
             Year at a Glance · {firstName}
           </span>
           <button
-            onClick={onDownload}
-            className="px-3 py-1.5 rounded text-xs font-medium border transition-all hover:opacity-80 flex items-center gap-1.5"
+            onClick={handleDownloadPDF}
+            disabled={downloading}
+            className="px-3 py-1.5 rounded text-xs font-medium border transition-all hover:opacity-80 flex items-center gap-1.5 disabled:opacity-50"
             style={{ backgroundColor: '#E1F5EE', color: '#085041', borderColor: '#9FE1CB' }}
           >
-            <Download size={12} /> Download PDF
+            {downloading ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
+            {downloading ? 'Generating...' : 'Download PDF'}
           </button>
           <button
             onClick={generateAI}
@@ -314,6 +316,24 @@ export const Tier1Preview = ({ analysis, srChart, natalChart, onBack, onDownload
             {aiLoading ? 'Generating...' : 'AI Reading'}
           </button>
         </div>
+      </div>
+
+      {/* Birthday message opt-out toggle */}
+      <div className="flex items-center gap-3 border border-border rounded-sm px-4 py-3 bg-card/40">
+        <label className="flex items-center gap-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={!includeBirthday}
+            onChange={(e) => setIncludeBirthday(!e.target.checked)}
+            className="rounded border-border"
+          />
+          <span className="text-xs text-muted-foreground">Skip birthday message in PDF</span>
+        </label>
+        {includeBirthday && (
+          <span className="text-xs text-muted-foreground/70 italic ml-auto truncate max-w-[50%]">
+            "{autoBirthdayMessage.slice(0, 80)}…"
+          </span>
+        )}
       </div>
 
       {/* Section: This Year's Theme */}
