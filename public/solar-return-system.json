@@ -1,0 +1,328 @@
+{
+  "system": "Solar Return PDF Report Generator",
+  "description": "A premium, Canva-quality personalized Solar Return astrology report built with jsPDF. Uses natal chart + solar return chart data to generate a multi-section PDF with expert-level astrological interpretations.",
+  "technicalStack": {
+    "pdfEngine": "jsPDF (letter format, portrait, pt units)",
+    "layoutEngine": "Custom PDFContext (src/lib/pdfSections/pdfContext.ts) with smart pagination, orphan prevention, and color-coded card system",
+    "analysisEngine": "src/lib/solarReturnAnalysis.ts — 1300+ lines computing all SR data points",
+    "renderEntry": "src/components/SolarReturnPDFExport.tsx — orchestrates all sections in order"
+  },
+  "inputData": {
+    "natalChart": "Birth chart with planets (sign, degree, house), house cusps, birth date, birth location",
+    "solarReturnChart": "SR chart with planets, house cusps, solar return year, SR location",
+    "narrative": "AI-generated year-ahead reading text (optional)",
+    "birthdayMode": "Toggle for gift presentation (zodiac cake images, gold borders, affirmation card)",
+    "personalMessage": "Custom message for birthday gift mode"
+  },
+  "analysisDataPoints": {
+    "yearlyTheme": "SR Ascendant sign → ruler → ruler's SR position = year's overarching theme",
+    "srAscRulerInNatal": "J-B Morin / Lynn Bell technique: SR Asc ruler's NATAL house = where the year plays out",
+    "profectionYear": {
+      "description": "Hellenistic annual profection: age → house → traditional ruler = Time Lord",
+      "fields": ["age", "houseNumber", "timeLord", "timeLordSRHouse", "timeLordSRSign", "overlap"]
+    },
+    "lordOfTheYear": "Natal chart ruler (Asc sign ruler) — fixed planet, separate from Time Lord",
+    "sunHouse": "SR Sun house placement + natal house overlay",
+    "moonSign": "SR Moon sign",
+    "moonHouse": "SR Moon house + natal house overlay",
+    "moonPhase": "Sun-Moon phase at moment of return (New, Full, Balsamic, etc.)",
+    "moonAngularity": "angular/succedent/cadent classification",
+    "moonVOC": "Void of Course — unaspected SR Moon",
+    "moonLateDegree": "25°+ Moon signaling completion",
+    "moonMetonicAges": "Ages when SR Moon was in same sign (19-year cycle)",
+    "srMoonAspects": "Moon's aspects to other SR planets (frozen snapshot)",
+    "houseOverlays": "Each SR planet mapped to both SR house and natal house",
+    "srToNatalAspects": "Aspects between SR planets and natal planets with orbs",
+    "srInternalAspects": "Aspects within the SR chart itself",
+    "stelliums": "3+ planets in same sign or house, with sign/house meanings and blend interpretations",
+    "elementBalance": "Fire/Earth/Air/Water count with dominant and missing elements",
+    "modalityBalance": "Cardinal/Fixed/Mutable count with dominant modality",
+    "hemisphericEmphasis": "Upper/Lower/East/West planet distribution",
+    "angularPlanets": "Planets conjunct angles (most powerful in SR)",
+    "saturnFocus": "Saturn's sign, house, retrograde status, and interpretation",
+    "nodesFocus": "North Node sign and house with growth direction",
+    "vertex": "Calculated fated encounters point with sign, house, and aspects",
+    "natalDegreeConduits": "SR planets within 2° of natal planet degrees (Lynn Bell)",
+    "retrogrades": "List of retrograde SR planets with interpretation",
+    "repeatedThemes": "Cross-technique pattern detection"
+  },
+  "pdfSections": [
+    {
+      "order": 1,
+      "name": "Cover Page",
+      "file": "src/lib/pdfSections/cover.ts",
+      "function": "generatePDFCover",
+      "description": "Title page with person's name, SR year, Sun/Moon/Rising signs, birth details, and SR location. Birthday mode adds zodiac cake image (200x170pt) and personal message.",
+      "features": ["Sign-specific zodiac cake images", "Gold decorative borders in gift mode", "Diamond corner ornaments"]
+    },
+    {
+      "order": 2,
+      "name": "Table of Contents",
+      "file": "src/lib/pdfSections/tableOfContents.ts",
+      "function": "generatePDFTableOfContents + addTOCLinks",
+      "description": "Single-page TOC with dot leaders and real-time page numbers. Two-pass system: first pass renders document and registers section pages, second pass retrofits clickable links.",
+      "features": ["Clickable dot-leader links", "Right-aligned page numbers", "Normalized matching for character variations"]
+    },
+    {
+      "order": 3,
+      "name": "How To Read This Report",
+      "file": "src/lib/pdfSections/howToRead.ts",
+      "function": "generateHowToReadPage",
+      "description": "Educational intro explaining what a Solar Return is and how to use the report."
+    },
+    {
+      "order": 4,
+      "name": "Your Big Three (Sun, Moon, Rising)",
+      "file": "src/lib/pdfSections/strengthsPortrait.ts",
+      "function": "generateStrengthsPortrait",
+      "description": "Multi-page layout — one planet per page. Each planet gets: Natal Strength (green box), Natal Shadow (peach box), How This Year Activates You (gold box), Where It Plays Out (blue box).",
+      "features": [
+        "22pt headers, 16pt sub-headers",
+        "Color-coded tinted boxes with 1.5pt left-accent bars",
+        "Gold-backed header bar per planet",
+        "Interplay between natal signs and SR signs explained",
+        "Plain language, no jargon"
+      ],
+      "importance": "Identified as the most important section by the user. Designed for maximum readability and impact."
+    },
+    {
+      "order": 5,
+      "name": "Year At A Glance",
+      "file": "src/lib/pdfSections/yearAtAGlance.ts",
+      "function": "generatePDFYearAtAGlance",
+      "description": "Overview snapshot of the year's key themes, profection, time lord, moon phase, and SR Ascendant."
+    },
+    {
+      "order": 6,
+      "name": "Profection Wheel",
+      "file": "src/lib/pdfSections/profectionWheel.ts",
+      "function": "drawProfectionWheel",
+      "description": "Visual wheel mapping ages 0-99 to house themes with the active house highlighted. Shows current age and corresponding profection house."
+    },
+    {
+      "order": 7,
+      "name": "Personal Profection Deep Dive",
+      "file": "src/lib/pdfSections/profectionPersonal.ts",
+      "function": "generateProfectionPersonalSection",
+      "description": "Detailed explanation of the current profection house, Time Lord planet, its SR house/sign position, dignity, and retrograde effects."
+    },
+    {
+      "order": 8,
+      "name": "Key Dates",
+      "file": "src/lib/pdfSections/keyDates.ts",
+      "function": "generateKeyDatesSection",
+      "description": "Calculates exact dates during the year when the Time Lord aspects natal planets. Categorized into 'Green Light Periods' and 'Pressure Points'."
+    },
+    {
+      "order": 9,
+      "name": "Moon Sign Shift",
+      "file": "SolarReturnPDFExport.tsx (inline)",
+      "description": "Side-by-side comparison of Natal Moon sign vs SR Moon sign. If different, shows a detailed shift narrative with Body, Apply, and Daily Life subsections.",
+      "dataSource": "moonSignDeep + moonShiftNarrative from src/lib/moonSignShiftData.ts"
+    },
+    {
+      "order": 10,
+      "name": "Solar Return vs Natal Table",
+      "file": "SolarReturnPDFExport.tsx (inline)",
+      "description": "Comparison table showing each planet's SR position, SR house, natal position, natal house, and sign shift. Gold header row, alternating row backgrounds."
+    },
+    {
+      "order": 11,
+      "name": "Stelliums — Power Zones",
+      "file": "SolarReturnPDFExport.tsx (inline)",
+      "description": "Separated into Sign Stelliums and House Stelliums. Each card shows planets, personalized interpretation (sign+house+planets), felt-sense description, and planet role list.",
+      "interpretationData": {
+        "signMeanings": "stelliumSignMeaning — 12 sign descriptions",
+        "feltSense": "stelliumFeltSense — body-level descriptions per sign",
+        "planetRoles": "stelliumPlanetRoles — what each planet contributes",
+        "houseMeanings": "stelliumHouseMeaning — 12 house descriptions",
+        "personalizedText": "getPersonalizedStelliumText() — combines sign, house, and planet names into narrative",
+        "blendMeanings": "getStelliumBlendMeaning() — specific planet combination interpretations (Sun-Moon, Venus-Mars, etc.)"
+      }
+    },
+    {
+      "order": 12,
+      "name": "Element, Modality & Energy",
+      "file": "SolarReturnPDFExport.tsx (inline)",
+      "description": "Visual grid showing Fire/Earth/Air/Water counts and Cardinal/Fixed/Mutable counts. Dominant element/modality highlighted. Includes 2x2 hemispheric grid (Upper/Lower/East/West) with planet lists.",
+      "subSections": [
+        "Elemental Balance (4 color-coded boxes)",
+        "Modality Balance (3 boxes with initiating/sustaining/adapting labels)",
+        "Where Your Energy Lives (2x2 hemispheric grid with planet names)",
+        "Angular Planets (most powerful this year)"
+      ]
+    },
+    {
+      "order": 13,
+      "name": "Lord of the Year",
+      "file": "SolarReturnPDFExport.tsx (inline)",
+      "description": "The profection Time Lord (NOT the natal chart ruler). Shows the planet, its SR sign/house, dignity, and retrograde status. Explains WHY this planet rules the year via the profection house cusp ruler logic.",
+      "subCards": [
+        "Why [Planet] Is Your Lord of the Year — profection logic explained",
+        "What This Means For Your Year — detailed planet-as-Time-Lord interpretation",
+        "What It Rules / How You Feel It — life domain + body sensation",
+        "Where the Lord sits in the SR — house interpretation",
+        "Dignity Warning/Advantage — if in Detriment/Fall or Domicile/Exaltation",
+        "Retrograde Effect — if Time Lord is Rx in SR"
+      ],
+      "interpretationData": "timeLordDetailedMeaning (7 planets: Sun through Saturn)"
+    },
+    {
+      "order": 14,
+      "name": "Saturn & North Node",
+      "file": "SolarReturnPDFExport.tsx (inline)",
+      "description": "Dedicated page explaining Saturn (where discipline is required) and North Node (where soul growth happens). Includes house meanings, sign behaviors, retrograde effects, and a Saturn-Node synthesis card.",
+      "interpretationData": {
+        "saturnHouseMeaning": "12 detailed house interpretations",
+        "saturnSignBehavior": "12 sign-specific Saturn descriptions",
+        "nodeHouseMeaning": "12 house growth directions",
+        "nodeSignGrowth": "12 sign growth descriptions"
+      }
+    },
+    {
+      "order": 15,
+      "name": "Key Aspects",
+      "file": "SolarReturnPDFExport.tsx (inline)",
+      "description": "SR-to-Natal aspects (excluding Sun conjunct Sun). Up to 8 major aspects shown. Each card has colored accent (warm for hard aspects, gold for soft), orb, houses, and three subsections: How It Feels, What It Means, What To Do.",
+      "interpretationEngine": "generateSRtoNatalInterpretation() from src/lib/solarReturnAspectInterp.ts"
+    },
+    {
+      "order": 16,
+      "name": "Your Moon This Year — Emotional Climate",
+      "file": "SolarReturnPDFExport.tsx (inline)",
+      "description": "SR Moon deep dive: VOC status, angularity, late degree, Metonic cycle echoes, and individual Moon-to-planet aspects. The Moon is treated as a STATIC SNAPSHOT, never as a monthly progression.",
+      "subSections": [
+        "Moon Void of Course (Gift/Challenge when unaspected)",
+        "Angularity classification (angular/succedent/cadent)",
+        "Late-Degree Moon warning",
+        "19-Year Metonic Cycle ages",
+        "Individual Moon aspect cards with interpretations"
+      ]
+    },
+    {
+      "order": 17,
+      "name": "Vertex — Fated Encounters",
+      "file": "SolarReturnPDFExport.tsx (inline)",
+      "description": "Calculated from MC and geographic latitude. Shows Vertex sign, degree, house, with fated theme and 'Who May Appear' interpretation.",
+      "calculationSource": "src/lib/solarReturnVertex.ts"
+    },
+    {
+      "order": 18,
+      "name": "Planet Spotlight",
+      "file": "SolarReturnPDFExport.tsx (inline)",
+      "description": "Individual planet-in-house cards for Mercury through Pluto. Each shows overview, 'What This Looks Like' (practical), and 'Watch For' (caution).",
+      "dataSource": "src/lib/solarReturnPlanetInHouseDeep.ts — detailed interpretations for each planet in each of the 12 houses"
+    },
+    {
+      "order": 19,
+      "name": "Year-Ahead Reading (AI Narrative)",
+      "file": "SolarReturnPDFExport.tsx (inline)",
+      "description": "AI-generated narrative text rendered with markdown parsing (## headers, **bold**, body text). Only included if a narrative was generated.",
+      "aiModel": "Generated via Lovable AI edge function"
+    },
+    {
+      "order": 20,
+      "name": "Best Months & Highlights + Month-by-Month Calendar",
+      "file": "src/lib/pdfSections/highlightsAndForecasts.ts",
+      "function": "generateHighlightsPage",
+      "description": "Two-part section: (1) Up to 4 personalized highlight cards with icon badges (KEY, FEEL, POWER, SHIFT, STAR, WORK) covering year's focus, emotional climate, power zones, year-defining aspect, chart ruler, and discipline areas. (2) 12-month calendar grid (3 columns × 4 rows, all on one page) starting from birth month with personalized monthly forecasts.",
+      "highlightCards": [
+        "This Year's Focus — profection house theme",
+        "Emotional Climate — Moon sign + house + angularity/VOC/late degree",
+        "Power Zone — first stellium location + blend meaning",
+        "Year-Defining Aspect — strongest SR-to-natal aspect (major planets only)",
+        "Your Chart Ruler — natal Asc ruler in SR vs natal positions",
+        "Where Discipline Is Required — Saturn focus"
+      ],
+      "monthlyLogic": {
+        "startMonth": "Calculated from actual birth date, NOT sign approximation",
+        "yearCalculation": "Months before birthday month get next year",
+        "themeRotation": "Houses rotate from profection house: month 1 = profection house, month 2 = next house, etc.",
+        "headlines": "Theme-based friendly labels (e.g., 'Follow the Fun', 'Career in Focus')",
+        "bodyContent": "Personalized per month index: month 0 = opener with ASC ruler, month 11 = integration, months 1-2 = stellium, months 3-5 = Sun house + retrogrades, months 6-8 = Moon sign + Saturn, months 9-10 = nodes + repeated themes"
+      }
+    },
+    {
+      "order": 21,
+      "name": "Birthday Affirmation Card",
+      "file": "src/lib/pdfSections/affirmationCard.ts",
+      "function": "generateAffirmationCard",
+      "description": "Birthday-mode only. A warm, personality-driven 'birthday letter' that synthesizes natal Sun gift, Moon need, and Rising impression into an inspiring closing. Year-ahead inspiration based on profection house theme (e.g., 'follow the joy' for 5th house year).",
+      "tone": "Warm, personal, non-technical. No anxiety-inducing tasks. Feels like a letter from a wise friend.",
+      "features": ["Personality paragraphs from Big Three", "Theme-based year-ahead inspiration", "No technical jargon", "Centered decorative layout"]
+    }
+  ],
+  "globalFeatures": {
+    "birthdayGiftMode": {
+      "description": "Toggle that adds zodiac cake images, gold borders with diamond ornaments, suppresses page numbers, and adds the affirmation card.",
+      "signColorThemes": "Each zodiac sign has a unique color palette applied to the entire PDF (gold, softGold, deepBrown, warmBorder, creamBg, accentGreen, accentRust, softBlue)"
+    },
+    "goldBorders": "Optional decorative double gold border on every page with corner circles and midpoint diamond ornaments",
+    "clickableTOC": "Table of Contents entries are clickable PDF links that jump to the correct page",
+    "pageNumbers": "Added to all pages except cover (suppressed entirely in birthday mode)",
+    "smartPagination": "PDFContext prevents orphaned lines (<4 lines on either side of a break), keeps bold headers with their content, and uses dynamic top spacing"
+  },
+  "interpretationDataFiles": {
+    "solarReturnAnalysis": "src/lib/solarReturnAnalysis.ts — Main analysis engine (1305 lines)",
+    "solarReturnInterpretations": "src/lib/solarReturnInterpretations.ts — SR Sun/Moon in house, overlays, ruler conditions",
+    "solarReturnAspectInterp": "src/lib/solarReturnAspectInterp.ts — SR-to-natal aspect interpretations with How It Feels / What It Means / What To Do",
+    "solarReturnMoonData": "src/lib/solarReturnMoonData.ts — Moon in house deep, Moon phase, angularity, aspects",
+    "solarReturnPlanetInHouseDeep": "src/lib/solarReturnPlanetInHouseDeep.ts — Mercury through Pluto in all 12 houses",
+    "solarReturnVertex": "src/lib/solarReturnVertex.ts — Vertex calculation and interpretation",
+    "solarReturnHemispheres": "src/lib/solarReturnHemispheres.ts — Hemispheric analysis",
+    "moonSignShiftData": "src/lib/moonSignShiftData.ts — Detailed Moon sign descriptions and sign-to-sign shift narratives",
+    "signColorThemes": "src/lib/pdfSections/signColorThemes.ts — 12 zodiac-specific color palettes"
+  },
+  "designSystem": {
+    "colors": {
+      "gold": "[162, 128, 72] — Primary accent, section titles, card headers",
+      "darkText": "[30, 28, 26] — Bold headings",
+      "bodyText": "[55, 50, 45] — Main body copy",
+      "dimText": "[120, 112, 105] — Subtitles, metadata",
+      "warmBorder": "[210, 200, 185] — Card borders",
+      "creamBg": "[250, 247, 242] — Content box backgrounds",
+      "softGold": "[245, 238, 225] — Card fills, highlight backgrounds",
+      "deepBrown": "[90, 70, 45] — Secondary headings",
+      "softBlue": "[230, 240, 250] — Blue-tinted boxes (activation, SR Moon)",
+      "accentGreen": "[34, 120, 80] — Strength, gifts, practical advice",
+      "accentRust": "[160, 90, 50] — Shadows, warnings, cautions"
+    },
+    "colorCodedBoxes": {
+      "green": "Natal Strength, gifts, 'What This Looks Like'",
+      "peach": "Natal Shadow, warnings, 'Watch For'",
+      "gold": "Year-ahead activation, How This Year Changes Things",
+      "blue": "Where It Plays Out, SR Moon context"
+    },
+    "typography": {
+      "sectionHeaders": "22pt helvetica bold",
+      "subHeaders": "16pt helvetica bold",
+      "cardTitles": "11-12pt helvetica bold",
+      "bodyText": "9.5-10pt helvetica normal, 13-14pt line height",
+      "labels": "7.5-9pt helvetica",
+      "badges": "7pt helvetica bold (white on gold)"
+    },
+    "cardSystem": {
+      "border": "0.3-0.5pt warmBorder rounded rect",
+      "leftAccent": "1.5-2pt colored left bar",
+      "padding": "14pt top, 12pt bottom, 8pt sides",
+      "breathingRoom": "4pt gap between header and body text"
+    }
+  },
+  "knownIssues": [
+    "Unicode astrological symbols (☉, ☽, etc.) replaced with text labels for cross-platform stability",
+    "stelliumSignMeaning and stelliumHouseMeaning are duplicated between SolarReturnPDFExport.tsx and solarReturnAnalysis.ts",
+    "Moon Sign Shift, SR vs Natal Table, Stelliums, Element/Modality, Lord of Year, Saturn/Node, Key Aspects, Moon Climate, Vertex, and Planet Spotlight are all rendered inline in SolarReturnPDFExport.tsx rather than extracted to separate pdfSections files",
+    "Monthly forecast body text may clip in 3×4 grid cells for longer interpretations",
+    "timeLordDetailedMeaning only covers Sun through Saturn (missing Uranus, Neptune, Pluto as Time Lords)"
+  ],
+  "possibleImprovements": [
+    "Extract inline sections from SolarReturnPDFExport.tsx into modular pdfSections files for maintainability",
+    "Add Uranus/Neptune/Pluto to timeLordDetailedMeaning for modern profection rulers",
+    "Add SR-internal aspect section to PDF (currently only SR-to-natal aspects are rendered)",
+    "Add natal degree conduit section to PDF (data is calculated but not rendered)",
+    "Add repeated themes consolidation card to PDF",
+    "Consider adding a 'What To Watch For Each Quarter' summary section",
+    "Add eclipse awareness if SR Moon or Sun is near eclipse degrees",
+    "Improve monthly forecast personalization — currently uses generic house themes rotated from profection"
+  ]
+}
