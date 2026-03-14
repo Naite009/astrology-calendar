@@ -227,31 +227,31 @@ export function createPDFContext(
     },
 
     writeCardSection(d: jsPDF, label: string, text: string, _labelColor: Color = GOLD) {
-      ctx.checkPage(66);
+      ctx.checkPage(60);
       const nestedStartY = ctx.y;
-      const nestedEstH = Math.min(300, ph - ctx.y - 10);
+      const nestedEstH = Math.min(280, ph - ctx.y - 10);
 
       d.setFillColor(...CARD_BG);
       d.roundedRect(margin + 10, nestedStartY, contentW - 20, nestedEstH, 2, 2, 'F');
       d.setFillColor(...GOLD);
       d.rect(margin + 10, nestedStartY, 2.5, nestedEstH, 'F');
 
-      ctx.y = nestedStartY + 15;
+      ctx.y = nestedStartY + 14;
       ctx.trackedLabel(d, label.toUpperCase(), margin + 18, ctx.y, { size: 7, charSpace: 3 });
-      ctx.y += 15;
+      ctx.y += 14;
 
-      d.setFont('times', 'normal'); d.setFontSize(10.5);
+      d.setFont('times', 'normal'); d.setFontSize(10);
       d.setTextColor(...INK);
       const lines: string[] = d.splitTextToSize(text, contentW - 40);
-      const lineH = 16;
+      const lineH = 14.5;
       for (const line of lines) {
         if (ctx.y + lineH > pageBottom()) break;
         d.text(line, margin + 18, ctx.y);
         ctx.y += lineH;
       }
 
-      ctx.y += 11;
-      const nestedH = Math.max(48, ctx.y - nestedStartY);
+      ctx.y += 8;
+      const nestedH = Math.max(44, ctx.y - nestedStartY);
 
       d.setFillColor(...CARD_BG);
       d.rect(margin + 9, nestedStartY + nestedH, contentW - 18, nestedEstH - nestedH + 5, 'F');
@@ -260,7 +260,7 @@ export function createPDFContext(
       d.setFillColor(...GOLD);
       d.rect(margin + 10, nestedStartY, 2.5, nestedH, 'F');
 
-      ctx.y += 10;
+      ctx.y += 8;
     },
 
     drawContentBox(d: jsPDF, x: number, yStart: number, w: number, h: number, _bg: Color = CARD_BG) {
