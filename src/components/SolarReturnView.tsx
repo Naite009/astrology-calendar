@@ -247,6 +247,16 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             }}
           />
 
+          {/* Hidden PDF export buttons — always in DOM so tier previews can trigger them */}
+          <div className="hidden">
+            <SolarReturnPDFExport
+              analysis={analysis}
+              srChart={selectedSR}
+              natalChart={selectedNatal}
+              narrative=""
+            />
+          </div>
+
           {/* Tier 1 full preview replaces tab content */}
           {selectedTier === 't1' ? (
             <Tier1Preview
