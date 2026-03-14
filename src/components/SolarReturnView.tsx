@@ -16,6 +16,7 @@ import { useDocumentExcerpts } from '@/hooks/useDocumentExcerpts';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import { SolarReturnPDFExport } from '@/components/SolarReturnPDFExport';
+import { TierButtonRow } from '@/components/solarReturn/TierButtonRow';
 
 const ZODIAC_SIGNS = [
   'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
@@ -225,6 +226,24 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             <TabsTrigger value="aspects" className="text-[11px] uppercase tracking-widest">Aspects</TabsTrigger>
             <TabsTrigger value="relocation" className="text-[11px] uppercase tracking-widest">Relocation</TabsTrigger>
           </TabsList>
+
+          {/* Tier preview button row */}
+          <TierButtonRow
+            analysis={analysis}
+            natalChart={selectedNatal}
+            solarReturnChart={selectedSR}
+            onDownloadTier={(tier) => {
+              if (tier === 't1') {
+                // Trigger Tier 1 download — delegate to the OverviewTab's PDF export
+                const btn = document.querySelector('[data-tier1-download]') as HTMLButtonElement;
+                if (btn) btn.click();
+              } else if (tier === 't4' || tier === 't5') {
+                toast.info('Coming soon — this tier is under development');
+              } else {
+                toast.info(`Tier ${tier.replace('t', '')} PDF coming soon`);
+              }
+            }}
+          />
 
           <TabsContent value="overview">
             <OverviewTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} onEdit={() => { setEditingSRId(selectedSR.id); setShowInputForm(true); }} onDelete={() => { deleteSolarReturn(selectedSR.id); setSelectedSRId(null); }} />
