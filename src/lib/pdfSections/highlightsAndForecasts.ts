@@ -115,13 +115,12 @@ function buildHighlights(a: SolarReturnAnalysis, srChart: SolarReturnChart, nata
     }
   }
 
-  // 5. Saturn focus — the mastery demand
+  // 5. Saturn focus — reframe without naming Saturn repeatedly
   if (a.saturnFocus) {
     const satH = a.saturnFocus.house;
-    const satSign = a.saturnFocus.sign;
     highlights.push({
-      label: `SATURN'S DEMAND: ${satSign.toUpperCase()}`,
-      timing: satH ? `${ord(satH)} House -- ${lifeTheme(satH)}` : `In ${satSign}`,
+      label: `WHERE DISCIPLINE IS REQUIRED`,
+      timing: satH ? `${ord(satH)} House -- ${lifeTheme(satH)}` : '',
       body: a.saturnFocus.interpretation,
       icon: 'WORK',
     });
