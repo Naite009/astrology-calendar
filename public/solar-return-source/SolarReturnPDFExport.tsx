@@ -328,7 +328,7 @@ function getPersonalizedStelliumText(sign: string, house: number | null, planets
 export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative }: Props) => {
   const [generating, setGenerating] = useState(false);
   const [generatingTier1, setGeneratingTier1] = useState(false);
-  const [birthdayMode, setBirthdayMode] = useState(false);
+  const [birthdayMode, setBirthdayMode] = useState(true);
   const [personalMessage, setPersonalMessage] = useState('');
   const [goldBorders, setGoldBorders] = useState(false);
 
