@@ -1,0 +1,22 @@
+{
+  "description": "Complete Solar Return PDF source code - all files",
+  "generated": "2026-03-14",
+  "files": [
+    "01-SolarReturnPDFExport.tsx",
+    "02-pdfContext.ts",
+    "03-cover.ts",
+    "04-tableOfContents.ts",
+    "05-howToRead.ts",
+    "06-strengthsPortrait.ts",
+    "07-yearAtAGlance.ts",
+    "08-tier1Report.ts",
+    "09-highlightsAndForecasts.ts",
+    "10-affirmationCard.ts",
+    "11-profectionWheel.ts",
+    "12-profectionPersonal.ts",
+    "13-keyDates.ts",
+    "14-quarterlySummary.ts",
+    "15-signColorThemes.ts"
+  ],
+  "instructions": "Download each file from /solar-return-source/[filename]. All files are the complete source code with no truncation."
+}
