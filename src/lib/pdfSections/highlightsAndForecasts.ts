@@ -338,41 +338,85 @@ export function generateHighlightsPage(
 
   // ── HIGHLIGHT CARDS ──
   const highlights = buildHighlights(a, srChart, natalChart);
-  for (const h of highlights) {
-    const bodyLines = doc.splitTextToSize(h.body, contentW - 30);
-    const cardH = 24 + bodyLines.length * 12 + 12;
-    ctx.checkPage(cardH + 10);
+  for (let i = 0; i < highlights.length; i++) {
+    const h = highlights[i];
+    const bodyLines = doc.splitTextToSize(h.body, contentW - 24);
+    ctx.checkPage(100);
 
-    const boxY = ctx.y;
-    doc.setFillColor(...colors.softGold);
-    doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.4);
-    doc.roundedRect(margin, boxY, contentW, cardH, 6, 6, 'FD');
+    if (i === 0) {
+      // HERO card — full bleed gold bar with large label, white text
+      const heroH = 16 + bodyLines.length * 12 + 20;
+      doc.setFillColor(...colors.deep);
+      doc.roundedRect(margin, ctx.y, contentW, heroH, 6, 6, 'F');
 
-    // Icon badge
-    doc.setFillColor(...colors.gold);
-    doc.roundedRect(margin + 8, boxY + 8, 40, 18, 4, 4, 'F');
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(7);
-    doc.setTextColor(255, 255, 255);
-    doc.text(h.icon, margin + 28, boxY + 19, { align: 'center' });
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
+      doc.setTextColor(...colors.gold);
+      doc.setCharSpace(1.5);
+      doc.text(h.icon, margin + 16, ctx.y + 14);
+      doc.setCharSpace(0);
 
-    // Label (after badge, with clear gap)
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
-    doc.setTextColor(...colors.gold);
-    doc.text(h.label, margin + 56, boxY + 19);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+      doc.setTextColor(...colors.gold);
+      doc.text(h.label, margin + 16, ctx.y + 24);
 
-    // Timing subtitle
-    doc.setFont('helvetica', 'italic'); doc.setFontSize(8);
-    doc.setTextColor(...colors.deepBrown);
-    doc.text(h.timing, margin + 56, boxY + 30);
+      doc.setFont('helvetica', 'italic'); doc.setFontSize(8);
+      doc.setTextColor(200, 190, 160);
+      doc.text(h.timing, margin + 16, ctx.y + 35);
 
-    // Body text — below the header area
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
-    doc.setTextColor(...colors.bodyText);
-    bodyLines.forEach((line: string, i: number) => {
-      doc.text(line, margin + 14, boxY + 42 + i * 12);
-    });
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+      doc.setTextColor(235, 230, 215);
+      bodyLines.forEach((line: string, li: number) => {
+        doc.text(line, margin + 16, ctx.y + 48 + li * 12);
+      });
+      ctx.y += heroH + 10;
 
-    ctx.y = boxY + cardH + 6;
+    } else if (i === 1) {
+      // PULL QUOTE style — large italic statement, no box
+      ctx.y += 8;
+      doc.setDrawColor(...colors.gold); doc.setLineWidth(2);
+      doc.line(margin, ctx.y, margin + 3, ctx.y + 40);
+      
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+      doc.setTextColor(...colors.gold);
+      doc.setCharSpace(1.2);
+      doc.text(h.label, margin + 12, ctx.y + 10);
+      doc.setCharSpace(0);
+
+      doc.setFont('helvetica', 'italic'); doc.setFontSize(7.5);
+      doc.setTextColor(...colors.deepBrown);
+      doc.text(h.timing, margin + 12, ctx.y + 20);
+
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
+      doc.setTextColor(...colors.bodyText);
+      bodyLines.forEach((line: string, li: number) => {
+        doc.text(line, margin + 12, ctx.y + 32 + li * 13);
+      });
+      ctx.y += 40 + bodyLines.length * 13 + 14;
+
+    } else {
+      // STANDARD card — lighter treatment
+      const cardH = 20 + bodyLines.length * 11 + 14;
+      doc.setFillColor(250, 248, 244);
+      doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.3);
+      doc.roundedRect(margin, ctx.y, contentW, cardH, 4, 4, 'FD');
+      doc.setDrawColor(...colors.gold); doc.setLineWidth(1.5);
+      doc.line(margin, ctx.y + 4, margin, ctx.y + cardH - 4);
+
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+      doc.setTextColor(...colors.gold);
+      doc.text(h.label, margin + 12, ctx.y + 13);
+
+      doc.setFont('helvetica', 'italic'); doc.setFontSize(7.5);
+      doc.setTextColor(...colors.deepBrown);
+      doc.text(h.timing, margin + 12, ctx.y + 23);
+
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
+      doc.setTextColor(...colors.bodyText);
+      bodyLines.forEach((line: string, li: number) => {
+        doc.text(line, margin + 12, ctx.y + 34 + li * 11);
+      });
+      ctx.y += cardH + 6;
+    }
   }
 
   // ── MONTH-BY-MONTH AT A GLANCE — all 12 on one page ──
