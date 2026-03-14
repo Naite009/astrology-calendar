@@ -923,14 +923,12 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
 
         if (analysis.saturnFocus) {
           ctx.drawCard(doc, () => {
-            // Saturn header box
-            doc.setFillColor(...ctx.colors.softGold);
-            doc.roundedRect(margin + 6, ctx.y - 4, contentW - 12, 30, 4, 4, 'F');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(...ctx.colors.gold);
-            doc.text(`Saturn in ${analysis.saturnFocus!.sign} — House ${analysis.saturnFocus!.house || '--'}${analysis.saturnFocus!.isRetrograde ? ' (Rx)' : ''}`, margin + 16, ctx.y + 14);
-            ctx.y += 34;
+            // Saturn header — editorial
+            doc.setFont('times', 'bold'); doc.setFontSize(12); doc.setTextColor(...ctx.colors.ink);
+            doc.text(`Saturn in ${analysis.saturnFocus!.sign} — House ${analysis.saturnFocus!.house || '--'}${analysis.saturnFocus!.isRetrograde ? ' (Rx)' : ''}`, margin + 8, ctx.y);
+            ctx.y += 16;
             const satMeaning = saturnHouseMeaning[analysis.saturnFocus!.house];
-            if (satMeaning) ctx.writeBody(doc, satMeaning, ctx.colors.bodyText, 10, 14);
+            if (satMeaning) ctx.writeBody(doc, satMeaning);
             
             // Saturn sign-specific behavior
             const satSignBehavior: Record<string, string> = {
