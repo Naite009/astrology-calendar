@@ -6,7 +6,7 @@ import { NatalChart } from '@/hooks/useNatalChart';
 import { KeyFactsRow } from './KeyFactsRow';
 import { TimeLordCard } from './TimeLordCard';
 import { NatalMeetsSR } from './NatalMeetsSR';
-import { TierButtonRow } from './TierButtonRow';
+
 import { buildOraclePrompt } from '@/lib/aiPrompts/oraclePrompt';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
