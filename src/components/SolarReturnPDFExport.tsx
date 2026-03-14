@@ -1108,18 +1108,15 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // =============================================
       if (analysis.vertex) {
         ctx.checkPage(200);
-        if (ctx.y > margin + 100) { doc.addPage(); ctx.y = margin; }
+        if (ctx.y > margin + 100) { doc.addPage(); ctx.y = margin; ctx.pageBg(doc); }
         ctx.sectionPages.set('VERTEX', doc.getNumberOfPages());
-        ctx.drawGoldRule(doc); ctx.y += 20;
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-        doc.setTextColor(...ctx.colors.gold);
-        doc.text('VERTEX — FATED ENCOUNTERS', margin, ctx.y); ctx.y += 20;
+        ctx.sectionTitle(doc, 'VERTEX — FATED ENCOUNTERS');
         ctx.drawCard(doc, () => {
-          ctx.writeBold(doc, `Vertex: ${analysis.vertex!.sign} ${analysis.vertex!.degree}' ${analysis.vertex!.house ? `(House ${analysis.vertex!.house})` : ''}`, ctx.colors.deepBrown, 11);
+          ctx.writeBold(doc, `Vertex: ${analysis.vertex!.sign} ${analysis.vertex!.degree}' ${analysis.vertex!.house ? `(House ${analysis.vertex!.house})` : ''}`);
           const vSign = vertexInSign[analysis.vertex!.sign];
           if (vSign) {
-            ctx.writeCardSection(doc, 'Fated Theme', vSign.fatedTheme, ctx.colors.gold);
-            ctx.writeCardSection(doc, 'Who May Appear', vSign.encounters, ctx.colors.accentGreen);
+            ctx.writeCardSection(doc, 'Fated Theme', vSign.fatedTheme);
+            ctx.writeCardSection(doc, 'Who May Appear', vSign.encounters);
           }
         });
       }
