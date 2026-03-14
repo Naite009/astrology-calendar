@@ -85,15 +85,16 @@ export const OverviewDashboard = ({ analysis, srChart, natalChart }: Props) => {
       {/* SECTION 4 — How This Year Meets You */}
       <NatalMeetsSR analysis={analysis} srChart={srChart} natalChart={natalChart} />
 
-      {/* SECTION 5 — Tier Download Row + AI Button */}
-      <TierButtonRow
-        analysis={analysis}
-        natalChart={natalChart}
-        solarReturnChart={srChart}
-        onSelectTier={onSelectTier}
-        onDownloadTier={onDownloadTier}
-        onAIClick={generateAI}
-      />
+      {/* AI Oracle Reading button */}
+      <div className="flex justify-end py-3 px-1 border-t border-border">
+        <button
+          onClick={generateAI}
+          className="px-4 py-1.5 rounded-full text-xs font-medium border border-border text-muted-foreground hover:bg-secondary transition-all flex items-center gap-1.5"
+        >
+          <Sparkles size={10} />
+          Generate AI Reading
+        </button>
+      </div>
 
       {/* AI Reading Panel (on demand) */}
       {aiPanelOpen && (
