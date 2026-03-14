@@ -359,7 +359,15 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // Header row with full-width gold background
       doc.setFillColor(...ctx.colors.gold);
       doc.roundedRect(margin, ctx.y - 12, contentW, 20, 4, 4, 'F');
-      const cols = [margin + 8, margin + 68, margin + 180, margin + 222, margin + 335, margin + 378];
+      // Use proportional columns based on contentW to prevent overflow
+      const cols = [
+        margin + 8,                          // PLANET
+        margin + contentW * 0.12,            // SR POSITION
+        margin + contentW * 0.32,            // SR H
+        margin + contentW * 0.40,            // NATAL POSITION
+        margin + contentW * 0.60,            // NAT H
+        margin + contentW * 0.70,            // SHIFT
+      ];
       doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(255, 255, 255);
       ['PLANET', 'SR POSITION', 'SR H', 'NATAL POSITION', 'NAT H', 'SHIFT'].forEach((h, i) => doc.text(h, cols[i], ctx.y));
       ctx.y += 14;
@@ -702,12 +710,12 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         if (tlDignity) {
           doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
           doc.setTextColor(...ctx.colors.deepBrown);
-          doc.text(`Dignity: ${tlDignity}`, pw - margin - 120, ctx.y + 28);
+          doc.text(`Dignity: ${tlDignity}`, margin + contentW - 100, ctx.y + 28);
         }
         if (tlIsRetro) {
           doc.setTextColor(...ctx.colors.accentRust);
           doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-          doc.text('RETROGRADE', pw - margin - 120, ctx.y + 42);
+          doc.text('RETROGRADE', margin + contentW - 100, ctx.y + 42);
         }
         ctx.y += 70;
 
@@ -910,14 +918,15 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           const accentColor = isHard ? [180, 100, 60] as [number, number, number] : ctx.colors.gold;
           ctx.drawCard(doc, () => {
             // Title bar
+            const innerW = contentW - 24;
             doc.setFillColor(...(isHard ? [255, 245, 240] as [number, number, number] : ctx.colors.softGold));
-            doc.roundedRect(margin + 6, ctx.y - 4, contentW - 12, 26, 4, 4, 'F');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5);
+            doc.roundedRect(margin + 8, ctx.y - 4, innerW, 26, 4, 4, 'F');
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
             doc.setTextColor(...accentColor);
             doc.text(`SR ${P[asp.planet1] || asp.planet1}  ${asp.type}  Natal ${P[asp.planet2] || asp.planet2}`, margin + 16, ctx.y + 10);
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.dimText);
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...ctx.colors.dimText);
             const orbHouse = `${asp.orb}' orb${srH ? `  |  SR H${srH}` : ''}${natalH ? `  |  Natal H${natalH}` : ''}`;
-            doc.text(orbHouse, pw - margin - 12, ctx.y + 10, { align: 'right' });
+            doc.text(orbHouse, margin + innerW - 4, ctx.y + 10, { align: 'right' });
             ctx.y += 30;
 
             ctx.writeCardSection(doc, 'How It Feels', interp.howItFeels, ctx.colors.accentGreen);
@@ -988,13 +997,14 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             const isHard = ['Square', 'Opposition', 'Quincunx'].includes(asp.aspectType);
             ctx.checkPage(80);
             ctx.drawCard(doc, () => {
+              const innerW = contentW - 24;
               doc.setFillColor(...(isHard ? [255, 245, 240] as [number, number, number] : ctx.colors.softGold));
-              doc.roundedRect(margin + 6, ctx.y - 4, contentW - 12, 22, 4, 4, 'F');
-              doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+              doc.roundedRect(margin + 8, ctx.y - 4, innerW, 22, 4, 4, 'F');
+              doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
               doc.setTextColor(...(isHard ? [180, 100, 60] as [number, number, number] : ctx.colors.gold));
               doc.text(`Moon ${asp.aspectType} ${P[asp.targetPlanet] || asp.targetPlanet}`, margin + 16, ctx.y + 10);
-              doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.dimText);
-              doc.text(`${asp.orb}' orb${asp.targetSRHouse ? `  |  H${asp.targetSRHouse}` : ''}`, pw - margin - 12, ctx.y + 10, { align: 'right' });
+              doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...ctx.colors.dimText);
+              doc.text(`${asp.orb}' orb${asp.targetSRHouse ? `  |  H${asp.targetSRHouse}` : ''}`, margin + innerW - 4, ctx.y + 10, { align: 'right' });
               ctx.y += 26;
               ctx.writeBody(doc, asp.interpretation, ctx.colors.bodyText, 9.5, 13);
             }, isHard ? [180, 100, 60] : ctx.colors.gold);
@@ -1057,8 +1067,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
             doc.setTextColor(...ctx.colors.gold);
             doc.text(`${P[planet] || planet} in House ${h}`, margin + 16, ctx.y + 10);
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.deepBrown);
-            doc.text(data.title || '', pw - margin - 12, ctx.y + 10, { align: 'right' });
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.deepBrown);
+            const titleText = (data.title || '').substring(0, 40);
+            doc.text(titleText, margin + contentW - 16, ctx.y + 10, { align: 'right' });
             ctx.y += 32;
 
             if (data.overview) {
