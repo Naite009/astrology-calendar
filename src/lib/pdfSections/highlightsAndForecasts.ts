@@ -307,12 +307,13 @@ function getSignFeel(sign: string): string {
   return feels[sign] || 'mixed emotional tones';
 }
 
-function getMonthFromSign(sign: string): number {
-  const signMonths: Record<string, number> = {
-    Aries: 2, Taurus: 3, Gemini: 4, Cancer: 5, Leo: 6, Virgo: 7,
-    Libra: 8, Scorpio: 9, Sagittarius: 10, Capricorn: 11, Aquarius: 0, Pisces: 1,
+function getSignRuler(sign: string): string | null {
+  const rulers: Record<string, string> = {
+    Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon',
+    Leo: 'Sun', Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Pluto',
+    Sagittarius: 'Jupiter', Capricorn: 'Saturn', Aquarius: 'Saturn', Pisces: 'Neptune',
   };
-  return signMonths[sign] ?? 0;
+  return rulers[sign] || null;
 }
 
 // ─── PDF Rendering ───
