@@ -652,44 +652,41 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           const eb = analysis.elementBalance;
           const mb = analysis.modalityBalance;
 
-          // Elements — compact inline
-          ctx.writeBold(doc, 'Elemental Balance', ctx.colors.gold, 11);
+          // Elements — editorial inline with hairline dividers
+          ctx.writeBold(doc, 'Elemental Balance');
           ctx.y += 6;
-          const elemW = (contentW - 56) / 4;
-          const elemH = 55;
-          const elements = [
-            { name: 'Fire', val: eb.fire, bg: [255, 240, 230] as [number, number, number] },
-            { name: 'Earth', val: eb.earth, bg: [235, 245, 230] as [number, number, number] },
-            { name: 'Air', val: eb.air, bg: [232, 240, 252] as [number, number, number] },
-            { name: 'Water', val: eb.water, bg: [230, 240, 252] as [number, number, number] },
-          ];
+          const elemW = (contentW - 12) / 4;
           const elemStartY = ctx.y;
+          const elements = [
+            { name: 'Fire', val: eb.fire },
+            { name: 'Earth', val: eb.earth },
+            { name: 'Air', val: eb.air },
+            { name: 'Water', val: eb.water },
+          ];
           elements.forEach((el, i) => {
-            const x = margin + 12 + i * (elemW + 10);
+            const x = margin + i * elemW;
             const isDom = el.name.toLowerCase() === eb.dominant;
-            doc.setFillColor(...el.bg);
-            doc.setDrawColor(...(isDom ? ctx.colors.gold : ctx.colors.warmBorder));
-            doc.setLineWidth(isDom ? 1.5 : 0.3);
-            doc.roundedRect(x, elemStartY, elemW, elemH, 6, 6, 'FD');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(24);
-            doc.setTextColor(...(isDom ? ctx.colors.gold : ctx.colors.darkText));
-            doc.text(String(el.val), x + elemW / 2, elemStartY + 24, { align: 'center' });
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-            doc.setTextColor(...ctx.colors.bodyText);
-            doc.text(el.name, x + elemW / 2, elemStartY + 40, { align: 'center' });
+            doc.setFont('times', 'bold'); doc.setFontSize(22);
+            doc.setTextColor(...(isDom ? ctx.colors.ink : ctx.colors.muted));
+            doc.text(String(el.val), x + elemW / 2, elemStartY + 20, { align: 'center' });
+            doc.setFont('times', 'normal'); doc.setFontSize(9);
+            doc.setTextColor(...ctx.colors.ink);
+            doc.text(el.name, x + elemW / 2, elemStartY + 34, { align: 'center' });
             if (isDom) {
-              doc.setFont('helvetica', 'bold'); doc.setFontSize(7);
-              doc.setTextColor(...ctx.colors.gold);
-              doc.text('DOMINANT', x + elemW / 2, elemStartY + 50, { align: 'center' });
+              ctx.trackedLabel(doc, 'DOMINANT', x + elemW / 2, elemStartY + 44, { align: 'center', size: 6.5, charSpace: 2 });
+            }
+            // Vertical divider
+            if (i < 3) {
+              doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
+              doc.line(x + elemW, elemStartY, x + elemW, elemStartY + 48);
             }
           });
-          ctx.y = elemStartY + elemH + 10;
+          ctx.y = elemStartY + 54;
 
-          // Modalities — compact inline
-          ctx.writeBold(doc, 'Modality Balance', ctx.colors.gold, 11);
+          // Modalities — editorial inline
+          ctx.writeBold(doc, 'Modality Balance');
           ctx.y += 6;
-          const modW = (contentW - 44) / 3;
-          const modH = 50;
+          const modW = (contentW - 8) / 3;
           const modalities = [
             { name: 'Cardinal', val: mb.cardinal, desc: 'Initiating' },
             { name: 'Fixed', val: mb.fixed, desc: 'Sustaining' },
@@ -697,20 +694,20 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           ];
           const modStartY = ctx.y;
           modalities.forEach((mod, i) => {
-            const x = margin + 12 + i * (modW + 10);
+            const x = margin + i * modW;
             const isDom = mod.name.toLowerCase() === mb.dominant;
-            doc.setFillColor(...ctx.colors.softGold);
-            doc.setDrawColor(...(isDom ? ctx.colors.gold : ctx.colors.warmBorder));
-            doc.setLineWidth(isDom ? 1.5 : 0.3);
-            doc.roundedRect(x, modStartY, modW, modH, 6, 6, 'FD');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(22);
-            doc.setTextColor(...(isDom ? ctx.colors.gold : ctx.colors.darkText));
-            doc.text(String(mod.val), x + modW / 2, modStartY + 22, { align: 'center' });
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-            doc.setTextColor(...ctx.colors.bodyText);
-            doc.text(`${mod.name} · ${mod.desc}`, x + modW / 2, modStartY + 38, { align: 'center' });
+            doc.setFont('times', 'bold'); doc.setFontSize(20);
+            doc.setTextColor(...(isDom ? ctx.colors.ink : ctx.colors.muted));
+            doc.text(String(mod.val), x + modW / 2, modStartY + 18, { align: 'center' });
+            doc.setFont('times', 'normal'); doc.setFontSize(9);
+            doc.setTextColor(...ctx.colors.ink);
+            doc.text(`${mod.name} · ${mod.desc}`, x + modW / 2, modStartY + 32, { align: 'center' });
+            if (i < 2) {
+              doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
+              doc.line(x + modW, modStartY, x + modW, modStartY + 38);
+            }
           });
-          ctx.y = modStartY + modH + 12;
+          ctx.y = modStartY + 44;
         }
 
         // WHERE YOUR ENERGY LIVES — continues on same page
