@@ -18,6 +18,7 @@ import ReactMarkdown from 'react-markdown';
 import { SolarReturnPDFExport } from '@/components/SolarReturnPDFExport';
 import { TierButtonRow } from '@/components/solarReturn/TierButtonRow';
 import { Tier1Preview } from '@/components/solarReturn/Tier1Preview';
+import { OverviewDashboard } from '@/components/solarReturn/OverviewDashboard';
 
 const ZODIAC_SIGNS = [
   'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
