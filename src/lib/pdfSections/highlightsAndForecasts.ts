@@ -165,7 +165,16 @@ function buildPersonalizedMonthlyForecasts(
   const fullMonthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
   const srYear = srChart.solarReturnYear || new Date().getFullYear();
-  const birthMonth = natalChart.planets?.Sun ? getMonthFromSign(natalChart.planets.Sun.sign) : new Date().getMonth();
+  // Use actual birth date to determine birth month, not sign approximation
+  let birthMonth = 2; // default March
+  if (natalChart.birthDate) {
+    const parts = natalChart.birthDate.split(/[-/]/);
+    // Try parsing as YYYY-MM-DD or MM/DD/YYYY
+    if (parts.length >= 2) {
+      const candidate = parts[0].length === 4 ? parseInt(parts[1], 10) - 1 : parseInt(parts[0], 10) - 1;
+      if (candidate >= 0 && candidate <= 11) birthMonth = candidate;
+    }
+  }
 
   const timeLord = a.profectionYear?.timeLord || '';
   const timeLordName = P[timeLord] || timeLord;
