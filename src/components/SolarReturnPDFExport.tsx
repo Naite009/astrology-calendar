@@ -1188,8 +1188,8 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
               const remainder = fullText.substring(firstSentenceEnd + 2);
               ctx.checkPage(80);
               ctx.y += 8;
-              doc.setFont('helvetica', 'italic'); doc.setFontSize(12);
-              doc.setTextColor(...ctx.colors.deepBrown);
+              doc.setFont('times', 'italic'); doc.setFontSize(12);
+              doc.setTextColor(...ctx.colors.accent);
               const pqLines = doc.splitTextToSize(pullQuote, contentW - 60);
               pqLines.forEach((line: string) => {
                 doc.text(line, pw / 2, ctx.y, { align: 'center' });
@@ -1197,8 +1197,8 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
               });
               ctx.y += 6;
               if (remainder) {
-                doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
-                doc.setTextColor(...ctx.colors.bodyText);
+                doc.setFont('times', 'normal'); doc.setFontSize(9.5);
+                doc.setTextColor(...ctx.colors.ink);
                 const rLines = doc.splitTextToSize(remainder, contentW);
                 rLines.forEach((line: string) => {
                   ctx.checkPage(14);
