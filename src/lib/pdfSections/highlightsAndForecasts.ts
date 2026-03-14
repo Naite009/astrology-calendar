@@ -63,15 +63,19 @@ function buildHighlights(a: SolarReturnAnalysis, srChart: SolarReturnChart, nata
     });
   }
 
-  // 4. Strongest SR-to-Natal aspect
+  // 4. Strongest SR-to-Natal aspect (skip Sun conjunct Sun — that's the Solar Return itself)
   if (a.srToNatalAspects.length > 0) {
-    const strongest = a.srToNatalAspects[0];
-    highlights.push({
-      label: `YEAR-DEFINING ASPECT`,
-      timing: `SR ${P[strongest.planet1] || strongest.planet1} ${strongest.type} Natal ${P[strongest.planet2] || strongest.planet2}`,
-      body: strongest.interpretation,
-      icon: 'SHIFT',
-    });
+    const strongest = a.srToNatalAspects.find(asp =>
+      !(asp.planet1 === 'Sun' && asp.planet2 === 'Sun' && asp.type === 'Conjunction')
+    );
+    if (strongest) {
+      highlights.push({
+        label: `YEAR-DEFINING ASPECT`,
+        timing: `SR ${P[strongest.planet1] || strongest.planet1} ${strongest.type} Natal ${P[strongest.planet2] || strongest.planet2}`,
+        body: strongest.interpretation,
+        icon: 'SHIFT',
+      });
+    }
   }
 
   // 5. Saturn focus — the mastery demand
