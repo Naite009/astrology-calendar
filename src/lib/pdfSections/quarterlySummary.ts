@@ -80,7 +80,8 @@ function buildDataRichQuarters(
   const nodeH = a.nodesFocus?.house;
 
   // Determine key dates from analysis if available
-  const keyDates = a.keyDates || [];
+  // Key dates from analysis if available
+  const keyDates = (a as any).keyDates || [];
 
   const quarters: QuarterData[] = [];
 
