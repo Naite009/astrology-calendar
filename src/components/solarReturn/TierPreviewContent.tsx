@@ -63,9 +63,9 @@ export const TierPreviewContent = ({ tier, analysis }: Props) => {
       return (
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-2">
-            <SummaryCard label="Year Theme" value={analysis.yearlyTheme?.theme || 'Transformation'} />
-            <SummaryCard label="Stelliums" value={stelliums.length ? stelliums.map(s => `${s.sign} (${s.planets.join(', ')})`).join('; ') : 'None detected'} />
-            <SummaryCard label="Strongest Aspect" value={topAspects[0] ? `${topAspects[0].srPlanet} ${topAspects[0].aspect} ${topAspects[0].natalPlanet}` : '—'} />
+            <SummaryCard label="Year Theme" value={analysis.yearlyTheme?.yearTheme || 'Transformation'} />
+            <SummaryCard label="Stelliums" value={stelliums.length ? stelliums.map(s => `${s.location} (${s.planets.join(', ')})`).join('; ') : 'None detected'} />
+            <SummaryCard label="Strongest Aspect" value={topAspects[0] ? `${topAspects[0].planet1} ${topAspects[0].type} ${topAspects[0].planet2}` : '—'} />
             <SummaryCard label="Moon Analysis" value={`${analysis.moonSign} in House ${analysis.moonHouse?.house || '—'}`} />
           </div>
           <SectionList items="Also includes: All aspects · Planet spotlight · Vertex · Degree conduits · Repeated themes · Full monthly calendar" />
