@@ -138,7 +138,7 @@ export function createPDFContext(
       }
     },
 
-    writeBody(d: jsPDF, text: string, _color: Color = INK, size = 11, lineH = 18) {
+    writeBody(d: jsPDF, text: string, _color: Color = INK, size = 11, lineH = 17) {
       d.setFont('times', 'normal');
       d.setFontSize(size);
       d.setTextColor(...INK);
