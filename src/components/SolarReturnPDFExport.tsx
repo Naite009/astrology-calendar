@@ -1120,6 +1120,13 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       generateHighlightsPage(ctx, doc, analysis, srChart, natalChart);
 
       // =============================================
+      // QUARTERLY SUMMARY — YOUR YEAR IN FOUR SEASONS
+      // =============================================
+      doc.addPage(); ctx.y = margin;
+      ctx.sectionPages.set('YOUR YEAR IN FOUR SEASONS', doc.getNumberOfPages());
+      generateQuarterlySummary(ctx, doc, analysis, srChart, natalChart);
+
+      // =============================================
       // BIRTHDAY AFFIRMATION CARD (birthday mode)
       // =============================================
       if (birthdayMode) {

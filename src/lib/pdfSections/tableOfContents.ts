@@ -50,6 +50,7 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   sections.push({ title: 'Planet Spotlight', desc: 'Deep dive into key planets by house placement' });
   if (narrative) sections.push({ title: 'Year-Ahead Reading', desc: 'Narrative synthesis of your year' });
   sections.push({ title: 'Best Months and Highlights', desc: 'Peak months for love, luck, and action' });
+  sections.push({ title: 'Your Year in Four Seasons', desc: 'Key themes for each quarter of your solar return year' });
   if (birthdayMode) sections.push({ title: 'Birthday Affirmation Card', desc: 'A personalized affirmation to carry with you all year' });
 
   // Numbered list with bold titles — page numbers added in second pass
