@@ -246,8 +246,9 @@ export async function generatePDFCover(
   const birthFooter = `Born: ${formatDateShort(natalChart.birthDate)}  |  ${capitalizeLocation(natalChart.birthLocation)}`;
   doc.text(birthFooter, pw / 2, footerY, { align: 'center' });
 
-  if (srChart.location) {
-    doc.text(`SR Location: ${capitalizeLocation(srChart.location)}`, pw / 2, footerY + 14, { align: 'center' });
+  const srLoc = (srChart as any).location || (srChart as any).birthLocation || '';
+  if (srLoc) {
+    doc.text(`SR Location: ${capitalizeLocation(srLoc)}`, pw / 2, footerY + 14, { align: 'center' });
   }
 
   // Personal message below footer if birthday mode
