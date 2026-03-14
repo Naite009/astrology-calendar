@@ -1167,25 +1167,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // NARRATIVE
       // =============================================
       if (narrative) {
-        doc.addPage(); ctx.y = margin;
+        doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
         ctx.sectionPages.set('YEAR-AHEAD READING', doc.getNumberOfPages());
-
-        // Section opener — large number + title with breathing room
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-        doc.setTextColor(...ctx.colors.dimText);
-        doc.text('17', margin, ctx.y);
-        ctx.y += 14;
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(22);
-        doc.setTextColor(...ctx.colors.gold);
-        doc.text('YEAR-AHEAD', margin, ctx.y);
-        ctx.y += 26;
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(22);
-        doc.setTextColor(...ctx.colors.ink);
-        doc.text('READING', margin, ctx.y);
-        ctx.y += 8;
-        doc.setDrawColor(...ctx.colors.gold); doc.setLineWidth(2);
-        doc.line(margin, ctx.y, margin + 80, ctx.y);
-        ctx.y += 28;
+        ctx.sectionTitle(doc, 'YEAR-AHEAD READING');
 
         const lines = narrative.split('\n');
         let paraBuffer: string[] = [];
