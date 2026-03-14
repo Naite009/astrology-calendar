@@ -1042,12 +1042,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // YOUR MOON THIS YEAR — own page
       // =============================================
       if (analysis.srMoonAspects || analysis.moonVOC || analysis.moonAngularity) {
-        doc.addPage(); ctx.y = margin;
+        doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
         ctx.sectionPages.set('YOUR MOON THIS YEAR', doc.getNumberOfPages());
-        ctx.drawGoldRule(doc); ctx.y += 20;
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-        doc.setTextColor(...ctx.colors.gold);
-        doc.text('YOUR MOON THIS YEAR — EMOTIONAL CLIMATE', margin, ctx.y); ctx.y += 20;
+        ctx.sectionTitle(doc, 'YOUR MOON THIS YEAR', 'Emotional Climate');
 
         // Moon VOC
         if (analysis.moonVOC) {
