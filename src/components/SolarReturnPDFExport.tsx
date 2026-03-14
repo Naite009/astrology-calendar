@@ -804,47 +804,39 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // The true "Lord of the Year" in Hellenistic astrology = profection Time Lord
       // =============================================
       if (analysis.profectionYear?.timeLord) {
-        doc.addPage(); ctx.y = margin;
+        doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
         ctx.sectionPages.set('LORD OF THE YEAR', doc.getNumberOfPages());
-        ctx.drawGoldRule(doc); ctx.y += 20;
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-        doc.setTextColor(...ctx.colors.gold);
-        doc.text('LORD OF THE YEAR', margin, ctx.y); ctx.y += 20;
+        ctx.sectionTitle(doc, 'LORD OF THE YEAR');
 
         const tlPlanet = analysis.profectionYear.timeLord;
         const tlSRHouse = analysis.profectionYear.timeLordSRHouse;
         const tlSRSign = analysis.profectionYear.timeLordSRSign;
         const houseNum = analysis.profectionYear.houseNumber;
         
-        // Get dignity and retrograde from SR chart position
         const tlSRPos = srChart.planets[tlPlanet as keyof typeof srChart.planets];
         const tlIsRetro = !!(tlSRPos as any)?.isRetrograde;
-        // Reuse lordOfTheYear dignity if same planet, otherwise leave blank
         const tlDignity = (analysis.lordOfTheYear && analysis.lordOfTheYear.planet === tlPlanet) 
           ? analysis.lordOfTheYear.dignity : '';
 
-        // Header box with key info
-        doc.setFillColor(...ctx.colors.softGold);
-        doc.setDrawColor(...ctx.colors.warmBorder); doc.setLineWidth(0.5);
-        doc.roundedRect(margin, ctx.y, contentW, 60, 6, 6, 'FD');
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(20);
-        doc.setTextColor(...ctx.colors.gold);
-        doc.text(`${P[tlPlanet] || tlPlanet}`, margin + 20, ctx.y + 28);
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(11);
-        doc.setTextColor(...ctx.colors.bodyText);
-        doc.text(`${tlSRSign || '--'} — SR House ${tlSRHouse || '--'}`, margin + 20, ctx.y + 46);
-        // Dignity + Rx badges on right
+        // Header — editorial style
+        doc.setFont('times', 'bold'); doc.setFontSize(18);
+        doc.setTextColor(...ctx.colors.ink);
+        doc.text(`${P[tlPlanet] || tlPlanet}`, margin + 8, ctx.y);
+        doc.setFont('times', 'normal'); doc.setFontSize(11);
+        doc.setTextColor(...ctx.colors.ink);
+        doc.text(`${tlSRSign || '--'} — SR House ${tlSRHouse || '--'}`, margin + 8, ctx.y + 18);
         if (tlDignity) {
-          doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-          doc.setTextColor(...ctx.colors.deepBrown);
-          doc.text(`Dignity: ${tlDignity}`, margin + contentW - 100, ctx.y + 28);
+          doc.setFont('times', 'italic'); doc.setFontSize(9);
+          doc.setTextColor(...ctx.colors.muted);
+          doc.text(`Dignity: ${tlDignity}`, margin + contentW, ctx.y, { align: 'right' });
         }
         if (tlIsRetro) {
-          doc.setTextColor(...ctx.colors.accentRust);
-          doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-          doc.text('RETROGRADE', margin + contentW - 100, ctx.y + 42);
+          ctx.trackedLabel(doc, 'RETROGRADE', margin + contentW, ctx.y + 12, { align: 'right', size: 7, charSpace: 2 });
         }
-        ctx.y += 70;
+        ctx.y += 30;
+        doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
+        doc.line(margin, ctx.y, margin + contentW, ctx.y);
+        ctx.y += 14;
 
         // Why this planet — link to profection
         ctx.drawCard(doc, () => {
