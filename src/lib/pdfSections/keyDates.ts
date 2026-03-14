@@ -256,44 +256,34 @@ export function generateKeyDatesSection(
     const yearNum = event.date.getFullYear();
     const isHard = ['challenge', 'tension'].includes(event.nature);
     const isFlow = ['flow', 'opportunity'].includes(event.nature);
-    const accentColor: [number, number, number] = isHard ? [180, 100, 60] : isFlow ? colors.accentGreen : colors.gold;
-    const bgColor: [number, number, number] = isHard ? [255, 245, 240] : isFlow ? [240, 252, 245] : colors.softGold;
 
       ctx.checkPage(180);
       ctx.drawCard(doc, () => {
-        // Date + aspect header bar — ensure it stays within card bounds
-        const cardInner = contentW - 24; // safe inner width
-        doc.setFillColor(...bgColor);
-        doc.roundedRect(margin + 8, ctx.y - 4, cardInner, 34, 4, 4, 'F');
-        
         // Date on left
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
-        doc.setTextColor(...accentColor);
-        doc.text(`${monthName} ${dayNum}, ${yearNum}`, margin + 16, ctx.y + 10);
+        doc.setFont('times', 'bold'); doc.setFontSize(11);
+        doc.setTextColor(...colors.ink);
+        doc.text(`${monthName} ${dayNum}, ${yearNum}`, margin + 8, ctx.y);
         
-        // Aspect name below date
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
-        doc.setTextColor(...colors.deepBrown);
+        // Nature badge — plain text
+        const natureBadge = isHard ? 'PRESSURE POINT' : isFlow ? 'GREEN LIGHT' : event.nature.toUpperCase();
+        ctx.trackedLabel(doc, natureBadge, pw - margin, ctx.y, { align: 'right', size: 7, charSpace: 2 });
+        ctx.y += 14;
+        
+        // Aspect name
         const natalName = P[event.natalPlanet] || event.natalPlanet;
         const aspectTitle = `${tlName} ${event.aspectName} Natal ${natalName}`;
-        doc.text(aspectTitle, margin + 16, ctx.y + 24);
-        
-        // Nature badge — plain text, no Unicode
-        const natureBadge = isHard ? 'PRESSURE POINT' : isFlow ? 'GREEN LIGHT' : event.nature.toUpperCase();
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(7);
-        doc.setTextColor(...accentColor);
-        const badgeX = margin + cardInner - 8;
-        doc.text(natureBadge, badgeX, ctx.y + 10, { align: 'right' });
+        doc.setFont('times', 'bold'); doc.setFontSize(10);
+        doc.setTextColor(...colors.accent);
+        doc.text(aspectTitle, margin + 8, ctx.y);
         
         // Orb + sign info
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
-        doc.setTextColor(...colors.dimText);
-        doc.text(`${event.orb}' orb  |  ${event.transitSign} ${event.transitDegree}'`, badgeX, ctx.y + 22, { align: 'right' });
-        
-        ctx.y += 40;
+        doc.setFont('times', 'normal'); doc.setFontSize(8);
+        doc.setTextColor(...colors.muted);
+        doc.text(`${event.orb}' orb  |  ${event.transitSign} ${event.transitDegree}'`, pw - margin, ctx.y, { align: 'right' });
+        ctx.y += 14;
 
-        // Interpretation — properly wrapped
-        ctx.writeBody(doc, event.interpretation, colors.bodyText, 9, 13);
-      }, accentColor);
+        // Interpretation
+        ctx.writeBody(doc, event.interpretation);
+      });
   }
 }
