@@ -176,9 +176,9 @@ export async function generatePDFCover(
     { natal: `${natalRising} Rising`, sr: `${srRising} Rising` },
   ];
 
-  doc.setFont('times', 'normal'); doc.setFontSize(16);
+  doc.setFont('times', 'normal'); doc.setFontSize(17.5);
   entries.forEach((e, i) => {
-    const ey = tableY + 60 + i * 26;
+    const ey = tableY + 62 + i * 28;
     doc.setTextColor(...INK);
     doc.text(e.natal, tableX + (tableW / 4), ey, { align: 'center' });
     doc.setTextColor(...GOLD);
