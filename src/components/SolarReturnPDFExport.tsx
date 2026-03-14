@@ -961,13 +961,11 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         if (analysis.nodesFocus) {
           ctx.checkPage(150);
           ctx.drawCard(doc, () => {
-            doc.setFillColor(...ctx.colors.softBlue);
-            doc.roundedRect(margin + 6, ctx.y - 4, contentW - 12, 30, 4, 4, 'F');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(...ctx.colors.gold);
-            doc.text(`North Node in ${analysis.nodesFocus!.sign} — House ${analysis.nodesFocus!.house || '--'}`, margin + 16, ctx.y + 14);
-            ctx.y += 34;
+            doc.setFont('times', 'bold'); doc.setFontSize(12); doc.setTextColor(...ctx.colors.ink);
+            doc.text(`North Node in ${analysis.nodesFocus!.sign} — House ${analysis.nodesFocus!.house || '--'}`, margin + 8, ctx.y);
+            ctx.y += 16;
             const nodeMeaning = nodeHouseMeaning[analysis.nodesFocus!.house];
-            if (nodeMeaning) ctx.writeBody(doc, nodeMeaning, ctx.colors.bodyText, 10, 14);
+            if (nodeMeaning) ctx.writeBody(doc, nodeMeaning);
             
             // Node sign-specific growth direction
             const nodeSignGrowth: Record<string, string> = {
