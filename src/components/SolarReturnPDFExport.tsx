@@ -334,7 +334,7 @@ function generateHowThisYearMeetsYou(
   }
 }
 
-
+interface Props {
   analysis: SolarReturnAnalysis;
   srChart: SolarReturnChart;
   natalChart: NatalChart;
