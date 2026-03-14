@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, X } from 'lucide-react';
 import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
@@ -23,6 +23,10 @@ const TIER_COLORS: Record<TierId, { bg: string; text: string; border: string; ac
   t4: { bg: '#FAECE7', text: '#712B13', border: '#F5C4B3', activeBg: '#F5C4B3' },
   t5: { bg: '#FBEAF0', text: '#72243E', border: '#F4C0D1', activeBg: '#F4C0D1' },
 };
+
+function generateTier1SolarReturnPDF() {
+  console.log('tier 1 download');
+}
 
 interface Props {
   analysis: SolarReturnAnalysis;
@@ -83,8 +87,46 @@ export const TierButtonRow = ({
         </button>
       </div>
 
-      {/* Preview panel */}
-      {activeTier && (
+      {/* T1 inline preview */}
+      {activeTier === 't1' && (
+        <div className="border-2 border-green-500 rounded-lg p-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Year at a Glance</h3>
+            <button
+              onClick={() => generateTier1SolarReturnPDF()}
+              className="px-4 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              Download PDF
+            </button>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-lg border border-border bg-card p-3 text-center">
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">SR Ascendant</div>
+              <div className="text-sm font-semibold">{analysis.yearlyTheme?.ascendantSign || '—'}</div>
+            </div>
+            <div className="rounded-lg border border-border bg-card p-3 text-center">
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">SR Moon</div>
+              <div className="text-sm font-semibold">{analysis.moonSign || '—'}</div>
+            </div>
+            <div className="rounded-lg border border-border bg-card p-3 text-center">
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Profection House</div>
+              <div className="text-sm font-semibold">{analysis.profectionYear?.houseNumber || '—'}</div>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setActiveTier(null)}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <X size={12} />
+            Close
+          </button>
+        </div>
+      )}
+
+      {/* Other tiers use existing preview panel */}
+      {activeTier && activeTier !== 't1' && (
         <TierPreviewPanel
           tier={activeTier}
           analysis={analysis}
