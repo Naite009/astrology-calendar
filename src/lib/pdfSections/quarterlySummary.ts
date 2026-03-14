@@ -22,40 +22,37 @@ const LIFE_THEMES: Record<number, { short: string; detail: string }> = {
   12: { short: 'Inner Work', detail: 'rest, reflection, and spiritual life' },
 };
 
-const QUARTER_LABELS = ['Q1 — LAUNCHING', 'Q2 — BUILDING', 'Q3 — HARVESTING', 'Q4 — INTEGRATING'];
-const QUARTER_ICONS = ['🌱', '🔨', '🌾', '🪞'];
-const SEASON_COLORS: Color[] = [
-  [45, 140, 90],   // green — spring/launch
-  [180, 120, 40],  // amber — building
-  [160, 80, 50],   // rust — harvest
-  [80, 100, 140],  // slate blue — integration
+// v3 quarter accent colors
+const QUARTER_COLORS: Color[] = [
+  [107, 79, 160],  // Q1: purple
+  [201, 168, 76],  // Q2: gold
+  [196, 98, 45],   // Q3: rust
+  [155, 142, 196], // Q4: lilac
 ];
 
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'];
 
+function ord(n: number): string {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
 interface QuarterData {
-  label: string;
   months: string;
-  houseThemes: string[];
-  keyTheme: string;
-  guidance: string;
+  headline: string;
+  body: string;
+  tags: string[];
   accentColor: Color;
 }
 
-function getSignFeel(sign: string): string {
-  const feels: Record<string, string> = {
-    Aries: 'courage and urgency', Taurus: 'stability and groundedness',
-    Gemini: 'curiosity and mental stimulation', Cancer: 'nurturing and emotional depth',
-    Leo: 'warmth, pride, and creative spark', Virgo: 'precision and self-improvement',
-    Libra: 'harmony and partnership', Scorpio: 'intensity and transformation',
-    Sagittarius: 'optimism and adventure', Capricorn: 'discipline and ambition',
-    Aquarius: 'innovation and independence', Pisces: 'intuition and compassion',
-  };
-  return feels[sign] || 'mixed energy';
-}
-
-function buildQuarters(
+/**
+ * Build data-rich quarterly content from REAL chart data only.
+ * Every sentence must trace to a specific planet, aspect, date, or house.
+ * Generic language ("new beginnings", "birthday season", "spring energy") is BANNED.
+ */
+function buildDataRichQuarters(
   a: SolarReturnAnalysis,
   srChart: SolarReturnChart,
   natalChart: NatalChart,
@@ -76,6 +73,15 @@ function buildQuarters(
   const moonSign = a.moonSign || '';
   const retros = a.retrogrades?.planets || [];
   const stelliums = a.stelliums || [];
+  const sunH = a.sunHouse?.house || 1;
+  const saturnH = a.saturnFocus?.house;
+  const saturnSign = a.saturnFocus?.sign || '';
+  const saturnRx = a.saturnFocus?.isRetrograde || false;
+  const nodeH = a.nodesFocus?.house;
+
+  // Determine key dates from analysis if available
+  // Key dates from analysis if available
+  const keyDates = (a as any).keyDates || [];
 
   const quarters: QuarterData[] = [];
 
@@ -89,72 +95,104 @@ function buildQuarters(
       ? `${monthNames[0]} – ${monthNames[2]} ${yearForFirst}`
       : `${monthNames[0]} ${yearForFirst} – ${monthNames[2]} ${yearForLast}`;
 
-    // House themes rotating from profection house
     const houses = [0, 1, 2].map(i => ((profH - 1 + startIdx + i) % 12) + 1);
     const houseThemes = houses.map(h => LIFE_THEMES[h]?.short || 'Life themes');
 
-    let keyTheme = '';
-    let guidance = '';
+    const sentences: string[] = [];
+    const tags: string[] = [];
 
-    if (q === 0) {
-      // Q1: Launch — opening energy, Time Lord, ASC ruler
-      keyTheme = `The year opens with ${timeLordName} setting the pace.`;
-      const ascRuler = a.srAscRulerInNatal;
-      if (ascRuler) {
-        keyTheme += ` Your chart ruler points toward ${LIFE_THEMES[ascRuler.rulerNatalHouse]?.detail || 'key areas'} as the year's landing zone.`;
-      }
-      if (stelliums.length > 0) {
-        const s = stelliums[0];
-        guidance = `Concentrated energy in ${s.location} demands early attention. Lean into ${houseThemes[0].toLowerCase()} and ${houseThemes[1].toLowerCase()} — this is where momentum builds.`;
-      } else {
-        guidance = `Focus on ${houseThemes[0].toLowerCase()} and ${houseThemes[1].toLowerCase()}. The energy is fresh — plant seeds deliberately rather than scattering in every direction.`;
-      }
-    } else if (q === 1) {
-      // Q2: Building — Sun house, retrogrades
-      const srSunH = a.sunHouse?.house;
-      if (srSunH) {
-        keyTheme = `Your Solar Return Sun in the ${srSunH}${srSunH === 1 ? 'st' : srSunH === 2 ? 'nd' : srSunH === 3 ? 'rd' : 'th'} house brings core vitality to ${LIFE_THEMES[srSunH]?.detail || 'this area'}.`;
-      } else {
-        keyTheme = `Mid-year energy builds as early themes solidify into tangible form.`;
-      }
-      if (retros.length > 0) {
-        guidance = `${retros.map(r => P[r] || r).join(' and ')} retrograde may slow external progress — use this to refine, not to push harder. The themes of ${houseThemes.join(', ').toLowerCase()} benefit from revision.`;
-      } else {
-        guidance = `Steady momentum in ${houseThemes.join(', ').toLowerCase()}. This is the quarter to build on what you started — commit rather than restart.`;
-      }
-    } else if (q === 2) {
-      // Q3: Harvesting — Moon emotional climate, Saturn discipline
-      if (moonSign) {
-        keyTheme = `Emotionally, ${moonSign} energy colors this quarter with ${getSignFeel(moonSign)}.`;
-      } else {
-        keyTheme = `The emotional landscape deepens as the year matures.`;
-      }
-      if (a.saturnFocus?.house) {
-        guidance = `Saturn in your ${a.saturnFocus.house}${a.saturnFocus.house === 1 ? 'st' : a.saturnFocus.house === 2 ? 'nd' : a.saturnFocus.house === 3 ? 'rd' : 'th'} house asks for discipline around ${LIFE_THEMES[a.saturnFocus.house]?.detail || 'responsibilities'}. What you've built is being tested — stay steady.`;
-      } else {
-        guidance = `Results from earlier efforts become visible. Pay attention to ${houseThemes.join(' and ').toLowerCase()} — this is where you see what's working.`;
-      }
-    } else {
-      // Q4: Integration — Nodes, repeated themes, closing
-      if (a.nodesFocus?.house) {
-        keyTheme = `Growth is pulling you toward ${LIFE_THEMES[a.nodesFocus.house]?.detail || 'new territory'}. The soul's assignment becomes clearer as the year closes.`;
-      } else {
-        keyTheme = `The year is drawing to a close — patterns that emerged in Q1 now reveal their deeper purpose.`;
-      }
-      if (a.repeatedThemes?.length > 0) {
-        guidance = `A recurring theme this year — ${a.repeatedThemes[0].description} — reaches its resolution. Let the lessons settle. Release what no longer serves the next chapter.`;
-      } else {
-        guidance = `Integration time. Look back at what this year taught you about ${houseThemes[0].toLowerCase()} and ${houseThemes[2].toLowerCase()}. The wisdom you carry forward matters more than any single event.`;
+    // 1. Time Lord activations in this quarter
+    if (timeLord && q === 0) {
+      sentences.push(`${timeLordName} as Time Lord sets the agenda from the start — ${LIFE_THEMES[profH]?.detail || 'key themes'} are activated immediately.`);
+    }
+
+    // 2. Sun house context
+    if (q === 0 && sunH) {
+      sentences.push(`The Solar Return Sun in the ${ord(sunH)} house directs core vitality toward ${LIFE_THEMES[sunH]?.detail || 'this area'}.`);
+    }
+
+    // 3. Stellium peaks
+    if (stelliums.length > 0 && q === 0) {
+      const s = stelliums[0];
+      const planets = s.planets.map(pp => P[pp] || pp).join(', ');
+      sentences.push(`Your ${s.planets.length}-planet stellium in ${s.location} (${planets}) concentrates energy early — lean into this concentration.`);
+    }
+
+    // 4. Retrograde planets
+    if (retros.length > 0 && q === 1) {
+      const rxNames = retros.map(r => P[r] || r).join(', ');
+      sentences.push(`${rxNames} retrograde in the SR chart signals a revision period — review and refine rather than launching new initiatives.`);
+      tags.push('Rx');
+    }
+
+    // 5. Saturn position and discipline
+    if (saturnH && q === 2) {
+      sentences.push(`Saturn in the ${ord(saturnH)} house (${saturnSign}) asks for sustained discipline around ${LIFE_THEMES[saturnH]?.detail || 'responsibilities'}.`);
+      if (saturnRx) {
+        sentences.push(`Saturn stations retrograde during this period — structures built earlier are now tested for authenticity.`);
+        tags.push('Saturn Rx');
       }
     }
 
+    // 6. Moon emotional climate
+    if (moonSign && q === 2) {
+      const moonFeels: Record<string, string> = {
+        Aries: 'directness and urgency', Taurus: 'stability and sensory grounding',
+        Gemini: 'mental stimulation and verbal processing', Cancer: 'emotional depth and intuitive responses',
+        Leo: 'warmth and the need for creative expression', Virgo: 'analytical precision and self-improvement',
+        Libra: 'harmony-seeking and relationship sensitivity', Scorpio: 'psychological intensity and truth-seeking',
+        Sagittarius: 'restlessness and philosophical questioning', Capricorn: 'emotional discipline and pragmatism',
+        Aquarius: 'detached clarity and unconventional responses', Pisces: 'heightened empathy and boundary dissolution',
+      };
+      sentences.push(`The SR Moon in ${moonSign} colors emotional responses with ${moonFeels[moonSign] || 'distinctive energy'}.`);
+    }
+
+    // 7. Balsamic Moon phase context
+    if (a.moonPhase?.phase && q === 3) {
+      const phase = a.moonPhase.phase;
+      if (phase === 'Balsamic' || phase === 'Balsamic Moon') {
+        sentences.push(`The Balsamic Moon phase colors the entire year toward completion — Q4 is especially important for release and preparation.`);
+      } else if (phase === 'Full Moon') {
+        sentences.push(`The Full Moon phase brings this quarter toward culmination — what was seeded earlier now reaches full visibility.`);
+      }
+    }
+
+    // 8. Nodes
+    if (nodeH && q === 3) {
+      sentences.push(`The North Node in the ${ord(nodeH)} house pulls growth toward ${LIFE_THEMES[nodeH]?.detail || 'unfamiliar territory'} as the year closes.`);
+    }
+
+    // If quarter is genuinely quiet, say so
+    if (sentences.length === 0) {
+      if (q === 1) {
+        sentences.push(`No major Time Lord activations dominate this quarter — a steadier stretch for consolidating what Q1 established in ${houseThemes.join(' and ').toLowerCase()}.`);
+      } else if (q === 3) {
+        sentences.push(`This quarter resolves themes from ${houseThemes[0].toLowerCase()} and ${houseThemes[2].toLowerCase()}. The year's lessons settle and integrate.`);
+      } else {
+        sentences.push(`The focus remains on ${houseThemes.join(', ').toLowerCase()} — the profection rotation brings these themes into active play.`);
+      }
+    }
+
+    // Build headline from dominant data point
+    let headline = '';
+    if (q === 0 && timeLord) {
+      headline = `${timeLordName} sets the pace`;
+    } else if (q === 1 && retros.length > 0) {
+      headline = `Review and revision period`;
+    } else if (q === 2 && saturnH) {
+      headline = `Saturn tests what you\'ve built`;
+    } else if (q === 3 && nodeH) {
+      headline = `Growth edge crystallizes`;
+    } else {
+      headline = `${houseThemes[0]} takes center stage`;
+    }
+
     quarters.push({
-      label: QUARTER_LABELS[q],
       months: monthsLabel,
-      houseThemes,
-      keyTheme,
-      guidance,
-      accentColor: SEASON_COLORS[q],
+      headline,
+      body: sentences.join(' '),
+      tags,
+      accentColor: QUARTER_COLORS[q],
     });
   }
 
@@ -167,98 +205,67 @@ export function generateQuarterlySummary(
 ) {
   const { pw, margin, contentW, colors } = ctx;
 
-  // Section header
-  doc.setDrawColor(...colors.gold); doc.setLineWidth(1);
-  doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 22;
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(18);
-  doc.setTextColor(...colors.gold);
-  doc.text('YOUR YEAR IN FOUR SEASONS', pw / 2, ctx.y, { align: 'center' });
-  ctx.y += 8;
-  doc.setFont('helvetica', 'italic'); doc.setFontSize(9);
-  doc.setTextColor(...colors.dimText);
-  doc.text('Key themes for each quarter of your solar return year', pw / 2, ctx.y, { align: 'center' });
-  ctx.y += 20;
+  // v3 section header
+  ctx.sectionTitle(doc, 'YOUR YEAR IN FOUR CHAPTERS', 'Built from your chart');
 
-  const quarters = buildQuarters(a, srChart, natalChart);
+  const quarters = buildDataRichQuarters(a, srChart, natalChart);
 
-  // 2×2 grid layout
-  const cols = 2;
-  const gap = 10;
-  const colW = (contentW - gap) / cols;
-  const availH = ctx.ph - ctx.y - 40;
-  const rowH = (availH - gap) / 2;
-
+  // Stacked cards (not 2x2 grid) — each card uses left accent bar in quarter color
   for (let i = 0; i < 4; i++) {
     const q = quarters[i];
-    const col = i % 2;
-    const row = Math.floor(i / 2);
-    const x = margin + col * (colW + gap);
-    const y = ctx.y + row * (rowH + gap);
+    ctx.checkPage(130);
 
-    // Card background
-    doc.setFillColor(...colors.softGold);
-    doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.4);
-    doc.roundedRect(x, y, colW, rowH, 5, 5, 'FD');
+    const cardStartY = ctx.y;
+    ctx.y += 12;
 
-    // Colored top accent bar
-    doc.setFillColor(...q.accentColor);
-    doc.roundedRect(x, y, colW, 4, 5, 5, 'F');
-    // Cover bottom corners of accent with card color
-    doc.setFillColor(...colors.softGold);
-    doc.rect(x, y + 2, colW, 4, 'F');
+    // Month range label
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+    doc.setTextColor(...colors.ink);
+    doc.setCharSpace(0.6);
+    doc.text(q.months.toUpperCase(), margin + 16, ctx.y);
+    doc.setCharSpace(0);
+    ctx.y += 14;
 
-    let curY = y + 18;
+    // Headline
+    doc.setFont('Georgia', 'bold'); doc.setFontSize(11);
+    doc.setTextColor(...colors.ink);
+    doc.text(q.headline, margin + 16, ctx.y);
+    ctx.y += 8;
 
-    // Quarter label
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
-    doc.setTextColor(...q.accentColor);
-    doc.text(q.label, x + 10, curY);
-    curY += 12;
-
-    // Months range
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-    doc.setTextColor(...colors.dimText);
-    doc.text(q.months, x + 10, curY);
-    curY += 14;
-
-    // House theme tags
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(7);
-    let tagX = x + 10;
-    for (const theme of q.houseThemes) {
-      const tw = doc.getTextWidth(theme) + 12;
-      if (tagX + tw > x + colW - 6) { tagX = x + 10; curY += 14; }
-      doc.setFillColor(...q.accentColor);
-      doc.roundedRect(tagX, curY - 7, tw, 12, 3, 3, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.text(theme, tagX + 6, curY + 1);
-      tagX += tw + 4;
-    }
-    curY += 16;
-
-    // Key theme paragraph
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
+    // Body
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
     doc.setTextColor(...colors.bodyText);
-    const themeLines: string[] = doc.splitTextToSize(q.keyTheme, colW - 20);
-    const maxY = y + rowH - 50;
-    for (const line of themeLines) {
-      if (curY > maxY) break;
-      doc.text(line, x + 10, curY);
-      curY += 11;
+    const bodyLines: string[] = doc.splitTextToSize(q.body, contentW - 32);
+    for (const line of bodyLines.slice(0, 6)) {
+      ctx.y += 13;
+      doc.text(line, margin + 16, ctx.y);
     }
-    curY += 4;
+    ctx.y += 8;
 
-    // Guidance paragraph (slightly dimmer)
-    doc.setFont('helvetica', 'italic'); doc.setFontSize(8);
-    doc.setTextColor(...colors.deepBrown);
-    const guidanceLines: string[] = doc.splitTextToSize(q.guidance, colW - 20);
-    const maxGY = y + rowH - 8;
-    for (const line of guidanceLines) {
-      if (curY > maxGY) break;
-      doc.text(line, x + 10, curY);
-      curY += 10;
+    // Tags
+    if (q.tags.length > 0) {
+      let tagX = margin + 16;
+      for (const tag of q.tags) {
+        const tw = doc.getTextWidth(tag) + 14;
+        doc.setFillColor(237, 229, 247);
+        doc.roundedRect(tagX, ctx.y - 3, tw, 14, 2, 2, 'F');
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(7);
+        doc.setTextColor(74, 45, 138);
+        doc.text(tag, tagX + 7, ctx.y + 6);
+        tagX += tw + 6;
+      }
+      ctx.y += 16;
     }
+
+    ctx.y += 8;
+
+    // Draw card border and left accent bar
+    const cardH = ctx.y - cardStartY;
+    doc.setDrawColor(...colors.border); doc.setLineWidth(0.5);
+    doc.roundedRect(margin, cardStartY, contentW, cardH, 4, 4, 'S');
+    doc.setFillColor(...q.accentColor);
+    doc.rect(margin, cardStartY, 3, cardH, 'F');
+
+    ctx.y += 8;
   }
-
-  ctx.y = ctx.y + 2 * (rowH + gap) + 10;
 }

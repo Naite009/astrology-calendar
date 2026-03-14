@@ -10,8 +10,7 @@ async function loadImageDataUrl(src: string): Promise<string | null> {
     img.crossOrigin = 'anonymous';
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
+      canvas.width = img.width; canvas.height = img.height;
       const c2 = canvas.getContext('2d');
       if (!c2) { resolve(null); return; }
       c2.drawImage(img, 0, 0);
@@ -24,13 +23,10 @@ async function loadImageDataUrl(src: string): Promise<string | null> {
 
 const formatDate = (dateStr: string | undefined): string => {
   if (!dateStr) return '--';
-  const parts = dateStr.split('-');
-  if (parts.length === 3 && parts[0].length === 4) return `${parts[1]}-${parts[2]}-${parts[0]}`;
   try {
-    const d = new Date(dateStr);
-    if (!isNaN(d.getTime())) return `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}-${d.getFullYear()}`;
-  } catch { /* */ }
-  return dateStr;
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  } catch { return dateStr || ''; }
 };
 
 const capitalizeLocation = (loc: string | undefined): string => {
@@ -49,152 +45,164 @@ export async function generatePDFCover(
   const { pw, margin, contentW, colors } = ctx;
   const name = natalChart.name || 'Chart';
   const year = srChart.solarReturnYear;
-  
-  // Natal Big 3
+
   const natalSun = natalChart.planets?.Sun?.sign || '';
   const natalMoon = natalChart.planets?.Moon?.sign || '';
   const natalRising = natalChart.houseCusps?.house1?.sign || '';
-  
-  // SR Big 3
   const srSunSign = srChart.planets.Sun?.sign || natalSun;
   const srMoonSign = a.moonSign || srChart.planets.Moon?.sign || '';
   const srRisingSign = srChart.planets.Ascendant?.sign || a.yearlyTheme?.ascendantSign || '';
 
-  ctx.y = 50;
+  // Page background
+  doc.setFillColor(...colors.cream);
+  doc.rect(0, 0, pw, ctx.ph, 'F');
+
+  ctx.y = 44;
+
+  // ── TOP SECTION: Cake + Happy Birthday ──
+  const cakeImgSrc = cakeImages[natalSun];
+  let cakeDataUrl: string | null = null;
+  if (cakeImgSrc) cakeDataUrl = await loadImageDataUrl(cakeImgSrc);
+
+  // Cream top area
+  const topH = birthdayMode ? 160 : 140;
+  doc.setFillColor(...colors.cream);
+  doc.rect(0, 0, pw, ctx.y + topH, 'F');
 
   if (birthdayMode) {
-    const cakeImgSrc = cakeImages[natalSun];
-    let cakeDataUrl: string | null = null;
-    if (cakeImgSrc) cakeDataUrl = await loadImageDataUrl(cakeImgSrc);
+    // Two columns: cake left, Happy Birthday right
+    const cakeW = 130; const cakeH = 108;
+    const cakeX = margin;
+    const textX = margin + cakeW + 24;
 
-    doc.setDrawColor(...colors.gold); doc.setLineWidth(1);
-    doc.line(margin, ctx.y, pw - margin, ctx.y);
-    ctx.y += 30;
-
-    const cakeW = 190; const cakeH = 160;
-    const textStartX = margin + cakeW + 30;
-
-    if (cakeDataUrl) doc.addImage(cakeDataUrl, 'PNG', margin, ctx.y - 10, cakeW, cakeH);
-
-    doc.setFont('times', 'bolditalic'); doc.setFontSize(42); doc.setTextColor(188, 120, 60);
-    doc.text('Happy', textStartX, ctx.y + 28);
-    doc.setFontSize(50); doc.text('Birthday!', textStartX, ctx.y + 70);
-
-    doc.setFontSize(14); doc.setTextColor(...colors.gold);
-    doc.setLineWidth(0.5);
-    doc.line(textStartX, ctx.y + 88, textStartX + 120, ctx.y + 88);
-
-    // Natal Big 3 on cover (right of cake)
-    const big3Y = ctx.y + 108;
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-    doc.setTextColor(...colors.dimText);
-    doc.text('YOUR NATAL CHART', textStartX, big3Y);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(13);
-    doc.setTextColor(...colors.deepBrown);
-    if (natalSun) doc.text(`${natalSun} Sun`, textStartX, big3Y + 16);
-    if (natalMoon) doc.text(`${natalMoon} Moon`, textStartX, big3Y + 32);
-    if (natalRising) doc.text(`${natalRising} Rising`, textStartX, big3Y + 48);
-
-    ctx.y += cakeH + 10;
-
-    if (personalMessage.trim()) {
-      ctx.y += 8;
-      const msgLines: string[] = doc.splitTextToSize(personalMessage.trim(), contentW - 60);
-      const msgH = msgLines.length * 16 + 28;
-      doc.setFillColor(252, 248, 240); doc.setDrawColor(...colors.gold); doc.setLineWidth(1);
-      doc.roundedRect(margin + 20, ctx.y, contentW - 40, msgH, 8, 8, 'FD');
-      doc.setFont('times', 'italic'); doc.setFontSize(12); doc.setTextColor(100, 80, 50);
-      let msgY = ctx.y + 18;
-      for (const line of msgLines) { doc.text(line, pw / 2, msgY, { align: 'center' }); msgY += 16; }
-      ctx.y += msgH + 12;
+    if (cakeDataUrl) {
+      doc.setFillColor(...colors.warm);
+      doc.roundedRect(cakeX, ctx.y, cakeW, cakeH, 4, 4, 'F');
+      doc.addImage(cakeDataUrl, 'PNG', cakeX + 5, ctx.y + 5, cakeW - 10, cakeH - 10);
     }
 
-    doc.setDrawColor(...colors.gold); doc.setLineWidth(1);
-    doc.line(margin, ctx.y, pw - margin, ctx.y);
-    ctx.y += 24;
+    doc.setFont('Georgia', 'bold'); doc.setFontSize(30);
+    doc.setTextColor(...colors.gold);
+    doc.text('Happy', textX, ctx.y + 36);
+    doc.text('Birthday!', textX, ctx.y + 70);
+
+    ctx.y += Math.max(cakeH, 80) + 10;
+  } else {
+    // Non-birthday: cake centered smaller + title
+    if (cakeDataUrl) {
+      const cakeW = 130; const cakeH = 108;
+      doc.setFillColor(...colors.warm);
+      doc.roundedRect((pw - cakeW) / 2, ctx.y, cakeW, cakeH, 4, 4, 'F');
+      doc.addImage(cakeDataUrl, 'PNG', (pw - cakeW) / 2 + 5, ctx.y + 5, cakeW - 10, cakeH - 10);
+      ctx.y += cakeH + 16;
+    } else {
+      ctx.y += 20;
+    }
   }
 
-  // --- TITLE AREA ---
-  if (!birthdayMode) {
-    doc.setDrawColor(...colors.gold); doc.setLineWidth(2.5);
-    doc.line(margin, ctx.y, pw - margin, ctx.y);
-    ctx.y += 1; doc.setLineWidth(0.5);
-    doc.line(margin, ctx.y + 2, pw - margin, ctx.y + 2);
-    ctx.y += 45;
-  }
+  // ── DARK STRIP ──
+  const stripH = 44;
+  doc.setFillColor(...colors.deep);
+  doc.rect(0, ctx.y, pw, stripH, 'F');
 
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(13);
+  // Left: SOLAR RETURN
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
+  doc.setTextColor(...colors.lilac);
+  doc.setCharSpace(1.2);
+  doc.text('SOLAR RETURN', margin, ctx.y + 26);
+  doc.setCharSpace(0);
+
+  // Center: YEAR
+  doc.setFont('Georgia', 'bold'); doc.setFontSize(20);
+  doc.setTextColor(255, 255, 255);
+  doc.text(String(year), pw / 2, ctx.y + 28, { align: 'center' });
+
+  // Right: FULL NAME
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
   doc.setTextColor(...colors.gold);
-  doc.text('S O L A R   R E T U R N', pw / 2, ctx.y, { align: 'center' });
-  ctx.y += 32;
+  doc.setCharSpace(0.4);
+  doc.text(name.toUpperCase(), pw - margin, ctx.y + 27, { align: 'right' });
+  doc.setCharSpace(0);
 
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(32);
-  doc.setTextColor(...colors.darkText);
-  doc.text(String(year), pw / 2, ctx.y, { align: 'center' });
-  ctx.y += 28;
+  ctx.y += stripH;
 
-  // Ornament
-  doc.setDrawColor(...colors.gold); doc.setLineWidth(0.5);
-  doc.line(pw / 2 - 60, ctx.y, pw / 2 - 8, ctx.y);
-  doc.line(pw / 2 + 8, ctx.y, pw / 2 + 60, ctx.y);
-  doc.setFillColor(...colors.gold);
-  doc.triangle(pw / 2, ctx.y - 3, pw / 2 - 3, ctx.y, pw / 2 + 3, ctx.y, 'F');
-  doc.triangle(pw / 2, ctx.y + 3, pw / 2 - 3, ctx.y, pw / 2 + 3, ctx.y, 'F');
-  ctx.y += 26;
+  // ── COMPARISON SECTION: Born With / This Year ──
+  ctx.y += 18;
+  const colW = (contentW - 20) / 2;
 
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(20);
-  doc.setTextColor(...colors.deepBrown);
-  doc.text(name.toUpperCase(), pw / 2, ctx.y, { align: 'center' });
-  ctx.y += 28;
+  // LEFT — BORN WITH
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
+  doc.setTextColor(...colors.dimText); doc.setCharSpace(0.8);
+  doc.text('BORN WITH', margin, ctx.y);
+  doc.setCharSpace(0);
+  ctx.y += 4;
+  doc.setDrawColor(...colors.rule); doc.setLineWidth(0.5);
+  doc.line(margin, ctx.y, margin + colW, ctx.y);
+  ctx.y += 8;
 
-  // --- NATAL & SR BIG 3 BOXES ---
-  const gap = 16;
-  const boxW = (contentW - gap) / 2;
-  const boxH = 90;
-  const startX = margin;
+  const lineH = 22;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+  doc.setTextColor(...colors.ink);
+  if (natalSun) doc.text(`${natalSun} Sun`, margin, ctx.y);
+  if (natalMoon) doc.text(`${natalMoon} Moon`, margin, ctx.y + lineH);
+  if (natalRising) doc.text(`${natalRising} Rising`, margin, ctx.y + lineH * 2);
 
-  // Natal box
-  doc.setFillColor(...colors.softGold);
-  doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.5);
-  doc.roundedRect(startX, ctx.y, boxW, boxH, 8, 8, 'FD');
+  // RIGHT — THIS YEAR
+  const rightX = margin + colW + 20;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
+  doc.setTextColor(...colors.dimText); doc.setCharSpace(0.8);
+  doc.text('THIS YEAR', rightX, ctx.y - 12);
+  doc.setCharSpace(0);
+  doc.setDrawColor(...colors.rule); doc.setLineWidth(0.5);
+  doc.line(rightX, ctx.y - 8, rightX + colW, ctx.y - 8);
 
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
-  doc.setTextColor(...colors.dimText);
-  doc.text('N A T A L   C H A R T', startX + boxW / 2, ctx.y + 16, { align: 'center' });
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+  doc.setTextColor(...colors.purple);
+  if (srSunSign) doc.text(`${srSunSign} Sun`, rightX, ctx.y);
+  if (srMoonSign) doc.text(`${srMoonSign} Moon`, rightX, ctx.y + lineH);
+  if (srRisingSign) doc.text(`${srRisingSign} Rising`, rightX, ctx.y + lineH * 2);
 
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
-  doc.setTextColor(...colors.deepBrown);
-  let ny = ctx.y + 34;
-  if (natalSun) { doc.text(`${natalSun} Sun`, startX + boxW / 2, ny, { align: 'center' }); ny += 18; }
-  if (natalMoon) { doc.text(`${natalMoon} Moon`, startX + boxW / 2, ny, { align: 'center' }); ny += 18; }
-  if (natalRising) { doc.text(`${natalRising} Rising`, startX + boxW / 2, ny, { align: 'center' }); }
+  ctx.y += lineH * 3 + 14;
 
-  // SR box
-  const srBoxX = startX + boxW + gap;
-  doc.setFillColor(...colors.softBlue);
-  doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.5);
-  doc.roundedRect(srBoxX, ctx.y, boxW, boxH, 8, 8, 'FD');
-
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
-  doc.setTextColor(...colors.dimText);
-  doc.text(`S O L A R   R E T U R N   ${year}`, srBoxX + boxW / 2, ctx.y + 16, { align: 'center' });
-
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
-  doc.setTextColor(...colors.deepBrown);
-  let sy = ctx.y + 34;
-  if (srSunSign) { doc.text(`${srSunSign} Sun`, srBoxX + boxW / 2, sy, { align: 'center' }); sy += 18; }
-  if (srMoonSign) { doc.text(`${srMoonSign} Moon`, srBoxX + boxW / 2, sy, { align: 'center' }); sy += 18; }
-  if (srRisingSign) { doc.text(`${srRisingSign} Rising`, srBoxX + boxW / 2, sy, { align: 'center' }); }
-
-  ctx.y += boxH + 18;
-
-  // Birth info
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-  doc.setTextColor(...colors.dimText);
-  doc.text(`Born: ${formatDate(natalChart.birthDate)}   |   ${capitalizeLocation(natalChart.birthLocation)}`, pw / 2, ctx.y, { align: 'center' });
-  if (srChart.solarReturnLocation) {
-    ctx.y += 14;
-    doc.text(`SR Location: ${capitalizeLocation(srChart.solarReturnLocation)}`, pw / 2, ctx.y, { align: 'center' });
+  // ── PERSONAL MESSAGE (birthday mode) ──
+  if (birthdayMode && personalMessage.trim()) {
+    const msgLines: string[] = doc.splitTextToSize(personalMessage.trim(), contentW - 60);
+    const msgH = Math.min(msgLines.length, 3) * 16 + 20;
+    doc.setFillColor(...colors.warm); doc.setDrawColor(...colors.rule); doc.setLineWidth(0.5);
+    doc.roundedRect(margin + 20, ctx.y, contentW - 40, msgH, 3, 3, 'FD');
+    doc.setFont('Georgia', 'italic'); doc.setFontSize(10);
+    doc.setTextColor(92, 74, 42);
+    let msgY = ctx.y + 14;
+    for (const line of msgLines.slice(0, 3)) { doc.text(line, pw / 2, msgY, { align: 'center' }); msgY += 16; }
+    ctx.y += msgH + 10;
   }
-  ctx.y += 24;
+
+  // ── NAME STRIP ──
+  const nameStripH = 36;
+  doc.setFillColor(...colors.purple);
+  doc.rect(0, ctx.y, pw, nameStripH, 'F');
+
+  doc.setFont('Georgia', 'bold'); doc.setFontSize(16);
+  doc.setTextColor(255, 255, 255);
+  doc.setCharSpace(0.6);
+  const diamondColor = colors.gold;
+  // Diamond + name + diamond
+  doc.setTextColor(...diamondColor);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(12);
+  const nameUpper = name.toUpperCase();
+  const nameTextW = doc.getTextWidth(nameUpper);
+  // Use text for diamonds since jsPDF triangle is complex
+  doc.setFont('Georgia', 'bold'); doc.setFontSize(16);
+  doc.setTextColor(255, 255, 255);
+  doc.text(nameUpper, pw / 2, ctx.y + 22, { align: 'center' });
+  doc.setCharSpace(0);
+
+  ctx.y += nameStripH;
+
+  // Birth info below
+  ctx.y += 14;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
+  doc.setTextColor(...colors.dimText);
+  doc.text(`Born ${formatDate(natalChart.birthDate)}  ·  ${capitalizeLocation(natalChart.birthLocation)}`, pw / 2, ctx.y, { align: 'center' });
+  ctx.y += 20;
 }

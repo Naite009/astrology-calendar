@@ -1,29 +1,18 @@
 /**
- * Tier 1 Solar Return PDF — "Year at a Glance" — v2 Redesign
- * 3-page editorial report. Plain language throughout — no astro jargon.
+ * Tier 1 Solar Return PDF — "Year at a Glance" — v3
+ * 2 pages only: Cover + Snapshot. No quarterly. No monthly.
+ * Print-first. Color from signColorThemes keyed to NATAL SUN SIGN.
  */
 import jsPDF from 'jspdf';
 import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { NatalChart } from '@/hooks/useNatalChart';
+import { signColorThemes, SignColorTheme } from '@/lib/pdfSections/signColorThemes';
 
 type Color = [number, number, number];
 
-// ─── Design Tokens (v2) ─────────────────────────────────────────────
-const T1 = {
-  ink:      [30, 28, 26]    as Color,
-  body:     [70, 65, 60]    as Color,
-  dim:      [160, 155, 148] as Color,
-  faint:    [192, 184, 176] as Color,
-  rule:     [216, 210, 200] as Color,
-  warmGray: [245, 242, 238] as Color,
-  page:     [253, 252, 250] as Color,
-  accent:   [210, 200, 185] as Color,
-  msgBg:    [248, 245, 240] as Color,
-};
-
 const MARGIN = 52;
-const MARGIN_TOP = 48;
+const MARGIN_TOP = 44;
 const MARGIN_BOTTOM = 44;
 
 // ─── Lookup Tables ──────────────────────────────────────────────────
@@ -63,7 +52,7 @@ const HOUSE_THEME_SHORT: Record<number, string> = {
 
 const MOON_KEYWORD: Record<string, string> = {
   Aries: 'Active & independent', Taurus: 'Steady & grounded',
-  Gemini: 'Curious & communicative', Cancer: 'Sensitive & nurturing',
+  Gemini: 'Curious & expressive', Cancer: 'Sensitive & nurturing',
   Leo: 'Warm & expressive', Virgo: 'Thoughtful & discerning',
   Libra: 'Balanced & relational', Scorpio: 'Intense & perceptive',
   Sagittarius: 'Free & optimistic', Capricorn: 'Steady & disciplined',
@@ -72,7 +61,7 @@ const MOON_KEYWORD: Record<string, string> = {
 
 const MOON_PHASE_PLAIN: Record<string, string> = {
   'New Moon': 'A year of fresh starts — plant new seeds',
-  'Waxing Crescent': 'A year of building — keep going',
+  'Waxing Crescent': 'A building year — keep going',
   'First Quarter': 'A year of action — push through',
   'Waxing Gibbous': 'A year of refinement — almost there',
   'Full Moon': 'A completion year — things come full circle',
@@ -98,7 +87,6 @@ const MOON_WORD: Record<string, string> = {
   Sagittarius: 'Freedom', Capricorn: 'Mastery', Aquarius: 'Vision', Pisces: 'Flow',
 };
 
-// Plain-language descriptions for Sun in SR house (no sign/planet names)
 const SUN_HOUSE_BODY: Record<number, string> = {
   1: 'This is a year where your sense of self takes center stage. You may feel a pull to reinvent, refresh, or simply show up more fully as who you are.',
   2: 'This year draws your attention to what you value — your resources, your time, and your sense of security. Building something tangible matters now.',
@@ -114,7 +102,6 @@ const SUN_HOUSE_BODY: Record<number, string> = {
   12: 'This year invites you to slow down, rest, and listen to what is happening beneath the surface. Healing and reflection are not delays — they are the work.',
 };
 
-// Plain-language Moon sign body (no sign names)
 const MOON_SIGN_BODY: Record<string, string> = {
   Aries: 'Your emotional world this year is quick, direct, and action-oriented. You process feelings by moving through them rather than sitting with them.',
   Taurus: 'Your emotional world this year is calm and steady. You find comfort in routine, beauty, and the tangible pleasures of daily life.',
@@ -130,7 +117,6 @@ const MOON_SIGN_BODY: Record<string, string> = {
   Pisces: 'Your emotional world this year is fluid and deeply empathic. You absorb the feelings of others easily — boundaries and rest matter more than usual.',
 };
 
-// Plain-language Rising sign body (no sign names in body)
 const RISING_BODY: Record<string, string> = {
   Aries: 'You come across as someone ready to act — direct, energetic, and unafraid to lead. People respond to your courage and initiative this year.',
   Taurus: 'You come across as grounded and dependable — someone others instinctively trust. This year rewards patience and a steady pace.',
@@ -177,31 +163,8 @@ function capitalizeLocation(loc: string | undefined): string {
   return loc.replace(/\b\w+/g, w => w.length <= 2 ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
 }
 
-function drawRule(doc: jsPDF, x1: number, x2: number, y: number) {
-  doc.setDrawColor(...T1.rule); doc.setLineWidth(0.4);
-  doc.line(x1, x2, y, y); // intentional: jsPDF line(x1,y1,x2,y2)
-}
-
-function hRule(doc: jsPDF, y: number, pw: number) {
-  doc.setDrawColor(...T1.rule); doc.setLineWidth(0.4);
-  doc.line(MARGIN, y, pw - MARGIN, y);
-}
-
-function eyebrow(doc: jsPDF, text: string, x: number, y: number, align: 'left' | 'center' | 'right' = 'left') {
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
-  doc.setTextColor(...T1.dim); doc.setCharSpace(0.8);
-  doc.text(text.toUpperCase(), x, y, { align }); doc.setCharSpace(0);
-}
-
-function microLabel(doc: jsPDF, text: string, x: number, y: number) {
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
-  doc.setTextColor(...T1.dim); doc.setCharSpace(0.6);
-  doc.text(text.toUpperCase(), x, y); doc.setCharSpace(0);
-}
-
-function monthName(m: number): string {
-  const names = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-  return names[((m - 1) % 12 + 12) % 12];
+function getTheme(natalSunSign: string): SignColorTheme {
+  return signColorThemes[natalSunSign] || signColorThemes['Pisces'];
 }
 
 // ─── Main Export ────────────────────────────────────────────────────
@@ -232,145 +195,178 @@ export async function generateTier1SolarReturnPDF(
   const profHouse = analysis.profectionYear?.houseNumber || 1;
   const profAge = analysis.profectionYear?.age;
 
+  const t = getTheme(natalSunSign);
+
   // ════════════════════════════════════════════════════════════════
-  // PAGE 1 — COVER
+  // PAGE 1 — COVER (centered, nothing else)
   // ════════════════════════════════════════════════════════════════
+  // Page background
+  doc.setFillColor(...t.cream);
+  doc.rect(0, 0, pw, ph, 'F');
+
   let y = MARGIN_TOP;
 
-  // Top rule
-  hRule(doc, y, pw);
-  y += 28;
+  // Gold rule centered, 60pt
+  doc.setDrawColor(...t.gold); doc.setLineWidth(1.5);
+  doc.line(pw / 2 - 30, y, pw / 2 + 30, y);
+  y += 20;
 
-  // Name
+  // Name italic
   doc.setFont('Georgia', 'italic'); doc.setFontSize(13);
-  doc.setTextColor(...T1.dim);
+  doc.setTextColor(...t.purple);
   doc.text(`${firstName}'s`, pw / 2, y, { align: 'center' });
   y += 22;
 
-  // Year Ahead
-  doc.setFont('Georgia', 'normal'); doc.setFontSize(42);
-  doc.setTextColor(...T1.ink);
+  // Year Ahead — 52pt
+  doc.setFont('Georgia', 'bold'); doc.setFontSize(52);
+  doc.setTextColor(...t.ink);
   doc.text('Year Ahead', pw / 2, y, { align: 'center' });
   y += 6;
 
-  // Year
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(13);
-  doc.setTextColor(...T1.dim);
+  // Year — 12pt ALL CAPS
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(12);
+  doc.setTextColor(...t.dimText);
+  doc.setCharSpace(1.5);
   doc.text(String(year), pw / 2, y + 16, { align: 'center' });
-  y += 44;
+  doc.setCharSpace(0);
+  y += 40;
 
-  // Cake image — ALWAYS shown (natal Sun sign)
+  // Cake image — ALWAYS shown
   const cakeImgSrc = cakeImages[natalSunSign];
   if (cakeImgSrc) {
     const dataUrl = await loadImageDataUrl(cakeImgSrc);
     if (dataUrl) {
+      // Warm bg behind cake
+      doc.setFillColor(...t.warm);
+      doc.roundedRect((pw - 210) / 2, y - 5, 210, 180, 4, 4, 'F');
       doc.addImage(dataUrl, 'PNG', (pw - 200) / 2, y, 200, 170);
-      y += 198;
+      y += 194;
     } else { y += 20; }
   } else { y += 20; }
 
-  // Bottom rule
-  hRule(doc, y, pw);
-  y += 16;
+  // Rule
+  doc.setDrawColor(...t.rule); doc.setLineWidth(0.5);
+  doc.line(MARGIN, y, pw - MARGIN, y);
+  y += 14;
 
-  // Big 3 line (sign names allowed in labels)
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-  doc.setTextColor(...T1.dim);
-  const big3Line = `Sun in ${natalSunSign}  ·  Moon in ${natalMoonSign}  ·  ${natalRisingSign} Rising`;
-  doc.text(big3Line, pw / 2, y, { align: 'center' });
+  // Big Three — one elegant line, purple
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+  doc.setTextColor(...t.purple);
+  doc.setCharSpace(0.4);
+  doc.text(`Sun in ${natalSunSign}  ·  Moon in ${natalMoonSign}  ·  ${natalRisingSign} Rising`, pw / 2, y, { align: 'center' });
+  doc.setCharSpace(0);
   y += 8;
 
   // Birth info
   const birthLine = `Born ${formatDatePretty(natalChart.birthDate)}  ·  ${capitalizeLocation(natalChart.birthLocation)}`;
-  doc.setFontSize(8); doc.setTextColor(...T1.faint);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
+  doc.setTextColor(...t.dimText);
   doc.text(birthLine, pw / 2, y + 8, { align: 'center' });
   y += 16;
 
   // Personal message (birthday mode only)
   if (birthdayMode && personalMessage.trim()) {
-    y += 20;
+    y += 18;
     const msgLines: string[] = doc.splitTextToSize(personalMessage.trim(), contentW - 24);
-    const msgH = msgLines.length * 14 + 20;
-    doc.setFillColor(...T1.msgBg); doc.setDrawColor(...T1.rule); doc.setLineWidth(0);
-    doc.roundedRect(MARGIN + 12, y, contentW - 24, msgH, 3, 3, 'F');
-    doc.setFont('Georgia', 'italic'); doc.setFontSize(10); doc.setTextColor(100, 95, 90);
+    const msgH = Math.min(msgLines.length, 3) * 14 + 20;
+    doc.setFillColor(...t.warm);
+    doc.setDrawColor(...t.rule); doc.setLineWidth(0.5);
+    doc.roundedRect(MARGIN + 12, y, contentW - 24, msgH, 3, 3, 'FD');
+    doc.setFont('Georgia', 'italic'); doc.setFontSize(10);
+    doc.setTextColor(92, 74, 42);
     let msgY = y + 14;
     for (const line of msgLines.slice(0, 3)) { doc.text(line, pw / 2, msgY, { align: 'center' }); msgY += 14; }
   }
 
   // ════════════════════════════════════════════════════════════════
-  // PAGE 2 — YOUR YEAR AT A GLANCE
+  // PAGE 2 — SNAPSHOT
   // ════════════════════════════════════════════════════════════════
   doc.addPage();
+  doc.setFillColor(...t.cream);
+  doc.rect(0, 0, pw, ph, 'F');
   y = MARGIN_TOP;
 
   // Page header
-  eyebrow(doc, 'YOUR YEAR AT A GLANCE', MARGIN, y);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+  doc.setTextColor(...t.dimText); doc.setCharSpace(1.2);
+  doc.text('YOUR YEAR AT A GLANCE', MARGIN, y);
+  doc.setCharSpace(0);
   doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
-  doc.setTextColor(...T1.faint);
+  doc.setTextColor(...t.dimText);
   doc.text(`${firstName} · ${year}`, pw - MARGIN, y, { align: 'right' });
-  y += 10;
-  hRule(doc, y, pw);
-  y += 20;
+  y += 8;
+  doc.setDrawColor(...t.rule); doc.setLineWidth(0.5);
+  doc.line(MARGIN, y, pw - MARGIN, y);
+  y += 18;
 
-  // ── SECTION 1: THIS YEAR'S THEME ──
-  eyebrow(doc, "THIS YEAR'S THEME", MARGIN, y);
+  // ── SECTION A: THIS YEAR'S THEME ──
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+  doc.setTextColor(...t.dimText); doc.setCharSpace(1.2);
+  doc.text("THIS YEAR'S THEME", MARGIN, y);
+  doc.setCharSpace(0);
   y += 6;
 
   const risingQuality = RISING_QUALITY[srRisingSign] || 'Fresh, evolving';
   const profThemePlain = PROFECTION_THEME_PLAIN[profHouse] || 'growth and renewal';
   const themeHeadline = `${risingQuality} energy leads this year — a time for ${profThemePlain}.`;
 
-  doc.setFont('Georgia', 'normal'); doc.setFontSize(24);
-  doc.setTextColor(...T1.ink);
+  doc.setFont('Georgia', 'normal'); doc.setFontSize(22);
+  doc.setTextColor(...t.ink);
   const headLines: string[] = doc.splitTextToSize(themeHeadline, contentW);
-  y += 22;
-  for (const hl of headLines) { doc.text(hl, MARGIN, y); y += 29; }
-  y += 8;
+  y += 20;
+  for (const hl of headLines) { doc.text(hl, MARGIN, y); y += 27; }
+  y += 4;
 
-  // Theme body — plain language, no planet/sign names
   const themeBody = `This year invites you into a season of ${profThemePlain}. The energy is ${risingQuality.toLowerCase()}, and the invitation is to trust what emerges naturally rather than forcing outcomes.`;
   doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
-  doc.setTextColor(...T1.body);
+  doc.setTextColor(...t.bodyText);
   const bodyLines: string[] = doc.splitTextToSize(themeBody, contentW);
   for (const bl of bodyLines) { doc.text(bl, MARGIN, y); y += 16; }
 
-  hRule(doc, y + 4, pw);
-  y += 22;
+  doc.setDrawColor(...t.rule); doc.setLineWidth(0.5);
+  doc.line(MARGIN, y + 2, pw - MARGIN, y + 2);
+  y += 18;
 
-  // ── SECTION 2: THREE SNAPSHOT CARDS ──
+  // ── SECTION B: THREE SNAPSHOT CARDS ──
   const cardGap = 10;
   const cardW = (contentW - cardGap * 2) / 3;
-  const cardH = 86;
+  const cardH = 88;
 
   const sunHouseTheme = HOUSE_THEME_SHORT[sunHouse] || 'A new focus area';
   const moonKeyword = MOON_KEYWORD[srMoonSign] || 'Emotionally attuned';
   const moonPhaseDesc = MOON_PHASE_PLAIN[analysis.moonPhase?.phase || ''] || 'A year of steady inner rhythm';
   const profThemeShort = HOUSE_THEME_SHORT[profHouse] || 'A new chapter';
-  const sunHouseBody = SUN_HOUSE_BODY[sunHouse] || 'This year draws your energy toward a new area of life.';
 
-  const cards = [
-    { micro: 'WHERE YOUR ENERGY GOES', label: 'LIFE FOCUS', value: sunHouseTheme, sub: sunHouseBody },
-    { micro: 'YOUR EMOTIONAL WEATHER', label: 'EMOTIONAL WORLD', value: moonKeyword, sub: moonPhaseDesc },
-    { micro: 'THE FOCUS OF THIS YEAR', label: 'THIS YEAR ACTIVATES', value: profThemeShort, sub: profAge != null ? `Year ${profAge}` : '' },
+  interface SnapCard { micro: string; value: string; sub: string; microColor: Color }
+  const cards: SnapCard[] = [
+    { micro: 'WHERE YOUR ENERGY GOES', value: sunHouseTheme, sub: SUN_HOUSE_BODY[sunHouse]?.split('.')[0] + '.' || '', microColor: [139, 105, 20] },
+    { micro: 'YOUR EMOTIONAL WEATHER', value: moonKeyword, sub: moonPhaseDesc, microColor: [74, 45, 138] },
+    { micro: 'THE FOCUS OF THIS YEAR', value: profThemeShort, sub: profAge != null ? `Year ${profAge}` : '', microColor: [139, 58, 21] },
   ];
 
   for (let i = 0; i < 3; i++) {
     const cx = MARGIN + i * (cardW + cardGap);
-    doc.setDrawColor(...T1.rule); doc.setLineWidth(0.4);
+    doc.setDrawColor(...t.border); doc.setLineWidth(0.5);
     doc.roundedRect(cx, y, cardW, cardH, 3, 3, 'S');
 
-    microLabel(doc, cards[i].micro, cx + 10, y + 14);
+    // Micro label
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
+    doc.setTextColor(...cards[i].microColor);
+    doc.setCharSpace(0.6);
+    doc.text(cards[i].micro, cx + 10, y + 14);
+    doc.setCharSpace(0);
 
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(13);
-    doc.setTextColor(...T1.ink);
+    // Value
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(13);
+    doc.setTextColor(...t.ink);
     const valLines: string[] = doc.splitTextToSize(cards[i].value, cardW - 20);
-    let vy = y + 30;
+    let vy = y + 32;
     for (const vl of valLines.slice(0, 2)) { doc.text(vl, cx + 10, vy); vy += 16; }
-    vy += 5;
+    vy += 4;
 
+    // Sub
     doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
-    doc.setTextColor(...T1.dim);
+    doc.setTextColor(...t.dimText);
     if (cards[i].sub) {
       const subLines: string[] = doc.splitTextToSize(cards[i].sub, cardW - 20);
       for (const sl of subLines.slice(0, 2)) { doc.text(sl, cx + 10, vy); vy += 11; }
@@ -378,103 +374,142 @@ export async function generateTier1SolarReturnPDF(
   }
   y += cardH + 18;
 
-  // ── SECTION 3: HOW THIS YEAR MEETS YOU ──
-  eyebrow(doc, 'HOW THIS YEAR MEETS YOU', MARGIN, y);
-  y += 8;
+  // ── SECTION C: HOW THIS YEAR MEETS YOU ──
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+  doc.setTextColor(...t.dimText); doc.setCharSpace(1.2);
+  doc.text('HOW THIS YEAR MEETS YOU', MARGIN, y);
+  doc.setCharSpace(0);
+  y += 6;
 
-  // Big Three stacked cards
+  // Intro
+  doc.setFont('Georgia', 'italic'); doc.setFontSize(9);
+  doc.setTextColor(122, 112, 104);
+  doc.text('Your natal chart is who you are. Your Solar Return shows how this year\'s energy meets that.', MARGIN, y);
+  y += 12;
+
+  // Three stacked Big Three cards
+  const headerTints: { bg: Color; labelColor: Color }[] = [
+    { bg: [255, 251, 240], labelColor: [139, 105, 20] },   // Sun — gold
+    { bg: [245, 240, 250], labelColor: [74, 45, 138] },     // Moon — purple
+    { bg: [253, 245, 238], labelColor: [139, 58, 21] },     // Rising — rust
+  ];
+
   const bigThreeCards = [
     {
       label: 'YOUR SUN',
+      natalTag: natalSunSign, srTag: `H${sunHouse}`,
       headline: getBigThreeSunHeadline(natalSunSign, sunHouse),
       body: SUN_HOUSE_BODY[sunHouse] || 'This year draws your energy toward a meaningful new focus.',
     },
     {
       label: 'YOUR MOON',
+      natalTag: natalMoonSign, srTag: srMoonSign,
       headline: getBigThreeMoonHeadline(natalMoonSign, srMoonSign),
       body: MOON_SIGN_BODY[srMoonSign] || 'Your emotional world shifts into a new rhythm this year.',
     },
     {
       label: 'YOUR PRESENCE THIS YEAR',
+      natalTag: natalRisingSign, srTag: srRisingSign,
       headline: getBigThreeRisingHeadline(natalRisingSign, srRisingSign),
       body: RISING_BODY[srRisingSign] || 'The way you show up in the world takes on a new quality this year.',
     },
   ];
 
-  for (const card of bigThreeCards) {
-    // Check if we need a new page
-    if (y + 90 > ph - MARGIN_BOTTOM) {
-      doc.addPage(); y = MARGIN_TOP;
-      eyebrow(doc, 'HOW THIS YEAR MEETS YOU (CONTINUED)', MARGIN, y);
-      y += 12;
+  for (let i = 0; i < bigThreeCards.length; i++) {
+    const card = bigThreeCards[i];
+    const tint = headerTints[i];
+
+    if (y + 80 > ph - MARGIN_BOTTOM) {
+      doc.addPage();
+      doc.setFillColor(...t.cream);
+      doc.rect(0, 0, pw, ph, 'F');
+      y = MARGIN_TOP;
     }
 
     const cardStartY = y;
-    // Background
-    doc.setFillColor(...T1.warmGray);
-    doc.roundedRect(MARGIN, y, contentW, 0, 3, 3, 'F'); // placeholder, drawn after measuring
 
-    // Accent bar
-    const barX = MARGIN;
+    // Header bar
+    doc.setFillColor(...tint.bg);
+    doc.setDrawColor(...t.border); doc.setLineWidth(0.5);
+    doc.roundedRect(MARGIN, y, contentW, 22, 4, 4, 'F');
+    // Draw top border
+    doc.roundedRect(MARGIN, y, contentW, 22, 4, 4, 'S');
 
-    // Content
-    const innerLeft = MARGIN + 16;
-    const innerW = contentW - 28;
-    let cy = y + 12;
+    // Planet label
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+    doc.setTextColor(...tint.labelColor);
+    doc.setCharSpace(0.8);
+    doc.text(card.label, MARGIN + 12, y + 14);
+    doc.setCharSpace(0);
 
-    microLabel(doc, card.label, innerLeft, cy);
-    cy += 13;
+    // Tags: NATAL → SR
+    const natalTagW = doc.getTextWidth(card.natalTag) + 14;
+    const srTagW = doc.getTextWidth(card.srTag) + 14;
+    const tagsX = MARGIN + contentW - 12 - srTagW - 20 - natalTagW;
 
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(11);
-    doc.setTextColor(...T1.ink);
-    const hlLines: string[] = doc.splitTextToSize(card.headline, innerW);
-    for (const hl of hlLines) { doc.text(hl, innerLeft, cy); cy += 14; }
-    cy += 5;
+    // Natal tag
+    doc.setFillColor(237, 229, 247);
+    doc.roundedRect(tagsX, y + 4, natalTagW, 14, 2, 2, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
+    doc.setTextColor(74, 45, 138);
+    doc.text(card.natalTag, tagsX + 7, y + 14);
 
+    // Arrow
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-    doc.setTextColor(...T1.body);
-    const bdLines: string[] = doc.splitTextToSize(card.body, innerW);
-    for (const bl of bdLines.slice(0, 3)) { doc.text(bl, innerLeft, cy); cy += 13; }
-    cy += 12;
+    doc.setTextColor(...t.gold);
+    doc.text('→', tagsX + natalTagW + 5, y + 14);
 
-    const cardHeight = cy - cardStartY;
+    // SR tag
+    const srTagX = tagsX + natalTagW + 20;
+    doc.setFillColor(253, 240, 232);
+    doc.roundedRect(srTagX, y + 4, srTagW, 14, 2, 2, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
+    doc.setTextColor(139, 58, 21);
+    doc.text(card.srTag, srTagX + 7, y + 14);
 
-    // Now draw the background and accent bar behind the text
-    // We need to draw bg first, so re-render. jsPDF doesn't support z-order easily.
-    // Instead draw bg rect at the position
-    doc.setFillColor(...T1.warmGray);
-    doc.roundedRect(MARGIN, cardStartY, contentW, cardHeight, 3, 3, 'F');
+    y += 22;
 
-    // Accent bar
-    doc.setFillColor(...T1.accent);
-    doc.rect(barX, cardStartY, 2, cardHeight, 'F');
+    // Body area
+    doc.setFillColor(...t.cream);
+    const bodyAreaH = 52;
+    doc.roundedRect(MARGIN, y, contentW, bodyAreaH, 0, 0, 'F');
+    // Bottom border
+    doc.setDrawColor(...t.border); doc.setLineWidth(0.5);
+    doc.roundedRect(MARGIN, cardStartY, contentW, 22 + bodyAreaH, 4, 4, 'S');
 
-    // Re-render text on top
-    let cy2 = cardStartY + 12;
-    microLabel(doc, card.label, innerLeft, cy2);
-    cy2 += 13;
+    y += 12;
 
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(11);
-    doc.setTextColor(...T1.ink);
-    for (const hl of hlLines) { doc.text(hl, innerLeft, cy2); cy2 += 14; }
-    cy2 += 5;
+    // Headline
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+    doc.setTextColor(...t.ink);
+    doc.text(card.headline, MARGIN + 12, y);
+    y += 14;
 
+    // Body — 2 sentences max for Tier 1
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-    doc.setTextColor(...T1.body);
-    for (const bl of bdLines.slice(0, 3)) { doc.text(bl, innerLeft, cy2); cy2 += 13; }
+    doc.setTextColor(...t.bodyText);
+    const bdLines: string[] = doc.splitTextToSize(card.body, contentW - 24);
+    for (const bl of bdLines.slice(0, 2)) { doc.text(bl, MARGIN + 12, y); y += 13; }
 
-    y = cy;
-    y += 8; // gap between cards
+    y = cardStartY + 22 + bodyAreaH + 6;
   }
 
-  // ── SECTION 4: THREE WORDS ──
-  if (y + 60 > ph - MARGIN_BOTTOM) {
-    doc.addPage(); y = MARGIN_TOP;
+  // ── SECTION D: THREE WORDS ──
+  if (y + 50 > ph - MARGIN_BOTTOM) {
+    doc.addPage();
+    doc.setFillColor(...t.cream);
+    doc.rect(0, 0, pw, ph, 'F');
+    y = MARGIN_TOP;
   }
-  hRule(doc, y, pw);
+
+  doc.setDrawColor(...t.rule); doc.setLineWidth(0.5);
+  doc.line(MARGIN, y, pw - MARGIN, y);
   y += 12;
 
-  eyebrow(doc, `THREE WORDS FOR ${year}`, pw / 2, y, 'center');
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+  doc.setTextColor(...t.dimText); doc.setCharSpace(1.2);
+  doc.text(`THREE WORDS FOR ${year}`, pw / 2, y, { align: 'center' });
+  doc.setCharSpace(0);
   y += 10;
 
   const dominantEl = analysis.elementBalance?.dominant || 'Fire';
@@ -483,110 +518,24 @@ export async function generateTier1SolarReturnPDF(
   const w3 = MOON_WORD[srMoonSign] || 'Depth';
 
   doc.setFont('Georgia', 'normal'); doc.setFontSize(16);
-  doc.setTextColor(90, 85, 80); doc.setCharSpace(0.5);
-  doc.text(`${w1}    ·    ${w2}    ·    ${w3}`, pw / 2, y + 4, { align: 'center' });
+  doc.setTextColor(92, 84, 80);
+  doc.setCharSpace(0.5);
+  doc.text(`${w1}  ·  ${w2}  ·  ${w3}`, pw / 2, y + 4, { align: 'center' });
   doc.setCharSpace(0);
-  y += 20;
+  y += 18;
 
-  hRule(doc, y, pw);
-
-  // ════════════════════════════════════════════════════════════════
-  // PAGE 3 — YOUR YEAR, QUARTER BY QUARTER
-  // ════════════════════════════════════════════════════════════════
-  doc.addPage();
-  y = MARGIN_TOP;
-
-  // Page header
-  eyebrow(doc, 'YOUR YEAR, QUARTER BY QUARTER', MARGIN, y);
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
-  doc.setTextColor(...T1.faint);
-  doc.text(`${firstName} · ${year}`, pw - MARGIN, y, { align: 'right' });
-  y += 10;
-  hRule(doc, y, pw);
-  y += 16;
-
-  // Intro
-  doc.setFont('Georgia', 'italic'); doc.setFontSize(9.5);
-  doc.setTextColor(100, 95, 90);
-  doc.text('Here is how your year unfolds — four chapters, each with its own invitation.', pw / 2, y, { align: 'center' });
-  y += 16;
-
-  // Determine birth month
-  const birthMonth = natalChart.birthDate
-    ? new Date(natalChart.birthDate + 'T00:00:00').getMonth() + 1
-    : 1;
-
-  const risingQ = (RISING_QUALITY[srRisingSign] || 'fresh').split(',')[0].trim().toLowerCase();
-  const moonQ = (MOON_KEYWORD[srMoonSign] || 'steady').split('&')[0].trim().toLowerCase();
-
-  const quarters = [
-    {
-      range: `${monthName(birthMonth)} – ${monthName(birthMonth + 2)}`,
-      headline: 'New beginnings stir',
-      body: `Your birthday season carries ${risingQ} energy. The themes of this year announce themselves early — stay open to what arrives.`,
-    },
-    {
-      range: `${monthName(birthMonth + 3)} – ${monthName(birthMonth + 5)}`,
-      headline: 'Momentum builds',
-      body: `The focus of this year — ${profThemePlain} — starts to take real shape. Energy is available to act on what matters most to you.`,
-    },
-    {
-      range: `${monthName(birthMonth + 6)} – ${monthName(birthMonth + 8)}`,
-      headline: 'Results come into view',
-      body: `Your ${moonQ} emotional steadiness serves you well now. What you put in motion earlier in the year becomes visible and tangible.`,
-    },
-    {
-      range: `${monthName(birthMonth + 9)} – ${monthName(birthMonth + 11)}`,
-      headline: 'Rest and renewal',
-      body: 'The year rounds out quietly. Rest is not wasted — it is preparation. Whatever has completed deserves acknowledgment before the next chapter begins.',
-    },
-  ];
-
-  // 2×2 grid
-  const gridGap = 12;
-  const gridW = (contentW - gridGap) / 2;
-  const gridH = 120;
-
-  for (let i = 0; i < 4; i++) {
-    const col = i % 2;
-    const row = Math.floor(i / 2);
-    const gx = MARGIN + col * (gridW + gridGap);
-    const gy = y + row * (gridH + gridGap);
-
-    // Card bg
-    doc.setFillColor(...T1.warmGray);
-    doc.roundedRect(gx, gy, gridW, gridH, 4, 4, 'F');
-
-    // Month range
-    let ty = gy + 16;
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-    doc.setTextColor(122, 114, 104); doc.setCharSpace(0.5);
-    doc.text(quarters[i].range, gx + 14, ty); doc.setCharSpace(0);
-    ty += 14;
-
-    // Headline
-    doc.setFont('Georgia', 'normal'); doc.setFontSize(13);
-    doc.setTextColor(...T1.ink);
-    doc.text(quarters[i].headline, gx + 14, ty);
-    ty += 14;
-
-    // Body
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
-    doc.setTextColor(112, 106, 100);
-    const qLines: string[] = doc.splitTextToSize(quarters[i].body, gridW - 28);
-    for (const ql of qLines.slice(0, 4)) { doc.text(ql, gx + 14, ty); ty += 12; }
-  }
-
-  y += 2 * (gridH + gridGap);
+  doc.setDrawColor(...t.rule); doc.setLineWidth(0.5);
+  doc.line(MARGIN, y, pw - MARGIN, y);
 
   // Birthday footer
   if (birthdayMode) {
     doc.setFont('Georgia', 'italic'); doc.setFontSize(8);
-    doc.setTextColor(...T1.dim);
+    doc.setTextColor(...t.dimText);
     doc.text('Wishing you a beautiful year ahead.', pw / 2, ph - MARGIN_BOTTOM, { align: 'center' });
   }
 
-  // ── SAVE ──
+  // No page 3. No quarterly. No monthly. End of Tier 1.
+
   doc.save(`Year-at-a-Glance-${year}-${firstName.replace(/\s+/g, '-')}.pdf`);
 }
 
@@ -604,9 +553,7 @@ function getBigThreeSunHeadline(natalSign: string, srHouse: number): string {
 }
 
 function getBigThreeMoonHeadline(natalMoon: string, srMoon: string): string {
-  if (natalMoon && natalMoon === srMoon) {
-    return 'Your emotional world stays in familiar territory';
-  }
+  if (natalMoon && natalMoon === srMoon) return 'Your emotional world stays in familiar territory';
   const qualities: Record<string, string> = {
     Aries: 'quickens and activates', Taurus: 'steadies and grounds',
     Gemini: 'lightens and opens', Cancer: 'deepens and softens',
@@ -619,9 +566,7 @@ function getBigThreeMoonHeadline(natalMoon: string, srMoon: string): string {
 }
 
 function getBigThreeRisingHeadline(natalRising: string, srRising: string): string {
-  if (natalRising && natalRising === srRising) {
-    return 'Your natural presence becomes your greatest strength';
-  }
+  if (natalRising && natalRising === srRising) return 'Your natural presence becomes your greatest strength';
   const qualities: Record<string, string> = {
     Aries: 'becomes bolder and more direct', Taurus: 'grounds into quiet confidence',
     Gemini: 'becomes lighter and more curious', Cancer: 'softens and becomes more intuitive',

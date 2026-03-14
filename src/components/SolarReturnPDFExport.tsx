@@ -166,6 +166,174 @@ export const nodeHouseMeaning: Record<number, string> = {
   12: 'Growth: surrender, release, and spiritual trust. The ego\'s agenda is being dissolved — not destroyed, but softened. Meditation, dreams, and quiet contemplation reveal what striving cannot.',
 };
 
+// ─── How This Year Meets You (v3 section) ───────────────────────────
+import type jsPDF from 'jspdf';
+
+const HTYM_SUN_BODY: Record<number, string> = {
+  1: 'Your core identity is being refreshed and redefined. People see a more authentic version of you emerging — the year amplifies who you really are. The 1st house placement puts you at the center of your own story.',
+  2: 'Your energy this year flows toward finances, possessions, and defining what you truly value. The 2nd house Sun draws attention to material security and self-worth in practical, tangible ways.',
+  3: 'Your mind and voice are the main characters. The 3rd house Sun activates learning, communication, writing, and everyday connections. Ideas carry unusual weight this year.',
+  4: 'Home, family, and emotional roots demand your full attention. The 4th house Sun turns energy inward — toward ancestry, domestic life, and the foundations that hold everything else together.',
+  5: 'Joy, creativity, and self-expression light up this year. The 5th house Sun invites you to play, create, and take emotional risks. Romance and children may also feature prominently.',
+  6: 'Daily routines, health, and work efficiency are being restructured. The 6th house Sun asks you to refine the mundane — small, consistent changes produce the biggest results this year.',
+  7: 'Relationships define this year. The 7th house Sun places partnerships — romantic, business, or creative — at the center. Growth happens through the mirror of another person.',
+  8: 'Transformation runs deep. The 8th house Sun activates shared resources, psychological depth, and emotional honesty. Something old must end for something authentic to begin.',
+  9: 'Your world is expanding through travel, education, or a fundamental shift in perspective. The 9th house Sun seeks meaning beyond the familiar — philosophy, culture, and big-picture thinking.',
+  10: 'Career and public reputation are the priority. The 10th house Sun makes you more visible — professional responsibilities increase, but so does recognition and authority.',
+  11: 'Community, friendship, and collective purpose shape the year. The 11th house Sun redirects personal ambition toward something larger — your social circle is being restructured.',
+  12: 'The most introspective placement. The 12th house Sun turns energy toward solitude, spiritual practice, and unconscious patterns. Rest and inner work are not extras — they are the curriculum.',
+};
+
+const HTYM_MOON_BODY: Record<string, string> = {
+  Aries: 'Your emotional landscape shifts toward directness and independence. Where your natal Moon processes feelings in its familiar way, this year the emotional body wants action, speed, and autonomy.',
+  Taurus: 'Your emotional world this year craves stability, comfort, and sensory grounding. The shift is toward patience — feelings are processed slowly and deliberately.',
+  Gemini: 'Your emotional processing becomes more verbal and social. You think through feelings rather than sitting with them — conversation and writing become emotional outlets.',
+  Cancer: 'Your emotional world deepens significantly. Sensitivity increases, intuition sharpens, and the need for emotional safety becomes non-negotiable.',
+  Leo: 'Your emotional world warms and expands. The need to feel seen, appreciated, and creatively expressed intensifies. Heart-centered decisions carry more weight.',
+  Virgo: 'Your emotional processing becomes more analytical and service-oriented. Feelings are examined, organized, and channeled into practical improvements.',
+  Libra: 'Your emotional world seeks balance and harmony. Relationship dynamics color everything — discord feels more disruptive, and the pull toward partnership strengthens.',
+  Scorpio: 'Your emotional world intensifies and deepens. Surface-level engagement becomes intolerable. The pull toward truth, transformation, and psychological depth is powerful.',
+  Sagittarius: 'Your emotional world opens and lifts. Restlessness increases, optimism grows, and the need for meaning and adventure colors your inner life.',
+  Capricorn: 'Your emotional world becomes more disciplined and pragmatic. Feelings are managed rather than indulged — emotional maturity deepens.',
+  Aquarius: 'Your emotional processing becomes more detached and cerebral. You observe feelings from a slight distance, preferring clarity and independence over intensity.',
+  Pisces: 'Your emotional world becomes fluid and permeable. Boundaries thin, empathy deepens, and the unconscious sends vivid signals through dreams and intuition.',
+};
+
+const HTYM_RISING_BODY: Record<string, string> = {
+  Aries: 'Your public presence shifts toward boldness, directness, and initiative. Others perceive you as more courageous and action-oriented. The Aries Rising year energy favors starting things.',
+  Taurus: 'Your public presence becomes more grounded, patient, and reliable. Others see stability in you — the Taurus Rising year rewards building slowly and deliberately.',
+  Gemini: 'Your public presence becomes lighter, more curious, and verbally agile. The Gemini Rising year energy makes you a connector — ideas, people, and information flow through you.',
+  Cancer: 'Your public presence softens and becomes more nurturing. Others feel safe in your company — the Cancer Rising year opens doors through emotional intelligence.',
+  Leo: 'Your public presence becomes more visible, warm, and magnetic. The Leo Rising year demands that you step forward and let yourself be seen.',
+  Virgo: 'Your public presence sharpens and becomes more purposeful. The Virgo Rising year rewards precision, competence, and attention to detail.',
+  Libra: 'Your public presence becomes more diplomatic, graceful, and partnership-oriented. The Libra Rising year shapes your path through relationships more than solo ambition.',
+  Scorpio: 'Your public presence deepens and becomes more intense. The Scorpio Rising year gives you a magnetic, transformative quality that others either gravitate toward or resist.',
+  Sagittarius: 'Your public presence opens and expands. The Sagittarius Rising year rewards adventure, teaching, and philosophical engagement with the world.',
+  Capricorn: 'Your public presence becomes more authoritative and focused. The Capricorn Rising year rewards ambition, structure, and taking on greater responsibility.',
+  Aquarius: 'Your public presence becomes more independent and original. The Aquarius Rising year rewards unconventional thinking and trusting your own vision.',
+  Pisces: 'Your public presence becomes gentler and more intuitive. The Pisces Rising year opens doors through compassion, creativity, and subtle connection.',
+};
+
+function generateHowThisYearMeetsYou(
+  ctx: PDFContext, doc: jsPDF, a: SolarReturnAnalysis,
+  srChart: SolarReturnChart, natalChart: NatalChart,
+) {
+  const { margin, contentW, colors } = ctx;
+  const natalSun = natalChart.planets?.Sun?.sign || '';
+  const natalMoon = natalChart.planets?.Moon?.sign || '';
+  const natalRising = natalChart.houseCusps?.house1?.sign || natalChart.planets?.Ascendant?.sign || '';
+  const srSunSign = srChart.planets.Sun?.sign || natalSun;
+  const srMoonSign = a.moonSign || srChart.planets.Moon?.sign || '';
+  const srRisingSign = srChart.planets.Ascendant?.sign || a.yearlyTheme?.ascendantSign || '';
+  const sunH = a.sunHouse?.house || 1;
+
+  ctx.sectionTitle(doc, 'HOW THIS YEAR MEETS YOU', 'Natal vs Solar Return');
+
+  // Intro
+  doc.setFont('Georgia', 'italic'); doc.setFontSize(9);
+  doc.setTextColor(122, 112, 104);
+  const introLines: string[] = doc.splitTextToSize(
+    'Your natal chart is who you are. Your Solar Return shows how this year\'s energy meets that.',
+    contentW,
+  );
+  for (const l of introLines) { doc.text(l, margin, ctx.y); ctx.y += 13; }
+  ctx.y += 8;
+
+  const headerTints: { bg: [number,number,number]; labelColor: [number,number,number] }[] = [
+    { bg: [255, 251, 240], labelColor: [139, 105, 20] },
+    { bg: [245, 240, 250], labelColor: [74, 45, 138] },
+    { bg: [253, 245, 238], labelColor: [139, 58, 21] },
+  ];
+
+  const cards = [
+    {
+      label: 'YOUR SUN', natalTag: natalSun, srTag: `${srSunSign} · H${sunH}`,
+      headline: `Your core self ${sunH === 1 ? 'takes center stage' : sunH === 7 ? 'meets itself through others' : sunH === 10 ? 'steps into the spotlight' : 'enters new territory'}`,
+      body: HTYM_SUN_BODY[sunH] || 'Your energy is directed toward a new area of life this year.',
+    },
+    {
+      label: 'YOUR MOON', natalTag: natalMoon, srTag: srMoonSign,
+      headline: natalMoon === srMoonSign ? 'Your emotional world stays in familiar territory' : `Your emotional world shifts from ${natalMoon} to ${srMoonSign}`,
+      body: HTYM_MOON_BODY[srMoonSign] || 'Your emotional world enters a new rhythm this year.',
+    },
+    {
+      label: 'YOUR RISING', natalTag: natalRising, srTag: srRisingSign,
+      headline: natalRising === srRisingSign ? 'Your natural presence amplifies' : `Your presence shifts from ${natalRising} to ${srRisingSign}`,
+      body: HTYM_RISING_BODY[srRisingSign] || 'The way you show up in the world takes on a new quality.',
+    },
+  ];
+
+  for (let i = 0; i < cards.length; i++) {
+    const card = cards[i];
+    const tint = headerTints[i];
+    ctx.checkPage(110);
+
+    const cardStartY = ctx.y;
+
+    // Header with tinted bg
+    doc.setFillColor(...tint.bg);
+    doc.setDrawColor(...colors.border); doc.setLineWidth(0.5);
+    doc.roundedRect(margin, ctx.y, contentW, 24, 4, 4, 'F');
+
+    // Label
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+    doc.setTextColor(...tint.labelColor);
+    doc.setCharSpace(0.8);
+    doc.text(card.label, margin + 12, ctx.y + 16);
+    doc.setCharSpace(0);
+
+    // Tags
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
+    const natalTagW = doc.getTextWidth(card.natalTag) + 14;
+    const srTagW = doc.getTextWidth(card.srTag) + 14;
+    const tagsX = margin + contentW - 12 - srTagW - 20 - natalTagW;
+
+    doc.setFillColor(237, 229, 247);
+    doc.roundedRect(tagsX, ctx.y + 5, natalTagW, 14, 2, 2, 'F');
+    doc.setTextColor(74, 45, 138);
+    doc.text(card.natalTag, tagsX + 7, ctx.y + 15);
+
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+    doc.setTextColor(...colors.gold);
+    doc.text('→', tagsX + natalTagW + 5, ctx.y + 15);
+
+    const srTagX = tagsX + natalTagW + 20;
+    doc.setFillColor(253, 240, 232);
+    doc.roundedRect(srTagX, ctx.y + 5, srTagW, 14, 2, 2, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
+    doc.setTextColor(139, 58, 21);
+    doc.text(card.srTag, srTagX + 7, ctx.y + 15);
+
+    ctx.y += 24;
+
+    // Body
+    doc.setFillColor(...colors.cream);
+    ctx.y += 10;
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+    doc.setTextColor(...colors.ink);
+    const hlLines: string[] = doc.splitTextToSize(card.headline, contentW - 24);
+    for (const hl of hlLines) { doc.text(hl, margin + 12, ctx.y); ctx.y += 14; }
+    ctx.y += 4;
+
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+    doc.setTextColor(...colors.bodyText);
+    const bdLines: string[] = doc.splitTextToSize(card.body, contentW - 24);
+    for (const bl of bdLines.slice(0, 4)) { doc.text(bl, margin + 12, ctx.y); ctx.y += 13; }
+    ctx.y += 8;
+
+    // Draw full card border
+    const cardH = ctx.y - cardStartY;
+    doc.setDrawColor(...colors.border); doc.setLineWidth(0.5);
+    doc.roundedRect(margin, cardStartY, contentW, cardH, 4, 4, 'S');
+    // Header bottom border
+    doc.setDrawColor(...colors.border); doc.setLineWidth(0.5);
+    doc.line(margin, cardStartY + 24, margin + contentW, cardStartY + 24);
+
+    ctx.y += 6;
+  }
+}
+
 interface Props {
   analysis: SolarReturnAnalysis;
   srChart: SolarReturnChart;
@@ -228,9 +396,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       const margin = 50;
       const contentW = pw - margin * 2;
 
-      // Apply sign-specific color theme if birthday mode
+      // Always apply sign-specific color theme keyed to NATAL SUN SIGN
       const sunSign = natalChart.planets?.Sun?.sign || '';
-      const signTheme = birthdayMode && sunSign ? signColorThemes[sunSign] : undefined;
+      const signTheme = sunSign ? signColorThemes[sunSign] : undefined;
       const ctx = createPDFContext(doc, pw, ph, margin, contentW, signTheme);
 
       // =============================================
@@ -253,14 +421,21 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       generateHowToReadPage(ctx, doc);
 
       // =============================================
-      // BIG THREE (birthday mode) or always
+      // BIG THREE
       // =============================================
       doc.addPage(); ctx.y = margin;
       ctx.sectionPages.set('YOUR BIG THREE', doc.getNumberOfPages());
       generateStrengthsPortrait(ctx, doc, natalChart, analysis);
 
       // =============================================
-      // PAGE 3+: YEAR AT A GLANCE (own page, beautiful)
+      // HOW THIS YEAR MEETS YOU (new v3 section)
+      // =============================================
+      doc.addPage(); ctx.y = margin;
+      ctx.sectionPages.set('HOW THIS YEAR MEETS YOU', doc.getNumberOfPages());
+      generateHowThisYearMeetsYou(ctx, doc, analysis, srChart, natalChart);
+
+      // =============================================
+      // PAGE 3+: YEAR AT A GLANCE (own page)
       // =============================================
       doc.addPage(); ctx.y = margin;
       ctx.sectionPages.set('YEAR AT A GLANCE', doc.getNumberOfPages());
@@ -1186,17 +1361,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // Add clickable links to the Table of Contents
       addTOCLinks(doc, tocPageNumber, tocEntries, ctx);
 
-      // Add page numbers to every page (skip cover page 1; skip in birthday mode for clean frameable pages)
-      if (!birthdayMode) {
-        const totalPages = doc.getNumberOfPages();
-        for (let i = 2; i <= totalPages; i++) {
-          doc.setPage(i);
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(8);
-          doc.setTextColor(...ctx.colors.dimText);
-          doc.text(`${i}`, pw / 2, ph - 28, { align: 'center' });
-        }
-      }
+      // No page numbers per v3 spec
 
       const name2 = natalChart.name || 'Chart';
       doc.save(`Solar-Return-${srChart.solarReturnYear}-${name2.replace(/\s+/g, '-')}.pdf`);
