@@ -13,6 +13,7 @@ const GOLD:  Color = [184, 150, 62];
 const CARD_BG: Color = [245, 241, 234];
 const WARM_CREAM: Color = [252, 249, 244];
 const SOFT_GOLD: Color = [248, 242, 228];
+const DARK: Color = [38, 34, 30];
 
 const HOUSE_FOCUS: Record<number, string> = {
   1: 'Identity & Self', 2: 'Money & Values', 3: 'Communication', 4: 'Home & Family',
@@ -24,25 +25,44 @@ const HOUSE_FOCUS: Record<number, string> = {
 export function generatePDFYearAtAGlance(
   ctx: PDFContext, doc: jsPDF, a: SolarReturnAnalysis, srChart: SolarReturnChart, natalChart: NatalChart
 ) {
-  const { pw, margin, contentW } = ctx;
+  const { pw, ph, margin, contentW } = ctx;
 
   ctx.pageBg(doc);
 
-  // Section header
-  ctx.sectionTitle(doc, 'YEAR AT A GLANCE', 'Your Year at a Glance');
-  ctx.y += 2;
-  doc.setFont('times', 'italic'); doc.setFontSize(9);
+  // ── Magazine-style section header with generous whitespace ─────────
+  ctx.y += 24;
+
+  // Tracked label
+  doc.setFont('times', 'bold'); doc.setFontSize(7);
+  doc.setTextColor(...GOLD);
+  doc.setCharSpace(4);
+  doc.text('YOUR YEAR', margin, ctx.y);
+  doc.setCharSpace(0);
+  ctx.y += 12;
+
+  // Hairline
+  doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+  doc.line(margin, ctx.y, pw - margin, ctx.y);
+  ctx.y += 28;
+
+  // Large serif title
+  doc.setFont('times', 'normal'); doc.setFontSize(36);
+  doc.setTextColor(...INK);
+  doc.text('At a Glance', margin, ctx.y);
+  ctx.y += 16;
+
+  // Subtitle
+  doc.setFont('times', 'italic'); doc.setFontSize(10);
   doc.setTextColor(...MUTED);
   doc.text('Stick this on your fridge', margin, ctx.y);
-  ctx.y += 22;
+  ctx.y += 36;
 
   // ── TOP ROW: 3-column info box grid ──────────────────────────────
-  const col3Gap = 12;
+  const col3Gap = 14;
   const col3W = (contentW - col3Gap * 2) / 3;
-  const boxH = 100;
+  const boxH = 108;
 
   const houseNum = a.profectionYear?.houseNumber || 1;
-  const moonPhase = a.moonPhase?.phase || '';
   const topStellium = a.stelliums[0];
 
   ctx.drawInfoBox(doc, margin, ctx.y, col3W, boxH,
@@ -66,61 +86,65 @@ export function generatePDFYearAtAGlance(
     WARM_CREAM,
   );
 
-  ctx.y += boxH + 16;
+  ctx.y += boxH + 24;
 
-  // ── YEAR-DEFINING ASPECT — hero dark card ────────────────────────
+  // ── YEAR-DEFINING ASPECT — dark hero card ────────────────────────
   if (a.srToNatalAspects.length > 0) {
     const yda = a.srToNatalAspects[0];
-    ctx.checkPage(140);
+    ctx.checkPage(160);
 
-    const heroH = 130;
+    const heroH = 140;
     const heroY = ctx.y;
 
-    // Dark background
-    doc.setFillColor(38, 34, 30);
+    // Dark background with rounded corners
+    doc.setFillColor(...DARK);
     doc.roundedRect(margin, heroY, contentW, heroH, 4, 4, 'F');
 
-    // Gold top accent
+    // Gold top accent line
     doc.setFillColor(...GOLD);
-    doc.rect(margin, heroY, contentW, 3, 'F');
+    doc.rect(margin, heroY, contentW, 2.5, 'F');
 
-    let hy = heroY + 24;
-    doc.setFont('times', 'bold'); doc.setFontSize(7);
+    let hy = heroY + 28;
+
+    // Tracked label
+    doc.setFont('times', 'bold'); doc.setFontSize(6.5);
     doc.setTextColor(...GOLD);
-    doc.setCharSpace(3);
-    doc.text('YEAR-DEFINING ASPECT', margin + 18, hy);
+    doc.setCharSpace(4);
+    doc.text('YEAR-DEFINING ASPECT', margin + 22, hy);
     doc.setCharSpace(0);
-    hy += 22;
+    hy += 26;
 
-    doc.setFont('times', 'bold'); doc.setFontSize(20);
+    // Large aspect name
+    doc.setFont('times', 'bold'); doc.setFontSize(22);
     doc.setTextColor(250, 247, 242);
-    doc.text(`SR ${P[yda.planet1] || yda.planet1} ${yda.type} Natal ${P[yda.planet2] || yda.planet2}`, margin + 18, hy);
-    hy += 14;
+    doc.text(`SR ${P[yda.planet1] || yda.planet1} ${yda.type} Natal ${P[yda.planet2] || yda.planet2}`, margin + 22, hy);
+    hy += 16;
 
+    // Orb detail
     doc.setFont('times', 'normal'); doc.setFontSize(8);
     doc.setTextColor(...GOLD);
-    doc.text(`${yda.orb}° ORB  ·  FELT ALL YEAR`, margin + 18, hy);
-    hy += 18;
+    doc.text(`${yda.orb}° ORB  ·  FELT ALL YEAR`, margin + 22, hy);
+    hy += 22;
 
+    // Interpretation
     if (yda.interpretation) {
       doc.setFont('times', 'normal'); doc.setFontSize(10.5);
       doc.setTextColor(220, 216, 210);
-      const interpLines: string[] = doc.splitTextToSize(yda.interpretation, contentW - 36);
-      for (const line of interpLines.slice(0, 3)) { doc.text(line, margin + 18, hy); hy += 15; }
+      const interpLines: string[] = doc.splitTextToSize(yda.interpretation, contentW - 44);
+      for (const line of interpLines.slice(0, 3)) { doc.text(line, margin + 22, hy); hy += 15; }
     }
 
-    ctx.y = heroY + heroH + 16;
+    ctx.y = heroY + heroH + 24;
   }
 
   // ── Two-column: SR ASCENDANT + MOON PHASE ────────────────────────
   if (a.yearlyTheme) {
-    ctx.checkPage(140);
-    const col2Gap = 14;
+    ctx.checkPage(150);
+    const col2Gap = 16;
     const col2W = (contentW - col2Gap) / 2;
     const pairH = 130;
     const pairY = ctx.y;
 
-    // Left box: SR Ascendant
     ctx.drawInfoBox(doc, margin, pairY, col2W, pairH,
       'SR ASCENDANT',
       `${a.yearlyTheme.ascendantSign} Rising`,
@@ -128,7 +152,7 @@ export function generatePDFYearAtAGlance(
       CARD_BG,
     );
 
-    // Right box: Moon Phase
+    const moonPhase = a.moonPhase?.phase || '';
     ctx.drawInfoBox(doc, margin + col2W + col2Gap, pairY, col2W, pairH,
       'SR MOON PHASE',
       moonPhase || 'Moon Phase',
@@ -136,19 +160,19 @@ export function generatePDFYearAtAGlance(
       SOFT_GOLD,
     );
 
-    ctx.y = pairY + pairH + 16;
+    ctx.y = pairY + pairH + 24;
   }
 
   // ── WHERE THIS YEAR PLAYS OUT — accent card ──────────────────────
   if (a.srAscRulerInNatal) {
-    ctx.checkPage(120);
+    ctx.checkPage(130);
     ctx.drawCard(doc, () => {
       ctx.trackedLabel(doc, 'WHERE THIS YEAR PLAYS OUT', margin + 14, ctx.y, { charSpace: 2.5, size: 7.5 });
-      ctx.y += 16;
-      doc.setFont('times', 'bold'); doc.setFontSize(14);
+      ctx.y += 18;
+      doc.setFont('times', 'bold'); doc.setFontSize(16);
       doc.setTextColor(...INK);
       doc.text(`${P[a.srAscRulerInNatal!.rulerPlanet] || a.srAscRulerInNatal!.rulerPlanet} in ${a.srAscRulerInNatal!.rulerNatalSign || '--'} — Natal House ${a.srAscRulerInNatal!.rulerNatalHouse || '--'}`, margin + 14, ctx.y);
-      ctx.y += 18;
+      ctx.y += 22;
       doc.setFont('times', 'normal'); doc.setFontSize(11);
       doc.setTextColor(...INK);
       const interpLines: string[] = doc.splitTextToSize(a.srAscRulerInNatal!.interpretation, contentW - 28);
@@ -156,6 +180,6 @@ export function generatePDFYearAtAGlance(
     });
   }
 
-  // Editorial divider before next section
+  // Editorial divider
   ctx.sectionDivider(doc);
 }

@@ -67,128 +67,144 @@ export async function generatePDFCover(
   doc.setFillColor(...CREAM);
   doc.rect(0, 0, pw, ph, 'F');
 
-  // ── flowing y cursor — everything stacks from top ─────────────────
-  let y = 56;
+  // ── Thin gold border frame — magazine style ────────────────────────
+  const frameInset = 18;
+  doc.setDrawColor(...GOLD); doc.setLineWidth(0.5);
+  doc.rect(frameInset, frameInset, pw - frameInset * 2, ph - frameInset * 2);
 
-  // ── Centered top label ─────────────────────────────────────────────
-  doc.setFont('times', 'normal'); doc.setFontSize(9);
+  // ── Top-left: small "SOLAR RETURN" masthead ────────────────────────
+  let y = frameInset + 30;
+  doc.setFont('times', 'normal'); doc.setFontSize(7.5);
   doc.setTextColor(...GOLD);
-  doc.text('-   SOLAR RETURN   -', pw / 2, y, { align: 'center' });
-  y += 40;
+  doc.setCharSpace(4);
+  doc.text('SOLAR RETURN', frameInset + 22, y);
+  doc.setCharSpace(0);
 
-  // ── "Happy Birthday" when in birthday mode ────────────────────────
+  // ── Top-right: year as small accent ────────────────────────────────
+  doc.setFont('times', 'normal'); doc.setFontSize(7.5);
+  doc.setTextColor(...GOLD);
+  doc.setCharSpace(4);
+  doc.text(String(year), pw - frameInset - 22, y, { align: 'right' });
+  doc.setCharSpace(0);
+
+  // ── Hairline under masthead ────────────────────────────────────────
+  y += 10;
+  doc.setDrawColor(...GOLD); doc.setLineWidth(0.3);
+  doc.line(frameInset + 22, y, pw - frameInset - 22, y);
+
+  // ── MASSIVE "Happy Birthday" — the focal point ────────────────────
   if (birthdayMode) {
-    doc.setFont('times', 'italic'); doc.setFontSize(22);
-    doc.setTextColor(...GOLD);
-    doc.text('Happy Birthday', pw / 2, y, { align: 'center' });
-    y += 36;
+    y += 62;
+    doc.setFont('times', 'italic'); doc.setFontSize(58);
+    doc.setTextColor(...INK);
+    doc.text('Happy', pw / 2, y, { align: 'center' });
+    y += 62;
+    doc.setFont('times', 'italic'); doc.setFontSize(58);
+    doc.text('Birthday', pw / 2, y, { align: 'center' });
+    y += 14;
+
+    // Gold flourish line under "Happy Birthday"
+    doc.setDrawColor(...GOLD); doc.setLineWidth(0.6);
+    doc.line(pw / 2 - 80, y, pw / 2 + 80, y);
+    y += 30;
   } else {
-    y += 10;
+    y += 50;
+    // Non-birthday: large year display
+    doc.setFont('times', 'bold'); doc.setFontSize(72);
+    doc.setTextColor(...INK);
+    doc.text(String(year), pw / 2, y + 50, { align: 'center' });
+    y += 80;
   }
 
-  // ── LARGE NAME ────────────────────────────────────────────────────
-  doc.setFont('times', 'normal'); doc.setFontSize(40);
-  doc.setTextColor(...INK);
-  const nameLines: string[] = doc.splitTextToSize(name.toUpperCase(), contentW + 40);
-  for (const line of nameLines) {
-    doc.text(line, pw / 2, y, { align: 'center' });
-    y += 46;
-  }
+  // ── Name — elegant, smaller, tracked ──────────────────────────────
+  doc.setFont('times', 'normal'); doc.setFontSize(14);
+  doc.setTextColor(...MUTED);
+  doc.setCharSpace(6);
+  doc.text(name.toUpperCase(), pw / 2, y, { align: 'center' });
+  doc.setCharSpace(0);
+  y += 22;
 
-  // ── Birth info ────────────────────────────────────────────────────
-  y += 2;
-  const birthInfo = `BORN ${formatDate(natalChart.birthDate)}  ·  ${capitalizeLocation(natalChart.birthLocation).toUpperCase()}`;
-  doc.setFont('times', 'normal'); doc.setFontSize(8);
+  // ── Birth info — very quiet ───────────────────────────────────────
+  const birthInfo = `${formatDate(natalChart.birthDate)}  ·  ${capitalizeLocation(natalChart.birthLocation).toUpperCase()}`;
+  doc.setFont('times', 'normal'); doc.setFontSize(7);
   doc.setTextColor(...MUTED);
   doc.text(birthInfo, pw / 2, y, { align: 'center' });
-  y += 34;
+  y += 36;
 
-  // ── Centered "SOLAR RETURN" label ───────────────────────────────
-  doc.setFont('times', 'normal'); doc.setFontSize(9.5);
-  doc.setTextColor(...MUTED);
-  doc.text('SOLAR RETURN', pw / 2, y, { align: 'center' });
-  y += 14;
-
-  // ── Massive centered year ─────────────────────────────────────────
-  doc.setFont('times', 'bold'); doc.setFontSize(84);
-  doc.setTextColor(...INK);
-  doc.text(String(year), pw / 2, y + 56, { align: 'center' });
-  y += 78;
-
-  // ── Cake image ────────────────────────────────────────────────────
+  // ── Cake image — framed like a magazine feature ───────────────────
   const cakeImgSrc = cakeImages[natalSun];
   if (cakeImgSrc) {
     try {
       const dataUrl = await loadImageDataUrl(cakeImgSrc);
       if (dataUrl) {
-        const imgW = 200;
-        const imgH = 169; // maintain aspect ratio ~1.18:1
+        const imgW = 180;
+        const imgH = 152;
         const imgX = (pw - imgW) / 2;
-        y += 8;
+
+        // Subtle shadow frame behind image
+        doc.setFillColor(235, 230, 222);
+        doc.roundedRect(imgX - 3, y - 3, imgW + 6, imgH + 6, 2, 2, 'F');
+        doc.setDrawColor(...RULE); doc.setLineWidth(0.4);
+        doc.roundedRect(imgX - 3, y - 3, imgW + 6, imgH + 6, 2, 2, 'S');
+
         doc.addImage(dataUrl, 'PNG', imgX, y, imgW, imgH);
-        y += imgH + 10;
+        y += imgH + 16;
       }
     } catch { /* skip image */ }
   }
 
-  // ── Personal message — directly under cake ────────────────────────
+  // ── Personal message — understated italic ─────────────────────────
   if (birthdayMode && personalMessage.trim()) {
-    y += 6;
-    const msgLines: string[] = doc.splitTextToSize(personalMessage.trim(), contentW * 0.72);
-    doc.setFont('times', 'italic'); doc.setFontSize(10.5);
-    doc.setTextColor(...MUTED);
-    for (const line of msgLines.slice(0, 4)) {
-      doc.text(line, pw / 2, y, { align: 'center' });
-      y += 15;
-    }
     y += 4;
+    const msgLines: string[] = doc.splitTextToSize(personalMessage.trim(), contentW * 0.65);
+    doc.setFont('times', 'italic'); doc.setFontSize(9.5);
+    doc.setTextColor(...MUTED);
+    for (const line of msgLines.slice(0, 3)) {
+      doc.text(line, pw / 2, y, { align: 'center' });
+      y += 14;
+    }
+    y += 8;
   }
 
-  // ── Thin gold rule above comparison table ────────────────────────
-  y += 10;
-  doc.setDrawColor(...GOLD); doc.setLineWidth(0.4);
-  doc.line(margin + 40, y, pw - margin - 40, y);
-  y += 14;
-
-  // ── BORN WITH / THIS YEAR comparison table ────────────────────────
-  const tableW  = contentW * 0.82;
+  // ── BORN WITH / THIS YEAR comparison — editorial table ────────────
+  const tableW  = contentW * 0.78;
   const tableX  = (pw - tableW) / 2;
-  const tableH  = 136;
-  const tableY  = Math.min(y, ph - margin - tableH - 16);
+  const tableH  = 120;
+  const tableY  = Math.min(y + 6, ph - frameInset - tableH - 30);
   const midX    = tableX + tableW / 2;
 
-  // Table background
+  // Soft background
   doc.setFillColor(...CARD_BG);
-  doc.roundedRect(tableX, tableY, tableW, tableH, 4, 4, 'F');
-  doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
-  doc.roundedRect(tableX, tableY, tableW, tableH, 4, 4, 'S');
+  doc.roundedRect(tableX, tableY, tableW, tableH, 3, 3, 'F');
+  doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+  doc.roundedRect(tableX, tableY, tableW, tableH, 3, 3, 'S');
 
   // Vertical divider
-  doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
-  doc.line(midX, tableY + 16, midX, tableY + tableH - 16);
+  doc.setDrawColor(...RULE); doc.setLineWidth(0.2);
+  doc.line(midX, tableY + 14, midX, tableY + tableH - 14);
 
   // Column headers
-  doc.setFont('times', 'normal'); doc.setFontSize(9);
+  doc.setFont('times', 'normal'); doc.setFontSize(7);
   doc.setTextColor(...MUTED);
   doc.setCharSpace(3);
-  doc.text('BORN WITH', tableX + (tableW / 4), tableY + 30, { align: 'center' });
-  doc.text('THIS YEAR', midX + (tableW / 4),   tableY + 30, { align: 'center' });
+  doc.text('BORN WITH', tableX + (tableW / 4), tableY + 24, { align: 'center' });
+  doc.text('THIS YEAR', midX + (tableW / 4),   tableY + 24, { align: 'center' });
   doc.setCharSpace(0);
 
   // Thin rule under headers
-  doc.setDrawColor(...RULE); doc.setLineWidth(0.2);
-  doc.line(tableX + 10, tableY + 38, tableX + tableW - 10, tableY + 38);
+  doc.setDrawColor(...RULE); doc.setLineWidth(0.15);
+  doc.line(tableX + 8, tableY + 32, tableX + tableW - 8, tableY + 32);
 
-  // Big Three rows — larger font
+  // Big Three rows
   const entries = [
     { natal: `${natalSun} Sun`,     sr: `${natalSun} Sun`  },
     { natal: `${natalMoon} Moon`,   sr: `${srMoon} Moon`   },
     { natal: `${natalRising} Rising`, sr: `${srRising} Rising` },
   ];
 
-  doc.setFont('times', 'normal'); doc.setFontSize(17.5);
+  doc.setFont('times', 'normal'); doc.setFontSize(15);
   entries.forEach((e, i) => {
-    const ey = tableY + 62 + i * 28;
+    const ey = tableY + 52 + i * 24;
     doc.setTextColor(...INK);
     doc.text(e.natal, tableX + (tableW / 4), ey, { align: 'center' });
     doc.setTextColor(...GOLD);
