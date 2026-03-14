@@ -275,7 +275,7 @@ export const CalendarDay = memo(({ date, day, isToday, userData, onDayClick, act
       onClick={() => onDayClick(dayData)}
       style={bgStyle}
       className={cn(
-        "group relative flex min-h-32 cursor-pointer flex-col p-3 transition-all duration-200 md:min-h-44 md:p-4",
+        "group relative flex min-h-32 max-h-56 cursor-pointer flex-col overflow-y-auto p-3 transition-all duration-200 md:min-h-44 md:max-h-72 md:p-4",
         "hover:opacity-90 hover:shadow-[inset_0_0_0_1px_hsl(var(--border))]",
         isToday && "shadow-[inset_0_0_0_2px_hsl(var(--primary))]"
       )}
