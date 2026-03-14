@@ -31,6 +31,7 @@ export interface PDFContext {
   sectionNum: number;
   checkPage: (needed: number) => void;
   sectionTitle: (doc: jsPDF, title: string, subtitle?: string) => void;
+  sectionDivider: (doc: jsPDF) => void;
   writeBody: (doc: jsPDF, text: string, color?: Color, size?: number, lineH?: number) => void;
   writeBold: (doc: jsPDF, text: string, color?: Color, size?: number) => void;
   writeLabel: (doc: jsPDF, label: string, value: string, labelColor?: Color, valueColor?: Color) => void;
@@ -39,6 +40,7 @@ export interface PDFContext {
   drawContentBox: (doc: jsPDF, x: number, yStart: number, w: number, h: number, bg?: Color) => void;
   drawGoldRule: (doc: jsPDF) => void;
   drawRule: (doc: jsPDF) => void;
+  drawInfoBox: (doc: jsPDF, x: number, yStart: number, w: number, h: number, label: string, value: string, body?: string, bgColor?: Color) => number;
   trackedLabel: (doc: jsPDF, text: string, x: number, y: number, opts?: { align?: 'left' | 'center' | 'right'; size?: number; charSpace?: number }) => void;
   pageBg: (doc: jsPDF) => void;
 }
@@ -268,6 +270,61 @@ export function createPDFContext(
       d.roundedRect(x, yStart, w, h, 3, 3, 'F');
       d.setDrawColor(...RULE); d.setLineWidth(0.3);
       d.roundedRect(x, yStart, w, h, 3, 3, 'S');
+    },
+
+    sectionDivider(d: jsPDF) {
+      ctx.checkPage(60);
+      ctx.y += 20;
+      const cx = pw / 2;
+      // Three small gold diamonds as editorial divider
+      d.setFillColor(...GOLD);
+      for (const offset of [-18, 0, 18]) {
+        const dx = cx + offset;
+        const dy = ctx.y;
+        d.triangle(dx, dy - 3, dx + 3, dy, dx, dy + 3, 'F');
+        d.triangle(dx, dy - 3, dx - 3, dy, dx, dy + 3, 'F');
+      }
+      ctx.y += 6;
+      d.setDrawColor(...RULE); d.setLineWidth(0.2);
+      d.line(margin + 20, ctx.y, cx - 30, ctx.y);
+      d.line(cx + 30, ctx.y, pw - margin - 20, ctx.y);
+      ctx.y += 24;
+    },
+
+    drawInfoBox(d: jsPDF, x: number, yStart: number, w: number, h: number, label: string, value: string, body?: string, bgColor: Color = CARD_BG): number {
+      const pad = 14;
+      let cy = yStart + pad;
+
+      d.setFillColor(...bgColor);
+      d.roundedRect(x, yStart, w, h, 4, 4, 'F');
+
+      // Top accent bar
+      d.setFillColor(...GOLD);
+      d.rect(x, yStart, w, 3, 'F');
+
+      // Label
+      ctx.trackedLabel(d, label, x + pad, cy + 4, { size: 6.5, charSpace: 2 });
+      cy += 18;
+
+      // Value
+      d.setFont('times', 'bold'); d.setFontSize(16);
+      d.setTextColor(...INK);
+      const valLines: string[] = d.splitTextToSize(value, w - pad * 2);
+      for (const vl of valLines.slice(0, 2)) { d.text(vl, x + pad, cy); cy += 20; }
+
+      // Body (optional)
+      if (body) {
+        cy += 2;
+        d.setFont('times', 'normal'); d.setFontSize(9.5);
+        d.setTextColor(...MUTED);
+        const bLines: string[] = d.splitTextToSize(body, w - pad * 2);
+        for (const bl of bLines.slice(0, 3)) { d.text(bl, x + pad, cy); cy += 13; }
+      }
+
+      d.setDrawColor(...RULE); d.setLineWidth(0.3);
+      d.roundedRect(x, yStart, w, h, 4, 4, 'S');
+
+      return cy;
     },
   };
 

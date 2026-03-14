@@ -7,10 +7,22 @@ import { signDegreesToLongitude } from '@/lib/houseCalculations';
 import { angularSeparation, getPlanetLongitudeExact } from '@/lib/transitMath';
 import { P } from '@/components/SolarReturnPDFExport';
 
-/**
- * Key Dates: When the Time Lord (Saturn or other) makes exact aspects to natal planets
- * during the Solar Return year. Calculates real ephemeris-based dates.
- */
+type Color = [number, number, number];
+const INK:     Color = [18,  16,  14];
+const MUTED:   Color = [130, 125, 118];
+const GOLD:    Color = [184, 150, 62];
+const RULE:    Color = [200, 195, 188];
+const CARD_BG: Color = [245, 241, 234];
+const CREAM:   Color = [250, 247, 242];
+
+// Nature-specific colors for visual badges
+const NATURE_COLORS: Record<string, { bg: Color; text: Color; label: string }> = {
+  fusion:      { bg: [248, 242, 228], text: [140, 120, 50],  label: 'FUSION' },
+  tension:     { bg: [252, 235, 232], text: [160, 60,  40],  label: 'PRESSURE POINT' },
+  flow:        { bg: [232, 248, 240], text: [40,  120, 80],  label: 'GREEN LIGHT' },
+  challenge:   { bg: [252, 240, 230], text: [160, 90,  30],  label: 'CHALLENGE' },
+  opportunity: { bg: [235, 242, 252], text: [50,  80,  140], label: 'OPPORTUNITY' },
+};
 
 const ZODIAC_SIGNS = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
@@ -18,16 +30,10 @@ const ZODIAC_SIGNS = [
 ];
 
 const PLANET_BODIES: Record<string, Astronomy.Body> = {
-  Sun: Astronomy.Body.Sun,
-  Moon: Astronomy.Body.Moon,
-  Mercury: Astronomy.Body.Mercury,
-  Venus: Astronomy.Body.Venus,
-  Mars: Astronomy.Body.Mars,
-  Jupiter: Astronomy.Body.Jupiter,
-  Saturn: Astronomy.Body.Saturn,
-  Uranus: Astronomy.Body.Uranus,
-  Neptune: Astronomy.Body.Neptune,
-  Pluto: Astronomy.Body.Pluto,
+  Sun: Astronomy.Body.Sun, Moon: Astronomy.Body.Moon,
+  Mercury: Astronomy.Body.Mercury, Venus: Astronomy.Body.Venus, Mars: Astronomy.Body.Mars,
+  Jupiter: Astronomy.Body.Jupiter, Saturn: Astronomy.Body.Saturn,
+  Uranus: Astronomy.Body.Uranus, Neptune: Astronomy.Body.Neptune, Pluto: Astronomy.Body.Pluto,
 };
 
 const ASPECTS = [
@@ -41,15 +47,8 @@ const ASPECTS = [
 const NATAL_TARGETS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Ascendant'];
 
 interface TimeLordDate {
-  date: Date;
-  natalPlanet: string;
-  aspectName: string;
-  aspectSymbol: string;
-  nature: string;
-  orb: number;
-  transitSign: string;
-  transitDegree: number;
-  interpretation: string;
+  date: Date; natalPlanet: string; aspectName: string; aspectSymbol: string;
+  nature: string; orb: number; transitSign: string; transitDegree: number; interpretation: string;
 }
 
 const lonToSign = (lon: number): { sign: string; degree: number } => {
@@ -117,7 +116,6 @@ const saturnTransitInterps: Record<string, Record<string, string>> = {
   },
 };
 
-/** Generic Time Lord transit interpretations for non-Saturn planets */
 function getGenericTimeLordInterp(timeLord: string, natalPlanet: string, aspect: string): string {
   const lordName = P[timeLord] || timeLord;
   const natalName = P[natalPlanet] || natalPlanet;
@@ -144,11 +142,9 @@ export function generateKeyDatesSection(
   const body = PLANET_BODIES[timeLord];
   if (!body) return;
 
-  // Calculate the SR year window (birthday to birthday)
   const srYear = srChart.solarReturnYear;
-  // Use a full calendar year approximation: March of srYear to March of srYear+1
-  const startDate = new Date(srYear, 2, 1); // Start scanning from March
-  const endDate = new Date(srYear + 1, 3, 1); // Through March next year
+  const startDate = new Date(srYear, 2, 1);
+  const endDate = new Date(srYear + 1, 3, 1);
 
   // Get natal planet longitudes
   const natalLons: Record<string, number> = {};
@@ -167,27 +163,23 @@ export function generateKeyDatesSection(
     }
   }
 
-  // Scan for aspects: sample every 3 days (Saturn moves ~0.03°/day)
+  // Scan for aspects
   const events: TimeLordDate[] = [];
   const foundKeys = new Set<string>();
 
   for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 3)) {
     const date = new Date(d);
     let tlLon: number;
-    try {
-      tlLon = getPlanetLongitudeExact(body, date);
-    } catch { continue; }
+    try { tlLon = getPlanetLongitudeExact(body, date); } catch { continue; }
 
     for (const [natalPlanet, natalLon] of Object.entries(natalLons)) {
-      if (natalPlanet === timeLord) continue; // Skip self (handled separately as Saturn-Saturn)
-      
+      if (natalPlanet === timeLord) continue;
       for (const asp of ASPECTS) {
         const orb = Math.abs(angularSeparation(tlLon, natalLon) - asp.angle);
         if (orb <= asp.orb) {
           const key = `${natalPlanet}-${asp.name}`;
           if (foundKeys.has(key)) continue;
 
-          // Refine to exact date
           let bestDate = date;
           let bestOrb = orb;
           for (let offset = -3; offset <= 3; offset++) {
@@ -201,8 +193,6 @@ export function generateKeyDatesSection(
           }
 
           const tlSign = lonToSign(getPlanetLongitudeExact(body, bestDate));
-          
-          // Get interpretation
           let interp = '';
           if (timeLord === 'Saturn' && saturnTransitInterps[natalPlanet]?.[asp.name]) {
             interp = saturnTransitInterps[natalPlanet][asp.name];
@@ -211,15 +201,9 @@ export function generateKeyDatesSection(
           }
 
           events.push({
-            date: bestDate,
-            natalPlanet,
-            aspectName: asp.name,
-            aspectSymbol: asp.symbol,
-            nature: asp.nature,
-            orb: Math.round(bestOrb * 10) / 10,
-            transitSign: tlSign.sign,
-            transitDegree: tlSign.degree,
-            interpretation: interp,
+            date: bestDate, natalPlanet, aspectName: asp.name, aspectSymbol: asp.symbol,
+            nature: asp.nature, orb: Math.round(bestOrb * 10) / 10,
+            transitSign: tlSign.sign, transitDegree: tlSign.degree, interpretation: interp,
           });
           foundKeys.add(key);
         }
@@ -227,12 +211,9 @@ export function generateKeyDatesSection(
     }
   }
 
-  // Sort by date
   events.sort((a, b) => a.date.getTime() - b.date.getTime());
-
   if (events.length === 0) return;
 
-  // Render the section
   const tlName = P[timeLord] || timeLord;
   doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
   ctx.sectionPages.set('KEY DATES', doc.getNumberOfPages());
@@ -243,10 +224,10 @@ export function generateKeyDatesSection(
   ctx.drawCard(doc, () => {
     ctx.writeBold(doc, 'Why These Dates Matter');
     ctx.y += 4;
-    ctx.writeBody(doc, `As your Time Lord, ${tlName} is the planet running the show this year. Every time transiting ${tlName} makes an exact aspect to one of your natal planets, the Time Lord's agenda ACTIVATES that area of your life. These are the dates when the year's themes become tangible -- when you feel the pressure, the opportunity, or the shift. Mark them.`);
+    ctx.writeBody(doc, `As your Time Lord, ${tlName} is the planet running the show this year. Every time transiting ${tlName} makes an exact aspect to one of your natal planets, the Time Lord's agenda ACTIVATES that area of your life. These are the dates when the year's themes become tangible — when you feel the pressure, the opportunity, or the shift. Mark them.`);
   });
 
-  // Month grouping for visual clarity
+  // ── Timeline-style event cards ──────────────────────────────────
   const months = ['January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -254,36 +235,66 @@ export function generateKeyDatesSection(
     const monthName = months[event.date.getMonth()];
     const dayNum = event.date.getDate();
     const yearNum = event.date.getFullYear();
-    const isHard = ['challenge', 'tension'].includes(event.nature);
-    const isFlow = ['flow', 'opportunity'].includes(event.nature);
+    const nature = NATURE_COLORS[event.nature] || NATURE_COLORS.fusion;
 
-      ctx.checkPage(180);
-      ctx.drawCard(doc, () => {
-        // Date on left
-        doc.setFont('times', 'bold'); doc.setFontSize(11);
-        doc.setTextColor(...colors.ink);
-        doc.text(`${monthName} ${dayNum}, ${yearNum}`, margin + 8, ctx.y);
-        
-        // Nature badge — plain text
-        const natureBadge = isHard ? 'PRESSURE POINT' : isFlow ? 'GREEN LIGHT' : event.nature.toUpperCase();
-        ctx.trackedLabel(doc, natureBadge, pw - margin, ctx.y, { align: 'right', size: 7, charSpace: 2 });
-        ctx.y += 14;
-        
-        // Aspect name
-        const natalName = P[event.natalPlanet] || event.natalPlanet;
-        const aspectTitle = `${tlName} ${event.aspectName} Natal ${natalName}`;
-        doc.setFont('times', 'bold'); doc.setFontSize(10);
-        doc.setTextColor(...colors.accent);
-        doc.text(aspectTitle, margin + 8, ctx.y);
-        
-        // Orb + sign info
-        doc.setFont('times', 'normal'); doc.setFontSize(8);
-        doc.setTextColor(...colors.muted);
-        doc.text(`${event.orb}' orb  |  ${event.transitSign} ${event.transitDegree}'`, pw - margin, ctx.y, { align: 'right' });
-        ctx.y += 14;
+    ctx.checkPage(200);
 
-        // Interpretation
-        ctx.writeBody(doc, event.interpretation);
-      });
+    // ── Date pill on left + nature badge on right ──
+    const cardStartY = ctx.y;
+    const dateStr = `${monthName} ${dayNum}, ${yearNum}`;
+
+    // Nature badge - colored rounded rect
+    const badgeW = 90;
+    const badgeH = 16;
+    const badgeX = pw - margin - badgeW;
+    const badgeY = cardStartY;
+
+    doc.setFillColor(...nature.bg);
+    doc.roundedRect(badgeX, badgeY, badgeW, badgeH, 8, 8, 'F');
+    doc.setFont('times', 'bold'); doc.setFontSize(7);
+    doc.setTextColor(...nature.text);
+    doc.setCharSpace(1.5);
+    doc.text(nature.label, badgeX + badgeW / 2, badgeY + 11, { align: 'center' });
+    doc.setCharSpace(0);
+
+    // Date text
+    doc.setFont('times', 'bold'); doc.setFontSize(12);
+    doc.setTextColor(...INK);
+    doc.text(dateStr, margin, cardStartY + 12);
+    ctx.y = cardStartY + 22;
+
+    // Timeline dot + vertical line
+    const dotX = margin + 6;
+    doc.setFillColor(...GOLD);
+    doc.circle(dotX, ctx.y + 2, 3, 'F');
+
+    // Hairline connector
+    doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
+    doc.line(dotX, ctx.y + 6, dotX, ctx.y + 8);
+
+    // Aspect title + details in card
+    ctx.y += 4;
+    const cardY = ctx.y;
+
+    ctx.drawCard(doc, () => {
+      const natalName = P[event.natalPlanet] || event.natalPlanet;
+      const aspectTitle = `${tlName} ${event.aspectName} Natal ${natalName}`;
+      
+      doc.setFont('times', 'bold'); doc.setFontSize(13);
+      doc.setTextColor(...GOLD);
+      doc.text(aspectTitle, margin + 14, ctx.y);
+      ctx.y += 12;
+
+      doc.setFont('times', 'normal'); doc.setFontSize(8.5);
+      doc.setTextColor(...MUTED);
+      doc.text(`${event.orb}° orb  ·  ${event.transitSign} ${event.transitDegree}°`, margin + 14, ctx.y);
+      ctx.y += 16;
+
+      // Interpretation body
+      ctx.writeBody(doc, event.interpretation);
+    });
   }
+
+  // Editorial divider
+  ctx.sectionDivider(doc);
 }
