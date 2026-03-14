@@ -19,6 +19,7 @@ import { generateAffirmationCard } from '@/lib/pdfSections/affirmationCard';
 import { generateHowToReadPage } from '@/lib/pdfSections/howToRead';
 import { generateProfectionPersonalSection } from '@/lib/pdfSections/profectionPersonal';
 import { generateKeyDatesSection } from '@/lib/pdfSections/keyDates';
+import { generateQuarterlySummary } from '@/lib/pdfSections/quarterlySummary';
 
 // Cake image imports
 import cakeAries from '@/assets/cakes/aries.png';
@@ -1117,6 +1118,13 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       doc.addPage(); ctx.y = margin;
       ctx.sectionPages.set('BEST MONTHS AND HIGHLIGHTS', doc.getNumberOfPages());
       generateHighlightsPage(ctx, doc, analysis, srChart, natalChart);
+
+      // =============================================
+      // QUARTERLY SUMMARY — YOUR YEAR IN FOUR SEASONS
+      // =============================================
+      doc.addPage(); ctx.y = margin;
+      ctx.sectionPages.set('YOUR YEAR IN FOUR SEASONS', doc.getNumberOfPages());
+      generateQuarterlySummary(ctx, doc, analysis, srChart, natalChart);
 
       // =============================================
       // BIRTHDAY AFFIRMATION CARD (birthday mode)
