@@ -133,84 +133,101 @@ export function generateAffirmationCard(
   const identity = getNatalIdentity(sunSign, moonSign, risingSign);
   const { body, closing } = getYearMessage(profH, timeLord, northNodeHouse, hasVenusAngular, hasJupiterAngular, moonPhase, srSunHouse);
 
-  // Full page cream background
   doc.setFillColor(...CREAM);
   doc.rect(0, 0, pw, ph, 'F');
 
-  let y = 60;
+  ctx.y = 58;
+  ctx.trackedLabel(doc, `FINAL TAKEAWAY · ${year}`, margin, ctx.y, { size: 7.5, charSpace: 3.2 });
+  ctx.y += 10;
 
-  // Tracked caps top
-  doc.setFont('times', 'normal'); doc.setFontSize(7.5);
+  doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+  doc.line(margin, ctx.y, pw - margin, ctx.y);
+  ctx.y += 24;
+
+  doc.setFont('times', 'normal'); doc.setFontSize(42);
+  doc.setTextColor(...INK);
+  const headingLines: string[] = doc.splitTextToSize('Carry This With You', pw - margin * 2);
+  for (const line of headingLines) {
+    doc.text(line, margin, ctx.y);
+    ctx.y += 42;
+  }
+
+  doc.setFont('times', 'italic'); doc.setFontSize(10.5);
   doc.setTextColor(...MUTED);
-  doc.setCharSpace(4);
-  doc.text(`SOLAR RETURN · ${year}`, pw / 2, y, { align: 'center' });
-  doc.setCharSpace(0);
-  y += 10;
+  doc.text(`${name} · ${sunSign} Sun${moonSign ? ` · ${moonSign} Moon` : ''}${risingSign ? ` · ${risingSign} Rising` : ''}`, margin, ctx.y);
+  ctx.y += 18;
 
-  // Hairline rule
+  const drawTakeawayCard = (label: string, text: string, maxLines: number) => {
+    const rawLines = doc.splitTextToSize(text, pw - margin * 2 - 32) as string[];
+    const lines = rawLines.length > maxLines
+      ? [...rawLines.slice(0, maxLines - 1), rawLines[maxLines - 1].replace(/[.,;:!?]?$/, '…')]
+      : rawLines;
+
+    const cardH = Math.max(118, 24 + 14 + lines.length * 16 + 18);
+    if (ctx.y + cardH > ph - 140) {
+      doc.addPage();
+      ctx.pageBg(doc);
+      ctx.y = margin;
+      ctx.trackedLabel(doc, 'FINAL TAKEAWAY · CONTINUED', margin, ctx.y, { size: 7.2, charSpace: 3 });
+      ctx.y += 10;
+      doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+      doc.line(margin, ctx.y, pw - margin, ctx.y);
+      ctx.y += 18;
+    }
+
+    const startY = ctx.y;
+    doc.setFillColor(...CARD_BG);
+    doc.roundedRect(margin, startY, pw - margin * 2, cardH, 3, 3, 'F');
+    doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
+    doc.roundedRect(margin, startY, pw - margin * 2, cardH, 3, 3, 'S');
+    doc.setFillColor(...GOLD);
+    doc.rect(margin, startY, 3, cardH, 'F');
+
+    let cy = startY + 24;
+    ctx.trackedLabel(doc, label, margin + 16, cy, { size: 7.4, charSpace: 2.6 });
+    cy += 14;
+
+    doc.setFont('times', 'normal'); doc.setFontSize(10.8);
+    doc.setTextColor(...INK);
+    for (const line of lines) {
+      doc.text(line, margin + 16, cy);
+      cy += 16;
+    }
+
+    ctx.y = startY + cardH + 14;
+  };
+
+  drawTakeawayCard('YOUR NATAL STRENGTH', identity, 9);
+  drawTakeawayCard('THIS YEAR ASK', body, 10);
+
+  ctx.checkPage(90);
+  ctx.y += 4;
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
-  doc.line(margin + 40, y, pw - margin - 40, y);
-  y += 24;
+  doc.line(margin, ctx.y, pw - margin, ctx.y);
+  ctx.y += 18;
 
-  // Name
-  doc.setFont('times', 'bold'); doc.setFontSize(16);
-  doc.setTextColor(...INK);
-  doc.text(name.toUpperCase(), pw / 2, y, { align: 'center' });
-  y += 8;
-
-  // Thin rule below name
-  doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
-  doc.line(pw / 2 - 50, y, pw / 2 + 50, y);
-  y += 24;
-
-  // Identity paragraph
-  const textW = pw * 0.72;
-  doc.setFont('times', 'normal'); doc.setFontSize(10);
-  doc.setTextColor(...INK);
-  const identLines: string[] = doc.splitTextToSize(identity, textW);
-  for (const line of identLines) {
-    doc.text(line, pw / 2, y, { align: 'center' });
-    y += 17;
-  }
-  y += 12;
-
-  // Year message
-  const bodyLines: string[] = doc.splitTextToSize(body, textW);
-  for (const line of bodyLines) {
-    doc.text(line, pw / 2, y, { align: 'center' });
-    y += 17;
-  }
-  y += 12;
-
-  // Hairline rule
-  doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
-  doc.line(pw / 2 - 60, y, pw / 2 + 60, y);
-  y += 20;
-
-  // Pull quote
-  const quoteW = pw * 0.65;
+  const quoteText = closing.replace(/^\"/, '').replace(/\" — .*$/, '');
   doc.setFont('times', 'italic'); doc.setFontSize(13);
   doc.setTextColor(...DARK);
-  const quoteLines: string[] = doc.splitTextToSize(closing.replace(/^\"/, '').replace(/\" — .*$/, ''), quoteW);
+  const quoteLines: string[] = doc.splitTextToSize(quoteText, pw * 0.64);
   for (const line of quoteLines) {
-    doc.text(line, pw / 2, y, { align: 'center' });
-    y += 18;
+    doc.text(line, pw / 2, ctx.y, { align: 'center' });
+    ctx.y += 18;
   }
-  y += 6;
 
-  // Attribution
-  const match = closing.match(/— (.+)$/);
-  if (match) {
-    doc.setFont('times', 'normal'); doc.setFontSize(8);
+  const attribution = closing.match(/— (.+)$/)?.[1];
+  if (attribution) {
+    ctx.y += 2;
+    doc.setFont('times', 'normal'); doc.setFontSize(8.2);
     doc.setTextColor(...MUTED);
     doc.setCharSpace(2);
-    doc.text(`— ${match[1].toUpperCase()}`, pw / 2, y, { align: 'center' });
+    doc.text(`— ${attribution.toUpperCase()}`, pw / 2, ctx.y, { align: 'center' });
     doc.setCharSpace(0);
   }
 
-  // Bottom hairline rule
+  const footerY = Math.min(ph - 26, ctx.y + 16);
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
-  doc.line(margin, ph - 24, pw - margin, ph - 24);
+  doc.line(margin, footerY, pw - margin, footerY);
 
   ctx.y = ph;
 }
