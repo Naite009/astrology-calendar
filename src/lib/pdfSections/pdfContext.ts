@@ -18,6 +18,7 @@ export interface PDFContext {
   ph: number;
   margin: number;
   contentW: number;
+  cardCount: number;
   colors: {
     cream: Color; cardBg: Color; ink: Color; muted: Color; gold: Color;
     accent: Color; rule: Color; dark: Color;
