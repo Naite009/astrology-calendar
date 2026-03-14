@@ -1021,25 +1021,20 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           
           ctx.checkPage(160);
           
-          // Aspect header with colored accent
-          const accentColor = isHard ? [180, 100, 60] as [number, number, number] : ctx.colors.gold;
           ctx.drawCard(doc, () => {
-            // Title bar
-            const innerW = contentW - 24;
-            doc.setFillColor(...(isHard ? [255, 245, 240] as [number, number, number] : ctx.colors.softGold));
-            doc.roundedRect(margin + 8, ctx.y - 4, innerW, 26, 4, 4, 'F');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
-            doc.setTextColor(...accentColor);
-            doc.text(`SR ${P[asp.planet1] || asp.planet1}  ${asp.type}  Natal ${P[asp.planet2] || asp.planet2}`, margin + 16, ctx.y + 10);
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...ctx.colors.dimText);
+            // Title line
+            doc.setFont('times', 'bold'); doc.setFontSize(10);
+            doc.setTextColor(...ctx.colors.ink);
+            doc.text(`SR ${P[asp.planet1] || asp.planet1}  ${asp.type}  Natal ${P[asp.planet2] || asp.planet2}`, margin + 8, ctx.y);
+            doc.setFont('times', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...ctx.colors.muted);
             const orbHouse = `${asp.orb}' orb${srH ? `  |  SR H${srH}` : ''}${natalH ? `  |  Natal H${natalH}` : ''}`;
-            doc.text(orbHouse, margin + innerW - 4, ctx.y + 10, { align: 'right' });
-            ctx.y += 30;
+            doc.text(orbHouse, margin + contentW, ctx.y, { align: 'right' });
+            ctx.y += 14;
 
-            ctx.writeCardSection(doc, 'How It Feels', interp.howItFeels, ctx.colors.accentGreen);
-            ctx.writeCardSection(doc, 'What It Means', interp.whatItMeans, ctx.colors.gold);
-            ctx.writeCardSection(doc, 'What To Do', interp.whatToDo, ctx.colors.accentRust);
-          }, accentColor);
+            ctx.writeCardSection(doc, 'How It Feels', interp.howItFeels);
+            ctx.writeCardSection(doc, 'What It Means', interp.whatItMeans);
+            ctx.writeCardSection(doc, 'What To Do', interp.whatToDo);
+          });
         }
       }
 
