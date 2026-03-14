@@ -120,6 +120,56 @@ export function generatePDFYearAtAGlance(
     doc.text(tlExplain, tlX + 12, ctx.y + 62);
 
     ctx.y += boxH + 10;
+
+    // Saturn/Profection tension callout — only when Time Lord and house theme are in tension
+    const heavyLords = ['Saturn', 'Mars', 'Pluto'];
+    const joyHouses = [1, 5, 7, 9, 11]; // houses associated with pleasure, creativity, expansion
+    const isHeavyLord = heavyLords.includes(a.profectionYear.timeLord);
+    const isJoyHouse = joyHouses.includes(a.profectionYear.houseNumber);
+
+    if (isHeavyLord && isJoyHouse) {
+      const HOUSE_PROMISE: Record<number, string> = {
+        1: 'reinvention and bold self-expression',
+        5: 'creativity, romance, and joy',
+        7: 'partnership and deep connection',
+        9: 'expansion, travel, and new horizons',
+        11: 'friendship, community, and shared dreams',
+      };
+      const LORD_DEMAND: Record<string, string> = {
+        Saturn: 'Saturn as Time Lord says: earn it. Structure first. Discipline before delight.',
+        Mars: 'Mars as Time Lord says: fight for it. Nothing arrives without effort and courage.',
+        Pluto: 'Pluto as Time Lord says: transform first. The old version of you cannot access what this year offers.',
+      };
+      const housePromise = HOUSE_PROMISE[a.profectionYear.houseNumber] || 'expansion';
+      const lordDemand = LORD_DEMAND[a.profectionYear.timeLord] || '';
+
+      ctx.checkPage(80);
+      // Callout box with slightly different color to stand out
+      doc.setFillColor(245, 240, 255); // soft lavender
+      doc.setDrawColor(colors.gold[0], colors.gold[1], colors.gold[2]);
+      doc.setLineWidth(1);
+      const calloutH = 72;
+      doc.roundedRect(boxL, ctx.y, boxW, calloutH, 6, 6, 'FD');
+
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+      doc.setTextColor(colors.dimText[0], colors.dimText[1], colors.dimText[2]);
+      doc.text('THE TENSION THAT DRIVES THIS YEAR', boxL + 14, ctx.y + 16);
+
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+      doc.setTextColor(colors.deepBrown[0], colors.deepBrown[1], colors.deepBrown[2]);
+      const tensionLine1 = `House ${a.profectionYear.houseNumber} promises ${housePromise}.`;
+      doc.text(tensionLine1, boxL + 14, ctx.y + 32);
+
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
+      doc.setTextColor(colors.bodyText[0], colors.bodyText[1], colors.bodyText[2]);
+      const tensionLine2 = `${lordDemand} This is not a contradiction — it is the assignment. The joy this year is deeper because it is earned.`;
+      const tensionLines = doc.splitTextToSize(tensionLine2, boxW - 28);
+      tensionLines.forEach((line: string, i: number) => {
+        doc.text(line, boxL + 14, ctx.y + 46 + i * 12);
+      });
+
+      ctx.y += calloutH + 10;
+    }
   }
 
   // --- Moon line + phase ---
