@@ -18,6 +18,7 @@ import ReactMarkdown from 'react-markdown';
 import { SolarReturnPDFExport } from '@/components/SolarReturnPDFExport';
 import { TierButtonRow } from '@/components/solarReturn/TierButtonRow';
 import { Tier1Preview } from '@/components/solarReturn/Tier1Preview';
+import { OverviewDashboard } from '@/components/solarReturn/OverviewDashboard';
 
 const ZODIAC_SIGNS = [
   'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
@@ -229,23 +230,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             <TabsTrigger value="relocation" className="text-[11px] uppercase tracking-widest">Relocation</TabsTrigger>
           </TabsList>
 
-          {/* Tier preview button row */}
-          <TierButtonRow
-            analysis={analysis}
-            natalChart={selectedNatal}
-            solarReturnChart={selectedSR}
-            onSelectTier={(tier) => setSelectedTier(tier as 't1' | null)}
-            onDownloadTier={(tier) => {
-              if (tier === 't1') {
-                const btn = document.querySelector('[data-tier1-download]') as HTMLButtonElement;
-                if (btn) btn.click();
-              } else if (tier === 't4' || tier === 't5') {
-                toast.info('Coming soon — this tier is under development');
-              } else {
-                toast.info(`Tier ${tier.replace('t', '')} PDF coming soon`);
-              }
-            }}
-          />
+          {/* Tier buttons are now inside OverviewDashboard */}
 
           {/* Hidden PDF export buttons — always in DOM so tier previews can trigger them */}
           <div className="hidden">
@@ -272,7 +257,22 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
           ) : (
             <>
               <TabsContent value="overview">
-                <OverviewTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} onEdit={() => { setEditingSRId(selectedSR.id); setShowInputForm(true); }} onDelete={() => { deleteSolarReturn(selectedSR.id); setSelectedSRId(null); }} />
+                <OverviewDashboard
+                  analysis={analysis}
+                  srChart={selectedSR}
+                  natalChart={selectedNatal}
+                  onSelectTier={(tier) => setSelectedTier(tier as 't1' | null)}
+                  onDownloadTier={(tier) => {
+                    if (tier === 't1') {
+                      const btn = document.querySelector('[data-tier1-download]') as HTMLButtonElement;
+                      if (btn) btn.click();
+                    } else if (tier === 't4' || tier === 't5') {
+                      toast.info('Coming soon — this tier is under development');
+                    } else {
+                      toast.info(`Tier ${tier.replace('t', '')} PDF coming soon`);
+                    }
+                  }}
+                />
               </TabsContent>
 
               <TabsContent value="houses">

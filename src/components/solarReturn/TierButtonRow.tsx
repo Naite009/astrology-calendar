@@ -33,6 +33,7 @@ interface Props {
   personName?: string;
   onDownloadTier: (tier: TierId) => void;
   onSelectTier?: (tier: TierId | null) => void;
+  onAIClick?: () => void;
 }
 
 export const TierButtonRow = ({
@@ -41,6 +42,7 @@ export const TierButtonRow = ({
   solarReturnChart,
   onDownloadTier,
   onSelectTier,
+  onAIClick,
 }: Props) => {
   const [activeTier, setActiveTier] = useState<TierId | null>(null);
 
@@ -55,7 +57,11 @@ export const TierButtonRow = ({
   };
 
   const handleAiClick = () => {
-    toast.info('AI reading generation coming soon');
+    if (onAIClick) {
+      onAIClick();
+    } else {
+      toast.info('AI reading generation coming soon');
+    }
   };
 
   return (
