@@ -19,6 +19,16 @@ interface YearHighlight {
   icon: string;
 }
 
+function ord(n: number): string {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+function lifeTheme(house: number): string {
+  return LIFE_THEMES[house]?.detail || 'general life themes';
+}
+
 function buildHighlights(a: SolarReturnAnalysis, srChart: SolarReturnChart, natalChart: NatalChart): YearHighlight[] {
   const highlights: YearHighlight[] = [];
 
@@ -26,12 +36,11 @@ function buildHighlights(a: SolarReturnAnalysis, srChart: SolarReturnChart, nata
   if (a.profectionYear) {
     const tl = P[a.profectionYear.timeLord] || a.profectionYear.timeLord;
     const hNum = a.profectionYear.houseNumber;
-    const hTheme = getHouseActionTheme(hNum);
     const srH = a.profectionYear.timeLordSRHouse;
     highlights.push({
       label: `${tl} RUNS YOUR YEAR`,
-      timing: `Profection: ${ordinal(hNum)} House Year`,
-      body: `${tl} is your Time Lord — the planet steering every major decision. Its home base is your natal ${ordinal(hNum)} house (${hTheme}).${srH ? ` This year it operates from SR House ${srH}, channeling that energy into ${getHouseActionTheme(srH)}.` : ''}`,
+      timing: `${ord(hNum)} House Profection Year`,
+      body: `${tl} is your Time Lord -- the planet steering every major decision. Its home base is your natal ${ord(hNum)} house (${lifeTheme(hNum)}).${srH ? ` This year it channels that energy into ${lifeTheme(srH)}.` : ''}`,
       icon: 'KEY',
     });
   }
@@ -41,12 +50,12 @@ function buildHighlights(a: SolarReturnAnalysis, srChart: SolarReturnChart, nata
     const moonSign = a.moonSign;
     const moonH = a.moonHouse.house;
     const angLabel = a.moonAngularity === 'angular' ? ' Angular Moon = emotionally intense, visible year.' : a.moonAngularity === 'cadent' ? ' Cadent Moon = quieter inner processing this year.' : '';
-    const vocNote = a.moonVOC ? ' Void-of-Course Moon: your emotional radar works differently — trust gut instinct over logic.' : '';
+    const vocNote = a.moonVOC ? ' Void-of-Course Moon: your emotional radar works differently -- trust gut instinct over logic.' : '';
     const lateNote = a.moonLateDegree ? ' Late-degree Moon: an emotional chapter is completing; major feelings will crystallize and resolve.' : '';
     highlights.push({
       label: `EMOTIONAL CLIMATE: ${moonSign.toUpperCase()}`,
-      timing: `Moon in ${ordinal(moonH)} House`,
-      body: `Your emotional life this year orbits ${getSignFeel(moonSign)} themes. House ${moonH} (${getHouseActionTheme(moonH)}) is where you feel the most — this is your emotional home base.${angLabel}${vocNote}${lateNote}`,
+      timing: `Moon in ${ord(moonH)} House`,
+      body: `Your emotional life this year orbits ${getSignFeel(moonSign)} themes. The ${ord(moonH)} house (${lifeTheme(moonH)}) is where you feel the most -- this is your emotional home base.${angLabel}${vocNote}${lateNote}`,
       icon: 'FEEL',
     });
   }
@@ -58,7 +67,7 @@ function buildHighlights(a: SolarReturnAnalysis, srChart: SolarReturnChart, nata
     highlights.push({
       label: `POWER ZONE: ${s.location.toUpperCase()}`,
       timing: `${s.planets.length}-Planet Stellium`,
-      body: `${planets} pile into ${s.location}. This is not subtle — it is a concentrated demand for attention. ${s.blendMeaning || s.interpretation}`,
+      body: `${planets} pile into ${s.location}. This is not subtle -- it is a concentrated demand for attention. ${s.blendMeaning || s.interpretation}`,
       icon: 'POWER',
     });
   }
@@ -84,7 +93,7 @@ function buildHighlights(a: SolarReturnAnalysis, srChart: SolarReturnChart, nata
     const satSign = a.saturnFocus.sign;
     highlights.push({
       label: `SATURN'S DEMAND: ${satSign.toUpperCase()}`,
-      timing: satH ? `${ordinal(satH)} House — ${getHouseActionTheme(satH)}` : `In ${satSign}`,
+      timing: satH ? `${ord(satH)} House -- ${lifeTheme(satH)}` : `In ${satSign}`,
       body: a.saturnFocus.interpretation,
       icon: 'WORK',
     });
