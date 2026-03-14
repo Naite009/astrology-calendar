@@ -25,7 +25,7 @@ interface Props {
   natalChart: NatalChart;
 }
 
-export const OverviewDashboard = ({ analysis, srChart, natalChart, onSelectTier, onDownloadTier }: Props) => {
+export const OverviewDashboard = ({ analysis, srChart, natalChart }: Props) => {
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [aiText, setAiText] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
