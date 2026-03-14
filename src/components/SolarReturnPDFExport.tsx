@@ -559,15 +559,13 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           const primaryHouse = planetHouses.length > 0 ? planetHouses[0] : null;
 
           ctx.drawCard(doc, () => {
-            ctx.writeBold(doc, `${s.planets.length}-Planet Stellium in ${isHouseStellium ? 'House ' + houseNum : s.location}`, ctx.colors.gold, 12);
+            ctx.writeBold(doc, `${s.planets.length}-Planet Stellium in ${isHouseStellium ? 'House ' + houseNum : s.location}`);
             ctx.y += 2;
 
-            // Planet chips inline
-            doc.setFillColor(...ctx.colors.softGold);
-            doc.roundedRect(margin + 6, ctx.y, contentW - 12, 22, 4, 4, 'F');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...ctx.colors.deepBrown);
-            doc.text(planets, margin + 16, ctx.y + 15);
-            ctx.y += 28;
+            // Planet list
+            doc.setFont('times', 'bold'); doc.setFontSize(10); doc.setTextColor(...ctx.colors.ink);
+            doc.text(planets, margin + 8, ctx.y);
+            ctx.y += 16;
 
             if (!isHouseStellium) {
               const signName = s.location;
