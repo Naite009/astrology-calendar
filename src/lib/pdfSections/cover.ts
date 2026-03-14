@@ -157,9 +157,10 @@ export async function generatePDFCover(
   if (birthdayMode && personalMessage.trim()) {
     const msgLines: string[] = doc.splitTextToSize(personalMessage.trim(), contentW - 60);
     const msgH = Math.min(msgLines.length, 3) * 16 + 20;
-    doc.setFillColor(...colors.warm); doc.setDrawColor(...colors.rule); doc.setLineWidth(0.5);
+    doc.setFillColor(245, 240, 232); // #F5F0E8
+    doc.setDrawColor(...colors.rule); doc.setLineWidth(0.5);
     doc.roundedRect(margin + 20, ctx.y, contentW - 40, msgH, 3, 3, 'FD');
-    doc.setFont('Georgia', 'italic'); doc.setFontSize(10);
+    doc.setFont('Georgia', 'italic'); doc.setFontSize(11);
     doc.setTextColor(92, 74, 42);
     let msgY = ctx.y + 14;
     for (const line of msgLines.slice(0, 3)) { doc.text(line, pw / 2, msgY, { align: 'center' }); msgY += 16; }
