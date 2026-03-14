@@ -172,9 +172,9 @@ export function generateStrengthsPortrait(
 
   // ── Section header ──
   ctx.pageBg(doc);
-  ctx.y += 8;
+  ctx.y += 16;
   ctx.trackedLabel(doc, '02 · YOUR BIG THREE', margin, ctx.y);
-  ctx.y += 8;
+  ctx.y += 16;
   doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
   ctx.y += 18;
@@ -212,31 +212,27 @@ export function generateStrengthsPortrait(
       doc.setFont('times', 'bold'); doc.setFontSize(22);
       doc.setTextColor(...INK);
       doc.text(heading, margin + 14, ctx.y);
-      ctx.y += 20;
+      ctx.y += 24;
 
-      // Two-column strength/shadow block
-      const colW = (contentW - 48) / 2;
-      const leftX = margin + 14;
-      const rightX = margin + 14 + colW + 20;
-      const colStartY = ctx.y;
-
-      // Left: STRENGTH
-      ctx.trackedLabel(doc, 'STRENGTH', leftX, ctx.y, { charSpace: 2.5, size: 7 });
-      let leftY = ctx.y + 12;
-      doc.setFont('times', 'normal'); doc.setFontSize(9.5);
+      // STRENGTH — full width, stacked
+      ctx.trackedLabel(doc, 'STRENGTH', margin + 14, ctx.y, { charSpace: 2.5, size: 7 });
+      ctx.y += 14;
+      doc.setFont('times', 'normal'); doc.setFontSize(11);
       doc.setTextColor(...INK);
-      const sLines: string[] = doc.splitTextToSize(strengthText, colW);
-      for (const line of sLines) { doc.text(line, leftX, leftY); leftY += 14; }
+      const sLines: string[] = doc.splitTextToSize(strengthText, contentW - 32);
+      for (const line of sLines) { doc.text(line, margin + 14, ctx.y); ctx.y += 17; }
 
-      // Right: SHADOW
-      ctx.trackedLabel(doc, 'SHADOW', rightX, colStartY, { charSpace: 2.5, size: 7 });
-      let rightY = colStartY + 12;
-      doc.setFont('times', 'normal'); doc.setFontSize(9.5);
+      ctx.y += 16;
+
+      // SHADOW — full width, stacked below
+      ctx.trackedLabel(doc, 'SHADOW', margin + 14, ctx.y, { charSpace: 2.5, size: 7 });
+      ctx.y += 14;
+      doc.setFont('times', 'normal'); doc.setFontSize(11);
       doc.setTextColor(...INK);
-      const shLines: string[] = doc.splitTextToSize(shadowText, colW);
-      for (const line of shLines) { doc.text(line, rightX, rightY); rightY += 14; }
+      const shLines: string[] = doc.splitTextToSize(shadowText, contentW - 32);
+      for (const line of shLines) { doc.text(line, margin + 14, ctx.y); ctx.y += 17; }
 
-      ctx.y = Math.max(leftY, rightY) + 8;
+      ctx.y += 16;
 
       // "What This Means For Your Year" as nested card section
       if (yearText) {
@@ -249,6 +245,9 @@ export function generateStrengthsPortrait(
       }
     });
   };
+
+  // Force all three planets onto a fresh page together
+  ctx.checkPage(650);
 
   // ── SUN ──
   if (sunSign && sunStrength[sunSign]) {
@@ -263,10 +262,8 @@ export function generateStrengthsPortrait(
     );
   }
 
-  // ── MOON — new page ──
+  // ── MOON ──
   if (moonSign && moonStrength[moonSign]) {
-    doc.addPage(); ctx.y = margin + 10; ctx.pageBg(doc);
-
     const srHouseLabel = srMoonHouse ? `, ${ord(srMoonHouse)} HOUSE` : '';
     const srLabel = srMoonSign ? `SR MOON: ${srMoonSign.toUpperCase()}${srHouseLabel}` : '';
     const activationText = srMoonSign && srMoonSignActivation[srMoonSign]
@@ -285,10 +282,8 @@ export function generateStrengthsPortrait(
     );
   }
 
-  // ── RISING — new page ──
+  // ── RISING ──
   if (risingSign && risingStrength[risingSign]) {
-    doc.addPage(); ctx.y = margin + 10; ctx.pageBg(doc);
-
     const srLabel = srAscSign ? `SR RISING: ${srAscSign.toUpperCase()}` : '';
     renderPlanetSection(
       `${risingSign.toUpperCase()} RISING  ·  ${srLabel}`,
@@ -300,5 +295,5 @@ export function generateStrengthsPortrait(
     );
   }
 
-  ctx.y += 6;
+  ctx.y += 12;
 }
