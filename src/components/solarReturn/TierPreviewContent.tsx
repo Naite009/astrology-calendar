@@ -52,7 +52,7 @@ export const TierPreviewContent = ({ tier, analysis }: Props) => {
           </div>
           <div className="grid grid-cols-3 gap-2">
             <SummaryCard label="Time Lord" value={timeLord || '—'} />
-            <SummaryCard label="Top Aspect" value={topAspects[0] ? `${topAspects[0].srPlanet}–${topAspects[0].natalPlanet}` : '—'} />
+            <SummaryCard label="Top Aspect" value={topAspects[0] ? `${topAspects[0].planet1}–${topAspects[0].planet2}` : '—'} />
             <SummaryCard label="Moon Phase" value={moonPhase} />
           </div>
           <SectionList items="Also includes: Big Three deep dive · Moon analysis · Profection year · Saturn focus · Monthly overview" />
