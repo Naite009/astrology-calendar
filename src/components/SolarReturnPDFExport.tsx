@@ -997,13 +997,14 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             const isHard = ['Square', 'Opposition', 'Quincunx'].includes(asp.aspectType);
             ctx.checkPage(80);
             ctx.drawCard(doc, () => {
+              const innerW = contentW - 24;
               doc.setFillColor(...(isHard ? [255, 245, 240] as [number, number, number] : ctx.colors.softGold));
-              doc.roundedRect(margin + 6, ctx.y - 4, contentW - 12, 22, 4, 4, 'F');
-              doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+              doc.roundedRect(margin + 8, ctx.y - 4, innerW, 22, 4, 4, 'F');
+              doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
               doc.setTextColor(...(isHard ? [180, 100, 60] as [number, number, number] : ctx.colors.gold));
               doc.text(`Moon ${asp.aspectType} ${P[asp.targetPlanet] || asp.targetPlanet}`, margin + 16, ctx.y + 10);
-              doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.dimText);
-              doc.text(`${asp.orb}' orb${asp.targetSRHouse ? `  |  H${asp.targetSRHouse}` : ''}`, pw - margin - 12, ctx.y + 10, { align: 'right' });
+              doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...ctx.colors.dimText);
+              doc.text(`${asp.orb}' orb${asp.targetSRHouse ? `  |  H${asp.targetSRHouse}` : ''}`, margin + innerW - 4, ctx.y + 10, { align: 'right' });
               ctx.y += 26;
               ctx.writeBody(doc, asp.interpretation, ctx.colors.bodyText, 9.5, 13);
             }, isHard ? [180, 100, 60] : ctx.colors.gold);
