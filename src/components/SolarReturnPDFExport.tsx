@@ -622,10 +622,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             // Check if there's room, otherwise new page
             ctx.checkPage(200);
             ctx.y += 10;
-            ctx.drawGoldRule(doc); ctx.y += 16;
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
-            doc.setTextColor(...ctx.colors.gold);
-            doc.text('STELLIUMS BY HOUSE', margin, ctx.y); ctx.y += 16;
+            ctx.drawRule(doc); ctx.y += 16;
+            ctx.trackedLabel(doc, 'STELLIUMS BY HOUSE', margin, ctx.y);
+            ctx.y += 16;
           } else {
             ctx.sectionTitle(doc, 'STELLIUMS — YOUR POWER ZONES');
             ctx.sectionPages.set('STELLIUMS', doc.getNumberOfPages());
