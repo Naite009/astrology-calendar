@@ -11,6 +11,8 @@ const MUTED: Color = [130, 125, 118];
 const GOLD:  Color = [184, 150, 62];
 const RULE:  Color = [200, 195, 188];
 const CARD_BG: Color = [245, 241, 234];
+const DARK:  Color = [38,  34,  30];
+const SOFT_GOLD: Color = [248, 242, 228];
 
 const LIFE_THEMES: Record<number, { short: string; detail: string }> = {
   1: { short: 'Identity', detail: 'your identity, confidence, and how you show up' },
@@ -30,6 +32,10 @@ const LIFE_THEMES: Record<number, { short: string; detail: string }> = {
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'];
 
+const SEASON_ICONS: Record<number, string> = {
+  0: '✦', 1: '◈', 2: '◆', 3: '●',
+};
+
 function ord(n: number): string {
   const s = ['th', 'st', 'nd', 'rd'];
   const v = n % 100;
@@ -41,6 +47,8 @@ interface QuarterData {
   headline: string;
   body: string;
   tags: string[];
+  energy: string;
+  powerMove: string;
 }
 
 function buildDataRichQuarters(a: SolarReturnAnalysis, srChart: SolarReturnChart, natalChart: NatalChart): QuarterData[] {
@@ -65,6 +73,7 @@ function buildDataRichQuarters(a: SolarReturnAnalysis, srChart: SolarReturnChart
   const saturnRx = a.saturnFocus?.isRetrograde || false;
   const nodeH = a.nodesFocus?.house;
   const quarters: QuarterData[] = [];
+
   for (let q = 0; q < 4; q++) {
     const startIdx = q * 3;
     const monthIndices = [0, 1, 2].map(i => (birthMonth + startIdx + i) % 12);
@@ -78,24 +87,33 @@ function buildDataRichQuarters(a: SolarReturnAnalysis, srChart: SolarReturnChart
     const houseThemes = houses.map(h => LIFE_THEMES[h]?.short || 'Life themes');
     const sentences: string[] = [];
     const tags: string[] = [];
+
     if (timeLord && q === 0) sentences.push(`${timeLordName} as Time Lord sets the agenda from the start — ${LIFE_THEMES[profH]?.detail || 'key themes'} are activated immediately.`);
     if (q === 0 && sunH) sentences.push(`The Solar Return Sun in the ${ord(sunH)} house directs core vitality toward ${LIFE_THEMES[sunH]?.detail || 'this area'}.`);
-    if (stelliums.length > 0 && q === 0) { const s = stelliums[0]; sentences.push(`Your ${s.planets.length}-planet stellium in ${s.location} concentrates energy early — lean into this concentration rather than scattering your focus.`); }
-    if (retros.length > 0 && q === 1) { sentences.push(`${retros.map(r => P[r] || r).join(', ')} retrograde in the SR chart signals a revision period — review and refine rather than launching new initiatives. This is not a slowdown; it is an invitation to perfect what you have already started. Revisit projects, relationships, and decisions from the first season with fresh eyes.`); tags.push('MERCURY RX'); }
-    if (saturnH && q === 2) { sentences.push(`Saturn in the ${ord(saturnH)} house (${saturnSign}) asks for sustained discipline around ${LIFE_THEMES[saturnH]?.detail || 'key areas'} and how you show up.`); if (saturnRx) tags.push('SATURN RX'); }
+    if (stelliums.length > 0 && q === 0) { const s = stelliums[0]; sentences.push(`Your ${s.planets.length}-planet stellium in ${s.location} concentrates energy early.`); }
+    if (retros.length > 0 && q === 1) { sentences.push(`${retros.map(r => P[r] || r).join(', ')} retrograde signals a revision period — review and refine.`); tags.push('MERCURY RX'); }
+    if (saturnH && q === 2) { sentences.push(`Saturn in the ${ord(saturnH)} house (${saturnSign}) asks for sustained discipline around ${LIFE_THEMES[saturnH]?.detail || 'key areas'}.`); if (saturnRx) tags.push('SATURN RX'); }
     if (moonSign && q === 2) {
       const moonFeels: Record<string, string> = { Aries: 'directness', Taurus: 'stability', Gemini: 'mental stimulation', Cancer: 'emotional depth', Leo: 'warmth', Virgo: 'analytical precision', Libra: 'harmony-seeking', Scorpio: 'psychological intensity', Sagittarius: 'restlessness', Capricorn: 'emotional discipline and pragmatism', Aquarius: 'detached clarity', Pisces: 'heightened empathy' };
-      sentences.push(`The SR Moon in ${moonSign} colors emotional responses with ${moonFeels[moonSign] || 'distinctive energy'}. What you built in the first half of the year is now being tested for durability.`);
+      sentences.push(`The SR Moon in ${moonSign} colors emotional responses with ${moonFeels[moonSign] || 'distinctive energy'}.`);
     }
     if (nodeH && q === 3) sentences.push(`The North Node in the ${ord(nodeH)} house pulls growth toward ${LIFE_THEMES[nodeH]?.detail || 'unfamiliar territory'}.`);
     if (sentences.length === 0) sentences.push(`The focus remains on ${houseThemes.join(', ').toLowerCase()}.`);
+
     let headline = '';
     if (q === 0 && timeLord) headline = `${timeLordName} Sets the Pace`;
-    else if (q === 1 && retros.length > 0) headline = 'Review and Revision Period';
+    else if (q === 1 && retros.length > 0) headline = 'Review & Revision';
     else if (q === 2 && saturnH) headline = 'Saturn Tests What You\'ve Built';
     else if (q === 3 && nodeH) headline = 'Growth Edge Crystallizes';
     else headline = `${houseThemes[0]} Takes Center Stage`;
-    quarters.push({ months: monthsLabel, headline, body: sentences.join(' '), tags });
+
+    // Condensed summary
+    const fullBody = sentences.join(' ');
+    const energy = sentences[0] || 'Pay attention to what shows up here.';
+    const actionSentences = sentences.filter(s => /build|create|trust|channel|lean|step|pay|use|ask|show|focus|walk|let|embrace|release/i.test(s));
+    const powerMove = actionSentences[actionSentences.length - 1] || sentences[sentences.length - 1] || 'Stay present to what shifts.';
+
+    quarters.push({ months: monthsLabel, headline, body: fullBody, tags, energy, powerMove });
   }
   return quarters;
 }
@@ -106,70 +124,123 @@ export function generateQuarterlySummary(
   const { pw, ph, margin, contentW } = ctx;
 
   ctx.pageBg(doc);
-  ctx.sectionTitle(doc, 'YOUR YEAR IN FOUR SEASONS', 'Built from Your Chart');
-  ctx.drawGoldRule(doc);
-  ctx.y += 20;
+
+  // ── Magazine section header ──
+  ctx.y += 24;
+  doc.setFont('times', 'bold'); doc.setFontSize(7);
+  doc.setTextColor(...GOLD);
+  doc.setCharSpace(4);
+  doc.text('SEASONAL FORECAST', margin, ctx.y);
+  doc.setCharSpace(0);
+  ctx.y += 12;
+
+  doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+  doc.line(margin, ctx.y, pw - margin, ctx.y);
+  ctx.y += 28;
+
+  doc.setFont('times', 'normal'); doc.setFontSize(32);
+  doc.setTextColor(...INK);
+  doc.text('Your Year in Four Seasons', margin, ctx.y);
+  ctx.y += 14;
+
+  doc.setFont('times', 'italic'); doc.setFontSize(10);
+  doc.setTextColor(...MUTED);
+  doc.text('Built from your chart', margin, ctx.y);
+  ctx.y += 34;
 
   const quarters = buildDataRichQuarters(a, srChart, natalChart);
 
+  // ── 2×2 GRID LAYOUT ──────────────────────────────────────────────
+  const gridGapX = 16;
+  const gridGapY = 16;
+  const cellW = (contentW - gridGapX) / 2;
+  const cellH = 220;
+
+  // Check if we have room for the full grid
+  ctx.checkPage(cellH * 2 + gridGapY + 20);
+
   for (let i = 0; i < 4; i++) {
     const q = quarters[i];
+    const col = i % 2;
+    const row = Math.floor(i / 2);
+    const cellX = margin + col * (cellW + gridGapX);
+    const cellY = ctx.y + row * (cellH + gridGapY);
 
-    const tagText = q.tags.join('  ');
-    doc.setFont('times', 'bold'); doc.setFontSize(7);
-    const tagW = tagText ? doc.getTextWidth(tagText) + 16 : 0;
+    // Alternating backgrounds
+    const isOdd = i % 2 === 1;
+    const bgColor: Color = isOdd ? SOFT_GOLD : CARD_BG;
 
-    const headlineMaxW = contentW - 44 - (tagW > 0 ? tagW + 14 : 0);
-    const headLines: string[] = doc.splitTextToSize(q.headline, Math.max(220, headlineMaxW));
-    const bodyLines: string[] = doc.splitTextToSize(q.body, contentW - 44);
+    doc.setFillColor(...bgColor);
+    doc.roundedRect(cellX, cellY, cellW, cellH, 4, 4, 'F');
+    doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+    doc.roundedRect(cellX, cellY, cellW, cellH, 4, 4, 'S');
 
-    const cardH = Math.max(
-      120,
-      24 + 18 + headLines.length * 24 + 8 + bodyLines.length * 16.5 + 20,
-    );
-
-    ctx.checkPage(cardH + 18);
-    const startY = ctx.y;
-
-    doc.setFillColor(...CARD_BG);
-    doc.roundedRect(margin, startY, contentW, cardH, 3, 3, 'F');
-    doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
-    doc.roundedRect(margin, startY, contentW, cardH, 3, 3, 'S');
-
+    // Gold top accent
     doc.setFillColor(...GOLD);
-    doc.rect(margin, startY, 3, cardH, 'F');
+    doc.rect(cellX, cellY, cellW, 2.5, 'F');
 
-    let cy = startY + 24;
-    ctx.trackedLabel(doc, q.months.toUpperCase(), margin + 16, cy, { size: 7.8, charSpace: 2.8 });
+    let cy = cellY + 22;
 
-    if (tagW > 0) {
-      const tagX = margin + contentW - 18 - tagW;
-      doc.setDrawColor(...GOLD); doc.setLineWidth(0.5);
-      doc.roundedRect(tagX, cy - 9, tagW, 15, 3, 3, 'S');
-      doc.setTextColor(...GOLD);
-      doc.setCharSpace(2);
-      doc.text(tagText, tagX + 8, cy);
-      doc.setCharSpace(0);
-    }
-
+    // Season icon
+    doc.setFont('times', 'bold'); doc.setFontSize(18);
+    doc.setTextColor(...GOLD);
+    doc.text(SEASON_ICONS[i] || '◆', cellX + 14, cy);
     cy += 18;
 
-    doc.setFont('times', 'bold'); doc.setFontSize(20);
+    // Months label
+    doc.setFont('times', 'bold'); doc.setFontSize(6.5);
+    doc.setTextColor(...GOLD);
+    doc.setCharSpace(2.5);
+    doc.text(q.months.toUpperCase(), cellX + 14, cy);
+    doc.setCharSpace(0);
+    cy += 16;
+
+    // Headline
+    doc.setFont('times', 'bold'); doc.setFontSize(16);
     doc.setTextColor(...INK);
-    for (const hl of headLines) {
-      doc.text(hl, margin + 16, cy);
-      cy += 24;
-    }
+    const headLines: string[] = doc.splitTextToSize(q.headline, cellW - 28);
+    for (const hl of headLines.slice(0, 2)) { doc.text(hl, cellX + 14, cy); cy += 20; }
+    cy += 8;
 
-    cy += 4;
-
-    doc.setFont('times', 'normal'); doc.setFontSize(10.5);
+    // THE ENERGY
+    doc.setFont('times', 'bold'); doc.setFontSize(6.5);
+    doc.setTextColor(...GOLD);
+    doc.setCharSpace(2);
+    doc.text('THE ENERGY', cellX + 14, cy);
+    doc.setCharSpace(0);
+    cy += 12;
+    doc.setFont('times', 'normal'); doc.setFontSize(9);
     doc.setTextColor(...INK);
-    for (const line of bodyLines) {
-      doc.text(line, margin + 16, cy);
-      cy += 16.5;
-    }
+    const eLines: string[] = doc.splitTextToSize(q.energy, cellW - 28);
+    for (const l of eLines.slice(0, 3)) { doc.text(l, cellX + 14, cy); cy += 12; }
+    cy += 8;
 
-    ctx.y = startY + cardH + 16;
+    // THE POWER MOVE
+    doc.setFont('times', 'bold'); doc.setFontSize(6.5);
+    doc.setTextColor(...GOLD);
+    doc.setCharSpace(2);
+    doc.text('THE POWER MOVE', cellX + 14, cy);
+    doc.setCharSpace(0);
+    cy += 12;
+    doc.setFont('times', 'italic'); doc.setFontSize(9);
+    doc.setTextColor(...INK);
+    const pLines: string[] = doc.splitTextToSize(q.powerMove, cellW - 28);
+    for (const l of pLines.slice(0, 2)) { doc.text(l, cellX + 14, cy); cy += 12; }
+
+    // Tags (if any)
+    if (q.tags.length > 0) {
+      cy += 6;
+      for (const tag of q.tags) {
+        const tagW = doc.getTextWidth(tag) + 12;
+        doc.setDrawColor(...GOLD); doc.setLineWidth(0.5);
+        doc.roundedRect(cellX + 14, cy - 8, tagW, 14, 3, 3, 'S');
+        doc.setFont('times', 'bold'); doc.setFontSize(6.5);
+        doc.setTextColor(...GOLD);
+        doc.text(tag, cellX + 20, cy);
+        cy += 16;
+      }
+    }
   }
+
+  ctx.y += cellH * 2 + gridGapY + 20;
 }

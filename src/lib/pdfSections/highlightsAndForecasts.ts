@@ -12,6 +12,7 @@ const GOLD:  Color = [184, 150, 62];
 const RULE:  Color = [200, 195, 188];
 const CARD_BG: Color = [245, 241, 234];
 const CREAM: Color = [250, 247, 242];
+const DARK:  Color = [38,  34,  30];
 
 const LIFE_THEMES: Record<number, { short: string; detail: string }> = {
   1: { short: 'Your New Year Begins', detail: 'your identity, confidence, and how you present yourself to the world' },
@@ -38,8 +39,6 @@ function lifeTheme(house: number): string {
   return LIFE_THEMES[house]?.detail || 'general life themes';
 }
 
-interface YearHighlight { label: string; timing: string; body: string; }
-
 function getSignFeel(sign: string): string {
   const feels: Record<string, string> = {
     Aries: 'urgency, independence, impatience, raw courage', Taurus: 'groundedness, sensuality, stubbornness, comfort-seeking',
@@ -52,8 +51,32 @@ function getSignFeel(sign: string): string {
   return feels[sign] || 'mixed emotional tones';
 }
 
+// ── Condensed 2-part summary extractor ──────────────────────────────
+function extractEnergySummary(fullText: string): { energy: string; powerMove: string } {
+  // Extract the first sentence as "The Energy"
+  const sentences = fullText.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 10);
+  const energy = sentences[0] || fullText.slice(0, 120) + '…';
+  
+  // Find the most actionable sentence for "The Power Move"
+  const actionWords = ['build', 'create', 'trust', 'channel', 'lean', 'step', 'say', 'make', 'let', 'use', 'ask', 'show', 'take', 'start', 'stop', 'choose', 'embrace', 'release', 'focus', 'walk'];
+  let powerMove = '';
+  for (const s of sentences.slice(1)) {
+    if (actionWords.some(w => s.toLowerCase().includes(w))) {
+      powerMove = s;
+      break;
+    }
+  }
+  if (!powerMove && sentences.length > 1) powerMove = sentences[sentences.length - 1];
+  if (!powerMove) powerMove = 'Pay attention to what shifts here — it matters.';
+  
+  return { energy: energy.trim(), powerMove: powerMove.trim() };
+}
+
+interface YearHighlight { label: string; timing: string; body: string; }
+
 function buildHighlights(a: SolarReturnAnalysis, srChart: SolarReturnChart, natalChart: NatalChart): YearHighlight[] {
   const highlights: YearHighlight[] = [];
+  const MAJOR_PLANETS = new Set(['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto']);
   if (a.profectionYear) {
     const hNum = a.profectionYear.houseNumber;
     const srH = a.profectionYear.timeLordSRHouse;
@@ -66,7 +89,6 @@ function buildHighlights(a: SolarReturnAnalysis, srChart: SolarReturnChart, nata
     const s = a.stelliums[0];
     highlights.push({ label: `POWER ZONE`, timing: `${s.planets.length}-Planet Stellium`, body: `${s.planets.map(p => P[p] || p).join(', ')} pile into ${s.location} — a concentrated demand for attention.` });
   }
-  const MAJOR_PLANETS = new Set(['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto']);
   if (a.srToNatalAspects.length > 0) {
     const strongest = a.srToNatalAspects.find(asp => MAJOR_PLANETS.has(asp.planet1) && MAJOR_PLANETS.has(asp.planet2) && !(asp.planet1 === 'Sun' && asp.planet2 === 'Sun' && asp.type === 'Conjunction'));
     if (strongest) highlights.push({ label: 'YEAR-DEFINING ASPECT', timing: `SR ${P[strongest.planet1] || strongest.planet1} ${strongest.type} Natal ${P[strongest.planet2] || strongest.planet2}`, body: strongest.interpretation });
@@ -109,19 +131,13 @@ function buildPersonalizedMonthlyForecasts(a: SolarReturnAnalysis, srChart: Sola
       if (themeH === 5) body += ' This month highlights romance, creative projects, fun, and children.';
     }
     if (i === 11) body = 'The year is winding down. Let the year\'s wisdom settle before the next one begins.';
-
-    // Add stellium context for early months
     if (stelliums.length > 0 && i < 3) {
       const s = stelliums[0];
       body += ` With ${s.planets.map(p => P[p] || p).join(', ')} concentrated in ${s.location}, expect intense activity in that area.`;
     }
-
-    // Add retrograde context for mid-year
     if (retros.length > 0 && i >= 3 && i <= 5) {
       body += ` ${retros.map(r => P[r] || r).join(' ')} retrograde asks you to revisit something unfinished before moving forward.`;
     }
-
-    // Add moon sign emotional context
     if (moonSign && i >= 6 && i <= 9) {
       const moonFeelShort: Record<string, string> = {
         Aries: 'direct emotional energy', Taurus: 'steady emotional presence', Gemini: 'verbal emotional processing',
@@ -132,12 +148,9 @@ function buildPersonalizedMonthlyForecasts(a: SolarReturnAnalysis, srChart: Sola
       };
       body += ` ${moonSign} Moon — ${moonFeelShort[moonSign] || 'mixed emotional tones'}.`;
     }
-
-    // Add 12th house sun context for relevant months
     if (sunH === 12 && i >= 4 && i <= 7) {
       body += ' The 12th house energy is at its strongest — bold moves made quietly are the most effective.';
     }
-
     forecasts.push({ month: monthNames[mIdx], year, headline, body });
   }
   return forecasts;
@@ -150,28 +163,110 @@ export function generateHighlightsPage(
 
   ctx.pageBg(doc);
 
-  // ── HIGHLIGHTS ──
-  ctx.sectionTitle(doc, 'YEAR AT A GLANCE', 'Your Year at a Glance');
-  ctx.y += 2;
-  doc.setFont('times', 'italic'); doc.setFontSize(9);
+  // ── Magazine-style section header ──
+  ctx.y += 24;
+  doc.setFont('times', 'bold'); doc.setFontSize(7);
+  doc.setTextColor(...GOLD);
+  doc.setCharSpace(4);
+  doc.text('HIGHLIGHTS', margin, ctx.y);
+  doc.setCharSpace(0);
+  ctx.y += 12;
+
+  doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+  doc.line(margin, ctx.y, pw - margin, ctx.y);
+  ctx.y += 28;
+
+  doc.setFont('times', 'normal'); doc.setFontSize(32);
+  doc.setTextColor(...INK);
+  doc.text('Year at a Glance', margin, ctx.y);
+  ctx.y += 14;
+
+  doc.setFont('times', 'italic'); doc.setFontSize(10);
   doc.setTextColor(...MUTED);
   doc.text('Stick this on your fridge', margin, ctx.y);
-  ctx.y += 18;
+  ctx.y += 30;
 
+  // ── Highlights as condensed Energy / Power Move cards ──
   const highlights = buildHighlights(a, srChart, natalChart);
-  for (const h of highlights) {
-    ctx.drawCard(doc, () => {
-      ctx.trackedLabel(doc, h.label, margin + 14, ctx.y, { size: 7, charSpace: 2.5 });
-      ctx.y += 14;
+  for (let i = 0; i < highlights.length; i++) {
+    const h = highlights[i];
+    const { energy, powerMove } = extractEnergySummary(h.body);
+
+    ctx.checkPage(130);
+
+    // Dark hero card for first, light cards for rest
+    if (i === 0) {
+      const heroH = 120;
+      const heroY = ctx.y;
+      doc.setFillColor(...DARK);
+      doc.roundedRect(margin, heroY, contentW, heroH, 4, 4, 'F');
+      doc.setFillColor(...GOLD);
+      doc.rect(margin, heroY, contentW, 2.5, 'F');
+
+      let hy = heroY + 24;
+      doc.setFont('times', 'bold'); doc.setFontSize(6.5);
+      doc.setTextColor(...GOLD);
+      doc.setCharSpace(3);
+      doc.text(h.label, margin + 18, hy);
+      doc.setCharSpace(0);
+      hy += 18;
+
       doc.setFont('times', 'bold'); doc.setFontSize(18);
-      doc.setTextColor(...INK);
-      const valLines: string[] = doc.splitTextToSize(h.timing, contentW - 28);
-      for (const vl of valLines) { doc.text(vl, margin + 14, ctx.y); ctx.y += 22; }
-      doc.setFont('times', 'normal'); doc.setFontSize(10.5);
-      doc.setTextColor(...INK);
-      const bodyLines: string[] = doc.splitTextToSize(h.body, contentW - 28);
-      for (const bl of bodyLines) { doc.text(bl, margin + 14, ctx.y); ctx.y += 16; }
-    });
+      doc.setTextColor(250, 247, 242);
+      doc.text(h.timing, margin + 18, hy);
+      hy += 22;
+
+      // The Energy
+      doc.setFont('times', 'bold'); doc.setFontSize(7);
+      doc.setTextColor(...GOLD);
+      doc.text('THE ENERGY', margin + 18, hy);
+      hy += 12;
+      doc.setFont('times', 'normal'); doc.setFontSize(9.5);
+      doc.setTextColor(220, 216, 210);
+      const elines: string[] = doc.splitTextToSize(energy, contentW - 36);
+      for (const l of elines.slice(0, 2)) { doc.text(l, margin + 18, hy); hy += 13; }
+
+      ctx.y = heroY + heroH + 16;
+    } else {
+      // Light card with Energy + Power Move
+      ctx.drawCard(doc, () => {
+        ctx.trackedLabel(doc, h.label, margin + 14, ctx.y, { size: 7, charSpace: 2.5 });
+        ctx.y += 14;
+
+        doc.setFont('times', 'bold'); doc.setFontSize(15);
+        doc.setTextColor(...INK);
+        const valLines: string[] = doc.splitTextToSize(h.timing, contentW - 28);
+        for (const vl of valLines) { doc.text(vl, margin + 14, ctx.y); ctx.y += 20; }
+
+        ctx.y += 4;
+
+        // The Energy
+        doc.setFont('times', 'bold'); doc.setFontSize(7);
+        doc.setTextColor(...GOLD);
+        doc.setCharSpace(2);
+        doc.text('THE ENERGY', margin + 14, ctx.y);
+        doc.setCharSpace(0);
+        ctx.y += 12;
+        doc.setFont('times', 'normal'); doc.setFontSize(10);
+        doc.setTextColor(...INK);
+        const elines: string[] = doc.splitTextToSize(energy, contentW - 28);
+        for (const l of elines.slice(0, 2)) { doc.text(l, margin + 14, ctx.y); ctx.y += 14; }
+
+        ctx.y += 6;
+
+        // The Power Move
+        doc.setFont('times', 'bold'); doc.setFontSize(7);
+        doc.setTextColor(...GOLD);
+        doc.setCharSpace(2);
+        doc.text('THE POWER MOVE', margin + 14, ctx.y);
+        doc.setCharSpace(0);
+        ctx.y += 12;
+        doc.setFont('times', 'italic'); doc.setFontSize(10);
+        doc.setTextColor(...INK);
+        const plines: string[] = doc.splitTextToSize(powerMove, contentW - 28);
+        for (const l of plines.slice(0, 2)) { doc.text(l, margin + 14, ctx.y); ctx.y += 14; }
+      });
+    }
   }
 
   // ── MONTH-BY-MONTH on new page ──
@@ -184,24 +279,35 @@ export function generateHighlightsPage(
 
   const drawMonthHeader = (continued = false) => {
     if (!continued) {
-      ctx.sectionTitle(doc, 'MONTH BY MONTH', 'Best Months & Highlights');
-      ctx.drawRule(doc);
-      ctx.y += 16;
+      ctx.y += 24;
+      doc.setFont('times', 'bold'); doc.setFontSize(7);
+      doc.setTextColor(...GOLD);
+      doc.setCharSpace(4);
+      doc.text('MONTHLY FORECAST', margin, ctx.y);
+      doc.setCharSpace(0);
+      ctx.y += 12;
+      doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+      doc.line(margin, ctx.y, pw - margin, ctx.y);
+      ctx.y += 28;
+      doc.setFont('times', 'normal'); doc.setFontSize(28);
+      doc.setTextColor(...INK);
+      doc.text('Month by Month', margin, ctx.y);
+      ctx.y += 12;
+      doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+      doc.line(margin, ctx.y, pw - margin, ctx.y);
+      ctx.y += 20;
       return;
     }
-
     ctx.pageBg(doc);
     ctx.trackedLabel(doc, 'MONTH BY MONTH · CONTINUED', margin, ctx.y, { size: 7.2, charSpace: 2.8 });
     ctx.y += 10;
     doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
     doc.line(margin, ctx.y, pw - margin, ctx.y);
     ctx.y += 16;
-
     doc.setFont('times', 'normal'); doc.setFontSize(24);
     doc.setTextColor(...INK);
     doc.text('Best Months & Highlights', margin, ctx.y);
     ctx.y += 10;
-
     doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
     doc.line(margin, ctx.y, pw - margin, ctx.y);
     ctx.y += 16;
@@ -227,53 +333,33 @@ export function generateHighlightsPage(
     if (!f) return { bodyLines: [] as string[], headLines: [] as string[], height: 0 };
     const bodyLines = clampLines(doc.splitTextToSize(f.body, cardW - cardPadX * 2), maxBodyLines);
     const headLines = doc.splitTextToSize(f.headline, cardW - cardPadX * 2) as string[];
-    const height = Math.max(
-      126,
-      cardPadTop + 12 + 6 + headLines.length * headlineLineH + 6 + bodyLines.length * bodyLineH + cardPadBottom,
-    );
+    const height = Math.max(126, cardPadTop + 12 + 6 + headLines.length * headlineLineH + 6 + bodyLines.length * bodyLineH + cardPadBottom);
     return { bodyLines, headLines, height };
   };
 
-  const drawCard = (
-    f: MonthForecast,
-    bodyLines: string[],
-    headLines: string[],
-    cardH: number,
-    x: number,
-    rowY: number,
-  ) => {
+  const drawMonthCard = (f: MonthForecast, bodyLines: string[], headLines: string[], cardH: number, x: number, rowY: number) => {
     doc.setFillColor(...CARD_BG);
     doc.roundedRect(x, rowY, cardW, cardH, 3, 3, 'F');
     doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
     doc.roundedRect(x, rowY, cardW, cardH, 3, 3, 'S');
-
     doc.setFillColor(...GOLD);
     doc.rect(x, rowY, 3, cardH, 'F');
 
     let cy = rowY + cardPadTop;
     ctx.trackedLabel(doc, `${f.month} ${f.year}`, x + cardPadX, cy, { size: 7.8, charSpace: 2.6 });
     cy += 14;
-
     doc.setFont('times', 'bold'); doc.setFontSize(15.5);
     doc.setTextColor(...INK);
-    for (const line of headLines) {
-      doc.text(line, x + cardPadX, cy);
-      cy += headlineLineH;
-    }
-
+    for (const line of headLines) { doc.text(line, x + cardPadX, cy); cy += headlineLineH; }
     doc.setFont('times', 'normal'); doc.setFontSize(10.5);
     doc.setTextColor(...INK);
-    for (const line of bodyLines) {
-      doc.text(line, x + cardPadX, cy);
-      cy += bodyLineH;
-    }
+    for (const line of bodyLines) { doc.text(line, x + cardPadX, cy); cy += bodyLineH; }
   };
 
   let index = 0;
   while (index < forecasts.length) {
     const left = forecasts[index];
     const right = forecasts[index + 1];
-
     const leftMeasured = measureCard(left);
     const rightMeasured = measureCard(right);
     const rowH = Math.max(leftMeasured.height, rightMeasured.height, 126);
@@ -285,13 +371,10 @@ export function generateHighlightsPage(
     }
 
     const rowY = ctx.y;
-    drawCard(left, leftMeasured.bodyLines, leftMeasured.headLines, rowH, margin, rowY);
-
+    drawMonthCard(left, leftMeasured.bodyLines, leftMeasured.headLines, rowH, margin, rowY);
     if (right) {
-      const rightX = margin + cardW + columnGap;
-      drawCard(right, rightMeasured.bodyLines, rightMeasured.headLines, rowH, rightX, rowY);
+      drawMonthCard(right, rightMeasured.bodyLines, rightMeasured.headLines, rowH, margin + cardW + columnGap, rowY);
     }
-
     ctx.y = rowY + rowH + rowGap;
     index += 2;
   }

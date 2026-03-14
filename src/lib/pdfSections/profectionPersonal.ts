@@ -5,140 +5,215 @@ import { P } from '@/components/SolarReturnPDFExport';
 type Color = [number, number, number];
 const INK:   Color = [18,  16,  14];
 const MUTED: Color = [130, 125, 118];
+const GOLD:  Color = [184, 150, 62];
 const RULE:  Color = [200, 195, 188];
 const DARK:  Color = [38,  34,  30];
+const CARD_BG: Color = [245, 241, 234];
 
 const PROFECTION_DEEP: Record<number, string> = {
-  1: 'House 1 profection years are the most personal. Your body, appearance, health, and sense of identity are the focal point. You may feel compelled to change how you look, how you present yourself, or fundamentally who you are. Decisions made this year have outsized personal impact — this is YOUR year to define YOUR direction.',
-  2: 'House 2 profection years center on money, material security, and self-worth. Income may change — up or down. Financial decisions made this year set the tone for the next several years. More importantly, you are being asked to examine what you VALUE.',
-  3: 'House 3 profection years activate your mind, communication, and immediate environment. You may write more, teach, learn something new, or have conversations that reshape your perspective.',
-  4: 'House 4 profection years bring focus to home, family, roots, and emotional foundations. You may move, renovate, or deal with family dynamics that require your full attention.',
-  5: 'House 5 profection years activate creativity, romance, children, and self-expression. This is a year where you are asked to CREATE. Joy and pleasure are not optional; they are the curriculum.',
-  6: 'House 6 profection years focus on daily routines, physical health, and work. The mundane is the spiritual path this year. Your body is sending messages — listen to them.',
-  7: 'House 7 profection years are defined by partnerships and one-on-one relationships. If single, you may meet someone significant. If partnered, the relationship demands a new level of engagement.',
-  8: 'House 8 profection years bring intensity, transformation, and encounters with shared resources. Psychologically, something needs to die so something authentic can emerge.',
-  9: 'House 9 profection years expand your world through travel, education, publishing, or philosophical exploration. Your current worldview is too small — this year stretches it.',
-  10: 'House 10 profection years put career, public reputation, and legacy in the spotlight. Professional responsibilities increase but so does recognition.',
-  11: 'House 11 profection years activate friendships, community, and collective purpose. Your social circle is being restructured.',
-  12: 'House 12 profection years are the most deeply internal. Solitude, spiritual practice, and unconscious patterns are the focus. This is a completion year.',
+  1: 'House 1 profection years are the most personal. Your body, appearance, health, and sense of identity are the focal point.',
+  2: 'House 2 profection years center on money, material security, and self-worth. Financial decisions set the tone for years to come.',
+  3: 'House 3 profection years activate your mind, communication, and immediate environment. Ideas carry unusual weight.',
+  4: 'House 4 profection years bring focus to home, family, roots, and emotional foundations.',
+  5: 'House 5 profection years activate creativity, romance, children, and self-expression. Joy is the curriculum.',
+  6: 'House 6 profection years focus on daily routines, physical health, and work. The mundane is the spiritual path.',
+  7: 'House 7 profection years are defined by partnerships and one-on-one relationships.',
+  8: 'House 8 profection years bring intensity, transformation, and encounters with shared resources.',
+  9: 'House 9 profection years expand your world through travel, education, or philosophical exploration.',
+  10: 'House 10 profection years put career, public reputation, and legacy in the spotlight.',
+  11: 'House 11 profection years activate friendships, community, and collective purpose.',
+  12: 'House 12 profection years are the most deeply internal. Solitude and spiritual practice are the focus.',
 };
-const TIME_LORD_DEEP: Record<string, string> = {
-  Sun: 'The Sun as your Time Lord means your IDENTITY is the story of the year. Everything that happens filters through the question: who am I becoming?',
-  Moon: 'The Moon as your Time Lord makes this fundamentally an EMOTIONAL year. Your feelings are the primary navigation system.',
-  Mercury: 'Mercury as your Time Lord puts your MIND at the center of everything. How you think, communicate, learn, and process information determines the quality of the year.',
-  Venus: 'Venus as your Time Lord makes this a year about LOVE, VALUES, and BEAUTY. Relationships — romantic, artistic, financial — are the primary arena.',
-  Mars: 'Mars as your Time Lord brings raw ENERGY, DRIVE, and potentially CONFLICT. You have more fuel than usual — the question is how you channel it.',
-  Jupiter: 'Jupiter as your Time Lord is traditionally considered fortunate — expansion, opportunity, and growth are the themes.',
-  Saturn: 'Saturn as your Time Lord signals a SERIOUS year. This is not a punishment — it is a promotion that comes with a test. Saturn years are when structures are tested.',
-  Uranus: 'Uranus as your Time Lord brings DISRUPTION, INNOVATION, and sudden change. Plans made before this year may be overturned.',
-  Neptune: 'Neptune as your Time Lord dissolves boundaries between the real and the imagined. Creativity and intuition are heightened but so is confusion.',
-  Pluto: 'Pluto as your Time Lord brings deep TRANSFORMATION and encounters with power. Something in your life is being fundamentally restructured.',
+
+const TIME_LORD_ENERGY: Record<string, string> = {
+  Sun: 'Your IDENTITY is the story. Everything filters through: who am I becoming?',
+  Moon: 'This is fundamentally an EMOTIONAL year. Your feelings are the primary navigation system.',
+  Mercury: 'Your MIND is at the center. How you think and communicate determines the quality of the year.',
+  Venus: 'This is a year about LOVE, VALUES, and BEAUTY. Relationships are the primary arena.',
+  Mars: 'Raw ENERGY, DRIVE, and potentially CONFLICT. You have more fuel than usual.',
+  Jupiter: 'EXPANSION, OPPORTUNITY, and GROWTH are the themes. Doors open.',
+  Saturn: 'A SERIOUS year. Structures are tested. Shortcuts fail. What is real survives.',
+  Uranus: 'DISRUPTION, INNOVATION, and sudden change. Plans may be overturned.',
+  Neptune: 'Boundaries dissolve between real and imagined. Creativity and intuition heightened.',
+  Pluto: 'Deep TRANSFORMATION and encounters with power. Something is being fundamentally restructured.',
 };
+
+const TIME_LORD_POWER_MOVE: Record<string, string> = {
+  Sun: 'Step into the spotlight deliberately. Be the main character — not for performance, but for real.',
+  Moon: 'Trust your instincts over logic this year. What you feel is more accurate than what you think.',
+  Mercury: 'Write it down. Say it out loud. The clarity you need comes through communication.',
+  Venus: 'Invest in what you genuinely love — people, experiences, beauty. The returns are real.',
+  Mars: 'Channel the energy into one clear project or goal. Scattered aggression costs; focused drive wins.',
+  Jupiter: 'Say yes to the thing that scares you a little. Overreach is the only real risk.',
+  Saturn: 'Do the hard thing first. Every morning. Build the structure your future self will thank you for.',
+  Uranus: 'Stay flexible. The detour is the point. Trust the disruption.',
+  Neptune: 'Create something. Meditate. Trust what you cannot yet prove.',
+  Pluto: 'Let something die. Resistance is the only thing that makes transformation painful.',
+};
+
+const HOUSE_FOCUS: Record<number, string> = {
+  1: 'Identity & Self', 2: 'Money & Values', 3: 'Communication', 4: 'Home & Family',
+  5: 'Creativity & Love', 6: 'Health & Daily Work', 7: 'Partnerships',
+  8: 'Transformation', 9: 'Travel & Learning', 10: 'Career & Legacy',
+  11: 'Friends & Community', 12: 'Spirituality & Inner Work',
+};
+
+function ord(n: number): string {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
 
 export function generateProfectionPersonalSection(
   ctx: PDFContext, doc: jsPDF,
   houseNumber: number, timeLord: string, age: number,
   timeLordSRHouse: number | null, timeLordSRSign: string
 ) {
-  const { pw, margin, contentW } = ctx;
+  const { pw, ph, margin, contentW } = ctx;
+  const tlName = P[timeLord] || timeLord;
 
   ctx.pageBg(doc);
 
-  // Section header
-  ctx.trackedLabel(doc, '04 · PROFECTION YEAR', margin, ctx.y);
-  ctx.y += 8;
-  doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
-  doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 18;
-
-  // Main heading
-  doc.setFont('times', 'bold'); doc.setFontSize(22);
-  doc.setTextColor(...INK);
-  doc.text('Your Profection Year', margin, ctx.y);
-  ctx.y += 14;
-
-  // Sub-heading
-  ctx.trackedLabel(doc, `HOUSE ${houseNumber} PROFECTION YEAR · AGE ${age}`, margin, ctx.y, { size: 8 });
-  ctx.y += 14;
-
-  // Theme title
-  const HOUSE_FOCUS: Record<number, string> = {
-    1: 'Identity & Self', 2: 'Money & Values', 3: 'Communication', 4: 'Home & Family',
-    5: 'Creativity & Love', 6: 'Health & Daily Work', 7: 'Partnerships',
-    8: 'Transformation', 9: 'Travel & Learning', 10: 'Career & Legacy',
-    11: 'Friends & Community', 12: 'Spirituality & Inner Work',
-  };
-  doc.setFont('times', 'bolditalic'); doc.setFontSize(16);
-  doc.setTextColor(90, 80, 68);
-  doc.text(HOUSE_FOCUS[houseNumber] || '', margin, ctx.y);
+  // ── Magazine editorial header ──
+  ctx.y += 24;
+  doc.setFont('times', 'bold'); doc.setFontSize(7);
+  doc.setTextColor(...GOLD);
+  doc.setCharSpace(4);
+  doc.text('THE TIME LORD', margin, ctx.y);
+  doc.setCharSpace(0);
   ctx.y += 12;
 
-  // Time Lord label
-  const tlName = P[timeLord] || timeLord;
-  ctx.trackedLabel(doc, `TIME LORD: ${tlName.toUpperCase()}`, margin, ctx.y, { size: 7 });
+  doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+  doc.line(margin, ctx.y, pw - margin, ctx.y);
+  ctx.y += 28;
+
+  // ── Large serif display: "Lord of the Year" ──
+  doc.setFont('times', 'normal'); doc.setFontSize(36);
+  doc.setTextColor(...INK);
+  doc.text('Lord of the Year', margin, ctx.y);
+  ctx.y += 42;
+
+  // ── DARK HERO CARD: Planet name as feature ──
+  const heroH = 100;
+  const heroY = ctx.y;
+  doc.setFillColor(...DARK);
+  doc.roundedRect(margin, heroY, contentW, heroH, 4, 4, 'F');
+  doc.setFillColor(...GOLD);
+  doc.rect(margin, heroY, contentW, 2.5, 'F');
+
+  let hy = heroY + 30;
+  doc.setFont('times', 'bold'); doc.setFontSize(42);
+  doc.setTextColor(250, 247, 242);
+  doc.text(tlName, margin + 22, hy);
+
+  // Right-aligned details
+  doc.setFont('times', 'normal'); doc.setFontSize(9);
+  doc.setTextColor(...GOLD);
+  doc.text(`${ord(houseNumber)} House Profection Year · Age ${age}`, pw - margin - 22, heroY + 24, { align: 'right' });
+  doc.text(HOUSE_FOCUS[houseNumber] || '', pw - margin - 22, heroY + 38, { align: 'right' });
+
+  if (timeLordSRHouse && timeLordSRSign) {
+    doc.text(`SR House ${timeLordSRHouse} · ${timeLordSRSign}`, pw - margin - 22, heroY + 52, { align: 'right' });
+  }
+
+  // THE ENERGY
+  hy += 22;
+  doc.setFont('times', 'bold'); doc.setFontSize(6.5);
+  doc.setTextColor(...GOLD);
+  doc.setCharSpace(2);
+  doc.text('THE ENERGY', margin + 22, hy);
+  doc.setCharSpace(0);
+  hy += 12;
+  doc.setFont('times', 'normal'); doc.setFontSize(10);
+  doc.setTextColor(220, 216, 210);
+  const energyText = TIME_LORD_ENERGY[timeLord] || `${tlName} sets the agenda for the year.`;
+  const eLines: string[] = doc.splitTextToSize(energyText, contentW - 44);
+  for (const l of eLines.slice(0, 2)) { doc.text(l, margin + 22, hy); hy += 14; }
+
+  ctx.y = heroY + heroH + 22;
+
+  // ── THE POWER MOVE — pull-quote style ──
+  ctx.checkPage(80);
+  doc.setDrawColor(...GOLD); doc.setLineWidth(0.6);
+  doc.line(margin + 4, ctx.y, margin + 4, ctx.y + 36);
+
+  doc.setFont('times', 'bold'); doc.setFontSize(6.5);
+  doc.setTextColor(...GOLD);
+  doc.setCharSpace(2);
+  doc.text('THE POWER MOVE', margin + 16, ctx.y);
+  doc.setCharSpace(0);
+  ctx.y += 14;
+
+  doc.setFont('times', 'italic'); doc.setFontSize(13);
+  doc.setTextColor(...INK);
+  const pmText = TIME_LORD_POWER_MOVE[timeLord] || 'Pay attention to what this planet demands.';
+  const pmLines: string[] = doc.splitTextToSize(pmText, contentW - 30);
+  for (const l of pmLines.slice(0, 2)) { doc.text(l, margin + 16, ctx.y); ctx.y += 18; }
   ctx.y += 16;
 
-  // House deep dive body
+  // ── House deep dive — editorial body text ──
   if (PROFECTION_DEEP[houseNumber]) {
-    doc.setFont('times', 'normal'); doc.setFontSize(10);
+    ctx.checkPage(80);
+    doc.setFont('times', 'bold'); doc.setFontSize(7);
+    doc.setTextColor(...GOLD);
+    doc.setCharSpace(2);
+    doc.text('THE PROFECTION HOUSE', margin, ctx.y);
+    doc.setCharSpace(0);
+    ctx.y += 14;
+
+    doc.setFont('times', 'normal'); doc.setFontSize(11);
     doc.setTextColor(...INK);
     const lines: string[] = doc.splitTextToSize(PROFECTION_DEEP[houseNumber], contentW);
     for (const line of lines) {
-      ctx.checkPage(16);
+      ctx.checkPage(18);
       doc.text(line, margin, ctx.y);
-      ctx.y += 16.5;
+      ctx.y += 17;
     }
     ctx.y += 12;
   }
 
-  // "WHY [PLANET] IS YOUR TIME LORD" sub-section
-  ctx.trackedLabel(doc, `WHY ${tlName.toUpperCase()} IS YOUR TIME LORD`, margin, ctx.y);
-  ctx.y += 12;
-  doc.setFont('times', 'normal'); doc.setFontSize(10);
+  // ── WHY [PLANET] IS YOUR TIME LORD ──
+  ctx.checkPage(80);
+  doc.setFont('times', 'bold'); doc.setFontSize(7);
+  doc.setTextColor(...GOLD);
+  doc.setCharSpace(2);
+  doc.text(`WHY ${tlName.toUpperCase()} IS YOUR TIME LORD`, margin, ctx.y);
+  doc.setCharSpace(0);
+  ctx.y += 14;
+
+  doc.setFont('times', 'normal'); doc.setFontSize(11);
   doc.setTextColor(...INK);
-  const whyText = `Your natal ${houseNumber}${houseNumber === 1 ? 'st' : houseNumber === 2 ? 'nd' : houseNumber === 3 ? 'rd' : 'th'} house cusp falls in a sign ruled by ${tlName}. In Hellenistic astrology, the planet that rules the sign on your activated profection house cusp becomes the "Time Lord" — the planet whose agenda dominates the year.`;
+  const whyText = `Your natal ${ord(houseNumber)} house cusp falls in a sign ruled by ${tlName}. In Hellenistic astrology, the planet that rules the sign on your activated profection house cusp becomes the "Time Lord" — the planet whose agenda dominates the year.`;
   const whyLines: string[] = doc.splitTextToSize(whyText, contentW);
   for (const line of whyLines) {
-    ctx.checkPage(16);
+    ctx.checkPage(18);
     doc.text(line, margin, ctx.y);
-    ctx.y += 16.5;
+    ctx.y += 17;
   }
-  ctx.y += 12;
+  ctx.y += 8;
 
-  // Time Lord detailed meaning
-  if (TIME_LORD_DEEP[timeLord]) {
-    ctx.checkPage(100);
-    ctx.trackedLabel(doc, `${tlName.toUpperCase()} AS TIME LORD`, margin, ctx.y);
-    ctx.y += 12;
-    doc.setFont('times', 'normal'); doc.setFontSize(10);
-    doc.setTextColor(...INK);
-    const tlLines: string[] = doc.splitTextToSize(TIME_LORD_DEEP[timeLord], contentW);
-    for (const line of tlLines) {
-      ctx.checkPage(16);
-      doc.text(line, margin, ctx.y);
-      ctx.y += 16.5;
-    }
-    ctx.y += 8;
-  }
-
-  // Where the Time Lord sits in the SR chart
+  // ── Where Time Lord sits in SR ──
   if (timeLordSRHouse && timeLordSRSign) {
     ctx.checkPage(60);
-    ctx.trackedLabel(doc, `${tlName.toUpperCase()} IN SR HOUSE ${timeLordSRHouse} (${timeLordSRSign.toUpperCase()})`, margin, ctx.y);
-    ctx.y += 12;
-    doc.setFont('times', 'normal'); doc.setFontSize(10);
-    doc.setTextColor(...INK);
     const houseArea = timeLordSRHouse === 1 ? 'your identity and personal presentation' : timeLordSRHouse === 2 ? 'finances and values' : timeLordSRHouse === 3 ? 'communication and learning' : timeLordSRHouse === 4 ? 'home and family' : timeLordSRHouse === 5 ? 'creativity, romance, and self-expression' : timeLordSRHouse === 6 ? 'daily routines and health' : timeLordSRHouse === 7 ? 'partnerships and relationships' : timeLordSRHouse === 8 ? 'transformation and shared resources' : timeLordSRHouse === 9 ? 'travel, education, and beliefs' : timeLordSRHouse === 10 ? 'career and public reputation' : timeLordSRHouse === 11 ? 'friendships and community' : 'solitude and inner work';
-    const srText = `Your Time Lord currently sits in the Solar Return ${timeLordSRHouse}${timeLordSRHouse === 1 ? 'st' : timeLordSRHouse === 2 ? 'nd' : timeLordSRHouse === 3 ? 'rd' : 'th'} house in ${timeLordSRSign}. This means the Time Lord's agenda plays out primarily through ${houseArea}.`;
-    const srLines: string[] = doc.splitTextToSize(srText, contentW);
-    for (const line of srLines) {
-      ctx.checkPage(16);
-      doc.text(line, margin, ctx.y);
-      ctx.y += 16.5;
-    }
-    ctx.y += 8;
-    doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
-    doc.line(margin, ctx.y, pw - margin, ctx.y);
-    ctx.y += 8;
+
+    ctx.drawCard(doc, () => {
+      ctx.trackedLabel(doc, `${tlName.toUpperCase()} IN SR HOUSE ${timeLordSRHouse}`, margin + 14, ctx.y, { size: 7 });
+      ctx.y += 14;
+      doc.setFont('times', 'bold'); doc.setFontSize(14);
+      doc.setTextColor(...INK);
+      doc.text(`${timeLordSRSign} · ${ord(timeLordSRHouse)} House`, margin + 14, ctx.y);
+      ctx.y += 18;
+      doc.setFont('times', 'normal'); doc.setFontSize(11);
+      doc.setTextColor(...INK);
+      const srText = `The Time Lord's agenda plays out primarily through ${houseArea}. Watch this area of life for the year's defining moments.`;
+      const srLines: string[] = doc.splitTextToSize(srText, contentW - 28);
+      for (const line of srLines) { doc.text(line, margin + 14, ctx.y); ctx.y += 17; }
+    });
   }
+
+  // Bottom rule
+  doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+  doc.line(margin, ctx.y, pw - margin, ctx.y);
+  ctx.y += 8;
 }
