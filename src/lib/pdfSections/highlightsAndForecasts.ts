@@ -19,6 +19,16 @@ interface YearHighlight {
   icon: string;
 }
 
+function ord(n: number): string {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+function lifeTheme(house: number): string {
+  return LIFE_THEMES[house]?.detail || 'general life themes';
+}
+
 function buildHighlights(a: SolarReturnAnalysis, srChart: SolarReturnChart, natalChart: NatalChart): YearHighlight[] {
   const highlights: YearHighlight[] = [];
 
@@ -26,12 +36,11 @@ function buildHighlights(a: SolarReturnAnalysis, srChart: SolarReturnChart, nata
   if (a.profectionYear) {
     const tl = P[a.profectionYear.timeLord] || a.profectionYear.timeLord;
     const hNum = a.profectionYear.houseNumber;
-    const hTheme = getHouseActionTheme(hNum);
     const srH = a.profectionYear.timeLordSRHouse;
     highlights.push({
       label: `${tl} RUNS YOUR YEAR`,
-      timing: `Profection: ${ordinal(hNum)} House Year`,
-      body: `${tl} is your Time Lord — the planet steering every major decision. Its home base is your natal ${ordinal(hNum)} house (${hTheme}).${srH ? ` This year it operates from SR House ${srH}, channeling that energy into ${getHouseActionTheme(srH)}.` : ''}`,
+      timing: `${ord(hNum)} House Profection Year`,
+      body: `${tl} is your Time Lord -- the planet steering every major decision. Its home base is your natal ${ord(hNum)} house (${lifeTheme(hNum)}).${srH ? ` This year it channels that energy into ${lifeTheme(srH)}.` : ''}`,
       icon: 'KEY',
     });
   }
@@ -41,12 +50,12 @@ function buildHighlights(a: SolarReturnAnalysis, srChart: SolarReturnChart, nata
     const moonSign = a.moonSign;
     const moonH = a.moonHouse.house;
     const angLabel = a.moonAngularity === 'angular' ? ' Angular Moon = emotionally intense, visible year.' : a.moonAngularity === 'cadent' ? ' Cadent Moon = quieter inner processing this year.' : '';
-    const vocNote = a.moonVOC ? ' Void-of-Course Moon: your emotional radar works differently — trust gut instinct over logic.' : '';
+    const vocNote = a.moonVOC ? ' Void-of-Course Moon: your emotional radar works differently -- trust gut instinct over logic.' : '';
     const lateNote = a.moonLateDegree ? ' Late-degree Moon: an emotional chapter is completing; major feelings will crystallize and resolve.' : '';
     highlights.push({
       label: `EMOTIONAL CLIMATE: ${moonSign.toUpperCase()}`,
-      timing: `Moon in ${ordinal(moonH)} House`,
-      body: `Your emotional life this year orbits ${getSignFeel(moonSign)} themes. House ${moonH} (${getHouseActionTheme(moonH)}) is where you feel the most — this is your emotional home base.${angLabel}${vocNote}${lateNote}`,
+      timing: `Moon in ${ord(moonH)} House`,
+      body: `Your emotional life this year orbits ${getSignFeel(moonSign)} themes. The ${ord(moonH)} house (${lifeTheme(moonH)}) is where you feel the most -- this is your emotional home base.${angLabel}${vocNote}${lateNote}`,
       icon: 'FEEL',
     });
   }
@@ -58,7 +67,7 @@ function buildHighlights(a: SolarReturnAnalysis, srChart: SolarReturnChart, nata
     highlights.push({
       label: `POWER ZONE: ${s.location.toUpperCase()}`,
       timing: `${s.planets.length}-Planet Stellium`,
-      body: `${planets} pile into ${s.location}. This is not subtle — it is a concentrated demand for attention. ${s.blendMeaning || s.interpretation}`,
+      body: `${planets} pile into ${s.location}. This is not subtle -- it is a concentrated demand for attention. ${s.blendMeaning || s.interpretation}`,
       icon: 'POWER',
     });
   }
@@ -84,7 +93,7 @@ function buildHighlights(a: SolarReturnAnalysis, srChart: SolarReturnChart, nata
     const satSign = a.saturnFocus.sign;
     highlights.push({
       label: `SATURN'S DEMAND: ${satSign.toUpperCase()}`,
-      timing: satH ? `${ordinal(satH)} House — ${getHouseActionTheme(satH)}` : `In ${satSign}`,
+      timing: satH ? `${ord(satH)} House -- ${lifeTheme(satH)}` : `In ${satSign}`,
       body: a.saturnFocus.interpretation,
       icon: 'WORK',
     });
@@ -97,9 +106,26 @@ function buildHighlights(a: SolarReturnAnalysis, srChart: SolarReturnChart, nata
 
 interface MonthForecast {
   month: string;
+  year: number;
   headline: string;
   body: string;
 }
+
+/** Plain-language life themes by house number — no jargon */
+const LIFE_THEMES: Record<number, { short: string; detail: string }> = {
+  1: { short: 'You', detail: 'your identity, confidence, and how you present yourself to the world' },
+  2: { short: 'Money & Worth', detail: 'your finances, possessions, and sense of self-worth' },
+  3: { short: 'Communication', detail: 'conversations, learning, writing, and your local world' },
+  4: { short: 'Home & Family', detail: 'your home life, family dynamics, and emotional foundations' },
+  5: { short: 'Joy & Creativity', detail: 'romance, creative projects, fun, and children' },
+  6: { short: 'Health & Routines', detail: 'your daily habits, health, and work life' },
+  7: { short: 'Relationships', detail: 'partnerships, commitments, and one-on-one dynamics' },
+  8: { short: 'Depth & Change', detail: 'deep transformation, shared resources, and intimacy' },
+  9: { short: 'Expansion', detail: 'travel, learning, big-picture thinking, and new perspectives' },
+  10: { short: 'Career', detail: 'your professional life, public reputation, and ambitions' },
+  11: { short: 'Community', detail: 'friendships, social circles, and your hopes for the future' },
+  12: { short: 'Inner Work', detail: 'rest, reflection, spiritual life, and processing what is hidden' },
+};
 
 function buildPersonalizedMonthlyForecasts(
   a: SolarReturnAnalysis,
@@ -108,37 +134,31 @@ function buildPersonalizedMonthlyForecasts(
 ): MonthForecast[] {
   const forecasts: MonthForecast[] = [];
   const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  const fullMonthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-  // Determine starting month from SR year
   const srYear = srChart.solarReturnYear || new Date().getFullYear();
   const birthMonth = natalChart.planets?.Sun ? getMonthFromSign(natalChart.planets.Sun.sign) : new Date().getMonth();
 
-  // Gather data layers for monthly assignment
   const timeLord = a.profectionYear?.timeLord || '';
   const timeLordName = P[timeLord] || timeLord;
   const profH = a.profectionYear?.houseNumber || 0;
-  const srSunH = a.sunHouse?.house || 0;
-  const srMoonH = a.moonHouse?.house || 0;
   const moonSign = a.moonSign || '';
-  const srAscRuler = a.srAscRulerInNatal;
-  const stelliums = a.stelliums;
   const retros = a.retrogrades?.planets || [];
-  const nodesFocus = a.nodesFocus;
-  const saturnFocus = a.saturnFocus;
-  const elementDom = a.elementBalance?.dominant || '';
-  const repeatedThemes = a.repeatedThemes || [];
 
-  // Build thematic arcs based on SR house sequence from profection
-  // Each month maps to profection house + 0..11 (monthly sub-profection)
   for (let i = 0; i < 12; i++) {
     const mIdx = (birthMonth + i) % 12;
-    const subH = ((profH - 1 + i) % 12) + 1; // Monthly sub-profection house
+    const themeH = ((profH - 1 + i) % 12) + 1;
+    const theme = LIFE_THEMES[themeH] || LIFE_THEMES[1];
 
-    const headline = getMonthHeadline(i, subH, timeLordName, a);
-    const body = getMonthBody(i, subH, timeLordName, a, srChart, natalChart);
+    // Determine correct year: months before birthday month belong to next year
+    const year = mIdx < birthMonth ? srYear + 1 : srYear;
+
+    const headline = getFriendlyHeadline(i, theme, timeLordName, a);
+    const body = getFriendlyBody(i, theme, timeLordName, a, srChart, natalChart);
 
     forecasts.push({
       month: monthNames[mIdx],
+      year,
       headline,
       body,
     });
@@ -147,117 +167,107 @@ function buildPersonalizedMonthlyForecasts(
   return forecasts;
 }
 
-function getMonthHeadline(monthIdx: number, subHouse: number, timeLord: string, a: SolarReturnAnalysis): string {
-  // First month and last month get special treatment
-  if (monthIdx === 0) return `${timeLord} Activates — Your Year Begins`;
-  if (monthIdx === 11) return `Integration Before the Next Cycle`;
+function getFriendlyHeadline(monthIdx: number, theme: { short: string; detail: string }, timeLord: string, a: SolarReturnAnalysis): string {
+  if (monthIdx === 0) return 'Your New Year Begins';
+  if (monthIdx === 11) return 'Wrapping Up & Looking Ahead';
 
-  // Check for stellium activation in this sub-house
-  const stellium = a.stelliums.find(s => s.locationType === 'house' && s.location.includes(String(subHouse)));
-  if (stellium) return `Stellium Ignites: ${stellium.location}`;
+  // Check for stellium activation
+  const stellium = a.stelliums[0];
+  if (monthIdx === 2 && stellium) return `${stellium.location} Energy Peaks`;
 
-  // Use sub-profection house for thematic headline
-  return `${timeLord} Meets the ${ordinal(subHouse)} House`;
+  // Friendly theme-based headlines
+  const friendlyLabels: Record<string, string> = {
+    'You': 'Focus on Yourself',
+    'Money & Worth': 'Money Moves',
+    'Communication': 'Speak Up',
+    'Home & Family': 'Home Base',
+    'Joy & Creativity': 'Follow the Fun',
+    'Health & Routines': 'Body Check-In',
+    'Relationships': 'Relationship Weather',
+    'Depth & Change': 'Going Deeper',
+    'Expansion': 'Broaden Your Horizons',
+    'Career': 'Career in Focus',
+    'Community': 'Your People',
+    'Inner Work': 'Quiet Time',
+  };
+
+  return friendlyLabels[theme.short] || theme.short;
 }
 
-function getMonthBody(
-  monthIdx: number, subHouse: number, timeLord: string,
+function getFriendlyBody(
+  monthIdx: number, theme: { short: string; detail: string }, timeLord: string,
   a: SolarReturnAnalysis, srChart: SolarReturnChart, natalChart: NatalChart
 ): string {
-  const hTheme = getHouseActionTheme(subHouse);
-  const srSunH = a.sunHouse?.house || 0;
   const moonSign = a.moonSign || '';
   const retros = a.retrogrades?.planets || [];
+  const srSunH = a.sunHouse?.house || 0;
 
   if (monthIdx === 0) {
     const ascRuler = a.srAscRulerInNatal;
-    return `New solar year energy floods in. ${timeLord} is now actively steering. ${ascRuler ? `The SR Ascendant ruler (${P[ascRuler.rulerPlanet] || ascRuler.rulerPlanet}) points to natal House ${ascRuler.rulerNatalHouse} — that is where this year lands first.` : ''} Focus on ${hTheme.toLowerCase()}.`;
+    let opener = `Fresh energy arrives. ${timeLord} is running the show now.`;
+    if (ascRuler) {
+      opener += ` Pay attention to ${LIFE_THEMES[ascRuler.rulerNatalHouse]?.detail || 'key life areas'} -- that is where this year lands first.`;
+    }
+    opener += ` This month highlights ${theme.detail}.`;
+    return opener;
   }
 
   if (monthIdx === 11) {
-    return `The year's lessons consolidate. What ${timeLord} brought — in ${getHouseActionTheme(a.profectionYear?.houseNumber || 1).toLowerCase()} — now becomes part of who you are. Prepare for the next annual chapter.`;
+    return `The year is winding down. Look back at what ${timeLord} brought you -- the lessons, the growth, the hard-won clarity. This is integration time. Let the year's wisdom settle before the next chapter begins.`;
   }
 
-  // Build contextual body
+  // Build natural-language body
   const parts: string[] = [];
-  parts.push(`Sub-profection activates your ${ordinal(subHouse)} house: ${hTheme}.`);
+  parts.push(`This month turns your attention toward ${theme.detail}.`);
 
-  // Add specific chart data per month phase
   if (monthIdx === 1 || monthIdx === 2) {
-    // Early months — foundations
     if (a.stelliums.length > 0) {
       const s = a.stelliums[0];
-      parts.push(`Your ${s.location} stellium energy is building — pay attention to ${s.blendMeaning ? s.blendMeaning.substring(0, 80) : 'concentrated themes'}.`);
+      const planetNames = s.planets.map(p => P[p] || p).join(', ');
+      parts.push(`With ${planetNames} concentrated in ${s.location}, expect intense activity in that area.`);
     }
   } else if (monthIdx >= 3 && monthIdx <= 5) {
-    // Mid-year — action
     if (srSunH) {
-      parts.push(`SR Sun in House ${srSunH} peaks — ${getHouseActionTheme(srSunH).toLowerCase()} demands bold moves.`);
+      parts.push(`Energy around ${LIFE_THEMES[srSunH]?.detail || 'your core focus'} is at its strongest -- time for bold moves.`);
     }
     if (retros.length > 0) {
-      parts.push(`${retros.map(r => P[r] || r).join(', ')} retrograde asks you to revisit unfinished business.`);
+      parts.push(`${retros.map(r => P[r] || r).join(' and ')} retrograde asks you to revisit something unfinished before moving forward.`);
     }
   } else if (monthIdx >= 6 && monthIdx <= 8) {
-    // Second half — emotional recalibration
-    parts.push(`Moon in ${moonSign} colors your feelings: ${getSignFeel(moonSign).toLowerCase()}.`);
+    if (moonSign) {
+      parts.push(`Emotionally, you are running on ${moonSign} energy: ${getSignFeel(moonSign).toLowerCase()}.`);
+    }
     if (a.saturnFocus?.house) {
-      parts.push(`Saturn in House ${a.saturnFocus.house} tightens — discipline pays off in ${getHouseActionTheme(a.saturnFocus.house).toLowerCase()}.`);
+      parts.push(`Discipline around ${LIFE_THEMES[a.saturnFocus.house]?.detail || 'responsibilities'} pays off now.`);
     }
   } else {
-    // Final stretch — harvest & integration
     if (a.nodesFocus?.house) {
-      parts.push(`North Node in House ${a.nodesFocus.house} pulls you toward growth: ${getHouseActionTheme(a.nodesFocus.house).toLowerCase()}.`);
+      parts.push(`Growth is pulling you toward ${LIFE_THEMES[a.nodesFocus.house]?.detail || 'new territory'}.`);
     }
-    if (a.repeatedThemes.length > 0) {
-      parts.push(`Repeated theme: ${a.repeatedThemes[0].description}`);
+    if (a.repeatedThemes?.length > 0) {
+      parts.push(`A recurring theme this year: ${a.repeatedThemes[0].description}`);
     }
   }
 
   return parts.join(' ');
 }
 
-// ─── Lookup helpers ───
-
-function ordinal(n: number): string {
-  const s = ['th', 'st', 'nd', 'rd'];
-  const v = n % 100;
-  return n + (s[(v - 20) % 10] || s[v] || s[0]);
-}
-
-function getHouseActionTheme(house: number): string {
-  const themes: Record<number, string> = {
-    1: 'Your identity, body, and how you show up',
-    2: 'Money, possessions, and self-worth',
-    3: 'Daily conversations, siblings, and local connections',
-    4: 'Home, family, and emotional roots',
-    5: 'Romance, creativity, children, and joy',
-    6: 'Health routines, daily work, and service',
-    7: 'Committed partnerships and one-on-one relationships',
-    8: 'Shared finances, intimacy, and psychological depth',
-    9: 'Travel, higher learning, and expanding your worldview',
-    10: 'Career ambitions, public role, and reputation',
-    11: 'Friendships, community, and future visions',
-    12: 'Solitude, spiritual practice, and hidden patterns',
-  };
-  return themes[house] || 'General life themes';
-}
-
 function getSignFeel(sign: string): string {
   const feels: Record<string, string> = {
-    Aries: 'Urgency, independence, impatience, raw courage',
-    Taurus: 'Groundedness, sensuality, stubbornness, comfort-seeking',
-    Gemini: 'Curiosity, restlessness, quick connections, mental stimulation',
-    Cancer: 'Deep nurturing, protectiveness, mood swings, home-centered feelings',
-    Leo: 'Warmth, pride, generosity, need for recognition',
-    Virgo: 'Analytical processing, self-improvement, anxiety about details',
-    Libra: 'Harmony-seeking, people-pleasing, romantic idealism',
-    Scorpio: 'Intensity, obsessive focus, emotional extremes, transformative depth',
-    Sagittarius: 'Optimism, restless seeking, philosophical feelings, need for freedom',
-    Capricorn: 'Controlled emotions, ambition channeling feelings, fear of vulnerability',
-    Aquarius: 'Detachment, unconventional processing, humanitarian feelings',
-    Pisces: 'Boundless empathy, escapism, spiritual sensitivity, absorbing others\' pain',
+    Aries: 'urgency, independence, impatience, raw courage',
+    Taurus: 'groundedness, sensuality, stubbornness, comfort-seeking',
+    Gemini: 'curiosity, restlessness, quick connections, mental stimulation',
+    Cancer: 'deep nurturing, protectiveness, mood swings, home-centered feelings',
+    Leo: 'warmth, pride, generosity, need for recognition',
+    Virgo: 'analytical processing, self-improvement, anxiety about details',
+    Libra: 'harmony-seeking, people-pleasing, romantic idealism',
+    Scorpio: 'intensity, obsessive focus, emotional extremes, transformative depth',
+    Sagittarius: 'optimism, restless seeking, philosophical feelings, need for freedom',
+    Capricorn: 'controlled emotions, ambition channeling feelings, fear of vulnerability',
+    Aquarius: 'detachment, unconventional processing, humanitarian feelings',
+    Pisces: 'boundless empathy, escapism, spiritual sensitivity, absorbing others\' pain',
   };
-  return feels[sign] || 'Mixed emotional tones';
+  return feels[sign] || 'mixed emotional tones';
 }
 
 function getMonthFromSign(sign: string): number {
@@ -341,7 +351,7 @@ export function generateHighlightsPage(
   ctx.y += 6;
   doc.setFont('helvetica', 'italic'); doc.setFontSize(8);
   doc.setTextColor(...colors.dimText);
-  doc.text('Based on your natal chart, solar return, and annual profection', pw / 2, ctx.y, { align: 'center' });
+  doc.text('What to expect each month, based on your chart', pw / 2, ctx.y, { align: 'center' });
   ctx.y += 16;
 
   const forecasts = buildPersonalizedMonthlyForecasts(a, srChart, natalChart);
@@ -371,10 +381,10 @@ export function generateHighlightsPage(
       doc.setFillColor(...colors.softGold);
       doc.roundedRect(x, y, colW, rowH - 2, 4, 4, 'F');
 
-      // Month badge
+      // Month + Year badge
       doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
       doc.setTextColor(...colors.gold);
-      doc.text(f.month, x + 8, y + 14);
+      doc.text(`${f.month} ${f.year}`, x + 8, y + 14);
 
       // Headline
       doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
