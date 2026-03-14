@@ -175,6 +175,8 @@ interface Props {
 export const Tier1Preview = ({ analysis, srChart, natalChart, onBack, onDownload }: Props) => {
   const [aiText, setAiText] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
+  const [includeBirthday, setIncludeBirthday] = useState(true);
+  const [downloading, setDownloading] = useState(false);
 
   const name = natalChart.name || 'You';
   const firstName = name.split(/\s+/)[0];
@@ -188,6 +190,25 @@ export const Tier1Preview = ({ analysis, srChart, natalChart, onBack, onDownload
   const profHouse = analysis.profectionYear?.houseNumber || 1;
   const profAge = analysis.profectionYear?.age;
   const dominantEl = analysis.elementBalance?.dominant || 'Fire';
+
+  // Auto-generated birthday message based on natal Sun sign
+  const autoBirthdayMessage = generateBirthdayMessage(firstName, natalSunSign, profHouse);
+
+  const handleDownloadPDF = async () => {
+    setDownloading(true);
+    try {
+      await generateTier1SolarReturnPDF(
+        analysis, srChart, natalChart,
+        includeBirthday, includeBirthday ? autoBirthdayMessage : '',
+        CAKE_IMAGES,
+      );
+    } catch (err) {
+      console.error('Tier 1 PDF error:', err);
+      toast.error('Failed to generate PDF');
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const risingQuality = RISING_QUALITY[srRisingSign] || 'Fresh, evolving';
   const profThemePlain = PROFECTION_THEME_PLAIN[profHouse] || 'growth and renewal';
