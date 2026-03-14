@@ -8,7 +8,9 @@ import { P } from '@/components/SolarReturnPDFExport';
 type Color = [number, number, number];
 const INK:   Color = [18,  16,  14];
 const MUTED: Color = [130, 125, 118];
+const GOLD:  Color = [184, 150, 62];
 const RULE:  Color = [200, 195, 188];
+const CARD_BG: Color = [245, 241, 234];
 
 const LIFE_THEMES: Record<number, { short: string; detail: string }> = {
   1: { short: 'Identity', detail: 'your identity, confidence, and how you show up' },
@@ -78,10 +80,13 @@ function buildDataRichQuarters(a: SolarReturnAnalysis, srChart: SolarReturnChart
     const tags: string[] = [];
     if (timeLord && q === 0) sentences.push(`${timeLordName} as Time Lord sets the agenda from the start — ${LIFE_THEMES[profH]?.detail || 'key themes'} are activated immediately.`);
     if (q === 0 && sunH) sentences.push(`The Solar Return Sun in the ${ord(sunH)} house directs core vitality toward ${LIFE_THEMES[sunH]?.detail || 'this area'}.`);
-    if (stelliums.length > 0 && q === 0) { const s = stelliums[0]; sentences.push(`Your ${s.planets.length}-planet stellium in ${s.location} concentrates energy early.`); }
-    if (retros.length > 0 && q === 1) { sentences.push(`${retros.map(r => P[r] || r).join(', ')} retrograde signals a revision period.`); tags.push('MERCURY RX'); }
-    if (saturnH && q === 2) { sentences.push(`Saturn in the ${ord(saturnH)} house (${saturnSign}) asks for sustained discipline.`); if (saturnRx) tags.push('SATURN RX'); }
-    if (moonSign && q === 2) { const moonFeels: Record<string, string> = { Aries: 'directness', Taurus: 'stability', Gemini: 'mental stimulation', Cancer: 'emotional depth', Leo: 'warmth', Virgo: 'analytical precision', Libra: 'harmony-seeking', Scorpio: 'psychological intensity', Sagittarius: 'restlessness', Capricorn: 'emotional discipline', Aquarius: 'detached clarity', Pisces: 'heightened empathy' }; sentences.push(`The SR Moon in ${moonSign} colors emotional responses with ${moonFeels[moonSign] || 'distinctive energy'}.`); }
+    if (stelliums.length > 0 && q === 0) { const s = stelliums[0]; sentences.push(`Your ${s.planets.length}-planet stellium in ${s.location} concentrates energy early — lean into this concentration rather than scattering your focus.`); }
+    if (retros.length > 0 && q === 1) { sentences.push(`${retros.map(r => P[r] || r).join(', ')} retrograde in the SR chart signals a revision period — review and refine rather than launching new initiatives. This is not a slowdown; it is an invitation to perfect what you have already started. Revisit projects, relationships, and decisions from the first season with fresh eyes.`); tags.push('MERCURY RX'); }
+    if (saturnH && q === 2) { sentences.push(`Saturn in the ${ord(saturnH)} house (${saturnSign}) asks for sustained discipline around ${LIFE_THEMES[saturnH]?.detail || 'key areas'} and how you show up.`); if (saturnRx) tags.push('SATURN RX'); }
+    if (moonSign && q === 2) {
+      const moonFeels: Record<string, string> = { Aries: 'directness', Taurus: 'stability', Gemini: 'mental stimulation', Cancer: 'emotional depth', Leo: 'warmth', Virgo: 'analytical precision', Libra: 'harmony-seeking', Scorpio: 'psychological intensity', Sagittarius: 'restlessness', Capricorn: 'emotional discipline and pragmatism', Aquarius: 'detached clarity', Pisces: 'heightened empathy' };
+      sentences.push(`The SR Moon in ${moonSign} colors emotional responses with ${moonFeels[moonSign] || 'distinctive energy'}. What you built in the first half of the year is now being tested for durability.`);
+    }
     if (nodeH && q === 3) sentences.push(`The North Node in the ${ord(nodeH)} house pulls growth toward ${LIFE_THEMES[nodeH]?.detail || 'unfamiliar territory'}.`);
     if (sentences.length === 0) sentences.push(`The focus remains on ${houseThemes.join(', ').toLowerCase()}.`);
     let headline = '';
@@ -98,55 +103,75 @@ function buildDataRichQuarters(a: SolarReturnAnalysis, srChart: SolarReturnChart
 export function generateQuarterlySummary(
   ctx: PDFContext, doc: jsPDF, a: SolarReturnAnalysis, srChart: SolarReturnChart, natalChart: NatalChart,
 ) {
-  const { pw, margin, contentW } = ctx;
+  const { pw, ph, margin, contentW } = ctx;
 
   ctx.pageBg(doc);
-  ctx.trackedLabel(doc, '18 · YOUR YEAR IN FOUR SEASONS', margin, ctx.y);
-  ctx.y += 8;
-  doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
-  doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 18;
-  doc.setFont('times', 'bold'); doc.setFontSize(20);
-  doc.setTextColor(...INK);
-  doc.text('Built from Your Chart', margin, ctx.y);
+  ctx.sectionTitle(doc, 'YOUR YEAR IN FOUR SEASONS', 'Built from Your Chart');
+  ctx.drawGoldRule(doc);
   ctx.y += 20;
 
   const quarters = buildDataRichQuarters(a, srChart, natalChart);
 
   for (let i = 0; i < 4; i++) {
     const q = quarters[i];
-    ctx.checkPage(100);
+
+    // Measure card height
+    const bodyLines: string[] = doc.splitTextToSize(q.body, contentW - 32);
+    const estH = 22 + 28 + bodyLines.length * 17 + 24;
+    ctx.checkPage(Math.max(estH, 100));
+
+    const startY = ctx.y;
+
+    // Card background
+    doc.setFillColor(...CARD_BG);
+    doc.roundedRect(margin, startY, contentW, estH, 3, 3, 'F');
+    doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
+    doc.roundedRect(margin, startY, contentW, estH, 3, 3, 'S');
+
+    // Gold left accent
+    doc.setFillColor(...GOLD);
+    doc.rect(margin, startY, 3, estH, 'F');
+
+    let cy = startY + 22;
 
     // Season date label
-    doc.setFont('times', 'bold'); doc.setFontSize(9);
-    doc.setTextColor(...MUTED);
-    doc.setCharSpace(2);
-    doc.text(q.months.toUpperCase(), margin, ctx.y);
-    doc.setCharSpace(0);
+    ctx.trackedLabel(doc, q.months.toUpperCase(), margin + 16, cy, { size: 7.5, charSpace: 2.5 });
 
-    // Mercury Rx inline badge
+    // Mercury Rx badge — right-aligned on same line
     if (q.tags.length > 0) {
       const tagText = q.tags.join('  ');
-      ctx.trackedLabel(doc, tagText, pw - margin, ctx.y, { align: 'right', size: 7 });
+      // Draw pill badge
+      doc.setFont('times', 'bold'); doc.setFontSize(7);
+      const tagW = doc.getTextWidth(tagText) + 16;
+      const tagX = margin + contentW - 16 - tagW;
+      doc.setDrawColor(...GOLD); doc.setLineWidth(0.5);
+      doc.roundedRect(tagX, cy - 8, tagW, 14, 3, 3, 'S');
+      doc.setTextColor(...GOLD);
+      doc.setCharSpace(2);
+      doc.text(tagText, tagX + 8, cy);
+      doc.setCharSpace(0);
     }
-    ctx.y += 14;
 
-    // Season headline
-    doc.setFont('times', 'bolditalic'); doc.setFontSize(14);
-    doc.setTextColor(38, 34, 30);
-    doc.text(q.headline, margin, ctx.y);
-    ctx.y += 14;
+    cy += 14;
 
-    // Body
-    doc.setFont('times', 'normal'); doc.setFontSize(9.5);
+    // Bold headline
+    doc.setFont('times', 'bold'); doc.setFontSize(20);
     doc.setTextColor(...INK);
-    const bodyLines: string[] = doc.splitTextToSize(q.body, contentW);
-    for (const line of bodyLines) { doc.text(line, margin, ctx.y); ctx.y += 14; }
+    const headLines: string[] = doc.splitTextToSize(q.headline, contentW - 80);
+    for (const hl of headLines) {
+      doc.text(hl, margin + 16, cy);
+      cy += 24;
+    }
+    cy += 4;
 
-    // Hairline rule between seasons
-    ctx.y += 6;
-    doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
-    doc.line(margin, ctx.y, pw - margin, ctx.y);
-    ctx.y += 14;
+    // Body text
+    doc.setFont('times', 'normal'); doc.setFontSize(10.5);
+    doc.setTextColor(...INK);
+    for (const line of bodyLines) {
+      doc.text(line, margin + 16, cy);
+      cy += 17;
+    }
+
+    ctx.y = startY + estH + 20;
   }
 }
