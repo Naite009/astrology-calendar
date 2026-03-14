@@ -286,18 +286,8 @@ export async function generateTier1SolarReturnPDF(
   doc.rect(0, 0, pw, ph, 'F');
   y = MARGIN_TOP;
 
-  // Page header
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-  doc.setTextColor(...t.dimText); doc.setCharSpace(1.2);
-  doc.text('YOUR YEAR AT A GLANCE', MARGIN, y);
-  doc.setCharSpace(0);
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
-  doc.setTextColor(...t.dimText);
-  doc.text(`${firstName} · ${year}`, pw - MARGIN, y, { align: 'right' });
-  y += 8;
-  doc.setDrawColor(...t.rule); doc.setLineWidth(0.5);
-  doc.line(MARGIN, y, pw - MARGIN, y);
-  y += 18;
+  // No page header — clean editorial layout per spec
+  y += 4;
 
   // ── SECTION A: THIS YEAR'S THEME ──
   doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
