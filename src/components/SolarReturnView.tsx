@@ -125,7 +125,8 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
       </div>
 
       {/* Header & person picker — only people with SR charts, plus option to add new */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3 justify-between">
+        <div className="flex flex-wrap items-center gap-3">
         <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Solar Return:</label>
         {natalChartsWithSR.length > 0 ? (
           <select
