@@ -32,15 +32,15 @@ function lifeTheme(house: number): string {
 function buildHighlights(a: SolarReturnAnalysis, srChart: SolarReturnChart, natalChart: NatalChart): YearHighlight[] {
   const highlights: YearHighlight[] = [];
 
-  // 1. Time Lord / Profection — the most important single factor
+  // 1. Time Lord / Profection — describe by theme, not planet name
   if (a.profectionYear) {
-    const tl = P[a.profectionYear.timeLord] || a.profectionYear.timeLord;
     const hNum = a.profectionYear.houseNumber;
     const srH = a.profectionYear.timeLordSRHouse;
+    const theme = LIFE_THEMES[hNum];
     highlights.push({
-      label: `${tl} RUNS YOUR YEAR`,
+      label: `THIS YEAR'S FOCUS: ${theme?.short?.toUpperCase() || 'YOUR PATH'}`,
       timing: `${ord(hNum)} House Profection Year`,
-      body: `${tl} is your Time Lord -- the planet steering every major decision. Its home base is your natal ${ord(hNum)} house (${lifeTheme(hNum)}).${srH ? ` This year it channels that energy into ${lifeTheme(srH)}.` : ''}`,
+      body: `This year the spotlight lands on ${lifeTheme(hNum)}. Everything significant circles back to this area.${srH ? ` The energy channels most directly into ${lifeTheme(srH)}.` : ''}`,
       icon: 'KEY',
     });
   }
