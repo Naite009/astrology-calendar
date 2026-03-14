@@ -65,7 +65,7 @@ export async function generatePDFCover(
   if (cakeImgSrc) cakeDataUrl = await loadImageDataUrl(cakeImgSrc);
 
   // Cream background for top area
-  const cakeW = 200; const cakeH = 170;
+  const cakeW = 240; const cakeH = 220;
   const cakeX = (pw - cakeW) / 2;
 
   if (cakeDataUrl) {
@@ -89,29 +89,30 @@ export async function generatePDFCover(
   // 20pt gap before dark strip
   ctx.y += 20;
 
-  // ── DARK STRIP ──
-  const stripH = 44;
+  // ── DARK STRIP (name + birth info + year) ──
+  const stripH = 58;
   doc.setFillColor(...colors.deep);
   doc.rect(0, ctx.y, pw, stripH, 'F');
 
-  // Left: SOLAR RETURN
+  // Left: NAME in white + birth info below in dimText
+  doc.setFont('Georgia', 'bold'); doc.setFontSize(14);
+  doc.setTextColor(255, 255, 255);
+  doc.text(name.toUpperCase(), margin, ctx.y + 22);
+
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+  doc.setTextColor(...colors.dimText);
+  doc.text(`Born ${formatDate(natalChart.birthDate)}  ·  ${capitalizeLocation(natalChart.birthLocation)}`, margin, ctx.y + 36);
+
+  // Right side: SOLAR RETURN label + year
   doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
   doc.setTextColor(...colors.lilac);
   doc.setCharSpace(1.2);
-  doc.text('SOLAR RETURN', margin, ctx.y + 26);
+  doc.text('SOLAR RETURN', pw - margin, ctx.y + 18, { align: 'right' });
   doc.setCharSpace(0);
 
-  // Center: YEAR — larger 24pt
   doc.setFont('Georgia', 'bold'); doc.setFontSize(24);
-  doc.setTextColor(255, 255, 255);
-  doc.text(String(year), pw / 2, ctx.y + 29, { align: 'center' });
-
-  // Right: FULL NAME
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
   doc.setTextColor(...colors.gold);
-  doc.setCharSpace(0.4);
-  doc.text(name.toUpperCase(), pw - margin, ctx.y + 27, { align: 'right' });
-  doc.setCharSpace(0);
+  doc.text(String(year), pw - margin, ctx.y + 40, { align: 'right' });
 
   ctx.y += stripH;
 
@@ -151,9 +152,9 @@ export async function generatePDFCover(
   if (srMoonSign) doc.text(`${srMoonSign} Moon`, rightX, ctx.y + lineH);
   if (srRisingSign) doc.text(`${srRisingSign} Rising`, rightX, ctx.y + lineH * 2);
 
-  ctx.y += lineH * 3 + 14;
+  ctx.y += lineH * 3;
 
-  // ── PERSONAL MESSAGE (birthday mode) ──
+  // ── PERSONAL MESSAGE (birthday mode) — immediately after Big Three ──
   if (birthdayMode && personalMessage.trim()) {
     const msgLines: string[] = doc.splitTextToSize(personalMessage.trim(), contentW - 60);
     const msgH = Math.min(msgLines.length, 3) * 16 + 20;
@@ -167,32 +168,5 @@ export async function generatePDFCover(
     ctx.y += msgH + 10;
   }
 
-  // ── NAME STRIP ──
-  const nameStripH = 36;
-  doc.setFillColor(...colors.purple);
-  doc.rect(0, ctx.y, pw, nameStripH, 'F');
-
-  doc.setFont('Georgia', 'bold'); doc.setFontSize(16);
-  doc.setTextColor(255, 255, 255);
-  doc.setCharSpace(0.6);
-  const diamondColor = colors.gold;
-  // Diamond + name + diamond
-  doc.setTextColor(...diamondColor);
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(12);
-  const nameUpper = name.toUpperCase();
-  const nameTextW = doc.getTextWidth(nameUpper);
-  // Use text for diamonds since jsPDF triangle is complex
-  doc.setFont('Georgia', 'bold'); doc.setFontSize(16);
-  doc.setTextColor(255, 255, 255);
-  doc.text(nameUpper, pw / 2, ctx.y + 22, { align: 'center' });
-  doc.setCharSpace(0);
-
-  ctx.y += nameStripH;
-
-  // Birth info below
-  ctx.y += 14;
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
-  doc.setTextColor(...colors.dimText);
-  doc.text(`Born ${formatDate(natalChart.birthDate)}  ·  ${capitalizeLocation(natalChart.birthLocation)}`, pw / 2, ctx.y, { align: 'center' });
   ctx.y += 20;
 }
