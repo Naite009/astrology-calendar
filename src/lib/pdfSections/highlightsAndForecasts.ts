@@ -397,7 +397,7 @@ export function generateHighlightsPage(
   const rows = 4;
   const gap = 6;
   const colW = (contentW - gap * (cols - 1)) / cols;
-  const availH = ph - ctx.y - 30; // leave bottom margin
+  const availH = ctx.ph - ctx.y - 30; // leave bottom margin
   const rowH = (availH - gap * (rows - 1)) / rows;
 
   for (let row = 0; row < rows; row++) {
