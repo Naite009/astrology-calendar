@@ -172,58 +172,34 @@ serve(async (req) => {
       ? "\n\nREFERENCE LIBRARY (the user has uploaded astrological reference books — use these to enrich and ground your Solar Return interpretation. When you draw from this material, briefly cite the source):\n" + referenceExcerpts
       : '';
 
-    const systemPrompt = `You are writing a data-driven Solar Return analysis. Your tone is direct, factual, and grounded — like a research briefing, not a greeting card. NO greetings, NO salutations (no "Dear X", "My dearest X"), NO "as your astrologer" or "I see a year of..." phrasing. NO fluff, NO platitudes, NO motivational filler. Start immediately with the data and what it means.${refBlock}
+    const systemPrompt = `You are a master astrologer with 40 years of experience writing a personalized solar return reading. Write in flowing paragraphs with warmth and authority. No bullet points. No section headers inside the narrative. No technical jargon lists. Every sentence must be grounded in the chart data provided. Never invent placements or aspects not in the data.${refBlock}`;
 
-Write a cohesive year-ahead analysis that SYNTHESIZES all the data below into a flowing, evidence-based reading. Do NOT just list each factor separately — weave them together into themes. Structure with markdown headers:
+    // Build structured user prompt with interpolated data
+    const srAsc = a.yearlyTheme?.ascendantSign || '—';
+    const srAscRuler = a.yearlyTheme?.ascendantRuler || '—';
+    const srAscRulerSign = a.yearlyTheme?.ascendantRulerSign || '—';
+    const srAscRulerHouse = a.yearlyTheme?.ascendantRulerHouse || '—';
+    const srAscRulerNatalHouse = a.srAscRulerInNatal?.rulerNatalHouse || '—';
+    const profectionHouse = a.profectionYear?.houseNumber || '—';
+    const timeLord = a.profectionYear?.timeLord || a.lordOfTheYear?.planet || '—';
+    const timeLordSign = a.lordOfTheYear?.srSign || a.profectionYear?.timeLordSRSign || '—';
+    const timeLordHouse = a.lordOfTheYear?.srHouse || a.profectionYear?.timeLordSRHouse || '—';
+    const timeLordDignity = a.lordOfTheYear?.dignity || 'Peregrine';
+    const timeLordRx = a.lordOfTheYear?.isRetrograde ? 'yes' : 'no';
+    const srMoonSign = a.moonSign || '—';
+    const srMoonHouse = a.moonHouse?.house || '—';
+    const moonPhase = a.moonPhase?.phase || '—';
+    const stelliumsStr = a.stelliums?.length > 0
+      ? a.stelliums.map((s: any) => `${s.planets.join(', ')} in ${s.location}`).join('; ')
+      : 'None';
+    const top5 = a.srToNatalAspects?.slice(0, 5).map((asp: any) =>
+      `SR ${asp.planet1} ${asp.type} Natal ${asp.planet2} (${asp.orb}° orb)`
+    ).join('; ') || 'None';
+    const repeatedStr = a.repeatedThemes?.length > 0
+      ? a.repeatedThemes.map((t: any) => t.description).join('; ')
+      : 'None';
 
-## The Year Ahead: [Your 3-5 word theme title]
-
-Open immediately with the structural indicators — SR Ascendant sign, its ruler's placement, Moon phase, element/modality distribution. State what these configurations produce in plain terms.
-
-## Where This Year's Energy Lands
-Focus on the SR Ascendant ruler and where it falls in the NATAL chart — this is the J-B Morin technique and is THE most important indicator of where the year plays out. Also weave in the SR Ascendant degree's natal house overlay (Lynn Bell), Sun house, Lord of the Year house, and Profection themes. These together tell the story of WHERE energy flows this year.
-
-## Emotional Landscape
-Moon sign, house, and phase. What emotional climate the data indicates and concrete ways to work with it. If the Moon is Void of Course (unaspected), this is a MAJOR theme — dedicate significant attention to what it means to have an emotionally independent year where feelings run on their own track without planetary support or challenge.
-
-## Key Players & Power Points
-Angular planets, stelliums (including any extra bodies like Chiron or North Node that amplify the stellium), and the most significant SR-to-natal aspects. What is being activated in the natal chart?
-
-## Natal Degree Connections
-If any SR planets sit on natal planet degrees (conduits), explain how these reawaken natal themes — these are among the strongest activations in any Solar Return.
-
-## House Overlays — SR Planets in Your Natal Houses
-Briefly describe where each major SR planet falls in the natal houses. This shows which life areas each planet's energy flows into for the year.
-
-## Saturn's Assignment
-What Saturn demands this year — the area of responsibility and structured effort.
-
-## Growth Edge
-North Node focus — where the data points toward evolution and unfamiliar territory.
-
-## Retrogrades & Review Periods
-If retrogrades exist, what areas need revision. If none, note the forward momentum.
-
-## IMPORTANT — NO Moon Timing Section
-DO NOT write a "Moon Timing" or "When Things Happen" section. The SR Moon is a STATIC SNAPSHOT captured at the exact moment of the Solar Return. It does NOT advance 1 degree per month. That is a common misconception. The Moon's aspects describe the emotional CLIMATE for the entire year — not a monthly timeline. Any suggestion that "around month X the Moon will trine Y" is FABRICATED and INACCURATE. Instead, discuss the Moon's aspects as a year-long emotional backdrop in the Emotional Landscape section.
-
-## What to Watch For
-2-3 specific, concrete things to pay attention to this year based on the strongest patterns.
-
-## The Bottom Line
-A punchy 2-3 sentence summary capturing the core message of the entire year. No sentimentality.
-
-RULES:
-- Maximum 1200 words total
-- NO greetings, salutations, or sign-offs. No "Dear [Name]", no "My dearest", no "Wishing you..." — NOTHING like that
-- NO phrases like "as your astrologer", "I see", "I believe", "I sense" — write in third-person analytical voice
-- NO motivational filler or empty encouragement. Every sentence must convey specific astrological information
-- Use bold for key planet/sign names
-- Every claim must come directly from the data provided — NO fabricated placements
-- Use plain language with technical terms explained naturally in context
-- Be specific about house themes — don't just say "relationships" when you can say "partnerships, contracts, and how you show up for others"
-- If a repeated natal theme exists, emphasize it as a confirmed/reinforced energy
-- When discussing the SR Ascendant ruler in natal houses, make it clear this is the CENTRAL technique for reading the SR`;
+    const userPrompt = `Write a 400-word year-ahead reading for ${chartName} using only this data: SR Ascendant ${srAsc}, ruled by ${srAscRuler} in ${srAscRulerSign} in SR house ${srAscRulerHouse}, falling in natal house ${srAscRulerNatalHouse}. Profection year: house ${profectionHouse}, Time Lord ${timeLord} in ${timeLordSign} SR house ${timeLordHouse}, dignity ${timeLordDignity}, retrograde ${timeLordRx}. SR Moon: ${srMoonSign} house ${srMoonHouse}, phase ${moonPhase}. Stelliums: ${stelliumsStr}. Strongest aspects: ${top5}. Repeated themes: ${repeatedStr}. Write 4 paragraphs: (1) The single defining pattern of this year and why it matters. (2) The emotional landscape — what will feel different and why. (3) The tension or paradox — what two energies are pulling against each other. (4) What this year is asking of this person at a soul level. Voice: speak directly to the person, warm but honest, no hedging, no generic affirmations. If something is hard, say so with compassion. If something is a gift, name it specifically.\n\nFull chart data for reference:\n${dataContext}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -235,7 +211,7 @@ RULES:
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: dataContext },
+          { role: "user", content: userPrompt },
         ],
         temperature: 0.4,
         stream: false,
