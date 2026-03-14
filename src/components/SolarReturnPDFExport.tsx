@@ -1207,8 +1207,8 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
                 });
               }
             } else {
-              doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
-              doc.setTextColor(...ctx.colors.bodyText);
+              doc.setFont('times', 'normal'); doc.setFontSize(9.5);
+              doc.setTextColor(...ctx.colors.ink);
               const bLines = doc.splitTextToSize(fullText, contentW);
               bLines.forEach((line: string) => {
                 ctx.checkPage(14);
