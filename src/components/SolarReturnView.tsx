@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import { SolarReturnPDFExport } from '@/components/SolarReturnPDFExport';
 import { TierButtonRow } from '@/components/solarReturn/TierButtonRow';
-import { Tier1Preview } from '@/components/solarReturn/Tier1Preview';
+import { TierPreview, TierId } from '@/components/solarReturn/TierPreview';
 import { OverviewDashboard } from '@/components/solarReturn/OverviewDashboard';
 
 const ZODIAC_SIGNS = [
