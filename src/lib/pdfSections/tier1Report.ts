@@ -198,60 +198,62 @@ export async function generateTier1SolarReturnPDF(
   const t = getTheme(natalSunSign);
 
   // ════════════════════════════════════════════════════════════════
-  // PAGE 1 — COVER (centered, nothing else)
+  // PAGE 1 — COVER (editorial)
   // ════════════════════════════════════════════════════════════════
-  // Page background
-  doc.setFillColor(...t.cream);
+  const CREAM: Color = [250, 247, 242];
+  const INK: Color = [18, 16, 14];
+  const MUTED: Color = [130, 125, 118];
+  const RULE: Color = [200, 195, 188];
+  const ACCENT: Color = [90, 80, 68];
+
+  doc.setFillColor(...CREAM);
   doc.rect(0, 0, pw, ph, 'F');
 
   let y = MARGIN_TOP;
 
-  // Gold rule centered, 60pt
-  doc.setDrawColor(...t.gold); doc.setLineWidth(1.5);
+  // Rule centered
+  doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
   doc.line(pw / 2 - 30, y, pw / 2 + 30, y);
   y += 20;
 
   // Name italic
-  doc.setFont('Georgia', 'italic'); doc.setFontSize(13);
-  doc.setTextColor(...t.purple);
+  doc.setFont('times', 'italic'); doc.setFontSize(13);
+  doc.setTextColor(...MUTED);
   doc.text(`${firstName}'s`, pw / 2, y, { align: 'center' });
   y += 22;
 
-  // Year Ahead — 52pt
-  doc.setFont('Georgia', 'bold'); doc.setFontSize(52);
-  doc.setTextColor(...t.ink);
+  // Year Ahead — large
+  doc.setFont('times', 'bold'); doc.setFontSize(48);
+  doc.setTextColor(...INK);
   doc.text('Year Ahead', pw / 2, y, { align: 'center' });
   y += 6;
 
-  // Year — 12pt ALL CAPS
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(12);
-  doc.setTextColor(...t.dimText);
+  // Year
+  doc.setFont('times', 'normal'); doc.setFontSize(12);
+  doc.setTextColor(...MUTED);
   doc.setCharSpace(1.5);
   doc.text(String(year), pw / 2, y + 16, { align: 'center' });
   doc.setCharSpace(0);
   y += 40;
 
-  // Cake image — ALWAYS shown
+  // Cake image
   const cakeImgSrc = cakeImages[natalSunSign];
   if (cakeImgSrc) {
     const dataUrl = await loadImageDataUrl(cakeImgSrc);
     if (dataUrl) {
-      // Warm bg behind cake
-      doc.setFillColor(...t.warm);
-      doc.roundedRect((pw - 210) / 2, y - 5, 210, 180, 4, 4, 'F');
       doc.addImage(dataUrl, 'PNG', (pw - 200) / 2, y, 200, 170);
-      y += 194;
+      y += 184;
     } else { y += 20; }
   } else { y += 20; }
 
   // Rule
-  doc.setDrawColor(...t.rule); doc.setLineWidth(0.5);
+  doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
   doc.line(MARGIN, y, pw - MARGIN, y);
   y += 14;
 
-  // Big Three — one elegant line, purple
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
-  doc.setTextColor(...t.purple);
+  // Big Three
+  doc.setFont('times', 'normal'); doc.setFontSize(10);
+  doc.setTextColor(...ACCENT);
   doc.setCharSpace(0.4);
   doc.text(`Sun in ${natalSunSign}  ·  Moon in ${natalMoonSign}  ·  ${natalRisingSign} Rising`, pw / 2, y, { align: 'center' });
   doc.setCharSpace(0);
@@ -259,22 +261,18 @@ export async function generateTier1SolarReturnPDF(
 
   // Birth info
   const birthLine = `Born ${formatDatePretty(natalChart.birthDate)}  ·  ${capitalizeLocation(natalChart.birthLocation)}`;
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
-  doc.setTextColor(...t.dimText);
+  doc.setFont('times', 'normal'); doc.setFontSize(8.5);
+  doc.setTextColor(...MUTED);
   doc.text(birthLine, pw / 2, y + 8, { align: 'center' });
   y += 16;
 
-  // Personal message (birthday mode only)
+  // Personal message
   if (birthdayMode && personalMessage.trim()) {
     y += 18;
     const msgLines: string[] = doc.splitTextToSize(personalMessage.trim(), contentW - 24);
-    const msgH = Math.min(msgLines.length, 3) * 14 + 20;
-    doc.setFillColor(...t.warm);
-    doc.setDrawColor(...t.rule); doc.setLineWidth(0.5);
-    doc.roundedRect(MARGIN + 12, y, contentW - 24, msgH, 3, 3, 'FD');
-    doc.setFont('Georgia', 'italic'); doc.setFontSize(10);
-    doc.setTextColor(92, 74, 42);
-    let msgY = y + 14;
+    doc.setFont('times', 'italic'); doc.setFontSize(10);
+    doc.setTextColor(...ACCENT);
+    let msgY = y;
     for (const line of msgLines.slice(0, 3)) { doc.text(line, pw / 2, msgY, { align: 'center' }); msgY += 14; }
   }
 
@@ -282,26 +280,28 @@ export async function generateTier1SolarReturnPDF(
   // PAGE 2 — SNAPSHOT
   // ════════════════════════════════════════════════════════════════
   doc.addPage();
-  doc.setFillColor(...t.cream);
+  doc.setFillColor(...CREAM);
   doc.rect(0, 0, pw, ph, 'F');
   y = MARGIN_TOP;
 
   // Page header
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-  doc.setTextColor(...t.dimText); doc.setCharSpace(1.2);
+  doc.setFont('times', 'normal'); doc.setFontSize(7.5);
+  doc.setTextColor(...MUTED);
+  doc.setCharSpace(3.5);
   doc.text('YOUR YEAR AT A GLANCE', MARGIN, y);
   doc.setCharSpace(0);
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
-  doc.setTextColor(...t.dimText);
+  doc.setFont('times', 'normal'); doc.setFontSize(7);
+  doc.setTextColor(...MUTED);
   doc.text(`${firstName} · ${year}`, pw - MARGIN, y, { align: 'right' });
   y += 8;
-  doc.setDrawColor(...t.rule); doc.setLineWidth(0.5);
+  doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
   doc.line(MARGIN, y, pw - MARGIN, y);
   y += 18;
 
   // ── SECTION A: THIS YEAR'S THEME ──
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-  doc.setTextColor(...t.dimText); doc.setCharSpace(1.2);
+  doc.setFont('times', 'normal'); doc.setFontSize(7.5);
+  doc.setTextColor(...MUTED);
+  doc.setCharSpace(3.5);
   doc.text("THIS YEAR'S THEME", MARGIN, y);
   doc.setCharSpace(0);
   y += 6;
@@ -310,20 +310,20 @@ export async function generateTier1SolarReturnPDF(
   const profThemePlain = PROFECTION_THEME_PLAIN[profHouse] || 'growth and renewal';
   const themeHeadline = `${risingQuality} energy leads this year — a time for ${profThemePlain}.`;
 
-  doc.setFont('Georgia', 'normal'); doc.setFontSize(22);
-  doc.setTextColor(...t.ink);
+  doc.setFont('times', 'normal'); doc.setFontSize(22);
+  doc.setTextColor(...INK);
   const headLines: string[] = doc.splitTextToSize(themeHeadline, contentW);
   y += 20;
   for (const hl of headLines) { doc.text(hl, MARGIN, y); y += 27; }
   y += 4;
 
   const themeBody = `This year invites you into a season of ${profThemePlain}. The energy is ${risingQuality.toLowerCase()}, and the invitation is to trust what emerges naturally rather than forcing outcomes.`;
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
-  doc.setTextColor(...t.bodyText);
+  doc.setFont('times', 'normal'); doc.setFontSize(9.5);
+  doc.setTextColor(...INK);
   const bodyLines: string[] = doc.splitTextToSize(themeBody, contentW);
   for (const bl of bodyLines) { doc.text(bl, MARGIN, y); y += 16; }
 
-  doc.setDrawColor(...t.rule); doc.setLineWidth(0.5);
+  doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
   doc.line(MARGIN, y + 2, pw - MARGIN, y + 2);
   y += 18;
 
@@ -337,62 +337,60 @@ export async function generateTier1SolarReturnPDF(
   const moonPhaseDesc = MOON_PHASE_PLAIN[analysis.moonPhase?.phase || ''] || 'A year of steady inner rhythm';
   const profThemeShort = HOUSE_THEME_SHORT[profHouse] || 'A new chapter';
 
-  interface SnapCard { micro: string; value: string; sub: string; microColor: Color }
+  interface SnapCard { micro: string; value: string; sub: string }
   const cards: SnapCard[] = [
-    { micro: 'WHERE YOUR ENERGY GOES', value: sunHouseTheme, sub: SUN_HOUSE_BODY[sunHouse]?.split('.')[0] + '.' || '', microColor: [139, 105, 20] },
-    { micro: 'YOUR EMOTIONAL WEATHER', value: moonKeyword, sub: moonPhaseDesc, microColor: [74, 45, 138] },
-    { micro: 'THE FOCUS OF THIS YEAR', value: profThemeShort, sub: profAge != null ? `Year ${profAge}` : '', microColor: [139, 58, 21] },
+    { micro: 'WHERE YOUR ENERGY GOES', value: sunHouseTheme, sub: SUN_HOUSE_BODY[sunHouse]?.split('.')[0] + '.' || '' },
+    { micro: 'YOUR EMOTIONAL WEATHER', value: moonKeyword, sub: moonPhaseDesc },
+    { micro: 'THE FOCUS OF THIS YEAR', value: profThemeShort, sub: profAge != null ? `Year ${profAge}` : '' },
   ];
 
   for (let i = 0; i < 3; i++) {
     const cx = MARGIN + i * (cardW + cardGap);
-    doc.setDrawColor(...t.border); doc.setLineWidth(0.5);
-    doc.roundedRect(cx, y, cardW, cardH, 3, 3, 'S');
 
-    // Micro label
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
-    doc.setTextColor(...cards[i].microColor);
-    doc.setCharSpace(0.6);
+    // Tracked caps micro label
+    doc.setFont('times', 'normal'); doc.setFontSize(7);
+    doc.setTextColor(...MUTED);
+    doc.setCharSpace(2);
     doc.text(cards[i].micro, cx + 10, y + 14);
     doc.setCharSpace(0);
 
     // Value
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(13);
-    doc.setTextColor(...t.ink);
+    doc.setFont('times', 'bold'); doc.setFontSize(13);
+    doc.setTextColor(...INK);
     const valLines: string[] = doc.splitTextToSize(cards[i].value, cardW - 20);
     let vy = y + 32;
     for (const vl of valLines.slice(0, 2)) { doc.text(vl, cx + 10, vy); vy += 16; }
     vy += 4;
 
     // Sub
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
-    doc.setTextColor(...t.dimText);
+    doc.setFont('times', 'normal'); doc.setFontSize(8.5);
+    doc.setTextColor(...MUTED);
     if (cards[i].sub) {
       const subLines: string[] = doc.splitTextToSize(cards[i].sub, cardW - 20);
       for (const sl of subLines.slice(0, 2)) { doc.text(sl, cx + 10, vy); vy += 11; }
+    }
+
+    // Vertical divider
+    if (i < 2) {
+      doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+      doc.line(cx + cardW + cardGap / 2, y, cx + cardW + cardGap / 2, y + cardH);
     }
   }
   y += cardH + 18;
 
   // ── SECTION C: HOW THIS YEAR MEETS YOU ──
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-  doc.setTextColor(...t.dimText); doc.setCharSpace(1.2);
+  doc.setFont('times', 'normal'); doc.setFontSize(7.5);
+  doc.setTextColor(...MUTED);
+  doc.setCharSpace(3.5);
   doc.text('HOW THIS YEAR MEETS YOU', MARGIN, y);
   doc.setCharSpace(0);
   y += 6;
 
   // Intro
-  doc.setFont('Georgia', 'italic'); doc.setFontSize(9);
-  doc.setTextColor(122, 112, 104);
+  doc.setFont('times', 'italic'); doc.setFontSize(9);
+  doc.setTextColor(...MUTED);
   doc.text('Your natal chart is who you are. Your Solar Return shows how this year\'s energy meets that.', MARGIN, y);
   y += 12;
-
-  // Three stacked Big Three cards
-  const headerTints: { bg: Color; labelColor: Color }[] = [
-    { bg: [255, 251, 240], labelColor: [139, 105, 20] },   // Sun — gold
-    { bg: [245, 240, 250], labelColor: [74, 45, 138] },     // Moon — purple
-    { bg: [253, 245, 238], labelColor: [139, 58, 21] },     // Rising — rust
-  ];
 
   const bigThreeCards = [
     {
@@ -417,97 +415,61 @@ export async function generateTier1SolarReturnPDF(
 
   for (let i = 0; i < bigThreeCards.length; i++) {
     const card = bigThreeCards[i];
-    const tint = headerTints[i];
 
     if (y + 80 > ph - MARGIN_BOTTOM) {
       doc.addPage();
-      doc.setFillColor(...t.cream);
+      doc.setFillColor(...CREAM);
       doc.rect(0, 0, pw, ph, 'F');
       y = MARGIN_TOP;
     }
 
-    const cardStartY = y;
-
-    // Header bar
-    doc.setFillColor(...tint.bg);
-    doc.setDrawColor(...t.border); doc.setLineWidth(0.5);
-    doc.roundedRect(MARGIN, y, contentW, 22, 4, 4, 'F');
-    // Draw top border
-    doc.roundedRect(MARGIN, y, contentW, 22, 4, 4, 'S');
-
-    // Planet label
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
-    doc.setTextColor(...tint.labelColor);
-    doc.setCharSpace(0.8);
-    doc.text(card.label, MARGIN + 12, y + 14);
+    // Tracked label
+    doc.setFont('times', 'normal'); doc.setFontSize(7);
+    doc.setTextColor(...MUTED);
+    doc.setCharSpace(3);
+    doc.text(card.label, MARGIN, y);
     doc.setCharSpace(0);
 
-    // Tags: NATAL → SR
-    const natalTagW = doc.getTextWidth(card.natalTag) + 14;
-    const srTagW = doc.getTextWidth(card.srTag) + 14;
-    const tagsX = MARGIN + contentW - 12 - srTagW - 20 - natalTagW;
-
-    // Natal tag
-    doc.setFillColor(237, 229, 247);
-    doc.roundedRect(tagsX, y + 4, natalTagW, 14, 2, 2, 'F');
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
-    doc.setTextColor(74, 45, 138);
-    doc.text(card.natalTag, tagsX + 7, y + 14);
-
-    // Arrow
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-    doc.setTextColor(...t.gold);
-    doc.text('→', tagsX + natalTagW + 5, y + 14);
-
-    // SR tag
-    const srTagX = tagsX + natalTagW + 20;
-    doc.setFillColor(253, 240, 232);
-    doc.roundedRect(srTagX, y + 4, srTagW, 14, 2, 2, 'F');
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
-    doc.setTextColor(139, 58, 21);
-    doc.text(card.srTag, srTagX + 7, y + 14);
-
-    y += 22;
-
-    // Body area
-    doc.setFillColor(...t.cream);
-    const bodyAreaH = 52;
-    doc.roundedRect(MARGIN, y, contentW, bodyAreaH, 0, 0, 'F');
-    // Bottom border
-    doc.setDrawColor(...t.border); doc.setLineWidth(0.5);
-    doc.roundedRect(MARGIN, cardStartY, contentW, 22 + bodyAreaH, 4, 4, 'S');
-
+    // Tags right-aligned
+    doc.setFont('times', 'normal'); doc.setFontSize(8);
+    doc.setTextColor(...MUTED);
+    doc.text(`${card.natalTag}  →  ${card.srTag}`, MARGIN + contentW, y, { align: 'right' });
     y += 12;
 
     // Headline
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
-    doc.setTextColor(...t.ink);
-    doc.text(card.headline, MARGIN + 12, y);
+    doc.setFont('times', 'bold'); doc.setFontSize(11);
+    doc.setTextColor(...INK);
+    doc.text(card.headline, MARGIN + 8, y);
     y += 14;
 
     // Body — 2 sentences max for Tier 1
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-    doc.setTextColor(...t.bodyText);
-    const bdLines: string[] = doc.splitTextToSize(card.body, contentW - 24);
-    for (const bl of bdLines.slice(0, 2)) { doc.text(bl, MARGIN + 12, y); y += 13; }
+    doc.setFont('times', 'normal'); doc.setFontSize(9);
+    doc.setTextColor(...INK);
+    const bdLines: string[] = doc.splitTextToSize(card.body, contentW - 16);
+    for (const bl of bdLines.slice(0, 2)) { doc.text(bl, MARGIN + 8, y); y += 13; }
+    y += 4;
 
-    y = cardStartY + 22 + bodyAreaH + 6;
+    // Hairline rule
+    doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+    doc.line(MARGIN, y, MARGIN + contentW, y);
+    y += 10;
   }
 
   // ── SECTION D: THREE WORDS ──
   if (y + 50 > ph - MARGIN_BOTTOM) {
     doc.addPage();
-    doc.setFillColor(...t.cream);
+    doc.setFillColor(...CREAM);
     doc.rect(0, 0, pw, ph, 'F');
     y = MARGIN_TOP;
   }
 
-  doc.setDrawColor(...t.rule); doc.setLineWidth(0.5);
+  doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
   doc.line(MARGIN, y, pw - MARGIN, y);
   y += 12;
 
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-  doc.setTextColor(...t.dimText); doc.setCharSpace(1.2);
+  doc.setFont('times', 'normal'); doc.setFontSize(7.5);
+  doc.setTextColor(...MUTED);
+  doc.setCharSpace(3.5);
   doc.text(`THREE WORDS FOR ${year}`, pw / 2, y, { align: 'center' });
   doc.setCharSpace(0);
   y += 10;
@@ -517,24 +479,22 @@ export async function generateTier1SolarReturnPDF(
   const w2 = PROFECTION_WORD[profHouse] || 'Renewal';
   const w3 = MOON_WORD[srMoonSign] || 'Depth';
 
-  doc.setFont('Georgia', 'normal'); doc.setFontSize(16);
-  doc.setTextColor(92, 84, 80);
+  doc.setFont('times', 'normal'); doc.setFontSize(16);
+  doc.setTextColor(...ACCENT);
   doc.setCharSpace(0.5);
   doc.text(`${w1}  ·  ${w2}  ·  ${w3}`, pw / 2, y + 4, { align: 'center' });
   doc.setCharSpace(0);
   y += 18;
 
-  doc.setDrawColor(...t.rule); doc.setLineWidth(0.5);
+  doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
   doc.line(MARGIN, y, pw - MARGIN, y);
 
   // Birthday footer
   if (birthdayMode) {
-    doc.setFont('Georgia', 'italic'); doc.setFontSize(8);
-    doc.setTextColor(...t.dimText);
+    doc.setFont('times', 'italic'); doc.setFontSize(8);
+    doc.setTextColor(...MUTED);
     doc.text('Wishing you a beautiful year ahead.', pw / 2, ph - MARGIN_BOTTOM, { align: 'center' });
   }
-
-  // No page 3. No quarterly. No monthly. End of Tier 1.
 
   doc.save(`Year-at-a-Glance-${year}-${firstName.replace(/\s+/g, '-')}.pdf`);
 }
