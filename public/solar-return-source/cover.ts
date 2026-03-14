@@ -74,7 +74,17 @@ export async function generatePDFCover(
   doc.setFont('times', 'normal'); doc.setFontSize(9);
   doc.setTextColor(...GOLD);
   doc.text('-   SOLAR RETURN   -', pw / 2, y, { align: 'center' });
-  y += 50;
+  y += 40;
+
+  // ── "Happy Birthday" when in birthday mode ────────────────────────
+  if (birthdayMode) {
+    doc.setFont('times', 'italic'); doc.setFontSize(22);
+    doc.setTextColor(...GOLD);
+    doc.text('Happy Birthday', pw / 2, y, { align: 'center' });
+    y += 36;
+  } else {
+    y += 10;
+  }
 
   // ── LARGE NAME ────────────────────────────────────────────────────
   doc.setFont('times', 'normal'); doc.setFontSize(40);
