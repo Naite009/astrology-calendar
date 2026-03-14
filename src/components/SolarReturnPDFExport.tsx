@@ -1134,14 +1134,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         return h !== null && h !== undefined && deepData[p]?.[h];
       });
       if (spotlightPlanets.length > 0) {
-        doc.addPage(); ctx.y = margin;
+        doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
         ctx.sectionPages.set('PLANET SPOTLIGHT', doc.getNumberOfPages());
-        ctx.drawGoldRule(doc); ctx.y += 20;
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-        doc.setTextColor(...ctx.colors.gold);
-        doc.text('PLANET SPOTLIGHT', margin, ctx.y); ctx.y += 8;
-        doc.setFont('helvetica', 'italic'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.dimText);
-        doc.text('Each planet\'s placement in your Solar Return and what it means for the year', margin, ctx.y); ctx.y += 16;
+        ctx.sectionTitle(doc, 'PLANET SPOTLIGHT', 'Each planet\'s placement in your Solar Return and what it means for the year');
 
         for (const planet of spotlightPlanets) {
           const h = analysis.planetSRHouses[planet]!;
@@ -1149,16 +1144,14 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           if (!data) continue;
           ctx.checkPage(180);
           ctx.drawCard(doc, () => {
-            // Planet header box
-            doc.setFillColor(...ctx.colors.softGold);
-            doc.roundedRect(margin + 6, ctx.y - 4, contentW - 12, 26, 4, 4, 'F');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
-            doc.setTextColor(...ctx.colors.gold);
-            doc.text(`${P[planet] || planet} in House ${h}`, margin + 16, ctx.y + 10);
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.deepBrown);
+            // Planet header — editorial
+            doc.setFont('times', 'bold'); doc.setFontSize(12);
+            doc.setTextColor(...ctx.colors.ink);
+            doc.text(`${P[planet] || planet} in House ${h}`, margin + 8, ctx.y);
+            doc.setFont('times', 'italic'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.muted);
             const titleText = (data.title || '').substring(0, 40);
-            doc.text(titleText, margin + contentW - 16, ctx.y + 10, { align: 'right' });
-            ctx.y += 32;
+            doc.text(titleText, margin + contentW, ctx.y, { align: 'right' });
+            ctx.y += 16;
 
             if (data.overview) {
               ctx.writeBody(doc, data.overview, ctx.colors.darkText, 10, 14);
