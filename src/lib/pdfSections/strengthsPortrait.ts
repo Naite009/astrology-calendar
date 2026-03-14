@@ -5,10 +5,16 @@ import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 
 /** YOUR BIG THREE — strengths, shadow, and how the SR year activates each */
 
+type Color = [number, number, number];
+
 function getOrdinalSuffix(n: number): string {
   const s = ['th', 'st', 'nd', 'rd'];
   const v = n % 100;
   return s[(v - 20) % 10] || s[v] || s[0];
+}
+
+function ord(n: number): string {
+  return `${n}${getOrdinalSuffix(n)}`;
 }
 
 const sunStrength: Record<string, string> = {
@@ -42,18 +48,18 @@ const sunShadow: Record<string, string> = {
 };
 
 const sunYearAhead: Record<number, string> = {
-  1: 'SR Sun in House 1: Your identity is front and center. This is a year of personal reinvention — how you present yourself, your physical appearance, and your sense of direction are all being reset. Others notice the change.',
-  2: 'SR Sun in House 2: Your strengths are channeled into building financial security and clarifying what you truly value. Income, possessions, and self-worth are the arena.',
-  3: 'SR Sun in House 3: Your gifts shine through communication — writing, teaching, or conversations that change perspectives. Siblings and neighbors may play a larger role.',
-  4: 'SR Sun in House 4: Your strengths serve your home and family — building emotional foundations and creating sanctuary. May involve a move, renovation, or family reckoning.',
-  5: 'SR Sun in House 5: Creative gifts demand expression — romance, art, children, and joyful risk-taking are the assignment. What you create this year reflects your essence.',
-  6: 'SR Sun in House 6: Your strengths are applied to daily life — health routines, work systems, and practical service. The body is a teacher this year.',
-  7: 'SR Sun in House 7: Your gifts are activated through partnership — what you bring to relationships defines the year. Contracts and commitments are central.',
-  8: 'SR Sun in House 8: Your strengths guide you through transformation — deep change, shared resources, and psychological growth. Something needs to end so something real can begin.',
-  9: 'SR Sun in House 9: Your gifts expand through travel, education, and the search for meaning beyond your usual world. Publishing, teaching, or legal matters may feature.',
-  10: 'SR Sun in House 10: Your strengths are visible to the world — career advancement and public recognition are the theme. Professional responsibility increases.',
-  11: 'SR Sun in House 11: Your gifts serve the collective — friendships, community involvement, and shared purpose. Your social network is being restructured.',
-  12: 'SR Sun in House 12: Your strengths work behind the scenes this year. Inner growth, spiritual practice, solitude, and healing take priority. The 12th house Sun suggests a quieter year where the most important work is invisible — processing, integrating, and preparing for the next cycle. Dreams may be vivid. Therapy is productive. Time alone is not loneliness, it is replenishment.',
+  1: 'Your identity is front and center. This is a year of personal reinvention — how you present yourself, your physical appearance, and your sense of direction are all being reset. Others notice the change.',
+  2: 'Your strengths are channeled into building financial security and clarifying what you truly value. Income, possessions, and self-worth are the arena.',
+  3: 'Your gifts shine through communication — writing, teaching, or conversations that change perspectives. Siblings and neighbors may play a larger role.',
+  4: 'Your strengths serve your home and family — building emotional foundations and creating sanctuary. May involve a move, renovation, or family reckoning.',
+  5: 'Creative gifts demand expression — romance, art, children, and joyful risk-taking are the assignment. What you create this year reflects your essence.',
+  6: 'Your strengths are applied to daily life — health routines, work systems, and practical service. The body is a teacher this year.',
+  7: 'Your gifts are activated through partnership — what you bring to relationships defines the year. Contracts and commitments are central.',
+  8: 'Your strengths guide you through transformation — deep change, shared resources, and psychological growth. Something needs to end so something real can begin.',
+  9: 'Your gifts expand through travel, education, and the search for meaning beyond your usual world. Publishing, teaching, or legal matters may feature.',
+  10: 'Your strengths are visible to the world — career advancement and public recognition are the theme. Professional responsibility increases.',
+  11: 'Your gifts serve the collective — friendships, community involvement, and shared purpose. Your social network is being restructured.',
+  12: 'Your strengths work behind the scenes this year. Inner growth, spiritual practice, solitude, and healing take priority. A quieter year where the most important work is invisible — processing, integrating, and preparing for the next cycle. Dreams may be vivid. Therapy is productive. Time alone is not loneliness, it is replenishment.',
 };
 
 const moonStrength: Record<string, string> = {
@@ -101,7 +107,6 @@ const moonYearAhead: Record<number, string> = {
   12: 'Emotions are internalized. Solitude is needed for processing. Dreams, meditation, and unconscious patterns are active.',
 };
 
-/** How the SR Moon SIGN activates or challenges natal Moon patterns */
 const srMoonSignActivation: Record<string, (natalSign: string) => string> = {
   Aries: (natal) => `Your SR Moon in Aries pushes your natal ${natal} Moon toward action and independence. Emotions come fast and demand immediate expression. You may feel impatient with your usual emotional patterns — this year rewards directness over deliberation.`,
   Taurus: (natal) => `Your SR Moon in Taurus grounds your natal ${natal} Moon in physical comfort and stability. Emotions slow down this year — you need tangible proof of safety. Routines, good food, and sensory pleasure become emotional medicine.`,
@@ -148,19 +153,54 @@ const risingShadow: Record<string, string> = {
 };
 
 const risingYearAhead: Record<string, string> = {
-  Aries: 'SR Aries Rising: The year\'s energy enters through bold action and initiative. First impressions are stronger. People see you as a leader whether you intend it or not.',
-  Taurus: 'SR Taurus Rising: The year unfolds slowly and deliberately. Financial and material themes color every area. Patience is rewarded.',
-  Gemini: 'SR Gemini Rising: Communication drives the year. Information comes from multiple directions. Flexibility is essential.',
-  Cancer: 'SR Cancer Rising: Emotional and domestic themes dominate the year\'s entry point. Home, family, and emotional security are the lens.',
-  Leo: 'SR Leo Rising: The year demands creative self-expression and visibility. You are seen more clearly — use that attention wisely.',
-  Virgo: 'SR Virgo Rising: The year enters through detailed analysis and practical improvement. Health and work systems are the gateway.',
-  Libra: 'SR Libra Rising: Relationships are the gateway to the year. Partnership decisions set the tone for everything else.',
-  Scorpio: 'SR Scorpio Rising: The year enters through intensity, transformation, and depth. Surface-level engagement is not an option.',
-  Sagittarius: 'SR Sagittarius Rising: The year opens through expansion — travel, education, or philosophical growth. Adventure calls.',
-  Capricorn: 'SR Capricorn Rising: The year enters through structure, responsibility, and ambition. Professional themes dominate.',
-  Aquarius: 'SR Aquarius Rising: The year opens through innovation, community, and breaking from convention. Expect the unexpected.',
-  Pisces: 'SR Pisces Rising: The year enters through intuition, creativity, and spiritual sensitivity. The boundary between inner and outer life is thin. Dreams and subtle impressions carry real information. The challenge is staying grounded while remaining open to what cannot be measured.',
+  Aries: 'The year\'s energy enters through bold action and initiative. First impressions are stronger. People see you as a leader whether you intend it or not.',
+  Taurus: 'The year unfolds slowly and deliberately. Financial and material themes color every area. Patience is rewarded.',
+  Gemini: 'Communication drives the year. Information comes from multiple directions. Flexibility is essential.',
+  Cancer: 'Emotional and domestic themes dominate the year\'s entry point. Home, family, and emotional security are the lens.',
+  Leo: 'The year demands creative self-expression and visibility. You are seen more clearly — use that attention wisely.',
+  Virgo: 'The year enters through detailed analysis and practical improvement. Health and work systems are the gateway.',
+  Libra: 'Relationships are the gateway to the year. Partnership decisions set the tone for everything else.',
+  Scorpio: 'The year enters through intensity, transformation, and depth. Surface-level engagement is not an option.',
+  Sagittarius: 'The year opens through expansion — travel, education, or philosophical growth. Adventure calls.',
+  Capricorn: 'The year enters through structure, responsibility, and ambition. Professional themes dominate.',
+  Aquarius: 'The year opens through innovation, community, and breaking from convention. Expect the unexpected.',
+  Pisces: 'The year enters through intuition, creativity, and spiritual sensitivity. The boundary between inner and outer life is thin. Dreams and subtle impressions carry real information. The challenge is staying grounded while remaining open to what cannot be measured.',
 };
+
+// ─── Premium rendering helpers ───
+
+function drawSectionBox(
+  doc: jsPDF, x: number, y: number, w: number, h: number,
+  bgColor: Color, borderColor: Color, label: string, labelColor: Color
+) {
+  doc.setFillColor(...bgColor);
+  doc.roundedRect(x, y, w, h, 5, 5, 'F');
+  doc.setDrawColor(...borderColor);
+  doc.setLineWidth(0.6);
+  doc.roundedRect(x, y, w, h, 5, 5, 'S');
+  // Label badge
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(...labelColor);
+  doc.text(label, x + 12, y + 14);
+}
+
+function writeParagraph(
+  doc: jsPDF, text: string, x: number, y: number, w: number,
+  color: Color, fontSize: number = 10, lineH: number = 14
+): number {
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(fontSize);
+  doc.setTextColor(...color);
+  const lines: string[] = doc.splitTextToSize(text, w);
+  for (const line of lines) {
+    doc.text(line, x, y);
+    y += lineH;
+  }
+  return y;
+}
+
+// ─── Main export — each planet gets generous space ───
 
 export function generateStrengthsPortrait(
   ctx: PDFContext, doc: jsPDF, natalChart: NatalChart, analysis: SolarReturnAnalysis
@@ -174,125 +214,248 @@ export function generateStrengthsPortrait(
   const srAscSign = analysis.yearlyTheme?.ascendantSign || '';
   const srMoonSign = analysis.moonSign || '';
 
-  // Compact title
-  ctx.y += 6;
-  doc.setDrawColor(...colors.gold); doc.setLineWidth(1);
-  doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 16;
+  const bodyColor = colors.bodyText;
+  const textInset = margin + 16;
+  const textW = contentW - 32;
 
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+  // ═══════════════════════════════════════════
+  // SECTION TITLE PAGE
+  // ═══════════════════════════════════════════
+  ctx.y += 8;
+  doc.setDrawColor(...colors.gold);
+  doc.setLineWidth(1.5);
+  doc.line(margin, ctx.y, pw - margin, ctx.y);
+  ctx.y += 30;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(22);
   doc.setTextColor(...colors.gold);
   doc.text('YOUR BIG THREE', pw / 2, ctx.y, { align: 'center' });
-  ctx.y += 5;
-  doc.setLineWidth(0.5); doc.line(pw / 2 - 40, ctx.y, pw / 2 + 40, ctx.y);
   ctx.y += 8;
 
-  doc.setFont('helvetica', 'italic'); doc.setFontSize(9);
-  doc.setTextColor(...colors.bodyText);
-  doc.text('Natal strengths, shadow patterns, and how this Solar Return year activates each one.', pw / 2, ctx.y, { align: 'center' });
-  ctx.y += 10;
+  // Decorative underline
+  doc.setLineWidth(0.8);
+  doc.line(pw / 2 - 50, ctx.y, pw / 2 + 50, ctx.y);
+  ctx.y += 14;
 
-  // --- Compact card helper ---
-  const tinyBody = (text: string, color: [number, number, number] = colors.bodyText) => {
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-    doc.setTextColor(...color);
-    const lines: string[] = doc.splitTextToSize(text, contentW - 28);
-    for (const line of lines) { doc.text(line, margin + 10, ctx.y); ctx.y += 10; }
-  };
-  const tinyLabel = (label: string, text: string, labelColor: [number, number, number]) => {
-    // Label on its own line, then body text below for clean readability
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
-    doc.setTextColor(...labelColor);
-    doc.text(label + ':', margin + 10, ctx.y);
-    ctx.y += 11;
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-    doc.setTextColor(...colors.bodyText);
-    const lines: string[] = doc.splitTextToSize(text, contentW - 32);
-    for (const line of lines) { doc.text(line, margin + 10, ctx.y); ctx.y += 10; }
-    ctx.y += 4; // breathing room between sections
-  };
-  const compactCard = (renderFn: () => void) => {
-    // Ensure at least 120pt available before starting a card; otherwise new page
-    ctx.checkPage(120);
-    const startPage = doc.getNumberOfPages();
-    const startY = ctx.y; ctx.y += 8;
-    renderFn(); ctx.y += 6;
-    const endPage = doc.getNumberOfPages();
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(10);
+  doc.setTextColor(...colors.dimText);
+  doc.text('Natal strengths, shadow patterns, and how this year activates each one.', pw / 2, ctx.y, { align: 'center' });
+  ctx.y += 28;
 
-    if (endPage === startPage) {
-      const h = ctx.y - startY;
-      doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.4);
-      doc.roundedRect(margin, startY, contentW, h, 4, 4, 'S');
-      doc.setDrawColor(...colors.gold); doc.setLineWidth(2);
-      doc.line(margin + 1, startY + 1, margin + 1, startY + h - 1);
-    } else {
-      // Card spans pages — draw border segments
-      doc.setPage(startPage);
-      const firstH = ph - 40 - startY;
-      doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.4);
-      doc.roundedRect(margin, startY, contentW, firstH, 4, 4, 'S');
-      doc.setDrawColor(...colors.gold); doc.setLineWidth(2);
-      doc.line(margin + 1, startY + 1, margin + 1, startY + firstH - 1);
+  // ═══════════════════════════════════════════
+  // ☉ SUN
+  // ═══════════════════════════════════════════
+  const renderPlanetSection = (
+    title: string,
+    subtitle: string,
+    strengthText: string,
+    shadowText: string,
+    yearLabel: string,
+    yearText: string,
+    extraLabel?: string,
+    extraText?: string,
+  ) => {
+    // Title bar with gold background
+    ctx.checkPage(200);
+    const titleBarY = ctx.y;
+    doc.setFillColor(...colors.softGold);
+    doc.roundedRect(margin, titleBarY, contentW, 40, 6, 6, 'F');
+    doc.setDrawColor(...colors.gold);
+    doc.setLineWidth(2);
+    doc.line(margin, titleBarY, margin, titleBarY + 40);
 
-      doc.setPage(endPage);
-      const lastH = ctx.y - margin;
-      doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.4);
-      doc.roundedRect(margin, margin, contentW, lastH, 4, 4, 'S');
-      doc.setDrawColor(...colors.gold); doc.setLineWidth(2);
-      doc.line(margin + 1, margin + 1, margin + 1, margin + lastH - 1);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor(...colors.gold);
+    doc.text(title, margin + 14, titleBarY + 18);
+
+    if (subtitle) {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(...colors.deepBrown);
+      doc.text(subtitle, margin + 14, titleBarY + 32);
     }
-    ctx.y += 4;
+
+    ctx.y = titleBarY + 52;
+
+    // ── Strength box ──
+    const strengthLines: string[] = doc.splitTextToSize(strengthText, textW - 24);
+    const strengthBoxH = 24 + strengthLines.length * 13 + 8;
+    ctx.checkPage(strengthBoxH + 10);
+
+    const sY = ctx.y;
+    doc.setFillColor(240, 248, 240); // very light green
+    doc.roundedRect(margin + 4, sY, contentW - 8, strengthBoxH, 4, 4, 'F');
+    doc.setDrawColor(...colors.accentGreen);
+    doc.setLineWidth(1.5);
+    doc.line(margin + 4, sY + 4, margin + 4, sY + strengthBoxH - 4);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(...colors.accentGreen);
+    doc.text('Strength', margin + 16, sY + 16);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(...bodyColor);
+    let lineY = sY + 30;
+    for (const line of strengthLines) {
+      doc.text(line, margin + 16, lineY);
+      lineY += 13;
+    }
+    ctx.y = sY + strengthBoxH + 8;
+
+    // ── Shadow box ──
+    const shadowLines: string[] = doc.splitTextToSize(shadowText, textW - 24);
+    const shadowBoxH = 24 + shadowLines.length * 13 + 8;
+    ctx.checkPage(shadowBoxH + 10);
+
+    const shY = ctx.y;
+    doc.setFillColor(252, 244, 238); // very light rust/peach
+    doc.roundedRect(margin + 4, shY, contentW - 8, shadowBoxH, 4, 4, 'F');
+    doc.setDrawColor(...colors.accentRust);
+    doc.setLineWidth(1.5);
+    doc.line(margin + 4, shY + 4, margin + 4, shY + shadowBoxH - 4);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(...colors.accentRust);
+    doc.text('Shadow', margin + 16, shY + 16);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(...bodyColor);
+    lineY = shY + 30;
+    for (const line of shadowLines) {
+      doc.text(line, margin + 16, lineY);
+      lineY += 13;
+    }
+    ctx.y = shY + shadowBoxH + 8;
+
+    // ── This Year box ──
+    if (yearText) {
+      const yearLines: string[] = doc.splitTextToSize(yearText, textW - 24);
+      const yearBoxH = 24 + yearLines.length * 13 + 8;
+      ctx.checkPage(yearBoxH + 10);
+
+      const yY = ctx.y;
+      doc.setFillColor(...colors.softGold);
+      doc.roundedRect(margin + 4, yY, contentW - 8, yearBoxH, 4, 4, 'F');
+      doc.setDrawColor(...colors.gold);
+      doc.setLineWidth(1.5);
+      doc.line(margin + 4, yY + 4, margin + 4, yY + yearBoxH - 4);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(...colors.gold);
+      doc.text(yearLabel, margin + 16, yY + 16);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(...bodyColor);
+      lineY = yY + 30;
+      for (const line of yearLines) {
+        doc.text(line, margin + 16, lineY);
+        lineY += 13;
+      }
+      ctx.y = yY + yearBoxH + 8;
+    }
+
+    // ── Extra section (e.g. "How This Year Activates You") ──
+    if (extraLabel && extraText) {
+      const extraLines: string[] = doc.splitTextToSize(extraText, textW - 24);
+      const extraBoxH = 24 + extraLines.length * 13 + 8;
+      ctx.checkPage(extraBoxH + 10);
+
+      const eY = ctx.y;
+      doc.setFillColor(...colors.softBlue);
+      doc.roundedRect(margin + 4, eY, contentW - 8, extraBoxH, 4, 4, 'F');
+      doc.setDrawColor(100, 140, 190);
+      doc.setLineWidth(1.5);
+      doc.line(margin + 4, eY + 4, margin + 4, eY + extraBoxH - 4);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(60, 100, 150);
+      doc.text(extraLabel, margin + 16, eY + 16);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(...bodyColor);
+      lineY = eY + 30;
+      for (const line of extraLines) {
+        doc.text(line, margin + 16, lineY);
+        lineY += 13;
+      }
+      ctx.y = eY + extraBoxH + 8;
+    }
+
+    ctx.y += 6;
   };
 
-  // --- SUN ---
+  // ── SUN ──
   if (sunSign && sunStrength[sunSign]) {
-    compactCard(() => {
-      const houseLabel = srSunHouse ? `  --  SR House ${srSunHouse}` : '';
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
-      doc.setTextColor(...colors.gold);
-      doc.text(`SUN IN ${sunSign.toUpperCase()}${houseLabel}`, margin + 6, ctx.y); ctx.y += 12;
-      tinyLabel('Strength', sunStrength[sunSign], colors.accentGreen);
-      if (sunShadow[sunSign]) tinyLabel('Shadow', sunShadow[sunSign], colors.accentRust);
-      if (srSunHouse && sunYearAhead[srSunHouse]) tinyLabel('This Year', sunYearAhead[srSunHouse], colors.gold);
-    });
+    const houseLabel = srSunHouse ? `Solar Return ${ord(srSunHouse)} House` : '';
+    renderPlanetSection(
+      `SUN IN ${sunSign.toUpperCase()}`,
+      houseLabel,
+      sunStrength[sunSign],
+      sunShadow[sunSign] || '',
+      'What This Means For Your Year',
+      srSunHouse ? (sunYearAhead[srSunHouse] || '') : '',
+    );
   }
 
-  // --- MOON ---
+  // ── MOON — start fresh page for breathing room ──
   if (moonSign && moonStrength[moonSign]) {
-    compactCard(() => {
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
-      doc.setTextColor(...colors.gold);
-      const srHouseLabel = srMoonHouse ? `, ${srMoonHouse}${getOrdinalSuffix(srMoonHouse)} House` : '';
-      const mainTitle = `NATAL MOON IN ${moonSign.toUpperCase()}`;
-      doc.text(mainTitle, margin + 6, ctx.y); ctx.y += 12;
-      if (srMoonSign) {
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
-        doc.setTextColor(...colors.deepBrown);
-        doc.text(`SR Moon: ${srMoonSign}${srHouseLabel}`, margin + 6, ctx.y); ctx.y += 11;
-      }
-      tinyLabel('Natal Strength', moonStrength[moonSign], colors.accentGreen);
-      if (moonShadow[moonSign]) tinyLabel('Natal Shadow', moonShadow[moonSign], colors.accentRust);
-      if (srMoonSign && srMoonSignActivation[srMoonSign]) tinyLabel('How This Year Activates You', srMoonSignActivation[srMoonSign](moonSign), colors.gold);
-      if (srMoonHouse && moonYearAhead[srMoonHouse]) tinyLabel(`Where It Plays Out (House ${srMoonHouse})`, moonYearAhead[srMoonHouse], colors.deepBrown);
-    });
+    doc.addPage();
+    ctx.y = margin + 10;
+
+    const srHouseLabel = srMoonHouse ? `, ${ord(srMoonHouse)} House` : '';
+    const srMoonLabel = srMoonSign ? `SR Moon: ${srMoonSign}${srHouseLabel}` : '';
+    const activationText = srMoonSign && srMoonSignActivation[srMoonSign]
+      ? srMoonSignActivation[srMoonSign](moonSign) : '';
+    const whereText = srMoonHouse && moonYearAhead[srMoonHouse]
+      ? moonYearAhead[srMoonHouse] : '';
+
+    // Combine "where it plays out" into the activation text if both exist
+    let yearText = '';
+    if (whereText && activationText) {
+      yearText = whereText;
+    } else if (whereText) {
+      yearText = whereText;
+    }
+
+    renderPlanetSection(
+      `NATAL MOON IN ${moonSign.toUpperCase()}`,
+      srMoonLabel,
+      moonStrength[moonSign],
+      moonShadow[moonSign] || '',
+      'How This Year Activates You',
+      activationText,
+      whereText ? `Where It Plays Out (${ord(srMoonHouse!)} House)` : undefined,
+      whereText || undefined,
+    );
   }
 
-  // --- RISING ---
+  // ── RISING — start fresh page ──
   if (risingSign && risingStrength[risingSign]) {
-    compactCard(() => {
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
-      doc.setTextColor(...colors.gold);
-      const mainTitle = `${risingSign.toUpperCase()} RISING`;
-      doc.text(mainTitle, margin + 6, ctx.y); ctx.y += 12;
-      if (srAscSign) {
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
-        doc.setTextColor(...colors.deepBrown);
-        doc.text(`SR Rising: ${srAscSign}`, margin + 6, ctx.y); ctx.y += 11;
-      }
-      tinyLabel('Strength', risingStrength[risingSign], colors.accentGreen);
-      if (risingShadow[risingSign]) tinyLabel('Shadow', risingShadow[risingSign], colors.accentRust);
-      if (srAscSign && risingYearAhead[srAscSign]) tinyLabel('This Year', risingYearAhead[srAscSign], colors.gold);
-    });
+    doc.addPage();
+    ctx.y = margin + 10;
+
+    const srLabel = srAscSign ? `SR Rising: ${srAscSign}` : '';
+    const yearText = srAscSign && risingYearAhead[srAscSign] ? risingYearAhead[srAscSign] : '';
+
+    renderPlanetSection(
+      `${risingSign.toUpperCase()} RISING`,
+      srLabel,
+      risingStrength[risingSign],
+      risingShadow[risingSign] || '',
+      'This Year',
+      yearText,
+    );
   }
 
   ctx.y += 6;
