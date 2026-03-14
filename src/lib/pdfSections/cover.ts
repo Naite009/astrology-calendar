@@ -89,29 +89,30 @@ export async function generatePDFCover(
   // 20pt gap before dark strip
   ctx.y += 20;
 
-  // ── DARK STRIP ──
-  const stripH = 44;
+  // ── DARK STRIP (name + birth info + year) ──
+  const stripH = 58;
   doc.setFillColor(...colors.deep);
   doc.rect(0, ctx.y, pw, stripH, 'F');
 
-  // Left: SOLAR RETURN
+  // Left: NAME in white + birth info below in dimText
+  doc.setFont('Georgia', 'bold'); doc.setFontSize(14);
+  doc.setTextColor(255, 255, 255);
+  doc.text(name.toUpperCase(), margin, ctx.y + 22);
+
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+  doc.setTextColor(...colors.dimText);
+  doc.text(`Born ${formatDate(natalChart.birthDate)}  ·  ${capitalizeLocation(natalChart.birthLocation)}`, margin, ctx.y + 36);
+
+  // Right side: SOLAR RETURN label + year
   doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
   doc.setTextColor(...colors.lilac);
   doc.setCharSpace(1.2);
-  doc.text('SOLAR RETURN', margin, ctx.y + 26);
+  doc.text('SOLAR RETURN', pw - margin, ctx.y + 18, { align: 'right' });
   doc.setCharSpace(0);
 
-  // Center: YEAR — larger 24pt
   doc.setFont('Georgia', 'bold'); doc.setFontSize(24);
-  doc.setTextColor(255, 255, 255);
-  doc.text(String(year), pw / 2, ctx.y + 29, { align: 'center' });
-
-  // Right: FULL NAME
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
   doc.setTextColor(...colors.gold);
-  doc.setCharSpace(0.4);
-  doc.text(name.toUpperCase(), pw - margin, ctx.y + 27, { align: 'right' });
-  doc.setCharSpace(0);
+  doc.text(String(year), pw - margin, ctx.y + 40, { align: 'right' });
 
   ctx.y += stripH;
 
