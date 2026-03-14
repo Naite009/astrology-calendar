@@ -3,6 +3,7 @@ import { Sparkles } from 'lucide-react';
 import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
+import { TierPreviewPanel } from './TierPreviewPanel';
 import { toast } from 'sonner';
 
 type TierId = 't1' | 't2' | 't3' | 't4' | 't5';
@@ -31,8 +32,6 @@ interface Props {
   personalMessage?: string;
   personName?: string;
   onDownloadTier: (tier: TierId) => void;
-  onSelectTier?: (tier: TierId | null) => void;
-  onAIClick?: () => void;
 }
 
 export const TierButtonRow = ({
@@ -40,27 +39,15 @@ export const TierButtonRow = ({
   natalChart,
   solarReturnChart,
   onDownloadTier,
-  onSelectTier,
-  onAIClick,
 }: Props) => {
   const [activeTier, setActiveTier] = useState<TierId | null>(null);
 
   const handleTierClick = (tier: TierId) => {
-    const newTier = activeTier === tier ? null : tier;
-    setActiveTier(newTier);
-    // All tiers now switch to full preview mode
-    if (onSelectTier) {
-      onSelectTier(newTier);
-      return;
-    }
+    setActiveTier(prev => (prev === tier ? null : tier));
   };
 
   const handleAiClick = () => {
-    if (onAIClick) {
-      onAIClick();
-    } else {
-      toast.info('AI reading generation coming soon');
-    }
+    toast.info('AI reading generation coming soon');
   };
 
   return (
@@ -95,6 +82,16 @@ export const TierButtonRow = ({
           Generate AI Reading
         </button>
       </div>
+
+      {/* Preview panel */}
+      {activeTier && (
+        <TierPreviewPanel
+          tier={activeTier}
+          analysis={analysis}
+          onClose={() => setActiveTier(null)}
+          onDownload={onDownloadTier}
+        />
+      )}
     </div>
   );
 };

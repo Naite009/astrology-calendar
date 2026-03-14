@@ -2,6 +2,3 @@ project_id = "ccdjecgztodkgifzjttc"
 
 [functions.extract-document-text]
 verify_jwt = false
-
-[functions.oracle-reading]
-verify_jwt = false

@@ -17,8 +17,6 @@ import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import { SolarReturnPDFExport } from '@/components/SolarReturnPDFExport';
 import { TierButtonRow } from '@/components/solarReturn/TierButtonRow';
-import { TierPreview, TierId } from '@/components/solarReturn/TierPreview';
-import { OverviewDashboard } from '@/components/solarReturn/OverviewDashboard';
 
 const ZODIAC_SIGNS = [
   'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
@@ -78,7 +76,6 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
 
   const [showInputForm, setShowInputForm] = useState(false);
   const [editingSRId, setEditingSRId] = useState<string | null>(null);
-  const [selectedTier, setSelectedTier] = useState<TierId | null>(null);
 
   const analysis = useMemo(() => {
     if (!selectedSR || !selectedNatal) return null;
@@ -125,8 +122,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
       </div>
 
       {/* Header & person picker — only people with SR charts, plus option to add new */}
-      <div className="flex flex-wrap items-center gap-3 justify-between">
-        <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Solar Return:</label>
         {natalChartsWithSR.length > 0 ? (
           <select
@@ -149,28 +145,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
         >
           + Add SR Chart
         </button>
-        </div>
       </div>
-
-      {/* Tier buttons row — top right, beneath header */}
-      {selectedSR && analysis && (
-        <TierButtonRow
-          analysis={analysis}
-          natalChart={selectedNatal}
-          solarReturnChart={selectedSR}
-          onSelectTier={(tier) => setSelectedTier(tier as TierId | null)}
-          onDownloadTier={(tier) => {
-            if (tier === 't1') {
-              const btn = document.querySelector('[data-tier1-download]') as HTMLButtonElement;
-              if (btn) btn.click();
-            } else if (tier === 't4' || tier === 't5') {
-              toast.info('Coming soon — this tier is under development');
-            } else {
-              toast.info(`Tier ${tier.replace('t', '')} PDF coming soon`);
-            }
-          }}
-        />
-      )}
 
       {/* When adding for potentially a different person, show natal chart picker */}
       {showAddForNewPerson && !showInputForm && (
@@ -252,50 +227,39 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             <TabsTrigger value="relocation" className="text-[11px] uppercase tracking-widest">Relocation</TabsTrigger>
           </TabsList>
 
-          {/* Tier buttons are now inside OverviewDashboard */}
+          {/* Tier preview button row */}
+          <TierButtonRow
+            analysis={analysis}
+            natalChart={selectedNatal}
+            solarReturnChart={selectedSR}
+            onDownloadTier={(tier) => {
+              if (tier === 't1') {
+                // Trigger Tier 1 download — delegate to the OverviewTab's PDF export
+                const btn = document.querySelector('[data-tier1-download]') as HTMLButtonElement;
+                if (btn) btn.click();
+              } else if (tier === 't4' || tier === 't5') {
+                toast.info('Coming soon — this tier is under development');
+              } else {
+                toast.info(`Tier ${tier.replace('t', '')} PDF coming soon`);
+              }
+            }}
+          />
 
-          {/* Hidden PDF export buttons — always in DOM so tier previews can trigger them */}
-          <div className="hidden">
-            <SolarReturnPDFExport
-              analysis={analysis}
-              srChart={selectedSR}
-              natalChart={selectedNatal}
-              narrative=""
-            />
-          </div>
+          <TabsContent value="overview">
+            <OverviewTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} onEdit={() => { setEditingSRId(selectedSR.id); setShowInputForm(true); }} onDelete={() => { deleteSolarReturn(selectedSR.id); setSelectedSRId(null); }} />
+          </TabsContent>
 
-          {/* Tier preview replaces tab content */}
-          {selectedTier ? (
-            <TierPreview
-              tier={selectedTier}
-              analysis={analysis}
-              srChart={selectedSR}
-              natalChart={selectedNatal}
-              onBack={() => setSelectedTier(null)}
-            />
-          ) : (
-            <>
-              <TabsContent value="overview">
-                <OverviewDashboard
-                  analysis={analysis}
-                  srChart={selectedSR}
-                  natalChart={selectedNatal}
-                />
-              </TabsContent>
+          <TabsContent value="houses">
+            <HouseOverlayTab analysis={analysis} />
+          </TabsContent>
 
-              <TabsContent value="houses">
-                <HouseOverlayTab analysis={analysis} />
-              </TabsContent>
+          <TabsContent value="aspects">
+            <AspectsTab analysis={analysis} />
+          </TabsContent>
 
-              <TabsContent value="aspects">
-                <AspectsTab analysis={analysis} />
-              </TabsContent>
-
-              <TabsContent value="relocation">
-                <RelocationTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} />
-              </TabsContent>
-            </>
-          )}
+          <TabsContent value="relocation">
+            <RelocationTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} />
+          </TabsContent>
         </Tabs>
       )}
     </div>
