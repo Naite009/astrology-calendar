@@ -95,9 +95,11 @@ export function generatePDFYearAtAGlance(
     doc.setTextColor(...INK);
     doc.text(a.moonSign || '--', margin + 14, leftY);
     leftY += 10;
+    const moonHouseNum = a.moonHouse?.house || 0;
+    const moonHouseLabel = moonHouseNum ? `MOON IN ${moonHouseNum}TH HOUSE` : '';
     doc.setFont('times', 'normal'); doc.setFontSize(8);
     doc.setTextColor(...MUTED);
-    doc.text(`MOON IN ${ord(a.moonHouse?.house || 0).toUpperCase()} HOUSE`, margin + 14, leftY);
+    doc.text(moonHouseLabel, margin + 14, leftY);
     leftY += 14;
     doc.setFont('times', 'normal'); doc.setFontSize(9.5);
     doc.setTextColor(...INK);
