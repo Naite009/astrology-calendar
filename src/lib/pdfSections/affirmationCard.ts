@@ -56,10 +56,7 @@ function getNatalIdentity(sunSign: string, moonSign: string, risingSign: string)
     Aquarius: 'People experience you as original — you refuse to be ordinary and it shows.',
     Pisces: 'People experience you as gentle and intuitive — you pick up on things others miss entirely.',
   };
-  const s = sun[sunSign] || 'You were born with something rare.';
-  const m = moon[moonSign] || 'What you need is to be understood.';
-  const r = rising[risingSign] || 'You show up in a way that is uniquely yours.';
-  return `${s} ${m} ${r}`;
+  return `${sun[sunSign] || 'You were born with something rare.'} ${moon[moonSign] || 'What you need is to be understood.'} ${rising[risingSign] || 'You show up in a way that is uniquely yours.'}`;
 }
 
 function getYearMessage(
@@ -75,14 +72,14 @@ function getYearMessage(
     11: 'your people and the community you belong to', 12: 'rest, reflection, and the invisible work that matters most',
   };
   const LORD_CONDITION: Record<string, string> = {
-    Saturn: 'Saturn asks that you show up for it with intention, not just inspiration. The joy you build deliberately is the kind that stays.',
-    Mars: 'Mars asks for courage — not recklessness, but the willingness to act before you feel ready.',
-    Jupiter: 'Jupiter opens doors this year. Walk through them. Overreach is the only real risk.',
-    Venus: 'Venus makes this year feel more natural than it has any right to. Use that ease to build something real.',
+    Saturn: 'Saturn asks that you show up for it with intention, not just inspiration.',
+    Mars: 'Mars asks for courage — the willingness to act before you feel ready.',
+    Jupiter: 'Jupiter opens doors this year. Walk through them.',
+    Venus: 'Venus makes this year feel more natural than it has any right to.',
     Mercury: 'Mercury asks you to think clearly, communicate honestly, and trust your own mind.',
-    Moon: 'The Moon asks you to feel your way through this year rather than reason your way through it.',
+    Moon: 'The Moon asks you to feel your way through rather than reason your way through.',
     Sun: 'The Sun asks you to be the main character — not for performance, but for real.',
-    Pluto: 'Pluto asks you to let something fundamental change. Resistance is the only thing that makes it hard.',
+    Pluto: 'Pluto asks you to let something fundamental change.',
     Neptune: 'Neptune asks you to trust what you cannot yet prove.',
     Uranus: 'Uranus asks you to stay flexible. The detour is often the point.',
   };
@@ -92,31 +89,31 @@ function getYearMessage(
   const is12thSun = srSunHouse === 12;
   const nodeInSurrenderHouse = northNodeHouse === 12 || northNodeHouse === 9;
   let body = `This year calls you toward ${houseTheme}. ${lordCondition}`;
-  if (is12thSun || isBalsamic) body += ' The most important work happens quietly this year — in private, in the pauses, in what you choose to release.';
-  if (nodeInSurrenderHouse) body += ' Trust what you cannot see yet. Growth this year comes through faith, not force.';
-  if (hasVenusAngular) body += ' You are more magnetic than you realize. Let people find you.';
+  if (is12thSun || isBalsamic) body += ' The most important work happens quietly this year.';
+  if (nodeInSurrenderHouse) body += ' Trust what you cannot see yet. Growth comes through faith, not force.';
+  if (hasVenusAngular) body += ' You are more magnetic than you realize.';
   else if (hasJupiterAngular) body += ' Something is expanding in your world. Make room for it.';
   const closings: Record<number, string> = {
-    1: '\"Becoming is better than being.\" — Carol Dweck',
-    2: '\"Know your worth, then add tax.\" — Unknown',
-    3: '\"The right word may be effective, but no word was ever as effective as a rightly timed pause.\" — Mark Twain',
-    4: '\"Where we love is home — home that our feet may leave, but not our hearts.\" — Oliver Wendell Holmes',
-    5: '\"You can\'t use up creativity. The more you use, the more you have.\" — Maya Angelou',
-    6: '\"Take care of your body. It\'s the only place you have to live.\" — Jim Rohn',
-    7: '\"The meeting of two personalities is like the contact of two chemical substances: if there is any reaction, both are transformed.\" — C.G. Jung',
-    8: '\"What we don\'t need in the midst of struggle is shame for being human.\" — Brene Brown',
-    9: '\"The world is a book, and those who do not travel read only one page.\" — Saint Augustine',
-    10: '\"Whatever you are, be a good one.\" — Abraham Lincoln',
-    11: '\"The glory of friendship is not the outstretched hand, not the kindly smile — it is the spiritual inspiration that comes to one when you discover that someone else believes in you.\" — Ralph Waldo Emerson',
-    12: '\"Almost everything will work again if you unplug it for a few minutes — including you.\" — Anne Lamott',
+    1: '"Becoming is better than being." — Carol Dweck',
+    2: '"Know your worth, then add tax." — Unknown',
+    3: '"The right word may be effective, but no word was ever as effective as a rightly timed pause." — Mark Twain',
+    4: '"Where we love is home — home that our feet may leave, but not our hearts." — Oliver Wendell Holmes',
+    5: '"You can\'t use up creativity. The more you use, the more you have." — Maya Angelou',
+    6: '"Take care of your body. It\'s the only place you have to live." — Jim Rohn',
+    7: '"The meeting of two personalities is like the contact of two chemical substances: if there is any reaction, both are transformed." — C.G. Jung',
+    8: '"What we don\'t need in the midst of struggle is shame for being human." — Brene Brown',
+    9: '"The world is a book, and those who do not travel read only one page." — Saint Augustine',
+    10: '"Whatever you are, be a good one." — Abraham Lincoln',
+    11: '"The glory of friendship is not the outstretched hand, not the kindly smile — it is the spiritual inspiration that comes to one when you discover that someone else believes in you." — Ralph Waldo Emerson',
+    12: '"Almost everything will work again if you unplug it for a few minutes — including you." — Anne Lamott',
   };
-  return { body, closing: closings[profHouse] || '\"Trust yourself. You know more than you think you do.\" — Benjamin Spock' };
+  return { body, closing: closings[profHouse] || '"Trust yourself. You know more than you think you do." — Benjamin Spock' };
 }
 
 export function generateAffirmationCard(
   ctx: PDFContext, doc: jsPDF, a: SolarReturnAnalysis, natalChart: NatalChart, srChart: SolarReturnChart,
 ) {
-  const { pw, ph, margin } = ctx;
+  const { pw, ph, margin, contentW } = ctx;
   const name = natalChart.name || 'Beautiful Soul';
   const year = srChart.solarReturnYear;
   const sunSign = natalChart.planets?.Sun?.sign || 'Pisces';
@@ -133,101 +130,118 @@ export function generateAffirmationCard(
   const identity = getNatalIdentity(sunSign, moonSign, risingSign);
   const { body, closing } = getYearMessage(profH, timeLord, northNodeHouse, hasVenusAngular, hasJupiterAngular, moonPhase, srSunHouse);
 
+  // ── Full-bleed cream page ──
   doc.setFillColor(...CREAM);
   doc.rect(0, 0, pw, ph, 'F');
 
-  ctx.y = 58;
-  ctx.trackedLabel(doc, `FINAL TAKEAWAY · ${year}`, margin, ctx.y, { size: 7.5, charSpace: 3.2 });
+  // ── Gold frame border — like a magazine closing spread ──
+  const frameInset = 18;
+  doc.setDrawColor(...GOLD); doc.setLineWidth(0.5);
+  doc.rect(frameInset, frameInset, pw - frameInset * 2, ph - frameInset * 2);
+
+  // ── Top: tracked label ──
+  ctx.y = frameInset + 32;
+  doc.setFont('times', 'bold'); doc.setFontSize(7);
+  doc.setTextColor(...GOLD);
+  doc.setCharSpace(4);
+  doc.text('CLOSING NOTE', pw / 2, ctx.y, { align: 'center' });
+  doc.setCharSpace(0);
   ctx.y += 10;
 
-  doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
-  doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 24;
+  doc.setDrawColor(...GOLD); doc.setLineWidth(0.3);
+  doc.line(pw / 2 - 60, ctx.y, pw / 2 + 60, ctx.y);
+  ctx.y += 40;
 
-  doc.setFont('times', 'normal'); doc.setFontSize(42);
+  // ── Massive centered title ──
+  doc.setFont('times', 'normal'); doc.setFontSize(46);
   doc.setTextColor(...INK);
-  const headingLines: string[] = doc.splitTextToSize('Carry This With You', pw - margin * 2);
-  for (const line of headingLines) {
-    doc.text(line, margin, ctx.y);
-    ctx.y += 42;
-  }
+  doc.text('Carry This', pw / 2, ctx.y, { align: 'center' });
+  ctx.y += 50;
+  doc.text('With You', pw / 2, ctx.y, { align: 'center' });
+  ctx.y += 22;
 
-  doc.setFont('times', 'italic'); doc.setFontSize(10.5);
+  // Name subtitle
+  doc.setFont('times', 'italic'); doc.setFontSize(10);
   doc.setTextColor(...MUTED);
-  doc.text(`${name} · ${sunSign} Sun${moonSign ? ` · ${moonSign} Moon` : ''}${risingSign ? ` · ${risingSign} Rising` : ''}`, margin, ctx.y);
-  ctx.y += 18;
+  const nameTag = `${name} · ${sunSign} Sun${moonSign ? ` · ${moonSign} Moon` : ''}${risingSign ? ` · ${risingSign} Rising` : ''}`;
+  doc.text(nameTag, pw / 2, ctx.y, { align: 'center' });
+  ctx.y += 36;
 
-  const drawTakeawayCard = (label: string, text: string, maxLines: number) => {
-    const rawLines = doc.splitTextToSize(text, pw - margin * 2 - 32) as string[];
-    const lines = rawLines.length > maxLines
-      ? [...rawLines.slice(0, maxLines - 1), rawLines[maxLines - 1].replace(/[.,;:!?]?$/, '…')]
-      : rawLines;
+  // ── Natal Strength — full-width card ──
+  const cardW = pw - margin * 2 - 20;
+  const cardX = (pw - cardW) / 2;
+  const identityLines: string[] = doc.splitTextToSize(identity, cardW - 32);
+  const card1H = Math.max(80, 28 + identityLines.length * 15 + 18);
 
-    const cardH = Math.max(118, 24 + 14 + lines.length * 16 + 18);
-    if (ctx.y + cardH > ph - 140) {
-      doc.addPage();
-      ctx.pageBg(doc);
-      ctx.y = margin;
-      ctx.trackedLabel(doc, 'FINAL TAKEAWAY · CONTINUED', margin, ctx.y, { size: 7.2, charSpace: 3 });
-      ctx.y += 10;
-      doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
-      doc.line(margin, ctx.y, pw - margin, ctx.y);
-      ctx.y += 18;
-    }
+  doc.setFillColor(...CARD_BG);
+  doc.roundedRect(cardX, ctx.y, cardW, card1H, 3, 3, 'F');
+  doc.setFillColor(...GOLD);
+  doc.rect(cardX, ctx.y, 3, card1H, 'F');
 
-    const startY = ctx.y;
-    doc.setFillColor(...CARD_BG);
-    doc.roundedRect(margin, startY, pw - margin * 2, cardH, 3, 3, 'F');
-    doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
-    doc.roundedRect(margin, startY, pw - margin * 2, cardH, 3, 3, 'S');
-    doc.setFillColor(...GOLD);
-    doc.rect(margin, startY, 3, cardH, 'F');
+  let cy = ctx.y + 22;
+  doc.setFont('times', 'bold'); doc.setFontSize(6.5);
+  doc.setTextColor(...GOLD);
+  doc.setCharSpace(2.5);
+  doc.text('YOUR NATAL STRENGTH', cardX + 16, cy);
+  doc.setCharSpace(0);
+  cy += 14;
 
-    let cy = startY + 24;
-    ctx.trackedLabel(doc, label, margin + 16, cy, { size: 7.4, charSpace: 2.6 });
-    cy += 14;
+  doc.setFont('times', 'normal'); doc.setFontSize(10.5);
+  doc.setTextColor(...INK);
+  for (const line of identityLines) { doc.text(line, cardX + 16, cy); cy += 15; }
 
-    doc.setFont('times', 'normal'); doc.setFontSize(10.8);
-    doc.setTextColor(...INK);
-    for (const line of lines) {
-      doc.text(line, margin + 16, cy);
-      cy += 16;
-    }
+  ctx.y += card1H + 12;
 
-    ctx.y = startY + cardH + 14;
-  };
+  // ── This Year's Ask — full-width card ──
+  const bodyLines: string[] = doc.splitTextToSize(body, cardW - 32);
+  const card2H = Math.max(80, 28 + bodyLines.length * 15 + 18);
 
-  drawTakeawayCard('YOUR NATAL STRENGTH', identity, 9);
-  drawTakeawayCard('THIS YEAR ASK', body, 10);
+  doc.setFillColor(...CARD_BG);
+  doc.roundedRect(cardX, ctx.y, cardW, card2H, 3, 3, 'F');
+  doc.setFillColor(...GOLD);
+  doc.rect(cardX, ctx.y, 3, card2H, 'F');
 
-  ctx.checkPage(90);
-  ctx.y += 4;
-  doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
-  doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 18;
+  cy = ctx.y + 22;
+  doc.setFont('times', 'bold'); doc.setFontSize(6.5);
+  doc.setTextColor(...GOLD);
+  doc.setCharSpace(2.5);
+  doc.text('THIS YEAR ASK', cardX + 16, cy);
+  doc.setCharSpace(0);
+  cy += 14;
 
-  const quoteText = closing.replace(/^\"/, '').replace(/\" — .*$/, '');
-  doc.setFont('times', 'italic'); doc.setFontSize(13);
+  doc.setFont('times', 'normal'); doc.setFontSize(10.5);
+  doc.setTextColor(...INK);
+  for (const line of bodyLines) { doc.text(line, cardX + 16, cy); cy += 15; }
+
+  ctx.y += card2H + 24;
+
+  // ── Full-page closing quote — large, centered, elegant ──
+  const quoteY = Math.max(ctx.y, ph - frameInset - 120);
+
+  doc.setDrawColor(...GOLD); doc.setLineWidth(0.3);
+  doc.line(pw / 2 - 40, quoteY, pw / 2 + 40, quoteY);
+
+  const quoteText = closing.replace(/^"/, '').replace(/" — .*$/, '').replace(/^"/, '').replace(/" — .*$/, '');
+  const attribution = closing.match(/— (.+)$/)?.[1] || closing.match(/— (.+)$/)?.[1];
+
+  const qY = quoteY + 24;
+  doc.setFont('times', 'italic'); doc.setFontSize(16);
   doc.setTextColor(...DARK);
-  const quoteLines: string[] = doc.splitTextToSize(quoteText, pw * 0.64);
+  const quoteLines: string[] = doc.splitTextToSize(quoteText, pw * 0.6);
+  let qCy = qY;
   for (const line of quoteLines) {
-    doc.text(line, pw / 2, ctx.y, { align: 'center' });
-    ctx.y += 18;
+    doc.text(line, pw / 2, qCy, { align: 'center' });
+    qCy += 22;
   }
 
-  const attribution = closing.match(/— (.+)$/)?.[1];
   if (attribution) {
-    ctx.y += 2;
-    doc.setFont('times', 'normal'); doc.setFontSize(8.2);
+    qCy += 6;
+    doc.setFont('times', 'normal'); doc.setFontSize(8);
     doc.setTextColor(...MUTED);
-    doc.setCharSpace(2);
-    doc.text(`— ${attribution.toUpperCase()}`, pw / 2, ctx.y, { align: 'center' });
+    doc.setCharSpace(3);
+    doc.text(`— ${attribution.toUpperCase()}`, pw / 2, qCy, { align: 'center' });
     doc.setCharSpace(0);
   }
-
-  const footerY = Math.min(ph - 26, ctx.y + 16);
-  doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
-  doc.line(margin, footerY, pw - margin, footerY);
 
   ctx.y = ph;
 }
