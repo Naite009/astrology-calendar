@@ -208,7 +208,8 @@ export function generateAffirmationCard(
   }
 
   // Paragraph 4: Year-ahead inspiration — warm, inviting, no planet names
-  const p4 = getYearInspiration(profH, srMoonSign);
+  const timeLord = a.profectionYear?.timeLord || '';
+  const p4 = getYearInspiration(profH, srMoonSign, timeLord);
   doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
   doc.setTextColor(...colors.gold);
   const p4Lines = doc.splitTextToSize(p4, textW);
