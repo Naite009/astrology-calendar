@@ -70,13 +70,11 @@ export async function generatePDFCover(
   // ── flowing y cursor — everything stacks from top ─────────────────
   let y = 56;
 
-  // ── "✦  SOLAR RETURN  ✦" ──────────────────────────────────────────
+  // ── Centered top label ─────────────────────────────────────────────
   doc.setFont('times', 'normal'); doc.setFontSize(9);
   doc.setTextColor(...GOLD);
-  doc.setCharSpace(4);
-  doc.text('*   SOLAR RETURN   *', pw / 2, y, { align: 'center' });
-  doc.setCharSpace(0);
-  y += 48;
+  doc.text('✶  SOLAR RETURN  ✶', pw / 2, y, { align: 'center' });
+  y += 50;
 
   // ── LARGE NAME ────────────────────────────────────────────────────
   doc.setFont('times', 'normal'); doc.setFontSize(40);
@@ -89,27 +87,23 @@ export async function generatePDFCover(
 
   // ── Birth info ────────────────────────────────────────────────────
   y += 2;
-  const birthInfo = `BORN ${formatDate(natalChart.birthDate)}  \u00B7  ${capitalizeLocation(natalChart.birthLocation).toUpperCase()}`;
+  const birthInfo = `BORN ${formatDate(natalChart.birthDate)}  ·  ${capitalizeLocation(natalChart.birthLocation).toUpperCase()}`;
   doc.setFont('times', 'normal'); doc.setFontSize(8);
   doc.setTextColor(...MUTED);
-  doc.setCharSpace(2);
   doc.text(birthInfo, pw / 2, y, { align: 'center' });
-  doc.setCharSpace(0);
-  y += 32;
+  y += 34;
 
-  // ── "SOLAR RETURN" label ──────────────────────────────────────────
-  doc.setFont('times', 'normal'); doc.setFontSize(9);
+  // ── Centered "SOLAR RETURN" label ───────────────────────────────
+  doc.setFont('times', 'normal'); doc.setFontSize(9.5);
   doc.setTextColor(...MUTED);
-  doc.setCharSpace(4);
   doc.text('SOLAR RETURN', pw / 2, y, { align: 'center' });
-  doc.setCharSpace(0);
-  y += 10;
+  y += 14;
 
-  // ── Massive year ──────────────────────────────────────────────────
-  doc.setFont('times', 'bold'); doc.setFontSize(82);
+  // ── Massive centered year ─────────────────────────────────────────
+  doc.setFont('times', 'bold'); doc.setFontSize(84);
   doc.setTextColor(...INK);
-  doc.text(String(year), pw / 2, y + 58, { align: 'center' });
-  y += 76;
+  doc.text(String(year), pw / 2, y + 56, { align: 'center' });
+  y += 78;
 
   // ── Cake image ────────────────────────────────────────────────────
   const cakeImgSrc = cakeImages[natalSun];
@@ -182,9 +176,9 @@ export async function generatePDFCover(
     { natal: `${natalRising} Rising`, sr: `${srRising} Rising` },
   ];
 
-  doc.setFont('times', 'normal'); doc.setFontSize(16);
+  doc.setFont('times', 'normal'); doc.setFontSize(17.5);
   entries.forEach((e, i) => {
-    const ey = tableY + 60 + i * 26;
+    const ey = tableY + 62 + i * 28;
     doc.setTextColor(...INK);
     doc.text(e.natal, tableX + (tableW / 4), ey, { align: 'center' });
     doc.setTextColor(...GOLD);
