@@ -31,6 +31,7 @@ export interface PDFContext {
   sectionNum: number;
   checkPage: (needed: number) => void;
   sectionTitle: (doc: jsPDF, title: string, subtitle?: string) => void;
+  sectionDivider: (doc: jsPDF) => void;
   writeBody: (doc: jsPDF, text: string, color?: Color, size?: number, lineH?: number) => void;
   writeBold: (doc: jsPDF, text: string, color?: Color, size?: number) => void;
   writeLabel: (doc: jsPDF, label: string, value: string, labelColor?: Color, valueColor?: Color) => void;
@@ -39,6 +40,7 @@ export interface PDFContext {
   drawContentBox: (doc: jsPDF, x: number, yStart: number, w: number, h: number, bg?: Color) => void;
   drawGoldRule: (doc: jsPDF) => void;
   drawRule: (doc: jsPDF) => void;
+  drawInfoBox: (doc: jsPDF, x: number, yStart: number, w: number, h: number, label: string, value: string, body?: string, bgColor?: Color) => number;
   trackedLabel: (doc: jsPDF, text: string, x: number, y: number, opts?: { align?: 'left' | 'center' | 'right'; size?: number; charSpace?: number }) => void;
   pageBg: (doc: jsPDF) => void;
 }
