@@ -72,9 +72,11 @@ function buildHighlights(a: SolarReturnAnalysis, srChart: SolarReturnChart, nata
     });
   }
 
-  // 4. Strongest SR-to-Natal aspect (skip Sun conjunct Sun — that's the Solar Return itself)
+  // 4. Strongest SR-to-Natal aspect (skip Sun conjunct Sun; only major 10 planets)
+  const MAJOR_PLANETS = new Set(['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto']);
   if (a.srToNatalAspects.length > 0) {
     const strongest = a.srToNatalAspects.find(asp =>
+      MAJOR_PLANETS.has(asp.planet1) && MAJOR_PLANETS.has(asp.planet2) &&
       !(asp.planet1 === 'Sun' && asp.planet2 === 'Sun' && asp.type === 'Conjunction')
     );
     if (strongest) {
@@ -83,6 +85,32 @@ function buildHighlights(a: SolarReturnAnalysis, srChart: SolarReturnChart, nata
         timing: `SR ${P[strongest.planet1] || strongest.planet1} ${strongest.type} Natal ${P[strongest.planet2] || strongest.planet2}`,
         body: strongest.interpretation,
         icon: 'SHIFT',
+      });
+    }
+  }
+
+  // 5. Natal Chart Ruler — how your birth chart's core energy interacts with this year
+  if (natalChart.planets?.Ascendant) {
+    const ascSign = natalChart.planets.Ascendant.sign;
+    const chartRuler = getSignRuler(ascSign);
+    const timeLord = a.profectionYear?.timeLord || '';
+    if (chartRuler && chartRuler !== timeLord) {
+      const rulerName = P[chartRuler] || chartRuler;
+      const natalPos = (natalChart.planets as any)?.[chartRuler];
+      const srPlanets = (srChart as any)?.planets || {};
+      const srPos = srPlanets[chartRuler];
+      let body = `${rulerName} rules your Ascendant (${ascSign}), making it your natal chart ruler — the planet that represents YOU.`;
+      if (natalPos?.sign) body += ` Born with ${rulerName} in ${natalPos.sign}`;
+      if (natalPos?.house) body += ` (${ord(natalPos.house)} house)`;
+      if (natalPos?.sign) body += `.`;
+      if (srPos?.sign) body += ` This year ${rulerName} moves through ${srPos.sign}`;
+      if (srPos?.house) body += ` in your ${ord(srPos.house)} house`;
+      if (srPos?.sign) body += ` — watch how ${LIFE_THEMES[srPos.house]?.detail || 'that area'} responds.`;
+      highlights.push({
+        label: `YOUR CHART RULER: ${rulerName.toUpperCase()}`,
+        timing: `${ascSign} Rising → ${rulerName}`,
+        body,
+        icon: 'STAR',
       });
     }
   }
