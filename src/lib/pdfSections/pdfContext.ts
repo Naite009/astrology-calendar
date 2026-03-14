@@ -91,7 +91,7 @@ export function createPDFContext(doc: jsPDF, pw: number, ph: number, margin: num
     writeBody(d: jsPDF, text: string, color: Color = colors.bodyText, size = 10, lineH = 15) {
       d.setFont('helvetica', 'normal'); d.setFontSize(size);
       d.setTextColor(color[0], color[1], color[2]);
-      const lines: string[] = d.splitTextToSize(text, contentW - 16);
+      const lines: string[] = d.splitTextToSize(text, contentW - 28);
       const totalH = lines.length * lineH;
       const remaining = ph - 55 - ctx.y;
       
