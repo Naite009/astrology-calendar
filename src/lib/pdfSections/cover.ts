@@ -73,7 +73,7 @@ export async function generatePDFCover(
   // ── Centered top label ─────────────────────────────────────────────
   doc.setFont('times', 'normal'); doc.setFontSize(9);
   doc.setTextColor(...GOLD);
-  doc.text('✶  SOLAR RETURN  ✶', pw / 2, y, { align: 'center' });
+  doc.text('-   SOLAR RETURN   -', pw / 2, y, { align: 'center' });
   y += 50;
 
   // ── LARGE NAME ────────────────────────────────────────────────────
