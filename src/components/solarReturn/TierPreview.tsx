@@ -565,14 +565,14 @@ export const TierPreview = ({ tier, analysis, srChart, natalChart, onBack }: Pro
           )}
 
           {/* Year-Defining Aspect */}
-          {analysis.yearDefiningAspect && (
+          {(analysis as any).yearDefiningAspect && (
             <div className="space-y-3 border border-border rounded-sm p-5 bg-card/60">
               <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Year-Defining Aspect</div>
               <div className="text-sm font-medium text-foreground">
-                {analysis.yearDefiningAspect.planet1} {analysis.yearDefiningAspect.type} {analysis.yearDefiningAspect.planet2}
+                {(analysis as any).yearDefiningAspect.planet1} {(analysis as any).yearDefiningAspect.type} {(analysis as any).yearDefiningAspect.planet2}
               </div>
-              {analysis.yearDefiningAspect.orb != null && (
-                <div className="text-xs text-muted-foreground">{analysis.yearDefiningAspect.orb.toFixed(1)}° orb</div>
+              {(analysis as any).yearDefiningAspect.orb != null && (
+                <div className="text-xs text-muted-foreground">{(analysis as any).yearDefiningAspect.orb.toFixed(1)}° orb</div>
               )}
             </div>
           )}
