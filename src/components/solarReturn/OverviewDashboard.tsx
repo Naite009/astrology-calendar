@@ -23,8 +23,6 @@ interface Props {
   analysis: SolarReturnAnalysis;
   srChart: SolarReturnChart;
   natalChart: NatalChart;
-  onSelectTier?: (tier: string | null) => void;
-  onDownloadTier: (tier: string) => void;
 }
 
 export const OverviewDashboard = ({ analysis, srChart, natalChart, onSelectTier, onDownloadTier }: Props) => {
