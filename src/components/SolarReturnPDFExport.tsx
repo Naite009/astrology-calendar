@@ -769,8 +769,8 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           // Angular Planets — continues on same page
           if (analysis.angularPlanets && analysis.angularPlanets.length > 0) {
             ctx.y += 6;
-            ctx.drawGoldRule(doc); ctx.y += 10;
-            ctx.writeBold(doc, 'Angular Planets — Most Powerful This Year', ctx.colors.gold, 11);
+            ctx.drawRule(doc); ctx.y += 10;
+            ctx.writeBold(doc, 'Angular Planets — Most Powerful This Year');
             ctx.y += 6;
             
             const angBoxW = (contentW - 16) / Math.min(analysis.angularPlanets.length, 3);
@@ -783,13 +783,12 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
               const x = margin + col * (angBoxW + 8);
               const by = angStartY + row * (angBoxH + 6);
               
-              ctx.drawContentBox(doc, x, by, angBoxW - 8, angBoxH, ctx.colors.softGold);
-              doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(...ctx.colors.gold);
+              doc.setFont('times', 'bold'); doc.setFontSize(11); doc.setTextColor(...ctx.colors.ink);
               doc.text(P[ap] || ap, x + 10, by + 18);
               
               const pm = planetLifeMeanings[ap] || planetLifeMeanings[ap.replace('NorthNode','North Node')];
               if (pm) {
-                doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...ctx.colors.bodyText);
+                doc.setFont('times', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...ctx.colors.ink);
                 const pmLines = doc.splitTextToSize(pm.inYourLife, angBoxW - 28);
                 pmLines.slice(0, 5).forEach((line: string, li: number) => doc.text(line, x + 10, by + 32 + li * 9));
               }
