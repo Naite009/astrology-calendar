@@ -49,9 +49,9 @@ export const TierButtonRow = ({
   const handleTierClick = (tier: TierId) => {
     const newTier = activeTier === tier ? null : tier;
     setActiveTier(newTier);
-    // For T1, switch to full preview mode
-    if (tier === 't1' && onSelectTier) {
-      onSelectTier(newTier === 't1' ? 't1' : null);
+    // All tiers now switch to full preview mode
+    if (onSelectTier) {
+      onSelectTier(newTier);
       return;
     }
   };

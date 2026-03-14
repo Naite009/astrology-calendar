@@ -242,17 +242,14 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             />
           </div>
 
-          {/* Tier 1 full preview replaces tab content */}
-          {selectedTier === 't1' ? (
-            <Tier1Preview
+          {/* Tier preview replaces tab content */}
+          {selectedTier ? (
+            <TierPreview
+              tier={selectedTier}
               analysis={analysis}
               srChart={selectedSR}
               natalChart={selectedNatal}
               onBack={() => setSelectedTier(null)}
-              onDownload={() => {
-                const btn = document.querySelector('[data-tier1-download]') as HTMLButtonElement;
-                if (btn) btn.click();
-              }}
             />
           ) : (
             <>
@@ -261,7 +258,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
                   analysis={analysis}
                   srChart={selectedSR}
                   natalChart={selectedNatal}
-                  onSelectTier={(tier) => setSelectedTier(tier as 't1' | null)}
+                  onSelectTier={(tier) => setSelectedTier(tier as TierId | null)}
                   onDownloadTier={(tier) => {
                     if (tier === 't1') {
                       const btn = document.querySelector('[data-tier1-download]') as HTMLButtonElement;
