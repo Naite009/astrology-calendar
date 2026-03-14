@@ -32,15 +32,15 @@ function lifeTheme(house: number): string {
 function buildHighlights(a: SolarReturnAnalysis, srChart: SolarReturnChart, natalChart: NatalChart): YearHighlight[] {
   const highlights: YearHighlight[] = [];
 
-  // 1. Time Lord / Profection — the most important single factor
+  // 1. Time Lord / Profection — describe by theme, not planet name
   if (a.profectionYear) {
-    const tl = P[a.profectionYear.timeLord] || a.profectionYear.timeLord;
     const hNum = a.profectionYear.houseNumber;
     const srH = a.profectionYear.timeLordSRHouse;
+    const theme = LIFE_THEMES[hNum];
     highlights.push({
-      label: `${tl} RUNS YOUR YEAR`,
+      label: `THIS YEAR'S FOCUS: ${theme?.short?.toUpperCase() || 'YOUR PATH'}`,
       timing: `${ord(hNum)} House Profection Year`,
-      body: `${tl} is your Time Lord -- the planet steering every major decision. Its home base is your natal ${ord(hNum)} house (${lifeTheme(hNum)}).${srH ? ` This year it channels that energy into ${lifeTheme(srH)}.` : ''}`,
+      body: `This year the spotlight lands on ${lifeTheme(hNum)}. Everything significant circles back to this area.${srH ? ` The energy channels most directly into ${lifeTheme(srH)}.` : ''}`,
       icon: 'KEY',
     });
   }
@@ -115,13 +115,12 @@ function buildHighlights(a: SolarReturnAnalysis, srChart: SolarReturnChart, nata
     }
   }
 
-  // 5. Saturn focus — the mastery demand
+  // 5. Saturn focus — reframe without naming Saturn repeatedly
   if (a.saturnFocus) {
     const satH = a.saturnFocus.house;
-    const satSign = a.saturnFocus.sign;
     highlights.push({
-      label: `SATURN'S DEMAND: ${satSign.toUpperCase()}`,
-      timing: satH ? `${ord(satH)} House -- ${lifeTheme(satH)}` : `In ${satSign}`,
+      label: `WHERE DISCIPLINE IS REQUIRED`,
+      timing: satH ? `${ord(satH)} House -- ${lifeTheme(satH)}` : '',
       body: a.saturnFocus.interpretation,
       icon: 'WORK',
     });
@@ -241,7 +240,7 @@ function getFriendlyBody(
 
   if (monthIdx === 0) {
     const ascRuler = a.srAscRulerInNatal;
-    let opener = `Fresh energy arrives. ${timeLord} is running the show now.`;
+    let opener = `Fresh energy arrives — your new year begins here.`;
     if (ascRuler) {
       opener += ` Pay attention to ${LIFE_THEMES[ascRuler.rulerNatalHouse]?.detail || 'key life areas'} -- that is where this year lands first.`;
     }
@@ -250,7 +249,7 @@ function getFriendlyBody(
   }
 
   if (monthIdx === 11) {
-    return `The year is winding down. Look back at what ${timeLord} brought you -- the lessons, the growth, the hard-won clarity. This is integration time. Let the year's wisdom settle before the next chapter begins.`;
+    return `The year is winding down. Look back at what this chapter brought you -- the lessons, the growth, the hard-won clarity. This is integration time. Let the year's wisdom settle before the next one begins.`;
   }
 
   // Build natural-language body
