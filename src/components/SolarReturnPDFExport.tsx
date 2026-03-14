@@ -1085,23 +1085,20 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         // SR Moon aspects
         if (analysis.srMoonAspects && analysis.srMoonAspects.length > 0) {
           ctx.y += 6;
-          ctx.writeBold(doc, 'Moon Aspects This Year', ctx.colors.gold, 11);
+          ctx.writeBold(doc, 'Moon Aspects This Year');
           ctx.y += 6;
           for (const asp of analysis.srMoonAspects.slice(0, 6)) {
             const isHard = ['Square', 'Opposition', 'Quincunx'].includes(asp.aspectType);
             ctx.checkPage(80);
             ctx.drawCard(doc, () => {
-              const innerW = contentW - 24;
-              doc.setFillColor(...(isHard ? [255, 245, 240] as [number, number, number] : ctx.colors.softGold));
-              doc.roundedRect(margin + 8, ctx.y - 4, innerW, 22, 4, 4, 'F');
-              doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
-              doc.setTextColor(...(isHard ? [180, 100, 60] as [number, number, number] : ctx.colors.gold));
-              doc.text(`Moon ${asp.aspectType} ${P[asp.targetPlanet] || asp.targetPlanet}`, margin + 16, ctx.y + 10);
-              doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...ctx.colors.dimText);
-              doc.text(`${asp.orb}' orb${asp.targetSRHouse ? `  |  H${asp.targetSRHouse}` : ''}`, margin + innerW - 4, ctx.y + 10, { align: 'right' });
-              ctx.y += 26;
-              ctx.writeBody(doc, asp.interpretation, ctx.colors.bodyText, 9.5, 13);
-            }, isHard ? [180, 100, 60] : ctx.colors.gold);
+              doc.setFont('times', 'bold'); doc.setFontSize(9.5);
+              doc.setTextColor(...ctx.colors.ink);
+              doc.text(`Moon ${asp.aspectType} ${P[asp.targetPlanet] || asp.targetPlanet}`, margin + 8, ctx.y);
+              doc.setFont('times', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...ctx.colors.muted);
+              doc.text(`${asp.orb}' orb${asp.targetSRHouse ? `  |  H${asp.targetSRHouse}` : ''}`, margin + contentW, ctx.y, { align: 'right' });
+              ctx.y += 12;
+              ctx.writeBody(doc, asp.interpretation);
+            });
           }
         }
       }
