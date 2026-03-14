@@ -74,7 +74,7 @@ export async function generatePDFCover(
   doc.setFont('times', 'normal'); doc.setFontSize(9);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(4);
-  doc.text('\u2726   SOLAR RETURN   \u2726', pw / 2, y, { align: 'center' });
+  doc.text('*   SOLAR RETURN   *', pw / 2, y, { align: 'center' });
   doc.setCharSpace(0);
   y += 48;
 
