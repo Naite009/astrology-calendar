@@ -351,7 +351,7 @@ export function generateHighlightsPage(
   ctx.y += 6;
   doc.setFont('helvetica', 'italic'); doc.setFontSize(8);
   doc.setTextColor(...colors.dimText);
-  doc.text('Based on your natal chart, solar return, and annual profection', pw / 2, ctx.y, { align: 'center' });
+  doc.text('What to expect each month, based on your chart', pw / 2, ctx.y, { align: 'center' });
   ctx.y += 16;
 
   const forecasts = buildPersonalizedMonthlyForecasts(a, srChart, natalChart);
@@ -381,10 +381,10 @@ export function generateHighlightsPage(
       doc.setFillColor(...colors.softGold);
       doc.roundedRect(x, y, colW, rowH - 2, 4, 4, 'F');
 
-      // Month badge
+      // Month + Year badge
       doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
       doc.setTextColor(...colors.gold);
-      doc.text(f.month, x + 8, y + 14);
+      doc.text(`${f.month} ${f.year}`, x + 8, y + 14);
 
       // Headline
       doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
