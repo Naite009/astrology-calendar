@@ -395,15 +395,15 @@ export function generateHighlightsPage(
   const colW = (contentW - 10) / 2;
 
   for (let i = 0; i < forecasts.length; i += 2) {
-    // Calculate row height from the taller of the two cards
-    const leftLines = doc.splitTextToSize(forecasts[i].body, colW - 52);
-    const rightLines = i + 1 < forecasts.length ? doc.splitTextToSize(forecasts[i + 1].body, colW - 52) : [];
-    const leftHeadLines = doc.splitTextToSize(forecasts[i].headline, colW - 52);
-    const rightHeadLines = i + 1 < forecasts.length ? doc.splitTextToSize(forecasts[i + 1].headline, colW - 52) : [];
-
-    const leftH = 14 + leftHeadLines.length * 11 + 4 + leftLines.length * 10 + 10;
-    const rightH = i + 1 < forecasts.length ? 14 + rightHeadLines.length * 11 + 4 + rightLines.length * 10 + 10 : 0;
-    const rowH = Math.max(leftH, rightH);
+    // Calculate row height — stacked layout: month/year → headline → body
+    const calcCardH = (fi: number) => {
+      if (fi >= forecasts.length) return 0;
+      const headLines = doc.splitTextToSize(forecasts[fi].headline, colW - 20);
+      const bodyLines = doc.splitTextToSize(forecasts[fi].body, colW - 20);
+      // 16 (top pad) + 14 (month label) + 6 (gap) + headLines*11 + 6 (gap) + bodyLines*10 + 10 (bottom pad)
+      return 16 + 14 + 6 + headLines.length * 11 + 6 + bodyLines.length * 10 + 10;
+    };
+    const rowH = Math.max(calcCardH(i), calcCardH(i + 1));
 
     ctx.checkPage(rowH + 6);
 
@@ -418,26 +418,28 @@ export function generateHighlightsPage(
       doc.setFillColor(...colors.softGold);
       doc.roundedRect(x, y, colW, rowH - 2, 4, 4, 'F');
 
-      // Month + Year badge
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+      // Row 1: Month + Year
+      let curY = y + 16;
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
       doc.setTextColor(...colors.gold);
-      doc.text(`${f.month} ${f.year}`, x + 8, y + 14);
+      doc.text(`${f.month} ${f.year}`, x + 10, curY);
+      curY += 14;
 
-      // Headline
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
+      // Row 2: Headline
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
       doc.setTextColor(...colors.deepBrown);
-      const hLines = doc.splitTextToSize(f.headline, colW - 52);
+      const hLines = doc.splitTextToSize(f.headline, colW - 20);
       hLines.forEach((line: string, li: number) => {
-        doc.text(line, x + 42, y + 13 + li * 11);
+        doc.text(line, x + 10, curY + li * 11);
       });
+      curY += hLines.length * 11 + 4;
 
-      // Body
+      // Row 3: Body
       doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
       doc.setTextColor(...colors.bodyText);
-      const bLines = doc.splitTextToSize(f.body, colW - 52);
-      const bodyStartY = y + 13 + hLines.length * 11 + 4;
+      const bLines = doc.splitTextToSize(f.body, colW - 20);
       bLines.forEach((line: string, li: number) => {
-        doc.text(line, x + 42, bodyStartY + li * 10);
+        doc.text(line, x + 10, curY + li * 10);
       });
     }
 
