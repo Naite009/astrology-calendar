@@ -20,6 +20,7 @@ import { generateHowToReadPage } from '@/lib/pdfSections/howToRead';
 import { generateProfectionPersonalSection } from '@/lib/pdfSections/profectionPersonal';
 import { generateKeyDatesSection } from '@/lib/pdfSections/keyDates';
 import { generateQuarterlySummary } from '@/lib/pdfSections/quarterlySummary';
+import { generateTier1SolarReturnPDF } from '@/lib/pdfSections/tier1Report';
 
 // Cake image imports
 import cakeAries from '@/assets/cakes/aries.png';
