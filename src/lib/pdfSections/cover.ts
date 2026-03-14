@@ -147,10 +147,9 @@ export async function generatePDFCover(
   y += 14;
 
   // ── BORN WITH / THIS YEAR comparison table ────────────────────────
-  // Keep table at current y; if it would overflow push to safe zone
   const tableW  = contentW * 0.82;
   const tableX  = (pw - tableW) / 2;
-  const tableH  = 116;
+  const tableH  = 136;
   const tableY  = Math.min(y, ph - margin - tableH - 16);
   const midX    = tableX + tableW / 2;
 
@@ -162,30 +161,30 @@ export async function generatePDFCover(
 
   // Vertical divider
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
-  doc.line(midX, tableY + 14, midX, tableY + tableH - 14);
+  doc.line(midX, tableY + 16, midX, tableY + tableH - 16);
 
   // Column headers
-  doc.setFont('times', 'normal'); doc.setFontSize(8);
+  doc.setFont('times', 'normal'); doc.setFontSize(9);
   doc.setTextColor(...MUTED);
   doc.setCharSpace(3);
-  doc.text('BORN WITH', tableX + (tableW / 4), tableY + 26, { align: 'center' });
-  doc.text('THIS YEAR', midX + (tableW / 4),   tableY + 26, { align: 'center' });
+  doc.text('BORN WITH', tableX + (tableW / 4), tableY + 30, { align: 'center' });
+  doc.text('THIS YEAR', midX + (tableW / 4),   tableY + 30, { align: 'center' });
   doc.setCharSpace(0);
 
   // Thin rule under headers
   doc.setDrawColor(...RULE); doc.setLineWidth(0.2);
-  doc.line(tableX + 10, tableY + 32, tableX + tableW - 10, tableY + 32);
+  doc.line(tableX + 10, tableY + 38, tableX + tableW - 10, tableY + 38);
 
-  // Big Three rows
+  // Big Three rows — larger font
   const entries = [
     { natal: `${natalSun} Sun`,     sr: `${natalSun} Sun`  },
     { natal: `${natalMoon} Moon`,   sr: `${srMoon} Moon`   },
     { natal: `${natalRising} Rising`, sr: `${srRising} Rising` },
   ];
 
-  doc.setFont('times', 'normal'); doc.setFontSize(13.5);
+  doc.setFont('times', 'normal'); doc.setFontSize(16);
   entries.forEach((e, i) => {
-    const ey = tableY + 50 + i * 22;
+    const ey = tableY + 60 + i * 26;
     doc.setTextColor(...INK);
     doc.text(e.natal, tableX + (tableW / 4), ey, { align: 'center' });
     doc.setTextColor(...GOLD);
