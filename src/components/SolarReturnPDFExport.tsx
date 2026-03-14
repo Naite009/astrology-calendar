@@ -1067,12 +1067,10 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             cadent: 'Your SR Moon is in a cadent house. Emotional responses are more adaptive this year. You process feelings internally, preparing rather than reacting.',
           };
           ctx.drawCard(doc, () => {
-            doc.setFillColor(...ctx.colors.softGold);
-            doc.roundedRect(margin + 6, ctx.y - 4, contentW - 12, 26, 4, 4, 'F');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(...ctx.colors.gold);
-            doc.text(`Moon: ${analysis.moonSign || ''} in House ${analysis.moonHouse?.house || '--'}`, margin + 16, ctx.y + 10);
-            ctx.y += 30;
-            ctx.writeBody(doc, angDesc[analysis.moonAngularity!], ctx.colors.bodyText, 10, 14);
+            doc.setFont('times', 'bold'); doc.setFontSize(11); doc.setTextColor(...ctx.colors.ink);
+            doc.text(`Moon: ${analysis.moonSign || ''} in House ${analysis.moonHouse?.house || '--'}`, margin + 8, ctx.y);
+            ctx.y += 14;
+            ctx.writeBody(doc, angDesc[analysis.moonAngularity!]);
             if (analysis.moonLateDegree) {
               ctx.y += 4;
               ctx.writeCardSection(doc, 'Late-Degree Moon', 'Your SR Moon is in the late degrees of its sign (25+). Something emotional is reaching completion or about to change. Endings, transitions, and a sense of "moving on" characterize the year.', ctx.colors.accentRust);
