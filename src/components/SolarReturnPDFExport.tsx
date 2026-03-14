@@ -665,7 +665,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           ];
           elements.forEach((el, i) => {
             const x = margin + i * elemW;
-            const isDom = el.name.toLowerCase() === eb.dominant;
+            const isDom = el.name.toLowerCase() === (eb.dominant || '').toLowerCase();
             doc.setFont('times', 'bold'); doc.setFontSize(22);
             doc.setTextColor(...(isDom ? ctx.colors.ink : ctx.colors.muted));
             doc.text(String(el.val), x + elemW / 2, elemStartY + 20, { align: 'center' });
@@ -695,7 +695,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           const modStartY = ctx.y;
           modalities.forEach((mod, i) => {
             const x = margin + i * modW;
-            const isDom = mod.name.toLowerCase() === mb.dominant;
+            const isDom = mod.name.toLowerCase() === (mb.dominant || '').toLowerCase();
             doc.setFont('times', 'bold'); doc.setFontSize(20);
             doc.setTextColor(...(isDom ? ctx.colors.ink : ctx.colors.muted));
             doc.text(String(mod.val), x + modW / 2, modStartY + 18, { align: 'center' });
