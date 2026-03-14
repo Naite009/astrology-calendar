@@ -94,17 +94,6 @@ export const TierButtonRow = ({
           <Sparkles size={10} />
           Generate AI Reading
         </button>
-      </div>
-
-      {/* Preview panel — only for non-T1 tiers (T1 uses full preview) */}
-      {activeTier && activeTier !== 't1' && (
-        <TierPreviewPanel
-          tier={activeTier}
-          analysis={analysis}
-          onClose={() => setActiveTier(null)}
-          onDownload={onDownloadTier}
-        />
-      )}
     </div>
   );
 };
