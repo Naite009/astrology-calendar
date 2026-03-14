@@ -253,14 +253,21 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       generateHowToReadPage(ctx, doc);
 
       // =============================================
-      // BIG THREE (birthday mode) or always
+      // BIG THREE
       // =============================================
       doc.addPage(); ctx.y = margin;
       ctx.sectionPages.set('YOUR BIG THREE', doc.getNumberOfPages());
       generateStrengthsPortrait(ctx, doc, natalChart, analysis);
 
       // =============================================
-      // PAGE 3+: YEAR AT A GLANCE (own page, beautiful)
+      // HOW THIS YEAR MEETS YOU (new v3 section)
+      // =============================================
+      doc.addPage(); ctx.y = margin;
+      ctx.sectionPages.set('HOW THIS YEAR MEETS YOU', doc.getNumberOfPages());
+      generateHowThisYearMeetsYou(ctx, doc, analysis, srChart, natalChart);
+
+      // =============================================
+      // PAGE 3+: YEAR AT A GLANCE (own page)
       // =============================================
       doc.addPage(); ctx.y = margin;
       ctx.sectionPages.set('YEAR AT A GLANCE', doc.getNumberOfPages());
