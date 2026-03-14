@@ -323,16 +323,27 @@ export const Tier1Preview = ({ analysis, srChart, natalChart, onBack, onDownload
     <div className="space-y-6 py-4">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <button
-          onClick={onBack}
-          className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
-        >
-          <ArrowLeft size={12} /> Back to full view
-        </button>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={onBack}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+          >
+            <ArrowLeft size={12} /> Back to full view
+          </button>
           <span className="text-sm font-medium text-foreground">
             Year at a Glance · {firstName}
           </span>
+          <label className="flex items-center gap-1.5 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={!includeBirthday}
+              onChange={(e) => setIncludeBirthday(!e.target.checked)}
+              className="rounded border-border h-3.5 w-3.5"
+            />
+            <span className="text-[11px] text-muted-foreground">No birthday</span>
+          </label>
+        </div>
+        <div className="flex items-center gap-3">
           <button
             onClick={handleDownloadPDF}
             disabled={downloading}
@@ -351,24 +362,6 @@ export const Tier1Preview = ({ analysis, srChart, natalChart, onBack, onDownload
             {aiLoading ? 'Generating...' : 'AI Reading'}
           </button>
         </div>
-      </div>
-
-      {/* Birthday message opt-out toggle */}
-      <div className="flex items-center gap-3 border border-border rounded-sm px-4 py-3 bg-card/40">
-        <label className="flex items-center gap-2 cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={!includeBirthday}
-            onChange={(e) => setIncludeBirthday(!e.target.checked)}
-            className="rounded border-border"
-          />
-          <span className="text-xs text-muted-foreground">Skip birthday message in PDF</span>
-        </label>
-        {includeBirthday && (
-          <span className="text-xs text-muted-foreground/70 italic ml-auto truncate max-w-[50%]">
-            "{autoBirthdayMessage.slice(0, 80)}…"
-          </span>
-        )}
       </div>
 
       {/* Section: This Year's Theme */}
