@@ -4,6 +4,8 @@ import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { buildOraclePrompt } from '@/lib/aiPrompts/oraclePrompt';
+import { generateTier1SolarReturnPDF } from '@/lib/pdfSections/tier1Report';
+import { CAKE_IMAGES } from '@/components/SolarReturnPDFExport';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
