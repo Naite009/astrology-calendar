@@ -3,71 +3,33 @@ import { PDFContext } from './pdfContext';
 import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
-import { P } from '@/components/SolarReturnPDFExport';
 
 /**
- * Birthday Affirmation Card — a frameable, deeply personal birthday letter
- * Uses natal big three, SR placements, time lord, and moon sign to create
- * a one-page message that reads like it was written by someone who truly knows you.
+ * Birthday Affirmation Card — ONE powerful takeaway quote for the year.
+ * Synthesizes natal Sun gift + profection house verb + SR Moon tone
+ * into a single, frameable sentence. No planet names. No jargon.
  */
 
-function getSignGift(sign: string): string {
-  const gifts: Record<string, string> = {
-    Aries: 'the courage to begin before you feel ready',
-    Taurus: 'the patience to build something that lasts',
-    Gemini: 'the ability to make connections others miss',
-    Cancer: 'the instinct to protect what matters most',
-    Leo: 'the warmth that makes people feel truly seen',
-    Virgo: 'the devotion to getting things right, especially for the people you love',
-    Libra: 'the grace to hold two sides of any situation without losing yourself',
-    Scorpio: 'the willingness to go where others are afraid to look',
-    Sagittarius: 'the faith that life is leading you somewhere meaningful',
-    Capricorn: 'the discipline to show up even when no one is watching',
-    Aquarius: 'the vision to see what the world could be, not just what it is',
-    Pisces: 'the sensitivity that lets you feel what others cannot put into words',
+function getSunEssence(sign: string): string {
+  const essences: Record<string, string> = {
+    Aries: 'You start things others only talk about.',
+    Taurus: 'You build things that last.',
+    Gemini: 'You connect dots no one else can see.',
+    Cancer: 'You feel what others cannot put into words.',
+    Leo: 'You make people feel seen just by being in the room.',
+    Virgo: 'You notice what everyone else overlooks — and you make it better.',
+    Libra: 'You hold space for both sides without losing yourself.',
+    Scorpio: 'You go where others are afraid to look.',
+    Sagittarius: 'You trust that life is taking you somewhere meaningful.',
+    Capricorn: 'You show up even when no one is watching.',
+    Aquarius: 'You see what the world could be, not just what it is.',
+    Pisces: 'You carry a sensitivity that changes the people around you.',
   };
-  return gifts[sign] || 'a depth that makes you irreplaceable';
+  return essences[sign] || 'You bring something irreplaceable.';
 }
 
-function getMoonNeed(sign: string): string {
-  const needs: Record<string, string> = {
-    Aries: 'space to act on your feelings without being told to slow down',
-    Taurus: 'safety, comfort, and the freedom to take your time',
-    Gemini: 'conversation, variety, and someone who keeps up with your mind',
-    Cancer: 'a home that feels like your own, and people who show up consistently',
-    Leo: 'to be appreciated — not for what you do, but for who you are',
-    Virgo: 'to feel useful, and permission to not have everything figured out',
-    Libra: 'peace, beauty, and relationships where you feel truly equal',
-    Scorpio: 'honesty — even when it is uncomfortable — and real emotional depth',
-    Sagittarius: 'adventure, meaning, and room to change your mind',
-    Capricorn: 'respect for your ambition and someone who sees past your composure',
-    Aquarius: 'freedom to be different and people who love you for exactly that',
-    Pisces: 'time alone to recharge, and someone who protects your tenderness',
-  };
-  return needs[sign] || 'to be understood without having to explain yourself';
-}
-
-function getRisingMessage(sign: string): string {
-  const msgs: Record<string, string> = {
-    Aries: 'People experience you as someone who gets things moving. You walk into a room and the energy shifts.',
-    Taurus: 'People experience you as calm, reliable, and grounded. Your presence alone steadies the room.',
-    Gemini: 'People experience you as bright, curious, and easy to talk to. You make everything more interesting.',
-    Cancer: 'People experience you as warm and approachable. Others feel safe with you before they know why.',
-    Leo: 'People experience you as magnetic. There is something about you that draws attention — not because you ask for it, but because you earn it.',
-    Virgo: 'People experience you as competent and thoughtful. You notice what others overlook.',
-    Libra: 'People experience you as graceful and fair. You have a gift for making others feel at ease.',
-    Scorpio: 'People experience you as intense and perceptive. You see through surfaces, and others know it.',
-    Sagittarius: 'People experience you as optimistic and adventurous. Your enthusiasm is genuinely contagious.',
-    Capricorn: 'People experience you as someone who has it together. You project quiet authority.',
-    Aquarius: 'People experience you as original and a little unpredictable. You refuse to be ordinary.',
-    Pisces: 'People experience you as gentle and intuitive. You pick up on things others miss entirely.',
-  };
-  return msgs[sign] || 'You show up in a way that is uniquely yours.';
-}
-
-function getYearAheadClosing(timeLord: string, profHouse: number, srMoonSign: string): string {
-  const tlName = P[timeLord] || timeLord;
-  const houseVerb: Record<number, string> = {
+function getYearVerb(profHouse: number): string {
+  const verbs: Record<number, string> = {
     1: 'redefine who you are',
     2: 'build something of real value',
     3: 'say the things you have been holding back',
@@ -81,9 +43,25 @@ function getYearAheadClosing(timeLord: string, profHouse: number, srMoonSign: st
     11: 'find the people who actually get you',
     12: 'rest, release, and trust the process',
   };
-  const verb = houseVerb[profHouse] || 'move forward with clarity';
+  return verbs[profHouse] || 'move forward with clarity';
+}
 
-  return `This year, ${tlName} is running the show — and it is asking you to ${verb}. Your emotional world will be colored by ${srMoonSign} energy all year. Trust that. Work with it. This is your year.`;
+function getMoonTone(sign: string): string {
+  const tones: Record<string, string> = {
+    Aries: 'Trust the urgency.',
+    Taurus: 'Trust the pace.',
+    Gemini: 'Trust the curiosity.',
+    Cancer: 'Trust what you feel.',
+    Leo: 'Trust what lights you up.',
+    Virgo: 'Trust the process.',
+    Libra: 'Trust the connection.',
+    Scorpio: 'Trust the depth.',
+    Sagittarius: 'Trust the direction.',
+    Capricorn: 'Trust the discipline.',
+    Aquarius: 'Trust the vision.',
+    Pisces: 'Trust the surrender.',
+  };
+  return tones[sign] || 'Trust yourself.';
 }
 
 export function generateAffirmationCard(
@@ -92,10 +70,7 @@ export function generateAffirmationCard(
   const { pw, ph, margin, contentW, colors } = ctx;
   const name = natalChart.name || 'Beautiful Soul';
   const sunSign = natalChart.planets?.Sun?.sign || 'Aries';
-  const moonSign = natalChart.planets?.Moon?.sign || '';
-  const risingSign = natalChart.planets?.Ascendant?.sign || natalChart.houseCusps?.[0]?.sign || '';
-  const srMoonSign = a.moonSign || '';
-  const timeLord = a.profectionYear?.timeLord || '';
+  const srMoonSign = a.moonSign || sunSign;
   const profH = a.profectionYear?.houseNumber || 1;
 
   // Outer decorative frame
@@ -116,7 +91,7 @@ export function generateAffirmationCard(
   });
 
   // "Happy Birthday" label
-  let cardY = 110;
+  let cardY = 120;
   doc.setFont('helvetica', 'italic'); doc.setFontSize(12);
   doc.setTextColor(...colors.dimText);
   doc.text('Happy Birthday', pw / 2, cardY, { align: 'center' });
@@ -131,57 +106,38 @@ export function generateAffirmationCard(
   // Decorative line
   doc.setDrawColor(...colors.gold); doc.setLineWidth(1);
   doc.line(pw / 2 - 80, cardY, pw / 2 + 80, cardY);
-  cardY += 30;
+  cardY += 60;
 
-  // ── THE BIRTHDAY LETTER ──
-  const textW = contentW - 100;
+  // ── THE SINGLE TAKEAWAY QUOTE ──
+  const textW = contentW - 80;
 
-  // Paragraph 1: Your Sun — your gift
-  const p1 = `You were born with ${getSignGift(sunSign)}. That is not something you learned — it is wired into who you are. It is the thing people remember about you long after you leave the room.`;
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(11);
+  // Line 1: Who you are (Sun essence)
+  const essence = getSunEssence(sunSign);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(13);
   doc.setTextColor(...colors.bodyText);
-  const p1Lines = doc.splitTextToSize(p1, textW);
-  p1Lines.forEach((line: string) => {
+  const essenceLines = doc.splitTextToSize(essence, textW);
+  essenceLines.forEach((line: string) => {
     doc.text(line, pw / 2, cardY, { align: 'center' });
-    cardY += 16;
+    cardY += 20;
   });
-  cardY += 10;
+  cardY += 16;
 
-  // Paragraph 2: Your Moon — what you need
-  if (moonSign) {
-    const p2 = `What you need — really need — is ${getMoonNeed(moonSign)}. That is not too much to ask. It is the minimum you deserve.`;
-    const p2Lines = doc.splitTextToSize(p2, textW);
-    p2Lines.forEach((line: string) => {
-      doc.text(line, pw / 2, cardY, { align: 'center' });
-      cardY += 16;
-    });
-    cardY += 10;
-  }
+  // Line 2: What this year is asking (profection verb — no planet name)
+  const yearLine = `This year is asking you to ${getYearVerb(profH)}.`;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+  doc.setTextColor(...colors.gold);
+  const yearLines = doc.splitTextToSize(yearLine, textW);
+  yearLines.forEach((line: string) => {
+    doc.text(line, pw / 2, cardY, { align: 'center' });
+    cardY += 20;
+  });
+  cardY += 16;
 
-  // Paragraph 3: Your Rising — how the world sees you
-  if (risingSign) {
-    const p3 = getRisingMessage(risingSign);
-    doc.setFont('helvetica', 'italic'); doc.setFontSize(11);
-    doc.setTextColor(...colors.deepBrown);
-    const p3Lines = doc.splitTextToSize(p3, textW);
-    p3Lines.forEach((line: string) => {
-      doc.text(line, pw / 2, cardY, { align: 'center' });
-      cardY += 16;
-    });
-    cardY += 14;
-  }
-
-  // Paragraph 4: The year ahead — closing with time lord + SR Moon
-  if (timeLord) {
-    const p4 = getYearAheadClosing(timeLord, profH, srMoonSign || sunSign);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
-    doc.setTextColor(...colors.gold);
-    const p4Lines = doc.splitTextToSize(p4, textW);
-    p4Lines.forEach((line: string) => {
-      doc.text(line, pw / 2, cardY, { align: 'center' });
-      cardY += 16;
-    });
-  }
+  // Line 3: Emotional tone for the year (SR Moon — no planet name)
+  const moonTone = getMoonTone(srMoonSign);
+  doc.setFont('helvetica', 'italic'); doc.setFontSize(13);
+  doc.setTextColor(...colors.deepBrown);
+  doc.text(moonTone, pw / 2, cardY, { align: 'center' });
 
   // Bottom stars
   const bottomStarY = ph - 80;
