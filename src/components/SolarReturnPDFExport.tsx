@@ -20,6 +20,7 @@ import { generateHowToReadPage } from '@/lib/pdfSections/howToRead';
 import { generateProfectionPersonalSection } from '@/lib/pdfSections/profectionPersonal';
 import { generateKeyDatesSection } from '@/lib/pdfSections/keyDates';
 import { generateQuarterlySummary } from '@/lib/pdfSections/quarterlySummary';
+import { generateTier1SolarReturnPDF } from '@/lib/pdfSections/tier1Report';
 
 // Cake image imports
 import cakeAries from '@/assets/cakes/aries.png';
@@ -201,9 +202,21 @@ function getPersonalizedStelliumText(sign: string, house: number | null, planets
 
 export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative }: Props) => {
   const [generating, setGenerating] = useState(false);
+  const [generatingTier1, setGeneratingTier1] = useState(false);
   const [birthdayMode, setBirthdayMode] = useState(false);
   const [personalMessage, setPersonalMessage] = useState('');
   const [goldBorders, setGoldBorders] = useState(false);
+
+  const generateTier1 = async () => {
+    setGeneratingTier1(true);
+    try {
+      await generateTier1SolarReturnPDF(analysis, srChart, natalChart, birthdayMode, personalMessage, CAKE_IMAGES);
+    } catch (err) {
+      console.error('Tier 1 PDF error:', err);
+    } finally {
+      setGeneratingTier1(false);
+    }
+  };
 
   const generatePDF = async () => {
     setGenerating(true);
@@ -1218,10 +1231,16 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         </div>
       )}
 
+      <button onClick={generateTier1} disabled={generatingTier1}
+        className="text-[11px] uppercase tracking-widest px-3 py-1.5 border border-border rounded-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1 disabled:opacity-50">
+        {generatingTier1 ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
+        {generatingTier1 ? 'Generating...' : 'Year at a Glance (Free)'}
+      </button>
+
       <button onClick={generatePDF} disabled={generating}
         className="text-[11px] uppercase tracking-widest px-3 py-1.5 border border-border rounded-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1 disabled:opacity-50">
         {generating ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
-        {generating ? 'Generating...' : birthdayMode ? 'Download Birthday Gift PDF' : 'Download PDF'}
+        {generating ? 'Generating...' : birthdayMode ? 'Download Birthday Gift PDF' : 'Download Full PDF'}
       </button>
     </div>
   );
