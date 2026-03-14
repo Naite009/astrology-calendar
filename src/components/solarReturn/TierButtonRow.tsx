@@ -46,7 +46,11 @@ export const TierButtonRow = ({
   };
 
   const handleAiClick = () => {
-    onGenerateAiReading?.() || toast.info('AI reading generation coming soon');
+    if (onGenerateAiReading) {
+      onGenerateAiReading();
+    } else {
+      toast.info('AI reading generation coming soon');
+    }
   };
 
   return (
