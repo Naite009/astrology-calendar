@@ -32,6 +32,7 @@ interface Props {
   personalMessage?: string;
   personName?: string;
   onDownloadTier: (tier: TierId) => void;
+  onSelectTier?: (tier: TierId | null) => void;
 }
 
 export const TierButtonRow = ({
@@ -39,11 +40,18 @@ export const TierButtonRow = ({
   natalChart,
   solarReturnChart,
   onDownloadTier,
+  onSelectTier,
 }: Props) => {
   const [activeTier, setActiveTier] = useState<TierId | null>(null);
 
   const handleTierClick = (tier: TierId) => {
-    setActiveTier(prev => (prev === tier ? null : tier));
+    const newTier = activeTier === tier ? null : tier;
+    setActiveTier(newTier);
+    // For T1, switch to full preview mode
+    if (tier === 't1' && onSelectTier) {
+      onSelectTier(newTier === 't1' ? 't1' : null);
+      return;
+    }
   };
 
   const handleAiClick = () => {
@@ -83,8 +91,8 @@ export const TierButtonRow = ({
         </button>
       </div>
 
-      {/* Preview panel */}
-      {activeTier && (
+      {/* Preview panel — only for non-T1 tiers (T1 uses full preview) */}
+      {activeTier && activeTier !== 't1' && (
         <TierPreviewPanel
           tier={activeTier}
           analysis={analysis}
