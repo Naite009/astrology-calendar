@@ -652,10 +652,19 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           const eb = analysis.elementBalance;
           const mb = analysis.modalityBalance;
 
-          // Elements — editorial inline with hairline dividers
+          // ── Element colors ──
+          const ELEM_BG: Record<string, [number, number, number]> = {
+            Fire:  [255, 230, 220],
+            Earth: [225, 245, 225],
+            Air:   [225, 235, 255],
+            Water: [220, 235, 250],
+          };
+
+          // ── Elemental Balance ──
           ctx.writeBold(doc, 'Elemental Balance');
-          ctx.y += 6;
-          const elemW = (contentW - 12) / 4;
+          ctx.y += 10;
+          const elemW = (contentW - 24) / 4;
+          const elemH = 72;
           const elemStartY = ctx.y;
           const elements = [
             { name: 'Fire', val: eb.fire },
@@ -664,29 +673,42 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             { name: 'Water', val: eb.water },
           ];
           elements.forEach((el, i) => {
-            const x = margin + i * elemW;
+            const x = margin + 2 + i * (elemW + 4);
             const isDom = el.name.toLowerCase() === (eb.dominant || '').toLowerCase();
-            doc.setFont('times', 'bold'); doc.setFontSize(22);
-            doc.setTextColor(...(isDom ? ctx.colors.ink : ctx.colors.muted));
-            doc.text(String(el.val), x + elemW / 2, elemStartY + 20, { align: 'center' });
-            doc.setFont('times', 'normal'); doc.setFontSize(9);
-            doc.setTextColor(...ctx.colors.ink);
-            doc.text(el.name, x + elemW / 2, elemStartY + 34, { align: 'center' });
+            const bg = ELEM_BG[el.name] || ctx.colors.cardBg;
+
+            // Box background
+            doc.setFillColor(...bg);
+            doc.roundedRect(x, elemStartY, elemW, elemH, 4, 4, 'F');
+
+            // Gold border for dominant
             if (isDom) {
-              ctx.trackedLabel(doc, 'DOMINANT', x + elemW / 2, elemStartY + 44, { align: 'center', size: 6.5, charSpace: 2 });
+              doc.setDrawColor(...ctx.colors.gold); doc.setLineWidth(1.2);
+              doc.roundedRect(x, elemStartY, elemW, elemH, 4, 4, 'S');
             }
-            // Vertical divider
-            if (i < 3) {
-              doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
-              doc.line(x + elemW, elemStartY, x + elemW, elemStartY + 48);
+
+            // Big number
+            doc.setFont('times', 'bold'); doc.setFontSize(28);
+            doc.setTextColor(...(isDom ? ctx.colors.ink : ctx.colors.muted));
+            doc.text(String(el.val), x + elemW / 2, elemStartY + 32, { align: 'center' });
+
+            // Element name
+            doc.setFont('times', 'normal'); doc.setFontSize(10);
+            doc.setTextColor(...ctx.colors.ink);
+            doc.text(el.name, x + elemW / 2, elemStartY + 48, { align: 'center' });
+
+            // DOMINANT label
+            if (isDom) {
+              ctx.trackedLabel(doc, 'DOMINANT', x + elemW / 2, elemStartY + 62, { align: 'center', size: 6.5, charSpace: 2 });
             }
           });
-          ctx.y = elemStartY + 54;
+          ctx.y = elemStartY + elemH + 14;
 
-          // Modalities — editorial inline
+          // ── Modality Balance ──
           ctx.writeBold(doc, 'Modality Balance');
-          ctx.y += 6;
-          const modW = (contentW - 8) / 3;
+          ctx.y += 10;
+          const modW = (contentW - 16) / 3;
+          const modH = 68;
           const modalities = [
             { name: 'Cardinal', val: mb.cardinal, desc: 'Initiating' },
             { name: 'Fixed', val: mb.fixed, desc: 'Sustaining' },
@@ -694,23 +716,35 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           ];
           const modStartY = ctx.y;
           modalities.forEach((mod, i) => {
-            const x = margin + i * modW;
+            const x = margin + 2 + i * (modW + 4);
             const isDom = mod.name.toLowerCase() === (mb.dominant || '').toLowerCase();
-            doc.setFont('times', 'bold'); doc.setFontSize(20);
-            doc.setTextColor(...(isDom ? ctx.colors.ink : ctx.colors.muted));
-            doc.text(String(mod.val), x + modW / 2, modStartY + 18, { align: 'center' });
-            doc.setFont('times', 'normal'); doc.setFontSize(9);
-            doc.setTextColor(...ctx.colors.ink);
-            doc.text(`${mod.name} · ${mod.desc}`, x + modW / 2, modStartY + 32, { align: 'center' });
-            if (i < 2) {
-              doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
-              doc.line(x + modW, modStartY, x + modW, modStartY + 38);
+
+            // Box background
+            doc.setFillColor(...ctx.colors.cardBg);
+            doc.roundedRect(x, modStartY, modW, modH, 4, 4, 'F');
+
+            // Gold border for dominant
+            if (isDom) {
+              doc.setDrawColor(...ctx.colors.gold); doc.setLineWidth(1.2);
+            } else {
+              doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.3);
             }
+            doc.roundedRect(x, modStartY, modW, modH, 4, 4, 'S');
+
+            // Big number
+            doc.setFont('times', 'bold'); doc.setFontSize(26);
+            doc.setTextColor(...(isDom ? ctx.colors.ink : ctx.colors.muted));
+            doc.text(String(mod.val), x + modW / 2, modStartY + 30, { align: 'center' });
+
+            // Label
+            doc.setFont('times', 'normal'); doc.setFontSize(9.5);
+            doc.setTextColor(...ctx.colors.ink);
+            doc.text(`${mod.name} · ${mod.desc}`, x + modW / 2, modStartY + 48, { align: 'center' });
           });
-          ctx.y = modStartY + 44;
+          ctx.y = modStartY + modH + 10;
         }
 
-        // WHERE YOUR ENERGY LIVES — continues on same page
+        // ── WHERE YOUR ENERGY LIVES ──
         if (hasHemisphere) {
           const hem = analysis.hemisphericEmphasis;
           const total = hem.totalCounted;
@@ -722,78 +756,123 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             if (h >= 10 || h <= 3) quadPlanets.east.push(P[p] || p); else quadPlanets.west.push(P[p] || p);
           }
 
-          ctx.drawRule(doc); ctx.y += 12;
-          ctx.writeBold(doc, 'Where Your Energy Lives');
-          ctx.y += 6;
+          // Dark divider band
+          ctx.y += 16;
+          doc.setFillColor(100, 100, 100);
+          doc.rect(0, ctx.y, pw, 6, 'F');
+          ctx.y += 28;
 
-          // 2x2 grid — compact
-          const boxW = (contentW - 40) / 2;
-          const boxH = 65;
+          ctx.writeBold(doc, 'Where Your Energy Lives');
+          ctx.y += 12;
+
+          // Hemisphere background colors
+          const HEMI_BG: Record<string, [number, number, number]> = {
+            upper: [225, 235, 255],
+            lower: [255, 240, 230],
+            east:  [225, 248, 235],
+            west:  [252, 235, 240],
+          };
+
+          // 2x2 grid with colored cards
+          const boxW = (contentW - 20) / 2;
+          const boxH = 80;
           const gridData = [
-            { label: 'UPPER', sub: 'Public & Visible', count: hem.upper, planets: quadPlanets.upper, bg: [240, 245, 255] as [number, number, number], row: 0, col: 0 },
-            { label: 'LOWER', sub: 'Private & Internal', count: hem.lower, planets: quadPlanets.lower, bg: [255, 248, 240] as [number, number, number], row: 0, col: 1 },
-            { label: 'EASTERN', sub: 'Self-Initiated', count: hem.east, planets: quadPlanets.east, bg: [240, 252, 245] as [number, number, number], row: 1, col: 0 },
-            { label: 'WESTERN', sub: 'Other-Oriented', count: hem.west, planets: quadPlanets.west, bg: [252, 242, 245] as [number, number, number], row: 1, col: 1 },
+            { key: 'upper', label: 'UPPER', sub: 'Public & Visible', count: hem.upper, planets: quadPlanets.upper, row: 0, col: 0 },
+            { key: 'lower', label: 'LOWER', sub: 'Private & Internal', count: hem.lower, planets: quadPlanets.lower, row: 0, col: 1 },
+            { key: 'east',  label: 'EASTERN', sub: 'Self-Initiated', count: hem.east, planets: quadPlanets.east, row: 1, col: 0 },
+            { key: 'west',  label: 'WESTERN', sub: 'Other-Oriented', count: hem.west, planets: quadPlanets.west, row: 1, col: 1 },
           ];
           const gridStartY = ctx.y;
           for (const g of gridData) {
-            const x = margin + 8 + g.col * (boxW + 12);
-            const by = gridStartY + g.row * (boxH + 6);
+            const x = margin + g.col * (boxW + 12);
+            const by = gridStartY + g.row * (boxH + 8);
             const isDom = g.count > total / 2;
-            doc.setFont('times', 'bold'); doc.setFontSize(22);
+            const bg = HEMI_BG[g.key] || ctx.colors.cardBg;
+
+            // Card background
+            doc.setFillColor(...bg);
+            doc.roundedRect(x, by, boxW, boxH, 4, 4, 'F');
+
+            // Gold left accent bar
+            doc.setFillColor(...ctx.colors.gold);
+            doc.rect(x, by, 3.5, boxH, 'F');
+
+            // Big number
+            doc.setFont('times', 'bold'); doc.setFontSize(24);
             doc.setTextColor(...(isDom ? ctx.colors.ink : ctx.colors.muted));
-            doc.text(String(g.count), x + 16, by + 24);
-            doc.setFont('times', 'bold'); doc.setFontSize(9);
+            doc.text(String(g.count), x + 16, by + 28);
+
+            // Label + sub
+            doc.setFont('times', 'bold'); doc.setFontSize(10);
             doc.setTextColor(...ctx.colors.ink);
-            doc.text(g.label, x + 46, by + 16);
-            doc.setFont('times', 'italic'); doc.setFontSize(8);
+            doc.text(g.label, x + 48, by + 20);
+            doc.setFont('times', 'italic'); doc.setFontSize(8.5);
             doc.setTextColor(...ctx.colors.muted);
-            doc.text(g.sub, x + 46, by + 26);
+            doc.text(g.sub, x + 48, by + 32);
+
+            // Planet list
             if (g.planets.length > 0) {
-              doc.setFont('times', 'normal'); doc.setFontSize(7.5);
+              doc.setFont('times', 'normal'); doc.setFontSize(8);
               doc.setTextColor(...ctx.colors.ink);
               const planetLines = doc.splitTextToSize(g.planets.join(', '), boxW - 30);
-              planetLines.forEach((line: string, li: number) => doc.text(line, x + 16, by + 40 + li * 10));
+              planetLines.forEach((line: string, li: number) => doc.text(line, x + 16, by + 48 + li * 11));
             }
+
+            // DOMINANT badge
             if (isDom) {
-              ctx.trackedLabel(doc, 'DOMINANT', x + boxW - 8, by + 10, { align: 'right', size: 6.5, charSpace: 2 });
-            }
-            // Vertical divider between columns
-            if (g.col === 0) {
-              doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
-              doc.line(x + boxW + 6, by, x + boxW + 6, by + boxH);
+              ctx.trackedLabel(doc, 'DOMINANT', x + boxW - 10, by + 14, { align: 'right', size: 6.5, charSpace: 2 });
             }
           }
-          ctx.y = gridStartY + (boxH + 6) * 2 + 6;
+          ctx.y = gridStartY + (boxH + 8) * 2 + 8;
 
-          // Angular Planets — continues on same page
+          // ── Angular Planets ──
           if (analysis.angularPlanets && analysis.angularPlanets.length > 0) {
-            ctx.y += 6;
-            ctx.drawRule(doc); ctx.y += 10;
+            ctx.y += 4;
+            doc.setDrawColor(...ctx.colors.gold); doc.setLineWidth(0.5);
+            doc.line(margin, ctx.y, margin + contentW, ctx.y);
+            ctx.y += 16;
             ctx.writeBold(doc, 'Angular Planets — Most Powerful This Year');
-            ctx.y += 6;
-            
-            const angBoxW = (contentW - 16) / Math.min(analysis.angularPlanets.length, 3);
-            const angBoxH = 75;
+            ctx.y += 12;
+
+            const ANG_BG: [number, number, number][] = [
+              [245, 241, 234], [252, 235, 240], [225, 248, 235], [225, 235, 255],
+            ];
+
+            const angCount = Math.min(analysis.angularPlanets.length, 3);
+            const angBoxW = (contentW - (angCount - 1) * 10) / angCount;
+            const angBoxH = 85;
             const angStartY = ctx.y;
-            
-            analysis.angularPlanets.forEach((ap, i) => {
-              const col = i % 3;
-              const row = Math.floor(i / 3);
-              const x = margin + col * (angBoxW + 8);
-              const by = angStartY + row * (angBoxH + 6);
-              
-              doc.setFont('times', 'bold'); doc.setFontSize(11); doc.setTextColor(...ctx.colors.ink);
-              doc.text(P[ap] || ap, x + 10, by + 18);
-              
+
+            analysis.angularPlanets.slice(0, 6).forEach((ap, i) => {
+              const col = i % angCount;
+              const row = Math.floor(i / angCount);
+              const x = margin + col * (angBoxW + 10);
+              const by = angStartY + row * (angBoxH + 8);
+              const bg = ANG_BG[i % ANG_BG.length];
+
+              // Card background
+              doc.setFillColor(...bg);
+              doc.roundedRect(x, by, angBoxW, angBoxH, 4, 4, 'F');
+
+              // Gold left accent bar
+              doc.setFillColor(...ctx.colors.gold);
+              doc.rect(x, by, 3.5, angBoxH, 'F');
+
+              // Planet name in gold
+              doc.setFont('times', 'bold'); doc.setFontSize(12);
+              doc.setTextColor(...ctx.colors.gold);
+              doc.text(P[ap] || ap, x + 14, by + 22);
+
+              // Description
               const pm = planetLifeMeanings[ap] || planetLifeMeanings[ap.replace('NorthNode','North Node')];
               if (pm) {
-                doc.setFont('times', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...ctx.colors.ink);
-                const pmLines = doc.splitTextToSize(pm.inYourLife, angBoxW - 28);
-                pmLines.slice(0, 5).forEach((line: string, li: number) => doc.text(line, x + 10, by + 32 + li * 9));
+                doc.setFont('times', 'normal'); doc.setFontSize(8.5);
+                doc.setTextColor(...ctx.colors.ink);
+                const pmLines = doc.splitTextToSize(pm.inYourLife, angBoxW - 30);
+                pmLines.slice(0, 5).forEach((line: string, li: number) => doc.text(line, x + 14, by + 38 + li * 11));
               }
             });
-            ctx.y = angStartY + (Math.ceil(analysis.angularPlanets.length / 3)) * (angBoxH + 6);
+            ctx.y = angStartY + (Math.ceil(Math.min(analysis.angularPlanets.length, 6) / angCount)) * (angBoxH + 8);
           }
         }
       }
