@@ -1173,83 +1173,56 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
 
         const lines = narrative.split('\n');
         let paraBuffer: string[] = [];
-        let paraCount = 0;
 
-        const flushPara = () => {
+        const flushParagraph = () => {
           if (paraBuffer.length === 0) return;
-          const fullText = paraBuffer.join(' ').replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').replace(/[^\x00-\x7F]/g, '');
-          paraCount++;
 
-          // Every other paragraph gets a pull quote treatment for the first sentence
-          if (paraCount % 2 === 0) {
-            const firstSentenceEnd = fullText.search(/[.!?]\s/);
-            if (firstSentenceEnd > 20 && firstSentenceEnd < 120) {
-              const pullQuote = fullText.substring(0, firstSentenceEnd + 1);
-              const remainder = fullText.substring(firstSentenceEnd + 2);
-              ctx.checkPage(80);
-              ctx.y += 8;
-              doc.setFont('times', 'italic'); doc.setFontSize(12);
-              doc.setTextColor(...ctx.colors.accent);
-              const pqLines = doc.splitTextToSize(pullQuote, contentW - 60);
-              pqLines.forEach((line: string) => {
-                doc.text(line, pw / 2, ctx.y, { align: 'center' });
-                ctx.y += 16;
-              });
-              ctx.y += 6;
-              if (remainder) {
-                doc.setFont('times', 'normal'); doc.setFontSize(9.5);
-                doc.setTextColor(...ctx.colors.ink);
-                const rLines = doc.splitTextToSize(remainder, contentW);
-                rLines.forEach((line: string) => {
-                  ctx.checkPage(14);
-                  doc.text(line, margin, ctx.y);
-                  ctx.y += 14;
-                });
-              }
-            } else {
-              doc.setFont('times', 'normal'); doc.setFontSize(9.5);
-              doc.setTextColor(...ctx.colors.ink);
-              const bLines = doc.splitTextToSize(fullText, contentW);
-              bLines.forEach((line: string) => {
-                ctx.checkPage(14);
-                doc.text(line, margin, ctx.y);
-                ctx.y += 14;
-              });
-            }
-          } else {
-            doc.setFont('times', 'normal'); doc.setFontSize(9.5);
-            doc.setTextColor(...ctx.colors.ink);
-            const bLines = doc.splitTextToSize(fullText, contentW);
-            bLines.forEach((line: string) => {
-              ctx.checkPage(14);
-              doc.text(line, margin, ctx.y);
-              ctx.y += 14;
-            });
+          const fullText = paraBuffer
+            .join(' ')
+            .replace(/\*\*(.*?)\*\*/g, '$1')
+            .replace(/\*(.*?)\*/g, '$1')
+            .replace(/[^\x00-\x7F]/g, '');
+
+          const paragraphLines = doc.splitTextToSize(fullText, contentW) as string[];
+          ctx.checkPage(paragraphLines.length * 20 + 18);
+
+          doc.setFont('times', 'normal'); doc.setFontSize(12.5);
+          doc.setTextColor(...ctx.colors.ink);
+          for (const paragraphLine of paragraphLines) {
+            ctx.checkPage(20);
+            doc.text(paragraphLine, margin, ctx.y);
+            ctx.y += 19;
           }
-          ctx.y += 12;
+
+          ctx.y += 18;
           paraBuffer = [];
         };
 
         for (const line of lines) {
           const trimmed = line.trim();
+
           if (!trimmed) {
-            flushPara();
+            flushParagraph();
             continue;
           }
+
           if (trimmed.startsWith('## ')) {
-            flushPara();
-            ctx.checkPage(50); ctx.y += 16;
-            ctx.trackedLabel(doc, trimmed.replace('## ', '').toUpperCase(), margin, ctx.y);
-            ctx.y += 4;
+            flushParagraph();
+            ctx.checkPage(58);
+            ctx.y += 6;
+            ctx.trackedLabel(doc, trimmed.replace('## ', '').toUpperCase(), margin, ctx.y, { size: 7.5, charSpace: 2.8 });
+            ctx.y += 8;
             doc.setDrawColor(...ctx.colors.rule);
             doc.setLineWidth(0.3);
             doc.line(margin, ctx.y, pw - margin, ctx.y);
-            ctx.y += 14;
-          } else {
-            paraBuffer.push(trimmed.replace(/\*\*/g, '').replace(/\*/g, ''));
+            ctx.y += 16;
+            continue;
           }
+
+          paraBuffer.push(trimmed.replace(/\*\*/g, '').replace(/\*/g, ''));
         }
-        flushPara();
+
+        flushParagraph();
       }
 
       // =============================================
