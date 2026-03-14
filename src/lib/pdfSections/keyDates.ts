@@ -234,20 +234,16 @@ export function generateKeyDatesSection(
 
   // Render the section
   const tlName = P[timeLord] || timeLord;
-  doc.addPage(); ctx.y = margin;
+  doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
   ctx.sectionPages.set('KEY DATES', doc.getNumberOfPages());
-  ctx.drawGoldRule(doc); ctx.y += 20;
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-  doc.setTextColor(...colors.gold);
-  doc.text(`KEY DATES — WHEN ${tlName.toUpperCase()} ACTIVATES YOUR CHART`, margin, ctx.y); ctx.y += 8;
-  doc.setFont('helvetica', 'italic'); doc.setFontSize(9); doc.setTextColor(...colors.dimText);
-  doc.text(`Exact and near-exact aspects from transiting ${tlName} to your natal planets during the SR year`, margin, ctx.y); ctx.y += 18;
+  ctx.sectionTitle(doc, `KEY DATES — WHEN ${tlName.toUpperCase()} ACTIVATES YOUR CHART`,
+    `Exact and near-exact aspects from transiting ${tlName} to your natal planets during the SR year`);
 
   // Intro card
   ctx.drawCard(doc, () => {
-    ctx.writeBold(doc, 'Why These Dates Matter', colors.gold, 11);
+    ctx.writeBold(doc, 'Why These Dates Matter');
     ctx.y += 4;
-    ctx.writeBody(doc, `As your Time Lord, ${tlName} is the planet running the show this year. Every time transiting ${tlName} makes an exact aspect to one of your natal planets, the Time Lord's agenda ACTIVATES that area of your life. These are the dates when the year's themes become tangible -- when you feel the pressure, the opportunity, or the shift. Mark them.`, colors.bodyText, 9.5, 14);
+    ctx.writeBody(doc, `As your Time Lord, ${tlName} is the planet running the show this year. Every time transiting ${tlName} makes an exact aspect to one of your natal planets, the Time Lord's agenda ACTIVATES that area of your life. These are the dates when the year's themes become tangible -- when you feel the pressure, the opportunity, or the shift. Mark them.`);
   });
 
   // Month grouping for visual clarity
