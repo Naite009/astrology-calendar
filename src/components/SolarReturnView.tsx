@@ -125,7 +125,8 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
       </div>
 
       {/* Header & person picker — only people with SR charts, plus option to add new */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3 justify-between">
+        <div className="flex flex-wrap items-center gap-3">
         <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Solar Return:</label>
         {natalChartsWithSR.length > 0 ? (
           <select
@@ -148,7 +149,28 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
         >
           + Add SR Chart
         </button>
+        </div>
       </div>
+
+      {/* Tier buttons row — top right, beneath header */}
+      {selectedSR && analysis && (
+        <TierButtonRow
+          analysis={analysis}
+          natalChart={selectedNatal}
+          solarReturnChart={selectedSR}
+          onSelectTier={(tier) => setSelectedTier(tier as TierId | null)}
+          onDownloadTier={(tier) => {
+            if (tier === 't1') {
+              const btn = document.querySelector('[data-tier1-download]') as HTMLButtonElement;
+              if (btn) btn.click();
+            } else if (tier === 't4' || tier === 't5') {
+              toast.info('Coming soon — this tier is under development');
+            } else {
+              toast.info(`Tier ${tier.replace('t', '')} PDF coming soon`);
+            }
+          }}
+        />
+      )}
 
       {/* When adding for potentially a different person, show natal chart picker */}
       {showAddForNewPerson && !showInputForm && (
@@ -258,17 +280,6 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
                   analysis={analysis}
                   srChart={selectedSR}
                   natalChart={selectedNatal}
-                  onSelectTier={(tier) => setSelectedTier(tier as TierId | null)}
-                  onDownloadTier={(tier) => {
-                    if (tier === 't1') {
-                      const btn = document.querySelector('[data-tier1-download]') as HTMLButtonElement;
-                      if (btn) btn.click();
-                    } else if (tier === 't4' || tier === 't5') {
-                      toast.info('Coming soon — this tier is under development');
-                    } else {
-                      toast.info(`Tier ${tier.replace('t', '')} PDF coming soon`);
-                    }
-                  }}
                 />
               </TabsContent>
 
