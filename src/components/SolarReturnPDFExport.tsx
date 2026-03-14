@@ -1067,8 +1067,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
             doc.setTextColor(...ctx.colors.gold);
             doc.text(`${P[planet] || planet} in House ${h}`, margin + 16, ctx.y + 10);
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.deepBrown);
-            doc.text(data.title || '', pw - margin - 12, ctx.y + 10, { align: 'right' });
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.deepBrown);
+            const titleText = (data.title || '').substring(0, 40);
+            doc.text(titleText, margin + contentW - 16, ctx.y + 10, { align: 'right' });
             ctx.y += 32;
 
             if (data.overview) {
