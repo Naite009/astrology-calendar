@@ -65,22 +65,62 @@ function getRisingMessage(sign: string): string {
 }
 
 /** Warm, inviting year-ahead closing — feels like encouragement, not a task */
-function getYearInspiration(profHouse: number, srMoonSign: string): string {
-  const themes: Record<number, string> = {
-    1: 'This is your year to step more fully into who you are becoming. You do not need to have it figured out — just keep showing up as yourself. The rest will follow.',
-    2: 'This is your year to remember what you are worth — and to stop settling for less. You already have everything you need to build something meaningful.',
-    3: 'This is your year to speak up, share your ideas, and trust your voice. The things you have been holding back? They are ready to be heard.',
-    4: 'This is your year to come home to yourself. Whatever "home" means to you — a place, a feeling, a person — you are allowed to build it exactly the way you need it.',
-    5: 'This is your year to follow the joy. Create, play, take the risk that excites you. The things you make this year — art, love, memories — will surprise you with how much they matter.',
-    6: 'This is your year to take care of yourself with the same devotion you give everyone else. Small, daily choices will add up to something powerful.',
-    7: 'This is your year for real partnership. Let someone truly see you. The right connections will meet you where you are.',
-    8: 'This is your year to release what no longer fits. It is not loss — it is making room. What comes next will be worth the space you create.',
-    9: 'This is your year to expand. Travel, learn, explore something that changes how you see the world. Your perspective is ready to grow.',
-    10: 'This is your year to be seen for what you have built. The work you have done is ready to be recognized. Step forward with confidence.',
-    11: 'This is your year to find your people. The friendships and communities that align with who you really are — they are looking for you too.',
-    12: 'This is your year to rest, reflect, and trust what is unfolding beneath the surface. Quiet does not mean nothing is happening. Something beautiful is preparing itself.',
+function getYearInspiration(profHouse: number, srMoonSign: string, timeLord: string): string {
+  const isSaturnLord = timeLord === 'Saturn';
+
+  const themes: Record<number, { base: string; saturnVersion: string }> = {
+    1: {
+      base: 'This is your year to step more fully into who you are becoming. You do not need to have it figured out — just keep showing up as yourself. The rest will follow.',
+      saturnVersion: 'This is your year to own who you are — not the polished version, the real one. Saturn asks you to build your identity from the inside out. That is harder than it sounds and more lasting than anything else.',
+    },
+    2: {
+      base: 'This is your year to remember what you are worth — and to stop settling for less. You already have everything you need to build something meaningful.',
+      saturnVersion: 'This is your year to build something financially and spiritually solid. Not fast — solid. Saturn rewards the patient ones who do the work without shortcuts.',
+    },
+    3: {
+      base: 'This is your year to speak up, share your ideas, and trust your voice. The things you have been holding back? They are ready to be heard.',
+      saturnVersion: 'This is your year to say what is true, not what is easy. Saturn in this house rewards precision, honesty, and the courage to communicate even when it is uncomfortable.',
+    },
+    4: {
+      base: 'This is your year to come home to yourself. Whatever home means to you — a place, a feeling, a person — you are allowed to build it exactly the way you need it.',
+      saturnVersion: 'This is your year to build a foundation that lasts. Not the home you wish you had — the home you are willing to work for. That is different, and better.',
+    },
+    5: {
+      base: 'This is your year to follow the joy. Create, play, take the risk that excites you. The things you make this year — art, love, memories — will surprise you with how much they matter.',
+      saturnVersion: 'This is your year to create something that lasts. The 5th house says play — but Saturn says earn it. Joy is not off the table; it is behind the door marked "do the real work first." What you build creatively this year will not be perfect. It will be true. That is better.',
+    },
+    6: {
+      base: 'This is your year to take care of yourself with the same devotion you give everyone else. Small, daily choices will add up to something powerful.',
+      saturnVersion: 'This is your year to build habits that actually hold. Saturn rewards the unglamorous, consistent effort. Show up for your own health and work the way you show up for everyone else.',
+    },
+    7: {
+      base: 'This is your year for real partnership. Let someone truly see you. The right connections will meet you where you are.',
+      saturnVersion: 'This is your year for partnerships built on honesty, not convenience. Saturn tests every relationship for substance. What survives the test is worth keeping.',
+    },
+    8: {
+      base: 'This is your year to release what no longer fits. It is not loss — it is making room. What comes next will be worth the space you create.',
+      saturnVersion: 'This is your year to face what you have been avoiding. Saturn in this house does not allow you to look away. The courage to go through it — not around it — is where the transformation lives.',
+    },
+    9: {
+      base: 'This is your year to expand. Travel, learn, explore something that changes how you see the world. Your perspective is ready to grow.',
+      saturnVersion: 'This is your year to earn your wisdom. Saturn asks you to study deeply, not broadly — to build real knowledge you can stand behind, not just ideas that sound good.',
+    },
+    10: {
+      base: 'This is your year to be seen for what you have built. The work you have done is ready to be recognized. Step forward with confidence.',
+      saturnVersion: 'This is your year to step into real authority — not borrowed, not performed. Saturn in this house gives you the chance to build a reputation that outlasts you. Do the work. Let the work speak.',
+    },
+    11: {
+      base: 'This is your year to find your people. The friendships and communities that align with who you really are — they are looking for you too.',
+      saturnVersion: 'This is your year to be intentional about who you surround yourself with. Saturn strips away the superficial. What remains are the friendships and communities worth building a life around.',
+    },
+    12: {
+      base: 'This is your year to rest, reflect, and trust what is unfolding beneath the surface. Quiet does not mean nothing is happening. Something beautiful is preparing itself.',
+      saturnVersion: 'This is your year to do the invisible work. Rest is not a reward — it is the assignment. Saturn in this house asks you to release, integrate, and prepare. What you let go of now makes room for everything that is coming.',
+    },
   };
-  return themes[profHouse] || 'This is your year. Trust yourself.';
+
+  const theme = themes[profHouse] || { base: 'This is your year. Trust yourself.', saturnVersion: 'This is your year. Do the real work. It will be worth it.' };
+  return isSaturnLord ? theme.saturnVersion : theme.base;
 }
 
 export function generateAffirmationCard(
@@ -168,7 +208,8 @@ export function generateAffirmationCard(
   }
 
   // Paragraph 4: Year-ahead inspiration — warm, inviting, no planet names
-  const p4 = getYearInspiration(profH, srMoonSign);
+  const timeLord = a.profectionYear?.timeLord || '';
+  const p4 = getYearInspiration(profH, srMoonSign, timeLord);
   doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
   doc.setTextColor(...colors.gold);
   const p4Lines = doc.splitTextToSize(p4, textW);
