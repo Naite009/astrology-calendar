@@ -240,7 +240,7 @@ function getFriendlyBody(
 
   if (monthIdx === 0) {
     const ascRuler = a.srAscRulerInNatal;
-    let opener = `Fresh energy arrives. ${timeLord} is running the show now.`;
+    let opener = `Fresh energy arrives — your new year begins here.`;
     if (ascRuler) {
       opener += ` Pay attention to ${LIFE_THEMES[ascRuler.rulerNatalHouse]?.detail || 'key life areas'} -- that is where this year lands first.`;
     }
@@ -249,7 +249,7 @@ function getFriendlyBody(
   }
 
   if (monthIdx === 11) {
-    return `The year is winding down. Look back at what ${timeLord} brought you -- the lessons, the growth, the hard-won clarity. This is integration time. Let the year's wisdom settle before the next chapter begins.`;
+    return `The year is winding down. Look back at what this chapter brought you -- the lessons, the growth, the hard-won clarity. This is integration time. Let the year's wisdom settle before the next one begins.`;
   }
 
   // Build natural-language body
