@@ -708,6 +708,9 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
 }) => {
   return (
     <div className="space-y-4 mt-4">
+      {/* New Dashboard Header Sections */}
+      <SROverviewDashboard analysis={analysis} natalChart={natalChart} srChart={srChart} />
+
       {/* Year Theme */}
       {analysis.yearlyTheme && (
         <div className="border border-primary/20 rounded-sm p-5 bg-card">
