@@ -9,6 +9,7 @@ const MUTED: Color = [130, 125, 118];
 const RULE:  Color = [200, 195, 188];
 const GOLD:  Color = [184, 150, 62];
 const CARD_BG: Color = [245, 241, 234];
+const DARK: Color = [38, 34, 30];
 
 function getOrdinalSuffix(n: number): string {
   const s = ['th', 'st', 'nd', 'rd'];
@@ -161,7 +162,7 @@ const risingYearAhead: Record<string, string> = {
 export function generateStrengthsPortrait(
   ctx: PDFContext, doc: jsPDF, natalChart: NatalChart, analysis: SolarReturnAnalysis
 ) {
-  const { pw, margin, contentW } = ctx;
+  const { pw, ph, margin, contentW } = ctx;
   const sunSign = natalChart.planets?.Sun?.sign || '';
   const moonSign = natalChart.planets?.Moon?.sign || '';
   const risingSign = natalChart.houseCusps?.house1?.sign || '';
@@ -170,29 +171,39 @@ export function generateStrengthsPortrait(
   const srAscSign = analysis.yearlyTheme?.ascendantSign || '';
   const srMoonSign = analysis.moonSign || '';
 
-  // ── Section header ──
+  // ── Editorial section header — magazine style ──
   ctx.pageBg(doc);
-  ctx.y += 16;
-  ctx.trackedLabel(doc, '02 · YOUR BIG THREE', margin, ctx.y);
-  ctx.y += 16;
-  doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
-  doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 18;
+  ctx.y += 24;
 
-  // Large serif display title
-  doc.setFont('times', 'normal'); doc.setFontSize(24);
-  doc.setTextColor(...INK);
-  const titleLines: string[] = doc.splitTextToSize('Natal Strengths & How This Year Activates Each', contentW);
-  for (const line of titleLines) { doc.text(line, margin, ctx.y); ctx.y += 30; }
+  // Tracked label
+  doc.setFont('times', 'bold'); doc.setFontSize(7);
+  doc.setTextColor(...GOLD);
+  doc.setCharSpace(4);
+  doc.text('YOUR BIG THREE', margin, ctx.y);
+  doc.setCharSpace(0);
+  ctx.y += 12;
 
-  // Hairline rule
+  // Hairline
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 16;
+  ctx.y += 28;
 
-  // ── Render each planet section wrapped in a card ──
-  const renderPlanetSection = (
+  // Large serif display title
+  doc.setFont('times', 'normal'); doc.setFontSize(32);
+  doc.setTextColor(...INK);
+  doc.text('Before & After', margin, ctx.y);
+  ctx.y += 14;
+
+  doc.setFont('times', 'italic'); doc.setFontSize(11);
+  doc.setTextColor(...MUTED);
+  doc.text('How this year activates your natal strengths', margin, ctx.y);
+  ctx.y += 32;
+
+  // ── Render each planet as an editorial spread card ──
+  const renderPlanetSpread = (
     planetLabel: string,
+    natalTag: string,
+    srTag: string,
     heading: string,
     strengthText: string,
     shadowText: string,
@@ -201,53 +212,84 @@ export function generateStrengthsPortrait(
     extraLabel?: string,
     extraText?: string,
   ) => {
-    ctx.checkPage(280);
+    // Check we have room for a substantial card
+    ctx.checkPage(320);
 
-    ctx.drawCard(doc, () => {
-      // Planet context line — tracked caps
-      ctx.trackedLabel(doc, planetLabel, margin + 14, ctx.y, { charSpace: 2.5, size: 7 });
-      ctx.y += 16;
+    // ── Dark header strip ──
+    const stripH = 58;
+    const stripY = ctx.y;
+    doc.setFillColor(...DARK);
+    doc.roundedRect(margin, stripY, contentW, stripH, 3, 3, 'F');
 
-      // Planet name heading — large serif
-      doc.setFont('times', 'bold'); doc.setFontSize(22);
-      doc.setTextColor(...INK);
-      doc.text(heading, margin + 14, ctx.y);
-      ctx.y += 24;
+    // Gold accent bar
+    doc.setFillColor(...GOLD);
+    doc.rect(margin, stripY, 3, stripH, 'F');
 
-      // STRENGTH — full width, stacked
-      ctx.trackedLabel(doc, 'STRENGTH', margin + 14, ctx.y, { charSpace: 2.5, size: 7 });
-      ctx.y += 16;
-      ctx.writeBody(doc, strengthText, ctx.colors.bodyText, 11, 17);
+    // Planet label in gold
+    doc.setFont('times', 'bold'); doc.setFontSize(6.5);
+    doc.setTextColor(...GOLD);
+    doc.setCharSpace(3);
+    doc.text(planetLabel, margin + 16, stripY + 20);
+    doc.setCharSpace(0);
 
-      ctx.y += 10;
+    // Large heading in cream
+    doc.setFont('times', 'bold'); doc.setFontSize(22);
+    doc.setTextColor(250, 247, 242);
+    doc.text(heading, margin + 16, stripY + 44);
 
-      // SHADOW — full width, stacked below
-      ctx.trackedLabel(doc, 'SHADOW', margin + 14, ctx.y, { charSpace: 2.5, size: 7 });
-      ctx.y += 16;
-      ctx.writeBody(doc, shadowText, ctx.colors.bodyText, 11, 17);
+    // Natal → SR tags on right
+    doc.setFont('times', 'normal'); doc.setFontSize(8.5);
+    doc.setTextColor(...GOLD);
+    doc.text(`${natalTag}  →  ${srTag}`, pw - margin - 16, stripY + 44, { align: 'right' });
 
-      ctx.y += 10;
+    ctx.y = stripY + stripH + 18;
 
-      // "What This Means For Your Year" as nested card section
-      if (yearText) {
-        ctx.writeCardSection(doc, yearLabel, yearText);
-      }
+    // ── STRENGTH block ──
+    doc.setFont('times', 'bold'); doc.setFontSize(7);
+    doc.setTextColor(...GOLD);
+    doc.setCharSpace(3);
+    doc.text('STRENGTH', margin + 8, ctx.y);
+    doc.setCharSpace(0);
+    ctx.y += 14;
 
-      // Extra section
-      if (extraLabel && extraText) {
-        ctx.writeCardSection(doc, extraLabel, extraText);
-      }
-    });
+    ctx.writeBody(doc, strengthText, INK, 11, 17);
+    ctx.y += 12;
+
+    // ── SHADOW block ──
+    doc.setFont('times', 'bold'); doc.setFontSize(7);
+    doc.setTextColor(...MUTED);
+    doc.setCharSpace(3);
+    doc.text('SHADOW', margin + 8, ctx.y);
+    doc.setCharSpace(0);
+    ctx.y += 14;
+
+    ctx.writeBody(doc, shadowText, INK, 11, 17);
+    ctx.y += 14;
+
+    // ── Year activation — nested card ──
+    if (yearText) {
+      ctx.writeCardSection(doc, yearLabel, yearText);
+    }
+
+    // Extra section
+    if (extraLabel && extraText) {
+      ctx.writeCardSection(doc, extraLabel, extraText);
+    }
+
+    // Bottom rule
+    ctx.y += 8;
+    doc.setDrawColor(...RULE); doc.setLineWidth(0.2);
+    doc.line(margin + 20, ctx.y, pw - margin - 20, ctx.y);
+    ctx.y += 24;
   };
-
-  // Force all three planets onto a fresh page together
-  ctx.checkPage(650);
 
   // ── SUN ──
   if (sunSign && sunStrength[sunSign]) {
-    const houseLabel = srSunHouse ? `SOLAR RETURN: ${ord(srSunHouse)} HOUSE` : '';
-    renderPlanetSection(
-      `SUN IN ${sunSign.toUpperCase()}  ·  ${houseLabel}`,
+    const houseLabel = srSunHouse ? `SR ${ord(srSunHouse)} HOUSE` : '';
+    renderPlanetSpread(
+      `SUN IN ${sunSign.toUpperCase()}`,
+      sunSign,
+      houseLabel,
       `Sun in ${sunSign}`,
       sunStrength[sunSign],
       sunShadow[sunSign] || '',
@@ -258,36 +300,38 @@ export function generateStrengthsPortrait(
 
   // ── MOON ──
   if (moonSign && moonStrength[moonSign]) {
-    const srHouseLabel = srMoonHouse ? `, ${ord(srMoonHouse)} HOUSE` : '';
-    const srLabel = srMoonSign ? `SR MOON: ${srMoonSign.toUpperCase()}${srHouseLabel}` : '';
-    const activationText = srMoonSign && srMoonSignActivation[srMoonSign]
-      ? srMoonSignActivation[srMoonSign](moonSign) : '';
-    const whereText = srMoonHouse && moonYearAhead[srMoonHouse] ? moonYearAhead[srMoonHouse] : '';
+    const moonHouseLabel = srMoonHouse ? `SR ${ord(srMoonHouse)} HOUSE` : '';
+    const srMoonActivation = srMoonSign && srMoonSignActivation[srMoonSign]
+      ? srMoonSignActivation[srMoonSign](moonSign)
+      : '';
 
-    renderPlanetSection(
-      `NATAL MOON IN ${moonSign.toUpperCase()}  ·  ${srLabel}`,
+    renderPlanetSpread(
+      `MOON IN ${moonSign.toUpperCase()}`,
+      moonSign,
+      `${srMoonSign} Moon · ${moonHouseLabel}`,
       `Moon in ${moonSign}`,
       moonStrength[moonSign],
       moonShadow[moonSign] || '',
-      'How This Year Activates You',
-      activationText,
-      whereText ? `Where It Plays Out (${ord(srMoonHouse!)} House)` : undefined,
-      whereText || undefined,
+      'Emotional Climate This Year',
+      srMoonHouse ? (moonYearAhead[srMoonHouse] || '') : '',
+      srMoonActivation ? 'Moon Sign Activation' : undefined,
+      srMoonActivation || undefined,
     );
   }
 
   // ── RISING ──
   if (risingSign && risingStrength[risingSign]) {
-    const srLabel = srAscSign ? `SR RISING: ${srAscSign.toUpperCase()}` : '';
-    renderPlanetSection(
-      `${risingSign.toUpperCase()} RISING  ·  ${srLabel}`,
+    renderPlanetSpread(
+      `RISING IN ${risingSign.toUpperCase()}`,
+      risingSign,
+      `${srAscSign} Rising`,
       `${risingSign} Rising`,
       risingStrength[risingSign],
       risingShadow[risingSign] || '',
-      'This Year',
-      srAscSign && risingYearAhead[srAscSign] ? risingYearAhead[srAscSign] : '',
+      'How You Show Up This Year',
+      risingYearAhead[srAscSign] || '',
     );
   }
 
-  ctx.y += 12;
+  ctx.sectionDivider(doc);
 }
