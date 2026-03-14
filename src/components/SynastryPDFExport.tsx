@@ -244,11 +244,48 @@ function generatePrintableHTML(
     }
     
     .house-overlay {
-      padding: 12px;
-      background: #f0f9ff;
-      border: 1px solid #bae6fd;
-      border-radius: 8px;
-      margin-bottom: 8px;
+      padding: 18px 20px;
+      background: #f8fbff;
+      border-left: 4px solid #60a5fa;
+      border-radius: 0 10px 10px 0;
+      margin-bottom: 14px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    
+    .house-overlay .overlay-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    
+    .house-overlay .overlay-planet {
+      font-size: 15px;
+      font-weight: bold;
+      color: #1e40af;
+    }
+    
+    .house-overlay .overlay-arrow {
+      font-size: 18px;
+      color: #93c5fd;
+    }
+    
+    .house-overlay .overlay-house {
+      font-size: 15px;
+      font-weight: bold;
+      color: #1e3a5f;
+    }
+    
+    .house-overlay .overlay-owner {
+      font-size: 11px;
+      color: #64748b;
+      font-style: italic;
+    }
+    
+    .house-overlay .overlay-interp {
+      font-size: 13px;
+      color: #334155;
+      line-height: 1.7;
     }
     
     .karmic-indicator {
@@ -362,13 +399,19 @@ function generatePrintableHTML(
   ${houseOverlays.length > 0 ? `
   <div class="section">
     <h2>House Overlays</h2>
-    <p style="font-size: 12px; color: #6b7280; margin-bottom: 12px;">
-      How each person's planets activate different life areas in the other's chart.
+    <p style="font-size: 13px; color: #64748b; margin-bottom: 16px; line-height: 1.6;">
+      When one person's planet lands in another person's house, it activates that life area between you.
+      These are the strongest activations in your charts.
     </p>
     ${houseOverlays.slice(0, 8).map(overlay => `
       <div class="house-overlay">
-        <div class="card-title">${overlay.planetOwner}'s ${PLANET_SYMBOLS[overlay.planet] || ''} ${overlay.planet} → ${overlay.houseOwner}'s ${overlay.house}th House</div>
-        <div class="card-content">${overlay.interpretation}</div>
+        <div class="overlay-header">
+          <span class="overlay-owner">${overlay.planetOwner}'s</span>
+          <span class="overlay-planet">${overlay.planet}</span>
+          <span class="overlay-arrow">&rarr;</span>
+          <span class="overlay-house">${overlay.houseOwner}'s ${overlay.house}${overlay.house === 1 ? 'st' : overlay.house === 2 ? 'nd' : overlay.house === 3 ? 'rd' : 'th'} House</span>
+        </div>
+        <div class="overlay-interp">${overlay.interpretation}</div>
       </div>
     `).join('')}
   </div>
