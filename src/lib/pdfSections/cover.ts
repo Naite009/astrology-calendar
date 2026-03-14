@@ -59,46 +59,35 @@ export async function generatePDFCover(
 
   ctx.y = 44;
 
-  // ── TOP SECTION: Cake + Happy Birthday ──
+  // ── TOP SECTION: Cake centered + Happy Birthday below ──
   const cakeImgSrc = cakeImages[natalSun];
   let cakeDataUrl: string | null = null;
   if (cakeImgSrc) cakeDataUrl = await loadImageDataUrl(cakeImgSrc);
 
-  // Cream top area
-  const topH = birthdayMode ? 160 : 140;
-  doc.setFillColor(...colors.cream);
-  doc.rect(0, 0, pw, ctx.y + topH, 'F');
+  // Cream background for top area
+  const cakeW = 200; const cakeH = 170;
+  const cakeX = (pw - cakeW) / 2;
 
-  if (birthdayMode) {
-    // Two columns: cake left, Happy Birthday right
-    const cakeW = 130; const cakeH = 108;
-    const cakeX = margin;
-    const textX = margin + cakeW + 24;
-
-    if (cakeDataUrl) {
-      doc.setFillColor(...colors.warm);
-      doc.roundedRect(cakeX, ctx.y, cakeW, cakeH, 4, 4, 'F');
-      doc.addImage(cakeDataUrl, 'PNG', cakeX + 5, ctx.y + 5, cakeW - 10, cakeH - 10);
-    }
-
-    doc.setFont('Georgia', 'bold'); doc.setFontSize(30);
-    doc.setTextColor(...colors.gold);
-    doc.text('Happy', textX, ctx.y + 36);
-    doc.text('Birthday!', textX, ctx.y + 70);
-
-    ctx.y += Math.max(cakeH, 80) + 10;
+  if (cakeDataUrl) {
+    // #F5F0E8 background with border-radius
+    doc.setFillColor(245, 240, 232);
+    doc.roundedRect(cakeX, ctx.y, cakeW, cakeH, 4, 4, 'F');
+    doc.addImage(cakeDataUrl, 'PNG', cakeX + 8, ctx.y + 8, cakeW - 16, cakeH - 16);
+    ctx.y += cakeH + 10;
   } else {
-    // Non-birthday: cake centered smaller + title
-    if (cakeDataUrl) {
-      const cakeW = 130; const cakeH = 108;
-      doc.setFillColor(...colors.warm);
-      doc.roundedRect((pw - cakeW) / 2, ctx.y, cakeW, cakeH, 4, 4, 'F');
-      doc.addImage(cakeDataUrl, 'PNG', (pw - cakeW) / 2 + 5, ctx.y + 5, cakeW - 10, cakeH - 10);
-      ctx.y += cakeH + 16;
-    } else {
-      ctx.y += 20;
-    }
+    ctx.y += 20;
   }
+
+  // "Happy Birthday!" centered below cake
+  if (birthdayMode) {
+    doc.setFont('Georgia', 'bold'); doc.setFontSize(42);
+    doc.setTextColor(201, 168, 76); // #C9A84C
+    doc.text('Happy Birthday!', pw / 2, ctx.y + 32, { align: 'center' });
+    ctx.y += 48;
+  }
+
+  // 20pt gap before dark strip
+  ctx.y += 20;
 
   // ── DARK STRIP ──
   const stripH = 44;
@@ -112,10 +101,10 @@ export async function generatePDFCover(
   doc.text('SOLAR RETURN', margin, ctx.y + 26);
   doc.setCharSpace(0);
 
-  // Center: YEAR
-  doc.setFont('Georgia', 'bold'); doc.setFontSize(20);
+  // Center: YEAR — larger 24pt
+  doc.setFont('Georgia', 'bold'); doc.setFontSize(24);
   doc.setTextColor(255, 255, 255);
-  doc.text(String(year), pw / 2, ctx.y + 28, { align: 'center' });
+  doc.text(String(year), pw / 2, ctx.y + 29, { align: 'center' });
 
   // Right: FULL NAME
   doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
@@ -168,9 +157,10 @@ export async function generatePDFCover(
   if (birthdayMode && personalMessage.trim()) {
     const msgLines: string[] = doc.splitTextToSize(personalMessage.trim(), contentW - 60);
     const msgH = Math.min(msgLines.length, 3) * 16 + 20;
-    doc.setFillColor(...colors.warm); doc.setDrawColor(...colors.rule); doc.setLineWidth(0.5);
+    doc.setFillColor(245, 240, 232); // #F5F0E8
+    doc.setDrawColor(...colors.rule); doc.setLineWidth(0.5);
     doc.roundedRect(margin + 20, ctx.y, contentW - 40, msgH, 3, 3, 'FD');
-    doc.setFont('Georgia', 'italic'); doc.setFontSize(10);
+    doc.setFont('Georgia', 'italic'); doc.setFontSize(11);
     doc.setTextColor(92, 74, 42);
     let msgY = ctx.y + 14;
     for (const line of msgLines.slice(0, 3)) { doc.text(line, pw / 2, msgY, { align: 'center' }); msgY += 16; }
