@@ -5,208 +5,185 @@ import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { P, MOON_PHASE_EXPLANATIONS } from '@/components/SolarReturnPDFExport';
 
+type Color = [number, number, number];
+const INK:   Color = [18,  16,  14];
+const MUTED: Color = [130, 125, 118];
+const RULE:  Color = [200, 195, 188];
+
 export function generatePDFYearAtAGlance(
   ctx: PDFContext, doc: jsPDF, a: SolarReturnAnalysis, srChart: SolarReturnChart, natalChart: NatalChart
 ) {
-  const { pw, margin, contentW, colors } = ctx;
+  const { pw, margin, contentW } = ctx;
 
-  // Elegant page header
-  doc.setDrawColor(colors.gold[0], colors.gold[1], colors.gold[2]); doc.setLineWidth(1);
+  ctx.pageBg(doc);
+
+  // Section label
+  ctx.trackedLabel(doc, '03 · YEAR AT A GLANCE', margin, ctx.y);
+  ctx.y += 8;
+  doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 24;
+  ctx.y += 18;
 
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(18);
-  doc.setTextColor(colors.gold[0], colors.gold[1], colors.gold[2]);
-  doc.text('YEAR AT A GLANCE', pw / 2, ctx.y, { align: 'center' });
+  // Heading
+  doc.setFont('times', 'bold'); doc.setFontSize(20);
+  doc.setTextColor(...INK);
+  doc.text('Your Year at a Glance', margin, ctx.y);
   ctx.y += 8;
 
-  // Sub-ornament
-  doc.setLineWidth(0.5);
-  doc.line(pw / 2 - 40, ctx.y, pw / 2 + 40, ctx.y);
-  ctx.y += 24;
+  // Sub-label
+  doc.setFont('times', 'italic'); doc.setFontSize(9);
+  doc.setTextColor(...MUTED);
+  doc.text('Stick this on your fridge', margin, ctx.y);
+  ctx.y += 10;
 
-  // Left column info — inset from margin to clear the gold accent bar
-  const boxL = margin + 8; // left edge of boxes (inset from accent bar)
-  const boxW = contentW - 8; // narrower to stay within page
-  const glanceStartY = ctx.y;
+  // Hairline rule
+  doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+  doc.line(margin, ctx.y, pw - margin, ctx.y);
+  ctx.y += 16;
 
-  // --- SR Ascendant ---
-  if (a.yearlyTheme) {
-    doc.setFillColor(colors.softGold[0], colors.softGold[1], colors.softGold[2]);
-    doc.setDrawColor(colors.warmBorder[0], colors.warmBorder[1], colors.warmBorder[2]); doc.setLineWidth(0.5);
-    doc.roundedRect(boxL, ctx.y, boxW, 54, 6, 6, 'FD');
+  const HOUSE_FOCUS: Record<number, string> = {
+    1: 'Identity & Self', 2: 'Money & Values', 3: 'Communication', 4: 'Home & Family',
+    5: 'Creativity, Romance & Children', 6: 'Health & Daily Work', 7: 'Partnerships',
+    8: 'Transformation & Shared Resources', 9: 'Travel & Higher Learning', 10: 'Career & Public Life',
+    11: 'Friends & Community', 12: 'Spirituality & Inner Work',
+  };
 
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-    doc.setTextColor(colors.dimText[0], colors.dimText[1], colors.dimText[2]);
-    doc.text('SR ASCENDANT', boxL + 14, ctx.y + 18);
-    doc.setFontSize(16);
-    doc.setTextColor(colors.gold[0], colors.gold[1], colors.gold[2]);
-    doc.text(`${a.yearlyTheme.ascendantSign} Rising`, boxL + 14, ctx.y + 38);
+  // 2x2 grid of data blocks — NO filled cards
+  const halfW = (contentW - 20) / 2;
+  const blockH = 80;
 
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
-    doc.setTextColor(colors.dimText[0], colors.dimText[1], colors.dimText[2]);
-    doc.text('Ruler:', pw / 2 + 20, ctx.y + 18);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
-    doc.setTextColor(colors.deepBrown[0], colors.deepBrown[1], colors.deepBrown[2]);
-    doc.text(`${P[a.yearlyTheme.ascendantRuler] || a.yearlyTheme.ascendantRuler} in ${a.yearlyTheme.ascendantRulerSign}`, pw / 2 + 20, ctx.y + 36);
-
-    ctx.y += 62;
+  interface DataBlock {
+    label: string;
+    value: string;
+    subvalue: string;
+    body: string;
   }
 
-  // --- Where This Year Plays Out ---
-  if (a.srAscRulerInNatal) {
-    ctx.drawCard(doc, () => {
-      ctx.writeBold(doc, 'Where This Year Plays Out', colors.deepBrown, 11);
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
-      doc.setTextColor(colors.gold[0], colors.gold[1], colors.gold[2]);
-      doc.text(`${P[a.srAscRulerInNatal!.rulerPlanet] || a.srAscRulerInNatal!.rulerPlanet} in ${a.srAscRulerInNatal!.rulerNatalSign || '--'} -- Natal House ${a.srAscRulerInNatal!.rulerNatalHouse || '--'}`, margin + 8, ctx.y);
-      ctx.y += 16;
-      ctx.writeBody(doc, a.srAscRulerInNatal!.interpretation, colors.bodyText, 9.5);
-    });
-  }
+  const blocks: DataBlock[] = [];
 
-  // --- Profection + Time Lord (side by side boxes with explanations) ---
+  // Block 1: This Year's Focus (Profection)
   if (a.profectionYear) {
-    const halfW = (boxW - 12) / 2;
-    const boxH = 76;
+    blocks.push({
+      label: "THIS YEAR'S FOCUS",
+      value: HOUSE_FOCUS[a.profectionYear.houseNumber] || `House ${a.profectionYear.houseNumber}`,
+      subvalue: `${a.profectionYear.houseNumber}TH HOUSE PROFECTION YEAR`,
+      body: `Age ${a.profectionYear.age} — the spotlight lands here.`,
+    });
+  }
 
-    const HOUSE_FOCUS: Record<number, string> = {
-      1: 'Identity & Self', 2: 'Money & Values', 3: 'Communication', 4: 'Home & Family',
-      5: 'Creativity, Romance & Children', 6: 'Health & Daily Work', 7: 'Partnerships',
-      8: 'Transformation & Shared Resources', 9: 'Travel & Higher Learning', 10: 'Career & Public Life',
-      11: 'Friends & Community', 12: 'Spirituality & Inner Work',
-    };
+  // Block 2: Time Lord
+  if (a.profectionYear?.timeLord) {
+    blocks.push({
+      label: 'TIME LORD',
+      value: P[a.profectionYear.timeLord] || a.profectionYear.timeLord,
+      subvalue: 'PLANET RUNNING YOUR YEAR',
+      body: `Rules your profection house cusp. Every transit to this planet hits harder.`,
+    });
+  }
 
-    // Profection box
-    doc.setFillColor(colors.softGold[0], colors.softGold[1], colors.softGold[2]);
-    doc.setDrawColor(colors.warmBorder[0], colors.warmBorder[1], colors.warmBorder[2]); doc.setLineWidth(0.5);
-    doc.roundedRect(boxL, ctx.y, halfW, boxH, 6, 6, 'FD');
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-    doc.setTextColor(colors.dimText[0], colors.dimText[1], colors.dimText[2]);
-    doc.text('PROFECTION YEAR', boxL + 12, ctx.y + 16);
-    doc.setFontSize(18);
-    doc.setTextColor(colors.gold[0], colors.gold[1], colors.gold[2]);
-    doc.text(`House ${a.profectionYear.houseNumber}`, boxL + 12, ctx.y + 36);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-    doc.setTextColor(colors.bodyText[0], colors.bodyText[1], colors.bodyText[2]);
-    doc.text(`Age ${a.profectionYear.age}`, boxL + 12, ctx.y + 50);
-    // House focus label
-    const focusLabel = HOUSE_FOCUS[a.profectionYear.houseNumber] || '';
-    doc.setFont('helvetica', 'italic'); doc.setFontSize(8);
-    doc.setTextColor(colors.deepBrown[0], colors.deepBrown[1], colors.deepBrown[2]);
-    const focusLines = doc.splitTextToSize(`Focus: ${focusLabel}`, halfW - 24);
-    focusLines.forEach((line: string, i: number) => {
-      doc.text(line, boxL + 12, ctx.y + 62 + i * 10);
+  // Block 3: SR Ascendant
+  if (a.yearlyTheme) {
+    blocks.push({
+      label: 'SR ASCENDANT',
+      value: `${a.yearlyTheme.ascendantSign} Rising`,
+      subvalue: `RULER: ${P[a.yearlyTheme.ascendantRuler] || a.yearlyTheme.ascendantRuler} IN ${(a.yearlyTheme.ascendantRulerSign || '').toUpperCase()}`,
+      body: 'How this year presents itself to the world.',
+    });
+  }
+
+  // Block 4: SR Moon
+  const moonPhaseText = a.moonPhase?.phase || '';
+  blocks.push({
+    label: 'SR MOON',
+    value: `${a.moonSign || '--'} in House ${a.moonHouse?.house || '--'}`,
+    subvalue: moonPhaseText ? moonPhaseText.toUpperCase() : '',
+    body: moonPhaseText ? (MOON_PHASE_EXPLANATIONS[moonPhaseText]?.substring(0, 100) + '...') || '' : '',
+  });
+
+  // Render blocks in 2x2 grid
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i];
+    const col = i % 2;
+    const row = Math.floor(i / 2);
+    const x = margin + col * (halfW + 20);
+    const baseY = ctx.y + row * (blockH + 16);
+
+    // Tracked caps label
+    ctx.trackedLabel(doc, b.label, x, baseY);
+
+    // Large value
+    doc.setFont('times', 'bold'); doc.setFontSize(16);
+    doc.setTextColor(...INK);
+    doc.text(b.value, x, baseY + 18);
+
+    // Subvalue
+    if (b.subvalue) {
+      doc.setFont('times', 'italic'); doc.setFontSize(9);
+      doc.setTextColor(...MUTED);
+      doc.text(b.subvalue, x, baseY + 30);
+    }
+
+    // Body
+    doc.setFont('times', 'normal'); doc.setFontSize(9);
+    doc.setTextColor(...INK);
+    const bodyLines: string[] = doc.splitTextToSize(b.body, halfW - 8);
+    bodyLines.slice(0, 2).forEach((line: string, li: number) => {
+      doc.text(line, x, baseY + 42 + li * 14);
     });
 
-    // Time Lord box
-    const tlX = boxL + halfW + 12;
-    doc.setFillColor(242, 248, 255);
-    doc.setDrawColor(colors.warmBorder[0], colors.warmBorder[1], colors.warmBorder[2]); doc.setLineWidth(0.5);
-    doc.roundedRect(tlX, ctx.y, halfW, boxH, 6, 6, 'FD');
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-    doc.setTextColor(colors.dimText[0], colors.dimText[1], colors.dimText[2]);
-    doc.text('TIME LORD', tlX + 12, ctx.y + 16);
-    doc.setFontSize(18);
-    doc.setTextColor(colors.gold[0], colors.gold[1], colors.gold[2]);
-    doc.text(P[a.profectionYear.timeLord] || a.profectionYear.timeLord, tlX + 12, ctx.y + 36);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-    doc.setTextColor(colors.bodyText[0], colors.bodyText[1], colors.bodyText[2]);
-    doc.text('Planet running your year', tlX + 12, ctx.y + 50);
-    // Why this planet
-    doc.setFont('helvetica', 'italic'); doc.setFontSize(8);
-    doc.setTextColor(colors.deepBrown[0], colors.deepBrown[1], colors.deepBrown[2]);
-    const tlExplain = `Rules the sign on natal House ${a.profectionYear.houseNumber} cusp`;
-    doc.text(tlExplain, tlX + 12, ctx.y + 62);
-
-    ctx.y += boxH + 10;
-
-    // Saturn/Profection tension callout — only when Time Lord and house theme are in tension
-    const heavyLords = ['Saturn', 'Mars', 'Pluto'];
-    const joyHouses = [1, 5, 7, 9, 11]; // houses associated with pleasure, creativity, expansion
-    const isHeavyLord = heavyLords.includes(a.profectionYear.timeLord);
-    const isJoyHouse = joyHouses.includes(a.profectionYear.houseNumber);
-
-    if (isHeavyLord && isJoyHouse) {
-      const HOUSE_PROMISE: Record<number, string> = {
-        1: 'reinvention and bold self-expression',
-        5: 'creativity, romance, and joy',
-        7: 'partnership and deep connection',
-        9: 'expansion, travel, and new horizons',
-        11: 'friendship, community, and shared dreams',
-      };
-      const LORD_DEMAND: Record<string, string> = {
-        Saturn: 'Saturn as Time Lord says: earn it. Structure first. Discipline before delight.',
-        Mars: 'Mars as Time Lord says: fight for it. Nothing arrives without effort and courage.',
-        Pluto: 'Pluto as Time Lord says: transform first. The old version of you cannot access what this year offers.',
-      };
-      const housePromise = HOUSE_PROMISE[a.profectionYear.houseNumber] || 'expansion';
-      const lordDemand = LORD_DEMAND[a.profectionYear.timeLord] || '';
-
-      ctx.checkPage(80);
-      // Callout box with slightly different color to stand out
-      doc.setFillColor(245, 240, 255); // soft lavender
-      doc.setDrawColor(colors.gold[0], colors.gold[1], colors.gold[2]);
-      doc.setLineWidth(1);
-      const calloutH = 72;
-      doc.roundedRect(boxL, ctx.y, boxW, calloutH, 6, 6, 'FD');
-
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-      doc.setTextColor(colors.dimText[0], colors.dimText[1], colors.dimText[2]);
-      doc.text('THE TENSION THAT DRIVES THIS YEAR', boxL + 14, ctx.y + 16);
-
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
-      doc.setTextColor(colors.deepBrown[0], colors.deepBrown[1], colors.deepBrown[2]);
-      const tensionLine1 = `House ${a.profectionYear.houseNumber} promises ${housePromise}.`;
-      doc.text(tensionLine1, boxL + 14, ctx.y + 32);
-
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
-      doc.setTextColor(colors.bodyText[0], colors.bodyText[1], colors.bodyText[2]);
-      const tensionLine2 = `${lordDemand} This is not a contradiction — it is the assignment. The joy this year is deeper because it is earned.`;
-      const tensionLines = doc.splitTextToSize(tensionLine2, boxW - 28);
-      tensionLines.forEach((line: string, i: number) => {
-        doc.text(line, boxL + 14, ctx.y + 46 + i * 12);
-      });
-
-      ctx.y += calloutH + 10;
-    }
+    // Hairline rule below block
+    doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+    doc.line(x, baseY + blockH - 4, x + halfW, baseY + blockH - 4);
   }
 
-  // --- Moon line + phase ---
-  const moonPhaseText = a.moonPhase?.phase || '';
+  const totalRows = Math.ceil(blocks.length / 2);
+  ctx.y += totalRows * (blockH + 16) + 10;
 
-  doc.setFillColor(colors.softGold[0], colors.softGold[1], colors.softGold[2]);
-  doc.setDrawColor(colors.warmBorder[0], colors.warmBorder[1], colors.warmBorder[2]); doc.setLineWidth(0.5);
-  const moonBoxH = 50;
-  doc.roundedRect(boxL, ctx.y, boxW, moonBoxH, 6, 6, 'FD');
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-  doc.setTextColor(colors.dimText[0], colors.dimText[1], colors.dimText[2]);
-  doc.text('SR MOON', boxL + 14, ctx.y + 18);
-  doc.setFontSize(14);
-  doc.setTextColor(colors.gold[0], colors.gold[1], colors.gold[2]);
-  doc.text(`${a.moonSign} in House ${a.moonHouse?.house || '--'}`, boxL + 14, ctx.y + 36);
+  // SR ASCENDANT OVERVIEW section — two side-by-side items
+  if (a.yearlyTheme && a.moonSign) {
+    ctx.trackedLabel(doc, 'SR ASCENDANT OVERVIEW', margin, ctx.y);
+    ctx.y += 12;
 
-  if (moonPhaseText) {
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
-    doc.setTextColor(colors.deepBrown[0], colors.deepBrown[1], colors.deepBrown[2]);
-    doc.text(moonPhaseText, pw / 2 + 20, ctx.y + 28);
+    // Left: SR Ascendant
+    doc.setFont('times', 'bold'); doc.setFontSize(14);
+    doc.setTextColor(...INK);
+    doc.text(`${a.yearlyTheme.ascendantSign} Rising`, margin, ctx.y);
+    doc.setFont('times', 'normal'); doc.setFontSize(9);
+    doc.setTextColor(...MUTED);
+    doc.text(`Ruler: ${P[a.yearlyTheme.ascendantRuler] || a.yearlyTheme.ascendantRuler} in ${a.yearlyTheme.ascendantRulerSign}`, margin, ctx.y + 14);
+
+    // Thin vertical rule divider
+    const midX = pw / 2;
+    doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+    doc.line(midX, ctx.y - 10, midX, ctx.y + 20);
+
+    // Right: SR Moon Phase
+    doc.setFont('times', 'bold'); doc.setFontSize(14);
+    doc.setTextColor(...INK);
+    doc.text(moonPhaseText || 'Moon Phase', midX + 16, ctx.y);
+    doc.setFont('times', 'normal'); doc.setFontSize(9);
+    doc.setTextColor(...MUTED);
+    doc.text(`${a.moonSign} in House ${a.moonHouse?.house || '--'}`, midX + 16, ctx.y + 14);
+
+    ctx.y += 32;
   }
-  ctx.y += moonBoxH + 8;
 
-  // Moon phase explanation card
-  if (moonPhaseText) {
-    const phaseExplanation = MOON_PHASE_EXPLANATIONS[moonPhaseText] || MOON_PHASE_EXPLANATIONS[moonPhaseText.replace(' Moon', '')] || MOON_PHASE_EXPLANATIONS[moonPhaseText + ' Moon'];
-    if (phaseExplanation) {
-      ctx.drawCard(doc, () => {
-        ctx.writeBold(doc, `Moon Phase: ${moonPhaseText}`, colors.gold, 11);
-        ctx.y += 2;
-        ctx.writeBody(doc, phaseExplanation, colors.bodyText, 10);
-      });
-    }
+  // Where This Year Plays Out — if available
+  if (a.srAscRulerInNatal) {
+    ctx.checkPage(80);
+    ctx.trackedLabel(doc, 'WHERE THIS YEAR PLAYS OUT', margin, ctx.y);
+    ctx.y += 10;
+    doc.setFont('times', 'bold'); doc.setFontSize(11);
+    doc.setTextColor(...INK);
+    doc.text(`${P[a.srAscRulerInNatal.rulerPlanet] || a.srAscRulerInNatal.rulerPlanet} in ${a.srAscRulerInNatal.rulerNatalSign || '--'} — Natal House ${a.srAscRulerInNatal.rulerNatalHouse || '--'}`, margin, ctx.y);
+    ctx.y += 14;
+    doc.setFont('times', 'normal'); doc.setFontSize(10);
+    doc.setTextColor(...INK);
+    const interpLines: string[] = doc.splitTextToSize(a.srAscRulerInNatal.interpretation, contentW);
+    for (const line of interpLines) { doc.text(line, margin, ctx.y); ctx.y += 16; }
+    ctx.y += 8;
+    doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+    doc.line(margin, ctx.y, pw - margin, ctx.y);
+    ctx.y += 8;
   }
-
-  // Gold accent bar on left
-  const glanceEndY = ctx.y;
-  doc.setDrawColor(colors.gold[0], colors.gold[1], colors.gold[2]); doc.setLineWidth(3);
-  doc.line(margin, glanceStartY, margin, glanceEndY);
 }
