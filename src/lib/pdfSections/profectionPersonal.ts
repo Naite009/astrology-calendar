@@ -7,8 +7,8 @@ const INK:   Color = [18,  16,  14];
 const MUTED: Color = [130, 125, 118];
 const GOLD:  Color = [184, 150, 62];
 const RULE:  Color = [200, 195, 188];
-const DARK:  Color = [38,  34,  30];
 const CARD_BG: Color = [245, 241, 234];
+const CHARCOAL: Color = [58, 54, 50];
 
 const PROFECTION_DEEP: Record<number, string> = {
   1: 'House 1 profection years are the most personal. Your body, appearance, health, and sense of identity are the focal point.',
@@ -69,13 +69,13 @@ export function generateProfectionPersonalSection(
   houseNumber: number, timeLord: string, age: number,
   timeLordSRHouse: number | null, timeLordSRSign: string
 ) {
-  const { pw, ph, margin, contentW } = ctx;
+  const { pw, margin, contentW } = ctx;
   const tlName = P[timeLord] || timeLord;
 
   ctx.pageBg(doc);
 
-  // ── Magazine editorial header ──
-  ctx.y += 24;
+  // ── Magazine editorial header with extra top padding ──
+  ctx.y += 36;
   doc.setFont('times', 'bold'); doc.setFontSize(7);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(4);
@@ -85,35 +85,37 @@ export function generateProfectionPersonalSection(
 
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 28;
+  ctx.y += 32;
 
   // ── Large serif display: "Lord of the Year" ──
   doc.setFont('times', 'normal'); doc.setFontSize(36);
   doc.setTextColor(...INK);
   doc.text('Lord of the Year', margin, ctx.y);
-  ctx.y += 42;
+  ctx.y += 46;
 
-  // ── DARK HERO CARD: Planet name as feature ──
+  // ── HERO CARD: cream bg with charcoal border (no black) ──
   const heroH = 100;
   const heroY = ctx.y;
-  doc.setFillColor(...DARK);
+  doc.setFillColor(...CARD_BG);
   doc.roundedRect(margin, heroY, contentW, heroH, 4, 4, 'F');
+  doc.setDrawColor(...CHARCOAL); doc.setLineWidth(0.5);
+  doc.roundedRect(margin, heroY, contentW, heroH, 4, 4, 'S');
   doc.setFillColor(...GOLD);
   doc.rect(margin, heroY, contentW, 2.5, 'F');
 
   let hy = heroY + 30;
   doc.setFont('times', 'bold'); doc.setFontSize(42);
-  doc.setTextColor(250, 247, 242);
+  doc.setTextColor(...CHARCOAL);
   doc.text(tlName, margin + 22, hy);
 
   // Right-aligned details
   doc.setFont('times', 'normal'); doc.setFontSize(9);
   doc.setTextColor(...GOLD);
-  doc.text(`${ord(houseNumber)} House Profection Year · Age ${age}`, pw - margin - 22, heroY + 24, { align: 'right' });
+  doc.text(`${ord(houseNumber)} House Profection Year → Age ${age}`, pw - margin - 22, heroY + 24, { align: 'right' });
   doc.text(HOUSE_FOCUS[houseNumber] || '', pw - margin - 22, heroY + 38, { align: 'right' });
 
   if (timeLordSRHouse && timeLordSRSign) {
-    doc.text(`SR House ${timeLordSRHouse} · ${timeLordSRSign}`, pw - margin - 22, heroY + 52, { align: 'right' });
+    doc.text(`SR House ${timeLordSRHouse} → ${timeLordSRSign}`, pw - margin - 22, heroY + 52, { align: 'right' });
   }
 
   // THE ENERGY
@@ -125,12 +127,12 @@ export function generateProfectionPersonalSection(
   doc.setCharSpace(0);
   hy += 12;
   doc.setFont('times', 'normal'); doc.setFontSize(10);
-  doc.setTextColor(220, 216, 210);
+  doc.setTextColor(...INK);
   const energyText = TIME_LORD_ENERGY[timeLord] || `${tlName} sets the agenda for the year.`;
   const eLines: string[] = doc.splitTextToSize(energyText, contentW - 44);
   for (const l of eLines.slice(0, 2)) { doc.text(l, margin + 22, hy); hy += 14; }
 
-  ctx.y = heroY + heroH + 22;
+  ctx.y = heroY + heroH + 26;
 
   // ── THE POWER MOVE — pull-quote style ──
   ctx.checkPage(80);
@@ -142,14 +144,14 @@ export function generateProfectionPersonalSection(
   doc.setCharSpace(2);
   doc.text('THE POWER MOVE', margin + 16, ctx.y);
   doc.setCharSpace(0);
-  ctx.y += 14;
+  ctx.y += 16;
 
   doc.setFont('times', 'italic'); doc.setFontSize(13);
   doc.setTextColor(...INK);
   const pmText = TIME_LORD_POWER_MOVE[timeLord] || 'Pay attention to what this planet demands.';
   const pmLines: string[] = doc.splitTextToSize(pmText, contentW - 30);
   for (const l of pmLines.slice(0, 2)) { doc.text(l, margin + 16, ctx.y); ctx.y += 18; }
-  ctx.y += 16;
+  ctx.y += 20;
 
   // ── House deep dive — editorial body text ──
   if (PROFECTION_DEEP[houseNumber]) {
@@ -159,7 +161,7 @@ export function generateProfectionPersonalSection(
     doc.setCharSpace(2);
     doc.text('THE PROFECTION HOUSE', margin, ctx.y);
     doc.setCharSpace(0);
-    ctx.y += 14;
+    ctx.y += 16;
 
     doc.setFont('times', 'normal'); doc.setFontSize(11);
     doc.setTextColor(...INK);
@@ -169,7 +171,7 @@ export function generateProfectionPersonalSection(
       doc.text(line, margin, ctx.y);
       ctx.y += 17;
     }
-    ctx.y += 12;
+    ctx.y += 14;
   }
 
   // ── WHY [PLANET] IS YOUR TIME LORD ──
@@ -179,7 +181,7 @@ export function generateProfectionPersonalSection(
   doc.setCharSpace(2);
   doc.text(`WHY ${tlName.toUpperCase()} IS YOUR TIME LORD`, margin, ctx.y);
   doc.setCharSpace(0);
-  ctx.y += 14;
+  ctx.y += 16;
 
   doc.setFont('times', 'normal'); doc.setFontSize(11);
   doc.setTextColor(...INK);
@@ -190,7 +192,7 @@ export function generateProfectionPersonalSection(
     doc.text(line, margin, ctx.y);
     ctx.y += 17;
   }
-  ctx.y += 8;
+  ctx.y += 10;
 
   // ── Where Time Lord sits in SR ──
   if (timeLordSRHouse && timeLordSRSign) {
@@ -199,11 +201,11 @@ export function generateProfectionPersonalSection(
 
     ctx.drawCard(doc, () => {
       ctx.trackedLabel(doc, `${tlName.toUpperCase()} IN SR HOUSE ${timeLordSRHouse}`, margin + 14, ctx.y, { size: 7 });
-      ctx.y += 14;
+      ctx.y += 16;
       doc.setFont('times', 'bold'); doc.setFontSize(14);
       doc.setTextColor(...INK);
-      doc.text(`${timeLordSRSign} · ${ord(timeLordSRHouse)} House`, margin + 14, ctx.y);
-      ctx.y += 18;
+      doc.text(`${timeLordSRSign} → ${ord(timeLordSRHouse)} House`, margin + 14, ctx.y);
+      ctx.y += 20;
       doc.setFont('times', 'normal'); doc.setFontSize(11);
       doc.setTextColor(...INK);
       const srText = `The Time Lord's agenda plays out primarily through ${houseArea}. Watch this area of life for the year's defining moments.`;
@@ -215,5 +217,5 @@ export function generateProfectionPersonalSection(
   // Bottom rule
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 8;
+  ctx.y += 10;
 }

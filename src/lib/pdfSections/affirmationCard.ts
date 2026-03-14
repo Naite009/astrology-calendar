@@ -9,7 +9,7 @@ const CREAM: Color = [250, 247, 242];
 const CARD_BG: Color = [245, 241, 234];
 const INK:   Color = [18,  16,  14];
 const MUTED: Color = [130, 125, 118];
-const DARK:  Color = [38,  34,  30];
+const CHARCOAL: Color = [58, 54, 50];
 const GOLD:  Color = [184, 150, 62];
 const RULE:  Color = [200, 195, 188];
 
@@ -23,7 +23,7 @@ function getNatalIdentity(sunSign: string, moonSign: string, risingSign: string)
     Virgo: 'You were born with the eye that catches what everyone else overlooks, and the devotion to actually do something about it.',
     Libra: 'You were born with the rare ability to hold two sides of anything without losing yourself — and to make peace feel possible.',
     Scorpio: 'You were born willing to go where others are afraid to look, and to love with a depth that changes people.',
-    Sagittarius: 'You were born with the faith that life is leading somewhere meaningful — and the courage to follow it.',
+    Sagittarius: 'You were born with the conviction that life is leading somewhere meaningful — and the courage to follow it.',
     Capricorn: 'You were born with the discipline to show up even when no one is watching, and the integrity to do it right.',
     Aquarius: 'You were born seeing what the world could be, not just what it is — and refusing to pretend otherwise.',
     Pisces: 'You were born feeling the world more deeply than most people ever will, absorbing what others cannot even sense.',
@@ -90,7 +90,8 @@ function getYearMessage(
   const nodeInSurrenderHouse = northNodeHouse === 12 || northNodeHouse === 9;
   let body = `This year calls you toward ${houseTheme}. ${lordCondition}`;
   if (is12thSun || isBalsamic) body += ' The most important work happens quietly this year.';
-  if (nodeInSurrenderHouse) body += ' Trust what you cannot see yet. Growth comes through faith, not force.';
+  // Replace "faith" with "trust in the process"
+  if (nodeInSurrenderHouse) body += ' Trust what you cannot see yet. Growth comes through trust in the process, not force.';
   if (hasVenusAngular) body += ' You are more magnetic than you realize.';
   else if (hasJupiterAngular) body += ' Something is expanding in your world. Make room for it.';
   const closings: Record<number, string> = {
@@ -140,32 +141,32 @@ export function generateAffirmationCard(
   doc.rect(frameInset, frameInset, pw - frameInset * 2, ph - frameInset * 2);
 
   // ── Top: tracked label ──
-  ctx.y = frameInset + 32;
+  ctx.y = frameInset + 36;
   doc.setFont('times', 'bold'); doc.setFontSize(7);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(4);
   doc.text('CLOSING NOTE', pw / 2, ctx.y, { align: 'center' });
   doc.setCharSpace(0);
-  ctx.y += 10;
+  ctx.y += 12;
 
   doc.setDrawColor(...GOLD); doc.setLineWidth(0.3);
   doc.line(pw / 2 - 60, ctx.y, pw / 2 + 60, ctx.y);
-  ctx.y += 40;
+  ctx.y += 44;
 
-  // ── Massive centered title ──
-  doc.setFont('times', 'normal'); doc.setFontSize(46);
+  // ── Massive centered title — larger font ──
+  doc.setFont('times', 'normal'); doc.setFontSize(52);
   doc.setTextColor(...INK);
   doc.text('Carry This', pw / 2, ctx.y, { align: 'center' });
-  ctx.y += 50;
+  ctx.y += 56;
   doc.text('With You', pw / 2, ctx.y, { align: 'center' });
-  ctx.y += 22;
+  ctx.y += 26;
 
-  // Name subtitle
-  doc.setFont('times', 'italic'); doc.setFontSize(10);
+  // Name subtitle — centered
+  doc.setFont('times', 'italic'); doc.setFontSize(11);
   doc.setTextColor(...MUTED);
-  const nameTag = `${name} · ${sunSign} Sun${moonSign ? ` · ${moonSign} Moon` : ''}${risingSign ? ` · ${risingSign} Rising` : ''}`;
+  const nameTag = `${name} — ${sunSign} Sun${moonSign ? ` — ${moonSign} Moon` : ''}${risingSign ? ` — ${risingSign} Rising` : ''}`;
   doc.text(nameTag, pw / 2, ctx.y, { align: 'center' });
-  ctx.y += 36;
+  ctx.y += 40;
 
   // ── Natal Strength — full-width card ──
   const cardW = pw - margin * 2 - 20;
@@ -190,7 +191,7 @@ export function generateAffirmationCard(
   doc.setTextColor(...INK);
   for (const line of identityLines) { doc.text(line, cardX + 16, cy); cy += 15; }
 
-  ctx.y += card1H + 12;
+  ctx.y += card1H + 14;
 
   // ── This Year's Ask — full-width card ──
   const bodyLines: string[] = doc.splitTextToSize(body, cardW - 32);
@@ -205,7 +206,7 @@ export function generateAffirmationCard(
   doc.setFont('times', 'bold'); doc.setFontSize(6.5);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(2.5);
-  doc.text('THIS YEAR ASK', cardX + 16, cy);
+  doc.text('THIS YEAR\'S ASK', cardX + 16, cy);
   doc.setCharSpace(0);
   cy += 14;
 
@@ -213,10 +214,10 @@ export function generateAffirmationCard(
   doc.setTextColor(...INK);
   for (const line of bodyLines) { doc.text(line, cardX + 16, cy); cy += 15; }
 
-  ctx.y += card2H + 24;
+  ctx.y += card2H + 28;
 
-  // ── Full-page closing quote — large, centered, elegant ──
-  const quoteY = Math.max(ctx.y, ph - frameInset - 120);
+  // ── Full-page closing quote — larger, centered, elegant ──
+  const quoteY = Math.max(ctx.y, ph - frameInset - 130);
 
   doc.setDrawColor(...GOLD); doc.setLineWidth(0.3);
   doc.line(pw / 2 - 40, quoteY, pw / 2 + 40, quoteY);
@@ -224,18 +225,18 @@ export function generateAffirmationCard(
   const quoteText = closing.replace(/^"/, '').replace(/" — .*$/, '').replace(/^"/, '').replace(/" — .*$/, '');
   const attribution = closing.match(/— (.+)$/)?.[1] || closing.match(/— (.+)$/)?.[1];
 
-  const qY = quoteY + 24;
-  doc.setFont('times', 'italic'); doc.setFontSize(16);
-  doc.setTextColor(...DARK);
+  const qY = quoteY + 28;
+  doc.setFont('times', 'italic'); doc.setFontSize(18);
+  doc.setTextColor(...CHARCOAL);
   const quoteLines: string[] = doc.splitTextToSize(quoteText, pw * 0.6);
   let qCy = qY;
   for (const line of quoteLines) {
     doc.text(line, pw / 2, qCy, { align: 'center' });
-    qCy += 22;
+    qCy += 24;
   }
 
   if (attribution) {
-    qCy += 6;
+    qCy += 8;
     doc.setFont('times', 'normal'); doc.setFontSize(8);
     doc.setTextColor(...MUTED);
     doc.setCharSpace(3);

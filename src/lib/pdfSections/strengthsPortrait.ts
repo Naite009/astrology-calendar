@@ -9,7 +9,7 @@ const MUTED: Color = [130, 125, 118];
 const RULE:  Color = [200, 195, 188];
 const GOLD:  Color = [184, 150, 62];
 const CARD_BG: Color = [245, 241, 234];
-const DARK: Color = [38, 34, 30];
+const CHARCOAL: Color = [58, 54, 50];
 
 function getOrdinalSuffix(n: number): string {
   const s = ['th', 'st', 'nd', 'rd'];
@@ -162,7 +162,7 @@ const risingYearAhead: Record<string, string> = {
 export function generateStrengthsPortrait(
   ctx: PDFContext, doc: jsPDF, natalChart: NatalChart, analysis: SolarReturnAnalysis
 ) {
-  const { pw, ph, margin, contentW } = ctx;
+  const { pw, margin, contentW } = ctx;
   const sunSign = natalChart.planets?.Sun?.sign || '';
   const moonSign = natalChart.planets?.Moon?.sign || '';
   const risingSign = natalChart.houseCusps?.house1?.sign || '';
@@ -171,9 +171,9 @@ export function generateStrengthsPortrait(
   const srAscSign = analysis.yearlyTheme?.ascendantSign || '';
   const srMoonSign = analysis.moonSign || '';
 
-  // ── Editorial section header — magazine style ──
+  // ── Force new page for this section ──
   ctx.pageBg(doc);
-  ctx.y += 24;
+  ctx.y += 28;
 
   // Tracked label
   doc.setFont('times', 'bold'); doc.setFontSize(7);
@@ -186,20 +186,20 @@ export function generateStrengthsPortrait(
   // Hairline
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 28;
+  ctx.y += 32;
 
-  // Large serif display title
+  // Large serif display title — renamed
   doc.setFont('times', 'normal'); doc.setFontSize(32);
   doc.setTextColor(...INK);
-  doc.text('Before & After', margin, ctx.y);
-  ctx.y += 14;
+  doc.text('The Natal-to-Return Shift', margin, ctx.y);
+  ctx.y += 16;
 
   doc.setFont('times', 'italic'); doc.setFontSize(11);
   doc.setTextColor(...MUTED);
   doc.text('How this year activates your natal strengths', margin, ctx.y);
-  ctx.y += 32;
+  ctx.y += 36;
 
-  // ── Render each planet as an editorial spread card ──
+  // ── Render each planet as a clean editorial card ──
   const renderPlanetSpread = (
     planetLabel: string,
     natalTag: string,
@@ -212,59 +212,60 @@ export function generateStrengthsPortrait(
     extraLabel?: string,
     extraText?: string,
   ) => {
-    // Check we have room for a substantial card
     ctx.checkPage(320);
 
-    // ── Dark header strip ──
-    const stripH = 58;
+    // ── Header strip — white background with charcoal text (print-friendly) ──
+    const stripH = 62;
     const stripY = ctx.y;
-    doc.setFillColor(...DARK);
+    doc.setFillColor(...CARD_BG);
     doc.roundedRect(margin, stripY, contentW, stripH, 3, 3, 'F');
+    doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
+    doc.roundedRect(margin, stripY, contentW, stripH, 3, 3, 'S');
 
-    // Gold accent bar
+    // Gold accent bar on left
     doc.setFillColor(...GOLD);
     doc.rect(margin, stripY, 3, stripH, 'F');
 
-    // Planet label in gold
-    doc.setFont('times', 'bold'); doc.setFontSize(6.5);
+    // Planet label in gold — larger font
+    doc.setFont('times', 'bold'); doc.setFontSize(7.5);
     doc.setTextColor(...GOLD);
     doc.setCharSpace(3);
-    doc.text(planetLabel, margin + 16, stripY + 20);
+    doc.text(planetLabel, margin + 16, stripY + 22);
     doc.setCharSpace(0);
 
-    // Large heading in cream
-    doc.setFont('times', 'bold'); doc.setFontSize(22);
-    doc.setTextColor(250, 247, 242);
-    doc.text(heading, margin + 16, stripY + 44);
+    // Large heading in charcoal — increased size
+    doc.setFont('times', 'bold'); doc.setFontSize(26);
+    doc.setTextColor(...CHARCOAL);
+    doc.text(heading, margin + 16, stripY + 48);
 
-    // Natal → SR tags on right
-    doc.setFont('times', 'normal'); doc.setFontSize(8.5);
+    // Natal → SR tags on right (clean arrow instead of glyph)
+    doc.setFont('times', 'normal'); doc.setFontSize(9);
     doc.setTextColor(...GOLD);
-    doc.text(`${natalTag}  →  ${srTag}`, pw - margin - 16, stripY + 44, { align: 'right' });
+    doc.text(`${natalTag}  →  ${srTag}`, pw - margin - 16, stripY + 48, { align: 'right' });
 
-    ctx.y = stripY + stripH + 18;
+    ctx.y = stripY + stripH + 22;
 
     // ── STRENGTH block ──
-    doc.setFont('times', 'bold'); doc.setFontSize(7);
+    doc.setFont('times', 'bold'); doc.setFontSize(7.5);
     doc.setTextColor(...GOLD);
     doc.setCharSpace(3);
     doc.text('STRENGTH', margin + 8, ctx.y);
     doc.setCharSpace(0);
-    ctx.y += 14;
+    ctx.y += 16;
 
     ctx.writeBody(doc, strengthText, INK, 11, 17);
-    ctx.y += 12;
+    ctx.y += 16;
 
     // ── SHADOW block ──
-    doc.setFont('times', 'bold'); doc.setFontSize(7);
+    doc.setFont('times', 'bold'); doc.setFontSize(7.5);
     doc.setTextColor(...MUTED);
     doc.setCharSpace(3);
     doc.text('SHADOW', margin + 8, ctx.y);
     doc.setCharSpace(0);
-    ctx.y += 14;
+    ctx.y += 16;
 
     ctx.writeBody(doc, shadowText, INK, 11, 17);
-    ctx.y += 14;
+    ctx.y += 18;
 
     // ── Year activation — nested card ──
     if (yearText) {
@@ -277,15 +278,15 @@ export function generateStrengthsPortrait(
     }
 
     // Bottom rule
-    ctx.y += 8;
+    ctx.y += 10;
     doc.setDrawColor(...RULE); doc.setLineWidth(0.2);
     doc.line(margin + 20, ctx.y, pw - margin - 20, ctx.y);
-    ctx.y += 24;
+    ctx.y += 28;
   };
 
   // ── SUN ──
   if (sunSign && sunStrength[sunSign]) {
-    const houseLabel = srSunHouse ? `SR ${ord(srSunHouse)} HOUSE` : '';
+    const houseLabel = srSunHouse ? `SR ${ord(srSunHouse)} House` : '';
     renderPlanetSpread(
       `SUN IN ${sunSign.toUpperCase()}`,
       sunSign,
@@ -300,7 +301,7 @@ export function generateStrengthsPortrait(
 
   // ── MOON ──
   if (moonSign && moonStrength[moonSign]) {
-    const moonHouseLabel = srMoonHouse ? `SR ${ord(srMoonHouse)} HOUSE` : '';
+    const moonHouseLabel = srMoonHouse ? `SR ${ord(srMoonHouse)} House` : '';
     const srMoonActivation = srMoonSign && srMoonSignActivation[srMoonSign]
       ? srMoonSignActivation[srMoonSign](moonSign)
       : '';
@@ -308,7 +309,7 @@ export function generateStrengthsPortrait(
     renderPlanetSpread(
       `MOON IN ${moonSign.toUpperCase()}`,
       moonSign,
-      `${srMoonSign} Moon · ${moonHouseLabel}`,
+      `${srMoonSign} Moon → ${moonHouseLabel}`,
       `Moon in ${moonSign}`,
       moonStrength[moonSign],
       moonShadow[moonSign] || '',

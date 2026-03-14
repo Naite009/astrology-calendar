@@ -11,7 +11,6 @@ const MUTED: Color = [130, 125, 118];
 const GOLD:  Color = [184, 150, 62];
 const RULE:  Color = [200, 195, 188];
 const CARD_BG: Color = [245, 241, 234];
-const DARK:  Color = [38,  34,  30];
 const SOFT_GOLD: Color = [248, 242, 228];
 
 const LIFE_THEMES: Record<number, { short: string; detail: string }> = {
@@ -32,9 +31,7 @@ const LIFE_THEMES: Record<number, { short: string; detail: string }> = {
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'];
 
-const SEASON_ICONS: Record<number, string> = {
-  0: '✦', 1: '◈', 2: '◆', 3: '●',
-};
+const SEASON_LABELS = ['Spring', 'Summer', 'Autumn', 'Winter'];
 
 function ord(n: number): string {
   const s = ['th', 'st', 'nd', 'rd'];
@@ -81,8 +78,8 @@ function buildDataRichQuarters(a: SolarReturnAnalysis, srChart: SolarReturnChart
     const yearForFirst = monthIndices[0] < birthMonth ? srYear + 1 : srYear;
     const yearForLast = monthIndices[2] < birthMonth ? srYear + 1 : srYear;
     const monthsLabel = yearForFirst === yearForLast
-      ? `${monthNames[0]} – ${monthNames[2]} ${yearForFirst}`
-      : `${monthNames[0]} ${yearForFirst} – ${monthNames[2]} ${yearForLast}`;
+      ? `${monthNames[0]} - ${monthNames[2]} ${yearForFirst}`
+      : `${monthNames[0]} ${yearForFirst} - ${monthNames[2]} ${yearForLast}`;
     const houses = [0, 1, 2].map(i => ((profH - 1 + startIdx + i) % 12) + 1);
     const houseThemes = houses.map(h => LIFE_THEMES[h]?.short || 'Life themes');
     const sentences: string[] = [];
@@ -107,7 +104,6 @@ function buildDataRichQuarters(a: SolarReturnAnalysis, srChart: SolarReturnChart
     else if (q === 3 && nodeH) headline = 'Growth Edge Crystallizes';
     else headline = `${houseThemes[0]} Takes Center Stage`;
 
-    // Condensed summary
     const fullBody = sentences.join(' ');
     const energy = sentences[0] || 'Pay attention to what shows up here.';
     const actionSentences = sentences.filter(s => /build|create|trust|channel|lean|step|pay|use|ask|show|focus|walk|let|embrace|release/i.test(s));
@@ -125,8 +121,8 @@ export function generateQuarterlySummary(
 
   ctx.pageBg(doc);
 
-  // ── Magazine section header ──
-  ctx.y += 24;
+  // ── Magazine section header with extra top breathing room ──
+  ctx.y += 36;
   doc.setFont('times', 'bold'); doc.setFontSize(7);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(4);
@@ -136,27 +132,26 @@ export function generateQuarterlySummary(
 
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 28;
+  ctx.y += 32;
 
   doc.setFont('times', 'normal'); doc.setFontSize(32);
   doc.setTextColor(...INK);
   doc.text('Your Year in Four Seasons', margin, ctx.y);
-  ctx.y += 14;
+  ctx.y += 16;
 
   doc.setFont('times', 'italic'); doc.setFontSize(10);
   doc.setTextColor(...MUTED);
   doc.text('Built from your chart', margin, ctx.y);
-  ctx.y += 34;
+  ctx.y += 38;
 
   const quarters = buildDataRichQuarters(a, srChart, natalChart);
 
-  // ── 2×2 GRID LAYOUT ──────────────────────────────────────────────
-  const gridGapX = 16;
-  const gridGapY = 16;
+  // ── 2x2 GRID LAYOUT ──────────────────────────────────────────────
+  const gridGapX = 18;
+  const gridGapY = 18;
   const cellW = (contentW - gridGapX) / 2;
-  const cellH = 220;
+  const cellH = 230;
 
-  // Check if we have room for the full grid
   ctx.checkPage(cellH * 2 + gridGapY + 20);
 
   for (let i = 0; i < 4; i++) {
@@ -179,13 +174,13 @@ export function generateQuarterlySummary(
     doc.setFillColor(...GOLD);
     doc.rect(cellX, cellY, cellW, 2.5, 'F');
 
-    let cy = cellY + 22;
+    let cy = cellY + 24;
 
-    // Season icon
-    doc.setFont('times', 'bold'); doc.setFontSize(18);
+    // Season label instead of icon
+    doc.setFont('times', 'bold'); doc.setFontSize(14);
     doc.setTextColor(...GOLD);
-    doc.text(SEASON_ICONS[i] || '◆', cellX + 14, cy);
-    cy += 18;
+    doc.text(SEASON_LABELS[i] || `Q${i + 1}`, cellX + 14, cy);
+    cy += 20;
 
     // Months label
     doc.setFont('times', 'bold'); doc.setFontSize(6.5);
@@ -193,14 +188,14 @@ export function generateQuarterlySummary(
     doc.setCharSpace(2.5);
     doc.text(q.months.toUpperCase(), cellX + 14, cy);
     doc.setCharSpace(0);
-    cy += 16;
+    cy += 18;
 
     // Headline
     doc.setFont('times', 'bold'); doc.setFontSize(16);
     doc.setTextColor(...INK);
     const headLines: string[] = doc.splitTextToSize(q.headline, cellW - 28);
     for (const hl of headLines.slice(0, 2)) { doc.text(hl, cellX + 14, cy); cy += 20; }
-    cy += 8;
+    cy += 10;
 
     // THE ENERGY
     doc.setFont('times', 'bold'); doc.setFontSize(6.5);
@@ -213,7 +208,7 @@ export function generateQuarterlySummary(
     doc.setTextColor(...INK);
     const eLines: string[] = doc.splitTextToSize(q.energy, cellW - 28);
     for (const l of eLines.slice(0, 3)) { doc.text(l, cellX + 14, cy); cy += 12; }
-    cy += 8;
+    cy += 10;
 
     // THE POWER MOVE
     doc.setFont('times', 'bold'); doc.setFontSize(6.5);
@@ -227,9 +222,9 @@ export function generateQuarterlySummary(
     const pLines: string[] = doc.splitTextToSize(q.powerMove, cellW - 28);
     for (const l of pLines.slice(0, 2)) { doc.text(l, cellX + 14, cy); cy += 12; }
 
-    // Tags (if any)
+    // Tags (if any) — clean pill badges
     if (q.tags.length > 0) {
-      cy += 6;
+      cy += 8;
       for (const tag of q.tags) {
         const tagW = doc.getTextWidth(tag) + 12;
         doc.setDrawColor(...GOLD); doc.setLineWidth(0.5);
@@ -242,5 +237,5 @@ export function generateQuarterlySummary(
     }
   }
 
-  ctx.y += cellH * 2 + gridGapY + 20;
+  ctx.y += cellH * 2 + gridGapY + 24;
 }

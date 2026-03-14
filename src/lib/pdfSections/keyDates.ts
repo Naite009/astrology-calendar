@@ -15,7 +15,7 @@ const RULE:    Color = [200, 195, 188];
 const CARD_BG: Color = [245, 241, 234];
 const CREAM:   Color = [250, 247, 242];
 
-// Nature-specific colors for visual badges
+// Nature-specific colors for visual badges (print-friendly, no solid black)
 const NATURE_COLORS: Record<string, { bg: Color; text: Color; label: string }> = {
   fusion:      { bg: [248, 242, 228], text: [140, 120, 50],  label: 'FUSION' },
   tension:     { bg: [252, 235, 232], text: [160, 60,  40],  label: 'PRESSURE POINT' },
@@ -37,11 +37,11 @@ const PLANET_BODIES: Record<string, Astronomy.Body> = {
 };
 
 const ASPECTS = [
-  { name: 'Conjunction', angle: 0, orb: 3, symbol: '☌', nature: 'fusion' },
-  { name: 'Opposition', angle: 180, orb: 3, symbol: '☍', nature: 'tension' },
-  { name: 'Trine', angle: 120, orb: 2.5, symbol: '△', nature: 'flow' },
-  { name: 'Square', angle: 90, orb: 3, symbol: '□', nature: 'challenge' },
-  { name: 'Sextile', angle: 60, orb: 2, symbol: '⚹', nature: 'opportunity' },
+  { name: 'Conjunction', angle: 0, orb: 3, symbol: '', nature: 'fusion' },
+  { name: 'Opposition', angle: 180, orb: 3, symbol: '', nature: 'tension' },
+  { name: 'Trine', angle: 120, orb: 2.5, symbol: '', nature: 'flow' },
+  { name: 'Square', angle: 90, orb: 3, symbol: '', nature: 'challenge' },
+  { name: 'Sextile', angle: 60, orb: 2, symbol: '', nature: 'opportunity' },
 ] as const;
 
 const NATAL_TARGETS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Ascendant'];
@@ -56,7 +56,6 @@ const lonToSign = (lon: number): { sign: string; degree: number } => {
   return { sign: ZODIAC_SIGNS[Math.floor(n / 30)], degree: Math.floor(n % 30) };
 };
 
-/** Saturn-specific transit interpretations by natal planet */
 const saturnTransitInterps: Record<string, Record<string, string>> = {
   Sun: {
     Conjunction: 'Identity restructuring. You feel the full weight of Saturn on your sense of self — who you are is being tested and rebuilt. Authority figures demand accountability. Health and vitality require attention. The gift: genuine self-authority earned through real effort.',
@@ -95,7 +94,7 @@ const saturnTransitInterps: Record<string, Record<string, string>> = {
   },
   Jupiter: {
     Conjunction: 'Expansion meets contraction. Big plans require real structure to succeed. The tension: wanting MORE while reality insists on LESS. The gift: sustainable growth rather than overextension.',
-    Opposition: 'Optimism vs. realism. Faith is tested by facts. Financial expansion needs grounding. The lesson: believe in what you can actually build, not just what you can imagine.',
+    Opposition: 'Optimism vs. realism. Confidence is tested by facts. Financial expansion needs grounding. The lesson: believe in what you can actually build, not just what you can imagine.',
     Square: 'Growth pains. Ambitions bump against limitations. Legal, educational, or philosophical pursuits require more effort than expected. The answer: persistence, not volume.',
     Trine: 'Wise expansion. Growth that is both ambitious and realistic. Professional, educational, or financial progress built on solid ground. The rare combination of luck and discipline.',
     Sextile: 'A practical opportunity for growth. An institution, mentor, or system helps you expand responsibly. Say yes to structured opportunity.',
@@ -217,13 +216,16 @@ export function generateKeyDatesSection(
   const tlName = P[timeLord] || timeLord;
   doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
   ctx.sectionPages.set('KEY DATES', doc.getNumberOfPages());
+
+  // ── Section header with extra top margin ──
+  ctx.y += 36;
   ctx.sectionTitle(doc, `KEY DATES — WHEN ${tlName.toUpperCase()} ACTIVATES YOUR CHART`,
     `Exact and near-exact aspects from transiting ${tlName} to your natal planets during the SR year`);
 
-  // Intro card
+  // Intro card — full-width centered
   ctx.drawCard(doc, () => {
     ctx.writeBold(doc, 'Why These Dates Matter');
-    ctx.y += 4;
+    ctx.y += 6;
     ctx.writeBody(doc, `As your Time Lord, ${tlName} is the planet running the show this year. Every time transiting ${tlName} makes an exact aspect to one of your natal planets, the Time Lord's agenda ACTIVATES that area of your life. These are the dates when the year's themes become tangible — when you feel the pressure, the opportunity, or the shift. Mark them.`);
   });
 
@@ -239,7 +241,7 @@ export function generateKeyDatesSection(
 
     ctx.checkPage(200);
 
-    // ── Date pill on left + nature badge on right ──
+    // ── Date + nature badge ──
     const cardStartY = ctx.y;
     const dateStr = `${monthName} ${dayNum}, ${yearNum}`;
 
@@ -261,7 +263,7 @@ export function generateKeyDatesSection(
     doc.setFont('times', 'bold'); doc.setFontSize(12);
     doc.setTextColor(...INK);
     doc.text(dateStr, margin, cardStartY + 12);
-    ctx.y = cardStartY + 22;
+    ctx.y = cardStartY + 24;
 
     // Timeline dot + vertical line
     const dotX = margin + 6;
@@ -273,8 +275,7 @@ export function generateKeyDatesSection(
     doc.line(dotX, ctx.y + 6, dotX, ctx.y + 8);
 
     // Aspect title + details in card
-    ctx.y += 4;
-    const cardY = ctx.y;
+    ctx.y += 6;
 
     ctx.drawCard(doc, () => {
       const natalName = P[event.natalPlanet] || event.natalPlanet;
@@ -283,14 +284,14 @@ export function generateKeyDatesSection(
       doc.setFont('times', 'bold'); doc.setFontSize(13);
       doc.setTextColor(...GOLD);
       doc.text(aspectTitle, margin + 14, ctx.y);
-      ctx.y += 12;
+      ctx.y += 14;
 
       doc.setFont('times', 'normal'); doc.setFontSize(8.5);
       doc.setTextColor(...MUTED);
-      doc.text(`${event.orb}° orb  ·  ${event.transitSign} ${event.transitDegree}°`, margin + 14, ctx.y);
-      ctx.y += 16;
+      doc.text(`${event.orb} degree orb  →  ${event.transitSign} ${event.transitDegree} degrees`, margin + 14, ctx.y);
+      ctx.y += 18;
 
-      // Interpretation body
+      // Interpretation body — full-width
       ctx.writeBody(doc, event.interpretation);
     });
   }
