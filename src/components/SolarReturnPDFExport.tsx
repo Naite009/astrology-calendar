@@ -1245,7 +1245,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       if (narrative) {
         doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
         ctx.sectionPages.set('YEAR-AHEAD READING', doc.getNumberOfPages());
-        ctx.sectionTitle(doc, 'YEAR-AHEAD READING');
+        ctx.sectionTitle(doc, 'YEAR-AHEAD READING', 'Your Year in Full');
+        ctx.drawGoldRule(doc);
+        ctx.y += 22;
 
         const lines = narrative.split('\n');
         let paraBuffer: string[] = [];
@@ -1263,46 +1265,46 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
               const pullQuote = fullText.substring(0, firstSentenceEnd + 1);
               const remainder = fullText.substring(firstSentenceEnd + 2);
               ctx.checkPage(80);
-              ctx.y += 8;
-              doc.setFont('times', 'italic'); doc.setFontSize(12);
+              ctx.y += 10;
+              doc.setFont('times', 'italic'); doc.setFontSize(13);
               doc.setTextColor(...ctx.colors.accent);
               const pqLines = doc.splitTextToSize(pullQuote, contentW - 60);
               pqLines.forEach((line: string) => {
                 doc.text(line, pw / 2, ctx.y, { align: 'center' });
-                ctx.y += 16;
+                ctx.y += 18;
               });
-              ctx.y += 6;
+              ctx.y += 8;
               if (remainder) {
-                doc.setFont('times', 'normal'); doc.setFontSize(9.5);
+                doc.setFont('times', 'normal'); doc.setFontSize(11.5);
                 doc.setTextColor(...ctx.colors.ink);
                 const rLines = doc.splitTextToSize(remainder, contentW);
                 rLines.forEach((line: string) => {
-                  ctx.checkPage(14);
+                  ctx.checkPage(18);
                   doc.text(line, margin, ctx.y);
-                  ctx.y += 14;
+                  ctx.y += 18;
                 });
               }
             } else {
-              doc.setFont('times', 'normal'); doc.setFontSize(9.5);
+              doc.setFont('times', 'normal'); doc.setFontSize(11.5);
               doc.setTextColor(...ctx.colors.ink);
               const bLines = doc.splitTextToSize(fullText, contentW);
               bLines.forEach((line: string) => {
-                ctx.checkPage(14);
+                ctx.checkPage(18);
                 doc.text(line, margin, ctx.y);
-                ctx.y += 14;
+                ctx.y += 18;
               });
             }
           } else {
-            doc.setFont('times', 'normal'); doc.setFontSize(9.5);
+            doc.setFont('times', 'normal'); doc.setFontSize(11.5);
             doc.setTextColor(...ctx.colors.ink);
             const bLines = doc.splitTextToSize(fullText, contentW);
             bLines.forEach((line: string) => {
-              ctx.checkPage(14);
+              ctx.checkPage(18);
               doc.text(line, margin, ctx.y);
-              ctx.y += 14;
+              ctx.y += 18;
             });
           }
-          ctx.y += 12;
+          ctx.y += 16;
           paraBuffer = [];
         };
 
@@ -1314,13 +1316,13 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           }
           if (trimmed.startsWith('## ')) {
             flushPara();
-            ctx.checkPage(50); ctx.y += 16;
+            ctx.checkPage(50); ctx.y += 18;
             ctx.trackedLabel(doc, trimmed.replace('## ', '').toUpperCase(), margin, ctx.y);
-            ctx.y += 4;
+            ctx.y += 5;
             doc.setDrawColor(...ctx.colors.rule);
             doc.setLineWidth(0.3);
             doc.line(margin, ctx.y, pw - margin, ctx.y);
-            ctx.y += 14;
+            ctx.y += 16;
           } else {
             paraBuffer.push(trimmed.replace(/\*\*/g, '').replace(/\*/g, ''));
           }
