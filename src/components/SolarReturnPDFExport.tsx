@@ -1239,12 +1239,10 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           if (trimmed.startsWith('## ')) {
             flushPara();
             ctx.checkPage(50); ctx.y += 16;
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
-            doc.setTextColor(...ctx.colors.gold);
-            doc.text(trimmed.replace('## ', '').toUpperCase(), margin, ctx.y);
+            ctx.trackedLabel(doc, trimmed.replace('## ', '').toUpperCase(), margin, ctx.y);
             ctx.y += 4;
-            doc.setDrawColor(ctx.colors.softGold[0], ctx.colors.softGold[1], ctx.colors.softGold[2]);
-            doc.setLineWidth(0.5);
+            doc.setDrawColor(...ctx.colors.rule);
+            doc.setLineWidth(0.3);
             doc.line(margin, ctx.y, pw - margin, ctx.y);
             ctx.y += 14;
           } else {
