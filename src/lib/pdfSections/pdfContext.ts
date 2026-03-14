@@ -68,6 +68,7 @@ export function createPDFContext(
     pw, ph, margin, contentW, colors,
     sectionPages,
     sectionNum: 0,
+    cardCount: 0,
 
     checkPage(needed: number) {
       if (ctx.y + needed > ph - 55) {
