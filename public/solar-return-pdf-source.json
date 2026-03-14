@@ -1,0 +1,22 @@
+{
+  "description": "All source files used to generate the Solar Return PDF report",
+  "generated": "2026-03-14",
+  "files": {
+    "src/components/SolarReturnPDFExport.tsx": "See the full file in the project - 1360 lines, too large to inline in JSON. This is the main React component that orchestrates cover, TOC, all sections, and the download button.",
+    "src/lib/pdfSections/cover.ts": "Cover page rendering - cake image, name, year, comparison table",
+    "src/lib/pdfSections/pdfContext.ts": "Shared layout engine - colors, card drawing, page breaks, text helpers",
+    "src/lib/pdfSections/tableOfContents.ts": "Table of contents with clickable links",
+    "src/lib/pdfSections/howToRead.ts": "How to Read This Report section",
+    "src/lib/pdfSections/strengthsPortrait.ts": "Your Big Three - Sun, Moon, Rising analysis",
+    "src/lib/pdfSections/yearAtAGlance.ts": "Year at a Glance dashboard",
+    "src/lib/pdfSections/tier1Report.ts": "Tier 1 standalone 2-page PDF",
+    "src/lib/pdfSections/highlightsAndForecasts.ts": "Best Months & Highlights + Monthly Forecasts",
+    "src/lib/pdfSections/affirmationCard.ts": "Birthday Affirmation card",
+    "src/lib/pdfSections/profectionWheel.ts": "Profection Wheel visual diagram",
+    "src/lib/pdfSections/profectionPersonal.ts": "Profection Year deep dive",
+    "src/lib/pdfSections/keyDates.ts": "Key Dates - Time Lord transit calculations",
+    "src/lib/pdfSections/quarterlySummary.ts": "Your Year in Four Seasons",
+    "src/lib/pdfSections/signColorThemes.ts": "Zodiac sign-specific color themes"
+  },
+  "note": "This JSON is a manifest. To get the actual file contents, use the Code Editor in Lovable (code icon in the navigation bar) and navigate to each file path listed above."
+}
