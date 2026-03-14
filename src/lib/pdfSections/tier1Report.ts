@@ -517,12 +517,7 @@ export async function generateTier1SolarReturnPDF(
   doc.setDrawColor(...t.rule); doc.setLineWidth(0.5);
   doc.line(MARGIN, y, pw - MARGIN, y);
 
-  // Birthday footer
-  if (birthdayMode) {
-    doc.setFont('Georgia', 'italic'); doc.setFontSize(8);
-    doc.setTextColor(...t.dimText);
-    doc.text('Wishing you a beautiful year ahead.', pw / 2, ph - MARGIN_BOTTOM, { align: 'center' });
-  }
+  // No footer — clean editorial layout per spec
 
   // No page 3. No quarterly. No monthly. End of Tier 1.
 
