@@ -72,9 +72,11 @@ function buildHighlights(a: SolarReturnAnalysis, srChart: SolarReturnChart, nata
     });
   }
 
-  // 4. Strongest SR-to-Natal aspect (skip Sun conjunct Sun — that's the Solar Return itself)
+  // 4. Strongest SR-to-Natal aspect (skip Sun conjunct Sun; only major 10 planets)
+  const MAJOR_PLANETS = new Set(['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto']);
   if (a.srToNatalAspects.length > 0) {
     const strongest = a.srToNatalAspects.find(asp =>
+      MAJOR_PLANETS.has(asp.planet1) && MAJOR_PLANETS.has(asp.planet2) &&
       !(asp.planet1 === 'Sun' && asp.planet2 === 'Sun' && asp.type === 'Conjunction')
     );
     if (strongest) {
@@ -83,6 +85,32 @@ function buildHighlights(a: SolarReturnAnalysis, srChart: SolarReturnChart, nata
         timing: `SR ${P[strongest.planet1] || strongest.planet1} ${strongest.type} Natal ${P[strongest.planet2] || strongest.planet2}`,
         body: strongest.interpretation,
         icon: 'SHIFT',
+      });
+    }
+  }
+
+  // 5. Natal Chart Ruler — how your birth chart's core energy interacts with this year
+  if (natalChart.planets?.Ascendant) {
+    const ascSign = natalChart.planets.Ascendant.sign;
+    const chartRuler = getSignRuler(ascSign);
+    const timeLord = a.profectionYear?.timeLord || '';
+    if (chartRuler && chartRuler !== timeLord) {
+      const rulerName = P[chartRuler] || chartRuler;
+      const natalPos = (natalChart.planets as any)?.[chartRuler];
+      const srPlanets = (srChart as any)?.planets || {};
+      const srPos = srPlanets[chartRuler];
+      let body = `${rulerName} rules your Ascendant (${ascSign}), making it your natal chart ruler — the planet that represents YOU.`;
+      if (natalPos?.sign) body += ` Born with ${rulerName} in ${natalPos.sign}`;
+      if (natalPos?.house) body += ` (${ord(natalPos.house)} house)`;
+      if (natalPos?.sign) body += `.`;
+      if (srPos?.sign) body += ` This year ${rulerName} moves through ${srPos.sign}`;
+      if (srPos?.house) body += ` in your ${ord(srPos.house)} house`;
+      if (srPos?.sign) body += ` — watch how ${LIFE_THEMES[srPos.house]?.detail || 'that area'} responds.`;
+      highlights.push({
+        label: `YOUR CHART RULER: ${rulerName.toUpperCase()}`,
+        timing: `${ascSign} Rising → ${rulerName}`,
+        body,
+        icon: 'STAR',
       });
     }
   }
@@ -137,7 +165,16 @@ function buildPersonalizedMonthlyForecasts(
   const fullMonthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
   const srYear = srChart.solarReturnYear || new Date().getFullYear();
-  const birthMonth = natalChart.planets?.Sun ? getMonthFromSign(natalChart.planets.Sun.sign) : new Date().getMonth();
+  // Use actual birth date to determine birth month, not sign approximation
+  let birthMonth = 2; // default March
+  if (natalChart.birthDate) {
+    const parts = natalChart.birthDate.split(/[-/]/);
+    // Try parsing as YYYY-MM-DD or MM/DD/YYYY
+    if (parts.length >= 2) {
+      const candidate = parts[0].length === 4 ? parseInt(parts[1], 10) - 1 : parseInt(parts[0], 10) - 1;
+      if (candidate >= 0 && candidate <= 11) birthMonth = candidate;
+    }
+  }
 
   const timeLord = a.profectionYear?.timeLord || '';
   const timeLordName = P[timeLord] || timeLord;
@@ -270,12 +307,13 @@ function getSignFeel(sign: string): string {
   return feels[sign] || 'mixed emotional tones';
 }
 
-function getMonthFromSign(sign: string): number {
-  const signMonths: Record<string, number> = {
-    Aries: 2, Taurus: 3, Gemini: 4, Cancer: 5, Leo: 6, Virgo: 7,
-    Libra: 8, Scorpio: 9, Sagittarius: 10, Capricorn: 11, Aquarius: 0, Pisces: 1,
+function getSignRuler(sign: string): string | null {
+  const rulers: Record<string, string> = {
+    Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon',
+    Leo: 'Sun', Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Pluto',
+    Sagittarius: 'Jupiter', Capricorn: 'Saturn', Aquarius: 'Saturn', Pisces: 'Neptune',
   };
-  return signMonths[sign] ?? 0;
+  return rulers[sign] || null;
 }
 
 // ─── PDF Rendering ───
