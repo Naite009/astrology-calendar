@@ -257,7 +257,22 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
           ) : (
             <>
               <TabsContent value="overview">
-                <OverviewTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} onEdit={() => { setEditingSRId(selectedSR.id); setShowInputForm(true); }} onDelete={() => { deleteSolarReturn(selectedSR.id); setSelectedSRId(null); }} />
+                <OverviewDashboard
+                  analysis={analysis}
+                  srChart={selectedSR}
+                  natalChart={selectedNatal}
+                  onSelectTier={(tier) => setSelectedTier(tier as 't1' | null)}
+                  onDownloadTier={(tier) => {
+                    if (tier === 't1') {
+                      const btn = document.querySelector('[data-tier1-download]') as HTMLButtonElement;
+                      if (btn) btn.click();
+                    } else if (tier === 't4' || tier === 't5') {
+                      toast.info('Coming soon — this tier is under development');
+                    } else {
+                      toast.info(`Tier ${tier.replace('t', '')} PDF coming soon`);
+                    }
+                  }}
+                />
               </TabsContent>
 
               <TabsContent value="houses">
