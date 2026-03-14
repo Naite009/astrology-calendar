@@ -1277,27 +1277,105 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       if (narrative) {
         doc.addPage(); ctx.y = margin;
         ctx.sectionPages.set('YEAR-AHEAD READING', doc.getNumberOfPages());
-        ctx.drawGoldRule(doc); ctx.y += 20;
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+
+        // Section opener — large number + title with breathing room
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+        doc.setTextColor(...ctx.colors.dimText);
+        doc.text('17', margin, ctx.y);
+        ctx.y += 14;
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(22);
         doc.setTextColor(...ctx.colors.gold);
-        doc.text('YEAR-AHEAD READING', margin, ctx.y); ctx.y += 20;
+        doc.text('YEAR-AHEAD', margin, ctx.y);
+        ctx.y += 26;
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(22);
+        doc.setTextColor(...ctx.colors.ink);
+        doc.text('READING', margin, ctx.y);
+        ctx.y += 8;
+        doc.setDrawColor(...ctx.colors.gold); doc.setLineWidth(2);
+        doc.line(margin, ctx.y, margin + 80, ctx.y);
+        ctx.y += 28;
 
         const lines = narrative.split('\n');
+        let paraBuffer: string[] = [];
+        let paraCount = 0;
+
+        const flushPara = () => {
+          if (paraBuffer.length === 0) return;
+          const fullText = paraBuffer.join(' ').replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').replace(/[^\x00-\x7F]/g, '');
+          paraCount++;
+
+          // Every other paragraph gets a pull quote treatment for the first sentence
+          if (paraCount % 2 === 0) {
+            const firstSentenceEnd = fullText.search(/[.!?]\s/);
+            if (firstSentenceEnd > 20 && firstSentenceEnd < 120) {
+              const pullQuote = fullText.substring(0, firstSentenceEnd + 1);
+              const remainder = fullText.substring(firstSentenceEnd + 2);
+              ctx.checkPage(80);
+              ctx.y += 8;
+              doc.setFont('helvetica', 'italic'); doc.setFontSize(12);
+              doc.setTextColor(...ctx.colors.deepBrown);
+              const pqLines = doc.splitTextToSize(pullQuote, contentW - 60);
+              pqLines.forEach((line: string) => {
+                doc.text(line, pw / 2, ctx.y, { align: 'center' });
+                ctx.y += 16;
+              });
+              ctx.y += 6;
+              if (remainder) {
+                doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
+                doc.setTextColor(...ctx.colors.bodyText);
+                const rLines = doc.splitTextToSize(remainder, contentW);
+                rLines.forEach((line: string) => {
+                  ctx.checkPage(14);
+                  doc.text(line, margin, ctx.y);
+                  ctx.y += 14;
+                });
+              }
+            } else {
+              doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
+              doc.setTextColor(...ctx.colors.bodyText);
+              const bLines = doc.splitTextToSize(fullText, contentW);
+              bLines.forEach((line: string) => {
+                ctx.checkPage(14);
+                doc.text(line, margin, ctx.y);
+                ctx.y += 14;
+              });
+            }
+          } else {
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
+            doc.setTextColor(...ctx.colors.bodyText);
+            const bLines = doc.splitTextToSize(fullText, contentW);
+            bLines.forEach((line: string) => {
+              ctx.checkPage(14);
+              doc.text(line, margin, ctx.y);
+              ctx.y += 14;
+            });
+          }
+          ctx.y += 12;
+          paraBuffer = [];
+        };
+
         for (const line of lines) {
           const trimmed = line.trim();
-          if (!trimmed) { ctx.y += 6; continue; }
+          if (!trimmed) {
+            flushPara();
+            continue;
+          }
           if (trimmed.startsWith('## ')) {
-            ctx.checkPage(60); ctx.y += 10;
-            doc.setDrawColor(...ctx.colors.softGold); doc.setLineWidth(0.5); doc.line(margin, ctx.y, pw - margin, ctx.y);
-            ctx.y += 12;
-            ctx.writeBold(doc, trimmed.replace('## ', '').toUpperCase(), ctx.colors.gold, 11); ctx.y += 4;
-          } else if (trimmed.startsWith('**') && trimmed.endsWith('**')) {
-            ctx.checkPage(30); ctx.writeBold(doc, trimmed.replace(/\*\*/g, ''), ctx.colors.darkText, 10);
+            flushPara();
+            ctx.checkPage(50); ctx.y += 16;
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+            doc.setTextColor(...ctx.colors.gold);
+            doc.text(trimmed.replace('## ', '').toUpperCase(), margin, ctx.y);
+            ctx.y += 4;
+            doc.setDrawColor(ctx.colors.softGold[0], ctx.colors.softGold[1], ctx.colors.softGold[2]);
+            doc.setLineWidth(0.5);
+            doc.line(margin, ctx.y, pw - margin, ctx.y);
+            ctx.y += 14;
           } else {
-            const clean = trimmed.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').replace(/[^\x00-\x7F]/g, '');
-            ctx.writeBody(doc, clean, ctx.colors.bodyText, 9.5, 14);
+            paraBuffer.push(trimmed.replace(/\*\*/g, '').replace(/\*/g, ''));
           }
         }
+        flushPara();
       }
 
       // =============================================
