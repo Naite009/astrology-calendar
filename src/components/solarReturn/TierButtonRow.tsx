@@ -94,6 +94,7 @@ export const TierButtonRow = ({
           <Sparkles size={10} />
           Generate AI Reading
         </button>
+      </div>
     </div>
   );
 };
