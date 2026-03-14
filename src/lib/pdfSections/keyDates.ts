@@ -234,20 +234,16 @@ export function generateKeyDatesSection(
 
   // Render the section
   const tlName = P[timeLord] || timeLord;
-  doc.addPage(); ctx.y = margin;
+  doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
   ctx.sectionPages.set('KEY DATES', doc.getNumberOfPages());
-  ctx.drawGoldRule(doc); ctx.y += 20;
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-  doc.setTextColor(...colors.gold);
-  doc.text(`KEY DATES — WHEN ${tlName.toUpperCase()} ACTIVATES YOUR CHART`, margin, ctx.y); ctx.y += 8;
-  doc.setFont('helvetica', 'italic'); doc.setFontSize(9); doc.setTextColor(...colors.dimText);
-  doc.text(`Exact and near-exact aspects from transiting ${tlName} to your natal planets during the SR year`, margin, ctx.y); ctx.y += 18;
+  ctx.sectionTitle(doc, `KEY DATES — WHEN ${tlName.toUpperCase()} ACTIVATES YOUR CHART`,
+    `Exact and near-exact aspects from transiting ${tlName} to your natal planets during the SR year`);
 
   // Intro card
   ctx.drawCard(doc, () => {
-    ctx.writeBold(doc, 'Why These Dates Matter', colors.gold, 11);
+    ctx.writeBold(doc, 'Why These Dates Matter');
     ctx.y += 4;
-    ctx.writeBody(doc, `As your Time Lord, ${tlName} is the planet running the show this year. Every time transiting ${tlName} makes an exact aspect to one of your natal planets, the Time Lord's agenda ACTIVATES that area of your life. These are the dates when the year's themes become tangible -- when you feel the pressure, the opportunity, or the shift. Mark them.`, colors.bodyText, 9.5, 14);
+    ctx.writeBody(doc, `As your Time Lord, ${tlName} is the planet running the show this year. Every time transiting ${tlName} makes an exact aspect to one of your natal planets, the Time Lord's agenda ACTIVATES that area of your life. These are the dates when the year's themes become tangible -- when you feel the pressure, the opportunity, or the shift. Mark them.`);
   });
 
   // Month grouping for visual clarity
@@ -260,44 +256,34 @@ export function generateKeyDatesSection(
     const yearNum = event.date.getFullYear();
     const isHard = ['challenge', 'tension'].includes(event.nature);
     const isFlow = ['flow', 'opportunity'].includes(event.nature);
-    const accentColor: [number, number, number] = isHard ? [180, 100, 60] : isFlow ? colors.accentGreen : colors.gold;
-    const bgColor: [number, number, number] = isHard ? [255, 245, 240] : isFlow ? [240, 252, 245] : colors.softGold;
 
       ctx.checkPage(180);
       ctx.drawCard(doc, () => {
-        // Date + aspect header bar — ensure it stays within card bounds
-        const cardInner = contentW - 24; // safe inner width
-        doc.setFillColor(...bgColor);
-        doc.roundedRect(margin + 8, ctx.y - 4, cardInner, 34, 4, 4, 'F');
-        
         // Date on left
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
-        doc.setTextColor(...accentColor);
-        doc.text(`${monthName} ${dayNum}, ${yearNum}`, margin + 16, ctx.y + 10);
+        doc.setFont('times', 'bold'); doc.setFontSize(11);
+        doc.setTextColor(...colors.ink);
+        doc.text(`${monthName} ${dayNum}, ${yearNum}`, margin + 8, ctx.y);
         
-        // Aspect name below date
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
-        doc.setTextColor(...colors.deepBrown);
+        // Nature badge — plain text
+        const natureBadge = isHard ? 'PRESSURE POINT' : isFlow ? 'GREEN LIGHT' : event.nature.toUpperCase();
+        ctx.trackedLabel(doc, natureBadge, pw - margin, ctx.y, { align: 'right', size: 7, charSpace: 2 });
+        ctx.y += 14;
+        
+        // Aspect name
         const natalName = P[event.natalPlanet] || event.natalPlanet;
         const aspectTitle = `${tlName} ${event.aspectName} Natal ${natalName}`;
-        doc.text(aspectTitle, margin + 16, ctx.y + 24);
-        
-        // Nature badge — plain text, no Unicode
-        const natureBadge = isHard ? 'PRESSURE POINT' : isFlow ? 'GREEN LIGHT' : event.nature.toUpperCase();
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(7);
-        doc.setTextColor(...accentColor);
-        const badgeX = margin + cardInner - 8;
-        doc.text(natureBadge, badgeX, ctx.y + 10, { align: 'right' });
+        doc.setFont('times', 'bold'); doc.setFontSize(10);
+        doc.setTextColor(...colors.accent);
+        doc.text(aspectTitle, margin + 8, ctx.y);
         
         // Orb + sign info
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
-        doc.setTextColor(...colors.dimText);
-        doc.text(`${event.orb}' orb  |  ${event.transitSign} ${event.transitDegree}'`, badgeX, ctx.y + 22, { align: 'right' });
-        
-        ctx.y += 40;
+        doc.setFont('times', 'normal'); doc.setFontSize(8);
+        doc.setTextColor(...colors.muted);
+        doc.text(`${event.orb}' orb  |  ${event.transitSign} ${event.transitDegree}'`, pw - margin, ctx.y, { align: 'right' });
+        ctx.y += 14;
 
-        // Interpretation — properly wrapped
-        ctx.writeBody(doc, event.interpretation, colors.bodyText, 9, 13);
-      }, accentColor);
+        // Interpretation
+        ctx.writeBody(doc, event.interpretation);
+      });
   }
 }

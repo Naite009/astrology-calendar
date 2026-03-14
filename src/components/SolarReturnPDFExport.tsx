@@ -230,20 +230,14 @@ function generateHowThisYearMeetsYou(
   ctx.sectionTitle(doc, 'HOW THIS YEAR MEETS YOU', 'Natal vs Solar Return');
 
   // Intro
-  doc.setFont('Georgia', 'italic'); doc.setFontSize(9);
-  doc.setTextColor(122, 112, 104);
+  doc.setFont('times', 'italic'); doc.setFontSize(9);
+  doc.setTextColor(...colors.muted);
   const introLines: string[] = doc.splitTextToSize(
     'Your natal chart is who you are. Your Solar Return shows how this year\'s energy meets that.',
     contentW,
   );
   for (const l of introLines) { doc.text(l, margin, ctx.y); ctx.y += 13; }
   ctx.y += 8;
-
-  const headerTints: { bg: [number,number,number]; labelColor: [number,number,number] }[] = [
-    { bg: [255, 251, 240], labelColor: [139, 105, 20] },
-    { bg: [245, 240, 250], labelColor: [74, 45, 138] },
-    { bg: [253, 245, 238], labelColor: [139, 58, 21] },
-  ];
 
   const cards = [
     {
@@ -265,72 +259,35 @@ function generateHowThisYearMeetsYou(
 
   for (let i = 0; i < cards.length; i++) {
     const card = cards[i];
-    const tint = headerTints[i];
     ctx.checkPage(110);
 
-    const cardStartY = ctx.y;
+    // Tracked caps label
+    ctx.trackedLabel(doc, card.label, margin, ctx.y, { size: 7, charSpace: 3 });
 
-    // Header with tinted bg
-    doc.setFillColor(...tint.bg);
-    doc.setDrawColor(...colors.border); doc.setLineWidth(0.5);
-    doc.roundedRect(margin, ctx.y, contentW, 24, 4, 4, 'F');
+    // Tags: natal → SR
+    doc.setFont('times', 'normal'); doc.setFontSize(8);
+    doc.setTextColor(...colors.muted);
+    doc.text(`${card.natalTag}  →  ${card.srTag}`, margin + contentW, ctx.y, { align: 'right' });
+    ctx.y += 12;
 
-    // Label
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
-    doc.setTextColor(...tint.labelColor);
-    doc.setCharSpace(0.8);
-    doc.text(card.label, margin + 12, ctx.y + 16);
-    doc.setCharSpace(0);
-
-    // Tags
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
-    const natalTagW = doc.getTextWidth(card.natalTag) + 14;
-    const srTagW = doc.getTextWidth(card.srTag) + 14;
-    const tagsX = margin + contentW - 12 - srTagW - 20 - natalTagW;
-
-    doc.setFillColor(237, 229, 247);
-    doc.roundedRect(tagsX, ctx.y + 5, natalTagW, 14, 2, 2, 'F');
-    doc.setTextColor(74, 45, 138);
-    doc.text(card.natalTag, tagsX + 7, ctx.y + 15);
-
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-    doc.setTextColor(...colors.gold);
-    doc.text('→', tagsX + natalTagW + 5, ctx.y + 15);
-
-    const srTagX = tagsX + natalTagW + 20;
-    doc.setFillColor(253, 240, 232);
-    doc.roundedRect(srTagX, ctx.y + 5, srTagW, 14, 2, 2, 'F');
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
-    doc.setTextColor(139, 58, 21);
-    doc.text(card.srTag, srTagX + 7, ctx.y + 15);
-
-    ctx.y += 24;
-
-    // Body
-    doc.setFillColor(...colors.cream);
-    ctx.y += 10;
-
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+    // Headline
+    doc.setFont('times', 'bold'); doc.setFontSize(11);
     doc.setTextColor(...colors.ink);
-    const hlLines: string[] = doc.splitTextToSize(card.headline, contentW - 24);
-    for (const hl of hlLines) { doc.text(hl, margin + 12, ctx.y); ctx.y += 14; }
+    const hlLines: string[] = doc.splitTextToSize(card.headline, contentW - 16);
+    for (const hl of hlLines) { doc.text(hl, margin + 8, ctx.y); ctx.y += 14; }
     ctx.y += 4;
 
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-    doc.setTextColor(...colors.bodyText);
-    const bdLines: string[] = doc.splitTextToSize(card.body, contentW - 24);
-    for (const bl of bdLines.slice(0, 4)) { doc.text(bl, margin + 12, ctx.y); ctx.y += 13; }
-    ctx.y += 8;
+    // Body
+    doc.setFont('times', 'normal'); doc.setFontSize(9);
+    doc.setTextColor(...colors.ink);
+    const bdLines: string[] = doc.splitTextToSize(card.body, contentW - 16);
+    for (const bl of bdLines.slice(0, 4)) { doc.text(bl, margin + 8, ctx.y); ctx.y += 13; }
+    ctx.y += 4;
 
-    // Draw full card border
-    const cardH = ctx.y - cardStartY;
-    doc.setDrawColor(...colors.border); doc.setLineWidth(0.5);
-    doc.roundedRect(margin, cardStartY, contentW, cardH, 4, 4, 'S');
-    // Header bottom border
-    doc.setDrawColor(...colors.border); doc.setLineWidth(0.5);
-    doc.line(margin, cardStartY + 24, margin + contentW, cardStartY + 24);
-
-    ctx.y += 6;
+    // Hairline rule
+    doc.setDrawColor(...colors.rule); doc.setLineWidth(0.25);
+    doc.line(margin, ctx.y, margin + contentW, ctx.y);
+    ctx.y += 12;
   }
 }
 
@@ -473,60 +430,58 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       const natalMoonSign = natalChart.planets.Moon?.sign;
       const srMoonSignFull = analysis.moonSign;
       if (natalMoonSign && srMoonSignFull) {
-        doc.addPage(); ctx.y = margin;
+        doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
         ctx.sectionPages.set('MOON SIGN SHIFT', doc.getNumberOfPages());
-        ctx.drawGoldRule(doc); ctx.y += 20;
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-        doc.setTextColor(...ctx.colors.gold);
-        doc.text('MOON SIGN SHIFT — YOUR EMOTIONAL YEAR', margin, ctx.y); ctx.y += 20;
+        ctx.sectionTitle(doc, 'MOON SIGN SHIFT', 'Your Emotional Year');
 
         const halfW = (contentW - 16) / 2;
         const natalDeep = moonSignDeep[natalMoonSign];
         const srDeep = moonSignDeep[srMoonSignFull];
-        const boxH = 110;
-        const moonBoxY = ctx.y;
 
-        ctx.drawContentBox(doc, margin, moonBoxY, halfW, boxH, ctx.colors.softGold);
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.deepBrown);
-        doc.text('NATAL MOON', margin + 12, moonBoxY + 16);
-        doc.setFontSize(16); doc.setTextColor(...ctx.colors.gold);
-        doc.text(natalMoonSign.toUpperCase(), margin + 12, moonBoxY + 35);
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(...ctx.colors.bodyText);
-        const natalMoonLines = doc.splitTextToSize(natalDeep?.emotional || '', halfW - 24);
-        natalMoonLines.slice(0, 6).forEach((line: string, i: number) => {
-          doc.text(line, margin + 12, moonBoxY + 50 + i * 11);
-        });
+        // Natal Moon
+        ctx.trackedLabel(doc, 'NATAL MOON', margin + 8, ctx.y, { size: 7, charSpace: 3 });
+        doc.setFont('times', 'normal'); doc.setFontSize(8);
+        doc.setTextColor(...ctx.colors.muted);
+        doc.text(`THIS YEAR'S MOON`, margin + halfW + 24, ctx.y);
+        ctx.y += 10;
+        
+        doc.setFont('times', 'bold'); doc.setFontSize(14);
+        doc.setTextColor(...ctx.colors.ink);
+        doc.text(natalMoonSign.toUpperCase(), margin + 8, ctx.y);
+        doc.text(srMoonSignFull.toUpperCase(), margin + halfW + 24, ctx.y);
+        ctx.y += 14;
 
-        const srBoxX = margin + halfW + 16;
-        ctx.drawContentBox(doc, srBoxX, moonBoxY, halfW, boxH, ctx.colors.softBlue);
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.deepBrown);
-        doc.text('THIS YEAR\'S MOON', srBoxX + 12, moonBoxY + 16);
-        doc.setFontSize(16); doc.setTextColor(...ctx.colors.gold);
-        doc.text(srMoonSignFull.toUpperCase(), srBoxX + 12, moonBoxY + 35);
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(...ctx.colors.bodyText);
-        const srMoonLines = doc.splitTextToSize(srDeep?.emotional || '', halfW - 24);
-        srMoonLines.slice(0, 6).forEach((line: string, i: number) => {
-          doc.text(line, srBoxX + 12, moonBoxY + 50 + i * 11);
-        });
-
-        ctx.y = moonBoxY + boxH + 12;
+        // Two-column body
+        doc.setFont('times', 'normal'); doc.setFontSize(8.5); doc.setTextColor(...ctx.colors.ink);
+        const natalMoonLines = doc.splitTextToSize(natalDeep?.emotional || '', halfW - 16);
+        const srMoonLines = doc.splitTextToSize(srDeep?.emotional || '', halfW - 16);
+        const maxLines = Math.max(natalMoonLines.length, srMoonLines.length);
+        for (let li = 0; li < Math.min(maxLines, 6); li++) {
+          if (natalMoonLines[li]) doc.text(natalMoonLines[li], margin + 8, ctx.y);
+          if (srMoonLines[li]) doc.text(srMoonLines[li], margin + halfW + 24, ctx.y);
+          ctx.y += 11;
+        }
+        // Vertical divider
+        doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
+        doc.line(margin + halfW + 8, ctx.y - maxLines * 11 - 14, margin + halfW + 8, ctx.y);
+        ctx.y += 8;
 
         if (natalMoonSign !== srMoonSignFull) {
           ctx.drawCard(doc, () => {
-            ctx.writeBold(doc, `The Shift: ${natalMoonSign} --> ${srMoonSignFull}`, ctx.colors.deepBrown, 11);
+            ctx.writeBold(doc, `The Shift: ${natalMoonSign} --> ${srMoonSignFull}`);
             ctx.y += 2;
             const specificNarrative = moonShiftNarrative[natalMoonSign]?.[srMoonSignFull];
-            if (specificNarrative) ctx.writeBody(doc, specificNarrative, ctx.colors.bodyText, 9.5);
+            if (specificNarrative) ctx.writeBody(doc, specificNarrative);
             ctx.y += 4;
             if (srDeep) {
-              ctx.writeCardSection(doc, 'Body', srDeep.body, ctx.colors.accentGreen);
-              ctx.writeCardSection(doc, 'Apply', srDeep.apply, ctx.colors.gold);
-              ctx.writeCardSection(doc, 'Daily Life', srDeep.looksLike, ctx.colors.accentRust);
+              ctx.writeCardSection(doc, 'Body', srDeep.body);
+              ctx.writeCardSection(doc, 'Apply', srDeep.apply);
+              ctx.writeCardSection(doc, 'Daily Life', srDeep.looksLike);
             }
           });
         } else {
           ctx.drawCard(doc, () => {
-            ctx.writeBold(doc, `Moon Stays in ${natalMoonSign} — Emotional Continuity`, ctx.colors.deepBrown, 11);
+            ctx.writeBold(doc, `Moon Stays in ${natalMoonSign} — Emotional Continuity`);
             ctx.writeBody(doc, 'Your SR Moon matches natal. This year amplifies your emotional instincts. Trust your gut.');
           });
         }
@@ -535,31 +490,27 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // =============================================
       // SOLAR RETURN VS NATAL — own page
       // =============================================
-      doc.addPage(); ctx.y = margin;
+      doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
       ctx.sectionPages.set('SOLAR RETURN VS NATAL', doc.getNumberOfPages());
-      ctx.drawGoldRule(doc); ctx.y += 20;
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-      doc.setTextColor(...ctx.colors.gold);
-      doc.text('SOLAR RETURN VS NATAL', margin, ctx.y); ctx.y += 20;
+      ctx.sectionTitle(doc, 'SOLAR RETURN VS NATAL');
       
-      // Table with rounded container
-      const tableStartY = ctx.y;
-      
-      // Header row with full-width gold background
-      doc.setFillColor(...ctx.colors.gold);
-      doc.roundedRect(margin, ctx.y - 12, contentW, 20, 4, 4, 'F');
-      // Use proportional columns based on contentW to prevent overflow
+      // Table header
       const cols = [
-        margin + 8,                          // PLANET
-        margin + contentW * 0.12,            // SR POSITION
-        margin + contentW * 0.32,            // SR H
-        margin + contentW * 0.40,            // NATAL POSITION
-        margin + contentW * 0.60,            // NAT H
-        margin + contentW * 0.70,            // SHIFT
+        margin + 8,
+        margin + contentW * 0.12,
+        margin + contentW * 0.32,
+        margin + contentW * 0.40,
+        margin + contentW * 0.60,
+        margin + contentW * 0.70,
       ];
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(255, 255, 255);
+      doc.setFont('times', 'bold'); doc.setFontSize(7.5); doc.setTextColor(...ctx.colors.muted);
+      doc.setCharSpace(1);
       ['PLANET', 'SR POSITION', 'SR H', 'NATAL POSITION', 'NAT H', 'SHIFT'].forEach((h, i) => doc.text(h, cols[i], ctx.y));
-      ctx.y += 14;
+      doc.setCharSpace(0);
+      ctx.y += 6;
+      doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.3);
+      doc.line(margin, ctx.y, margin + contentW, ctx.y);
+      ctx.y += 10;
 
       for (const p of PLANET_ORDER) {
         const srPos = srChart.planets[p as keyof typeof srChart.planets];
@@ -572,28 +523,23 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           ? (srPos.sign === natPos.sign ? 'Same' : `${S[natPos.sign] || natPos.sign} > ${S[srPos.sign] || srPos.sign}`)
           : '';
         ctx.checkPage(18);
-        const rowIdx = PLANET_ORDER.indexOf(p);
-        if (rowIdx % 2 === 0) { 
-          doc.setFillColor(...ctx.colors.softGold); 
-          doc.rect(margin, ctx.y - 11, contentW, 17, 'F'); 
-        }
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.deepBrown);
+        doc.setFont('times', 'bold'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.ink);
         doc.text(P[p] || p, cols[0], ctx.y);
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.bodyText);
+        doc.setFont('times', 'normal'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.ink);
         doc.text(srPos ? `${srPos.sign} ${srPos.degree}'` : '--', cols[1], ctx.y);
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.gold);
+        doc.setFont('times', 'bold'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.accent);
         doc.text(srH != null ? `H${srH}` : '--', cols[2], ctx.y);
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.bodyText);
+        doc.setFont('times', 'normal'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.ink);
         doc.text(natPos ? `${natPos.sign} ${natPos.degree}'` : '--', cols[3], ctx.y);
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.gold);
+        doc.setFont('times', 'bold'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.accent);
         doc.text(natH != null ? `H${natH}` : '--', cols[4], ctx.y);
-        doc.setFont('helvetica', 'italic'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.dimText); 
+        doc.setFont('times', 'italic'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.muted); 
         doc.text(shift, cols[5], ctx.y);
         ctx.y += 17;
       }
-      // Table border
-      doc.setDrawColor(...ctx.colors.warmBorder); doc.setLineWidth(0.5);
-      doc.roundedRect(margin, tableStartY - 12, contentW, ctx.y - tableStartY + 16, 4, 4, 'S');
+      // Bottom rule
+      doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
+      doc.line(margin, ctx.y, margin + contentW, ctx.y);
       ctx.y += 10;
 
       // =============================================
@@ -613,15 +559,13 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           const primaryHouse = planetHouses.length > 0 ? planetHouses[0] : null;
 
           ctx.drawCard(doc, () => {
-            ctx.writeBold(doc, `${s.planets.length}-Planet Stellium in ${isHouseStellium ? 'House ' + houseNum : s.location}`, ctx.colors.gold, 12);
+            ctx.writeBold(doc, `${s.planets.length}-Planet Stellium in ${isHouseStellium ? 'House ' + houseNum : s.location}`);
             ctx.y += 2;
 
-            // Planet chips inline
-            doc.setFillColor(...ctx.colors.softGold);
-            doc.roundedRect(margin + 6, ctx.y, contentW - 12, 22, 4, 4, 'F');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...ctx.colors.deepBrown);
-            doc.text(planets, margin + 16, ctx.y + 15);
-            ctx.y += 28;
+            // Planet list
+            doc.setFont('times', 'bold'); doc.setFontSize(10); doc.setTextColor(...ctx.colors.ink);
+            doc.text(planets, margin + 8, ctx.y);
+            ctx.y += 16;
 
             if (!isHouseStellium) {
               const signName = s.location;
@@ -678,10 +622,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             // Check if there's room, otherwise new page
             ctx.checkPage(200);
             ctx.y += 10;
-            ctx.drawGoldRule(doc); ctx.y += 16;
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
-            doc.setTextColor(...ctx.colors.gold);
-            doc.text('STELLIUMS BY HOUSE', margin, ctx.y); ctx.y += 16;
+            ctx.drawRule(doc); ctx.y += 16;
+            ctx.trackedLabel(doc, 'STELLIUMS BY HOUSE', margin, ctx.y);
+            ctx.y += 16;
           } else {
             ctx.sectionTitle(doc, 'STELLIUMS — YOUR POWER ZONES');
             ctx.sectionPages.set('STELLIUMS', doc.getNumberOfPages());
@@ -709,44 +652,41 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           const eb = analysis.elementBalance;
           const mb = analysis.modalityBalance;
 
-          // Elements — compact inline
-          ctx.writeBold(doc, 'Elemental Balance', ctx.colors.gold, 11);
+          // Elements — editorial inline with hairline dividers
+          ctx.writeBold(doc, 'Elemental Balance');
           ctx.y += 6;
-          const elemW = (contentW - 56) / 4;
-          const elemH = 55;
-          const elements = [
-            { name: 'Fire', val: eb.fire, bg: [255, 240, 230] as [number, number, number] },
-            { name: 'Earth', val: eb.earth, bg: [235, 245, 230] as [number, number, number] },
-            { name: 'Air', val: eb.air, bg: [232, 240, 252] as [number, number, number] },
-            { name: 'Water', val: eb.water, bg: [230, 240, 252] as [number, number, number] },
-          ];
+          const elemW = (contentW - 12) / 4;
           const elemStartY = ctx.y;
+          const elements = [
+            { name: 'Fire', val: eb.fire },
+            { name: 'Earth', val: eb.earth },
+            { name: 'Air', val: eb.air },
+            { name: 'Water', val: eb.water },
+          ];
           elements.forEach((el, i) => {
-            const x = margin + 12 + i * (elemW + 10);
+            const x = margin + i * elemW;
             const isDom = el.name.toLowerCase() === eb.dominant;
-            doc.setFillColor(...el.bg);
-            doc.setDrawColor(...(isDom ? ctx.colors.gold : ctx.colors.warmBorder));
-            doc.setLineWidth(isDom ? 1.5 : 0.3);
-            doc.roundedRect(x, elemStartY, elemW, elemH, 6, 6, 'FD');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(24);
-            doc.setTextColor(...(isDom ? ctx.colors.gold : ctx.colors.darkText));
-            doc.text(String(el.val), x + elemW / 2, elemStartY + 24, { align: 'center' });
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-            doc.setTextColor(...ctx.colors.bodyText);
-            doc.text(el.name, x + elemW / 2, elemStartY + 40, { align: 'center' });
+            doc.setFont('times', 'bold'); doc.setFontSize(22);
+            doc.setTextColor(...(isDom ? ctx.colors.ink : ctx.colors.muted));
+            doc.text(String(el.val), x + elemW / 2, elemStartY + 20, { align: 'center' });
+            doc.setFont('times', 'normal'); doc.setFontSize(9);
+            doc.setTextColor(...ctx.colors.ink);
+            doc.text(el.name, x + elemW / 2, elemStartY + 34, { align: 'center' });
             if (isDom) {
-              doc.setFont('helvetica', 'bold'); doc.setFontSize(7);
-              doc.setTextColor(...ctx.colors.gold);
-              doc.text('DOMINANT', x + elemW / 2, elemStartY + 50, { align: 'center' });
+              ctx.trackedLabel(doc, 'DOMINANT', x + elemW / 2, elemStartY + 44, { align: 'center', size: 6.5, charSpace: 2 });
+            }
+            // Vertical divider
+            if (i < 3) {
+              doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
+              doc.line(x + elemW, elemStartY, x + elemW, elemStartY + 48);
             }
           });
-          ctx.y = elemStartY + elemH + 10;
+          ctx.y = elemStartY + 54;
 
-          // Modalities — compact inline
-          ctx.writeBold(doc, 'Modality Balance', ctx.colors.gold, 11);
+          // Modalities — editorial inline
+          ctx.writeBold(doc, 'Modality Balance');
           ctx.y += 6;
-          const modW = (contentW - 44) / 3;
-          const modH = 50;
+          const modW = (contentW - 8) / 3;
           const modalities = [
             { name: 'Cardinal', val: mb.cardinal, desc: 'Initiating' },
             { name: 'Fixed', val: mb.fixed, desc: 'Sustaining' },
@@ -754,20 +694,20 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           ];
           const modStartY = ctx.y;
           modalities.forEach((mod, i) => {
-            const x = margin + 12 + i * (modW + 10);
+            const x = margin + i * modW;
             const isDom = mod.name.toLowerCase() === mb.dominant;
-            doc.setFillColor(...ctx.colors.softGold);
-            doc.setDrawColor(...(isDom ? ctx.colors.gold : ctx.colors.warmBorder));
-            doc.setLineWidth(isDom ? 1.5 : 0.3);
-            doc.roundedRect(x, modStartY, modW, modH, 6, 6, 'FD');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(22);
-            doc.setTextColor(...(isDom ? ctx.colors.gold : ctx.colors.darkText));
-            doc.text(String(mod.val), x + modW / 2, modStartY + 22, { align: 'center' });
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-            doc.setTextColor(...ctx.colors.bodyText);
-            doc.text(`${mod.name} · ${mod.desc}`, x + modW / 2, modStartY + 38, { align: 'center' });
+            doc.setFont('times', 'bold'); doc.setFontSize(20);
+            doc.setTextColor(...(isDom ? ctx.colors.ink : ctx.colors.muted));
+            doc.text(String(mod.val), x + modW / 2, modStartY + 18, { align: 'center' });
+            doc.setFont('times', 'normal'); doc.setFontSize(9);
+            doc.setTextColor(...ctx.colors.ink);
+            doc.text(`${mod.name} · ${mod.desc}`, x + modW / 2, modStartY + 32, { align: 'center' });
+            if (i < 2) {
+              doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
+              doc.line(x + modW, modStartY, x + modW, modStartY + 38);
+            }
           });
-          ctx.y = modStartY + modH + 12;
+          ctx.y = modStartY + 44;
         }
 
         // WHERE YOUR ENERGY LIVES — continues on same page
@@ -782,8 +722,8 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             if (h >= 10 || h <= 3) quadPlanets.east.push(P[p] || p); else quadPlanets.west.push(P[p] || p);
           }
 
-          ctx.drawGoldRule(doc); ctx.y += 12;
-          ctx.writeBold(doc, 'Where Your Energy Lives', ctx.colors.gold, 11);
+          ctx.drawRule(doc); ctx.y += 12;
+          ctx.writeBold(doc, 'Where Your Energy Lives');
           ctx.y += 6;
 
           // 2x2 grid — compact
@@ -800,29 +740,28 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             const x = margin + 8 + g.col * (boxW + 12);
             const by = gridStartY + g.row * (boxH + 6);
             const isDom = g.count > total / 2;
-            doc.setFillColor(...g.bg);
-            doc.setDrawColor(...(isDom ? ctx.colors.gold : ctx.colors.warmBorder));
-            doc.setLineWidth(isDom ? 1.5 : 0.3);
-            doc.roundedRect(x, by, boxW, boxH, 6, 6, 'FD');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(22);
-            doc.setTextColor(...(isDom ? ctx.colors.gold : ctx.colors.darkText));
+            doc.setFont('times', 'bold'); doc.setFontSize(22);
+            doc.setTextColor(...(isDom ? ctx.colors.ink : ctx.colors.muted));
             doc.text(String(g.count), x + 16, by + 24);
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-            doc.setTextColor(...ctx.colors.deepBrown);
+            doc.setFont('times', 'bold'); doc.setFontSize(9);
+            doc.setTextColor(...ctx.colors.ink);
             doc.text(g.label, x + 46, by + 16);
-            doc.setFont('helvetica', 'italic'); doc.setFontSize(8);
-            doc.setTextColor(...ctx.colors.dimText);
+            doc.setFont('times', 'italic'); doc.setFontSize(8);
+            doc.setTextColor(...ctx.colors.muted);
             doc.text(g.sub, x + 46, by + 26);
             if (g.planets.length > 0) {
-              doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
-              doc.setTextColor(...ctx.colors.bodyText);
+              doc.setFont('times', 'normal'); doc.setFontSize(7.5);
+              doc.setTextColor(...ctx.colors.ink);
               const planetLines = doc.splitTextToSize(g.planets.join(', '), boxW - 30);
               planetLines.forEach((line: string, li: number) => doc.text(line, x + 16, by + 40 + li * 10));
             }
             if (isDom) {
-              doc.setFont('helvetica', 'bold'); doc.setFontSize(7);
-              doc.setTextColor(...ctx.colors.gold);
-              doc.text('DOMINANT', x + boxW - 8, by + 10, { align: 'right' });
+              ctx.trackedLabel(doc, 'DOMINANT', x + boxW - 8, by + 10, { align: 'right', size: 6.5, charSpace: 2 });
+            }
+            // Vertical divider between columns
+            if (g.col === 0) {
+              doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
+              doc.line(x + boxW + 6, by, x + boxW + 6, by + boxH);
             }
           }
           ctx.y = gridStartY + (boxH + 6) * 2 + 6;
@@ -830,8 +769,8 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           // Angular Planets — continues on same page
           if (analysis.angularPlanets && analysis.angularPlanets.length > 0) {
             ctx.y += 6;
-            ctx.drawGoldRule(doc); ctx.y += 10;
-            ctx.writeBold(doc, 'Angular Planets — Most Powerful This Year', ctx.colors.gold, 11);
+            ctx.drawRule(doc); ctx.y += 10;
+            ctx.writeBold(doc, 'Angular Planets — Most Powerful This Year');
             ctx.y += 6;
             
             const angBoxW = (contentW - 16) / Math.min(analysis.angularPlanets.length, 3);
@@ -844,13 +783,12 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
               const x = margin + col * (angBoxW + 8);
               const by = angStartY + row * (angBoxH + 6);
               
-              ctx.drawContentBox(doc, x, by, angBoxW - 8, angBoxH, ctx.colors.softGold);
-              doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(...ctx.colors.gold);
+              doc.setFont('times', 'bold'); doc.setFontSize(11); doc.setTextColor(...ctx.colors.ink);
               doc.text(P[ap] || ap, x + 10, by + 18);
               
               const pm = planetLifeMeanings[ap] || planetLifeMeanings[ap.replace('NorthNode','North Node')];
               if (pm) {
-                doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...ctx.colors.bodyText);
+                doc.setFont('times', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...ctx.colors.ink);
                 const pmLines = doc.splitTextToSize(pm.inYourLife, angBoxW - 28);
                 pmLines.slice(0, 5).forEach((line: string, li: number) => doc.text(line, x + 10, by + 32 + li * 9));
               }
@@ -866,47 +804,39 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // The true "Lord of the Year" in Hellenistic astrology = profection Time Lord
       // =============================================
       if (analysis.profectionYear?.timeLord) {
-        doc.addPage(); ctx.y = margin;
+        doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
         ctx.sectionPages.set('LORD OF THE YEAR', doc.getNumberOfPages());
-        ctx.drawGoldRule(doc); ctx.y += 20;
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-        doc.setTextColor(...ctx.colors.gold);
-        doc.text('LORD OF THE YEAR', margin, ctx.y); ctx.y += 20;
+        ctx.sectionTitle(doc, 'LORD OF THE YEAR');
 
         const tlPlanet = analysis.profectionYear.timeLord;
         const tlSRHouse = analysis.profectionYear.timeLordSRHouse;
         const tlSRSign = analysis.profectionYear.timeLordSRSign;
         const houseNum = analysis.profectionYear.houseNumber;
         
-        // Get dignity and retrograde from SR chart position
         const tlSRPos = srChart.planets[tlPlanet as keyof typeof srChart.planets];
         const tlIsRetro = !!(tlSRPos as any)?.isRetrograde;
-        // Reuse lordOfTheYear dignity if same planet, otherwise leave blank
         const tlDignity = (analysis.lordOfTheYear && analysis.lordOfTheYear.planet === tlPlanet) 
           ? analysis.lordOfTheYear.dignity : '';
 
-        // Header box with key info
-        doc.setFillColor(...ctx.colors.softGold);
-        doc.setDrawColor(...ctx.colors.warmBorder); doc.setLineWidth(0.5);
-        doc.roundedRect(margin, ctx.y, contentW, 60, 6, 6, 'FD');
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(20);
-        doc.setTextColor(...ctx.colors.gold);
-        doc.text(`${P[tlPlanet] || tlPlanet}`, margin + 20, ctx.y + 28);
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(11);
-        doc.setTextColor(...ctx.colors.bodyText);
-        doc.text(`${tlSRSign || '--'} — SR House ${tlSRHouse || '--'}`, margin + 20, ctx.y + 46);
-        // Dignity + Rx badges on right
+        // Header — editorial style
+        doc.setFont('times', 'bold'); doc.setFontSize(18);
+        doc.setTextColor(...ctx.colors.ink);
+        doc.text(`${P[tlPlanet] || tlPlanet}`, margin + 8, ctx.y);
+        doc.setFont('times', 'normal'); doc.setFontSize(11);
+        doc.setTextColor(...ctx.colors.ink);
+        doc.text(`${tlSRSign || '--'} — SR House ${tlSRHouse || '--'}`, margin + 8, ctx.y + 18);
         if (tlDignity) {
-          doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-          doc.setTextColor(...ctx.colors.deepBrown);
-          doc.text(`Dignity: ${tlDignity}`, margin + contentW - 100, ctx.y + 28);
+          doc.setFont('times', 'italic'); doc.setFontSize(9);
+          doc.setTextColor(...ctx.colors.muted);
+          doc.text(`Dignity: ${tlDignity}`, margin + contentW, ctx.y, { align: 'right' });
         }
         if (tlIsRetro) {
-          doc.setTextColor(...ctx.colors.accentRust);
-          doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-          doc.text('RETROGRADE', margin + contentW - 100, ctx.y + 42);
+          ctx.trackedLabel(doc, 'RETROGRADE', margin + contentW, ctx.y + 12, { align: 'right', size: 7, charSpace: 2 });
         }
-        ctx.y += 70;
+        ctx.y += 30;
+        doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
+        doc.line(margin, ctx.y, margin + contentW, ctx.y);
+        ctx.y += 14;
 
         // Why this planet — link to profection
         ctx.drawCard(doc, () => {
@@ -981,12 +911,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // SATURN & NORTH NODE — own page
       // =============================================
       if (analysis.saturnFocus || analysis.nodesFocus) {
-        doc.addPage(); ctx.y = margin;
+        doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
         ctx.sectionPages.set('SATURN AND NORTH NODE', doc.getNumberOfPages());
-        ctx.drawGoldRule(doc); ctx.y += 20;
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-        doc.setTextColor(...ctx.colors.gold);
-        doc.text('SATURN & NORTH NODE', margin, ctx.y); ctx.y += 20;
+        ctx.sectionTitle(doc, 'SATURN & NORTH NODE');
 
         // Brief why card
         ctx.drawCard(doc, () => {
@@ -996,14 +923,12 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
 
         if (analysis.saturnFocus) {
           ctx.drawCard(doc, () => {
-            // Saturn header box
-            doc.setFillColor(...ctx.colors.softGold);
-            doc.roundedRect(margin + 6, ctx.y - 4, contentW - 12, 30, 4, 4, 'F');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(...ctx.colors.gold);
-            doc.text(`Saturn in ${analysis.saturnFocus!.sign} — House ${analysis.saturnFocus!.house || '--'}${analysis.saturnFocus!.isRetrograde ? ' (Rx)' : ''}`, margin + 16, ctx.y + 14);
-            ctx.y += 34;
+            // Saturn header — editorial
+            doc.setFont('times', 'bold'); doc.setFontSize(12); doc.setTextColor(...ctx.colors.ink);
+            doc.text(`Saturn in ${analysis.saturnFocus!.sign} — House ${analysis.saturnFocus!.house || '--'}${analysis.saturnFocus!.isRetrograde ? ' (Rx)' : ''}`, margin + 8, ctx.y);
+            ctx.y += 16;
             const satMeaning = saturnHouseMeaning[analysis.saturnFocus!.house];
-            if (satMeaning) ctx.writeBody(doc, satMeaning, ctx.colors.bodyText, 10, 14);
+            if (satMeaning) ctx.writeBody(doc, satMeaning);
             
             // Saturn sign-specific behavior
             const satSignBehavior: Record<string, string> = {
@@ -1036,13 +961,11 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         if (analysis.nodesFocus) {
           ctx.checkPage(150);
           ctx.drawCard(doc, () => {
-            doc.setFillColor(...ctx.colors.softBlue);
-            doc.roundedRect(margin + 6, ctx.y - 4, contentW - 12, 30, 4, 4, 'F');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(...ctx.colors.gold);
-            doc.text(`North Node in ${analysis.nodesFocus!.sign} — House ${analysis.nodesFocus!.house || '--'}`, margin + 16, ctx.y + 14);
-            ctx.y += 34;
+            doc.setFont('times', 'bold'); doc.setFontSize(12); doc.setTextColor(...ctx.colors.ink);
+            doc.text(`North Node in ${analysis.nodesFocus!.sign} — House ${analysis.nodesFocus!.house || '--'}`, margin + 8, ctx.y);
+            ctx.y += 16;
             const nodeMeaning = nodeHouseMeaning[analysis.nodesFocus!.house];
-            if (nodeMeaning) ctx.writeBody(doc, nodeMeaning, ctx.colors.bodyText, 10, 14);
+            if (nodeMeaning) ctx.writeBody(doc, nodeMeaning);
             
             // Node sign-specific growth direction
             const nodeSignGrowth: Record<string, string> = {
@@ -1085,14 +1008,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         const allAspects = analysis.srToNatalAspects.filter(asp => !(asp.planet1 === 'Sun' && asp.planet2 === 'Sun' && asp.type === 'Conjunction'));
         const majorAspects = allAspects.filter(asp => MAJOR_BODIES.has(asp.planet1) && MAJOR_BODIES.has(asp.planet2));
         
-        doc.addPage(); ctx.y = margin;
+        doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
         ctx.sectionPages.set('KEY ASPECTS', doc.getNumberOfPages());
-        ctx.drawGoldRule(doc); ctx.y += 20;
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-        doc.setTextColor(...ctx.colors.gold);
-        doc.text('KEY ASPECTS', margin, ctx.y); ctx.y += 8;
-        doc.setFont('helvetica', 'italic'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.dimText);
-        doc.text('How Solar Return planets activate your natal chart', margin, ctx.y); ctx.y += 16;
+        ctx.sectionTitle(doc, 'KEY ASPECTS', 'How Solar Return planets activate your natal chart');
 
         for (let i = 0; i < Math.min(majorAspects.length, 8); i++) {
           const asp = majorAspects[i];
@@ -1103,25 +1021,20 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           
           ctx.checkPage(160);
           
-          // Aspect header with colored accent
-          const accentColor = isHard ? [180, 100, 60] as [number, number, number] : ctx.colors.gold;
           ctx.drawCard(doc, () => {
-            // Title bar
-            const innerW = contentW - 24;
-            doc.setFillColor(...(isHard ? [255, 245, 240] as [number, number, number] : ctx.colors.softGold));
-            doc.roundedRect(margin + 8, ctx.y - 4, innerW, 26, 4, 4, 'F');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
-            doc.setTextColor(...accentColor);
-            doc.text(`SR ${P[asp.planet1] || asp.planet1}  ${asp.type}  Natal ${P[asp.planet2] || asp.planet2}`, margin + 16, ctx.y + 10);
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...ctx.colors.dimText);
+            // Title line
+            doc.setFont('times', 'bold'); doc.setFontSize(10);
+            doc.setTextColor(...ctx.colors.ink);
+            doc.text(`SR ${P[asp.planet1] || asp.planet1}  ${asp.type}  Natal ${P[asp.planet2] || asp.planet2}`, margin + 8, ctx.y);
+            doc.setFont('times', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...ctx.colors.muted);
             const orbHouse = `${asp.orb}' orb${srH ? `  |  SR H${srH}` : ''}${natalH ? `  |  Natal H${natalH}` : ''}`;
-            doc.text(orbHouse, margin + innerW - 4, ctx.y + 10, { align: 'right' });
-            ctx.y += 30;
+            doc.text(orbHouse, margin + contentW, ctx.y, { align: 'right' });
+            ctx.y += 14;
 
-            ctx.writeCardSection(doc, 'How It Feels', interp.howItFeels, ctx.colors.accentGreen);
-            ctx.writeCardSection(doc, 'What It Means', interp.whatItMeans, ctx.colors.gold);
-            ctx.writeCardSection(doc, 'What To Do', interp.whatToDo, ctx.colors.accentRust);
-          }, accentColor);
+            ctx.writeCardSection(doc, 'How It Feels', interp.howItFeels);
+            ctx.writeCardSection(doc, 'What It Means', interp.whatItMeans);
+            ctx.writeCardSection(doc, 'What To Do', interp.whatToDo);
+          });
         }
       }
 
@@ -1129,27 +1042,21 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // YOUR MOON THIS YEAR — own page
       // =============================================
       if (analysis.srMoonAspects || analysis.moonVOC || analysis.moonAngularity) {
-        doc.addPage(); ctx.y = margin;
+        doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
         ctx.sectionPages.set('YOUR MOON THIS YEAR', doc.getNumberOfPages());
-        ctx.drawGoldRule(doc); ctx.y += 20;
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-        doc.setTextColor(...ctx.colors.gold);
-        doc.text('YOUR MOON THIS YEAR — EMOTIONAL CLIMATE', margin, ctx.y); ctx.y += 20;
+        ctx.sectionTitle(doc, 'YOUR MOON THIS YEAR', 'Emotional Climate');
 
         // Moon VOC
         if (analysis.moonVOC) {
           ctx.drawCard(doc, () => {
-            doc.setFillColor(255, 248, 235);
-            doc.roundedRect(margin + 6, ctx.y - 4, contentW - 12, 26, 4, 4, 'F');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(180, 130, 40);
-            doc.text('Moon Void of Course — The Unaspected Moon', margin + 16, ctx.y + 10);
-            ctx.y += 30;
-            ctx.writeBody(doc, 'Your Solar Return Moon makes no major aspects to any other planet in the SR chart. This is a rare and significant condition.', ctx.colors.darkText, 10);
+            ctx.writeBold(doc, 'Moon Void of Course — The Unaspected Moon');
+            ctx.y += 6;
+            ctx.writeBody(doc, 'Your Solar Return Moon makes no major aspects to any other planet in the SR chart. This is a rare and significant condition.');
             ctx.y += 4;
-            ctx.writeCardSection(doc, 'What This Means', 'An unaspected SR Moon operates in isolation — your emotional life this year runs on its own track. Feelings are vivid but disconnected from the rest of the chart\'s story.', [180, 130, 40]);
-            ctx.writeCardSection(doc, 'The Gift', 'Without planetary aspects pulling it in different directions, the Moon is free. Your emotional compass this year is entirely your own.', ctx.colors.accentGreen);
-            ctx.writeCardSection(doc, 'The Challenge', 'Without aspects to ground or activate the Moon, emotional needs may go unmet unless you consciously name and honor them.', ctx.colors.accentRust);
-          }, [180, 130, 40]);
+            ctx.writeCardSection(doc, 'What This Means', 'An unaspected SR Moon operates in isolation — your emotional life this year runs on its own track. Feelings are vivid but disconnected from the rest of the chart\'s story.');
+            ctx.writeCardSection(doc, 'The Gift', 'Without planetary aspects pulling it in different directions, the Moon is free. Your emotional compass this year is entirely your own.');
+            ctx.writeCardSection(doc, 'The Challenge', 'Without aspects to ground or activate the Moon, emotional needs may go unmet unless you consciously name and honor them.');
+          });
         }
 
         // Angularity
@@ -1160,12 +1067,10 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             cadent: 'Your SR Moon is in a cadent house. Emotional responses are more adaptive this year. You process feelings internally, preparing rather than reacting.',
           };
           ctx.drawCard(doc, () => {
-            doc.setFillColor(...ctx.colors.softGold);
-            doc.roundedRect(margin + 6, ctx.y - 4, contentW - 12, 26, 4, 4, 'F');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(...ctx.colors.gold);
-            doc.text(`Moon: ${analysis.moonSign || ''} in House ${analysis.moonHouse?.house || '--'}`, margin + 16, ctx.y + 10);
-            ctx.y += 30;
-            ctx.writeBody(doc, angDesc[analysis.moonAngularity!], ctx.colors.bodyText, 10, 14);
+            doc.setFont('times', 'bold'); doc.setFontSize(11); doc.setTextColor(...ctx.colors.ink);
+            doc.text(`Moon: ${analysis.moonSign || ''} in House ${analysis.moonHouse?.house || '--'}`, margin + 8, ctx.y);
+            ctx.y += 14;
+            ctx.writeBody(doc, angDesc[analysis.moonAngularity!]);
             if (analysis.moonLateDegree) {
               ctx.y += 4;
               ctx.writeCardSection(doc, 'Late-Degree Moon', 'Your SR Moon is in the late degrees of its sign (25+). Something emotional is reaching completion or about to change. Endings, transitions, and a sense of "moving on" characterize the year.', ctx.colors.accentRust);
@@ -1180,23 +1085,20 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         // SR Moon aspects
         if (analysis.srMoonAspects && analysis.srMoonAspects.length > 0) {
           ctx.y += 6;
-          ctx.writeBold(doc, 'Moon Aspects This Year', ctx.colors.gold, 11);
+          ctx.writeBold(doc, 'Moon Aspects This Year');
           ctx.y += 6;
           for (const asp of analysis.srMoonAspects.slice(0, 6)) {
             const isHard = ['Square', 'Opposition', 'Quincunx'].includes(asp.aspectType);
             ctx.checkPage(80);
             ctx.drawCard(doc, () => {
-              const innerW = contentW - 24;
-              doc.setFillColor(...(isHard ? [255, 245, 240] as [number, number, number] : ctx.colors.softGold));
-              doc.roundedRect(margin + 8, ctx.y - 4, innerW, 22, 4, 4, 'F');
-              doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
-              doc.setTextColor(...(isHard ? [180, 100, 60] as [number, number, number] : ctx.colors.gold));
-              doc.text(`Moon ${asp.aspectType} ${P[asp.targetPlanet] || asp.targetPlanet}`, margin + 16, ctx.y + 10);
-              doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...ctx.colors.dimText);
-              doc.text(`${asp.orb}' orb${asp.targetSRHouse ? `  |  H${asp.targetSRHouse}` : ''}`, margin + innerW - 4, ctx.y + 10, { align: 'right' });
-              ctx.y += 26;
-              ctx.writeBody(doc, asp.interpretation, ctx.colors.bodyText, 9.5, 13);
-            }, isHard ? [180, 100, 60] : ctx.colors.gold);
+              doc.setFont('times', 'bold'); doc.setFontSize(9.5);
+              doc.setTextColor(...ctx.colors.ink);
+              doc.text(`Moon ${asp.aspectType} ${P[asp.targetPlanet] || asp.targetPlanet}`, margin + 8, ctx.y);
+              doc.setFont('times', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...ctx.colors.muted);
+              doc.text(`${asp.orb}' orb${asp.targetSRHouse ? `  |  H${asp.targetSRHouse}` : ''}`, margin + contentW, ctx.y, { align: 'right' });
+              ctx.y += 12;
+              ctx.writeBody(doc, asp.interpretation);
+            });
           }
         }
       }
@@ -1206,18 +1108,15 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // =============================================
       if (analysis.vertex) {
         ctx.checkPage(200);
-        if (ctx.y > margin + 100) { doc.addPage(); ctx.y = margin; }
+        if (ctx.y > margin + 100) { doc.addPage(); ctx.y = margin; ctx.pageBg(doc); }
         ctx.sectionPages.set('VERTEX', doc.getNumberOfPages());
-        ctx.drawGoldRule(doc); ctx.y += 20;
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-        doc.setTextColor(...ctx.colors.gold);
-        doc.text('VERTEX — FATED ENCOUNTERS', margin, ctx.y); ctx.y += 20;
+        ctx.sectionTitle(doc, 'VERTEX — FATED ENCOUNTERS');
         ctx.drawCard(doc, () => {
-          ctx.writeBold(doc, `Vertex: ${analysis.vertex!.sign} ${analysis.vertex!.degree}' ${analysis.vertex!.house ? `(House ${analysis.vertex!.house})` : ''}`, ctx.colors.deepBrown, 11);
+          ctx.writeBold(doc, `Vertex: ${analysis.vertex!.sign} ${analysis.vertex!.degree}' ${analysis.vertex!.house ? `(House ${analysis.vertex!.house})` : ''}`);
           const vSign = vertexInSign[analysis.vertex!.sign];
           if (vSign) {
-            ctx.writeCardSection(doc, 'Fated Theme', vSign.fatedTheme, ctx.colors.gold);
-            ctx.writeCardSection(doc, 'Who May Appear', vSign.encounters, ctx.colors.accentGreen);
+            ctx.writeCardSection(doc, 'Fated Theme', vSign.fatedTheme);
+            ctx.writeCardSection(doc, 'Who May Appear', vSign.encounters);
           }
         });
       }
@@ -1235,14 +1134,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         return h !== null && h !== undefined && deepData[p]?.[h];
       });
       if (spotlightPlanets.length > 0) {
-        doc.addPage(); ctx.y = margin;
+        doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
         ctx.sectionPages.set('PLANET SPOTLIGHT', doc.getNumberOfPages());
-        ctx.drawGoldRule(doc); ctx.y += 20;
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-        doc.setTextColor(...ctx.colors.gold);
-        doc.text('PLANET SPOTLIGHT', margin, ctx.y); ctx.y += 8;
-        doc.setFont('helvetica', 'italic'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.dimText);
-        doc.text('Each planet\'s placement in your Solar Return and what it means for the year', margin, ctx.y); ctx.y += 16;
+        ctx.sectionTitle(doc, 'PLANET SPOTLIGHT', 'Each planet\'s placement in your Solar Return and what it means for the year');
 
         for (const planet of spotlightPlanets) {
           const h = analysis.planetSRHouses[planet]!;
@@ -1250,16 +1144,14 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           if (!data) continue;
           ctx.checkPage(180);
           ctx.drawCard(doc, () => {
-            // Planet header box
-            doc.setFillColor(...ctx.colors.softGold);
-            doc.roundedRect(margin + 6, ctx.y - 4, contentW - 12, 26, 4, 4, 'F');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
-            doc.setTextColor(...ctx.colors.gold);
-            doc.text(`${P[planet] || planet} in House ${h}`, margin + 16, ctx.y + 10);
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.deepBrown);
+            // Planet header — editorial
+            doc.setFont('times', 'bold'); doc.setFontSize(12);
+            doc.setTextColor(...ctx.colors.ink);
+            doc.text(`${P[planet] || planet} in House ${h}`, margin + 8, ctx.y);
+            doc.setFont('times', 'italic'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.muted);
             const titleText = (data.title || '').substring(0, 40);
-            doc.text(titleText, margin + contentW - 16, ctx.y + 10, { align: 'right' });
-            ctx.y += 32;
+            doc.text(titleText, margin + contentW, ctx.y, { align: 'right' });
+            ctx.y += 16;
 
             if (data.overview) {
               ctx.writeBody(doc, data.overview, ctx.colors.darkText, 10, 14);
@@ -1275,25 +1167,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // NARRATIVE
       // =============================================
       if (narrative) {
-        doc.addPage(); ctx.y = margin;
+        doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
         ctx.sectionPages.set('YEAR-AHEAD READING', doc.getNumberOfPages());
-
-        // Section opener — large number + title with breathing room
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-        doc.setTextColor(...ctx.colors.dimText);
-        doc.text('17', margin, ctx.y);
-        ctx.y += 14;
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(22);
-        doc.setTextColor(...ctx.colors.gold);
-        doc.text('YEAR-AHEAD', margin, ctx.y);
-        ctx.y += 26;
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(22);
-        doc.setTextColor(...ctx.colors.ink);
-        doc.text('READING', margin, ctx.y);
-        ctx.y += 8;
-        doc.setDrawColor(...ctx.colors.gold); doc.setLineWidth(2);
-        doc.line(margin, ctx.y, margin + 80, ctx.y);
-        ctx.y += 28;
+        ctx.sectionTitle(doc, 'YEAR-AHEAD READING');
 
         const lines = narrative.split('\n');
         let paraBuffer: string[] = [];
@@ -1312,8 +1188,8 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
               const remainder = fullText.substring(firstSentenceEnd + 2);
               ctx.checkPage(80);
               ctx.y += 8;
-              doc.setFont('helvetica', 'italic'); doc.setFontSize(12);
-              doc.setTextColor(...ctx.colors.deepBrown);
+              doc.setFont('times', 'italic'); doc.setFontSize(12);
+              doc.setTextColor(...ctx.colors.accent);
               const pqLines = doc.splitTextToSize(pullQuote, contentW - 60);
               pqLines.forEach((line: string) => {
                 doc.text(line, pw / 2, ctx.y, { align: 'center' });
@@ -1321,8 +1197,8 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
               });
               ctx.y += 6;
               if (remainder) {
-                doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
-                doc.setTextColor(...ctx.colors.bodyText);
+                doc.setFont('times', 'normal'); doc.setFontSize(9.5);
+                doc.setTextColor(...ctx.colors.ink);
                 const rLines = doc.splitTextToSize(remainder, contentW);
                 rLines.forEach((line: string) => {
                   ctx.checkPage(14);
@@ -1331,8 +1207,8 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
                 });
               }
             } else {
-              doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
-              doc.setTextColor(...ctx.colors.bodyText);
+              doc.setFont('times', 'normal'); doc.setFontSize(9.5);
+              doc.setTextColor(...ctx.colors.ink);
               const bLines = doc.splitTextToSize(fullText, contentW);
               bLines.forEach((line: string) => {
                 ctx.checkPage(14);
@@ -1341,8 +1217,8 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
               });
             }
           } else {
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
-            doc.setTextColor(...ctx.colors.bodyText);
+            doc.setFont('times', 'normal'); doc.setFontSize(9.5);
+            doc.setTextColor(...ctx.colors.ink);
             const bLines = doc.splitTextToSize(fullText, contentW);
             bLines.forEach((line: string) => {
               ctx.checkPage(14);
@@ -1363,12 +1239,10 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           if (trimmed.startsWith('## ')) {
             flushPara();
             ctx.checkPage(50); ctx.y += 16;
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
-            doc.setTextColor(...ctx.colors.gold);
-            doc.text(trimmed.replace('## ', '').toUpperCase(), margin, ctx.y);
+            ctx.trackedLabel(doc, trimmed.replace('## ', '').toUpperCase(), margin, ctx.y);
             ctx.y += 4;
-            doc.setDrawColor(ctx.colors.softGold[0], ctx.colors.softGold[1], ctx.colors.softGold[2]);
-            doc.setLineWidth(0.5);
+            doc.setDrawColor(...ctx.colors.rule);
+            doc.setLineWidth(0.3);
             doc.line(margin, ctx.y, pw - margin, ctx.y);
             ctx.y += 14;
           } else {
