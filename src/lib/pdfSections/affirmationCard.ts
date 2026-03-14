@@ -4,6 +4,13 @@ import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 
+type Color = [number, number, number];
+const CREAM: Color = [250, 247, 242];
+const INK:   Color = [18,  16,  14];
+const MUTED: Color = [130, 125, 118];
+const DARK:  Color = [38,  34,  30];
+const RULE:  Color = [200, 195, 188];
+
 function getNatalIdentity(sunSign: string, moonSign: string, risingSign: string): string {
   const sun: Record<string, string> = {
     Aries: 'You were born to lead, to initiate, to move first when everyone else is still deciding.',
@@ -54,29 +61,17 @@ function getNatalIdentity(sunSign: string, moonSign: string, risingSign: string)
 }
 
 function getYearMessage(
-  profHouse: number,
-  timeLord: string,
-  northNodeHouse: number | null,
-  hasVenusAngular: boolean,
-  hasJupiterAngular: boolean,
-  moonPhase: string,
-  srSunHouse: number | null
+  profHouse: number, timeLord: string, northNodeHouse: number | null,
+  hasVenusAngular: boolean, hasJupiterAngular: boolean, moonPhase: string, srSunHouse: number | null
 ): { body: string; closing: string } {
   const HOUSE_THEME: Record<number, string> = {
-    1: 'identity and bold reinvention',
-    2: 'real worth — financial and personal',
-    3: 'your voice, your ideas, your mind',
-    4: 'home, roots, and what you are building from the inside out',
-    5: 'joy, creativity, and the things that make you come alive',
-    6: 'your health and the daily work that sustains you',
-    7: 'partnership and what you are willing to let be real',
-    8: 'transformation and releasing what no longer fits',
-    9: 'expansion — a bigger world, a bigger life',
-    10: 'your work and how the world sees what you have built',
-    11: 'your people and the community you belong to',
-    12: 'rest, reflection, and the invisible work that matters most',
+    1: 'identity and bold reinvention', 2: 'real worth — financial and personal',
+    3: 'your voice, your ideas, your mind', 4: 'home, roots, and what you are building from the inside out',
+    5: 'joy, creativity, and the things that make you come alive', 6: 'your health and the daily work that sustains you',
+    7: 'partnership and what you are willing to let be real', 8: 'transformation and releasing what no longer fits',
+    9: 'expansion — a bigger world, a bigger life', 10: 'your work and how the world sees what you have built',
+    11: 'your people and the community you belong to', 12: 'rest, reflection, and the invisible work that matters most',
   };
-
   const LORD_CONDITION: Record<string, string> = {
     Saturn: 'Saturn asks that you show up for it with intention, not just inspiration. The joy you build deliberately is the kind that stays.',
     Mars: 'Mars asks for courage — not recklessness, but the willingness to act before you feel ready.',
@@ -89,54 +84,39 @@ function getYearMessage(
     Neptune: 'Neptune asks you to trust what you cannot yet prove.',
     Uranus: 'Uranus asks you to stay flexible. The detour is often the point.',
   };
-
   const houseTheme = HOUSE_THEME[profHouse] || 'the work that matters most this year';
   const lordCondition = LORD_CONDITION[timeLord] || 'The year has conditions. Meet them.';
-
   const isBalsamic = moonPhase?.toLowerCase().includes('balsamic');
   const is12thSun = srSunHouse === 12;
   const nodeInSurrenderHouse = northNodeHouse === 12 || northNodeHouse === 9;
-
   let body = `This year calls you toward ${houseTheme}. ${lordCondition}`;
-
-  if (is12thSun || isBalsamic) {
-    body += ' The most important work happens quietly this year — in private, in the pauses, in what you choose to release.';
-  }
-
-  if (nodeInSurrenderHouse) {
-    body += ' Trust what you cannot see yet. Growth this year comes through faith, not force.';
-  }
-
-  if (hasVenusAngular) {
-    body += ' You are more magnetic than you realize. Let people find you.';
-  } else if (hasJupiterAngular) {
-    body += ' Something is expanding in your world. Make room for it.';
-  }
-
+  if (is12thSun || isBalsamic) body += ' The most important work happens quietly this year — in private, in the pauses, in what you choose to release.';
+  if (nodeInSurrenderHouse) body += ' Trust what you cannot see yet. Growth this year comes through faith, not force.';
+  if (hasVenusAngular) body += ' You are more magnetic than you realize. Let people find you.';
+  else if (hasJupiterAngular) body += ' Something is expanding in your world. Make room for it.';
   const closings: Record<number, string> = {
-    1: '"Becoming is better than being." — Carol Dweck',
-    2: '"Know your worth, then add tax." — Unknown',
-    3: '"The right word may be effective, but no word was ever as effective as a rightly timed pause." — Mark Twain',
-    4: '"Where we love is home — home that our feet may leave, but not our hearts." — Oliver Wendell Holmes',
-    5: '"You can\'t use up creativity. The more you use, the more you have." — Maya Angelou',
-    6: '"Take care of your body. It\'s the only place you have to live." — Jim Rohn',
-    7: '"The meeting of two personalities is like the contact of two chemical substances: if there is any reaction, both are transformed." — C.G. Jung',
-    8: '"What we don\'t need in the midst of struggle is shame for being human." — Brené Brown',
-    9: '"The world is a book, and those who do not travel read only one page." — Saint Augustine',
-    10: '"Whatever you are, be a good one." — Abraham Lincoln',
-    11: '"The glory of friendship is not the outstretched hand, not the kindly smile — it is the spiritual inspiration that comes to one when you discover that someone else believes in you." — Ralph Waldo Emerson',
-    12: '"Almost everything will work again if you unplug it for a few minutes — including you." — Anne Lamott',
+    1: '\"Becoming is better than being.\" — Carol Dweck',
+    2: '\"Know your worth, then add tax.\" — Unknown',
+    3: '\"The right word may be effective, but no word was ever as effective as a rightly timed pause.\" — Mark Twain',
+    4: '\"Where we love is home — home that our feet may leave, but not our hearts.\" — Oliver Wendell Holmes',
+    5: '\"You can\'t use up creativity. The more you use, the more you have.\" — Maya Angelou',
+    6: '\"Take care of your body. It\'s the only place you have to live.\" — Jim Rohn',
+    7: '\"The meeting of two personalities is like the contact of two chemical substances: if there is any reaction, both are transformed.\" — C.G. Jung',
+    8: '\"What we don\'t need in the midst of struggle is shame for being human.\" — Brene Brown',
+    9: '\"The world is a book, and those who do not travel read only one page.\" — Saint Augustine',
+    10: '\"Whatever you are, be a good one.\" — Abraham Lincoln',
+    11: '\"The glory of friendship is not the outstretched hand, not the kindly smile — it is the spiritual inspiration that comes to one when you discover that someone else believes in you.\" — Ralph Waldo Emerson',
+    12: '\"Almost everything will work again if you unplug it for a few minutes — including you.\" — Anne Lamott',
   };
-
-  const closing = closings[profHouse] || '"Trust yourself. You know more than you think you do." — Benjamin Spock';
-  return { body, closing };
+  return { body, closing: closings[profHouse] || '\"Trust yourself. You know more than you think you do.\" — Benjamin Spock' };
 }
 
 export function generateAffirmationCard(
   ctx: PDFContext, doc: jsPDF, a: SolarReturnAnalysis, natalChart: NatalChart, srChart: SolarReturnChart,
 ) {
-  const { pw, ph, margin, colors } = ctx;
+  const { pw, ph, margin } = ctx;
   const name = natalChart.name || 'Beautiful Soul';
+  const year = srChart.solarReturnYear;
   const sunSign = natalChart.planets?.Sun?.sign || 'Pisces';
   const moonSign = natalChart.planets?.Moon?.sign || '';
   const risingSign = natalChart.planets?.Ascendant?.sign || natalChart.houseCusps?.[0]?.sign || '';
@@ -145,7 +125,6 @@ export function generateAffirmationCard(
   const northNodeHouse = a.nodesFocus?.house || null;
   const moonPhase = a.moonPhase?.phase || '';
   const srSunHouse = a.sunHouse?.house || null;
-
   const hasVenusAngular = a.angularPlanets?.includes('Venus') || false;
   const hasJupiterAngular = a.angularPlanets?.includes('Jupiter') || false;
 
@@ -153,80 +132,83 @@ export function generateAffirmationCard(
   const { body, closing } = getYearMessage(profH, timeLord, northNodeHouse, hasVenusAngular, hasJupiterAngular, moonPhase, srSunHouse);
 
   // Full page cream background
-  doc.setFillColor(...colors.cream);
+  doc.setFillColor(...CREAM);
   doc.rect(0, 0, pw, ph, 'F');
 
-  // Outer gold frame
-  doc.setDrawColor(...colors.gold);
-  doc.setLineWidth(2.5);
-  doc.roundedRect(24, 24, pw - 48, ph - 48, 10, 10, 'S');
-  doc.setLineWidth(0.8);
-  doc.roundedRect(30, 30, pw - 60, ph - 60, 8, 8, 'S');
+  let y = 60;
 
-  const textW = pw - 140;
-  let y = 80;
-
-  // "Happy Birthday" small italic label
-  doc.setFont('helvetica', 'italic');
-  doc.setFontSize(10);
-  doc.setTextColor(...colors.dimText);
-  doc.text('Happy Birthday', pw / 2, y, { align: 'center' });
-  y += 22;
-
-  // NAME — large, gold
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(26);
-  doc.setTextColor(...colors.gold);
-  doc.text(name.toUpperCase(), pw / 2, y, { align: 'center' });
+  // Tracked caps top
+  doc.setFont('times', 'normal'); doc.setFontSize(7.5);
+  doc.setTextColor(...MUTED);
+  doc.setCharSpace(4);
+  doc.text(`SOLAR RETURN · ${year}`, pw / 2, y, { align: 'center' });
+  doc.setCharSpace(0);
   y += 10;
 
-  // Thin divider
-  doc.setDrawColor(...colors.gold);
-  doc.setLineWidth(0.8);
+  // Hairline rule
+  doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+  doc.line(margin + 40, y, pw - margin - 40, y);
+  y += 24;
+
+  // Name
+  doc.setFont('times', 'bold'); doc.setFontSize(16);
+  doc.setTextColor(...INK);
+  doc.text(name.toUpperCase(), pw / 2, y, { align: 'center' });
+  y += 8;
+
+  // Thin rule below name
+  doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+  doc.line(pw / 2 - 50, y, pw / 2 + 50, y);
+  y += 24;
+
+  // Identity paragraph
+  const textW = pw * 0.72;
+  doc.setFont('times', 'normal'); doc.setFontSize(10);
+  doc.setTextColor(...INK);
+  const identLines: string[] = doc.splitTextToSize(identity, textW);
+  for (const line of identLines) {
+    doc.text(line, pw / 2, y, { align: 'center' });
+    y += 17;
+  }
+  y += 12;
+
+  // Year message
+  const bodyLines: string[] = doc.splitTextToSize(body, textW);
+  for (const line of bodyLines) {
+    doc.text(line, pw / 2, y, { align: 'center' });
+    y += 17;
+  }
+  y += 12;
+
+  // Hairline rule
+  doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(pw / 2 - 60, y, pw / 2 + 60, y);
-  y += 28;
-
-  // Identity paragraph — who you are
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10.5);
-  doc.setTextColor(...colors.bodyText);
-  const identLines = doc.splitTextToSize(identity, textW);
-  identLines.forEach((line: string) => {
-    doc.text(line, pw / 2, y, { align: 'center' });
-    y += 14;
-  });
-  y += 14;
-
-  // Thin divider
-  doc.setDrawColor(...colors.warmBorder);
-  doc.setLineWidth(0.5);
-  doc.line(pw / 2 - 40, y, pw / 2 + 40, y);
   y += 20;
 
-  // Year message — what this year asks
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10.5);
-  doc.setTextColor(...colors.bodyText);
-  const bodyLines = doc.splitTextToSize(body, textW);
-  bodyLines.forEach((line: string) => {
+  // Pull quote
+  const quoteW = pw * 0.65;
+  doc.setFont('times', 'italic'); doc.setFontSize(13);
+  doc.setTextColor(...DARK);
+  const quoteLines: string[] = doc.splitTextToSize(closing.replace(/^\"/, '').replace(/\" — .*$/, ''), quoteW);
+  for (const line of quoteLines) {
     doc.text(line, pw / 2, y, { align: 'center' });
-    y += 14;
-  });
-  y += 20;
+    y += 18;
+  }
+  y += 6;
 
-  // Closing quote — italic, gold, centered near bottom
-  const quoteY = Math.max(y + 20, ph - 110);
-  doc.setDrawColor(...colors.gold);
-  doc.setLineWidth(0.5);
-  doc.line(pw / 2 - 50, quoteY - 12, pw / 2 + 50, quoteY - 12);
+  // Attribution
+  const match = closing.match(/— (.+)$/);
+  if (match) {
+    doc.setFont('times', 'normal'); doc.setFontSize(8);
+    doc.setTextColor(...MUTED);
+    doc.setCharSpace(2);
+    doc.text(`— ${match[1].toUpperCase()}`, pw / 2, y, { align: 'center' });
+    doc.setCharSpace(0);
+  }
 
-  doc.setFont('helvetica', 'italic');
-  doc.setFontSize(9.5);
-  doc.setTextColor(...colors.dimText);
-  const quoteLines = doc.splitTextToSize(closing, textW - 40);
-  quoteLines.forEach((line: string, i: number) => {
-    doc.text(line, pw / 2, quoteY + i * 13, { align: 'center' });
-  });
+  // Bottom hairline rule
+  doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+  doc.line(margin, ph - 24, pw - margin, ph - 24);
 
   ctx.y = ph;
 }

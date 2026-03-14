@@ -3,6 +3,14 @@ import { SignColorTheme } from './signColorThemes';
 
 type Color = [number, number, number];
 
+// ─── EDITORIAL PALETTE ──────────────────────────────────────────────
+const CREAM:  Color = [250, 247, 242];
+const INK:    Color = [18,  16,  14];
+const MUTED:  Color = [130, 125, 118];
+const ACCENT: Color = [90,  80,  68];
+const RULE:   Color = [200, 195, 188];
+const DARK:   Color = [38,  34,  30];
+
 export interface PDFContext {
   y: number;
   pw: number;
@@ -10,19 +18,22 @@ export interface PDFContext {
   margin: number;
   contentW: number;
   colors: {
+    cream: Color;
+    ink: Color;
+    muted: Color;
+    accent: Color;
+    rule: Color;
+    dark: Color;
+    // Legacy aliases kept for backward compat
     deep: Color;
     purple: Color;
     gold: Color;
     lilac: Color;
     rust: Color;
-    cream: Color;
     warm: Color;
     border: Color;
-    rule: Color;
     dimText: Color;
     bodyText: Color;
-    ink: Color;
-    // Legacy aliases
     darkText: Color;
     softGold: Color;
     deepBrown: Color;
@@ -44,6 +55,10 @@ export interface PDFContext {
   drawContentBox: (doc: jsPDF, x: number, yStart: number, w: number, h: number, bg?: Color) => void;
   drawGoldRule: (doc: jsPDF) => void;
   drawRule: (doc: jsPDF) => void;
+  /** Tracked caps label — editorial style */
+  trackedLabel: (doc: jsPDF, text: string, x: number, y: number, opts?: { align?: 'left' | 'center' | 'right'; size?: number; charSpace?: number }) => void;
+  /** Cream page background */
+  pageBg: (doc: jsPDF) => void;
 }
 
 export interface ColorOverrides {
@@ -59,57 +74,35 @@ export interface ColorOverrides {
 
 export function createPDFContext(
   doc: jsPDF, pw: number, ph: number, margin: number, contentW: number,
-  themeOrOverrides?: SignColorTheme | ColorOverrides,
+  _themeOrOverrides?: SignColorTheme | ColorOverrides,
 ): PDFContext {
-  // Detect if it's a full SignColorTheme or legacy ColorOverrides
-  const isFullTheme = themeOrOverrides && 'deep' in themeOrOverrides;
-
-  const colors = isFullTheme
-    ? {
-        deep: (themeOrOverrides as SignColorTheme).deep,
-        purple: (themeOrOverrides as SignColorTheme).purple,
-        gold: (themeOrOverrides as SignColorTheme).gold,
-        lilac: (themeOrOverrides as SignColorTheme).lilac,
-        rust: (themeOrOverrides as SignColorTheme).rust,
-        cream: (themeOrOverrides as SignColorTheme).cream,
-        warm: (themeOrOverrides as SignColorTheme).warm,
-        border: (themeOrOverrides as SignColorTheme).border,
-        rule: (themeOrOverrides as SignColorTheme).rule,
-        dimText: (themeOrOverrides as SignColorTheme).dimText,
-        bodyText: (themeOrOverrides as SignColorTheme).bodyText,
-        ink: (themeOrOverrides as SignColorTheme).ink,
-        darkText: (themeOrOverrides as SignColorTheme).ink,
-        softGold: (themeOrOverrides as SignColorTheme).warm,
-        deepBrown: (themeOrOverrides as SignColorTheme).deep,
-        warmBorder: (themeOrOverrides as SignColorTheme).border,
-        creamBg: (themeOrOverrides as SignColorTheme).cream,
-        softBlue: (themeOrOverrides as SignColorTheme).softBlue || [230, 240, 250] as Color,
-        accentGreen: (themeOrOverrides as SignColorTheme).purple,
-        accentRust: (themeOrOverrides as SignColorTheme).rust,
-      }
-    : {
-        // Default / legacy fallback
-        deep: [30, 28, 26] as Color,
-        purple: [107, 79, 160] as Color,
-        gold: (themeOrOverrides as ColorOverrides)?.gold || [162, 128, 72] as Color,
-        lilac: [155, 142, 196] as Color,
-        rust: [196, 98, 45] as Color,
-        cream: [253, 250, 245] as Color,
-        warm: [245, 240, 232] as Color,
-        border: [224, 216, 204] as Color,
-        rule: [216, 210, 200] as Color,
-        dimText: [160, 144, 128] as Color,
-        bodyText: [92, 84, 80] as Color,
-        ink: [30, 28, 26] as Color,
-        darkText: [30, 28, 26] as Color,
-        softGold: (themeOrOverrides as ColorOverrides)?.softGold || [245, 238, 225] as Color,
-        deepBrown: (themeOrOverrides as ColorOverrides)?.deepBrown || [90, 70, 45] as Color,
-        warmBorder: (themeOrOverrides as ColorOverrides)?.warmBorder || [210, 200, 185] as Color,
-        creamBg: (themeOrOverrides as ColorOverrides)?.creamBg || [250, 247, 242] as Color,
-        softBlue: (themeOrOverrides as ColorOverrides)?.softBlue || [230, 240, 250] as Color,
-        accentGreen: (themeOrOverrides as ColorOverrides)?.accentGreen || [34, 120, 80] as Color,
-        accentRust: (themeOrOverrides as ColorOverrides)?.accentRust || [160, 90, 50] as Color,
-      };
+  // All themes now map to the editorial palette
+  const colors = {
+    cream: CREAM,
+    ink: INK,
+    muted: MUTED,
+    accent: ACCENT,
+    rule: RULE,
+    dark: DARK,
+    // Legacy aliases — all mapped to editorial equivalents
+    deep: INK,
+    purple: ACCENT,
+    gold: ACCENT,
+    lilac: MUTED,
+    rust: DARK,
+    warm: CREAM,
+    border: RULE,
+    dimText: MUTED,
+    bodyText: INK,
+    darkText: INK,
+    softGold: CREAM,
+    deepBrown: DARK,
+    warmBorder: RULE,
+    creamBg: CREAM,
+    softBlue: CREAM,
+    accentGreen: ACCENT,
+    accentRust: DARK,
+  };
 
   const sectionPages = new Map<string, number>();
 
@@ -120,16 +113,32 @@ export function createPDFContext(
     sectionNum: 0,
 
     checkPage(needed: number) {
-      if (ctx.y + needed > ph - 55) { doc.addPage(); ctx.y = margin; }
+      if (ctx.y + needed > ph - 55) { doc.addPage(); ctx.y = margin; ctx.pageBg(doc); }
+    },
+
+    pageBg(d: jsPDF) {
+      d.setFillColor(...CREAM);
+      d.rect(0, 0, pw, ph, 'F');
+    },
+
+    trackedLabel(d: jsPDF, text: string, x: number, y: number, opts) {
+      const align = opts?.align || 'left';
+      const size = opts?.size || 7.5;
+      const cs = opts?.charSpace || 3.5;
+      d.setFont('times', 'normal'); d.setFontSize(size);
+      d.setTextColor(...MUTED);
+      d.setCharSpace(cs);
+      d.text(text, x, y, { align });
+      d.setCharSpace(0);
     },
 
     drawGoldRule(d: jsPDF) {
-      d.setDrawColor(...colors.gold); d.setLineWidth(1);
+      d.setDrawColor(...RULE); d.setLineWidth(0.3);
       d.line(margin, ctx.y, pw - margin, ctx.y);
     },
 
     drawRule(d: jsPDF) {
-      d.setDrawColor(...colors.rule); d.setLineWidth(0.5);
+      d.setDrawColor(...RULE); d.setLineWidth(0.25);
       d.line(margin, ctx.y, pw - margin, ctx.y);
     },
 
@@ -141,34 +150,26 @@ export function createPDFContext(
       const topPad = ctx.y < margin + 20 ? 8 : 24;
       ctx.y += topPad;
 
-      // v3 section header: number in gold, title in Georgia bold, subtitle in dim
+      // Tracked caps section label
       const numStr = String(ctx.sectionNum).padStart(2, '0');
-      d.setFont('helvetica', 'bold'); d.setFontSize(10);
-      d.setTextColor(...colors.gold);
-      d.text(numStr, margin, ctx.y);
-      const numW = d.getTextWidth(numStr) + 8;
-
-      d.setFont('Georgia', 'bold'); d.setFontSize(12);
-      d.setTextColor(...colors.ink);
-      d.setCharSpace(0.8);
-      d.text(title.toUpperCase(), margin + numW, ctx.y);
-      d.setCharSpace(0);
+      const labelText = `${numStr} · ${title.toUpperCase()}`;
+      ctx.trackedLabel(d, labelText, margin, ctx.y);
 
       if (subtitle) {
-        d.setFont('helvetica', 'normal'); d.setFontSize(8.5);
-        d.setTextColor(...colors.dimText);
+        d.setFont('times', 'italic'); d.setFontSize(8);
+        d.setTextColor(...MUTED);
         d.text(subtitle, pw - margin, ctx.y, { align: 'right' });
       }
 
       ctx.y += 8;
-      d.setDrawColor(...colors.rule); d.setLineWidth(0.5);
+      d.setDrawColor(...RULE); d.setLineWidth(0.3);
       d.line(margin, ctx.y, pw - margin, ctx.y);
       ctx.y += 16;
     },
 
-    writeBody(d: jsPDF, text: string, color: Color = colors.bodyText, size = 10, lineH = 15) {
-      d.setFont('helvetica', 'normal'); d.setFontSize(size);
-      d.setTextColor(...color);
+    writeBody(d: jsPDF, text: string, _color: Color = INK, size = 10, lineH = 15) {
+      d.setFont('times', 'normal'); d.setFontSize(size);
+      d.setTextColor(...INK);
       const lines: string[] = d.splitTextToSize(text, contentW - 28);
       const totalH = lines.length * lineH;
       const remaining = ph - 55 - ctx.y;
@@ -179,75 +180,58 @@ export function createPDFContext(
       const linesFit = Math.floor(remaining / lineH);
       const linesRemaining = lines.length - linesFit;
       if (linesFit < 4 || linesRemaining < 4) {
-        doc.addPage(); ctx.y = margin;
+        doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
         for (const line of lines) { d.text(line, margin + 8, ctx.y); ctx.y += lineH; }
         return;
       }
       for (let i = 0; i < linesFit; i++) { d.text(lines[i], margin + 8, ctx.y); ctx.y += lineH; }
-      doc.addPage(); ctx.y = margin;
+      doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
       for (let i = linesFit; i < lines.length; i++) { d.text(lines[i], margin + 8, ctx.y); ctx.y += lineH; }
     },
 
-    writeBold(d: jsPDF, text: string, color: Color = colors.ink, size = 11) {
-      d.setFont('helvetica', 'bold'); d.setFontSize(size);
-      d.setTextColor(...color);
+    writeBold(d: jsPDF, text: string, _color: Color = INK, size = 11) {
+      d.setFont('times', 'bold'); d.setFontSize(size);
+      d.setTextColor(...INK);
       const lines: string[] = d.splitTextToSize(text, contentW - 28);
       const totalH = lines.length * 15;
-      if (ctx.y + totalH > ph - 55) { doc.addPage(); ctx.y = margin; }
+      if (ctx.y + totalH > ph - 55) { doc.addPage(); ctx.y = margin; ctx.pageBg(doc); }
       for (const line of lines) { d.text(line, margin + 8, ctx.y); ctx.y += 15; }
       ctx.y += 4;
     },
 
-    writeLabel(d: jsPDF, label: string, value: string, labelColor: Color = colors.dimText, valueColor: Color = colors.ink) {
+    writeLabel(d: jsPDF, label: string, value: string, _labelColor: Color = MUTED, _valueColor: Color = INK) {
       ctx.checkPage(16);
-      d.setFont('helvetica', 'normal'); d.setFontSize(9);
-      d.setTextColor(...labelColor);
+      d.setFont('times', 'normal'); d.setFontSize(9);
+      d.setTextColor(...MUTED);
       d.text(label, margin + 8, ctx.y);
       const labelW = d.getTextWidth(label);
-      d.setFont('helvetica', 'bold'); d.setFontSize(10.5);
-      d.setTextColor(...valueColor);
+      d.setFont('times', 'bold'); d.setFontSize(10.5);
+      d.setTextColor(...INK);
       d.text(value, margin + 8 + labelW + 6, ctx.y); ctx.y += 16;
     },
 
-    drawCard(d: jsPDF, renderContent: () => void, accentColor: Color = colors.gold) {
-      const startPage = d.getNumberOfPages();
-      const cardStartY = ctx.y; ctx.y += 14;
-      renderContent(); ctx.y += 12;
-      const endPage = d.getNumberOfPages();
-
-      if (endPage === startPage) {
-        const cardH = ctx.y - cardStartY;
-        d.setDrawColor(...colors.border); d.setLineWidth(0.5);
-        d.roundedRect(margin, cardStartY, contentW, cardH, 3, 3, 'S');
-        d.setFillColor(...accentColor);
-        d.rect(margin, cardStartY, 2.5, cardH, 'F');
-      } else {
-        d.setPage(startPage);
-        const firstPageBottom = ph - 40;
-        const firstH = firstPageBottom - cardStartY;
-        d.setDrawColor(...colors.border); d.setLineWidth(0.5);
-        d.roundedRect(margin, cardStartY, contentW, firstH, 3, 3, 'S');
-        d.setFillColor(...accentColor);
-        d.rect(margin, cardStartY, 2.5, firstH, 'F');
-        d.setPage(endPage);
-        const lastH = ctx.y - margin;
-        d.setDrawColor(...colors.border); d.setLineWidth(0.5);
-        d.roundedRect(margin, margin, contentW, lastH, 3, 3, 'S');
-        d.setFillColor(...accentColor);
-        d.rect(margin, margin, 2.5, lastH, 'F');
-      }
+    drawCard(d: jsPDF, renderContent: () => void, _accentColor: Color = ACCENT) {
+      // Editorial: no card borders, just content with hairline rule after
+      const startY = ctx.y;
+      ctx.y += 8;
+      renderContent();
+      ctx.y += 8;
+      // Hairline rule below
+      d.setDrawColor(...RULE); d.setLineWidth(0.25);
+      d.line(margin, ctx.y, pw - margin, ctx.y);
       ctx.y += 8;
     },
 
-    writeCardSection(d: jsPDF, label: string, text: string, labelColor: Color = colors.purple) {
-      ctx.writeBold(d, label, labelColor, 9.5); ctx.writeBody(d, text, colors.bodyText, 9.5); ctx.y += 6;
+    writeCardSection(d: jsPDF, label: string, text: string, _labelColor: Color = MUTED) {
+      // Tracked caps label + body
+      ctx.trackedLabel(d, label.toUpperCase(), margin + 8, ctx.y, { size: 7, charSpace: 3 });
+      ctx.y += 10;
+      ctx.writeBody(d, text, INK, 9.5);
+      ctx.y += 6;
     },
 
-    drawContentBox(d: jsPDF, x: number, yStart: number, w: number, h: number, bg: Color = colors.cream) {
-      d.setFillColor(...bg);
-      d.setDrawColor(...colors.border);
-      d.setLineWidth(0.5);
-      d.roundedRect(x, yStart, w, h, 3, 3, 'FD');
+    drawContentBox(_d: jsPDF, _x: number, _yStart: number, _w: number, _h: number, _bg: Color = CREAM) {
+      // No-op in editorial design — no filled boxes
     },
   };
 
