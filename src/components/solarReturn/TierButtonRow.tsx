@@ -3,7 +3,6 @@ import { Sparkles } from 'lucide-react';
 import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
-import { TierPreviewPanel } from './TierPreviewPanel';
 import { toast } from 'sonner';
 
 type TierId = 't1' | 't2' | 't3' | 't4' | 't5';
