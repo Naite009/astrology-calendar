@@ -430,60 +430,58 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       const natalMoonSign = natalChart.planets.Moon?.sign;
       const srMoonSignFull = analysis.moonSign;
       if (natalMoonSign && srMoonSignFull) {
-        doc.addPage(); ctx.y = margin;
+        doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
         ctx.sectionPages.set('MOON SIGN SHIFT', doc.getNumberOfPages());
-        ctx.drawGoldRule(doc); ctx.y += 20;
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-        doc.setTextColor(...ctx.colors.gold);
-        doc.text('MOON SIGN SHIFT — YOUR EMOTIONAL YEAR', margin, ctx.y); ctx.y += 20;
+        ctx.sectionTitle(doc, 'MOON SIGN SHIFT', 'Your Emotional Year');
 
         const halfW = (contentW - 16) / 2;
         const natalDeep = moonSignDeep[natalMoonSign];
         const srDeep = moonSignDeep[srMoonSignFull];
-        const boxH = 110;
-        const moonBoxY = ctx.y;
 
-        ctx.drawContentBox(doc, margin, moonBoxY, halfW, boxH, ctx.colors.softGold);
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.deepBrown);
-        doc.text('NATAL MOON', margin + 12, moonBoxY + 16);
-        doc.setFontSize(16); doc.setTextColor(...ctx.colors.gold);
-        doc.text(natalMoonSign.toUpperCase(), margin + 12, moonBoxY + 35);
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(...ctx.colors.bodyText);
-        const natalMoonLines = doc.splitTextToSize(natalDeep?.emotional || '', halfW - 24);
-        natalMoonLines.slice(0, 6).forEach((line: string, i: number) => {
-          doc.text(line, margin + 12, moonBoxY + 50 + i * 11);
-        });
+        // Natal Moon
+        ctx.trackedLabel(doc, 'NATAL MOON', margin + 8, ctx.y, { size: 7, charSpace: 3 });
+        doc.setFont('times', 'normal'); doc.setFontSize(8);
+        doc.setTextColor(...ctx.colors.muted);
+        doc.text(`THIS YEAR'S MOON`, margin + halfW + 24, ctx.y);
+        ctx.y += 10;
+        
+        doc.setFont('times', 'bold'); doc.setFontSize(14);
+        doc.setTextColor(...ctx.colors.ink);
+        doc.text(natalMoonSign.toUpperCase(), margin + 8, ctx.y);
+        doc.text(srMoonSignFull.toUpperCase(), margin + halfW + 24, ctx.y);
+        ctx.y += 14;
 
-        const srBoxX = margin + halfW + 16;
-        ctx.drawContentBox(doc, srBoxX, moonBoxY, halfW, boxH, ctx.colors.softBlue);
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.deepBrown);
-        doc.text('THIS YEAR\'S MOON', srBoxX + 12, moonBoxY + 16);
-        doc.setFontSize(16); doc.setTextColor(...ctx.colors.gold);
-        doc.text(srMoonSignFull.toUpperCase(), srBoxX + 12, moonBoxY + 35);
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(...ctx.colors.bodyText);
-        const srMoonLines = doc.splitTextToSize(srDeep?.emotional || '', halfW - 24);
-        srMoonLines.slice(0, 6).forEach((line: string, i: number) => {
-          doc.text(line, srBoxX + 12, moonBoxY + 50 + i * 11);
-        });
-
-        ctx.y = moonBoxY + boxH + 12;
+        // Two-column body
+        doc.setFont('times', 'normal'); doc.setFontSize(8.5); doc.setTextColor(...ctx.colors.ink);
+        const natalMoonLines = doc.splitTextToSize(natalDeep?.emotional || '', halfW - 16);
+        const srMoonLines = doc.splitTextToSize(srDeep?.emotional || '', halfW - 16);
+        const maxLines = Math.max(natalMoonLines.length, srMoonLines.length);
+        for (let li = 0; li < Math.min(maxLines, 6); li++) {
+          if (natalMoonLines[li]) doc.text(natalMoonLines[li], margin + 8, ctx.y);
+          if (srMoonLines[li]) doc.text(srMoonLines[li], margin + halfW + 24, ctx.y);
+          ctx.y += 11;
+        }
+        // Vertical divider
+        doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
+        doc.line(margin + halfW + 8, ctx.y - maxLines * 11 - 14, margin + halfW + 8, ctx.y);
+        ctx.y += 8;
 
         if (natalMoonSign !== srMoonSignFull) {
           ctx.drawCard(doc, () => {
-            ctx.writeBold(doc, `The Shift: ${natalMoonSign} --> ${srMoonSignFull}`, ctx.colors.deepBrown, 11);
+            ctx.writeBold(doc, `The Shift: ${natalMoonSign} --> ${srMoonSignFull}`);
             ctx.y += 2;
             const specificNarrative = moonShiftNarrative[natalMoonSign]?.[srMoonSignFull];
-            if (specificNarrative) ctx.writeBody(doc, specificNarrative, ctx.colors.bodyText, 9.5);
+            if (specificNarrative) ctx.writeBody(doc, specificNarrative);
             ctx.y += 4;
             if (srDeep) {
-              ctx.writeCardSection(doc, 'Body', srDeep.body, ctx.colors.accentGreen);
-              ctx.writeCardSection(doc, 'Apply', srDeep.apply, ctx.colors.gold);
-              ctx.writeCardSection(doc, 'Daily Life', srDeep.looksLike, ctx.colors.accentRust);
+              ctx.writeCardSection(doc, 'Body', srDeep.body);
+              ctx.writeCardSection(doc, 'Apply', srDeep.apply);
+              ctx.writeCardSection(doc, 'Daily Life', srDeep.looksLike);
             }
           });
         } else {
           ctx.drawCard(doc, () => {
-            ctx.writeBold(doc, `Moon Stays in ${natalMoonSign} — Emotional Continuity`, ctx.colors.deepBrown, 11);
+            ctx.writeBold(doc, `Moon Stays in ${natalMoonSign} — Emotional Continuity`);
             ctx.writeBody(doc, 'Your SR Moon matches natal. This year amplifies your emotional instincts. Trust your gut.');
           });
         }
