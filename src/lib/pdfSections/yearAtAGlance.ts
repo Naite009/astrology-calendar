@@ -156,9 +156,9 @@ export function generatePDFYearAtAGlance(
     ctx.y = startY + actualH + 10;
   }
 
-  // ── YEAR-DEFINING ASPECT ──
-  if (a.yearDefiningAspect) {
-    const yda = a.yearDefiningAspect;
+  // ── YEAR-DEFINING ASPECT (use strongest SR-to-natal aspect if available) ──
+  if (a.srToNatalAspects.length > 0) {
+    const yda = a.srToNatalAspects[0];
     ctx.drawCard(doc, () => {
       ctx.trackedLabel(doc, 'YEAR-DEFINING ASPECT', margin + 14, ctx.y, { charSpace: 2.5, size: 7.5 });
       ctx.y += 16;
