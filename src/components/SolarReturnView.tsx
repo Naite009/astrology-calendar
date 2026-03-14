@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import { SolarReturnPDFExport } from '@/components/SolarReturnPDFExport';
 import { TierButtonRow } from '@/components/solarReturn/TierButtonRow';
+import { SROverviewDashboard } from '@/components/solarReturn/SROverviewDashboard';
 
 const ZODIAC_SIGNS = [
   'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
@@ -707,6 +708,9 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
 }) => {
   return (
     <div className="space-y-4 mt-4">
+      {/* New Dashboard Header Sections */}
+      <SROverviewDashboard analysis={analysis} natalChart={natalChart} srChart={srChart} />
+
       {/* Year Theme */}
       {analysis.yearlyTheme && (
         <div className="border border-primary/20 rounded-sm p-5 bg-card">
