@@ -1396,17 +1396,13 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         </div>
       )}
 
-      <button data-tier1-download onClick={generateTier1} disabled={generatingTier1}
-        className="text-[11px] uppercase tracking-widest px-3 py-1.5 rounded-sm inline-flex items-center gap-1 disabled:opacity-50 bg-[hsl(var(--tier-1))] text-[hsl(var(--tier-1-accent))] border border-[hsl(var(--tier-1-accent)/0.3)] hover:border-[hsl(var(--tier-1-accent)/0.6)]">
-        {generatingTier1 ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
-        {generatingTier1 ? 'Generating...' : 'Tier 1 · Year at a Glance (Free)'}
-      </button>
-
-      <button onClick={generatePDF} disabled={generating}
-        className="text-[11px] uppercase tracking-widest px-3 py-1.5 rounded-sm inline-flex items-center gap-1 disabled:opacity-50 bg-[hsl(var(--tier-3))] text-[hsl(var(--tier-3-accent))] border border-[hsl(var(--tier-3-accent)/0.3)] hover:border-[hsl(var(--tier-3-accent)/0.6)]">
-        {generating ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
-        {generating ? 'Generating...' : birthdayMode ? 'Tier 3 · Birthday Gift PDF' : 'Tier 3 · Deep Dive PDF'}
-      </button>
+      {narrative && narrative.trim().length > 0 && (
+        <button onClick={generatePDF} disabled={generating}
+          className="text-[11px] uppercase tracking-widest px-3 py-1.5 rounded-sm inline-flex items-center gap-1 disabled:opacity-50 bg-[hsl(var(--tier-3))] text-[hsl(var(--tier-3-accent))] border border-[hsl(var(--tier-3-accent)/0.3)] hover:border-[hsl(var(--tier-3-accent)/0.6)]">
+          {generating ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
+          {generating ? 'Generating...' : 'Birthday Gift PDF'}
+        </button>
+      )}
     </div>
   );
 };
