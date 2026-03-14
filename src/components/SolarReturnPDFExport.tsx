@@ -230,20 +230,14 @@ function generateHowThisYearMeetsYou(
   ctx.sectionTitle(doc, 'HOW THIS YEAR MEETS YOU', 'Natal vs Solar Return');
 
   // Intro
-  doc.setFont('Georgia', 'italic'); doc.setFontSize(9);
-  doc.setTextColor(122, 112, 104);
+  doc.setFont('times', 'italic'); doc.setFontSize(9);
+  doc.setTextColor(...colors.muted);
   const introLines: string[] = doc.splitTextToSize(
     'Your natal chart is who you are. Your Solar Return shows how this year\'s energy meets that.',
     contentW,
   );
   for (const l of introLines) { doc.text(l, margin, ctx.y); ctx.y += 13; }
   ctx.y += 8;
-
-  const headerTints: { bg: [number,number,number]; labelColor: [number,number,number] }[] = [
-    { bg: [255, 251, 240], labelColor: [139, 105, 20] },
-    { bg: [245, 240, 250], labelColor: [74, 45, 138] },
-    { bg: [253, 245, 238], labelColor: [139, 58, 21] },
-  ];
 
   const cards = [
     {
@@ -265,72 +259,35 @@ function generateHowThisYearMeetsYou(
 
   for (let i = 0; i < cards.length; i++) {
     const card = cards[i];
-    const tint = headerTints[i];
     ctx.checkPage(110);
 
-    const cardStartY = ctx.y;
+    // Tracked caps label
+    ctx.trackedLabel(doc, card.label, margin, ctx.y, { size: 7, charSpace: 3 });
 
-    // Header with tinted bg
-    doc.setFillColor(...tint.bg);
-    doc.setDrawColor(...colors.border); doc.setLineWidth(0.5);
-    doc.roundedRect(margin, ctx.y, contentW, 24, 4, 4, 'F');
+    // Tags: natal → SR
+    doc.setFont('times', 'normal'); doc.setFontSize(8);
+    doc.setTextColor(...colors.muted);
+    doc.text(`${card.natalTag}  →  ${card.srTag}`, margin + contentW, ctx.y, { align: 'right' });
+    ctx.y += 12;
 
-    // Label
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
-    doc.setTextColor(...tint.labelColor);
-    doc.setCharSpace(0.8);
-    doc.text(card.label, margin + 12, ctx.y + 16);
-    doc.setCharSpace(0);
-
-    // Tags
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
-    const natalTagW = doc.getTextWidth(card.natalTag) + 14;
-    const srTagW = doc.getTextWidth(card.srTag) + 14;
-    const tagsX = margin + contentW - 12 - srTagW - 20 - natalTagW;
-
-    doc.setFillColor(237, 229, 247);
-    doc.roundedRect(tagsX, ctx.y + 5, natalTagW, 14, 2, 2, 'F');
-    doc.setTextColor(74, 45, 138);
-    doc.text(card.natalTag, tagsX + 7, ctx.y + 15);
-
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-    doc.setTextColor(...colors.gold);
-    doc.text('→', tagsX + natalTagW + 5, ctx.y + 15);
-
-    const srTagX = tagsX + natalTagW + 20;
-    doc.setFillColor(253, 240, 232);
-    doc.roundedRect(srTagX, ctx.y + 5, srTagW, 14, 2, 2, 'F');
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
-    doc.setTextColor(139, 58, 21);
-    doc.text(card.srTag, srTagX + 7, ctx.y + 15);
-
-    ctx.y += 24;
-
-    // Body
-    doc.setFillColor(...colors.cream);
-    ctx.y += 10;
-
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+    // Headline
+    doc.setFont('times', 'bold'); doc.setFontSize(11);
     doc.setTextColor(...colors.ink);
-    const hlLines: string[] = doc.splitTextToSize(card.headline, contentW - 24);
-    for (const hl of hlLines) { doc.text(hl, margin + 12, ctx.y); ctx.y += 14; }
+    const hlLines: string[] = doc.splitTextToSize(card.headline, contentW - 16);
+    for (const hl of hlLines) { doc.text(hl, margin + 8, ctx.y); ctx.y += 14; }
     ctx.y += 4;
 
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-    doc.setTextColor(...colors.bodyText);
-    const bdLines: string[] = doc.splitTextToSize(card.body, contentW - 24);
-    for (const bl of bdLines.slice(0, 4)) { doc.text(bl, margin + 12, ctx.y); ctx.y += 13; }
-    ctx.y += 8;
+    // Body
+    doc.setFont('times', 'normal'); doc.setFontSize(9);
+    doc.setTextColor(...colors.ink);
+    const bdLines: string[] = doc.splitTextToSize(card.body, contentW - 16);
+    for (const bl of bdLines.slice(0, 4)) { doc.text(bl, margin + 8, ctx.y); ctx.y += 13; }
+    ctx.y += 4;
 
-    // Draw full card border
-    const cardH = ctx.y - cardStartY;
-    doc.setDrawColor(...colors.border); doc.setLineWidth(0.5);
-    doc.roundedRect(margin, cardStartY, contentW, cardH, 4, 4, 'S');
-    // Header bottom border
-    doc.setDrawColor(...colors.border); doc.setLineWidth(0.5);
-    doc.line(margin, cardStartY + 24, margin + contentW, cardStartY + 24);
-
-    ctx.y += 6;
+    // Hairline rule
+    doc.setDrawColor(...colors.rule); doc.setLineWidth(0.25);
+    doc.line(margin, ctx.y, margin + contentW, ctx.y);
+    ctx.y += 12;
   }
 }
 
