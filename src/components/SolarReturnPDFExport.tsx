@@ -1231,10 +1231,16 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         </div>
       )}
 
+      <button onClick={generateTier1} disabled={generatingTier1}
+        className="text-[11px] uppercase tracking-widest px-3 py-1.5 border border-border rounded-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1 disabled:opacity-50">
+        {generatingTier1 ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
+        {generatingTier1 ? 'Generating...' : 'Year at a Glance (Free)'}
+      </button>
+
       <button onClick={generatePDF} disabled={generating}
         className="text-[11px] uppercase tracking-widest px-3 py-1.5 border border-border rounded-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1 disabled:opacity-50">
         {generating ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
-        {generating ? 'Generating...' : birthdayMode ? 'Download Birthday Gift PDF' : 'Download PDF'}
+        {generating ? 'Generating...' : birthdayMode ? 'Download Birthday Gift PDF' : 'Download Full PDF'}
       </button>
     </div>
   );
