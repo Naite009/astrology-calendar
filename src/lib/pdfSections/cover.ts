@@ -28,10 +28,30 @@ const capitalizeLocation = (loc: string | undefined): string => {
   });
 };
 
+function loadImageDataUrl(src: string): Promise<string | null> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const c = canvas.getContext('2d');
+        if (!c) { resolve(null); return; }
+        c.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      } catch { resolve(null); }
+    };
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
+
 export async function generatePDFCover(
   ctx: PDFContext, doc: jsPDF, a: SolarReturnAnalysis, srChart: SolarReturnChart,
   natalChart: NatalChart, birthdayMode: boolean, personalMessage: string,
-  _cakeImages: Record<string, string>
+  cakeImages: Record<string, string>
 ) {
   const { pw, ph, margin, contentW } = ctx;
   const name = natalChart.name || 'Chart';
@@ -47,8 +67,8 @@ export async function generatePDFCover(
   doc.setFillColor(...CREAM);
   doc.rect(0, 0, pw, ph, 'F');
 
-  // 2. "✦  SOLAR RETURN  ✦" centered tracked caps — upper third
-  let y = ph * 0.18;
+  // 2. "✦  SOLAR RETURN  ✦" centered tracked caps
+  let y = ph * 0.10;
   doc.setFont('times', 'normal'); doc.setFontSize(9);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(4);
@@ -56,43 +76,60 @@ export async function generatePDFCover(
   doc.setCharSpace(0);
 
   // 3. HUGE serif name
-  y += 30;
-  doc.setFont('times', 'normal'); doc.setFontSize(38);
+  y += 24;
+  doc.setFont('times', 'normal'); doc.setFontSize(42);
   doc.setTextColor(...INK);
-  // Split long names
-  const nameLines: string[] = doc.splitTextToSize(name.toUpperCase(), contentW);
+  const nameLines: string[] = doc.splitTextToSize(name.toUpperCase(), contentW + 20);
   for (const line of nameLines) {
     doc.text(line, pw / 2, y, { align: 'center' });
-    y += 44;
+    y += 48;
   }
 
   // 4. Birth info tracked caps
-  y += 4;
-  const birthInfo = `BORN ${formatDate(natalChart.birthDate)}  ·  ${capitalizeLocation(natalChart.birthLocation).toUpperCase()}`;
+  y += 2;
+  const birthInfo = `BORN ${formatDate(natalChart.birthDate)}  \u00B7  ${capitalizeLocation(natalChart.birthLocation).toUpperCase()}`;
   doc.setFont('times', 'normal'); doc.setFontSize(8);
   doc.setTextColor(...MUTED);
   doc.setCharSpace(2);
   doc.text(birthInfo, pw / 2, y, { align: 'center' });
   doc.setCharSpace(0);
 
-  // 5. "SOLAR RETURN" label + massive year
-  y += 40;
-  doc.setFont('times', 'normal'); doc.setFontSize(8);
-  doc.setTextColor(...MUTED);
-  doc.setCharSpace(4);
-  doc.text('SOLAR RETURN', pw / 2, y, { align: 'center' });
+  // 5. Massive year with "SOLAR RETURN" behind it in lighter text
+  y += 18;
+  // "SOLAR RETURN" in very light muted behind the year
+  doc.setFont('times', 'normal'); doc.setFontSize(9);
+  doc.setTextColor(...RULE);
+  doc.setCharSpace(6);
+  doc.text('SOLAR RETURN', pw / 2, y + 18, { align: 'center' });
   doc.setCharSpace(0);
 
-  y += 30;
-  doc.setFont('times', 'bold'); doc.setFontSize(72);
+  // Large bold year on top
+  doc.setFont('times', 'bold'); doc.setFontSize(90);
   doc.setTextColor(...INK);
-  doc.text(String(year), pw / 2, y, { align: 'center' });
+  doc.text(String(year), pw / 2, y + 36, { align: 'center' });
 
-  // 6. Comparison table at bottom — "BORN WITH" | "THIS YEAR"
-  const tableY = ph * 0.72;
-  const tableW = contentW * 0.7;
+  // 6. Cake image — centered in the middle area
+  const cakeY = y + 56;
+  const cakeImgSrc = cakeImages[natalSun];
+  if (cakeImgSrc) {
+    try {
+      const dataUrl = await loadImageDataUrl(cakeImgSrc);
+      if (dataUrl) {
+        const imgW = 200;
+        const imgH = 170;
+        const imgX = (pw - imgW) / 2;
+        doc.addImage(dataUrl, 'PNG', imgX, cakeY, imgW, imgH);
+      }
+    } catch {
+      // silently skip if image fails
+    }
+  }
+
+  // 7. Comparison table — BORN WITH | THIS YEAR — large and prominent
+  const tableY = ph * 0.62;
+  const tableW = contentW * 0.78;
   const tableX = (pw - tableW) / 2;
-  const tableH = 100;
+  const tableH = 130;
   const midX = tableX + tableW / 2;
 
   // Table background
@@ -104,42 +141,42 @@ export async function generatePDFCover(
 
   // Vertical divider
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
-  doc.line(midX, tableY + 8, midX, tableY + tableH - 8);
+  doc.line(midX, tableY + 12, midX, tableY + tableH - 12);
 
-  // Headers
-  doc.setFont('times', 'normal'); doc.setFontSize(7.5);
+  // Headers — tracked caps
+  doc.setFont('times', 'normal'); doc.setFontSize(8.5);
   doc.setTextColor(...MUTED);
-  doc.setCharSpace(2.5);
-  doc.text('BORN WITH', tableX + (tableW / 4), tableY + 20, { align: 'center' });
-  doc.text('THIS YEAR', midX + (tableW / 4), tableY + 20, { align: 'center' });
+  doc.setCharSpace(3);
+  doc.text('BORN WITH', tableX + (tableW / 4), tableY + 28, { align: 'center' });
+  doc.text('THIS YEAR', midX + (tableW / 4), tableY + 28, { align: 'center' });
   doc.setCharSpace(0);
 
-  // Big Three comparison
+  // Big Three comparison — larger font
   const entries = [
     { natal: `${natalSun} Sun`, sr: `${natalSun} Sun` },
     { natal: `${natalMoon} Moon`, sr: `${srMoon} Moon` },
     { natal: `${natalRising} Rising`, sr: `${srRising} Rising` },
   ];
 
-  doc.setFont('times', 'normal'); doc.setFontSize(11);
+  doc.setFont('times', 'normal'); doc.setFontSize(14);
   entries.forEach((e, i) => {
-    const ey = tableY + 40 + i * 18;
+    const ey = tableY + 52 + i * 24;
     doc.setTextColor(...INK);
     doc.text(e.natal, tableX + (tableW / 4), ey, { align: 'center' });
     doc.setTextColor(...GOLD);
     doc.text(e.sr, midX + (tableW / 4), ey, { align: 'center' });
   });
 
-  // 7. Personal message (birthday mode)
+  // 8. Personal message (birthday mode) — right below table
   if (birthdayMode && personalMessage.trim()) {
-    const msgY = tableY + tableH + 20;
+    const msgY = tableY + tableH + 16;
     const msgLines: string[] = doc.splitTextToSize(personalMessage.trim(), contentW * 0.6);
-    doc.setFont('times', 'italic'); doc.setFontSize(10);
+    doc.setFont('times', 'italic'); doc.setFontSize(11);
     doc.setTextColor(...MUTED);
     let my = msgY;
     for (const line of msgLines.slice(0, 3)) {
       doc.text(line, pw / 2, my, { align: 'center' });
-      my += 14;
+      my += 15;
     }
   }
 
