@@ -375,8 +375,7 @@ export function generateHighlightsPage(
     ctx.y = boxY + cardH + 6;
   }
 
-  // ── MONTH-BY-MONTH AT A GLANCE ──
-  ctx.y += 8;
+  // ── MONTH-BY-MONTH AT A GLANCE — all 12 on one page ──
   doc.addPage(); ctx.y = margin;
 
   doc.setDrawColor(...colors.gold); doc.setLineWidth(1);
@@ -389,60 +388,64 @@ export function generateHighlightsPage(
   doc.setFont('helvetica', 'italic'); doc.setFontSize(8);
   doc.setTextColor(...colors.dimText);
   doc.text('What to expect each month, based on your chart', pw / 2, ctx.y, { align: 'center' });
-  ctx.y += 16;
+  ctx.y += 14;
 
   const forecasts = buildPersonalizedMonthlyForecasts(a, srChart, natalChart);
-  const colW = (contentW - 10) / 2;
 
-  for (let i = 0; i < forecasts.length; i += 2) {
-    // Calculate row height — stacked layout: month/year → headline → body
-    const calcCardH = (fi: number) => {
-      if (fi >= forecasts.length) return 0;
-      const headLines = doc.splitTextToSize(forecasts[fi].headline, colW - 20);
-      const bodyLines = doc.splitTextToSize(forecasts[fi].body, colW - 20);
-      // 16 (top pad) + 14 (month label) + 6 (gap) + headLines*11 + 6 (gap) + bodyLines*10 + 10 (bottom pad)
-      return 16 + 14 + 6 + headLines.length * 11 + 6 + bodyLines.length * 10 + 10;
-    };
-    const rowH = Math.max(calcCardH(i), calcCardH(i + 1));
+  // 3 columns × 4 rows grid — use full width with minimal gaps
+  const cols = 3;
+  const rows = 4;
+  const gap = 6;
+  const colW = (contentW - gap * (cols - 1)) / cols;
+  const availH = ctx.ph - ctx.y - 30; // leave bottom margin
+  const rowH = (availH - gap * (rows - 1)) / rows;
 
-    ctx.checkPage(rowH + 6);
-
-    for (let col = 0; col < 2; col++) {
-      const fi = i + col;
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const fi = row * cols + col;
       if (fi >= forecasts.length) break;
       const f = forecasts[fi];
-      const x = margin + col * (colW + 10);
-      const y = ctx.y;
+      const x = margin + col * (colW + gap);
+      const y = ctx.y + row * (rowH + gap);
 
       // Card background
       doc.setFillColor(...colors.softGold);
-      doc.roundedRect(x, y, colW, rowH - 2, 4, 4, 'F');
+      doc.setDrawColor(...colors.warmBorder); doc.setLineWidth(0.3);
+      doc.roundedRect(x, y, colW, rowH, 4, 4, 'FD');
 
-      // Row 1: Month + Year
-      let curY = y + 16;
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
-      doc.setTextColor(...colors.gold);
-      doc.text(`${f.month} ${f.year}`, x + 10, curY);
-      curY += 14;
+      // Gold left accent
+      doc.setDrawColor(...colors.gold); doc.setLineWidth(1.5);
+      doc.line(x + 1, y + 3, x + 1, y + rowH - 3);
 
-      // Row 2: Headline
+      // Month + Year header
+      let curY = y + 11;
       doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+      doc.setTextColor(...colors.gold);
+      doc.text(`${f.month} ${f.year}`, x + 8, curY);
+      curY += 10;
+
+      // Headline
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(7);
       doc.setTextColor(...colors.deepBrown);
-      const hLines = doc.splitTextToSize(f.headline, colW - 20);
+      const hLines: string[] = doc.splitTextToSize(f.headline, colW - 16);
       hLines.forEach((line: string, li: number) => {
-        doc.text(line, x + 10, curY + li * 11);
+        doc.text(line, x + 8, curY + li * 8);
       });
-      curY += hLines.length * 11 + 4;
+      curY += hLines.length * 8 + 3;
 
-      // Row 3: Body
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
+      // Body — fill remaining card space
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
       doc.setTextColor(...colors.bodyText);
-      const bLines = doc.splitTextToSize(f.body, colW - 20);
-      bLines.forEach((line: string, li: number) => {
-        doc.text(line, x + 10, curY + li * 10);
-      });
+      const maxBodyY = y + rowH - 6;
+      const bodyW = colW - 16;
+      const bLines: string[] = doc.splitTextToSize(f.body, bodyW);
+      for (const line of bLines) {
+        if (curY > maxBodyY) break; // clip to card bounds
+        doc.text(line, x + 8, curY);
+        curY += 7.5;
+      }
     }
-
-    ctx.y += rowH + 4;
   }
+
+  ctx.y = ctx.y + rows * (rowH + gap);
 }
