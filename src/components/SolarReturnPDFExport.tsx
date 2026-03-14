@@ -911,12 +911,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // SATURN & NORTH NODE — own page
       // =============================================
       if (analysis.saturnFocus || analysis.nodesFocus) {
-        doc.addPage(); ctx.y = margin;
+        doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
         ctx.sectionPages.set('SATURN AND NORTH NODE', doc.getNumberOfPages());
-        ctx.drawGoldRule(doc); ctx.y += 20;
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-        doc.setTextColor(...ctx.colors.gold);
-        doc.text('SATURN & NORTH NODE', margin, ctx.y); ctx.y += 20;
+        ctx.sectionTitle(doc, 'SATURN & NORTH NODE');
 
         // Brief why card
         ctx.drawCard(doc, () => {
