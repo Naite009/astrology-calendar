@@ -19,6 +19,7 @@ import { generateAffirmationCard } from '@/lib/pdfSections/affirmationCard';
 import { generateHowToReadPage } from '@/lib/pdfSections/howToRead';
 import { generateProfectionPersonalSection } from '@/lib/pdfSections/profectionPersonal';
 import { generateKeyDatesSection } from '@/lib/pdfSections/keyDates';
+import { generateQuarterlySummary } from '@/lib/pdfSections/quarterlySummary';
 
 // Cake image imports
 import cakeAries from '@/assets/cakes/aries.png';
