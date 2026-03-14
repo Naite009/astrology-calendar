@@ -119,9 +119,19 @@
     --energy-rest: 270 25% 20%;
     --energy-high: 150 30% 18%;
     --energy-caution: 40 50% 20%;
-    --energy-high: 150 30% 18%;
-    --energy-caution: 40 50% 20%;
-    
+
+    /* Tier color system (dark) */
+    --tier-1: 30 40% 18%;
+    --tier-1-accent: 30 55% 70%;
+    --tier-2: 145 30% 16%;
+    --tier-2-accent: 145 40% 65%;
+    --tier-3: 270 30% 18%;
+    --tier-3-accent: 270 40% 72%;
+    --tier-4: 5 35% 18%;
+    --tier-4-accent: 5 45% 70%;
+    --tier-5: 25 40% 18%;
+    --tier-5-accent: 25 55% 70%;
+
     --sidebar-background: 0 0% 10%;
     --sidebar-foreground: 40 10% 90%;
     --sidebar-primary: 224 76% 48%;
