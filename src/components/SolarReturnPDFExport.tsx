@@ -710,12 +710,12 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         if (tlDignity) {
           doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
           doc.setTextColor(...ctx.colors.deepBrown);
-          doc.text(`Dignity: ${tlDignity}`, pw - margin - 120, ctx.y + 28);
+          doc.text(`Dignity: ${tlDignity}`, margin + contentW - 100, ctx.y + 28);
         }
         if (tlIsRetro) {
           doc.setTextColor(...ctx.colors.accentRust);
           doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-          doc.text('RETROGRADE', pw - margin - 120, ctx.y + 42);
+          doc.text('RETROGRADE', margin + contentW - 100, ctx.y + 42);
         }
         ctx.y += 70;
 
