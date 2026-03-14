@@ -217,22 +217,16 @@ export function generateStrengthsPortrait(
       // STRENGTH — full width, stacked
       ctx.trackedLabel(doc, 'STRENGTH', margin + 14, ctx.y, { charSpace: 2.5, size: 7 });
       ctx.y += 16;
-      doc.setFont('times', 'normal'); doc.setFontSize(11);
-      doc.setTextColor(...INK);
-      const sLines: string[] = doc.splitTextToSize(strengthText, contentW - 32);
-      for (const line of sLines) { doc.text(line, margin + 14, ctx.y); ctx.y += 17; }
+      ctx.writeBody(doc, strengthText, ctx.colors.bodyText, 11, 17);
 
-      ctx.y += 22;
+      ctx.y += 10;
 
       // SHADOW — full width, stacked below
       ctx.trackedLabel(doc, 'SHADOW', margin + 14, ctx.y, { charSpace: 2.5, size: 7 });
       ctx.y += 16;
-      doc.setFont('times', 'normal'); doc.setFontSize(11);
-      doc.setTextColor(...INK);
-      const shLines: string[] = doc.splitTextToSize(shadowText, contentW - 32);
-      for (const line of shLines) { doc.text(line, margin + 14, ctx.y); ctx.y += 17; }
+      ctx.writeBody(doc, shadowText, ctx.colors.bodyText, 11, 17);
 
-      ctx.y += 22;
+      ctx.y += 10;
 
       // "What This Means For Your Year" as nested card section
       if (yearText) {
