@@ -202,18 +202,17 @@ export function createPDFContext(
       d.setFillColor(...GOLD);
       d.rect(margin, startY, 3, maxCardH, 'F');
 
-      ctx.y = startY + 24;
+      ctx.y = startY + 18;
       renderContent();
-      ctx.y += 20;
+      ctx.y += 16;
 
       const endPage = d.getNumberOfPages();
       if (endPage !== startPage) {
-        // Multi-page card: keep current flow safe and avoid invalid height math.
-        ctx.y += 14;
+        ctx.y += 10;
         return;
       }
 
-      const actualH = Math.max(68, Math.min(ctx.y - startY, maxCardH));
+      const actualH = Math.max(60, Math.min(ctx.y - startY, maxCardH));
 
       d.setFillColor(...CREAM);
       d.rect(margin - 1, startY + actualH, contentW + 2, maxCardH - actualH + 12, 'F');
@@ -224,7 +223,7 @@ export function createPDFContext(
       d.setFillColor(...GOLD);
       d.rect(margin, startY, 3, actualH, 'F');
 
-      ctx.y += 18;
+      ctx.y += 12;
     },
 
     writeCardSection(d: jsPDF, label: string, text: string, _labelColor: Color = GOLD) {
