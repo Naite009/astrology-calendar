@@ -189,20 +189,21 @@ export function createPDFContext(
     },
 
     drawCard(d: jsPDF, renderContent: () => void, _accentColor: Color = GOLD) {
-      ctx.checkPage(80);
+      const MIN_CARD_SPACE = 150;
+      ctx.checkPage(MIN_CARD_SPACE);
       ctx.cardCount += 1;
 
       const isShaded = ctx.cardCount % 2 === 1;
       const cardBgColor: Color = isShaded ? CARD_BG : CREAM;
       const startPage = d.getNumberOfPages();
       const startY = ctx.y;
-      const maxCardH = Math.max(75, ph - startY - 12);
+      const availableH = Math.max(120, pageBottom() - startY - 6);
 
       d.setFillColor(...cardBgColor);
-      d.roundedRect(margin, startY, contentW, maxCardH, 3, 3, 'F');
+      d.roundedRect(margin, startY, contentW, availableH, 3, 3, 'F');
 
       d.setFillColor(...GOLD);
-      d.rect(margin, startY, 3, maxCardH, 'F');
+      d.rect(margin, startY, 3, availableH, 'F');
 
       ctx.y = startY + 18;
       renderContent();
@@ -210,14 +211,23 @@ export function createPDFContext(
 
       const endPage = d.getNumberOfPages();
       if (endPage !== startPage) {
-        ctx.y += 10;
+        if (ctx.y > pageBottom() - 18) {
+          d.addPage();
+          ctx.y = margin;
+          ctx.pageBg(d);
+        } else {
+          ctx.y += 8;
+        }
         return;
       }
 
-      const actualH = Math.max(60, Math.min(ctx.y - startY, maxCardH));
+      const actualH = Math.max(64, Math.min(ctx.y - startY, availableH));
+      const cleanupH = Math.max(0, availableH - actualH + 12);
 
-      d.setFillColor(...CREAM);
-      d.rect(margin - 1, startY + actualH, contentW + 2, maxCardH - actualH + 12, 'F');
+      if (cleanupH > 0) {
+        d.setFillColor(...CREAM);
+        d.rect(margin - 1, startY + actualH, contentW + 2, cleanupH, 'F');
+      }
 
       d.setDrawColor(...RULE); d.setLineWidth(0.3);
       d.roundedRect(margin, startY, contentW, actualH, 3, 3, 'S');
@@ -225,44 +235,48 @@ export function createPDFContext(
       d.setFillColor(...GOLD);
       d.rect(margin, startY, 3, actualH, 'F');
 
-      ctx.y += 12;
+      if (ctx.y > pageBottom() - 14) {
+        d.addPage();
+        ctx.y = margin;
+        ctx.pageBg(d);
+      } else {
+        ctx.y += 12;
+      }
     },
 
     writeCardSection(d: jsPDF, label: string, text: string, _labelColor: Color = GOLD) {
-      ctx.checkPage(60);
+      const innerX = margin + 10;
+      const innerW = contentW - 20;
+      const bodyX = margin + 18;
+      const textW = contentW - 40;
+      const lineH = 16;
+      const lines: string[] = d.splitTextToSize(text, textW);
+
+      const minBodyLines = Math.max(1, lines.length);
+      const nestedH = Math.max(62, 14 + 14 + minBodyLines * lineH + 14);
+
+      ctx.checkPage(nestedH + 10);
       const nestedStartY = ctx.y;
-      const nestedEstH = Math.min(280, ph - ctx.y - 10);
 
       d.setFillColor(...CARD_BG);
-      d.roundedRect(margin + 10, nestedStartY, contentW - 20, nestedEstH, 2, 2, 'F');
+      d.roundedRect(innerX, nestedStartY, innerW, nestedH, 2, 2, 'F');
+      d.setDrawColor(...RULE); d.setLineWidth(0.25);
+      d.roundedRect(innerX, nestedStartY, innerW, nestedH, 2, 2, 'S');
       d.setFillColor(...GOLD);
-      d.rect(margin + 10, nestedStartY, 2.5, nestedEstH, 'F');
+      d.rect(innerX, nestedStartY, 2.5, nestedH, 'F');
 
       ctx.y = nestedStartY + 14;
-      ctx.trackedLabel(d, label.toUpperCase(), margin + 18, ctx.y, { size: 7, charSpace: 3 });
+      ctx.trackedLabel(d, label.toUpperCase(), bodyX, ctx.y, { size: 7, charSpace: 3 });
       ctx.y += 14;
 
       d.setFont('times', 'normal'); d.setFontSize(11);
       d.setTextColor(...INK);
-      const lines: string[] = d.splitTextToSize(text, contentW - 40);
-      const lineH = 16;
       for (const line of lines) {
-        if (ctx.y + lineH > pageBottom()) break;
-        d.text(line, margin + 18, ctx.y);
+        d.text(line, bodyX, ctx.y);
         ctx.y += lineH;
       }
 
-      ctx.y += 8;
-      const nestedH = Math.max(44, ctx.y - nestedStartY);
-
-      d.setFillColor(...CARD_BG);
-      d.rect(margin + 9, nestedStartY + nestedH, contentW - 18, nestedEstH - nestedH + 5, 'F');
-      d.setDrawColor(...RULE); d.setLineWidth(0.25);
-      d.roundedRect(margin + 10, nestedStartY, contentW - 20, nestedH, 2, 2, 'S');
-      d.setFillColor(...GOLD);
-      d.rect(margin + 10, nestedStartY, 2.5, nestedH, 'F');
-
-      ctx.y += 8;
+      ctx.y = nestedStartY + nestedH + 8;
     },
 
     drawContentBox(d: jsPDF, x: number, yStart: number, w: number, h: number, _bg: Color = CARD_BG) {
