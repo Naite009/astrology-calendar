@@ -722,8 +722,8 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             if (h >= 10 || h <= 3) quadPlanets.east.push(P[p] || p); else quadPlanets.west.push(P[p] || p);
           }
 
-          ctx.drawGoldRule(doc); ctx.y += 12;
-          ctx.writeBold(doc, 'Where Your Energy Lives', ctx.colors.gold, 11);
+          ctx.drawRule(doc); ctx.y += 12;
+          ctx.writeBold(doc, 'Where Your Energy Lives');
           ctx.y += 6;
 
           // 2x2 grid — compact
