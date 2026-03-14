@@ -740,29 +740,28 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             const x = margin + 8 + g.col * (boxW + 12);
             const by = gridStartY + g.row * (boxH + 6);
             const isDom = g.count > total / 2;
-            doc.setFillColor(...g.bg);
-            doc.setDrawColor(...(isDom ? ctx.colors.gold : ctx.colors.warmBorder));
-            doc.setLineWidth(isDom ? 1.5 : 0.3);
-            doc.roundedRect(x, by, boxW, boxH, 6, 6, 'FD');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(22);
-            doc.setTextColor(...(isDom ? ctx.colors.gold : ctx.colors.darkText));
+            doc.setFont('times', 'bold'); doc.setFontSize(22);
+            doc.setTextColor(...(isDom ? ctx.colors.ink : ctx.colors.muted));
             doc.text(String(g.count), x + 16, by + 24);
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-            doc.setTextColor(...ctx.colors.deepBrown);
+            doc.setFont('times', 'bold'); doc.setFontSize(9);
+            doc.setTextColor(...ctx.colors.ink);
             doc.text(g.label, x + 46, by + 16);
-            doc.setFont('helvetica', 'italic'); doc.setFontSize(8);
-            doc.setTextColor(...ctx.colors.dimText);
+            doc.setFont('times', 'italic'); doc.setFontSize(8);
+            doc.setTextColor(...ctx.colors.muted);
             doc.text(g.sub, x + 46, by + 26);
             if (g.planets.length > 0) {
-              doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
-              doc.setTextColor(...ctx.colors.bodyText);
+              doc.setFont('times', 'normal'); doc.setFontSize(7.5);
+              doc.setTextColor(...ctx.colors.ink);
               const planetLines = doc.splitTextToSize(g.planets.join(', '), boxW - 30);
               planetLines.forEach((line: string, li: number) => doc.text(line, x + 16, by + 40 + li * 10));
             }
             if (isDom) {
-              doc.setFont('helvetica', 'bold'); doc.setFontSize(7);
-              doc.setTextColor(...ctx.colors.gold);
-              doc.text('DOMINANT', x + boxW - 8, by + 10, { align: 'right' });
+              ctx.trackedLabel(doc, 'DOMINANT', x + boxW - 8, by + 10, { align: 'right', size: 6.5, charSpace: 2 });
+            }
+            // Vertical divider between columns
+            if (g.col === 0) {
+              doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
+              doc.line(x + boxW + 6, by, x + boxW + 6, by + boxH);
             }
           }
           ctx.y = gridStartY + (boxH + 6) * 2 + 6;
