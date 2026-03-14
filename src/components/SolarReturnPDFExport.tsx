@@ -652,11 +652,17 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           const eb = analysis.elementBalance;
           const mb = analysis.modalityBalance;
 
+          if (ctx.y + 190 > ph - 62) {
+            doc.addPage();
+            ctx.y = margin;
+            ctx.pageBg(doc);
+          }
+
           // ── Element colors ──
           const ELEM_BG: Record<string, [number, number, number]> = {
-            Fire:  [255, 230, 220],
+            Fire: [255, 230, 220],
             Earth: [225, 245, 225],
-            Air:   [225, 235, 255],
+            Air: [225, 235, 255],
             Water: [220, 235, 250],
           };
 
@@ -677,32 +683,27 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             const isDom = el.name.toLowerCase() === (eb.dominant || '').toLowerCase();
             const bg = ELEM_BG[el.name] || ctx.colors.cardBg;
 
-            // Box background
             doc.setFillColor(...bg);
             doc.roundedRect(x, elemStartY, elemW, elemH, 4, 4, 'F');
 
-            // Gold border for dominant
             if (isDom) {
               doc.setDrawColor(...ctx.colors.gold); doc.setLineWidth(1.2);
               doc.roundedRect(x, elemStartY, elemW, elemH, 4, 4, 'S');
             }
 
-            // Big number
             doc.setFont('times', 'bold'); doc.setFontSize(28);
             doc.setTextColor(...(isDom ? ctx.colors.ink : ctx.colors.muted));
             doc.text(String(el.val), x + elemW / 2, elemStartY + 32, { align: 'center' });
 
-            // Element name
             doc.setFont('times', 'normal'); doc.setFontSize(10);
             doc.setTextColor(...ctx.colors.ink);
             doc.text(el.name, x + elemW / 2, elemStartY + 48, { align: 'center' });
 
-            // DOMINANT label
             if (isDom) {
               ctx.trackedLabel(doc, 'DOMINANT', x + elemW / 2, elemStartY + 62, { align: 'center', size: 6.5, charSpace: 2 });
             }
           });
-          ctx.y = elemStartY + elemH + 14;
+          ctx.y = elemStartY + elemH + 16;
 
           // ── Modality Balance ──
           ctx.writeBold(doc, 'Modality Balance');
@@ -719,11 +720,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             const x = margin + 2 + i * (modW + 4);
             const isDom = mod.name.toLowerCase() === (mb.dominant || '').toLowerCase();
 
-            // Box background
             doc.setFillColor(...ctx.colors.cardBg);
             doc.roundedRect(x, modStartY, modW, modH, 4, 4, 'F');
 
-            // Gold border for dominant
             if (isDom) {
               doc.setDrawColor(...ctx.colors.gold); doc.setLineWidth(1.2);
             } else {
@@ -731,17 +730,15 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             }
             doc.roundedRect(x, modStartY, modW, modH, 4, 4, 'S');
 
-            // Big number
             doc.setFont('times', 'bold'); doc.setFontSize(26);
             doc.setTextColor(...(isDom ? ctx.colors.ink : ctx.colors.muted));
             doc.text(String(mod.val), x + modW / 2, modStartY + 30, { align: 'center' });
 
-            // Label
             doc.setFont('times', 'normal'); doc.setFontSize(9.5);
             doc.setTextColor(...ctx.colors.ink);
             doc.text(`${mod.name} · ${mod.desc}`, x + modW / 2, modStartY + 48, { align: 'center' });
           });
-          ctx.y = modStartY + modH + 10;
+          ctx.y = modStartY + modH + 12;
         }
 
         // ── WHERE YOUR ENERGY LIVES ──
@@ -756,31 +753,31 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             if (h >= 10 || h <= 3) quadPlanets.east.push(P[p] || p); else quadPlanets.west.push(P[p] || p);
           }
 
-          // Dark divider band
-          ctx.y += 16;
-          doc.setFillColor(100, 100, 100);
-          doc.rect(0, ctx.y, pw, 6, 'F');
-          ctx.y += 28;
+          if (ctx.y + 250 > ph - 62) {
+            doc.addPage();
+            ctx.y = margin;
+            ctx.pageBg(doc);
+          }
 
+          ctx.drawGoldRule(doc);
+          ctx.y += 16;
           ctx.writeBold(doc, 'Where Your Energy Lives');
           ctx.y += 12;
 
-          // Hemisphere background colors
           const HEMI_BG: Record<string, [number, number, number]> = {
             upper: [225, 235, 255],
             lower: [255, 240, 230],
-            east:  [225, 248, 235],
-            west:  [252, 235, 240],
+            east: [225, 248, 235],
+            west: [252, 235, 240],
           };
 
-          // 2x2 grid with colored cards
           const boxW = (contentW - 20) / 2;
           const boxH = 80;
           const gridData = [
             { key: 'upper', label: 'UPPER', sub: 'Public & Visible', count: hem.upper, planets: quadPlanets.upper, row: 0, col: 0 },
             { key: 'lower', label: 'LOWER', sub: 'Private & Internal', count: hem.lower, planets: quadPlanets.lower, row: 0, col: 1 },
-            { key: 'east',  label: 'EASTERN', sub: 'Self-Initiated', count: hem.east, planets: quadPlanets.east, row: 1, col: 0 },
-            { key: 'west',  label: 'WESTERN', sub: 'Other-Oriented', count: hem.west, planets: quadPlanets.west, row: 1, col: 1 },
+            { key: 'east', label: 'EASTERN', sub: 'Self-Initiated', count: hem.east, planets: quadPlanets.east, row: 1, col: 0 },
+            { key: 'west', label: 'WESTERN', sub: 'Other-Oriented', count: hem.west, planets: quadPlanets.west, row: 1, col: 1 },
           ];
           const gridStartY = ctx.y;
           for (const g of gridData) {
@@ -789,20 +786,18 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             const isDom = g.count > total / 2;
             const bg = HEMI_BG[g.key] || ctx.colors.cardBg;
 
-            // Card background
             doc.setFillColor(...bg);
             doc.roundedRect(x, by, boxW, boxH, 4, 4, 'F');
+            doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.3);
+            doc.roundedRect(x, by, boxW, boxH, 4, 4, 'S');
 
-            // Gold left accent bar
             doc.setFillColor(...ctx.colors.gold);
             doc.rect(x, by, 3.5, boxH, 'F');
 
-            // Big number
             doc.setFont('times', 'bold'); doc.setFontSize(24);
             doc.setTextColor(...(isDom ? ctx.colors.ink : ctx.colors.muted));
             doc.text(String(g.count), x + 16, by + 28);
 
-            // Label + sub
             doc.setFont('times', 'bold'); doc.setFontSize(10);
             doc.setTextColor(...ctx.colors.ink);
             doc.text(g.label, x + 48, by + 20);
@@ -810,23 +805,27 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             doc.setTextColor(...ctx.colors.muted);
             doc.text(g.sub, x + 48, by + 32);
 
-            // Planet list
             if (g.planets.length > 0) {
               doc.setFont('times', 'normal'); doc.setFontSize(8);
               doc.setTextColor(...ctx.colors.ink);
               const planetLines = doc.splitTextToSize(g.planets.join(', '), boxW - 30);
-              planetLines.forEach((line: string, li: number) => doc.text(line, x + 16, by + 48 + li * 11));
+              planetLines.slice(0, 3).forEach((line: string, li: number) => doc.text(line, x + 16, by + 48 + li * 11));
             }
 
-            // DOMINANT badge
             if (isDom) {
               ctx.trackedLabel(doc, 'DOMINANT', x + boxW - 10, by + 14, { align: 'right', size: 6.5, charSpace: 2 });
             }
           }
-          ctx.y = gridStartY + (boxH + 8) * 2 + 8;
+          ctx.y = gridStartY + (boxH + 8) * 2 + 10;
 
           // ── Angular Planets ──
           if (analysis.angularPlanets && analysis.angularPlanets.length > 0) {
+            if (ctx.y + 140 > ph - 62) {
+              doc.addPage();
+              ctx.y = margin;
+              ctx.pageBg(doc);
+            }
+
             ctx.y += 4;
             doc.setDrawColor(...ctx.colors.gold); doc.setLineWidth(0.5);
             doc.line(margin, ctx.y, margin + contentW, ctx.y);
@@ -838,41 +837,39 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
               [245, 241, 234], [252, 235, 240], [225, 248, 235], [225, 235, 255],
             ];
 
-            const angCount = Math.min(analysis.angularPlanets.length, 3);
-            const angBoxW = (contentW - (angCount - 1) * 10) / angCount;
-            const angBoxH = 85;
+            const angCount = Math.max(1, Math.min(analysis.angularPlanets.length, 2));
+            const angBoxW = (contentW - (angCount - 1) * 12) / angCount;
+            const angBoxH = 92;
             const angStartY = ctx.y;
 
-            analysis.angularPlanets.slice(0, 6).forEach((ap, i) => {
+            analysis.angularPlanets.slice(0, 4).forEach((ap, i) => {
               const col = i % angCount;
               const row = Math.floor(i / angCount);
-              const x = margin + col * (angBoxW + 10);
-              const by = angStartY + row * (angBoxH + 8);
+              const x = margin + col * (angBoxW + 12);
+              const by = angStartY + row * (angBoxH + 10);
               const bg = ANG_BG[i % ANG_BG.length];
 
-              // Card background
               doc.setFillColor(...bg);
               doc.roundedRect(x, by, angBoxW, angBoxH, 4, 4, 'F');
+              doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.3);
+              doc.roundedRect(x, by, angBoxW, angBoxH, 4, 4, 'S');
 
-              // Gold left accent bar
               doc.setFillColor(...ctx.colors.gold);
               doc.rect(x, by, 3.5, angBoxH, 'F');
 
-              // Planet name in gold
-              doc.setFont('times', 'bold'); doc.setFontSize(12);
+              doc.setFont('times', 'bold'); doc.setFontSize(14);
               doc.setTextColor(...ctx.colors.gold);
-              doc.text(P[ap] || ap, x + 14, by + 22);
+              doc.text(P[ap] || ap, x + 14, by + 24);
 
-              // Description
-              const pm = planetLifeMeanings[ap] || planetLifeMeanings[ap.replace('NorthNode','North Node')];
+              const pm = planetLifeMeanings[ap] || planetLifeMeanings[ap.replace('NorthNode', 'North Node')];
               if (pm) {
-                doc.setFont('times', 'normal'); doc.setFontSize(8.5);
+                doc.setFont('times', 'normal'); doc.setFontSize(9);
                 doc.setTextColor(...ctx.colors.ink);
                 const pmLines = doc.splitTextToSize(pm.inYourLife, angBoxW - 30);
-                pmLines.slice(0, 5).forEach((line: string, li: number) => doc.text(line, x + 14, by + 38 + li * 11));
+                pmLines.slice(0, 5).forEach((line: string, li: number) => doc.text(line, x + 14, by + 42 + li * 11));
               }
             });
-            ctx.y = angStartY + (Math.ceil(Math.min(analysis.angularPlanets.length, 6) / angCount)) * (angBoxH + 8);
+            ctx.y = angStartY + Math.ceil(Math.min(analysis.angularPlanets.length, 4) / angCount) * (angBoxH + 10);
           }
         }
       }
