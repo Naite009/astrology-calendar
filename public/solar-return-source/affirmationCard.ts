@@ -6,9 +6,11 @@ import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 
 type Color = [number, number, number];
 const CREAM: Color = [250, 247, 242];
+const CARD_BG: Color = [245, 241, 234];
 const INK:   Color = [18,  16,  14];
 const MUTED: Color = [130, 125, 118];
 const DARK:  Color = [38,  34,  30];
+const GOLD:  Color = [184, 150, 62];
 const RULE:  Color = [200, 195, 188];
 
 function getNatalIdentity(sunSign: string, moonSign: string, risingSign: string): string {
