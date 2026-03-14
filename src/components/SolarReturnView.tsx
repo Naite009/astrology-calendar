@@ -77,6 +77,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
 
   const [showInputForm, setShowInputForm] = useState(false);
   const [editingSRId, setEditingSRId] = useState<string | null>(null);
+  const [selectedTier, setSelectedTier] = useState<'t1' | null>(null);
 
   const analysis = useMemo(() => {
     if (!selectedSR || !selectedNatal) return null;
