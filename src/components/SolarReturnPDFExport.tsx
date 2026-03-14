@@ -167,7 +167,7 @@ export const nodeHouseMeaning: Record<number, string> = {
 };
 
 // ─── How This Year Meets You (v3 section) ───────────────────────────
-import { PDFContext } from '@/lib/pdfSections/pdfContext';
+import type jsPDF from 'jspdf';
 
 const HTYM_SUN_BODY: Record<number, string> = {
   1: 'Your core identity is being refreshed and redefined. People see a more authentic version of you emerging — the year amplifies who you really are. The 1st house placement puts you at the center of your own story.',
