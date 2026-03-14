@@ -244,11 +244,48 @@ function generatePrintableHTML(
     }
     
     .house-overlay {
-      padding: 12px;
-      background: #f0f9ff;
-      border: 1px solid #bae6fd;
-      border-radius: 8px;
-      margin-bottom: 8px;
+      padding: 18px 20px;
+      background: #f8fbff;
+      border-left: 4px solid #60a5fa;
+      border-radius: 0 10px 10px 0;
+      margin-bottom: 14px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    
+    .house-overlay .overlay-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    
+    .house-overlay .overlay-planet {
+      font-size: 15px;
+      font-weight: bold;
+      color: #1e40af;
+    }
+    
+    .house-overlay .overlay-arrow {
+      font-size: 18px;
+      color: #93c5fd;
+    }
+    
+    .house-overlay .overlay-house {
+      font-size: 15px;
+      font-weight: bold;
+      color: #1e3a5f;
+    }
+    
+    .house-overlay .overlay-owner {
+      font-size: 11px;
+      color: #64748b;
+      font-style: italic;
+    }
+    
+    .house-overlay .overlay-interp {
+      font-size: 13px;
+      color: #334155;
+      line-height: 1.7;
     }
     
     .karmic-indicator {
