@@ -399,13 +399,19 @@ function generatePrintableHTML(
   ${houseOverlays.length > 0 ? `
   <div class="section">
     <h2>House Overlays</h2>
-    <p style="font-size: 12px; color: #6b7280; margin-bottom: 12px;">
-      How each person's planets activate different life areas in the other's chart.
+    <p style="font-size: 13px; color: #64748b; margin-bottom: 16px; line-height: 1.6;">
+      When one person's planet lands in another person's house, it activates that life area between you.
+      These are the strongest activations in your charts.
     </p>
     ${houseOverlays.slice(0, 8).map(overlay => `
       <div class="house-overlay">
-        <div class="card-title">${overlay.planetOwner}'s ${PLANET_SYMBOLS[overlay.planet] || ''} ${overlay.planet} → ${overlay.houseOwner}'s ${overlay.house}th House</div>
-        <div class="card-content">${overlay.interpretation}</div>
+        <div class="overlay-header">
+          <span class="overlay-owner">${overlay.planetOwner}'s</span>
+          <span class="overlay-planet">${overlay.planet}</span>
+          <span class="overlay-arrow">&rarr;</span>
+          <span class="overlay-house">${overlay.houseOwner}'s ${overlay.house}${overlay.house === 1 ? 'st' : overlay.house === 2 ? 'nd' : overlay.house === 3 ? 'rd' : 'th'} House</span>
+        </div>
+        <div class="overlay-interp">${overlay.interpretation}</div>
       </div>
     `).join('')}
   </div>
