@@ -115,63 +115,61 @@ export function generateQuarterlySummary(
   for (let i = 0; i < 4; i++) {
     const q = quarters[i];
 
-    // Measure card height
-    const bodyLines: string[] = doc.splitTextToSize(q.body, contentW - 32);
-    const estH = 22 + 28 + bodyLines.length * 17 + 24;
-    ctx.checkPage(Math.max(estH, 100));
+    const tagText = q.tags.join('  ');
+    doc.setFont('times', 'bold'); doc.setFontSize(7);
+    const tagW = tagText ? doc.getTextWidth(tagText) + 16 : 0;
 
+    const headlineMaxW = contentW - 44 - (tagW > 0 ? tagW + 14 : 0);
+    const headLines: string[] = doc.splitTextToSize(q.headline, Math.max(220, headlineMaxW));
+    const bodyLines: string[] = doc.splitTextToSize(q.body, contentW - 44);
+
+    const cardH = Math.max(
+      120,
+      24 + 18 + headLines.length * 24 + 8 + bodyLines.length * 16.5 + 20,
+    );
+
+    ctx.checkPage(cardH + 18);
     const startY = ctx.y;
 
-    // Card background
     doc.setFillColor(...CARD_BG);
-    doc.roundedRect(margin, startY, contentW, estH, 3, 3, 'F');
+    doc.roundedRect(margin, startY, contentW, cardH, 3, 3, 'F');
     doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
-    doc.roundedRect(margin, startY, contentW, estH, 3, 3, 'S');
+    doc.roundedRect(margin, startY, contentW, cardH, 3, 3, 'S');
 
-    // Gold left accent
     doc.setFillColor(...GOLD);
-    doc.rect(margin, startY, 3, estH, 'F');
+    doc.rect(margin, startY, 3, cardH, 'F');
 
-    let cy = startY + 22;
+    let cy = startY + 24;
+    ctx.trackedLabel(doc, q.months.toUpperCase(), margin + 16, cy, { size: 7.8, charSpace: 2.8 });
 
-    // Season date label
-    ctx.trackedLabel(doc, q.months.toUpperCase(), margin + 16, cy, { size: 7.5, charSpace: 2.5 });
-
-    // Mercury Rx badge — right-aligned on same line
-    if (q.tags.length > 0) {
-      const tagText = q.tags.join('  ');
-      // Draw pill badge
-      doc.setFont('times', 'bold'); doc.setFontSize(7);
-      const tagW = doc.getTextWidth(tagText) + 16;
-      const tagX = margin + contentW - 16 - tagW;
+    if (tagW > 0) {
+      const tagX = margin + contentW - 18 - tagW;
       doc.setDrawColor(...GOLD); doc.setLineWidth(0.5);
-      doc.roundedRect(tagX, cy - 8, tagW, 14, 3, 3, 'S');
+      doc.roundedRect(tagX, cy - 9, tagW, 15, 3, 3, 'S');
       doc.setTextColor(...GOLD);
       doc.setCharSpace(2);
       doc.text(tagText, tagX + 8, cy);
       doc.setCharSpace(0);
     }
 
-    cy += 14;
+    cy += 18;
 
-    // Bold headline
     doc.setFont('times', 'bold'); doc.setFontSize(20);
     doc.setTextColor(...INK);
-    const headLines: string[] = doc.splitTextToSize(q.headline, contentW - 80);
     for (const hl of headLines) {
       doc.text(hl, margin + 16, cy);
       cy += 24;
     }
+
     cy += 4;
 
-    // Body text
     doc.setFont('times', 'normal'); doc.setFontSize(10.5);
     doc.setTextColor(...INK);
     for (const line of bodyLines) {
       doc.text(line, margin + 16, cy);
-      cy += 17;
+      cy += 16.5;
     }
 
-    ctx.y = startY + estH + 20;
+    ctx.y = startY + cardH + 16;
   }
 }
