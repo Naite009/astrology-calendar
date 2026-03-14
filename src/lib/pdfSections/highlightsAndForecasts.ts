@@ -12,7 +12,7 @@ const GOLD:  Color = [184, 150, 62];
 const RULE:  Color = [200, 195, 188];
 const CARD_BG: Color = [245, 241, 234];
 const CREAM: Color = [250, 247, 242];
-const DARK:  Color = [38,  34,  30];
+const CHARCOAL: Color = [58, 54, 50];
 
 const LIFE_THEMES: Record<number, { short: string; detail: string }> = {
   1: { short: 'Your New Year Begins', detail: 'your identity, confidence, and how you present yourself to the world' },
@@ -51,24 +51,16 @@ function getSignFeel(sign: string): string {
   return feels[sign] || 'mixed emotional tones';
 }
 
-// ── Condensed 2-part summary extractor ──────────────────────────────
 function extractEnergySummary(fullText: string): { energy: string; powerMove: string } {
-  // Extract the first sentence as "The Energy"
   const sentences = fullText.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 10);
-  const energy = sentences[0] || fullText.slice(0, 120) + '…';
-  
-  // Find the most actionable sentence for "The Power Move"
+  const energy = sentences[0] || fullText.slice(0, 120) + '...';
   const actionWords = ['build', 'create', 'trust', 'channel', 'lean', 'step', 'say', 'make', 'let', 'use', 'ask', 'show', 'take', 'start', 'stop', 'choose', 'embrace', 'release', 'focus', 'walk'];
   let powerMove = '';
   for (const s of sentences.slice(1)) {
-    if (actionWords.some(w => s.toLowerCase().includes(w))) {
-      powerMove = s;
-      break;
-    }
+    if (actionWords.some(w => s.toLowerCase().includes(w))) { powerMove = s; break; }
   }
   if (!powerMove && sentences.length > 1) powerMove = sentences[sentences.length - 1];
   if (!powerMove) powerMove = 'Pay attention to what shifts here — it matters.';
-  
   return { energy: energy.trim(), powerMove: powerMove.trim() };
 }
 
@@ -163,8 +155,8 @@ export function generateHighlightsPage(
 
   ctx.pageBg(doc);
 
-  // ── Magazine-style section header ──
-  ctx.y += 24;
+  // ── Magazine-style section header with extra padding ──
+  ctx.y += 36;
   doc.setFont('times', 'bold'); doc.setFontSize(7);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(4);
@@ -174,7 +166,7 @@ export function generateHighlightsPage(
 
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 28;
+  ctx.y += 32;
 
   doc.setFont('times', 'normal'); doc.setFontSize(32);
   doc.setTextColor(...INK);
@@ -184,9 +176,9 @@ export function generateHighlightsPage(
   doc.setFont('times', 'italic'); doc.setFontSize(10);
   doc.setTextColor(...MUTED);
   doc.text('Stick this on your fridge', margin, ctx.y);
-  ctx.y += 30;
+  ctx.y += 34;
 
-  // ── Highlights as condensed Energy / Power Move cards ──
+  // ── Highlights as condensed Energy / Power Move cards (no dark bg) ──
   const highlights = buildHighlights(a, srChart, natalChart);
   for (let i = 0; i < highlights.length; i++) {
     const h = highlights[i];
@@ -194,12 +186,14 @@ export function generateHighlightsPage(
 
     ctx.checkPage(130);
 
-    // Dark hero card for first, light cards for rest
     if (i === 0) {
+      // First card — cream with charcoal border (print-friendly, no black)
       const heroH = 120;
       const heroY = ctx.y;
-      doc.setFillColor(...DARK);
+      doc.setFillColor(...CARD_BG);
       doc.roundedRect(margin, heroY, contentW, heroH, 4, 4, 'F');
+      doc.setDrawColor(...CHARCOAL); doc.setLineWidth(0.5);
+      doc.roundedRect(margin, heroY, contentW, heroH, 4, 4, 'S');
       doc.setFillColor(...GOLD);
       doc.rect(margin, heroY, contentW, 2.5, 'F');
 
@@ -212,7 +206,7 @@ export function generateHighlightsPage(
       hy += 18;
 
       doc.setFont('times', 'bold'); doc.setFontSize(18);
-      doc.setTextColor(250, 247, 242);
+      doc.setTextColor(...CHARCOAL);
       doc.text(h.timing, margin + 18, hy);
       hy += 22;
 
@@ -222,11 +216,11 @@ export function generateHighlightsPage(
       doc.text('THE ENERGY', margin + 18, hy);
       hy += 12;
       doc.setFont('times', 'normal'); doc.setFontSize(9.5);
-      doc.setTextColor(220, 216, 210);
+      doc.setTextColor(...INK);
       const elines: string[] = doc.splitTextToSize(energy, contentW - 36);
       for (const l of elines.slice(0, 2)) { doc.text(l, margin + 18, hy); hy += 13; }
 
-      ctx.y = heroY + heroH + 16;
+      ctx.y = heroY + heroH + 20;
     } else {
       // Light card with Energy + Power Move
       ctx.drawCard(doc, () => {
@@ -269,17 +263,17 @@ export function generateHighlightsPage(
     }
   }
 
-  // ── MONTH-BY-MONTH on new page ──
+  // ── MONTH-BY-MONTH on new page — large distinct cards ──
   const clampLines = (lines: string[], max: number): string[] => {
     if (lines.length <= max) return lines;
     const clipped = lines.slice(0, max);
-    clipped[max - 1] = clipped[max - 1].replace(/[.,;:!?]?$/, '…');
+    clipped[max - 1] = clipped[max - 1].replace(/[.,;:!?]?$/, '...');
     return clipped;
   };
 
   const drawMonthHeader = (continued = false) => {
     if (!continued) {
-      ctx.y += 24;
+      ctx.y += 36;
       doc.setFont('times', 'bold'); doc.setFontSize(7);
       doc.setTextColor(...GOLD);
       doc.setCharSpace(4);
@@ -288,29 +282,29 @@ export function generateHighlightsPage(
       ctx.y += 12;
       doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
       doc.line(margin, ctx.y, pw - margin, ctx.y);
-      ctx.y += 28;
+      ctx.y += 32;
       doc.setFont('times', 'normal'); doc.setFontSize(28);
       doc.setTextColor(...INK);
       doc.text('Month by Month', margin, ctx.y);
-      ctx.y += 12;
+      ctx.y += 14;
       doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
       doc.line(margin, ctx.y, pw - margin, ctx.y);
-      ctx.y += 20;
+      ctx.y += 24;
       return;
     }
     ctx.pageBg(doc);
-    ctx.trackedLabel(doc, 'MONTH BY MONTH · CONTINUED', margin, ctx.y, { size: 7.2, charSpace: 2.8 });
+    ctx.trackedLabel(doc, 'MONTH BY MONTH (CONTINUED)', margin, ctx.y, { size: 7.2, charSpace: 2.8 });
     ctx.y += 10;
     doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
     doc.line(margin, ctx.y, pw - margin, ctx.y);
-    ctx.y += 16;
+    ctx.y += 20;
     doc.setFont('times', 'normal'); doc.setFontSize(24);
     doc.setTextColor(...INK);
     doc.text('Best Months & Highlights', margin, ctx.y);
-    ctx.y += 10;
+    ctx.y += 12;
     doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
     doc.line(margin, ctx.y, pw - margin, ctx.y);
-    ctx.y += 16;
+    ctx.y += 20;
   };
 
   doc.addPage();
@@ -319,12 +313,12 @@ export function generateHighlightsPage(
   drawMonthHeader(false);
 
   const forecasts = buildPersonalizedMonthlyForecasts(a, srChart, natalChart);
-  const columnGap = 16;
-  const rowGap = 16;
+  const columnGap = 20;
+  const rowGap = 20;
   const cardW = (contentW - columnGap) / 2;
-  const cardPadX = 16;
-  const cardPadTop = 18;
-  const cardPadBottom = 16;
+  const cardPadX = 18;
+  const cardPadTop = 20;
+  const cardPadBottom = 18;
   const maxBodyLines = 6;
   const bodyLineH = 15.5;
   const headlineLineH = 22;
@@ -333,7 +327,7 @@ export function generateHighlightsPage(
     if (!f) return { bodyLines: [] as string[], headLines: [] as string[], height: 0 };
     const bodyLines = clampLines(doc.splitTextToSize(f.body, cardW - cardPadX * 2), maxBodyLines);
     const headLines = doc.splitTextToSize(f.headline, cardW - cardPadX * 2) as string[];
-    const height = Math.max(126, cardPadTop + 12 + 6 + headLines.length * headlineLineH + 6 + bodyLines.length * bodyLineH + cardPadBottom);
+    const height = Math.max(140, cardPadTop + 18 + 8 + headLines.length * headlineLineH + 8 + bodyLines.length * bodyLineH + cardPadBottom);
     return { bodyLines, headLines, height };
   };
 
@@ -346,11 +340,21 @@ export function generateHighlightsPage(
     doc.rect(x, rowY, 3, cardH, 'F');
 
     let cy = rowY + cardPadTop;
-    ctx.trackedLabel(doc, `${f.month} ${f.year}`, x + cardPadX, cy, { size: 7.8, charSpace: 2.6 });
-    cy += 14;
-    doc.setFont('times', 'bold'); doc.setFontSize(15.5);
+    
+    // MUCH LARGER month name
+    doc.setFont('times', 'bold'); doc.setFontSize(20);
+    doc.setTextColor(...CHARCOAL);
+    doc.text(f.month, x + cardPadX, cy);
+    
+    doc.setFont('times', 'normal'); doc.setFontSize(9);
+    doc.setTextColor(...MUTED);
+    doc.text(String(f.year), x + cardPadX + doc.getTextWidth(f.month) + 8, cy);
+    cy += 24;
+
+    doc.setFont('times', 'bold'); doc.setFontSize(13);
     doc.setTextColor(...INK);
     for (const line of headLines) { doc.text(line, x + cardPadX, cy); cy += headlineLineH; }
+    cy += 4;
     doc.setFont('times', 'normal'); doc.setFontSize(10.5);
     doc.setTextColor(...INK);
     for (const line of bodyLines) { doc.text(line, x + cardPadX, cy); cy += bodyLineH; }
@@ -362,7 +366,7 @@ export function generateHighlightsPage(
     const right = forecasts[index + 1];
     const leftMeasured = measureCard(left);
     const rightMeasured = measureCard(right);
-    const rowH = Math.max(leftMeasured.height, rightMeasured.height, 126);
+    const rowH = Math.max(leftMeasured.height, rightMeasured.height, 140);
 
     if (ctx.y + rowH > ph - 62) {
       doc.addPage();

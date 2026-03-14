@@ -67,7 +67,7 @@ export async function generatePDFCover(
   doc.setFillColor(...CREAM);
   doc.rect(0, 0, pw, ph, 'F');
 
-  // ── Thin gold border frame — magazine style ────────────────────────
+  // ── Thin gold border frame ────────────────────────────────────────
   const frameInset = 18;
   doc.setDrawColor(...GOLD); doc.setLineWidth(0.5);
   doc.rect(frameInset, frameInset, pw - frameInset * 2, ph - frameInset * 2);
@@ -103,20 +103,19 @@ export async function generatePDFCover(
     doc.text('Birthday', pw / 2, y, { align: 'center' });
     y += 14;
 
-    // Gold flourish line under "Happy Birthday"
+    // Gold flourish line
     doc.setDrawColor(...GOLD); doc.setLineWidth(0.6);
     doc.line(pw / 2 - 80, y, pw / 2 + 80, y);
     y += 30;
   } else {
     y += 50;
-    // Non-birthday: large year display
     doc.setFont('times', 'bold'); doc.setFontSize(72);
     doc.setTextColor(...INK);
     doc.text(String(year), pw / 2, y + 50, { align: 'center' });
     y += 80;
   }
 
-  // ── Name — elegant, smaller, tracked ──────────────────────────────
+  // ── Name — centered, elegant, smaller, tracked ────────────────────
   doc.setFont('times', 'normal'); doc.setFontSize(14);
   doc.setTextColor(...MUTED);
   doc.setCharSpace(6);
@@ -125,20 +124,20 @@ export async function generatePDFCover(
   y += 22;
 
   // ── Birth info — very quiet ───────────────────────────────────────
-  const birthInfo = `${formatDate(natalChart.birthDate)}  ·  ${capitalizeLocation(natalChart.birthLocation).toUpperCase()}`;
+  const birthInfo = `${formatDate(natalChart.birthDate)}  →  ${capitalizeLocation(natalChart.birthLocation).toUpperCase()}`;
   doc.setFont('times', 'normal'); doc.setFontSize(7);
   doc.setTextColor(...MUTED);
   doc.text(birthInfo, pw / 2, y, { align: 'center' });
   y += 36;
 
-  // ── Cake image — framed like a magazine feature ───────────────────
+  // ── Cake image — framed like a magazine feature, larger ───────────
   const cakeImgSrc = cakeImages[natalSun];
   if (cakeImgSrc) {
     try {
       const dataUrl = await loadImageDataUrl(cakeImgSrc);
       if (dataUrl) {
-        const imgW = 180;
-        const imgH = 152;
+        const imgW = 200;
+        const imgH = 169;
         const imgX = (pw - imgW) / 2;
 
         // Subtle shadow frame behind image
