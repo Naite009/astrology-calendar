@@ -228,9 +228,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       const margin = 50;
       const contentW = pw - margin * 2;
 
-      // Apply sign-specific color theme if birthday mode
+      // Always apply sign-specific color theme keyed to NATAL SUN SIGN
       const sunSign = natalChart.planets?.Sun?.sign || '';
-      const signTheme = birthdayMode && sunSign ? signColorThemes[sunSign] : undefined;
+      const signTheme = sunSign ? signColorThemes[sunSign] : undefined;
       const ctx = createPDFContext(doc, pw, ph, margin, contentW, signTheme);
 
       // =============================================
