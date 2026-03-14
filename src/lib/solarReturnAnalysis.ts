@@ -590,7 +590,7 @@ export const analyzeSolarReturn = (
 
   // 4. House overlays — SR planets in both SR houses and natal houses
   const houseOverlays: SRHouseOverlay[] = [];
-  for (const planet of ALL_PLANETS) {
+  for (const planet of [...ALL_PLANETS, 'NorthNode' as const]) {
     const pos = srChart.planets[planet as keyof typeof srChart.planets];
     if (!pos) continue;
     const deg = toAbsDeg(pos);
