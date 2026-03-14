@@ -490,31 +490,27 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // =============================================
       // SOLAR RETURN VS NATAL — own page
       // =============================================
-      doc.addPage(); ctx.y = margin;
+      doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
       ctx.sectionPages.set('SOLAR RETURN VS NATAL', doc.getNumberOfPages());
-      ctx.drawGoldRule(doc); ctx.y += 20;
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-      doc.setTextColor(...ctx.colors.gold);
-      doc.text('SOLAR RETURN VS NATAL', margin, ctx.y); ctx.y += 20;
+      ctx.sectionTitle(doc, 'SOLAR RETURN VS NATAL');
       
-      // Table with rounded container
-      const tableStartY = ctx.y;
-      
-      // Header row with full-width gold background
-      doc.setFillColor(...ctx.colors.gold);
-      doc.roundedRect(margin, ctx.y - 12, contentW, 20, 4, 4, 'F');
-      // Use proportional columns based on contentW to prevent overflow
+      // Table header
       const cols = [
-        margin + 8,                          // PLANET
-        margin + contentW * 0.12,            // SR POSITION
-        margin + contentW * 0.32,            // SR H
-        margin + contentW * 0.40,            // NATAL POSITION
-        margin + contentW * 0.60,            // NAT H
-        margin + contentW * 0.70,            // SHIFT
+        margin + 8,
+        margin + contentW * 0.12,
+        margin + contentW * 0.32,
+        margin + contentW * 0.40,
+        margin + contentW * 0.60,
+        margin + contentW * 0.70,
       ];
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(255, 255, 255);
+      doc.setFont('times', 'bold'); doc.setFontSize(7.5); doc.setTextColor(...ctx.colors.muted);
+      doc.setCharSpace(1);
       ['PLANET', 'SR POSITION', 'SR H', 'NATAL POSITION', 'NAT H', 'SHIFT'].forEach((h, i) => doc.text(h, cols[i], ctx.y));
-      ctx.y += 14;
+      doc.setCharSpace(0);
+      ctx.y += 6;
+      doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.3);
+      doc.line(margin, ctx.y, margin + contentW, ctx.y);
+      ctx.y += 10;
 
       for (const p of PLANET_ORDER) {
         const srPos = srChart.planets[p as keyof typeof srChart.planets];
@@ -527,28 +523,23 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           ? (srPos.sign === natPos.sign ? 'Same' : `${S[natPos.sign] || natPos.sign} > ${S[srPos.sign] || srPos.sign}`)
           : '';
         ctx.checkPage(18);
-        const rowIdx = PLANET_ORDER.indexOf(p);
-        if (rowIdx % 2 === 0) { 
-          doc.setFillColor(...ctx.colors.softGold); 
-          doc.rect(margin, ctx.y - 11, contentW, 17, 'F'); 
-        }
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.deepBrown);
+        doc.setFont('times', 'bold'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.ink);
         doc.text(P[p] || p, cols[0], ctx.y);
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.bodyText);
+        doc.setFont('times', 'normal'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.ink);
         doc.text(srPos ? `${srPos.sign} ${srPos.degree}'` : '--', cols[1], ctx.y);
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.gold);
+        doc.setFont('times', 'bold'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.accent);
         doc.text(srH != null ? `H${srH}` : '--', cols[2], ctx.y);
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.bodyText);
+        doc.setFont('times', 'normal'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.ink);
         doc.text(natPos ? `${natPos.sign} ${natPos.degree}'` : '--', cols[3], ctx.y);
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.gold);
+        doc.setFont('times', 'bold'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.accent);
         doc.text(natH != null ? `H${natH}` : '--', cols[4], ctx.y);
-        doc.setFont('helvetica', 'italic'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.dimText); 
+        doc.setFont('times', 'italic'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.muted); 
         doc.text(shift, cols[5], ctx.y);
         ctx.y += 17;
       }
-      // Table border
-      doc.setDrawColor(...ctx.colors.warmBorder); doc.setLineWidth(0.5);
-      doc.roundedRect(margin, tableStartY - 12, contentW, ctx.y - tableStartY + 16, 4, 4, 'S');
+      // Bottom rule
+      doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
+      doc.line(margin, ctx.y, margin + contentW, ctx.y);
       ctx.y += 10;
 
       // =============================================
