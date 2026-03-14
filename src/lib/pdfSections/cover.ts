@@ -65,7 +65,7 @@ export async function generatePDFCover(
   if (cakeImgSrc) cakeDataUrl = await loadImageDataUrl(cakeImgSrc);
 
   // Cream background for top area
-  const cakeW = 200; const cakeH = 170;
+  const cakeW = 240; const cakeH = 220;
   const cakeX = (pw - cakeW) / 2;
 
   if (cakeDataUrl) {
