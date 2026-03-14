@@ -242,10 +242,10 @@ export function createPDFContext(
       ctx.trackedLabel(d, label.toUpperCase(), margin + 18, ctx.y, { size: 7, charSpace: 3 });
       ctx.y += 14;
 
-      d.setFont('times', 'normal'); d.setFontSize(10);
+      d.setFont('times', 'normal'); d.setFontSize(11);
       d.setTextColor(...INK);
       const lines: string[] = d.splitTextToSize(text, contentW - 40);
-      const lineH = 14.5;
+      const lineH = 16;
       for (const line of lines) {
         if (ctx.y + lineH > pageBottom()) break;
         d.text(line, margin + 18, ctx.y);
