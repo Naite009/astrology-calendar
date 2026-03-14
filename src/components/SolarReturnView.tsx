@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import { SolarReturnPDFExport } from '@/components/SolarReturnPDFExport';
 import { TierButtonRow } from '@/components/solarReturn/TierButtonRow';
-import { Tier1Preview } from '@/components/solarReturn/Tier1Preview';
+import { TierPreview, TierId } from '@/components/solarReturn/TierPreview';
 import { OverviewDashboard } from '@/components/solarReturn/OverviewDashboard';
 
 const ZODIAC_SIGNS = [
@@ -78,7 +78,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
 
   const [showInputForm, setShowInputForm] = useState(false);
   const [editingSRId, setEditingSRId] = useState<string | null>(null);
-  const [selectedTier, setSelectedTier] = useState<'t1' | null>(null);
+  const [selectedTier, setSelectedTier] = useState<TierId | null>(null);
 
   const analysis = useMemo(() => {
     if (!selectedSR || !selectedNatal) return null;
@@ -242,17 +242,14 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             />
           </div>
 
-          {/* Tier 1 full preview replaces tab content */}
-          {selectedTier === 't1' ? (
-            <Tier1Preview
+          {/* Tier preview replaces tab content */}
+          {selectedTier ? (
+            <TierPreview
+              tier={selectedTier}
               analysis={analysis}
               srChart={selectedSR}
               natalChart={selectedNatal}
               onBack={() => setSelectedTier(null)}
-              onDownload={() => {
-                const btn = document.querySelector('[data-tier1-download]') as HTMLButtonElement;
-                if (btn) btn.click();
-              }}
             />
           ) : (
             <>
@@ -261,7 +258,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
                   analysis={analysis}
                   srChart={selectedSR}
                   natalChart={selectedNatal}
-                  onSelectTier={(tier) => setSelectedTier(tier as 't1' | null)}
+                  onSelectTier={(tier) => setSelectedTier(tier as TierId | null)}
                   onDownloadTier={(tier) => {
                     if (tier === 't1') {
                       const btn = document.querySelector('[data-tier1-download]') as HTMLButtonElement;

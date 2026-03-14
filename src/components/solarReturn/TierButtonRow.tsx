@@ -3,7 +3,6 @@ import { Sparkles } from 'lucide-react';
 import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
-import { TierPreviewPanel } from './TierPreviewPanel';
 import { toast } from 'sonner';
 
 type TierId = 't1' | 't2' | 't3' | 't4' | 't5';
@@ -49,9 +48,9 @@ export const TierButtonRow = ({
   const handleTierClick = (tier: TierId) => {
     const newTier = activeTier === tier ? null : tier;
     setActiveTier(newTier);
-    // For T1, switch to full preview mode
-    if (tier === 't1' && onSelectTier) {
-      onSelectTier(newTier === 't1' ? 't1' : null);
+    // All tiers now switch to full preview mode
+    if (onSelectTier) {
+      onSelectTier(newTier);
       return;
     }
   };
@@ -96,16 +95,6 @@ export const TierButtonRow = ({
           Generate AI Reading
         </button>
       </div>
-
-      {/* Preview panel — only for non-T1 tiers (T1 uses full preview) */}
-      {activeTier && activeTier !== 't1' && (
-        <TierPreviewPanel
-          tier={activeTier}
-          analysis={analysis}
-          onClose={() => setActiveTier(null)}
-          onDownload={onDownloadTier}
-        />
-      )}
     </div>
   );
 };
