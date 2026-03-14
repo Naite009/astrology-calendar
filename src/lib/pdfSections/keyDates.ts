@@ -246,8 +246,8 @@ export function generateKeyDatesSection(
   // Intro card
   ctx.drawCard(doc, () => {
     ctx.writeBold(doc, 'Why These Dates Matter', colors.gold, 11);
-    ctx.y += 2;
-    ctx.writeBody(doc, `As your Time Lord, ${tlName} is the planet running the show this year. Every time transiting ${tlName} makes an exact aspect to one of your natal planets, the Time Lord's agenda ACTIVATES that area of your life. These are the dates when the year's themes become tangible — when you feel the pressure, the opportunity, or the shift. Mark them.`, colors.bodyText, 10, 14);
+    ctx.y += 4;
+    ctx.writeBody(doc, `As your Time Lord, ${tlName} is the planet running the show this year. Every time transiting ${tlName} makes an exact aspect to one of your natal planets, the Time Lord's agenda ACTIVATES that area of your life. These are the dates when the year's themes become tangible -- when you feel the pressure, the opportunity, or the shift. Mark them.`, colors.bodyText, 9.5, 14);
   });
 
   // Month grouping for visual clarity

@@ -122,7 +122,7 @@ export function createPDFContext(doc: jsPDF, pw: number, ph: number, margin: num
     writeBold(d: jsPDF, text: string, color: Color = colors.darkText, size = 11) {
       d.setFont('helvetica', 'bold'); d.setFontSize(size);
       d.setTextColor(color[0], color[1], color[2]);
-      const lines: string[] = d.splitTextToSize(text, contentW - 16);
+      const lines: string[] = d.splitTextToSize(text, contentW - 28);
       // Keep bold text blocks together
       const totalH = lines.length * 15;
       if (ctx.y + totalH > ph - 55) { doc.addPage(); ctx.y = margin; }

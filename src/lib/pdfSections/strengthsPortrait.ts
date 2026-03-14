@@ -196,27 +196,20 @@ export function generateStrengthsPortrait(
   const tinyBody = (text: string, color: [number, number, number] = colors.bodyText) => {
     doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
     doc.setTextColor(...color);
-    const lines: string[] = doc.splitTextToSize(text, contentW - 12);
-    for (const line of lines) { doc.text(line, margin + 6, ctx.y); ctx.y += 10; }
+    const lines: string[] = doc.splitTextToSize(text, contentW - 28);
+    for (const line of lines) { doc.text(line, margin + 10, ctx.y); ctx.y += 10; }
   };
   const tinyLabel = (label: string, text: string, labelColor: [number, number, number]) => {
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+    // Label on its own line, then body text below for clean readability
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
     doc.setTextColor(...labelColor);
-    doc.text(label + ':', margin + 6, ctx.y);
-    const lw = doc.getTextWidth(label + ': ');
+    doc.text(label + ':', margin + 10, ctx.y);
+    ctx.y += 11;
     doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
     doc.setTextColor(...colors.bodyText);
-    const availW = contentW - 12 - lw;
-    const lines: string[] = doc.splitTextToSize(text, availW > 60 ? contentW - 12 : contentW - 12);
-    if (availW > 60) {
-      // First line continues after label
-      doc.text(lines[0], margin + 6 + lw, ctx.y);
-      ctx.y += 10;
-      for (let j = 1; j < lines.length; j++) { doc.text(lines[j], margin + 6, ctx.y); ctx.y += 10; }
-    } else {
-      ctx.y += 10;
-      for (const line of lines) { doc.text(line, margin + 6, ctx.y); ctx.y += 10; }
-    }
+    const lines: string[] = doc.splitTextToSize(text, contentW - 32);
+    for (const line of lines) { doc.text(line, margin + 10, ctx.y); ctx.y += 10; }
+    ctx.y += 4; // breathing room between sections
   };
   const compactCard = (renderFn: () => void) => {
     // Ensure at least 120pt available before starting a card; otherwise new page

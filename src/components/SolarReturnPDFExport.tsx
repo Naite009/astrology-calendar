@@ -359,7 +359,15 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // Header row with full-width gold background
       doc.setFillColor(...ctx.colors.gold);
       doc.roundedRect(margin, ctx.y - 12, contentW, 20, 4, 4, 'F');
-      const cols = [margin + 8, margin + 68, margin + 180, margin + 222, margin + 335, margin + 378];
+      // Use proportional columns based on contentW to prevent overflow
+      const cols = [
+        margin + 8,                          // PLANET
+        margin + contentW * 0.12,            // SR POSITION
+        margin + contentW * 0.32,            // SR H
+        margin + contentW * 0.40,            // NATAL POSITION
+        margin + contentW * 0.60,            // NAT H
+        margin + contentW * 0.70,            // SHIFT
+      ];
       doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(255, 255, 255);
       ['PLANET', 'SR POSITION', 'SR H', 'NATAL POSITION', 'NAT H', 'SHIFT'].forEach((h, i) => doc.text(h, cols[i], ctx.y));
       ctx.y += 14;
