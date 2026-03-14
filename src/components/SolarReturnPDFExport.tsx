@@ -918,14 +918,15 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           const accentColor = isHard ? [180, 100, 60] as [number, number, number] : ctx.colors.gold;
           ctx.drawCard(doc, () => {
             // Title bar
+            const innerW = contentW - 24;
             doc.setFillColor(...(isHard ? [255, 245, 240] as [number, number, number] : ctx.colors.softGold));
-            doc.roundedRect(margin + 6, ctx.y - 4, contentW - 12, 26, 4, 4, 'F');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5);
+            doc.roundedRect(margin + 8, ctx.y - 4, innerW, 26, 4, 4, 'F');
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
             doc.setTextColor(...accentColor);
             doc.text(`SR ${P[asp.planet1] || asp.planet1}  ${asp.type}  Natal ${P[asp.planet2] || asp.planet2}`, margin + 16, ctx.y + 10);
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.dimText);
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...ctx.colors.dimText);
             const orbHouse = `${asp.orb}' orb${srH ? `  |  SR H${srH}` : ''}${natalH ? `  |  Natal H${natalH}` : ''}`;
-            doc.text(orbHouse, pw - margin - 12, ctx.y + 10, { align: 'right' });
+            doc.text(orbHouse, margin + innerW - 4, ctx.y + 10, { align: 'right' });
             ctx.y += 30;
 
             ctx.writeCardSection(doc, 'How It Feels', interp.howItFeels, ctx.colors.accentGreen);
