@@ -202,7 +202,7 @@ export function createPDFContext(
       d.setFillColor(...GOLD);
       d.rect(margin, startY, 3, maxCardH, 'F');
 
-      ctx.y = startY + 22;
+      ctx.y = startY + 24;
       renderContent();
       ctx.y += 20;
 
