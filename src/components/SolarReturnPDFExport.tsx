@@ -202,9 +202,21 @@ function getPersonalizedStelliumText(sign: string, house: number | null, planets
 
 export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative }: Props) => {
   const [generating, setGenerating] = useState(false);
+  const [generatingTier1, setGeneratingTier1] = useState(false);
   const [birthdayMode, setBirthdayMode] = useState(false);
   const [personalMessage, setPersonalMessage] = useState('');
   const [goldBorders, setGoldBorders] = useState(false);
+
+  const generateTier1 = async () => {
+    setGeneratingTier1(true);
+    try {
+      await generateTier1SolarReturnPDF(analysis, srChart, natalChart, birthdayMode, personalMessage, CAKE_IMAGES);
+    } catch (err) {
+      console.error('Tier 1 PDF error:', err);
+    } finally {
+      setGeneratingTier1(false);
+    }
+  };
 
   const generatePDF = async () => {
     setGenerating(true);
