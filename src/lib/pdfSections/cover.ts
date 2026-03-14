@@ -152,9 +152,9 @@ export async function generatePDFCover(
   if (srMoonSign) doc.text(`${srMoonSign} Moon`, rightX, ctx.y + lineH);
   if (srRisingSign) doc.text(`${srRisingSign} Rising`, rightX, ctx.y + lineH * 2);
 
-  ctx.y += lineH * 3 + 14;
+  ctx.y += lineH * 3;
 
-  // ── PERSONAL MESSAGE (birthday mode) ──
+  // ── PERSONAL MESSAGE (birthday mode) — immediately after Big Three ──
   if (birthdayMode && personalMessage.trim()) {
     const msgLines: string[] = doc.splitTextToSize(personalMessage.trim(), contentW - 60);
     const msgH = Math.min(msgLines.length, 3) * 16 + 20;
@@ -168,32 +168,5 @@ export async function generatePDFCover(
     ctx.y += msgH + 10;
   }
 
-  // ── NAME STRIP ──
-  const nameStripH = 36;
-  doc.setFillColor(...colors.purple);
-  doc.rect(0, ctx.y, pw, nameStripH, 'F');
-
-  doc.setFont('Georgia', 'bold'); doc.setFontSize(16);
-  doc.setTextColor(255, 255, 255);
-  doc.setCharSpace(0.6);
-  const diamondColor = colors.gold;
-  // Diamond + name + diamond
-  doc.setTextColor(...diamondColor);
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(12);
-  const nameUpper = name.toUpperCase();
-  const nameTextW = doc.getTextWidth(nameUpper);
-  // Use text for diamonds since jsPDF triangle is complex
-  doc.setFont('Georgia', 'bold'); doc.setFontSize(16);
-  doc.setTextColor(255, 255, 255);
-  doc.text(nameUpper, pw / 2, ctx.y + 22, { align: 'center' });
-  doc.setCharSpace(0);
-
-  ctx.y += nameStripH;
-
-  // Birth info below
-  ctx.y += 14;
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
-  doc.setTextColor(...colors.dimText);
-  doc.text(`Born ${formatDate(natalChart.birthDate)}  ·  ${capitalizeLocation(natalChart.birthLocation)}`, pw / 2, ctx.y, { align: 'center' });
   ctx.y += 20;
 }
