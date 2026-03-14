@@ -1008,14 +1008,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         const allAspects = analysis.srToNatalAspects.filter(asp => !(asp.planet1 === 'Sun' && asp.planet2 === 'Sun' && asp.type === 'Conjunction'));
         const majorAspects = allAspects.filter(asp => MAJOR_BODIES.has(asp.planet1) && MAJOR_BODIES.has(asp.planet2));
         
-        doc.addPage(); ctx.y = margin;
+        doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
         ctx.sectionPages.set('KEY ASPECTS', doc.getNumberOfPages());
-        ctx.drawGoldRule(doc); ctx.y += 20;
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-        doc.setTextColor(...ctx.colors.gold);
-        doc.text('KEY ASPECTS', margin, ctx.y); ctx.y += 8;
-        doc.setFont('helvetica', 'italic'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.dimText);
-        doc.text('How Solar Return planets activate your natal chart', margin, ctx.y); ctx.y += 16;
+        ctx.sectionTitle(doc, 'KEY ASPECTS', 'How Solar Return planets activate your natal chart');
 
         for (let i = 0; i < Math.min(majorAspects.length, 8); i++) {
           const asp = majorAspects[i];
