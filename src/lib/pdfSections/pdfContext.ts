@@ -106,6 +106,7 @@ export function createPDFContext(
     sectionTitle(d: jsPDF, title: string, subtitle?: string) {
       ctx.checkPage(140);
       ctx.sectionNum++;
+      ctx.cardCount = 0; // reset card alternation per section
       const pageNum = d.getNumberOfPages();
       sectionPages.set(title.toUpperCase(), pageNum);
 
