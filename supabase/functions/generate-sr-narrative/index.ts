@@ -199,7 +199,37 @@ serve(async (req) => {
       ? a.repeatedThemes.map((t: any) => t.description).join('; ')
       : 'None';
 
-    const userPrompt = `Write a 400-word year-ahead reading for ${chartName} using only this data: SR Ascendant ${srAsc}, ruled by ${srAscRuler} in ${srAscRulerSign} in SR house ${srAscRulerHouse}, falling in natal house ${srAscRulerNatalHouse}. Profection year: house ${profectionHouse}, Time Lord ${timeLord} in ${timeLordSign} SR house ${timeLordHouse}, dignity ${timeLordDignity}, retrograde ${timeLordRx}. SR Moon: ${srMoonSign} house ${srMoonHouse}, phase ${moonPhase}. Stelliums: ${stelliumsStr}. Strongest aspects: ${top5}. Repeated themes: ${repeatedStr}. Write 4 paragraphs: (1) The single defining pattern of this year and why it matters. (2) The emotional landscape — what will feel different and why. (3) The tension or paradox — what two energies are pulling against each other. (4) What this year is asking of this person at a soul level. Voice: speak directly to the person, warm but honest, no hedging, no generic affirmations. If something is hard, say so with compassion. If something is a gift, name it specifically.\n\nFull chart data for reference:\n${dataContext}`;
+    const userPrompt = `Write a 400-word year-ahead reading for ${chartName} using ONLY the chart data provided. Do not invent any planet positions, signs, or house placements that are not explicitly in this data.
+
+CHART DATA:
+- SR Ascendant: ${srAsc}, ruled by ${srAscRuler} in ${srAscRulerSign} in SR house ${srAscRulerHouse}, falling in natal house ${srAscRulerNatalHouse}
+- Profection year: House ${profectionHouse}, Time Lord: ${timeLord} in ${timeLordSign}, SR House ${timeLordHouse}, dignity ${timeLordDignity}, retrograde ${timeLordRx}
+- SR Moon: ${srMoonSign}, House ${srMoonHouse}, phase ${moonPhase}
+- Stelliums: ${stelliumsStr}
+- Strongest aspects: ${top5}
+- Repeated themes: ${repeatedStr}
+
+CRITICAL INSTRUCTION — THE PROFECTION/TIME LORD TENSION:
+The profection house describes what this year is ASKING FOR. The Time Lord describes the CONDITIONS under which it must be pursued. These are not always comfortable together — and that tension is the most important thing to name.
+
+In this chart: House ${profectionHouse} is asking for ${profectionHouse === 1 ? 'identity and bold self-definition' : profectionHouse === 2 ? 'financial stability and real self-worth' : profectionHouse === 3 ? 'communication and mental clarity' : profectionHouse === 4 ? 'home, roots, and emotional foundations' : profectionHouse === 5 ? 'creativity, joy, and authentic self-expression' : profectionHouse === 6 ? 'health, service, and sustainable routines' : profectionHouse === 7 ? 'partnership and deep one-on-one connection' : profectionHouse === 8 ? 'transformation and release of what is dead' : profectionHouse === 9 ? 'expansion, meaning, and new horizons' : profectionHouse === 10 ? 'career achievement and public recognition' : profectionHouse === 11 ? 'community, friendship, and shared vision' : 'rest, spiritual depth, and inner preparation'}. The Time Lord ${timeLord} ${timeLord === 'Saturn' ? 'demands that this be EARNED — through structure, discipline, and real effort. Joy and ease are not denied; they are behind the door marked "do the actual work first." Saturn years feel heavier than the house theme suggests. That is not a mistake — it is the point.' : timeLord === 'Mars' ? 'demands courage and direct action. Nothing arrives without effort. Conflict may be the path to the reward.' : timeLord === 'Jupiter' ? 'expands what the house promises — but rewards faith and punishes overreach.' : timeLord === 'Venus' ? 'softens the year and opens social and creative doors with relative ease.' : timeLord === 'Mercury' ? 'puts the mind and communication at the center of how this year unfolds.' : timeLord === 'Moon' ? 'makes emotional attunement the key to unlocking what this year offers.' : timeLord === 'Sun' ? 'makes identity and purpose the engine of the year.' : timeLord === 'Pluto' ? 'demands deep transformation before the house promise can be accessed.' : timeLord === 'Neptune' ? 'dissolves certainty and asks for faith over control.' : timeLord === 'Uranus' ? 'disrupts the expected path and demands flexibility and innovation.' : 'sets the conditions for how the year unfolds.'}
+
+ACCURACY RULES:
+- ${timeLord} is in ${timeLordSign} in SR House ${timeLordHouse}. Use ONLY these positions when mentioning ${timeLord}.
+- The SR Moon is in ${srMoonSign} in House ${srMoonHouse}. Do not place it anywhere else.
+- The SR Sun is in House ${a.sunHouse?.house || '—'}. Do not move it.
+- Every planet position you mention must come from the Full chart data below.
+
+Write 4 paragraphs:
+1. The single defining pattern of this year — name the profection house theme AND the Time Lord's conditions in one honest statement. What is this year actually about?
+2. The emotional landscape — what the SR Moon in ${srMoonSign} in House ${srMoonHouse} with a ${moonPhase} phase means for how this person will feel day to day.
+3. The central tension — what two energies are pulling against each other and what that friction is asking them to do.
+4. The soul-level ask — what this year wants from this person at the deepest level, named with specificity not generality.
+
+Voice: direct, warm, honest. If something is hard, say so with compassion. If something is a gift, name it precisely. No hedging. No generic affirmations. No invented placements.
+
+Full chart data for reference:
+${dataContext}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
