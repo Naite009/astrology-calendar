@@ -149,15 +149,21 @@ function drawPlanetCell(
   doc.setTextColor(...INK);
   const posText = `${sign} ${houseLabel}`;
   doc.text(posText, x + w / 2, cy, { align: 'center' });
-  cy += 14;
+  cy += 10;
 
-  // One-line theme (max 20 words)
-  const theme = PLANET_THEME[planet] || 'Active this year.';
-  doc.setFont('times', 'normal'); doc.setFontSize(7.5);
+  // Evocative name
+  const { name, description } = getPlanetSignHouseFelt(planet, sign, srH);
+  doc.setFont('times', 'italic'); doc.setFontSize(7);
+  doc.setTextColor(...GOLD);
+  doc.text(`"${name}"`, x + w / 2, cy, { align: 'center' });
+  cy += 10;
+
+  // Felt-sense description
+  doc.setFont('times', 'normal'); doc.setFontSize(6.5);
   doc.setTextColor(...MUTED);
-  const themeLines = doc.splitTextToSize(theme, w - 12);
-  for (const line of themeLines.slice(0, 2)) {
+  const descLines = doc.splitTextToSize(description, w - 10);
+  for (const line of descLines.slice(0, 4)) {
     doc.text(line, x + w / 2, cy, { align: 'center' });
-    cy += 10;
+    cy += 8;
   }
 }
