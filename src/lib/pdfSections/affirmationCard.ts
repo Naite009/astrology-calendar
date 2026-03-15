@@ -156,7 +156,7 @@ export function generateAffirmationCard(
 
   // Opening letter — condensed
   const letterLines = [
-    `Dear ${name},`,
+    `${name},`,
     '',
     'This report is a map, not a mandate. The planets describe the weather',
     'of your year -- they do not decide what you build in it.',
