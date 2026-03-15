@@ -254,7 +254,7 @@ export function generateKeyDatesTimeline(
     doc.setFont('times', 'bold'); doc.setFontSize(6);
     doc.setTextColor(...nature.text);
     doc.setCharSpace(1.2);
-    doc.text(nature.label, x + colW - 8, y + 13, { align: 'right' });
+    doc.text(nature.label, x + colW - 14, y + 13, { align: 'right' });
     doc.setCharSpace(0);
 
     doc.setFont('times', 'bold'); doc.setFontSize(8.5);
