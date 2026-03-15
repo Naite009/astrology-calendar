@@ -205,15 +205,14 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
   const srSunHouse = analysis.sunHouse?.house;
   const srSunNatalHouse = analysis.sunNatalHouse?.house;
 
-  // Tightest SR-to-natal aspects — exclude Sun conjunct Sun, allow ties
+  // Tightest SR-to-natal aspects — major planets + Chiron + North Node only, max 2
+  const ALLOWED_ASPECT_BODIES = new Set(['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','Chiron','NorthNode']);
   const nonSunConjAspects = analysis.srToNatalAspects.filter(
     a => !(a.planet1 === 'Sun' && a.planet2 === 'Sun' && a.type === 'Conjunction')
+      && ALLOWED_ASPECT_BODIES.has(a.planet1) && ALLOWED_ASPECT_BODIES.has(a.planet2)
   );
   const sortedAspects = [...nonSunConjAspects].sort((a, b) => a.orb - b.orb);
-  const tightestOrb = sortedAspects.length > 0 ? sortedAspects[0].orb : null;
-  const tightestAspects = tightestOrb !== null
-    ? sortedAspects.filter(a => Math.abs(a.orb - tightestOrb) < 0.3)
-    : [];
+  const tightestAspects = sortedAspects.slice(0, 2);
 
   // Dominant element
   const eb = analysis.elementBalance;
