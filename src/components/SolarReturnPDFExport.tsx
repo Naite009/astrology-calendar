@@ -423,6 +423,13 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       generatePDFYearAtAGlance(ctx, doc, analysis, srChart, natalChart);
 
       // =============================================
+      // 29-YEAR LUNAR PHASE TIMELINE
+      // =============================================
+      doc.addPage(); ctx.y = margin;
+      ctx.sectionPages.set('LUNAR PHASE TIMELINE', doc.getNumberOfPages());
+      generatePDFLunarTimeline(ctx, doc, analysis, srChart, natalChart);
+
+      // =============================================
       // PROFECTION WHEEL
       // =============================================
       if (analysis.profectionYear) {
