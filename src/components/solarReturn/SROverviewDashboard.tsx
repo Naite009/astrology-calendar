@@ -4,7 +4,6 @@ import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { Badge } from '@/components/ui/badge';
 import { formatDateMMDDYYYY } from '@/lib/localDate';
 import { Droplets, Flame, Wind, Mountain } from 'lucide-react';
-import { formatDateMMDDYYYY } from '@/lib/localDate';
 
 const ALL_SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 
