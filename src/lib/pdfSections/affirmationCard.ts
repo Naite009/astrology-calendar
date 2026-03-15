@@ -5,9 +5,8 @@ import { NatalChart } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 
 type Color = [number, number, number];
-const CREAM: Color = [250, 247, 242];
 const CARD_BG: Color = [245, 241, 234];
-const INK:   Color = [18,  16,  14];
+const INK:   Color = [58,  54,  50]; // Charcoal grey
 const MUTED: Color = [130, 125, 118];
 const CHARCOAL: Color = [58, 54, 50];
 const GOLD:  Color = [184, 150, 62];
