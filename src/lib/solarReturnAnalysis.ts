@@ -714,6 +714,9 @@ export const analyzeSolarReturn = (
       
       const asp = detectAspect(srDeg, natDeg);
       if (asp) {
+        // Skip Sun-Sun conjunction — it's always 0° by definition in a Solar Return
+        if (srPlanet === 'Sun' && natPlanet === 'Sun' && asp.type === 'Conjunction') continue;
+
         srToNatalAspects.push({
           planet1: srPlanet, planet1Source: 'SR',
           planet2: natPlanet, planet2Source: 'Natal',

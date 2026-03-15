@@ -137,18 +137,18 @@ export function StoryOfTheYear({ analysis, natalChart, srChart }: Props) {
           </div>
         )}
 
-        {/* 3. Moon emotional field */}
-        {moonHouse && (
+        {/* 3. SR Moon Phase tone */}
+        {currentEntry && (
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">Where You Feel It Most</p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">Emotional Tone of the Year</p>
             <p className="text-sm text-foreground leading-relaxed">
-              The Moon in <strong>{analysis.moonSign}</strong> in the <strong>{moonHouse}{moonHouse === 1 ? 'st' : moonHouse === 2 ? 'nd' : moonHouse === 3 ? 'rd' : 'th'} house</strong> reveals where your emotional attention and daily experience will be most intense: {MOON_HOUSE_THEMES[moonHouse] || `house ${moonHouse} themes`}. Your emotional needs this year are filtered through {analysis.moonSign} — {blending?.releasing ? `meaning patterns like ${blending.releasing} are active in your inner world` : 'shaping how you process and react to everything'}.
+              The SR Moon Phase is <strong>{currentEntry.phase}</strong> ({currentEntry.phaseAngle}° separation), which sets the year's emotional undertone toward {cycleStageText}.
             </p>
           </div>
         )}
 
-        {/* 4. Aspect catalyst */}
-        {aspectNarrative && topAspect && (
+        {/* 4. Aspect catalyst — skip Sun-Sun */}
+        {aspectNarrative && topAspect && !(topAspect.planet1 === 'Sun' && topAspect.planet2 === 'Sun') && (
           <div>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">What Adds Momentum</p>
             <p className="text-sm text-foreground leading-relaxed">
