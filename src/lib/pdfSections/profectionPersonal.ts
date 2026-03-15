@@ -204,7 +204,7 @@ export function generateProfectionPersonalSection(
       ctx.y += 16;
       doc.setFont('times', 'bold'); doc.setFontSize(14);
       doc.setTextColor(...INK);
-      doc.text(`${timeLordSRSign} → ${ord(timeLordSRHouse)} House`, margin + 14, ctx.y);
+      doc.text(`${timeLordSRSign} -- ${ord(timeLordSRHouse)} House`, margin + 14, ctx.y);
       ctx.y += 20;
       doc.setFont('times', 'normal'); doc.setFontSize(11);
       doc.setTextColor(...INK);
