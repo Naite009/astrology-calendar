@@ -142,25 +142,46 @@ const aspectCategory = (type: string) => {
   return { label: type, cls: 'bg-muted text-muted-foreground' };
 };
 
-// How This Year Meets You headlines
 const getShiftHeadline = (planet: string, natalSign: string, srSign: string): string => {
   if (natalSign === srSign) return `Staying in ${natalSign} — a year of deepening`;
-  if (isOpposite(natalSign, srSign)) return `From ${natalSign} to ${srSign} — a full reversal`;
-  return `From ${natalSign} to ${srSign} — a new lens`;
+  if (isOpposite(natalSign, srSign)) return `${natalSign} → ${srSign} — the polarity axis activates`;
+  if (SIGN_ELEMENT[natalSign] === SIGN_ELEMENT[srSign]) return `${natalSign} → ${srSign} — same element, different expression`;
+  if (SIGN_MODALITY[natalSign] === SIGN_MODALITY[srSign]) return `${natalSign} → ${srSign} — same drive, different arena`;
+  return `${natalSign} → ${srSign} — a fundamentally different lens`;
 };
 
 const getShiftBody = (planet: string, natalSign: string, srSign: string): string => {
-  if (planet === 'Sun') {
-    if (natalSign === srSign) return 'Your core identity stays in familiar territory this year. The Sun reinforces your natal patterns, bringing consistency and confidence to your self-expression.';
-    return `Your identity expression shifts from ${natalSign} to ${srSign} this year. You may notice yourself approaching life decisions with a different energy than usual — lean into it.`;
+  const planetLabel = planet === 'Rising' ? 'your Ascendant (the mask you wear and how others first experience you)' : planet === 'Sun' ? 'your core identity and vitality' : 'your emotional needs and instinctive reactions';
+
+  if (natalSign === srSign) {
+    if (planet === 'Sun') return 'Your core identity stays in its natal sign. In solar return work, this is a year of consolidation — the Sun reinforces patterns you already know. The gift is confidence and consistency; the risk is stagnation if you don\'t push into new territory within familiar ground.';
+    if (planet === 'Moon') return 'Your emotional needs this year mirror your natal Moon. What comforts you remains consistent — the same foods, people, and environments feel right. This is stabilizing for emotional health, but watch for complacency. The Moon in its natal sign deepens rather than disrupts.';
+    return 'Others see you much as they always have. The SR Ascendant matching your natal Rising means your public persona is reinforced — there\'s no cognitive dissonance between who you are and how you present. "What you see is what you get" works in your favor this year.';
   }
-  if (planet === 'Moon') {
-    if (natalSign === srSign) return 'Your emotional needs this year mirror your natal patterns. What comforts you remains consistent — trust your instincts.';
-    return `Your emotional landscape shifts from ${natalSign} to ${srSign}. What soothes and satisfies you this year may surprise you — pay attention to new cravings and comfort patterns.`;
+
+  const base = `This year, ${planetLabel} shifts from ${natalSign} to ${srSign}.`;
+
+  if (isOpposite(natalSign, srSign)) {
+    const axisKey = getAxisKey(natalSign, srSign);
+    const depth = OPPOSITE_AXIS_DEPTH[axisKey] || `The ${natalSign}-${srSign} axis activates a fundamental polarity. What was dominant becomes secondary, and what was unconscious rises to the surface. Expect to see the "other side" of your ${planet.toLowerCase()} nature this year.`;
+    return `${base} This is a full polarity reversal — one of the most significant shifts in solar return work. ${depth}`;
   }
-  // Rising
-  if (natalSign === srSign) return 'Others see you much as they always have. Your outward persona is reinforced, giving you consistency in first impressions and public presence.';
-  return `The face you show the world changes from ${natalSign} to ${srSign}. People may react to you differently this year — you're projecting a new energy before you even speak.`;
+
+  if (SIGN_ELEMENT[natalSign] === SIGN_ELEMENT[srSign]) {
+    const el = SIGN_ELEMENT[natalSign];
+    const depth = SAME_ELEMENT_DEPTH[el] || '';
+    return `${base} Because both signs share the ${el} element, this isn't a jarring transition — it's more like changing rooms in the same house. The fundamental language is the same, but the dialect changes. ${depth}`;
+  }
+
+  if (SIGN_MODALITY[natalSign] === SIGN_MODALITY[srSign]) {
+    const mod = SIGN_MODALITY[natalSign];
+    const modDesc = mod === 'Cardinal' ? 'Both signs initiate action, but the arena and motivation change completely. You\'re still a starter, but what you\'re starting and why has shifted.' :
+      mod === 'Fixed' ? 'Both signs commit with determination, but what they\'re committed to and why shifts dramatically. Your tenacity is intact; the target is different.' :
+      'Both signs adapt and adjust, but the information they\'re processing and how they communicate it transforms. Flexibility is your constant; what bends around you changes.';
+    return `${base} They share the ${mod} modality — ${modDesc} The underlying operating system is familiar, but the content is entirely new.`;
+  }
+
+  return `${base} This is a significant recalibration — different element, different modality, no shared ground. The way ${planetLabel} operates this year has almost no overlap with your natal pattern. This can feel disorienting in the first months, but it's the solar return's way of forcing growth in areas you wouldn't naturally explore.`;
 };
 
 interface Props {
