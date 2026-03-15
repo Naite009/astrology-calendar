@@ -125,6 +125,7 @@ const PLANET_FELT: Record<string, string> = {
 export function generatePDFAngleActivations(
   ctx: PDFContext, doc: jsPDF,
   natalChart: NatalChart, srChart: SolarReturnChart,
+  maxOrb: number = ORB,
 ) {
   ctx.sectionTitle(doc, 'MAJOR PLANETARY ACTIVATIONS', 'SR Angles to Natal Planets & SR Planets to Natal Angles');
 
