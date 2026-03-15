@@ -759,48 +759,7 @@ export async function generateBirthdayGiftPDF(
     } // close majorAspects.length > 0
   }
 
-  // 19. YOUR MOON THIS YEAR
-  if (analysis.srMoonAspects || analysis.moonVOC || analysis.moonAngularity) {
-    doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
-    ctx.sectionPages.set('YOUR MOON THIS YEAR', doc.getNumberOfPages());
-    ctx.sectionTitle(doc, 'YOUR MOON THIS YEAR', 'Emotional Climate');
-    if (analysis.moonVOC) {
-      ctx.drawCard(doc, () => {
-        ctx.writeBold(doc, 'Moon Void of Course -- The Unaspected Moon');
-        ctx.y += 6;
-        ctx.writeBody(doc, 'Your Solar Return Moon makes no major aspects. This is rare and significant.');
-        ctx.writeCardSection(doc, 'What This Means', 'An unaspected SR Moon operates in isolation -- your emotional life this year runs on its own track.');
-        ctx.writeCardSection(doc, 'The Gift', 'Without planetary aspects pulling it, the Moon is free. Your emotional compass this year is entirely your own.');
-      });
-    }
-    if (analysis.moonAngularity) {
-      const angDesc: Record<string, string> = {
-        angular: 'Your SR Moon is angular. Emotional responses are instinctive, automatic, and highly reactive.',
-        succedent: 'Your SR Moon is in a succedent house. Emotional responses are stable and grounded.',
-        cadent: 'Your SR Moon is in a cadent house. Emotional responses are more adaptive.',
-      };
-      ctx.drawCard(doc, () => {
-        doc.setFont('times', 'bold'); doc.setFontSize(11); doc.setTextColor(...ctx.colors.ink);
-        doc.text(`Moon: ${analysis.moonSign || ''} in House ${analysis.moonHouse?.house || '--'}`, margin + 8, ctx.y);
-        ctx.y += 14;
-        ctx.writeBody(doc, angDesc[analysis.moonAngularity!]);
-      });
-    }
-    if (analysis.srMoonAspects && analysis.srMoonAspects.length > 0) {
-      ctx.y += 6;
-      ctx.writeBold(doc, 'Moon Aspects This Year');
-      ctx.y += 6;
-      for (const asp of analysis.srMoonAspects.slice(0, 6)) {
-        ctx.checkPage(80);
-        ctx.drawCard(doc, () => {
-          doc.setFont('times', 'bold'); doc.setFontSize(9.5); doc.setTextColor(...ctx.colors.ink);
-          doc.text(`Moon ${asp.aspectType} ${P[asp.targetPlanet] || asp.targetPlanet}`, margin + 8, ctx.y);
-          ctx.y += 12;
-          ctx.writeBody(doc, asp.interpretation);
-        });
-      }
-    }
-  }
+  // 19. YOUR MOON THIS YEAR — REMOVED (redundant with Emotional Climate box + Moon Sign Shift)
 
   // 20. VERTEX
   if (analysis.vertex) {

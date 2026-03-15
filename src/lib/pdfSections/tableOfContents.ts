@@ -59,7 +59,7 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   if (a.profectionYear) sections.push({ title: 'Key Dates', desc: 'Exact dates when your Time Lord activates natal planets' });
   if (a.saturnFocus || a.nodesFocus) sections.push({ title: 'Saturn & North Node', desc: 'Where you are being tested and growing' });
   if (a.srToNatalAspects.length > 0) sections.push({ title: 'Key Aspects', desc: 'How Solar Return planets activate your natal chart' });
-  sections.push({ title: 'Your Moon This Year', desc: 'Emotional climate and SR Moon aspects' });
+  
   if (a.vertex) sections.push({ title: 'Vertex', desc: 'Fated encounters and destined meetings' });
   sections.push({ title: 'Planet Spotlight', desc: 'Deep dive into key planets by house placement' });
   sections.push({ title: 'Best Months & Highlights', desc: 'Peak months for love, luck, and action' });
