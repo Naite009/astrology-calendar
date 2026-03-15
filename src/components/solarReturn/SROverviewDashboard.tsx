@@ -294,8 +294,8 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
         </div>
       </div>
 
-      {/* ─── 3. Row 2: 3 Metric Cards ─── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+      {/* ─── 3. Row 2: 4 Metric Cards ─── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
         {/* Dominant Element(s) */}
         {(() => {
           const counts: Record<string, number> = { Fire: eb.fire, Earth: eb.earth, Air: eb.air, Water: eb.water };
@@ -333,17 +333,16 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
           );
         })()}
 
-        {/* Strongest Aspect(s) */}
+        {/* SR-to-Natal: How the year hits YOU */}
         <div className="bg-muted/50 rounded-lg p-3">
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
-            {tightestAspects.length > 1 ? 'Strongest Aspects' : 'Strongest Aspect'}
-          </p>
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">SR → Natal</p>
+          <p className="text-[9px] text-muted-foreground/60 mb-1.5">How this year personally impacts you</p>
           {tightestAspects.length > 0 ? (
             <div className="space-y-2">
               {tightestAspects.map((asp, i) => (
                 <div key={i}>
                   <p className="text-sm font-serif text-foreground">
-                    SR {asp.planet1} {asp.type} Natal {asp.planet2}
+                    {asp.planet1} {asp.type} {asp.planet2}
                   </p>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <span className="text-[11px] text-muted-foreground">{asp.orb}° orb</span>
@@ -361,6 +360,36 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">No major SR-to-natal aspects</p>
+          )}
+        </div>
+
+        {/* SR Internal: The year's climate */}
+        <div className="bg-muted/50 rounded-lg p-3">
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">SR Internal</p>
+          <p className="text-[9px] text-muted-foreground/60 mb-1.5">The year's overall climate</p>
+          {tightestInternal.length > 0 ? (
+            <div className="space-y-2">
+              {tightestInternal.map((asp, i) => (
+                <div key={i}>
+                  <p className="text-sm font-serif text-foreground">
+                    {asp.planet1} {asp.type} {asp.planet2}
+                  </p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="text-[11px] text-muted-foreground">{asp.orb}° orb</span>
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${aspectCategory(asp.type).cls}`}>
+                      {aspectCategory(asp.type).label}
+                    </span>
+                  </div>
+                  {asp.interpretation && (
+                    <p className="text-[10px] text-muted-foreground/80 mt-1 leading-tight">
+                      {asp.interpretation.split('.').slice(0, 2).join('.')}.
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">No major internal aspects</p>
           )}
         </div>
 
