@@ -657,17 +657,23 @@ export async function generateBirthdayGiftPDF(
   // 14. PROFECTION WHEEL
   doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
   ctx.sectionPages.set('PROFECTION WHEEL', doc.getNumberOfPages());
-  drawProfectionWheel(ctx, doc, analysis);
+  if (analysis.profectionYear) {
+    drawProfectionWheel(ctx, doc, analysis.profectionYear.age, analysis.profectionYear.houseNumber, analysis.profectionYear.timeLord);
+  }
 
   // 15. PROFECTION PERSONAL DEEP DIVE
-  doc.addPage(); ctx.y = margin;
-  ctx.sectionPages.set('PROFECTION YEAR', doc.getNumberOfPages());
-  generateProfectionPersonalSection(ctx, doc, analysis, natalChart, srChart);
+  if (analysis.profectionYear) {
+    doc.addPage(); ctx.y = margin;
+    ctx.sectionPages.set('PROFECTION YEAR', doc.getNumberOfPages());
+    generateProfectionPersonalSection(ctx, doc, analysis.profectionYear.houseNumber, analysis.profectionYear.timeLord, analysis.profectionYear.age, analysis.profectionYear.timeLordSRHouse || null, analysis.profectionYear.timeLordSRSign || '');
+  }
 
   // 16. KEY DATES TIMELINE
-  doc.addPage(); ctx.y = margin;
-  ctx.sectionPages.set('KEY DATES', doc.getNumberOfPages());
-  generateKeyDatesTimeline(ctx, doc, analysis, srChart, natalChart);
+  if (analysis.profectionYear) {
+    doc.addPage(); ctx.y = margin;
+    ctx.sectionPages.set('KEY DATES', doc.getNumberOfPages());
+    generateKeyDatesTimeline(ctx, doc, analysis.profectionYear.timeLord, natalChart, srChart);
+  }
 
   // 17. SATURN & NORTH NODE
   if (analysis.saturnFocus || analysis.nodesFocus) {
