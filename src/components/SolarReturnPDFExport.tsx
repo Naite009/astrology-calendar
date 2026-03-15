@@ -1079,7 +1079,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
               Sagittarius: 'The North Node in Sagittarius says: expand your world. Growth comes through travel, education, and forming your own philosophy based on direct experience rather than data.',
               Capricorn: 'The North Node in Capricorn says: take responsibility. Growth comes through career ambition, public contribution, and building structures that outlast your comfort zone.',
               Aquarius: 'The North Node in Aquarius says: serve the collective. Growth comes through community involvement, innovation, and detaching from personal drama to focus on the bigger picture.',
-              Pisces: 'The North Node in Pisces says: trust the unseen. Growth comes through faith, artistic expression, and surrendering the need to control every outcome.',
+              Pisces: 'The North Node in Pisces says: trust the unseen. Growth comes through trusting your inner wisdom, artistic expression, and surrendering the need to control every outcome.',
             };
             const nodeSign = analysis.nodesFocus!.sign;
             if (nodeSignGrowth[nodeSign]) {
