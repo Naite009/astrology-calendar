@@ -98,32 +98,31 @@ export function generatePDFLunarTimeline(
 
   // ── Current Year Highlight Card ──
   if (currentEntry) {
-    const cardH = 70;
-    ctx.checkPage(cardH + 20);
+    const cardH = 55;
+    ctx.checkPage(cardH + 14);
 
     doc.setFillColor(...SOFT_GOLD);
     doc.roundedRect(margin, ctx.y, contentW, cardH, 3, 3, 'F');
     doc.setFillColor(...GOLD);
-    doc.rect(margin, ctx.y, contentW, 2.5, 'F');
+    doc.rect(margin, ctx.y, contentW, 2, 'F');
 
-    let cy = ctx.y + 20;
-    doc.setFont('times', 'bold'); doc.setFontSize(7);
+    let cy = ctx.y + 16;
+    doc.setFont('times', 'bold'); doc.setFontSize(6.5);
     doc.setTextColor(...GOLD);
     doc.setCharSpace(3);
     doc.text('CURRENT YEAR', margin + 14, cy);
     doc.setCharSpace(0);
-    cy += 18;
+    cy += 16;
 
-    doc.setFont('times', 'bold'); doc.setFontSize(18);
+    doc.setFont('times', 'bold'); doc.setFontSize(16);
     doc.setTextColor(...INK);
     doc.text(`${currentEntry.year} -- ${currentEntry.phase}`, margin + 14, cy);
-    cy += 14;
 
-    doc.setFont('times', 'normal'); doc.setFontSize(9);
+    doc.setFont('times', 'normal'); doc.setFontSize(8);
     doc.setTextColor(...MUTED);
-    doc.text(`${currentEntry.cycleStage} -- Age ${currentEntry.age}`, margin + 14, cy);
+    doc.text(`${currentEntry.cycleStage} -- Age ${currentEntry.age}`, margin + contentW / 2, cy, { align: 'center' });
 
-    ctx.y += cardH + 16;
+    ctx.y += cardH + 10;
   }
 
   // ── Visual timeline: dot strip with years ──
