@@ -18,14 +18,14 @@ export interface PhaseDefinition {
 }
 
 export const PHASE_DEFINITIONS: PhaseDefinition[] = [
-  { name: 'New Moon', range: [0, 45], cycleStage: 'Beginning', shortMeaning: 'A year of initiation, emergence, and planting new seeds.', colorLabel: 'beginning' },
-  { name: 'Crescent', range: [45, 90], cycleStage: 'Growth', shortMeaning: 'A year of effort, traction, and building momentum.', colorLabel: 'growth' },
-  { name: 'First Quarter', range: [90, 135], cycleStage: 'Action', shortMeaning: 'A year of challenge, decisions, and decisive forward movement.', colorLabel: 'action' },
-  { name: 'Gibbous', range: [135, 180], cycleStage: 'Refinement', shortMeaning: 'A year of preparation, adjustment, and improvement before culmination.', colorLabel: 'refinement' },
-  { name: 'Full Moon', range: [180, 225], cycleStage: 'Culmination', shortMeaning: 'A year of visibility, relationship focus, revelation, and harvest.', colorLabel: 'culmination' },
-  { name: 'Disseminating', range: [225, 270], cycleStage: 'Sharing', shortMeaning: 'A year of teaching, distributing, contributing, and expressing what has been learned.', colorLabel: 'sharing' },
-  { name: 'Last Quarter', range: [270, 315], cycleStage: 'Reevaluation', shortMeaning: 'A year of restructuring, rethinking, and challenging old systems.', colorLabel: 'reevaluation' },
-  { name: 'Balsamic', range: [315, 360], cycleStage: 'Completion', shortMeaning: 'A year of closure, release, healing, and spiritual preparation for the next beginning.', colorLabel: 'completion' },
+  { name: 'New Moon', range: [0, 22.5], cycleStage: 'Beginning', shortMeaning: 'A year of initiation, emergence, and planting new seeds.', colorLabel: 'beginning' },
+  { name: 'Crescent', range: [22.5, 67.5], cycleStage: 'Growth', shortMeaning: 'A year of effort, traction, and building momentum.', colorLabel: 'growth' },
+  { name: 'First Quarter', range: [67.5, 112.5], cycleStage: 'Action', shortMeaning: 'A year of challenge, decisions, and decisive forward movement.', colorLabel: 'action' },
+  { name: 'Gibbous', range: [112.5, 157.5], cycleStage: 'Refinement', shortMeaning: 'A year of preparation, adjustment, and improvement before culmination.', colorLabel: 'refinement' },
+  { name: 'Full Moon', range: [157.5, 202.5], cycleStage: 'Culmination', shortMeaning: 'A year of visibility, relationship focus, revelation, and harvest.', colorLabel: 'culmination' },
+  { name: 'Disseminating', range: [202.5, 247.5], cycleStage: 'Sharing', shortMeaning: 'A year of teaching, distributing, contributing, and expressing what has been learned.', colorLabel: 'sharing' },
+  { name: 'Last Quarter', range: [247.5, 292.5], cycleStage: 'Reevaluation', shortMeaning: 'A year of restructuring, rethinking, and challenging old systems.', colorLabel: 'reevaluation' },
+  { name: 'Balsamic', range: [292.5, 360], cycleStage: 'Completion', shortMeaning: 'A year of closure, release, healing, and spiritual preparation for the next beginning.', colorLabel: 'completion' },
 ];
 
 // ── Timeline entry ──────────────────────────────────────────────────
