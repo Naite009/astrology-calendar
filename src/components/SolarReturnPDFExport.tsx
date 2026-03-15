@@ -226,7 +226,7 @@ const HTYM_RISING_BODY: Record<string, string> = {
   Cancer: 'Your public presence softens and becomes more nurturing. Others feel safe in your company — the Cancer Rising year opens doors through emotional intelligence.',
   Leo: 'Your public presence becomes more visible, warm, and magnetic. The Leo Rising year demands that you step forward and let yourself be seen.',
   Virgo: 'Your public presence sharpens and becomes more purposeful. The Virgo Rising year rewards precision, competence, and attention to detail.',
-  Libra: 'Your public presence becomes more diplomatic, graceful, and partnership-oriented. The Libra Rising year shapes your path through relationships more than solo ambition.',
+  Libra: 'Your public presence becomes more diplomatic, graceful, and partnership-oriented. Doors open through collaboration rather than solo ambition — you find yourself naturally mediating, beautifying, and building bridges between people.',
   Scorpio: 'Your public presence deepens and becomes more intense. The Scorpio Rising year gives you a magnetic, transformative quality that others either gravitate toward or resist.',
   Sagittarius: 'Your public presence opens and expands. The Sagittarius Rising year rewards adventure, teaching, and philosophical engagement with the world.',
   Capricorn: 'Your public presence becomes more authoritative and focused. The Capricorn Rising year rewards ambition, structure, and taking on greater responsibility.',

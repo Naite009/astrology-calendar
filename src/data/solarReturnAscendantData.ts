@@ -136,19 +136,19 @@ export const SR_ASC_IN_NATAL_HOUSE: Record<number, { theme: string; description:
   },
   6: {
     theme: 'Work & Health',
-    description: 'The SR Ascendant falls in your natal 6th house. Daily work, health, routines, and service become your primary focus. You are inclined to improve your daily habits, address health concerns, or find greater meaning in your work. The year asks you to refine and improve rather than initiate.',
+    description: 'The SR Ascendant falls in your natal 6th house. Daily work, health, routines, and service become your primary focus. You feel a persistent pull to improve — fixing inefficiencies in your schedule, addressing health concerns you\'ve postponed, and finding greater precision in your work. Perfectionism intensifies; you notice flaws you previously tolerated.',
   },
   7: {
     theme: 'Partnerships & Others',
-    description: 'Your natal 7th house is brought to the Ascendant. Relationships — romantic, business, or legal — dominate the year. You may feel dependent on others or define yourself through partnership. Contracts, counseling, mediation, and one-on-one dynamics are emphasized. You see yourself through others.',
+    description: 'Your natal 7th house is brought to the Ascendant. Relationships — romantic, business, or legal — dominate the year. You may feel unusually dependent on others\' opinions, or define your next steps through partnership dynamics. Contracts, counseling, mediation, and one-on-one negotiations consume significant emotional bandwidth. You see yourself most clearly through how others respond to you.',
   },
   8: {
     theme: 'Transformation & Shared Resources',
-    description: 'The SR Ascendant activates your natal 8th house. Deep transformation, shared finances, intimacy, psychological intensity, and matters of power and control come to the surface. This can be a year of profound change. Inheritance, taxes, debt, insurance, or psychological excavation may feature.',
+    description: 'The SR Ascendant activates your natal 8th house. Deep transformation, shared finances, intimacy, and psychological intensity surface whether you seek them or not. You feel pulled toward uncomfortable truths — about money owed, power dynamics in relationships, or emotional patterns you\'ve avoided. Inheritance, taxes, debt, insurance, or psychological excavation may feature.',
   },
   9: {
     theme: 'Expansion & Philosophy',
-    description: 'Your natal 9th house is brought to the fore. Higher education, long-distance travel, publishing, legal matters, and your worldview are activated. You approach the year with a desire for meaning, growth, and expansion beyond your usual boundaries. A teacher or mentor may appear.',
+    description: 'Your natal 9th house is brought to the fore. Higher education, long-distance travel, publishing, legal matters, and your worldview are activated. You feel restless with the familiar — a hunger for meaning, growth, and experiences beyond your usual boundaries pulls you outward. A teacher, mentor, or foreign connection may catalyze a shift in perspective.',
   },
   10: {
     theme: 'Career & Public Life',
