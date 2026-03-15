@@ -21,7 +21,7 @@ import { TierButtonRow } from '@/components/solarReturn/TierButtonRow';
 import { SROverviewDashboard } from '@/components/solarReturn/SROverviewDashboard';
 import { LunarPhaseTimeline } from '@/components/solarReturn/LunarPhaseTimeline';
 import { StoryOfTheYear } from '@/components/solarReturn/StoryOfTheYear';
-import { LifeCycleContext } from '@/components/solarReturn/LifeCycleContext';
+
 import { NatalOverlayCard } from '@/components/solarReturn/NatalOverlayCard';
 import { LandsVsPlaysOutCard } from '@/components/solarReturn/LandsVsPlaysOutCard';
 import { AngleActivationCard } from '@/components/solarReturn/AngleActivationCard';
@@ -734,8 +734,6 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
       {/* 1. Story of the Year — top-level narrative synthesis */}
       <StoryOfTheYear analysis={analysis} natalChart={natalChart} srChart={srChart} />
 
-      {/* 2. Life-Cycle Context — where this year fits in the larger pattern */}
-      <LifeCycleContext natalChart={natalChart} srChart={srChart} />
 
       {/* 3. Natal Overlay — where this year lands in the natal chart */}
       <NatalOverlayCard analysis={analysis} />
