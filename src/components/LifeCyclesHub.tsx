@@ -9,7 +9,7 @@ import { NatalChart } from '@/hooks/useNatalChart';
 import { calculateDetailedSaturnCycles, DetailedSaturnCycles, formatDegreePosition } from '@/lib/saturnCycleCalculator';
 import { SaturnReturnCalculator } from './SaturnReturnCalculator';
 import { calculateSect } from '@/lib/birthConditions';
-import { calculateSecondaryProgressions, getProgressedMoonInfo } from '@/lib/secondaryProgressions';
+import { calculateSecondaryProgressions, getProgressedMoonInfo, computeProgressedLunationTimeline, ProgressedLunationPhase } from '@/lib/secondaryProgressions';
 import * as Astronomy from 'astronomy-engine';
 import { format, differenceInDays, differenceInMonths, addYears, addMonths } from 'date-fns';
 
