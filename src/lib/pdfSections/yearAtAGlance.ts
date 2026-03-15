@@ -125,7 +125,7 @@ export function generatePDFYearAtAGlance(
     // Orb detail
     doc.setFont('times', 'normal'); doc.setFontSize(8);
     doc.setTextColor(...GOLD);
-    doc.text(`${yda.orb} degree orb  →  Felt all year`, margin + 22, hy);
+    doc.text(`${yda.orb} degree orb -- Felt all year`, margin + 22, hy);
     hy += 22;
 
     // Interpretation
