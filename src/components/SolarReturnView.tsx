@@ -1004,8 +1004,8 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
                   <p className="text-[10px] uppercase tracking-widest text-primary mb-1">What To Focus On</p>
                   <p className="text-sm text-muted-foreground leading-relaxed">{srSunInHouse[analysis.sunHouse.house].focus}</p>
                 </div>
-                <div className="bg-destructive/5 rounded-sm p-3">
-                  <p className="text-[10px] uppercase tracking-widest text-destructive mb-1">Watch Out For</p>
+                <div className="bg-secondary/30 rounded-sm p-3">
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Worth Knowing</p>
                   <p className="text-sm text-muted-foreground leading-relaxed">{srSunInHouse[analysis.sunHouse.house].caution}</p>
                 </div>
               </div>
