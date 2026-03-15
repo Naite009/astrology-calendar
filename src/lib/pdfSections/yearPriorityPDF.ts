@@ -30,7 +30,7 @@ export function generatePDFNatalOverlay(
   ctx: PDFContext, doc: jsPDF,
   analysis: SolarReturnAnalysis,
 ) {
-  ctx.sectionTitle(doc, 'HOW THIS YEAR LANDS IN YOUR NATAL CHART', 'Solar Return to Natal House Overlay');
+  ctx.sectionTitle(doc, 'SOLAR RETURN TO NATAL HOUSE OVERLAY');
 
   interface Point { label: string; house: number; meaning: string; }
   const points: Point[] = [];
@@ -43,11 +43,11 @@ export function generatePDFNatalOverlay(
     houseCounts[house].push(label);
   };
 
-  if (analysis.srAscInNatalHouse) addPt('SR Ascendant', analysis.srAscInNatalHouse.natalHouse);
-  addPt('SR Sun', analysis.sunNatalHouse?.house ?? null);
-  addPt('SR Moon', analysis.moonNatalHouse?.house ?? null);
+  if (analysis.srAscInNatalHouse) addPt('Solar Return Ascendant', analysis.srAscInNatalHouse.natalHouse);
+  addPt('Solar Return Sun', analysis.sunNatalHouse?.house ?? null);
+  addPt('Solar Return Moon', analysis.moonNatalHouse?.house ?? null);
   for (const ov of analysis.houseOverlays || []) {
-    if (ov.planet === 'Saturn' || ov.planet === 'Jupiter') addPt(`SR ${ov.planet}`, ov.natalHouse);
+    if (ov.planet === 'Saturn' || ov.planet === 'Jupiter') addPt(`Solar Return ${ov.planet}`, ov.natalHouse);
   }
 
   // Dominant house
@@ -58,26 +58,48 @@ export function generatePDFNatalOverlay(
   }
 
   if (dominant) {
-    ctx.checkPage(60);
+    ctx.checkPage(50);
     ctx.drawCard(doc, () => {
       ctx.writeCardSection(doc, `MAIN ARENA -- NATAL ${dominant!.house}${ord(dominant!.house).toUpperCase()} HOUSE`,
         `${dominant!.labels.join(', ')} all land in your natal ${dominant!.house}${ord(dominant!.house)} house, emphasizing ${HOUSE_MEANINGS[dominant!.house] || ''}.`);
     }, ctx.colors.gold);
-    ctx.y += 8;
-  }
-
-  for (const p of points) {
-    ctx.checkPage(40);
-    doc.setFont('times', 'bold'); doc.setFontSize(9);
-    doc.setTextColor(...ctx.colors.ink);
-    doc.text(`${p.label} --> Natal ${p.house}${ord(p.house)} House`, ctx.margin + 8, ctx.y);
-    ctx.y += 12;
-    doc.setFont('times', 'normal'); doc.setFontSize(8.5);
-    doc.setTextColor(...ctx.colors.muted);
-    const lines = doc.splitTextToSize(`(${p.meaning})`, ctx.contentW - 24);
-    for (const l of lines) { doc.text(l, ctx.margin + 16, ctx.y); ctx.y += 11; }
     ctx.y += 4;
   }
+
+  // Two-column layout for overlay points
+  const col2W = (ctx.contentW - 14) / 2;
+  let colIdx = 0;
+  const rowStartY = ctx.y;
+  let maxColY = ctx.y;
+
+  for (const p of points) {
+    const col = colIdx % 2;
+    const x = ctx.margin + col * (col2W + 14);
+    if (col === 0 && colIdx > 0) {
+      ctx.y = maxColY + 4;
+      maxColY = ctx.y;
+    }
+    const drawY = col === 0 ? ctx.y : (colIdx === 1 ? rowStartY : ctx.y - (maxColY - (colIdx > 1 ? maxColY : ctx.y)));
+
+    // For simplicity, use the current ctx.y for left column, track for right
+    const yPos = col === 0 ? ctx.y : ctx.y;
+
+    doc.setFont('times', 'bold'); doc.setFontSize(8.5);
+    doc.setTextColor(...ctx.colors.ink);
+    doc.text(`${p.label} --> Natal ${p.house}${ord(p.house)}`, x + 4, yPos);
+
+    doc.setFont('times', 'normal'); doc.setFontSize(8);
+    doc.setTextColor(...ctx.colors.muted);
+    doc.text(`(${p.meaning})`, x + 4, yPos + 10);
+
+    if (col === 1) {
+      ctx.y += 24;
+    }
+    colIdx++;
+  }
+  // If odd number of points, advance
+  if (colIdx % 2 === 1) ctx.y += 24;
+  ctx.y += 8;
 }
 
 // ─── Angle Activations Section ──────────────────────────────────
