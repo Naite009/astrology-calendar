@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 import { PDFContext } from './pdfContext';
 import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { P } from '@/components/SolarReturnPDFExport';
+import { getPlanetSignHouseFelt } from './planetSignHouseFelt';
 
 // Planet images imported in SolarReturnPDFExport and passed via imageMap
 type Color = [number, number, number];
@@ -12,21 +13,6 @@ const RULE:  Color = [200, 195, 188];
 const WHITE: Color = [255, 255, 255];
 
 const GRID_ORDER = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','Chiron','NorthNode'];
-
-const PLANET_THEME: Record<string, string> = {
-  Sun: 'Your identity and purpose take center stage.',
-  Moon: 'Emotional needs and instincts drive the year.',
-  Mercury: 'Communication and thinking shape your path.',
-  Venus: 'Love, beauty, and values guide decisions.',
-  Mars: 'Drive and courage fuel your ambitions.',
-  Jupiter: 'Growth and opportunity expand your world.',
-  Saturn: 'Discipline and structure build what lasts.',
-  Uranus: 'Breakthroughs and change electrify your life.',
-  Neptune: 'Intuition and dreams dissolve old limits.',
-  Pluto: 'Deep transformation reshapes your foundation.',
-  Chiron: 'Your deepest wound becomes your greatest gift.',
-  NorthNode: 'Your soul grows toward unfamiliar territory.',
-};
 
 export function generatePlanetGallery(
   ctx: PDFContext, doc: jsPDF, analysis: SolarReturnAnalysis,
