@@ -561,7 +561,7 @@ export function generatePDFYearPriority(
     for (const theme of rest) {
       doc.setFont('times', 'normal'); doc.setFontSize(8);
       doc.setTextColor(...ctx.colors.ink);
-      doc.text(`${theme.label} (${theme.confidence})`, ctx.margin + 8, ctx.y);
+      doc.text(theme.label, ctx.margin + 8, ctx.y);
       ctx.y += 11;
     }
   }
