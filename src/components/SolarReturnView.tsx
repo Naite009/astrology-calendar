@@ -47,10 +47,15 @@ interface Props {
 }
 
 export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
-  const allCharts = useMemo(() => [
-    ...(userNatalChart ? [userNatalChart] : []),
-    ...savedCharts,
-  ], [userNatalChart, savedCharts]);
+  const allCharts = useMemo(() => {
+    const sorted = [...savedCharts]
+      .filter(c => c.id !== userNatalChart?.id)
+      .sort((a, b) => a.name.localeCompare(b.name));
+    return [
+      ...(userNatalChart ? [userNatalChart] : []),
+      ...sorted,
+    ];
+  }, [userNatalChart, savedCharts]);
 
   const {
     solarReturnCharts, addSolarReturn, updateSolarReturn, deleteSolarReturn,
@@ -59,7 +64,12 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
 
   // Only show natal charts that have at least one SR chart uploaded
   const natalChartsWithSR = useMemo(() => {
-    return allCharts.filter(c => getSolarReturnsForChart(c.id).length > 0);
+    return allCharts.filter(c => getSolarReturnsForChart(c.id).length > 0)
+      .sort((a, b) => {
+        if (a.id === userNatalChart?.id) return -1;
+        if (b.id === userNatalChart?.id) return 1;
+        return a.name.localeCompare(b.name);
+      });
   }, [allCharts, solarReturnCharts]);
 
   const [selectedNatalId, setSelectedNatalId] = useState<string>(
