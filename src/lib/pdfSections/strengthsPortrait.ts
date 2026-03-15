@@ -224,7 +224,7 @@ export function generateStrengthsPortrait(
     // Natal to SR tags on right — clean arrow (no unicode)
     doc.setFont('times', 'normal'); doc.setFontSize(8);
     doc.setTextColor(...GOLD);
-    const tagText = srTag ? `${natalTag}  -->  ${srTag}` : natalTag;
+    const tagText = srTag ? `${srTag}  -->  ${natalTag}` : natalTag;
     doc.text(tagText, pw - margin - 14, stripY + 30, { align: 'right' });
 
     ctx.y = stripY + stripH + 10; // Reduced from 18
