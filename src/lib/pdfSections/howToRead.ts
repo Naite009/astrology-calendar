@@ -19,11 +19,12 @@ export function generateHowToReadPage(ctx: PDFContext, doc: jsPDF) {
   doc.line(margin, ctx.y, pw - margin, ctx.y);
   ctx.y += 14;
 
-  // Title
+  // Title — extra buffer above
+  ctx.y += 24;
   doc.setFont('times', 'normal'); doc.setFontSize(22);
   doc.setTextColor(...INK);
   doc.text('Your Personal Map for the Year', margin, ctx.y);
-  ctx.y += 10;
+  ctx.y += 14;
 
   // Hairline rule
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);

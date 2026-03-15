@@ -381,15 +381,12 @@ export async function generateBirthdayGiftPDF(
   ctx.sectionPages.set('HOW TO READ THIS REPORT', doc.getNumberOfPages());
   generateHowToReadPage(ctx, doc);
 
-  // 4. BIG THREE
+  // 4. BIG THREE — comprehensive merged section (natal + SR in depth)
   doc.addPage(); ctx.y = margin;
   ctx.sectionPages.set('YOUR BIG THREE', doc.getNumberOfPages());
-  generateStrengthsPortrait(ctx, doc, natalChart, analysis);
+  generateStrengthsPortrait(ctx, doc, natalChart, analysis, srChart);
 
-  // 5. HOW THIS YEAR MEETS YOU
-  doc.addPage(); ctx.y = margin;
-  ctx.sectionPages.set('HOW THIS YEAR MEETS YOU', doc.getNumberOfPages());
-  generateHowThisYearMeetsYou(ctx, doc, analysis, srChart, natalChart);
+  // 5. (removed — merged into Big Three above)
 
   // 6. YEAR AT A GLANCE
   doc.addPage(); ctx.y = margin;
