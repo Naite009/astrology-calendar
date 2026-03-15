@@ -467,9 +467,9 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
       {/* Pattern Detection Panel — All 8 phases in cycle order */}
       <div className="px-4 pb-4 space-y-3">
         <div>
-          <p className="text-[10px] uppercase tracking-widest font-medium text-primary">Recurring Patterns — Every Year Since Birth</p>
+          <p className="text-[10px] uppercase tracking-widest font-medium text-primary">Phase History — Your SR Moon by Category</p>
           <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed">
-            At each Solar Return, the Moon-Sun angle falls into one of 8 phases. These phases always follow the same sequence, repeating every ~29.5 years. Each phase lasts approximately 3–4 years.
+            Looking back across every Solar Return, these are the years that shared the same Moon phase. Years in the same category had a similar emotional tone at the birthday return — though they are not part of a sequential cycle.
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
