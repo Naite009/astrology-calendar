@@ -796,7 +796,7 @@ export const AstroCalendar = () => {
 
         {viewMode === "year" && <YearView year={currentDate.getFullYear()} />}
 
-        {viewMode === "moon-phases" && <MoonPhasesView year={currentDate.getFullYear()} />}
+        
 
         {viewMode === "annual-tables" && <AnnualTablesView year={currentDate.getFullYear()} />}
 
