@@ -393,8 +393,9 @@ export async function generateBirthdayGiftPDF(
   ctx.sectionPages.set('YEAR AT A GLANCE', doc.getNumberOfPages());
   generatePDFYearAtAGlance(ctx, doc, analysis, srChart, natalChart);
 
-  // 7. SR MOON PHASE TIMELINE
+  // 7. SOLAR RETURN MOON PHASE TIMELINE
   doc.addPage(); ctx.y = margin;
+  ctx.sectionPages.set('LUNAR PHASE TIMELINE', doc.getNumberOfPages());
   ctx.sectionPages.set('SR MOON PHASE BY YEAR', doc.getNumberOfPages());
   generatePDFLunarTimeline(ctx, doc, analysis, srChart, natalChart);
 
@@ -416,7 +417,8 @@ export async function generateBirthdayGiftPDF(
     if (natalMoonSign && srMoonSignFull) {
       doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
       ctx.sectionPages.set('MOON SHIFT', doc.getNumberOfPages());
-      ctx.sectionTitle(doc, 'MOON SHIFT', `Emotional recalibration: ${natalMoonSign} --> ${srMoonSignFull}`);
+      ctx.sectionPages.set('MOON SIGN SHIFT', doc.getNumberOfPages());
+      ctx.sectionTitle(doc, 'MOON SIGN SHIFT', `Emotional recalibration: ${natalMoonSign} --> ${srMoonSignFull}`);
 
       const natalDeep = moonSignDeep[natalMoonSign];
       const srDeep = moonSignDeep[srMoonSignFull];

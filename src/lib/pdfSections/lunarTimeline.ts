@@ -60,7 +60,7 @@ export function generatePDFLunarTimeline(
   // ── New page ──
   ctx.pageBg(doc);
 
-  ctx.y += 24;
+  ctx.y += 16;
 
   // Tracked label
   doc.setFont('times', 'bold'); doc.setFontSize(7);
@@ -68,62 +68,61 @@ export function generatePDFLunarTimeline(
   doc.setCharSpace(4);
   doc.text('LUNAR PHASE', margin, ctx.y);
   doc.setCharSpace(0);
-  ctx.y += 12;
+  ctx.y += 8;
 
   // Hairline
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 28;
+  ctx.y += 22;
 
   // Large title
-  doc.setFont('times', 'normal'); doc.setFontSize(30);
+  doc.setFont('times', 'normal'); doc.setFontSize(26);
   doc.setTextColor(...INK);
-  doc.text('SR Moon Phase by Year', margin, ctx.y);
-  ctx.y += 14;
+  doc.text('Solar Return Moon Phase by Year', margin, ctx.y);
+  ctx.y += 12;
 
   // Subtitle
-  doc.setFont('times', 'italic'); doc.setFontSize(10);
+  doc.setFont('times', 'italic'); doc.setFontSize(9);
   doc.setTextColor(...MUTED);
   doc.text('Your developmental cycle mapped year by year', margin, ctx.y);
-  ctx.y += 24;
+  ctx.y += 16;
 
-  // Summary
-  doc.setFont('times', 'normal'); doc.setFontSize(10.5);
+  // Summary — compact
+  doc.setFont('times', 'normal'); doc.setFontSize(9.5);
   doc.setTextColor(...INK);
   const summaryLines: string[] = doc.splitTextToSize(summary, contentW);
-  for (const line of summaryLines) {
-    doc.text(line, margin, ctx.y); ctx.y += 15;
+  for (const line of summaryLines.slice(0, 3)) {
+    doc.text(line, margin, ctx.y); ctx.y += 13;
   }
-  ctx.y += 12;
+  ctx.y += 8;
 
   // ── Current Year Highlight Card ──
   if (currentEntry) {
-    const cardH = 70;
-    ctx.checkPage(cardH + 20);
+    const cardH = 55;
+    ctx.checkPage(cardH + 14);
 
     doc.setFillColor(...SOFT_GOLD);
     doc.roundedRect(margin, ctx.y, contentW, cardH, 3, 3, 'F');
     doc.setFillColor(...GOLD);
-    doc.rect(margin, ctx.y, contentW, 2.5, 'F');
+    doc.rect(margin, ctx.y, contentW, 2, 'F');
 
-    let cy = ctx.y + 20;
-    doc.setFont('times', 'bold'); doc.setFontSize(7);
+    let cy = ctx.y + 16;
+    doc.setFont('times', 'bold'); doc.setFontSize(6.5);
     doc.setTextColor(...GOLD);
     doc.setCharSpace(3);
     doc.text('CURRENT YEAR', margin + 14, cy);
     doc.setCharSpace(0);
-    cy += 18;
+    cy += 16;
 
-    doc.setFont('times', 'bold'); doc.setFontSize(18);
+    doc.setFont('times', 'bold'); doc.setFontSize(16);
     doc.setTextColor(...INK);
     doc.text(`${currentEntry.year} -- ${currentEntry.phase}`, margin + 14, cy);
-    cy += 14;
 
-    doc.setFont('times', 'normal'); doc.setFontSize(9);
+    doc.setFont('times', 'normal'); doc.setFontSize(8);
     doc.setTextColor(...MUTED);
-    doc.text(`${currentEntry.cycleStage} -- Age ${currentEntry.age}`, margin + 14, cy);
+    doc.text(`${currentEntry.cycleStage} -- Age ${currentEntry.age}`, margin + contentW / 2, cy, { align: 'center' });
 
-    ctx.y += cardH + 16;
+    ctx.y += cardH + 10;
   }
 
   // ── Visual timeline: dot strip with years ──
@@ -156,7 +155,7 @@ export function generatePDFLunarTimeline(
       doc.circle(x, ctx.y, radius + 2, 'S');
     }
   });
-  ctx.y += 14;
+  ctx.y += 10;
 
   // Stage labels for key years
   doc.setFont('times', 'italic'); doc.setFontSize(5.5);
@@ -168,20 +167,20 @@ export function generatePDFLunarTimeline(
       doc.text(label, x - 6, ctx.y);
     }
   });
-  ctx.y += 24;
+  ctx.y += 16;
 
   // ── Recurring Patterns grid ──
   ctx.checkPage(120);
 
-  doc.setFont('times', 'bold'); doc.setFontSize(7);
+  doc.setFont('times', 'bold'); doc.setFontSize(6.5);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(3);
   doc.text('RECURRING PATTERNS', margin, ctx.y);
   doc.setCharSpace(0);
-  ctx.y += 16;
+  ctx.y += 12;
 
   const col2W = (contentW - 16) / 2;
-  const patternBoxH = 60;
+  const patternBoxH = 48;
 
   const patternSets: { label: string; years: number[]; color: Color }[] = [
     { label: 'NEW BEGINNINGS', years: patterns.newCycleYears, color: PHASE_DOT_RGB.beginning },
@@ -215,19 +214,19 @@ export function generatePDFLunarTimeline(
       doc.setFont('times', 'bold'); doc.setFontSize(6.5);
       doc.setTextColor(...ps.color);
       doc.setCharSpace(2);
-      doc.text(ps.label, x + 10, y + 16);
+      doc.text(ps.label, x + 10, y + 14);
       doc.setCharSpace(0);
 
       doc.setFont('times', 'normal'); doc.setFontSize(9);
       doc.setTextColor(...INK);
       const yearsText = ps.years.join(', ');
       const wrappedYears: string[] = doc.splitTextToSize(yearsText, col2W - 20);
-      wrappedYears.slice(0, 3).forEach((line, li) => {
-        doc.text(line, x + 10, y + 30 + li * 11);
+      wrappedYears.slice(0, 2).forEach((line, li) => {
+        doc.text(line, x + 10, y + 26 + li * 10);
       });
     });
 
-    ctx.y += patternBoxH + 8;
+    ctx.y += patternBoxH + 6;
     gridIdx += 2;
   }
 
