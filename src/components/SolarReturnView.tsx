@@ -736,6 +736,9 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
       {/* 3. Natal Overlay — where this year lands in the natal chart */}
       <NatalOverlayCard analysis={analysis} />
 
+      {/* 3b. Lands vs Plays Out — side-by-side comparison */}
+      <LandsVsPlaysOutCard analysis={analysis} />
+
       {/* 4. Angle Activations — SR angles contacting natal planets */}
       <AngleActivationCard natalChart={natalChart} srChart={srChart} />
 
