@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 import { PDFContext } from './pdfContext';
 import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { P } from '@/components/SolarReturnPDFExport';
+import { getPlanetSignHouseFelt } from './planetSignHouseFelt';
 
 // Planet images imported in SolarReturnPDFExport and passed via imageMap
 type Color = [number, number, number];
@@ -12,21 +13,6 @@ const RULE:  Color = [200, 195, 188];
 const WHITE: Color = [255, 255, 255];
 
 const GRID_ORDER = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','Chiron','NorthNode'];
-
-const PLANET_THEME: Record<string, string> = {
-  Sun: 'Your identity and purpose take center stage.',
-  Moon: 'Emotional needs and instincts drive the year.',
-  Mercury: 'Communication and thinking shape your path.',
-  Venus: 'Love, beauty, and values guide decisions.',
-  Mars: 'Drive and courage fuel your ambitions.',
-  Jupiter: 'Growth and opportunity expand your world.',
-  Saturn: 'Discipline and structure build what lasts.',
-  Uranus: 'Breakthroughs and change electrify your life.',
-  Neptune: 'Intuition and dreams dissolve old limits.',
-  Pluto: 'Deep transformation reshapes your foundation.',
-  Chiron: 'Your deepest wound becomes your greatest gift.',
-  NorthNode: 'Your soul grows toward unfamiliar territory.',
-};
 
 export function generatePlanetGallery(
   ctx: PDFContext, doc: jsPDF, analysis: SolarReturnAnalysis,
@@ -76,7 +62,7 @@ export function generatePlanetGallery(
   const gapY = 14;
   const cellW = (contentW - gapX * (cols - 1)) / cols;
   const imgSize = 48;
-  const cellH = imgSize + 80; // image + text space
+  const cellH = imgSize + 110; // image + name + description
 
   const ph = doc.internal.pageSize.getHeight();
   let gridStartY = ctx.y;
@@ -163,15 +149,21 @@ function drawPlanetCell(
   doc.setTextColor(...INK);
   const posText = `${sign} ${houseLabel}`;
   doc.text(posText, x + w / 2, cy, { align: 'center' });
-  cy += 14;
+  cy += 10;
 
-  // One-line theme (max 20 words)
-  const theme = PLANET_THEME[planet] || 'Active this year.';
-  doc.setFont('times', 'normal'); doc.setFontSize(7.5);
+  // Evocative name
+  const { name, description } = getPlanetSignHouseFelt(planet, sign, srH);
+  doc.setFont('times', 'italic'); doc.setFontSize(7);
+  doc.setTextColor(...GOLD);
+  doc.text(`"${name}"`, x + w / 2, cy, { align: 'center' });
+  cy += 10;
+
+  // Felt-sense description
+  doc.setFont('times', 'normal'); doc.setFontSize(6.5);
   doc.setTextColor(...MUTED);
-  const themeLines = doc.splitTextToSize(theme, w - 12);
-  for (const line of themeLines.slice(0, 2)) {
+  const descLines = doc.splitTextToSize(description, w - 10);
+  for (const line of descLines.slice(0, 4)) {
     doc.text(line, x + w / 2, cy, { align: 'center' });
-    cy += 10;
+    cy += 8;
   }
 }
