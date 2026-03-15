@@ -45,20 +45,20 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   const sections: { title: string; desc: string }[] = [];
   sections.push({ title: 'How to Read This Report', desc: 'Key concepts explained in plain language' });
   sections.push({ title: 'Your Big Three', desc: 'Sun, Moon, and Rising — strengths, shadow, and activation' });
-  sections.push({ title: 'Year at a Glance', desc: 'SR Ascendant, ruler, profection, time lord, and moon phase' });
+  sections.push({ title: 'Year at a Glance', desc: 'Solar Return Ascendant, ruler, profection, time lord, and moon phase' });
   sections.push({ title: 'Lunar Phase Timeline', desc: '29-year developmental cycle with recurring patterns' });
-  sections.push({ title: 'Natal Overlay & Angle Activations', desc: 'How SR planets land in your natal houses' });
+  sections.push({ title: 'Natal Overlay & Angle Activations', desc: 'How Solar Return placements land in natal houses' });
   sections.push({ title: 'Year Priority Engine', desc: 'Life areas ranked by planetary emphasis' });
   if (a.moonSign) sections.push({ title: 'Moon Sign Shift', desc: 'How your emotional processing changes this year' });
   sections.push({ title: 'Solar Return vs Natal', desc: 'Side-by-side comparison of all planet positions' });
   if (a.stelliums.length > 0) sections.push({ title: 'Stelliums', desc: 'Where 3+ planets cluster' });
   if (a.elementBalance) sections.push({ title: 'Element & Modality Balance', desc: 'Fire/Earth/Air/Water and Cardinal/Fixed/Mutable' });
   if (a.hemisphericEmphasis) sections.push({ title: 'Where Your Energy Lives', desc: 'Hemispheric distribution' });
-  if (a.lordOfTheYear || a.profectionYear) sections.push({ title: 'Your Time Lord', desc: 'The planet running the show — Lord of the Year explained' });
+  if (a.lordOfTheYear || a.profectionYear) sections.push({ title: 'Your Time Lord (Lord of the Year)', desc: 'The planet running the show this year' });
   sections.push({ title: 'Profection Wheel & Your Profection Year', desc: 'Visual diagram and activated house' });
   if (a.profectionYear) sections.push({ title: 'Key Dates', desc: 'Exact dates when your Time Lord activates natal planets' });
   if (a.saturnFocus || a.nodesFocus) sections.push({ title: 'Saturn & North Node', desc: 'Where you are being tested and growing' });
-  if (a.srToNatalAspects.length > 0) sections.push({ title: 'Key Aspects', desc: 'How SR planets activate your natal chart' });
+  if (a.srToNatalAspects.length > 0) sections.push({ title: 'Key Aspects', desc: 'How Solar Return planets activate your natal chart' });
   sections.push({ title: 'Your Moon This Year', desc: 'Emotional climate and SR Moon aspects' });
   if (a.vertex) sections.push({ title: 'Vertex', desc: 'Fated encounters and destined meetings' });
   sections.push({ title: 'Planet Spotlight', desc: 'Deep dive into key planets by house placement' });
@@ -68,27 +68,27 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
 
   for (let i = 0; i < sections.length; i++) {
     const section = sections[i];
-    ctx.checkPage(24);
+    ctx.checkPage(20);
     const entryY = ctx.y;
 
     // Bold gold number
-    doc.setFont('times', 'bold'); doc.setFontSize(9);
+    doc.setFont('times', 'bold'); doc.setFontSize(8.5);
     doc.setTextColor(...GOLD);
     doc.text(String(i + 1).padStart(2, '0'), margin, ctx.y + 2);
 
     // Title in regular serif
-    doc.setFont('times', 'normal'); doc.setFontSize(10.5);
+    doc.setFont('times', 'normal'); doc.setFontSize(9.75);
     doc.setTextColor(...INK);
     doc.text(section.title, margin + 18, ctx.y + 2);
 
     tocEntries.push({ title: section.title, desc: section.desc, y: entryY });
 
-    ctx.y += 16;
+    ctx.y += 13;
 
     // Hairline rule after every entry
     doc.setDrawColor(...RULE); doc.setLineWidth(0.15);
     doc.line(margin, ctx.y, pw - margin, ctx.y);
-    ctx.y += 14;
+    ctx.y += 9;
   }
 
   return tocEntries;

@@ -939,6 +939,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // =============================================
       doc.addPage(); ctx.y = margin;
       ctx.sectionPages.set('LUNAR PHASE TIMELINE', doc.getNumberOfPages());
+      ctx.sectionPages.set('SR MOON PHASE BY YEAR', doc.getNumberOfPages());
       generatePDFLunarTimeline(ctx, doc, analysis, srChart, natalChart);
 
       // =============================================
@@ -946,6 +947,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // =============================================
       doc.addPage(); ctx.y = margin;
       ctx.sectionPages.set('NATAL OVERLAY', doc.getNumberOfPages());
+      ctx.sectionPages.set('NATAL OVERLAY AND ANGLE ACTIVATIONS', doc.getNumberOfPages());
       generatePDFNatalOverlay(ctx, doc, analysis);
 
       // =============================================
@@ -1445,8 +1447,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // =============================================
       if (analysis.profectionYear?.timeLord) {
         doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
+        ctx.sectionPages.set('YOUR TIME LORD', doc.getNumberOfPages());
         ctx.sectionPages.set('LORD OF THE YEAR', doc.getNumberOfPages());
-        ctx.sectionTitle(doc, 'LORD OF THE YEAR');
+        ctx.sectionTitle(doc, 'YOUR TIME LORD (LORD OF THE YEAR)');
 
         const tlPlanet = analysis.profectionYear.timeLord;
         const tlSRHouse = analysis.profectionYear.timeLordSRHouse;
@@ -1854,6 +1857,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           doc.addPage();
         }
         ctx.y = margin;
+        ctx.sectionPages.set('TAKE THIS WITH YOU', doc.getNumberOfPages());
         ctx.sectionPages.set('BIRTHDAY AFFIRMATION CARD', doc.getNumberOfPages());
         generateAffirmationCard(ctx, doc, analysis, natalChart, srChart);
       }
