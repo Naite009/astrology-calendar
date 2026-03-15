@@ -401,6 +401,7 @@ export async function generateBirthdayGiftPDF(
   // 8. NATAL OVERLAY + ANGLE ACTIVATIONS + YEAR PRIORITY
   doc.addPage(); ctx.y = margin;
   ctx.sectionPages.set('NATAL OVERLAY', doc.getNumberOfPages());
+  ctx.sectionPages.set('NATAL OVERLAY AND ANGLE ACTIVATIONS', doc.getNumberOfPages());
   generatePDFNatalOverlay(ctx, doc, analysis);
   ctx.checkPage(200);
   generatePDFAngleActivations(ctx, doc, natalChart, srChart, 1);
