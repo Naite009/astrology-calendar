@@ -199,7 +199,8 @@ export function computeLunarPhaseTimeline(
   const birthDay = bd.getUTCDate();
   const birthYear = bd.getUTCFullYear();
 
-  const startYear = currentSRYear - yearsPast;
+  // Start from birth year, go to current + yearsFuture
+  const startYear = birthYear;
   const endYear = currentSRYear + yearsFuture;
   const entries: TimelineEntry[] = [];
 
