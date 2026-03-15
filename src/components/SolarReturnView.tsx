@@ -23,6 +23,7 @@ import { LunarPhaseTimeline } from '@/components/solarReturn/LunarPhaseTimeline'
 import { StoryOfTheYear } from '@/components/solarReturn/StoryOfTheYear';
 import { LifeCycleContext } from '@/components/solarReturn/LifeCycleContext';
 import { NatalOverlayCard } from '@/components/solarReturn/NatalOverlayCard';
+import { AngleActivationCard } from '@/components/solarReturn/AngleActivationCard';
 
 const ZODIAC_SIGNS = [
   'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
@@ -731,6 +732,9 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
 
       {/* 3. Natal Overlay — where this year lands in the natal chart */}
       <NatalOverlayCard analysis={analysis} />
+
+      {/* 4. Angle Activations — SR angles contacting natal planets */}
+      <AngleActivationCard natalChart={natalChart} srChart={srChart} />
 
       {/* Dashboard Details */}
       <SROverviewDashboard analysis={analysis} natalChart={natalChart} srChart={srChart} />
