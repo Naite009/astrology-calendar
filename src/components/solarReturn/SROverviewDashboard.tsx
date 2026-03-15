@@ -342,6 +342,28 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
           ))}
         </div>
       </div>
+      {/* ─── 6. Intercepted Signs ─── */}
+      {(() => {
+        const intercepted = detectInterceptedSigns(srChart.houseCusps);
+        if (intercepted.length === 0) return null;
+        return (
+          <div className="border border-amber-500/30 rounded-lg p-4 bg-amber-500/5 space-y-2">
+            <p className="text-[10px] uppercase tracking-widest text-amber-600 font-medium">Intercepted Signs</p>
+            <div className="flex flex-wrap gap-2">
+              {intercepted.map(sign => (
+                <Badge key={sign} variant="outline" className="border-amber-500/30 text-amber-700 bg-amber-50">
+                  {SIGN_SYMBOLS[sign]} {sign}
+                </Badge>
+              ))}
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              {intercepted.length === 2
+                ? `${intercepted[0]} and ${intercepted[1]} are intercepted — they appear within houses but don't rule any house cusp. These signs represent energy that's harder to access directly. The themes of ${intercepted[0]} and ${intercepted[1]} require more conscious effort to express and may develop later in the year.`
+                : `${intercepted.join(', ')} are intercepted — contained within houses without ruling any cusp. This energy requires more conscious effort to access.`}
+            </p>
+          </div>
+        );
+      })()}
     </div>
   );
 };
