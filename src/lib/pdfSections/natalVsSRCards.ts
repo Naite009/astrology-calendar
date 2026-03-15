@@ -90,28 +90,28 @@ export function generateNatalVsSRCards(
   doc.setFillColor(...WHITE);
   doc.rect(0, 0, pw, ph, 'F');
 
-  // Section header
-  ctx.y += 24;
+  // Compact section header
+  ctx.y += 16;
   doc.setFont('times', 'bold'); doc.setFontSize(7);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(4);
   doc.text('YOUR PLANETARY SHIFTS', margin, ctx.y);
   doc.setCharSpace(0);
-  ctx.y += 8;
+  ctx.y += 6;
 
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 28;
+  ctx.y += 20;
 
-  doc.setFont('times', 'normal'); doc.setFontSize(28);
+  doc.setFont('times', 'normal'); doc.setFontSize(24);
   doc.setTextColor(...INK);
   doc.text('Natal vs Solar Return', margin, ctx.y);
-  ctx.y += 14;
+  ctx.y += 10;
 
-  doc.setFont('times', 'italic'); doc.setFontSize(10);
+  doc.setFont('times', 'italic'); doc.setFontSize(9);
   doc.setTextColor(...MUTED);
   doc.text('Where each planet was — and where it is now', margin, ctx.y);
-  ctx.y += 30;
+  ctx.y += 18;
 
   // 2-column grid — compact to fit all on fewer pages
   const cols = 2;
