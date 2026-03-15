@@ -48,9 +48,13 @@ export interface TimelineEntry {
 // ── Pattern detection result ────────────────────────────────────────
 export interface TimelinePatterns {
   newCycleYears: number[];
+  crescentYears: number[];
+  actionYears: number[];
+  refinementYears: number[];
   culminationYears: number[];
-  releaseYears: number[];
+  sharingYears: number[];
   turningPointYears: number[];
+  releaseYears: number[];
   bridgeYears: number[];
 }
 
