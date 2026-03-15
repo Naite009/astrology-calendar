@@ -116,6 +116,9 @@ export function generateAffirmationCard(
   const sunSign = natalChart.planets?.Sun?.sign || 'Pisces';
   const moonSign = natalChart.planets?.Moon?.sign || '';
   const risingSign = natalChart.planets?.Ascendant?.sign || natalChart.houseCusps?.[0]?.sign || '';
+  const srSunSign = a.yearlyTheme?.sunSign || a.sunHouse?.sign || '';
+  const srMoonSign = a.moonSign || '';
+  const srAscSign = a.yearlyTheme?.ascendantSign || '';
   const profH = a.profectionYear?.houseNumber || 1;
   const timeLord = a.profectionYear?.timeLord || '';
   const northNodeHouse = a.nodesFocus?.house || null;
@@ -149,7 +152,7 @@ export function generateAffirmationCard(
   doc.line(pw / 2 - 60, ctx.y, pw / 2 + 60, ctx.y);
   ctx.y += 44;
 
-  // Massive centered title -- BIGGER FONT
+  // Massive centered title
   doc.setFont('times', 'normal'); doc.setFontSize(52);
   doc.setTextColor(...INK);
   doc.text('Carry This', pw / 2, ctx.y, { align: 'center' });
@@ -157,12 +160,23 @@ export function generateAffirmationCard(
   doc.text('With You', pw / 2, ctx.y, { align: 'center' });
   ctx.y += 26;
 
-  // Name subtitle -- centered
+  // Natal line
   doc.setFont('times', 'italic'); doc.setFontSize(11);
   doc.setTextColor(...MUTED);
-  const nameTag = `${name} -- ${sunSign} Sun${moonSign ? ` -- ${moonSign} Moon` : ''}${risingSign ? ` -- ${risingSign} Rising` : ''}`;
-  doc.text(nameTag, pw / 2, ctx.y, { align: 'center' });
-  ctx.y += 40;
+  const natalTag = `Natal: ${sunSign} Sun${moonSign ? ` -- ${moonSign} Moon` : ''}${risingSign ? ` -- ${risingSign} Rising` : ''}`;
+  doc.text(natalTag, pw / 2, ctx.y, { align: 'center' });
+  ctx.y += 18;
+
+  // Solar Return line
+  const srTag = `Solar Return: ${srSunSign ? srSunSign + ' Sun' : ''}${srMoonSign ? ` -- ${srMoonSign} Moon` : ''}${srAscSign ? ` -- ${srAscSign} Rising` : ''}`;
+  if (srSunSign || srMoonSign || srAscSign) {
+    doc.setFont('times', 'italic'); doc.setFontSize(11);
+    doc.setTextColor(...GOLD);
+    doc.text(srTag, pw / 2, ctx.y, { align: 'center' });
+    ctx.y += 18;
+  }
+
+  ctx.y += 22;
 
   // Natal Strength card
   const cardW = pw - margin * 2 - 20;
@@ -187,7 +201,7 @@ export function generateAffirmationCard(
   doc.setTextColor(...INK);
   for (const line of identityLines) { doc.text(line, cardX + 16, cy); cy += 16; }
 
-  ctx.y += card1H + 14;
+  ctx.y += card1H + 30; // Increased spacing between cards
 
   // This Year's Ask card
   const bodyLines: string[] = doc.splitTextToSize(body, cardW - 32);
@@ -210,35 +224,31 @@ export function generateAffirmationCard(
   doc.setTextColor(...INK);
   for (const line of bodyLines) { doc.text(line, cardX + 16, cy); cy += 16; }
 
-  ctx.y += card2H + 28;
+  ctx.y += card2H + 30;
 
-  // Full-page closing quote -- BIGGER FONT
-  const quoteY = Math.max(ctx.y, ph - frameInset - 130);
-
+  // Closing quote — positioned relative to content, not forced to bottom
   doc.setDrawColor(...GOLD); doc.setLineWidth(0.3);
-  doc.line(pw / 2 - 40, quoteY, pw / 2 + 40, quoteY);
+  doc.line(pw / 2 - 40, ctx.y, pw / 2 + 40, ctx.y);
 
-  // Parse quote and attribution cleanly
   const dashIdx = closing.lastIndexOf(' -- ');
   const quoteText = dashIdx > 0 ? closing.slice(0, dashIdx) : closing;
   const attribution = dashIdx > 0 ? closing.slice(dashIdx + 4) : '';
 
-  const qY = quoteY + 28;
+  ctx.y += 28;
   doc.setFont('times', 'italic'); doc.setFontSize(20);
   doc.setTextColor(...CHARCOAL);
   const quoteLines: string[] = doc.splitTextToSize(quoteText, pw * 0.6);
-  let qCy = qY;
   for (const line of quoteLines) {
-    doc.text(line, pw / 2, qCy, { align: 'center' });
-    qCy += 26;
+    doc.text(line, pw / 2, ctx.y, { align: 'center' });
+    ctx.y += 26;
   }
 
   if (attribution) {
-    qCy += 8;
+    ctx.y += 8;
     doc.setFont('times', 'normal'); doc.setFontSize(8);
     doc.setTextColor(...MUTED);
     doc.setCharSpace(3);
-    doc.text(`-- ${attribution.toUpperCase()}`, pw / 2, qCy, { align: 'center' });
+    doc.text(`-- ${attribution.toUpperCase()}`, pw / 2, ctx.y, { align: 'center' });
     doc.setCharSpace(0);
   }
 
