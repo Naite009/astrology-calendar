@@ -151,7 +151,7 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
       {/* Header */}
       <div className="p-4 pb-0">
         <p className="text-[10px] uppercase tracking-widest font-medium text-primary">
-          29-Year Lunar Phase Timeline
+          Solar Return Moon Phase — Year by Year
         </p>
         <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
           {summary}
