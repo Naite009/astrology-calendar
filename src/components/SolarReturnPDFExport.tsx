@@ -719,13 +719,23 @@ export async function generateBirthdayGiftPDF(
     }
   }
 
-  // 18. KEY ASPECTS
+  // 18. KEY ASPECTS (Birthday Gift: 1° orb max, no quincunx)
   if (analysis.srToNatalAspects.length > 0) {
-    const allAspects = analysis.srToNatalAspects.filter(asp => !(asp.planet1 === 'Sun' && asp.planet2 === 'Sun' && asp.type === 'Conjunction'));
+    const allAspects = analysis.srToNatalAspects.filter(asp => {
+      // Exclude Sun-Sun conjunction (feature of every SR)
+      if (asp.planet1 === 'Sun' && asp.planet2 === 'Sun' && asp.type === 'Conjunction') return false;
+      // Exclude quincunx for birthday gift PDF
+      if (asp.type === 'Quincunx' || asp.type === 'quincunx' || asp.type === 'Semi-Sextile' || asp.type === 'semi-sextile') return false;
+      // Only 1° orb for birthday gift
+      if (typeof asp.orb === 'number' && asp.orb > 1) return false;
+      if (typeof asp.orb === 'string' && parseFloat(asp.orb) > 1) return false;
+      return true;
+    });
     const majorAspects = allAspects.filter(asp => MAJOR_BODIES.has(asp.planet1) && MAJOR_BODIES.has(asp.planet2));
+    if (majorAspects.length > 0) {
     doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
     ctx.sectionPages.set('KEY ASPECTS', doc.getNumberOfPages());
-    ctx.sectionTitle(doc, 'KEY ASPECTS', 'How Solar Return planets activate your natal chart');
+    ctx.sectionTitle(doc, 'KEY ASPECTS', 'How Solar Return planets activate your natal chart (within 1 degree)');
     for (let i = 0; i < Math.min(majorAspects.length, 10); i++) {
       const asp = majorAspects[i];
       const interp = generateSRtoNatalInterpretation(asp.planet1, asp.planet2, asp.type, asp.orb);
