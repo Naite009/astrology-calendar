@@ -1431,7 +1431,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           const asp = majorAspects[i];
           const interp = generateSRtoNatalInterpretation(asp.planet1, asp.planet2, asp.type, asp.orb);
           const srH = analysis.planetSRHouses?.[asp.planet1];
-          const natalH = natalChart.planets?.[asp.planet2 as keyof typeof natalChart.planets]?.house;
+          const natalH = analysis.houseOverlays?.find(o => o.planet === asp.planet2)?.natalHouse;
           
           ctx.checkPage(120);
           
