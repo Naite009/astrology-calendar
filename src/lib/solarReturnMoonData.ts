@@ -67,7 +67,7 @@ export const srMoonInHouseDeep: Record<number, { title: string; overview: string
   },
   10: {
     title: 'Emotions in the Spotlight',
-    overview: 'The Moon in the 10th house is angular — your emotional life is public. Feelings play out in your career, are visible to colleagues, and affect your professional reputation. Mary Fortier Shea notes this placement can go two ways: a business-like approach to emotions, or bringing emotions into professional life.',
+    overview: 'The Moon in the 10th house is angular — your emotional life is public. Feelings play out in your career, are visible to colleagues, and affect your professional reputation. This placement can go two ways: a business-like approach to emotions, or bringing emotions into professional life.',
     emotionalTheme: 'Professional recognition (or lack of it) affects your emotional state deeply. You may feel emotionally defined by your career success or failure. A mother figure or female authority may be prominent in your professional sphere. Your nurturing instincts may shape your leadership style.',
     focus: 'Use your emotional intelligence as a professional asset. Careers in counseling, caregiving, hospitality, or creative fields are especially favored. Be mindful that your reputation is emotionally charged — what people think of your work hits you harder than usual.',
     caution: 'Emotional volatility in professional settings can damage your reputation. Find private outlets for intense feelings before they leak into work. Do not let career setbacks define your self-worth.',
