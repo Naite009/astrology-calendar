@@ -3,6 +3,7 @@ import { NatalChart } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { Badge } from '@/components/ui/badge';
 import { formatDateMMDDYYYY } from '@/lib/localDate';
+import { Droplets, Flame, Wind, Mountain } from 'lucide-react';
 
 const ALL_SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 
@@ -288,18 +289,28 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
       {/* ─── 3. Row 2: 3 Metric Cards ─── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
         {/* Dominant Element */}
-        <div className="bg-muted/50 rounded-lg p-3">
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Dominant Element</p>
-          <p className="text-lg font-serif text-foreground">
-            {ELEMENT_MAP[eb.dominant] || ''} {eb.dominant}
-          </p>
-          <p className="text-[11px] text-muted-foreground">
-            {(elementPlanetLists[eb.dominant as keyof typeof elementPlanetLists] || []).join(', ')}
-          </p>
-          <p className="text-[10px] text-muted-foreground/80 mt-1 leading-tight">
-            {eb.interpretation?.split('.').slice(0, 1).join('.')}.
-          </p>
-        </div>
+        {(() => {
+          const domCap = eb.dominant ? eb.dominant.charAt(0).toUpperCase() + eb.dominant.slice(1) : '—';
+          const planets = elementPlanetLists[domCap] || elementPlanetLists[eb.dominant] || [];
+          return (
+            <div className="bg-muted/50 rounded-lg p-3">
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Dominant Element</p>
+              <p className="text-lg font-serif text-foreground flex items-center gap-1.5">
+                <Droplets className="w-4 h-4 text-blue-400 inline" style={{ display: domCap === 'Water' ? 'inline' : 'none' }} />
+                <Flame className="w-4 h-4 text-red-400 inline" style={{ display: domCap === 'Fire' ? 'inline' : 'none' }} />
+                <Wind className="w-4 h-4 text-sky-400 inline" style={{ display: domCap === 'Air' ? 'inline' : 'none' }} />
+                <Mountain className="w-4 h-4 text-amber-700 inline" style={{ display: domCap === 'Earth' ? 'inline' : 'none' }} />
+                {domCap}
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                {planets.join(', ')}
+              </p>
+              <p className="text-[10px] text-muted-foreground/80 mt-1 leading-tight">
+                {eb.interpretation?.split('.').slice(0, 1).join('.')}.
+              </p>
+            </div>
+          );
+        })()}
 
         {/* Strongest Aspect */}
         <div className="bg-muted/50 rounded-lg p-3">
