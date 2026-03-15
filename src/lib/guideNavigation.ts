@@ -140,7 +140,7 @@ export function getSectionForView(view: ViewMode): GuideSection {
 export function sectionHasTryIt(section: GuideSection): boolean {
   const view = SECTION_TO_VIEW[section];
   // These views can be navigated to from the guide
-  return ["colors", "timing", "patterns", "decoder", "sacred-script", "speeds", "dwarf-planets", "moon-phases"].includes(view);
+  return ["colors", "timing", "patterns", "decoder", "sacred-script", "speeds", "dwarf-planets", "moon-encyclopedia"].includes(view);
 }
 
 // Get the label for the "Try It" button based on section
