@@ -154,7 +154,7 @@ export function getTryItLabel(section: GuideSection): string {
     sacredscript: "Open Sacred Script",
     dwarfplanets: "Open TNOs",
     speeds: "Open Speeds",
-    moonphases: "Open Moon Phases",
+    moonphases: "Open Moon Encyclopedia",
     dignities: "Open Decoder",
     difficultplacements: "Open Decoder",
     solararc: "Open Decoder",
