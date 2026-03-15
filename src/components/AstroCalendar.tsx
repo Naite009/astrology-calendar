@@ -237,7 +237,12 @@ export const AstroCalendar = () => {
               </button>
             )}
             <h1 className="font-serif text-3xl font-light tracking-wide text-foreground md:text-5xl">
-              {getTitle()}
+              {(viewMode === "month" || viewMode === "week") ? (
+                <span className="flex items-baseline gap-3">
+                  <span>{currentDate.toLocaleString("default", { month: "long" })}</span>
+                  <span className="text-muted-foreground text-xl md:text-3xl">{currentDate.getFullYear()}</span>
+                </span>
+              ) : getTitle()}
             </h1>
             
             {/* Chart Selector Dropdown */}
