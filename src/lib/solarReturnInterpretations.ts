@@ -326,7 +326,6 @@ export const angularPlanetMeaning: Record<string, string> = {
 };
 
 // ─── SR MC (Midheaven) in House interpretations ─────────────────────
-// Source: Brian Clark "The Year Ahead" & Ray Merriman
 
 export const srMCInHouse: Record<number, string> = {
   1: 'Your public reputation and career direction are deeply personal this year. Professional identity and personal identity are nearly inseparable. How you present yourself IS your career statement. Self-promotion is natural and necessary.',
