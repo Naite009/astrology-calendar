@@ -172,12 +172,12 @@ export function generatePDFLunarTimeline(
   // ── Recurring Patterns grid ──
   ctx.checkPage(120);
 
-  doc.setFont('times', 'bold'); doc.setFontSize(7);
+  doc.setFont('times', 'bold'); doc.setFontSize(6.5);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(3);
   doc.text('RECURRING PATTERNS', margin, ctx.y);
   doc.setCharSpace(0);
-  ctx.y += 16;
+  ctx.y += 12;
 
   const col2W = (contentW - 16) / 2;
   const patternBoxH = 60;
