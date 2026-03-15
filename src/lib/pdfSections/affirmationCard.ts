@@ -6,7 +6,7 @@ import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 
 type Color = [number, number, number];
 const CARD_BG: Color = [245, 241, 234];
-const INK:   Color = [58,  54,  50]; // Charcoal grey
+const INK:   Color = [58,  54,  50];
 const MUTED: Color = [130, 125, 118];
 const CHARCOAL: Color = [58, 54, 50];
 const GOLD:  Color = [184, 150, 62];
@@ -108,17 +108,19 @@ function getYearMessage(
   return { body, closing: closings[profHouse] || 'Trust yourself. You know more than you think you do. -- Benjamin Spock' };
 }
 
+/**
+ * Combined closing page: "Take This With You"
+ * Merges the affirmation card content + closing letter into a single elegant page.
+ */
 export function generateAffirmationCard(
   ctx: PDFContext, doc: jsPDF, a: SolarReturnAnalysis, natalChart: NatalChart, srChart: SolarReturnChart,
 ) {
-  const { pw, ph, margin, contentW } = ctx;
+  const { pw, ph, margin } = ctx;
+  const cx = pw / 2;
   const name = natalChart.name || 'Beautiful Soul';
   const sunSign = natalChart.planets?.Sun?.sign || 'Pisces';
   const moonSign = natalChart.planets?.Moon?.sign || '';
   const risingSign = natalChart.planets?.Ascendant?.sign || natalChart.houseCusps?.[0]?.sign || '';
-  const srSunSign = srChart.planets?.Sun?.sign || '';
-  const srMoonSign = a.moonSign || '';
-  const srAscSign = a.yearlyTheme?.ascendantSign || '';
   const profH = a.profectionYear?.houseNumber || 1;
   const timeLord = a.profectionYear?.timeLord || '';
   const northNodeHouse = a.nodesFocus?.house || null;
@@ -134,123 +136,126 @@ export function generateAffirmationCard(
   doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, pw, ph, 'F');
 
-  // Gold frame border
-  const frameInset = 18;
-  doc.setDrawColor(...GOLD); doc.setLineWidth(0.5);
-  doc.rect(frameInset, frameInset, pw - frameInset * 2, ph - frameInset * 2);
-
-  // Top: tracked label
-  ctx.y = frameInset + 36;
-  doc.setFont('times', 'bold'); doc.setFontSize(7);
-  doc.setTextColor(...GOLD);
-  doc.setCharSpace(4);
-  doc.text('CLOSING NOTE', pw / 2, ctx.y, { align: 'center' });
-  doc.setCharSpace(0);
-  ctx.y += 12;
-
-  doc.setDrawColor(...GOLD); doc.setLineWidth(0.3);
-  doc.line(pw / 2 - 60, ctx.y, pw / 2 + 60, ctx.y);
-  ctx.y += 44;
-
-  // Massive centered title
-  doc.setFont('times', 'normal'); doc.setFontSize(52);
-  doc.setTextColor(...INK);
-  doc.text('Carry This', pw / 2, ctx.y, { align: 'center' });
-  ctx.y += 56;
-  doc.text('With You', pw / 2, ctx.y, { align: 'center' });
-  ctx.y += 26;
-
-  // Natal line
-  doc.setFont('times', 'italic'); doc.setFontSize(11);
-  doc.setTextColor(...MUTED);
-  const natalTag = `Natal: ${sunSign} Sun${moonSign ? ` -- ${moonSign} Moon` : ''}${risingSign ? ` -- ${risingSign} Rising` : ''}`;
-  doc.text(natalTag, pw / 2, ctx.y, { align: 'center' });
+  // Diamond ornament
+  ctx.y = 46;
+  doc.setFillColor(...GOLD);
+  doc.triangle(cx, ctx.y - 6, cx - 4, ctx.y, cx + 4, ctx.y, 'F');
+  doc.triangle(cx, ctx.y + 6, cx - 4, ctx.y, cx + 4, ctx.y, 'F');
   ctx.y += 18;
 
-  // Solar Return line
-  const srTag = `Solar Return: ${srSunSign ? srSunSign + ' Sun' : ''}${srMoonSign ? ` -- ${srMoonSign} Moon` : ''}${srAscSign ? ` -- ${srAscSign} Rising` : ''}`;
-  if (srSunSign || srMoonSign || srAscSign) {
-    doc.setFont('times', 'italic'); doc.setFontSize(11);
-    doc.setTextColor(...GOLD);
-    doc.text(srTag, pw / 2, ctx.y, { align: 'center' });
-    ctx.y += 18;
+  // Title
+  doc.setFont('times', 'italic'); doc.setFontSize(28);
+  doc.setTextColor(...INK);
+  doc.text('Take This With You', cx, ctx.y, { align: 'center' });
+  ctx.y += 14;
+
+  // Gold rule
+  doc.setDrawColor(...GOLD); doc.setLineWidth(0.3);
+  doc.line(cx - 60, ctx.y, cx + 60, ctx.y);
+  ctx.y += 20;
+
+  // Opening letter — condensed
+  const letterLines = [
+    `Dear ${name},`,
+    '',
+    'This report is a map, not a mandate. The planets describe the weather',
+    'of your year -- they do not decide what you build in it.',
+    'Use what resonates. Return to these pages when you need orientation.',
+  ];
+  doc.setFont('times', 'normal'); doc.setFontSize(10.5);
+  doc.setTextColor(...INK);
+  for (const line of letterLines) {
+    doc.text(line, cx, ctx.y, { align: 'center' });
+    ctx.y += line === '' ? 8 : 14;
   }
 
-  ctx.y += 22;
+  ctx.y += 14;
 
-  // Natal Strength card
-  const cardW = pw - margin * 2 - 20;
+  // ── Natal Strength card ──
+  const cardW = pw - margin * 2 - 16;
   const cardX = (pw - cardW) / 2;
-  const identityLines: string[] = doc.splitTextToSize(identity, cardW - 32);
-  const card1H = Math.max(80, 28 + identityLines.length * 16 + 18);
+  const identityLines: string[] = doc.splitTextToSize(identity, cardW - 28);
+  const card1H = 22 + identityLines.length * 13 + 10;
 
   doc.setFillColor(...CARD_BG);
-  doc.roundedRect(cardX, ctx.y, cardW, card1H, 3, 3, 'F');
+  doc.roundedRect(cardX, ctx.y, cardW, card1H, 2, 2, 'F');
   doc.setFillColor(...GOLD);
-  doc.rect(cardX, ctx.y, 3, card1H, 'F');
+  doc.rect(cardX, ctx.y, 2.5, card1H, 'F');
 
-  let cy = ctx.y + 22;
-  doc.setFont('times', 'bold'); doc.setFontSize(6.5);
+  let cy = ctx.y + 16;
+  doc.setFont('times', 'bold'); doc.setFontSize(6);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(2.5);
-  doc.text('YOUR NATAL STRENGTH', cardX + 16, cy);
+  doc.text('YOUR NATAL STRENGTH', cardX + 14, cy);
   doc.setCharSpace(0);
-  cy += 14;
+  cy += 12;
 
-  doc.setFont('times', 'normal'); doc.setFontSize(11);
+  doc.setFont('times', 'normal'); doc.setFontSize(9.5);
   doc.setTextColor(...INK);
-  for (const line of identityLines) { doc.text(line, cardX + 16, cy); cy += 16; }
+  for (const line of identityLines) { doc.text(line, cardX + 14, cy); cy += 13; }
 
-  ctx.y += card1H + 30; // Increased spacing between cards
+  ctx.y += card1H + 14;
 
-  // This Year's Ask card
-  const bodyLines: string[] = doc.splitTextToSize(body, cardW - 32);
-  const card2H = Math.max(80, 28 + bodyLines.length * 16 + 18);
+  // ── This Year's Ask card ──
+  const bodyLines: string[] = doc.splitTextToSize(body, cardW - 28);
+  const card2H = 22 + bodyLines.length * 13 + 10;
 
   doc.setFillColor(...CARD_BG);
-  doc.roundedRect(cardX, ctx.y, cardW, card2H, 3, 3, 'F');
+  doc.roundedRect(cardX, ctx.y, cardW, card2H, 2, 2, 'F');
   doc.setFillColor(...GOLD);
-  doc.rect(cardX, ctx.y, 3, card2H, 'F');
+  doc.rect(cardX, ctx.y, 2.5, card2H, 'F');
 
-  cy = ctx.y + 22;
-  doc.setFont('times', 'bold'); doc.setFontSize(6.5);
+  cy = ctx.y + 16;
+  doc.setFont('times', 'bold'); doc.setFontSize(6);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(2.5);
-  doc.text('THIS YEAR\'S ASK', cardX + 16, cy);
+  doc.text('THIS YEAR\'S ASK', cardX + 14, cy);
   doc.setCharSpace(0);
-  cy += 14;
+  cy += 12;
 
-  doc.setFont('times', 'normal'); doc.setFontSize(11);
+  doc.setFont('times', 'normal'); doc.setFontSize(9.5);
   doc.setTextColor(...INK);
-  for (const line of bodyLines) { doc.text(line, cardX + 16, cy); cy += 16; }
+  for (const line of bodyLines) { doc.text(line, cardX + 14, cy); cy += 13; }
 
-  ctx.y += card2H + 30;
+  ctx.y += card2H + 18;
 
-  // Closing quote — positioned relative to content, not forced to bottom
+  // ── Closing quote ──
   doc.setDrawColor(...GOLD); doc.setLineWidth(0.3);
-  doc.line(pw / 2 - 40, ctx.y, pw / 2 + 40, ctx.y);
+  doc.line(cx - 36, ctx.y, cx + 36, ctx.y);
 
   const dashIdx = closing.lastIndexOf(' -- ');
   const quoteText = dashIdx > 0 ? closing.slice(0, dashIdx) : closing;
   const attribution = dashIdx > 0 ? closing.slice(dashIdx + 4) : '';
 
-  ctx.y += 28;
-  doc.setFont('times', 'italic'); doc.setFontSize(20);
+  ctx.y += 18;
+  doc.setFont('times', 'italic'); doc.setFontSize(14);
   doc.setTextColor(...CHARCOAL);
-  const quoteLines: string[] = doc.splitTextToSize(quoteText, pw * 0.6);
+  const quoteLines: string[] = doc.splitTextToSize(quoteText, pw * 0.55);
   for (const line of quoteLines) {
-    doc.text(line, pw / 2, ctx.y, { align: 'center' });
-    ctx.y += 26;
+    doc.text(line, cx, ctx.y, { align: 'center' });
+    ctx.y += 18;
   }
 
   if (attribution) {
-    ctx.y += 8;
-    doc.setFont('times', 'normal'); doc.setFontSize(8);
+    ctx.y += 4;
+    doc.setFont('times', 'normal'); doc.setFontSize(7);
     doc.setTextColor(...MUTED);
-    doc.setCharSpace(3);
-    doc.text(`-- ${attribution.toUpperCase()}`, pw / 2, ctx.y, { align: 'center' });
+    doc.setCharSpace(2.5);
+    doc.text(`-- ${attribution.toUpperCase()}`, cx, ctx.y, { align: 'center' });
     doc.setCharSpace(0);
   }
+
+  // ── Happy Birthday sign-off ──
+  ctx.y += 22;
+  doc.setFont('times', 'italic'); doc.setFontSize(12);
+  doc.setTextColor(...INK);
+  doc.text('Happy Birthday. Trust your inner wisdom.', cx, ctx.y, { align: 'center' });
+
+  // Bottom diamond
+  ctx.y += 20;
+  doc.setFillColor(...GOLD);
+  doc.triangle(cx, ctx.y - 4, cx - 3, ctx.y, cx + 3, ctx.y, 'F');
+  doc.triangle(cx, ctx.y + 4, cx - 3, ctx.y, cx + 3, ctx.y, 'F');
 
   ctx.y = ph;
 }

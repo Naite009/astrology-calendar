@@ -827,67 +827,11 @@ export async function generateBirthdayGiftPDF(
   ctx.sectionPages.set('YOUR YEAR IN FOUR SEASONS', doc.getNumberOfPages());
   generateQuarterlySummary(ctx, doc, analysis, srChart, natalChart);
 
-  // 24. BIRTHDAY AFFIRMATION
+  // 24. TAKE THIS WITH YOU — combined closing page
   if (ctx.y > margin + 10) doc.addPage();
   ctx.y = margin;
   ctx.sectionPages.set('BIRTHDAY AFFIRMATION CARD', doc.getNumberOfPages());
   generateAffirmationCard(ctx, doc, analysis, natalChart, srChart);
-
-  // 25. TAKE THIS WITH YOU — closing page
-  doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
-  {
-    const cx = pw / 2;
-    ctx.y = ph * 0.2;
-
-    // Diamond ornament
-    doc.setFillColor(...ctx.colors.gold);
-    doc.triangle(cx, ctx.y - 10, cx - 6, ctx.y, cx + 6, ctx.y, 'F');
-    doc.triangle(cx, ctx.y + 10, cx - 6, ctx.y, cx + 6, ctx.y, 'F');
-    ctx.y += 30;
-
-    doc.setFont('times', 'italic'); doc.setFontSize(28);
-    doc.setTextColor(...ctx.colors.ink);
-    doc.text('Take This With You', cx, ctx.y, { align: 'center' });
-    ctx.y += 36;
-
-    doc.setDrawColor(...ctx.colors.gold); doc.setLineWidth(0.5);
-    doc.line(cx - 80, ctx.y, cx + 80, ctx.y);
-    ctx.y += 30;
-
-    const name = natalChart.name || 'friend';
-    const takeWithYouLines = [
-      `Dear ${name},`,
-      '',
-      'This report is a map, not a mandate.',
-      '',
-      'The planets describe the weather of your year --',
-      'they do not decide what you build in it.',
-      '',
-      'Use what resonates. Set aside what doesn\'t.',
-      'Return to these pages when you need orientation.',
-      '',
-      'The best astrology doesn\'t predict your future.',
-      'It helps you meet it with more awareness,',
-      'more compassion, and more courage.',
-      '',
-      'Happy Birthday.',
-      '',
-      'Trust your inner wisdom.',
-    ];
-
-    doc.setFont('times', 'normal'); doc.setFontSize(13);
-    doc.setTextColor(...ctx.colors.ink);
-    for (const line of takeWithYouLines) {
-      doc.text(line, cx, ctx.y, { align: 'center' });
-      ctx.y += line === '' ? 12 : 20;
-    }
-
-    // Bottom ornament
-    ctx.y += 20;
-    doc.setFillColor(...ctx.colors.gold);
-    doc.triangle(cx, ctx.y - 5, cx - 4, ctx.y, cx + 4, ctx.y, 'F');
-    doc.triangle(cx, ctx.y + 5, cx - 4, ctx.y, cx + 4, ctx.y, 'F');
-  }
 
   // GOLD BORDERS on all pages
   {
