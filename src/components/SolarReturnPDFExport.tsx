@@ -18,10 +18,30 @@ import { generateHighlightsPage } from '@/lib/pdfSections/highlightsAndForecasts
 import { generateAffirmationCard } from '@/lib/pdfSections/affirmationCard';
 import { generateHowToReadPage } from '@/lib/pdfSections/howToRead';
 import { generateProfectionPersonalSection } from '@/lib/pdfSections/profectionPersonal';
-import { generateKeyDatesSection } from '@/lib/pdfSections/keyDates';
+import { generateKeyDatesTimeline } from '@/lib/pdfSections/keyDatesTimeline';
 import { generateQuarterlySummary } from '@/lib/pdfSections/quarterlySummary';
 import { generateTier1SolarReturnPDF } from '@/lib/pdfSections/tier1Report';
+import { generatePlanetGallery } from '@/lib/pdfSections/planetGallery';
 
+// Planet image imports
+import planetSun from '@/assets/planets/sun.png';
+import planetMoon from '@/assets/planets/moon.png';
+import planetMercury from '@/assets/planets/mercury.png';
+import planetVenus from '@/assets/planets/venus.png';
+import planetMars from '@/assets/planets/mars.png';
+import planetJupiter from '@/assets/planets/jupiter.png';
+import planetSaturn from '@/assets/planets/saturn.png';
+import planetUranus from '@/assets/planets/uranus.png';
+import planetNeptune from '@/assets/planets/neptune.png';
+import planetPluto from '@/assets/planets/pluto.png';
+import planetChiron from '@/assets/planets/chiron.png';
+import planetNorthNode from '@/assets/planets/northnode.png';
+
+export const PLANET_IMAGES: Record<string, string> = {
+  sun: planetSun, moon: planetMoon, mercury: planetMercury, venus: planetVenus,
+  mars: planetMars, jupiter: planetJupiter, saturn: planetSaturn, uranus: planetUranus,
+  neptune: planetNeptune, pluto: planetPluto, chiron: planetChiron, northnode: planetNorthNode,
+};
 // Cake image imports
 import cakeAries from '@/assets/cakes/aries.png';
 import cakeTaurus from '@/assets/cakes/taurus.png';
@@ -424,7 +444,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // KEY DATES — When Time Lord activates natal planets
       // =============================================
       if (analysis.profectionYear) {
-        generateKeyDatesSection(ctx, doc, analysis.profectionYear.timeLord, natalChart, srChart);
+        generateKeyDatesTimeline(ctx, doc, analysis.profectionYear.timeLord, natalChart, srChart);
       }
 
       // ==============================================
@@ -1059,7 +1079,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
               Sagittarius: 'The North Node in Sagittarius says: expand your world. Growth comes through travel, education, and forming your own philosophy based on direct experience rather than data.',
               Capricorn: 'The North Node in Capricorn says: take responsibility. Growth comes through career ambition, public contribution, and building structures that outlast your comfort zone.',
               Aquarius: 'The North Node in Aquarius says: serve the collective. Growth comes through community involvement, innovation, and detaching from personal drama to focus on the bigger picture.',
-              Pisces: 'The North Node in Pisces says: trust the unseen. Growth comes through faith, artistic expression, and surrendering the need to control every outcome.',
+              Pisces: 'The North Node in Pisces says: trust the unseen. Growth comes through trusting your inner wisdom, artistic expression, and surrendering the need to control every outcome.',
             };
             const nodeSign = analysis.nodesFocus!.sign;
             if (nodeSignGrowth[nodeSign]) {
@@ -1201,46 +1221,10 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       }
 
       // =============================================
-      // PLANET SPOTLIGHT — own page with box layout
+      // PLANET GALLERY — 4x3 grid with images
       // =============================================
-      const deepData: Record<string, Record<number, any>> = {
-        Mercury: srMercuryInHouseDeep, Venus: srVenusInHouseDeep, Mars: srMarsInHouseDeep,
-        Jupiter: srJupiterInHouseDeep, Saturn: srSaturnInHouseDeep, Uranus: srUranusInHouseDeep,
-        Neptune: srNeptuneInHouseDeep, Pluto: srPlutoInHouseDeep,
-      };
-      const spotlightPlanets = SPOTLIGHT_ORDER.filter(p => {
-        const h = analysis.planetSRHouses?.[p];
-        return h !== null && h !== undefined && deepData[p]?.[h];
-      });
-      if (spotlightPlanets.length > 0) {
-        doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
-        ctx.sectionPages.set('PLANET SPOTLIGHT', doc.getNumberOfPages());
-        ctx.sectionTitle(doc, 'PLANET SPOTLIGHT', 'Each planet\'s placement in your Solar Return and what it means for the year');
-
-        for (const planet of spotlightPlanets) {
-          const h = analysis.planetSRHouses[planet]!;
-          const data = deepData[planet][h];
-          if (!data) continue;
-          ctx.checkPage(180);
-          ctx.drawCard(doc, () => {
-            // Planet header — editorial
-            doc.setFont('times', 'bold'); doc.setFontSize(12);
-            doc.setTextColor(...ctx.colors.ink);
-            doc.text(`${P[planet] || planet} in House ${h}`, margin + 8, ctx.y);
-            doc.setFont('times', 'italic'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.muted);
-            const titleText = (data.title || '').substring(0, 40);
-            doc.text(titleText, margin + contentW, ctx.y, { align: 'right' });
-            ctx.y += 16;
-
-            if (data.overview) {
-              ctx.writeBody(doc, data.overview, ctx.colors.darkText, 10, 14);
-              ctx.y += 6;
-            }
-            ctx.writeCardSection(doc, 'What This Looks Like', data.practical, ctx.colors.accentGreen);
-            if (data.caution) ctx.writeCardSection(doc, 'Watch For', data.caution, ctx.colors.accentRust);
-          });
-        }
-      }
+      ctx.sectionPages.set('PLANET SPOTLIGHT', doc.getNumberOfPages() + 1);
+      generatePlanetGallery(ctx, doc, analysis, PLANET_IMAGES, srChart);
 
       // =============================================
       // NARRATIVE

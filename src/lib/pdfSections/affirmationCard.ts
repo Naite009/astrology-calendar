@@ -5,9 +5,8 @@ import { NatalChart } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 
 type Color = [number, number, number];
-const CREAM: Color = [250, 247, 242];
 const CARD_BG: Color = [245, 241, 234];
-const INK:   Color = [18,  16,  14];
+const INK:   Color = [58,  54,  50]; // Charcoal grey
 const MUTED: Color = [130, 125, 118];
 const CHARCOAL: Color = [58, 54, 50];
 const GOLD:  Color = [184, 150, 62];
@@ -128,8 +127,8 @@ export function generateAffirmationCard(
   const identity = getNatalIdentity(sunSign, moonSign, risingSign);
   const { body, closing } = getYearMessage(profH, timeLord, northNodeHouse, hasVenusAngular, hasJupiterAngular, moonPhase, srSunHouse);
 
-  // Full-bleed cream page
-  doc.setFillColor(...CREAM);
+  // Full-bleed white page
+  doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, pw, ph, 'F');
 
   // Gold frame border

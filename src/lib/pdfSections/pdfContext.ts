@@ -6,7 +6,7 @@ type Color = [number, number, number];
 // ─── V3 EDITORIAL PALETTE ───────────────────────────────────────────
 const CREAM: Color = [250, 247, 242];
 const CARD_BG: Color = [245, 241, 234];
-const INK: Color = [18, 16, 14];
+const INK: Color = [58, 54, 50]; // Charcoal grey for print safety
 const MUTED: Color = [130, 125, 118];
 const GOLD: Color = [184, 150, 62];
 const RULE: Color = [200, 195, 188];
@@ -82,7 +82,7 @@ export function createPDFContext(
     },
 
     pageBg(d: jsPDF) {
-      d.setFillColor(...CREAM);
+      d.setFillColor(255, 255, 255);
       d.rect(0, 0, pw, ph, 'F');
     },
 
@@ -115,7 +115,7 @@ export function createPDFContext(
       const pageNum = d.getNumberOfPages();
       sectionPages.set(title.toUpperCase(), pageNum);
 
-      const topPad = ctx.y < margin + 20 ? 14 : 34;
+      const topPad = ctx.y < margin + 20 ? 14 : 40;
       ctx.y += topPad;
 
       const numStr = String(ctx.sectionNum).padStart(2, '0');

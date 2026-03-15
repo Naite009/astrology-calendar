@@ -6,7 +6,7 @@ import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { P } from '@/components/SolarReturnPDFExport';
 
 type Color = [number, number, number];
-const INK:   Color = [18,  16,  14];
+const INK:   Color = [58,  54,  50]; // Charcoal grey
 const MUTED: Color = [130, 125, 118];
 const GOLD:  Color = [184, 150, 62];
 const RULE:  Color = [200, 195, 188];
