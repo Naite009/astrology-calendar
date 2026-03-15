@@ -89,7 +89,7 @@ function buildDataRichQuarters(a: SolarReturnAnalysis, srChart: SolarReturnChart
 
     if (timeLord && q === 0) sentences.push(`${timeLordName} as Time Lord sets the agenda from the start -- ${LIFE_THEMES[profH]?.detail || 'key themes'} are activated immediately.`);
     if (q === 0 && sunH) sentences.push(`The Solar Return Sun in the ${ord(sunH)} house directs core vitality toward ${LIFE_THEMES[sunH]?.detail || 'this area'}.`);
-    if (stelliums.length > 0 && q === 0) { const s = stelliums[0]; sentences.push(`Your ${s.planets.length}-planet stellium in ${s.location} concentrates energy early.`); }
+    if (stelliums.length > 0 && q === 0) { const s = stelliums[0]; const notableExtras = (s.extras || []).filter((e: string) => e === 'Chiron' || e === 'NorthNode'); const extrasNote = notableExtras.length > 0 ? ` (also with ${notableExtras.map((e: string) => e === 'NorthNode' ? 'North Node' : e).join(' and ')})` : ''; sentences.push(`Your ${s.planets.length}-planet stellium in ${s.location}${extrasNote} concentrates energy early.`); }
     if (retros.length > 0 && q === 1) { sentences.push(`${retros.map(r => P[r] || r).join(', ')} retrograde signals a revision period -- review and refine.`); tags.push('RETROGRADE'); }
     if (saturnH && q === 2) { sentences.push(`Saturn in the ${ord(saturnH)} house (${saturnSign}) asks for sustained discipline around ${LIFE_THEMES[saturnH]?.detail || 'key areas'}.`); if (saturnRx) tags.push('SATURN RX'); }
     if (moonSign && q === 2) {

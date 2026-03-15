@@ -81,7 +81,11 @@ function buildHighlights(a: SolarReturnAnalysis, _srChart: SolarReturnChart, _na
   }
   if (a.stelliums.length > 0) {
     const s = a.stelliums[0];
-    highlights.push({ label: 'POWER ZONE', timing: `${s.planets.length}-Planet Stellium`, body: `${s.planets.map(p => P[p] || p).join(', ')} pile into ${s.location} -- a concentrated demand for attention.` });
+    const notableExtras = (s.extras || []).filter((e: string) => e === 'Chiron' || e === 'NorthNode');
+    const extrasNote = notableExtras.length > 0
+      ? ` Also contains ${notableExtras.map((e: string) => e === 'NorthNode' ? 'North Node' : e).join(' and ')}.`
+      : '';
+    highlights.push({ label: 'POWER ZONE', timing: `${s.planets.length}-Planet Stellium`, body: `${s.planets.map(p => P[p] || p).join(', ')} pile into ${s.location} -- a concentrated demand for attention.${extrasNote}` });
   }
   if (a.srToNatalAspects.length > 0) {
     const strongest = a.srToNatalAspects.find(asp => MAJOR_PLANETS.has(asp.planet1) && MAJOR_PLANETS.has(asp.planet2) && !(asp.planet1 === 'Sun' && asp.planet2 === 'Sun' && asp.type === 'Conjunction'));
@@ -127,7 +131,11 @@ function buildPersonalizedMonthlyForecasts(a: SolarReturnAnalysis, srChart: Sola
     if (i === 11) body = 'The year is winding down. Let the year wisdom settle before the next one begins.';
     if (stelliums.length > 0 && i < 3) {
       const s = stelliums[0];
-      body += ` With ${s.planets.map(p => P[p] || p).join(', ')} concentrated in ${s.location}, expect intense activity in that area.`;
+      const notableExtras = (s.extras || []).filter((e: string) => e === 'Chiron' || e === 'NorthNode');
+      const extrasNote = notableExtras.length > 0
+        ? ` (also with ${notableExtras.map((e: string) => e === 'NorthNode' ? 'North Node' : e).join(' and ')})`
+        : '';
+      body += ` With ${s.planets.map(p => P[p] || p).join(', ')} concentrated in ${s.location}${extrasNote}, expect intense activity in that area.`;
     }
     if (retros.length > 0 && i >= 3 && i <= 5) {
       body += ` ${retros.map(r => P[r] || r).join(' ')} retrograde asks you to revisit something unfinished before moving forward.`;

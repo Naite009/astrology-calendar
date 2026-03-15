@@ -135,10 +135,14 @@ export function generatePDFYearAtAGlance(
     CARD_BG,
   );
 
+  const stelliumExtrasNote = topStellium?.extras?.filter((e: string) => e === 'Chiron' || e === 'NorthNode');
+  const stelliumSubtitle = topStellium
+    ? `${topStellium.planets.length}-Planet Stellium${stelliumExtrasNote && stelliumExtrasNote.length > 0 ? ` + ${stelliumExtrasNote.map((e: string) => e === 'NorthNode' ? 'North Node' : e).join(', ')}` : ''}`
+    : 'Element Balance';
   ctx.drawInfoBox(doc, margin + (col3W + col3Gap) * 2, ctx.y, col3W, boxH,
     topStellium ? 'POWER ZONE' : 'DOMINANT ELEMENT',
     topStellium ? topStellium.location : (a.elementBalance?.dominant || '--'),
-    topStellium ? `${topStellium.planets.length}-Planet Stellium` : 'Element Balance',
+    stelliumSubtitle,
     WARM_CREAM,
   );
 
