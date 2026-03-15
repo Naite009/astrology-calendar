@@ -90,36 +90,36 @@ export function generateNatalVsSRCards(
   doc.setFillColor(...WHITE);
   doc.rect(0, 0, pw, ph, 'F');
 
-  // Section header
-  ctx.y += 24;
+  // Compact section header
+  ctx.y += 16;
   doc.setFont('times', 'bold'); doc.setFontSize(7);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(4);
   doc.text('YOUR PLANETARY SHIFTS', margin, ctx.y);
   doc.setCharSpace(0);
-  ctx.y += 8;
+  ctx.y += 6;
 
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 28;
+  ctx.y += 20;
 
-  doc.setFont('times', 'normal'); doc.setFontSize(28);
+  doc.setFont('times', 'normal'); doc.setFontSize(24);
   doc.setTextColor(...INK);
   doc.text('Natal vs Solar Return', margin, ctx.y);
-  ctx.y += 14;
+  ctx.y += 10;
 
-  doc.setFont('times', 'italic'); doc.setFontSize(10);
+  doc.setFont('times', 'italic'); doc.setFontSize(9);
   doc.setTextColor(...MUTED);
   doc.text('Where each planet was — and where it is now', margin, ctx.y);
-  ctx.y += 30;
+  ctx.y += 18;
 
-  // 2-column x 6-row grid (12 planets)
+  // 2-column grid — compact to fit all on fewer pages
   const cols = 2;
-  const gapX = 14;
-  const gapY = 12;
+  const gapX = 10;
+  const gapY = 6;
   const cardW = (contentW - gapX * (cols - 1)) / cols;
-  const imgSize = 32;
-  const cardH = 120;
+  const imgSize = 24;
+  const cardH = 88;
 
   let gridStartY = ctx.y;
 
@@ -198,8 +198,8 @@ function drawShiftCard(
   }
 
   // Planet name — right of image
-  let tx = x + imgSize + 18;
-  let ty = y + 18;
+  let tx = x + imgSize + 14;
+  let ty = y + 14;
   doc.setFont('times', 'bold'); doc.setFontSize(7);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(2);
@@ -208,67 +208,66 @@ function drawShiftCard(
 
   // Shift indicator badge
   if (isSameSign) {
-    doc.setFillColor(225, 245, 225); // soft green
-    doc.roundedRect(x + w - 42, y + 8, 34, 14, 2, 2, 'F');
-    doc.setFont('times', 'bold'); doc.setFontSize(6);
+    doc.setFillColor(225, 245, 225);
+    doc.roundedRect(x + w - 38, y + 6, 30, 12, 2, 2, 'F');
+    doc.setFont('times', 'bold'); doc.setFontSize(5.5);
     doc.setTextColor(80, 140, 80);
-    doc.text('SAME', x + w - 25, y + 18, { align: 'center' });
+    doc.text('SAME', x + w - 23, y + 14, { align: 'center' });
   } else if (natSign !== '--' && srSign !== '--') {
-    doc.setFillColor(255, 235, 220); // soft amber
-    doc.roundedRect(x + w - 42, y + 8, 34, 14, 2, 2, 'F');
-    doc.setFont('times', 'bold'); doc.setFontSize(6);
+    doc.setFillColor(255, 235, 220);
+    doc.roundedRect(x + w - 38, y + 6, 30, 12, 2, 2, 'F');
+    doc.setFont('times', 'bold'); doc.setFontSize(5.5);
     doc.setTextColor(180, 120, 60);
-    doc.text('SHIFT', x + w - 25, y + 18, { align: 'center' });
+    doc.text('SHIFT', x + w - 23, y + 14, { align: 'center' });
   }
 
   // Two-column: NATAL | SR
-  const halfW = (w - 20) / 2;
-  const leftX = x + 10;
-  const rightX = x + 10 + halfW + 6;
-  ty = y + imgSize + 16;
+  const halfW = (w - 16) / 2;
+  const leftX = x + 8;
+  const rightX = x + 8 + halfW + 6;
+  ty = y + imgSize + 10;
 
-  // Natal column
-  doc.setFont('times', 'normal'); doc.setFontSize(6);
+  // Labels
+  doc.setFont('times', 'normal'); doc.setFontSize(5.5);
   doc.setTextColor(...MUTED);
   doc.text('NATAL', leftX, ty);
   doc.text('THIS YEAR', rightX, ty);
-  ty += 10;
+  ty += 8;
 
-  // Natal sign + degree
-  doc.setFont('times', 'bold'); doc.setFontSize(10);
+  // Signs
+  doc.setFont('times', 'bold'); doc.setFontSize(9);
   doc.setTextColor(...INK);
   doc.text(natSign, leftX, ty);
   doc.text(srSign, rightX, ty);
-  ty += 10;
+  ty += 8;
 
   // Degrees + houses
-  doc.setFont('times', 'normal'); doc.setFontSize(8);
+  doc.setFont('times', 'normal'); doc.setFontSize(7);
   doc.setTextColor(...MUTED);
   doc.text(`${natDeg}${natH ? ` · H${natH}` : ''}`, leftX, ty);
   doc.text(`${srDeg}${srH ? ` · H${srH}` : ''}`, rightX, ty);
 
   // Arrow between columns
-  const arrowY = ty - 8;
-  doc.setDrawColor(...ARROW_GOLD); doc.setLineWidth(0.8);
+  const arrowY = ty - 6;
+  doc.setDrawColor(...ARROW_GOLD); doc.setLineWidth(0.6);
   const arrowStartX = leftX + halfW - 2;
   const arrowEndX = rightX - 4;
   doc.line(arrowStartX, arrowY, arrowEndX, arrowY);
-  // Arrowhead
-  doc.line(arrowEndX - 4, arrowY - 3, arrowEndX, arrowY);
-  doc.line(arrowEndX - 4, arrowY + 3, arrowEndX, arrowY);
+  doc.line(arrowEndX - 3, arrowY - 2, arrowEndX, arrowY);
+  doc.line(arrowEndX - 3, arrowY + 2, arrowEndX, arrowY);
 
-  ty += 12;
+  ty += 8;
 
-  // Shift narrative
+  // Shift narrative — single line
   const shiftFeel = SHIFT_FEEL[planet];
   if (shiftFeel) {
     const narrative = isSameSign ? shiftFeel.same : shiftFeel.different;
-    doc.setFont('times', 'italic'); doc.setFontSize(6.5);
+    doc.setFont('times', 'italic'); doc.setFontSize(5.5);
     doc.setTextColor(...MUTED);
-    const lines = doc.splitTextToSize(narrative, w - 20);
+    const lines = doc.splitTextToSize(narrative, w - 16);
     for (const line of lines.slice(0, 2)) {
       doc.text(line, x + w / 2, ty, { align: 'center' });
-      ty += 8;
+      ty += 7;
     }
   }
 }
