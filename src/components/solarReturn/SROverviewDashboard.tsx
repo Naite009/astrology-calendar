@@ -223,6 +223,11 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
                   {aspectCategory(tightestAspect.type).label}
                 </span>
               </div>
+              {tightestAspect.interpretation && (
+                <p className="text-[10px] text-muted-foreground/80 mt-1.5 leading-tight">
+                  {tightestAspect.interpretation.split('.').slice(0, 2).join('.')}.
+                </p>
+              )}
             </>
           ) : (
             <p className="text-sm text-muted-foreground">No major SR-to-natal aspects</p>
