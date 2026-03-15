@@ -4,7 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 /* Lazy-load heavy components to prevent main thread blocking */
 const BiorhythmCard = lazy(() => import('@/components/BiorhythmCard').then(m => ({ default: m.BiorhythmCard })));
-const BiorhythmForecast = lazy(() => import('@/components/BiorhythmForecast').then(m => ({ default: m.BiorhythmForecast })));
+
 const LifeCyclesHub = lazy(() => import('@/components/LifeCyclesHub').then(m => ({ default: m.LifeCyclesHub })));
 const DailySynthesisCard = lazy(() => import('@/components/DailySynthesisCard').then(m => ({ default: m.DailySynthesisCard })));
 const TransitAlertsCard = lazy(() => import('@/components/TransitAlertsCard').then(m => ({ default: m.TransitAlertsCard })));
