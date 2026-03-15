@@ -333,6 +333,7 @@ export interface SolarReturnAnalysis {
     timeLordSRHouse: number | null;
     timeLordSRSign: string;
     overlap: boolean;
+    overlapDescription: string;
     interpretation: string;
   } | null;
   // New deep analysis sections
