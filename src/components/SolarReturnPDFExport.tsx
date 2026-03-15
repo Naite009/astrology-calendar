@@ -399,7 +399,7 @@ export async function generateBirthdayGiftPDF(
   // 7. SR MOON PHASE TIMELINE
   doc.addPage(); ctx.y = margin;
   ctx.sectionPages.set('SR MOON PHASE BY YEAR', doc.getNumberOfPages());
-  generatePDFLunarTimeline(ctx, doc, natalChart, srChart);
+  generatePDFLunarTimeline(ctx, doc, analysis, srChart, natalChart);
 
   // 8. NATAL OVERLAY + ANGLE ACTIVATIONS + YEAR PRIORITY
   doc.addPage(); ctx.y = margin;
