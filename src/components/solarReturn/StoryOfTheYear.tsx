@@ -8,6 +8,7 @@ import {
   TimelineEntry,
 } from '@/lib/solarReturnLunarTimeline';
 import { getMoonPhaseBlending } from '@/lib/solarReturnMoonData';
+import { computeYearPriorities } from '@/lib/yearPriorityScoring';
 
 const PHASE_ICONS: Record<string, string> = {
   'New Moon': '🌑', 'Crescent': '🌒', 'First Quarter': '🌓', 'Gibbous': '🌔',
