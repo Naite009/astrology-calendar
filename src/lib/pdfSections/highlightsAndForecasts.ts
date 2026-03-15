@@ -275,21 +275,21 @@ export function generateHighlightsPage(
   drawMonthHeader(false);
 
   const forecasts = buildPersonalizedMonthlyForecasts(a, srChart, natalChart);
-  const columnGap = 20;
-  const rowGap = 22;
+  const columnGap = 16;
+  const rowGap = 14;
   const cardW = (contentW - columnGap) / 2;
-  const cardPadX = 18;
-  const cardPadTop = 20;
-  const cardPadBottom = 18;
-  const maxBodyLines = 5;
-  const bodyLineH = 14;
-  const headlineLineH = 20;
+  const cardPadX = 14;
+  const cardPadTop = 16;
+  const cardPadBottom = 12;
+  const maxBodyLines = 3;
+  const bodyLineH = 12;
+  const headlineLineH = 16;
 
   const measureCard = (f: MonthForecast | undefined) => {
     if (!f) return { bodyLines: [] as string[], headLines: [] as string[], height: 0 };
     const bodyLines = clampLines(doc.splitTextToSize(f.body, cardW - cardPadX * 2), maxBodyLines);
     const headLines = doc.splitTextToSize(f.headline, cardW - cardPadX * 2) as string[];
-    const height = Math.max(150, cardPadTop + 30 + 10 + headLines.length * headlineLineH + 10 + bodyLines.length * bodyLineH + cardPadBottom);
+    const height = Math.max(110, cardPadTop + 24 + 6 + headLines.length * headlineLineH + 6 + bodyLines.length * bodyLineH + cardPadBottom);
     return { bodyLines, headLines, height };
   };
 
@@ -303,21 +303,21 @@ export function generateHighlightsPage(
 
     let cy = rowY + cardPadTop;
 
-    // LARGE month name
-    doc.setFont('times', 'bold'); doc.setFontSize(22);
+    // Month name left, year right-flush
+    doc.setFont('times', 'bold'); doc.setFontSize(18);
     doc.setTextColor(...INK);
     doc.text(f.month, x + cardPadX, cy);
 
     doc.setFont('times', 'normal'); doc.setFontSize(9);
     doc.setTextColor(...MUTED);
-    doc.text(String(f.year), x + cardPadX + doc.getTextWidth(f.month) + 8, cy);
-    cy += 28;
+    doc.text(String(f.year), x + cardW - cardPadX, cy, { align: 'right' });
+    cy += 22;
 
-    doc.setFont('times', 'bold'); doc.setFontSize(12);
+    doc.setFont('times', 'bold'); doc.setFontSize(11);
     doc.setTextColor(...INK);
     for (const line of headLines) { doc.text(line, x + cardPadX, cy); cy += headlineLineH; }
-    cy += 8;
-    doc.setFont('times', 'normal'); doc.setFontSize(10);
+    cy += 4;
+    doc.setFont('times', 'normal'); doc.setFontSize(9.5);
     doc.setTextColor(...INK);
     for (const line of bodyLines) { doc.text(line, x + cardPadX, cy); cy += bodyLineH; }
   };
@@ -328,9 +328,9 @@ export function generateHighlightsPage(
     const right = forecasts[index + 1];
     const leftMeasured = measureCard(left);
     const rightMeasured = measureCard(right);
-    const rowH = Math.max(leftMeasured.height, rightMeasured.height, 150);
+    const rowH = Math.max(leftMeasured.height, rightMeasured.height, 110);
 
-    if (ctx.y + rowH > ph - 62) {
+    if (ctx.y + rowH > ph - 52) {
       doc.addPage();
       ctx.y = ctx.margin;
       drawMonthHeader(true);
