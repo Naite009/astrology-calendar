@@ -212,12 +212,8 @@ const PLANET_HOUSE_FELT: Record<string, Record<number, string>> = {
 };
 
 // ─── Natal Overlay Section ──────────────────────────────────────
-export function generatePDFNatalOverlay(
-  ctx: PDFContext, doc: jsPDF,
-  analysis: SolarReturnAnalysis,
-) {
-  ctx.sectionTitle(doc, 'SOLAR RETURN TO NATAL HOUSE OVERLAY');
-
+// Returns the dominant house info so it can be placed on a previous page
+export function computeOverlayData(analysis: SolarReturnAnalysis) {
   interface Point { label: string; planetKey: string; house: number; meaning: string; felt: string; }
   const points: Point[] = [];
   const houseCounts: Record<number, string[]> = {};
@@ -231,15 +227,13 @@ export function generatePDFNatalOverlay(
     houseCounts[house].push(label);
   };
 
-  // Add ALL overlays
-  if (analysis.srAscInNatalHouse) addPt('Solar Return Ascendant', 'Ascendant', analysis.srAscInNatalHouse.natalHouse);
-  addPt('Solar Return Sun', 'Sun', analysis.sunNatalHouse?.house ?? null);
-  addPt('Solar Return Moon', 'Moon', analysis.moonNatalHouse?.house ?? null);
+  if (analysis.srAscInNatalHouse) addPt('Ascendant', 'Ascendant', analysis.srAscInNatalHouse.natalHouse);
+  addPt('Sun', 'Sun', analysis.sunNatalHouse?.house ?? null);
+  addPt('Moon', 'Moon', analysis.moonNatalHouse?.house ?? null);
   for (const ov of analysis.houseOverlays || []) {
-    addPt(`Solar Return ${ov.planet}`, ov.planet, ov.natalHouse);
+    addPt(ov.planet, ov.planet, ov.natalHouse);
   }
 
-  // Dominant house banner
   let dominant: { house: number; count: number; labels: string[] } | null = null;
   for (const [h, labels] of Object.entries(houseCounts)) {
     if (labels.length >= 2 && (!dominant || labels.length > dominant.count)) {
@@ -247,39 +241,55 @@ export function generatePDFNatalOverlay(
     }
   }
 
-  if (dominant) {
-    ctx.checkPage(52);
-    const dominantH = 42;
-    doc.setFillColor(...ctx.colors.cardBg);
-    doc.roundedRect(ctx.margin, ctx.y, ctx.contentW, dominantH, 3, 3, 'F');
-    doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
-    doc.roundedRect(ctx.margin, ctx.y, ctx.contentW, dominantH, 3, 3, 'S');
-    doc.setFillColor(...ctx.colors.gold);
-    doc.rect(ctx.margin, ctx.y, 3, dominantH, 'F');
+  return { points, dominant };
+}
 
-    doc.setFont('times', 'bold'); doc.setFontSize(8);
-    doc.setTextColor(...ctx.colors.gold);
-    doc.text(`MAIN ARENA -- NATAL ${dominant.house}${ord(dominant.house).toUpperCase()} HOUSE`, ctx.margin + 10, ctx.y + 14);
+// Draw the Main Arena banner (call from Year at a Glance page)
+export function drawMainArenaBanner(
+  ctx: PDFContext, doc: jsPDF,
+  dominant: { house: number; count: number; labels: string[] },
+) {
+  ctx.checkPage(46);
+  const bannerH = 38;
+  doc.setFillColor(...ctx.colors.cardBg);
+  doc.roundedRect(ctx.margin, ctx.y, ctx.contentW, bannerH, 3, 3, 'F');
+  doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
+  doc.roundedRect(ctx.margin, ctx.y, ctx.contentW, bannerH, 3, 3, 'S');
+  doc.setFillColor(...ctx.colors.gold);
+  doc.rect(ctx.margin, ctx.y, 3, bannerH, 'F');
 
-    doc.setFont('times', 'normal'); doc.setFontSize(8.5);
-    doc.setTextColor(...ctx.colors.ink);
-    const dominantText = `${dominant.labels.join(', ')} land here, emphasizing ${HOUSE_MEANINGS[dominant.house] || ''}.`;
-    const dominantLines = doc.splitTextToSize(dominantText, ctx.contentW - 20);
-    doc.text(dominantLines[0] || dominantText, ctx.margin + 10, ctx.y + 28);
+  doc.setFont('times', 'bold'); doc.setFontSize(7);
+  doc.setTextColor(...ctx.colors.gold);
+  doc.text(`MAIN ARENA -- NATAL ${dominant.house}${ord(dominant.house).toUpperCase()} HOUSE`, ctx.margin + 10, ctx.y + 14);
 
-    ctx.y += dominantH + 10;
-  }
+  doc.setFont('times', 'normal'); doc.setFontSize(8);
+  doc.setTextColor(...ctx.colors.ink);
+  const dominantText = `${dominant.labels.join(', ')} land here, emphasizing ${HOUSE_MEANINGS[dominant.house] || ''}.`;
+  const lines = doc.splitTextToSize(dominantText, ctx.contentW - 20);
+  doc.text(lines[0] || dominantText, ctx.margin + 10, ctx.y + 26);
+
+  ctx.y += bannerH + 8;
+}
+
+export function generatePDFNatalOverlay(
+  ctx: PDFContext, doc: jsPDF,
+  analysis: SolarReturnAnalysis,
+) {
+  // Title page for this section
+  ctx.sectionTitle(doc, 'HOW THIS YEAR LANDS IN YOUR NATAL CHART', 'Solar Return Planets in Your Natal Houses');
+
+  const { points } = computeOverlayData(analysis);
 
   if (points.length === 0) {
     ctx.writeBody(doc, 'No major Solar Return-to-natal overlay points were detected in this chart.');
     return;
   }
 
-  // Two-column layout with felt-sense interpretations
-  const col2Gap = 14;
+  // Compact two-column layout — smaller cards, no glyphs, plain text
+  const col2Gap = 10;
   const col2W = (ctx.contentW - col2Gap) / 2;
-  const cardH = 90;
-  const rowGap = 12;
+  const cardH = 68;
+  const rowGap = 8;
 
   for (let i = 0; i < points.length; i += 2) {
     const leftP = points[i];
@@ -288,10 +298,7 @@ export function generatePDFNatalOverlay(
     ctx.checkPage(cardH + rowGap);
     const y = ctx.y;
 
-    // Draw left card
     drawOverlayCard(doc, ctx, ctx.margin, y, col2W, cardH, leftP);
-
-    // Draw right card if exists
     if (rightP) {
       drawOverlayCard(doc, ctx, ctx.margin + col2W + col2Gap, y, col2W, cardH, rightP);
     }
@@ -306,25 +313,25 @@ function drawOverlayCard(
   p: { label: string; house: number; felt: string },
 ) {
   doc.setFillColor(...ctx.colors.cream);
-  doc.roundedRect(x, y, w, h, 4, 4, 'F');
-  doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.3);
-  doc.roundedRect(x, y, w, h, 4, 4, 'S');
+  doc.roundedRect(x, y, w, h, 3, 3, 'F');
+  doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
+  doc.roundedRect(x, y, w, h, 3, 3, 'S');
   doc.setFillColor(...ctx.colors.gold);
-  doc.rect(x, y, 3.5, h, 'F');
+  doc.rect(x, y, 3, h, 'F');
 
-  // Bold label
-  doc.setFont('times', 'bold'); doc.setFontSize(11);
+  // Plain text label — no arrow glyph
+  doc.setFont('times', 'bold'); doc.setFontSize(9);
   doc.setTextColor(...ctx.colors.ink);
-  const label = `${p.label}  →  Natal ${p.house}${ord(p.house)}`;
-  const labelLines: string[] = doc.splitTextToSize(label, w - 22);
-  let ty = y + 18;
-  for (const l of labelLines) { doc.text(l, x + 12, ty); ty += 14; }
+  const label = `${p.label} in Natal ${p.house}${ord(p.house)} House`;
+  const labelLines: string[] = doc.splitTextToSize(label, w - 18);
+  let ty = y + 14;
+  for (const l of labelLines.slice(0, 2)) { doc.text(l, x + 10, ty); ty += 11; }
 
   // Felt-sense interpretation
-  doc.setFont('times', 'normal'); doc.setFontSize(8.5);
+  doc.setFont('times', 'normal'); doc.setFontSize(7.5);
   doc.setTextColor(...ctx.colors.muted);
-  const feltLines: string[] = doc.splitTextToSize(p.felt, w - 22);
-  for (const l of feltLines.slice(0, 4)) { doc.text(l, x + 12, ty); ty += 11; }
+  const feltLines: string[] = doc.splitTextToSize(p.felt, w - 18);
+  for (const l of feltLines.slice(0, 4)) { doc.text(l, x + 10, ty); ty += 9; }
 }
 
 // ─── Angle Activations Section ──────────────────────────────────
@@ -374,19 +381,20 @@ export function generatePDFAngleActivations(
   natalChart: NatalChart, srChart: SolarReturnChart,
   maxOrb: number = ORB,
 ) {
-  ctx.sectionTitle(doc, 'MAJOR PLANETARY ACTIVATIONS', 'Solar Return Angles to Natal Planets & Solar Return Planets to Natal Angles');
+  ctx.sectionTitle(doc, 'MAJOR PLANETARY ACTIVATIONS', 'How Solar Return angles and planets connect to your natal chart');
 
-  interface Act { label: string; aspectName: string; orb: number; narrative: string; priority: number; }
-  const acts: Act[] = [];
+  interface Act { label: string; aspectName: string; orb: number; narrative: string; priority: number; category: 'angles-to-planets' | 'planets-to-angles'; }
+  const anglesToPlanets: Act[] = [];
+  const planetsToAngles: Act[] = [];
 
   const buildNarrative = (srBody: string, aspectName: string, natalBody: string, natalKey: string, srKey: string): string => {
     const feltTarget = PLANET_FELT[natalKey] || ANGLE_FELT[natalBody] || '';
     const feltSource = PLANET_FELT[srKey] || ANGLE_FELT[srBody] || '';
     if (feltTarget) {
-      return `SR ${srBody} ${aspectName}s natal ${natalBody} — this directly touches ${feltTarget}`;
+      return `Touches ${feltTarget}`;
     }
     if (feltSource) {
-      return `SR ${srBody} ${aspectName}s natal ${natalBody} — this channels ${feltSource}`;
+      return `Channels ${feltSource}`;
     }
     return `SR ${srBody} ${aspectName}s natal ${natalBody}.`;
   };
@@ -417,7 +425,7 @@ export function generatePDFAngleActivations(
         const orb = Math.abs(diff - asp.angle);
         if (orb <= maxOrb) {
           const dp = pName === 'NorthNode' ? 'N.Node' : pName;
-          acts.push({ label: `SR ${angle.name} ${asp.glyph} Natal ${dp}`, aspectName: asp.name, orb: Math.round(orb * 10) / 10, narrative: buildNarrative(angle.name, asp.name, dp, pName, angle.name), priority: asp.angle === 0 ? 1 : 2 });
+          anglesToPlanets.push({ label: `SR ${angle.name} ${asp.glyph} Natal ${dp}`, aspectName: asp.name, orb: Math.round(orb * 10) / 10, narrative: buildNarrative(angle.name, asp.name, dp, pName, angle.name), priority: asp.angle === 0 ? 1 : 2, category: 'angles-to-planets' });
         }
       }
     }
@@ -435,30 +443,72 @@ export function generatePDFAngleActivations(
         const orb = Math.abs(diff - asp.angle);
         if (orb <= maxOrb) {
           const dp = pName === 'NorthNode' ? 'N.Node' : pName;
-          acts.push({ label: `SR ${dp} ${asp.glyph} Natal ${angle.name}`, aspectName: asp.name, orb: Math.round(orb * 10) / 10, narrative: buildNarrative(dp, asp.name, angle.name, angle.name, pName), priority: asp.angle === 0 ? 1 : 3 });
+          planetsToAngles.push({ label: `SR ${dp} ${asp.glyph} Natal ${angle.name}`, aspectName: asp.name, orb: Math.round(orb * 10) / 10, narrative: buildNarrative(dp, asp.name, angle.name, angle.name, pName), priority: asp.angle === 0 ? 1 : 3, category: 'planets-to-angles' });
         }
       }
     }
   }
 
-  acts.sort((a, b) => a.priority - b.priority || a.orb - b.orb);
+  anglesToPlanets.sort((a, b) => a.priority - b.priority || a.orb - b.orb);
+  planetsToAngles.sort((a, b) => a.priority - b.priority || a.orb - b.orb);
 
-  if (acts.length === 0) {
-    ctx.writeBody(doc, 'No significant angle-to-planet contacts detected within 3 degrees orb.');
+  if (anglesToPlanets.length === 0 && planetsToAngles.length === 0) {
+    ctx.writeBody(doc, 'No significant angle-to-planet contacts detected within the orb.');
     return;
   }
 
-  for (const act of acts.slice(0, 8)) {
-    ctx.checkPage(50);
-    doc.setFont('times', 'bold'); doc.setFontSize(9);
+  // Two-column layout: left = angles to planets, right = planets to angles
+  const col2Gap = 12;
+  const col2W = (ctx.contentW - col2Gap) / 2;
+  const leftX = ctx.margin;
+  const rightX = ctx.margin + col2W + col2Gap;
+
+  // Column headers
+  doc.setFont('times', 'bold'); doc.setFontSize(7);
+  doc.setTextColor(...ctx.colors.gold);
+  doc.setCharSpace(2);
+  doc.text('SR ANGLES TO NATAL PLANETS', leftX, ctx.y);
+  doc.text('SR PLANETS TO NATAL ANGLES', rightX, ctx.y);
+  doc.setCharSpace(0);
+  ctx.y += 12;
+
+  doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.2);
+  doc.line(leftX, ctx.y, leftX + col2W, ctx.y);
+  doc.line(rightX, ctx.y, rightX + col2W, ctx.y);
+  ctx.y += 8;
+
+  // Render items side by side
+  const maxItems = Math.max(anglesToPlanets.length, planetsToAngles.length);
+  const itemsToShow = Math.min(maxItems, 10);
+
+  const renderColumnItem = (act: Act, x: number, y: number, w: number): number => {
+    doc.setFont('times', 'bold'); doc.setFontSize(7.5);
     doc.setTextColor(...ctx.colors.ink);
-    doc.text(`${act.label} (${act.orb} deg)`, ctx.margin, ctx.y);
-    ctx.y += 12;
-    doc.setFont('times', 'normal'); doc.setFontSize(8.5);
+    const labelLines = doc.splitTextToSize(`${act.label} (${act.orb}°)`, w - 4);
+    let ly = y;
+    for (const l of labelLines.slice(0, 1)) { doc.text(l, x, ly); ly += 9; }
+
+    doc.setFont('times', 'normal'); doc.setFontSize(6.8);
     doc.setTextColor(...ctx.colors.muted);
-    const lines = doc.splitTextToSize(act.narrative, ctx.contentW - 16);
-    for (const l of lines) { doc.text(l, ctx.margin + 8, ctx.y); ctx.y += 11; }
-    ctx.y += 6;
+    const narrativeLines = doc.splitTextToSize(act.narrative, w - 4);
+    for (const l of narrativeLines.slice(0, 2)) { doc.text(l, x, ly); ly += 8; }
+    return ly + 4;
+  };
+
+  for (let i = 0; i < itemsToShow; i++) {
+    ctx.checkPage(40);
+    const startY = ctx.y;
+    let leftEnd = startY;
+    let rightEnd = startY;
+
+    if (i < anglesToPlanets.length) {
+      leftEnd = renderColumnItem(anglesToPlanets[i], leftX, startY, col2W);
+    }
+    if (i < planetsToAngles.length) {
+      rightEnd = renderColumnItem(planetsToAngles[i], rightX, startY, col2W);
+    }
+
+    ctx.y = Math.max(leftEnd, rightEnd) + 2;
   }
 }
 

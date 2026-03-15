@@ -5,6 +5,7 @@ import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { P, MOON_PHASE_EXPLANATIONS } from '@/components/SolarReturnPDFExport';
 import { getMoonPhaseBlending } from '@/lib/solarReturnMoonData';
+import { computeOverlayData, drawMainArenaBanner } from '@/lib/pdfSections/yearPriorityPDF';
 
 type Color = [number, number, number];
 const INK:   Color = [58,  54,  50]; // Charcoal grey
@@ -228,28 +229,48 @@ export function generatePDFYearAtAGlance(
     ctx.y = pairY + pairH + 10;
   }
 
-  // ── Time Lord strip (explicitly includes both names) ──────────────
+  // ── Time Lord / Lord of the Year — expanded with interpretation ──
   if (a.profectionYear?.timeLord) {
-    ctx.checkPage(56);
-    const stripH = 44;
+    const timeLordFelt: Record<string, string> = {
+      Sun: 'The Sun rules this year — your identity, vitality, and sense of purpose are the driving force. Decisions feel personal and consequential.',
+      Moon: 'The Moon rules this year — emotions, instincts, and domestic life set the pace. Your inner world guides outer events.',
+      Mercury: 'Mercury rules this year — communication, learning, and mental agility are your superpowers. Words carry extra weight.',
+      Venus: 'Venus rules this year — relationships, beauty, and values are the currency. What you love and how you love shapes everything.',
+      Mars: 'Mars rules this year — energy, ambition, and assertiveness are amplified. You push harder and tolerate less passivity.',
+      Jupiter: 'Jupiter rules this year — growth, opportunity, and expansion are the themes. Say yes to what expands you.',
+      Saturn: 'Saturn rules this year — discipline, responsibility, and long-term building define the pace. Patience produces lasting results.',
+    };
+
+    const lordName = P[a.profectionYear.timeLord] || a.profectionYear.timeLord;
+    const lordFelt = timeLordFelt[a.profectionYear.timeLord] || `${lordName} governs the pace and quality of events this year.`;
+    const lordHouse = a.profectionYear.timeLordSRHouse;
+
+    ctx.checkPage(80);
+    const stripH = 68;
     doc.setFillColor(...WARM_CREAM);
     doc.roundedRect(margin, ctx.y, contentW, stripH, 3, 3, 'F');
     doc.setFillColor(...GOLD);
     doc.rect(margin, ctx.y, 3, stripH, 'F');
 
-    let sy = ctx.y + 15;
+    let sy = ctx.y + 14;
     doc.setFont('times', 'bold'); doc.setFontSize(6.5);
     doc.setTextColor(...GOLD);
     doc.setCharSpace(2.5);
     doc.text('TIME LORD / LORD OF THE YEAR', margin + 12, sy);
     doc.setCharSpace(0);
 
-    sy += 16;
+    sy += 14;
     doc.setFont('times', 'bold'); doc.setFontSize(11.5);
     doc.setTextColor(...INK);
-    doc.text(`${P[a.profectionYear.timeLord] || a.profectionYear.timeLord} in Solar Return House ${a.profectionYear.timeLordSRHouse || '--'}`, margin + 12, sy);
+    doc.text(`${lordName}${lordHouse ? ` in Solar Return House ${lordHouse}` : ''}`, margin + 12, sy);
 
-    ctx.y += stripH + 10;
+    sy += 12;
+    doc.setFont('times', 'normal'); doc.setFontSize(8);
+    doc.setTextColor(...MUTED);
+    const feltLines: string[] = doc.splitTextToSize(lordFelt, contentW - 24);
+    for (const l of feltLines.slice(0, 2)) { doc.text(l, margin + 12, sy); sy += 10; }
+
+    ctx.y += stripH + 8;
   }
 
   // ── WHERE THIS YEAR PLAYS OUT — compact box ───────────────────────
@@ -279,6 +300,12 @@ export function generatePDFYearAtAGlance(
     for (const line of interpLines.slice(0, 3)) { doc.text(line, margin + 12, py); py += 10; }
 
     ctx.y += boxH + 8;
+  }
+
+  // ── Main Arena banner (moved from overlay page) ────────────────────
+  const { dominant } = computeOverlayData(a);
+  if (dominant) {
+    drawMainArenaBanner(ctx, doc, dominant);
   }
 
   // Editorial divider
