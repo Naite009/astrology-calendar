@@ -1282,6 +1282,7 @@ export const analyzeSolarReturn = (
   // ─── Moon Angularity (true degree-based, not house-based) ──
   // Check if Moon is within 5° of any angle cusp (ASC, IC, DSC, MC)
   let moonAngularity: SolarReturnAnalysis['moonAngularity'] = null;
+  const moonHouseNum = moonHouse?.house ?? null;
   if (moonPos) {
     const moonDeg = toAbsDeg(moonPos);
     if (moonDeg !== null) {

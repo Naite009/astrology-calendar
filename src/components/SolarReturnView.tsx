@@ -1068,7 +1068,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
 
         {/* ── Angularity Deep Teaching ── */}
         {analysis.moonHouse.house && (() => {
-          const ang = srMoonAngularity(analysis.moonHouse.house);
+          const ang = srMoonAngularity(analysis.moonAngularity, analysis.moonHouse.house || 0);
           return (
             <div className="border border-border rounded-sm p-4 bg-muted/10 space-y-2">
               <p className="text-[10px] uppercase tracking-widest font-medium text-primary">{ang.position} Moon — What This Means</p>
