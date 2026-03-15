@@ -720,7 +720,13 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
 }) => {
   return (
     <div className="space-y-4 mt-4">
-      {/* New Dashboard Header Sections */}
+      {/* 1. Story of the Year — top-level narrative synthesis */}
+      <StoryOfTheYear analysis={analysis} natalChart={natalChart} srChart={srChart} />
+
+      {/* 2. Life-Cycle Context — where this year fits in the larger pattern */}
+      <LifeCycleContext natalChart={natalChart} srChart={srChart} />
+
+      {/* Dashboard Details */}
       <SROverviewDashboard analysis={analysis} natalChart={natalChart} srChart={srChart} />
 
       {/* Year Theme */}
