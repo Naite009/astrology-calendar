@@ -28,7 +28,7 @@ serve(async (req) => {
       dataContext += `SR ASCENDANT: ${a.yearlyTheme.ascendantSign} Rising, ruled by ${a.yearlyTheme.ascendantRuler} in ${a.yearlyTheme.ascendantRulerSign}${a.yearlyTheme.ascendantRulerHouse ? ` (SR House ${a.yearlyTheme.ascendantRulerHouse})` : ''}\n`;
     }
 
-    // SR Ascendant Ruler in Natal Houses (J-B Morin technique)
+    // SR Ascendant Ruler in Natal Houses
     if (a.srAscRulerInNatal) {
       dataContext += `SR ASC RULER IN NATAL: ${a.srAscRulerInNatal.rulerPlanet} (ruler of ${a.srAscRulerInNatal.srAscSign}) in ${a.srAscRulerInNatal.rulerSRSign}${a.srAscRulerInNatal.rulerSRHouse ? ` (SR House ${a.srAscRulerInNatal.rulerSRHouse})` : ''} → falls in Natal House ${a.srAscRulerInNatal.rulerNatalHouse || '—'} (${a.srAscRulerInNatal.rulerNatalHouseTheme || ''})\n`;
       if (a.srAscRulerInNatal.interpretation) {
@@ -36,7 +36,7 @@ serve(async (req) => {
       }
     }
 
-    // SR Ascendant degree in Natal House (Lynn Bell)
+    // SR Ascendant degree in Natal House
     if (a.srAscInNatalHouse) {
       dataContext += `SR ASC DEGREE IN NATAL: The SR Ascendant falls in Natal House ${a.srAscInNatalHouse.natalHouse} (${a.srAscInNatalHouse.natalHouseTheme || ''})\n`;
     }
@@ -113,7 +113,7 @@ serve(async (req) => {
       if (a.hemisphericEmphasis.combinedInsight) dataContext += `Combined: ${a.hemisphericEmphasis.combinedInsight}\n`;
     }
 
-    // Natal Degree Conduits (Lynn Bell)
+    // Natal Degree Conduits
     if (a.natalDegreeConduits?.length > 0) {
       dataContext += `\nNATAL DEGREE CONDUITS (SR planet on natal planet's degree ±2°):\n`;
       a.natalDegreeConduits.forEach((c: any) => {

@@ -751,7 +751,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         </div>
       )}
 
-      {/* SR Ascendant Ruler in Natal Houses — the J-B Morin technique */}
+      {/* SR Ascendant Ruler in Natal Houses */}
       {analysis.srAscRulerInNatal && (
         <div className="border border-primary/20 rounded-sm p-5 bg-card">
           <h3 className="text-sm uppercase tracking-widest font-medium text-foreground mb-3 flex items-center gap-2">
@@ -761,7 +761,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
 
           {/* Step-by-step logic so it's crystal clear */}
           <div className="bg-secondary/50 rounded-sm p-3 mb-4 space-y-1.5">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-2">How this works (J-B Morin / Lynn Bell technique):</p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-2">How this works:</p>
             <p className="text-xs text-foreground">
               <span className="text-primary font-semibold">Step 1:</span> Your Solar Return Ascendant is {SIGN_SYMBOLS[analysis.srAscRulerInNatal.srAscSign] || ''} <strong>{analysis.srAscRulerInNatal.srAscSign}</strong> Rising
             </p>
@@ -1434,7 +1434,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
 
       {/* Moon Phase moved into Moon section above */}
 
-      {/* SR Ascendant in Natal House (Lynn Bell) */}
+      {/* SR Ascendant in Natal House */}
       {analysis.srAscInNatalHouse && (
         <div className="border border-primary/20 rounded-sm p-5 bg-card">
           <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
@@ -1448,7 +1448,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         </div>
       )}
 
-      {/* Natal Degree Conduits (Lynn Bell: SR planet on natal degree) */}
+      {/* Natal Degree Conduits */}
       {analysis.natalDegreeConduits.length > 0 && (
         <div className="border border-primary/20 rounded-sm p-5 bg-card">
           <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
