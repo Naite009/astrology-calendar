@@ -12,7 +12,7 @@ import {
 import { SAFETY_COPY } from '@/lib/structuralStressCopy';
 import { SaturnLensCards } from './structural/SaturnLensCards';
 import { DateExplorer } from './structural/DateExplorer';
-import { LifeMilestones } from './structural/LifeMilestones';
+
 import { FocusedTransitCard } from './structural/FocusedTransitCard';
 import { PhaseTimeline } from './structural/PhaseTimeline';
 
