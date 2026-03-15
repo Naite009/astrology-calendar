@@ -115,9 +115,9 @@ export function generatePDFYearAtAGlance(
   ctx.y += 28;
 
   // ── TOP ROW: 3-column info box grid ──────────────────────────────
-  const col3Gap = 12;
+  const col3Gap = 10;
   const col3W = (contentW - col3Gap * 2) / 3;
-  const boxH = 130;
+  const boxH = 112;
 
   const houseNum = a.profectionYear?.houseNumber || 1;
   const topStellium = a.stelliums[0];
@@ -147,58 +147,59 @@ export function generatePDFYearAtAGlance(
     WARM_CREAM,
   );
 
-  ctx.y += boxH + 18;
+  ctx.y += boxH + 12;
 
-  // ── YEAR-DEFINING ASPECT — cream hero card (print-friendly) ──────
+  // ── YEAR-DEFINING ASPECT — compact hero card ─────────────────────
   if (a.srToNatalAspects.length > 0) {
     const yda = a.srToNatalAspects[0];
-    ctx.checkPage(120);
+    ctx.checkPage(100);
 
-    const heroH = 110;
+    const heroH = 94;
     const heroY = ctx.y;
 
     doc.setFillColor(...CARD_BG);
     doc.roundedRect(margin, heroY, contentW, heroH, 4, 4, 'F');
-    doc.setDrawColor(...CHARCOAL); doc.setLineWidth(0.5);
+    doc.setDrawColor(...CHARCOAL); doc.setLineWidth(0.4);
     doc.roundedRect(margin, heroY, contentW, heroH, 4, 4, 'S');
     doc.setFillColor(...GOLD);
     doc.rect(margin, heroY, contentW, 2, 'F');
 
-    let hy = heroY + 22;
+    let hy = heroY + 17;
 
     doc.setFont('times', 'bold'); doc.setFontSize(6);
     doc.setTextColor(...GOLD);
-    doc.setCharSpace(4);
-    doc.text('YEAR-DEFINING ASPECT', margin + 18, hy);
+    doc.setCharSpace(3.5);
+    doc.text('YEAR-DEFINING ASPECT', margin + 14, hy);
     doc.setCharSpace(0);
-    hy += 20;
-
-    doc.setFont('times', 'bold'); doc.setFontSize(18);
-    doc.setTextColor(...CHARCOAL);
-    doc.text(`Solar Return ${P[yda.planet1] || yda.planet1} ${yda.type} Natal ${P[yda.planet2] || yda.planet2}`, margin + 18, hy);
-    hy += 14;
-
-    doc.setFont('times', 'normal'); doc.setFontSize(7.5);
-    doc.setTextColor(...GOLD);
-    doc.text(`${yda.orb} degree orb -- Felt all year`, margin + 18, hy);
     hy += 16;
 
+    doc.setFont('times', 'bold'); doc.setFontSize(15);
+    doc.setTextColor(...CHARCOAL);
+    const aspectLine = `Solar Return ${P[yda.planet1] || yda.planet1} ${yda.type} Natal ${P[yda.planet2] || yda.planet2}`;
+    const aspectLines: string[] = doc.splitTextToSize(aspectLine, contentW - 28);
+    for (const line of aspectLines.slice(0, 2)) { doc.text(line, margin + 14, hy); hy += 12; }
+
+    doc.setFont('times', 'normal'); doc.setFontSize(7);
+    doc.setTextColor(...GOLD);
+    doc.text(`${yda.orb} degree orb -- Felt all year`, margin + 14, hy);
+    hy += 13;
+
     if (yda.interpretation) {
-      doc.setFont('times', 'normal'); doc.setFontSize(9.5);
+      doc.setFont('times', 'normal'); doc.setFontSize(8.8);
       doc.setTextColor(...INK);
-      const interpLines: string[] = doc.splitTextToSize(yda.interpretation, contentW - 36);
-      for (const line of interpLines.slice(0, 3)) { doc.text(line, margin + 18, hy); hy += 13; }
+      const interpLines: string[] = doc.splitTextToSize(yda.interpretation, contentW - 28);
+      for (const line of interpLines.slice(0, 2)) { doc.text(line, margin + 14, hy); hy += 11; }
     }
 
-    ctx.y = heroY + heroH + 18;
+    ctx.y = heroY + heroH + 12;
   }
 
-  // ── Two-row: Solar Return ASCENDANT + MOON PHASE ──
+  // ── Two-column row: Solar Return ASCENDANT + MOON PHASE ─────────
   if (a.yearlyTheme) {
-    ctx.checkPage(150);
-    const col2Gap = 14;
+    ctx.checkPage(122);
+    const col2Gap = 12;
     const col2W = (contentW - col2Gap) / 2;
-    const pairH = 140;
+    const pairH = 112;
     const pairY = ctx.y;
 
     const ascSign = a.yearlyTheme.ascendantSign || '';
@@ -224,24 +225,60 @@ export function generatePDFYearAtAGlance(
       SOFT_GOLD,
     );
 
-    ctx.y = pairY + pairH + 18;
+    ctx.y = pairY + pairH + 10;
   }
 
-  // ── WHERE THIS YEAR PLAYS OUT — accent card ──────────────────────
+  // ── Time Lord strip (explicitly includes both names) ──────────────
+  if (a.profectionYear?.timeLord) {
+    ctx.checkPage(56);
+    const stripH = 44;
+    doc.setFillColor(...WARM_CREAM);
+    doc.roundedRect(margin, ctx.y, contentW, stripH, 3, 3, 'F');
+    doc.setFillColor(...GOLD);
+    doc.rect(margin, ctx.y, 3, stripH, 'F');
+
+    let sy = ctx.y + 15;
+    doc.setFont('times', 'bold'); doc.setFontSize(6.5);
+    doc.setTextColor(...GOLD);
+    doc.setCharSpace(2.5);
+    doc.text('TIME LORD / LORD OF THE YEAR', margin + 12, sy);
+    doc.setCharSpace(0);
+
+    sy += 16;
+    doc.setFont('times', 'bold'); doc.setFontSize(11.5);
+    doc.setTextColor(...INK);
+    doc.text(`${P[a.profectionYear.timeLord] || a.profectionYear.timeLord} in Solar Return House ${a.profectionYear.timeLordSRHouse || '--'}`, margin + 12, sy);
+
+    ctx.y += stripH + 10;
+  }
+
+  // ── WHERE THIS YEAR PLAYS OUT — compact box ───────────────────────
   if (a.srAscRulerInNatal) {
-    ctx.checkPage(130);
-    ctx.drawCard(doc, () => {
-      ctx.trackedLabel(doc, 'WHERE THIS YEAR PLAYS OUT', margin + 14, ctx.y, { charSpace: 2.5, size: 7.5 });
-      ctx.y += 20;
-      doc.setFont('times', 'bold'); doc.setFontSize(16);
-      doc.setTextColor(...INK);
-      doc.text(`${P[a.srAscRulerInNatal!.rulerPlanet] || a.srAscRulerInNatal!.rulerPlanet} in ${a.srAscRulerInNatal!.rulerNatalSign || '--'} -- Natal House ${a.srAscRulerInNatal!.rulerNatalHouse || '--'}`, margin + 14, ctx.y);
-      ctx.y += 24;
-      doc.setFont('times', 'normal'); doc.setFontSize(11);
-      doc.setTextColor(...INK);
-      const interpLines: string[] = doc.splitTextToSize(a.srAscRulerInNatal!.interpretation, contentW - 28);
-      for (const line of interpLines) { doc.text(line, margin + 14, ctx.y); ctx.y += 17; }
-    });
+    ctx.checkPage(96);
+    const boxH = 86;
+    doc.setFillColor(...CARD_BG);
+    doc.roundedRect(margin, ctx.y, contentW, boxH, 3, 3, 'F');
+    doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
+    doc.roundedRect(margin, ctx.y, contentW, boxH, 3, 3, 'S');
+    doc.setFillColor(...GOLD);
+    doc.rect(margin, ctx.y, 3, boxH, 'F');
+
+    let py = ctx.y + 14;
+    ctx.trackedLabel(doc, 'WHERE THIS YEAR PLAYS OUT', margin + 12, py, { charSpace: 2.2, size: 6.8 });
+    py += 14;
+
+    doc.setFont('times', 'bold'); doc.setFontSize(11.5);
+    doc.setTextColor(...INK);
+    const title = `${P[a.srAscRulerInNatal.rulerPlanet] || a.srAscRulerInNatal.rulerPlanet} in ${a.srAscRulerInNatal.rulerNatalSign || '--'} -- Natal House ${a.srAscRulerInNatal.rulerNatalHouse || '--'}`;
+    const titleLines: string[] = doc.splitTextToSize(title, contentW - 24);
+    for (const line of titleLines.slice(0, 1)) { doc.text(line, margin + 12, py); py += 12; }
+
+    doc.setFont('times', 'normal'); doc.setFontSize(8.6);
+    doc.setTextColor(...INK);
+    const interpLines: string[] = doc.splitTextToSize(a.srAscRulerInNatal.interpretation, contentW - 24);
+    for (const line of interpLines.slice(0, 3)) { doc.text(line, margin + 12, py); py += 10; }
+
+    ctx.y += boxH + 8;
   }
 
   // Editorial divider
