@@ -50,7 +50,7 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   sections.push({ title: 'Natal Overlay & Angle Activations', desc: 'How Solar Return placements land in natal houses' });
   sections.push({ title: 'Year Priority Engine', desc: 'Life areas ranked by planetary emphasis' });
   if (a.moonSign) sections.push({ title: 'Moon Sign Shift', desc: 'How your emotional processing changes this year' });
-  sections.push({ title: 'Solar Return vs Natal', desc: 'Side-by-side comparison of all planet positions' });
+  sections.push({ title: 'Natal vs Solar Return', desc: 'Side-by-side comparison of all planet positions' });
   if (a.stelliums.length > 0) sections.push({ title: 'Stelliums', desc: 'Where 3+ planets cluster' });
   if (a.elementBalance) sections.push({ title: 'Element & Modality Balance', desc: 'Fire/Earth/Air/Water and Cardinal/Fixed/Mutable' });
   if (a.hemisphericEmphasis) sections.push({ title: 'Where Your Energy Lives', desc: 'Hemispheric distribution' });
