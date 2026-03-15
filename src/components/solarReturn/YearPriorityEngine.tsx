@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Trophy, TrendingUp, ChevronRight, HelpCircle } from 'lucide-react';
+import { Trophy, TrendingUp, ChevronRight } from 'lucide-react';
 import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
@@ -28,8 +28,6 @@ export function YearPriorityEngine({ analysis, natalChart, srChart }: Props) {
 
   if (top3.length === 0) return null;
 
-  const maxScore = top3[0]?.score || 1;
-
   return (
     <div className="border border-primary/20 rounded-sm bg-card overflow-hidden">
       <div className="bg-primary/5 px-5 py-4 border-b border-primary/10">
@@ -38,7 +36,7 @@ export function YearPriorityEngine({ analysis, natalChart, srChart }: Props) {
           <div>
             <h3 className="text-sm uppercase tracking-widest font-medium text-foreground">Year Priority Engine</h3>
             <p className="text-xs text-muted-foreground">
-              Top themes ranked by weighted signal strength
+              Top themes ranked by house placements, angle contacts, and overlays
             </p>
           </div>
         </div>
@@ -53,32 +51,20 @@ export function YearPriorityEngine({ analysis, natalChart, srChart }: Props) {
                 <span className={`text-lg font-bold ${i === 0 ? 'text-primary' : 'text-foreground'}`}>#{i + 1}</span>
                 <span className="text-sm font-medium text-foreground">{theme.label}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className={`text-[10px] uppercase tracking-widest font-medium ${CONFIDENCE_COLORS[theme.confidence] || 'text-muted-foreground'}`}>
-                  {theme.confidence}
-                </span>
-                <span className="text-[10px] text-muted-foreground font-mono">{theme.score}pts</span>
-              </div>
+              <span className={`text-[10px] uppercase tracking-widest font-medium ${CONFIDENCE_COLORS[theme.confidence] || 'text-muted-foreground'}`}>
+                {theme.confidence}
+              </span>
             </div>
 
-            {/* Score bar */}
-            <div className="h-1.5 bg-muted rounded-full mb-3 overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all ${i === 0 ? 'bg-primary' : 'bg-primary/50'}`}
-                style={{ width: `${Math.min(100, (theme.score / maxScore) * 100)}%` }}
-              />
-            </div>
-
-            {/* Drivers */}
-            <div className="space-y-1">
+            {/* Why this theme ranks */}
+            <div className="space-y-1 mt-3">
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1">
-                <TrendingUp size={10} /> Key Drivers
+                <TrendingUp size={10} /> Why This Ranks
               </p>
               {theme.drivers.slice(0, 4).map((d, di) => (
-                <p key={di} className="text-xs text-muted-foreground flex items-center gap-1">
-                  <ChevronRight size={10} className="flex-shrink-0" />
-                  {d.source}
-                  <span className="text-muted-foreground/50 font-mono ml-auto">+{d.weight}</span>
+                <p key={di} className="text-xs text-muted-foreground flex items-start gap-1">
+                  <ChevronRight size={10} className="flex-shrink-0 mt-0.5" />
+                  <span>{d.source}</span>
                 </p>
               ))}
               {theme.drivers.length > 4 && (
@@ -98,25 +84,15 @@ export function YearPriorityEngine({ analysis, natalChart, srChart }: Props) {
               {rest.map((theme) => (
                 <div key={theme.id} className="flex items-center justify-between text-xs text-muted-foreground py-1 px-2 bg-muted/20 rounded-sm">
                   <span>{theme.label}</span>
-                  <span className="font-mono text-[10px]">{theme.score}pts</span>
+                  <span className={`text-[10px] uppercase tracking-widest ${CONFIDENCE_COLORS[theme.confidence] || ''}`}>
+                    {theme.confidence}
+                  </span>
                 </div>
               ))}
             </div>
           </div>
         )}
-
-        {/* Method note */}
-        <div className="flex items-start gap-1.5 pt-2 border-t border-border">
-          <HelpCircle size={10} className="text-muted-foreground flex-shrink-0 mt-0.5" />
-          <p className="text-[10px] text-muted-foreground leading-relaxed">
-            Scores combine SR house placements, natal house overlays, angle-to-planet contacts, planet-to-angle contacts, major aspects, lunar phase, and stacking bonuses. Higher scores indicate stronger, more repeated signals pointing to the same life area.
-          </p>
-        </div>
       </div>
     </div>
   );
-}
-
-function ord(n: number): string {
-  if (n === 1) return 'st'; if (n === 2) return 'nd'; if (n === 3) return 'rd'; return 'th';
 }
