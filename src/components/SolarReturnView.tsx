@@ -20,6 +20,8 @@ import { SolarReturnPDFExport } from '@/components/SolarReturnPDFExport';
 import { TierButtonRow } from '@/components/solarReturn/TierButtonRow';
 import { SROverviewDashboard } from '@/components/solarReturn/SROverviewDashboard';
 import { LunarPhaseTimeline } from '@/components/solarReturn/LunarPhaseTimeline';
+import { StoryOfTheYear } from '@/components/solarReturn/StoryOfTheYear';
+import { LifeCycleContext } from '@/components/solarReturn/LifeCycleContext';
 
 const ZODIAC_SIGNS = [
   'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
@@ -720,7 +722,13 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
 }) => {
   return (
     <div className="space-y-4 mt-4">
-      {/* New Dashboard Header Sections */}
+      {/* 1. Story of the Year — top-level narrative synthesis */}
+      <StoryOfTheYear analysis={analysis} natalChart={natalChart} srChart={srChart} />
+
+      {/* 2. Life-Cycle Context — where this year fits in the larger pattern */}
+      <LifeCycleContext natalChart={natalChart} srChart={srChart} />
+
+      {/* Dashboard Details */}
       <SROverviewDashboard analysis={analysis} natalChart={natalChart} srChart={srChart} />
 
       {/* Year Theme */}
