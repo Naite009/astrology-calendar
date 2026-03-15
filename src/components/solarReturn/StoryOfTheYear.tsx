@@ -85,6 +85,11 @@ export function StoryOfTheYear({ analysis, natalChart, srChart }: Props) {
     ? `${topAspect.planet1}–${topAspect.planet2} ${topAspect.type.toLowerCase()} (${topAspect.orb.toFixed(1)}°)`
     : null;
 
+  // Compute priority themes
+  const topThemes = useMemo(() => {
+    return computeYearPriorities(analysis, natalChart, srChart).slice(0, 3);
+  }, [analysis, natalChart, srChart]);
+
   if (!currentEntry || !sunHouse) return null;
 
   const cycleStageText = CYCLE_STAGE_TEXT[currentEntry.cycleStage] || currentEntry.cycleStage.toLowerCase();
