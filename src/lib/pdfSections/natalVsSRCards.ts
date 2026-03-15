@@ -113,13 +113,13 @@ export function generateNatalVsSRCards(
   doc.text('Where each planet was — and where it is now', margin, ctx.y);
   ctx.y += 30;
 
-  // 2-column x 6-row grid (12 planets)
+  // 2-column grid — compact to fit all on fewer pages
   const cols = 2;
-  const gapX = 14;
-  const gapY = 12;
+  const gapX = 10;
+  const gapY = 6;
   const cardW = (contentW - gapX * (cols - 1)) / cols;
-  const imgSize = 32;
-  const cardH = 120;
+  const imgSize = 24;
+  const cardH = 88;
 
   let gridStartY = ctx.y;
 
