@@ -188,13 +188,14 @@ export function generateKeyDatesTimeline(
   const tlName = P[timeLord] || timeLord;
 
   // New page — white bg
-  doc.addPage(); ctx.y = margin;
+  doc.addPage();
+  ctx.y = margin;
   doc.setFillColor(...WHITE);
   doc.rect(0, 0, pw, ph, 'F');
   ctx.sectionPages.set('KEY DATES', doc.getNumberOfPages());
 
   // Section header
-  ctx.y += 24;
+  ctx.y += 20;
   doc.setFont('times', 'bold'); doc.setFontSize(7);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(4);
@@ -204,90 +205,78 @@ export function generateKeyDatesTimeline(
 
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 28;
+  ctx.y += 22;
 
-  doc.setFont('times', 'normal'); doc.setFontSize(28);
+  doc.setFont('times', 'normal'); doc.setFontSize(25);
   doc.setTextColor(...INK);
   doc.text('When Your Year Activates', margin, ctx.y);
-  ctx.y += 14;
+  ctx.y += 12;
 
-  doc.setFont('times', 'italic'); doc.setFontSize(10);
+  doc.setFont('times', 'italic'); doc.setFontSize(9);
   doc.setTextColor(...MUTED);
   doc.text(`Transiting ${tlName} to your natal planets`, margin, ctx.y);
-  ctx.y += 40;
+  ctx.y += 16;
 
-  // Vertical timeline
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const timelineX = margin + 60; // Vertical line X position
-  const eventW = contentW - 80;
-  const eventH = 44;
-  const eventGap = 8;
+  const colGap = 12;
+  const colW = (contentW - colGap) / 2;
+  const cardH = 44;
+  const rowGap = 8;
 
-  for (const event of events) {
-    // Check page
-    if (ctx.y + eventH + eventGap > ph - 60) {
-      doc.addPage();
-      doc.setFillColor(...WHITE);
-      doc.rect(0, 0, pw, ph, 'F');
-      ctx.y = margin + 20;
-      // Continuation label
-      doc.setFont('times', 'bold'); doc.setFontSize(7);
-      doc.setTextColor(...GOLD);
-      doc.setCharSpace(3);
-      doc.text('KEY DATES (CONTINUED)', margin, ctx.y);
-      doc.setCharSpace(0);
-      ctx.y += 16;
-    }
+  const availableH = ph - 62 - ctx.y;
+  const maxRows = Math.max(1, Math.floor((availableH + rowGap) / (cardH + rowGap)));
+  const maxEvents = maxRows * 2;
+  const visibleEvents = events.slice(0, maxEvents);
+
+  for (let i = 0; i < visibleEvents.length; i++) {
+    const event = visibleEvents[i];
+    const row = Math.floor(i / 2);
+    const col = i % 2;
+    const x = margin + col * (colW + colGap);
+    const y = ctx.y + row * (cardH + rowGap);
 
     const nature = NATURE_COLORS[event.nature] || NATURE_COLORS.fusion;
     const dateStr = `${months[event.date.getMonth()]} ${event.date.getDate()}`;
     const natalName = P[event.natalPlanet] || event.natalPlanet;
     const aspectTitle = `${tlName} ${event.aspectName} ${natalName}`;
 
-    // Date label (left of timeline)
-    doc.setFont('times', 'bold'); doc.setFontSize(10);
-    doc.setTextColor(...INK);
-    doc.text(dateStr, timelineX - 14, ctx.y + 14, { align: 'right' });
-
-    // Vertical line segment
-    doc.setDrawColor(...RULE); doc.setLineWidth(0.5);
-    doc.line(timelineX, ctx.y, timelineX, ctx.y + eventH);
-
-    // Gold dot
-    doc.setFillColor(...GOLD);
-    doc.circle(timelineX, ctx.y + 14, 4, 'F');
-
-    // Event card (right of timeline)
-    const cardX = timelineX + 14;
-    const cardInnerW = eventW - 20; // Ensure content stays inside card
     doc.setFillColor(...nature.bg);
-    doc.roundedRect(cardX, ctx.y, eventW, eventH, 3, 3, 'F');
+    doc.roundedRect(x, y, colW, cardH, 3, 3, 'F');
     doc.setDrawColor(...RULE); doc.setLineWidth(0.2);
-    doc.roundedRect(cardX, ctx.y, eventW, eventH, 3, 3, 'S');
+    doc.roundedRect(x, y, colW, cardH, 3, 3, 'S');
+    doc.setFillColor(...GOLD);
+    doc.rect(x, y, 2.5, cardH, 'F');
 
-    // Nature badge (right side) — draw FIRST to know how much space to reserve
-    const badgeW = doc.getTextWidth(nature.label) + 10;
+    doc.setFont('times', 'bold'); doc.setFontSize(8.5);
+    doc.setTextColor(...INK);
+    doc.text(dateStr, x + 10, y + 13);
+
     doc.setFont('times', 'bold'); doc.setFontSize(6);
     doc.setTextColor(...nature.text);
-    doc.setCharSpace(1.5);
-    doc.text(nature.label, cardX + eventW - 10, ctx.y + 16, { align: 'right' });
+    doc.setCharSpace(1.2);
+    doc.text(nature.label, x + colW - 8, y + 13, { align: 'right' });
     doc.setCharSpace(0);
 
-    // Aspect title — constrained to not overlap badge
-    doc.setFont('times', 'bold'); doc.setFontSize(9);
+    doc.setFont('times', 'bold'); doc.setFontSize(8.5);
     doc.setTextColor(...INK);
-    const titleMaxW = cardInnerW - badgeW - 10;
-    const titleLines = doc.splitTextToSize(aspectTitle, titleMaxW);
-    doc.text(titleLines[0] || aspectTitle, cardX + 10, ctx.y + 16);
+    const titleLines = doc.splitTextToSize(aspectTitle, colW - 20);
+    doc.text(titleLines[0] || aspectTitle, x + 10, y + 26);
 
-    // 5-word summary
-    doc.setFont('times', 'normal'); doc.setFontSize(8);
+    doc.setFont('times', 'normal'); doc.setFontSize(7.5);
     doc.setTextColor(...MUTED);
-    const summaryLines = doc.splitTextToSize(event.summary, cardInnerW);
-    doc.text(summaryLines[0] || event.summary, cardX + 10, ctx.y + 30);
-
-    ctx.y += eventH + eventGap;
+    const summaryLines = doc.splitTextToSize(event.summary, colW - 20);
+    doc.text(summaryLines[0] || event.summary, x + 10, y + 37);
   }
 
-  ctx.y += 10;
+  const usedRows = Math.ceil(visibleEvents.length / 2);
+  ctx.y += usedRows * (cardH + rowGap);
+
+  if (events.length > visibleEvents.length) {
+    doc.setFont('times', 'italic'); doc.setFontSize(8);
+    doc.setTextColor(...MUTED);
+    doc.text(`Showing ${visibleEvents.length} strongest activations in this one-page view.`, margin, ctx.y + 2);
+    ctx.y += 12;
+  }
+
+  ctx.y += 4;
 }
