@@ -103,20 +103,6 @@ const moonYearAhead: Record<number, string> = {
   11: 'Emotional fulfillment through friendships and community.',
   12: 'Emotions are internalized. Solitude is needed for processing.',
 };
-const srMoonSignActivation: Record<string, (natalSign: string) => string> = {
-  Aries: (natal) => `Your SR Moon in Aries pushes your natal ${natal} Moon toward action and independence.`,
-  Taurus: (natal) => `Your SR Moon in Taurus grounds your natal ${natal} Moon in physical comfort and stability.`,
-  Gemini: (natal) => `Your SR Moon in Gemini activates your natal ${natal} Moon through communication.`,
-  Cancer: (natal) => `Your SR Moon in Cancer amplifies your natal ${natal} Moon deepest needs.`,
-  Leo: (natal) => `Your SR Moon in Leo activates your natal ${natal} Moon through creative self-expression.`,
-  Virgo: (natal) => `Your SR Moon in Virgo channels your natal ${natal} Moon into practical service.`,
-  Libra: (natal) => `Your SR Moon in Libra filters your natal ${natal} Moon through relationships.`,
-  Scorpio: (natal) => `Your SR Moon in Scorpio intensifies your natal ${natal} Moon dramatically.`,
-  Sagittarius: (natal) => `Your SR Moon in Sagittarius expands your natal ${natal} Moon toward adventure.`,
-  Capricorn: (natal) => `Your SR Moon in Capricorn disciplines your natal ${natal} Moon. Emotions are managed through structure and achievement.`,
-  Aquarius: (natal) => `Your SR Moon in Aquarius detaches your natal ${natal} Moon just enough to see patterns clearly.`,
-  Pisces: (natal) => `Your SR Moon in Pisces dissolves boundaries around your natal ${natal} Moon. Intuition is heightened.`,
-};
 const risingStrength: Record<string, string> = {
   Aries: 'People experience you as bold, direct, and energizing.',
   Taurus: 'People experience you as calm, reliable, and aesthetically aware.',
@@ -172,9 +158,9 @@ export function generateStrengthsPortrait(
   const srAscSign = analysis.yearlyTheme?.ascendantSign || '';
   const srMoonSign = analysis.moonSign || '';
 
-  // Force new page for this section
+  // Force new page for this section — start higher to fit everything on one page
   ctx.pageBg(doc);
-  ctx.y += 28;
+  ctx.y += 12; // Reduced from 28
 
   // Tracked label
   doc.setFont('times', 'bold'); doc.setFontSize(7);
@@ -182,26 +168,25 @@ export function generateStrengthsPortrait(
   doc.setCharSpace(4);
   doc.text('YOUR BIG THREE', margin, ctx.y);
   doc.setCharSpace(0);
-  ctx.y += 12;
+  ctx.y += 8; // Reduced from 12
 
   // Hairline
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 32;
+  ctx.y += 18; // Reduced from 32
 
   // Large serif display title
-  doc.setFont('times', 'normal'); doc.setFontSize(32);
+  doc.setFont('times', 'normal'); doc.setFontSize(28); // Reduced from 32
   doc.setTextColor(...INK);
   doc.text('The Natal-to-Return Shift', margin, ctx.y);
-  ctx.y += 16;
+  ctx.y += 12; // Reduced from 16
 
-  doc.setFont('times', 'italic'); doc.setFontSize(11);
+  doc.setFont('times', 'italic'); doc.setFontSize(10);
   doc.setTextColor(...MUTED);
   doc.text('How this year activates your natal strengths', margin, ctx.y);
-  ctx.y += 30;
+  ctx.y += 20; // Reduced from 30
 
-  // Compact rendering: All three planets on minimal pages
-  // Each planet gets a header strip + condensed strength/shadow + year text
+  // Compact rendering: All three planets on one page
   const renderCompactPlanet = (
     planetLabel: string,
     natalTag: string,
@@ -212,10 +197,8 @@ export function generateStrengthsPortrait(
     yearLabel: string,
     yearText: string,
   ) => {
-    ctx.checkPage(180);
-
     // Header strip — cream bg, no black
-    const stripH = 48;
+    const stripH = 36; // Reduced from 48
     const stripY = ctx.y;
     doc.setFillColor(...CARD_BG);
     doc.roundedRect(margin, stripY, contentW, stripH, 3, 3, 'F');
@@ -226,62 +209,62 @@ export function generateStrengthsPortrait(
     doc.setFillColor(...GOLD);
     doc.rect(margin, stripY, 3, stripH, 'F');
 
-    // Planet label in gold — bigger
-    doc.setFont('times', 'bold'); doc.setFontSize(7.5);
+    // Planet label in gold
+    doc.setFont('times', 'bold'); doc.setFontSize(6.5);
     doc.setTextColor(...GOLD);
     doc.setCharSpace(3);
-    doc.text(planetLabel, margin + 14, stripY + 18);
+    doc.text(planetLabel, margin + 14, stripY + 14);
     doc.setCharSpace(0);
 
-    // Large heading — bigger font
-    doc.setFont('times', 'bold'); doc.setFontSize(22);
+    // Large heading
+    doc.setFont('times', 'bold'); doc.setFontSize(16); // Reduced from 22
     doc.setTextColor(...INK);
-    doc.text(heading, margin + 14, stripY + 38);
+    doc.text(heading, margin + 14, stripY + 30);
 
-    // Natal to SR tags on right — clean arrow
-    doc.setFont('times', 'normal'); doc.setFontSize(9);
+    // Natal to SR tags on right — clean arrow (no unicode)
+    doc.setFont('times', 'normal'); doc.setFontSize(8);
     doc.setTextColor(...GOLD);
     const tagText = srTag ? `${natalTag}  -->  ${srTag}` : natalTag;
-    doc.text(tagText, pw - margin - 14, stripY + 38, { align: 'right' });
+    doc.text(tagText, pw - margin - 14, stripY + 30, { align: 'right' });
 
-    ctx.y = stripY + stripH + 18;
+    ctx.y = stripY + stripH + 10; // Reduced from 18
 
     // STRENGTH — condensed
-    doc.setFont('times', 'bold'); doc.setFontSize(7);
+    doc.setFont('times', 'bold'); doc.setFontSize(6.5);
     doc.setTextColor(...GOLD);
     doc.setCharSpace(2);
     doc.text('STRENGTH', margin + 8, ctx.y);
     doc.setCharSpace(0);
-    ctx.y += 12;
-    ctx.writeBody(doc, strengthText, INK, 10, 14);
-    ctx.y += 8;
+    ctx.y += 10; // Reduced from 12
+    ctx.writeBody(doc, strengthText, INK, 9, 12.5); // Smaller font
+    ctx.y += 4; // Reduced from 8
 
     // SHADOW — condensed
-    doc.setFont('times', 'bold'); doc.setFontSize(7);
+    doc.setFont('times', 'bold'); doc.setFontSize(6.5);
     doc.setTextColor(...MUTED);
     doc.setCharSpace(2);
     doc.text('SHADOW', margin + 8, ctx.y);
     doc.setCharSpace(0);
-    ctx.y += 12;
-    ctx.writeBody(doc, shadowText, INK, 10, 14);
-    ctx.y += 8;
+    ctx.y += 10;
+    ctx.writeBody(doc, shadowText, INK, 9, 12.5);
+    ctx.y += 4;
 
-    // Year activation — inline, not nested card
+    // Year activation — inline
     if (yearText) {
-      doc.setFont('times', 'bold'); doc.setFontSize(7);
+      doc.setFont('times', 'bold'); doc.setFontSize(6.5);
       doc.setTextColor(...GOLD);
       doc.setCharSpace(2);
       doc.text(yearLabel.toUpperCase(), margin + 8, ctx.y);
       doc.setCharSpace(0);
-      ctx.y += 12;
-      ctx.writeBody(doc, yearText, INK, 10, 14);
+      ctx.y += 10;
+      ctx.writeBody(doc, yearText, INK, 9, 12.5);
     }
 
     // Thin divider
-    ctx.y += 8;
+    ctx.y += 4;
     doc.setDrawColor(...RULE); doc.setLineWidth(0.15);
     doc.line(margin + 20, ctx.y, pw - margin - 20, ctx.y);
-    ctx.y += 16;
+    ctx.y += 10; // Reduced from 16
   };
 
   // SUN
@@ -328,5 +311,6 @@ export function generateStrengthsPortrait(
     );
   }
 
+  // No section divider — let stars/divider be part of this page naturally
   ctx.sectionDivider(doc);
 }
