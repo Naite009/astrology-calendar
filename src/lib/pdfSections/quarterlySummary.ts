@@ -15,13 +15,13 @@ const SOFT_GOLD: Color = [248, 242, 228];
 
 const LIFE_THEMES: Record<number, { short: string; detail: string }> = {
   1: { short: 'Identity', detail: 'your identity, confidence, and how you show up' },
-  2: { short: 'Money & Worth', detail: 'finances, possessions, and self-worth' },
+  2: { short: 'Money and Worth', detail: 'finances, possessions, and self-worth' },
   3: { short: 'Communication', detail: 'conversations, learning, and your local world' },
-  4: { short: 'Home & Family', detail: 'home, family, and emotional foundations' },
-  5: { short: 'Joy & Creativity', detail: 'romance, creative projects, and self-expression' },
-  6: { short: 'Health & Routines', detail: 'daily habits, health, and work life' },
+  4: { short: 'Home and Family', detail: 'home, family, and emotional foundations' },
+  5: { short: 'Joy and Creativity', detail: 'romance, creative projects, and self-expression' },
+  6: { short: 'Health and Routines', detail: 'daily habits, health, and work life' },
   7: { short: 'Relationships', detail: 'partnerships, commitments, and one-on-one dynamics' },
-  8: { short: 'Depth & Change', detail: 'deep transformation, shared resources, and intimacy' },
+  8: { short: 'Depth and Change', detail: 'deep transformation, shared resources, and intimacy' },
   9: { short: 'Expansion', detail: 'travel, learning, and big-picture thinking' },
   10: { short: 'Career', detail: 'professional life, reputation, and ambitions' },
   11: { short: 'Community', detail: 'friendships, social circles, and future hopes' },
@@ -34,15 +34,17 @@ const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
 const SEASON_LABELS = ['Spring', 'Summer', 'Autumn', 'Winter'];
 
 function ord(n: number): string {
-  const s = ['th', 'st', 'nd', 'rd'];
-  const v = n % 100;
-  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  if (n >= 11 && n <= 13) return `${n}th`;
+  const last = n % 10;
+  if (last === 1) return `${n}st`;
+  if (last === 2) return `${n}nd`;
+  if (last === 3) return `${n}rd`;
+  return `${n}th`;
 }
 
 interface QuarterData {
   months: string;
   headline: string;
-  body: string;
   tags: string[];
   energy: string;
   powerMove: string;
@@ -85,10 +87,10 @@ function buildDataRichQuarters(a: SolarReturnAnalysis, srChart: SolarReturnChart
     const sentences: string[] = [];
     const tags: string[] = [];
 
-    if (timeLord && q === 0) sentences.push(`${timeLordName} as Time Lord sets the agenda from the start — ${LIFE_THEMES[profH]?.detail || 'key themes'} are activated immediately.`);
+    if (timeLord && q === 0) sentences.push(`${timeLordName} as Time Lord sets the agenda from the start -- ${LIFE_THEMES[profH]?.detail || 'key themes'} are activated immediately.`);
     if (q === 0 && sunH) sentences.push(`The Solar Return Sun in the ${ord(sunH)} house directs core vitality toward ${LIFE_THEMES[sunH]?.detail || 'this area'}.`);
     if (stelliums.length > 0 && q === 0) { const s = stelliums[0]; sentences.push(`Your ${s.planets.length}-planet stellium in ${s.location} concentrates energy early.`); }
-    if (retros.length > 0 && q === 1) { sentences.push(`${retros.map(r => P[r] || r).join(', ')} retrograde signals a revision period — review and refine.`); tags.push('MERCURY RX'); }
+    if (retros.length > 0 && q === 1) { sentences.push(`${retros.map(r => P[r] || r).join(', ')} retrograde signals a revision period -- review and refine.`); tags.push('RETROGRADE'); }
     if (saturnH && q === 2) { sentences.push(`Saturn in the ${ord(saturnH)} house (${saturnSign}) asks for sustained discipline around ${LIFE_THEMES[saturnH]?.detail || 'key areas'}.`); if (saturnRx) tags.push('SATURN RX'); }
     if (moonSign && q === 2) {
       const moonFeels: Record<string, string> = { Aries: 'directness', Taurus: 'stability', Gemini: 'mental stimulation', Cancer: 'emotional depth', Leo: 'warmth', Virgo: 'analytical precision', Libra: 'harmony-seeking', Scorpio: 'psychological intensity', Sagittarius: 'restlessness', Capricorn: 'emotional discipline and pragmatism', Aquarius: 'detached clarity', Pisces: 'heightened empathy' };
@@ -99,17 +101,16 @@ function buildDataRichQuarters(a: SolarReturnAnalysis, srChart: SolarReturnChart
 
     let headline = '';
     if (q === 0 && timeLord) headline = `${timeLordName} Sets the Pace`;
-    else if (q === 1 && retros.length > 0) headline = 'Review & Revision';
-    else if (q === 2 && saturnH) headline = 'Saturn Tests What You\'ve Built';
+    else if (q === 1 && retros.length > 0) headline = 'Review and Revision';
+    else if (q === 2 && saturnH) headline = 'Saturn Tests What You Have Built';
     else if (q === 3 && nodeH) headline = 'Growth Edge Crystallizes';
     else headline = `${houseThemes[0]} Takes Center Stage`;
 
-    const fullBody = sentences.join(' ');
     const energy = sentences[0] || 'Pay attention to what shows up here.';
     const actionSentences = sentences.filter(s => /build|create|trust|channel|lean|step|pay|use|ask|show|focus|walk|let|embrace|release/i.test(s));
     const powerMove = actionSentences[actionSentences.length - 1] || sentences[sentences.length - 1] || 'Stay present to what shifts.';
 
-    quarters.push({ months: monthsLabel, headline, body: fullBody, tags, energy, powerMove });
+    quarters.push({ months: monthsLabel, headline, tags, energy, powerMove });
   }
   return quarters;
 }
@@ -117,11 +118,11 @@ function buildDataRichQuarters(a: SolarReturnAnalysis, srChart: SolarReturnChart
 export function generateQuarterlySummary(
   ctx: PDFContext, doc: jsPDF, a: SolarReturnAnalysis, srChart: SolarReturnChart, natalChart: NatalChart,
 ) {
-  const { pw, ph, margin, contentW } = ctx;
+  const { pw, margin, contentW } = ctx;
 
   ctx.pageBg(doc);
 
-  // ── Magazine section header with extra top breathing room ──
+  // Section header
   ctx.y += 36;
   doc.setFont('times', 'bold'); doc.setFontSize(7);
   doc.setTextColor(...GOLD);
@@ -146,7 +147,7 @@ export function generateQuarterlySummary(
 
   const quarters = buildDataRichQuarters(a, srChart, natalChart);
 
-  // ── 2x2 GRID LAYOUT ──────────────────────────────────────────────
+  // 2x2 GRID LAYOUT
   const gridGapX = 18;
   const gridGapY = 18;
   const cellW = (contentW - gridGapX) / 2;
@@ -161,7 +162,6 @@ export function generateQuarterlySummary(
     const cellX = margin + col * (cellW + gridGapX);
     const cellY = ctx.y + row * (cellH + gridGapY);
 
-    // Alternating backgrounds
     const isOdd = i % 2 === 1;
     const bgColor: Color = isOdd ? SOFT_GOLD : CARD_BG;
 
@@ -176,7 +176,7 @@ export function generateQuarterlySummary(
 
     let cy = cellY + 24;
 
-    // Season label instead of icon
+    // Season label
     doc.setFont('times', 'bold'); doc.setFontSize(14);
     doc.setTextColor(...GOLD);
     doc.text(SEASON_LABELS[i] || `Q${i + 1}`, cellX + 14, cy);
@@ -222,7 +222,7 @@ export function generateQuarterlySummary(
     const pLines: string[] = doc.splitTextToSize(q.powerMove, cellW - 28);
     for (const l of pLines.slice(0, 2)) { doc.text(l, cellX + 14, cy); cy += 12; }
 
-    // Tags (if any) — clean pill badges
+    // Tags
     if (q.tags.length > 0) {
       cy += 8;
       for (const tag of q.tags) {

@@ -12,11 +12,22 @@ const MUTED:   Color = [130, 125, 118];
 const RULE:    Color = [200, 195, 188];
 const CARD_BG: Color = [245, 241, 234];
 
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
 const formatDate = (dateStr: string | undefined): string => {
   if (!dateStr) return '';
   try {
-    const d = new Date(dateStr + 'T00:00:00');
-    return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase();
+    const parts = dateStr.split(/[-/]/);
+    let year: string, month: number, day: number;
+    if (parts[0].length === 4) {
+      year = parts[0]; month = parseInt(parts[1], 10); day = parseInt(parts[2], 10);
+    } else {
+      month = parseInt(parts[0], 10); day = parseInt(parts[1], 10); year = parts[2];
+    }
+    return `${MONTH_NAMES[month - 1] || ''} ${day}, ${year}`;
   } catch { return dateStr || ''; }
 };
 
@@ -63,16 +74,16 @@ export async function generatePDFCover(
   const srMoon    = a.moonSign || '';
   const srRising  = a.yearlyTheme?.ascendantSign || '';
 
-  // ── Full cream background ──────────────────────────────────────────
+  // Full cream background
   doc.setFillColor(...CREAM);
   doc.rect(0, 0, pw, ph, 'F');
 
-  // ── Thin gold border frame ────────────────────────────────────────
+  // Thin gold border frame
   const frameInset = 18;
   doc.setDrawColor(...GOLD); doc.setLineWidth(0.5);
   doc.rect(frameInset, frameInset, pw - frameInset * 2, ph - frameInset * 2);
 
-  // ── Top-left: small "SOLAR RETURN" masthead ────────────────────────
+  // Top-left: small "SOLAR RETURN" masthead
   let y = frameInset + 30;
   doc.setFont('times', 'normal'); doc.setFontSize(7.5);
   doc.setTextColor(...GOLD);
@@ -80,19 +91,19 @@ export async function generatePDFCover(
   doc.text('SOLAR RETURN', frameInset + 22, y);
   doc.setCharSpace(0);
 
-  // ── Top-right: year as small accent ────────────────────────────────
+  // Top-right: year as small accent
   doc.setFont('times', 'normal'); doc.setFontSize(7.5);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(4);
   doc.text(String(year), pw - frameInset - 22, y, { align: 'right' });
   doc.setCharSpace(0);
 
-  // ── Hairline under masthead ────────────────────────────────────────
+  // Hairline under masthead
   y += 10;
   doc.setDrawColor(...GOLD); doc.setLineWidth(0.3);
   doc.line(frameInset + 22, y, pw - frameInset - 22, y);
 
-  // ── MASSIVE "Happy Birthday" — the focal point ────────────────────
+  // MASSIVE "Happy Birthday" — the focal point, all centered
   if (birthdayMode) {
     y += 62;
     doc.setFont('times', 'italic'); doc.setFontSize(58);
@@ -115,22 +126,27 @@ export async function generatePDFCover(
     y += 80;
   }
 
-  // ── Name — centered, elegant, smaller, tracked ────────────────────
+  // Name — centered, elegant, tracked
   doc.setFont('times', 'normal'); doc.setFontSize(14);
   doc.setTextColor(...MUTED);
   doc.setCharSpace(6);
   doc.text(name.toUpperCase(), pw / 2, y, { align: 'center' });
   doc.setCharSpace(0);
-  y += 22;
+  y += 24;
 
-  // ── Birth info — very quiet ───────────────────────────────────────
-  const birthInfo = `${formatDate(natalChart.birthDate)}  →  ${capitalizeLocation(natalChart.birthLocation).toUpperCase()}`;
-  doc.setFont('times', 'normal'); doc.setFontSize(7);
+  // Birth info — clean, no special characters, centered
+  const dateStr = formatDate(natalChart.birthDate);
+  const locStr = capitalizeLocation(natalChart.birthLocation);
+  const birthParts: string[] = [];
+  if (dateStr) birthParts.push(dateStr);
+  if (locStr) birthParts.push(locStr);
+  const birthInfo = birthParts.join('  ·  ');
+  doc.setFont('times', 'normal'); doc.setFontSize(7.5);
   doc.setTextColor(...MUTED);
   doc.text(birthInfo, pw / 2, y, { align: 'center' });
   y += 36;
 
-  // ── Cake image — framed like a magazine feature, larger ───────────
+  // Cake image — centered, larger
   const cakeImgSrc = cakeImages[natalSun];
   if (cakeImgSrc) {
     try {
@@ -140,7 +156,6 @@ export async function generatePDFCover(
         const imgH = 169;
         const imgX = (pw - imgW) / 2;
 
-        // Subtle shadow frame behind image
         doc.setFillColor(235, 230, 222);
         doc.roundedRect(imgX - 3, y - 3, imgW + 6, imgH + 6, 2, 2, 'F');
         doc.setDrawColor(...RULE); doc.setLineWidth(0.4);
@@ -152,7 +167,7 @@ export async function generatePDFCover(
     } catch { /* skip image */ }
   }
 
-  // ── Personal message — understated italic ─────────────────────────
+  // Personal message — understated italic, centered
   if (birthdayMode && personalMessage.trim()) {
     y += 4;
     const msgLines: string[] = doc.splitTextToSize(personalMessage.trim(), contentW * 0.65);
@@ -165,14 +180,13 @@ export async function generatePDFCover(
     y += 8;
   }
 
-  // ── BORN WITH / THIS YEAR comparison — editorial table ────────────
+  // BORN WITH / THIS YEAR comparison — editorial table, centered
   const tableW  = contentW * 0.78;
   const tableX  = (pw - tableW) / 2;
   const tableH  = 120;
   const tableY  = Math.min(y + 6, ph - frameInset - tableH - 30);
   const midX    = tableX + tableW / 2;
 
-  // Soft background
   doc.setFillColor(...CARD_BG);
   doc.roundedRect(tableX, tableY, tableW, tableH, 3, 3, 'F');
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
@@ -194,10 +208,10 @@ export async function generatePDFCover(
   doc.setDrawColor(...RULE); doc.setLineWidth(0.15);
   doc.line(tableX + 8, tableY + 32, tableX + tableW - 8, tableY + 32);
 
-  // Big Three rows
+  // Big Three rows — clean text, no special glyphs
   const entries = [
-    { natal: `${natalSun} Sun`,     sr: `${natalSun} Sun`  },
-    { natal: `${natalMoon} Moon`,   sr: `${srMoon} Moon`   },
+    { natal: `${natalSun} Sun`,       sr: `${natalSun} Sun`  },
+    { natal: `${natalMoon} Moon`,     sr: `${srMoon} Moon`   },
     { natal: `${natalRising} Rising`, sr: `${srRising} Rising` },
   ];
 
