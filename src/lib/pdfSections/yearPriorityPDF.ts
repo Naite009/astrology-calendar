@@ -186,7 +186,7 @@ export function generatePDFAngleActivations(
       for (const asp of ASPECT_DEFS) {
         let diff = Math.abs(srDeg - angle.deg); if (diff > 180) diff = 360 - diff;
         const orb = Math.abs(diff - asp.angle);
-        if (orb <= ORB) {
+        if (orb <= maxOrb) {
           const dp = pName === 'NorthNode' ? 'N.Node' : pName;
           acts.push({ label: `SR ${dp} ${asp.glyph} Natal ${angle.name}`, aspectName: asp.name, orb: Math.round(orb * 10) / 10, narrative: buildNarrative(dp, asp.name, angle.name, angle.name, pName), priority: asp.angle === 0 ? 1 : 3 });
         }

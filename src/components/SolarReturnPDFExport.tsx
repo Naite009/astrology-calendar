@@ -403,7 +403,7 @@ export async function generateBirthdayGiftPDF(
   ctx.sectionPages.set('NATAL OVERLAY', doc.getNumberOfPages());
   generatePDFNatalOverlay(ctx, doc, analysis);
   ctx.checkPage(200);
-  generatePDFAngleActivations(ctx, doc, natalChart, srChart);
+  generatePDFAngleActivations(ctx, doc, natalChart, srChart, 1);
   doc.addPage(); ctx.y = margin;
   ctx.sectionPages.set('YEAR PRIORITY ENGINE', doc.getNumberOfPages());
   generatePDFYearPriority(ctx, doc, analysis, natalChart, srChart);
