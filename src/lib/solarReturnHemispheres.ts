@@ -42,8 +42,8 @@ function getVerticalDetail(upper: number, lower: number, total: number): { label
         title: 'Balanced Horizon — Equal Public & Private',
         summary: 'Your Solar Return planets are evenly split above and below the horizon. This is a year where your private inner world and your public outer world receive equal attention and energy.',
         bodyParagraphs: [
-          'When planets divide evenly across the horizon line, neither the public nor private sphere dominates your year. According to Mary Fortier Shea, this balance suggests a year of integration — you are not being pushed exclusively into the spotlight or pulled entirely into retreat. Instead, you move fluidly between both domains.',
-          'Brian Clark notes that a balanced horizon in the Solar Return indicates a year where internal development supports external achievement and vice versa. What you process privately (emotional work, family matters, self-care) feeds directly into what you accomplish publicly (career moves, social engagements, reputation building). There is no disconnect between inner and outer worlds.',
+          'When planets divide evenly across the horizon line, neither the public nor private sphere dominates your year. This balance suggests a year of integration — you are not being pushed exclusively into the spotlight or pulled entirely into retreat. Instead, you move fluidly between both domains.',
+          'A balanced horizon in the Solar Return means internal development supports external achievement and vice versa. What you process privately (emotional work, family matters, self-care) feeds directly into what you accomplish publicly (career moves, social engagements, reputation building). There is no disconnect between inner and outer worlds.',
           'This balance can also signal that no single life area is in crisis — you have the bandwidth to attend to both personal foundations and professional or social responsibilities. The risk, however, is a lack of clear direction: when everything gets equal weight, you may struggle to prioritize or feel pulled in too many directions simultaneously.'
         ],
         focusAreas: [
