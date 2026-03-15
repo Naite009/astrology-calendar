@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 import { PDFContext } from './pdfContext';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
+import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 
 type Color = [number, number, number];
 const INK:   Color = [18,  16,  14];
@@ -19,6 +20,7 @@ function ord(n: number): string {
   return `${n}th`;
 }
 
+// ─── Natal Sun ──────────────────────────────────────
 const sunStrength: Record<string, string> = {
   Aries: 'Initiative, courage, and the drive to start what others only imagine. You act first and think later -- and it usually works.',
   Taurus: 'Steadiness, sensory awareness, and the patience to build things that endure. You are the rock others lean on.',
@@ -47,36 +49,88 @@ const sunShadow: Record<string, string> = {
   Aquarius: 'Emotional detachment presented as objectivity. Contrarianism for its own sake.',
   Pisces: 'Boundary dissolution that leads to enmeshment. Escapism through substances, fantasy, or spiritual bypassing.',
 };
-const sunYearAhead: Record<number, string> = {
-  1: 'Your identity is front and center. This is a year of personal reinvention.',
-  2: 'Your strengths are channeled into building financial security and clarifying what you truly value.',
-  3: 'Your gifts shine through communication -- writing, teaching, or conversations that change perspectives.',
-  4: 'Your strengths serve your home and family -- building emotional foundations and creating sanctuary.',
-  5: 'Creative gifts demand expression -- romance, art, children, and joyful risk-taking are the assignment.',
-  6: 'Your strengths are applied to daily life -- health routines, work systems, and practical service.',
-  7: 'Your gifts are activated through partnership -- what you bring to relationships defines the year.',
-  8: 'Your strengths guide you through transformation -- deep change, shared resources, and psychological growth.',
-  9: 'Your gifts expand through travel, education, and the search for meaning beyond your usual world.',
-  10: 'Your strengths are visible to the world -- career advancement and public recognition are the theme.',
-  11: 'Your gifts serve the collective -- friendships, community involvement, and shared purpose.',
-  12: 'Your strengths work behind the scenes this year. Inner growth, spiritual practice, and healing take priority.',
+
+// ─── SR Sun in House ────────────────────────────────
+const srSunHouseBody: Record<number, string> = {
+  1: 'Your core identity is being refreshed and redefined. People see a more authentic version of you emerging — the year amplifies who you really are. The 1st house placement puts you at the center of your own story.',
+  2: 'Your energy this year flows toward finances, possessions, and defining what you truly value. The 2nd house Sun draws attention to material security and self-worth in practical, tangible ways.',
+  3: 'Your mind and voice are the main characters. The 3rd house Sun activates learning, communication, writing, and everyday connections. Ideas carry unusual weight this year.',
+  4: 'Home, family, and emotional roots demand your full attention. The 4th house Sun turns energy inward — toward ancestry, domestic life, and the foundations that hold everything else together.',
+  5: 'Joy, creativity, and self-expression light up this year. The 5th house Sun pulls you toward play, creative risk-taking, and emotional vulnerability.',
+  6: 'Daily routines, health, and work efficiency are being restructured. Small, consistent changes produce the biggest results.',
+  7: 'Relationships define this year. The 7th house Sun places partnerships at the center. Growth happens through the mirror of another person.',
+  8: 'Transformation runs deep. The 8th house Sun activates shared resources, psychological depth, and emotional honesty.',
+  9: 'Your world is expanding through travel, education, or a fundamental shift in perspective. The 9th house Sun seeks meaning beyond the familiar.',
+  10: 'Career and public reputation are the priority. The 10th house Sun makes you more visible — professional responsibilities increase, but so does recognition.',
+  11: 'Community, friendship, and collective purpose shape the year. The 11th house Sun redirects personal ambition toward something larger.',
+  12: 'The most introspective placement. The 12th house Sun turns energy toward solitude, spiritual practice, and unconscious patterns. Rest and inner work are the curriculum.',
 };
+
+// ─── SR Moon by Sign ────────────────────────────────
+const srMoonBody: Record<string, string> = {
+  Aries: 'Your emotional landscape shifts toward directness and independence. The emotional body wants action, speed, and autonomy.',
+  Taurus: 'Your emotional world craves stability, comfort, and sensory grounding. Feelings are processed slowly and deliberately.',
+  Gemini: 'Your emotional processing becomes more verbal and social. Conversation and writing become emotional outlets.',
+  Cancer: 'Emotional sensitivity deepens significantly. Intuition sharpens, and the need for emotional safety becomes non-negotiable.',
+  Leo: 'Your emotional world warms and expands. The need to feel seen, appreciated, and creatively expressed intensifies.',
+  Virgo: 'Your emotional processing becomes more analytical and service-oriented. Feelings are channeled into practical improvements.',
+  Libra: 'Your emotional world seeks balance and harmony. Discord feels physically disruptive, and the pull toward partnership strengthens.',
+  Scorpio: 'Your emotional world intensifies. Surface-level engagement becomes intolerable — you crave psychological honesty.',
+  Sagittarius: 'Your emotional world opens. Restlessness increases, optimism grows, and routine feels suffocating.',
+  Capricorn: 'Your emotional world becomes more disciplined and pragmatic. Emotional maturity deepens.',
+  Aquarius: 'Your emotional processing becomes more detached and cerebral. You observe feelings from a slight distance, preferring clarity over intensity.',
+  Pisces: 'Your emotional world becomes fluid and permeable. Boundaries thin, empathy deepens, and the unconscious sends vivid signals.',
+};
+
+// ─── SR Moon by House ───────────────────────────────
+const srMoonHouseBody: Record<number, string> = {
+  1: 'Your emotional needs are front and center — visible to everyone.',
+  2: 'Emotional security is tied to finances and material stability.',
+  3: 'You process emotions through conversation, writing, and thinking.',
+  4: 'Home and family are the emotional center of the year.',
+  5: 'Emotional fulfillment comes through creativity, romance, and play.',
+  6: 'Emotional state directly affects physical health — body and mood are linked.',
+  7: 'Emotional needs are met (or frustrated) through partnerships.',
+  8: 'Deep emotional processing, intimacy, and shared vulnerability define the year.',
+  9: 'Emotional growth through travel, study, or exposure to different worldviews.',
+  10: 'Emotional investment in career and public role — your heart is at work.',
+  11: 'Emotional fulfillment through friendships and community belonging.',
+  12: 'Emotions are internalized. Solitude is needed for processing.',
+};
+
+// ─── SR Rising by Sign ──────────────────────────────
+const srRisingBody: Record<string, string> = {
+  Aries: 'Your public presence shifts toward boldness and initiative. Others perceive you as more courageous and action-oriented.',
+  Taurus: 'Your public presence becomes more grounded, patient, and reliable. You feel most effective when building slowly.',
+  Gemini: 'Your public presence becomes lighter and more verbally agile. You naturally become a connector of ideas and people.',
+  Cancer: 'Your public presence softens and becomes more nurturing. Doors open through emotional intelligence.',
+  Leo: 'Your public presence becomes more visible, warm, and magnetic. Hiding feels uncomfortable and counterproductive.',
+  Virgo: 'Your public presence sharpens and becomes more purposeful. Competence and precision earn respect.',
+  Libra: 'Your public presence becomes more diplomatic and partnership-oriented. Doors open through collaboration.',
+  Scorpio: 'Your public presence deepens and becomes more intense. You carry a magnetic, transformative quality.',
+  Sagittarius: 'Your public presence becomes more expansive and philosophical. Big ideas and enthusiasm open doors.',
+  Capricorn: 'Your public presence becomes more authoritative and structured. Others naturally defer to your judgment.',
+  Aquarius: 'Your public presence becomes more unconventional and forward-thinking. You attract opportunities through originality.',
+  Pisces: 'Your public presence becomes gentler and more intuitive. Others sense your empathy and creative depth.',
+};
+
+// ─── Natal Moon ─────────────────────────────────────
 const moonStrength: Record<string, string> = {
   Aries: 'Emotional reactions are fast, honest, and courageous. You process feelings through action.',
   Taurus: 'Emotional world is grounded and steady. You bring calm to chaos.',
   Gemini: 'You process feelings through talking, writing, and thinking.',
-  Cancer: 'Emotional capacity is enormous. You feel everything deeply and your nurturing instinct is your greatest gift.',
+  Cancer: 'Emotional capacity is enormous. You feel everything deeply.',
   Leo: 'Emotional warmth lights up rooms. You process feelings through creative expression.',
-  Virgo: 'You process emotions practically -- knowing exactly what someone needs before they ask.',
+  Virgo: 'You process emotions practically — knowing exactly what someone needs before they ask.',
   Libra: 'Emotional world seeks harmony. You process feelings through relationship and dialogue.',
   Scorpio: 'Emotional depth is extraordinary. You feel everything at full intensity.',
-  Sagittarius: 'Emotional resilience is remarkable. You process feelings through meaning-making and adventure.',
+  Sagittarius: 'Emotional resilience is remarkable. You process feelings through meaning-making.',
   Capricorn: 'Emotional strength is quiet but immense. You carry responsibilities others cannot.',
   Aquarius: 'Emotional intelligence is innovative. You see patterns in feelings that others miss.',
   Pisces: 'Emotional sensitivity is a superpower. You absorb the emotional atmosphere of every space.',
 };
 const moonShadow: Record<string, string> = {
-  Aries: 'Emotional impulsivity -- reacting before processing. Anger as a default emotion.',
+  Aries: 'Emotional impulsivity — reacting before processing. Anger as a default emotion.',
   Taurus: 'Emotional rigidity. Refusing to feel what is uncomfortable.',
   Gemini: 'Intellectualizing emotions to avoid feeling them.',
   Cancer: 'Emotional flooding, mood swings, and using guilt to maintain closeness.',
@@ -89,20 +143,8 @@ const moonShadow: Record<string, string> = {
   Aquarius: 'Detaching from emotions when they become inconvenient.',
   Pisces: 'Absorbing others emotions and losing yourself. Escapism.',
 };
-const moonYearAhead: Record<number, string> = {
-  1: 'Emotional needs are front and center.',
-  2: 'Emotional security is tied to finances and material stability this year.',
-  3: 'Emotional processing happens through conversation and writing.',
-  4: 'Home and family are the emotional center.',
-  5: 'Emotional fulfillment comes through creativity, romance, and play.',
-  6: 'Emotional state directly affects physical health.',
-  7: 'Emotional needs are met (or frustrated) through partnerships.',
-  8: 'Deep emotional processing, intimacy, and shared vulnerability define the year.',
-  9: 'Emotional growth through travel, study, or exposure to different worldviews.',
-  10: 'Emotional investment in career and public role.',
-  11: 'Emotional fulfillment through friendships and community.',
-  12: 'Emotions are internalized. Solitude is needed for processing.',
-};
+
+// ─── Natal Rising ───────────────────────────────────
 const risingStrength: Record<string, string> = {
   Aries: 'People experience you as bold, direct, and energizing.',
   Taurus: 'People experience you as calm, reliable, and aesthetically aware.',
@@ -131,38 +173,25 @@ const risingShadow: Record<string, string> = {
   Aquarius: 'Can seem detached, contrarian, or emotionally unavailable.',
   Pisces: 'Can appear vague, passive, or easily overwhelmed.',
 };
-const risingYearAhead: Record<string, string> = {
-  Aries: 'The year energy enters through bold action and initiative.',
-  Taurus: 'The year unfolds slowly and deliberately.',
-  Gemini: 'Communication drives the year.',
-  Cancer: 'Emotional and domestic themes dominate.',
-  Leo: 'The year demands creative self-expression and visibility.',
-  Virgo: 'The year enters through detailed analysis and practical improvement.',
-  Libra: 'Relationships are the gateway to the year.',
-  Scorpio: 'The year enters through intensity, transformation, and depth.',
-  Sagittarius: 'The year opens through expansion -- travel, education, or philosophical growth.',
-  Capricorn: 'The year enters through structure, responsibility, and ambition.',
-  Aquarius: 'The year opens through innovation, community, and breaking from convention.',
-  Pisces: 'The year enters through intuition, creativity, and spiritual sensitivity.',
-};
 
 export function generateStrengthsPortrait(
-  ctx: PDFContext, doc: jsPDF, natalChart: NatalChart, analysis: SolarReturnAnalysis
+  ctx: PDFContext, doc: jsPDF, natalChart: NatalChart, analysis: SolarReturnAnalysis,
+  srChart?: SolarReturnChart,
 ) {
   const { pw, margin, contentW } = ctx;
   const sunSign = natalChart.planets?.Sun?.sign || '';
   const moonSign = natalChart.planets?.Moon?.sign || '';
   const risingSign = natalChart.houseCusps?.house1?.sign || '';
-  const srSunHouse = analysis.planetSRHouses?.['Sun'];
+  const srSunHouse = analysis.planetSRHouses?.['Sun'] || analysis.sunHouse?.house;
   const srMoonHouse = analysis.planetSRHouses?.['Moon'];
-  const srAscSign = analysis.yearlyTheme?.ascendantSign || '';
-  const srMoonSign = analysis.moonSign || '';
+  const srAscSign = analysis.yearlyTheme?.ascendantSign || srChart?.planets?.Ascendant?.sign || '';
+  const srMoonSign = analysis.moonSign || srChart?.planets?.Moon?.sign || '';
+  const srSunSign = srChart?.planets?.Sun?.sign || sunSign;
 
-  // Force new page for this section
   ctx.pageBg(doc);
   ctx.y += 12;
 
-  // Tracked label
+  // Section header
   doc.setFont('times', 'bold'); doc.setFontSize(7);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(4);
@@ -170,12 +199,10 @@ export function generateStrengthsPortrait(
   doc.setCharSpace(0);
   ctx.y += 8;
 
-  // Hairline
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 36; // Extra spacing before title per user request
+  ctx.y += 36;
 
-  // Large serif display title
   doc.setFont('times', 'normal'); doc.setFontSize(28);
   doc.setTextColor(...INK);
   doc.text('The Natal-to-Return Shift', margin, ctx.y);
@@ -184,133 +211,154 @@ export function generateStrengthsPortrait(
   doc.setFont('times', 'italic'); doc.setFontSize(10);
   doc.setTextColor(...MUTED);
   doc.text('How this year activates your natal strengths', margin, ctx.y);
-  ctx.y += 20;
+  ctx.y += 24;
 
-  // Compact rendering: All three planets on one page
-  const renderCompactPlanet = (
-    planetLabel: string,
-    natalTag: string,
-    srTag: string,
-    heading: string,
-    strengthText: string,
-    shadowText: string,
-    yearLabel: string,
-    yearText: string,
+  // ──────────────────────────────────────────────────
+  // Shared renderer for each planet
+  // ──────────────────────────────────────────────────
+  const renderPlanet = (
+    planetName: string,
+    natalSign: string,
+    srSign: string,
+    srHouse: number | undefined,
+    natalStrength: string,
+    natalShadow: string,
+    srBodyText: string,
+    srHouseText: string,
   ) => {
-    // Header strip — cream bg, no black
-    const stripH = 36; // Reduced from 48
+    ctx.checkPage(220);
+
+    // ── Header strip ──
+    const stripH = 52;
     const stripY = ctx.y;
     doc.setFillColor(...CARD_BG);
     doc.roundedRect(margin, stripY, contentW, stripH, 3, 3, 'F');
     doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
     doc.roundedRect(margin, stripY, contentW, stripH, 3, 3, 'S');
-
-    // Gold accent bar on left
     doc.setFillColor(...GOLD);
-    doc.rect(margin, stripY, 3, stripH, 'F');
+    doc.rect(margin, stripY, 3.5, stripH, 'F');
 
-    // Planet label in gold
+    // Planet label — top left
     doc.setFont('times', 'bold'); doc.setFontSize(6.5);
     doc.setTextColor(...GOLD);
     doc.setCharSpace(3);
-    doc.text(planetLabel, margin + 14, stripY + 14);
+    doc.text(planetName.toUpperCase(), margin + 14, stripY + 14);
     doc.setCharSpace(0);
 
-    // Large heading
-    doc.setFont('times', 'bold'); doc.setFontSize(16); // Reduced from 22
+    // Natal sign — large heading left
+    doc.setFont('times', 'bold'); doc.setFontSize(18);
     doc.setTextColor(...INK);
-    doc.text(heading, margin + 14, stripY + 30);
+    doc.text(`${natalSign}`, margin + 14, stripY + 34);
 
-    // Natal to SR tags on right — clean arrow (no unicode)
-    doc.setFont('times', 'normal'); doc.setFontSize(8);
-    doc.setTextColor(...GOLD);
-    const tagText = srTag ? `${srTag}  -->  ${natalTag}` : natalTag;
-    doc.text(tagText, pw - margin - 14, stripY + 30, { align: 'right' });
+    // SR placement — right side, prominent gold
+    const srParts: string[] = [];
+    if (srSign) srParts.push(srSign);
+    if (srHouse) srParts.push(`in the ${ord(srHouse)}`);
+    const srTagText = srParts.join(' ');
 
-    ctx.y = stripY + stripH + 10; // Reduced from 18
+    if (srTagText) {
+      doc.setFont('times', 'bold'); doc.setFontSize(7);
+      doc.setTextColor(...GOLD);
+      doc.setCharSpace(2);
+      doc.text('SOLAR RETURN', pw - margin - 14, stripY + 14, { align: 'right' });
+      doc.setCharSpace(0);
+      doc.setFont('times', 'bold'); doc.setFontSize(14);
+      doc.setTextColor(...GOLD);
+      doc.text(srTagText, pw - margin - 14, stripY + 34, { align: 'right' });
+    }
 
-    // STRENGTH — condensed
+    // Shift arrow line
+    if (srSign && srSign !== natalSign) {
+      doc.setFont('times', 'normal'); doc.setFontSize(9);
+      doc.setTextColor(...MUTED);
+      doc.text(`${natalSign}  -->  ${srSign}${srHouse ? ' H' + srHouse : ''}`, margin + 14, stripY + 48);
+    } else if (srHouse) {
+      doc.setFont('times', 'normal'); doc.setFontSize(9);
+      doc.setTextColor(...MUTED);
+      doc.text(`${natalSign} --> ${ord(srHouse)} House`, margin + 14, stripY + 48);
+    }
+
+    ctx.y = stripY + stripH + 14;
+
+    // ── NATAL STRENGTH ──
     doc.setFont('times', 'bold'); doc.setFontSize(6.5);
     doc.setTextColor(...GOLD);
     doc.setCharSpace(2);
-    doc.text('STRENGTH', margin + 8, ctx.y);
+    doc.text('NATAL STRENGTH', margin + 8, ctx.y);
     doc.setCharSpace(0);
-    ctx.y += 10; // Reduced from 12
-    ctx.writeBody(doc, strengthText, INK, 9, 12.5); // Smaller font
-    ctx.y += 4; // Reduced from 8
+    ctx.y += 10;
+    ctx.writeBody(doc, natalStrength, INK, 9, 12.5);
+    ctx.y += 6;
 
-    // SHADOW — condensed
+    // ── SHADOW ──
     doc.setFont('times', 'bold'); doc.setFontSize(6.5);
     doc.setTextColor(...MUTED);
     doc.setCharSpace(2);
     doc.text('SHADOW', margin + 8, ctx.y);
     doc.setCharSpace(0);
     ctx.y += 10;
-    ctx.writeBody(doc, shadowText, INK, 9, 12.5);
-    ctx.y += 4;
+    ctx.writeBody(doc, natalShadow, INK, 9, 12.5);
+    ctx.y += 6;
 
-    // Year activation — inline
-    if (yearText) {
+    // ── THIS YEAR'S ACTIVATION ──
+    if (srBodyText) {
+      ctx.checkPage(60);
       doc.setFont('times', 'bold'); doc.setFontSize(6.5);
       doc.setTextColor(...GOLD);
       doc.setCharSpace(2);
-      doc.text(yearLabel.toUpperCase(), margin + 8, ctx.y);
+      doc.text('THIS YEAR\'S ACTIVATION', margin + 8, ctx.y);
       doc.setCharSpace(0);
       ctx.y += 10;
-      ctx.writeBody(doc, yearText, INK, 9, 12.5);
+      ctx.writeBody(doc, srBodyText, INK, 9.5, 13);
+      ctx.y += 4;
     }
 
-    // Thin divider
-    ctx.y += 4;
+    // ── SR HOUSE FOCUS ──
+    if (srHouseText && srHouse) {
+      ctx.checkPage(50);
+      doc.setFont('times', 'bold'); doc.setFontSize(6.5);
+      doc.setTextColor(...GOLD);
+      doc.setCharSpace(2);
+      doc.text(`${ord(srHouse).toUpperCase()} HOUSE FOCUS`, margin + 8, ctx.y);
+      doc.setCharSpace(0);
+      ctx.y += 10;
+      ctx.writeBody(doc, srHouseText, INK, 9, 12.5);
+    }
+
+    ctx.y += 6;
     doc.setDrawColor(...RULE); doc.setLineWidth(0.15);
     doc.line(margin + 20, ctx.y, pw - margin - 20, ctx.y);
-    ctx.y += 10; // Reduced from 16
+    ctx.y += 14;
   };
 
-  // SUN
+  // ═══ SUN ═══
   if (sunSign && sunStrength[sunSign]) {
-    const houseLabel = srSunHouse ? `SR ${ord(srSunHouse)} House` : '';
-    renderCompactPlanet(
-      `SUN IN ${sunSign.toUpperCase()}`,
-      sunSign,
-      houseLabel,
-      `Sun in ${sunSign}`,
-      sunStrength[sunSign],
-      sunShadow[sunSign] || '',
-      'What This Means For Your Year',
-      srSunHouse ? (sunYearAhead[srSunHouse] || '') : '',
+    renderPlanet(
+      'Sun', sunSign, srSunSign, srSunHouse,
+      sunStrength[sunSign], sunShadow[sunSign] || '',
+      srSunHouse ? (srSunHouseBody[srSunHouse] || '') : '',
+      srSunHouse ? (srMoonHouseBody[srSunHouse] || '') : '',
     );
   }
 
-  // MOON
+  // ═══ MOON ═══
   if (moonSign && moonStrength[moonSign]) {
-    const moonHouseLabel = srMoonHouse ? `SR ${ord(srMoonHouse)} House` : '';
-    renderCompactPlanet(
-      `MOON IN ${moonSign.toUpperCase()}`,
-      moonSign,
-      srMoonSign ? `${srMoonSign} Moon, ${moonHouseLabel}` : moonHouseLabel,
-      `Moon in ${moonSign}`,
-      moonStrength[moonSign],
-      moonShadow[moonSign] || '',
-      'Emotional Climate This Year',
-      srMoonHouse ? (moonYearAhead[srMoonHouse] || '') : '',
+    renderPlanet(
+      'Moon', moonSign, srMoonSign, srMoonHouse,
+      moonStrength[moonSign], moonShadow[moonSign] || '',
+      srMoonBody[srMoonSign] || '',
+      srMoonHouse ? (srMoonHouseBody[srMoonHouse] || '') : '',
     );
   }
 
-  // RISING
+  // ═══ RISING ═══
   if (risingSign && risingStrength[risingSign]) {
-    renderCompactPlanet(
-      `RISING IN ${risingSign.toUpperCase()}`,
-      risingSign,
-      `${srAscSign} Rising`,
-      `${risingSign} Rising`,
-      risingStrength[risingSign],
-      risingShadow[risingSign] || '',
-      'How You Show Up This Year',
-      risingYearAhead[srAscSign] || '',
+    renderPlanet(
+      'Rising', risingSign, srAscSign, undefined,
+      risingStrength[risingSign], risingShadow[risingSign] || '',
+      srRisingBody[srAscSign] || '', '',
     );
   }
 
-  // No section divider — let stars/divider be part of this page naturally
   ctx.sectionDivider(doc);
 }
