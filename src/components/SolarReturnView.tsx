@@ -729,6 +729,9 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
       {/* 2. Life-Cycle Context — where this year fits in the larger pattern */}
       <LifeCycleContext natalChart={natalChart} srChart={srChart} />
 
+      {/* 3. Natal Overlay — where this year lands in the natal chart */}
+      <NatalOverlayCard analysis={analysis} />
+
       {/* Dashboard Details */}
       <SROverviewDashboard analysis={analysis} natalChart={natalChart} srChart={srChart} />
 
