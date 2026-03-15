@@ -128,8 +128,8 @@ export function generateAffirmationCard(
   const identity = getNatalIdentity(sunSign, moonSign, risingSign);
   const { body, closing } = getYearMessage(profH, timeLord, northNodeHouse, hasVenusAngular, hasJupiterAngular, moonPhase, srSunHouse);
 
-  // Full-bleed cream page
-  doc.setFillColor(...CREAM);
+  // Full-bleed white page
+  doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, pw, ph, 'F');
 
   // Gold frame border
