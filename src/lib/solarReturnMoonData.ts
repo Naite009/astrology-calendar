@@ -266,24 +266,44 @@ export function getMoonPhaseBlending(
 }
 
 // ─── Moon Angular Position Meaning ──────────────────────────────────
-export const srMoonAngularity = (house: number): { position: string; meaning: string } => {
+// Now uses true angularity: "angular" means conjunct an angle (within 5°),
+// NOT simply being in an angular house number.
+export const srMoonAngularity = (angularity: 'angular' | 'succedent' | 'cadent' | null, house: number): { position: string; meaning: string } => {
+  if (angularity === 'angular') {
+    return {
+      position: 'Conjunct an Angle (Foreground)',
+      meaning: 'The Moon is within 5° of an angle in your Solar Return — ASC, MC, DSC, or IC. This is genuinely angular: your emotional reactions are INSTINCTIVE, AUTOMATIC, and VISIBLE. You are very close to every situation and find it hard to step back for perspective. Others read your feelings on your face before you are consciously aware of them. Major life events — moves, new relationships, career shifts — tend to correlate with angular Moon years. All Moon aspects and themes are AMPLIFIED.',
+    };
+  }
+  if (angularity === 'succedent') {
+    return {
+      position: `Succedent (Middleground) — House ${house}`,
+      meaning: 'The Moon is in the middleground of your Solar Return — your emotional responses are STABLE and MEASURED. You can step back and examine situations without immediately magnifying them. This is emotionally one of the strongest positions: you have perspective, resilience, and the ability to process feelings without being overwhelmed by them. Succedent Moons produce years of consolidation — deepening commitments to relationships, creative projects, or financial goals.',
+    };
+  }
+  if (angularity === 'cadent') {
+    return {
+      position: `Cadent (Background) — House ${house}`,
+      meaning: 'The Moon is in the background of your Solar Return — your emotional life is more PASSIVE and ADAPTIVE. You do not feel an onslaught from the outside, but you are busy adapting, preparing, and processing internally. This is a quieter emotional year where much of the work happens beneath the surface. The most important changes happen inside you — shifts in perspective, processing old grief, spiritual breakthroughs.',
+    };
+  }
+  // Fallback based on house
   const angular = [1, 4, 7, 10];
   const succedent = [2, 5, 8, 11];
-
   if (angular.includes(house)) {
     return {
-      position: 'Angular (Foreground)',
-      meaning: 'The Moon is in the foreground of your Solar Return — your emotional reactions are INSTINCTIVE, AUTOMATIC, and VISIBLE. You are very close to every situation and find it hard to step back for perspective. Impulsive and emotional reactions dominate. You are deeply affected by, and deeply affect, your environment. All Moon aspects and themes are AMPLIFIED by this angular position.',
+      position: `Angular House (${house}) — Check Angle Proximity`,
+      meaning: `The Moon is in an angular house but may not be conjunct the angle itself. Being in House ${house} gives your emotions visibility in that life area, but the full "foreground" intensity only applies if the Moon is within 5° of the actual angle cusp.`,
     };
   }
   if (succedent.includes(house)) {
     return {
-      position: 'Succedent (Middleground)',
-      meaning: 'The Moon is in the middleground of your Solar Return — your emotional responses are STABLE and MEASURED. You can step back and examine situations without immediately magnifying them. This is emotionally one of the strongest positions: you have perspective, resilience, and the ability to process feelings without being overwhelmed by them.',
+      position: `Succedent (Middleground) — House ${house}`,
+      meaning: 'Your emotional responses are stable and measured this year. You have perspective, resilience, and the ability to process feelings constructively.',
     };
   }
   return {
-    position: 'Cadent (Background)',
-    meaning: 'The Moon is in the background of your Solar Return — your emotional life is more PASSIVE and ADAPTIVE. You do not feel an onslaught from the outside, but you are busy adapting, preparing, and processing internally. This is a quieter emotional year where much of the work happens beneath the surface. You are preparing emotionally for future phases.',
+    position: `Cadent (Background) — House ${house}`,
+    meaning: 'Your emotional life operates beneath the surface this year. Inner work, adaptation, and quiet processing are the themes.',
   };
 };
