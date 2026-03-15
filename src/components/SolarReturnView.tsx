@@ -1434,7 +1434,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
 
       {/* Moon Phase moved into Moon section above */}
 
-      {/* SR Ascendant in Natal House (Lynn Bell) */}
+      {/* SR Ascendant in Natal House */}
       {analysis.srAscInNatalHouse && (
         <div className="border border-primary/20 rounded-sm p-5 bg-card">
           <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
