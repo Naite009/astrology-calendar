@@ -77,7 +77,7 @@ export const VIEW_TO_SECTION: Record<ViewMode, GuideSection> = {
   month: "overview",
   week: "overview",
   year: "overview",
-  "moon-phases": "moonphases",
+  "moon-encyclopedia": "moonphases",
   "annual-tables": "overview",
   guide: "overview",
   charts: "overview",
