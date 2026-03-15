@@ -279,21 +279,21 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
         );
       })()}
 
-      {/* Universal Phase Sequence Legend */}
+      {/* Phase Reference Guide */}
       <div className="mx-4 p-3 bg-secondary/20 rounded-sm">
         <p className="text-[9px] uppercase tracking-widest font-medium text-muted-foreground mb-2">
-          Universal Cycle Order — Every Life Follows This Sequence
+          Moon Phase Reference — What Each Phase Means
         </p>
         <div className="grid grid-cols-4 md:grid-cols-8 gap-1.5">
           {[
-            { icon: '🌑', num: 1, phase: 'New Moon', stage: 'Beginning' },
-            { icon: '🌒', num: 2, phase: 'Crescent', stage: 'Growth' },
-            { icon: '🌓', num: 3, phase: '1st Quarter', stage: 'Action' },
-            { icon: '🌔', num: 4, phase: 'Gibbous', stage: 'Refinement' },
-            { icon: '🌕', num: 5, phase: 'Full Moon', stage: 'Culmination' },
-            { icon: '🌖', num: 6, phase: 'Disseminating', stage: 'Sharing' },
-            { icon: '🌗', num: 7, phase: 'Last Quarter', stage: 'Reevaluation' },
-            { icon: '🌘', num: 8, phase: 'Balsamic', stage: 'Completion' },
+            { icon: '🌑', num: 1, phase: 'New Moon', stage: 'Beginning', range: '0°–22.5°' },
+            { icon: '🌒', num: 2, phase: 'Crescent', stage: 'Growth', range: '22.5°–67.5°' },
+            { icon: '🌓', num: 3, phase: '1st Quarter', stage: 'Action', range: '67.5°–112.5°' },
+            { icon: '🌔', num: 4, phase: 'Gibbous', stage: 'Refinement', range: '112.5°–157.5°' },
+            { icon: '🌕', num: 5, phase: 'Full Moon', stage: 'Culmination', range: '157.5°–202.5°' },
+            { icon: '🌖', num: 6, phase: 'Disseminating', stage: 'Sharing', range: '202.5°–247.5°' },
+            { icon: '🌗', num: 7, phase: 'Last Quarter', stage: 'Reevaluation', range: '247.5°–292.5°' },
+            { icon: '🌘', num: 8, phase: 'Balsamic', stage: 'Completion', range: '292.5°–360°' },
           ].map(p => {
             const isCurrent = currentEntry?.phase === (p.num === 3 ? 'First Quarter' : p.phase);
             return (
@@ -301,12 +301,13 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
                 <span className="text-sm">{p.icon}</span>
                 <span className={`text-[8px] font-bold mt-0.5 ${isCurrent ? 'text-primary' : 'text-foreground'}`}>{p.num}. {p.stage}</span>
                 <span className="text-[7px] text-muted-foreground leading-tight">{p.phase}</span>
+                <span className="text-[6px] text-muted-foreground/50">{p.range}</span>
               </div>
             );
           })}
         </div>
-        <p className="text-[9px] text-muted-foreground mt-2 leading-relaxed">
-          Each phase lasts ~3.5 years. The full cycle repeats every ~29.5 years. Your starting point is determined by your natal Sun–Moon angle.
+        <p className="text-[9px] text-muted-foreground mt-2 leading-relaxed italic">
+          The phase is determined by the Moon-Sun separation angle at the exact Solar Return moment each year. Because the Moon moves ~13° per day, each year's phase is independent — it does not follow a sequential progression.
         </p>
       </div>
 
