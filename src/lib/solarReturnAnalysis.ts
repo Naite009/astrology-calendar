@@ -1118,7 +1118,7 @@ export const analyzeSolarReturn = (
     };
   }
 
-  // ─── SR Ascendant falling in natal house (Lynn Bell: "the SR Ascendant is in the 8th house") ──
+  // ─── SR Ascendant falling in natal house ──
   let srAscInNatalHouse: SolarReturnAnalysis['srAscInNatalHouse'] = null;
   if (srAsc) {
     const srAscDeg = toAbsDeg(srAsc);
