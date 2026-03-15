@@ -232,92 +232,71 @@ export function generateHighlightsPage(
     });
   }
 
-  // MONTH-BY-MONTH on new page
-  const clampLines = (lines: string[], max: number): string[] => {
-    if (lines.length <= max) return lines;
-    const clipped = lines.slice(0, max);
-    clipped[max - 1] = clipped[max - 1].replace(/[.,;:!?]?$/, '...');
-    return clipped;
-  };
-
-  const drawMonthHeader = (continued = false) => {
-    if (!continued) {
-      ctx.y += 36;
-      doc.setFont('times', 'bold'); doc.setFontSize(7);
-      doc.setTextColor(...GOLD);
-      doc.setCharSpace(4);
-      doc.text('MONTHLY FORECAST', margin, ctx.y);
-      doc.setCharSpace(0);
-      ctx.y += 12;
-      doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
-      doc.line(margin, ctx.y, pw - margin, ctx.y);
-      ctx.y += 32;
-      doc.setFont('times', 'normal'); doc.setFontSize(28);
-      doc.setTextColor(...INK);
-      doc.text('Month by Month', margin, ctx.y);
-      ctx.y += 14;
-      doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
-      doc.line(margin, ctx.y, pw - margin, ctx.y);
-      ctx.y += 24;
-      return;
-    }
-    ctx.pageBg(doc);
-    ctx.trackedLabel(doc, 'MONTH BY MONTH (CONTINUED)', margin, ctx.y, { size: 7.2, charSpace: 2.8 });
+  // MONTH-BY-MONTH — compact enough to fit all 12 on ONE page
+  const drawMonthHeader = () => {
+    ctx.y += 20;
+    doc.setFont('times', 'bold'); doc.setFontSize(7);
+    doc.setTextColor(...GOLD);
+    doc.setCharSpace(4);
+    doc.text('MONTHLY FORECAST', margin, ctx.y);
+    doc.setCharSpace(0);
+    ctx.y += 8;
+    doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+    doc.line(margin, ctx.y, pw - margin, ctx.y);
+    ctx.y += 18;
+    doc.setFont('times', 'normal'); doc.setFontSize(22);
+    doc.setTextColor(...INK);
+    doc.text('Month by Month', margin, ctx.y);
     ctx.y += 10;
     doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
     doc.line(margin, ctx.y, pw - margin, ctx.y);
-    ctx.y += 20;
+    ctx.y += 14;
   };
 
   doc.addPage();
   ctx.y = ctx.margin;
   ctx.pageBg(doc);
-  drawMonthHeader(false);
+  drawMonthHeader();
 
   const forecasts = buildPersonalizedMonthlyForecasts(a, srChart, natalChart);
-  const columnGap = 16;
-  const rowGap = 14;
+  const columnGap = 10;
+  const rowGap = 6;
   const cardW = (contentW - columnGap) / 2;
-  const cardPadX = 14;
-  const cardPadTop = 16;
-  const cardPadBottom = 12;
-  const maxBodyLines = 3;
-  const bodyLineH = 12;
-  const headlineLineH = 16;
+  const cardPadX = 10;
+  const cardPadTop = 10;
+  const bodyLineH = 9;
+  const headlineLineH = 11;
 
   const measureCard = (f: MonthForecast | undefined) => {
     if (!f) return { bodyLines: [] as string[], headLines: [] as string[], height: 0 };
-    const bodyLines = clampLines(doc.splitTextToSize(f.body, cardW - cardPadX * 2), maxBodyLines);
-    const headLines = doc.splitTextToSize(f.headline, cardW - cardPadX * 2) as string[];
-    const height = Math.max(110, cardPadTop + 24 + 6 + headLines.length * headlineLineH + 6 + bodyLines.length * bodyLineH + cardPadBottom);
-    return { bodyLines, headLines, height };
+    // Combine headline + body into a single flow to save vertical space
+    const fullText = `${f.headline}. ${f.body}`;
+    const bodyLines = doc.splitTextToSize(fullText, cardW - cardPadX * 2) as string[];
+    return { bodyLines, headLines: [] as string[], height: cardPadTop + 16 + bodyLines.length * bodyLineH + 6 };
   };
 
-  const drawMonthCard = (f: MonthForecast, bodyLines: string[], headLines: string[], cardH: number, x: number, rowY: number) => {
+  const drawMonthCard = (f: MonthForecast, bodyLines: string[], _headLines: string[], cardH: number, x: number, rowY: number) => {
     doc.setFillColor(...CARD_BG);
-    doc.roundedRect(x, rowY, cardW, cardH, 3, 3, 'F');
-    doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
-    doc.roundedRect(x, rowY, cardW, cardH, 3, 3, 'S');
+    doc.roundedRect(x, rowY, cardW, cardH, 2, 2, 'F');
+    doc.setDrawColor(...RULE); doc.setLineWidth(0.2);
+    doc.roundedRect(x, rowY, cardW, cardH, 2, 2, 'S');
     doc.setFillColor(...GOLD);
-    doc.rect(x, rowY, 3, cardH, 'F');
+    doc.rect(x, rowY, 2.5, cardH, 'F');
 
     let cy = rowY + cardPadTop;
 
-    // Month name left, year right-flush
-    doc.setFont('times', 'bold'); doc.setFontSize(18);
+    // Month name left, year right-flush — compact
+    doc.setFont('times', 'bold'); doc.setFontSize(12);
     doc.setTextColor(...INK);
     doc.text(f.month, x + cardPadX, cy);
 
-    doc.setFont('times', 'normal'); doc.setFontSize(9);
+    doc.setFont('times', 'normal'); doc.setFontSize(7.5);
     doc.setTextColor(...MUTED);
     doc.text(String(f.year), x + cardW - cardPadX, cy, { align: 'right' });
-    cy += 22;
+    cy += 14;
 
-    doc.setFont('times', 'bold'); doc.setFontSize(11);
-    doc.setTextColor(...INK);
-    for (const line of headLines) { doc.text(line, x + cardPadX, cy); cy += headlineLineH; }
-    cy += 4;
-    doc.setFont('times', 'normal'); doc.setFontSize(9.5);
+    // Body text — no truncation, no ellipsis
+    doc.setFont('times', 'normal'); doc.setFontSize(7.5);
     doc.setTextColor(...INK);
     for (const line of bodyLines) { doc.text(line, x + cardPadX, cy); cy += bodyLineH; }
   };
@@ -328,13 +307,7 @@ export function generateHighlightsPage(
     const right = forecasts[index + 1];
     const leftMeasured = measureCard(left);
     const rightMeasured = measureCard(right);
-    const rowH = Math.max(leftMeasured.height, rightMeasured.height, 110);
-
-    if (ctx.y + rowH > ph - 52) {
-      doc.addPage();
-      ctx.y = ctx.margin;
-      drawMonthHeader(true);
-    }
+    const rowH = Math.max(leftMeasured.height, rightMeasured.height);
 
     const rowY = ctx.y;
     drawMonthCard(left, leftMeasured.bodyLines, leftMeasured.headLines, rowH, margin, rowY);
