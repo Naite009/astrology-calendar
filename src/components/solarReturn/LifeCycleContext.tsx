@@ -79,14 +79,19 @@ export function LifeCycleContext({ natalChart, srChart }: Props) {
       </div>
 
       <div className="p-5 space-y-4">
-        {/* Where You Are Now */}
+        {/* Where You Are Now — with highlighted current year */}
         <div>
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">Where You Are Now</p>
-          <p className="text-sm text-foreground leading-relaxed">
-            This year falls in a <strong>{currentEntry.phase}</strong> phase of your longer lunar development cycle, emphasizing {currentEntry.cycleStage.toLowerCase()}. At age {currentEntry.age}, you are in the {
-              currentEntry.waxingOrWaning === 'waxing' ? 'building half' : 'releasing half'
-            } of the cycle.
-          </p>
+          <div className="bg-primary/5 border border-primary/10 rounded-sm p-3 mb-2">
+            <p className="text-sm text-foreground leading-relaxed">
+              <strong className="text-primary">{PHASE_ICONS[currentEntry.phase] || '☽'} {currentEntry.year} — Age {currentEntry.age} — {currentEntry.phase}</strong>
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              This is your current position in the cycle, emphasizing {currentEntry.cycleStage.toLowerCase()}. You are in the {
+                currentEntry.waxingOrWaning === 'waxing' ? 'building half' : 'releasing half'
+              } of the cycle.
+            </p>
+          </div>
         </div>
 
         {/* Related Years */}
