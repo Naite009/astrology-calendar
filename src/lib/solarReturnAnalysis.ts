@@ -308,6 +308,7 @@ export interface SolarReturnAnalysis {
   profectionYear: {
     age: number;
     houseNumber: number;
+    natalCuspSign: string;
     timeLord: string;
     timeLordSRHouse: number | null;
     timeLordSRSign: string;
