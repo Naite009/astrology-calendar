@@ -218,11 +218,16 @@ export function generatePDFYearAtAGlance(
     );
 
     const moonPhase = a.moonPhase?.phase || '';
+    const sunSign = srChart.planets.Sun?.sign || '';
+    const blending = getMoonPhaseBlending(
+      moonPhase, a.moonSign || '', sunSign,
+      a.moonHouse?.house ?? null, a.sunHouse?.house ?? null,
+    );
     const phaseFelt = MOON_PHASE_FELT[moonPhase] || '';
     ctx.drawInfoBox(doc, margin + col2W + col2Gap, pairY, col2W, pairH,
       'SR MOON PHASE',
       moonPhase || 'Moon Phase',
-      `${a.moonSign || '--'} -- House ${a.moonHouse?.house || '--'}. ${phaseFelt}`,
+      `${blending.cycleStage}. ${phaseFelt} Releasing: ${blending.releasing}. Emerging: ${blending.emerging}.`,
       SOFT_GOLD,
     );
 
