@@ -296,7 +296,7 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
             <div className="text-xs text-foreground space-y-1 pl-1">
               <p><span className="text-primary font-semibold">1.</span> Age at Solar Return: <strong>{prof.age}</strong></p>
               <p><span className="text-primary font-semibold">2.</span> Profected house: <strong>{ordinal(prof.houseNumber)} house</strong> ({prof.age} mod 12 + 1)</p>
-              <p><span className="text-primary font-semibold">3.</span> Cusp sign of {ordinal(prof.houseNumber)} house → <strong>{prof.timeLordSRSign || lord.srSign}</strong></p>
+              <p><span className="text-primary font-semibold">3.</span> Cusp sign of {ordinal(prof.houseNumber)} house → <strong>{prof.natalCuspSign || 'unknown'}</strong></p>
               <p><span className="text-primary font-semibold">4.</span> Traditional ruler: <strong>{PLANET_SYMBOLS[lord.planet]} {lord.planet}</strong></p>
               <p><span className="text-primary font-semibold">5.</span> SR placement: {SIGN_SYMBOLS[lord.srSign]} {lord.srSign}{lord.srHouse ? `, ${ordinal(lord.srHouse)} house` : ''}</p>
               <p><span className="text-primary font-semibold">6.</span> Dignity: <strong>{lord.dignity}</strong></p>

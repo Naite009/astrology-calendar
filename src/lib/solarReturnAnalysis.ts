@@ -732,10 +732,12 @@ export const analyzeSolarReturn = (
       let timeLord = '';
       let timeLordSRHouse: number | null = null;
       let timeLordSRSign = '';
+      let natalCuspSign = '';
       
       if (natalCusp) {
         const cuspSign = (natalCusp as any).sign;
-        if (cuspSign) {
+        if (cuspSign && SIGNS.includes(cuspSign)) {
+          natalCuspSign = cuspSign;
           timeLord = traditionalRuler[cuspSign] || '';
         }
       }
@@ -744,7 +746,8 @@ export const analyzeSolarReturn = (
         const ascIdx = SIGNS.indexOf(natalRisingSign);
         if (ascIdx >= 0) {
           const profectionSignIdx = (ascIdx + houseNumber - 1) % 12;
-          timeLord = traditionalRuler[SIGNS[profectionSignIdx]] || '';
+          natalCuspSign = SIGNS[profectionSignIdx];
+          timeLord = traditionalRuler[natalCuspSign] || '';
         }
       }
 
@@ -768,6 +771,7 @@ export const analyzeSolarReturn = (
         profectionYear = {
           age,
           houseNumber,
+          natalCuspSign,
           timeLord,
           timeLordSRHouse,
           timeLordSRSign,
