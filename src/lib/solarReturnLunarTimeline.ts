@@ -254,9 +254,13 @@ export function computeLunarPhaseTimeline(
 export function detectTimelinePatterns(entries: TimelineEntry[]): TimelinePatterns {
   return {
     newCycleYears: entries.filter(e => e.phase === 'New Moon').map(e => e.year),
+    crescentYears: entries.filter(e => e.phase === 'Crescent').map(e => e.year),
+    actionYears: entries.filter(e => e.phase === 'First Quarter').map(e => e.year),
+    refinementYears: entries.filter(e => e.phase === 'Gibbous').map(e => e.year),
     culminationYears: entries.filter(e => e.phase === 'Full Moon').map(e => e.year),
+    sharingYears: entries.filter(e => e.phase === 'Disseminating').map(e => e.year),
+    turningPointYears: entries.filter(e => e.phase === 'Last Quarter').map(e => e.year),
     releaseYears: entries.filter(e => e.phase === 'Balsamic').map(e => e.year),
-    turningPointYears: entries.filter(e => e.phase === 'First Quarter' || e.phase === 'Last Quarter').map(e => e.year),
     bridgeYears: entries.filter(e => e.moonSign !== e.sunSign).map(e => e.year),
   };
 }
