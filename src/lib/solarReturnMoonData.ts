@@ -53,7 +53,7 @@ export const srMoonInHouseDeep: Record<number, { title: string; overview: string
   },
   8: {
     title: 'Emotional Depth Work',
-    overview: 'The Moon in the 8th house is succedent — emotions are intense but controlled. Mary Fortier Shea notes this placement gives "emotional strength" and the ability to "sit back, watch, and wait." Your emotional life operates at depth, dealing with themes of intimacy, power, shared resources, and transformation.',
+    overview: 'The Moon in the 8th house is succedent — emotions are intense but controlled. This placement gives "emotional strength" and the ability to "sit back, watch, and wait." Your emotional life operates at depth, dealing with themes of intimacy, power, shared resources, and transformation.',
     emotionalTheme: 'Primal emotions surface — grief, desire, jealousy, fear of loss. Sexual and intimate relationships carry enormous emotional charge. Financial entanglements with others trigger deep feelings. You are processing something fundamental about trust, vulnerability, and power.',
     focus: 'Lean into depth work: therapy, shadow journaling, intimate conversations, and any practice that helps you face what you normally avoid. Financial matters involving others (taxes, debt, inheritance, shared accounts) need emotional as well as practical attention.',
     caution: 'Emotional isolation — you may feel that nobody else can understand what you are going through. Resist the urge to suffer alone. Also watch for manipulative emotional dynamics in intimate relationships.',
