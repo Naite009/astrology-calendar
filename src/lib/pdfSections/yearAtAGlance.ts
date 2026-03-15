@@ -152,66 +152,59 @@ export function generatePDFYearAtAGlance(
   // ── YEAR-DEFINING ASPECT — cream hero card (print-friendly) ──────
   if (a.srToNatalAspects.length > 0) {
     const yda = a.srToNatalAspects[0];
-    ctx.checkPage(160);
+    ctx.checkPage(120);
 
-    const heroH = 140;
+    const heroH = 110;
     const heroY = ctx.y;
 
-    // Cream background with charcoal border (no black)
     doc.setFillColor(...CARD_BG);
     doc.roundedRect(margin, heroY, contentW, heroH, 4, 4, 'F');
     doc.setDrawColor(...CHARCOAL); doc.setLineWidth(0.5);
     doc.roundedRect(margin, heroY, contentW, heroH, 4, 4, 'S');
-
-    // Gold top accent line
     doc.setFillColor(...GOLD);
-    doc.rect(margin, heroY, contentW, 2.5, 'F');
+    doc.rect(margin, heroY, contentW, 2, 'F');
 
-    let hy = heroY + 28;
+    let hy = heroY + 22;
 
-    // Tracked label
-    doc.setFont('times', 'bold'); doc.setFontSize(6.5);
+    doc.setFont('times', 'bold'); doc.setFontSize(6);
     doc.setTextColor(...GOLD);
     doc.setCharSpace(4);
-    doc.text('YEAR-DEFINING ASPECT', margin + 22, hy);
+    doc.text('YEAR-DEFINING ASPECT', margin + 18, hy);
     doc.setCharSpace(0);
-    hy += 26;
+    hy += 20;
 
-    // Large aspect name in charcoal
-    doc.setFont('times', 'bold'); doc.setFontSize(22);
+    doc.setFont('times', 'bold'); doc.setFontSize(18);
     doc.setTextColor(...CHARCOAL);
-    doc.text(`SR ${P[yda.planet1] || yda.planet1} ${yda.type} Natal ${P[yda.planet2] || yda.planet2}`, margin + 22, hy);
+    doc.text(`Solar Return ${P[yda.planet1] || yda.planet1} ${yda.type} Natal ${P[yda.planet2] || yda.planet2}`, margin + 18, hy);
+    hy += 14;
+
+    doc.setFont('times', 'normal'); doc.setFontSize(7.5);
+    doc.setTextColor(...GOLD);
+    doc.text(`${yda.orb} degree orb -- Felt all year`, margin + 18, hy);
     hy += 16;
 
-    // Orb detail
-    doc.setFont('times', 'normal'); doc.setFontSize(8);
-    doc.setTextColor(...GOLD);
-    doc.text(`${yda.orb} degree orb -- Felt all year`, margin + 22, hy);
-    hy += 22;
-
-    // Interpretation
     if (yda.interpretation) {
-      doc.setFont('times', 'normal'); doc.setFontSize(10.5);
+      doc.setFont('times', 'normal'); doc.setFontSize(9.5);
       doc.setTextColor(...INK);
-      const interpLines: string[] = doc.splitTextToSize(yda.interpretation, contentW - 44);
-      for (const line of interpLines.slice(0, 3)) { doc.text(line, margin + 22, hy); hy += 15; }
+      const interpLines: string[] = doc.splitTextToSize(yda.interpretation, contentW - 36);
+      for (const line of interpLines.slice(0, 3)) { doc.text(line, margin + 18, hy); hy += 13; }
     }
 
-    ctx.y = heroY + heroH + 28;
+    ctx.y = heroY + heroH + 18;
   }
 
-  // ── Two-column: SR ASCENDANT + MOON PHASE (with felt-sense body text) ──
+  // ── Two-row: Solar Return ASCENDANT + MOON PHASE ──
   if (a.yearlyTheme) {
-    ctx.checkPage(200);
-    const col2Gap = 16;
+    ctx.checkPage(150);
+    const col2Gap = 14;
     const col2W = (contentW - col2Gap) / 2;
-    const pairH = 185; // Taller for descriptive text
+    const pairH = 140;
     const pairY = ctx.y;
 
     const ascSign = a.yearlyTheme.ascendantSign || '';
     const ascFelt = ASC_SIGN_FELT[ascSign] || 'The year opens through this sign\'s energy.';
     ctx.drawInfoBox(doc, margin, pairY, col2W, pairH,
-      'SR ASCENDANT',
+      'SOLAR RETURN ASCENDANT',
       `${ascSign} Rising`,
       `Ruler: ${P[a.yearlyTheme.ascendantRuler] || a.yearlyTheme.ascendantRuler} in ${(a.yearlyTheme.ascendantRulerSign || '').toUpperCase()}. ${ascFelt}`,
       CARD_BG,
@@ -225,13 +218,13 @@ export function generatePDFYearAtAGlance(
     );
     const phaseFelt = MOON_PHASE_FELT[moonPhase] || '';
     ctx.drawInfoBox(doc, margin + col2W + col2Gap, pairY, col2W, pairH,
-      'SR MOON PHASE',
+      'SOLAR RETURN MOON PHASE',
       moonPhase || 'Moon Phase',
-      `${blending.cycleStage}. ${phaseFelt} Releasing: ${blending.releasing}. Emerging: ${blending.emerging}.`,
+      `${blending.cycleStage}. ${phaseFelt}`,
       SOFT_GOLD,
     );
 
-    ctx.y = pairY + pairH + 28;
+    ctx.y = pairY + pairH + 18;
   }
 
   // ── WHERE THIS YEAR PLAYS OUT — accent card ──────────────────────
