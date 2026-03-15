@@ -54,7 +54,7 @@ export function YearPriorityEngine({ analysis, natalChart, srChart }: Props) {
                 <span className="text-sm font-medium text-foreground">{theme.label}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className={`text-[10px] uppercase tracking-widest font-medium ${theme.confidenceColor}`}>
+                <span className={`text-[10px] uppercase tracking-widest font-medium ${CONFIDENCE_COLORS[theme.confidence] || 'text-muted-foreground'}`}>
                   {theme.confidence}
                 </span>
                 <span className="text-[10px] text-muted-foreground font-mono">{theme.score}pts</span>
