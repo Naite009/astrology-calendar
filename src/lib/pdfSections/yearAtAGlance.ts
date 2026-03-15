@@ -87,7 +87,7 @@ export function generatePDFYearAtAGlance(
   ctx.pageBg(doc);
 
   // ── Section header ─────────
-  ctx.y += 24;
+  ctx.y += 16;
 
   // Tracked label
   doc.setFont('times', 'bold'); doc.setFontSize(7);
@@ -95,24 +95,24 @@ export function generatePDFYearAtAGlance(
   doc.setCharSpace(4);
   doc.text('YOUR YEAR', margin, ctx.y);
   doc.setCharSpace(0);
-  ctx.y += 12;
+  ctx.y += 8;
 
   // Hairline
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 42;
+  ctx.y += 28;
 
   // Large serif title
-  doc.setFont('times', 'normal'); doc.setFontSize(36);
+  doc.setFont('times', 'normal'); doc.setFontSize(32);
   doc.setTextColor(...INK);
-  doc.text('At a Glance', margin, ctx.y);
-  ctx.y += 20;
+  doc.text('Your Personal Map', margin, ctx.y);
+  ctx.y += 14;
 
   // Subtitle
-  doc.setFont('times', 'italic'); doc.setFontSize(10);
+  doc.setFont('times', 'italic'); doc.setFontSize(9);
   doc.setTextColor(...MUTED);
   doc.text('Stick this on your fridge', margin, ctx.y);
-  ctx.y += 44;
+  ctx.y += 28;
 
   // ── TOP ROW: 3-column info box grid ──────────────────────────────
   const col3Gap = 14;
