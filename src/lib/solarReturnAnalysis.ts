@@ -878,6 +878,7 @@ export const analyzeSolarReturn = (
           timeLordSRHouse,
           timeLordSRSign,
           overlap,
+          overlapDescription,
           interpretation,
         };
       }
