@@ -752,6 +752,7 @@ export async function generateBirthdayGiftPDF(
         ctx.writeCardSection(doc, 'What To Do', interp.whatToDo);
       });
     }
+    } // close majorAspects.length > 0
   }
 
   // 19. YOUR MOON THIS YEAR
