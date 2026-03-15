@@ -837,9 +837,9 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
             Age at this Solar Return: <span className="font-medium text-foreground">{analysis.profectionYear.age}</span>
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed">{analysis.profectionYear.interpretation}</p>
-          {analysis.profectionYear.overlap && (
+          {analysis.profectionYear.overlap && analysis.profectionYear.overlapDescription && (
             <div className="mt-3 px-3 py-2 bg-primary/10 border border-primary/20 rounded-sm">
-              <p className="text-xs text-primary font-medium">⚡ Confirmed theme — this planet appears in multiple timing systems. High certainty.</p>
+              <p className="text-xs text-primary font-medium">⚡ {analysis.profectionYear.overlapDescription}</p>
             </div>
           )}
 
