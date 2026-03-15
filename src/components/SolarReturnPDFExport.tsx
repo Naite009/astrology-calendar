@@ -22,6 +22,7 @@ import { generateKeyDatesTimeline } from '@/lib/pdfSections/keyDatesTimeline';
 import { generateQuarterlySummary } from '@/lib/pdfSections/quarterlySummary';
 import { generateTier1SolarReturnPDF } from '@/lib/pdfSections/tier1Report';
 import { generatePlanetGallery } from '@/lib/pdfSections/planetGallery';
+import { generatePDFLunarTimeline } from '@/lib/pdfSections/lunarTimeline';
 
 // Planet image imports
 import planetSun from '@/assets/planets/sun.png';
@@ -420,6 +421,13 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       doc.addPage(); ctx.y = margin;
       ctx.sectionPages.set('YEAR AT A GLANCE', doc.getNumberOfPages());
       generatePDFYearAtAGlance(ctx, doc, analysis, srChart, natalChart);
+
+      // =============================================
+      // 29-YEAR LUNAR PHASE TIMELINE
+      // =============================================
+      doc.addPage(); ctx.y = margin;
+      ctx.sectionPages.set('LUNAR PHASE TIMELINE', doc.getNumberOfPages());
+      generatePDFLunarTimeline(ctx, doc, analysis, srChart, natalChart);
 
       // =============================================
       // PROFECTION WHEEL
