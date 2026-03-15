@@ -460,6 +460,22 @@ export async function generateBirthdayGiftPDF(
           }
         });
       }
+
+      // Moon aspects — folded into this section
+      if (analysis.srMoonAspects && analysis.srMoonAspects.length > 0) {
+        ctx.y += 6;
+        ctx.writeBold(doc, 'Moon Aspects This Year');
+        ctx.y += 6;
+        for (const asp of analysis.srMoonAspects.slice(0, 4)) {
+          ctx.checkPage(80);
+          ctx.drawCard(doc, () => {
+            doc.setFont('times', 'bold'); doc.setFontSize(9.5); doc.setTextColor(...ctx.colors.ink);
+            doc.text(`Moon ${asp.aspectType} ${P[asp.targetPlanet] || asp.targetPlanet}`, margin + 8, ctx.y);
+            ctx.y += 12;
+            ctx.writeBody(doc, asp.interpretation);
+          });
+        }
+      }
     }
   }
 
