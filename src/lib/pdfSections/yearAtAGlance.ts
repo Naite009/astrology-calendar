@@ -30,7 +30,7 @@ export function generatePDFYearAtAGlance(
   ctx.pageBg(doc);
 
   // ── Magazine-style section header with extra breathing room ─────────
-  ctx.y += 36;
+  ctx.y += 24; // Reduced from 36
 
   // Tracked label
   doc.setFont('times', 'bold'); doc.setFontSize(7);
@@ -43,19 +43,19 @@ export function generatePDFYearAtAGlance(
   // Hairline
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 32;
+  ctx.y += 20; // Reduced from 32
 
   // Large serif title
   doc.setFont('times', 'normal'); doc.setFontSize(36);
   doc.setTextColor(...INK);
   doc.text('At a Glance', margin, ctx.y);
-  ctx.y += 16;
+  ctx.y += 12;
 
   // Subtitle
   doc.setFont('times', 'italic'); doc.setFontSize(10);
   doc.setTextColor(...MUTED);
   doc.text('Stick this on your fridge', margin, ctx.y);
-  ctx.y += 40;
+  ctx.y += 28; // Reduced from 40
 
   // ── TOP ROW: 3-column info box grid ──────────────────────────────
   const col3Gap = 14;
