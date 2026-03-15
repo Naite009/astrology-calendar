@@ -47,10 +47,15 @@ interface Props {
 }
 
 export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
-  const allCharts = useMemo(() => [
-    ...(userNatalChart ? [userNatalChart] : []),
-    ...savedCharts,
-  ], [userNatalChart, savedCharts]);
+  const allCharts = useMemo(() => {
+    const sorted = [...savedCharts]
+      .filter(c => c.id !== userNatalChart?.id)
+      .sort((a, b) => a.name.localeCompare(b.name));
+    return [
+      ...(userNatalChart ? [userNatalChart] : []),
+      ...sorted,
+    ];
+  }, [userNatalChart, savedCharts]);
 
   const {
     solarReturnCharts, addSolarReturn, updateSolarReturn, deleteSolarReturn,
