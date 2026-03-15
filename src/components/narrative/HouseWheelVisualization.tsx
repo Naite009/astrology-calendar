@@ -187,14 +187,19 @@ export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
           <text x={cx + outerR + 90} y={cy - 16} textAnchor="end" className="fill-muted-foreground text-[9px] font-medium">WEST (Other)</text>
 
           {/* House numbers and names */}
-          {houseWedges.map(w => (
+          {houseWedges.map(w => {
+            const needsSpacing = [1, 6, 7, 12].includes(w.h.num);
+            const numYOffset = needsSpacing ? -6 : 0;
+            const nameYOffset = w.h.num === 12 || w.h.num === 7 ? 12 : 0;
+            return (
             <g key={`label-${w.h.num}`}>
-              <text x={w.numPos.x} y={w.numPos.y} textAnchor="middle" dominantBaseline="middle"
+              <text x={w.numPos.x} y={w.numPos.y + numYOffset} textAnchor="middle" dominantBaseline="middle"
                 className="fill-foreground text-[11px] font-bold">{w.h.num}</text>
-              <text x={w.namePos.x} y={w.namePos.y + (w.h.num === 12 || w.h.num === 7 ? 12 : 0)} textAnchor="middle" dominantBaseline="middle"
+              <text x={w.namePos.x} y={w.namePos.y + nameYOffset} textAnchor="middle" dominantBaseline="middle"
                 className="fill-muted-foreground text-[6px]">{w.h.name}</text>
             </g>
-          ))}
+            );
+          })}
 
           {/* Cusp signs from chart */}
           {chart && houseWedges.map(w => {
