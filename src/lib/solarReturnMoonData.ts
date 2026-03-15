@@ -164,6 +164,107 @@ export const srMoonPhaseInterp: Record<string, { theme: string; description: str
   },
 };
 
+// ─── Moon Phase Sign Blending ───────────────────────────────────────
+// What the Moon sign is releasing vs. what the Sun sign is calling forward
+const SIGN_RELEASING: Record<string, string> = {
+  Aries: 'impulsive independence, the habit of going it alone, reactive anger',
+  Taurus: 'clinging to comfort zones, material attachment as emotional security, resistance to change',
+  Gemini: 'scattered attention, intellectualizing instead of feeling, surface-level connections',
+  Cancer: 'over-nurturing as a control mechanism, emotional dependency, clinging to the familiar',
+  Leo: 'needing external validation, performing instead of being authentic, ego-driven choices',
+  Virgo: 'perfectionism, anxiety disguised as productivity, self-criticism as a coping mechanism',
+  Libra: 'people-pleasing, avoiding conflict at the cost of authenticity, defining yourself through others',
+  Scorpio: 'controlling outcomes through emotional intensity, holding grudges, obsessive attachment',
+  Sagittarius: 'escapism through adventure, restlessness as avoidance, over-promising and under-delivering',
+  Capricorn: 'emotional suppression in service of achievement, equating self-worth with status, rigid self-discipline',
+  Aquarius: 'emotional detachment as self-protection, intellectual superiority, defining yourself by your social role',
+  Pisces: 'boundary dissolution, martyrdom, escaping reality through fantasy or substances',
+};
+
+const SIGN_EMERGING: Record<string, string> = {
+  Aries: 'a fiercer, more honest relationship with your own desires and instincts',
+  Taurus: 'a slower, more embodied way of living that values quality over quantity',
+  Gemini: 'curiosity as a compass, mental flexibility, new ways of communicating your truth',
+  Cancer: 'deeper emotional honesty, the capacity to nurture without losing yourself',
+  Leo: 'authentic creative expression, leading from the heart rather than the ego',
+  Virgo: 'meaningful service, practical wisdom, the ability to discern what truly matters',
+  Libra: 'genuine partnership, aesthetic refinement, the courage to seek harmony without self-erasure',
+  Scorpio: 'psychological depth, the power of vulnerability, emotional resilience forged through truth',
+  Sagittarius: 'expanded meaning, philosophical depth, the freedom that comes from genuine understanding',
+  Capricorn: 'mature authority, strategic patience, building something that outlasts you',
+  Aquarius: 'innovative thinking, authentic community, the freedom to be exactly who you are',
+  Pisces: 'spiritual sensitivity, compassion without codependency, creative imagination as a life force',
+};
+
+// What the house is closing vs. incubating
+const HOUSE_CLOSING: Record<number, string> = {
+  1: 'an old version of your identity — how you present yourself is completing a cycle',
+  2: 'a financial chapter or value system that has run its course',
+  3: 'communication patterns, a learning phase, or a neighborhood chapter',
+  4: 'a home situation, family dynamic, or emotional foundation',
+  5: 'a creative project, romance, or relationship with joy and play',
+  6: 'a work routine, health regimen, or daily structure',
+  7: 'a partnership chapter — how you relate one-on-one is being restructured',
+  8: 'a shared resource arrangement, an intimacy pattern, or a psychological chapter',
+  9: 'a belief system, educational pursuit, or relationship with travel and meaning',
+  10: 'a career chapter, professional identity, or public role',
+  11: 'a social circle, group affiliation, or set of future goals',
+  12: 'a period of behind-the-scenes processing, a spiritual practice, or an isolation pattern',
+};
+
+const HOUSE_INCUBATING: Record<number, string> = {
+  1: 'a new self-image and way of moving through the world',
+  2: 'a new relationship with money, security, and what you value',
+  3: 'new communication skills, learning interests, or local connections',
+  4: 'a new sense of home, belonging, or emotional roots',
+  5: 'new creative impulses, romantic possibilities, or sources of genuine joy',
+  6: 'new daily habits, health practices, or meaningful work systems',
+  7: 'a new way of partnering — more honest, more equal, or entirely different',
+  8: 'a deeper capacity for intimacy, shared power, or psychological transformation',
+  9: 'a new worldview, teaching path, or relationship with freedom and meaning',
+  10: 'a new professional direction, public role, or relationship with authority',
+  11: 'new community connections, friendships, or visions for the future',
+  12: 'a new spiritual practice, healing journey, or relationship with solitude',
+};
+
+export interface MoonPhaseBlending {
+  cycleStage: string;
+  themeLabel: string;
+  releasing: string;
+  emerging: string;
+  areaClosing: string;
+  newDirection: string;
+}
+
+const CYCLE_STAGES: Record<string, { stage: string; theme: string }> = {
+  'New Moon': { stage: 'Beginning', theme: 'Plant seeds and trust raw instinct' },
+  'Crescent': { stage: 'Struggle for Growth', theme: 'Push through early resistance with persistence' },
+  'First Quarter': { stage: 'Action & Decision', theme: 'Commit to a path under external pressure' },
+  'Gibbous': { stage: 'Refinement', theme: 'Fine-tune what is almost ready' },
+  'Full Moon': { stage: 'Culmination', theme: 'Harvest what you have built and see clearly' },
+  'Disseminating': { stage: 'Sharing Knowledge', theme: 'Teach, give back, and distribute wisdom' },
+  'Last Quarter': { stage: 'Reevaluation', theme: 'Release outdated structures and beliefs' },
+  'Balsamic': { stage: 'Completion & Release', theme: 'Release old structures and prepare for spiritual renewal' },
+};
+
+export function getMoonPhaseBlending(
+  phase: string,
+  moonSign: string,
+  sunSign: string,
+  moonHouse: number | null,
+  sunHouse: number | null,
+): MoonPhaseBlending {
+  const stageInfo = CYCLE_STAGES[phase] || { stage: phase, theme: '' };
+  return {
+    cycleStage: stageInfo.stage,
+    themeLabel: stageInfo.theme,
+    releasing: SIGN_RELEASING[moonSign] || `patterns associated with ${moonSign}`,
+    emerging: SIGN_EMERGING[sunSign] || `qualities of ${sunSign}`,
+    areaClosing: moonHouse ? HOUSE_CLOSING[moonHouse] || `House ${moonHouse} themes` : 'unknown area',
+    newDirection: sunHouse ? HOUSE_INCUBATING[sunHouse] || `House ${sunHouse} themes` : 'unknown area',
+  };
+}
+
 // ─── Moon Angular Position Meaning ──────────────────────────────────
 export const srMoonAngularity = (house: number): { position: string; meaning: string } => {
   const angular = [1, 4, 7, 10];
