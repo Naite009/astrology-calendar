@@ -533,7 +533,9 @@ export const analyzeSolarReturn = (
     const rulerSign = rulerPos?.sign || 'Unknown';
     const rulerHouse = planetSRHouses[ruler] ?? null;
 
-    const themeDesc = `Your year is colored by ${srAsc.sign} Rising — ruled by ${ruler} in ${rulerSign}${rulerHouse ? ` (SR ${rulerHouse}th house)` : ''}. This sets the tone for how you approach the entire year.`;
+    const rulerTheme = PLANET_THEMES[ruler] || { domain: `${ruler} themes`, drive: `${ruler}'s drive`, body: '' };
+    const houseArea = rulerHouse ? SR_HOUSE_LIFE_AREA[rulerHouse] || `your ${rulerHouse}th house affairs` : '';
+    const themeDesc = `${srAsc.sign} Rising this year means ${ruler} — the planet of ${rulerTheme.domain} — steers how you meet every situation. With ${ruler} in ${rulerSign}${rulerHouse ? ` (SR ${rulerHouse}th house)` : ''}, your instinctive drive all year is ${rulerTheme.drive}${houseArea ? `, and that drive plays out most visibly in ${houseArea}` : ''}. You'll feel this as a persistent pull: decisions, moods, and reactions will keep filtering through ${rulerSign} energy — ${getSignFeltSense(rulerSign)}.`;
     yearlyTheme = {
       ascendantSign: srAsc.sign,
       ascendantRuler: ruler,
