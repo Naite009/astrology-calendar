@@ -987,6 +987,7 @@ export const AstroCalendar = () => {
           <MoonPhaseEncyclopedia
             userNatalChart={userNatalChart}
             savedCharts={savedCharts}
+            currentYear={currentDate.getFullYear()}
           />
         )}
 
