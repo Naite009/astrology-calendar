@@ -1350,10 +1350,13 @@ export const analyzeSolarReturn = (
   const moonLateDegree = moonPos ? parseInt(String(moonPos.degree)) >= 25 : false;
 
   // ─── Moon 19-Year Metonic Cycle ──
+  // Include past ages, current age, and next 3 future occurrences
   const currentAge = profectionYear?.age ?? 0;
   const moonMetonicAges: number[] = [];
   if (currentAge > 0) {
-    for (let a = currentAge % 19; a < currentAge; a += 19) {
+    const startRemainder = currentAge % 19;
+    const firstAge = startRemainder === 0 ? 19 : startRemainder;
+    for (let a = firstAge; a <= currentAge + 57; a += 19) {
       if (a > 0) moonMetonicAges.push(a);
     }
   }

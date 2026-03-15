@@ -1462,12 +1462,28 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
           <div className="border-t border-border pt-4">
             <div className="border border-border/50 rounded-sm p-4 bg-muted/10 space-y-2">
               <p className="text-[10px] uppercase tracking-widest font-medium text-primary">The 19-Year Metonic Echo</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                The Moon returns to the same zodiac sign approximately every 19 years (the Metonic cycle). This means you experienced a similar emotional flavor — Moon in {analysis.moonSign} — at age{analysis.moonMetonicAges.length > 1 ? 's' : ''} <strong className="text-foreground">{analysis.moonMetonicAges.join(', ')}</strong>.
-              </p>
-              <p className="text-xs text-muted-foreground leading-relaxed italic">
-                Reflect on what was happening emotionally at those ages. The same emotional themes are cycling back — but you are meeting them with everything you have learned since then. This is not repetition; it is a spiral.
-              </p>
+              {(() => {
+                const age = analysis.profectionYear?.age ?? 0;
+                const past = analysis.moonMetonicAges.filter(a => a < age);
+                const future = analysis.moonMetonicAges.filter(a => a > age);
+                return (
+                  <>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      The Moon returns to the same zodiac sign approximately every 19 years (the Metonic cycle). You experience Moon in {analysis.moonSign} at these ages:
+                    </p>
+                    <p className="text-xs text-foreground leading-relaxed">
+                      {past.length > 0 && <><span className="text-muted-foreground">Past: </span><strong>{past.join(', ')}</strong></>}
+                      {past.length > 0 && ' · '}
+                      <span className="text-primary font-bold">Now: {age}</span>
+                      {future.length > 0 && ' · '}
+                      {future.length > 0 && <><span className="text-muted-foreground">Next: </span><strong>{future.join(', ')}</strong></>}
+                    </p>
+                    <p className="text-xs text-muted-foreground leading-relaxed italic">
+                      Reflect on what was happening emotionally at those past ages. The same emotional themes are cycling back — but you are meeting them with everything you have learned since then. This is not repetition; it is a spiral.
+                    </p>
+                  </>
+                );
+              })()}
             </div>
           </div>
         )}
