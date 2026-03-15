@@ -162,9 +162,9 @@ function getHorizontalDetail(east: number, west: number, total: number): { label
         title: 'Balanced Initiative — Self-Direction Meets Collaboration',
         summary: 'Your Solar Return planets are equally divided between eastern and western hemispheres. You have equal capacity for self-initiated action and responsive collaboration.',
         bodyParagraphs: [
-          'When the eastern and western hemispheres hold equal planetary weight, you are neither purely self-directed nor purely dependent on others for direction. Mary Fortier Shea notes this balance suggests a year where both your own initiatives and your responses to others\' needs shape outcomes.',
+          'When the eastern and western hemispheres hold equal planetary weight, you are neither purely self-directed nor purely dependent on others for direction. This balance suggests a year where both your own initiatives and your responses to others\' needs shape outcomes.',
           'This is generally a favorable balance — you can start your own projects when inspiration strikes AND effectively collaborate when opportunities arrive through others. The key is knowing which mode to use when.',
-          'Brian Clark would observe that this balanced east-west axis means you have genuine free will AND the social awareness to use it wisely. Neither isolation nor over-dependence on others defines your year.'
+          'This balanced east-west axis means you have genuine free will AND the social awareness to use it wisely. Neither isolation nor over-dependence on others defines your year.'
         ],
         focusAreas: [
           'Developing discernment about when to lead vs. when to follow',
