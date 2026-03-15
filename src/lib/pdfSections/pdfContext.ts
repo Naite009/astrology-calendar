@@ -115,7 +115,7 @@ export function createPDFContext(
       const pageNum = d.getNumberOfPages();
       sectionPages.set(title.toUpperCase(), pageNum);
 
-      const topPad = ctx.y < margin + 20 ? 14 : 34;
+      const topPad = ctx.y < margin + 20 ? 14 : 40;
       ctx.y += topPad;
 
       const numStr = String(ctx.sectionNum).padStart(2, '0');
