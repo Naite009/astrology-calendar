@@ -149,7 +149,7 @@ export function generatePDFAngleActivations(
   natalChart: NatalChart, srChart: SolarReturnChart,
   maxOrb: number = ORB,
 ) {
-  ctx.sectionTitle(doc, 'MAJOR PLANETARY ACTIVATIONS', 'SR Angles to Natal Planets & SR Planets to Natal Angles');
+  ctx.sectionTitle(doc, 'MAJOR PLANETARY ACTIVATIONS', 'Solar Return Angles to Natal Planets & Solar Return Planets to Natal Angles');
 
   interface Act { label: string; aspectName: string; orb: number; narrative: string; priority: number; }
   const acts: Act[] = [];
