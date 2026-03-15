@@ -18,10 +18,30 @@ import { generateHighlightsPage } from '@/lib/pdfSections/highlightsAndForecasts
 import { generateAffirmationCard } from '@/lib/pdfSections/affirmationCard';
 import { generateHowToReadPage } from '@/lib/pdfSections/howToRead';
 import { generateProfectionPersonalSection } from '@/lib/pdfSections/profectionPersonal';
-import { generateKeyDatesSection } from '@/lib/pdfSections/keyDates';
+import { generateKeyDatesTimeline } from '@/lib/pdfSections/keyDatesTimeline';
 import { generateQuarterlySummary } from '@/lib/pdfSections/quarterlySummary';
 import { generateTier1SolarReturnPDF } from '@/lib/pdfSections/tier1Report';
+import { generatePlanetGallery } from '@/lib/pdfSections/planetGallery';
 
+// Planet image imports
+import planetSun from '@/assets/planets/sun.png';
+import planetMoon from '@/assets/planets/moon.png';
+import planetMercury from '@/assets/planets/mercury.png';
+import planetVenus from '@/assets/planets/venus.png';
+import planetMars from '@/assets/planets/mars.png';
+import planetJupiter from '@/assets/planets/jupiter.png';
+import planetSaturn from '@/assets/planets/saturn.png';
+import planetUranus from '@/assets/planets/uranus.png';
+import planetNeptune from '@/assets/planets/neptune.png';
+import planetPluto from '@/assets/planets/pluto.png';
+import planetChiron from '@/assets/planets/chiron.png';
+import planetNorthNode from '@/assets/planets/northnode.png';
+
+export const PLANET_IMAGES: Record<string, string> = {
+  sun: planetSun, moon: planetMoon, mercury: planetMercury, venus: planetVenus,
+  mars: planetMars, jupiter: planetJupiter, saturn: planetSaturn, uranus: planetUranus,
+  neptune: planetNeptune, pluto: planetPluto, chiron: planetChiron, northnode: planetNorthNode,
+};
 // Cake image imports
 import cakeAries from '@/assets/cakes/aries.png';
 import cakeTaurus from '@/assets/cakes/taurus.png';
