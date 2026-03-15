@@ -1047,6 +1047,9 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts, currentYear
           );
         })}
       </div>
+
+      {/* Yearly Moon Phase Grid */}
+      <MoonPhasesView year={currentYear || new Date().getFullYear()} />
     </div>
   );
 };
