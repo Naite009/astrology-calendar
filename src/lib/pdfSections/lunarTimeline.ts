@@ -181,46 +181,55 @@ export function generatePDFLunarTimeline(
   ctx.y += 16;
 
   const col2W = (contentW - 16) / 2;
-  const patternBoxH = 50;
+  const patternBoxH = 60;
 
   const patternSets: { label: string; years: number[]; color: Color }[] = [
     { label: 'NEW BEGINNINGS', years: patterns.newCycleYears, color: PHASE_DOT_RGB.beginning },
-    { label: 'CULMINATION YEARS', years: patterns.culminationYears, color: PHASE_DOT_RGB.culmination },
-    { label: 'TURNING POINTS', years: patterns.turningPointYears, color: PHASE_DOT_RGB.action },
-    { label: 'RELEASE YEARS', years: patterns.releaseYears, color: MUTED },
-  ];
+    { label: 'GROWTH YEARS', years: patterns.crescentYears, color: PHASE_DOT_RGB.growth },
+    { label: 'ACTION & DECISION', years: patterns.actionYears, color: PHASE_DOT_RGB.action },
+    { label: 'REFINEMENT', years: patterns.refinementYears, color: PHASE_DOT_RGB.refinement },
+    { label: 'CULMINATION', years: patterns.culminationYears, color: PHASE_DOT_RGB.culmination },
+    { label: 'SHARING & TEACHING', years: patterns.sharingYears, color: PHASE_DOT_RGB.sharing },
+    { label: 'REEVALUATION', years: patterns.turningPointYears, color: PHASE_DOT_RGB.reevaluation },
+    { label: 'RELEASE & COMPLETION', years: patterns.releaseYears, color: MUTED },
+  ].filter(ps => ps.years.length > 0);
 
-  patternSets.forEach((ps, idx) => {
-    if (ps.years.length === 0) return;
-    const col = idx % 2;
-    const row = Math.floor(idx / 2);
-    const x = margin + col * (col2W + 16);
-    const y = ctx.y + row * (patternBoxH + 8);
+  // Draw in 2-column rows with page break awareness
+  let gridIdx = 0;
+  while (gridIdx < patternSets.length) {
+    // Draw up to 2 per row
+    const rowItems = patternSets.slice(gridIdx, gridIdx + 2);
+    ctx.checkPage(patternBoxH + 12);
 
-    doc.setFillColor(...CARD_BG);
-    doc.roundedRect(x, y, col2W, patternBoxH, 2, 2, 'F');
+    rowItems.forEach((ps, col) => {
+      const x = margin + col * (col2W + 16);
+      const y = ctx.y;
 
-    // Left accent bar
-    doc.setFillColor(...ps.color);
-    doc.rect(x, y, 3, patternBoxH, 'F');
+      doc.setFillColor(...CARD_BG);
+      doc.roundedRect(x, y, col2W, patternBoxH, 2, 2, 'F');
 
-    doc.setFont('times', 'bold'); doc.setFontSize(6.5);
-    doc.setTextColor(...ps.color);
-    doc.setCharSpace(2);
-    doc.text(ps.label, x + 10, y + 16);
-    doc.setCharSpace(0);
+      // Left accent bar
+      doc.setFillColor(...ps.color);
+      doc.rect(x, y, 3, patternBoxH, 'F');
 
-    doc.setFont('times', 'normal'); doc.setFontSize(9.5);
-    doc.setTextColor(...INK);
-    const yearsText = ps.years.join(', ');
-    const wrappedYears: string[] = doc.splitTextToSize(yearsText, col2W - 20);
-    wrappedYears.slice(0, 2).forEach((line, li) => {
-      doc.text(line, x + 10, y + 30 + li * 12);
+      doc.setFont('times', 'bold'); doc.setFontSize(6.5);
+      doc.setTextColor(...ps.color);
+      doc.setCharSpace(2);
+      doc.text(ps.label, x + 10, y + 16);
+      doc.setCharSpace(0);
+
+      doc.setFont('times', 'normal'); doc.setFontSize(9);
+      doc.setTextColor(...INK);
+      const yearsText = ps.years.join(', ');
+      const wrappedYears: string[] = doc.splitTextToSize(yearsText, col2W - 20);
+      wrappedYears.slice(0, 3).forEach((line, li) => {
+        doc.text(line, x + 10, y + 30 + li * 11);
+      });
     });
-  });
 
-  const filledRows = Math.ceil(patternSets.filter(p => p.years.length > 0).length / 2);
-  ctx.y += filledRows * (patternBoxH + 8) + 16;
+    ctx.y += patternBoxH + 8;
+    gridIdx += 2;
+  }
 
   // ── Balsamic "Ending / Emerging" section (if current year is Balsamic) ──
   if (currentEntry?.phase === 'Balsamic') {

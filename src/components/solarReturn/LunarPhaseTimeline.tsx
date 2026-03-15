@@ -258,34 +258,25 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
         </div>
       )}
 
-      {/* Pattern Detection Panel */}
+      {/* Pattern Detection Panel — All 8 phases */}
       <div className="px-4 pb-4 space-y-3">
-        <p className="text-[10px] uppercase tracking-widest font-medium text-primary">Recurring Patterns</p>
+        <p className="text-[10px] uppercase tracking-widest font-medium text-primary">Recurring Patterns — Every Year Since Birth</p>
         <div className="grid grid-cols-2 gap-2">
-          {patterns.newCycleYears.length > 0 && (
-            <div className="bg-chart-1/10 rounded-sm p-2 space-y-1">
-              <p className="text-[9px] uppercase tracking-widest font-medium text-chart-1">New Beginnings</p>
-              <p className="text-xs text-foreground">{patterns.newCycleYears.join(', ')}</p>
+          {[
+            { label: 'New Beginnings', years: patterns.newCycleYears, bg: 'bg-chart-1/10', text: 'text-chart-1' },
+            { label: 'Growth Years', years: patterns.crescentYears, bg: 'bg-chart-2/10', text: 'text-chart-2' },
+            { label: 'Action & Decision', years: patterns.actionYears, bg: 'bg-chart-3/10', text: 'text-chart-3' },
+            { label: 'Refinement', years: patterns.refinementYears, bg: 'bg-chart-4/10', text: 'text-chart-4' },
+            { label: 'Culmination', years: patterns.culminationYears, bg: 'bg-chart-5/10', text: 'text-chart-5' },
+            { label: 'Sharing & Teaching', years: patterns.sharingYears, bg: 'bg-accent/10', text: 'text-accent-foreground' },
+            { label: 'Reevaluation', years: patterns.turningPointYears, bg: 'bg-secondary/20', text: 'text-secondary-foreground' },
+            { label: 'Release & Completion', years: patterns.releaseYears, bg: 'bg-muted/30', text: 'text-muted-foreground' },
+          ].filter(p => p.years.length > 0).map(p => (
+            <div key={p.label} className={`${p.bg} rounded-sm p-2 space-y-1`}>
+              <p className={`text-[9px] uppercase tracking-widest font-medium ${p.text}`}>{p.label}</p>
+              <p className="text-xs text-foreground">{p.years.join(', ')}</p>
             </div>
-          )}
-          {patterns.culminationYears.length > 0 && (
-            <div className="bg-chart-5/10 rounded-sm p-2 space-y-1">
-              <p className="text-[9px] uppercase tracking-widest font-medium text-chart-5">Culmination Years</p>
-              <p className="text-xs text-foreground">{patterns.culminationYears.join(', ')}</p>
-            </div>
-          )}
-          {patterns.turningPointYears.length > 0 && (
-            <div className="bg-chart-3/10 rounded-sm p-2 space-y-1">
-              <p className="text-[9px] uppercase tracking-widest font-medium text-chart-3">Turning Points</p>
-              <p className="text-xs text-foreground">{patterns.turningPointYears.join(', ')}</p>
-            </div>
-          )}
-          {patterns.releaseYears.length > 0 && (
-            <div className="bg-muted/30 rounded-sm p-2 space-y-1">
-              <p className="text-[9px] uppercase tracking-widest font-medium text-muted-foreground">Release Years</p>
-              <p className="text-xs text-foreground">{patterns.releaseYears.join(', ')}</p>
-            </div>
-          )}
+          ))}
         </div>
 
         {/* Phase Legend */}
