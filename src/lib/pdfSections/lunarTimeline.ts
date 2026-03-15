@@ -214,7 +214,7 @@ export function generatePDFLunarTimeline(
       doc.setFont('times', 'bold'); doc.setFontSize(6.5);
       doc.setTextColor(...ps.color);
       doc.setCharSpace(2);
-      doc.text(ps.label, x + 10, y + 16);
+      doc.text(ps.label, x + 10, y + 14);
       doc.setCharSpace(0);
 
       doc.setFont('times', 'normal'); doc.setFontSize(9);
