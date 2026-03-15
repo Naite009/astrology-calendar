@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { ChartSelector } from './ChartSelector';
+import { MoonPhasesView } from './MoonPhasesView';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { calculateBirthMoonPhase, BirthMoonPhase } from '@/lib/birthConditions';
 import { calculateSecondaryProgressions, getProgressedMoonInfo } from '@/lib/secondaryProgressions';
