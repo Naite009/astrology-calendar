@@ -226,7 +226,7 @@ export function generatePDFLunarTimeline(
       });
     });
 
-    ctx.y += patternBoxH + 8;
+    ctx.y += patternBoxH + 6;
     gridIdx += 2;
   }
 
