@@ -91,7 +91,7 @@ export function generateNatalVsSRCards(
   doc.rect(0, 0, pw, ph, 'F');
 
   // Compact section header
-  ctx.y += 16;
+  ctx.y += 12;
   doc.setFont('times', 'bold'); doc.setFontSize(7);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(4);
@@ -101,25 +101,25 @@ export function generateNatalVsSRCards(
 
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 20;
+  ctx.y += 16;
 
-  doc.setFont('times', 'normal'); doc.setFontSize(24);
+  doc.setFont('times', 'normal'); doc.setFontSize(22);
   doc.setTextColor(...INK);
   doc.text('Natal vs Solar Return', margin, ctx.y);
-  ctx.y += 10;
+  ctx.y += 8;
 
   doc.setFont('times', 'italic'); doc.setFontSize(9);
   doc.setTextColor(...MUTED);
   doc.text('Where each planet was — and where it is now', margin, ctx.y);
-  ctx.y += 18;
+  ctx.y += 14;
 
-  // 2-column grid — compact to fit all on fewer pages
-  const cols = 2;
-  const gapX = 10;
+  // 3-column grid for compactness while allowing readable text
+  const cols = 3;
+  const gapX = 8;
   const gapY = 6;
   const cardW = (contentW - gapX * (cols - 1)) / cols;
-  const imgSize = 24;
-  const cardH = 88;
+  const imgSize = 20;
+  const cardH = 100;
 
   let gridStartY = ctx.y;
 
@@ -183,91 +183,81 @@ function drawShiftCard(
 
   // Gold top accent
   doc.setFillColor(...GOLD);
-  doc.rect(x, y, w, 2.5, 'F');
+  doc.rect(x, y, w, 2, 'F');
 
   // Planet image — top left
   const imgKey = planet.toLowerCase().replace('northnode', 'northnode');
   const imgSrc = planetImages[imgKey];
   if (imgSrc) {
     try {
-      doc.addImage(imgSrc, 'PNG', x + 8, y + 8, imgSize, imgSize);
+      doc.addImage(imgSrc, 'PNG', x + 6, y + 6, imgSize, imgSize);
     } catch {
       doc.setFillColor(...GOLD);
-      doc.circle(x + 8 + imgSize / 2, y + 8 + imgSize / 2, imgSize / 3, 'F');
+      doc.circle(x + 6 + imgSize / 2, y + 6 + imgSize / 2, imgSize / 3, 'F');
     }
   }
 
   // Planet name — right of image
-  let tx = x + imgSize + 14;
+  let tx = x + imgSize + 10;
   let ty = y + 14;
   doc.setFont('times', 'bold'); doc.setFontSize(7);
   doc.setTextColor(...GOLD);
-  doc.setCharSpace(2);
+  doc.setCharSpace(1.5);
   doc.text((P[planet] || planet).toUpperCase(), tx, ty);
   doc.setCharSpace(0);
 
   // Shift indicator badge
   if (isSameSign) {
     doc.setFillColor(225, 245, 225);
-    doc.roundedRect(x + w - 38, y + 6, 30, 12, 2, 2, 'F');
+    doc.roundedRect(x + w - 32, y + 5, 26, 10, 2, 2, 'F');
     doc.setFont('times', 'bold'); doc.setFontSize(5.5);
     doc.setTextColor(80, 140, 80);
-    doc.text('SAME', x + w - 23, y + 14, { align: 'center' });
+    doc.text('SAME', x + w - 19, y + 12, { align: 'center' });
   } else if (natSign !== '--' && srSign !== '--') {
     doc.setFillColor(255, 235, 220);
-    doc.roundedRect(x + w - 38, y + 6, 30, 12, 2, 2, 'F');
+    doc.roundedRect(x + w - 32, y + 5, 26, 10, 2, 2, 'F');
     doc.setFont('times', 'bold'); doc.setFontSize(5.5);
     doc.setTextColor(180, 120, 60);
-    doc.text('SHIFT', x + w - 23, y + 14, { align: 'center' });
+    doc.text('SHIFT', x + w - 19, y + 12, { align: 'center' });
   }
 
-  // Two-column: NATAL | SR
-  const halfW = (w - 16) / 2;
-  const leftX = x + 8;
-  const rightX = x + 8 + halfW + 6;
+  // Natal → SR inline
   ty = y + imgSize + 10;
-
-  // Labels
-  doc.setFont('times', 'normal'); doc.setFontSize(5.5);
-  doc.setTextColor(...MUTED);
-  doc.text('NATAL', leftX, ty);
-  doc.text('THIS YEAR', rightX, ty);
-  ty += 8;
-
-  // Signs
-  doc.setFont('times', 'bold'); doc.setFontSize(9);
+  doc.setFont('times', 'bold'); doc.setFontSize(8.5);
   doc.setTextColor(...INK);
-  doc.text(natSign, leftX, ty);
-  doc.text(srSign, rightX, ty);
-  ty += 8;
+  doc.text(natSign, x + 6, ty);
+
+  // Arrow
+  const arrowX1 = x + 6 + doc.getTextWidth(natSign) + 4;
+  const arrowX2 = arrowX1 + 14;
+  const arrowMidY = ty - 2.5;
+  doc.setDrawColor(...ARROW_GOLD); doc.setLineWidth(0.5);
+  doc.line(arrowX1, arrowMidY, arrowX2, arrowMidY);
+  doc.line(arrowX2 - 3, arrowMidY - 2, arrowX2, arrowMidY);
+  doc.line(arrowX2 - 3, arrowMidY + 2, arrowX2, arrowMidY);
+
+  doc.setFont('times', 'bold'); doc.setFontSize(8.5);
+  doc.setTextColor(...INK);
+  doc.text(srSign, arrowX2 + 3, ty);
+  ty += 10;
 
   // Degrees + houses
   doc.setFont('times', 'normal'); doc.setFontSize(7);
   doc.setTextColor(...MUTED);
-  doc.text(`${natDeg}${natH ? ` · H${natH}` : ''}`, leftX, ty);
-  doc.text(`${srDeg}${srH ? ` · H${srH}` : ''}`, rightX, ty);
+  const detailLine = `${natDeg}${natH ? ` H${natH}` : ''}  →  ${srDeg}${srH ? ` H${srH}` : ''}`;
+  doc.text(detailLine, x + 6, ty);
+  ty += 10;
 
-  // Arrow between columns
-  const arrowY = ty - 6;
-  doc.setDrawColor(...ARROW_GOLD); doc.setLineWidth(0.6);
-  const arrowStartX = leftX + halfW - 2;
-  const arrowEndX = rightX - 4;
-  doc.line(arrowStartX, arrowY, arrowEndX, arrowY);
-  doc.line(arrowEndX - 3, arrowY - 2, arrowEndX, arrowY);
-  doc.line(arrowEndX - 3, arrowY + 2, arrowEndX, arrowY);
-
-  ty += 8;
-
-  // Shift narrative — single line
+  // Shift narrative — readable size
   const shiftFeel = SHIFT_FEEL[planet];
   if (shiftFeel) {
     const narrative = isSameSign ? shiftFeel.same : shiftFeel.different;
-    doc.setFont('times', 'italic'); doc.setFontSize(5.5);
+    doc.setFont('times', 'italic'); doc.setFontSize(7);
     doc.setTextColor(...MUTED);
-    const lines = doc.splitTextToSize(narrative, w - 16);
-    for (const line of lines.slice(0, 2)) {
-      doc.text(line, x + w / 2, ty, { align: 'center' });
-      ty += 7;
+    const lines = doc.splitTextToSize(narrative, w - 12);
+    for (const line of lines.slice(0, 3)) {
+      doc.text(line, x + 6, ty);
+      ty += 9;
     }
   }
 }

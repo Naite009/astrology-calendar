@@ -668,40 +668,37 @@ export async function generateBirthdayGiftPDF(
   // 17. SATURN & NORTH NODE — dramatic portrait cards
   generateSaturnNodePortrait(doc, ctx, margin, contentW, pw, analysis.saturnFocus, analysis.nodesFocus);
 
-  // 18. KEY ASPECTS (Birthday Gift: 1° orb max, no quincunx)
+  // 18. KEY ASPECTS (Birthday Gift: 2° orb max, no quincunx)
   if (analysis.srToNatalAspects.length > 0) {
     const allAspects = analysis.srToNatalAspects.filter(asp => {
-      // Exclude Sun-Sun conjunction (feature of every SR)
       if (asp.planet1 === 'Sun' && asp.planet2 === 'Sun' && asp.type === 'Conjunction') return false;
-      // Exclude quincunx for birthday gift PDF
       if (asp.type === 'Quincunx' || asp.type === 'quincunx' || asp.type === 'Semi-Sextile' || asp.type === 'semi-sextile') return false;
-      // Only 1° orb for birthday gift
-      if (typeof asp.orb === 'number' && asp.orb > 1) return false;
-      if (typeof asp.orb === 'string' && parseFloat(asp.orb) > 1) return false;
+      if (typeof asp.orb === 'number' && asp.orb > 2) return false;
+      if (typeof asp.orb === 'string' && parseFloat(asp.orb) > 2) return false;
       return true;
     });
     const majorAspects = allAspects.filter(asp => MAJOR_BODIES.has(asp.planet1) && MAJOR_BODIES.has(asp.planet2));
     if (majorAspects.length > 0) {
     doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
     ctx.sectionPages.set('KEY ASPECTS', doc.getNumberOfPages());
-    ctx.sectionTitle(doc, 'KEY ASPECTS', 'How Solar Return planets activate your natal chart (within 1 degree)');
+    ctx.sectionTitle(doc, 'KEY ASPECTS', 'How Solar Return planets activate your natal chart (within 2 degrees)');
     for (let i = 0; i < Math.min(majorAspects.length, 10); i++) {
       const asp = majorAspects[i];
       const interp = generateSRtoNatalInterpretation(asp.planet1, asp.planet2, asp.type, asp.orb);
-      ctx.checkPage(160);
+      ctx.checkPage(120);
       ctx.drawCard(doc, () => {
         doc.setFont('times', 'bold'); doc.setFontSize(10); doc.setTextColor(...ctx.colors.ink);
         doc.text(`SR ${P[asp.planet1] || asp.planet1}  ${asp.type}  Natal ${P[asp.planet2] || asp.planet2}`, margin + 8, ctx.y);
         doc.setFont('times', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...ctx.colors.muted);
         const srH = analysis.planetSRHouses?.[asp.planet1];
-        doc.text(`${asp.orb}' orb${srH ? `  |  SR H${srH}` : ''}`, margin + contentW, ctx.y, { align: 'right' });
+        doc.text(`${asp.orb}° orb${srH ? `  |  SR H${srH}` : ''}`, margin + contentW, ctx.y, { align: 'right' });
         ctx.y += 14;
         ctx.writeCardSection(doc, 'How It Feels', interp.howItFeels);
         ctx.writeCardSection(doc, 'What It Means', interp.whatItMeans);
         ctx.writeCardSection(doc, 'What To Do', interp.whatToDo);
       });
     }
-    } // close majorAspects.length > 0
+    }
   }
 
   // 19. YOUR MOON THIS YEAR — REMOVED (redundant with Emotional Climate box + Moon Sign Shift)
@@ -1413,32 +1410,37 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       generateSaturnNodePortrait(doc, ctx, margin, contentW, pw, analysis.saturnFocus, analysis.nodesFocus);
 
       // =============================================
-      // KEY ASPECTS — own page with box layout
+      // KEY ASPECTS — own page with box layout (2° orb)
       // =============================================
       if (analysis.srToNatalAspects.length > 0) {
-        const allAspects = analysis.srToNatalAspects.filter(asp => !(asp.planet1 === 'Sun' && asp.planet2 === 'Sun' && asp.type === 'Conjunction'));
+        const allAspects = analysis.srToNatalAspects.filter(asp => {
+          if (asp.planet1 === 'Sun' && asp.planet2 === 'Sun' && asp.type === 'Conjunction') return false;
+          if (asp.type === 'Quincunx' || asp.type === 'quincunx' || asp.type === 'Semi-Sextile' || asp.type === 'semi-sextile') return false;
+          if (typeof asp.orb === 'number' && asp.orb > 2) return false;
+          if (typeof asp.orb === 'string' && parseFloat(asp.orb) > 2) return false;
+          return true;
+        });
         const majorAspects = allAspects.filter(asp => MAJOR_BODIES.has(asp.planet1) && MAJOR_BODIES.has(asp.planet2));
         
+        if (majorAspects.length > 0) {
         doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
         ctx.sectionPages.set('KEY ASPECTS', doc.getNumberOfPages());
-        ctx.sectionTitle(doc, 'KEY ASPECTS', 'How Solar Return planets activate your natal chart');
+        ctx.sectionTitle(doc, 'KEY ASPECTS', 'How Solar Return planets activate your natal chart (within 2 degrees)');
 
-        for (let i = 0; i < Math.min(majorAspects.length, 8); i++) {
+        for (let i = 0; i < Math.min(majorAspects.length, 10); i++) {
           const asp = majorAspects[i];
           const interp = generateSRtoNatalInterpretation(asp.planet1, asp.planet2, asp.type, asp.orb);
-          const isHard = ['Square', 'Opposition', 'Quincunx'].includes(asp.type);
           const srH = analysis.planetSRHouses?.[asp.planet1];
-          const natalH = natalChart.planets?.[asp.planet2]?.house;
+          const natalH = analysis.houseOverlays?.find(o => o.planet === asp.planet2)?.natalHouse;
           
-          ctx.checkPage(160);
+          ctx.checkPage(120);
           
           ctx.drawCard(doc, () => {
-            // Title line
             doc.setFont('times', 'bold'); doc.setFontSize(10);
             doc.setTextColor(...ctx.colors.ink);
             doc.text(`SR ${P[asp.planet1] || asp.planet1}  ${asp.type}  Natal ${P[asp.planet2] || asp.planet2}`, margin + 8, ctx.y);
             doc.setFont('times', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...ctx.colors.muted);
-            const orbHouse = `${asp.orb}' orb${srH ? `  |  SR H${srH}` : ''}${natalH ? `  |  Natal H${natalH}` : ''}`;
+            const orbHouse = `${asp.orb}° orb${srH ? `  |  SR H${srH}` : ''}${natalH ? `  |  Natal H${natalH}` : ''}`;
             doc.text(orbHouse, margin + contentW, ctx.y, { align: 'right' });
             ctx.y += 14;
 
@@ -1446,6 +1448,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             ctx.writeCardSection(doc, 'What It Means', interp.whatItMeans);
             ctx.writeCardSection(doc, 'What To Do', interp.whatToDo);
           });
+        }
         }
       }
 

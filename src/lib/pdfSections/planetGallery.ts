@@ -4,9 +4,8 @@ import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { P } from '@/components/SolarReturnPDFExport';
 import { getPlanetSignHouseFelt } from './planetSignHouseFelt';
 
-// Planet images imported in SolarReturnPDFExport and passed via imageMap
 type Color = [number, number, number];
-const INK:   Color = [58,  54,  50]; // Charcoal grey for print safety
+const INK:   Color = [58,  54,  50];
 const MUTED: Color = [130, 125, 118];
 const GOLD:  Color = [184, 150, 62];
 const RULE:  Color = [200, 195, 188];
@@ -28,7 +27,7 @@ export function generatePlanetGallery(
   doc.rect(0, 0, pw, doc.internal.pageSize.getHeight(), 'F');
 
   // Section header
-  ctx.y += 24;
+  ctx.y += 20;
   doc.setFont('times', 'bold'); doc.setFontSize(7);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(4);
@@ -38,17 +37,17 @@ export function generatePlanetGallery(
 
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 28;
+  ctx.y += 24;
 
-  doc.setFont('times', 'normal'); doc.setFontSize(28);
+  doc.setFont('times', 'normal'); doc.setFontSize(26);
   doc.setTextColor(...INK);
   doc.text('Your Planets This Year', margin, ctx.y);
-  ctx.y += 14;
+  ctx.y += 12;
 
   doc.setFont('times', 'italic'); doc.setFontSize(10);
   doc.setTextColor(...MUTED);
   doc.text('Each placement in your Solar Return', margin, ctx.y);
-  ctx.y += 40;
+  ctx.y += 30;
 
   // Build planet data
   const planets = GRID_ORDER.filter(p => {
@@ -56,13 +55,13 @@ export function generatePlanetGallery(
     return !!srPos;
   });
 
-  // 4 columns x 3 rows grid
-  const cols = 4;
-  const gapX = 12;
-  const gapY = 14;
+  // 3 columns x 4 rows grid — bigger cells for readable text
+  const cols = 3;
+  const gapX = 10;
+  const gapY = 10;
   const cellW = (contentW - gapX * (cols - 1)) / cols;
-  const imgSize = 48;
-  const cellH = imgSize + 110; // image + name + description
+  const imgSize = 36;
+  const cellH = imgSize + 100;
 
   const ph = doc.internal.pageSize.getHeight();
   let gridStartY = ctx.y;
@@ -79,18 +78,12 @@ export function generatePlanetGallery(
       doc.addPage();
       doc.setFillColor(...WHITE);
       doc.rect(0, 0, pw, ph, 'F');
-      gridStartY = margin + 20;
-      // Recalculate
-      const newRow = 0;
-      const newCellY = gridStartY;
-      drawPlanetCell(doc, ctx, planet, analysis, srChart, planetImages,
-        cellX, newCellY, cellW, cellH, imgSize);
-      // Reset for subsequent planets
-      continue;
+      gridStartY = margin + 20 - row * (cellH + gapY);
     }
 
+    const recalcY = gridStartY + row * (cellH + gapY);
     drawPlanetCell(doc, ctx, planet, analysis, srChart, planetImages,
-      cellX, cellY, cellW, cellH, imgSize);
+      cellX, recalcY, cellW, cellH, imgSize);
   }
 
   const totalRows = Math.ceil(Math.min(planets.length, 12) / cols);
@@ -126,15 +119,14 @@ function drawPlanetCell(
   if (imgSrc) {
     try {
       const imgX = x + (w - imgSize) / 2;
-      doc.addImage(imgSrc, 'PNG', imgX, y + 8, imgSize, imgSize);
+      doc.addImage(imgSrc, 'PNG', imgX, y + 6, imgSize, imgSize);
     } catch {
-      // Draw a gold circle fallback
       doc.setFillColor(...GOLD);
-      doc.circle(x + w / 2, y + 8 + imgSize / 2, imgSize / 3, 'F');
+      doc.circle(x + w / 2, y + 6 + imgSize / 2, imgSize / 3, 'F');
     }
   }
 
-  let cy = y + imgSize + 14;
+  let cy = y + imgSize + 12;
 
   // Planet name - centered, tracked caps
   doc.setFont('times', 'bold'); doc.setFontSize(7);
@@ -145,7 +137,7 @@ function drawPlanetCell(
   cy += 12;
 
   // Sign + House - centered
-  doc.setFont('times', 'bold'); doc.setFontSize(9);
+  doc.setFont('times', 'bold'); doc.setFontSize(10);
   doc.setTextColor(...INK);
   const posText = `${sign} ${houseLabel}`;
   doc.text(posText, x + w / 2, cy, { align: 'center' });
@@ -153,17 +145,17 @@ function drawPlanetCell(
 
   // Evocative name
   const { name, description } = getPlanetSignHouseFelt(planet, sign, srH);
-  doc.setFont('times', 'italic'); doc.setFontSize(7);
+  doc.setFont('times', 'italic'); doc.setFontSize(7.5);
   doc.setTextColor(...GOLD);
   doc.text(`"${name}"`, x + w / 2, cy, { align: 'center' });
   cy += 10;
 
-  // Felt-sense description
-  doc.setFont('times', 'normal'); doc.setFontSize(6.5);
+  // Felt-sense description — READABLE size
+  doc.setFont('times', 'normal'); doc.setFontSize(7.5);
   doc.setTextColor(...MUTED);
-  const descLines = doc.splitTextToSize(description, w - 10);
+  const descLines = doc.splitTextToSize(description, w - 12);
   for (const line of descLines.slice(0, 4)) {
     doc.text(line, x + w / 2, cy, { align: 'center' });
-    cy += 8;
+    cy += 9;
   }
 }
