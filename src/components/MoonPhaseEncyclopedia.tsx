@@ -570,7 +570,7 @@ function ForrestNatalMoonSection({ chart }: { chart: NatalChart }) {
   );
 }
 
-export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhaseEncyclopediaProps) => {
+export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts, currentYear }: MoonPhaseEncyclopediaProps) => {
   const [selectedChartId, setSelectedChartId] = useState<string>(userNatalChart ? 'user' : '');
   const [expandedPhase, setExpandedPhase] = useState<BirthMoonPhase | null>(null);
   const [myMoonModal, setMyMoonModal] = useState(false);
