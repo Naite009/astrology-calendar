@@ -155,7 +155,7 @@ export function generatePDFLunarTimeline(
       doc.circle(x, ctx.y, radius + 2, 'S');
     }
   });
-  ctx.y += 14;
+  ctx.y += 10;
 
   // Stage labels for key years
   doc.setFont('times', 'italic'); doc.setFontSize(5.5);
@@ -167,7 +167,7 @@ export function generatePDFLunarTimeline(
       doc.text(label, x - 6, ctx.y);
     }
   });
-  ctx.y += 24;
+  ctx.y += 16;
 
   // ── Recurring Patterns grid ──
   ctx.checkPage(120);
