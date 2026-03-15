@@ -665,34 +665,8 @@ export async function generateBirthdayGiftPDF(
     generateKeyDatesTimeline(ctx, doc, analysis.profectionYear.timeLord, natalChart, srChart);
   }
 
-  // 17. SATURN & NORTH NODE
-  if (analysis.saturnFocus || analysis.nodesFocus) {
-    doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
-    ctx.sectionPages.set('SATURN AND NORTH NODE', doc.getNumberOfPages());
-    ctx.sectionTitle(doc, 'SATURN & NORTH NODE');
-    ctx.drawCard(doc, () => {
-      ctx.writeBold(doc, 'Why These Two Matter', ctx.colors.gold, 11);
-      ctx.writeBody(doc, 'Saturn = WHERE YOU ARE TESTED. The area of life where shortcuts fail and real work produces lasting results. North Node = WHERE YOUR SOUL IS GROWING. The direction that feels unfamiliar but is exactly what this year requires.', ctx.colors.bodyText, 10, 14);
-    });
-    if (analysis.saturnFocus) {
-      ctx.drawCard(doc, () => {
-        doc.setFont('times', 'bold'); doc.setFontSize(12); doc.setTextColor(...ctx.colors.ink);
-        doc.text(`Saturn in ${analysis.saturnFocus!.sign} -- House ${analysis.saturnFocus!.house || '--'}${analysis.saturnFocus!.isRetrograde ? ' (Rx)' : ''}`, margin + 8, ctx.y);
-        ctx.y += 16;
-        const satMeaning = saturnHouseMeaning[analysis.saturnFocus!.house];
-        if (satMeaning) ctx.writeBody(doc, satMeaning);
-      });
-    }
-    if (analysis.nodesFocus) {
-      ctx.drawCard(doc, () => {
-        doc.setFont('times', 'bold'); doc.setFontSize(12); doc.setTextColor(...ctx.colors.ink);
-        doc.text(`North Node in ${analysis.nodesFocus!.sign} -- House ${analysis.nodesFocus!.house || '--'}`, margin + 8, ctx.y);
-        ctx.y += 16;
-        const nodeMeaning = nodeHouseMeaning[analysis.nodesFocus!.house];
-        if (nodeMeaning) ctx.writeBody(doc, nodeMeaning);
-      });
-    }
-  }
+  // 17. SATURN & NORTH NODE — dramatic portrait cards
+  generateSaturnNodePortrait(doc, ctx, margin, contentW, pw, analysis.saturnFocus, analysis.nodesFocus);
 
   // 18. KEY ASPECTS (Birthday Gift: 1° orb max, no quincunx)
   if (analysis.srToNatalAspects.length > 0) {
