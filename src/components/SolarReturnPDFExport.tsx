@@ -1221,46 +1221,10 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       }
 
       // =============================================
-      // PLANET SPOTLIGHT — own page with box layout
+      // PLANET GALLERY — 4x3 grid with images
       // =============================================
-      const deepData: Record<string, Record<number, any>> = {
-        Mercury: srMercuryInHouseDeep, Venus: srVenusInHouseDeep, Mars: srMarsInHouseDeep,
-        Jupiter: srJupiterInHouseDeep, Saturn: srSaturnInHouseDeep, Uranus: srUranusInHouseDeep,
-        Neptune: srNeptuneInHouseDeep, Pluto: srPlutoInHouseDeep,
-      };
-      const spotlightPlanets = SPOTLIGHT_ORDER.filter(p => {
-        const h = analysis.planetSRHouses?.[p];
-        return h !== null && h !== undefined && deepData[p]?.[h];
-      });
-      if (spotlightPlanets.length > 0) {
-        doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
-        ctx.sectionPages.set('PLANET SPOTLIGHT', doc.getNumberOfPages());
-        ctx.sectionTitle(doc, 'PLANET SPOTLIGHT', 'Each planet\'s placement in your Solar Return and what it means for the year');
-
-        for (const planet of spotlightPlanets) {
-          const h = analysis.planetSRHouses[planet]!;
-          const data = deepData[planet][h];
-          if (!data) continue;
-          ctx.checkPage(180);
-          ctx.drawCard(doc, () => {
-            // Planet header — editorial
-            doc.setFont('times', 'bold'); doc.setFontSize(12);
-            doc.setTextColor(...ctx.colors.ink);
-            doc.text(`${P[planet] || planet} in House ${h}`, margin + 8, ctx.y);
-            doc.setFont('times', 'italic'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.muted);
-            const titleText = (data.title || '').substring(0, 40);
-            doc.text(titleText, margin + contentW, ctx.y, { align: 'right' });
-            ctx.y += 16;
-
-            if (data.overview) {
-              ctx.writeBody(doc, data.overview, ctx.colors.darkText, 10, 14);
-              ctx.y += 6;
-            }
-            ctx.writeCardSection(doc, 'What This Looks Like', data.practical, ctx.colors.accentGreen);
-            if (data.caution) ctx.writeCardSection(doc, 'Watch For', data.caution, ctx.colors.accentRust);
-          });
-        }
-      }
+      ctx.sectionPages.set('PLANET SPOTLIGHT', doc.getNumberOfPages() + 1);
+      generatePlanetGallery(ctx, doc, analysis, PLANET_IMAGES, srChart);
 
       // =============================================
       // NARRATIVE
