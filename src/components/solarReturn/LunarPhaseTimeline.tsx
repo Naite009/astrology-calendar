@@ -158,42 +158,90 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
         </p>
       </div>
 
-      {/* Current Phase Highlight */}
+      {/* Lunar Phase of the Year — Clean Card */}
       {currentEntry && (() => {
         const PHASE_ORDER = ['New Moon', 'Crescent', 'First Quarter', 'Gibbous', 'Full Moon', 'Disseminating', 'Last Quarter', 'Balsamic'];
         const phaseNum = PHASE_ORDER.indexOf(currentEntry.phase) + 1;
-        // Find next phase shift year
         const futureEntries = timeline.filter(e => e.year > currentEntry.year && e.phase !== currentEntry.phase);
         const nextShiftEntry = futureEntries.length > 0 ? futureEntries[0] : null;
         const yearsUntilNext = nextShiftEntry ? nextShiftEntry.year - currentEntry.year : null;
+
+        const blending = getMoonPhaseBlending(
+          currentEntry.phase,
+          currentEntry.moonSign,
+          currentEntry.sunSign,
+          null,
+          null,
+        );
+
         return (
-        <div className="mx-4 p-3 border border-primary/20 rounded-sm bg-primary/5 space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="text-lg">{PHASE_ICONS[currentEntry.phase] || '☽'}</span>
-            <div>
-              <p className="text-sm font-serif text-foreground">
-                {currentEntry.year} — {currentEntry.phase}
-                <span className="ml-2 text-[10px] font-sans text-muted-foreground">Phase {phaseNum} of 8</span>
+        <div className="mx-4 border border-primary/20 rounded-sm bg-card overflow-hidden">
+          {/* Header */}
+          <div className="bg-primary/5 px-4 py-3 border-b border-primary/10">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">{PHASE_ICONS[currentEntry.phase] || '☽'}</span>
+              <div>
+                <p className="text-sm font-serif text-foreground">
+                  Lunar Phase of the Year
+                </p>
+                <p className="text-xs text-primary font-medium">
+                  {currentEntry.phase} — {currentEntry.cycleStage}
+                  <span className="ml-2 text-muted-foreground font-normal">Phase {phaseNum} of 8</span>
+                </p>
+              </div>
+            </div>
+            {yearsUntilNext !== null && (
+              <p className="text-[10px] text-muted-foreground mt-1">
+                {yearsUntilNext === 1 ? 'Next phase shift in 1 year' : `Next phase shift in ${yearsUntilNext} years`}
+                {nextShiftEntry && ` → ${nextShiftEntry.cycleStage}`}
               </p>
-              <p className="text-[10px] uppercase tracking-widest text-primary font-medium">
-                {currentEntry.cycleStage} · Age {currentEntry.age}
-                {yearsUntilNext !== null && (
-                  <span className="ml-2 text-muted-foreground normal-case tracking-normal">
-                    · {yearsUntilNext === 1 ? 'Next phase in 1 year' : `Next phase in ${yearsUntilNext} years`}
-                    {nextShiftEntry && ` (${nextShiftEntry.cycleStage})`}
-                  </span>
-                )}
+            )}
+          </div>
+
+          {/* Card Body */}
+          <div className="p-4 space-y-4">
+            {/* Overview */}
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Overview</p>
+              <p className="text-xs text-foreground leading-relaxed">{currentEntry.shortMeaning}</p>
+              {transition && (
+                <p className="text-xs text-muted-foreground/80 italic leading-relaxed mt-1">{transition}</p>
+              )}
+            </div>
+
+            {/* What is completing */}
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">What Is Completing</p>
+              <p className="text-xs text-foreground leading-relaxed">
+                Your {currentEntry.moonSign} Moon points to what is being released this year: {blending.releasing}. These patterns have served their purpose and are naturally dissolving.
+              </p>
+            </div>
+
+            {/* What is emerging */}
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">What Is Emerging</p>
+              <p className="text-xs text-foreground leading-relaxed">
+                Your {currentEntry.sunSign} Sun reveals the deeper direction forming: {blending.emerging}. This may feel subtle now but will become clearer in the years ahead.
+              </p>
+            </div>
+
+            {/* Theme of the year */}
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Theme of the Year</p>
+              <p className="text-xs text-foreground leading-relaxed">
+                {blending.themeLabel}. The {currentEntry.cycleStage.toLowerCase()} stage of the lunar cycle means this year is about {
+                  currentEntry.cycleStage === 'Beginning' ? 'planting new seeds and trusting fresh instincts — even when you can\'t see the outcome yet' :
+                  currentEntry.cycleStage === 'Growth' ? 'pushing through early resistance and building momentum — the effort is real but so is the traction' :
+                  currentEntry.cycleStage === 'Action' ? 'making decisive moves and committing to a path — hesitation costs more than imperfection' :
+                  currentEntry.cycleStage === 'Refinement' ? 'fine-tuning what\'s almost ready — small adjustments now prevent bigger corrections later' :
+                  currentEntry.cycleStage === 'Culmination' ? 'harvesting what you\'ve built — results become visible and relationships reach turning points' :
+                  currentEntry.cycleStage === 'Sharing' ? 'teaching and giving back — what you\'ve learned becomes valuable to others' :
+                  currentEntry.cycleStage === 'Reevaluation' ? 'questioning what no longer works — old structures need to be released or rebuilt' :
+                  'releasing and resting — this is preparation, not failure. The next beginning is forming in the quiet'
+                }.
               </p>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground leading-relaxed">{currentEntry.shortMeaning}</p>
-          {transition && (
-            <p className="text-xs text-muted-foreground/80 italic leading-relaxed">{transition}</p>
-          )}
-          {/* Balsamic special panel for current year */}
-          {currentEntry.phase === 'Balsamic' && (
-            <BalsamicDetailPanel entry={currentEntry} />
-          )}
         </div>
         );
       })()}
