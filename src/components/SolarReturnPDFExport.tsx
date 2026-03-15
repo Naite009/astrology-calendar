@@ -444,7 +444,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // KEY DATES — When Time Lord activates natal planets
       // =============================================
       if (analysis.profectionYear) {
-        generateKeyDatesSection(ctx, doc, analysis.profectionYear.timeLord, natalChart, srChart);
+        generateKeyDatesTimeline(ctx, doc, analysis.profectionYear.timeLord, natalChart, srChart);
       }
 
       // ==============================================
