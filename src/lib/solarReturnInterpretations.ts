@@ -342,7 +342,7 @@ export const srMCInHouse: Record<number, string> = {
   12: 'Career operates behind the scenes — institutional work, retreat, research, or spiritual service. Your public reputation may be quiet or sacrificial. What you accomplish in private has more lasting impact than public performance.',
 };
 
-// ─── SR Sun Aspect Interpretations (Ray Merriman / Mary Fortier Shea) ──
+// ─── SR Sun Aspect Interpretations ──────────────────────────────────
 
 export const srSunAspectInterps: Record<string, Record<string, string>> = {
   Moon: {

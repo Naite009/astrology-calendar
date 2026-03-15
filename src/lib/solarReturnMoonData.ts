@@ -89,7 +89,6 @@ export const srMoonInHouseDeep: Record<number, { title: string; overview: string
 };
 
 // ─── SR Moon Aspect Interpretations ─────────────────────────────────
-// Source: Cafe Astrology, Mary Fortier Shea
 export const srMoonAspects: Record<string, { hard: string; soft: string }> = {
   Sun: {
     hard: 'Moon hard aspects to the Sun mark a major, memorable year. Your conscious goals and emotional needs are at odds — what you think you should do conflicts with what you feel. This internal tension drives significant life events. If a conjunction, it is a powerful new beginning with singular focus.',
