@@ -111,7 +111,7 @@ export function generateProfectionPersonalSection(
   // Right-aligned details
   doc.setFont('times', 'normal'); doc.setFontSize(9);
   doc.setTextColor(...GOLD);
-  doc.text(`${ord(houseNumber)} House Profection Year → Age ${age}`, pw - margin - 22, heroY + 24, { align: 'right' });
+  doc.text(`${ord(houseNumber)} House Profection Year -- Age ${age}`, pw - margin - 22, heroY + 24, { align: 'right' });
   doc.text(HOUSE_FOCUS[houseNumber] || '', pw - margin - 22, heroY + 38, { align: 'right' });
 
   if (timeLordSRHouse && timeLordSRSign) {
