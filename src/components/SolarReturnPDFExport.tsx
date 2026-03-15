@@ -1857,6 +1857,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           doc.addPage();
         }
         ctx.y = margin;
+        ctx.sectionPages.set('TAKE THIS WITH YOU', doc.getNumberOfPages());
         ctx.sectionPages.set('BIRTHDAY AFFIRMATION CARD', doc.getNumberOfPages());
         generateAffirmationCard(ctx, doc, analysis, natalChart, srChart);
       }
