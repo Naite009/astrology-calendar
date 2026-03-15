@@ -308,6 +308,7 @@ export interface SolarReturnAnalysis {
   profectionYear: {
     age: number;
     houseNumber: number;
+    natalCuspSign: string;
     timeLord: string;
     timeLordSRHouse: number | null;
     timeLordSRSign: string;
@@ -731,19 +732,25 @@ export const analyzeSolarReturn = (
       let timeLord = '';
       let timeLordSRHouse: number | null = null;
       let timeLordSRSign = '';
+      let natalCuspSign = '';
       
       if (natalCusp) {
         const cuspSign = (natalCusp as any).sign;
-        if (cuspSign) {
+        console.log(`[Profection] house${houseNumber} cusp data:`, JSON.stringify(natalCusp), 'sign:', cuspSign);
+        if (cuspSign && SIGNS.includes(cuspSign)) {
+          natalCuspSign = cuspSign;
           timeLord = traditionalRuler[cuspSign] || '';
         }
+      } else {
+        console.log(`[Profection] No houseCusps.${natalCuspKey} found, falling back to whole-sign. natalRisingSign:`, natalRisingSign);
       }
       // Fallback: if no house cusps, use whole sign from ascendant
       if (!timeLord && natalRisingSign) {
         const ascIdx = SIGNS.indexOf(natalRisingSign);
         if (ascIdx >= 0) {
           const profectionSignIdx = (ascIdx + houseNumber - 1) % 12;
-          timeLord = traditionalRuler[SIGNS[profectionSignIdx]] || '';
+          natalCuspSign = SIGNS[profectionSignIdx];
+          timeLord = traditionalRuler[natalCuspSign] || '';
         }
       }
 
@@ -767,6 +774,7 @@ export const analyzeSolarReturn = (
         profectionYear = {
           age,
           houseNumber,
+          natalCuspSign,
           timeLord,
           timeLordSRHouse,
           timeLordSRSign,
