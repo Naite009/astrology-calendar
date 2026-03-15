@@ -70,12 +70,12 @@ export function generatePDFNatalOverlay(
     ctx.checkPage(40);
     doc.setFont('times', 'bold'); doc.setFontSize(9);
     doc.setTextColor(...ctx.colors.ink);
-    doc.text(`${p.label} --> Natal ${p.house}${ord(p.house)} House`, ctx.margin, ctx.y);
+    doc.text(`${p.label} --> Natal ${p.house}${ord(p.house)} House`, ctx.margin + 8, ctx.y);
     ctx.y += 12;
     doc.setFont('times', 'normal'); doc.setFontSize(8.5);
     doc.setTextColor(...ctx.colors.muted);
-    const lines = doc.splitTextToSize(`(${p.meaning})`, ctx.contentW - 16);
-    for (const l of lines) { doc.text(l, ctx.margin + 8, ctx.y); ctx.y += 11; }
+    const lines = doc.splitTextToSize(`(${p.meaning})`, ctx.contentW - 24);
+    for (const l of lines) { doc.text(l, ctx.margin + 16, ctx.y); ctx.y += 11; }
     ctx.y += 4;
   }
 }
@@ -125,6 +125,7 @@ const PLANET_FELT: Record<string, string> = {
 export function generatePDFAngleActivations(
   ctx: PDFContext, doc: jsPDF,
   natalChart: NatalChart, srChart: SolarReturnChart,
+  maxOrb: number = ORB,
 ) {
   ctx.sectionTitle(doc, 'MAJOR PLANETARY ACTIVATIONS', 'SR Angles to Natal Planets & SR Planets to Natal Angles');
 
@@ -167,7 +168,7 @@ export function generatePDFAngleActivations(
       for (const asp of ASPECT_DEFS) {
         let diff = Math.abs(angle.deg - pDeg); if (diff > 180) diff = 360 - diff;
         const orb = Math.abs(diff - asp.angle);
-        if (orb <= ORB) {
+        if (orb <= maxOrb) {
           const dp = pName === 'NorthNode' ? 'N.Node' : pName;
           acts.push({ label: `SR ${angle.name} ${asp.glyph} Natal ${dp}`, aspectName: asp.name, orb: Math.round(orb * 10) / 10, narrative: buildNarrative(angle.name, asp.name, dp, pName, angle.name), priority: asp.angle === 0 ? 1 : 2 });
         }
@@ -185,7 +186,7 @@ export function generatePDFAngleActivations(
       for (const asp of ASPECT_DEFS) {
         let diff = Math.abs(srDeg - angle.deg); if (diff > 180) diff = 360 - diff;
         const orb = Math.abs(diff - asp.angle);
-        if (orb <= ORB) {
+        if (orb <= maxOrb) {
           const dp = pName === 'NorthNode' ? 'N.Node' : pName;
           acts.push({ label: `SR ${dp} ${asp.glyph} Natal ${angle.name}`, aspectName: asp.name, orb: Math.round(orb * 10) / 10, narrative: buildNarrative(dp, asp.name, angle.name, angle.name, pName), priority: asp.angle === 0 ? 1 : 3 });
         }

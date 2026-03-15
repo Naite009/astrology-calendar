@@ -259,27 +259,32 @@ export function generateKeyDatesTimeline(
 
     // Event card (right of timeline)
     const cardX = timelineX + 14;
+    const cardInnerW = eventW - 20; // Ensure content stays inside card
     doc.setFillColor(...nature.bg);
     doc.roundedRect(cardX, ctx.y, eventW, eventH, 3, 3, 'F');
     doc.setDrawColor(...RULE); doc.setLineWidth(0.2);
     doc.roundedRect(cardX, ctx.y, eventW, eventH, 3, 3, 'S');
 
-    // Aspect title
-    doc.setFont('times', 'bold'); doc.setFontSize(9);
-    doc.setTextColor(...INK);
-    doc.text(aspectTitle, cardX + 10, ctx.y + 16);
-
-    // 5-word summary
-    doc.setFont('times', 'normal'); doc.setFontSize(8);
-    doc.setTextColor(...MUTED);
-    doc.text(event.summary, cardX + 10, ctx.y + 30);
-
-    // Nature badge (right side)
+    // Nature badge (right side) — draw FIRST to know how much space to reserve
+    const badgeW = doc.getTextWidth(nature.label) + 10;
     doc.setFont('times', 'bold'); doc.setFontSize(6);
     doc.setTextColor(...nature.text);
     doc.setCharSpace(1.5);
     doc.text(nature.label, cardX + eventW - 10, ctx.y + 16, { align: 'right' });
     doc.setCharSpace(0);
+
+    // Aspect title — constrained to not overlap badge
+    doc.setFont('times', 'bold'); doc.setFontSize(9);
+    doc.setTextColor(...INK);
+    const titleMaxW = cardInnerW - badgeW - 10;
+    const titleLines = doc.splitTextToSize(aspectTitle, titleMaxW);
+    doc.text(titleLines[0] || aspectTitle, cardX + 10, ctx.y + 16);
+
+    // 5-word summary
+    doc.setFont('times', 'normal'); doc.setFontSize(8);
+    doc.setTextColor(...MUTED);
+    const summaryLines = doc.splitTextToSize(event.summary, cardInnerW);
+    doc.text(summaryLines[0] || event.summary, cardX + 10, ctx.y + 30);
 
     ctx.y += eventH + eventGap;
   }

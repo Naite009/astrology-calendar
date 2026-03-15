@@ -403,7 +403,7 @@ export async function generateBirthdayGiftPDF(
   ctx.sectionPages.set('NATAL OVERLAY', doc.getNumberOfPages());
   generatePDFNatalOverlay(ctx, doc, analysis);
   ctx.checkPage(200);
-  generatePDFAngleActivations(ctx, doc, natalChart, srChart);
+  generatePDFAngleActivations(ctx, doc, natalChart, srChart, 1);
   doc.addPage(); ctx.y = margin;
   ctx.sectionPages.set('YEAR PRIORITY ENGINE', doc.getNumberOfPages());
   generatePDFYearPriority(ctx, doc, analysis, natalChart, srChart);
@@ -611,7 +611,7 @@ export async function generateBirthdayGiftPDF(
     }
   }
 
-  // 13. LORD OF THE YEAR
+  // 13. LORD OF THE YEAR + PROFECTION WHEEL (combined page)
   if (analysis.profectionYear?.timeLord) {
     doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
     ctx.sectionPages.set('LORD OF THE YEAR', doc.getNumberOfPages());
@@ -623,6 +623,14 @@ export async function generateBirthdayGiftPDF(
     const tlSRPos = srChart.planets[tlPlanet as keyof typeof srChart.planets];
     const tlIsRetro = !!(tlSRPos as any)?.isRetrograde;
     const tlDignity = (analysis.lordOfTheYear && analysis.lordOfTheYear.planet === tlPlanet) ? analysis.lordOfTheYear.dignity : '';
+
+    // Find the sign on the natal house cusp to explain the ruler connection
+    const natalCuspSign = natalChart.houseCusps?.[`house${houseNum}` as keyof typeof natalChart.houseCusps]?.sign || '';
+    const SIGN_RULERS: Record<string, string> = {
+      Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon', Leo: 'Sun',
+      Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Mars', Sagittarius: 'Jupiter',
+      Capricorn: 'Saturn', Aquarius: 'Saturn', Pisces: 'Jupiter',
+    };
 
     doc.setFont('times', 'bold'); doc.setFontSize(18); doc.setTextColor(...ctx.colors.ink);
     doc.text(`${P[tlPlanet] || tlPlanet}`, margin + 8, ctx.y);
@@ -638,7 +646,19 @@ export async function generateBirthdayGiftPDF(
     ctx.drawCard(doc, () => {
       ctx.writeBold(doc, `Why ${P[tlPlanet] || tlPlanet} Is Your Lord of the Year`, ctx.colors.gold, 11);
       ctx.y += 2;
-      ctx.writeBody(doc, `You are ${analysis.profectionYear!.age} years old, placing you in a ${houseNum}${houseNum === 1 ? 'st' : houseNum === 2 ? 'nd' : houseNum === 3 ? 'rd' : 'th'} house profection year. The traditional ruler of your natal ${houseNum}${houseNum === 1 ? 'st' : houseNum === 2 ? 'nd' : houseNum === 3 ? 'rd' : 'th'} house cusp is ${P[tlPlanet] || tlPlanet}, making it the planet running the show.`, ctx.colors.bodyText, 10, 14);
+      // Explain the chain: Age → House → Natal cusp sign → Ruler = Time Lord
+      const ordH = `${houseNum}${houseNum === 1 ? 'st' : houseNum === 2 ? 'nd' : houseNum === 3 ? 'rd' : 'th'}`;
+      let explanation = `You are ${analysis.profectionYear!.age} years old, placing you in a ${ordH} house profection year.`;
+      if (natalCuspSign) {
+        explanation += ` Your natal ${ordH} house cusp is in ${natalCuspSign}.`;
+        const expectedRuler = SIGN_RULERS[natalCuspSign];
+        if (expectedRuler) {
+          explanation += ` ${natalCuspSign} is ruled by ${expectedRuler}, which makes ${expectedRuler} the planet running the show this year.`;
+        }
+      } else {
+        explanation += ` The traditional ruler of your natal ${ordH} house cusp is ${P[tlPlanet] || tlPlanet}, making it the planet running the show.`;
+      }
+      ctx.writeBody(doc, explanation, ctx.colors.bodyText, 10, 14);
     });
 
     const detailedMeaning = timeLordDetailedMeaning[tlPlanet];
@@ -649,12 +669,10 @@ export async function generateBirthdayGiftPDF(
         ctx.writeBody(doc, detailedMeaning, ctx.colors.bodyText, 10, 14);
       });
     }
-  }
 
-  // 14. PROFECTION WHEEL
-  doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
-  ctx.sectionPages.set('PROFECTION WHEEL', doc.getNumberOfPages());
-  if (analysis.profectionYear) {
+    // Profection wheel on the same page (or next if needed)
+    ctx.checkPage(280);
+    ctx.sectionPages.set('PROFECTION WHEEL', doc.getNumberOfPages());
     drawProfectionWheel(ctx, doc, analysis.profectionYear.age, analysis.profectionYear.houseNumber, analysis.profectionYear.timeLord);
   }
 
@@ -665,10 +683,9 @@ export async function generateBirthdayGiftPDF(
     generateProfectionPersonalSection(ctx, doc, analysis.profectionYear.houseNumber, analysis.profectionYear.timeLord, analysis.profectionYear.age, analysis.profectionYear.timeLordSRHouse || null, analysis.profectionYear.timeLordSRSign || '');
   }
 
-  // 16. KEY DATES TIMELINE
+  // 16. KEY DATES TIMELINE (note: generateKeyDatesTimeline creates its own first page)
   if (analysis.profectionYear) {
-    doc.addPage(); ctx.y = margin;
-    ctx.sectionPages.set('KEY DATES', doc.getNumberOfPages());
+    ctx.sectionPages.set('KEY DATES', doc.getNumberOfPages() + 1);
     generateKeyDatesTimeline(ctx, doc, analysis.profectionYear.timeLord, natalChart, srChart);
   }
 
@@ -701,13 +718,23 @@ export async function generateBirthdayGiftPDF(
     }
   }
 
-  // 18. KEY ASPECTS
+  // 18. KEY ASPECTS (Birthday Gift: 1° orb max, no quincunx)
   if (analysis.srToNatalAspects.length > 0) {
-    const allAspects = analysis.srToNatalAspects.filter(asp => !(asp.planet1 === 'Sun' && asp.planet2 === 'Sun' && asp.type === 'Conjunction'));
+    const allAspects = analysis.srToNatalAspects.filter(asp => {
+      // Exclude Sun-Sun conjunction (feature of every SR)
+      if (asp.planet1 === 'Sun' && asp.planet2 === 'Sun' && asp.type === 'Conjunction') return false;
+      // Exclude quincunx for birthday gift PDF
+      if (asp.type === 'Quincunx' || asp.type === 'quincunx' || asp.type === 'Semi-Sextile' || asp.type === 'semi-sextile') return false;
+      // Only 1° orb for birthday gift
+      if (typeof asp.orb === 'number' && asp.orb > 1) return false;
+      if (typeof asp.orb === 'string' && parseFloat(asp.orb) > 1) return false;
+      return true;
+    });
     const majorAspects = allAspects.filter(asp => MAJOR_BODIES.has(asp.planet1) && MAJOR_BODIES.has(asp.planet2));
+    if (majorAspects.length > 0) {
     doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
     ctx.sectionPages.set('KEY ASPECTS', doc.getNumberOfPages());
-    ctx.sectionTitle(doc, 'KEY ASPECTS', 'How Solar Return planets activate your natal chart');
+    ctx.sectionTitle(doc, 'KEY ASPECTS', 'How Solar Return planets activate your natal chart (within 1 degree)');
     for (let i = 0; i < Math.min(majorAspects.length, 10); i++) {
       const asp = majorAspects[i];
       const interp = generateSRtoNatalInterpretation(asp.planet1, asp.planet2, asp.type, asp.orb);
@@ -724,6 +751,7 @@ export async function generateBirthdayGiftPDF(
         ctx.writeCardSection(doc, 'What To Do', interp.whatToDo);
       });
     }
+    } // close majorAspects.length > 0
   }
 
   // 19. YOUR MOON THIS YEAR
