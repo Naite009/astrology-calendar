@@ -22,6 +22,7 @@ import { SROverviewDashboard } from '@/components/solarReturn/SROverviewDashboar
 import { LunarPhaseTimeline } from '@/components/solarReturn/LunarPhaseTimeline';
 import { StoryOfTheYear } from '@/components/solarReturn/StoryOfTheYear';
 import { LifeCycleContext } from '@/components/solarReturn/LifeCycleContext';
+import { NatalOverlayCard } from '@/components/solarReturn/NatalOverlayCard';
 
 const ZODIAC_SIGNS = [
   'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
@@ -727,6 +728,9 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
 
       {/* 2. Life-Cycle Context — where this year fits in the larger pattern */}
       <LifeCycleContext natalChart={natalChart} srChart={srChart} />
+
+      {/* 3. Natal Overlay — where this year lands in the natal chart */}
+      <NatalOverlayCard analysis={analysis} />
 
       {/* Dashboard Details */}
       <SROverviewDashboard analysis={analysis} natalChart={natalChart} srChart={srChart} />
