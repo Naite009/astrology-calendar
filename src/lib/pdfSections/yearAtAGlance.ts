@@ -5,6 +5,7 @@ import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { P, MOON_PHASE_EXPLANATIONS } from '@/components/SolarReturnPDFExport';
 import { getMoonPhaseBlending } from '@/lib/solarReturnMoonData';
+import { computeOverlayData, drawMainArenaBanner } from '@/lib/pdfSections/yearPriorityPDF';
 
 type Color = [number, number, number];
 const INK:   Color = [58,  54,  50]; // Charcoal grey
