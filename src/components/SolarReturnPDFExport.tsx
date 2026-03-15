@@ -939,6 +939,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // =============================================
       doc.addPage(); ctx.y = margin;
       ctx.sectionPages.set('LUNAR PHASE TIMELINE', doc.getNumberOfPages());
+      ctx.sectionPages.set('SR MOON PHASE BY YEAR', doc.getNumberOfPages());
       generatePDFLunarTimeline(ctx, doc, analysis, srChart, natalChart);
 
       // =============================================
@@ -946,6 +947,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // =============================================
       doc.addPage(); ctx.y = margin;
       ctx.sectionPages.set('NATAL OVERLAY', doc.getNumberOfPages());
+      ctx.sectionPages.set('NATAL OVERLAY AND ANGLE ACTIVATIONS', doc.getNumberOfPages());
       generatePDFNatalOverlay(ctx, doc, analysis);
 
       // =============================================
