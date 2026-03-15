@@ -18,6 +18,10 @@ export interface SRHemisphericResult {
   lower: number;
   east: number;
   west: number;
+  upperPlanets: string[];
+  lowerPlanets: string[];
+  eastPlanets: string[];
+  westPlanets: string[];
   totalCounted: number;
   verticalLabel: string;   // e.g. "Balanced Upper/Lower" or "Upper Dominant"
   horizontalLabel: string; // e.g. "Extreme Eastern"
