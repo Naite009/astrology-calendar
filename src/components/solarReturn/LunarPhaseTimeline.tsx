@@ -182,7 +182,10 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
               <span className="text-xl">{PHASE_ICONS[currentEntry.phase] || '☽'}</span>
               <div>
                 <p className="text-sm font-serif text-foreground">
-                  Lunar Phase of the Year
+                  Solar Return Lunar Phase
+                </p>
+                <p className="text-[9px] text-muted-foreground/60 italic">
+                  Based on the Moon-Sun angle at your {currentEntry.year} Solar Return — not your natal Moon phase
                 </p>
                 <p className="text-xs text-primary font-medium">
                   {currentEntry.phase} — {currentEntry.cycleStage}
