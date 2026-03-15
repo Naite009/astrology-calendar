@@ -202,7 +202,10 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
             {ELEMENT_MAP[eb.dominant] || ''} {eb.dominant}
           </p>
           <p className="text-[11px] text-muted-foreground">
-            {elementCounts[eb.dominant as keyof typeof elementCounts]} planets
+            {(elementPlanetLists[eb.dominant as keyof typeof elementPlanetLists] || []).join(', ')}
+          </p>
+          <p className="text-[10px] text-muted-foreground/80 mt-1 leading-tight">
+            {eb.interpretation?.split('.').slice(0, 1).join('.')}.
           </p>
         </div>
 
