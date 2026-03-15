@@ -9,7 +9,7 @@ import {
   generateTransitionNarrative,
   TimelineEntry,
 } from '@/lib/solarReturnLunarTimeline';
-import { getMoonPhaseBlending } from '@/lib/solarReturnMoonData';
+import { getMoonPhaseBlending, srMoonPhaseInterp } from '@/lib/solarReturnMoonData';
 
 // ── Color mapping for phase stages ──────────────────────────────────
 const PHASE_COLORS: Record<string, string> = {
@@ -241,6 +241,45 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
                 }.
               </p>
             </div>
+
+            {/* Expandable Learn More */}
+            {(() => {
+              const phaseInterpKeys: Record<string, string> = {
+                'New Moon': 'New Moon', 'Crescent': 'Waxing Crescent', 'First Quarter': 'First Quarter',
+                'Gibbous': 'Waxing Gibbous', 'Full Moon': 'Full Moon', 'Disseminating': 'Waning Gibbous',
+                'Last Quarter': 'Last Quarter', 'Balsamic': 'Waning Crescent',
+              };
+              const deepInterp = srMoonPhaseInterp[phaseInterpKeys[currentEntry.phase] || currentEntry.phase];
+              if (!deepInterp) return null;
+              return (
+                <details className="pt-2 border-t border-border/50">
+                  <summary className="text-[10px] uppercase tracking-widest text-primary cursor-pointer hover:text-primary/80 transition-colors">
+                    Learn more about the {currentEntry.phase} phase
+                  </summary>
+                  <div className="mt-2 space-y-2">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{deepInterp.theme}</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{deepInterp.description}</p>
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      <div className="bg-secondary/20 rounded-sm p-2">
+                        <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Moon Sign: {currentEntry.moonSign}</p>
+                        <p className="text-[11px] text-foreground leading-relaxed">
+                          The Moon sign describes the emotional style active during this phase — specifically: {blending.releasing}.
+                        </p>
+                      </div>
+                      <div className="bg-accent/10 rounded-sm p-2">
+                        <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Sun Sign: {currentEntry.sunSign}</p>
+                        <p className="text-[11px] text-foreground leading-relaxed">
+                          The Sun sign describes the spiritual orientation — specifically: {blending.emerging}.
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground/70 italic">
+                      Phase angle: {currentEntry.phaseAngle}° · {currentEntry.waxingOrWaning === 'waxing' ? 'Waxing (building energy)' : 'Waning (releasing energy)'}
+                    </p>
+                  </div>
+                </details>
+              );
+            })()}
           </div>
         </div>
         );
@@ -316,41 +355,118 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
         </button>
       </div>
 
-      {/* Detail Card for Selected Year */}
-      {detailEntry && (
-        <div className={`mx-4 p-3 rounded-sm border space-y-2 ${PHASE_COLORS[detailEntry.colorLabel] || 'bg-muted/20 border-border'}`}>
-          <div className="flex items-center gap-2">
-            <span className="text-base">{PHASE_ICONS[detailEntry.phase] || '☽'}</span>
-            <div>
-              <p className="text-sm font-serif">{detailEntry.year} — {detailEntry.phase}</p>
-              <p className="text-[10px] uppercase tracking-widest font-medium">
-                {detailEntry.cycleStage} · Age {detailEntry.age}
-              </p>
-            </div>
-          </div>
-          <p className="text-xs leading-relaxed">{detailEntry.shortMeaning}</p>
-          <div className="flex items-center gap-2 text-[10px]">
-            <span>☽ {detailEntry.moonSign}</span>
-            <ArrowRight className="w-3 h-3" />
-            <span>☉ {detailEntry.sunSign}</span>
-            <span className="ml-auto opacity-60">{detailEntry.phaseAngle}°</span>
-          </div>
-          {detailEntry.patternTags.length > 0 && (
-            <div className="flex flex-wrap gap-1 pt-1">
-              {detailEntry.patternTags.map(tag => (
-                <span key={tag} className="text-[9px] px-1.5 py-0.5 rounded-sm bg-background/50 border border-border/50">
-                  {tag.replace(/_/g, ' ')}
-                </span>
-              ))}
-            </div>
-          )}
+      {/* Detail Card for Selected Year — Full Phase Card */}
+      {detailEntry && (() => {
+        const PHASE_ORDER = ['New Moon', 'Crescent', 'First Quarter', 'Gibbous', 'Full Moon', 'Disseminating', 'Last Quarter', 'Balsamic'];
+        const phaseNum = PHASE_ORDER.indexOf(detailEntry.phase) + 1;
+        const blending = getMoonPhaseBlending(detailEntry.phase, detailEntry.moonSign, detailEntry.sunSign, null, null);
 
-          {/* Balsamic Ending/Emerging panel for any clicked Balsamic year */}
-          {detailEntry.phase === 'Balsamic' && (
-            <BalsamicDetailPanel entry={detailEntry} />
-          )}
-        </div>
-      )}
+        // Map phase names to srMoonPhaseInterp keys
+        const phaseInterpKeys: Record<string, string> = {
+          'New Moon': 'New Moon', 'Crescent': 'Waxing Crescent', 'First Quarter': 'First Quarter',
+          'Gibbous': 'Waxing Gibbous', 'Full Moon': 'Full Moon', 'Disseminating': 'Waning Gibbous',
+          'Last Quarter': 'Last Quarter', 'Balsamic': 'Waning Crescent',
+        };
+        const deepInterp = srMoonPhaseInterp[phaseInterpKeys[detailEntry.phase] || detailEntry.phase];
+
+        return (
+          <div className="mx-4 border border-border rounded-sm bg-card overflow-hidden">
+            {/* Header */}
+            <div className={`px-4 py-3 border-b border-border/50 ${PHASE_COLORS[detailEntry.colorLabel] || 'bg-muted/20'}`}>
+              <div className="flex items-center gap-2">
+                <span className="text-xl">{PHASE_ICONS[detailEntry.phase] || '☽'}</span>
+                <div>
+                  <p className="text-sm font-serif text-foreground">
+                    {detailEntry.year} — {detailEntry.phase}
+                  </p>
+                  <p className="text-xs font-medium">
+                    {detailEntry.cycleStage} · Age {detailEntry.age}
+                    <span className="ml-2 text-muted-foreground font-normal">Phase {phaseNum} of 8</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Card Body */}
+            <div className="p-4 space-y-4">
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Overview</p>
+                <p className="text-xs text-foreground leading-relaxed">{detailEntry.shortMeaning}</p>
+              </div>
+
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">What Is Completing</p>
+                <p className="text-xs text-foreground leading-relaxed">
+                  Your {detailEntry.moonSign} Moon points to what is being released: {blending.releasing}. These patterns have served their purpose and are naturally dissolving.
+                </p>
+              </div>
+
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">What Is Emerging</p>
+                <p className="text-xs text-foreground leading-relaxed">
+                  Your {detailEntry.sunSign} Sun reveals the deeper direction forming: {blending.emerging}. This may feel subtle now but will become clearer in the years ahead.
+                </p>
+              </div>
+
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Theme of the Year</p>
+                <p className="text-xs text-foreground leading-relaxed">
+                  {blending.themeLabel}. The {detailEntry.cycleStage.toLowerCase()} stage means this year is about {
+                    detailEntry.cycleStage === 'Beginning' ? 'planting new seeds and trusting fresh instincts — even when you can\'t see the outcome yet' :
+                    detailEntry.cycleStage === 'Growth' ? 'pushing through early resistance and building momentum — the effort is real but so is the traction' :
+                    detailEntry.cycleStage === 'Action' ? 'making decisive moves and committing to a path — hesitation costs more than imperfection' :
+                    detailEntry.cycleStage === 'Refinement' ? 'fine-tuning what\'s almost ready — small adjustments now prevent bigger corrections later' :
+                    detailEntry.cycleStage === 'Culmination' ? 'harvesting what you\'ve built — results become visible and relationships reach turning points' :
+                    detailEntry.cycleStage === 'Sharing' ? 'teaching and giving back — what you\'ve learned becomes valuable to others' :
+                    detailEntry.cycleStage === 'Reevaluation' ? 'questioning what no longer works — old structures need to be released or rebuilt' :
+                    'releasing and resting — this is preparation, not failure. The next beginning is forming in the quiet'
+                  }.
+                </p>
+              </div>
+
+              {detailEntry.patternTags.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {detailEntry.patternTags.map(tag => (
+                    <span key={tag} className="text-[9px] px-1.5 py-0.5 rounded-sm bg-muted/50 border border-border/50 text-muted-foreground">
+                      {tag.replace(/_/g, ' ')}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Expandable Learn More */}
+              {deepInterp && (
+                <details className="pt-2 border-t border-border/50">
+                  <summary className="text-[10px] uppercase tracking-widest text-primary cursor-pointer hover:text-primary/80 transition-colors">
+                    Learn more about the {detailEntry.phase} phase
+                  </summary>
+                  <div className="mt-2 space-y-2">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{deepInterp.theme}</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{deepInterp.description}</p>
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      <div className="bg-secondary/20 rounded-sm p-2">
+                        <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Moon Sign: {detailEntry.moonSign}</p>
+                        <p className="text-[11px] text-foreground leading-relaxed">
+                          The Moon sign describes the emotional style and psychological pattern active during this phase — specifically: {blending.releasing}.
+                        </p>
+                      </div>
+                      <div className="bg-accent/10 rounded-sm p-2">
+                        <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Sun Sign: {detailEntry.sunSign}</p>
+                        <p className="text-[11px] text-foreground leading-relaxed">
+                          The Sun sign describes the spiritual orientation and life direction — specifically: {blending.emerging}.
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground/70 italic">
+                      Phase angle: {detailEntry.phaseAngle}° · {detailEntry.waxingOrWaning === 'waxing' ? 'Waxing (building energy)' : 'Waning (releasing energy)'}
+                    </p>
+                  </div>
+                </details>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Pattern Detection Panel — All 8 phases */}
       <div className="px-4 pb-4 space-y-3">
