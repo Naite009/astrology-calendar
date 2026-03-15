@@ -431,6 +431,27 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       generatePDFLunarTimeline(ctx, doc, analysis, srChart, natalChart);
 
       // =============================================
+      // NATAL OVERLAY — How This Year Lands
+      // =============================================
+      doc.addPage(); ctx.y = margin;
+      ctx.sectionPages.set('NATAL OVERLAY', doc.getNumberOfPages());
+      generatePDFNatalOverlay(ctx, doc, analysis);
+
+      // =============================================
+      // ANGLE ACTIVATIONS
+      // =============================================
+      doc.addPage(); ctx.y = margin;
+      ctx.sectionPages.set('PLANETARY ACTIVATIONS', doc.getNumberOfPages());
+      generatePDFAngleActivations(ctx, doc, natalChart, srChart);
+
+      // =============================================
+      // YEAR PRIORITY ENGINE
+      // =============================================
+      doc.addPage(); ctx.y = margin;
+      ctx.sectionPages.set('YEAR PRIORITY ENGINE', doc.getNumberOfPages());
+      generatePDFYearPriority(ctx, doc, analysis, natalChart, srChart);
+
+      // =============================================
       // PROFECTION WHEEL
       // =============================================
       if (analysis.profectionYear) {
