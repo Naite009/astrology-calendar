@@ -115,7 +115,7 @@ export function StoryOfTheYear({ analysis, natalChart, srChart }: Props) {
         <div className="bg-muted/30 border border-border rounded-sm p-3">
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">What You're Reading</p>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Every birthday, the Moon is in a different position relative to the Sun. Over roughly 29.5 years, these positions trace a complete lunar cycle — from New Moon (new beginnings) through Full Moon (culmination) to Balsamic (completion). This isn't a transit or a single day's Moon phase — it's a <strong className="text-foreground">life-development cycle</strong> that shows what season of growth you're in right now, based on decades of accumulated experience. Professional astrologers use this as one of the most important frameworks for reading a Solar Return.
+            A Solar Return chart is cast for the exact moment the Sun returns to your natal degree each birthday. This chart — with its own Ascendant, Moon placement, and planetary positions — acts as a <strong className="text-foreground">blueprint for the year ahead</strong>. The house the Sun falls in shows where your energy and attention go. The Moon's sign and house reveal your emotional landscape. The aspects between SR and natal planets highlight what gets activated. Together, these signals tell the story of your year.
           </p>
         </div>
 
