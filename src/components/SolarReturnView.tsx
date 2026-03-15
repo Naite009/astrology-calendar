@@ -591,7 +591,7 @@ const SRInputForm = ({ natalChart, existingSR, onSave, onCancel }: SRInputFormPr
         <div>
           <label className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 block">Birthday</label>
           <div className="w-full border border-border bg-muted text-foreground rounded-sm px-3 py-2 text-sm opacity-80">
-            {natalChart.birthDate || '—'}
+            {formatDateMMDDYYYY(natalChart.birthDate) || '—'}
           </div>
         </div>
         <div>
