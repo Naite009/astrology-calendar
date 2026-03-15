@@ -579,16 +579,15 @@ export const analyzeSolarReturn = (
     };
   }
 
-  // 1b. SR Ascendant Ruler in NATAL houses (J-B Morin / Mel Priestley technique)
+  // 1b. SR Ascendant Ruler in NATAL houses
   // The SR Ascendant ruler's position in the natal chart shows WHERE in your life
   // the year's themes will play out most strongly.
   let srAscRulerInNatal: SRAscRulerInNatal | null = null;
   if (yearlyTheme && srAsc) {
     const ruler = yearlyTheme.ascendantRuler;
     const rulerSRPos = srChart.planets[ruler as keyof typeof srChart.planets];
-    // CORRECT TECHNIQUE (J-B Morin / Lynn Bell): Find where the ruler sits in the NATAL chart,
-    // not where the SR version overlays onto natal houses. E.g., SR Asc = Pisces → ruler = Neptune →
-    // look at where NATAL Neptune sits → that natal house is where the year's energy plays out.
+    // Find where the ruler sits in the NATAL chart — that natal house is where
+    // the year's energy plays out.
     const rulerNatalPos = natalChart.planets[ruler as keyof typeof natalChart.planets];
     if (rulerSRPos) {
       const natalDeg = rulerNatalPos ? toAbsDeg(rulerNatalPos) : null;
