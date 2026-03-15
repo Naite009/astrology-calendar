@@ -45,7 +45,7 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   const sections: { title: string; desc: string }[] = [];
   sections.push({ title: 'How to Read This Report', desc: 'Key concepts explained in plain language' });
   sections.push({ title: 'Your Big Three', desc: 'Sun, Moon, and Rising — strengths, shadow, and activation' });
-  sections.push({ title: 'Year at a Glance', desc: 'Solar Return Ascendant, ruler, profection, time lord, and moon phase' });
+  
   sections.push({ title: 'Lunar Phase Timeline', desc: '29-year developmental cycle with recurring patterns' });
   sections.push({ title: 'Natal Overlay & Angle Activations', desc: 'How Solar Return placements land in natal houses' });
   sections.push({ title: 'Year Priority Engine', desc: 'Life areas ranked by planetary emphasis' });
