@@ -182,20 +182,14 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
               <span className="text-xl">{PHASE_ICONS[currentEntry.phase] || '☽'}</span>
               <div>
                 <p className="text-sm font-serif text-foreground">
-                  Lunar Phase of the Year
+                  {currentEntry.year} SR Moon Phase
                 </p>
                 <p className="text-xs text-primary font-medium">
                   {currentEntry.phase} — {currentEntry.cycleStage}
-                  <span className="ml-2 text-muted-foreground font-normal">Phase {phaseNum} of 8</span>
+                  <span className="ml-2 text-muted-foreground font-normal">{currentEntry.phaseAngle}° separation</span>
                 </p>
               </div>
             </div>
-            {yearsUntilNext !== null && (
-              <p className="text-[10px] text-muted-foreground mt-1">
-                {yearsUntilNext === 1 ? 'Next phase shift in 1 year' : `Next phase shift in ${yearsUntilNext} years`}
-                {nextShiftEntry && ` → ${nextShiftEntry.cycleStage}`}
-              </p>
-            )}
           </div>
 
           {/* Card Body */}
