@@ -22,6 +22,7 @@ import { generateKeyDatesTimeline } from '@/lib/pdfSections/keyDatesTimeline';
 import { generateQuarterlySummary } from '@/lib/pdfSections/quarterlySummary';
 import { generateTier1SolarReturnPDF } from '@/lib/pdfSections/tier1Report';
 import { generatePlanetGallery } from '@/lib/pdfSections/planetGallery';
+import { generatePDFLunarTimeline } from '@/lib/pdfSections/lunarTimeline';
 
 // Planet image imports
 import planetSun from '@/assets/planets/sun.png';
