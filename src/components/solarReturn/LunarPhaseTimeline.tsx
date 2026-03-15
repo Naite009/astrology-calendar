@@ -9,7 +9,7 @@ import {
   generateTransitionNarrative,
   TimelineEntry,
 } from '@/lib/solarReturnLunarTimeline';
-import { getMoonPhaseBlending } from '@/lib/solarReturnMoonData';
+import { getMoonPhaseBlending, srMoonPhaseInterp } from '@/lib/solarReturnMoonData';
 
 // ── Color mapping for phase stages ──────────────────────────────────
 const PHASE_COLORS: Record<string, string> = {
