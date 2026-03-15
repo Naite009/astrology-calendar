@@ -119,17 +119,11 @@ export function StoryOfTheYear({ analysis, natalChart, srChart }: Props) {
           </p>
         </div>
 
-        {/* 1. Phase context */}
+        {/* 1. Sun house — the main event */}
         <div>
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">The Season You're In</p>
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">Where Your Energy Goes This Year</p>
           <p className="text-sm text-foreground leading-relaxed">
-            This Solar Return year falls in the <strong>{currentEntry.phase}</strong> phase of your lunar development cycle — a period focused on {cycleStageText}. {currentEntry.cycleStage === 'Completion' || currentEntry.cycleStage === 'Reevaluation'
-              ? 'This is not a year to force new beginnings. It\'s a year to honor what is finishing and create space for what comes next.'
-              : currentEntry.cycleStage === 'Beginning' || currentEntry.cycleStage === 'Growth'
-              ? 'You are in the building phase of a longer arc. What you start or commit to now gains momentum over the next several years.'
-              : currentEntry.cycleStage === 'Culmination'
-              ? 'This is a peak year — the results of years of effort become visible. Relationships, career, and creative projects reach important turning points.'
-              : 'The momentum of previous years carries forward. Stay engaged with what you\'ve been building.'}
+            The Sun in the <strong>{sunHouse}{sunHouse === 1 ? 'st' : sunHouse === 2 ? 'nd' : sunHouse === 3 ? 'rd' : 'th'} house</strong> places your central focus on {SUN_HOUSE_THEMES[sunHouse] || `house ${sunHouse} themes`}. This is where your vitality, willpower, and conscious attention are directed all year — it's where the biggest developments happen and where you feel most engaged.
           </p>
         </div>
 
