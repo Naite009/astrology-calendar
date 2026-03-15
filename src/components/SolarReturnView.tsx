@@ -1448,7 +1448,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         </div>
       )}
 
-      {/* Natal Degree Conduits (Lynn Bell: SR planet on natal degree) */}
+      {/* Natal Degree Conduits */}
       {analysis.natalDegreeConduits.length > 0 && (
         <div className="border border-primary/20 rounded-sm p-5 bg-card">
           <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">

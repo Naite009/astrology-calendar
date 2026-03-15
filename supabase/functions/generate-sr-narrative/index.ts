@@ -113,7 +113,7 @@ serve(async (req) => {
       if (a.hemisphericEmphasis.combinedInsight) dataContext += `Combined: ${a.hemisphericEmphasis.combinedInsight}\n`;
     }
 
-    // Natal Degree Conduits (Lynn Bell)
+    // Natal Degree Conduits
     if (a.natalDegreeConduits?.length > 0) {
       dataContext += `\nNATAL DEGREE CONDUITS (SR planet on natal planet's degree ±2°):\n`;
       a.natalDegreeConduits.forEach((c: any) => {
