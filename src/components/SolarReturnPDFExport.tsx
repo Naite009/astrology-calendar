@@ -832,6 +832,7 @@ export async function generateBirthdayGiftPDF(
   // 24. TAKE THIS WITH YOU — combined closing page
   if (ctx.y > margin + 10) doc.addPage();
   ctx.y = margin;
+  ctx.sectionPages.set('TAKE THIS WITH YOU', doc.getNumberOfPages());
   ctx.sectionPages.set('BIRTHDAY AFFIRMATION CARD', doc.getNumberOfPages());
   generateAffirmationCard(ctx, doc, analysis, natalChart, srChart);
 
