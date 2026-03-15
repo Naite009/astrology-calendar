@@ -223,88 +223,79 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
         </div>
       </div>
 
-      {/* ─── 4. Time Lord Feature Card ─── */}
-      {lord && prof && (
-        <div className="border border-border rounded-lg p-5 bg-card space-y-4">
-          {/* Header */}
-          <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-3xl">{PLANET_SYMBOLS[lord.planet] || lord.planet}</span>
-            <div>
-              <h3 className="text-lg font-serif text-foreground">
-                Time Lord: {lord.planet}
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                {SIGN_SYMBOLS[lord.srSign]} {lord.srSign} {lord.srDegree}
-                {lord.srHouse ? ` · ${ordinal(lord.srHouse)} house` : ''}
-              </p>
-            </div>
-            <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded border ${dignityColor(lord.dignity)}`}>
-              {lord.dignity}
-            </span>
-            {lord.isRetrograde && (
-              <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded border bg-amber-500/10 text-amber-600 border-amber-500/20">
-                Rx
-              </span>
-            )}
-          </div>
+      {/* ─── 4. Lord of the Year + Time Lord — Side by Side ─── */}
+      {(lord || prof) && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {/* LORD OF THE YEAR — ruler of natal Ascendant */}
+          {lord && (
+            <div className="border border-border rounded-lg p-4 bg-card space-y-3">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-2xl">{PLANET_SYMBOLS[lord.planet]}</span>
+                <div>
+                  <h3 className="text-base font-serif text-foreground">Lord of the Year</h3>
+                  <p className="text-[10px] text-muted-foreground">Ruler of natal Ascendant ({lord.natalRisingSign})</p>
+                </div>
+                <span className={`text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded border ${dignityColor(lord.dignity)}`}>
+                  {lord.dignity}
+                </span>
+                {lord.isRetrograde && (
+                  <span className="text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded border bg-amber-500/10 text-amber-600 border-amber-500/20">Rx</span>
+                )}
+              </div>
 
-          {/* Three Columns */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="bg-muted/30 rounded-lg p-3">
-              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5 font-medium">Why This Planet</p>
-              <p className="text-xs text-foreground leading-relaxed">
-                At age {prof.age}, your annual profection activates the {ordinal(prof.houseNumber)} house.
-                The sign on that cusp determines the Time Lord — in this case, {lord.planet}.
-              </p>
-            </div>
-            <div className="bg-muted/30 rounded-lg p-3">
-              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5 font-medium">Where It Sits in SR</p>
-              <p className="text-xs text-foreground leading-relaxed">
-                {lord.planet} is in {SIGN_SYMBOLS[lord.srSign]} {lord.srSign}
-                {lord.srHouse ? ` in the ${ordinal(lord.srHouse)} house` : ''}.
-                {lord.dignity !== 'Peregrine' ? ` In ${lord.dignity} — ${
-                  lord.dignity === 'Domicile' ? 'fully empowered in its home sign' :
-                  lord.dignity === 'Exaltation' ? 'elevated and performing at its best' :
-                  lord.dignity === 'Detriment' ? 'working against its nature, requiring extra effort' :
-                  'weakened and struggling to express itself clearly'
-                }.` : ' Peregrine — operating without essential dignity, relying on aspects and house placement for strength.'}
-              </p>
-            </div>
-            <div className="bg-muted/30 rounded-lg p-3">
-              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5 font-medium">Motion</p>
-              <p className="text-xs text-foreground leading-relaxed">
-                {lord.isRetrograde
-                  ? `${lord.planet} is retrograde this year — themes unfold through revision, internalization, and revisiting past patterns. Progress may feel slower but the inner work is deeper.`
-                  : `${lord.planet} is direct — themes unfold with forward momentum. You can act on this planet's agenda with clarity and external progress.`
-                }
-              </p>
-            </div>
-          </div>
+              <div className="bg-muted/30 rounded-lg p-2.5">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 font-medium">{lord.planet} in SR</p>
+                <p className="text-xs text-foreground leading-relaxed">
+                  {SIGN_SYMBOLS[lord.srSign]} {lord.srSign} {lord.srDegree}
+                  {lord.srHouse ? ` · ${ordinal(lord.srHouse)} house` : ''}
+                </p>
+              </div>
 
-          {/* Profection Explanation */}
-          <div className="bg-secondary/40 rounded-lg p-3">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5 font-medium">About Hellenistic Profections</p>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Annual profections are a Hellenistic timing technique. Starting from your 1st house at birth, each year of life activates the next house.
-              The ruler of that house's cusp sign becomes your "Time Lord" — the planet whose condition in the Solar Return chart tells you how the year's themes will unfold.
-            </p>
-          </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                The ruler of your natal Ascendant ({lord.natalRisingSign}) is {lord.planet}. Its condition in the Solar Return chart shows how your overall vitality and life direction are supported this year.
+              </p>
+            </div>
+          )}
 
-          {/* Numbered Calculation Chain */}
-          <div className="space-y-1.5">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Calculation Chain</p>
-            <div className="text-xs text-foreground space-y-1 pl-1">
-              <p><span className="text-primary font-semibold">1.</span> Age at Solar Return: <strong>{prof.age}</strong></p>
-              <p><span className="text-primary font-semibold">2.</span> Profected house: <strong>{ordinal(prof.houseNumber)} house</strong> ({prof.age} mod 12 + 1)</p>
-              <p><span className="text-primary font-semibold">3.</span> Cusp sign of {ordinal(prof.houseNumber)} house → <strong>{prof.natalCuspSign || 'unknown'}</strong></p>
-              <p><span className="text-primary font-semibold">4.</span> Traditional ruler: <strong>{PLANET_SYMBOLS[lord.planet]} {lord.planet}</strong></p>
-              <p><span className="text-primary font-semibold">5.</span> SR placement: {SIGN_SYMBOLS[lord.srSign]} {lord.srSign}{lord.srHouse ? `, ${ordinal(lord.srHouse)} house` : ''}</p>
-              <p><span className="text-primary font-semibold">6.</span> Dignity: <strong>{lord.dignity}</strong></p>
-              {lord.isRetrograde && (
-                <p><span className="text-primary font-semibold">7.</span> Motion: <strong>Retrograde</strong> — themes are internalized</p>
+          {/* TIME LORD — ruler of profected house cusp */}
+          {prof && (
+            <div className="border border-border rounded-lg p-4 bg-card space-y-3">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-2xl">{PLANET_SYMBOLS[prof.timeLord]}</span>
+                <div>
+                  <h3 className="text-base font-serif text-foreground">Time Lord</h3>
+                  <p className="text-[10px] text-muted-foreground">Ruler of {ordinal(prof.houseNumber)} house ({prof.natalCuspSign || '—'})</p>
+                </div>
+              </div>
+
+              <div className="bg-muted/30 rounded-lg p-2.5">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 font-medium">Profection</p>
+                <p className="text-xs text-foreground leading-relaxed">
+                  Age {prof.age} → {ordinal(prof.houseNumber)} house · {PROFECTION_THEMES[prof.houseNumber] || ''}
+                </p>
+              </div>
+
+              {prof.timeLordSRHouse && (
+                <div className="bg-muted/30 rounded-lg p-2.5">
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 font-medium">{prof.timeLord} in SR</p>
+                  <p className="text-xs text-foreground leading-relaxed">
+                    {SIGN_SYMBOLS[prof.timeLordSRSign]} {prof.timeLordSRSign}
+                    {prof.timeLordSRHouse ? ` · ${ordinal(prof.timeLordSRHouse)} house` : ''}
+                  </p>
+                </div>
+              )}
+
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                At age {prof.age}, the {ordinal(prof.houseNumber)} house is activated. The sign on that cusp ({prof.natalCuspSign || '—'}) makes {prof.timeLord} your Time Lord — the planet setting this year's agenda.
+              </p>
+
+              {prof.overlap && (
+                <p className="text-[10px] text-primary font-medium">
+                  ✦ {prof.timeLord} is also your Lord of the Year — doubly emphasized.
+                </p>
               )}
             </div>
-          </div>
+          )}
         </div>
       )}
 
