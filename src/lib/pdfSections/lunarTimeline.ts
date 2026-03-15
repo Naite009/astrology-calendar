@@ -221,8 +221,8 @@ export function generatePDFLunarTimeline(
       doc.setTextColor(...INK);
       const yearsText = ps.years.join(', ');
       const wrappedYears: string[] = doc.splitTextToSize(yearsText, col2W - 20);
-      wrappedYears.slice(0, 3).forEach((line, li) => {
-        doc.text(line, x + 10, y + 30 + li * 11);
+      wrappedYears.slice(0, 2).forEach((line, li) => {
+        doc.text(line, x + 10, y + 26 + li * 10);
       });
     });
 
