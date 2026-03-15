@@ -388,10 +388,7 @@ export async function generateBirthdayGiftPDF(
 
   // 5. (removed — merged into Big Three above)
 
-  // 6. YEAR AT A GLANCE
-  doc.addPage(); ctx.y = margin;
-  ctx.sectionPages.set('YEAR AT A GLANCE', doc.getNumberOfPages());
-  generatePDFYearAtAGlance(ctx, doc, analysis, srChart, natalChart);
+  // 6. YEAR AT A GLANCE — REMOVED (redundant: every item has its own dedicated section)
 
   // 7. SOLAR RETURN MOON PHASE TIMELINE
   doc.addPage(); ctx.y = margin;

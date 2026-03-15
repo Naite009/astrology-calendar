@@ -112,7 +112,7 @@ export function generatePDFYearAtAGlance(
   // Subtitle
   doc.setFont('times', 'italic'); doc.setFontSize(9);
   doc.setTextColor(...MUTED);
-  doc.text('Stick this on your fridge', margin, ctx.y);
+  doc.text('The essential snapshot of your Solar Return year', margin, ctx.y);
   ctx.y += 28;
 
   // ── TOP ROW: 3-column info box grid ──────────────────────────────

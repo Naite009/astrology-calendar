@@ -185,7 +185,7 @@ export function generateHighlightsPage(
 
   doc.setFont('times', 'italic'); doc.setFontSize(10);
   doc.setTextColor(...MUTED);
-  doc.text('Stick this on your fridge', margin, ctx.y);
+  doc.text('Your best months and what to watch for', margin, ctx.y);
   ctx.y += 34;
 
   // Highlights as condensed cards
