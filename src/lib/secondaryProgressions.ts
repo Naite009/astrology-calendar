@@ -770,6 +770,188 @@ const getProgressedInterpretation = (progPlanet: string, natalPlanet: string, as
   return interpretations[key] || `Progressed ${progPlanet} ${ASPECT_SYMBOLS[aspect] || aspect} natal ${natalPlanet}. Internal maturation brings this energy to consciousness.`;
 };
 
+// ── Progressed Lunation Cycle Timeline ───────────────────────────────
+// Computes exact dates for each phase transition in the ~29.5-year
+// secondary progressed Sun-Moon cycle across the user's entire life.
+
+export interface ProgressedLunationPhase {
+  phaseName: string;
+  phaseEmoji: string;
+  cycleStage: string;
+  startDate: Date;
+  startAge: number;
+  endDate: Date | null;
+  endAge: number | null;
+  duration: string; // e.g. "~3.4 years"
+  lifeTheme: string;
+  isCurrent: boolean;
+  cycleNumber: number; // which ~29.5 year cycle (1, 2, 3...)
+}
+
+const PROG_LUNATION_PHASES = [
+  { boundary: 0, name: 'New Moon', emoji: '🌑', stage: 'Beginning', theme: 'A new ~29-year chapter begins. You feel pulled to start something entirely fresh — a new direction that comes from instinct, not planning. Seeds planted now grow for decades.' },
+  { boundary: 45, name: 'Crescent', emoji: '🌒', stage: 'Emergence', theme: 'The new direction meets resistance from the past. Old habits, old identities pull backward. This is the struggle phase — push through or lose momentum. The effort you invest now determines whether the seed survives.' },
+  { boundary: 90, name: 'First Quarter', emoji: '🌓', stage: 'Crisis of Action', theme: 'A decisive turning point. External circumstances force you to commit and build concrete structures for your vision. No more dreaming — act or lose the thread. Relationships and career may demand clear choices.' },
+  { boundary: 135, name: 'Gibbous', emoji: '🌔', stage: 'Refinement', theme: 'The final preparation before results become visible. You refine your skills, analyze what\'s working, and perfect your approach. The harvest is close but not yet here. Patience and precision matter.' },
+  { boundary: 180, name: 'Full Moon', emoji: '🌕', stage: 'Culmination', theme: 'Maximum illumination. What you\'ve been building reaches peak expression. Relationships serve as mirrors — you see yourself clearly through others. This is harvest time: fulfillment if you built well, reckoning if you didn\'t.' },
+  { boundary: 225, name: 'Disseminating', emoji: '🌖', stage: 'Distribution', theme: 'Time to share what you\'ve gathered. Teaching, mentoring, publishing, contributing your experience to others. Meaning comes through generosity and passing on what you know.' },
+  { boundary: 270, name: 'Last Quarter', emoji: '🌗', stage: 'Crisis of Consciousness', theme: 'The structures you built no longer fit. A fundamental reorientation of values and beliefs. You must let go of what no longer serves — even things that once defined you. This is pruning season.' },
+  { boundary: 315, name: 'Balsamic', emoji: '🌘', stage: 'Completion', theme: 'The final phase before rebirth. Deep inward turning. Release, surrender, and clearing. You may feel isolated or drawn to solitude — this is preparation, not depression. Seeds for the next 29-year cycle are forming in the dark.' },
+];
+
+export function computeProgressedLunationTimeline(
+  natalChart: NatalChart,
+  currentDate: Date = new Date()
+): ProgressedLunationPhase[] {
+  const birthDate = parseBirthDate(natalChart);
+  if (!birthDate) return [];
+
+  const maxAge = 95; // compute up to age 95
+  const stepMonths = 1; // monthly resolution
+  const msPerDay = 24 * 60 * 60 * 1000;
+
+  // Compute progressed Sun-Moon angle at monthly intervals
+  interface DataPoint { date: Date; age: number; angle: number; }
+  const dataPoints: DataPoint[] = [];
+
+  for (let months = 0; months <= maxAge * 12; months += stepMonths) {
+    const targetDate = new Date(birthDate.getTime());
+    targetDate.setUTCMonth(targetDate.getUTCMonth() + months);
+
+    const daysSinceBirth = (targetDate.getTime() - birthDate.getTime()) / msPerDay;
+    const ageInYears = daysSinceBirth / 365.25;
+    const progressedDays = ageInYears;
+    const progressedDate = new Date(birthDate.getTime() + progressedDays * msPerDay);
+
+    try {
+      const astroTime = Astronomy.MakeTime(progressedDate);
+      const sunVec = Astronomy.GeoVector(Astronomy.Body.Sun, astroTime, true);
+      const moonVec = Astronomy.GeoVector(Astronomy.Body.Moon, astroTime, true);
+      const sunLon = Astronomy.Ecliptic(sunVec).elon;
+      const moonLon = Astronomy.Ecliptic(moonVec).elon;
+
+      let angle = moonLon - sunLon;
+      if (angle < 0) angle += 360;
+
+      dataPoints.push({ date: targetDate, age: ageInYears, angle });
+    } catch {
+      // skip invalid dates
+    }
+  }
+
+  if (dataPoints.length < 2) return [];
+
+  // Find phase transitions
+  const transitions: { phaseIndex: number; date: Date; age: number }[] = [];
+
+  // First, determine initial phase
+  const initialAngle = dataPoints[0].angle;
+  let currentPhaseIdx = 0;
+  for (let p = PROG_LUNATION_PHASES.length - 1; p >= 0; p--) {
+    if (initialAngle >= PROG_LUNATION_PHASES[p].boundary) {
+      currentPhaseIdx = p;
+      break;
+    }
+  }
+  transitions.push({ phaseIndex: currentPhaseIdx, date: dataPoints[0].date, age: 0 });
+
+  // Scan for phase boundary crossings
+  for (let i = 1; i < dataPoints.length; i++) {
+    const prevAngle = dataPoints[i - 1].angle;
+    const currAngle = dataPoints[i].angle;
+
+    // Check each boundary
+    for (let p = 0; p < PROG_LUNATION_PHASES.length; p++) {
+      const boundary = PROG_LUNATION_PHASES[p].boundary;
+
+      // Detect crossing: handle wrap-around at 0/360
+      let crossed = false;
+      if (boundary === 0) {
+        // New Moon: angle wraps from ~350+ back to ~0+
+        if (prevAngle > 300 && currAngle < 60) crossed = true;
+      } else {
+        // Normal boundary crossing
+        if (prevAngle < boundary && currAngle >= boundary) crossed = true;
+        // Handle case where angle jumps over boundary
+        if (prevAngle > 300 && currAngle < 60 && boundary < 60) crossed = true;
+      }
+
+      if (crossed && p !== currentPhaseIdx) {
+        // Interpolate the exact date
+        let fraction = 0.5;
+        if (boundary === 0) {
+          // wrap logic
+          const adjustedPrev = prevAngle;
+          const adjustedCurr = currAngle + 360;
+          fraction = (360 - adjustedPrev) / (adjustedCurr - adjustedPrev);
+        } else {
+          const range = currAngle - prevAngle;
+          if (Math.abs(range) > 0.01) {
+            fraction = (boundary - prevAngle) / range;
+          }
+        }
+        fraction = Math.max(0, Math.min(1, fraction));
+
+        const prevMs = dataPoints[i - 1].date.getTime();
+        const currMs = dataPoints[i].date.getTime();
+        const interpMs = prevMs + (currMs - prevMs) * fraction;
+        const interpAge = dataPoints[i - 1].age + (dataPoints[i].age - dataPoints[i - 1].age) * fraction;
+
+        transitions.push({ phaseIndex: p, date: new Date(interpMs), age: interpAge });
+        currentPhaseIdx = p;
+      }
+    }
+  }
+
+  // Sort transitions chronologically
+  transitions.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+  // Remove duplicates (same phase within 6 months)
+  const deduped: typeof transitions = [transitions[0]];
+  for (let i = 1; i < transitions.length; i++) {
+    const prev = deduped[deduped.length - 1];
+    const curr = transitions[i];
+    const monthsApart = (curr.date.getTime() - prev.date.getTime()) / (30 * msPerDay);
+    if (curr.phaseIndex !== prev.phaseIndex || monthsApart > 6) {
+      deduped.push(curr);
+    }
+  }
+
+  // Build output phases
+  const currentAge = (currentDate.getTime() - new Date(natalChart.birthDate).getTime()) / (365.25 * msPerDay);
+  const result: ProgressedLunationPhase[] = [];
+  let cycleNumber = 1;
+
+  for (let i = 0; i < deduped.length; i++) {
+    const t = deduped[i];
+    const phaseData = PROG_LUNATION_PHASES[t.phaseIndex];
+    const nextT = deduped[i + 1] || null;
+
+    // Track cycle number (increment at each New Moon after the first)
+    if (t.phaseIndex === 0 && i > 0) cycleNumber++;
+
+    const startAge = t.age;
+    const endAge = nextT ? nextT.age : null;
+    const durationYears = endAge !== null ? endAge - startAge : null;
+
+    result.push({
+      phaseName: phaseData.name,
+      phaseEmoji: phaseData.emoji,
+      cycleStage: phaseData.stage,
+      startDate: t.date,
+      startAge,
+      endDate: nextT?.date || null,
+      endAge,
+      duration: durationYears !== null ? `~${durationYears.toFixed(1)} years` : 'ongoing',
+      lifeTheme: phaseData.theme,
+      isCurrent: currentAge >= startAge && (endAge === null || currentAge < endAge),
+      cycleNumber,
+    });
+  }
+
+  return result;
+}
+
 // Export interface for progressed Moon transit alert
 export interface ProgressedMoonTransit {
   type: 'progressed-moon';
