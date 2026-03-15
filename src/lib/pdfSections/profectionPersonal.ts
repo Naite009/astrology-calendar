@@ -79,7 +79,7 @@ export function generateProfectionPersonalSection(
   doc.setFont('times', 'bold'); doc.setFontSize(7);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(4);
-  doc.text('THE TIME LORD', margin, ctx.y);
+  doc.text('YOUR PROFECTION YEAR', margin, ctx.y);
   doc.setCharSpace(0);
   ctx.y += 12;
 
@@ -87,10 +87,10 @@ export function generateProfectionPersonalSection(
   doc.line(margin, ctx.y, pw - margin, ctx.y);
   ctx.y += 32;
 
-  // ── Large serif display: "Lord of the Year" ──
+  // ── Large serif display: "Your Time Lord" ──
   doc.setFont('times', 'normal'); doc.setFontSize(36);
   doc.setTextColor(...INK);
-  doc.text('Lord of the Year', margin, ctx.y);
+  doc.text('Your Time Lord', margin, ctx.y);
   ctx.y += 46;
 
   // ── HERO CARD: cream bg with charcoal border (no black) ──

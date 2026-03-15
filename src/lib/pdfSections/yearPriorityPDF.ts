@@ -70,12 +70,12 @@ export function generatePDFNatalOverlay(
     ctx.checkPage(40);
     doc.setFont('times', 'bold'); doc.setFontSize(9);
     doc.setTextColor(...ctx.colors.ink);
-    doc.text(`${p.label} --> Natal ${p.house}${ord(p.house)} House`, ctx.margin, ctx.y);
+    doc.text(`${p.label} --> Natal ${p.house}${ord(p.house)} House`, ctx.margin + 8, ctx.y);
     ctx.y += 12;
     doc.setFont('times', 'normal'); doc.setFontSize(8.5);
     doc.setTextColor(...ctx.colors.muted);
-    const lines = doc.splitTextToSize(`(${p.meaning})`, ctx.contentW - 16);
-    for (const l of lines) { doc.text(l, ctx.margin + 8, ctx.y); ctx.y += 11; }
+    const lines = doc.splitTextToSize(`(${p.meaning})`, ctx.contentW - 24);
+    for (const l of lines) { doc.text(l, ctx.margin + 16, ctx.y); ctx.y += 11; }
     ctx.y += 4;
   }
 }
