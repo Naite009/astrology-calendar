@@ -219,10 +219,12 @@ export function LandsVsPlaysOutCard({ analysis }: Props) {
                 </div>
 
                 {/* Answer */}
-                <div className="pt-2 border-t border-border">
+                <div className="pt-2 border-t border-border space-y-1">
                   <p className="text-[10px] text-muted-foreground leading-relaxed">
-                    <strong className="text-foreground">Answers:</strong>{' '}
                     <span className="italic">"Where does the year's engine actually drive you?"</span>
+                  </p>
+                  <p className="text-xs text-foreground leading-relaxed">
+                    The SR Ascendant in {playsOut.srAscSign} is ruled by {playsOut.rulerPlanet}, which sits in your natal {ordinal(playsOutHouse)} house ({HOUSE_MEANINGS[playsOutHouse]?.toLowerCase()}). This means the year's underlying motivation — what quietly steers your choices — routes through {HOUSE_MEANINGS[playsOutHouse]?.split(',')[0]?.toLowerCase()} concerns, even when surface-level events point elsewhere.
                   </p>
                 </div>
               </>
