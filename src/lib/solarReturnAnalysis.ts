@@ -240,6 +240,7 @@ export interface SRMoonPhase {
   phase: string;
   description: string;
   isEclipse: boolean;
+  phaseAngle: number;
 }
 
 export interface SRStellium {
@@ -906,7 +907,7 @@ export const analyzeSolarReturn = (
       const phase = phases.find(p => diff >= p.min && diff < p.max) || phases[0];
       // Check if Sun-Moon are close enough for eclipse possibility (within ~12° for solar, ~6° of nodes for lunar)
       const isEclipse = diff < 12 || diff > 348 || (diff > 168 && diff < 192);
-      moonPhase = { phase: phase.name, description: phase.desc, isEclipse };
+      moonPhase = { phase: phase.name, description: phase.desc, isEclipse, phaseAngle: Math.round(diff * 100) / 100 };
     }
   }
 

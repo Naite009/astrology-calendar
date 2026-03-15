@@ -1155,7 +1155,12 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
                   <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-destructive/10 text-destructive rounded-sm">Near Eclipse Axis</span>
                 )}
               </div>
-              <p className="text-base font-serif text-foreground">{analysis.moonPhase.phase}</p>
+              <p className="text-base font-serif text-foreground">
+                {analysis.moonPhase.phase}
+                <span className="ml-2 text-xs text-muted-foreground font-normal">
+                  {analysis.moonPhase.phaseAngle}° separation
+                </span>
+              </p>
               {phaseInterp && <p className="text-xs font-medium text-primary">{phaseInterp.theme}</p>}
               <p className="text-xs text-muted-foreground leading-relaxed">{phaseInterp?.description || analysis.moonPhase.description}</p>
 
