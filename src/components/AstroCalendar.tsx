@@ -217,7 +217,9 @@ export const AstroCalendar = () => {
       const weekStart = getWeekStart(currentDate);
       return `Week of ${weekStart.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`;
     }
-    return currentDate.toLocaleString("default", { month: "long", year: "numeric" });
+    const monthName = currentDate.toLocaleString("default", { month: "long" });
+    const yearStr = currentDate.getFullYear().toString();
+    return { month: monthName, year: yearStr };
   };
 
   return (
