@@ -189,7 +189,7 @@ export function generateStrengthsPortrait(
   const srSunSign = srChart?.planets?.Sun?.sign || sunSign;
 
   ctx.pageBg(doc);
-  ctx.y += 12;
+  ctx.y += 8;
 
   // Section header
   doc.setFont('times', 'bold'); doc.setFontSize(7);
@@ -197,21 +197,21 @@ export function generateStrengthsPortrait(
   doc.setCharSpace(4);
   doc.text('YOUR BIG THREE', margin, ctx.y);
   doc.setCharSpace(0);
-  ctx.y += 8;
+  ctx.y += 6;
 
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 36;
+  ctx.y += 22;
 
-  doc.setFont('times', 'normal'); doc.setFontSize(28);
+  doc.setFont('times', 'normal'); doc.setFontSize(24);
   doc.setTextColor(...INK);
   doc.text('The Natal-to-Return Shift', margin, ctx.y);
-  ctx.y += 16;
+  ctx.y += 12;
 
-  doc.setFont('times', 'italic'); doc.setFontSize(10);
+  doc.setFont('times', 'italic'); doc.setFontSize(9);
   doc.setTextColor(...MUTED);
   doc.text('How this year activates your natal strengths', margin, ctx.y);
-  ctx.y += 24;
+  ctx.y += 16;
 
   // ──────────────────────────────────────────────────
   // Shared renderer for each planet
