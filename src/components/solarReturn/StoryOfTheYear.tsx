@@ -127,13 +127,15 @@ export function StoryOfTheYear({ analysis, natalChart, srChart }: Props) {
           </p>
         </div>
 
-        {/* 2. Sun house direction */}
-        <div>
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">Where Life Is Moving</p>
-          <p className="text-sm text-foreground leading-relaxed">
-            The Sun in the <strong>{sunHouse}{sunHouse === 1 ? 'st' : sunHouse === 2 ? 'nd' : sunHouse === 3 ? 'rd' : 'th'} house</strong> places your central focus on {SUN_HOUSE_THEMES[sunHouse] || `house ${sunHouse} themes`}. This is where your vitality, willpower, and conscious attention are directed all year. It's not just a topic — it's where you feel most alive and where the biggest developments happen.
-          </p>
-        </div>
+        {/* 2. Moon emotional field */}
+        {moonHouse && (
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">Where You Feel It Most</p>
+            <p className="text-sm text-foreground leading-relaxed">
+              The Moon in <strong>{analysis.moonSign}</strong> in the <strong>{moonHouse}{moonHouse === 1 ? 'st' : moonHouse === 2 ? 'nd' : moonHouse === 3 ? 'rd' : 'th'} house</strong> reveals where your emotional attention and daily experience will be most intense: {MOON_HOUSE_THEMES[moonHouse] || `house ${moonHouse} themes`}. Your emotional needs this year are filtered through {analysis.moonSign} — {blending?.releasing ? `meaning patterns around ${blending.releasing} are active in your inner world` : 'shaping how you process and react to everything'}.
+            </p>
+          </div>
+        )}
 
         {/* 3. Moon emotional field */}
         {moonHouse && (
