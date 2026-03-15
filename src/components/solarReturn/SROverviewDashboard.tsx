@@ -228,6 +228,11 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
                 <div key={i}>
                   <p className="text-sm font-serif text-foreground">{s.location}</p>
                   <p className="text-[11px] text-muted-foreground">{s.planets.join(', ')}</p>
+                  {s.extras && s.extras.filter(e => e === 'Chiron' || e === 'NorthNode').length > 0 && (
+                    <p className="text-[10px] text-amber-400 italic mt-0.5">
+                      Also contains: {s.extras.filter(e => e === 'Chiron' || e === 'NorthNode').map(e => e === 'NorthNode' ? 'North Node' : e).join(', ')}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
