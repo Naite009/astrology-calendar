@@ -219,7 +219,7 @@ export function generatePDFYearPriority(
   ctx: PDFContext, doc: jsPDF,
   analysis: SolarReturnAnalysis, natalChart: NatalChart, srChart: SolarReturnChart,
 ) {
-  ctx.sectionTitle(doc, 'YEAR PRIORITY ENGINE', 'Top Themes Ranked by Signal Strength');
+  ctx.sectionTitle(doc, 'YEAR PRIORITY ENGINE', 'Top Themes Ranked by House Placements and Angle Contacts');
 
   const ranked = computeYearPriorities(analysis, natalChart, srChart);
   const top3 = ranked.slice(0, 3);
@@ -231,7 +231,7 @@ export function generatePDFYearPriority(
 
   for (let i = 0; i < top3.length; i++) {
     const theme = top3[i];
-    ctx.checkPage(80);
+    ctx.checkPage(100);
 
     ctx.drawCard(doc, () => {
       // Rank + label
@@ -240,20 +240,20 @@ export function generatePDFYearPriority(
       doc.text(`#${i + 1}  ${theme.label}`, ctx.margin + 12, ctx.y);
       ctx.y += 14;
 
-      // Confidence + score
+      // Confidence
       doc.setFont('times', 'normal'); doc.setFontSize(8);
       doc.setTextColor(...ctx.colors.muted);
-      doc.text(`${theme.confidence} confidence  --  ${theme.score} points`, ctx.margin + 12, ctx.y);
+      doc.text(`${theme.confidence} confidence`, ctx.margin + 12, ctx.y);
       ctx.y += 14;
 
-      // Key drivers (top 3)
-      ctx.trackedLabel(doc, 'KEY DRIVERS', ctx.margin + 12, ctx.y, { size: 6, charSpace: 2 });
+      // Why this ranks
+      ctx.trackedLabel(doc, 'WHY THIS RANKS', ctx.margin + 12, ctx.y, { size: 6, charSpace: 2 });
       ctx.y += 10;
-      for (const d of theme.drivers.slice(0, 3)) {
+      for (const d of theme.drivers.slice(0, 4)) {
         doc.setFont('times', 'normal'); doc.setFontSize(8);
         doc.setTextColor(...ctx.colors.ink);
-        doc.text(`- ${d.source} (+${d.weight})`, ctx.margin + 16, ctx.y);
-        ctx.y += 11;
+        const lines = doc.splitTextToSize(`- ${d.source}`, ctx.contentW - 32);
+        for (const l of lines) { doc.text(l, ctx.margin + 16, ctx.y); ctx.y += 11; }
       }
     }, i === 0 ? ctx.colors.gold : ctx.colors.rule);
 
@@ -269,7 +269,7 @@ export function generatePDFYearPriority(
     for (const theme of rest) {
       doc.setFont('times', 'normal'); doc.setFontSize(8);
       doc.setTextColor(...ctx.colors.ink);
-      doc.text(`${theme.label} -- ${theme.score} pts (${theme.confidence})`, ctx.margin + 8, ctx.y);
+      doc.text(`${theme.label} (${theme.confidence})`, ctx.margin + 8, ctx.y);
       ctx.y += 11;
     }
   }

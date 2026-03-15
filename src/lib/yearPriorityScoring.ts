@@ -12,20 +12,22 @@ export interface ScoredCategory {
   score: number;
   confidence: string;
   drivers: Driver[];
+  /** Plain-English summary of why this theme ranks */
+  summary: string;
 }
 
 const CATEGORIES = [
-  { id: 'identity_direction', label: 'Identity and Direction' },
-  { id: 'relationships', label: 'Relationships' },
-  { id: 'career_public_life', label: 'Career and Public Life' },
-  { id: 'home_family_private_life', label: 'Home and Private Life' },
-  { id: 'money_resources', label: 'Money and Resources' },
-  { id: 'health_work_routines', label: 'Health, Work, and Routines' },
-  { id: 'creativity_children_joy', label: 'Creativity, Children, and Joy' },
-  { id: 'inner_healing_spirituality', label: 'Inner Healing and Spirituality' },
-  { id: 'transformation_shared_resources', label: 'Transformation and Shared Resources' },
-  { id: 'learning_travel_beliefs', label: 'Learning, Travel, and Beliefs' },
-  { id: 'friends_community_future', label: 'Friends, Community, and Future Vision' },
+  { id: 'identity_direction', label: 'Identity and Direction', house: 1 },
+  { id: 'relationships', label: 'Relationships', house: 7 },
+  { id: 'career_public_life', label: 'Career and Public Life', house: 10 },
+  { id: 'home_family_private_life', label: 'Home and Private Life', house: 4 },
+  { id: 'money_resources', label: 'Money and Resources', house: 2 },
+  { id: 'health_work_routines', label: 'Health, Work, and Routines', house: 6 },
+  { id: 'creativity_children_joy', label: 'Creativity, Children, and Joy', house: 5 },
+  { id: 'inner_healing_spirituality', label: 'Inner Healing and Spirituality', house: 12 },
+  { id: 'transformation_shared_resources', label: 'Transformation and Shared Resources', house: 8 },
+  { id: 'learning_travel_beliefs', label: 'Learning, Travel, and Beliefs', house: 9 },
+  { id: 'friends_community_future', label: 'Friends, Community, and Future Vision', house: 11 },
 ];
 
 const HOUSE_TO_CATEGORY: Record<number, string> = {
@@ -35,22 +37,6 @@ const HOUSE_TO_CATEGORY: Record<number, string> = {
   10: 'career_public_life', 11: 'friends_community_future', 12: 'inner_healing_spirituality',
 };
 
-const PLANET_TO_CATEGORIES: Record<string, string[]> = {
-  Sun: ['identity_direction', 'career_public_life'],
-  Moon: ['home_family_private_life', 'inner_healing_spirituality'],
-  Mercury: ['learning_travel_beliefs', 'career_public_life'],
-  Venus: ['relationships', 'money_resources', 'creativity_children_joy'],
-  Mars: ['identity_direction', 'career_public_life', 'health_work_routines'],
-  Jupiter: ['learning_travel_beliefs', 'career_public_life', 'friends_community_future'],
-  Saturn: ['career_public_life', 'health_work_routines', 'home_family_private_life'],
-  Uranus: ['identity_direction', 'friends_community_future'],
-  Neptune: ['inner_healing_spirituality', 'creativity_children_joy'],
-  Pluto: ['transformation_shared_resources', 'career_public_life'],
-  NorthNode: ['identity_direction', 'relationships', 'career_public_life'],
-  'North Node': ['identity_direction', 'relationships', 'career_public_life'],
-  Chiron: ['inner_healing_spirituality', 'health_work_routines'],
-};
-
 const ANGLE_TO_CATEGORIES: Record<string, string[]> = {
   Ascendant: ['identity_direction'], Descendant: ['relationships'],
   Midheaven: ['career_public_life'], IC: ['home_family_private_life'],
@@ -58,19 +44,19 @@ const ANGLE_TO_CATEGORIES: Record<string, string[]> = {
 
 const PHASE_BOOSTS: Record<string, string[]> = {
   'New Moon': ['identity_direction'],
-  'Crescent': ['identity_direction', 'health_work_routines'],
-  'First Quarter': ['identity_direction', 'career_public_life', 'relationships'],
-  'Gibbous': ['health_work_routines', 'career_public_life', 'learning_travel_beliefs'],
-  'Full Moon': ['relationships', 'career_public_life', 'home_family_private_life'],
-  'Disseminating': ['learning_travel_beliefs', 'friends_community_future', 'career_public_life'],
-  'Last Quarter': ['inner_healing_spirituality', 'career_public_life', 'relationships'],
+  'Crescent': ['identity_direction'],
+  'First Quarter': ['identity_direction', 'relationships'],
+  'Gibbous': ['health_work_routines'],
+  'Full Moon': ['relationships'],
+  'Disseminating': ['learning_travel_beliefs', 'friends_community_future'],
+  'Last Quarter': ['inner_healing_spirituality'],
   'Balsamic': ['inner_healing_spirituality', 'home_family_private_life'],
 };
 
 const ASPECT_WEIGHTS: Record<string, number> = {
-  conjunct: 12, conjunction: 12, Conjunction: 12,
-  opposite: 7, opposition: 7, Opposition: 7,
-  square: 6, Square: 6, trine: 4, Trine: 4, sextile: 3, Sextile: 3,
+  conjunct: 10, conjunction: 10, Conjunction: 10,
+  opposite: 6, opposition: 6, Opposition: 6,
+  square: 5, Square: 5, trine: 3, Trine: 3, sextile: 2, Sextile: 2,
 };
 
 const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
@@ -87,8 +73,39 @@ const ASPECT_DEFS = [
 ];
 const ORB = 3;
 
-function ord(n: number): string {
-  if (n === 1) return 'st'; if (n === 2) return 'nd'; if (n === 3) return 'rd'; return 'th';
+function ordSuffix(n: number): string {
+  if (n >= 11 && n <= 13) return 'th';
+  const last = n % 10;
+  if (last === 1) return 'st'; if (last === 2) return 'nd'; if (last === 3) return 'rd'; return 'th';
+}
+
+/** Build a plain-English summary for a category based on its drivers */
+function buildSummary(catId: string, label: string, drivers: Driver[]): string {
+  if (drivers.length === 0) return '';
+  
+  // Group driver reasons
+  const houseDrivers = drivers.filter(d => d.source.includes('house'));
+  const angleDrivers = drivers.filter(d => d.source.includes('angle') || d.source.includes('Ascendant') || d.source.includes('Midheaven') || d.source.includes('Descendant') || d.source.includes('IC'));
+  const phaseDrivers = drivers.filter(d => d.source.includes('phase'));
+  
+  const parts: string[] = [];
+  
+  if (houseDrivers.length > 0) {
+    const hNames = houseDrivers.map(d => d.source).join('; ');
+    parts.push(`Multiple planets activate this area through house placements (${hNames})`);
+  }
+  if (angleDrivers.length > 0) {
+    parts.push(`Direct angle contacts amplify visibility`);
+  }
+  if (phaseDrivers.length > 0) {
+    parts.push(`The lunar phase reinforces this direction`);
+  }
+  
+  if (parts.length === 0) {
+    return `${label} is active this year based on ${drivers.length} chart signals.`;
+  }
+  
+  return parts.join('. ') + '.';
 }
 
 export function computeYearPriorities(
@@ -105,25 +122,22 @@ export function computeYearPriorities(
     scores[catId].drivers.push({ source, weight });
   };
 
-  // Sun house
+  // ──── PRIMARY SIGNAL: House placements ────────────────────────
+  // Sun house (strongest signal — where your vitality goes this year)
   const sunH = analysis.sunHouse?.house;
-  if (sunH) { const cat = HOUSE_TO_CATEGORY[sunH]; if (cat) add(cat, 10, `SR Sun in ${sunH}${ord(sunH)} house`); }
-
-  // Moon house
-  const moonH = analysis.moonHouse?.house;
-  if (moonH) { const cat = HOUSE_TO_CATEGORY[moonH]; if (cat) add(cat, 8, `SR Moon in ${moonH}${ord(moonH)} house`); }
-
-  // Lunar phase
-  const sun = natalChart.planets.Sun;
-  if (sun) {
-    const timeline = computeLunarPhaseTimeline(sun.sign, sun.degree, sun.minutes, natalChart.birthDate, srChart.solarReturnYear);
-    const current = timeline.find(e => e.isCurrent);
-    if (current) {
-      (PHASE_BOOSTS[current.phase] || []).forEach(catId => add(catId, 5, `${current.phase} lunar phase`));
-    }
+  if (sunH) {
+    const cat = HOUSE_TO_CATEGORY[sunH];
+    if (cat) add(cat, 12, `Sun in ${sunH}${ordSuffix(sunH)} house — your core energy focuses here`);
   }
 
-  // House emphasis
+  // Moon house (second strongest — where your heart invests)
+  const moonH = analysis.moonHouse?.house;
+  if (moonH) {
+    const cat = HOUSE_TO_CATEGORY[moonH];
+    if (cat) add(cat, 10, `Moon in ${moonH}${ordSuffix(moonH)} house — your emotional investment lives here`);
+  }
+
+  // House emphasis (2+ planets in a house)
   const srHouseCounts: Record<number, string[]> = {};
   for (const ov of analysis.houseOverlays || []) {
     if (ov.srHouse) { if (!srHouseCounts[ov.srHouse]) srHouseCounts[ov.srHouse] = []; srHouseCounts[ov.srHouse].push(ov.planet); }
@@ -132,12 +146,21 @@ export function computeYearPriorities(
     const hNum = Number(h);
     const cat = HOUSE_TO_CATEGORY[hNum];
     if (cat && planets.length >= 2) {
-      add(cat, 9, `${planets.length} planets in SR ${hNum}${ord(hNum)} house`);
-      if ([1, 4, 7, 10].includes(hNum)) add(cat, 4, `Angular house emphasis (${hNum}${ord(hNum)})`);
+      const planetNames = planets.join(', ');
+      add(cat, 9, `${planets.length} planets (${planetNames}) in ${hNum}${ordSuffix(hNum)} house`);
+      if ([1, 4, 7, 10].includes(hNum)) add(cat, 3, `Angular house ${hNum} — extra emphasis`);
     }
   }
 
-  // Angle activations
+  // ──── Natal house overlays (SR planets landing in natal houses) ────
+  for (const ov of analysis.houseOverlays || []) {
+    if (ov.natalHouse) {
+      const cat = HOUSE_TO_CATEGORY[ov.natalHouse];
+      if (cat) add(cat, 8, `SR ${ov.planet} falls in your natal ${ov.natalHouse}${ordSuffix(ov.natalHouse)} house`);
+    }
+  }
+
+  // ──── SECONDARY SIGNAL: Angle activations ────────────────────
   const srAngles: { name: string; deg: number | null }[] = [];
   const srAsc = srChart.houseCusps?.house1; const srMC = srChart.houseCusps?.house10;
   if (srAsc) { const d = toAbsDeg(srAsc); srAngles.push({ name: 'Ascendant', deg: d }); if (d !== null) srAngles.push({ name: 'Descendant', deg: (d + 180) % 360 }); }
@@ -148,80 +171,99 @@ export function computeYearPriorities(
   if (nAsc) { const d = toAbsDeg(nAsc); natalAngles.push({ name: 'Ascendant', deg: d }); if (d !== null) natalAngles.push({ name: 'Descendant', deg: (d + 180) % 360 }); }
   if (nMC) { const d = toAbsDeg(nMC); natalAngles.push({ name: 'Midheaven', deg: d }); if (d !== null) natalAngles.push({ name: 'IC', deg: (d + 180) % 360 }); }
 
-  const planetNames = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','NorthNode','Chiron'];
+  const allPlanetNames = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','NorthNode','Chiron'];
 
-  // SR angles → natal planets
+  // SR angles → natal planets (house-based category only)
   for (const angle of srAngles) {
     if (angle.deg === null) continue;
     const angleCats = ANGLE_TO_CATEGORIES[angle.name] || [];
-    for (const pName of planetNames) {
+    for (const pName of allPlanetNames) {
       const pos = natalChart.planets[pName as keyof typeof natalChart.planets];
       if (!pos) continue;
-      const pDeg = toAbsDeg(pos);
-      if (pDeg === null) continue;
+      const pDeg = toAbsDeg(pos); if (pDeg === null) continue;
       for (const asp of ASPECT_DEFS) {
         let diff = Math.abs(angle.deg - pDeg); if (diff > 180) diff = 360 - diff;
         if (Math.abs(diff - asp.angle) <= ORB) {
-          const w = ASPECT_WEIGHTS[asp.name] || 3;
-          const allCats = [...new Set([...angleCats, ...(PLANET_TO_CATEGORIES[pName] || [])])];
+          const w = Math.min(ASPECT_WEIGHTS[asp.name] || 2, 8);
           const dp = pName === 'NorthNode' ? 'North Node' : pName;
-          allCats.forEach(c => add(c, w, `SR ${angle.name} ${asp.name} natal ${dp}`));
+          angleCats.forEach(c => add(c, w, `SR ${angle.name} ${asp.name}s your natal ${dp}`));
         }
       }
     }
   }
 
-  // SR planets → natal angles
-  for (const pName of planetNames) {
+  // SR planets → natal angles (house-based category only)
+  for (const pName of allPlanetNames) {
     const srPos = srChart.planets[pName as keyof typeof srChart.planets];
     if (!srPos) continue;
     const srDeg = toAbsDeg(srPos); if (srDeg === null) continue;
-    const planetCats = PLANET_TO_CATEGORIES[pName] || [];
     for (const angle of natalAngles) {
       if (angle.deg === null) continue;
       const angleCats = ANGLE_TO_CATEGORIES[angle.name] || [];
       for (const asp of ASPECT_DEFS) {
         let diff = Math.abs(srDeg - angle.deg); if (diff > 180) diff = 360 - diff;
         if (Math.abs(diff - asp.angle) <= ORB) {
-          const w = (ASPECT_WEIGHTS[asp.name] || 3) - 1;
-          const allCats = [...new Set([...angleCats, ...planetCats])];
+          const w = Math.min((ASPECT_WEIGHTS[asp.name] || 2) - 1, 7);
           const dp = pName === 'NorthNode' ? 'North Node' : pName;
-          allCats.forEach(c => add(c, w, `SR ${dp} ${asp.name} natal ${angle.name}`));
+          angleCats.forEach(c => add(c, w, `SR ${dp} ${asp.name}s your natal ${angle.name}`));
         }
       }
     }
   }
 
-  // Natal house overlays
-  for (const ov of analysis.houseOverlays || []) {
-    if (ov.natalHouse) { const cat = HOUSE_TO_CATEGORY[ov.natalHouse]; if (cat) add(cat, 9, `SR ${ov.planet} in natal ${ov.natalHouse}${ord(ov.natalHouse)} house`); }
-  }
-  if (analysis.sunNatalHouse?.house) { const cat = HOUSE_TO_CATEGORY[analysis.sunNatalHouse.house]; if (cat) add(cat, 9, `SR Sun in natal ${analysis.sunNatalHouse.house}${ord(analysis.sunNatalHouse.house)} house`); }
-  if (analysis.moonNatalHouse?.house) { const cat = HOUSE_TO_CATEGORY[analysis.moonNatalHouse.house]; if (cat) add(cat, 9, `SR Moon in natal ${analysis.moonNatalHouse.house}${ord(analysis.moonNatalHouse.house)} house`); }
-
-  // Major aspects
-  const allAspects = [...(analysis.srToNatalAspects || []), ...(analysis.srInternalAspects || [])];
-  for (const asp of allAspects) {
-    const w = ASPECT_WEIGHTS[asp.type] || 3;
-    const allCats = [...new Set([...(PLANET_TO_CATEGORIES[asp.planet1] || []), ...(PLANET_TO_CATEGORIES[asp.planet2] || [])])];
-    allCats.forEach(c => add(c, w, `${asp.planet1}--${asp.planet2} ${asp.type.toLowerCase()}`));
+  // ──── TERTIARY SIGNAL: Lunar phase ────────────────────────────
+  const sun = natalChart.planets.Sun;
+  if (sun) {
+    const timeline = computeLunarPhaseTimeline(sun.sign, sun.degree, sun.minutes, natalChart.birthDate, srChart.solarReturnYear);
+    const current = timeline.find(e => e.isCurrent);
+    if (current) {
+      (PHASE_BOOSTS[current.phase] || []).forEach(catId => add(catId, 4, `${current.phase} lunar phase supports this direction`));
+    }
   }
 
-  // Stacking bonus
+  // ──── SR-to-Natal aspects (NOT SR internal aspects) ───────────
+  // Only cross-chart aspects matter for category ranking.
+  // SR internal aspects (e.g., SR Mars conjunct SR Mars) are expected
+  // in Solar Returns and don't indicate specific life areas.
+  for (const asp of (analysis.srToNatalAspects || [])) {
+    // Skip Sun-Sun conjunction — it's the defining feature of every Solar Return
+    if (asp.planet1 === 'Sun' && asp.planet2 === 'Sun') continue;
+    
+    // Use the HOUSE where these planets sit, not the planet's "nature"
+    const p1House = analysis.planetSRHouses?.[asp.planet1];
+    const p2NatalHouse = analysis.houseOverlays?.find(o => o.planet === asp.planet2)?.natalHouse;
+    
+    const w = Math.min(ASPECT_WEIGHTS[asp.type] || 2, 6);
+    const p1 = asp.planet1 === 'NorthNode' ? 'North Node' : asp.planet1;
+    const p2 = asp.planet2 === 'NorthNode' ? 'North Node' : asp.planet2;
+    
+    if (p1House) {
+      const cat = HOUSE_TO_CATEGORY[p1House];
+      if (cat) add(cat, w, `SR ${p1} (${p1House}${ordSuffix(p1House)} house) ${asp.type.toLowerCase()}s natal ${p2}`);
+    }
+    if (p2NatalHouse && p2NatalHouse !== p1House) {
+      const cat = HOUSE_TO_CATEGORY[p2NatalHouse];
+      if (cat) add(cat, w - 1, `Natal ${p2} (${p2NatalHouse}${ordSuffix(p2NatalHouse)} house) aspected by SR ${p1}`);
+    }
+  }
+
+  // ──── Stacking bonus (3+ distinct signals → strong theme) ────
   for (const catId of Object.keys(scores)) {
-    if (scores[catId].drivers.length >= 3) {
-      scores[catId].score += 6;
-      scores[catId].drivers.push({ source: 'Stacked theme bonus (3+ signals)', weight: 6 });
+    const uniqueSources = new Set(scores[catId].drivers.map(d => d.source));
+    if (uniqueSources.size >= 3) {
+      scores[catId].score += 5;
+      scores[catId].drivers.push({ source: 'Multiple reinforcing signals point here', weight: 5 });
     }
   }
 
   // Build ranked
   return CATEGORIES.map(c => {
     const s = scores[c.id];
-    const conf = s.score >= 30 ? 'Very High' : s.score >= 22 ? 'High' : s.score >= 15 ? 'Moderate' : 'Emerging';
+    const conf = s.score >= 28 ? 'Very High' : s.score >= 20 ? 'High' : s.score >= 12 ? 'Moderate' : 'Emerging';
     const uniqueDrivers: Driver[] = [];
     const seen = new Set<string>();
     for (const d of s.drivers) { if (!seen.has(d.source)) { seen.add(d.source); uniqueDrivers.push(d); } }
-    return { id: c.id, label: c.label, score: s.score, confidence: conf, drivers: uniqueDrivers.sort((a, b) => b.weight - a.weight) };
+    const summary = buildSummary(c.id, c.label, uniqueDrivers);
+    return { id: c.id, label: c.label, score: s.score, confidence: conf, drivers: uniqueDrivers, summary };
   }).filter(c => c.score > 0).sort((a, b) => b.score - a.score);
 }
