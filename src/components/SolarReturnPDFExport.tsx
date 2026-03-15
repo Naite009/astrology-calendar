@@ -463,10 +463,11 @@ export async function generateBirthdayGiftPDF(
     }
   }
 
-  // 10. SR VS NATAL TABLE
+  // 10. NATAL VS SOLAR RETURN TABLE
   doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
   ctx.sectionPages.set('SOLAR RETURN VS NATAL', doc.getNumberOfPages());
-  ctx.sectionTitle(doc, 'SOLAR RETURN VS NATAL');
+  ctx.sectionPages.set('NATAL VS SOLAR RETURN', doc.getNumberOfPages());
+  ctx.sectionTitle(doc, 'NATAL VS SOLAR RETURN');
   {
     const cols = [
       margin + 8, margin + contentW * 0.12, margin + contentW * 0.32,
@@ -474,7 +475,7 @@ export async function generateBirthdayGiftPDF(
     ];
     doc.setFont('times', 'bold'); doc.setFontSize(7.5); doc.setTextColor(...ctx.colors.muted);
     doc.setCharSpace(1);
-    ['PLANET', 'SR POSITION', 'SR H', 'NATAL POSITION', 'NAT H', 'SHIFT'].forEach((h, i) => doc.text(h, cols[i], ctx.y));
+    ['PLANET', 'NATAL POSITION', 'NAT H', 'SR POSITION', 'SR H', 'SHIFT'].forEach((h, i) => doc.text(h, cols[i], ctx.y));
     doc.setCharSpace(0);
     ctx.y += 6;
     doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.3);
@@ -495,13 +496,13 @@ export async function generateBirthdayGiftPDF(
       doc.setFont('times', 'bold'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.ink);
       doc.text(P[p] || p, cols[0], ctx.y);
       doc.setFont('times', 'normal'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.ink);
-      doc.text(srPos ? `${srPos.sign} ${srPos.degree}'` : '--', cols[1], ctx.y);
+      doc.text(natPos ? `${natPos.sign} ${natPos.degree}'` : '--', cols[1], ctx.y);
       doc.setFont('times', 'bold'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.accent);
-      doc.text(srH != null ? `H${srH}` : '--', cols[2], ctx.y);
+      doc.text(natH != null ? `H${natH}` : '--', cols[2], ctx.y);
       doc.setFont('times', 'normal'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.ink);
-      doc.text(natPos ? `${natPos.sign} ${natPos.degree}'` : '--', cols[3], ctx.y);
+      doc.text(srPos ? `${srPos.sign} ${srPos.degree}'` : '--', cols[3], ctx.y);
       doc.setFont('times', 'bold'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.accent);
-      doc.text(natH != null ? `H${natH}` : '--', cols[4], ctx.y);
+      doc.text(srH != null ? `H${srH}` : '--', cols[4], ctx.y);
       doc.setFont('times', 'italic'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.muted);
       doc.text(shift, cols[5], ctx.y);
       ctx.y += 17;
