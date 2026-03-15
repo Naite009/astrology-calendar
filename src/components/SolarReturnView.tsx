@@ -24,6 +24,8 @@ import { StoryOfTheYear } from '@/components/solarReturn/StoryOfTheYear';
 import { LifeCycleContext } from '@/components/solarReturn/LifeCycleContext';
 import { NatalOverlayCard } from '@/components/solarReturn/NatalOverlayCard';
 import { AngleActivationCard } from '@/components/solarReturn/AngleActivationCard';
+import { PlanetToAngleCard } from '@/components/solarReturn/PlanetToAngleCard';
+import { YearPriorityEngine } from '@/components/solarReturn/YearPriorityEngine';
 
 const ZODIAC_SIGNS = [
   'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
@@ -735,6 +737,12 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
 
       {/* 4. Angle Activations — SR angles contacting natal planets */}
       <AngleActivationCard natalChart={natalChart} srChart={srChart} />
+
+      {/* 5. Planet-to-Angle — SR planets contacting natal angles */}
+      <PlanetToAngleCard natalChart={natalChart} srChart={srChart} />
+
+      {/* 6. Year Priority Engine — weighted theme ranking */}
+      <YearPriorityEngine analysis={analysis} natalChart={natalChart} srChart={srChart} />
 
       {/* Dashboard Details */}
       <SROverviewDashboard analysis={analysis} natalChart={natalChart} srChart={srChart} />
