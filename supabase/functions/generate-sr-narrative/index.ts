@@ -36,7 +36,7 @@ serve(async (req) => {
       }
     }
 
-    // SR Ascendant degree in Natal House (Lynn Bell)
+    // SR Ascendant degree in Natal House
     if (a.srAscInNatalHouse) {
       dataContext += `SR ASC DEGREE IN NATAL: The SR Ascendant falls in Natal House ${a.srAscInNatalHouse.natalHouse} (${a.srAscInNatalHouse.natalHouseTheme || ''})\n`;
     }
