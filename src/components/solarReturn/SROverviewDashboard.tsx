@@ -361,80 +361,224 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
       </div>
 
       {/* ─── 4. Lord of the Year + Time Lord — Side by Side ─── */}
-      {(lord || prof) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {/* LORD OF THE YEAR — ruler of natal Ascendant */}
-          {lord && (
-            <div className="border border-border rounded-lg p-4 bg-card space-y-3">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-2xl">{PLANET_SYMBOLS[lord.planet]}</span>
-                <div>
-                  <h3 className="text-base font-serif text-foreground">Lord of the Year</h3>
-                  <p className="text-[10px] text-muted-foreground">Ruler of natal Ascendant ({lord.natalRisingSign})</p>
+      {(lord || prof) && (() => {
+        // Find tight aspects (≤1° orb) involving Lord of the Year or Time Lord
+        const lordPlanet = lord?.planet || '';
+        const timeLordPlanet = prof?.timeLord || '';
+        const allAspects = [...(analysis.srToNatalAspects || []), ...(analysis.srInternalAspects || [])];
+        
+        const findTightAspects = (planet: string) => {
+          if (!planet) return [];
+          return allAspects.filter(a => 
+            (a.planet1 === planet || a.planet2 === planet) && 
+            a.orb <= 1.0 &&
+            !(a.planet1 === 'Sun' && a.planet2 === 'Sun' && a.type === 'Conjunction')
+          );
+        };
+        
+        const lordTightAspects = findTightAspects(lordPlanet);
+        const timeLordTightAspects = findTightAspects(timeLordPlanet);
+        const isDoubled = prof?.overlap || false;
+
+        // Expert interpretation for planet in sign in house
+        const getPlanetSignHouseExpert = (planet: string, sign: string, house: number | null, role: 'lord' | 'timeLord'): string => {
+          const PLANET_DRIVE: Record<string, string> = {
+            Sun: 'vitality, will, and conscious purpose',
+            Moon: 'emotional needs, instinctive reactions, and comfort patterns',
+            Mercury: 'communication style, mental processing, and daily decision-making',
+            Venus: 'values, relationships, pleasure-seeking, and aesthetic choices',
+            Mars: 'drive, assertiveness, desire, and how you fight for what you want',
+            Jupiter: 'expansion, optimism, opportunity, and where you seek growth',
+            Saturn: 'discipline, responsibility, fear, and where you must earn through effort',
+            Uranus: 'disruption, innovation, sudden change, and where you break free',
+            Neptune: 'imagination, spiritual longing, confusion, and where boundaries dissolve',
+            Pluto: 'power, transformation, obsession, and where you undergo psychological death and rebirth',
+          };
+          const SIGN_STYLE: Record<string, string> = {
+            Aries: 'impulsively, directly, and with raw courage — acting before thinking',
+            Taurus: 'slowly, sensually, and with stubborn persistence — prioritizing comfort and stability',
+            Gemini: 'verbally, adaptively, and with intellectual curiosity — through conversation and information-gathering',
+            Cancer: 'protectively, emotionally, and with deep sensitivity — through nurturing and emotional attunement',
+            Leo: 'dramatically, generously, and with creative confidence — through self-expression and warm-hearted leadership',
+            Virgo: 'analytically, precisely, and with practical service — through improvement and attention to detail',
+            Libra: 'diplomatically, aesthetically, and through partnership — seeking fairness and harmony in all interactions',
+            Scorpio: 'intensely, strategically, and with psychological depth — through investigation and emotional honesty',
+            Sagittarius: 'expansively, philosophically, and with restless optimism — through exploration and meaning-making',
+            Capricorn: 'methodically, ambitiously, and with structural discipline — through long-term planning and earned authority',
+            Aquarius: 'unconventionally, collectively, and with detached innovation — through reform and group consciousness',
+            Pisces: 'intuitively, compassionately, and with fluid boundaries — through imagination, empathy, and surrender to what cannot be controlled',
+          };
+          const HOUSE_WHERE: Record<number, string> = {
+            1: 'in matters of personal identity, physical body, and how you initiate new beginnings',
+            2: 'in matters of money, material security, self-worth, and what you build to feel safe',
+            3: 'in matters of communication, siblings, short travel, learning, and your immediate environment',
+            4: 'in matters of home, family, roots, emotional foundation, and private life',
+            5: 'in matters of creativity, romance, children, pleasure, and joyful self-expression',
+            6: 'in matters of daily work, health routines, service to others, and practical problem-solving',
+            7: 'in matters of committed partnerships, one-on-one relationships, and open collaborations or conflicts',
+            8: 'in matters of shared resources, intimacy, psychological transformation, and what you must release',
+            9: 'in matters of higher education, travel, philosophy, publishing, and expanding your worldview',
+            10: 'in matters of career, public reputation, authority, and your visible contribution to the world',
+            11: 'in matters of community, friendships, collective goals, hopes for the future, and group identity',
+            12: 'in matters of solitude, spiritual practice, hidden patterns, self-undoing, and what operates beneath conscious awareness',
+          };
+
+          const drive = PLANET_DRIVE[planet] || `${planet}'s specific themes`;
+          const style = SIGN_STYLE[sign] || `through ${sign} energy`;
+          const where = house ? (HOUSE_WHERE[house] || `in the ${ordinal(house)} house domain`) : '';
+          
+          if (role === 'lord') {
+            return `As Lord of the Year, ${planet} governs your overall vitality and life direction. ${planet} represents ${drive}. In ${sign}, it operates ${style}. ${house ? `Placed in the ${ordinal(house)} house, you feel this most directly ${where}. This is where the year's energy concentrates — this house becomes the stage where your identity is most actively tested and developed.` : ''}`;
+          }
+          return `As Time Lord, ${planet} sets the year's agenda and determines the conditions under which life delivers its lessons. ${planet} represents ${drive}. In ${sign}, it operates ${style}. ${house ? `In the ${ordinal(house)} house, the agenda plays out ${where}.` : ''}`;
+        };
+
+        const getDoubleEmphasisExpert = (planet: string, sign: string, house: number | null): string => {
+          return `When the same planet serves as both Lord of the Year (ruler of natal Ascendant) and Time Lord (ruler of the profected house), the year becomes a single-planet year. Every major theme — your vitality, your timing, your opportunities, and your challenges — routes through ${planet}. This is extraordinarily focused. Instead of two different planets pulling you in different directions, ${planet} is the sole gatekeeper. What ${planet} touches, thrives. What ${planet} ignores, stalls. In ${sign}${house ? ` in the ${ordinal(house)} house` : ''}, the style and arena are clear: every door opens or closes through ${planet}'s condition. Pay attention to transits hitting ${planet} this year — they function as master switches for the entire solar return.`;
+        };
+
+        return (
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* LORD OF THE YEAR — ruler of natal Ascendant */}
+              {lord && (
+                <div className="border border-border rounded-lg p-4 bg-card space-y-3">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-2xl">{PLANET_SYMBOLS[lord.planet]}</span>
+                    <div>
+                      <h3 className="text-base font-serif text-foreground">Lord of the Year</h3>
+                      <p className="text-[10px] text-muted-foreground">Ruler of natal Ascendant ({lord.natalRisingSign})</p>
+                    </div>
+                    <span className={`text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded border ${dignityColor(lord.dignity)}`}>
+                      {lord.dignity}
+                    </span>
+                    {lord.isRetrograde && (
+                      <span className="text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded border bg-amber-500/10 text-amber-600 border-amber-500/20">Rx</span>
+                    )}
+                  </div>
+
+                  <div className="bg-muted/30 rounded-lg p-2.5">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 font-medium">{lord.planet} in SR</p>
+                    <p className="text-xs text-foreground leading-relaxed">
+                      {SIGN_SYMBOLS[lord.srSign]} {lord.srSign} {lord.srDegree}
+                      {lord.srHouse ? ` · ${ordinal(lord.srHouse)} house` : ''}
+                    </p>
+                  </div>
+
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    {getPlanetSignHouseExpert(lord.planet, lord.srSign, lord.srHouse, 'lord')}
+                  </p>
+
+                  {/* Tight aspects for Lord */}
+                  {lordTightAspects.length > 0 && (
+                    <div className="bg-primary/5 rounded-lg p-2.5 border border-primary/10">
+                      <p className="text-[10px] uppercase tracking-widest text-primary font-medium mb-1">Tight Aspects (≤1° orb)</p>
+                      {lordTightAspects.map((a, i) => {
+                        const other = a.planet1 === lord.planet ? a.planet2 : a.planet1;
+                        return (
+                          <p key={i} className="text-[11px] text-muted-foreground leading-relaxed">
+                            <span className="text-foreground font-medium">{a.type} {other}</span> ({a.orb.toFixed(1)}° orb)
+                            {a.interpretation ? ` — ${a.interpretation.split('.').slice(0, 1).join('.')}.` : ''}
+                          </p>
+                        );
+                      })}
+                      <p className="text-[10px] text-muted-foreground/80 mt-1 leading-tight">
+                        When the Lord of the Year forms aspects within 1° of another planet or angle, those contacts are highly activated all year. They represent the most reliable channels through which the year's energy flows.
+                      </p>
+                    </div>
+                  )}
                 </div>
-                <span className={`text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded border ${dignityColor(lord.dignity)}`}>
-                  {lord.dignity}
-                </span>
-                {lord.isRetrograde && (
-                  <span className="text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded border bg-amber-500/10 text-amber-600 border-amber-500/20">Rx</span>
+              )}
+
+              {/* TIME LORD — ruler of profected house cusp */}
+              {prof && (
+                <div className="border border-border rounded-lg p-4 bg-card space-y-3">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-2xl">{PLANET_SYMBOLS[prof.timeLord]}</span>
+                    <div>
+                      <h3 className="text-base font-serif text-foreground">Time Lord</h3>
+                      <p className="text-[10px] text-muted-foreground">Ruler of {ordinal(prof.houseNumber)} house ({prof.natalCuspSign || '—'})</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-muted/30 rounded-lg p-2.5">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 font-medium">Profection</p>
+                    <p className="text-xs text-foreground leading-relaxed">
+                      Age {prof.age} → {ordinal(prof.houseNumber)} house · {PROFECTION_THEMES[prof.houseNumber] || ''}
+                    </p>
+                  </div>
+
+                  {prof.timeLordSRHouse && (
+                    <div className="bg-muted/30 rounded-lg p-2.5">
+                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 font-medium">{prof.timeLord} in SR</p>
+                      <p className="text-xs text-foreground leading-relaxed">
+                        {SIGN_SYMBOLS[prof.timeLordSRSign]} {prof.timeLordSRSign}
+                        {prof.timeLordSRHouse ? ` · ${ordinal(prof.timeLordSRHouse)} house` : ''}
+                      </p>
+                    </div>
+                  )}
+
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    {getPlanetSignHouseExpert(prof.timeLord, prof.timeLordSRSign, prof.timeLordSRHouse, 'timeLord')}
+                  </p>
+
+                  {/* Tight aspects for Time Lord (only if different from Lord) */}
+                  {!isDoubled && timeLordTightAspects.length > 0 && (
+                    <div className="bg-primary/5 rounded-lg p-2.5 border border-primary/10">
+                      <p className="text-[10px] uppercase tracking-widest text-primary font-medium mb-1">Tight Aspects (≤1° orb)</p>
+                      {timeLordTightAspects.map((a, i) => {
+                        const other = a.planet1 === prof.timeLord ? a.planet2 : a.planet1;
+                        return (
+                          <p key={i} className="text-[11px] text-muted-foreground leading-relaxed">
+                            <span className="text-foreground font-medium">{a.type} {other}</span> ({a.orb.toFixed(1)}° orb)
+                            {a.interpretation ? ` — ${a.interpretation.split('.').slice(0, 1).join('.')}.` : ''}
+                          </p>
+                        );
+                      })}
+                      <p className="text-[10px] text-muted-foreground/80 mt-1 leading-tight">
+                        Tight Time Lord aspects indicate precisely how and when the profection house themes are triggered throughout the year.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* ─── Double Emphasis Box ─── */}
+            {isDoubled && lord && prof && (
+              <div className="border border-primary/30 rounded-lg p-4 bg-primary/5 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">{PLANET_SYMBOLS[lord.planet]}</span>
+                  <p className="text-[10px] uppercase tracking-widest text-primary font-semibold">Double Emphasis — Single-Planet Year</p>
+                </div>
+                <p className="text-xs font-medium text-foreground">
+                  {lord.planet} serves as both Lord of the Year and Time Lord
+                </p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  {getDoubleEmphasisExpert(lord.planet, lord.srSign, lord.srHouse)}
+                </p>
+                {lordTightAspects.length > 0 && (
+                  <div className="mt-2">
+                    <p className="text-[10px] uppercase tracking-widest text-primary font-medium mb-1">Critical Aspects (≤1° orb)</p>
+                    {lordTightAspects.map((a, i) => {
+                      const other = a.planet1 === lord.planet ? a.planet2 : a.planet1;
+                      return (
+                        <p key={i} className="text-[11px] text-muted-foreground leading-relaxed">
+                          <span className="text-foreground font-medium">{PLANET_SYMBOLS[other] || ''} {a.type} {other}</span> ({a.orb.toFixed(1)}°)
+                          {a.interpretation ? ` — ${a.interpretation.split('.').slice(0, 1).join('.')}.` : ''}
+                        </p>
+                      );
+                    })}
+                    <p className="text-[10px] text-muted-foreground/80 mt-1 leading-tight">
+                      In a single-planet year, tight aspects to the ruling planet become the year's most critical activations. Every transit that touches {lord.planet} ripples through both your identity (Lord) and your timing (Time Lord) simultaneously.
+                    </p>
+                  </div>
                 )}
               </div>
-
-              <div className="bg-muted/30 rounded-lg p-2.5">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 font-medium">{lord.planet} in SR</p>
-                <p className="text-xs text-foreground leading-relaxed">
-                  {SIGN_SYMBOLS[lord.srSign]} {lord.srSign} {lord.srDegree}
-                  {lord.srHouse ? ` · ${ordinal(lord.srHouse)} house` : ''}
-                </p>
-              </div>
-
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
-                The ruler of your natal Ascendant ({lord.natalRisingSign}) is {lord.planet}. Its condition in the Solar Return chart shows how your overall vitality and life direction are supported this year.
-              </p>
-            </div>
-          )}
-
-          {/* TIME LORD — ruler of profected house cusp */}
-          {prof && (
-            <div className="border border-border rounded-lg p-4 bg-card space-y-3">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-2xl">{PLANET_SYMBOLS[prof.timeLord]}</span>
-                <div>
-                  <h3 className="text-base font-serif text-foreground">Time Lord</h3>
-                  <p className="text-[10px] text-muted-foreground">Ruler of {ordinal(prof.houseNumber)} house ({prof.natalCuspSign || '—'})</p>
-                </div>
-              </div>
-
-              <div className="bg-muted/30 rounded-lg p-2.5">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 font-medium">Profection</p>
-                <p className="text-xs text-foreground leading-relaxed">
-                  Age {prof.age} → {ordinal(prof.houseNumber)} house · {PROFECTION_THEMES[prof.houseNumber] || ''}
-                </p>
-              </div>
-
-              {prof.timeLordSRHouse && (
-                <div className="bg-muted/30 rounded-lg p-2.5">
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 font-medium">{prof.timeLord} in SR</p>
-                  <p className="text-xs text-foreground leading-relaxed">
-                    {SIGN_SYMBOLS[prof.timeLordSRSign]} {prof.timeLordSRSign}
-                    {prof.timeLordSRHouse ? ` · ${ordinal(prof.timeLordSRHouse)} house` : ''}
-                  </p>
-                </div>
-              )}
-
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
-                At age {prof.age}, the {ordinal(prof.houseNumber)} house is activated. The sign on that cusp ({prof.natalCuspSign || '—'}) makes {prof.timeLord} your Time Lord — the planet setting this year's agenda.
-              </p>
-
-              {prof.overlap && (
-                <p className="text-[10px] text-primary font-medium">
-                  ✦ {prof.timeLord} is also your Lord of the Year — doubly emphasized.
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        );
+      })()}
 
       {/* ─── 5. How This Year Meets You ─── */}
       <div>
