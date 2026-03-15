@@ -428,38 +428,44 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
       {/* ─── 5. How This Year Meets You ─── */}
       <div>
         <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-2">How This Year Meets You</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {[
             { planet: 'Sun', natal: natalSunSign, sr: srSunSign },
             { planet: 'Moon', natal: natalMoonSign, sr: srMoonSign },
             { planet: 'Rising', natal: natalRisingSign, sr: srRisingSign },
-          ].map(({ planet, natal, sr }) => (
-            <div key={planet} className="bg-muted/50 rounded-lg p-3 space-y-2">
-              <div className="flex items-center justify-between">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">{planet}</p>
-                {isOpposite(natal, sr) && (
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 font-medium">
-                    Opposite sign shift
-                  </span>
-                )}
+          ].map(({ planet, natal, sr }) => {
+            const tags = getShiftTags(natal, sr);
+            return (
+              <div key={planet} className="bg-muted/50 rounded-lg p-3 space-y-2">
+                <div className="flex items-center justify-between flex-wrap gap-1">
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">{planet}</p>
+                  <div className="flex flex-wrap gap-1">
+                    {tags.map((tag, i) => (
+                      <span key={i} className={`text-[8px] px-1.5 py-0.5 rounded font-medium ${tag.cls}`}>
+                        {tag.label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 text-sm">
+                  <span className="text-foreground">{SIGN_SYMBOLS[natal]} {natal}</span>
+                  <span className="text-muted-foreground">→</span>
+                  <span className="text-foreground font-medium">{SIGN_SYMBOLS[sr]} {sr}</span>
+                </div>
+                <p className="text-xs font-medium text-foreground">{getShiftHeadline(planet, natal, sr)}</p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">{getShiftBody(planet, natal, sr)}</p>
               </div>
-              <div className="flex items-center gap-1.5 text-sm">
-                <span className="text-foreground">{SIGN_SYMBOLS[natal]} {natal}</span>
-                <span className="text-muted-foreground">→</span>
-                <span className="text-foreground font-medium">{SIGN_SYMBOLS[sr]} {sr}</span>
-              </div>
-              <p className="text-xs font-medium text-foreground">{getShiftHeadline(planet, natal, sr)}</p>
-              <p className="text-[11px] text-muted-foreground leading-relaxed">{getShiftBody(planet, natal, sr)}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
+
       {/* ─── 6. Intercepted Signs ─── */}
       {(() => {
         const intercepted = detectInterceptedSigns(srChart.houseCusps);
         if (intercepted.length === 0) return null;
         return (
-          <div className="border border-amber-500/30 rounded-lg p-4 bg-amber-500/5 space-y-2">
+          <div className="border border-amber-500/30 rounded-lg p-4 bg-amber-500/5 space-y-3">
             <p className="text-[10px] uppercase tracking-widest text-amber-600 font-medium">Intercepted Signs</p>
             <div className="flex flex-wrap gap-2">
               {intercepted.map(sign => (
@@ -468,11 +474,21 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
                 </Badge>
               ))}
             </div>
+            {/* Master-level teaching on interception mechanics */}
             <p className="text-[11px] text-muted-foreground leading-relaxed">
-              {intercepted.length === 2
-                ? `${intercepted[0]} and ${intercepted[1]} are intercepted — they appear within houses but don't rule any house cusp. These signs represent energy that's harder to access directly. The themes of ${intercepted[0]} and ${intercepted[1]} require more conscious effort to express and may develop later in the year.`
-                : `${intercepted.join(', ')} are intercepted — contained within houses without ruling any cusp. This energy requires more conscious effort to access.`}
+              {getInterceptionTeaching(intercepted)}
             </p>
+            {/* Per-sign expert themes */}
+            <div className="space-y-2 mt-1">
+              {intercepted.map(sign => (
+                <div key={sign} className="bg-background/60 rounded p-2.5 border border-border/50">
+                  <p className="text-xs font-medium text-foreground mb-1">{SIGN_SYMBOLS[sign]} {sign}</p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    {INTERCEPTION_SIGN_THEMES[sign] || `${sign} themes are contained within this house and require deliberate effort to express.`}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         );
       })()}
