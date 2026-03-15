@@ -1436,6 +1436,151 @@ const PlanetaryReturnsTracker: React.FC<{ chart: NatalChart; currentDate: Date }
   );
 };
 
+// ---- Progressed Lunation Cycle Card ----
+const ProgressedLunationCycleCard: React.FC<{ chart: NatalChart; currentDate: Date }> = ({ chart, currentDate }) => {
+  const [timeline, setTimeline] = useState<ProgressedLunationPhase[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const result = computeProgressedLunationTimeline(chart, currentDate);
+      setTimeline(result);
+      setLoading(false);
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [chart, currentDate]);
+
+  const currentPhase = timeline.find(p => p.isCurrent);
+  const currentCycle = currentPhase?.cycleNumber || 1;
+
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center text-sm text-muted-foreground">
+          Computing your progressed lunation cycle...
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Explainer */}
+      <Card className="border-primary/20">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <Moon size={16} className="text-primary" />
+            Secondary Progressed Lunation Cycle
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="p-3 bg-accent/30 rounded-sm border border-accent text-xs text-foreground leading-relaxed space-y-2">
+            <p>
+              <strong>What this is:</strong> Every ~29.5 years, your progressed Sun and Moon complete a full cycle — from conjunction (Progressed New Moon) through opposition (Progressed Full Moon) and back. This is a <em>real developmental cycle</em> that unfolds in strict sequence over your entire life.
+            </p>
+            <p>
+              <strong>How it works:</strong> In secondary progressions, each day after birth equals one year of life. The progressed Moon moves ~13° per year while the progressed Sun moves ~1°, so their relative motion is ~12° per year — producing a complete 360° cycle in roughly 29.5 years.
+            </p>
+            <p>
+              <strong>Why it matters:</strong> Professional astrologers (Dane Rudhyar, Steven Forrest, Robert Hand) consider this the most important long-range timing tool in astrology. Each phase lasts ~3.5 years and describes the developmental task of that period — from planting seeds to harvest to release.
+            </p>
+          </div>
+
+          {/* Current Phase Highlight */}
+          {currentPhase && (
+            <div className="p-4 bg-primary/5 border border-primary/20 rounded-sm space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">{currentPhase.phaseEmoji}</span>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">
+                    You Are Here: {currentPhase.phaseName} Phase — {currentPhase.cycleStage}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Cycle {currentPhase.cycleNumber} • Since {format(currentPhase.startDate, 'MMMM yyyy')} (age {Math.floor(currentPhase.startAge)})
+                    {currentPhase.endDate && <> • Through ~{format(currentPhase.endDate, 'MMMM yyyy')} (age {Math.floor(currentPhase.endAge!)})</>}
+                  </p>
+                </div>
+              </div>
+              <p className="text-sm font-serif text-foreground leading-relaxed italic">
+                {currentPhase.lifeTheme}
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Full Timeline — grouped by cycle */}
+      {[...new Set(timeline.map(p => p.cycleNumber))].map(cycleNum => {
+        const phases = timeline.filter(p => p.cycleNumber === cycleNum);
+        const isCurrentCycle = cycleNum === currentCycle;
+        const firstPhase = phases[0];
+        const lastPhase = phases[phases.length - 1];
+
+        return (
+          <Card key={cycleNum} className={isCurrentCycle ? 'border-primary/30' : ''}>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
+                  Cycle {cycleNum} — {firstPhase ? `Age ${Math.floor(firstPhase.startAge)}` : ''}
+                  {lastPhase?.endAge ? ` to ${Math.floor(lastPhase.endAge)}` : '+'}
+                </CardTitle>
+                {isCurrentCycle && (
+                  <Badge variant="default" className="text-[9px]">CURRENT CYCLE</Badge>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-0">
+              <div className="relative pl-5">
+                <div className="absolute left-[9px] top-2 bottom-2 w-0.5 bg-border" />
+                {phases.map((phase, idx) => (
+                  <Collapsible key={idx}>
+                    <div className={`relative pb-3 ${phase.isCurrent ? '' : ''}`}>
+                      <div className={`absolute left-[-11px] top-2 w-3 h-3 rounded-full border-2 ${
+                        phase.isCurrent 
+                          ? 'bg-primary border-primary ring-2 ring-primary/20' 
+                          : phase.startDate < currentDate 
+                            ? 'bg-muted-foreground/40 border-muted-foreground/40' 
+                            : 'bg-background border-border'
+                      }`} />
+                      <CollapsibleTrigger className="w-full text-left">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-base">{phase.phaseEmoji}</span>
+                          <span className={`text-xs font-semibold ${phase.isCurrent ? 'text-primary' : 'text-foreground'}`}>
+                            {phase.phaseName}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground font-mono">
+                            {format(phase.startDate, 'MMM yyyy')} — Age {Math.floor(phase.startAge)}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground">
+                            ({phase.duration})
+                          </span>
+                          {phase.isCurrent && <Badge variant="default" className="text-[8px] px-1 py-0">NOW</Badge>}
+                        </div>
+                        <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1">
+                          <ChevronDown size={10} />
+                          {phase.cycleStage}
+                        </p>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="mt-2 ml-6 p-3 bg-secondary/30 rounded-sm border border-border">
+                        <p className="text-xs text-foreground leading-relaxed">{phase.lifeTheme}</p>
+                        {phase.endDate && (
+                          <p className="text-[10px] text-muted-foreground mt-2">
+                            Ends ~{format(phase.endDate, 'MMMM yyyy')} (age {Math.floor(phase.endAge!)})
+                          </p>
+                        )}
+                      </CollapsibleContent>
+                    </div>
+                  </Collapsible>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
+    </div>
+  );
+};
+
 export const LifeCyclesHub: React.FC<LifeCyclesHubProps> = ({ chart, currentDate = new Date() }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showSaturnDetails, setShowSaturnDetails] = useState(false);
