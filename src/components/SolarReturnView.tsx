@@ -23,6 +23,7 @@ import { LunarPhaseTimeline } from '@/components/solarReturn/LunarPhaseTimeline'
 import { StoryOfTheYear } from '@/components/solarReturn/StoryOfTheYear';
 import { LifeCycleContext } from '@/components/solarReturn/LifeCycleContext';
 import { NatalOverlayCard } from '@/components/solarReturn/NatalOverlayCard';
+import { LandsVsPlaysOutCard } from '@/components/solarReturn/LandsVsPlaysOutCard';
 import { AngleActivationCard } from '@/components/solarReturn/AngleActivationCard';
 import { PlanetToAngleCard } from '@/components/solarReturn/PlanetToAngleCard';
 import { YearPriorityEngine } from '@/components/solarReturn/YearPriorityEngine';
