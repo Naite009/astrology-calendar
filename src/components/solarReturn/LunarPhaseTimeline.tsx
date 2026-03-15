@@ -159,16 +159,30 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
       </div>
 
       {/* Current Phase Highlight */}
-      {currentEntry && (
+      {currentEntry && (() => {
+        const PHASE_ORDER = ['New Moon', 'Crescent', 'First Quarter', 'Gibbous', 'Full Moon', 'Disseminating', 'Last Quarter', 'Balsamic'];
+        const phaseNum = PHASE_ORDER.indexOf(currentEntry.phase) + 1;
+        // Find next phase shift year
+        const futureEntries = timeline.filter(e => e.year > currentEntry.year && e.phase !== currentEntry.phase);
+        const nextShiftEntry = futureEntries.length > 0 ? futureEntries[0] : null;
+        const yearsUntilNext = nextShiftEntry ? nextShiftEntry.year - currentEntry.year : null;
+        return (
         <div className="mx-4 p-3 border border-primary/20 rounded-sm bg-primary/5 space-y-2">
           <div className="flex items-center gap-2">
             <span className="text-lg">{PHASE_ICONS[currentEntry.phase] || '☽'}</span>
             <div>
               <p className="text-sm font-serif text-foreground">
                 {currentEntry.year} — {currentEntry.phase}
+                <span className="ml-2 text-[10px] font-sans text-muted-foreground">Phase {phaseNum} of 8</span>
               </p>
               <p className="text-[10px] uppercase tracking-widest text-primary font-medium">
                 {currentEntry.cycleStage} · Age {currentEntry.age}
+                {yearsUntilNext !== null && (
+                  <span className="ml-2 text-muted-foreground normal-case tracking-normal">
+                    · {yearsUntilNext === 1 ? 'Next phase in 1 year' : `Next phase in ${yearsUntilNext} years`}
+                    {nextShiftEntry && ` (${nextShiftEntry.cycleStage})`}
+                  </span>
+                )}
               </p>
             </div>
           </div>

@@ -870,17 +870,18 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
                   const houseLabelR = r - 18;
                   const hlx = cx + houseLabelR * Math.cos(toRad(midAngle));
                   const hly = cy - houseLabelR * Math.sin(toRad(midAngle));
-                  // For houses near horizontal axis (1,12,6,7), radial spread doesn't
-                  // create vertical separation — add manual vertical offsets
+                  // For houses near horizontal axis (1,12,6,7), the radial layout
+                  // places house label + two age rows at nearly the same Y,
+                  // causing bunching. Fix: shift house label outward AND
+                  // stagger age rows with strong vertical offsets.
                   const isHorizontal = [1, 6, 7, 12].includes(houseNum);
-                  const vSpread = isHorizontal ? 6 : 0;
-                  // Ages in two rows in the middle band
-                  const agesR1 = (r + rInner) / 2 + 12;
-                  const agesR2 = (r + rInner) / 2 - 12;
+                  // Ages in two rows in the middle band — wider gap for horizontal houses
+                  const agesR1 = (r + rInner) / 2 + (isHorizontal ? 20 : 12);
+                  const agesR2 = (r + rInner) / 2 - (isHorizontal ? 20 : 12);
                   const a1x = cx + agesR1 * Math.cos(toRad(midAngle));
-                  const a1y = cy - agesR1 * Math.sin(toRad(midAngle)) - vSpread;
+                  const a1y = cy - agesR1 * Math.sin(toRad(midAngle));
                   const a2x = cx + agesR2 * Math.cos(toRad(midAngle));
-                  const a2y = cy - agesR2 * Math.sin(toRad(midAngle)) + vSpread;
+                  const a2y = cy - agesR2 * Math.sin(toRad(midAngle));
                   const row1 = allAges.slice(0, 5);
                   const row2 = allAges.slice(5);
 
