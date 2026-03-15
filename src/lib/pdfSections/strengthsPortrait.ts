@@ -233,7 +233,7 @@ export function generateStrengthsPortrait(
     const stripY = ctx.y;
     const innerPad = 12;
     const rightPad = 14;
-    const maxRightW = contentW * 0.42; // limit right-side text width
+    const maxRightW = contentW * 0.35;
     doc.setFillColor(...CARD_BG);
     doc.roundedRect(margin, stripY, contentW, stripH, 3, 3, 'F');
     doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
@@ -253,23 +253,23 @@ export function generateStrengthsPortrait(
     doc.setTextColor(...INK);
     doc.text(`${natalSign}`, margin + innerPad, stripY + 30);
 
-    // SR placement — right side, prominent gold (constrained width)
+    // SR placement — right side, use smaller font and constrain to box
     const srParts: string[] = [];
     if (srSign) srParts.push(srSign);
-    if (srHouse) srParts.push(`in the ${ord(srHouse)}`);
-    const srTagText = srParts.join(' ');
+    if (srHouse) srParts.push(`${ord(srHouse)} House`);
+    const srTagText = srParts.join(', ');
 
     if (srTagText) {
       doc.setFont('times', 'bold'); doc.setFontSize(6);
       doc.setTextColor(...GOLD);
       doc.setCharSpace(2);
-      doc.text('SOLAR RETURN', pw - margin - rightPad, stripY + 12, { align: 'right' });
+      const srLabelX = pw - margin - rightPad;
+      doc.text('THIS YEAR', srLabelX, stripY + 12, { align: 'right' });
       doc.setCharSpace(0);
-      doc.setFont('times', 'bold'); doc.setFontSize(13);
+      doc.setFont('times', 'bold'); doc.setFontSize(11);
       doc.setTextColor(...GOLD);
-      // Truncate if needed to fit
       const srLines = doc.splitTextToSize(srTagText, maxRightW);
-      doc.text(srLines[0], pw - margin - rightPad, stripY + 28, { align: 'right' });
+      doc.text(srLines[0], srLabelX, stripY + 28, { align: 'right' });
     }
 
     // Shift arrow line
