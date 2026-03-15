@@ -1156,6 +1156,9 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
           );
         })()}
 
+        {/* ── 29-Year Lunar Phase Timeline ── */}
+        <LunarPhaseTimeline natalChart={natalChart} srChart={srChart} />
+
         {/* ── Moon Sign: Emotional Temperament ── */}
         {srMoonInSign[analysis.moonSign] && (
           <div className="space-y-1">
