@@ -35,6 +35,19 @@ const OPPOSITE_PAIRS: [string, string][] = [
 const isOpposite = (a: string, b: string): boolean =>
   OPPOSITE_PAIRS.some(([x, y]) => (a === x && b === y) || (a === y && b === x));
 
+const SIGN_ELEMENT: Record<string, string> = {
+  Aries:'Fire', Leo:'Fire', Sagittarius:'Fire',
+  Taurus:'Earth', Virgo:'Earth', Capricorn:'Earth',
+  Gemini:'Air', Libra:'Air', Aquarius:'Air',
+  Cancer:'Water', Scorpio:'Water', Pisces:'Water',
+};
+
+const SIGN_MODALITY: Record<string, string> = {
+  Aries:'Cardinal', Cancer:'Cardinal', Libra:'Cardinal', Capricorn:'Cardinal',
+  Taurus:'Fixed', Leo:'Fixed', Scorpio:'Fixed', Aquarius:'Fixed',
+  Gemini:'Mutable', Virgo:'Mutable', Sagittarius:'Mutable', Pisces:'Mutable',
+};
+
 const ELEMENT_MAP: Record<string, string> = {
   Fire: '🔥', Earth: '🌍', Air: '💨', Water: '💧',
 };
@@ -52,6 +65,64 @@ const HOUSE_THEMES: Record<number, string> = {
   9: 'Expansion', 10: 'Career', 11: 'Community', 12: 'Spirituality',
 };
 
+// ─── Sign shift relationship tags ────────────────────────────────
+const getShiftTags = (natal: string, sr: string): { label: string; cls: string }[] => {
+  if (natal === sr) return [{ label: 'Same sign', cls: 'bg-green-500/10 text-green-600' }];
+  const tags: { label: string; cls: string }[] = [];
+  if (isOpposite(natal, sr)) tags.push({ label: 'Opposite axis', cls: 'bg-amber-500/10 text-amber-600' });
+  if (SIGN_ELEMENT[natal] === SIGN_ELEMENT[sr]) tags.push({ label: `Same element · ${SIGN_ELEMENT[natal]}`, cls: 'bg-blue-400/10 text-blue-400' });
+  if (SIGN_MODALITY[natal] === SIGN_MODALITY[sr]) tags.push({ label: `Same mode · ${SIGN_MODALITY[natal]}`, cls: 'bg-purple-400/10 text-purple-400' });
+  if (SIGN_ELEMENT[natal] !== SIGN_ELEMENT[sr] && SIGN_MODALITY[natal] !== SIGN_MODALITY[sr] && !isOpposite(natal, sr)) {
+    tags.push({ label: 'Full shift', cls: 'bg-red-400/10 text-red-400' });
+  }
+  return tags;
+};
+
+// ─── Expert-level opposite axis interpretations ─────────────────
+const OPPOSITE_AXIS_DEPTH: Record<string, string> = {
+  'Aries-Libra': 'The Aries-Libra axis is the axis of self versus other. Aries acts from personal will; Libra negotiates through relationship. When a planet shifts across this axis, the year demands you reconcile independence with compromise — the tension between "what I need" and "what the relationship needs." Neither side is wrong, but the year won\'t let you default to one without addressing the other.',
+  'Scorpio-Taurus': 'The Taurus-Scorpio axis is the axis of possession and release. Taurus holds, stabilizes, and builds material security; Scorpio strips away, transforms, and demands psychological honesty. A shift across this axis forces a reckoning between comfort and truth — what you cling to versus what must die so something more authentic can emerge. This is one of the most intense axes in astrology.',
+  'Gemini-Sagittarius': 'The Gemini-Sagittarius axis is the axis of information versus meaning. Gemini gathers data, asks questions, stays curious; Sagittarius synthesizes, draws conclusions, seeks ultimate truth. A shift here pushes you from collecting to concluding (or vice versa) — you either need more facts before deciding, or you need to stop researching and commit to a belief.',
+  'Cancer-Capricorn': 'The Cancer-Capricorn axis is the axis of private life versus public life. Cancer nurtures, protects, and roots into family; Capricorn builds, achieves, and earns public authority. A shift here forces you to weigh emotional security against ambition — the year asks whether your professional climb supports or undermines the people who matter most.',
+  'Aquarius-Leo': 'The Leo-Aquarius axis is the axis of personal creativity versus collective contribution. Leo radiates individual brilliance and demands recognition; Aquarius serves the group and questions whether personal glory matters. A shift here recalibrates your relationship between self-expression and community — shine without overshadowing, or contribute without losing yourself.',
+  'Pisces-Virgo': 'The Virgo-Pisces axis is the axis of analysis versus surrender. Virgo refines, organizes, and fixes; Pisces dissolves, accepts, and trusts the invisible. A shift here demands you balance precision with intuition — either you\'ve been over-analyzing and need to let go, or you\'ve been drifting and need to get practical.',
+};
+
+const getAxisKey = (a: string, b: string): string => [a, b].sort().join('-');
+
+// ─── Same-element expert depth ──────────────────────────────────
+const SAME_ELEMENT_DEPTH: Record<string, string> = {
+  Fire: 'Both signs speak Fire — initiative, passion, and forward motion. The shift isn\'t a shock; it\'s a change in how that fire burns. Aries fire is a match strike (fast, personal, competitive). Leo fire is a bonfire (sustained, creative, performative). Sagittarius fire is a wildfire (expansive, philosophical, restless). The underlying drive remains action-oriented, but the style and target shift noticeably.',
+  Earth: 'Both signs share Earth\'s concern with tangible results, material stability, and practical execution. The shift changes the method, not the goal. Taurus Earth is sensory and accumulative. Virgo Earth is analytical and service-oriented. Capricorn Earth is structural and ambitious. You\'ll still be building — but with different tools and for different reasons.',
+  Air: 'Both signs operate through Air — ideas, communication, and social connection. Gemini Air is curious and scattered across many topics. Libra Air is relational and aesthetic, focused on fairness and beauty. Aquarius Air is systemic and unconventional, concerned with reform and innovation. There\'s a shared intellectual restlessness, but the conversation changes topics entirely.',
+  Water: 'Both signs process through Water — emotion, intuition, and deep feeling. The shift changes the depth and direction of that emotional current. Cancer Water is protective and familial. Scorpio Water is investigative and transformative. Pisces Water is boundaryless and spiritual. The feeling tone is familiar, but what triggers your emotions and how you process them shifts significantly.',
+};
+
+// ─── Expert intercepted sign interpretations ────────────────────
+const INTERCEPTION_SIGN_THEMES: Record<string, string> = {
+  Aries: 'Aries interception contains your capacity for direct, assertive action — buried inside a house rather than announcing itself at the cusp. You can\'t just "be bold" easily this year. Courage and initiative require deliberate cultivation. The first half of the year often feels frustratingly passive in this area; the Aries energy typically breaks through mid-year when enough internal pressure builds that it can no longer be suppressed.',
+  Taurus: 'Taurus interception contains your ability to stabilize, possess, and build material security. What you value and how you ground yourself isn\'t readily accessible — it takes conscious work to feel settled. Financial or sensory comfort may feel elusive until mid-year when the contained Taurus energy finds its outlet.',
+  Gemini: 'Gemini interception suppresses your natural curiosity and communication style. You may struggle to articulate what you know or feel mentally foggy in the intercepted house\'s domain. The Gemini energy emerges later when you\'ve accumulated enough experience to finally name what you\'ve been processing.',
+  Cancer: 'Cancer interception contains your nurturing instincts and emotional security needs. The area of life ruled by this house feels emotionally unsafe at first — you can\'t easily access comfort or create belonging there. The Cancer energy breaks through when vulnerability is finally allowed.',
+  Leo: 'Leo interception suppresses your creative self-expression and visibility in this area. You want to shine here but the energy is locked — it feels like performing behind a curtain. The Leo energy emerges when you stop waiting for permission and create your own stage.',
+  Virgo: 'Virgo interception means your analytical and problem-solving abilities are contained. You see what needs fixing but can\'t easily act on it. The Virgo energy activates later when accumulated observation finally produces a clear, actionable plan.',
+  Libra: 'Libra interception contains your relational intelligence and diplomatic instincts. Partnerships and negotiations in this house\'s domain feel strained or one-sided early in the year — you can\'t easily find balance or fairness. The Libra energy surfaces when you stop over-accommodating and advocate for genuine equity.',
+  Scorpio: 'Scorpio interception locks your transformative power and psychological depth inside this house. Surface-level approaches don\'t work here, but going deep feels blocked. The Scorpio energy erupts — often suddenly — when the truth can no longer be contained.',
+  Sagittarius: 'Sagittarius interception contains your ability to find meaning, see the big picture, and expand. The area feels confined or purposeless at first. The Sagittarius energy breaks through when a single experience or insight suddenly unlocks an entirely new perspective.',
+  Capricorn: 'Capricorn interception suppresses your structural ambition and authority. You want to build something lasting but can\'t find traction. The Capricorn energy activates later when you\'ve earned enough credibility through patient, unglamorous work.',
+  Aquarius: 'Aquarius interception contains your innovative thinking and desire for change. The status quo in this area feels immovable. The Aquarius energy breaks through when you stop trying to reform the system from within and find an unconventional side door.',
+  Pisces: 'Pisces interception contains your spiritual sensitivity and intuitive knowing. The area feels spiritually dry or disconnected from something larger. The Pisces energy flows in when you surrender control and allow the unconscious to guide you.',
+};
+
+const getInterceptionTeaching = (intercepted: string[]): string => {
+  const axisPairs = OPPOSITE_PAIRS.filter(([a, b]) => intercepted.includes(a) && intercepted.includes(b));
+  let axisNote = '';
+  if (axisPairs.length > 0) {
+    const [a, b] = axisPairs[0];
+    axisNote = ` Interceptions always occur in opposite pairs. The ${a}-${b} axis being intercepted means an entire polarity is operating beneath the surface — neither the ${a} principle nor its counterbalance in ${b} has easy expression. The year's work is to consciously develop both sides. Usually one emerges first and pulls the other into awareness by mid-year.`;
+  }
+  return `In solar return work, interception is a technical condition with real psychological consequences. When a sign is intercepted, it appears entirely within a house — no house cusp carries that sign. This means the sign's energy has no "front door." It can't announce itself; it must be excavated. You may not even recognize these needs exist until the second half of the year, when enough internal pressure forces them to the surface.${axisNote}`;
+};
 const ordinal = (n: number) => {
   const s = ['th','st','nd','rd'];
   const v = n % 100;
