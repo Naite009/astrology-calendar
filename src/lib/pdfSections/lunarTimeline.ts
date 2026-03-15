@@ -60,7 +60,7 @@ export function generatePDFLunarTimeline(
   // ── New page ──
   ctx.pageBg(doc);
 
-  ctx.y += 24;
+  ctx.y += 16;
 
   // Tracked label
   doc.setFont('times', 'bold'); doc.setFontSize(7);
@@ -68,33 +68,33 @@ export function generatePDFLunarTimeline(
   doc.setCharSpace(4);
   doc.text('LUNAR PHASE', margin, ctx.y);
   doc.setCharSpace(0);
-  ctx.y += 12;
+  ctx.y += 8;
 
   // Hairline
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 28;
+  ctx.y += 22;
 
   // Large title
-  doc.setFont('times', 'normal'); doc.setFontSize(30);
+  doc.setFont('times', 'normal'); doc.setFontSize(26);
   doc.setTextColor(...INK);
-  doc.text('SR Moon Phase by Year', margin, ctx.y);
-  ctx.y += 14;
+  doc.text('Solar Return Moon Phase by Year', margin, ctx.y);
+  ctx.y += 12;
 
   // Subtitle
-  doc.setFont('times', 'italic'); doc.setFontSize(10);
+  doc.setFont('times', 'italic'); doc.setFontSize(9);
   doc.setTextColor(...MUTED);
   doc.text('Your developmental cycle mapped year by year', margin, ctx.y);
-  ctx.y += 24;
+  ctx.y += 16;
 
-  // Summary
-  doc.setFont('times', 'normal'); doc.setFontSize(10.5);
+  // Summary — compact
+  doc.setFont('times', 'normal'); doc.setFontSize(9.5);
   doc.setTextColor(...INK);
   const summaryLines: string[] = doc.splitTextToSize(summary, contentW);
-  for (const line of summaryLines) {
-    doc.text(line, margin, ctx.y); ctx.y += 15;
+  for (const line of summaryLines.slice(0, 3)) {
+    doc.text(line, margin, ctx.y); ctx.y += 13;
   }
-  ctx.y += 12;
+  ctx.y += 8;
 
   // ── Current Year Highlight Card ──
   if (currentEntry) {
