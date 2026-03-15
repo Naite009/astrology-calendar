@@ -331,7 +331,7 @@ export interface SolarReturnAnalysis {
     natalHouseTheme: string;
     interpretation: string;
   } | null;
-  /** SR planets within 2° of natal planet degrees — "conduit" connections (Lynn Bell) */
+  /** SR planets within 2° of natal planet degrees — "conduit" connections */
   natalDegreeConduits: {
     srPlanet: string;
     natalPlanet: string;
