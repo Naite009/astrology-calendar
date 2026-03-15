@@ -158,7 +158,7 @@ export function generatePDFYearAtAGlance(
     ctx.drawInfoBox(doc, margin + col2W + col2Gap, pairY, col2W, pairH,
       'SR MOON PHASE',
       moonPhase || 'Moon Phase',
-      `${a.moonSign || '--'} → House ${a.moonHouse?.house || '--'}`,
+      `${a.moonSign || '--'} -- House ${a.moonHouse?.house || '--'}`,
       SOFT_GOLD,
     );
 
