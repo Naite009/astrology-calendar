@@ -62,7 +62,7 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   if (narrative) sections.push({ title: 'Year-Ahead Reading', desc: 'Narrative synthesis of your year' });
   sections.push({ title: 'Best Months & Highlights', desc: 'Peak months for love, luck, and action' });
   sections.push({ title: 'Your Year in Four Seasons', desc: 'Key themes for each quarter' });
-  if (birthdayMode) sections.push({ title: 'Birthday Affirmation', desc: 'A personalized affirmation to carry all year' });
+  if (birthdayMode) sections.push({ title: 'Take This With You', desc: 'Your natal strength, this year\'s ask, and a closing note' });
 
   for (let i = 0; i < sections.length; i++) {
     const section = sections[i];
