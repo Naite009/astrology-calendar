@@ -205,13 +205,15 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
   const srSunHouse = analysis.sunHouse?.house;
   const srSunNatalHouse = analysis.sunNatalHouse?.house;
 
-  // Tightest SR-to-natal aspect — exclude Sun conjunct Sun (always exact in a solar return)
+  // Tightest SR-to-natal aspects — exclude Sun conjunct Sun, allow ties
   const nonSunConjAspects = analysis.srToNatalAspects.filter(
     a => !(a.planet1 === 'Sun' && a.planet2 === 'Sun' && a.type === 'Conjunction')
   );
-  const tightestAspect = nonSunConjAspects.length > 0
-    ? [...nonSunConjAspects].sort((a, b) => a.orb - b.orb)[0]
-    : null;
+  const sortedAspects = [...nonSunConjAspects].sort((a, b) => a.orb - b.orb);
+  const tightestOrb = sortedAspects.length > 0 ? sortedAspects[0].orb : null;
+  const tightestAspects = tightestOrb !== null
+    ? sortedAspects.filter(a => Math.abs(a.orb - tightestOrb) < 0.3)
+    : [];
 
   // Dominant element
   const eb = analysis.elementBalance;
@@ -288,50 +290,69 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
 
       {/* ─── 3. Row 2: 3 Metric Cards ─── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-        {/* Dominant Element */}
+        {/* Dominant Element(s) */}
         {(() => {
-          const domCap = eb.dominant ? eb.dominant.charAt(0).toUpperCase() + eb.dominant.slice(1) : '—';
-          const planets = elementPlanetLists[domCap] || elementPlanetLists[eb.dominant] || [];
+          const counts: Record<string, number> = { Fire: eb.fire, Earth: eb.earth, Air: eb.air, Water: eb.water };
+          const maxCount = Math.max(...Object.values(counts));
+          const dominants = Object.entries(counts).filter(([, v]) => v === maxCount).map(([k]) => k);
+          const ELEMENT_ICON: Record<string, React.ReactNode> = {
+            Water: <Droplets className="w-4 h-4 text-blue-400" />,
+            Fire: <Flame className="w-4 h-4 text-red-400" />,
+            Air: <Wind className="w-4 h-4 text-sky-400" />,
+            Earth: <Mountain className="w-4 h-4 text-amber-700" />,
+          };
           return (
             <div className="bg-muted/50 rounded-lg p-3">
-              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Dominant Element</p>
-              <p className="text-lg font-serif text-foreground flex items-center gap-1.5">
-                <Droplets className="w-4 h-4 text-blue-400 inline" style={{ display: domCap === 'Water' ? 'inline' : 'none' }} />
-                <Flame className="w-4 h-4 text-red-400 inline" style={{ display: domCap === 'Fire' ? 'inline' : 'none' }} />
-                <Wind className="w-4 h-4 text-sky-400 inline" style={{ display: domCap === 'Air' ? 'inline' : 'none' }} />
-                <Mountain className="w-4 h-4 text-amber-700 inline" style={{ display: domCap === 'Earth' ? 'inline' : 'none' }} />
-                {domCap}
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
+                {dominants.length > 1 ? 'Dominant Elements' : 'Dominant Element'}
               </p>
-              <p className="text-[11px] text-muted-foreground">
-                {planets.join(', ')}
-              </p>
+              {dominants.map(el => {
+                const planets = elementPlanetLists[el] || elementPlanetLists[el.toLowerCase()] || [];
+                return (
+                  <div key={el} className="mb-1.5 last:mb-0">
+                    <p className="text-lg font-serif text-foreground flex items-center gap-1.5">
+                      {ELEMENT_ICON[el]}
+                      {el}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">{planets.join(', ')}</p>
+                  </div>
+                );
+              })}
               <p className="text-[10px] text-muted-foreground/80 mt-1 leading-tight">
-                {eb.interpretation?.split('.').slice(0, 1).join('.')}.
+                {dominants.length > 1
+                  ? `${dominants.join(' and ')} are tied — the year balances both elemental styles equally.`
+                  : eb.interpretation?.split('.').slice(0, 1).join('.') + '.'}
               </p>
             </div>
           );
         })()}
 
-        {/* Strongest Aspect */}
+        {/* Strongest Aspect(s) */}
         <div className="bg-muted/50 rounded-lg p-3">
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Strongest Aspect</p>
-          {tightestAspect ? (
-            <>
-              <p className="text-sm font-serif text-foreground">
-                SR {tightestAspect.planet1} {tightestAspect.type} Natal {tightestAspect.planet2}
-              </p>
-              <div className="flex items-center gap-1.5 mt-1">
-                <span className="text-[11px] text-muted-foreground">{tightestAspect.orb}° orb</span>
-                <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${aspectCategory(tightestAspect.type).cls}`}>
-                  {aspectCategory(tightestAspect.type).label}
-                </span>
-              </div>
-              {tightestAspect.interpretation && (
-                <p className="text-[10px] text-muted-foreground/80 mt-1.5 leading-tight">
-                  {tightestAspect.interpretation.split('.').slice(0, 2).join('.')}.
-                </p>
-              )}
-            </>
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
+            {tightestAspects.length > 1 ? 'Strongest Aspects' : 'Strongest Aspect'}
+          </p>
+          {tightestAspects.length > 0 ? (
+            <div className="space-y-2">
+              {tightestAspects.map((asp, i) => (
+                <div key={i}>
+                  <p className="text-sm font-serif text-foreground">
+                    SR {asp.planet1} {asp.type} Natal {asp.planet2}
+                  </p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="text-[11px] text-muted-foreground">{asp.orb}° orb</span>
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${aspectCategory(asp.type).cls}`}>
+                      {aspectCategory(asp.type).label}
+                    </span>
+                  </div>
+                  {asp.interpretation && (
+                    <p className="text-[10px] text-muted-foreground/80 mt-1 leading-tight">
+                      {asp.interpretation.split('.').slice(0, 2).join('.')}.
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
           ) : (
             <p className="text-sm text-muted-foreground">No major SR-to-natal aspects</p>
           )}
