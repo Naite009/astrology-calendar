@@ -2,7 +2,21 @@ import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { Badge } from '@/components/ui/badge';
+import { formatDateMMDDYYYY } from '@/lib/localDate';
 
+const ALL_SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+
+function detectInterceptedSigns(houseCusps: any): string[] {
+  if (!houseCusps) return [];
+  const cuspSigns: string[] = [];
+  for (let i = 1; i <= 12; i++) {
+    const cusp = houseCusps[`house${i}`];
+    if (cusp?.sign) cuspSigns.push(cusp.sign);
+  }
+  if (cuspSigns.length < 12) return [];
+  const uniqueSigns = new Set(cuspSigns);
+  return ALL_SIGNS.filter(s => !uniqueSigns.has(s));
+}
 const SIGN_SYMBOLS: Record<string, string> = {
   Aries:'♈', Taurus:'♉', Gemini:'♊', Cancer:'♋', Leo:'♌', Virgo:'♍',
   Libra:'♎', Scorpio:'♏', Sagittarius:'♐', Capricorn:'♑', Aquarius:'♒', Pisces:'♓',
@@ -119,7 +133,7 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
           Solar Return {srChart.solarReturnYear} — {natalChart.name}
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
-          {SIGN_SYMBOLS[natalSunSign]} {natalSunSign} Sun · {SIGN_SYMBOLS[natalMoonSign]} {natalMoonSign} Moon · {SIGN_SYMBOLS[natalRisingSign]} {natalRisingSign} Rising · Born {natalChart.birthDate}
+          {SIGN_SYMBOLS[natalSunSign]} {natalSunSign} Sun · {SIGN_SYMBOLS[natalMoonSign]} {natalMoonSign} Moon · {SIGN_SYMBOLS[natalRisingSign]} {natalRisingSign} Rising · Born {formatDateMMDDYYYY(natalChart.birthDate)}
         </p>
       </div>
 
@@ -328,6 +342,28 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
           ))}
         </div>
       </div>
+      {/* ─── 6. Intercepted Signs ─── */}
+      {(() => {
+        const intercepted = detectInterceptedSigns(srChart.houseCusps);
+        if (intercepted.length === 0) return null;
+        return (
+          <div className="border border-amber-500/30 rounded-lg p-4 bg-amber-500/5 space-y-2">
+            <p className="text-[10px] uppercase tracking-widest text-amber-600 font-medium">Intercepted Signs</p>
+            <div className="flex flex-wrap gap-2">
+              {intercepted.map(sign => (
+                <Badge key={sign} variant="outline" className="border-amber-500/30 text-amber-700 bg-amber-50">
+                  {SIGN_SYMBOLS[sign]} {sign}
+                </Badge>
+              ))}
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              {intercepted.length === 2
+                ? `${intercepted[0]} and ${intercepted[1]} are intercepted — they appear within houses but don't rule any house cusp. These signs represent energy that's harder to access directly. The themes of ${intercepted[0]} and ${intercepted[1]} require more conscious effort to express and may develop later in the year.`
+                : `${intercepted.join(', ')} are intercepted — contained within houses without ruling any cusp. This energy requires more conscious effort to access.`}
+            </p>
+          </div>
+        );
+      })()}
     </div>
   );
 };

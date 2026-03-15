@@ -21,13 +21,13 @@ const formatDate = (dateStr: string | undefined): string => {
   if (!dateStr) return '';
   try {
     const parts = dateStr.split(/[-/]/);
-    let year: string, month: number, day: number;
+    let month: string, day: string, year: string;
     if (parts[0].length === 4) {
-      year = parts[0]; month = parseInt(parts[1], 10); day = parseInt(parts[2], 10);
+      year = parts[0]; month = String(parseInt(parts[1], 10)).padStart(2, '0'); day = String(parseInt(parts[2], 10)).padStart(2, '0');
     } else {
-      month = parseInt(parts[0], 10); day = parseInt(parts[1], 10); year = parts[2];
+      month = String(parseInt(parts[0], 10)).padStart(2, '0'); day = String(parseInt(parts[1], 10)).padStart(2, '0'); year = parts[2];
     }
-    return `${MONTH_NAMES[month - 1] || ''} ${day}, ${year}`;
+    return `${month}-${day}-${year}`;
   } catch { return dateStr || ''; }
 };
 

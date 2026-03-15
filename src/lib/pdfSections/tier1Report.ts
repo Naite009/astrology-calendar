@@ -153,8 +153,14 @@ function loadImageDataUrl(src: string): Promise<string | null> {
 function formatDatePretty(dateStr: string | undefined): string {
   if (!dateStr) return '';
   try {
-    const d = new Date(dateStr + 'T00:00:00');
-    return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    const parts = dateStr.split(/[-/]/);
+    let month: string, day: string, year: string;
+    if (parts[0].length === 4) {
+      year = parts[0]; month = String(parseInt(parts[1], 10)).padStart(2, '0'); day = String(parseInt(parts[2], 10)).padStart(2, '0');
+    } else {
+      month = String(parseInt(parts[0], 10)).padStart(2, '0'); day = String(parseInt(parts[1], 10)).padStart(2, '0'); year = parts[2];
+    }
+    return `${month}-${day}-${year}`;
   } catch { return dateStr || ''; }
 }
 

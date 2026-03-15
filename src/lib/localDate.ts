@@ -30,3 +30,29 @@ export function formatLocalDateLong(
     year: 'numeric',
   });
 }
+
+/**
+ * Format any date string (YYYY-MM-DD or MM-DD-YYYY or MM/DD/YYYY) into MM-DD-YYYY display format.
+ * This is the project-wide standard for all date displays.
+ */
+export function formatDateMMDDYYYY(dateStr: string | undefined): string {
+  if (!dateStr) return '';
+  try {
+    const parts = dateStr.split(/[-/]/);
+    let year: string, month: string, day: string;
+    if (parts[0].length === 4) {
+      // YYYY-MM-DD
+      year = parts[0];
+      month = String(parseInt(parts[1], 10)).padStart(2, '0');
+      day = String(parseInt(parts[2], 10)).padStart(2, '0');
+    } else {
+      // MM-DD-YYYY or MM/DD/YYYY
+      month = String(parseInt(parts[0], 10)).padStart(2, '0');
+      day = String(parseInt(parts[1], 10)).padStart(2, '0');
+      year = parts[2];
+    }
+    return `${month}-${day}-${year}`;
+  } catch {
+    return dateStr;
+  }
+}

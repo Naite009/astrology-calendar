@@ -9,6 +9,7 @@ import { vertexInSign, vertexInHouse, vertexAspectMeanings } from '@/lib/solarRe
 import { srJupiterInHouseDeep, srMercuryInHouseDeep, srVenusInHouseDeep, srMarsInHouseDeep, srSaturnInHouseDeep, srUranusInHouseDeep, srNeptuneInHouseDeep, srPlutoInHouseDeep, type SRPlanetHouseDeep } from '@/lib/solarReturnPlanetInHouseDeep';
 import { generateSRtoNatalInterpretation, aspectTypeMeanings, planetLifeMeanings } from '@/lib/solarReturnAspectInterp';
 import { moonSignDeep, moonShiftNarrative } from '@/lib/moonSignShiftData';
+import { formatDateMMDDYYYY } from '@/lib/localDate';
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
@@ -591,7 +592,7 @@ const SRInputForm = ({ natalChart, existingSR, onSave, onCancel }: SRInputFormPr
         <div>
           <label className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 block">Birthday</label>
           <div className="w-full border border-border bg-muted text-foreground rounded-sm px-3 py-2 text-sm opacity-80">
-            {natalChart.birthDate || '—'}
+            {formatDateMMDDYYYY(natalChart.birthDate) || '—'}
           </div>
         </div>
         <div>
