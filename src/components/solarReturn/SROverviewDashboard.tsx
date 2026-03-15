@@ -543,6 +543,18 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
                     {getPlanetSignHouseExpert(lord.planet, lord.srSign, lord.srHouse, 'lord')}
                   </p>
 
+                  {/* Interception alert for Lord */}
+                  {lordSignIntercepted && (
+                    <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-2.5 space-y-1.5">
+                      <p className="text-[10px] uppercase tracking-widest text-amber-600 font-medium flex items-center gap-1.5">
+                        ⚠ {lord.srSign} Is Intercepted
+                      </p>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        {getInterceptionModifier(lord.planet, lord.srSign, 'lord')}
+                      </p>
+                    </div>
+                  )}
+
                   {/* Tight aspects for Lord */}
                   {lordTightAspects.length > 0 && (
                     <div className="bg-primary/5 rounded-lg p-2.5 border border-primary/10">
