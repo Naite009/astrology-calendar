@@ -112,14 +112,21 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
   const srSunHouse = analysis.sunHouse?.house;
   const srSunNatalHouse = analysis.sunNatalHouse?.house;
 
-  // Tightest SR-to-natal aspect
-  const tightestAspect = analysis.srToNatalAspects.length > 0
-    ? [...analysis.srToNatalAspects].sort((a, b) => a.orb - b.orb)[0]
+  // Tightest SR-to-natal aspect — exclude Sun conjunct Sun (always exact in a solar return)
+  const nonSunConjAspects = analysis.srToNatalAspects.filter(
+    a => !(a.planet1 === 'Sun' && a.planet2 === 'Sun' && a.type === 'Conjunction')
+  );
+  const tightestAspect = nonSunConjAspects.length > 0
+    ? [...nonSunConjAspects].sort((a, b) => a.orb - b.orb)[0]
     : null;
 
   // Dominant element
   const eb = analysis.elementBalance;
   const elementCounts = { Fire: eb.fire, Earth: eb.earth, Air: eb.air, Water: eb.water };
+  const elementPlanetLists: Record<string, string[]> = {
+    Fire: eb.firePlanets || [], Earth: eb.earthPlanets || [],
+    Air: eb.airPlanets || [], Water: eb.waterPlanets || [],
+  };
 
   // Time Lord
   const lord = analysis.lordOfTheYear;
@@ -195,7 +202,10 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
             {ELEMENT_MAP[eb.dominant] || ''} {eb.dominant}
           </p>
           <p className="text-[11px] text-muted-foreground">
-            {elementCounts[eb.dominant as keyof typeof elementCounts]} planets
+            {(elementPlanetLists[eb.dominant as keyof typeof elementPlanetLists] || []).join(', ')}
+          </p>
+          <p className="text-[10px] text-muted-foreground/80 mt-1 leading-tight">
+            {eb.interpretation?.split('.').slice(0, 1).join('.')}.
           </p>
         </div>
 
@@ -213,6 +223,11 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
                   {aspectCategory(tightestAspect.type).label}
                 </span>
               </div>
+              {tightestAspect.interpretation && (
+                <p className="text-[10px] text-muted-foreground/80 mt-1.5 leading-tight">
+                  {tightestAspect.interpretation.split('.').slice(0, 2).join('.')}.
+                </p>
+              )}
             </>
           ) : (
             <p className="text-sm text-muted-foreground">No major SR-to-natal aspects</p>
