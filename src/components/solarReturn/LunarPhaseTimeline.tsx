@@ -195,7 +195,8 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
             <BalsamicDetailPanel entry={currentEntry} />
           )}
         </div>
-      )}
+        );
+      })()}
 
       {/* Visual Timeline Strip */}
       <div className="px-4">
