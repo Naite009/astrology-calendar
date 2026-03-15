@@ -101,7 +101,7 @@ export const AstroCalendar = () => {
   const navigate = (direction: number) => {
     setCurrentDate((prev) => {
       const newDate = new Date(prev);
-      if (viewMode === "year" || viewMode === "annual-tables" || viewMode === "moon-phases" || viewMode === "patterns") {
+      if (viewMode === "year" || viewMode === "annual-tables" || viewMode === "patterns") {
         newDate.setFullYear(prev.getFullYear() + direction);
       } else if (viewMode === "week") {
         newDate.setDate(prev.getDate() + direction * 7);
