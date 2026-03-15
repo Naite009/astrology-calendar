@@ -20,6 +20,7 @@ import { getForrestMoonSign, getForrestMoonHouse } from '@/data/moonForrestData'
 interface MoonPhaseEncyclopediaProps {
   userNatalChart: NatalChart | null;
   savedCharts: NatalChart[];
+  currentYear?: number;
 }
 
 const PHASE_ORDER: { phase: BirthMoonPhase; degreeRange: string; minDeg: number; maxDeg: number }[] = [
