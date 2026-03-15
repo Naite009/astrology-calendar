@@ -301,17 +301,6 @@ export const AstroCalendar = () => {
                 Year
               </button>
               <button
-                onClick={() => setViewMode("moon-phases")}
-                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
-                  viewMode === "moon-phases"
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Moon size={14} />
-                Phases
-              </button>
-              <button
                 onClick={() => setViewMode("annual-tables")}
                 className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
                   viewMode === "annual-tables"
