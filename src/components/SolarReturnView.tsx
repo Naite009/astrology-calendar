@@ -751,7 +751,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         </div>
       )}
 
-      {/* SR Ascendant Ruler in Natal Houses — the J-B Morin technique */}
+      {/* SR Ascendant Ruler in Natal Houses */}
       {analysis.srAscRulerInNatal && (
         <div className="border border-primary/20 rounded-sm p-5 bg-card">
           <h3 className="text-sm uppercase tracking-widest font-medium text-foreground mb-3 flex items-center gap-2">
