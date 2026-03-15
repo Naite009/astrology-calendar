@@ -1149,7 +1149,7 @@ export const analyzeSolarReturn = (
     }
   }
 
-  // ─── Natal Degree Conduits (Lynn Bell: SR planet on natal degree = "conduit") ──
+  // ─── Natal Degree Conduits (SR planet on natal degree = "conduit") ──
   const natalDegreeConduits: SolarReturnAnalysis['natalDegreeConduits'] = [];
   const CONDUIT_ORB = 2;
   for (const srPlanet of ALL_PLANETS) {
