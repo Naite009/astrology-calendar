@@ -611,11 +611,12 @@ export async function generateBirthdayGiftPDF(
     }
   }
 
-  // 13. LORD OF THE YEAR + PROFECTION WHEEL (combined page)
+  // 13. YOUR TIME LORD + PROFECTION WHEEL (combined page)
   if (analysis.profectionYear?.timeLord) {
     doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
+    ctx.sectionPages.set('YOUR TIME LORD', doc.getNumberOfPages());
     ctx.sectionPages.set('LORD OF THE YEAR', doc.getNumberOfPages());
-    ctx.sectionTitle(doc, 'LORD OF THE YEAR');
+    ctx.sectionTitle(doc, 'YOUR TIME LORD');
     const tlPlanet = analysis.profectionYear.timeLord;
     const tlSRHouse = analysis.profectionYear.timeLordSRHouse;
     const tlSRSign = analysis.profectionYear.timeLordSRSign;
