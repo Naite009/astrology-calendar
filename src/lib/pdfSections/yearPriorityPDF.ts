@@ -25,6 +25,192 @@ function ord(n: number): string {
   if (n === 1) return 'st'; if (n === 2) return 'nd'; if (n === 3) return 'rd'; return 'th';
 }
 
+// ─── Felt-sense planet-in-natal-house interpretations ───────────
+const PLANET_HOUSE_FELT: Record<string, Record<number, string>> = {
+  Ascendant: {
+    1: 'Your Solar Return lens overlays your natal identity — this year feels deeply personal. You are redefining yourself from the inside out.',
+    2: 'The year\'s energy filters through your finances and self-worth. How you earn, spend, and value yourself becomes the frame for everything.',
+    3: 'Daily conversations, short trips, and mental activity become the gateway to this year\'s growth. Your mind is unusually active.',
+    4: 'Home and family become the container for this year\'s story. You may feel pulled inward, nesting, or dealing with roots.',
+    5: 'Creativity, romance, and self-expression set the tone. You approach life with more playfulness and willingness to take risks.',
+    6: 'Your daily routines and health habits become the vehicle for transformation. The year asks you to restructure how you work and care for your body.',
+    7: 'Partnerships define the year. You cannot navigate it alone — the most important events happen through or because of another person.',
+    8: 'Deep psychological shifts are the backdrop. Power, shared resources, and intimate bonds demand honesty you may not feel ready for.',
+    9: 'Your worldview expands. Travel, study, philosophy, or legal matters provide the context for personal growth.',
+    10: 'Career and public life are the stage. You feel more visible, more scrutinized, and more driven to make your mark.',
+    11: 'Friends, groups, and your vision of the future shape everything. Your social world is the primary arena.',
+    12: 'The year unfolds behind the scenes. Solitude, spiritual practice, and processing the past take priority over external action.',
+  },
+  Sun: {
+    1: 'Your vitality and identity are fully activated — you feel more like yourself than you have in years. Others see you clearly.',
+    2: 'Your purpose this year is inseparable from money and values. What you earn and what you\'re worth demand honest reckoning.',
+    3: 'Your life force flows through words, ideas, and connections. You are a student and a teacher this year — communication is power.',
+    4: 'Your deepest energy goes into home, family, and emotional foundations. This is a building year — what you root now lasts.',
+    5: 'Your creative fire is lit. Romance, artistic expression, and joy are not luxuries — they are how you fulfill your purpose.',
+    6: 'Your vitality is channeled into daily work, health, and service. The unglamorous details of life are where meaning lives this year.',
+    7: 'Your purpose is realized through partnership. The most important person in your year is the one sitting across from you.',
+    8: 'Your identity undergoes deep renovation. Something must be released before the new version of you can fully emerge.',
+    9: 'Your spirit needs expansion. You feel confined by the familiar and drawn toward bigger questions, farther horizons.',
+    10: 'Your purpose and your career converge. This is the year when what you do in the world IS who you are.',
+    11: 'Your vitality goes into community, friendship, and collective vision. Personal ambition feels less important than shared purpose.',
+    12: 'Your conscious identity takes a back seat to something deeper. Rest, reflection, and inner work are not optional — they are the work.',
+  },
+  Moon: {
+    1: 'Your emotional life is written on your face this year. Feelings are visible, moods shift quickly, and self-care is survival.',
+    2: 'Emotional security is tied to financial security. You feel anxious when money is uncertain and soothed when resources are stable.',
+    3: 'Your emotional processing happens through talking, writing, and thinking. You need to verbalize feelings to understand them.',
+    4: 'You feel everything more deeply at home. Family dynamics stir old emotions. Creating a safe domestic space is essential.',
+    5: 'Your heart wants play, romance, and creative expression. Emotional fulfillment comes through what you create and who you love.',
+    6: 'Your emotions live in your body this year. Stress shows up as physical symptoms; self-care routines become emotional anchors.',
+    7: 'Your emotional needs are met (or unmet) through your closest relationship. You feel what your partner feels.',
+    8: 'Emotions run deep and private. You process grief, desire, and power in ways you may not fully share with anyone.',
+    9: 'Emotional growth comes through expanding your perspective — travel, study, or spiritual practice helps you feel alive.',
+    10: 'Your emotional life is visible publicly. You may be seen as nurturing or vulnerable in professional settings.',
+    11: 'Friends and community are your emotional home base. Belonging to a group feels necessary, not optional.',
+    12: 'Your emotional world is largely internal. Dreams are vivid, intuition is strong, and you need significant solitude.',
+  },
+  Mercury: {
+    1: 'Your mind is sharp and your words carry weight. People listen to you differently this year — what you say matters.',
+    2: 'Your thinking is focused on money, deals, and practical value. Mental energy goes into financial planning and resource management.',
+    3: 'Communication is supercharged. Writing, teaching, learning, and daily conversations are where the action is.',
+    4: 'You think about home, family, and roots more than usual. Mental energy goes into domestic decisions and family conversations.',
+    5: 'Your mind is playful and creative. Ideas flow, wit sharpens, and intellectual flirtation is more appealing than deep analysis.',
+    6: 'Your thinking is detail-oriented and practical. You analyze routines, health data, and work processes with unusual precision.',
+    7: 'Communication with partners is the year\'s theme. Contracts, negotiations, and honest dialogue shape your relationships.',
+    8: 'Your mind goes deep — research, psychology, and hidden information fascinate you. Surface-level thinking feels unsatisfying.',
+    9: 'Big ideas and philosophical questions occupy your mind. You may study, publish, or engage with foreign perspectives.',
+    10: 'Your professional communication is highlighted. Presentations, public speaking, and career-related writing demand attention.',
+    11: 'Your social network expands through ideas. Online communities, intellectual friendships, and group brainstorming energize you.',
+    12: 'Your thinking is more intuitive than logical. Journaling, meditation, and private reflection reveal insights that analysis misses.',
+  },
+  Venus: {
+    1: 'You feel more attractive and approachable. Your personal charm is amplified — people are drawn to you without effort.',
+    2: 'Money comes more easily, and spending feels more pleasurable. Your values and aesthetics influence financial decisions.',
+    3: 'Social charm flows through conversation. Diplomatic words, charming texts, and pleasant interactions smooth daily life.',
+    4: 'Home becomes beautiful. You invest in decor, family harmony, and creating a space that feels like a sanctuary.',
+    5: 'Romance and creative pleasure are at their peak. Love affairs, artistic projects, and joyful self-expression flourish.',
+    6: 'Work relationships are harmonious. You find beauty in routine and pleasure in service. Health through pleasure — massage, good food, gentle movement.',
+    7: 'Love and partnership are center stage. Existing relationships deepen; new romantic or business partnerships form naturally.',
+    8: 'Intimacy deepens. You crave emotional honesty and physical closeness. Shared finances may benefit from someone else\'s generosity.',
+    9: 'You fall in love with ideas, cultures, or people from different backgrounds. Beauty is found in the unfamiliar.',
+    10: 'Professional relationships benefit from your charm. Your public image is more polished and aesthetically appealing.',
+    11: 'Friendships bring joy. Social gatherings, group activities, and community involvement are where love and pleasure live.',
+    12: 'Love is private and spiritual. You may have a secret attraction or find deep pleasure in solitude, art, and contemplation.',
+  },
+  Mars: {
+    1: 'Your energy and assertiveness spike. You feel physically stronger, more competitive, and less willing to tolerate passivity.',
+    2: 'You fight for your financial security. Aggressive earning, spending, or defending your resources is likely.',
+    3: 'Your words have an edge. Arguments, passionate debates, and forceful communication are more frequent.',
+    4: 'Conflict or renovation at home. Family dynamics may include arguments, but also the energy to make dramatic domestic changes.',
+    5: 'Creative passion and romantic pursuit intensify. You go after what you want with boldness. Competitive hobbies thrive.',
+    6: 'Work pace accelerates dramatically. You push yourself physically — gym goals, demanding projects, and an intolerance for inefficiency.',
+    7: 'Conflict and passion in partnerships. Arguments may be more frequent, but so is the desire to fight FOR the relationship.',
+    8: 'Power struggles surface. Sexual energy intensifies. You confront control dynamics head-on and demand authenticity.',
+    9: 'You pursue truth aggressively — debates about beliefs, legal battles, or ambitious travel plans require courage.',
+    10: 'Career ambition is fierce. You push for advancement, take on leadership roles, and refuse to be overlooked professionally.',
+    11: 'You take action within groups. Leadership in communities, activism, or confrontation with friends over principles.',
+    12: 'Anger may go underground. Frustration builds in private. Physical energy is best channeled into solitary exercise or spiritual discipline.',
+  },
+  Jupiter: {
+    1: 'Confidence and optimism surge. You feel protected, expansive, and ready to say yes to opportunities. Weight gain is possible.',
+    2: 'Money circulates in larger amounts — but direction depends on context. Income may rise, or spending expands. Financial movement intensifies.',
+    3: 'Learning, communication, and travel opportunities multiply. Good news arrives. Writing, teaching, and intellectual exchange flourish.',
+    4: 'Home improvements, real estate luck, and domestic contentment. This is one of the best years to buy property or settle down.',
+    5: 'Romance, creativity, and joy expand. Fertility increases. Fun is abundant — the universe wants you to enjoy yourself.',
+    6: 'Health recovers, work conditions improve, and daily life feels more supported. Healing therapies are especially effective.',
+    7: 'Partnerships bring benefits. A generous partner appears, or an existing relationship becomes more supportive and expansive.',
+    8: 'Shared resources grow. Inheritance, insurance payouts, or investment returns are possible. Psychological depth increases.',
+    9: 'The most natural placement — travel, higher education, publishing, and spiritual expansion are all strongly favored.',
+    10: 'Career advancement, promotions, and public recognition. Professional life expands beyond what you thought possible.',
+    11: 'Social circle widens dramatically. Influential friends, group success, and optimism about the future increase.',
+    12: 'Hidden blessings and spiritual protection. Retreat, rest, and inner work are rewarded. Grace arrives from unexpected sources.',
+  },
+  Saturn: {
+    1: 'You feel the weight of responsibility on your shoulders. Self-discipline increases but so does self-criticism. You age and mature visibly.',
+    2: 'Financial tightening or restructuring. You learn to live with less or build a more disciplined relationship with money.',
+    3: 'Communication becomes more serious. Words carry consequences. Learning requires effort but produces lasting results.',
+    4: 'Family responsibilities increase. A parent may need care. Home structures — literally or emotionally — require repair.',
+    5: 'Joy requires effort this year. Creative blocks, romantic delays, or parenting pressures demand patience and discipline.',
+    6: 'Work demands peak. Health issues require structural attention — bones, teeth, joints, chronic conditions. Discipline is medicine.',
+    7: 'Relationships are tested. Commitments deepen or dissolve. Partnerships require work, honesty, and realistic expectations.',
+    8: 'Financial obligations to others weigh heavily. Debt, taxes, or shared resource negotiations demand mature handling.',
+    9: 'Beliefs are tested by reality. Travel may be restricted. Education requires discipline. Legal matters demand patience.',
+    10: 'Career pressure and responsibility peak. Authority figures scrutinize your work. The results of years of effort become visible.',
+    11: 'Social circles contract. Fair-weather friends disappear. The friendships that survive are the ones worth keeping.',
+    12: 'Isolation may feel heavy but is purposeful. You confront fears, limitations, and old patterns in deep solitude.',
+  },
+  Uranus: {
+    1: 'Expect sudden changes to your identity or appearance. You feel rebellious, restless, and unwilling to be who you were last year.',
+    2: 'Financial surprises — sudden income or unexpected expenses. Your relationship with money and possessions becomes unpredictable.',
+    3: 'Your thinking shifts radically. New ideas disrupt old mental habits. Technology plays a bigger role in daily communication.',
+    4: 'Home disruptions — sudden moves, renovations, or family upheaval. What felt stable at home gets shaken loose.',
+    5: 'Unexpected romance, creative breakthroughs, or surprises involving children. You take risks you never would have before.',
+    6: 'Work routine is disrupted. You may change jobs suddenly, adopt radical health practices, or rebel against monotony.',
+    7: 'Relationships experience sudden changes. Freedom within partnership becomes non-negotiable. New connections arrive unexpectedly.',
+    8: 'Deep psychological shocks lead to liberation. Power dynamics shift overnight. Financial entanglements may break suddenly.',
+    9: 'Your worldview shatters and rebuilds. Sudden travel, radical new beliefs, or encounters with foreign perspectives change you.',
+    10: 'Career takes unexpected turns. You may leave a stable job, get recruited suddenly, or reinvent your professional identity.',
+    11: 'Your social world transforms. You join unusual groups, meet eccentric people, or suddenly leave communities that no longer fit.',
+    12: 'Spiritual awakenings arrive without warning. Intuition spikes. Hidden parts of yourself demand acknowledgment.',
+  },
+  Neptune: {
+    1: 'Your boundaries dissolve. You are more empathetic, more artistic, and more vulnerable to absorbing other people\'s energy.',
+    2: 'Financial clarity is elusive. Money may slip through your fingers, or idealistic spending replaces practical budgeting.',
+    3: 'Your thinking becomes more intuitive than logical. Creative writing flourishes but factual communication may be foggy.',
+    4: 'Home life has a dreamlike quality. You idealize family, escape into domestic fantasy, or deal with unclear living situations.',
+    5: 'Romantic idealization is strong. Creative imagination soars. Be careful not to fall in love with a fantasy rather than a person.',
+    6: 'Health symptoms may be hard to diagnose. Holistic healing approaches are more effective than conventional ones this year.',
+    7: 'You see your partner through rose-colored glasses — or fog. Relationships require extra discernment and honest communication.',
+    8: 'Psychological boundaries blur. Shared financial situations lack clarity. Intuition about hidden matters is strong but needs grounding.',
+    9: 'Spiritual seeking intensifies. You may be drawn to meditation, pilgrimages, or philosophical traditions that transcend logic.',
+    10: 'Your public image is idealized or misunderstood. Career in creative or healing fields thrives; conventional careers feel confusing.',
+    11: 'You attract spiritual or artistic communities. Group idealism is high but collective illusions are also possible.',
+    12: 'The most natural Neptune placement — deep spirituality, vivid dreams, artistic inspiration, and the need for regular solitude.',
+  },
+  Pluto: {
+    1: 'Personal transformation is unavoidable. You feel a compulsive need to shed old versions of yourself. Others sense your intensity.',
+    2: 'Your relationship with money and possessions undergoes deep change. Control issues around resources surface and demand resolution.',
+    3: 'Your words become more penetrating. You uncover hidden information. Communication has a quality of exposure and revelation.',
+    4: 'Family secrets surface. Home undergoes deep transformation — demolition and rebuilding, literally or psychologically.',
+    5: 'Creative obsession, intense romance, or power dynamics with children. Whatever you create this year comes from your depths.',
+    6: 'Work becomes a crucible. Health crises may force radical lifestyle changes. You cannot maintain routines that don\'t serve you.',
+    7: 'Relationships undergo power transformation. You confront control dynamics, jealousy, or deep mutual evolution with a partner.',
+    8: 'The most intense placement — death, rebirth, inheritance, sexuality, and psychological excavation are all activated simultaneously.',
+    9: 'Your beliefs are transformed by encounters with truth that cannot be unseen. Fundamentalist thinking — in any direction — crumbles.',
+    10: 'Career power dynamics intensify. You may dismantle and rebuild your professional life. Authority and ambition are transformed.',
+    11: 'Group dynamics involve power struggles. You may transform a community from within or leave one that has become toxic.',
+    12: 'Deep unconscious material surfaces. Therapy, dreams, and solitary processing are essential. You are composting your shadow.',
+  },
+  NorthNode: {
+    1: 'Your soul\'s growth asks you to step into greater independence and self-definition. Leaning on others holds you back.',
+    2: 'Growth comes through building your own resources and developing self-sufficiency. Stop outsourcing your security.',
+    3: 'Your growth edge is communication, curiosity, and learning. Speak up. Ask questions. Stop assuming you already know.',
+    4: 'Soul growth requires building emotional foundations and investing in home and family — even if career feels more comfortable.',
+    5: 'Your growth direction points toward creative self-expression, joy, and taking heart-centered risks.',
+    6: 'Growth comes through service, daily practice, and health attention. The spiritual path IS the mundane path this year.',
+    7: 'Your soul\'s growth requires partnership, compromise, and showing up for another person — even when independence feels safer.',
+    8: 'Growth demands emotional depth, vulnerability, and shared resources. Surface-level living won\'t satisfy you.',
+    9: 'Your growth edge is expansion — travel, higher learning, and developing a personal philosophy that is truly yours.',
+    10: 'Soul growth pushes you toward public achievement and taking responsibility for your contribution to the world.',
+    11: 'Your growth direction points toward community, collective vision, and releasing attachment to personal recognition.',
+    12: 'Growth comes through surrender, solitude, and letting go of the need to control outcomes. Trust the process.',
+  },
+  Chiron: {
+    1: 'Old wounds around identity and self-worth are activated — not to re-injure you, but to show you how far you\'ve come.',
+    2: 'Financial insecurity or self-worth wounds surface for healing. Your relationship with "enough" is being recalibrated.',
+    3: 'Wounds around communication, intelligence, or being heard are activated. Healing comes through finding your voice.',
+    4: 'Family wounds surface. Childhood pain may need attention. Healing your roots heals everything that grows from them.',
+    5: 'Creative blocks, romantic wounds, or childhood pain around self-expression come up for healing through joy and play.',
+    6: 'Health vulnerabilities point toward where healing is needed. Your body is your teacher — listen to its specific messages.',
+    7: 'Relationship wounds activate. Past partnership pain informs present patterns. Healing comes through conscious relating.',
+    8: 'Deep psychological wounds around trust, power, or intimacy surface. Healing requires going into the pain, not around it.',
+    9: 'Wounds around meaning, faith, or belonging in the larger world need attention. Your search for truth IS the healing.',
+    10: 'Career wounds or imposter syndrome activate. Healing comes through showing up professionally despite feeling inadequate.',
+    11: 'Social rejection wounds surface. Healing comes through finding your people — the ones who see and accept the real you.',
+    12: 'Spiritual wounds or existential suffering need compassionate attention. Healing happens in solitude and surrender.',
+  },
+};
+
 // ─── Natal Overlay Section ──────────────────────────────────────
 export function generatePDFNatalOverlay(
   ctx: PDFContext, doc: jsPDF,
@@ -32,24 +218,28 @@ export function generatePDFNatalOverlay(
 ) {
   ctx.sectionTitle(doc, 'SOLAR RETURN TO NATAL HOUSE OVERLAY');
 
-  interface Point { label: string; house: number; meaning: string; }
+  interface Point { label: string; planetKey: string; house: number; meaning: string; felt: string; }
   const points: Point[] = [];
   const houseCounts: Record<number, string[]> = {};
 
-  const addPt = (label: string, house: number | null) => {
+  const addPt = (label: string, planetKey: string, house: number | null) => {
     if (!house) return;
-    points.push({ label, house, meaning: HOUSE_MEANINGS[house] || '' });
+    const feltMap = PLANET_HOUSE_FELT[planetKey];
+    const felt = feltMap?.[house] || HOUSE_MEANINGS[house] || '';
+    points.push({ label, planetKey, house, meaning: HOUSE_MEANINGS[house] || '', felt });
     if (!houseCounts[house]) houseCounts[house] = [];
     houseCounts[house].push(label);
   };
 
-  if (analysis.srAscInNatalHouse) addPt('Solar Return Ascendant', analysis.srAscInNatalHouse.natalHouse);
-  addPt('Solar Return Sun', analysis.sunNatalHouse?.house ?? null);
-  addPt('Solar Return Moon', analysis.moonNatalHouse?.house ?? null);
+  // Add ALL overlays
+  if (analysis.srAscInNatalHouse) addPt('Solar Return Ascendant', 'Ascendant', analysis.srAscInNatalHouse.natalHouse);
+  addPt('Solar Return Sun', 'Sun', analysis.sunNatalHouse?.house ?? null);
+  addPt('Solar Return Moon', 'Moon', analysis.moonNatalHouse?.house ?? null);
   for (const ov of analysis.houseOverlays || []) {
-    if (ov.planet === 'Saturn' || ov.planet === 'Jupiter') addPt(`Solar Return ${ov.planet}`, ov.natalHouse);
+    addPt(`Solar Return ${ov.planet}`, ov.planet, ov.natalHouse);
   }
 
+  // Dominant house banner
   let dominant: { house: number; count: number; labels: string[] } | null = null;
   for (const [h, labels] of Object.entries(houseCounts)) {
     if (labels.length >= 2 && (!dominant || labels.length > dominant.count)) {
@@ -85,41 +275,56 @@ export function generatePDFNatalOverlay(
     return;
   }
 
-  // Full-page layout: large font, generous spacing, single column
-  const cardH = 72;
-  const rowGap = 16;
-  const totalH = points.length * cardH + Math.max(0, points.length - 1) * rowGap;
+  // Two-column layout with felt-sense interpretations
+  const col2Gap = 14;
+  const col2W = (ctx.contentW - col2Gap) / 2;
+  const cardH = 90;
+  const rowGap = 12;
 
-  ctx.checkPage(Math.min(totalH + 10, 500));
+  for (let i = 0; i < points.length; i += 2) {
+    const leftP = points[i];
+    const rightP = points[i + 1];
 
-  for (let i = 0; i < points.length; i++) {
-    const p = points[i];
     ctx.checkPage(cardH + rowGap);
-
     const y = ctx.y;
 
-    doc.setFillColor(...ctx.colors.cream);
-    doc.roundedRect(ctx.margin, y, ctx.contentW, cardH, 4, 4, 'F');
-    doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.3);
-    doc.roundedRect(ctx.margin, y, ctx.contentW, cardH, 4, 4, 'S');
-    doc.setFillColor(...ctx.colors.gold);
-    doc.rect(ctx.margin, y, 3.5, cardH, 'F');
+    // Draw left card
+    drawOverlayCard(doc, ctx, ctx.margin, y, col2W, cardH, leftP);
 
-    // Large bold label
-    doc.setFont('times', 'bold'); doc.setFontSize(16);
-    doc.setTextColor(...ctx.colors.ink);
-    const label = `${p.label}  →  Natal ${p.house}${ord(p.house)} House`;
-    const labelLines = doc.splitTextToSize(label, ctx.contentW - 30);
-    doc.text(labelLines[0] || label, ctx.margin + 14, y + 28);
-
-    // Larger meaning text
-    doc.setFont('times', 'normal'); doc.setFontSize(13);
-    doc.setTextColor(...ctx.colors.muted);
-    const meaningLines = doc.splitTextToSize(p.meaning, ctx.contentW - 30);
-    doc.text(meaningLines[0] || p.meaning, ctx.margin + 14, y + 50);
+    // Draw right card if exists
+    if (rightP) {
+      drawOverlayCard(doc, ctx, ctx.margin + col2W + col2Gap, y, col2W, cardH, rightP);
+    }
 
     ctx.y = y + cardH + rowGap;
   }
+}
+
+function drawOverlayCard(
+  doc: jsPDF, ctx: PDFContext,
+  x: number, y: number, w: number, h: number,
+  p: { label: string; house: number; felt: string },
+) {
+  doc.setFillColor(...ctx.colors.cream);
+  doc.roundedRect(x, y, w, h, 4, 4, 'F');
+  doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.3);
+  doc.roundedRect(x, y, w, h, 4, 4, 'S');
+  doc.setFillColor(...ctx.colors.gold);
+  doc.rect(x, y, 3.5, h, 'F');
+
+  // Bold label
+  doc.setFont('times', 'bold'); doc.setFontSize(11);
+  doc.setTextColor(...ctx.colors.ink);
+  const label = `${p.label}  →  Natal ${p.house}${ord(p.house)}`;
+  const labelLines: string[] = doc.splitTextToSize(label, w - 22);
+  let ty = y + 18;
+  for (const l of labelLines) { doc.text(l, x + 12, ty); ty += 14; }
+
+  // Felt-sense interpretation
+  doc.setFont('times', 'normal'); doc.setFontSize(8.5);
+  doc.setTextColor(...ctx.colors.muted);
+  const feltLines: string[] = doc.splitTextToSize(p.felt, w - 22);
+  for (const l of feltLines.slice(0, 4)) { doc.text(l, x + 12, ty); ty += 11; }
 }
 
 // ─── Angle Activations Section ──────────────────────────────────
