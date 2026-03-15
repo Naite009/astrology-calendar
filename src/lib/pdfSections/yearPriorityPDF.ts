@@ -538,12 +538,6 @@ export function generatePDFYearPriority(
       doc.text(`#${i + 1}  ${theme.label}`, ctx.margin + 12, ctx.y);
       ctx.y += 14;
 
-      // Confidence
-      doc.setFont('times', 'normal'); doc.setFontSize(8);
-      doc.setTextColor(...ctx.colors.muted);
-      doc.text(`${theme.confidence} confidence`, ctx.margin + 12, ctx.y);
-      ctx.y += 14;
-
       // Why this ranks
       ctx.trackedLabel(doc, 'WHY THIS RANKS', ctx.margin + 12, ctx.y, { size: 6, charSpace: 2 });
       ctx.y += 10;
@@ -567,7 +561,7 @@ export function generatePDFYearPriority(
     for (const theme of rest) {
       doc.setFont('times', 'normal'); doc.setFontSize(8);
       doc.setTextColor(...ctx.colors.ink);
-      doc.text(`${theme.label} (${theme.confidence})`, ctx.margin + 8, ctx.y);
+      doc.text(theme.label, ctx.margin + 8, ctx.y);
       ctx.y += 11;
     }
   }
