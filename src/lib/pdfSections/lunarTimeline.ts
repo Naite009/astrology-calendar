@@ -180,7 +180,7 @@ export function generatePDFLunarTimeline(
   ctx.y += 12;
 
   const col2W = (contentW - 16) / 2;
-  const patternBoxH = 60;
+  const patternBoxH = 48;
 
   const patternSets: { label: string; years: number[]; color: Color }[] = [
     { label: 'NEW BEGINNINGS', years: patterns.newCycleYears, color: PHASE_DOT_RGB.beginning },
