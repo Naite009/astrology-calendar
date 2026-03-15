@@ -127,21 +127,41 @@ const lordHouseInterps: Record<number, string> = {
   12: "Your natal ruler has withdrawn into the hidden house. This is a year of retreat, spiritual deepening, and processing what is behind the scenes. Rest is not laziness — it is the work. What you release this year matters as much as what you pursue.",
 };
 
-// ─── Profection house summaries ─────────────────────────────────────
-const profectionHouseSummary: Record<number, string> = {
-  1: 'This is a year centered on self, identity, and new beginnings.',
-  2: 'This is a year centered on finances, values, and self-worth.',
-  3: 'This is a year centered on communication, learning, and local connections.',
-  4: 'This is a year centered on home, family, and emotional roots.',
-  5: 'This is a year centered on creativity, romance, and self-expression.',
-  6: 'This is a year centered on health, daily work, and routines.',
-  7: 'This is a year centered on partnerships, relationships, and contracts.',
-  8: 'This is a year centered on transformation, shared resources, and depth.',
-  9: 'This is a year centered on travel, higher learning, and expanding your worldview.',
-  10: 'This is a year centered on career, public reputation, and ambition.',
-  11: 'This is a year centered on community, friendships, and future visions.',
-  12: 'This is a year centered on rest, spirituality, and inner processing.',
+// ─── Profection house themes (used for synthesis with Time Lord) ──────
+const profectionHouseThemes: Record<number, string> = {
+  1: 'self, identity, and new beginnings',
+  2: 'finances, values, and self-worth',
+  3: 'communication, learning, and local connections',
+  4: 'home, family, and emotional roots',
+  5: 'creativity, romance, and self-expression',
+  6: 'health, daily work, and routines',
+  7: 'partnerships, relationships, and contracts',
+  8: 'transformation, shared resources, and depth',
+  9: 'travel, higher learning, and expanding your worldview',
+  10: 'career, public reputation, and ambition',
+  11: 'community, friendships, and future visions',
+  12: 'rest, spirituality, and inner processing',
 };
+
+// ─── Planet nature keywords for Time Lord synthesis ──────────────────
+const planetNatureKeywords: Record<string, string> = {
+  Sun: 'vitality, leadership, and conscious purpose',
+  Moon: 'emotional needs, instinct, and nurturing',
+  Mercury: 'communication, analysis, and adaptability',
+  Venus: 'pleasure, connection, aesthetics, and diplomacy',
+  Mars: 'drive, assertion, courage, and decisive action',
+  Jupiter: 'growth, opportunity, faith, and expansion',
+  Saturn: 'discipline, structure, long-term commitment, and mastery',
+};
+
+function buildProfectionSynthesis(timeLord: string, houseNumber: number): string {
+  const houseThemes = profectionHouseThemes[houseNumber] || '';
+  const planetNature = planetNatureKeywords[timeLord];
+  if (!planetNature) {
+    return `The year's focus areas — ${houseThemes} — are activated through ${timeLord}'s influence.`;
+  }
+  return `${timeLord} brings ${planetNature} to this year's focus on ${houseThemes}. You'll feel ${timeLord}'s nature coloring every development in these areas.`;
+}
 
 // ─── Aspect detection ───────────────────────────────────────────────
 interface Aspect {
