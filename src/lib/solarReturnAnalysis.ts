@@ -240,6 +240,7 @@ export interface SRMoonPhase {
   phase: string;
   description: string;
   isEclipse: boolean;
+  phaseAngle: number;
 }
 
 export interface SRStellium {
