@@ -165,7 +165,6 @@ export const SR_ASC_IN_NATAL_HOUSE: Record<number, { theme: string; description:
 };
 
 // ─── MC Sign Interpretations in SR ──────────────────────────────────
-// Source: Brian Clark — "Working with Solar Returns"
 
 export const SR_MC_SIGN: Record<string, string> = {
   Aries: 'The MC in Aries signals a year when career initiative is paramount. You are called to be bold, pioneering, and independent in your professional direction. Leadership roles or solo ventures are favored. Patience with slow-moving authority structures will be tested.',

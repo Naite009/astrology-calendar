@@ -220,18 +220,18 @@ const HTYM_MOON_BODY: Record<string, string> = {
 };
 
 const HTYM_RISING_BODY: Record<string, string> = {
-  Aries: 'Your public presence shifts toward boldness, directness, and initiative. Others perceive you as more courageous and action-oriented. The Aries Rising year energy favors starting things.',
-  Taurus: 'Your public presence becomes more grounded, patient, and reliable. Others see stability in you — the Taurus Rising year rewards building slowly and deliberately.',
-  Gemini: 'Your public presence becomes lighter, more curious, and verbally agile. The Gemini Rising year energy makes you a connector — ideas, people, and information flow through you.',
-  Cancer: 'Your public presence softens and becomes more nurturing. Others feel safe in your company — the Cancer Rising year opens doors through emotional intelligence.',
-  Leo: 'Your public presence becomes more visible, warm, and magnetic. The Leo Rising year demands that you step forward and let yourself be seen.',
-  Virgo: 'Your public presence sharpens and becomes more purposeful. The Virgo Rising year rewards precision, competence, and attention to detail.',
+  Aries: 'Your public presence shifts toward boldness, directness, and initiative. Others perceive you as more courageous and action-oriented — you feel impatient with hesitation and drawn to starting things.',
+  Taurus: 'Your public presence becomes more grounded, patient, and reliable. Others see stability in you — you feel most effective when building slowly and deliberately rather than rushing.',
+  Gemini: 'Your public presence becomes lighter, more curious, and verbally agile. You naturally become a connector — ideas, people, and information flow through you, and you feel most alive in conversation.',
+  Cancer: 'Your public presence softens and becomes more nurturing. Others feel safe in your company — doors open through emotional intelligence and the genuine care you project.',
+  Leo: 'Your public presence becomes more visible, warm, and magnetic. You feel a persistent pull to step forward and let yourself be seen — hiding feels uncomfortable and counterproductive.',
+  Virgo: 'Your public presence sharpens and becomes more purposeful. You feel most confident when demonstrating precision and competence — sloppy work from others becomes harder to tolerate.',
   Libra: 'Your public presence becomes more diplomatic, graceful, and partnership-oriented. Doors open through collaboration rather than solo ambition — you find yourself naturally mediating, beautifying, and building bridges between people.',
-  Scorpio: 'Your public presence deepens and becomes more intense. The Scorpio Rising year gives you a magnetic, transformative quality that others either gravitate toward or resist.',
-  Sagittarius: 'Your public presence opens and expands. The Sagittarius Rising year rewards adventure, teaching, and philosophical engagement with the world.',
-  Capricorn: 'Your public presence becomes more authoritative and focused. The Capricorn Rising year rewards ambition, structure, and taking on greater responsibility.',
-  Aquarius: 'Your public presence becomes more independent and original. The Aquarius Rising year rewards unconventional thinking and trusting your own vision.',
-  Pisces: 'Your public presence becomes gentler and more intuitive. The Pisces Rising year opens doors through compassion, creativity, and subtle connection.',
+  Scorpio: 'Your public presence deepens and becomes more intense. You carry a magnetic, transformative quality that others either gravitate toward or instinctively resist — superficial interactions feel like a waste of time.',
+  Sagittarius: 'Your public presence opens and expands. You feel most effective when teaching, adventuring, or engaging philosophically with the world — routine professional obligations feel constraining.',
+  Capricorn: 'Your public presence becomes more authoritative and focused. You feel a drive to take on greater responsibility and build something lasting — frivolous pursuits lose their appeal.',
+  Aquarius: 'Your public presence becomes more independent and original. You feel most aligned when trusting your own unconventional vision, even when it confuses people around you.',
+  Pisces: 'Your public presence becomes gentler and more intuitive. Doors open through compassion, creativity, and subtle connection — you influence others by feeling with them rather than directing them.',
 };
 
 function generateHowThisYearMeetsYou(
