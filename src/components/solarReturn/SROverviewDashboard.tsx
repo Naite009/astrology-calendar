@@ -608,6 +608,18 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
                     {getPlanetSignHouseExpert(prof.timeLord, prof.timeLordSRSign, prof.timeLordSRHouse, 'timeLord')}
                   </p>
 
+                  {/* Interception alert for Time Lord */}
+                  {timeLordSignIntercepted && (
+                    <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-2.5 space-y-1.5">
+                      <p className="text-[10px] uppercase tracking-widest text-amber-600 font-medium flex items-center gap-1.5">
+                        ⚠ {prof.timeLordSRSign} Is Intercepted
+                      </p>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        {getInterceptionModifier(prof.timeLord, prof.timeLordSRSign, 'timeLord')}
+                      </p>
+                    </div>
+                  )}
+
                   {/* Tight aspects for Time Lord (only if different from Lord) */}
                   {!isDoubled && timeLordTightAspects.length > 0 && (
                     <div className="bg-primary/5 rounded-lg p-2.5 border border-primary/10">
