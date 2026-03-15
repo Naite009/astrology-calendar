@@ -18,6 +18,10 @@ export interface SRHemisphericResult {
   lower: number;
   east: number;
   west: number;
+  upperPlanets: string[];
+  lowerPlanets: string[];
+  eastPlanets: string[];
+  westPlanets: string[];
   totalCounted: number;
   verticalLabel: string;   // e.g. "Balanced Upper/Lower" or "Upper Dominant"
   horizontalLabel: string; // e.g. "Extreme Eastern"
@@ -338,12 +342,14 @@ export function analyzeSRHemispheres(
   planetNames: string[]
 ): SRHemisphericResult {
   let upper = 0, lower = 0, east = 0, west = 0;
+  const upperPlanets: string[] = [], lowerPlanets: string[] = [];
+  const eastPlanets: string[] = [], westPlanets: string[] = [];
 
   for (const name of planetNames) {
     const h = planetHouses[name];
     if (h == null) continue;
-    if (h >= 7 && h <= 12) upper++; else lower++;
-    if (h >= 10 || h <= 3) east++; else west++;
+    if (h >= 7 && h <= 12) { upper++; upperPlanets.push(name); } else { lower++; lowerPlanets.push(name); }
+    if (h >= 10 || h <= 3) { east++; eastPlanets.push(name); } else { west++; westPlanets.push(name); }
   }
 
   const total = upper + lower;
@@ -353,6 +359,7 @@ export function analyzeSRHemispheres(
 
   return {
     upper, lower, east, west,
+    upperPlanets, lowerPlanets, eastPlanets, westPlanets,
     totalCounted: total,
     verticalLabel,
     horizontalLabel,
