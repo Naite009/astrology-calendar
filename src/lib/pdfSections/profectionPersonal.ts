@@ -115,7 +115,7 @@ export function generateProfectionPersonalSection(
   doc.text(HOUSE_FOCUS[houseNumber] || '', pw - margin - 22, heroY + 38, { align: 'right' });
 
   if (timeLordSRHouse && timeLordSRSign) {
-    doc.text(`SR House ${timeLordSRHouse} → ${timeLordSRSign}`, pw - margin - 22, heroY + 52, { align: 'right' });
+    doc.text(`SR House ${timeLordSRHouse} -- ${timeLordSRSign}`, pw - margin - 22, heroY + 52, { align: 'right' });
   }
 
   // THE ENERGY
