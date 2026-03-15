@@ -333,10 +333,11 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
                   ${isSelected ? 'bg-accent/20' : 'hover:bg-muted/30'}
                   ${entry.isMajorTransition ? 'opacity-100' : 'opacity-70 hover:opacity-100'}
                 `}
-                title={`${entry.year} — ${entry.phase} (${entry.cycleStage})`}
+                title={`${entry.year} — ${entry.phase} (${entry.cycleStage}) · ${entry.phaseAngle}°`}
               >
-                <span className="text-[9px] text-muted-foreground">{entry.year.toString().slice(2)}</span>
+                <span className="text-[9px] text-muted-foreground">{entry.year}</span>
                 <span className="text-sm leading-none">{PHASE_ICONS[entry.phase] || '☽'}</span>
+                <span className="text-[7px] text-muted-foreground/60">{entry.phaseAngle}°</span>
                 {entry.isMajorTransition && (
                   <Sparkles className="w-2 h-2 text-primary" />
                 )}
