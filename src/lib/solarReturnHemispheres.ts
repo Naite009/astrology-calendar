@@ -1,5 +1,4 @@
 // Solar Return Hemispheric Emphasis — Expert-level interpretations
-// Sources: Mary Fortier Shea (Planets in Solar Returns), Brian Clark, Lynn Bell, Cafe Astrology
 
 // ============================================================================
 // TYPES

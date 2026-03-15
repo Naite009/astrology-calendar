@@ -1,5 +1,4 @@
 // Solar Return Moon — Expert-level interpretations
-// Sources: Mary Fortier Shea, Cafe Astrology, Lynn Bell, Alexandre Volguine
 
 // ─── SR Moon in House (expanded, expert-level) ──────────────────────
 export const srMoonInHouseDeep: Record<number, { title: string; overview: string; emotionalTheme: string; focus: string; caution: string }> = {
