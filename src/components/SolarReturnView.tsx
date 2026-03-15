@@ -867,21 +867,30 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
                   const baseAge = houseNum - 1;
                   const allAges = Array.from({ length: 9 }, (_, j) => baseAge + j * 12).filter(a => a <= 99);
                   // Position house label near outer edge, ages near middle
-                  const houseLabelR = r - 18;
-                  const hlx = cx + houseLabelR * Math.cos(toRad(midAngle));
-                  const hly = cy - houseLabelR * Math.sin(toRad(midAngle));
-                  // For houses near horizontal axis (1,12,6,7), the radial layout
-                  // places house label + two age rows at nearly the same Y,
-                  // causing bunching. Fix: shift house label outward AND
-                  // stagger age rows with strong vertical offsets.
+                  // For horizontal-axis houses (1,6,7,12), radial offsets barely
+                  // change Y, so we offset PERPENDICULAR to the radius instead.
                   const isHorizontal = [1, 6, 7, 12].includes(houseNum);
-                  // Ages in two rows in the middle band — wider gap for horizontal houses
-                  const agesR1 = (r + rInner) / 2 + (isHorizontal ? 20 : 12);
-                  const agesR2 = (r + rInner) / 2 - (isHorizontal ? 20 : 12);
-                  const a1x = cx + agesR1 * Math.cos(toRad(midAngle));
-                  const a1y = cy - agesR1 * Math.sin(toRad(midAngle));
-                  const a2x = cx + agesR2 * Math.cos(toRad(midAngle));
-                  const a2y = cy - agesR2 * Math.sin(toRad(midAngle));
+                  const midRad = toRad(midAngle);
+                  const cosM = Math.cos(midRad);
+                  const sinM = Math.sin(midRad);
+                  // Perpendicular unit vector (tangent, pointing "up" in wedge)
+                  const perpX = sinM;  // rotated 90° from radial
+                  const perpY = cosM;
+
+                  const houseLabelR = r - 18;
+                  // For horizontal houses, nudge the house label perpendicular
+                  const hPerp = isHorizontal ? 14 : 0;
+                  const hlx = cx + houseLabelR * cosM + perpX * hPerp;
+                  const hly = cy - houseLabelR * sinM + perpY * hPerp;
+
+                  // Age rows: use different radii AND perpendicular nudge
+                  const agesR1 = (r + rInner) / 2 + 12;
+                  const agesR2 = (r + rInner) / 2 - 12;
+                  const agePerp = isHorizontal ? 10 : 0;
+                  const a1x = cx + agesR1 * cosM + perpX * agePerp;
+                  const a1y = cy - agesR1 * sinM + perpY * agePerp;
+                  const a2x = cx + agesR2 * cosM - perpX * agePerp;
+                  const a2y = cy - agesR2 * sinM - perpY * agePerp;
                   const row1 = allAges.slice(0, 5);
                   const row2 = allAges.slice(5);
 
