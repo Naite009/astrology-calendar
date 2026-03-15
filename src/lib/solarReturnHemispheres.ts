@@ -253,7 +253,7 @@ function getHorizontalDetail(east: number, west: number, total: number): { label
           : 'Western Hemisphere Emphasis — Collaborative & Responsive',
       summary: `${west} of your ${total} planets occupy the western hemisphere (Houses 4, 5, 6, 7, 8, 9). This year unfolds through other people — partnerships, collaborations, and how you respond to external circumstances.`,
       bodyParagraphs: [
-        `With ${west} out of ${total} planets in the western hemisphere and only ${east} in the east, this Solar Return places you in a responsive rather than initiating role. Mary Fortier Shea describes western emphasis as years when "fate" plays a stronger hand — not because you lack free will, but because your most important growth comes through engaging with others and responding to circumstances you did not create.`,
+        `With ${west} out of ${total} planets in the western hemisphere and only ${east} in the east, this Solar Return places you in a responsive rather than initiating role. Western emphasis means your most important growth comes through engaging with others and responding to circumstances you did not create.`,
 
         'The western hemisphere (Houses 4, 5, 6, 7, 8, 9) encompasses home and family roots (4th), creative expression and romance (5th), health and service (6th), committed partnerships (7th), shared resources and transformation (8th), and higher learning and travel (9th). Planets clustering here signal a year where these relational and experiential domains dominate.',
 
@@ -261,9 +261,9 @@ function getHorizontalDetail(east: number, west: number, total: number): { label
           ? 'With nearly all planets in the west, this is one of the most other-oriented Solar Returns possible. Your personal fate this year is deeply intertwined with the actions, decisions, and needs of other people. Major life changes may come through a partner\'s career move, a family member\'s health, a business partner\'s decision, or a teacher/mentor\'s influence. The lesson is profound surrender to the collaborative process.'
           : 'This strong western emphasis means relationships and collaborations are the primary vehicles through which this year\'s story unfolds. Your growth comes not from solo initiative but from how you engage, negotiate, and respond.',
 
-        'Lynn Bell notes that western-emphasis Solar Returns often bring significant relationship developments — marriages, business partnerships, important new friendships, or the need to renegotiate existing relationships. These are years to practice the art of compromise, negotiation, and receptivity.',
+        'Western-emphasis Solar Returns often bring significant relationship developments — marriages, business partnerships, important new friendships, or the need to renegotiate existing relationships. These are years to practice the art of compromise, negotiation, and receptivity.',
 
-        'Brian Clark observes that western years teach us that fulfillment doesn\'t always come from personal ambition. Sometimes the deepest growth arrives when we open ourselves to what others bring us — their perspectives, needs, challenges, and gifts.'
+        'Western years teach us that fulfillment doesn\'t always come from personal ambition. Sometimes the deepest growth arrives when we open ourselves to what others bring us — their perspectives, needs, challenges, and gifts.'
       ],
       focusAreas: [
         'Partnerships — romantic, business, and creative collaborations',
