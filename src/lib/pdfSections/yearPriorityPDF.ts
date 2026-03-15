@@ -98,6 +98,30 @@ const ASPECT_DEFS = [
 ];
 const ORB = 3;
 
+// ─── Felt-sense narratives for angle activations ────────────────
+const ANGLE_FELT: Record<string, string> = {
+  Ascendant: 'your physical presence, first impressions, and how you instinctively approach new situations. You feel this in your body — posture shifts, energy levels change, and people respond to you differently without knowing why.',
+  Descendant: 'your closest partnerships and how you relate one-on-one. Relationship dynamics feel electric — you attract new connections or existing partnerships undergo visible restructuring. Compromise and projection patterns surface.',
+  Midheaven: 'your career, public reputation, and life direction. Professional visibility increases — you feel more exposed, more scrutinized, and more driven toward what you want the world to see.',
+  IC: 'your home, family roots, and emotional foundations. Something shifts at the base of your life — living situations change, family dynamics surface, or your private inner world demands attention you cannot postpone.',
+};
+
+const PLANET_FELT: Record<string, string> = {
+  Sun: 'your core identity and sense of purpose. You feel more visible, more yourself, and more aware of whether your daily life matches who you actually are.',
+  Moon: 'your emotional needs and instinctive reactions. Feelings run stronger, intuition sharpens, and your body tells you what your mind hasn\'t caught up to yet.',
+  Mercury: 'your thinking patterns, communication style, and daily information processing. Conversations carry more weight, ideas come faster, and what you say (or don\'t say) has consequences.',
+  Venus: 'your values, relationships, and what you find beautiful. You feel more attuned to pleasure and more aware of where your relationships need honesty.',
+  Mars: 'your drive, ambition, and how you handle conflict. Energy surges — you feel restless, competitive, or motivated to push through obstacles that previously stopped you.',
+  Jupiter: 'your growth, optimism, and where life feels expansive. Opportunities appear. The danger is overcommitting. The gift is genuine expansion.',
+  Saturn: 'your responsibilities, limits, and long-term structures. You feel the weight of what matters — bones, boundaries, and commitments that demand follow-through.',
+  Uranus: 'your need for freedom, originality, and sudden change. Expect the unexpected — disruptions that feel destabilizing in the moment but liberating afterward.',
+  Neptune: 'your intuition, imagination, and where boundaries dissolve. Reality feels softer, dreams are vivid, and the line between what you want and what is actually happening blurs.',
+  Pluto: 'deep transformation and power dynamics. Something hidden surfaces — control patterns, buried emotions, or situations that force you to let go of what you\'ve outgrown.',
+  'N.Node': 'your soul\'s growth direction. Life events push you toward unfamiliar territory that feels uncomfortable but necessary — the discomfort is the signal you\'re growing.',
+  NorthNode: 'your soul\'s growth direction. Life events push you toward unfamiliar territory that feels uncomfortable but necessary.',
+  Chiron: 'your deepest wound and greatest healing gift. Old pain resurfaces — not to retraumatize, but to show you how far you\'ve come and where compassion still needs to reach.',
+};
+
 export function generatePDFAngleActivations(
   ctx: PDFContext, doc: jsPDF,
   natalChart: NatalChart, srChart: SolarReturnChart,
@@ -106,6 +130,18 @@ export function generatePDFAngleActivations(
 
   interface Act { label: string; aspectName: string; orb: number; narrative: string; priority: number; }
   const acts: Act[] = [];
+
+  const buildNarrative = (srBody: string, aspectName: string, natalBody: string, natalKey: string, srKey: string): string => {
+    const feltTarget = PLANET_FELT[natalKey] || ANGLE_FELT[natalBody] || '';
+    const feltSource = PLANET_FELT[srKey] || ANGLE_FELT[srBody] || '';
+    if (feltTarget) {
+      return `SR ${srBody} ${aspectName}s natal ${natalBody} — this directly touches ${feltTarget}`;
+    }
+    if (feltSource) {
+      return `SR ${srBody} ${aspectName}s natal ${natalBody} — this channels ${feltSource}`;
+    }
+    return `SR ${srBody} ${aspectName}s natal ${natalBody}.`;
+  };
 
   // SR angles
   const srAngles: { name: string; deg: number | null }[] = [];
@@ -133,7 +169,7 @@ export function generatePDFAngleActivations(
         const orb = Math.abs(diff - asp.angle);
         if (orb <= ORB) {
           const dp = pName === 'NorthNode' ? 'N.Node' : pName;
-          acts.push({ label: `SR ${angle.name} ${asp.glyph} Natal ${dp}`, aspectName: asp.name, orb: Math.round(orb * 10) / 10, narrative: `SR ${angle.name} ${asp.name}s natal ${dp} -- this contact activates ${dp} themes through the year.`, priority: asp.angle === 0 ? 1 : 2 });
+          acts.push({ label: `SR ${angle.name} ${asp.glyph} Natal ${dp}`, aspectName: asp.name, orb: Math.round(orb * 10) / 10, narrative: buildNarrative(angle.name, asp.name, dp, pName, angle.name), priority: asp.angle === 0 ? 1 : 2 });
         }
       }
     }
@@ -151,7 +187,7 @@ export function generatePDFAngleActivations(
         const orb = Math.abs(diff - asp.angle);
         if (orb <= ORB) {
           const dp = pName === 'NorthNode' ? 'N.Node' : pName;
-          acts.push({ label: `SR ${dp} ${asp.glyph} Natal ${angle.name}`, aspectName: asp.name, orb: Math.round(orb * 10) / 10, narrative: `SR ${dp} ${asp.name}s natal ${angle.name} -- visible activation of ${angle.name} themes.`, priority: asp.angle === 0 ? 1 : 3 });
+          acts.push({ label: `SR ${dp} ${asp.glyph} Natal ${angle.name}`, aspectName: asp.name, orb: Math.round(orb * 10) / 10, narrative: buildNarrative(dp, asp.name, angle.name, angle.name, pName), priority: asp.angle === 0 ? 1 : 3 });
         }
       }
     }
@@ -165,7 +201,7 @@ export function generatePDFAngleActivations(
   }
 
   for (const act of acts.slice(0, 8)) {
-    ctx.checkPage(40);
+    ctx.checkPage(50);
     doc.setFont('times', 'bold'); doc.setFontSize(9);
     doc.setTextColor(...ctx.colors.ink);
     doc.text(`${act.label} (${act.orb} deg)`, ctx.margin, ctx.y);
@@ -174,7 +210,7 @@ export function generatePDFAngleActivations(
     doc.setTextColor(...ctx.colors.muted);
     const lines = doc.splitTextToSize(act.narrative, ctx.contentW - 16);
     for (const l of lines) { doc.text(l, ctx.margin + 8, ctx.y); ctx.y += 11; }
-    ctx.y += 4;
+    ctx.y += 6;
   }
 }
 
