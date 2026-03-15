@@ -82,7 +82,7 @@ export function createPDFContext(
     },
 
     pageBg(d: jsPDF) {
-      d.setFillColor(...CREAM);
+      d.setFillColor(255, 255, 255);
       d.rect(0, 0, pw, ph, 'F');
     },
 
