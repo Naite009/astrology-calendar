@@ -683,10 +683,9 @@ export async function generateBirthdayGiftPDF(
     generateProfectionPersonalSection(ctx, doc, analysis.profectionYear.houseNumber, analysis.profectionYear.timeLord, analysis.profectionYear.age, analysis.profectionYear.timeLordSRHouse || null, analysis.profectionYear.timeLordSRSign || '');
   }
 
-  // 16. KEY DATES TIMELINE
+  // 16. KEY DATES TIMELINE (note: generateKeyDatesTimeline creates its own first page)
   if (analysis.profectionYear) {
-    doc.addPage(); ctx.y = margin;
-    ctx.sectionPages.set('KEY DATES', doc.getNumberOfPages());
+    ctx.sectionPages.set('KEY DATES', doc.getNumberOfPages() + 1);
     generateKeyDatesTimeline(ctx, doc, analysis.profectionYear.timeLord, natalChart, srChart);
   }
 
