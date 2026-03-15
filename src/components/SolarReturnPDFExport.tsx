@@ -393,8 +393,9 @@ export async function generateBirthdayGiftPDF(
   ctx.sectionPages.set('YEAR AT A GLANCE', doc.getNumberOfPages());
   generatePDFYearAtAGlance(ctx, doc, analysis, srChart, natalChart);
 
-  // 7. SR MOON PHASE TIMELINE
+  // 7. SOLAR RETURN MOON PHASE TIMELINE
   doc.addPage(); ctx.y = margin;
+  ctx.sectionPages.set('LUNAR PHASE TIMELINE', doc.getNumberOfPages());
   ctx.sectionPages.set('SR MOON PHASE BY YEAR', doc.getNumberOfPages());
   generatePDFLunarTimeline(ctx, doc, analysis, srChart, natalChart);
 
