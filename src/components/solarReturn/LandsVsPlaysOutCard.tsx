@@ -1,4 +1,4 @@
-import { Compass, MapPin, ArrowRight, HelpCircle } from 'lucide-react';
+import { Compass, MapPin, ArrowRight, HelpCircle, Layers } from 'lucide-react';
 import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 
 const SIGN_SYMBOLS: Record<string, string> = {
@@ -36,10 +36,8 @@ function getSynthesis(landsHouse: number, playsOutHouse: number): string {
   if (landsHouse === playsOutHouse) {
     return `Both techniques point to the same house — an unusually focused year. The life area of your ${ordinal(landsHouse)} house receives both the most planetary traffic AND the underlying motivational engine. This is a year where volume and direction are aligned.`;
   }
-
   const landsLabel = HOUSE_MEANINGS[landsHouse]?.split(',')[0]?.toLowerCase() || '';
   const playsLabel = HOUSE_MEANINGS[playsOutHouse]?.split(',')[0]?.toLowerCase() || '';
-
   return `Events and activity concentrate in your ${ordinal(landsHouse)} house (${landsLabel}), but the underlying motivation routes through your ${ordinal(playsOutHouse)} house (${playsLabel}). In practice, ${landsLabel} matters get the most attention, but they keep circling back to ${playsLabel} questions. The ${ordinal(landsHouse)} house is where life happens; the ${ordinal(playsOutHouse)} house is why it matters to you.`;
 }
 
@@ -51,7 +49,7 @@ export function LandsVsPlaysOutCard({ analysis }: Props) {
   // "Where the Year Lands" = dominant natal house from overlay
   const overlays = analysis.houseOverlays || [];
   const houseCounts: Record<number, string[]> = {};
-  
+
   const addToCount = (label: string, house: number | null) => {
     if (!house) return;
     if (!houseCounts[house]) houseCounts[house] = [];
@@ -84,8 +82,15 @@ export function LandsVsPlaysOutCard({ analysis }: Props) {
 
   if (!landsHouse && !playsOutHouse) return null;
 
+  // Extract planet icons from the landsPlanets list for the left card
+  const extractPlanetFromLabel = (label: string): string | null => {
+    const match = label.match(/^SR\s+(.+)$/);
+    return match ? match[1] : null;
+  };
+
   return (
     <div className="border border-primary/20 rounded-sm bg-card overflow-hidden">
+      {/* Header */}
       <div className="bg-primary/5 px-5 py-3 border-b border-primary/10">
         <h3 className="text-sm uppercase tracking-widest font-medium text-foreground flex items-center gap-2">
           <Compass size={16} className="text-primary" />
@@ -96,85 +101,143 @@ export function LandsVsPlaysOutCard({ analysis }: Props) {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+      {/* Two-column cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5">
         {/* LEFT: Where the Year Lands */}
-        <div className="p-4 md:border-r border-b md:border-b-0 border-border space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <MapPin size={16} className="text-primary" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-foreground uppercase tracking-widest">Where the Year Lands</p>
-              <p className="text-[10px] text-muted-foreground">Natal House Overlay technique</p>
+        <div className="border border-border rounded-lg overflow-hidden">
+          {/* Card header */}
+          <div className="bg-muted/40 px-4 py-3 border-b border-border">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <MapPin size={15} className="text-primary" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-foreground uppercase tracking-widest">Where the Year Lands</p>
+                <p className="text-[10px] text-muted-foreground">Natal House Overlay technique</p>
+              </div>
             </div>
           </div>
 
-          {landsHouse ? (
-            <>
-              <div className="bg-primary/5 border border-primary/10 rounded-sm p-2.5">
-                <p className="text-lg font-serif text-foreground">
-                  Natal {ordinal(landsHouse)} House
-                </p>
-                <p className="text-xs text-muted-foreground">{HOUSE_MEANINGS[landsHouse]}</p>
-              </div>
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
-                {landsCount} SR points land here ({landsPlanets.join(', ')}). This house gets the most planetary traffic — it's where events, people, and circumstances show up most frequently.
-              </p>
-              <p className="text-[10px] text-muted-foreground/70 leading-relaxed">
-                <strong className="text-foreground">Answers:</strong> "What area of life gets the most activity this year?"
-              </p>
-            </>
-          ) : (
-            <p className="text-xs text-muted-foreground">No dominant overlay house detected</p>
-          )}
+          {/* Card body */}
+          <div className="p-4 space-y-3">
+            {landsHouse ? (
+              <>
+                {/* House highlight box */}
+                <div className="bg-primary/5 border border-primary/10 rounded-sm p-3">
+                  <p className="text-xl font-serif text-foreground">
+                    Natal {ordinal(landsHouse)} House
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{HOUSE_MEANINGS[landsHouse]}</p>
+                </div>
+
+                {/* Step-style breakdown to mirror the right card */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 text-[11px]">
+                    <span className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Layers size={10} className="text-primary" />
+                    </span>
+                    <span className="text-foreground font-medium">{landsCount} SR points</span>
+                    <span className="text-muted-foreground">land in this house</span>
+                  </div>
+                  {landsPlanets.map((label, i) => {
+                    const planet = extractPlanetFromLabel(label);
+                    const symbol = planet ? PLANET_SYMBOLS[planet] : '';
+                    return (
+                      <div key={i} className="flex items-center gap-2 text-[11px] pl-7">
+                        {symbol && <span className="text-base leading-none">{symbol}</span>}
+                        <span className="text-muted-foreground">{label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Answer */}
+                <div className="pt-2 border-t border-border">
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">
+                    <strong className="text-foreground">Answers:</strong>{' '}
+                    <span className="italic">"What area of life gets the most activity this year?"</span>
+                  </p>
+                </div>
+              </>
+            ) : (
+              <p className="text-xs text-muted-foreground">No dominant overlay house detected</p>
+            )}
+          </div>
         </div>
 
         {/* RIGHT: Where It Plays Out */}
-        <div className="p-4 space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-accent/30 flex items-center justify-center">
-              <Compass size={16} className="text-primary" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-foreground uppercase tracking-widest">Where It Plays Out</p>
-              <p className="text-[10px] text-muted-foreground">SR Ascendant Ruler technique</p>
+        <div className="border border-border rounded-lg overflow-hidden">
+          {/* Card header */}
+          <div className="bg-muted/40 px-4 py-3 border-b border-border">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Compass size={15} className="text-primary" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-foreground uppercase tracking-widest">Where It Plays Out</p>
+                <p className="text-[10px] text-muted-foreground">SR Ascendant Ruler technique</p>
+              </div>
             </div>
           </div>
 
-          {playsOut && playsOutHouse ? (
-            <>
-              <div className="bg-accent/10 border border-accent/20 rounded-sm p-2.5">
-                <p className="text-lg font-serif text-foreground">
-                  Natal {ordinal(playsOutHouse)} House
-                </p>
-                <p className="text-xs text-muted-foreground">{HOUSE_MEANINGS[playsOutHouse]}</p>
-              </div>
-              <div className="text-[11px] text-muted-foreground leading-relaxed space-y-1">
-                <p className="flex items-center gap-1">
-                  <span className="text-foreground font-medium">Step 1:</span> SR Ascendant = {SIGN_SYMBOLS[playsOut.srAscSign]} {playsOut.srAscSign}
-                </p>
-                <p className="flex items-center gap-1">
-                  <span className="text-foreground font-medium">Step 2:</span> Ruled by {PLANET_SYMBOLS[playsOut.rulerPlanet]} {playsOut.rulerPlanet}
-                </p>
-                <p className="flex items-center gap-1">
-                  <span className="text-foreground font-medium">Step 3:</span> Natal {playsOut.rulerPlanet} → {playsOut.rulerNatalSign ? `${SIGN_SYMBOLS[playsOut.rulerNatalSign]} ${playsOut.rulerNatalSign}` : '—'}, {ordinal(playsOutHouse)} house
-                </p>
-              </div>
-              <p className="text-[10px] text-muted-foreground/70 leading-relaxed">
-                <strong className="text-foreground">Answers:</strong> "Where does the year's engine actually drive you?"
-              </p>
-            </>
-          ) : (
-            <p className="text-xs text-muted-foreground">SR Ascendant ruler data unavailable</p>
-          )}
+          {/* Card body */}
+          <div className="p-4 space-y-3">
+            {playsOut && playsOutHouse ? (
+              <>
+                {/* House highlight box — matching left */}
+                <div className="bg-primary/5 border border-primary/10 rounded-sm p-3">
+                  <p className="text-xl font-serif text-foreground">
+                    Natal {ordinal(playsOutHouse)} House
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{HOUSE_MEANINGS[playsOutHouse]}</p>
+                </div>
+
+                {/* Step-by-step with consistent icon treatment */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 text-[11px]">
+                    <span className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-[10px]">1</span>
+                    <span className="text-muted-foreground">SR Ascendant =</span>
+                    <span className="text-base leading-none">{SIGN_SYMBOLS[playsOut.srAscSign] || ''}</span>
+                    <span className="text-foreground font-medium">{playsOut.srAscSign}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[11px]">
+                    <span className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-[10px]">2</span>
+                    <span className="text-muted-foreground">Ruled by</span>
+                    <span className="text-base leading-none">{PLANET_SYMBOLS[playsOut.rulerPlanet] || ''}</span>
+                    <span className="text-foreground font-medium">{playsOut.rulerPlanet}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[11px]">
+                    <span className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-[10px]">3</span>
+                    <span className="text-muted-foreground">Natal {playsOut.rulerPlanet} →</span>
+                    {playsOut.rulerNatalSign && <span className="text-base leading-none">{SIGN_SYMBOLS[playsOut.rulerNatalSign]}</span>}
+                    <span className="text-foreground font-medium">
+                      {playsOut.rulerNatalSign || '—'}, {ordinal(playsOutHouse)} house
+                    </span>
+                  </div>
+                </div>
+
+                {/* Answer */}
+                <div className="pt-2 border-t border-border">
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">
+                    <strong className="text-foreground">Answers:</strong>{' '}
+                    <span className="italic">"Where does the year's engine actually drive you?"</span>
+                  </p>
+                </div>
+              </>
+            ) : (
+              <p className="text-xs text-muted-foreground">SR Ascendant ruler data unavailable</p>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Synthesis */}
       {landsHouse && playsOutHouse && (
-        <div className="border-t border-border px-5 py-3 bg-muted/20">
-          <div className="flex items-start gap-2">
-            <ArrowRight size={12} className="text-primary flex-shrink-0 mt-1" />
+        <div className="border-t border-border mx-5 mb-5 pt-3">
+          <div className="flex items-start gap-2.5">
+            <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <ArrowRight size={10} className="text-primary" />
+            </div>
             <div>
               <p className="text-[10px] uppercase tracking-widest text-primary font-medium mb-1">How These Connect</p>
               <p className="text-xs text-muted-foreground leading-relaxed">
@@ -186,7 +249,7 @@ export function LandsVsPlaysOutCard({ analysis }: Props) {
       )}
 
       {/* Method note */}
-      <div className="border-t border-border px-5 py-2.5">
+      <div className="border-t border-border px-5 py-2.5 bg-muted/10">
         <div className="flex items-start gap-1.5">
           <HelpCircle size={10} className="text-muted-foreground flex-shrink-0 mt-0.5" />
           <p className="text-[10px] text-muted-foreground leading-relaxed">
