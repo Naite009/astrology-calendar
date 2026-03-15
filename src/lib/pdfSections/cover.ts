@@ -88,8 +88,13 @@ export async function generatePDFCover(
   doc.setFont('times', 'normal'); doc.setFontSize(7.5);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(4);
-  doc.text(`SOLAR RETURN`, pw / 2 - 60, y);
-  doc.text(String(year), pw / 2 + 40, y);
+  doc.text('SOLAR RETURN', pw / 2, y, { align: 'center' });
+  doc.setCharSpace(0);
+  y += 16;
+  doc.setFont('times', 'normal'); doc.setFontSize(9);
+  doc.setTextColor(...GOLD);
+  doc.setCharSpace(5);
+  doc.text(String(year), pw / 2, y, { align: 'center' });
   doc.setCharSpace(0);
 
   // Hairline under masthead
