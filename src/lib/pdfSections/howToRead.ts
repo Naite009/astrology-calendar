@@ -12,16 +12,14 @@ export function generateHowToReadPage(ctx: PDFContext, doc: jsPDF) {
 
   ctx.pageBg(doc);
 
-  // Section header
+  // Section header — start higher (no extra spacing)
   ctx.trackedLabel(doc, '01 - HOW TO READ THIS REPORT', margin, ctx.y);
   ctx.y += 8;
   doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
   ctx.y += 18;
 
-  // Large serif display title — moved DOWN extra rows for breathing room
-  ctx.y += 36;
-
+  // Large serif display title — no extra 36pt gap
   doc.setFont('times', 'normal'); doc.setFontSize(24);
   doc.setTextColor(...INK);
   doc.text('Your Personal Map for the Year', margin, ctx.y);
@@ -32,14 +30,7 @@ export function generateHowToReadPage(ctx: PDFContext, doc: jsPDF) {
   doc.line(margin, ctx.y, pw - margin, ctx.y);
   ctx.y += 14;
 
-  // Intro card
-  ctx.drawCard(doc, () => {
-    doc.setFont('times', 'normal'); doc.setFontSize(10);
-    doc.setTextColor(...INK);
-    const intro = 'This report is your personal map for the year ahead. No astrology background is needed -- every concept is explained as you go.';
-    const introLines: string[] = doc.splitTextToSize(intro, contentW - 28);
-    for (const line of introLines) { doc.text(line, margin + 14, ctx.y); ctx.y += 16; }
-  });
+  // NO intro card — removed per request. Go straight to concepts.
 
   const concepts: { title: string; body: string }[] = [
     {

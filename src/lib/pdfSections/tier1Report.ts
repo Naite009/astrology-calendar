@@ -433,7 +433,7 @@ export async function generateTier1SolarReturnPDF(
     // Tags right-aligned
     doc.setFont('times', 'normal'); doc.setFontSize(8);
     doc.setTextColor(...MUTED);
-    doc.text(`${card.natalTag}  →  ${card.srTag}`, MARGIN + contentW, y, { align: 'right' });
+    doc.text(`${card.natalTag}  -->  ${card.srTag}`, MARGIN + contentW, y, { align: 'right' });
     y += 12;
 
     // Headline

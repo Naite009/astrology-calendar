@@ -83,19 +83,13 @@ export async function generatePDFCover(
   doc.setDrawColor(...GOLD); doc.setLineWidth(0.5);
   doc.rect(frameInset, frameInset, pw - frameInset * 2, ph - frameInset * 2);
 
-  // Top-left: small "SOLAR RETURN" masthead
+  // Top: "SOLAR RETURN  ·  2026" centered
   let y = frameInset + 30;
   doc.setFont('times', 'normal'); doc.setFontSize(7.5);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(4);
-  doc.text('SOLAR RETURN', frameInset + 22, y);
-  doc.setCharSpace(0);
-
-  // Top-right: year as small accent
-  doc.setFont('times', 'normal'); doc.setFontSize(7.5);
-  doc.setTextColor(...GOLD);
-  doc.setCharSpace(4);
-  doc.text(String(year), pw - frameInset - 22, y, { align: 'right' });
+  doc.text(`SOLAR RETURN`, pw / 2 - 60, y);
+  doc.text(String(year), pw / 2 + 40, y);
   doc.setCharSpace(0);
 
   // Hairline under masthead
@@ -127,11 +121,12 @@ export async function generatePDFCover(
   }
 
   // Name — centered, elegant, tracked
+  // Use manual letter-spacing to ensure perfect centering
   doc.setFont('times', 'normal'); doc.setFontSize(14);
   doc.setTextColor(...MUTED);
-  doc.setCharSpace(6);
-  doc.text(name.toUpperCase(), pw / 2, y, { align: 'center' });
-  doc.setCharSpace(0);
+  const nameUpper = name.toUpperCase();
+  const nameSpaced = nameUpper.split('').join('  ');
+  doc.text(nameSpaced, pw / 2, y, { align: 'center' });
   y += 24;
 
   // Birth info — clean, no special characters, centered
@@ -140,7 +135,7 @@ export async function generatePDFCover(
   const birthParts: string[] = [];
   if (dateStr) birthParts.push(dateStr);
   if (locStr) birthParts.push(locStr);
-  const birthInfo = birthParts.join('  ·  ');
+  const birthInfo = birthParts.join('  --  ');
   doc.setFont('times', 'normal'); doc.setFontSize(7.5);
   doc.setTextColor(...MUTED);
   doc.text(birthInfo, pw / 2, y, { align: 'center' });

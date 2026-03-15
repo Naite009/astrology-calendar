@@ -218,7 +218,7 @@ function generateHowThisYearMeetsYou(
   ctx: PDFContext, doc: jsPDF, a: SolarReturnAnalysis,
   srChart: SolarReturnChart, natalChart: NatalChart,
 ) {
-  const { margin, contentW, colors } = ctx;
+  const { margin, contentW, colors, pw } = ctx;
   const natalSun = natalChart.planets?.Sun?.sign || '';
   const natalMoon = natalChart.planets?.Moon?.sign || '';
   const natalRising = natalChart.houseCusps?.house1?.sign || natalChart.planets?.Ascendant?.sign || '';
@@ -264,10 +264,13 @@ function generateHowThisYearMeetsYou(
     // Tracked caps label
     ctx.trackedLabel(doc, card.label, margin, ctx.y, { size: 7, charSpace: 3 });
 
-    // Tags: natal → SR
+    // Tags: natal --> SR (no unicode arrows — jsPDF Times doesn't support them)
     doc.setFont('times', 'normal'); doc.setFontSize(8);
     doc.setTextColor(...colors.muted);
-    doc.text(`${card.natalTag}  →  ${card.srTag}`, margin + contentW, ctx.y, { align: 'right' });
+    const tagStr = `${card.natalTag}  -->  ${card.srTag}`;
+    // Place tags with margin from right edge to prevent overflow
+    const tagW = doc.getTextWidth(tagStr);
+    doc.text(tagStr, Math.min(margin + contentW, pw - margin) - tagW, ctx.y);
     ctx.y += 12;
 
     // Headline

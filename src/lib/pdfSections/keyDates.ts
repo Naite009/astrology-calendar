@@ -288,7 +288,7 @@ export function generateKeyDatesSection(
 
       doc.setFont('times', 'normal'); doc.setFontSize(8.5);
       doc.setTextColor(...MUTED);
-      doc.text(`${event.orb} degree orb  →  ${event.transitSign} ${event.transitDegree} degrees`, margin + 14, ctx.y);
+      doc.text(`${event.orb} degree orb -- ${event.transitSign} ${event.transitDegree} degrees`, margin + 14, ctx.y);
       ctx.y += 18;
 
       // Interpretation body — full-width

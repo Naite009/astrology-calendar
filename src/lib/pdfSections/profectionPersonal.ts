@@ -111,11 +111,11 @@ export function generateProfectionPersonalSection(
   // Right-aligned details
   doc.setFont('times', 'normal'); doc.setFontSize(9);
   doc.setTextColor(...GOLD);
-  doc.text(`${ord(houseNumber)} House Profection Year → Age ${age}`, pw - margin - 22, heroY + 24, { align: 'right' });
+  doc.text(`${ord(houseNumber)} House Profection Year -- Age ${age}`, pw - margin - 22, heroY + 24, { align: 'right' });
   doc.text(HOUSE_FOCUS[houseNumber] || '', pw - margin - 22, heroY + 38, { align: 'right' });
 
   if (timeLordSRHouse && timeLordSRSign) {
-    doc.text(`SR House ${timeLordSRHouse} → ${timeLordSRSign}`, pw - margin - 22, heroY + 52, { align: 'right' });
+    doc.text(`SR House ${timeLordSRHouse} -- ${timeLordSRSign}`, pw - margin - 22, heroY + 52, { align: 'right' });
   }
 
   // THE ENERGY
@@ -204,7 +204,7 @@ export function generateProfectionPersonalSection(
       ctx.y += 16;
       doc.setFont('times', 'bold'); doc.setFontSize(14);
       doc.setTextColor(...INK);
-      doc.text(`${timeLordSRSign} → ${ord(timeLordSRHouse)} House`, margin + 14, ctx.y);
+      doc.text(`${timeLordSRSign} -- ${ord(timeLordSRHouse)} House`, margin + 14, ctx.y);
       ctx.y += 20;
       doc.setFont('times', 'normal'); doc.setFontSize(11);
       doc.setTextColor(...INK);
