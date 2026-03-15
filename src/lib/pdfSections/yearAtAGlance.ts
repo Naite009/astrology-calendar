@@ -205,7 +205,7 @@ export function generatePDFYearAtAGlance(
     ctx.checkPage(200);
     const col2Gap = 16;
     const col2W = (contentW - col2Gap) / 2;
-    const pairH = 170; // Taller to fit descriptive text
+    const pairH = 185; // Taller for descriptive text
     const pairY = ctx.y;
 
     const ascSign = a.yearlyTheme.ascendantSign || '';
