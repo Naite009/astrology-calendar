@@ -166,7 +166,7 @@ export function StoryOfTheYear({ analysis, natalChart, srChart }: Props) {
         <div className="border-t border-border pt-4">
           <p className="text-[10px] uppercase tracking-widest text-primary mb-1.5">The Year in One Sentence</p>
           <p className="text-base font-serif text-foreground leading-relaxed">
-            A {currentEntry.cycleStage.toLowerCase()} year centered on {SUN_HOUSE_THEMES[sunHouse]?.split(',')[0] || 'growth'}{moonHouse ? `, felt most deeply through ${MOON_HOUSE_THEMES[moonHouse]?.split('—')[0]?.trim() || 'emotional processing'}` : ''}{aspectNarrative ? `, catalyzed by the ${topAspect!.type.toLowerCase()} between ${topAspect!.planet1} and ${topAspect!.planet2}` : ''}.
+            A {currentEntry?.phase ? `${currentEntry.phase} ` : ''}{currentEntry?.cycleStage ? `(${currentEntry.cycleStage.toLowerCase()}) ` : ''}year focused on {SUN_HOUSE_THEMES[sunHouse]?.split(',')[0]?.toLowerCase() || 'growth'}{moonHouse ? `, with emotional energy concentrated in ${MOON_HOUSE_THEMES[moonHouse]?.split('—')[0]?.trim()?.toLowerCase() || 'inner processing'}` : ''}{topAspect && !(topAspect.planet1 === 'Sun' && topAspect.planet2 === 'Sun') ? `, sharpened by the ${topAspect.type.toLowerCase()} between ${topAspect.planet1} and ${topAspect.planet2}` : ''}.
           </p>
           {topThemes.length >= 2 && (
             <p className="text-sm text-muted-foreground leading-relaxed mt-3">
