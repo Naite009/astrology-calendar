@@ -22,6 +22,62 @@ const HOUSE_FOCUS: Record<number, string> = {
   11: 'Friends & Community', 12: 'Spirituality & Inner Work',
 };
 
+const HOUSE_FELT: Record<number, string> = {
+  1: 'You feel a pull to redefine who you are. Decisions feel personal. Your body, appearance, and sense of self demand attention.',
+  2: 'You feel focused on money, security, and what you truly value. Financial decisions carry extra weight this year.',
+  3: 'Your mind is buzzing. Conversations, writing, and learning feel more significant. Your neighborhood and siblings may play a role.',
+  4: 'Home and family are where your heart is. You may feel drawn to move, renovate, or address family dynamics.',
+  5: 'You crave joy, creativity, and romance. Self-expression feels essential, not optional. Play and pleasure are the assignment.',
+  6: 'Daily routines and health demand your attention. Your body is sending messages. Work systems need refinement.',
+  7: 'Relationships take center stage. Partnerships -- romantic, business, or creative -- require a new level of engagement.',
+  8: 'Something deep is shifting. Shared resources, intimacy, and psychological transformation are the themes.',
+  9: 'You feel restless for meaning. Travel, education, or a philosophical shift expands your world.',
+  10: 'Career and public reputation are in the spotlight. Professional responsibilities increase but so does recognition.',
+  11: 'Friendships and community involvement feel more important. Your social circle is being restructured.',
+  12: 'You need more solitude than usual. Inner work, spiritual practice, and rest are not extras -- they are the curriculum.',
+};
+
+const MOON_SIGN_FELT: Record<string, string> = {
+  Aries: 'Emotions are fast, reactive, and honest. You process feelings through action and may feel impatient with slowness.',
+  Taurus: 'Emotional needs center on comfort, stability, and sensory pleasure. You crave predictability and physical grounding.',
+  Gemini: 'You process emotions by talking them through. Mental stimulation soothes you. Restlessness is the signal something needs attention.',
+  Cancer: 'Emotions run deep. You feel everything intensely and need safe spaces to process. Nurturing others is how you cope.',
+  Leo: 'You need to feel seen and appreciated. Creative expression is emotional medicine. Warmth radiates from you.',
+  Virgo: 'You process emotions practically -- analyzing, organizing, fixing. Anxiety may spike when things feel out of control.',
+  Libra: 'Emotional balance depends on harmony in relationships. Discord is physically uncomfortable. Beauty soothes.',
+  Scorpio: 'Emotional intensity is at maximum. You feel everything at full depth. Trust is earned slowly; betrayal cuts deep.',
+  Sagittarius: 'You process emotions through meaning-making. Adventure and philosophy are your emotional outlets.',
+  Capricorn: 'Emotions are managed through structure and discipline. You carry more than you show. Vulnerability feels risky.',
+  Aquarius: 'You step back from emotions to analyze them. Detachment is your default coping mechanism. Community connections matter.',
+  Pisces: 'You absorb the emotional atmosphere of every room. Boundaries blur. Intuition is heightened but so is overwhelm.',
+};
+
+const ASC_SIGN_FELT: Record<string, string> = {
+  Aries: 'You come across as bold, direct, and action-oriented. People see you as a leader this year.',
+  Taurus: 'You project calm reliability. People experience you as steady and aesthetically aware.',
+  Gemini: 'You appear quick-witted and socially versatile. Communication opens every door.',
+  Cancer: 'You seem warm, approachable, and emotionally attuned. People feel safe around you.',
+  Leo: 'You radiate confidence and warmth. People are drawn to your generous energy.',
+  Virgo: 'You appear competent, detail-oriented, and thoughtful. People trust your analysis.',
+  Libra: 'You project grace, charm, and balance. Social situations feel natural.',
+  Scorpio: 'You appear intense, perceptive, and magnetic. People sense your depth immediately.',
+  Sagittarius: 'You seem adventurous, honest, and inspiring. Your optimism is contagious.',
+  Capricorn: 'You project maturity, competence, and quiet authority. People take you seriously.',
+  Aquarius: 'You appear unique, intellectually fascinating, and refreshingly unconventional.',
+  Pisces: 'You come across as gentle, intuitive, and creatively inspired. People sense your sensitivity.',
+};
+
+const MOON_PHASE_FELT: Record<string, string> = {
+  'New Moon': 'You feel a strong impulse to start something new. Energy is raw and initiatory. Trust your instincts even when the path is unclear.',
+  'Crescent': 'You feel resistance as you push toward something new. Doubt may arise early but momentum is building.',
+  'First Quarter': 'You feel pressure to make decisions. External events force your hand. Action is required.',
+  'Gibbous': 'You feel the need to refine and adjust. Something is almost ready but not quite. Patience and fine-tuning are key.',
+  'Full Moon': 'Everything feels heightened and visible. Relationships demand attention. What you have been building reaches a peak.',
+  'Disseminating': 'You feel called to share what you know. Teaching, giving back, and social engagement increase.',
+  'Last Quarter': 'You feel the pull to release old structures. Internal shifts matter more than external events.',
+  'Balsamic': 'You feel a deep need for rest and solitude. The old cycle is ending. Surrender and inner processing are the work.',
+};
+
 export function generatePDFYearAtAGlance(
   ctx: PDFContext, doc: jsPDF, a: SolarReturnAnalysis, srChart: SolarReturnChart, natalChart: NatalChart
 ) {
@@ -29,8 +85,8 @@ export function generatePDFYearAtAGlance(
 
   ctx.pageBg(doc);
 
-  // ── Magazine-style section header with extra breathing room ─────────
-  ctx.y += 24; // Reduced from 36
+  // ── Section header ─────────
+  ctx.y += 24;
 
   // Tracked label
   doc.setFont('times', 'bold'); doc.setFontSize(7);
@@ -43,24 +99,24 @@ export function generatePDFYearAtAGlance(
   // Hairline
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 20; // Reduced from 32
+  ctx.y += 28;
 
   // Large serif title
   doc.setFont('times', 'normal'); doc.setFontSize(36);
   doc.setTextColor(...INK);
   doc.text('At a Glance', margin, ctx.y);
-  ctx.y += 12;
+  ctx.y += 16;
 
   // Subtitle
   doc.setFont('times', 'italic'); doc.setFontSize(10);
   doc.setTextColor(...MUTED);
   doc.text('Stick this on your fridge', margin, ctx.y);
-  ctx.y += 28; // Reduced from 40
+  ctx.y += 40; // 4 extra rows of spacing
 
   // ── TOP ROW: 3-column info box grid ──────────────────────────────
   const col3Gap = 14;
   const col3W = (contentW - col3Gap * 2) / 3;
-  const boxH = 108;
+  const boxH = 140; // Taller boxes to fit body text
 
   const houseNum = a.profectionYear?.houseNumber || 1;
   const topStellium = a.stelliums[0];
@@ -68,14 +124,14 @@ export function generatePDFYearAtAGlance(
   ctx.drawInfoBox(doc, margin, ctx.y, col3W, boxH,
     "THIS YEAR'S FOCUS",
     HOUSE_FOCUS[houseNum] || `House ${houseNum}`,
-    `${houseNum}th House Profection Year`,
+    HOUSE_FELT[houseNum] || `${houseNum}th House Profection Year`,
     SOFT_GOLD,
   );
 
   ctx.drawInfoBox(doc, margin + col3W + col3Gap, ctx.y, col3W, boxH,
     'EMOTIONAL CLIMATE',
     a.moonSign || '--',
-    `Moon in House ${a.moonHouse?.house || '--'}`,
+    MOON_SIGN_FELT[a.moonSign || ''] || `Moon in House ${a.moonHouse?.house || '--'}`,
     CARD_BG,
   );
 
@@ -139,26 +195,29 @@ export function generatePDFYearAtAGlance(
     ctx.y = heroY + heroH + 28;
   }
 
-  // ── Two-column: SR ASCENDANT + MOON PHASE ────────────────────────
+  // ── Two-column: SR ASCENDANT + MOON PHASE (with felt-sense body text) ──
   if (a.yearlyTheme) {
-    ctx.checkPage(150);
+    ctx.checkPage(200);
     const col2Gap = 16;
     const col2W = (contentW - col2Gap) / 2;
-    const pairH = 130;
+    const pairH = 170; // Taller to fit descriptive text
     const pairY = ctx.y;
 
+    const ascSign = a.yearlyTheme.ascendantSign || '';
+    const ascFelt = ASC_SIGN_FELT[ascSign] || 'The year opens through this sign\'s energy.';
     ctx.drawInfoBox(doc, margin, pairY, col2W, pairH,
       'SR ASCENDANT',
-      `${a.yearlyTheme.ascendantSign} Rising`,
-      `Ruler: ${P[a.yearlyTheme.ascendantRuler] || a.yearlyTheme.ascendantRuler} in ${(a.yearlyTheme.ascendantRulerSign || '').toUpperCase()}`,
+      `${ascSign} Rising`,
+      `Ruler: ${P[a.yearlyTheme.ascendantRuler] || a.yearlyTheme.ascendantRuler} in ${(a.yearlyTheme.ascendantRulerSign || '').toUpperCase()}. ${ascFelt}`,
       CARD_BG,
     );
 
     const moonPhase = a.moonPhase?.phase || '';
+    const phaseFelt = MOON_PHASE_FELT[moonPhase] || '';
     ctx.drawInfoBox(doc, margin + col2W + col2Gap, pairY, col2W, pairH,
       'SR MOON PHASE',
       moonPhase || 'Moon Phase',
-      `${a.moonSign || '--'} -- House ${a.moonHouse?.house || '--'}`,
+      `${a.moonSign || '--'} -- House ${a.moonHouse?.house || '--'}. ${phaseFelt}`,
       SOFT_GOLD,
     );
 

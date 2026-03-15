@@ -12,25 +12,23 @@ export function generateHowToReadPage(ctx: PDFContext, doc: jsPDF) {
 
   ctx.pageBg(doc);
 
-  // Section header — start higher (no extra spacing)
+  // Section header
   ctx.trackedLabel(doc, '01 - HOW TO READ THIS REPORT', margin, ctx.y);
   ctx.y += 8;
   doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 18;
+  ctx.y += 14;
 
-  // Large serif display title — no extra 36pt gap
-  doc.setFont('times', 'normal'); doc.setFontSize(24);
+  // Title
+  doc.setFont('times', 'normal'); doc.setFontSize(22);
   doc.setTextColor(...INK);
   doc.text('Your Personal Map for the Year', margin, ctx.y);
-  ctx.y += 14;
+  ctx.y += 10;
 
   // Hairline rule
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 14;
-
-  // NO intro card — removed per request. Go straight to concepts.
+  ctx.y += 10;
 
   const concepts: { title: string; body: string }[] = [
     {
@@ -59,17 +57,26 @@ export function generateHowToReadPage(ctx: PDFContext, doc: jsPDF) {
     },
   ];
 
+  // Render concepts as compact blocks (no drawCard — tighter fit)
   for (const c of concepts) {
-    ctx.checkPage(100);
-    ctx.drawCard(doc, () => {
-      ctx.trackedLabel(doc, c.title, margin + 14, ctx.y, { charSpace: 2.5, size: 7.5 });
-      ctx.y += 14;
-      doc.setFont('times', 'normal'); doc.setFontSize(10);
-      doc.setTextColor(...INK);
-      const bodyLines: string[] = doc.splitTextToSize(c.body, contentW - 28);
-      for (const line of bodyLines) { doc.text(line, margin + 14, ctx.y); ctx.y += 15; }
-    });
+    ctx.checkPage(60);
+
+    // Label
+    ctx.trackedLabel(doc, c.title, margin + 4, ctx.y, { charSpace: 2.5, size: 7 });
+    ctx.y += 12;
+
+    // Body text
+    doc.setFont('times', 'normal'); doc.setFontSize(9.5);
+    doc.setTextColor(...INK);
+    const bodyLines: string[] = doc.splitTextToSize(c.body, contentW - 8);
+    for (const line of bodyLines) { doc.text(line, margin + 4, ctx.y); ctx.y += 13; }
+    ctx.y += 8;
+
+    // Thin divider
+    doc.setDrawColor(...RULE); doc.setLineWidth(0.15);
+    doc.line(margin + 20, ctx.y, pw - margin - 20, ctx.y);
+    ctx.y += 8;
   }
 
-  ctx.y += 6;
+  ctx.y += 4;
 }
