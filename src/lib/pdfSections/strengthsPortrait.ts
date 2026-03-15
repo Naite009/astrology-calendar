@@ -158,9 +158,9 @@ export function generateStrengthsPortrait(
   const srAscSign = analysis.yearlyTheme?.ascendantSign || '';
   const srMoonSign = analysis.moonSign || '';
 
-  // Force new page for this section — start higher to fit everything on one page
+  // Force new page for this section
   ctx.pageBg(doc);
-  ctx.y += 12; // Reduced from 28
+  ctx.y += 12;
 
   // Tracked label
   doc.setFont('times', 'bold'); doc.setFontSize(7);
@@ -168,23 +168,23 @@ export function generateStrengthsPortrait(
   doc.setCharSpace(4);
   doc.text('YOUR BIG THREE', margin, ctx.y);
   doc.setCharSpace(0);
-  ctx.y += 8; // Reduced from 12
+  ctx.y += 8;
 
   // Hairline
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 18; // Reduced from 32
+  ctx.y += 36; // Extra spacing before title per user request
 
   // Large serif display title
-  doc.setFont('times', 'normal'); doc.setFontSize(28); // Reduced from 32
+  doc.setFont('times', 'normal'); doc.setFontSize(28);
   doc.setTextColor(...INK);
   doc.text('The Natal-to-Return Shift', margin, ctx.y);
-  ctx.y += 12; // Reduced from 16
+  ctx.y += 16;
 
   doc.setFont('times', 'italic'); doc.setFontSize(10);
   doc.setTextColor(...MUTED);
   doc.text('How this year activates your natal strengths', margin, ctx.y);
-  ctx.y += 20; // Reduced from 30
+  ctx.y += 20;
 
   // Compact rendering: All three planets on one page
   const renderCompactPlanet = (
