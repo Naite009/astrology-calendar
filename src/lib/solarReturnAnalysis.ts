@@ -371,6 +371,40 @@ export interface SolarReturnAnalysis {
   planetSRHouses: Record<string, number | null>;
 }
 
+// ─── House life-area map & sign felt-sense ──────────────────────────
+const SR_HOUSE_LIFE_AREA: Record<number, string> = {
+  1: 'your identity, appearance, and how others first perceive you',
+  2: 'money, possessions, and your sense of self-worth',
+  3: 'communication, siblings, short trips, and everyday learning',
+  4: 'home, family, roots, and your private emotional foundation',
+  5: 'romance, creativity, children, and what brings you joy',
+  6: 'daily routines, health habits, and work responsibilities',
+  7: 'partnerships, committed relationships, and one-on-one dynamics',
+  8: 'shared resources, intimacy, debt, and psychological transformation',
+  9: 'travel, higher education, belief systems, and expanding your worldview',
+  10: 'career, public reputation, and your visible achievements',
+  11: 'friendships, community, group endeavors, and long-term hopes',
+  12: 'solitude, subconscious patterns, healing, and what you do behind the scenes',
+};
+
+const getSignFeltSense = (sign: string): string => {
+  const senses: Record<string, string> = {
+    Aries: 'impatience with anything slow, a need to act first and think later, and a physical restlessness that demands movement',
+    Taurus: 'a craving for stability and sensory comfort, slower decision-making, and resistance to being rushed',
+    Gemini: 'mental hyperactivity, curiosity pulling you in multiple directions, and a need to talk things through',
+    Cancer: 'heightened emotional sensitivity, strong protective instincts, and decisions filtered through gut feelings',
+    Leo: 'a need to be seen and appreciated, creative urgency, and taking things personally when recognition is withheld',
+    Virgo: 'hyper-awareness of flaws and details, a drive to fix and improve, and anxiety when things feel disorganized',
+    Libra: 'constant weighing of options, difficulty making solo decisions, and a pull toward harmony even at personal cost',
+    Scorpio: 'intense focus, suspicion of surface-level explanations, and an all-or-nothing approach to what matters',
+    Sagittarius: 'restlessness with routine, a hunger for meaning and new experiences, and bluntness that surprises even you',
+    Capricorn: 'pressure to achieve measurable results, emotional restraint, and a pragmatic "what\'s the point?" filter on everything',
+    Aquarius: 'detachment from emotional pressure, unconventional choices that confuse others, and a need for intellectual freedom',
+    Pisces: 'boundary dissolution, absorbing others\' moods, heightened intuition, and a pull toward escapism when overwhelmed',
+  };
+  return senses[sign] || `the qualities of ${sign}`;
+};
+
 // ─── Expert-level aspect interpretation engine ──────────────────────
 const PLANET_THEMES: Record<string, { domain: string; drive: string; body: string }> = {
   Sun: { domain: 'identity, vitality, and conscious will', drive: 'to shine, lead, and express purpose', body: 'heart, spine, and overall vitality' },
@@ -533,7 +567,9 @@ export const analyzeSolarReturn = (
     const rulerSign = rulerPos?.sign || 'Unknown';
     const rulerHouse = planetSRHouses[ruler] ?? null;
 
-    const themeDesc = `Your year is colored by ${srAsc.sign} Rising — ruled by ${ruler} in ${rulerSign}${rulerHouse ? ` (SR ${rulerHouse}th house)` : ''}. This sets the tone for how you approach the entire year.`;
+    const rulerTheme = PLANET_THEMES[ruler] || { domain: `${ruler} themes`, drive: `${ruler}'s drive`, body: '' };
+    const houseArea = rulerHouse ? SR_HOUSE_LIFE_AREA[rulerHouse] || `your ${rulerHouse}th house affairs` : '';
+    const themeDesc = `${srAsc.sign} Rising this year means ${ruler} — the planet of ${rulerTheme.domain} — steers how you meet every situation. With ${ruler} in ${rulerSign}${rulerHouse ? ` (SR ${rulerHouse}th house)` : ''}, your instinctive drive all year is ${rulerTheme.drive}${houseArea ? `, and that drive plays out most visibly in ${houseArea}` : ''}. You'll feel this as a persistent pull: decisions, moods, and reactions will keep filtering through ${rulerSign} energy — ${getSignFeltSense(rulerSign)}.`;
     yearlyTheme = {
       ascendantSign: srAsc.sign,
       ascendantRuler: ruler,
