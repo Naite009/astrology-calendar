@@ -417,7 +417,8 @@ export async function generateBirthdayGiftPDF(
     if (natalMoonSign && srMoonSignFull) {
       doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
       ctx.sectionPages.set('MOON SHIFT', doc.getNumberOfPages());
-      ctx.sectionTitle(doc, 'MOON SHIFT', `Emotional recalibration: ${natalMoonSign} --> ${srMoonSignFull}`);
+      ctx.sectionPages.set('MOON SIGN SHIFT', doc.getNumberOfPages());
+      ctx.sectionTitle(doc, 'MOON SIGN SHIFT', `Emotional recalibration: ${natalMoonSign} --> ${srMoonSignFull}`);
 
       const natalDeep = moonSignDeep[natalMoonSign];
       const srDeep = moonSignDeep[srMoonSignFull];
