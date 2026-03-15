@@ -282,6 +282,12 @@ export function generatePDFYearAtAGlance(
     ctx.y += boxH + 8;
   }
 
+  // ── Main Arena banner (moved from overlay page) ────────────────────
+  const { dominant } = computeOverlayData(a);
+  if (dominant) {
+    drawMainArenaBanner(ctx, doc, dominant);
+  }
+
   // Editorial divider
   ctx.sectionDivider(doc);
 }
