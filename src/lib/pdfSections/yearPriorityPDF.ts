@@ -85,41 +85,41 @@ export function generatePDFNatalOverlay(
     return;
   }
 
-  const colGap = 12;
-  const colW = (ctx.contentW - colGap) / 2;
-  const cardH = 46;
-  const rowGap = 8;
-  const rows = Math.ceil(points.length / 2);
-  const gridH = rows * cardH + Math.max(0, rows - 1) * rowGap;
+  // Full-page layout: large font, generous spacing, single column
+  const cardH = 72;
+  const rowGap = 16;
+  const totalH = points.length * cardH + Math.max(0, points.length - 1) * rowGap;
 
-  ctx.checkPage(gridH + 10);
-  const startY = ctx.y;
+  ctx.checkPage(Math.min(totalH + 10, 500));
 
   for (let i = 0; i < points.length; i++) {
     const p = points[i];
-    const row = Math.floor(i / 2);
-    const col = i % 2;
-    const x = ctx.margin + col * (colW + colGap);
-    const y = startY + row * (cardH + rowGap);
+    ctx.checkPage(cardH + rowGap);
+
+    const y = ctx.y;
 
     doc.setFillColor(...ctx.colors.cream);
-    doc.roundedRect(x, y, colW, cardH, 3, 3, 'F');
-    doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
-    doc.roundedRect(x, y, colW, cardH, 3, 3, 'S');
+    doc.roundedRect(ctx.margin, y, ctx.contentW, cardH, 4, 4, 'F');
+    doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.3);
+    doc.roundedRect(ctx.margin, y, ctx.contentW, cardH, 4, 4, 'S');
     doc.setFillColor(...ctx.colors.gold);
-    doc.rect(x, y, 2.5, cardH, 'F');
+    doc.rect(ctx.margin, y, 3.5, cardH, 'F');
 
-    doc.setFont('times', 'bold'); doc.setFontSize(8.6);
+    // Large bold label
+    doc.setFont('times', 'bold'); doc.setFontSize(16);
     doc.setTextColor(...ctx.colors.ink);
-    doc.text(`${p.label} --> Natal ${p.house}${ord(p.house)}`, x + 8, y + 15);
+    const label = `${p.label}  →  Natal ${p.house}${ord(p.house)} House`;
+    const labelLines = doc.splitTextToSize(label, ctx.contentW - 30);
+    doc.text(labelLines[0] || label, ctx.margin + 14, y + 28);
 
-    doc.setFont('times', 'normal'); doc.setFontSize(7.8);
+    // Larger meaning text
+    doc.setFont('times', 'normal'); doc.setFontSize(13);
     doc.setTextColor(...ctx.colors.muted);
-    const meaningLines = doc.splitTextToSize(p.meaning, colW - 14);
-    doc.text(meaningLines[0] || p.meaning, x + 8, y + 29);
-  }
+    const meaningLines = doc.splitTextToSize(p.meaning, ctx.contentW - 30);
+    doc.text(meaningLines[0] || p.meaning, ctx.margin + 14, y + 50);
 
-  ctx.y = startY + gridH + 6;
+    ctx.y = y + cardH + rowGap;
+  }
 }
 
 // ─── Angle Activations Section ──────────────────────────────────
