@@ -67,9 +67,8 @@ export const StructuralStressView = ({ userChart, savedCharts }: StructuralStres
   }, [addEvent]);
 
   const handleMilestoneClick = useCallback((date: Date) => {
-    if (!selectedChart) return;
-    setActiveTab('explore');
-  }, [selectedChart]);
+    // no-op, milestones removed (use Life Cycles hub instead)
+  }, []);
 
   const handleTransitClick = useCallback((date: Date) => {
     if (!selectedChart) return;
