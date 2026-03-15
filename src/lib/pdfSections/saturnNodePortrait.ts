@@ -79,16 +79,15 @@ interface PortraitData {
 }
 
 /**
- * Renders a dramatic full-width portrait card for Saturn or North Node.
- * Large house number, pull-quote, clean body text — one card per half-page.
+ * Renders a compact portrait card for Saturn or North Node.
+ * Designed to fit BOTH cards + synthesis on a single page.
  */
 function drawPortraitCard(
   doc: jsPDF, ctx: PDFContext, margin: number, contentW: number, pw: number,
   type: 'saturn' | 'node', data: PortraitData,
 ) {
   const house = data.house || 1;
-  const cardH = 310;
-  ctx.checkPage(cardH + 20);
+  const cardH = 230;
 
   const startY = ctx.y;
   const isSaturn = type === 'saturn';
@@ -104,68 +103,68 @@ function drawPortraitCard(
 
   // ── Tracked label at top ──
   const label = isSaturn ? 'WHERE YOU ARE TESTED' : 'WHERE YOUR SOUL IS GROWING';
-  ctx.trackedLabel(doc, label, margin + 20, startY + 28, { size: 7, charSpace: 3.5 });
+  ctx.trackedLabel(doc, label, margin + 18, startY + 22, { size: 6.5, charSpace: 3 });
 
   // ── Giant house number ──
   doc.setFont('times', 'bold');
-  doc.setFontSize(96);
+  doc.setFontSize(72);
   doc.setTextColor(...accentColor);
   const houseStr = String(house);
-  doc.text(houseStr, pw - margin - 24, startY + 100, { align: 'right' });
+  doc.text(houseStr, pw - margin - 20, startY + 80, { align: 'right' });
 
   // ── Planet name + sign ──
   const planetName = isSaturn ? 'Saturn' : 'North Node';
   const rxLabel = isSaturn && data.isRetrograde ? '  ℞' : '';
   doc.setFont('times', 'bold');
-  doc.setFontSize(28);
+  doc.setFontSize(22);
   doc.setTextColor(...INK);
-  doc.text(`${planetName} in ${data.sign}${rxLabel}`, margin + 20, startY + 80);
+  doc.text(`${planetName} in ${data.sign}${rxLabel}`, margin + 18, startY + 65);
 
   // ── "House X" subtitle ──
   doc.setFont('times', 'normal');
-  doc.setFontSize(14);
+  doc.setFontSize(12);
   doc.setTextColor(...MUTED);
-  doc.text(`House ${house}`, margin + 20, startY + 100);
+  doc.text(`House ${house}`, margin + 18, startY + 82);
 
   // ── Pull-quote ──
   const quote = isSaturn ? saturnPullQuote[house] : nodePullQuote[house];
   if (quote) {
     doc.setDrawColor(...accentColor);
     doc.setLineWidth(0.6);
-    doc.line(margin + 20, startY + 125, margin + 20, startY + 145);
+    doc.line(margin + 18, startY + 100, margin + 18, startY + 116);
 
     doc.setFont('times', 'italic');
-    doc.setFontSize(18);
+    doc.setFontSize(15);
     doc.setTextColor(...INK);
-    doc.text(`"${quote}"`, margin + 28, startY + 139);
+    doc.text(`"${quote}"`, margin + 26, startY + 112);
   }
 
   // ── Body text ──
   const body = isSaturn ? saturnBody[house] : nodeBody[house];
   if (body) {
     doc.setFont('times', 'normal');
-    doc.setFontSize(11);
+    doc.setFontSize(10);
     doc.setTextColor(...INK);
-    const lines: string[] = doc.splitTextToSize(body, contentW - 48);
-    let ty = startY + 175;
-    for (const line of lines.slice(0, 8)) {
-      doc.text(line, margin + 20, ty);
-      ty += 17;
+    const lines: string[] = doc.splitTextToSize(body, contentW - 40);
+    let ty = startY + 140;
+    for (const line of lines.slice(0, 6)) {
+      doc.text(line, margin + 18, ty);
+      ty += 14;
     }
   }
 
   // ── Retrograde badge ──
   if (isSaturn && data.isRetrograde) {
-    const badgeY = startY + cardH - 50;
+    const badgeY = startY + cardH - 36;
     doc.setFillColor(245, 241, 234);
-    doc.roundedRect(margin + 20, badgeY, 140, 28, 3, 3, 'F');
+    doc.roundedRect(margin + 18, badgeY, 140, 22, 3, 3, 'F');
     doc.setDrawColor(...RULE);
     doc.setLineWidth(0.3);
-    doc.roundedRect(margin + 20, badgeY, 140, 28, 3, 3, 'S');
+    doc.roundedRect(margin + 18, badgeY, 140, 22, 3, 3, 'S');
     doc.setFont('times', 'italic');
-    doc.setFontSize(9);
+    doc.setFontSize(8);
     doc.setTextColor(...MUTED);
-    doc.text('Retrograde — the testing is internal', margin + 30, badgeY + 18);
+    doc.text('Retrograde — the testing is internal', margin + 28, badgeY + 14);
   }
 
   // Outer border
@@ -173,11 +172,11 @@ function drawPortraitCard(
   doc.setLineWidth(0.3);
   doc.roundedRect(margin, startY, contentW, cardH, 4, 4, 'S');
 
-  ctx.y = startY + cardH + 16;
+  ctx.y = startY + cardH + 12;
 }
 
 /**
- * Generate the full Saturn & North Node section with dramatic portrait cards.
+ * Generate the full Saturn & North Node section — BOTH on a single page.
  */
 export function generateSaturnNodePortrait(
   doc: jsPDF, ctx: PDFContext, margin: number, contentW: number, pw: number,
@@ -190,7 +189,22 @@ export function generateSaturnNodePortrait(
   ctx.y = margin;
   ctx.pageBg(doc);
   ctx.sectionPages.set('SATURN AND NORTH NODE', doc.getNumberOfPages());
-  ctx.sectionTitle(doc, 'SATURN & NORTH NODE');
+
+  // Compact section title
+  ctx.y += 10;
+  doc.setFont('times', 'bold'); doc.setFontSize(7);
+  doc.setTextColor(...GOLD);
+  doc.setCharSpace(4);
+  doc.text('SATURN & NORTH NODE', margin, ctx.y);
+  doc.setCharSpace(0);
+  ctx.y += 6;
+  doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+  doc.line(margin, ctx.y, pw - margin, ctx.y);
+  ctx.y += 16;
+  doc.setFont('times', 'normal'); doc.setFontSize(20);
+  doc.setTextColor(...INK as Color);
+  doc.text('Strength & Wisdom', margin, ctx.y);
+  ctx.y += 16;
 
   // Saturn portrait card
   if (saturnFocus) {
@@ -204,7 +218,6 @@ export function generateSaturnNodePortrait(
 
   // Synthesis line if both exist
   if (saturnFocus && nodesFocus) {
-    ctx.checkPage(60);
     const cx = pw / 2;
     // Gold diamond divider
     doc.setFillColor(...GOLD);
@@ -213,17 +226,17 @@ export function generateSaturnNodePortrait(
       doc.triangle(dx, ctx.y - 2, dx + 2.5, ctx.y + 1, dx, ctx.y + 4, 'F');
       doc.triangle(dx, ctx.y - 2, dx - 2.5, ctx.y + 1, dx, ctx.y + 4, 'F');
     }
-    ctx.y += 16;
+    ctx.y += 12;
 
     doc.setFont('times', 'italic');
-    doc.setFontSize(11);
+    doc.setFontSize(10);
     doc.setTextColor(...MUTED);
-    const synth = `Saturn in House ${saturnFocus.house || '--'} is where you are made stronger. The North Node in House ${nodesFocus.house || '--'} is where you are made wiser. That tension drives the year.`;
-    const synthLines: string[] = doc.splitTextToSize(synth, contentW - 60);
+    const synth = `Saturn in House ${saturnFocus.house || '--'} is where you are made stronger. North Node in House ${nodesFocus.house || '--'} is where you are made wiser.`;
+    const synthLines: string[] = doc.splitTextToSize(synth, contentW - 40);
     for (const line of synthLines) {
       doc.text(line, cx, ctx.y, { align: 'center' });
-      ctx.y += 16;
+      ctx.y += 13;
     }
-    ctx.y += 10;
+    ctx.y += 6;
   }
 }

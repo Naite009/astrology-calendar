@@ -6,7 +6,7 @@ import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { P } from '@/components/SolarReturnPDFExport';
 
 type Color = [number, number, number];
-const INK:   Color = [58,  54,  50]; // Charcoal grey
+const INK:   Color = [58,  54,  50];
 const MUTED: Color = [130, 125, 118];
 const GOLD:  Color = [184, 150, 62];
 const RULE:  Color = [200, 195, 188];
@@ -125,33 +125,53 @@ function buildPersonalizedMonthlyForecasts(a: SolarReturnAnalysis, srChart: Sola
 
     let body = `Your attention turns toward ${theme.detail}.`;
     if (i === 0) {
-      body = `Fresh energy arrives. Pay attention to ${theme.detail} -- that is where this year lands first.`;
-      if (themeH === 5) body += ' This month highlights romance, creative projects, fun, and children.';
+      body = `Fresh energy arrives. Your attention turns toward ${theme.detail} -- that is where this year lands first.`;
+      if (stelliums.length > 0) {
+        const s = stelliums[0];
+        const notableExtras = (s.extras || []).filter((e: string) => e === 'Chiron' || e === 'NorthNode');
+        const extrasNote = notableExtras.length > 0
+          ? ` (also with ${notableExtras.map((e: string) => e === 'NorthNode' ? 'North Node' : e).join(' and ')})`
+          : '';
+        body += ` With ${s.planets.map(p => P[p] || p).join(', ')} concentrated in ${s.location}${extrasNote}, expect intense activity in that area.`;
+      }
+    }
+    if (i === 1) {
+      body = `Your attention turns toward ${theme.detail}.`;
+      if (stelliums.length > 0) {
+        const s = stelliums[0];
+        const notableExtras = (s.extras || []).filter((e: string) => e === 'Chiron' || e === 'NorthNode');
+        const extrasNote = notableExtras.length > 0
+          ? ` (also with ${notableExtras.map((e: string) => e === 'NorthNode' ? 'North Node' : e).join(' and ')})`
+          : '';
+        body += ` With ${s.planets.map(p => P[p] || p).join(', ')} concentrated in ${s.location}${extrasNote}, expect intense activity in that area.`;
+      }
     }
     if (i === 11) body = 'The year is winding down. Let the year wisdom settle before the next one begins.';
-    if (stelliums.length > 0 && i < 3) {
-      const s = stelliums[0];
-      const notableExtras = (s.extras || []).filter((e: string) => e === 'Chiron' || e === 'NorthNode');
-      const extrasNote = notableExtras.length > 0
-        ? ` (also with ${notableExtras.map((e: string) => e === 'NorthNode' ? 'North Node' : e).join(' and ')})`
-        : '';
-      body += ` With ${s.planets.map(p => P[p] || p).join(', ')} concentrated in ${s.location}${extrasNote}, expect intense activity in that area.`;
-    }
-    if (retros.length > 0 && i >= 3 && i <= 5) {
-      body += ` ${retros.map(r => P[r] || r).join(' ')} retrograde asks you to revisit something unfinished before moving forward.`;
-    }
-    if (moonSign && i >= 6 && i <= 9) {
-      const moonFeelShort: Record<string, string> = {
-        Aries: 'direct emotional energy', Taurus: 'steady emotional presence', Gemini: 'verbal emotional processing',
-        Cancer: 'deep emotional sensitivity', Leo: 'warm emotional expression', Virgo: 'analytical emotional processing',
-        Libra: 'harmony-seeking feelings', Scorpio: 'intense emotional honesty', Sagittarius: 'restless emotional energy',
-        Capricorn: 'discipline around how you present yourself continues to pay off', Aquarius: 'detached emotional clarity',
-        Pisces: 'heightened empathy and compassion',
-      };
-      body += ` ${moonSign} Moon -- ${moonFeelShort[moonSign] || 'mixed emotional tones'}.`;
-    }
-    if (sunH === 12 && i >= 4 && i <= 7) {
-      body += ' The 12th house energy is at its strongest -- bold moves made quietly are the most effective.';
+    if (i >= 2 && i < 11) {
+      if (stelliums.length > 0 && i < 4) {
+        const s = stelliums[0];
+        const notableExtras = (s.extras || []).filter((e: string) => e === 'Chiron' || e === 'NorthNode');
+        const extrasNote = notableExtras.length > 0
+          ? ` (also with ${notableExtras.map((e: string) => e === 'NorthNode' ? 'North Node' : e).join(' and ')})`
+          : '';
+        body += ` With ${s.planets.map(p => P[p] || p).join(', ')} concentrated in ${s.location}${extrasNote}, expect intense activity in that area.`;
+      }
+      if (retros.length > 0 && i >= 3 && i <= 5) {
+        body += ` ${retros.map(r => P[r] || r).join(' ')} retrograde asks you to revisit something unfinished before moving forward.`;
+      }
+      if (moonSign && i >= 6 && i <= 9) {
+        const moonFeelShort: Record<string, string> = {
+          Aries: 'direct emotional energy', Taurus: 'steady emotional presence', Gemini: 'verbal emotional processing',
+          Cancer: 'deep emotional sensitivity', Leo: 'warm emotional expression', Virgo: 'analytical emotional processing',
+          Libra: 'harmony-seeking feelings', Scorpio: 'intense emotional honesty', Sagittarius: 'restless emotional energy',
+          Capricorn: 'discipline around how you present yourself continues to pay off', Aquarius: 'detached emotional clarity',
+          Pisces: 'heightened empathy and compassion',
+        };
+        body += ` ${moonSign} Moon -- ${moonFeelShort[moonSign] || 'mixed emotional tones'}.`;
+      }
+      if (sunH === 12 && i >= 4 && i <= 7) {
+        body += ' The 12th house energy is at its strongest -- bold moves made quietly are the most effective.';
+      }
     }
     forecasts.push({ month: monthNames[mIdx], year, headline, body });
   }
@@ -165,18 +185,18 @@ export function generateHighlightsPage(
 
   ctx.pageBg(doc);
 
-  // Section header with extra breathing room
-  ctx.y += 36;
+  // Section header
+  ctx.y += 28;
   doc.setFont('times', 'bold'); doc.setFontSize(7);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(4);
   doc.text('HIGHLIGHTS', margin, ctx.y);
   doc.setCharSpace(0);
-  ctx.y += 12;
+  ctx.y += 10;
 
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 32;
+  ctx.y += 28;
 
   doc.setFont('times', 'normal'); doc.setFontSize(32);
   doc.setTextColor(...INK);
@@ -185,8 +205,8 @@ export function generateHighlightsPage(
 
   doc.setFont('times', 'italic'); doc.setFontSize(10);
   doc.setTextColor(...MUTED);
-  doc.text('Your best months and what to watch for', margin, ctx.y);
-  ctx.y += 34;
+  doc.text('Your key themes and where the year concentrates', margin, ctx.y);
+  ctx.y += 30;
 
   // Highlights as condensed cards
   const highlights = buildHighlights(a, srChart, natalChart);
@@ -232,50 +252,51 @@ export function generateHighlightsPage(
     });
   }
 
-  // MONTH-BY-MONTH — compact enough to fit all 12 on ONE page
-  const drawMonthHeader = () => {
-    ctx.y += 20;
-    doc.setFont('times', 'bold'); doc.setFontSize(7);
-    doc.setTextColor(...GOLD);
-    doc.setCharSpace(4);
-    doc.text('MONTHLY FORECAST', margin, ctx.y);
-    doc.setCharSpace(0);
-    ctx.y += 8;
-    doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
-    doc.line(margin, ctx.y, pw - margin, ctx.y);
-    ctx.y += 18;
-    doc.setFont('times', 'normal'); doc.setFontSize(22);
-    doc.setTextColor(...INK);
-    doc.text('Month by Month', margin, ctx.y);
-    ctx.y += 10;
-    doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
-    doc.line(margin, ctx.y, pw - margin, ctx.y);
-    ctx.y += 14;
-  };
-
+  // MONTH-BY-MONTH — fit all 12 on ONE page, full-width cards
   doc.addPage();
   ctx.y = ctx.margin;
   ctx.pageBg(doc);
-  drawMonthHeader();
+
+  // Header
+  ctx.y += 16;
+  doc.setFont('times', 'bold'); doc.setFontSize(7);
+  doc.setTextColor(...GOLD);
+  doc.setCharSpace(4);
+  doc.text('MONTHLY FORECAST', margin, ctx.y);
+  doc.setCharSpace(0);
+  ctx.y += 8;
+  doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+  doc.line(margin, ctx.y, pw - margin, ctx.y);
+  ctx.y += 16;
+  doc.setFont('times', 'normal'); doc.setFontSize(22);
+  doc.setTextColor(...INK);
+  doc.text('Month by Month', margin, ctx.y);
+  ctx.y += 8;
+  doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+  doc.line(margin, ctx.y, pw - margin, ctx.y);
+  ctx.y += 10;
 
   const forecasts = buildPersonalizedMonthlyForecasts(a, srChart, natalChart);
   const columnGap = 10;
-  const rowGap = 6;
+  const rowGap = 5;
   const cardW = (contentW - columnGap) / 2;
   const cardPadX = 10;
-  const cardPadTop = 10;
-  const bodyLineH = 9;
-  const headlineLineH = 11;
+  const cardPadTop = 8;
+  const bodyLineH = 8.5;
+
+  // Calculate available height for cards
+  const availH = ph - ctx.y - margin - 10;
+  const numRows = 6;
+  const maxRowH = Math.floor((availH - rowGap * (numRows - 1)) / numRows);
 
   const measureCard = (f: MonthForecast | undefined) => {
-    if (!f) return { bodyLines: [] as string[], headLines: [] as string[], height: 0 };
-    // Combine headline + body into a single flow to save vertical space
-    const fullText = `${f.headline}. ${f.body}`;
+    if (!f) return { bodyLines: [] as string[], height: 0 };
+    const fullText = `${f.body}`;
     const bodyLines = doc.splitTextToSize(fullText, cardW - cardPadX * 2) as string[];
-    return { bodyLines, headLines: [] as string[], height: cardPadTop + 16 + bodyLines.length * bodyLineH + 6 };
+    return { bodyLines, height: cardPadTop + 16 + bodyLines.length * bodyLineH + 4 };
   };
 
-  const drawMonthCard = (f: MonthForecast, bodyLines: string[], _headLines: string[], cardH: number, x: number, rowY: number) => {
+  const drawMonthCard = (f: MonthForecast, bodyLines: string[], cardH: number, x: number, rowY: number) => {
     doc.setFillColor(...CARD_BG);
     doc.roundedRect(x, rowY, cardW, cardH, 2, 2, 'F');
     doc.setDrawColor(...RULE); doc.setLineWidth(0.2);
@@ -285,17 +306,18 @@ export function generateHighlightsPage(
 
     let cy = rowY + cardPadTop;
 
-    // Month name left, year right-flush — compact
-    doc.setFont('times', 'bold'); doc.setFontSize(12);
+    // Month name — bigger and bolder
+    doc.setFont('times', 'bold'); doc.setFontSize(14);
     doc.setTextColor(...INK);
     doc.text(f.month, x + cardPadX, cy);
 
-    doc.setFont('times', 'normal'); doc.setFontSize(7.5);
+    // Year right-flush
+    doc.setFont('times', 'normal'); doc.setFontSize(8);
     doc.setTextColor(...MUTED);
     doc.text(String(f.year), x + cardW - cardPadX, cy, { align: 'right' });
     cy += 14;
 
-    // Body text — no truncation, no ellipsis
+    // Body text — no truncation
     doc.setFont('times', 'normal'); doc.setFontSize(7.5);
     doc.setTextColor(...INK);
     for (const line of bodyLines) { doc.text(line, x + cardPadX, cy); cy += bodyLineH; }
@@ -307,12 +329,12 @@ export function generateHighlightsPage(
     const right = forecasts[index + 1];
     const leftMeasured = measureCard(left);
     const rightMeasured = measureCard(right);
-    const rowH = Math.max(leftMeasured.height, rightMeasured.height);
+    const rowH = Math.max(leftMeasured.height, rightMeasured?.height || 0, 50);
 
     const rowY = ctx.y;
-    drawMonthCard(left, leftMeasured.bodyLines, leftMeasured.headLines, rowH, margin, rowY);
+    drawMonthCard(left, leftMeasured.bodyLines, rowH, margin, rowY);
     if (right) {
-      drawMonthCard(right, rightMeasured.bodyLines, rightMeasured.headLines, rowH, margin + cardW + columnGap, rowY);
+      drawMonthCard(right, rightMeasured.bodyLines, rowH, margin + cardW + columnGap, rowY);
     }
     ctx.y = rowY + rowH + rowGap;
     index += 2;
