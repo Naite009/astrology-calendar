@@ -469,22 +469,32 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
         );
       })()}
 
-      {/* Pattern Detection Panel — All 8 phases */}
+      {/* Pattern Detection Panel — All 8 phases in cycle order */}
       <div className="px-4 pb-4 space-y-3">
-        <p className="text-[10px] uppercase tracking-widest font-medium text-primary">Recurring Patterns — Every Year Since Birth</p>
-        <div className="grid grid-cols-2 gap-2">
+        <div>
+          <p className="text-[10px] uppercase tracking-widest font-medium text-primary">Recurring Patterns — Every Year Since Birth</p>
+          <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed">
+            At each Solar Return, the Moon-Sun angle falls into one of 8 phases. These phases always follow the same sequence, repeating every ~29.5 years. Each phase lasts approximately 3–4 years.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {[
-            { label: 'New Beginnings', years: patterns.newCycleYears, bg: 'bg-chart-1/10', text: 'text-chart-1' },
-            { label: 'Growth Years', years: patterns.crescentYears, bg: 'bg-chart-2/10', text: 'text-chart-2' },
-            { label: 'Action & Decision', years: patterns.actionYears, bg: 'bg-chart-3/10', text: 'text-chart-3' },
-            { label: 'Refinement', years: patterns.refinementYears, bg: 'bg-chart-4/10', text: 'text-chart-4' },
-            { label: 'Culmination', years: patterns.culminationYears, bg: 'bg-chart-5/10', text: 'text-chart-5' },
-            { label: 'Sharing & Teaching', years: patterns.sharingYears, bg: 'bg-accent/10', text: 'text-accent-foreground' },
-            { label: 'Reevaluation', years: patterns.turningPointYears, bg: 'bg-secondary/20', text: 'text-secondary-foreground' },
-            { label: 'Release & Completion', years: patterns.releaseYears, bg: 'bg-muted/30', text: 'text-muted-foreground' },
+            { icon: '🌑', num: 1, label: 'New Beginnings', years: patterns.newCycleYears, bg: 'bg-chart-1/10', text: 'text-chart-1' },
+            { icon: '🌒', num: 2, label: 'Growth', years: patterns.crescentYears, bg: 'bg-chart-2/10', text: 'text-chart-2' },
+            { icon: '🌓', num: 3, label: 'Action & Decision', years: patterns.actionYears, bg: 'bg-chart-3/10', text: 'text-chart-3' },
+            { icon: '🌔', num: 4, label: 'Refinement', years: patterns.refinementYears, bg: 'bg-chart-4/10', text: 'text-chart-4' },
+            { icon: '🌕', num: 5, label: 'Culmination', years: patterns.culminationYears, bg: 'bg-chart-5/10', text: 'text-chart-5' },
+            { icon: '🌖', num: 6, label: 'Sharing & Teaching', years: patterns.sharingYears, bg: 'bg-accent/10', text: 'text-accent-foreground' },
+            { icon: '🌗', num: 7, label: 'Reevaluation', years: patterns.turningPointYears, bg: 'bg-secondary/20', text: 'text-secondary-foreground' },
+            { icon: '🌘', num: 8, label: 'Release & Completion', years: patterns.releaseYears, bg: 'bg-muted/30', text: 'text-muted-foreground' },
           ].filter(p => p.years.length > 0).map(p => (
-            <div key={p.label} className={`${p.bg} rounded-sm p-2 space-y-1`}>
-              <p className={`text-[9px] uppercase tracking-widest font-medium ${p.text}`}>{p.label}</p>
+            <div key={p.label} className={`${p.bg} rounded-sm p-2.5 space-y-1`}>
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm">{p.icon}</span>
+                <p className={`text-[9px] uppercase tracking-widest font-medium ${p.text}`}>
+                  {p.num}. {p.label}
+                </p>
+              </div>
               <p className="text-xs text-foreground">{p.years.join(', ')}</p>
             </div>
           ))}
