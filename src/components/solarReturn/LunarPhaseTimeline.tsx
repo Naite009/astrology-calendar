@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ChevronDown, ChevronUp, Sparkles, Circle, ArrowRight } from 'lucide-react';
+import { ChevronDown, ChevronUp, Sparkles, ArrowRight } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import {
@@ -9,6 +9,7 @@ import {
   generateTransitionNarrative,
   TimelineEntry,
 } from '@/lib/solarReturnLunarTimeline';
+import { getMoonPhaseBlending } from '@/lib/solarReturnMoonData';
 
 // ── Color mapping for phase stages ──────────────────────────────────
 const PHASE_COLORS: Record<string, string> = {
@@ -49,6 +50,67 @@ interface Props {
   srChart: SolarReturnChart;
 }
 
+/** Balsamic "Ending & Emerging" detail panel */
+function BalsamicDetailPanel({ entry }: { entry: TimelineEntry }) {
+  // Use the blending engine for sign-level releasing/emerging narratives
+  // We don't have house data for computed years, so pass null
+  const blending = getMoonPhaseBlending(
+    'Balsamic',
+    entry.moonSign,
+    entry.sunSign,
+    null,
+    null,
+  );
+
+  const isBridge = entry.moonSign !== entry.sunSign;
+
+  return (
+    <div className="space-y-3 pt-2 border-t border-border/50">
+      <p className="text-[10px] uppercase tracking-widest font-medium text-primary">
+        What Is Ending and What Is Emerging
+      </p>
+
+      {isBridge && (
+        <p className="text-[10px] text-muted-foreground italic leading-relaxed">
+          This year bridges two different psychological territories — a threshold year where one completed chapter dissolves while another quietly forms.
+        </p>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+        {/* Releasing */}
+        <div className="bg-secondary/20 rounded-sm p-2.5 space-y-1">
+          <p className="text-[9px] uppercase tracking-widest font-medium text-muted-foreground">
+            Releasing · {entry.moonSign} ☽
+          </p>
+          <p className="text-xs text-foreground leading-relaxed">
+            {blending.releasing}
+          </p>
+          <p className="text-[10px] text-muted-foreground/70 italic mt-1">
+            The Moon sign describes the psychological style, identity, or emotional pattern that is dissolving.
+          </p>
+        </div>
+
+        {/* Emerging */}
+        <div className="bg-accent/20 rounded-sm p-2.5 space-y-1">
+          <p className="text-[9px] uppercase tracking-widest font-medium text-muted-foreground">
+            Emerging · {entry.sunSign} ☉
+          </p>
+          <p className="text-xs text-foreground leading-relaxed">
+            {blending.emerging}
+          </p>
+          <p className="text-[10px] text-muted-foreground/70 italic mt-1">
+            The Sun sign describes the spiritual orientation and inner calling quietly forming.
+          </p>
+        </div>
+      </div>
+
+      <p className="text-xs text-muted-foreground leading-relaxed">
+        This is not a year to force momentum. It is a year to trust release, inner work, and preparation for the next cycle.
+      </p>
+    </div>
+  );
+}
+
 export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
   const [expanded, setExpanded] = useState(false);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
@@ -80,7 +142,7 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
 
   const detailEntry = selectedYear !== null
     ? timeline.find(e => e.year === selectedYear)
-    : currentEntry;
+    : null; // Don't auto-select current — it already has the highlight card
 
   if (timeline.length === 0) return null;
 
@@ -113,6 +175,10 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
           <p className="text-xs text-muted-foreground leading-relaxed">{currentEntry.shortMeaning}</p>
           {transition && (
             <p className="text-xs text-muted-foreground/80 italic leading-relaxed">{transition}</p>
+          )}
+          {/* Balsamic special panel for current year */}
+          {currentEntry.phase === 'Balsamic' && (
+            <BalsamicDetailPanel entry={currentEntry} />
           )}
         </div>
       )}
@@ -157,7 +223,7 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
       </div>
 
       {/* Detail Card for Selected Year */}
-      {detailEntry && detailEntry !== currentEntry && (
+      {detailEntry && (
         <div className={`mx-4 p-3 rounded-sm border space-y-2 ${PHASE_COLORS[detailEntry.colorLabel] || 'bg-muted/20 border-border'}`}>
           <div className="flex items-center gap-2">
             <span className="text-base">{PHASE_ICONS[detailEntry.phase] || '☽'}</span>
@@ -183,6 +249,11 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
                 </span>
               ))}
             </div>
+          )}
+
+          {/* Balsamic Ending/Emerging panel for any clicked Balsamic year */}
+          {detailEntry.phase === 'Balsamic' && (
+            <BalsamicDetailPanel entry={detailEntry} />
           )}
         </div>
       )}
