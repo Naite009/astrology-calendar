@@ -214,6 +214,13 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
   const sortedAspects = [...nonSunConjAspects].sort((a, b) => a.orb - b.orb);
   const tightestAspects = sortedAspects.slice(0, 2);
 
+  // Tightest SR internal aspects (year's climate), max 2
+  const srInternalFiltered = (analysis.srInternalAspects || []).filter(
+    a => ALLOWED_ASPECT_BODIES.has(a.planet1) && ALLOWED_ASPECT_BODIES.has(a.planet2)
+  );
+  const sortedInternal = [...srInternalFiltered].sort((a, b) => a.orb - b.orb);
+  const tightestInternal = sortedInternal.slice(0, 2);
+
   // Dominant element
   const eb = analysis.elementBalance;
   const elementCounts = { Fire: eb.fire, Earth: eb.earth, Air: eb.air, Water: eb.water };
