@@ -16,7 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useDocumentExcerpts } from '@/hooks/useDocumentExcerpts';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
-import { SolarReturnPDFExport } from '@/components/SolarReturnPDFExport';
+import { SolarReturnPDFExport, generateBirthdayGiftPDF } from '@/components/SolarReturnPDFExport';
 import { TierButtonRow } from '@/components/solarReturn/TierButtonRow';
 import { SROverviewDashboard } from '@/components/solarReturn/SROverviewDashboard';
 import { LunarPhaseTimeline } from '@/components/solarReturn/LunarPhaseTimeline';
@@ -254,9 +254,13 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             solarReturnChart={selectedSR}
             onDownloadTier={(tier) => {
               if (tier === 't1') {
-                // Trigger Tier 1 download — delegate to the OverviewTab's PDF export
                 const btn = document.querySelector('[data-tier1-download]') as HTMLButtonElement;
                 if (btn) btn.click();
+              } else if (tier === 'gift') {
+                toast.promise(
+                  generateBirthdayGiftPDF(analysis, selectedSR, selectedNatal),
+                  { loading: 'Generating Birthday Gift Print...', success: 'PDF downloaded!', error: 'PDF generation failed' }
+                );
               } else if (tier === 't4' || tier === 't5') {
                 toast.info('Coming soon — this tier is under development');
               } else {

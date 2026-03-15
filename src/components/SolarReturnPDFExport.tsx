@@ -350,6 +350,543 @@ function getPersonalizedStelliumText(sign: string, house: number | null, planets
   return signPersonal[sign] || `${planetNames} are clustered in ${sign}${houseContext}, concentrating this year's energy into a focused area.`;
 }
 
+// ── Birthday Gift Print PDF (comprehensive, no AI narrative required) ──
+export async function generateBirthdayGiftPDF(
+  analysis: SolarReturnAnalysis,
+  srChart: SolarReturnChart,
+  natalChart: NatalChart,
+  personalMessage?: string,
+) {
+  const { default: jsPDF } = await import('jspdf');
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'letter' });
+  const pw = doc.internal.pageSize.getWidth();
+  const ph = doc.internal.pageSize.getHeight();
+  const margin = 50;
+  const contentW = pw - margin * 2;
+
+  const sunSign = natalChart.planets?.Sun?.sign || '';
+  const signTheme = sunSign ? signColorThemes[sunSign] : undefined;
+  const ctx = createPDFContext(doc, pw, ph, margin, contentW, signTheme);
+
+  // 1. COVER
+  await generatePDFCover(ctx, doc, analysis, srChart, natalChart, true, personalMessage || '', CAKE_IMAGES);
+
+  // 2. TABLE OF CONTENTS
+  doc.addPage(); ctx.y = margin;
+  const tocPageNumber = doc.getNumberOfPages();
+  const tocEntries = generatePDFTableOfContents(ctx, doc, analysis, '', true);
+
+  // 3. HOW TO READ
+  doc.addPage(); ctx.y = margin;
+  ctx.sectionPages.set('HOW TO READ THIS REPORT', doc.getNumberOfPages());
+  generateHowToReadPage(ctx, doc);
+
+  // 4. BIG THREE
+  doc.addPage(); ctx.y = margin;
+  ctx.sectionPages.set('YOUR BIG THREE', doc.getNumberOfPages());
+  generateStrengthsPortrait(ctx, doc, natalChart, analysis);
+
+  // 5. HOW THIS YEAR MEETS YOU
+  doc.addPage(); ctx.y = margin;
+  ctx.sectionPages.set('HOW THIS YEAR MEETS YOU', doc.getNumberOfPages());
+  generateHowThisYearMeetsYou(ctx, doc, analysis, srChart, natalChart);
+
+  // 6. YEAR AT A GLANCE
+  doc.addPage(); ctx.y = margin;
+  ctx.sectionPages.set('YEAR AT A GLANCE', doc.getNumberOfPages());
+  generatePDFYearAtAGlance(ctx, doc, analysis, srChart, natalChart);
+
+  // 7. SR MOON PHASE TIMELINE
+  doc.addPage(); ctx.y = margin;
+  ctx.sectionPages.set('SR MOON PHASE BY YEAR', doc.getNumberOfPages());
+  generatePDFLunarTimeline(ctx, doc, analysis, srChart, natalChart);
+
+  // 8. NATAL OVERLAY + ANGLE ACTIVATIONS + YEAR PRIORITY
+  doc.addPage(); ctx.y = margin;
+  ctx.sectionPages.set('NATAL OVERLAY', doc.getNumberOfPages());
+  generatePDFNatalOverlay(ctx, doc, analysis);
+  ctx.checkPage(200);
+  generatePDFAngleActivations(ctx, doc, natalChart, srChart);
+  doc.addPage(); ctx.y = margin;
+  ctx.sectionPages.set('YEAR PRIORITY ENGINE', doc.getNumberOfPages());
+  generatePDFYearPriority(ctx, doc, analysis, natalChart, srChart);
+
+  // 9. MOON SHIFT
+  {
+    const natalMoonSign = natalChart.planets?.Moon?.sign || '';
+    const srMoonSignFull = analysis.moonSign || srChart.planets.Moon?.sign || '';
+    if (natalMoonSign && srMoonSignFull) {
+      doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
+      ctx.sectionPages.set('MOON SHIFT', doc.getNumberOfPages());
+      ctx.sectionTitle(doc, 'MOON SHIFT', `Emotional recalibration: ${natalMoonSign} --> ${srMoonSignFull}`);
+
+      const natalDeep = moonSignDeep[natalMoonSign];
+      const srDeep = moonSignDeep[srMoonSignFull];
+      const halfW = (contentW - 16) / 2;
+
+      ctx.trackedLabel(doc, 'NATAL MOON', margin + 8, ctx.y, { size: 7, charSpace: 3 });
+      ctx.trackedLabel(doc, 'SR MOON', margin + halfW + 24, ctx.y, { size: 7, charSpace: 3 });
+      ctx.y += 14;
+
+      doc.setFont('times', 'bold'); doc.setFontSize(14);
+      doc.setTextColor(...ctx.colors.ink);
+      doc.text(natalMoonSign.toUpperCase(), margin + 8, ctx.y);
+      doc.text(srMoonSignFull.toUpperCase(), margin + halfW + 24, ctx.y);
+      ctx.y += 14;
+
+      doc.setFont('times', 'normal'); doc.setFontSize(8.5); doc.setTextColor(...ctx.colors.ink);
+      const natalMoonLines = doc.splitTextToSize(natalDeep?.emotional || '', halfW - 16);
+      const srMoonLines = doc.splitTextToSize(srDeep?.emotional || '', halfW - 16);
+      const maxLines = Math.max(natalMoonLines.length, srMoonLines.length);
+      for (let li = 0; li < Math.min(maxLines, 6); li++) {
+        if (natalMoonLines[li]) doc.text(natalMoonLines[li], margin + 8, ctx.y);
+        if (srMoonLines[li]) doc.text(srMoonLines[li], margin + halfW + 24, ctx.y);
+        ctx.y += 11;
+      }
+      doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
+      doc.line(margin + halfW + 8, ctx.y - maxLines * 11 - 14, margin + halfW + 8, ctx.y);
+      ctx.y += 8;
+
+      if (natalMoonSign !== srMoonSignFull) {
+        ctx.drawCard(doc, () => {
+          ctx.writeBold(doc, `The Shift: ${natalMoonSign} --> ${srMoonSignFull}`);
+          ctx.y += 2;
+          const specificNarrative = moonShiftNarrative[natalMoonSign]?.[srMoonSignFull];
+          if (specificNarrative) ctx.writeBody(doc, specificNarrative);
+          ctx.y += 4;
+          if (srDeep) {
+            ctx.writeCardSection(doc, 'Body', srDeep.body);
+            ctx.writeCardSection(doc, 'Apply', srDeep.apply);
+          }
+        });
+      }
+    }
+  }
+
+  // 10. SR VS NATAL TABLE
+  doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
+  ctx.sectionPages.set('SOLAR RETURN VS NATAL', doc.getNumberOfPages());
+  ctx.sectionTitle(doc, 'SOLAR RETURN VS NATAL');
+  {
+    const cols = [
+      margin + 8, margin + contentW * 0.12, margin + contentW * 0.32,
+      margin + contentW * 0.40, margin + contentW * 0.60, margin + contentW * 0.70,
+    ];
+    doc.setFont('times', 'bold'); doc.setFontSize(7.5); doc.setTextColor(...ctx.colors.muted);
+    doc.setCharSpace(1);
+    ['PLANET', 'SR POSITION', 'SR H', 'NATAL POSITION', 'NAT H', 'SHIFT'].forEach((h, i) => doc.text(h, cols[i], ctx.y));
+    doc.setCharSpace(0);
+    ctx.y += 6;
+    doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.3);
+    doc.line(margin, ctx.y, margin + contentW, ctx.y);
+    ctx.y += 10;
+
+    for (const p of PLANET_ORDER) {
+      const srPos = srChart.planets[p as keyof typeof srChart.planets];
+      const natPos = natalChart.planets[p as keyof typeof natalChart.planets];
+      if (!srPos && !natPos) continue;
+      const srH = analysis.planetSRHouses?.[p];
+      const overlay = analysis.houseOverlays.find(o => o.planet === p);
+      const natH = overlay?.natalHouse;
+      const shift = srPos?.sign && natPos?.sign
+        ? (srPos.sign === natPos.sign ? 'Same' : `${S[natPos.sign] || natPos.sign} > ${S[srPos.sign] || srPos.sign}`)
+        : '';
+      ctx.checkPage(18);
+      doc.setFont('times', 'bold'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.ink);
+      doc.text(P[p] || p, cols[0], ctx.y);
+      doc.setFont('times', 'normal'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.ink);
+      doc.text(srPos ? `${srPos.sign} ${srPos.degree}'` : '--', cols[1], ctx.y);
+      doc.setFont('times', 'bold'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.accent);
+      doc.text(srH != null ? `H${srH}` : '--', cols[2], ctx.y);
+      doc.setFont('times', 'normal'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.ink);
+      doc.text(natPos ? `${natPos.sign} ${natPos.degree}'` : '--', cols[3], ctx.y);
+      doc.setFont('times', 'bold'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.accent);
+      doc.text(natH != null ? `H${natH}` : '--', cols[4], ctx.y);
+      doc.setFont('times', 'italic'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.muted);
+      doc.text(shift, cols[5], ctx.y);
+      ctx.y += 17;
+    }
+    doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
+    doc.line(margin, ctx.y, margin + contentW, ctx.y);
+    ctx.y += 10;
+  }
+
+  // 11. STELLIUMS
+  if (analysis.stelliums.length > 0) {
+    const signStelliums = analysis.stelliums.filter(s => !/^\d+$/.test(String(s.location)) && !s.location.startsWith('House'));
+    const houseStelliums = analysis.stelliums.filter(s => /^\d+$/.test(String(s.location)) || s.location.startsWith('House'));
+
+    const renderStelliumCard = (s: typeof analysis.stelliums[0]) => {
+      const planets = s.planets.map(pp => P[pp] || pp).join(', ');
+      const isHouseStellium = /^\d+$/.test(String(s.location)) || s.location.startsWith('House');
+      const houseNum = parseInt(String(s.location).replace('House ', '').replace('House', ''));
+      const planetHouses = s.planets.map(pp => analysis.planetSRHouses?.[pp]).filter(Boolean) as number[];
+      const primaryHouse = planetHouses.length > 0 ? planetHouses[0] : null;
+
+      ctx.drawCard(doc, () => {
+        ctx.writeBold(doc, `${s.planets.length}-Planet Stellium in ${isHouseStellium ? 'House ' + houseNum : s.location}`);
+        ctx.y += 2;
+        doc.setFont('times', 'bold'); doc.setFontSize(10); doc.setTextColor(...ctx.colors.ink);
+        doc.text(planets, margin + 8, ctx.y);
+        ctx.y += 16;
+
+        if (!isHouseStellium) {
+          const personalizedStellium = getPersonalizedStelliumText(s.location, primaryHouse, s.planets);
+          ctx.writeBody(doc, personalizedStellium, ctx.colors.bodyText, 9.5, 13);
+          ctx.y += 4;
+          const felt = stelliumFeltSense[s.location];
+          if (felt) ctx.writeCardSection(doc, 'How You Will Feel This', felt, ctx.colors.accentGreen);
+        } else if (!isNaN(houseNum)) {
+          const houseMeaning = stelliumHouseMeaning[houseNum];
+          if (houseMeaning) ctx.writeBody(doc, houseMeaning, ctx.colors.bodyText, 9.5, 13);
+        }
+      });
+      ctx.y += 4;
+    };
+
+    if (signStelliums.length > 0) {
+      ctx.sectionTitle(doc, 'STELLIUMS -- YOUR POWER ZONES');
+      ctx.sectionPages.set('STELLIUMS', doc.getNumberOfPages());
+      for (const s of signStelliums) renderStelliumCard(s);
+    }
+    if (houseStelliums.length > 0) {
+      if (signStelliums.length > 0) { ctx.checkPage(200); ctx.y += 10; ctx.drawRule(doc); ctx.y += 16; }
+      else { ctx.sectionTitle(doc, 'STELLIUMS -- YOUR POWER ZONES'); ctx.sectionPages.set('STELLIUMS', doc.getNumberOfPages()); }
+      for (const s of houseStelliums) renderStelliumCard(s);
+    }
+  }
+
+  // 12. ELEMENT, MODALITY & ENERGY
+  {
+    const hasElements = !!analysis.elementBalance;
+    const hasHemisphere = !!analysis.hemisphericEmphasis;
+    if (hasElements || hasHemisphere) {
+      ctx.sectionTitle(doc, 'ELEMENT, MODALITY & ENERGY');
+      ctx.sectionPages.set('ELEMENT AND MODALITY', doc.getNumberOfPages());
+      if (hasHemisphere) ctx.sectionPages.set('WHERE YOUR ENERGY LIVES', doc.getNumberOfPages());
+    }
+    if (hasElements) {
+      const eb = analysis.elementBalance;
+      const mb = analysis.modalityBalance;
+      ctx.checkPage(190);
+
+      ctx.writeBold(doc, 'Elemental Balance');
+      ctx.y += 10;
+      const elemW = (contentW - 24) / 4;
+      const elemH = 72;
+      const ELEM_BG: Record<string, [number, number, number]> = { Fire: [255, 230, 220], Earth: [225, 245, 225], Air: [225, 235, 255], Water: [220, 235, 250] };
+      const elements = [{ name: 'Fire', val: eb.fire }, { name: 'Earth', val: eb.earth }, { name: 'Air', val: eb.air }, { name: 'Water', val: eb.water }];
+      const elemStartY = ctx.y;
+      elements.forEach((el, i) => {
+        const x = margin + 2 + i * (elemW + 4);
+        const isDom = el.name.toLowerCase() === (eb.dominant || '').toLowerCase();
+        const bg = ELEM_BG[el.name] || ctx.colors.cardBg;
+        doc.setFillColor(...bg);
+        doc.roundedRect(x, elemStartY, elemW, elemH, 4, 4, 'F');
+        if (isDom) { doc.setDrawColor(...ctx.colors.gold); doc.setLineWidth(1.2); doc.roundedRect(x, elemStartY, elemW, elemH, 4, 4, 'S'); }
+        doc.setFont('times', 'bold'); doc.setFontSize(28); doc.setTextColor(...(isDom ? ctx.colors.ink : ctx.colors.muted));
+        doc.text(String(el.val), x + elemW / 2, elemStartY + 32, { align: 'center' });
+        doc.setFont('times', 'normal'); doc.setFontSize(10); doc.setTextColor(...ctx.colors.ink);
+        doc.text(el.name, x + elemW / 2, elemStartY + 48, { align: 'center' });
+        if (isDom) ctx.trackedLabel(doc, 'DOMINANT', x + elemW / 2, elemStartY + 62, { align: 'center', size: 6.5, charSpace: 2 });
+      });
+      ctx.y = elemStartY + elemH + 16;
+
+      ctx.writeBold(doc, 'Modality Balance');
+      ctx.y += 10;
+      const modW = (contentW - 16) / 3;
+      const modH = 68;
+      const modalities = [{ name: 'Cardinal', val: mb.cardinal, desc: 'Initiating' }, { name: 'Fixed', val: mb.fixed, desc: 'Sustaining' }, { name: 'Mutable', val: mb.mutable, desc: 'Adapting' }];
+      const modStartY = ctx.y;
+      modalities.forEach((mod, i) => {
+        const x = margin + 2 + i * (modW + 4);
+        const isDom = mod.name.toLowerCase() === (mb.dominant || '').toLowerCase();
+        doc.setFillColor(...ctx.colors.cardBg);
+        doc.roundedRect(x, modStartY, modW, modH, 4, 4, 'F');
+        if (isDom) { doc.setDrawColor(...ctx.colors.gold); doc.setLineWidth(1.2); } else { doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.3); }
+        doc.roundedRect(x, modStartY, modW, modH, 4, 4, 'S');
+        doc.setFont('times', 'bold'); doc.setFontSize(26); doc.setTextColor(...(isDom ? ctx.colors.ink : ctx.colors.muted));
+        doc.text(String(mod.val), x + modW / 2, modStartY + 30, { align: 'center' });
+        doc.setFont('times', 'normal'); doc.setFontSize(9.5); doc.setTextColor(...ctx.colors.ink);
+        doc.text(`${mod.name} -- ${mod.desc}`, x + modW / 2, modStartY + 48, { align: 'center' });
+      });
+      ctx.y = modStartY + modH + 12;
+    }
+  }
+
+  // 13. LORD OF THE YEAR
+  if (analysis.profectionYear?.timeLord) {
+    doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
+    ctx.sectionPages.set('LORD OF THE YEAR', doc.getNumberOfPages());
+    ctx.sectionTitle(doc, 'LORD OF THE YEAR');
+    const tlPlanet = analysis.profectionYear.timeLord;
+    const tlSRHouse = analysis.profectionYear.timeLordSRHouse;
+    const tlSRSign = analysis.profectionYear.timeLordSRSign;
+    const houseNum = analysis.profectionYear.houseNumber;
+    const tlSRPos = srChart.planets[tlPlanet as keyof typeof srChart.planets];
+    const tlIsRetro = !!(tlSRPos as any)?.isRetrograde;
+    const tlDignity = (analysis.lordOfTheYear && analysis.lordOfTheYear.planet === tlPlanet) ? analysis.lordOfTheYear.dignity : '';
+
+    doc.setFont('times', 'bold'); doc.setFontSize(18); doc.setTextColor(...ctx.colors.ink);
+    doc.text(`${P[tlPlanet] || tlPlanet}`, margin + 8, ctx.y);
+    doc.setFont('times', 'normal'); doc.setFontSize(11); doc.setTextColor(...ctx.colors.ink);
+    doc.text(`${tlSRSign || '--'} -- SR House ${tlSRHouse || '--'}`, margin + 8, ctx.y + 18);
+    if (tlDignity) { doc.setFont('times', 'italic'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.muted); doc.text(`Dignity: ${tlDignity}`, margin + contentW, ctx.y, { align: 'right' }); }
+    if (tlIsRetro) ctx.trackedLabel(doc, 'RETROGRADE', margin + contentW, ctx.y + 12, { align: 'right', size: 7, charSpace: 2 });
+    ctx.y += 30;
+    doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
+    doc.line(margin, ctx.y, margin + contentW, ctx.y);
+    ctx.y += 14;
+
+    ctx.drawCard(doc, () => {
+      ctx.writeBold(doc, `Why ${P[tlPlanet] || tlPlanet} Is Your Lord of the Year`, ctx.colors.gold, 11);
+      ctx.y += 2;
+      ctx.writeBody(doc, `You are ${analysis.profectionYear!.age} years old, placing you in a ${houseNum}${houseNum === 1 ? 'st' : houseNum === 2 ? 'nd' : houseNum === 3 ? 'rd' : 'th'} house profection year. The traditional ruler of your natal ${houseNum}${houseNum === 1 ? 'st' : houseNum === 2 ? 'nd' : houseNum === 3 ? 'rd' : 'th'} house cusp is ${P[tlPlanet] || tlPlanet}, making it the planet running the show.`, ctx.colors.bodyText, 10, 14);
+    });
+
+    const detailedMeaning = timeLordDetailedMeaning[tlPlanet];
+    if (detailedMeaning) {
+      ctx.drawCard(doc, () => {
+        ctx.writeBold(doc, 'What This Means For Your Year', ctx.colors.accentGreen, 11);
+        ctx.y += 2;
+        ctx.writeBody(doc, detailedMeaning, ctx.colors.bodyText, 10, 14);
+      });
+    }
+  }
+
+  // 14. PROFECTION WHEEL
+  doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
+  ctx.sectionPages.set('PROFECTION WHEEL', doc.getNumberOfPages());
+  if (analysis.profectionYear) {
+    drawProfectionWheel(ctx, doc, analysis.profectionYear.age, analysis.profectionYear.houseNumber, analysis.profectionYear.timeLord);
+  }
+
+  // 15. PROFECTION PERSONAL DEEP DIVE
+  if (analysis.profectionYear) {
+    doc.addPage(); ctx.y = margin;
+    ctx.sectionPages.set('PROFECTION YEAR', doc.getNumberOfPages());
+    generateProfectionPersonalSection(ctx, doc, analysis.profectionYear.houseNumber, analysis.profectionYear.timeLord, analysis.profectionYear.age, analysis.profectionYear.timeLordSRHouse || null, analysis.profectionYear.timeLordSRSign || '');
+  }
+
+  // 16. KEY DATES TIMELINE
+  if (analysis.profectionYear) {
+    doc.addPage(); ctx.y = margin;
+    ctx.sectionPages.set('KEY DATES', doc.getNumberOfPages());
+    generateKeyDatesTimeline(ctx, doc, analysis.profectionYear.timeLord, natalChart, srChart);
+  }
+
+  // 17. SATURN & NORTH NODE
+  if (analysis.saturnFocus || analysis.nodesFocus) {
+    doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
+    ctx.sectionPages.set('SATURN AND NORTH NODE', doc.getNumberOfPages());
+    ctx.sectionTitle(doc, 'SATURN & NORTH NODE');
+    ctx.drawCard(doc, () => {
+      ctx.writeBold(doc, 'Why These Two Matter', ctx.colors.gold, 11);
+      ctx.writeBody(doc, 'Saturn = WHERE YOU ARE TESTED. The area of life where shortcuts fail and real work produces lasting results. North Node = WHERE YOUR SOUL IS GROWING. The direction that feels unfamiliar but is exactly what this year requires.', ctx.colors.bodyText, 10, 14);
+    });
+    if (analysis.saturnFocus) {
+      ctx.drawCard(doc, () => {
+        doc.setFont('times', 'bold'); doc.setFontSize(12); doc.setTextColor(...ctx.colors.ink);
+        doc.text(`Saturn in ${analysis.saturnFocus!.sign} -- House ${analysis.saturnFocus!.house || '--'}${analysis.saturnFocus!.isRetrograde ? ' (Rx)' : ''}`, margin + 8, ctx.y);
+        ctx.y += 16;
+        const satMeaning = saturnHouseMeaning[analysis.saturnFocus!.house];
+        if (satMeaning) ctx.writeBody(doc, satMeaning);
+      });
+    }
+    if (analysis.nodesFocus) {
+      ctx.drawCard(doc, () => {
+        doc.setFont('times', 'bold'); doc.setFontSize(12); doc.setTextColor(...ctx.colors.ink);
+        doc.text(`North Node in ${analysis.nodesFocus!.sign} -- House ${analysis.nodesFocus!.house || '--'}`, margin + 8, ctx.y);
+        ctx.y += 16;
+        const nodeMeaning = nodeHouseMeaning[analysis.nodesFocus!.house];
+        if (nodeMeaning) ctx.writeBody(doc, nodeMeaning);
+      });
+    }
+  }
+
+  // 18. KEY ASPECTS
+  if (analysis.srToNatalAspects.length > 0) {
+    const allAspects = analysis.srToNatalAspects.filter(asp => !(asp.planet1 === 'Sun' && asp.planet2 === 'Sun' && asp.type === 'Conjunction'));
+    const majorAspects = allAspects.filter(asp => MAJOR_BODIES.has(asp.planet1) && MAJOR_BODIES.has(asp.planet2));
+    doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
+    ctx.sectionPages.set('KEY ASPECTS', doc.getNumberOfPages());
+    ctx.sectionTitle(doc, 'KEY ASPECTS', 'How Solar Return planets activate your natal chart');
+    for (let i = 0; i < Math.min(majorAspects.length, 10); i++) {
+      const asp = majorAspects[i];
+      const interp = generateSRtoNatalInterpretation(asp.planet1, asp.planet2, asp.type, asp.orb);
+      ctx.checkPage(160);
+      ctx.drawCard(doc, () => {
+        doc.setFont('times', 'bold'); doc.setFontSize(10); doc.setTextColor(...ctx.colors.ink);
+        doc.text(`SR ${P[asp.planet1] || asp.planet1}  ${asp.type}  Natal ${P[asp.planet2] || asp.planet2}`, margin + 8, ctx.y);
+        doc.setFont('times', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...ctx.colors.muted);
+        const srH = analysis.planetSRHouses?.[asp.planet1];
+        doc.text(`${asp.orb}' orb${srH ? `  |  SR H${srH}` : ''}`, margin + contentW, ctx.y, { align: 'right' });
+        ctx.y += 14;
+        ctx.writeCardSection(doc, 'How It Feels', interp.howItFeels);
+        ctx.writeCardSection(doc, 'What It Means', interp.whatItMeans);
+        ctx.writeCardSection(doc, 'What To Do', interp.whatToDo);
+      });
+    }
+  }
+
+  // 19. YOUR MOON THIS YEAR
+  if (analysis.srMoonAspects || analysis.moonVOC || analysis.moonAngularity) {
+    doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
+    ctx.sectionPages.set('YOUR MOON THIS YEAR', doc.getNumberOfPages());
+    ctx.sectionTitle(doc, 'YOUR MOON THIS YEAR', 'Emotional Climate');
+    if (analysis.moonVOC) {
+      ctx.drawCard(doc, () => {
+        ctx.writeBold(doc, 'Moon Void of Course -- The Unaspected Moon');
+        ctx.y += 6;
+        ctx.writeBody(doc, 'Your Solar Return Moon makes no major aspects. This is rare and significant.');
+        ctx.writeCardSection(doc, 'What This Means', 'An unaspected SR Moon operates in isolation -- your emotional life this year runs on its own track.');
+        ctx.writeCardSection(doc, 'The Gift', 'Without planetary aspects pulling it, the Moon is free. Your emotional compass this year is entirely your own.');
+      });
+    }
+    if (analysis.moonAngularity) {
+      const angDesc: Record<string, string> = {
+        angular: 'Your SR Moon is angular. Emotional responses are instinctive, automatic, and highly reactive.',
+        succedent: 'Your SR Moon is in a succedent house. Emotional responses are stable and grounded.',
+        cadent: 'Your SR Moon is in a cadent house. Emotional responses are more adaptive.',
+      };
+      ctx.drawCard(doc, () => {
+        doc.setFont('times', 'bold'); doc.setFontSize(11); doc.setTextColor(...ctx.colors.ink);
+        doc.text(`Moon: ${analysis.moonSign || ''} in House ${analysis.moonHouse?.house || '--'}`, margin + 8, ctx.y);
+        ctx.y += 14;
+        ctx.writeBody(doc, angDesc[analysis.moonAngularity!]);
+      });
+    }
+    if (analysis.srMoonAspects && analysis.srMoonAspects.length > 0) {
+      ctx.y += 6;
+      ctx.writeBold(doc, 'Moon Aspects This Year');
+      ctx.y += 6;
+      for (const asp of analysis.srMoonAspects.slice(0, 6)) {
+        ctx.checkPage(80);
+        ctx.drawCard(doc, () => {
+          doc.setFont('times', 'bold'); doc.setFontSize(9.5); doc.setTextColor(...ctx.colors.ink);
+          doc.text(`Moon ${asp.aspectType} ${P[asp.targetPlanet] || asp.targetPlanet}`, margin + 8, ctx.y);
+          ctx.y += 12;
+          ctx.writeBody(doc, asp.interpretation);
+        });
+      }
+    }
+  }
+
+  // 20. VERTEX
+  if (analysis.vertex) {
+    ctx.checkPage(200);
+    if (ctx.y > margin + 100) { doc.addPage(); ctx.y = margin; ctx.pageBg(doc); }
+    ctx.sectionPages.set('VERTEX', doc.getNumberOfPages());
+    ctx.sectionTitle(doc, 'VERTEX -- FATED ENCOUNTERS');
+    ctx.drawCard(doc, () => {
+      ctx.writeBold(doc, `Vertex: ${analysis.vertex!.sign} ${analysis.vertex!.degree}' ${analysis.vertex!.house ? `(House ${analysis.vertex!.house})` : ''}`);
+      const vSign = vertexInSign[analysis.vertex!.sign];
+      if (vSign) {
+        ctx.writeCardSection(doc, 'Fated Theme', vSign.fatedTheme);
+        ctx.writeCardSection(doc, 'Who May Appear', vSign.encounters);
+      }
+    });
+  }
+
+  // 21. PLANET GALLERY
+  ctx.sectionPages.set('PLANET SPOTLIGHT', doc.getNumberOfPages() + 1);
+  generatePlanetGallery(ctx, doc, analysis, PLANET_IMAGES, srChart);
+
+  // 22. HIGHLIGHTS & MONTHLY FORECASTS
+  doc.addPage(); ctx.y = margin;
+  ctx.sectionPages.set('BEST MONTHS AND HIGHLIGHTS', doc.getNumberOfPages());
+  generateHighlightsPage(ctx, doc, analysis, srChart, natalChart);
+
+  // 23. QUARTERLY SUMMARY
+  doc.addPage(); ctx.y = margin;
+  ctx.sectionPages.set('YOUR YEAR IN FOUR SEASONS', doc.getNumberOfPages());
+  generateQuarterlySummary(ctx, doc, analysis, srChart, natalChart);
+
+  // 24. BIRTHDAY AFFIRMATION
+  if (ctx.y > margin + 10) doc.addPage();
+  ctx.y = margin;
+  ctx.sectionPages.set('BIRTHDAY AFFIRMATION CARD', doc.getNumberOfPages());
+  generateAffirmationCard(ctx, doc, analysis, natalChart, srChart);
+
+  // 25. TAKE THIS WITH YOU — closing page
+  doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
+  {
+    const cx = pw / 2;
+    ctx.y = ph * 0.2;
+
+    // Diamond ornament
+    doc.setFillColor(...ctx.colors.gold);
+    doc.triangle(cx, ctx.y - 10, cx - 6, ctx.y, cx + 6, ctx.y, 'F');
+    doc.triangle(cx, ctx.y + 10, cx - 6, ctx.y, cx + 6, ctx.y, 'F');
+    ctx.y += 30;
+
+    doc.setFont('times', 'italic'); doc.setFontSize(28);
+    doc.setTextColor(...ctx.colors.ink);
+    doc.text('Take This With You', cx, ctx.y, { align: 'center' });
+    ctx.y += 36;
+
+    doc.setDrawColor(...ctx.colors.gold); doc.setLineWidth(0.5);
+    doc.line(cx - 80, ctx.y, cx + 80, ctx.y);
+    ctx.y += 30;
+
+    const name = natalChart.name || 'friend';
+    const takeWithYouLines = [
+      `Dear ${name},`,
+      '',
+      'This report is a map, not a mandate.',
+      '',
+      'The planets describe the weather of your year --',
+      'they do not decide what you build in it.',
+      '',
+      'Use what resonates. Set aside what doesn\'t.',
+      'Return to these pages when you need orientation.',
+      '',
+      'The best astrology doesn\'t predict your future.',
+      'It helps you meet it with more awareness,',
+      'more compassion, and more courage.',
+      '',
+      'Happy Birthday.',
+      '',
+      'Trust your inner wisdom.',
+    ];
+
+    doc.setFont('times', 'normal'); doc.setFontSize(13);
+    doc.setTextColor(...ctx.colors.ink);
+    for (const line of takeWithYouLines) {
+      doc.text(line, cx, ctx.y, { align: 'center' });
+      ctx.y += line === '' ? 12 : 20;
+    }
+
+    // Bottom ornament
+    ctx.y += 20;
+    doc.setFillColor(...ctx.colors.gold);
+    doc.triangle(cx, ctx.y - 5, cx - 4, ctx.y, cx + 4, ctx.y, 'F');
+    doc.triangle(cx, ctx.y + 5, cx - 4, ctx.y, cx + 4, ctx.y, 'F');
+  }
+
+  // GOLD BORDERS on all pages
+  {
+    const totalPages = doc.getNumberOfPages();
+    const realGold: [number, number, number] = [190, 155, 80];
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setDrawColor(...realGold); doc.setLineWidth(2.5);
+      doc.rect(18, 18, pw - 36, ph - 36);
+      doc.setLineWidth(0.8);
+      doc.rect(23, 23, pw - 46, ph - 46);
+      const corners = [[27, 27], [pw - 27, 27], [27, ph - 27], [pw - 27, ph - 27]];
+      doc.setFillColor(...realGold);
+      for (const [cx2, cy2] of corners) doc.circle(cx2, cy2, 3.5, 'F');
+    }
+  }
+
+  // TOC links
+  addTOCLinks(doc, tocPageNumber, tocEntries, ctx);
+
+  const name2 = natalChart.name || 'Chart';
+  doc.save(`Birthday-Gift-${srChart.solarReturnYear}-${name2.replace(/\s+/g, '-')}.pdf`);
+}
+
 export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative }: Props) => {
   const [generating, setGenerating] = useState(false);
   const [generatingTier1, setGeneratingTier1] = useState(false);
