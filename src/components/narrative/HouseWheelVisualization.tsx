@@ -197,9 +197,9 @@ export function HouseWheelVisualization({ chart, onHouseClick }: Props) {
                 className="fill-foreground text-[11px] font-bold">{w.h.num}</text>
               <text x={w.namePos.x} y={w.namePos.y + nameYOffset} textAnchor="middle" dominantBaseline="middle"
                 className="fill-muted-foreground text-[6px]">{w.h.name}</text>
-            </g>);
+            </g>
+            );
           })}
-          ))}
 
           {/* Cusp signs from chart */}
           {chart && houseWedges.map(w => {
