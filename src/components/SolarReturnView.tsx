@@ -9,6 +9,7 @@ import { vertexInSign, vertexInHouse, vertexAspectMeanings } from '@/lib/solarRe
 import { srJupiterInHouseDeep, srMercuryInHouseDeep, srVenusInHouseDeep, srMarsInHouseDeep, srSaturnInHouseDeep, srUranusInHouseDeep, srNeptuneInHouseDeep, srPlutoInHouseDeep, type SRPlanetHouseDeep } from '@/lib/solarReturnPlanetInHouseDeep';
 import { generateSRtoNatalInterpretation, aspectTypeMeanings, planetLifeMeanings } from '@/lib/solarReturnAspectInterp';
 import { moonSignDeep, moonShiftNarrative } from '@/lib/moonSignShiftData';
+import { formatDateMMDDYYYY } from '@/lib/localDate';
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
