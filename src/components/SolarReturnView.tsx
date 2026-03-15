@@ -23,6 +23,7 @@ import { LunarPhaseTimeline } from '@/components/solarReturn/LunarPhaseTimeline'
 import { StoryOfTheYear } from '@/components/solarReturn/StoryOfTheYear';
 import { LifeCycleContext } from '@/components/solarReturn/LifeCycleContext';
 import { NatalOverlayCard } from '@/components/solarReturn/NatalOverlayCard';
+import { AngleActivationCard } from '@/components/solarReturn/AngleActivationCard';
 
 const ZODIAC_SIGNS = [
   'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
