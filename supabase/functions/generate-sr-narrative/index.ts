@@ -28,7 +28,7 @@ serve(async (req) => {
       dataContext += `SR ASCENDANT: ${a.yearlyTheme.ascendantSign} Rising, ruled by ${a.yearlyTheme.ascendantRuler} in ${a.yearlyTheme.ascendantRulerSign}${a.yearlyTheme.ascendantRulerHouse ? ` (SR House ${a.yearlyTheme.ascendantRulerHouse})` : ''}\n`;
     }
 
-    // SR Ascendant Ruler in Natal Houses (J-B Morin technique)
+    // SR Ascendant Ruler in Natal Houses
     if (a.srAscRulerInNatal) {
       dataContext += `SR ASC RULER IN NATAL: ${a.srAscRulerInNatal.rulerPlanet} (ruler of ${a.srAscRulerInNatal.srAscSign}) in ${a.srAscRulerInNatal.rulerSRSign}${a.srAscRulerInNatal.rulerSRHouse ? ` (SR House ${a.srAscRulerInNatal.rulerSRHouse})` : ''} → falls in Natal House ${a.srAscRulerInNatal.rulerNatalHouse || '—'} (${a.srAscRulerInNatal.rulerNatalHouseTheme || ''})\n`;
       if (a.srAscRulerInNatal.interpretation) {
