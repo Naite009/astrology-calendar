@@ -368,8 +368,8 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
 
         {/* SR Internal: The year's climate */}
         <div className="bg-muted/50 rounded-lg p-3">
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">SR Internal</p>
-          <p className="text-[9px] text-muted-foreground/60 mb-1.5">The year's overall climate</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-foreground mb-0.5">SR Internal</p>
+          <p className="text-[9px] text-muted-foreground/70 mb-1.5">The year's overall climate</p>
           {tightestInternal.length > 0 ? (
             <div className="space-y-2">
               {tightestInternal.map((asp, i) => (
