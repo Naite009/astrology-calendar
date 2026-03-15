@@ -161,10 +161,6 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
       {/* Lunar Phase of the Year — Clean Card */}
       {currentEntry && (() => {
         const PHASE_ORDER = ['New Moon', 'Crescent', 'First Quarter', 'Gibbous', 'Full Moon', 'Disseminating', 'Last Quarter', 'Balsamic'];
-        const phaseNum = PHASE_ORDER.indexOf(currentEntry.phase) + 1;
-        const futureEntries = timeline.filter(e => e.year > currentEntry.year && e.phase !== currentEntry.phase);
-        const nextShiftEntry = futureEntries.length > 0 ? futureEntries[0] : null;
-        const yearsUntilNext = nextShiftEntry ? nextShiftEntry.year - currentEntry.year : null;
 
         const blending = getMoonPhaseBlending(
           currentEntry.phase,
