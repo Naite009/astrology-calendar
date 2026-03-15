@@ -25,6 +25,7 @@ import { generatePlanetGallery } from '@/lib/pdfSections/planetGallery';
 import { generatePDFLunarTimeline } from '@/lib/pdfSections/lunarTimeline';
 import { generatePDFNatalOverlay, generatePDFAngleActivations, generatePDFYearPriority } from '@/lib/pdfSections/yearPriorityPDF';
 import { generateNatalVsSRCards } from '@/lib/pdfSections/natalVsSRCards';
+import { generateSaturnNodePortrait } from '@/lib/pdfSections/saturnNodePortrait';
 
 // Planet image imports
 import planetSun from '@/assets/planets/sun.png';
