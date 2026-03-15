@@ -325,7 +325,7 @@ export interface SolarReturnAnalysis {
   hemisphericEmphasis: SRHemisphericEmphasis;
   saturnFocus: SRSaturnFocus | null;
   nodesFocus: SRNodesFocus | null;
-  /** Where the SR Ascendant degree falls in the natal chart houses (Lynn Bell technique) */
+  /** Where the SR Ascendant degree falls in the natal chart houses */
   srAscInNatalHouse: {
     natalHouse: number;
     natalHouseTheme: string;
