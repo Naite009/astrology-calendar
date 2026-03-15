@@ -2,7 +2,21 @@ import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { Badge } from '@/components/ui/badge';
+import { formatDateMMDDYYYY } from '@/lib/localDate';
 
+const ALL_SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+
+function detectInterceptedSigns(houseCusps: any): string[] {
+  if (!houseCusps) return [];
+  const cuspSigns: string[] = [];
+  for (let i = 1; i <= 12; i++) {
+    const cusp = houseCusps[`house${i}`];
+    if (cusp?.sign) cuspSigns.push(cusp.sign);
+  }
+  if (cuspSigns.length < 12) return [];
+  const uniqueSigns = new Set(cuspSigns);
+  return ALL_SIGNS.filter(s => !uniqueSigns.has(s));
+}
 const SIGN_SYMBOLS: Record<string, string> = {
   Aries:'♈', Taurus:'♉', Gemini:'♊', Cancer:'♋', Leo:'♌', Virgo:'♍',
   Libra:'♎', Scorpio:'♏', Sagittarius:'♐', Capricorn:'♑', Aquarius:'♒', Pisces:'♓',
