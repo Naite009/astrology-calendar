@@ -31,7 +31,6 @@ export type ViewMode =
   | "month" 
   | "week" 
   | "year" 
-  | "moon-phases" 
   | "annual-tables" 
   | "guide" 
   | "charts" 
@@ -42,14 +41,15 @@ export type ViewMode =
   | "voice-memos" 
   | "decoder" 
   | "speeds" 
-  | "dwarf-planets";
+  | "dwarf-planets"
+  | "moon-encyclopedia";
 
 // Maps guide sections to the corresponding app view mode
 export const SECTION_TO_VIEW: Record<GuideSection, ViewMode> = {
   overview: "month",
   colors: "colors",
   symbols: "month",
-  moonphases: "moon-phases",
+  moonphases: "moon-encyclopedia",
   retrogrades: "month",
   aspects: "month",
   dignities: "decoder",
@@ -77,7 +77,7 @@ export const VIEW_TO_SECTION: Record<ViewMode, GuideSection> = {
   month: "overview",
   week: "overview",
   year: "overview",
-  "moon-phases": "moonphases",
+  "moon-encyclopedia": "moonphases",
   "annual-tables": "overview",
   guide: "overview",
   charts: "overview",
@@ -140,7 +140,7 @@ export function getSectionForView(view: ViewMode): GuideSection {
 export function sectionHasTryIt(section: GuideSection): boolean {
   const view = SECTION_TO_VIEW[section];
   // These views can be navigated to from the guide
-  return ["colors", "timing", "patterns", "decoder", "sacred-script", "speeds", "dwarf-planets", "moon-phases"].includes(view);
+  return ["colors", "timing", "patterns", "decoder", "sacred-script", "speeds", "dwarf-planets", "moon-encyclopedia"].includes(view);
 }
 
 // Get the label for the "Try It" button based on section
@@ -154,7 +154,7 @@ export function getTryItLabel(section: GuideSection): string {
     sacredscript: "Open Sacred Script",
     dwarfplanets: "Open TNOs",
     speeds: "Open Speeds",
-    moonphases: "Open Moon Phases",
+    moonphases: "Open Moon Encyclopedia",
     dignities: "Open Decoder",
     difficultplacements: "Open Decoder",
     solararc: "Open Decoder",

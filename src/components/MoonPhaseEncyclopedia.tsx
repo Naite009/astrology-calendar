@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { ChartSelector } from './ChartSelector';
+import { MoonPhasesView } from './MoonPhasesView';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { calculateBirthMoonPhase, BirthMoonPhase } from '@/lib/birthConditions';
 import { calculateSecondaryProgressions, getProgressedMoonInfo } from '@/lib/secondaryProgressions';
@@ -20,6 +21,7 @@ import { getForrestMoonSign, getForrestMoonHouse } from '@/data/moonForrestData'
 interface MoonPhaseEncyclopediaProps {
   userNatalChart: NatalChart | null;
   savedCharts: NatalChart[];
+  currentYear?: number;
 }
 
 const PHASE_ORDER: { phase: BirthMoonPhase; degreeRange: string; minDeg: number; maxDeg: number }[] = [
@@ -569,7 +571,7 @@ function ForrestNatalMoonSection({ chart }: { chart: NatalChart }) {
   );
 }
 
-export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhaseEncyclopediaProps) => {
+export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts, currentYear }: MoonPhaseEncyclopediaProps) => {
   const [selectedChartId, setSelectedChartId] = useState<string>(userNatalChart ? 'user' : '');
   const [expandedPhase, setExpandedPhase] = useState<BirthMoonPhase | null>(null);
   const [myMoonModal, setMyMoonModal] = useState(false);
@@ -1046,6 +1048,9 @@ export const MoonPhaseEncyclopedia = ({ userNatalChart, savedCharts }: MoonPhase
           );
         })}
       </div>
+
+      {/* Yearly Moon Phase Grid */}
+      <MoonPhasesView year={currentYear || new Date().getFullYear()} />
     </div>
   );
 };

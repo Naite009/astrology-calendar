@@ -10,7 +10,7 @@ import { WeekView } from "./WeekView";
 import { YearView } from "./YearView";
 import { AnnualTablesView } from "./AnnualTablesView";
 import { GuideView } from "./GuideView";
-import { MoonPhasesView } from "./MoonPhasesView";
+
 import { UserForm } from "./UserForm";
 import { DayDetail } from "./DayDetail";
 import { ChartLibrary } from "./ChartLibrary";
@@ -48,7 +48,7 @@ const TarotFunctionsView = lazy(() => import("./TarotFunctionsView").then(m => (
 
 
 
-type ViewMode = "month" | "week" | "year" | "moon-phases" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "retrogrades" | "moon-encyclopedia" | "foundations" | "tarot-functions";
+type ViewMode = "month" | "week" | "year" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "retrogrades" | "moon-encyclopedia" | "foundations" | "tarot-functions";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -101,7 +101,7 @@ export const AstroCalendar = () => {
   const navigate = (direction: number) => {
     setCurrentDate((prev) => {
       const newDate = new Date(prev);
-      if (viewMode === "year" || viewMode === "annual-tables" || viewMode === "moon-phases" || viewMode === "patterns") {
+      if (viewMode === "year" || viewMode === "annual-tables" || viewMode === "patterns") {
         newDate.setFullYear(prev.getFullYear() + direction);
       } else if (viewMode === "week") {
         newDate.setDate(prev.getDate() + direction * 7);
@@ -204,9 +204,6 @@ export const AstroCalendar = () => {
     if (viewMode === "tarot-functions") {
       return "Tarot Functions";
     }
-    if (viewMode === "moon-phases") {
-      return `${currentDate.getFullYear()} Moon Phases`;
-    }
     if (viewMode === "annual-tables") {
       return `${currentDate.getFullYear()} Annual Tables`;
     }
@@ -299,17 +296,6 @@ export const AstroCalendar = () => {
                 }`}
               >
                 Year
-              </button>
-              <button
-                onClick={() => setViewMode("moon-phases")}
-                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
-                  viewMode === "moon-phases"
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Moon size={14} />
-                Phases
               </button>
               <button
                 onClick={() => setViewMode("annual-tables")}
@@ -807,7 +793,7 @@ export const AstroCalendar = () => {
 
         {viewMode === "year" && <YearView year={currentDate.getFullYear()} />}
 
-        {viewMode === "moon-phases" && <MoonPhasesView year={currentDate.getFullYear()} />}
+        
 
         {viewMode === "annual-tables" && <AnnualTablesView year={currentDate.getFullYear()} />}
 
@@ -998,6 +984,7 @@ export const AstroCalendar = () => {
           <MoonPhaseEncyclopedia
             userNatalChart={userNatalChart}
             savedCharts={savedCharts}
+            currentYear={currentDate.getFullYear()}
           />
         )}
 

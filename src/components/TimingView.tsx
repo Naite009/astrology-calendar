@@ -4,7 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 /* Lazy-load heavy components to prevent main thread blocking */
 const BiorhythmCard = lazy(() => import('@/components/BiorhythmCard').then(m => ({ default: m.BiorhythmCard })));
-const BiorhythmForecast = lazy(() => import('@/components/BiorhythmForecast').then(m => ({ default: m.BiorhythmForecast })));
+
 const LifeCyclesHub = lazy(() => import('@/components/LifeCyclesHub').then(m => ({ default: m.LifeCyclesHub })));
 const DailySynthesisCard = lazy(() => import('@/components/DailySynthesisCard').then(m => ({ default: m.DailySynthesisCard })));
 const TransitAlertsCard = lazy(() => import('@/components/TransitAlertsCard').then(m => ({ default: m.TransitAlertsCard })));
@@ -1192,40 +1192,6 @@ const PlanAheadSection = ({
         )}
       </div>
 
-      {/* Biorhythm Forecast Section - Always visible with built-in chart selector */}
-      <div className="mt-8">
-        <h4 className="text-lg font-serif mb-4 flex items-center gap-2">
-          <Sparkles size={20} className="text-primary" />
-          Personal Biorhythm Forecast
-        </h4>
-        {activeChart ? (
-          <Suspense fallback={<Skeleton className="h-40 w-full rounded-lg" />}>
-            <BiorhythmForecast 
-              birthDate={parseLocalDate(activeChart.birthDate)}
-              startDate={new Date(selectedYear, currentMonth, 1)}
-              days={35}
-              savedCharts={[
-                ...(userNatalChart ? [{ id: 'user', name: `★ ${userNatalChart.name}`, birthDate: userNatalChart.birthDate }] : []),
-                ...[...savedCharts].sort((a, b) => a.name.localeCompare(b.name)).map(c => ({ id: c.id, name: c.name, birthDate: c.birthDate }))
-              ]}
-              selectedChartId={selectedChart}
-              onChartChange={(id) => setSelectedChart(id)}
-            />
-          </Suspense>
-        ) : (
-          <div className="p-4 rounded-lg border border-dashed border-border bg-secondary/20">
-            <div className="flex items-center gap-3">
-              <Sparkles size={20} className="text-muted-foreground" />
-              <div>
-                <p className="text-sm font-medium">Biorhythm Forecast Available</p>
-                <p className="text-xs text-muted-foreground">
-                  Select a chart above to see your 30-day biorhythm forecast with romance compatibility.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
     </div>
   );
 };

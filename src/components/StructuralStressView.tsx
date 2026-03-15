@@ -12,7 +12,7 @@ import {
 import { SAFETY_COPY } from '@/lib/structuralStressCopy';
 import { SaturnLensCards } from './structural/SaturnLensCards';
 import { DateExplorer } from './structural/DateExplorer';
-import { LifeMilestones } from './structural/LifeMilestones';
+
 import { FocusedTransitCard } from './structural/FocusedTransitCard';
 import { PhaseTimeline } from './structural/PhaseTimeline';
 
@@ -67,9 +67,8 @@ export const StructuralStressView = ({ userChart, savedCharts }: StructuralStres
   }, [addEvent]);
 
   const handleMilestoneClick = useCallback((date: Date) => {
-    if (!selectedChart) return;
-    setActiveTab('explore');
-  }, [selectedChart]);
+    // no-op, milestones removed (use Life Cycles hub instead)
+  }, []);
 
   const handleTransitClick = useCallback((date: Date) => {
     if (!selectedChart) return;
@@ -151,13 +150,6 @@ export const StructuralStressView = ({ userChart, savedCharts }: StructuralStres
                 onDateExplored={setHasDateResult}
               />
               
-              {/* Life Milestones - only show when NOT viewing date results */}
-              {!hasDateResult && (
-                <LifeMilestones 
-                  chart={selectedChart} 
-                  onMilestoneClick={handleMilestoneClick}
-                />
-              )}
             </TabsContent>
 
             {/* Phase Timeline Tab */}
