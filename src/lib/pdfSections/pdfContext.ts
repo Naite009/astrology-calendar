@@ -328,7 +328,7 @@ export function createPDFContext(
 
       // Body (optional)
       if (body) {
-        cy += 2;
+        cy += 16; // Extra spacing below bold heading
         d.setFont('times', 'normal'); d.setFontSize(9.5);
         d.setTextColor(...MUTED);
         const bLines: string[] = d.splitTextToSize(body, w - pad * 2);
