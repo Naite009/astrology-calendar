@@ -218,7 +218,7 @@ function generateHowThisYearMeetsYou(
   ctx: PDFContext, doc: jsPDF, a: SolarReturnAnalysis,
   srChart: SolarReturnChart, natalChart: NatalChart,
 ) {
-  const { margin, contentW, colors } = ctx;
+  const { margin, contentW, colors, pw } = ctx;
   const natalSun = natalChart.planets?.Sun?.sign || '';
   const natalMoon = natalChart.planets?.Moon?.sign || '';
   const natalRising = natalChart.houseCusps?.house1?.sign || natalChart.planets?.Ascendant?.sign || '';
