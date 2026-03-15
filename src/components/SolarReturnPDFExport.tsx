@@ -23,6 +23,7 @@ import { generateQuarterlySummary } from '@/lib/pdfSections/quarterlySummary';
 import { generateTier1SolarReturnPDF } from '@/lib/pdfSections/tier1Report';
 import { generatePlanetGallery } from '@/lib/pdfSections/planetGallery';
 import { generatePDFLunarTimeline } from '@/lib/pdfSections/lunarTimeline';
+import { generatePDFNatalOverlay, generatePDFAngleActivations, generatePDFYearPriority } from '@/lib/pdfSections/yearPriorityPDF';
 
 // Planet image imports
 import planetSun from '@/assets/planets/sun.png';
@@ -428,6 +429,27 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       doc.addPage(); ctx.y = margin;
       ctx.sectionPages.set('LUNAR PHASE TIMELINE', doc.getNumberOfPages());
       generatePDFLunarTimeline(ctx, doc, analysis, srChart, natalChart);
+
+      // =============================================
+      // NATAL OVERLAY — How This Year Lands
+      // =============================================
+      doc.addPage(); ctx.y = margin;
+      ctx.sectionPages.set('NATAL OVERLAY', doc.getNumberOfPages());
+      generatePDFNatalOverlay(ctx, doc, analysis);
+
+      // =============================================
+      // ANGLE ACTIVATIONS
+      // =============================================
+      doc.addPage(); ctx.y = margin;
+      ctx.sectionPages.set('PLANETARY ACTIVATIONS', doc.getNumberOfPages());
+      generatePDFAngleActivations(ctx, doc, natalChart, srChart);
+
+      // =============================================
+      // YEAR PRIORITY ENGINE
+      // =============================================
+      doc.addPage(); ctx.y = margin;
+      ctx.sectionPages.set('YEAR PRIORITY ENGINE', doc.getNumberOfPages());
+      generatePDFYearPriority(ctx, doc, analysis, natalChart, srChart);
 
       // =============================================
       // PROFECTION WHEEL
