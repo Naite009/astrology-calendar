@@ -185,9 +185,13 @@ export function generatePDFLunarTimeline(
 
   const patternSets: { label: string; years: number[]; color: Color }[] = [
     { label: 'NEW BEGINNINGS', years: patterns.newCycleYears, color: PHASE_DOT_RGB.beginning },
-    { label: 'CULMINATION YEARS', years: patterns.culminationYears, color: PHASE_DOT_RGB.culmination },
-    { label: 'TURNING POINTS', years: patterns.turningPointYears, color: PHASE_DOT_RGB.action },
-    { label: 'RELEASE YEARS', years: patterns.releaseYears, color: MUTED },
+    { label: 'GROWTH YEARS', years: patterns.crescentYears, color: PHASE_DOT_RGB.growth },
+    { label: 'ACTION & DECISION', years: patterns.actionYears, color: PHASE_DOT_RGB.action },
+    { label: 'REFINEMENT', years: patterns.refinementYears, color: PHASE_DOT_RGB.refinement },
+    { label: 'CULMINATION', years: patterns.culminationYears, color: PHASE_DOT_RGB.culmination },
+    { label: 'SHARING & TEACHING', years: patterns.sharingYears, color: PHASE_DOT_RGB.sharing },
+    { label: 'REEVALUATION', years: patterns.turningPointYears, color: PHASE_DOT_RGB.reevaluation },
+    { label: 'RELEASE & COMPLETION', years: patterns.releaseYears, color: MUTED },
   ];
 
   patternSets.forEach((ps, idx) => {
