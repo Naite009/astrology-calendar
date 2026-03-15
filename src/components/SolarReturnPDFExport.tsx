@@ -984,60 +984,11 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       }
 
       // =============================================
-      // NATAL VS SOLAR RETURN — own page
+      // NATAL VS SOLAR RETURN — visual card layout
       // =============================================
-      doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
-      ctx.sectionPages.set('SOLAR RETURN VS NATAL', doc.getNumberOfPages());
-      ctx.sectionPages.set('NATAL VS SOLAR RETURN', doc.getNumberOfPages());
-      ctx.sectionTitle(doc, 'NATAL VS SOLAR RETURN');
-      
-      // Table header
-      const cols = [
-        margin + 8,
-        margin + contentW * 0.12,
-        margin + contentW * 0.32,
-        margin + contentW * 0.40,
-        margin + contentW * 0.60,
-        margin + contentW * 0.70,
-      ];
-      doc.setFont('times', 'bold'); doc.setFontSize(7.5); doc.setTextColor(...ctx.colors.muted);
-      doc.setCharSpace(1);
-      ['PLANET', 'NATAL POSITION', 'NAT H', 'SR POSITION', 'SR H', 'SHIFT'].forEach((h, i) => doc.text(h, cols[i], ctx.y));
-      doc.setCharSpace(0);
-      ctx.y += 6;
-      doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.3);
-      doc.line(margin, ctx.y, margin + contentW, ctx.y);
-      ctx.y += 10;
-
-      for (const p of PLANET_ORDER) {
-        const srPos = srChart.planets[p as keyof typeof srChart.planets];
-        const natPos = natalChart.planets[p as keyof typeof natalChart.planets];
-        if (!srPos && !natPos) continue;
-        const srH = analysis.planetSRHouses?.[p];
-        const overlay = analysis.houseOverlays.find(o => o.planet === p);
-        const natH = overlay?.natalHouse;
-        const shift = srPos?.sign && natPos?.sign
-          ? (srPos.sign === natPos.sign ? 'Same' : `${S[natPos.sign] || natPos.sign} > ${S[srPos.sign] || srPos.sign}`)
-          : '';
-        ctx.checkPage(18);
-        doc.setFont('times', 'bold'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.ink);
-        doc.text(P[p] || p, cols[0], ctx.y);
-        doc.setFont('times', 'normal'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.ink);
-        doc.text(natPos ? `${natPos.sign} ${natPos.degree}'` : '--', cols[1], ctx.y);
-        doc.setFont('times', 'bold'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.accent);
-        doc.text(natH != null ? `H${natH}` : '--', cols[2], ctx.y);
-        doc.setFont('times', 'normal'); doc.setFontSize(9); doc.setTextColor(...ctx.colors.ink);
-        doc.text(srPos ? `${srPos.sign} ${srPos.degree}'` : '--', cols[3], ctx.y);
-        doc.setFont('times', 'bold'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.accent);
-        doc.text(srH != null ? `H${srH}` : '--', cols[4], ctx.y);
-        doc.setFont('times', 'italic'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.muted); 
-        doc.text(shift, cols[5], ctx.y);
-        ctx.y += 17;
-      }
-      // Bottom rule
-      doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
-      doc.line(margin, ctx.y, margin + contentW, ctx.y);
-      ctx.y += 10;
+      ctx.sectionPages.set('SOLAR RETURN VS NATAL', doc.getNumberOfPages() + 1);
+      ctx.sectionPages.set('NATAL VS SOLAR RETURN', doc.getNumberOfPages() + 1);
+      generateNatalVsSRCards(ctx, doc, analysis, natalChart, srChart, PLANET_IMAGES);
 
       // =============================================
       // STELLIUMS — personalized with house context
