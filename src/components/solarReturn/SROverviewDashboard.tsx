@@ -439,6 +439,9 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
         const timeLordTightAspects = findTightAspects(timeLordPlanet);
         const isDoubled = prof?.overlap || false;
 
+        // Detect intercepted signs for interception-aware logic
+        const interceptedSigns = detectInterceptedSigns(srChart.houseCusps);
+
         // Expert interpretation for planet in sign in house
         const getPlanetSignHouseExpert = (planet: string, sign: string, house: number | null, role: 'lord' | 'timeLord'): string => {
           const PLANET_DRIVE: Record<string, string> = {
@@ -492,6 +495,18 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
           return `As Time Lord, ${planet} sets the year's agenda and determines the conditions under which life delivers its lessons. ${planet} represents ${drive}. In ${sign}, it operates ${style}. ${house ? `In the ${ordinal(house)} house, the agenda plays out ${where}.` : ''}`;
         };
 
+        // Check if Lord or Time Lord sign is intercepted
+        const lordSignIntercepted = lord ? interceptedSigns.includes(lord.srSign) : false;
+        const timeLordSignIntercepted = prof ? interceptedSigns.includes(prof.timeLordSRSign) : false;
+
+        const getInterceptionModifier = (planet: string, sign: string, role: 'lord' | 'timeLord'): string => {
+          const roleLabel = role === 'lord' ? 'Lord of the Year' : 'Time Lord';
+          const opposite = OPPOSITE_PAIRS.find(([a, b]) => a === sign || b === sign);
+          const oppSign = opposite ? (opposite[0] === sign ? opposite[1] : opposite[0]) : null;
+
+          return `However, ${sign} is intercepted in this Solar Return chart — it has no house cusp to call its own. This fundamentally changes how ${planet} as ${roleLabel} delivers its lessons. Instead of direct, immediate expression, ${planet}'s ${sign} agenda operates under pressure: contained, delayed, and building force beneath the surface. The first half of the year may feel frustratingly blocked in this area — you know what you need to do, but the path is not straightforward. The ${sign} energy typically breaks through mid-year when enough internal pressure accumulates that it can no longer be suppressed.${oppSign ? ` Because interceptions occur in axis pairs, ${oppSign} is also intercepted — the opposite polarity is equally contained. Often the ${oppSign} side surfaces first and pulls ${sign} into awareness by contrast.` : ''} This is paradoxically very ${planet} in nature: the lesson isn't handed to you — it must be earned through patience, pressure, and deliberate cultivation.`;
+        };
+
         const getDoubleEmphasisExpert = (planet: string, sign: string, house: number | null): string => {
           return `When the same planet serves as both Lord of the Year (ruler of natal Ascendant) and Time Lord (ruler of the profected house), the year becomes a single-planet year. Every major theme — your vitality, your timing, your opportunities, and your challenges — routes through ${planet}. This is extraordinarily focused. Instead of two different planets pulling you in different directions, ${planet} is the sole gatekeeper. What ${planet} touches, thrives. What ${planet} ignores, stalls. In ${sign}${house ? ` in the ${ordinal(house)} house` : ''}, the style and arena are clear: every door opens or closes through ${planet}'s condition. Pay attention to transits hitting ${planet} this year — they function as master switches for the entire solar return.`;
         };
@@ -527,6 +542,18 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
                     {getPlanetSignHouseExpert(lord.planet, lord.srSign, lord.srHouse, 'lord')}
                   </p>
+
+                  {/* Interception alert for Lord */}
+                  {lordSignIntercepted && (
+                    <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-2.5 space-y-1.5">
+                      <p className="text-[10px] uppercase tracking-widest text-amber-600 font-medium flex items-center gap-1.5">
+                        ⚠ {lord.srSign} Is Intercepted
+                      </p>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        {getInterceptionModifier(lord.planet, lord.srSign, 'lord')}
+                      </p>
+                    </div>
+                  )}
 
                   {/* Tight aspects for Lord */}
                   {lordTightAspects.length > 0 && (
@@ -580,6 +607,18 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
                     {getPlanetSignHouseExpert(prof.timeLord, prof.timeLordSRSign, prof.timeLordSRHouse, 'timeLord')}
                   </p>
+
+                  {/* Interception alert for Time Lord */}
+                  {timeLordSignIntercepted && (
+                    <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-2.5 space-y-1.5">
+                      <p className="text-[10px] uppercase tracking-widest text-amber-600 font-medium flex items-center gap-1.5">
+                        ⚠ {prof.timeLordSRSign} Is Intercepted
+                      </p>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        {getInterceptionModifier(prof.timeLord, prof.timeLordSRSign, 'timeLord')}
+                      </p>
+                    </div>
+                  )}
 
                   {/* Tight aspects for Time Lord (only if different from Lord) */}
                   {!isDoubled && timeLordTightAspects.length > 0 && (
