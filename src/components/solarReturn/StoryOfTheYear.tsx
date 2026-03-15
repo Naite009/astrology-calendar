@@ -105,11 +105,19 @@ export function StoryOfTheYear({ analysis, natalChart, srChart }: Props) {
 
       {/* Body — narrative paragraphs */}
       <div className="p-5 space-y-5">
+        {/* 0. What is this — context explainer */}
+        <div className="bg-muted/30 border border-border rounded-sm p-3">
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">What You're Reading</p>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Every birthday, the Moon is in a different position relative to the Sun. Over roughly 29.5 years, these positions trace a complete lunar cycle — from New Moon (new beginnings) through Full Moon (culmination) to Balsamic (completion). This isn't a transit or a single day's Moon phase — it's a <strong className="text-foreground">life-development cycle</strong> that shows what season of growth you're in right now, based on decades of accumulated experience. Professional astrologers use this as one of the most important frameworks for reading a Solar Return.
+          </p>
+        </div>
+
         {/* 1. Phase context */}
         <div>
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">The Season You're In</p>
           <p className="text-sm text-foreground leading-relaxed">
-            This Solar Return year falls in the <strong>{currentEntry.phase}</strong> phase of your 29.5-year lunar development cycle — a period focused on {cycleStageText}. {currentEntry.cycleStage === 'Completion' || currentEntry.cycleStage === 'Reevaluation'
+            This Solar Return year falls in the <strong>{currentEntry.phase}</strong> phase of your lunar development cycle — a period focused on {cycleStageText}. {currentEntry.cycleStage === 'Completion' || currentEntry.cycleStage === 'Reevaluation'
               ? 'This is not a year to force new beginnings. It\'s a year to honor what is finishing and create space for what comes next.'
               : currentEntry.cycleStage === 'Beginning' || currentEntry.cycleStage === 'Growth'
               ? 'You are in the building phase of a longer arc. What you start or commit to now gains momentum over the next several years.'

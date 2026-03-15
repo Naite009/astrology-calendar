@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Compass, MapPin, Star, Layers } from 'lucide-react';
+import { Compass, MapPin, Star, Layers, HelpCircle } from 'lucide-react';
 import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 
 const HOUSE_MEANINGS: Record<number, string> = {
@@ -119,7 +119,7 @@ export function NatalOverlayCard({ analysis }: Props) {
       p.narrative = specific || `${p.label} in your natal ${p.natalHouse}${ordinal(p.natalHouse)} house activates themes of ${p.meaning}.`;
     });
 
-    // Dominant house
+    // Dominant house — house with the most SR points stacking
     let dominant: { house: number; count: number; labels: string[] } | null = null;
     for (const [h, labels] of Object.entries(houseCounts)) {
       const count = labels.length;
@@ -175,7 +175,7 @@ export function NatalOverlayCard({ analysis }: Props) {
         Solar Return → Natal House Overlay
       </p>
 
-      {/* Main arena summary */}
+      {/* Main arena summary with explanation */}
       {dominantHouse && (
         <div className="bg-primary/5 border border-primary/10 rounded-sm p-3 mb-4">
           <p className="text-xs font-medium text-primary uppercase tracking-widest mb-1 flex items-center gap-1.5">
@@ -184,6 +184,12 @@ export function NatalOverlayCard({ analysis }: Props) {
           </p>
           <p className="text-sm text-foreground leading-relaxed">
             This Solar Return lands most strongly in your natal {dominantHouse.house}{ordinal(dominantHouse.house)} house, emphasizing <em>{HOUSE_MEANINGS[dominantHouse.house]}</em>.
+          </p>
+          <p className="text-[10px] text-muted-foreground mt-1.5 flex items-start gap-1">
+            <HelpCircle size={10} className="flex-shrink-0 mt-0.5" />
+            <span>
+              Why this house? {dominantHouse.count} Solar Return points ({dominantHouse.labels.join(', ')}) all fall into your natal {dominantHouse.house}{ordinal(dominantHouse.house)} house. When multiple placements stack in one natal house, that life area becomes the dominant arena of the year.
+            </span>
           </p>
         </div>
       )}
