@@ -115,9 +115,9 @@ export function generatePDFYearAtAGlance(
   ctx.y += 28;
 
   // ── TOP ROW: 3-column info box grid ──────────────────────────────
-  const col3Gap = 14;
+  const col3Gap = 12;
   const col3W = (contentW - col3Gap * 2) / 3;
-  const boxH = 155; // Taller boxes for proper spacing
+  const boxH = 130;
 
   const houseNum = a.profectionYear?.houseNumber || 1;
   const topStellium = a.stelliums[0];
@@ -147,7 +147,7 @@ export function generatePDFYearAtAGlance(
     WARM_CREAM,
   );
 
-  ctx.y += boxH + 28;
+  ctx.y += boxH + 18;
 
   // ── YEAR-DEFINING ASPECT — cream hero card (print-friendly) ──────
   if (a.srToNatalAspects.length > 0) {
