@@ -68,27 +68,27 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
 
   for (let i = 0; i < sections.length; i++) {
     const section = sections[i];
-    ctx.checkPage(24);
+    ctx.checkPage(20);
     const entryY = ctx.y;
 
     // Bold gold number
-    doc.setFont('times', 'bold'); doc.setFontSize(9);
+    doc.setFont('times', 'bold'); doc.setFontSize(8.5);
     doc.setTextColor(...GOLD);
     doc.text(String(i + 1).padStart(2, '0'), margin, ctx.y + 2);
 
     // Title in regular serif
-    doc.setFont('times', 'normal'); doc.setFontSize(10.5);
+    doc.setFont('times', 'normal'); doc.setFontSize(9.75);
     doc.setTextColor(...INK);
     doc.text(section.title, margin + 18, ctx.y + 2);
 
     tocEntries.push({ title: section.title, desc: section.desc, y: entryY });
 
-    ctx.y += 16;
+    ctx.y += 13;
 
     // Hairline rule after every entry
     doc.setDrawColor(...RULE); doc.setLineWidth(0.15);
     doc.line(margin, ctx.y, pw - margin, ctx.y);
-    ctx.y += 14;
+    ctx.y += 9;
   }
 
   return tocEntries;
