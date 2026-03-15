@@ -852,11 +852,22 @@ export const analyzeSolarReturn = (
         // Check overlap with SR asc ruler or natal asc ruler (lord of the year)
         const srAscRuler = yearlyTheme?.ascendantRuler || '';
         const natalAscRuler = lordOfTheYear?.planet || '';
-        const overlap = timeLord === srAscRuler || timeLord === natalAscRuler;
+        const overlapWithSRAsc = timeLord === srAscRuler;
+        const overlapWithLotY = timeLord === natalAscRuler;
+        const overlap = overlapWithSRAsc || overlapWithLotY;
 
-        const overlapText = overlap ? ' This planet is also emphasized as your SR or natal chart ruler — its themes are confirmed as central to this year.' : '';
-        const houseSummary = profectionHouseSummary[houseNumber] || '';
-        const interpretation = `You are in a ${houseNumber}${houseNumber === 1 ? 'st' : houseNumber === 2 ? 'nd' : houseNumber === 3 ? 'rd' : 'th'} house profection year, making ${timeLord} your Time Lord for the year. ${timeLord} is currently in the SR ${timeLordSRHouse ? `${timeLordSRHouse}${timeLordSRHouse === 1 ? 'st' : timeLordSRHouse === 2 ? 'nd' : timeLordSRHouse === 3 ? 'rd' : 'th'}` : '—'} house in ${timeLordSRSign || '—'}.${overlapText} ${houseSummary}`;
+        // Build specific overlap description
+        let overlapSystems: string[] = [];
+        if (overlapWithLotY) overlapSystems.push('Lord of the Year (natal Ascendant ruler)');
+        if (overlapWithSRAsc) overlapSystems.push('SR Ascendant ruler');
+        const overlapDescription = overlapSystems.length > 0
+          ? `${timeLord} is both your Time Lord and your ${overlapSystems.join(' and ')} — ${overlapSystems.length > 1 ? 'three' : 'two'} independent timing systems confirm this planet drives the year.`
+          : '';
+
+        const ord = (n: number) => n === 1 ? '1st' : n === 2 ? '2nd' : n === 3 ? '3rd' : `${n}th`;
+        const srHouseText = timeLordSRHouse ? `${ord(timeLordSRHouse)} house in ${timeLordSRSign || '—'}` : '—';
+        const synthesis = buildProfectionSynthesis(timeLord, houseNumber);
+        const interpretation = `You are in a ${ord(houseNumber)} house profection year, making ${timeLord} your Time Lord for the year. ${timeLord} is currently in the SR ${srHouseText}. ${synthesis}`;
 
         profectionYear = {
           age,
