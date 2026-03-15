@@ -241,6 +241,45 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
                 }.
               </p>
             </div>
+
+            {/* Expandable Learn More */}
+            {(() => {
+              const phaseInterpKeys: Record<string, string> = {
+                'New Moon': 'New Moon', 'Crescent': 'Waxing Crescent', 'First Quarter': 'First Quarter',
+                'Gibbous': 'Waxing Gibbous', 'Full Moon': 'Full Moon', 'Disseminating': 'Waning Gibbous',
+                'Last Quarter': 'Last Quarter', 'Balsamic': 'Waning Crescent',
+              };
+              const deepInterp = srMoonPhaseInterp[phaseInterpKeys[currentEntry.phase] || currentEntry.phase];
+              if (!deepInterp) return null;
+              return (
+                <details className="pt-2 border-t border-border/50">
+                  <summary className="text-[10px] uppercase tracking-widest text-primary cursor-pointer hover:text-primary/80 transition-colors">
+                    Learn more about the {currentEntry.phase} phase
+                  </summary>
+                  <div className="mt-2 space-y-2">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{deepInterp.theme}</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{deepInterp.description}</p>
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      <div className="bg-secondary/20 rounded-sm p-2">
+                        <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Moon Sign: {currentEntry.moonSign}</p>
+                        <p className="text-[11px] text-foreground leading-relaxed">
+                          The Moon sign describes the emotional style active during this phase — specifically: {blending.releasing}.
+                        </p>
+                      </div>
+                      <div className="bg-accent/10 rounded-sm p-2">
+                        <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Sun Sign: {currentEntry.sunSign}</p>
+                        <p className="text-[11px] text-foreground leading-relaxed">
+                          The Sun sign describes the spiritual orientation — specifically: {blending.emerging}.
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground/70 italic">
+                      Phase angle: {currentEntry.phaseAngle}° · {currentEntry.waxingOrWaning === 'waxing' ? 'Waxing (building energy)' : 'Waning (releasing energy)'}
+                    </p>
+                  </div>
+                </details>
+              );
+            })()}
           </div>
         </div>
         );
