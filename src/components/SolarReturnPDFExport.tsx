@@ -1447,8 +1447,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       // =============================================
       if (analysis.profectionYear?.timeLord) {
         doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
+        ctx.sectionPages.set('YOUR TIME LORD', doc.getNumberOfPages());
         ctx.sectionPages.set('LORD OF THE YEAR', doc.getNumberOfPages());
-        ctx.sectionTitle(doc, 'LORD OF THE YEAR');
+        ctx.sectionTitle(doc, 'YOUR TIME LORD (LORD OF THE YEAR)');
 
         const tlPlanet = analysis.profectionYear.timeLord;
         const tlSRHouse = analysis.profectionYear.timeLordSRHouse;
