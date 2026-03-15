@@ -4,7 +4,7 @@ import { NatalChart } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { toast } from 'sonner';
 
-type TierId = 't1' | 't2' | 't3' | 't4' | 't5';
+type TierId = 't1' | 't2' | 't3' | 't4' | 't5' | 'gift';
 
 const TIER_BUTTONS: { id: TierId; label: string }[] = [
   { id: 't1', label: 'T1 · Year at a Glance' },
@@ -12,6 +12,7 @@ const TIER_BUTTONS: { id: TierId; label: string }[] = [
   { id: 't3', label: 'T3 · Deep Dive' },
   { id: 't4', label: 'T4 · Master Reading' },
   { id: 't5', label: 'T5 · Oracle Report' },
+  { id: 'gift', label: 'Birthday Gift Print' },
 ];
 
 const TIER_COLORS: Record<TierId, { bg: string; text: string; border: string }> = {
@@ -20,6 +21,7 @@ const TIER_COLORS: Record<TierId, { bg: string; text: string; border: string }> 
   t3: { bg: '#FAEEDA', text: '#633806', border: '#FAC775' },
   t4: { bg: '#FAECE7', text: '#712B13', border: '#F5C4B3' },
   t5: { bg: '#FBEAF0', text: '#72243E', border: '#F4C0D1' },
+  gift: { bg: '#FFF8E1', text: '#5D4037', border: '#D4A574' },
 };
 
 interface Props {
