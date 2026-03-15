@@ -1096,8 +1096,16 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         {/* ── Moon Phase ── */}
         {analysis.moonPhase && (() => {
           const phaseInterp = srMoonPhaseInterp[analysis.moonPhase.phase];
+          const sunSign = srChart.planets.Sun?.sign || '';
+          const blending = getMoonPhaseBlending(
+            analysis.moonPhase.phase,
+            analysis.moonSign,
+            sunSign,
+            analysis.moonHouse?.house ?? null,
+            analysis.sunHouse?.house ?? null,
+          );
           return (
-            <div className="border border-border rounded-sm p-4 bg-muted/10 space-y-2">
+            <div className="border border-border rounded-sm p-4 bg-muted/10 space-y-4">
               <div className="flex items-center gap-3 flex-wrap">
                 <p className="text-[10px] uppercase tracking-widest font-medium text-primary">SR Moon Phase</p>
                 {analysis.moonPhase.isEclipse && (
@@ -1107,6 +1115,42 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
               <p className="text-base font-serif text-foreground">{analysis.moonPhase.phase}</p>
               {phaseInterp && <p className="text-xs font-medium text-primary">{phaseInterp.theme}</p>}
               <p className="text-xs text-muted-foreground leading-relaxed">{phaseInterp?.description || analysis.moonPhase.description}</p>
+
+              {/* Phase Narrative Summary */}
+              <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border">
+                <div className="space-y-1">
+                  <p className="text-[10px] uppercase tracking-widest text-primary font-medium">Cycle Stage</p>
+                  <p className="text-xs text-foreground font-medium">{blending.cycleStage}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] uppercase tracking-widest text-primary font-medium">Theme</p>
+                  <p className="text-xs text-foreground font-medium">{blending.themeLabel}</p>
+                </div>
+              </div>
+
+              {/* Sign Blending: What's releasing vs emerging */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="bg-secondary/20 rounded-sm p-3 space-y-1">
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Releasing ({analysis.moonSign})</p>
+                  <p className="text-xs text-foreground leading-relaxed">{blending.releasing}</p>
+                </div>
+                <div className="bg-accent/20 rounded-sm p-3 space-y-1">
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Emerging ({sunSign})</p>
+                  <p className="text-xs text-foreground leading-relaxed">{blending.emerging}</p>
+                </div>
+              </div>
+
+              {/* House Blending: Where closing vs incubating */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="bg-secondary/20 rounded-sm p-3 space-y-1">
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Focus Area Closing{analysis.moonHouse?.house ? ` · House ${analysis.moonHouse.house}` : ''}</p>
+                  <p className="text-xs text-foreground leading-relaxed">{blending.areaClosing}</p>
+                </div>
+                <div className="bg-accent/20 rounded-sm p-3 space-y-1">
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">New Inner Direction{analysis.sunHouse?.house ? ` · House ${analysis.sunHouse.house}` : ''}</p>
+                  <p className="text-xs text-foreground leading-relaxed">{blending.newDirection}</p>
+                </div>
+              </div>
             </div>
           );
         })()}
