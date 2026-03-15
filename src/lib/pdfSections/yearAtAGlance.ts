@@ -246,15 +246,17 @@ export function generatePDFYearAtAGlance(
     const lordHouse = a.profectionYear.timeLordSRHouse;
     const houseNum = a.profectionYear.houseNumber || '';
 
-    ctx.checkPage(54);
+    ctx.checkPage(90);
     const col2Gap = 12;
     const col2W = (contentW - col2Gap) / 2;
-    const stripH = 50;
+    const stripH = 78;
     const stripY = ctx.y;
 
-    // Time Lord strip (left)
+    // ── Left: TIME LORD (Profection Ruler) ──
     doc.setFillColor(...WARM_CREAM);
     doc.roundedRect(margin, stripY, col2W, stripH, 3, 3, 'F');
+    doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
+    doc.roundedRect(margin, stripY, col2W, stripH, 3, 3, 'S');
     doc.setFillColor(...GOLD);
     doc.rect(margin, stripY, 3, stripH, 'F');
 
@@ -262,24 +264,34 @@ export function generatePDFYearAtAGlance(
     doc.setFont('times', 'bold'); doc.setFontSize(6);
     doc.setTextColor(...GOLD);
     doc.setCharSpace(2);
-    doc.text('TIME LORD (PROFECTION RULER)', margin + 10, sy);
+    doc.text('TIME LORD', margin + 10, sy);
     doc.setCharSpace(0);
+    sy += 8;
+    doc.setFont('times', 'italic'); doc.setFontSize(6.5);
+    doc.setTextColor(...MUTED);
+    doc.text('Profection Ruler', margin + 10, sy);
     sy += 12;
-    doc.setFont('times', 'bold'); doc.setFontSize(10);
+    doc.setFont('times', 'bold'); doc.setFontSize(11);
     doc.setTextColor(...INK);
-    doc.text(`${lordName}${houseNum ? ` — ${houseNum}${houseNum === 1 ? 'st' : houseNum === 2 ? 'nd' : houseNum === 3 ? 'rd' : 'th'} House Year` : ''}`, margin + 10, sy);
+    doc.text(`${lordName}`, margin + 10, sy);
     sy += 10;
     doc.setFont('times', 'normal'); doc.setFontSize(7.5);
     doc.setTextColor(...MUTED);
+    doc.text(`${houseNum ? `${houseNum}${houseNum === 1 ? 'st' : houseNum === 2 ? 'nd' : houseNum === 3 ? 'rd' : 'th'} House Year` : ''}`, margin + 10, sy);
+    sy += 10;
+    doc.setFont('times', 'normal'); doc.setFontSize(7);
+    doc.setTextColor(...INK);
     const feltLines: string[] = doc.splitTextToSize(lordFelt, col2W - 20);
-    doc.text(feltLines[0] || lordFelt, margin + 10, sy);
+    for (const line of feltLines.slice(0, 2)) { doc.text(line, margin + 10, sy); sy += 9; }
 
-    // Lord of the Year strip (right) — natal ASC ruler in SR
+    // ── Right: LORD OF THE YEAR (Natal ASC Ruler) ──
     if (a.lordOfTheYear) {
       const loty = a.lordOfTheYear;
       const lotyName = P[loty.planet] || loty.planet;
       doc.setFillColor(...CARD_BG);
       doc.roundedRect(margin + col2W + col2Gap, stripY, col2W, stripH, 3, 3, 'F');
+      doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
+      doc.roundedRect(margin + col2W + col2Gap, stripY, col2W, stripH, 3, 3, 'S');
       doc.setFillColor(...GOLD);
       doc.rect(margin + col2W + col2Gap, stripY, 3, stripH, 'F');
 
@@ -287,21 +299,29 @@ export function generatePDFYearAtAGlance(
       doc.setFont('times', 'bold'); doc.setFontSize(6);
       doc.setTextColor(...GOLD);
       doc.setCharSpace(2);
-      doc.text('LORD OF THE YEAR (NATAL ASC RULER)', margin + col2W + col2Gap + 10, ly);
+      doc.text('LORD OF THE YEAR', margin + col2W + col2Gap + 10, ly);
       doc.setCharSpace(0);
+      ly += 8;
+      doc.setFont('times', 'italic'); doc.setFontSize(6.5);
+      doc.setTextColor(...MUTED);
+      doc.text('Natal Ascendant Ruler', margin + col2W + col2Gap + 10, ly);
       ly += 12;
-      doc.setFont('times', 'bold'); doc.setFontSize(10);
+      doc.setFont('times', 'bold'); doc.setFontSize(11);
       doc.setTextColor(...INK);
-      doc.text(`${lotyName} in SR House ${loty.srHouse || '--'}`, margin + col2W + col2Gap + 10, ly);
+      doc.text(`${lotyName}`, margin + col2W + col2Gap + 10, ly);
       ly += 10;
       doc.setFont('times', 'normal'); doc.setFontSize(7.5);
       doc.setTextColor(...MUTED);
-      const lotyDesc = `Your natal ${loty.natalRisingSign || ''} ruler — shows where your core self operates this year.`;
+      doc.text(`In Solar Return House ${loty.srHouse || '--'}`, margin + col2W + col2Gap + 10, ly);
+      ly += 10;
+      doc.setFont('times', 'normal'); doc.setFontSize(7);
+      doc.setTextColor(...INK);
+      const lotyDesc = `Your natal ${loty.natalRisingSign || ''} ruler shows where your core identity operates this year.`;
       const lotyLines: string[] = doc.splitTextToSize(lotyDesc, col2W - 20);
-      doc.text(lotyLines[0] || lotyDesc, margin + col2W + col2Gap + 10, ly);
+      for (const line of lotyLines.slice(0, 2)) { doc.text(line, margin + col2W + col2Gap + 10, ly); ly += 9; }
     }
 
-    ctx.y = stripY + stripH + 8;
+    ctx.y = stripY + stripH + 10;
   }
 
   // ── WHERE THIS YEAR PLAYS OUT — compact box ───────────────────────
