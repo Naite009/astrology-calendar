@@ -151,7 +151,7 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
       {/* Header */}
       <div className="p-4 pb-0">
         <p className="text-[10px] uppercase tracking-widest font-medium text-primary">
-          29-Year Lunar Phase Timeline
+          Solar Return Moon Phase — Year by Year
         </p>
         <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
           {summary}
@@ -161,10 +161,6 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
       {/* Lunar Phase of the Year — Clean Card */}
       {currentEntry && (() => {
         const PHASE_ORDER = ['New Moon', 'Crescent', 'First Quarter', 'Gibbous', 'Full Moon', 'Disseminating', 'Last Quarter', 'Balsamic'];
-        const phaseNum = PHASE_ORDER.indexOf(currentEntry.phase) + 1;
-        const futureEntries = timeline.filter(e => e.year > currentEntry.year && e.phase !== currentEntry.phase);
-        const nextShiftEntry = futureEntries.length > 0 ? futureEntries[0] : null;
-        const yearsUntilNext = nextShiftEntry ? nextShiftEntry.year - currentEntry.year : null;
 
         const blending = getMoonPhaseBlending(
           currentEntry.phase,
@@ -182,20 +178,14 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
               <span className="text-xl">{PHASE_ICONS[currentEntry.phase] || '☽'}</span>
               <div>
                 <p className="text-sm font-serif text-foreground">
-                  Lunar Phase of the Year
+                  {currentEntry.year} SR Moon Phase
                 </p>
                 <p className="text-xs text-primary font-medium">
                   {currentEntry.phase} — {currentEntry.cycleStage}
-                  <span className="ml-2 text-muted-foreground font-normal">Phase {phaseNum} of 8</span>
+                  <span className="ml-2 text-muted-foreground font-normal">{currentEntry.phaseAngle}° separation</span>
                 </p>
               </div>
             </div>
-            {yearsUntilNext !== null && (
-              <p className="text-[10px] text-muted-foreground mt-1">
-                {yearsUntilNext === 1 ? 'Next phase shift in 1 year' : `Next phase shift in ${yearsUntilNext} years`}
-                {nextShiftEntry && ` → ${nextShiftEntry.cycleStage}`}
-              </p>
-            )}
           </div>
 
           {/* Card Body */}
@@ -285,21 +275,21 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
         );
       })()}
 
-      {/* Universal Phase Sequence Legend */}
+      {/* Phase Reference Guide */}
       <div className="mx-4 p-3 bg-secondary/20 rounded-sm">
         <p className="text-[9px] uppercase tracking-widest font-medium text-muted-foreground mb-2">
-          Universal Cycle Order — Every Life Follows This Sequence
+          Moon Phase Reference — What Each Phase Means
         </p>
         <div className="grid grid-cols-4 md:grid-cols-8 gap-1.5">
           {[
-            { icon: '🌑', num: 1, phase: 'New Moon', stage: 'Beginning' },
-            { icon: '🌒', num: 2, phase: 'Crescent', stage: 'Growth' },
-            { icon: '🌓', num: 3, phase: '1st Quarter', stage: 'Action' },
-            { icon: '🌔', num: 4, phase: 'Gibbous', stage: 'Refinement' },
-            { icon: '🌕', num: 5, phase: 'Full Moon', stage: 'Culmination' },
-            { icon: '🌖', num: 6, phase: 'Disseminating', stage: 'Sharing' },
-            { icon: '🌗', num: 7, phase: 'Last Quarter', stage: 'Reevaluation' },
-            { icon: '🌘', num: 8, phase: 'Balsamic', stage: 'Completion' },
+            { icon: '🌑', num: 1, phase: 'New Moon', stage: 'Beginning', range: '0°–22.5°' },
+            { icon: '🌒', num: 2, phase: 'Crescent', stage: 'Growth', range: '22.5°–67.5°' },
+            { icon: '🌓', num: 3, phase: '1st Quarter', stage: 'Action', range: '67.5°–112.5°' },
+            { icon: '🌔', num: 4, phase: 'Gibbous', stage: 'Refinement', range: '112.5°–157.5°' },
+            { icon: '🌕', num: 5, phase: 'Full Moon', stage: 'Culmination', range: '157.5°–202.5°' },
+            { icon: '🌖', num: 6, phase: 'Disseminating', stage: 'Sharing', range: '202.5°–247.5°' },
+            { icon: '🌗', num: 7, phase: 'Last Quarter', stage: 'Reevaluation', range: '247.5°–292.5°' },
+            { icon: '🌘', num: 8, phase: 'Balsamic', stage: 'Completion', range: '292.5°–360°' },
           ].map(p => {
             const isCurrent = currentEntry?.phase === (p.num === 3 ? 'First Quarter' : p.phase);
             return (
@@ -307,12 +297,13 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
                 <span className="text-sm">{p.icon}</span>
                 <span className={`text-[8px] font-bold mt-0.5 ${isCurrent ? 'text-primary' : 'text-foreground'}`}>{p.num}. {p.stage}</span>
                 <span className="text-[7px] text-muted-foreground leading-tight">{p.phase}</span>
+                <span className="text-[6px] text-muted-foreground/50">{p.range}</span>
               </div>
             );
           })}
         </div>
-        <p className="text-[9px] text-muted-foreground mt-2 leading-relaxed">
-          Each phase lasts ~3.5 years. The full cycle repeats every ~29.5 years. Your starting point is determined by your natal Sun–Moon angle.
+        <p className="text-[9px] text-muted-foreground mt-2 leading-relaxed italic">
+          The phase is determined by the Moon-Sun separation angle at the exact Solar Return moment each year. Because the Moon moves ~13° per day, each year's phase is independent — it does not follow a sequential progression.
         </p>
       </div>
 
@@ -472,9 +463,9 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
       {/* Pattern Detection Panel — All 8 phases in cycle order */}
       <div className="px-4 pb-4 space-y-3">
         <div>
-          <p className="text-[10px] uppercase tracking-widest font-medium text-primary">Recurring Patterns — Every Year Since Birth</p>
+          <p className="text-[10px] uppercase tracking-widest font-medium text-primary">Phase History — Your SR Moon by Category</p>
           <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed">
-            At each Solar Return, the Moon-Sun angle falls into one of 8 phases. These phases always follow the same sequence, repeating every ~29.5 years. Each phase lasts approximately 3–4 years.
+            Looking back across every Solar Return, these are the years that shared the same Moon phase. Years in the same category had a similar emotional tone at the birthday return — though they are not part of a sequential cycle.
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
