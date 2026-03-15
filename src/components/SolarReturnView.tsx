@@ -16,7 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useDocumentExcerpts } from '@/hooks/useDocumentExcerpts';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
-import { SolarReturnPDFExport } from '@/components/SolarReturnPDFExport';
+import { SolarReturnPDFExport, generateBirthdayGiftPDF } from '@/components/SolarReturnPDFExport';
 import { TierButtonRow } from '@/components/solarReturn/TierButtonRow';
 import { SROverviewDashboard } from '@/components/solarReturn/SROverviewDashboard';
 import { LunarPhaseTimeline } from '@/components/solarReturn/LunarPhaseTimeline';
