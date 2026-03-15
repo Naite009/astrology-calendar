@@ -401,6 +401,7 @@ export async function generateBirthdayGiftPDF(
   // 8. NATAL OVERLAY + ANGLE ACTIVATIONS + YEAR PRIORITY
   doc.addPage(); ctx.y = margin;
   ctx.sectionPages.set('NATAL OVERLAY', doc.getNumberOfPages());
+  ctx.sectionPages.set('NATAL OVERLAY AND ANGLE ACTIVATIONS', doc.getNumberOfPages());
   generatePDFNatalOverlay(ctx, doc, analysis);
   ctx.checkPage(200);
   generatePDFAngleActivations(ctx, doc, natalChart, srChart, 1);
@@ -611,11 +612,12 @@ export async function generateBirthdayGiftPDF(
     }
   }
 
-  // 13. LORD OF THE YEAR + PROFECTION WHEEL (combined page)
+  // 13. YOUR TIME LORD + PROFECTION WHEEL (combined page)
   if (analysis.profectionYear?.timeLord) {
     doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
+    ctx.sectionPages.set('YOUR TIME LORD', doc.getNumberOfPages());
     ctx.sectionPages.set('LORD OF THE YEAR', doc.getNumberOfPages());
-    ctx.sectionTitle(doc, 'LORD OF THE YEAR');
+    ctx.sectionTitle(doc, 'YOUR TIME LORD');
     const tlPlanet = analysis.profectionYear.timeLord;
     const tlSRHouse = analysis.profectionYear.timeLordSRHouse;
     const tlSRSign = analysis.profectionYear.timeLordSRSign;
@@ -830,6 +832,7 @@ export async function generateBirthdayGiftPDF(
   // 24. TAKE THIS WITH YOU — combined closing page
   if (ctx.y > margin + 10) doc.addPage();
   ctx.y = margin;
+  ctx.sectionPages.set('TAKE THIS WITH YOU', doc.getNumberOfPages());
   ctx.sectionPages.set('BIRTHDAY AFFIRMATION CARD', doc.getNumberOfPages());
   generateAffirmationCard(ctx, doc, analysis, natalChart, srChart);
 

@@ -189,7 +189,7 @@ export function generateStrengthsPortrait(
   const srSunSign = srChart?.planets?.Sun?.sign || sunSign;
 
   ctx.pageBg(doc);
-  ctx.y += 12;
+  ctx.y += 8;
 
   // Section header
   doc.setFont('times', 'bold'); doc.setFontSize(7);
@@ -197,21 +197,21 @@ export function generateStrengthsPortrait(
   doc.setCharSpace(4);
   doc.text('YOUR BIG THREE', margin, ctx.y);
   doc.setCharSpace(0);
-  ctx.y += 8;
+  ctx.y += 6;
 
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 36;
+  ctx.y += 22;
 
-  doc.setFont('times', 'normal'); doc.setFontSize(28);
+  doc.setFont('times', 'normal'); doc.setFontSize(24);
   doc.setTextColor(...INK);
   doc.text('The Natal-to-Return Shift', margin, ctx.y);
-  ctx.y += 16;
+  ctx.y += 12;
 
-  doc.setFont('times', 'italic'); doc.setFontSize(10);
+  doc.setFont('times', 'italic'); doc.setFontSize(9);
   doc.setTextColor(...MUTED);
   doc.text('How this year activates your natal strengths', margin, ctx.y);
-  ctx.y += 24;
+  ctx.y += 16;
 
   // ──────────────────────────────────────────────────
   // Shared renderer for each planet
@@ -226,11 +226,14 @@ export function generateStrengthsPortrait(
     srBodyText: string,
     srHouseText: string,
   ) => {
-    ctx.checkPage(220);
+    ctx.checkPage(160);
 
     // ── Header strip ──
-    const stripH = 52;
+    const stripH = 44;
     const stripY = ctx.y;
+    const innerPad = 12;
+    const rightPad = 14;
+    const maxRightW = contentW * 0.42; // limit right-side text width
     doc.setFillColor(...CARD_BG);
     doc.roundedRect(margin, stripY, contentW, stripH, 3, 3, 'F');
     doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
@@ -239,96 +242,96 @@ export function generateStrengthsPortrait(
     doc.rect(margin, stripY, 3.5, stripH, 'F');
 
     // Planet label — top left
-    doc.setFont('times', 'bold'); doc.setFontSize(6.5);
+    doc.setFont('times', 'bold'); doc.setFontSize(6);
     doc.setTextColor(...GOLD);
     doc.setCharSpace(3);
-    doc.text(planetName.toUpperCase(), margin + 14, stripY + 14);
+    doc.text(planetName.toUpperCase(), margin + innerPad, stripY + 12);
     doc.setCharSpace(0);
 
     // Natal sign — large heading left
-    doc.setFont('times', 'bold'); doc.setFontSize(18);
+    doc.setFont('times', 'bold'); doc.setFontSize(16);
     doc.setTextColor(...INK);
-    doc.text(`${natalSign}`, margin + 14, stripY + 34);
+    doc.text(`${natalSign}`, margin + innerPad, stripY + 30);
 
-    // SR placement — right side, prominent gold
+    // SR placement — right side, prominent gold (constrained width)
     const srParts: string[] = [];
     if (srSign) srParts.push(srSign);
     if (srHouse) srParts.push(`in the ${ord(srHouse)}`);
     const srTagText = srParts.join(' ');
 
     if (srTagText) {
-      doc.setFont('times', 'bold'); doc.setFontSize(7);
+      doc.setFont('times', 'bold'); doc.setFontSize(6);
       doc.setTextColor(...GOLD);
       doc.setCharSpace(2);
-      doc.text('SOLAR RETURN', pw - margin - 14, stripY + 14, { align: 'right' });
+      doc.text('SOLAR RETURN', pw - margin - rightPad, stripY + 12, { align: 'right' });
       doc.setCharSpace(0);
-      doc.setFont('times', 'bold'); doc.setFontSize(14);
+      doc.setFont('times', 'bold'); doc.setFontSize(13);
       doc.setTextColor(...GOLD);
-      doc.text(srTagText, pw - margin - 14, stripY + 34, { align: 'right' });
+      // Truncate if needed to fit
+      const srLines = doc.splitTextToSize(srTagText, maxRightW);
+      doc.text(srLines[0], pw - margin - rightPad, stripY + 28, { align: 'right' });
     }
 
     // Shift arrow line
     if (srSign && srSign !== natalSign) {
-      doc.setFont('times', 'normal'); doc.setFontSize(9);
+      doc.setFont('times', 'normal'); doc.setFontSize(8);
       doc.setTextColor(...MUTED);
-      doc.text(`${natalSign}  -->  ${srSign}${srHouse ? ' H' + srHouse : ''}`, margin + 14, stripY + 48);
+      doc.text(`${natalSign}  -->  ${srSign}${srHouse ? ' H' + srHouse : ''}`, margin + innerPad, stripY + 40);
     } else if (srHouse) {
-      doc.setFont('times', 'normal'); doc.setFontSize(9);
+      doc.setFont('times', 'normal'); doc.setFontSize(8);
       doc.setTextColor(...MUTED);
-      doc.text(`${natalSign} --> ${ord(srHouse)} House`, margin + 14, stripY + 48);
+      doc.text(`${natalSign} --> ${ord(srHouse)} House`, margin + innerPad, stripY + 40);
     }
 
-    ctx.y = stripY + stripH + 14;
+    ctx.y = stripY + stripH + 8;
 
     // ── NATAL STRENGTH ──
-    doc.setFont('times', 'bold'); doc.setFontSize(6.5);
+    doc.setFont('times', 'bold'); doc.setFontSize(6);
     doc.setTextColor(...GOLD);
     doc.setCharSpace(2);
     doc.text('NATAL STRENGTH', margin + 8, ctx.y);
     doc.setCharSpace(0);
-    ctx.y += 10;
-    ctx.writeBody(doc, natalStrength, INK, 9, 12.5);
-    ctx.y += 6;
+    ctx.y += 9;
+    ctx.writeBody(doc, natalStrength, INK, 8.5, 11);
+    ctx.y += 4;
 
     // ── SHADOW ──
-    doc.setFont('times', 'bold'); doc.setFontSize(6.5);
+    doc.setFont('times', 'bold'); doc.setFontSize(6);
     doc.setTextColor(...MUTED);
     doc.setCharSpace(2);
     doc.text('SHADOW', margin + 8, ctx.y);
     doc.setCharSpace(0);
-    ctx.y += 10;
-    ctx.writeBody(doc, natalShadow, INK, 9, 12.5);
-    ctx.y += 6;
+    ctx.y += 9;
+    ctx.writeBody(doc, natalShadow, INK, 8.5, 11);
+    ctx.y += 4;
 
     // ── THIS YEAR'S ACTIVATION ──
     if (srBodyText) {
-      ctx.checkPage(60);
-      doc.setFont('times', 'bold'); doc.setFontSize(6.5);
+      doc.setFont('times', 'bold'); doc.setFontSize(6);
       doc.setTextColor(...GOLD);
       doc.setCharSpace(2);
       doc.text('THIS YEAR\'S ACTIVATION', margin + 8, ctx.y);
       doc.setCharSpace(0);
-      ctx.y += 10;
-      ctx.writeBody(doc, srBodyText, INK, 9.5, 13);
-      ctx.y += 4;
+      ctx.y += 9;
+      ctx.writeBody(doc, srBodyText, INK, 8.5, 11);
+      ctx.y += 3;
     }
 
     // ── SR HOUSE FOCUS ──
     if (srHouseText && srHouse) {
-      ctx.checkPage(50);
-      doc.setFont('times', 'bold'); doc.setFontSize(6.5);
+      doc.setFont('times', 'bold'); doc.setFontSize(6);
       doc.setTextColor(...GOLD);
       doc.setCharSpace(2);
       doc.text(`${ord(srHouse).toUpperCase()} HOUSE FOCUS`, margin + 8, ctx.y);
       doc.setCharSpace(0);
-      ctx.y += 10;
-      ctx.writeBody(doc, srHouseText, INK, 9, 12.5);
+      ctx.y += 9;
+      ctx.writeBody(doc, srHouseText, INK, 8.5, 11);
     }
 
-    ctx.y += 6;
+    ctx.y += 4;
     doc.setDrawColor(...RULE); doc.setLineWidth(0.15);
     doc.line(margin + 20, ctx.y, pw - margin - 20, ctx.y);
-    ctx.y += 14;
+    ctx.y += 10;
   };
 
   // ═══ SUN ═══
