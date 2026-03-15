@@ -128,14 +128,58 @@ export const srMoonInSign: Record<string, string> = {
 export const srOverlayNarrative = (planet: string, srHouse: number | null, natalHouse: number | null): string => {
   if (!srHouse || !natalHouse) return '';
   if (srHouse === natalHouse) {
-    return `${planet} activates the same life arena in both your SR and natal charts (House ${srHouse}). This is a DOUBLE emphasis — these themes are unavoidable and deeply personal this year. There is no separation between the external events and your core identity in this area.`;
+    return `${planet} lands in House ${srHouse} in both your Solar Return and natal chart — a double activation. The events that unfold in your ${shortHouseTheme[srHouse] || 'life'} this year hit you personally and directly. There's no buffer between what happens externally and how it registers internally; you live these themes from the inside out.`;
   }
 
   const srTheme = shortHouseTheme[srHouse] || `House ${srHouse}`;
   const natTheme = shortHouseTheme[natalHouse] || `House ${natalHouse}`;
 
-  return `${planet} operates through ${srTheme} themes this year (SR House ${srHouse}), but its effects land in your natal ${natTheme} territory (natal House ${natalHouse}). Think of it this way: the SITUATION plays out in ${srTheme} contexts, but the PERSONAL IMPACT registers in your ${natTheme} life. For example, events at work (if SR 10th) may transform your finances (if natal 2nd). The overlay tells you WHERE the action is and WHERE you feel it.`;
+  const overlayFelt: Record<string, string> = {
+    // How the SR house "delivers" to the natal house — felt-sense bridging
+  };
+
+  // Build a specific narrative using their actual houses
+  const srVerb = getHouseActionVerb(srHouse);
+  const natFeeling = getHouseImpactFeeling(natalHouse);
+
+  return `${planet} drives activity in your ${srTheme} (SR House ${srHouse}) this year — that's where the visible events, decisions, and turning points show up. But those experiences land in your natal House ${natalHouse}, which means the real impact registers in your ${natTheme} life. Concretely: ${srVerb} in ${srTheme} contexts, and you ${natFeeling} in your ${natTheme} world as a result. The situation and the emotional hit are in two different rooms of your life — and that gap is where the growth happens.`;
 };
+
+function getHouseActionVerb(house: number): string {
+  const verbs: Record<number, string> = {
+    1: 'you take visible initiative and put yourself forward',
+    2: 'financial decisions and resource shifts demand attention',
+    3: 'conversations, meetings, and information exchanges accelerate',
+    4: 'home and family dynamics shift or demand restructuring',
+    5: 'creative projects, romantic encounters, or joy-seeking drives action',
+    6: 'daily routines, work obligations, and health habits are rearranged',
+    7: 'partnerships and one-on-one dynamics create pivotal moments',
+    8: 'shared resources, intimacy, or psychological depths are activated',
+    9: 'travel, education, or belief-system expansion opens new ground',
+    10: 'career moves, public visibility, and authority dynamics play out',
+    11: 'community involvement, friendships, and future plans take center stage',
+    12: 'behind-the-scenes processing, solitude, or institutional matters unfold',
+  };
+  return verbs[house] || 'significant developments unfold';
+}
+
+function getHouseImpactFeeling(house: number): string {
+  const feelings: Record<number, string> = {
+    1: 'feel it as a shift in your identity — who you are changes',
+    2: 'feel it in your wallet and your sense of self-worth',
+    3: 'feel it in how you think, communicate, and process information',
+    4: 'feel it at home — your emotional foundation is stirred',
+    5: 'feel it in your creative confidence and capacity for joy',
+    6: 'feel it in your body, your daily energy, and your work satisfaction',
+    7: 'feel it in your closest relationships — the dynamic shifts',
+    8: 'feel it as deep psychological processing and power dynamics',
+    9: 'feel it as a pull toward meaning, expansion, and bigger questions',
+    10: 'feel it in your professional standing and sense of direction',
+    11: 'feel it in your social connections and sense of belonging',
+    12: 'feel it as an internal, private reckoning — something shifts beneath the surface',
+  };
+  return feelings[house] || 'feel the effects in a deeply personal way';
+}
 
 const shortHouseTheme: Record<number, string> = {
   1: 'identity & self-presentation',
