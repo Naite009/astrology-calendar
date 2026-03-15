@@ -198,6 +198,37 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
         );
       })()}
 
+      {/* Universal Phase Sequence Legend */}
+      <div className="mx-4 p-3 bg-secondary/20 rounded-sm">
+        <p className="text-[9px] uppercase tracking-widest font-medium text-muted-foreground mb-2">
+          Universal Cycle Order — Every Life Follows This Sequence
+        </p>
+        <div className="grid grid-cols-4 md:grid-cols-8 gap-1.5">
+          {[
+            { icon: '🌑', num: 1, phase: 'New Moon', stage: 'Beginning' },
+            { icon: '🌒', num: 2, phase: 'Crescent', stage: 'Growth' },
+            { icon: '🌓', num: 3, phase: '1st Quarter', stage: 'Action' },
+            { icon: '🌔', num: 4, phase: 'Gibbous', stage: 'Refinement' },
+            { icon: '🌕', num: 5, phase: 'Full Moon', stage: 'Culmination' },
+            { icon: '🌖', num: 6, phase: 'Disseminating', stage: 'Sharing' },
+            { icon: '🌗', num: 7, phase: 'Last Quarter', stage: 'Reevaluation' },
+            { icon: '🌘', num: 8, phase: 'Balsamic', stage: 'Completion' },
+          ].map(p => {
+            const isCurrent = currentEntry?.phase === (p.num === 3 ? 'First Quarter' : p.phase);
+            return (
+              <div key={p.num} className={`flex flex-col items-center text-center p-1.5 rounded-sm ${isCurrent ? 'bg-primary/10 ring-1 ring-primary' : ''}`}>
+                <span className="text-sm">{p.icon}</span>
+                <span className={`text-[8px] font-bold mt-0.5 ${isCurrent ? 'text-primary' : 'text-foreground'}`}>{p.num}. {p.stage}</span>
+                <span className="text-[7px] text-muted-foreground leading-tight">{p.phase}</span>
+              </div>
+            );
+          })}
+        </div>
+        <p className="text-[9px] text-muted-foreground mt-2 leading-relaxed">
+          Each phase lasts ~3.5 years. The full cycle repeats every ~29.5 years. Your starting point is determined by your natal Sun–Moon angle.
+        </p>
+      </div>
+
       {/* Visual Timeline Strip */}
       <div className="px-4">
         <div className="flex items-center gap-[2px] overflow-x-auto py-2 scrollbar-thin">
