@@ -78,7 +78,7 @@ export function generatePDFLunarTimeline(
   // Large title
   doc.setFont('times', 'normal'); doc.setFontSize(30);
   doc.setTextColor(...INK);
-  doc.text('29-Year Timeline', margin, ctx.y);
+  doc.text('SR Moon Phase by Year', margin, ctx.y);
   ctx.y += 14;
 
   // Subtitle
