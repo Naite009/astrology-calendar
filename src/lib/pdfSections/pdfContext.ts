@@ -306,8 +306,8 @@ export function createPDFContext(
     },
 
     drawInfoBox(d: jsPDF, x: number, yStart: number, w: number, h: number, label: string, value: string, body?: string, bgColor: Color = CARD_BG): number {
-      const pad = 14;
-      let cy = yStart + pad;
+      const pad = 16;
+      let cy = yStart + pad + 2;
 
       d.setFillColor(...bgColor);
       d.roundedRect(x, yStart, w, h, 4, 4, 'F');
@@ -318,21 +318,22 @@ export function createPDFContext(
 
       // Label
       ctx.trackedLabel(d, label, x + pad, cy + 4, { size: 6.5, charSpace: 2 });
-      cy += 18;
+      cy += 22;
 
       // Value
       d.setFont('times', 'bold'); d.setFontSize(16);
       d.setTextColor(...INK);
       const valLines: string[] = d.splitTextToSize(value, w - pad * 2);
-      for (const vl of valLines.slice(0, 2)) { d.text(vl, x + pad, cy); cy += 20; }
+      for (const vl of valLines.slice(0, 2)) { d.text(vl, x + pad, cy); cy += 22; }
 
       // Body (optional)
       if (body) {
-        cy += 16; // Extra spacing below bold heading
-        d.setFont('times', 'normal'); d.setFontSize(9.5);
+        cy += 14; // Breathing room below heading
+        d.setFont('times', 'normal'); d.setFontSize(9);
         d.setTextColor(...MUTED);
         const bLines: string[] = d.splitTextToSize(body, w - pad * 2);
-        for (const bl of bLines.slice(0, 3)) { d.text(bl, x + pad, cy); cy += 13; }
+        const maxBodyLines = Math.min(bLines.length, Math.floor((yStart + h - cy - 10) / 13));
+        for (let i = 0; i < maxBodyLines; i++) { d.text(bLines[i], x + pad, cy); cy += 13; }
       }
 
       d.setDrawColor(...RULE); d.setLineWidth(0.3);
