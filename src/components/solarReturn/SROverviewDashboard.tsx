@@ -385,7 +385,7 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
                   </div>
                   {asp.interpretation && (
                     <p className="text-[10px] text-muted-foreground/80 mt-1 leading-tight">
-                      {asp.interpretation.split('.').slice(0, 2).join('.')}.
+                      {asp.interpretation.split('.').slice(0, 3).join('.')}.
                     </p>
                   )}
                 </div>
