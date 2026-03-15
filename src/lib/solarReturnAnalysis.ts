@@ -371,14 +371,46 @@ export interface SolarReturnAnalysis {
   planetSRHouses: Record<string, number | null>;
 }
 
+// ─── Expert-level aspect interpretation engine ──────────────────────
+const PLANET_THEMES: Record<string, { domain: string; drive: string; body: string }> = {
+  Sun: { domain: 'identity, vitality, and conscious will', drive: 'to shine, lead, and express purpose', body: 'heart, spine, and overall vitality' },
+  Moon: { domain: 'emotions, instincts, and comfort needs', drive: 'to nurture, feel safe, and belong', body: 'stomach, breasts, and fluid balance' },
+  Mercury: { domain: 'communication, thinking, and daily logistics', drive: 'to understand, articulate, and connect information', body: 'nervous system, hands, and respiratory' },
+  Venus: { domain: 'love, values, money, and aesthetic pleasure', drive: 'to attract, harmonize, and enjoy', body: 'throat, kidneys, and skin' },
+  Mars: { domain: 'action, desire, anger, and physical drive', drive: 'to assert, compete, and pursue what you want', body: 'muscles, blood, and adrenals' },
+  Jupiter: { domain: 'growth, opportunity, faith, and expansion', drive: 'to explore, teach, and find meaning', body: 'liver, hips, and fat metabolism' },
+  Saturn: { domain: 'discipline, limits, responsibility, and time', drive: 'to structure, earn through effort, and endure', body: 'bones, teeth, knees, and skin' },
+  Uranus: { domain: 'disruption, liberation, innovation, and sudden change', drive: 'to break free, rebel, and reinvent', body: 'nervous system and circulation' },
+  Neptune: { domain: 'imagination, spirituality, illusion, and dissolution', drive: 'to transcend, dissolve boundaries, and dream', body: 'immune system and lymphatic' },
+  Pluto: { domain: 'power, transformation, obsession, and psychological depth', drive: 'to transform, control, and regenerate from crisis', body: 'reproductive system and elimination' },
+  Chiron: { domain: 'wounding, healing, and teaching from experience', drive: 'to heal others through your own pain', body: 'chronic conditions and sensitivity points' },
+  NorthNode: { domain: 'soul growth direction, karmic pull, and destiny', drive: 'to move toward unfamiliar growth', body: '' },
+  Ascendant: { domain: 'your visible self, first impressions, and physical presence', drive: 'to project identity into the world', body: 'head and overall constitution' },
+};
+
+const ASPECT_FEEL: Record<string, { verb: string; quality: string; experience: string }> = {
+  Conjunction: { verb: 'fuses with', quality: 'intensification', experience: 'These two energies merge into a single force — you cannot separate them this year. They amplify each other, for better or worse. The effect is immediate and constant.' },
+  Opposition: { verb: 'opposes', quality: 'polarization and awareness', experience: 'These two energies pull in opposite directions, creating an inner tug-of-war. Oppositions demand integration — you cannot choose one side without the other demanding attention. Other people often embody the planet you are not expressing, creating external confrontations that mirror internal tension.' },
+  Trine: { verb: 'flows with', quality: 'ease and natural talent', experience: 'These energies support each other effortlessly — doors open, skills click, and the combination feels natural. The risk is complacency; trines work so smoothly that you may not fully utilize the opportunity. Conscious engagement multiplies the benefit.' },
+  Square: { verb: 'clashes with', quality: 'friction and forced growth', experience: 'These energies grind against each other, creating frustration that demands action. Squares are the engine of achievement — nothing changes without friction. Expect obstacles that ultimately force you to develop strength you did not know you had.' },
+  Sextile: { verb: 'supports', quality: 'opportunity through effort', experience: 'A cooperative opening that requires conscious engagement. Sextiles do not hand you results — they present doors. You have to walk through them. When activated, they produce tangible, practical results.' },
+  Quincunx: { verb: 'requires adjustment with', quality: 'awkward recalibration', experience: 'These energies have nothing in common — different element, different mode. The effect is a persistent irritation that cannot be resolved by choosing one side. Health issues, logistical complications, and the need for constant small adjustments are common.' },
+};
+
 const aspectMeaning = (p1: string, p2: string, type: string): string => {
-  const action = type === 'Conjunction' ? 'merges with' : type === 'Opposition' ? 'opposes' : type === 'Trine' ? 'flows with' : type === 'Square' ? 'challenges' : type === 'Sextile' ? 'supports' : 'adjusts to';
-  return `SR ${p1} ${action} Natal ${p2} — activating themes of both planets this year.`;
+  const t1 = PLANET_THEMES[p1] || { domain: `${p1} themes`, drive: `${p1}'s drive`, body: '' };
+  const t2 = PLANET_THEMES[p2] || { domain: `${p2} themes`, drive: `${p2}'s drive`, body: '' };
+  const feel = ASPECT_FEEL[type] || ASPECT_FEEL.Conjunction;
+
+  return `SR ${p1} (${t1.domain}) ${feel.verb} Natal ${p2} (${t2.domain}). ${feel.experience} This year, your natal ${p2} pattern — the drive ${t2.drive} — is directly activated by the solar return's ${p1} energy. The ${type.toLowerCase()} creates ${feel.quality} between these two forces.`;
 };
 
 const internalAspectMeaning = (p1: string, p2: string, type: string): string => {
-  const action = type === 'Conjunction' ? 'unites with' : type === 'Opposition' ? 'creates tension with' : type === 'Trine' ? 'harmonizes with' : type === 'Square' ? 'creates friction with' : type === 'Sextile' ? 'cooperates with' : 'requires adjustment with';
-  return `${p1} ${action} ${p2} — a key dynamic shaping your year.`;
+  const t1 = PLANET_THEMES[p1] || { domain: `${p1} themes`, drive: `${p1}'s drive`, body: '' };
+  const t2 = PLANET_THEMES[p2] || { domain: `${p2} themes`, drive: `${p2}'s drive`, body: '' };
+  const feel = ASPECT_FEEL[type] || ASPECT_FEEL.Conjunction;
+
+  return `${p1} (${t1.domain}) ${feel.verb} ${p2} (${t2.domain}) within the solar return chart itself. ${feel.experience} This defines the year's background climate — the dynamic between ${p1} and ${p2} colors every area of life, regardless of which houses they occupy.`;
 };
 
 // ─── Stellium interpretation helpers ────────────────────────────────

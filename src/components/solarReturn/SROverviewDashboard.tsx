@@ -206,19 +206,22 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
   const srSunNatalHouse = analysis.sunNatalHouse?.house;
 
   // Tightest SR-to-natal aspects — major planets + Chiron + North Node only, max 2
+  // Deprioritize Quincunx: sort by orb but add penalty for minor aspects
   const ALLOWED_ASPECT_BODIES = new Set(['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','Chiron','NorthNode']);
+  const MAJOR_ASPECTS = new Set(['Conjunction','Opposition','Trine','Square','Sextile']);
+  const aspectSortScore = (a: { orb: number; type: string }) => a.orb + (MAJOR_ASPECTS.has(a.type) ? 0 : 5);
   const nonSunConjAspects = analysis.srToNatalAspects.filter(
     a => !(a.planet1 === 'Sun' && a.planet2 === 'Sun' && a.type === 'Conjunction')
       && ALLOWED_ASPECT_BODIES.has(a.planet1) && ALLOWED_ASPECT_BODIES.has(a.planet2)
   );
-  const sortedAspects = [...nonSunConjAspects].sort((a, b) => a.orb - b.orb);
+  const sortedAspects = [...nonSunConjAspects].sort((a, b) => aspectSortScore(a) - aspectSortScore(b));
   const tightestAspects = sortedAspects.slice(0, 2);
 
   // Tightest SR internal aspects (year's climate), max 2
   const srInternalFiltered = (analysis.srInternalAspects || []).filter(
     a => ALLOWED_ASPECT_BODIES.has(a.planet1) && ALLOWED_ASPECT_BODIES.has(a.planet2)
   );
-  const sortedInternal = [...srInternalFiltered].sort((a, b) => a.orb - b.orb);
+  const sortedInternal = [...srInternalFiltered].sort((a, b) => aspectSortScore(a) - aspectSortScore(b));
   const tightestInternal = sortedInternal.slice(0, 2);
 
   // Dominant element
@@ -352,7 +355,7 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
                   </div>
                   {asp.interpretation && (
                     <p className="text-[10px] text-muted-foreground/80 mt-1 leading-tight">
-                      {asp.interpretation.split('.').slice(0, 2).join('.')}.
+                      {asp.interpretation.split('.').slice(0, 3).join('.')}.
                     </p>
                   )}
                 </div>
@@ -382,7 +385,7 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
                   </div>
                   {asp.interpretation && (
                     <p className="text-[10px] text-muted-foreground/80 mt-1 leading-tight">
-                      {asp.interpretation.split('.').slice(0, 2).join('.')}.
+                      {asp.interpretation.split('.').slice(0, 3).join('.')}.
                     </p>
                   )}
                 </div>
