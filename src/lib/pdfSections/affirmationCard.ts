@@ -116,7 +116,7 @@ export function generateAffirmationCard(
   const sunSign = natalChart.planets?.Sun?.sign || 'Pisces';
   const moonSign = natalChart.planets?.Moon?.sign || '';
   const risingSign = natalChart.planets?.Ascendant?.sign || natalChart.houseCusps?.[0]?.sign || '';
-  const srSunSign = a.yearlyTheme?.sunSign || a.sunHouse?.sign || '';
+  const srSunSign = srChart.planets?.Sun?.sign || '';
   const srMoonSign = a.moonSign || '';
   const srAscSign = a.yearlyTheme?.ascendantSign || '';
   const profH = a.profectionYear?.houseNumber || 1;
