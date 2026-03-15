@@ -204,8 +204,8 @@ export const AstroCalendar = () => {
     if (viewMode === "tarot-functions") {
       return "Tarot Functions";
     }
-    if (viewMode === "moon-phases") {
-      return `${currentDate.getFullYear()} Moon Phases`;
+    if (viewMode === "moon-encyclopedia") {
+      return "Moon";
     }
     if (viewMode === "annual-tables") {
       return `${currentDate.getFullYear()} Annual Tables`;
