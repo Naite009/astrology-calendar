@@ -62,7 +62,7 @@ export function generatePlanetGallery(
   const gapY = 14;
   const cellW = (contentW - gapX * (cols - 1)) / cols;
   const imgSize = 48;
-  const cellH = imgSize + 80; // image + text space
+  const cellH = imgSize + 110; // image + name + description
 
   const ph = doc.internal.pageSize.getHeight();
   let gridStartY = ctx.y;
