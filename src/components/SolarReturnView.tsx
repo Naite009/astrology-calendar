@@ -738,6 +738,12 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
       {/* 4. Angle Activations — SR angles contacting natal planets */}
       <AngleActivationCard natalChart={natalChart} srChart={srChart} />
 
+      {/* 5. Planet-to-Angle — SR planets contacting natal angles */}
+      <PlanetToAngleCard natalChart={natalChart} srChart={srChart} />
+
+      {/* 6. Year Priority Engine — weighted theme ranking */}
+      <YearPriorityEngine analysis={analysis} natalChart={natalChart} srChart={srChart} />
+
       {/* Dashboard Details */}
       <SROverviewDashboard analysis={analysis} natalChart={natalChart} srChart={srChart} />
 
