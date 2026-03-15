@@ -31,7 +31,11 @@ export interface SRHemisphericResult {
 }
 
 // ============================================================================
-// VERTICAL AXIS: UPPER (Southern/Public) vs LOWER (Northern/Private)
+// VERTICAL AXIS: UPPER (Houses 7–12) vs LOWER (Houses 1–6)
+// Upper = life shaped by others, external forces, and larger systems
+// Lower = life shaped by personal agency and self-development
+// NOTE: "Upper" does NOT mean "public/visible" — House 12 is deeply private.
+//       "Lower" does NOT mean "hidden" — House 1 is the most visible house.
 // ============================================================================
 
 function getVerticalDetail(upper: number, lower: number, total: number): { label: string; detail: HemisphereDetail } {
@@ -43,27 +47,27 @@ function getVerticalDetail(upper: number, lower: number, total: number): { label
     return {
       label: 'Balanced Upper/Lower',
       detail: {
-        title: 'Balanced Horizon — Equal Public & Private',
-        summary: 'Your Solar Return planets are evenly split above and below the horizon. This is a year where your private inner world and your public outer world receive equal attention and energy.',
+        title: 'Balanced Horizon — Integration Year',
+        summary: 'Your Solar Return planets are evenly split above and below the horizon. This is a year where personal development and your relationships with the outer world receive equal weight.',
         bodyParagraphs: [
-          'When planets divide evenly across the horizon line, neither the public nor private sphere dominates your year. This balance suggests a year of integration — you are not being pushed exclusively into the spotlight or pulled entirely into retreat. Instead, you move fluidly between both domains.',
-          'A balanced horizon in the Solar Return means internal development supports external achievement and vice versa. What you process privately (emotional work, family matters, self-care) feeds directly into what you accomplish publicly (career moves, social engagements, reputation building). There is no disconnect between inner and outer worlds.',
-          'This balance can also signal that no single life area is in crisis — you have the bandwidth to attend to both personal foundations and professional or social responsibilities. The risk, however, is a lack of clear direction: when everything gets equal weight, you may struggle to prioritize or feel pulled in too many directions simultaneously.'
+          'When planets divide evenly across the horizon line, neither self-directed work nor other-directed engagement dominates. This balance suggests a year of integration — you are building personal foundations AND navigating partnerships, institutions, and collective dynamics simultaneously.',
+          'A balanced horizon means your inner growth directly feeds your external relationships and vice versa. What you process internally (identity, health, creativity, values) supports how you engage with others (partnerships, career, community, spiritual practice). There is no disconnect between personal development and relational engagement.',
+          'The risk of a balanced year is diffusion — when everything gets equal weight, you may struggle to prioritize. Let the specific house placements of individual planets guide where to invest your energy.'
         ],
         focusAreas: [
-          'Integration: consciously bridge your private insights into your public actions',
-          'Time management: with equal demands from both spheres, scheduling becomes critical',
-          'Check in quarterly to see if one hemisphere is being neglected despite the theoretical balance'
+          'Integration: bridge personal insights into your partnerships and commitments',
+          'Time management: equal demands from self-development and relational spheres',
+          'Check in quarterly to see if one hemisphere is being neglected'
         ],
         challenges: [
           'Diffusion of focus — everything feels equally important',
-          'Difficulty prioritizing between inner needs and outer obligations',
-          'May not feel like a "big" year because no single area is being dramatically activated'
+          'Difficulty prioritizing between inner needs and relational obligations',
+          'May not feel like a dramatic year because no single axis is strongly activated'
         ],
         practicalAdvice: [
-          'Use a planner that tracks both personal growth goals and professional milestones side by side',
-          'Schedule dedicated private retreat time alongside social/career commitments',
-          'Let the SR house placements of individual planets guide where to invest energy since the hemispheres alone don\'t provide a strong directional signal'
+          'Track both personal growth goals and relational milestones side by side',
+          'Let the individual planet houses guide your priorities since the hemispheres alone are balanced',
+          'Schedule both solo reflection time and collaborative engagement deliberately'
         ]
       }
     };
@@ -75,36 +79,36 @@ function getVerticalDetail(upper: number, lower: number, total: number): { label
       label: intensity === 'extreme' ? 'Strong Upper Dominance' : 'Upper-Leaning',
       detail: {
         title: intensity === 'extreme'
-          ? 'Above the Horizon — A Highly Visible, Public Year'
-          : 'Upper Hemisphere Emphasis — External Focus',
-        summary: `${upper} of your ${total} planets sit above the horizon (Houses 7–12). This is a year where your life is lived more publicly — through relationships, career, community, and collective engagement.`,
+          ? 'Above the Horizon — Life Shaped by Others and External Forces'
+          : 'Upper Hemisphere Emphasis — Other-Directed Year',
+        summary: `${upper} of your ${total} planets sit above the horizon (Houses 7–12). This year, your growth comes THROUGH engagement with others — partners, institutions, communities, and forces larger than yourself.`,
         bodyParagraphs: [
-          `With ${upper} planets above the horizon versus only ${lower} below, the Solar Return strongly emphasizes the southern (upper) hemisphere. This pattern indicates a year when you are "out there" — visible, engaged with the world, and focused on how you relate to others and to society at large. Your private inner world takes a back seat to external demands and opportunities.`,
-          'The upper hemisphere encompasses partnerships (7th), shared resources and transformation (8th), higher learning and travel (9th), career and public standing (10th), community and future visions (11th), and spiritual/institutional matters (12th). When planets cluster here, events in these domains drive your year. You may find yourself in the public eye, entering or deepening partnerships, traveling, receiving recognition, or participating in group causes.',
+          `With ${upper} planets above the horizon versus only ${lower} below, this Solar Return emphasizes the upper hemisphere. This does NOT simply mean "public and visible" — it means your life this year is shaped by how you relate to others and to systems beyond your personal control.`,
+          'The upper hemisphere includes one-on-one partnerships (7th), deep shared resources and transformation (8th), expanded worldview through travel and study (9th), career and reputation within institutions (10th), community and collective vision (11th), and solitude, spiritual surrender, and endings (12th). Notice that the 12th house — the most inward, private house — is part of this hemisphere. Upper emphasis means engagement with forces beyond yourself, whether that looks like a marriage, a career shift, a spiritual retreat, or an institutional reckoning.',
           intensity === 'extreme'
-            ? 'With such a dramatic upper concentration, this year\'s lessons arrive THROUGH other people and external circumstances rather than through solitary introspection. The universe is asking you to engage, to show up, and to let your actions be witnessed. Privacy may feel hard to come by — even if you try to retreat, circumstances pull you back out. This is a year where reputation and public perception matter significantly.'
-            : 'This moderate upper lean suggests a year where external engagement is emphasized without completely eclipsing your inner world. You\'ll spend more time interacting with others and handling career or social obligations, while still having some capacity for private reflection.',
-          'Upper-hemisphere Solar Returns often coincide with years of professional advancement, important relationship milestones, or increased social responsibility. The work you\'ve done privately in previous years now gets "shown to the world."'
+            ? 'With such a dramatic upper concentration, this year\'s lessons arrive THROUGH other people, institutions, and circumstances rather than through solo initiative. Whether through partnerships, career demands, community involvement, or even enforced solitude (12th house), the common thread is that external forces set the agenda. You are responding, adapting, and growing through engagement rather than setting your own terms.'
+            : 'This moderate upper lean suggests a year where relational engagement and external systems take priority without completely eclipsing your personal agency. You\'ll spend more time navigating partnerships, career dynamics, or collective responsibilities.',
+          'Upper-hemisphere Solar Returns often coincide with partnership milestones, career transitions, involvement in larger organizations, spiritual deepening, or years when you must surrender personal control and trust the process.'
         ],
         focusAreas: [
-          'Career advancement and public reputation',
-          'Partnerships — business and romantic',
-          'Social networking and community involvement',
-          'How others perceive you — your public image',
-          'Higher education, publishing, or legal matters'
+          'Partnerships — business, romantic, and collaborative',
+          'Career navigation within larger organizations or institutions',
+          'Community involvement and collective responsibilities',
+          'Spiritual practice, therapy, or inner work (12th house)',
+          'Higher education, travel, or expanded perspective'
         ],
         challenges: [
-          'Neglecting personal needs and self-care in favor of external demands',
-          'Burnout from constant public engagement',
-          'Feeling like your identity is defined by others\' expectations',
-          'Privacy may feel compromised or hard to maintain'
+          'Feeling like others set the agenda rather than you',
+          'Burnout from constant relational or institutional demands',
+          'Loss of personal autonomy — needing to compromise and adapt',
+          'If 12th house is activated: enforced solitude or endings that feel beyond your control'
         ],
         practicalAdvice: [
-          'Deliberately carve out private time — it won\'t happen naturally this year',
-          'Invest in your professional image and reputation since they carry extra weight',
-          'Be strategic about which partnerships and social obligations you commit to',
-          'Use the momentum — this is a year to launch, publish, present, or otherwise make your mark',
-          'Don\'t ignore physical and emotional health even as external demands intensify'
+          'Recognize that growth through others IS personal growth — it\'s just not solo',
+          'Invest in your key partnerships since they carry extra weight this year',
+          'If the 12th house is activated, honor the need for retreat and closure — this is not failure, it\'s preparation',
+          'Be strategic about which commitments and obligations you accept',
+          'Maintain some personal practices (exercise, journaling) to stay grounded amid external demands'
         ]
       }
     };
@@ -116,36 +120,36 @@ function getVerticalDetail(upper: number, lower: number, total: number): { label
     label: intensity === 'extreme' ? 'Strong Lower Dominance' : 'Lower-Leaning',
     detail: {
       title: intensity === 'extreme'
-        ? 'Below the Horizon — A Private, Foundation-Building Year'
-        : 'Lower Hemisphere Emphasis — Internal Focus',
-      summary: `${lower} of your ${total} planets sit below the horizon (Houses 1–6). This is a year focused on personal development, building foundations, and private inner work.`,
+        ? 'Below the Horizon — A Self-Directed, Foundation-Building Year'
+        : 'Lower Hemisphere Emphasis — Personal Agency Year',
+      summary: `${lower} of your ${total} planets sit below the horizon (Houses 1–6). This is a year where YOU set the agenda — personal development, self-expression, and building your own foundations take priority.`,
       bodyParagraphs: [
-        `With ${lower} planets below the horizon versus only ${upper} above, the Solar Return emphasizes the northern (lower) hemisphere. This is a year when the work is internal, subjective, and personal. You are building or rebuilding the foundations of your life — identity, finances, communication skills, home, family, creativity, health, and daily routines.`,
-        'The lower hemisphere encompasses self-identity and appearance (1st), personal resources and values (2nd), communication and learning (3rd), home and family (4th), creativity and romance (5th), and health and daily work (6th). Planets clustering here signal a year where these personally-rooted areas demand your attention.',
+        `With ${lower} planets below the horizon versus only ${upper} above, this Solar Return emphasizes the lower hemisphere. This does NOT mean "hidden" or "invisible" — the 1st house (your most visible, outward-facing house) is part of this hemisphere. Lower emphasis means your life is driven by personal agency: you are the initiator, the builder, the one setting terms.`,
+        'The lower hemisphere encompasses self-identity and how you present to the world (1st), personal finances and values (2nd), communication and local connections (3rd), home and family foundations (4th), creative self-expression and romance (5th), and daily health and work routines (6th). Planets clustering here signal a year of self-directed action.',
         intensity === 'extreme'
-          ? 'With such a strong lower concentration, this is emphatically a building year. You are "constructing from the ground up" — laying foundations that will support future public achievements. This is NOT the year to force a public debut or major career push. Instead, honor the inward pull: heal what needs healing, stabilize your finances, deepen your self-understanding, and perfect your craft. The results of this work will become visible in subsequent Solar Returns.'
-          : 'This moderate lower lean suggests a year where personal development takes priority without completely removing you from public life. You\'ll naturally gravitate toward home improvements, creative projects, health routines, and self-discovery while maintaining some external engagements.',
-        'Lower-hemisphere years often coincide with moves, home renovations, starting a personal creative project, therapy or healing work, or simply a period where you need to "come home to yourself" before re-engaging with the wider world.'
+          ? 'With such a strong lower concentration, this is emphatically a year where you build from the ground up on your own terms. You are shaping your identity, stabilizing your resources, creating from your own vision, and perfecting your craft. This is NOT a year of passivity — it\'s a year of personal initiative. The results of this self-directed work will become relational and institutional in subsequent Solar Returns.'
+          : 'This moderate lower lean suggests a year where personal initiative takes priority without completely removing you from partnerships and external systems. You\'ll naturally gravitate toward self-improvement, creative projects, and foundation-building.',
+        'Lower-hemisphere years often coincide with personal reinvention, financial restructuring, creative breakthroughs, home changes, health transformations, or periods of deliberate self-development.'
       ],
       focusAreas: [
-        'Self-discovery and personal identity work',
+        'Personal identity and self-presentation',
         'Financial stability and resource management',
-        'Home environment — renovations, moves, or family matters',
-        'Creative projects that don\'t yet need an audience',
+        'Home environment — renovations, moves, or family foundations',
+        'Creative projects driven by your own vision',
         'Physical health and daily routine optimization'
       ],
       challenges: [
-        'Feeling invisible or disconnected from your social/professional world',
-        'Frustration if you try to force external achievements during an inward year',
-        'Isolation or excessive self-focus',
-        'Others may not understand your need for privacy'
+        'Over-reliance on self — difficulty asking for help or collaborating',
+        'Frustration if partnerships or institutions don\'t align with your personal agenda',
+        'Risk of isolation if you neglect relational engagement entirely',
+        'Others may not understand your focus on personal foundations'
       ],
       practicalAdvice: [
-        'Trust the process — foundation work is not glamorous but it\'s essential',
-        'Use this year to invest in your physical health, home, and creative skills',
-        'Don\'t compare your progress to others\' public achievements this year',
-        'Journal, go to therapy, take classes — this is a year for inner enrichment',
-        'Plan for future public visibility but don\'t force it now'
+        'Lean into your personal agency — this is YOUR year to build',
+        'Invest in your physical health, home, finances, and creative skills',
+        'Don\'t neglect key partnerships entirely, but recognize they\'re not the primary driver this year',
+        'Journal, take classes, start creative projects — this is a year for self-directed growth',
+        'Trust that the foundations you build now will support future relational and career chapters'
       ]
     }
   };
