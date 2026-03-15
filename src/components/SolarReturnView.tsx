@@ -1853,10 +1853,10 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
           {/* Counts bar */}
           <div className="grid grid-cols-4 gap-2 text-center">
             {[
-              { label: 'Upper', value: analysis.hemisphericEmphasis.upper, desc: 'Houses 7–12', planets: analysis.hemisphericEmphasis.upperPlanets },
-              { label: 'Lower', value: analysis.hemisphericEmphasis.lower, desc: 'Houses 1–6', planets: analysis.hemisphericEmphasis.lowerPlanets },
-              { label: 'East', value: analysis.hemisphericEmphasis.east, desc: 'Houses 10–3', planets: analysis.hemisphericEmphasis.eastPlanets },
-              { label: 'West', value: analysis.hemisphericEmphasis.west, desc: 'Houses 4–9', planets: analysis.hemisphericEmphasis.westPlanets },
+              { label: 'Upper', value: analysis.hemisphericEmphasis.upper, desc: 'Houses 7–12 · Other-directed', planets: analysis.hemisphericEmphasis.upperPlanets },
+              { label: 'Lower', value: analysis.hemisphericEmphasis.lower, desc: 'Houses 1–6 · Self-directed', planets: analysis.hemisphericEmphasis.lowerPlanets },
+              { label: 'East', value: analysis.hemisphericEmphasis.east, desc: 'Houses 10–3 · Initiating', planets: analysis.hemisphericEmphasis.eastPlanets },
+              { label: 'West', value: analysis.hemisphericEmphasis.west, desc: 'Houses 4–9 · Responsive', planets: analysis.hemisphericEmphasis.westPlanets },
             ].map(item => (
               <div key={item.label} className="border border-border rounded-sm p-2 bg-muted/30">
                 <div className="text-lg font-semibold text-foreground">{item.value}</div>
