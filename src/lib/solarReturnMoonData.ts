@@ -1,11 +1,10 @@
 // Solar Return Moon — Expert-level interpretations
-// Sources: Mary Fortier Shea, Cafe Astrology, Lynn Bell, Alexandre Volguine
 
 // ─── SR Moon in House (expanded, expert-level) ──────────────────────
 export const srMoonInHouseDeep: Record<number, { title: string; overview: string; emotionalTheme: string; focus: string; caution: string }> = {
   1: {
     title: 'The Exposed Heart',
-    overview: 'The Moon in the 1st house is angular — your emotional reactions are instinctive, automatic, and visible to everyone. Mary Fortier Shea notes this is the most emotionally reactive placement: you are "very close to any situation" and find it hard to get perspective. Others read your feelings on your face before you are consciously aware of them.',
+    overview: 'The Moon in the 1st house is angular — your emotional reactions are instinctive, automatic, and visible to everyone. This is the most emotionally reactive placement: you are "very close to any situation" and find it hard to get perspective. Others read your feelings on your face before you are consciously aware of them.',
     emotionalTheme: 'Emotional authenticity is both your gift and your vulnerability this year. You feel everything intensely and personally. Your body registers emotions physically — tension, flushing, restlessness. Moon-related people (women, family, the public) feature prominently. You attract emotional situations and people who need nurturing.',
     focus: 'Lean into emotional honesty rather than fighting it. Your sensitivity this year is a superpower for connecting with others — use it in creative work, counseling, or leadership that requires empathy. Physical self-care is emotionally stabilizing: what you do for your body, you do for your mood.',
     caution: 'Impulsive emotional reactions can create problems. Practice the 24-hour rule before responding to charged situations. You may absorb others\' moods — learn to distinguish your feelings from those you are picking up from the environment.',
@@ -54,7 +53,7 @@ export const srMoonInHouseDeep: Record<number, { title: string; overview: string
   },
   8: {
     title: 'Emotional Depth Work',
-    overview: 'The Moon in the 8th house is succedent — emotions are intense but controlled. Mary Fortier Shea notes this placement gives "emotional strength" and the ability to "sit back, watch, and wait." Your emotional life operates at depth, dealing with themes of intimacy, power, shared resources, and transformation.',
+    overview: 'The Moon in the 8th house is succedent — emotions are intense but controlled. This placement gives "emotional strength" and the ability to "sit back, watch, and wait." Your emotional life operates at depth, dealing with themes of intimacy, power, shared resources, and transformation.',
     emotionalTheme: 'Primal emotions surface — grief, desire, jealousy, fear of loss. Sexual and intimate relationships carry enormous emotional charge. Financial entanglements with others trigger deep feelings. You are processing something fundamental about trust, vulnerability, and power.',
     focus: 'Lean into depth work: therapy, shadow journaling, intimate conversations, and any practice that helps you face what you normally avoid. Financial matters involving others (taxes, debt, inheritance, shared accounts) need emotional as well as practical attention.',
     caution: 'Emotional isolation — you may feel that nobody else can understand what you are going through. Resist the urge to suffer alone. Also watch for manipulative emotional dynamics in intimate relationships.',
@@ -68,7 +67,7 @@ export const srMoonInHouseDeep: Record<number, { title: string; overview: string
   },
   10: {
     title: 'Emotions in the Spotlight',
-    overview: 'The Moon in the 10th house is angular — your emotional life is public. Feelings play out in your career, are visible to colleagues, and affect your professional reputation. Mary Fortier Shea notes this placement can go two ways: a business-like approach to emotions, or bringing emotions into professional life.',
+    overview: 'The Moon in the 10th house is angular — your emotional life is public. Feelings play out in your career, are visible to colleagues, and affect your professional reputation. This placement can go two ways: a business-like approach to emotions, or bringing emotions into professional life.',
     emotionalTheme: 'Professional recognition (or lack of it) affects your emotional state deeply. You may feel emotionally defined by your career success or failure. A mother figure or female authority may be prominent in your professional sphere. Your nurturing instincts may shape your leadership style.',
     focus: 'Use your emotional intelligence as a professional asset. Careers in counseling, caregiving, hospitality, or creative fields are especially favored. Be mindful that your reputation is emotionally charged — what people think of your work hits you harder than usual.',
     caution: 'Emotional volatility in professional settings can damage your reputation. Find private outlets for intense feelings before they leak into work. Do not let career setbacks define your self-worth.',
@@ -90,7 +89,6 @@ export const srMoonInHouseDeep: Record<number, { title: string; overview: string
 };
 
 // ─── SR Moon Aspect Interpretations ─────────────────────────────────
-// Source: Cafe Astrology, Mary Fortier Shea
 export const srMoonAspects: Record<string, { hard: string; soft: string }> = {
   Sun: {
     hard: 'Moon hard aspects to the Sun mark a major, memorable year. Your conscious goals and emotional needs are at odds — what you think you should do conflicts with what you feel. This internal tension drives significant life events. If a conjunction, it is a powerful new beginning with singular focus.',

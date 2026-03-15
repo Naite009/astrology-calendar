@@ -1,5 +1,4 @@
 // Solar Return Hemispheric Emphasis — Expert-level interpretations
-// Sources: Mary Fortier Shea (Planets in Solar Returns), Brian Clark, Lynn Bell, Cafe Astrology
 
 // ============================================================================
 // TYPES
@@ -43,8 +42,8 @@ function getVerticalDetail(upper: number, lower: number, total: number): { label
         title: 'Balanced Horizon — Equal Public & Private',
         summary: 'Your Solar Return planets are evenly split above and below the horizon. This is a year where your private inner world and your public outer world receive equal attention and energy.',
         bodyParagraphs: [
-          'When planets divide evenly across the horizon line, neither the public nor private sphere dominates your year. According to Mary Fortier Shea, this balance suggests a year of integration — you are not being pushed exclusively into the spotlight or pulled entirely into retreat. Instead, you move fluidly between both domains.',
-          'Brian Clark notes that a balanced horizon in the Solar Return indicates a year where internal development supports external achievement and vice versa. What you process privately (emotional work, family matters, self-care) feeds directly into what you accomplish publicly (career moves, social engagements, reputation building). There is no disconnect between inner and outer worlds.',
+          'When planets divide evenly across the horizon line, neither the public nor private sphere dominates your year. This balance suggests a year of integration — you are not being pushed exclusively into the spotlight or pulled entirely into retreat. Instead, you move fluidly between both domains.',
+          'A balanced horizon in the Solar Return means internal development supports external achievement and vice versa. What you process privately (emotional work, family matters, self-care) feeds directly into what you accomplish publicly (career moves, social engagements, reputation building). There is no disconnect between inner and outer worlds.',
           'This balance can also signal that no single life area is in crisis — you have the bandwidth to attend to both personal foundations and professional or social responsibilities. The risk, however, is a lack of clear direction: when everything gets equal weight, you may struggle to prioritize or feel pulled in too many directions simultaneously.'
         ],
         focusAreas: [
@@ -76,12 +75,12 @@ function getVerticalDetail(upper: number, lower: number, total: number): { label
           : 'Upper Hemisphere Emphasis — External Focus',
         summary: `${upper} of your ${total} planets sit above the horizon (Houses 7–12). This is a year where your life is lived more publicly — through relationships, career, community, and collective engagement.`,
         bodyParagraphs: [
-          `With ${upper} planets above the horizon versus only ${lower} below, the Solar Return strongly emphasizes the southern (upper) hemisphere. According to Mary Fortier Shea, this pattern indicates a year when you are "out there" — visible, engaged with the world, and focused on how you relate to others and to society at large. Your private inner world takes a back seat to external demands and opportunities.`,
+          `With ${upper} planets above the horizon versus only ${lower} below, the Solar Return strongly emphasizes the southern (upper) hemisphere. This pattern indicates a year when you are "out there" — visible, engaged with the world, and focused on how you relate to others and to society at large. Your private inner world takes a back seat to external demands and opportunities.`,
           'The upper hemisphere encompasses partnerships (7th), shared resources and transformation (8th), higher learning and travel (9th), career and public standing (10th), community and future visions (11th), and spiritual/institutional matters (12th). When planets cluster here, events in these domains drive your year. You may find yourself in the public eye, entering or deepening partnerships, traveling, receiving recognition, or participating in group causes.',
           intensity === 'extreme'
-            ? 'With such a dramatic upper concentration, Brian Clark would note that this year\'s lessons arrive THROUGH other people and external circumstances rather than through solitary introspection. The universe is asking you to engage, to show up, and to let your actions be witnessed. Privacy may feel hard to come by — even if you try to retreat, circumstances pull you back out. This is a year where reputation and public perception matter significantly.'
+            ? 'With such a dramatic upper concentration, this year\'s lessons arrive THROUGH other people and external circumstances rather than through solitary introspection. The universe is asking you to engage, to show up, and to let your actions be witnessed. Privacy may feel hard to come by — even if you try to retreat, circumstances pull you back out. This is a year where reputation and public perception matter significantly.'
             : 'This moderate upper lean suggests a year where external engagement is emphasized without completely eclipsing your inner world. You\'ll spend more time interacting with others and handling career or social obligations, while still having some capacity for private reflection.',
-          'Lynn Bell observes that upper-hemisphere Solar Returns often coincide with years of professional advancement, important relationship milestones, or increased social responsibility. The work you\'ve done privately in previous years now gets "shown to the world."'
+          'Upper-hemisphere Solar Returns often coincide with years of professional advancement, important relationship milestones, or increased social responsibility. The work you\'ve done privately in previous years now gets "shown to the world."'
         ],
         focusAreas: [
           'Career advancement and public reputation',
@@ -117,12 +116,12 @@ function getVerticalDetail(upper: number, lower: number, total: number): { label
         : 'Lower Hemisphere Emphasis — Internal Focus',
       summary: `${lower} of your ${total} planets sit below the horizon (Houses 1–6). This is a year focused on personal development, building foundations, and private inner work.`,
       bodyParagraphs: [
-        `With ${lower} planets below the horizon versus only ${upper} above, the Solar Return emphasizes the northern (lower) hemisphere. Mary Fortier Shea describes this as a year when the work is internal, subjective, and personal. You are building or rebuilding the foundations of your life — identity, finances, communication skills, home, family, creativity, health, and daily routines.`,
+        `With ${lower} planets below the horizon versus only ${upper} above, the Solar Return emphasizes the northern (lower) hemisphere. This is a year when the work is internal, subjective, and personal. You are building or rebuilding the foundations of your life — identity, finances, communication skills, home, family, creativity, health, and daily routines.`,
         'The lower hemisphere encompasses self-identity and appearance (1st), personal resources and values (2nd), communication and learning (3rd), home and family (4th), creativity and romance (5th), and health and daily work (6th). Planets clustering here signal a year where these personally-rooted areas demand your attention.',
         intensity === 'extreme'
-          ? 'With such a strong lower concentration, this is emphatically a building year. Brian Clark would note that you are "constructing from the ground up" — laying foundations that will support future public achievements. This is NOT the year to force a public debut or major career push. Instead, honor the inward pull: heal what needs healing, stabilize your finances, deepen your self-understanding, and perfect your craft. The results of this work will become visible in subsequent Solar Returns.'
+          ? 'With such a strong lower concentration, this is emphatically a building year. You are "constructing from the ground up" — laying foundations that will support future public achievements. This is NOT the year to force a public debut or major career push. Instead, honor the inward pull: heal what needs healing, stabilize your finances, deepen your self-understanding, and perfect your craft. The results of this work will become visible in subsequent Solar Returns.'
           : 'This moderate lower lean suggests a year where personal development takes priority without completely removing you from public life. You\'ll naturally gravitate toward home improvements, creative projects, health routines, and self-discovery while maintaining some external engagements.',
-        'Lynn Bell notes that lower-hemisphere years often coincide with moves, home renovations, starting a personal creative project, therapy or healing work, or simply a period where you need to "come home to yourself" before re-engaging with the wider world.'
+        'Lower-hemisphere years often coincide with moves, home renovations, starting a personal creative project, therapy or healing work, or simply a period where you need to "come home to yourself" before re-engaging with the wider world.'
       ],
       focusAreas: [
         'Self-discovery and personal identity work',
@@ -163,9 +162,9 @@ function getHorizontalDetail(east: number, west: number, total: number): { label
         title: 'Balanced Initiative — Self-Direction Meets Collaboration',
         summary: 'Your Solar Return planets are equally divided between eastern and western hemispheres. You have equal capacity for self-initiated action and responsive collaboration.',
         bodyParagraphs: [
-          'When the eastern and western hemispheres hold equal planetary weight, you are neither purely self-directed nor purely dependent on others for direction. Mary Fortier Shea notes this balance suggests a year where both your own initiatives and your responses to others\' needs shape outcomes.',
+          'When the eastern and western hemispheres hold equal planetary weight, you are neither purely self-directed nor purely dependent on others for direction. This balance suggests a year where both your own initiatives and your responses to others\' needs shape outcomes.',
           'This is generally a favorable balance — you can start your own projects when inspiration strikes AND effectively collaborate when opportunities arrive through others. The key is knowing which mode to use when.',
-          'Brian Clark would observe that this balanced east-west axis means you have genuine free will AND the social awareness to use it wisely. Neither isolation nor over-dependence on others defines your year.'
+          'This balanced east-west axis means you have genuine free will AND the social awareness to use it wisely. Neither isolation nor over-dependence on others defines your year.'
         ],
         focusAreas: [
           'Developing discernment about when to lead vs. when to follow',
@@ -197,19 +196,19 @@ function getHorizontalDetail(east: number, west: number, total: number): { label
             : 'Eastern Hemisphere Emphasis — Initiative & Independence',
         summary: `${east} of your ${total} planets occupy the eastern hemisphere (Houses 10, 11, 12, 1, 2, 3). This is one of the strongest possible indicators of personal agency in a Solar Return. YOU are the architect of this year.`,
         bodyParagraphs: [
-          `With ${east} out of ${total} planets in the eastern hemisphere and only ${west} in the west, this Solar Return places an extraordinary amount of power and responsibility in your own hands. According to Mary Fortier Shea, an eastern emphasis of this magnitude means that your actions, decisions, and initiatives — not other people\'s — determine how the year unfolds. You are not waiting for permission, invitations, or opportunities to come to you. You are creating them.`,
+          `With ${east} out of ${total} planets in the eastern hemisphere and only ${west} in the west, this Solar Return places an extraordinary amount of power and responsibility in your own hands. An eastern emphasis of this magnitude means that your actions, decisions, and initiatives — not other people\'s — determine how the year unfolds. You are not waiting for permission, invitations, or opportunities to come to you. You are creating them.`,
 
           'The eastern hemisphere (Houses 1, 2, 3, 10, 11, 12) encompasses identity and self-presentation (1st), personal finances and values (2nd), communication and local environment (3rd), career and public standing (10th), community and future vision (11th), and the inner spiritual/unconscious realm (12th). When nearly all your planets cluster here, these houses become your active theater of operations. You are personally driving changes in your identity, income, how you communicate, your career path, your social circles, and your inner world.',
 
           isNearTotal
-            ? 'This near-total eastern concentration is rare and extremely significant. Brian Clark would call this a "protagonist year" — the plot of your life revolves entirely around your choices. There is very little buffering from others; what you do (or fail to do) produces direct, undiluted consequences. This is simultaneously empowering and daunting. You cannot blame circumstances or other people for where you end up by next birthday. The flip side is exhilarating freedom: if you want to change direction, rebrand yourself, start a business, move across the country, or radically alter your life — this is the year the cosmos is giving you maximum latitude to do so.'
+            ? 'This near-total eastern concentration is rare and extremely significant. This is a "protagonist year" — the plot of your life revolves entirely around your choices. There is very little buffering from others; what you do (or fail to do) produces direct, undiluted consequences. This is simultaneously empowering and daunting. You cannot blame circumstances or other people for where you end up by next birthday. The flip side is exhilarating freedom: if you want to change direction, rebrand yourself, start a business, move across the country, or radically alter your life — this is the year the cosmos is giving you maximum latitude to do so.'
             : 'This strong eastern concentration indicates significant personal agency. You are the primary mover in most areas of your life this year. While others will still play supporting roles, the initiative and decision-making fall predominantly on you.',
 
-          'From Lynn Bell\'s perspective, extreme eastern years often correlate with major personal launches — new businesses, solo creative projects, geographic moves, or bold identity shifts. These are years when you don\'t consult committees; you act from your own authority. Bell notes that eastern emphasis in Solar Returns is especially powerful when it echoes the natal chart\'s emphasis, amplifying a person\'s natural tendency toward independence.',
+          'Extreme eastern years often correlate with major personal launches — new businesses, solo creative projects, geographic moves, or bold identity shifts. These are years when you don\'t consult committees; you act from your own authority. Eastern emphasis in Solar Returns is especially powerful when it echoes the natal chart\'s emphasis, amplifying a natural tendency toward independence.',
 
-          'Mary Fortier Shea specifically warns that extreme eastern emphasis can manifest as loneliness or a feeling that nobody else understands your vision. Because you are so far ahead of the curve in terms of self-direction, others may lag behind, unable to keep up with your pace of change. This is not a rejection of relationship — it is a recognition that THIS year, you are meant to be the author, not the editor, of your story.',
+          'Extreme eastern emphasis can manifest as loneliness or a feeling that nobody else understands your vision. Because you are so far ahead of the curve in terms of self-direction, others may lag behind, unable to keep up with your pace of change. This is not a rejection of relationship — it is a recognition that THIS year, you are meant to be the author, not the editor, of your story.',
 
-          'Ray Merriman notes that Solar Returns with strong eastern emphasis favor independent professional ventures, self-employment decisions, personal fitness transformations, solo travel, and any situation where the outcome depends primarily on individual effort rather than team consensus or market conditions.'
+          'Solar Returns with strong eastern emphasis favor independent professional ventures, self-employment decisions, personal fitness transformations, solo travel, and any situation where the outcome depends primarily on individual effort rather than team consensus or market conditions.'
         ],
         focusAreas: [
           'Personal initiative — launch projects, businesses, or creative works under your own name',
@@ -254,7 +253,7 @@ function getHorizontalDetail(east: number, west: number, total: number): { label
           : 'Western Hemisphere Emphasis — Collaborative & Responsive',
       summary: `${west} of your ${total} planets occupy the western hemisphere (Houses 4, 5, 6, 7, 8, 9). This year unfolds through other people — partnerships, collaborations, and how you respond to external circumstances.`,
       bodyParagraphs: [
-        `With ${west} out of ${total} planets in the western hemisphere and only ${east} in the east, this Solar Return places you in a responsive rather than initiating role. Mary Fortier Shea describes western emphasis as years when "fate" plays a stronger hand — not because you lack free will, but because your most important growth comes through engaging with others and responding to circumstances you did not create.`,
+        `With ${west} out of ${total} planets in the western hemisphere and only ${east} in the east, this Solar Return places you in a responsive rather than initiating role. Western emphasis means your most important growth comes through engaging with others and responding to circumstances you did not create.`,
 
         'The western hemisphere (Houses 4, 5, 6, 7, 8, 9) encompasses home and family roots (4th), creative expression and romance (5th), health and service (6th), committed partnerships (7th), shared resources and transformation (8th), and higher learning and travel (9th). Planets clustering here signal a year where these relational and experiential domains dominate.',
 
@@ -262,9 +261,9 @@ function getHorizontalDetail(east: number, west: number, total: number): { label
           ? 'With nearly all planets in the west, this is one of the most other-oriented Solar Returns possible. Your personal fate this year is deeply intertwined with the actions, decisions, and needs of other people. Major life changes may come through a partner\'s career move, a family member\'s health, a business partner\'s decision, or a teacher/mentor\'s influence. The lesson is profound surrender to the collaborative process.'
           : 'This strong western emphasis means relationships and collaborations are the primary vehicles through which this year\'s story unfolds. Your growth comes not from solo initiative but from how you engage, negotiate, and respond.',
 
-        'Lynn Bell notes that western-emphasis Solar Returns often bring significant relationship developments — marriages, business partnerships, important new friendships, or the need to renegotiate existing relationships. These are years to practice the art of compromise, negotiation, and receptivity.',
+        'Western-emphasis Solar Returns often bring significant relationship developments — marriages, business partnerships, important new friendships, or the need to renegotiate existing relationships. These are years to practice the art of compromise, negotiation, and receptivity.',
 
-        'Brian Clark observes that western years teach us that fulfillment doesn\'t always come from personal ambition. Sometimes the deepest growth arrives when we open ourselves to what others bring us — their perspectives, needs, challenges, and gifts.'
+        'Western years teach us that fulfillment doesn\'t always come from personal ambition. Sometimes the deepest growth arrives when we open ourselves to what others bring us — their perspectives, needs, challenges, and gifts.'
       ],
       focusAreas: [
         'Partnerships — romantic, business, and creative collaborations',

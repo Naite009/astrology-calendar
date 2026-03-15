@@ -325,13 +325,13 @@ export interface SolarReturnAnalysis {
   hemisphericEmphasis: SRHemisphericEmphasis;
   saturnFocus: SRSaturnFocus | null;
   nodesFocus: SRNodesFocus | null;
-  /** Where the SR Ascendant degree falls in the natal chart houses (Lynn Bell technique) */
+  /** Where the SR Ascendant degree falls in the natal chart houses */
   srAscInNatalHouse: {
     natalHouse: number;
     natalHouseTheme: string;
     interpretation: string;
   } | null;
-  /** SR planets within 2° of natal planet degrees — "conduit" connections (Lynn Bell) */
+  /** SR planets within 2° of natal planet degrees — "conduit" connections */
   natalDegreeConduits: {
     srPlanet: string;
     natalPlanet: string;
@@ -1118,7 +1118,7 @@ export const analyzeSolarReturn = (
     };
   }
 
-  // ─── SR Ascendant falling in natal house (Lynn Bell: "the SR Ascendant is in the 8th house") ──
+  // ─── SR Ascendant falling in natal house ──
   let srAscInNatalHouse: SolarReturnAnalysis['srAscInNatalHouse'] = null;
   if (srAsc) {
     const srAscDeg = toAbsDeg(srAsc);
@@ -1149,7 +1149,7 @@ export const analyzeSolarReturn = (
     }
   }
 
-  // ─── Natal Degree Conduits (Lynn Bell: SR planet on natal degree = "conduit") ──
+  // ─── Natal Degree Conduits (SR planet on natal degree = "conduit") ──
   const natalDegreeConduits: SolarReturnAnalysis['natalDegreeConduits'] = [];
   const CONDUIT_ORB = 2;
   for (const srPlanet of ALL_PLANETS) {
