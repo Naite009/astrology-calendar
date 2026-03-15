@@ -229,48 +229,79 @@ export function generatePDFYearAtAGlance(
     ctx.y = pairY + pairH + 10;
   }
 
-  // ── Time Lord / Lord of the Year — expanded with interpretation ──
+  // ── TIME LORD (Profection ruler) ────────────────────────────────
   if (a.profectionYear?.timeLord) {
     const timeLordFelt: Record<string, string> = {
-      Sun: 'The Sun rules this year — your identity, vitality, and sense of purpose are the driving force. Decisions feel personal and consequential.',
-      Moon: 'The Moon rules this year — emotions, instincts, and domestic life set the pace. Your inner world guides outer events.',
-      Mercury: 'Mercury rules this year — communication, learning, and mental agility are your superpowers. Words carry extra weight.',
-      Venus: 'Venus rules this year — relationships, beauty, and values are the currency. What you love and how you love shapes everything.',
-      Mars: 'Mars rules this year — energy, ambition, and assertiveness are amplified. You push harder and tolerate less passivity.',
-      Jupiter: 'Jupiter rules this year — growth, opportunity, and expansion are the themes. Say yes to what expands you.',
-      Saturn: 'Saturn rules this year — discipline, responsibility, and long-term building define the pace. Patience produces lasting results.',
+      Sun: 'The Sun sets the pace — identity, purpose, and visibility drive events.',
+      Moon: 'The Moon sets the pace — emotions, instincts, and home life drive events.',
+      Mercury: 'Mercury sets the pace — communication, learning, and mental agility drive events.',
+      Venus: 'Venus sets the pace — relationships, beauty, and values drive events.',
+      Mars: 'Mars sets the pace — energy, ambition, and assertiveness drive events.',
+      Jupiter: 'Jupiter sets the pace — growth, opportunity, and expansion drive events.',
+      Saturn: 'Saturn sets the pace — discipline, responsibility, and long-term building drive events.',
     };
 
     const lordName = P[a.profectionYear.timeLord] || a.profectionYear.timeLord;
-    const lordFelt = timeLordFelt[a.profectionYear.timeLord] || `${lordName} governs the pace and quality of events this year.`;
+    const lordFelt = timeLordFelt[a.profectionYear.timeLord] || `${lordName} governs the pace and quality of events.`;
     const lordHouse = a.profectionYear.timeLordSRHouse;
+    const houseNum = a.profectionYear.houseNumber || '';
 
-    ctx.checkPage(80);
-    const stripH = 68;
+    ctx.checkPage(54);
+    const col2Gap = 12;
+    const col2W = (contentW - col2Gap) / 2;
+    const stripH = 50;
+    const stripY = ctx.y;
+
+    // Time Lord strip (left)
     doc.setFillColor(...WARM_CREAM);
-    doc.roundedRect(margin, ctx.y, contentW, stripH, 3, 3, 'F');
+    doc.roundedRect(margin, stripY, col2W, stripH, 3, 3, 'F');
     doc.setFillColor(...GOLD);
-    doc.rect(margin, ctx.y, 3, stripH, 'F');
+    doc.rect(margin, stripY, 3, stripH, 'F');
 
-    let sy = ctx.y + 14;
-    doc.setFont('times', 'bold'); doc.setFontSize(6.5);
+    let sy = stripY + 13;
+    doc.setFont('times', 'bold'); doc.setFontSize(6);
     doc.setTextColor(...GOLD);
-    doc.setCharSpace(2.5);
-    doc.text('TIME LORD / LORD OF THE YEAR', margin + 12, sy);
+    doc.setCharSpace(2);
+    doc.text('TIME LORD (PROFECTION RULER)', margin + 10, sy);
     doc.setCharSpace(0);
-
-    sy += 14;
-    doc.setFont('times', 'bold'); doc.setFontSize(11.5);
-    doc.setTextColor(...INK);
-    doc.text(`${lordName}${lordHouse ? ` in Solar Return House ${lordHouse}` : ''}`, margin + 12, sy);
-
     sy += 12;
-    doc.setFont('times', 'normal'); doc.setFontSize(8);
+    doc.setFont('times', 'bold'); doc.setFontSize(10);
+    doc.setTextColor(...INK);
+    doc.text(`${lordName}${houseNum ? ` — ${houseNum}${houseNum === 1 ? 'st' : houseNum === 2 ? 'nd' : houseNum === 3 ? 'rd' : 'th'} House Year` : ''}`, margin + 10, sy);
+    sy += 10;
+    doc.setFont('times', 'normal'); doc.setFontSize(7.5);
     doc.setTextColor(...MUTED);
-    const feltLines: string[] = doc.splitTextToSize(lordFelt, contentW - 24);
-    for (const l of feltLines.slice(0, 2)) { doc.text(l, margin + 12, sy); sy += 10; }
+    const feltLines: string[] = doc.splitTextToSize(lordFelt, col2W - 20);
+    doc.text(feltLines[0] || lordFelt, margin + 10, sy);
 
-    ctx.y += stripH + 8;
+    // Lord of the Year strip (right) — natal ASC ruler in SR
+    if (a.lordOfTheYear) {
+      const loty = a.lordOfTheYear;
+      const lotyName = P[loty.planet] || loty.planet;
+      doc.setFillColor(...CARD_BG);
+      doc.roundedRect(margin + col2W + col2Gap, stripY, col2W, stripH, 3, 3, 'F');
+      doc.setFillColor(...GOLD);
+      doc.rect(margin + col2W + col2Gap, stripY, 3, stripH, 'F');
+
+      let ly = stripY + 13;
+      doc.setFont('times', 'bold'); doc.setFontSize(6);
+      doc.setTextColor(...GOLD);
+      doc.setCharSpace(2);
+      doc.text('LORD OF THE YEAR (NATAL ASC RULER)', margin + col2W + col2Gap + 10, ly);
+      doc.setCharSpace(0);
+      ly += 12;
+      doc.setFont('times', 'bold'); doc.setFontSize(10);
+      doc.setTextColor(...INK);
+      doc.text(`${lotyName} in SR House ${loty.srHouse || '--'}`, margin + col2W + col2Gap + 10, ly);
+      ly += 10;
+      doc.setFont('times', 'normal'); doc.setFontSize(7.5);
+      doc.setTextColor(...MUTED);
+      const lotyDesc = `Your natal ${loty.natalRisingSign || ''} ruler — shows where your core self operates this year.`;
+      const lotyLines: string[] = doc.splitTextToSize(lotyDesc, col2W - 20);
+      doc.text(lotyLines[0] || lotyDesc, margin + col2W + col2Gap + 10, ly);
+    }
+
+    ctx.y = stripY + stripH + 8;
   }
 
   // ── WHERE THIS YEAR PLAYS OUT — compact box ───────────────────────
