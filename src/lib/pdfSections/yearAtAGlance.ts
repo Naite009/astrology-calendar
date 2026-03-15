@@ -117,7 +117,7 @@ export function generatePDFYearAtAGlance(
   // ── TOP ROW: 3-column info box grid ──────────────────────────────
   const col3Gap = 14;
   const col3W = (contentW - col3Gap * 2) / 3;
-  const boxH = 140; // Taller boxes to fit body text
+  const boxH = 155; // Taller boxes for proper spacing
 
   const houseNum = a.profectionYear?.houseNumber || 1;
   const topStellium = a.stelliums[0];
