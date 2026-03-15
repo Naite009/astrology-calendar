@@ -150,13 +150,6 @@ export const StructuralStressView = ({ userChart, savedCharts }: StructuralStres
                 onDateExplored={setHasDateResult}
               />
               
-              {/* Life Milestones - only show when NOT viewing date results */}
-              {!hasDateResult && (
-                <LifeMilestones 
-                  chart={selectedChart} 
-                  onMilestoneClick={handleMilestoneClick}
-                />
-              )}
             </TabsContent>
 
             {/* Phase Timeline Tab */}
