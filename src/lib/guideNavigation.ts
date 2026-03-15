@@ -49,7 +49,7 @@ export const SECTION_TO_VIEW: Record<GuideSection, ViewMode> = {
   overview: "month",
   colors: "colors",
   symbols: "month",
-  moonphases: "moon-phases",
+  moonphases: "moon-encyclopedia",
   retrogrades: "month",
   aspects: "month",
   dignities: "decoder",
