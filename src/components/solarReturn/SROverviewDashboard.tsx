@@ -133,7 +133,7 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
           Solar Return {srChart.solarReturnYear} — {natalChart.name}
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
-          {SIGN_SYMBOLS[natalSunSign]} {natalSunSign} Sun · {SIGN_SYMBOLS[natalMoonSign]} {natalMoonSign} Moon · {SIGN_SYMBOLS[natalRisingSign]} {natalRisingSign} Rising · Born {natalChart.birthDate}
+          {SIGN_SYMBOLS[natalSunSign]} {natalSunSign} Sun · {SIGN_SYMBOLS[natalMoonSign]} {natalMoonSign} Moon · {SIGN_SYMBOLS[natalRisingSign]} {natalRisingSign} Rising · Born {formatDateMMDDYYYY(natalChart.birthDate)}
         </p>
       </div>
 
