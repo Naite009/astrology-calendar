@@ -1279,15 +1279,39 @@ export const analyzeSolarReturn = (
   // This is a significant condition: the Moon operates independently, without planetary dialogue.
   const moonVOC = srMoonAspects.length === 0 && moonPos !== undefined;
 
-  // ─── Moon Angularity ──
-  const angularHousesSet = [1, 4, 7, 10];
-  const succedentHousesSet = [2, 5, 8, 11];
+  // ─── Moon Angularity (true degree-based, not house-based) ──
+  // Check if Moon is within 5° of any angle cusp (ASC, IC, DSC, MC)
+  let moonAngularity: SolarReturnAnalysis['moonAngularity'] = null;
   const moonHouseNum = moonHouse?.house ?? null;
-  const moonAngularity: SolarReturnAnalysis['moonAngularity'] = moonHouseNum
-    ? angularHousesSet.includes(moonHouseNum) ? 'angular'
-      : succedentHousesSet.includes(moonHouseNum) ? 'succedent'
-      : 'cadent'
-    : null;
+  if (moonPos) {
+    const moonDeg = toAbsDeg(moonPos);
+    if (moonDeg !== null) {
+      const angleCusps = [
+        srChart.houseCusps?.house1,  // ASC
+        srChart.houseCusps?.house4,  // IC
+        srChart.houseCusps?.house7,  // DSC
+        srChart.houseCusps?.house10, // MC
+      ];
+      let isConjunctAngle = false;
+      for (const cusp of angleCusps) {
+        if (!cusp) continue;
+        const cuspDeg = toAbsDeg(cusp);
+        if (cuspDeg === null) continue;
+        let diff = Math.abs(moonDeg - cuspDeg);
+        if (diff > 180) diff = 360 - diff;
+        if (diff <= 5) { isConjunctAngle = true; break; }
+      }
+
+      if (isConjunctAngle) {
+        moonAngularity = 'angular';
+      } else {
+        const succedentHousesSet = [2, 5, 8, 11];
+        moonAngularity = moonHouseNum
+          ? succedentHousesSet.includes(moonHouseNum) ? 'succedent' : 'cadent'
+          : null;
+      }
+    }
+  }
 
   // ─── Moon Late Degree ──
   const moonLateDegree = moonPos ? parseInt(String(moonPos.degree)) >= 25 : false;
