@@ -152,10 +152,12 @@ export function LandsVsPlaysOutCard({ analysis }: Props) {
                 </div>
 
                 {/* Answer */}
-                <div className="pt-2 border-t border-border">
+                <div className="pt-2 border-t border-border space-y-1">
                   <p className="text-[10px] text-muted-foreground leading-relaxed">
-                    <strong className="text-foreground">Answers:</strong>{' '}
                     <span className="italic">"What area of life gets the most activity this year?"</span>
+                  </p>
+                  <p className="text-xs text-foreground leading-relaxed">
+                    Your {ordinal(landsHouse)} house — {HOUSE_MEANINGS[landsHouse]?.toLowerCase()}. With {landsCount} Solar Return points landing here, this is where life gets loud. Expect events, decisions, and energy to cluster around {HOUSE_MEANINGS[landsHouse]?.split(',')[0]?.toLowerCase()} themes throughout the year.
                   </p>
                 </div>
               </>
