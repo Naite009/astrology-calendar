@@ -249,7 +249,7 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
                 title={`${entry.year} — ${entry.phase} (${entry.cycleStage})`}
               >
                 <span className="text-[9px] text-muted-foreground">{entry.year.toString().slice(2)}</span>
-                <span className={`w-3 h-3 rounded-full ${dotColor} ${isCurr ? 'ring-2 ring-primary ring-offset-1 ring-offset-background' : ''}`} />
+                <span className="text-sm leading-none">{PHASE_ICONS[entry.phase] || '☽'}</span>
                 {entry.isMajorTransition && (
                   <Sparkles className="w-2 h-2 text-primary" />
                 )}
