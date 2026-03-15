@@ -761,7 +761,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
 
           {/* Step-by-step logic so it's crystal clear */}
           <div className="bg-secondary/50 rounded-sm p-3 mb-4 space-y-1.5">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-2">How this works (J-B Morin / Lynn Bell technique):</p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-2">How this works:</p>
             <p className="text-xs text-foreground">
               <span className="text-primary font-semibold">Step 1:</span> Your Solar Return Ascendant is {SIGN_SYMBOLS[analysis.srAscRulerInNatal.srAscSign] || ''} <strong>{analysis.srAscRulerInNatal.srAscSign}</strong> Rising
             </p>
