@@ -611,7 +611,7 @@ export async function generateBirthdayGiftPDF(
     }
   }
 
-  // 13. LORD OF THE YEAR
+  // 13. LORD OF THE YEAR + PROFECTION WHEEL (combined page)
   if (analysis.profectionYear?.timeLord) {
     doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
     ctx.sectionPages.set('LORD OF THE YEAR', doc.getNumberOfPages());
@@ -623,6 +623,14 @@ export async function generateBirthdayGiftPDF(
     const tlSRPos = srChart.planets[tlPlanet as keyof typeof srChart.planets];
     const tlIsRetro = !!(tlSRPos as any)?.isRetrograde;
     const tlDignity = (analysis.lordOfTheYear && analysis.lordOfTheYear.planet === tlPlanet) ? analysis.lordOfTheYear.dignity : '';
+
+    // Find the sign on the natal house cusp to explain the ruler connection
+    const natalCuspSign = natalChart.houseCusps?.[`house${houseNum}` as keyof typeof natalChart.houseCusps]?.sign || '';
+    const SIGN_RULERS: Record<string, string> = {
+      Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon', Leo: 'Sun',
+      Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Mars', Sagittarius: 'Jupiter',
+      Capricorn: 'Saturn', Aquarius: 'Saturn', Pisces: 'Jupiter',
+    };
 
     doc.setFont('times', 'bold'); doc.setFontSize(18); doc.setTextColor(...ctx.colors.ink);
     doc.text(`${P[tlPlanet] || tlPlanet}`, margin + 8, ctx.y);
@@ -638,7 +646,19 @@ export async function generateBirthdayGiftPDF(
     ctx.drawCard(doc, () => {
       ctx.writeBold(doc, `Why ${P[tlPlanet] || tlPlanet} Is Your Lord of the Year`, ctx.colors.gold, 11);
       ctx.y += 2;
-      ctx.writeBody(doc, `You are ${analysis.profectionYear!.age} years old, placing you in a ${houseNum}${houseNum === 1 ? 'st' : houseNum === 2 ? 'nd' : houseNum === 3 ? 'rd' : 'th'} house profection year. The traditional ruler of your natal ${houseNum}${houseNum === 1 ? 'st' : houseNum === 2 ? 'nd' : houseNum === 3 ? 'rd' : 'th'} house cusp is ${P[tlPlanet] || tlPlanet}, making it the planet running the show.`, ctx.colors.bodyText, 10, 14);
+      // Explain the chain: Age → House → Natal cusp sign → Ruler = Time Lord
+      const ordH = `${houseNum}${houseNum === 1 ? 'st' : houseNum === 2 ? 'nd' : houseNum === 3 ? 'rd' : 'th'}`;
+      let explanation = `You are ${analysis.profectionYear!.age} years old, placing you in a ${ordH} house profection year.`;
+      if (natalCuspSign) {
+        explanation += ` Your natal ${ordH} house cusp is in ${natalCuspSign}.`;
+        const expectedRuler = SIGN_RULERS[natalCuspSign];
+        if (expectedRuler) {
+          explanation += ` ${natalCuspSign} is ruled by ${expectedRuler}, which makes ${expectedRuler} the planet running the show this year.`;
+        }
+      } else {
+        explanation += ` The traditional ruler of your natal ${ordH} house cusp is ${P[tlPlanet] || tlPlanet}, making it the planet running the show.`;
+      }
+      ctx.writeBody(doc, explanation, ctx.colors.bodyText, 10, 14);
     });
 
     const detailedMeaning = timeLordDetailedMeaning[tlPlanet];
@@ -649,12 +669,10 @@ export async function generateBirthdayGiftPDF(
         ctx.writeBody(doc, detailedMeaning, ctx.colors.bodyText, 10, 14);
       });
     }
-  }
 
-  // 14. PROFECTION WHEEL
-  doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
-  ctx.sectionPages.set('PROFECTION WHEEL', doc.getNumberOfPages());
-  if (analysis.profectionYear) {
+    // Profection wheel on the same page (or next if needed)
+    ctx.checkPage(280);
+    ctx.sectionPages.set('PROFECTION WHEEL', doc.getNumberOfPages());
     drawProfectionWheel(ctx, doc, analysis.profectionYear.age, analysis.profectionYear.houseNumber, analysis.profectionYear.timeLord);
   }
 
