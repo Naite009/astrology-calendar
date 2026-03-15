@@ -31,7 +31,6 @@ export type ViewMode =
   | "month" 
   | "week" 
   | "year" 
-  | "moon-phases" 
   | "annual-tables" 
   | "guide" 
   | "charts" 
@@ -42,7 +41,8 @@ export type ViewMode =
   | "voice-memos" 
   | "decoder" 
   | "speeds" 
-  | "dwarf-planets";
+  | "dwarf-planets"
+  | "moon-encyclopedia";
 
 // Maps guide sections to the corresponding app view mode
 export const SECTION_TO_VIEW: Record<GuideSection, ViewMode> = {
