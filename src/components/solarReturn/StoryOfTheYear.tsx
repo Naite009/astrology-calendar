@@ -172,6 +172,11 @@ export function StoryOfTheYear({ analysis, natalChart, srChart }: Props) {
           <p className="text-base font-serif text-foreground leading-relaxed">
             A {currentEntry.cycleStage.toLowerCase()} year centered on {SUN_HOUSE_THEMES[sunHouse]?.split(',')[0] || 'growth'}{moonHouse ? `, felt most deeply through ${MOON_HOUSE_THEMES[moonHouse]?.split('—')[0]?.trim() || 'emotional processing'}` : ''}{aspectNarrative ? `, catalyzed by the ${topAspect!.type.toLowerCase()} between ${topAspect!.planet1} and ${topAspect!.planet2}` : ''}.
           </p>
+          {topThemes.length >= 2 && (
+            <p className="text-sm text-muted-foreground leading-relaxed mt-3">
+              The strongest priorities of the year are <strong className="text-foreground">{topThemes[0].label}</strong>{topThemes[1] ? <>, <strong className="text-foreground">{topThemes[1].label}</strong></> : ''}{topThemes[2] ? <>, and <strong className="text-foreground">{topThemes[2].label}</strong></> : ''} — these themes are confirmed by multiple independent signals across the chart.
+            </p>
+          )}
         </div>
       </div>
     </div>

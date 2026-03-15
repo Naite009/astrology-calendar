@@ -3,122 +3,14 @@ import { Trophy, TrendingUp, ChevronRight, HelpCircle } from 'lucide-react';
 import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
-import {
-  computeLunarPhaseTimeline,
-} from '@/lib/solarReturnLunarTimeline';
+import { computeYearPriorities, ScoredCategory } from '@/lib/yearPriorityScoring';
 
-// ─── category definitions ─────────────────────────────────────
-interface Category {
-  id: string;
-  label: string;
-}
-
-const CATEGORIES: Category[] = [
-  { id: 'identity_direction', label: 'Identity and Direction' },
-  { id: 'relationships', label: 'Relationships' },
-  { id: 'career_public_life', label: 'Career and Public Life' },
-  { id: 'home_family_private_life', label: 'Home and Private Life' },
-  { id: 'money_resources', label: 'Money and Resources' },
-  { id: 'health_work_routines', label: 'Health, Work, and Routines' },
-  { id: 'creativity_children_joy', label: 'Creativity, Children, and Joy' },
-  { id: 'inner_healing_spirituality', label: 'Inner Healing and Spirituality' },
-  { id: 'transformation_shared_resources', label: 'Transformation and Shared Resources' },
-  { id: 'learning_travel_beliefs', label: 'Learning, Travel, and Beliefs' },
-  { id: 'friends_community_future', label: 'Friends, Community, and Future Vision' },
-];
-
-const HOUSE_TO_CATEGORY: Record<number, string> = {
-  1: 'identity_direction', 2: 'money_resources', 3: 'learning_travel_beliefs',
-  4: 'home_family_private_life', 5: 'creativity_children_joy', 6: 'health_work_routines',
-  7: 'relationships', 8: 'transformation_shared_resources', 9: 'learning_travel_beliefs',
-  10: 'career_public_life', 11: 'friends_community_future', 12: 'inner_healing_spirituality',
+const CONFIDENCE_COLORS: Record<string, string> = {
+  'Very High': 'text-primary',
+  'High': 'text-primary/80',
+  'Moderate': 'text-foreground',
+  'Emerging': 'text-muted-foreground',
 };
-
-const PLANET_TO_CATEGORIES: Record<string, string[]> = {
-  Sun: ['identity_direction', 'career_public_life'],
-  Moon: ['home_family_private_life', 'inner_healing_spirituality'],
-  Mercury: ['learning_travel_beliefs', 'career_public_life'],
-  Venus: ['relationships', 'money_resources', 'creativity_children_joy'],
-  Mars: ['identity_direction', 'career_public_life', 'health_work_routines'],
-  Jupiter: ['learning_travel_beliefs', 'career_public_life', 'friends_community_future'],
-  Saturn: ['career_public_life', 'health_work_routines', 'home_family_private_life'],
-  Uranus: ['identity_direction', 'friends_community_future'],
-  Neptune: ['inner_healing_spirituality', 'creativity_children_joy'],
-  Pluto: ['transformation_shared_resources', 'career_public_life'],
-  NorthNode: ['identity_direction', 'relationships', 'career_public_life'],
-  'North Node': ['identity_direction', 'relationships', 'career_public_life'],
-  Chiron: ['inner_healing_spirituality', 'health_work_routines'],
-};
-
-const ANGLE_TO_CATEGORIES: Record<string, string[]> = {
-  Ascendant: ['identity_direction'],
-  Descendant: ['relationships'],
-  Midheaven: ['career_public_life'],
-  IC: ['home_family_private_life'],
-};
-
-const PHASE_BOOSTS: Record<string, string[]> = {
-  'New Moon': ['identity_direction'],
-  'Crescent': ['identity_direction', 'health_work_routines'],
-  'First Quarter': ['identity_direction', 'career_public_life', 'relationships'],
-  'Gibbous': ['health_work_routines', 'career_public_life', 'learning_travel_beliefs'],
-  'Full Moon': ['relationships', 'career_public_life', 'home_family_private_life'],
-  'Disseminating': ['learning_travel_beliefs', 'friends_community_future', 'career_public_life'],
-  'Last Quarter': ['inner_healing_spirituality', 'career_public_life', 'relationships'],
-  'Balsamic': ['inner_healing_spirituality', 'home_family_private_life'],
-};
-
-const ASPECT_WEIGHTS: Record<string, number> = {
-  conjunct: 12, conjunction: 12, Conjunction: 12,
-  opposite: 7, opposition: 7, Opposition: 7,
-  square: 6, Square: 6,
-  trine: 4, Trine: 4,
-  sextile: 3, Sextile: 3,
-};
-
-const CONFIDENCE_LABELS: { min: number; label: string; color: string }[] = [
-  { min: 30, label: 'Very High', color: 'text-primary' },
-  { min: 22, label: 'High', color: 'text-primary/80' },
-  { min: 15, label: 'Moderate', color: 'text-foreground' },
-  { min: 0, label: 'Emerging', color: 'text-muted-foreground' },
-];
-
-function getConfidence(score: number) {
-  return CONFIDENCE_LABELS.find(c => score >= c.min) || CONFIDENCE_LABELS[CONFIDENCE_LABELS.length - 1];
-}
-
-// ─── Scoring types ────────────────────────────────────────────
-interface Driver {
-  source: string;
-  weight: number;
-}
-
-interface ScoredCategory {
-  id: string;
-  label: string;
-  score: number;
-  confidence: string;
-  confidenceColor: string;
-  drivers: Driver[];
-}
-
-// ─── Helpers ──────────────────────────────────────────────────
-const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
-const toAbsDeg = (pos: { sign: string; degree: number; minutes?: number } | undefined): number | null => {
-  if (!pos) return null;
-  const idx = SIGNS.indexOf(pos.sign);
-  if (idx < 0) return null;
-  return idx * 30 + (pos.degree || 0) + ((pos as any).minutes || 0) / 60;
-};
-
-const ASPECT_DEFS = [
-  { name: 'conjunct', angle: 0 },
-  { name: 'opposite', angle: 180 },
-  { name: 'square', angle: 90 },
-  { name: 'trine', angle: 120 },
-  { name: 'sextile', angle: 60 },
-];
-const ORB = 3;
 
 interface Props {
   analysis: SolarReturnAnalysis;
@@ -128,8 +20,8 @@ interface Props {
 
 export function YearPriorityEngine({ analysis, natalChart, srChart }: Props) {
   const rankedThemes = useMemo(() => {
-    const scores: Record<string, { score: number; drivers: Driver[] }> = {};
-    CATEGORIES.forEach(c => { scores[c.id] = { score: 0, drivers: [] }; });
+    return computeYearPriorities(analysis, natalChart, srChart);
+  }, [analysis, natalChart, srChart]);
 
     const add = (catId: string, weight: number, source: string) => {
       if (!scores[catId]) return;
