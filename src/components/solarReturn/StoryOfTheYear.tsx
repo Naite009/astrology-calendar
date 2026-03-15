@@ -115,44 +115,40 @@ export function StoryOfTheYear({ analysis, natalChart, srChart }: Props) {
         <div className="bg-muted/30 border border-border rounded-sm p-3">
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">What You're Reading</p>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Every birthday, the Moon is in a different position relative to the Sun. Over roughly 29.5 years, these positions trace a complete lunar cycle — from New Moon (new beginnings) through Full Moon (culmination) to Balsamic (completion). This isn't a transit or a single day's Moon phase — it's a <strong className="text-foreground">life-development cycle</strong> that shows what season of growth you're in right now, based on decades of accumulated experience. Professional astrologers use this as one of the most important frameworks for reading a Solar Return.
+            A Solar Return chart is cast for the exact moment the Sun returns to your natal degree each birthday. This chart — with its own Ascendant, Moon placement, and planetary positions — acts as a <strong className="text-foreground">blueprint for the year ahead</strong>. The house the Sun falls in shows where your energy and attention go. The Moon's sign and house reveal your emotional landscape. The aspects between SR and natal planets highlight what gets activated. Together, these signals tell the story of your year.
           </p>
         </div>
 
-        {/* 1. Phase context */}
+        {/* 1. Sun house — the main event */}
         <div>
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">The Season You're In</p>
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">Where Your Energy Goes This Year</p>
           <p className="text-sm text-foreground leading-relaxed">
-            This Solar Return year falls in the <strong>{currentEntry.phase}</strong> phase of your lunar development cycle — a period focused on {cycleStageText}. {currentEntry.cycleStage === 'Completion' || currentEntry.cycleStage === 'Reevaluation'
-              ? 'This is not a year to force new beginnings. It\'s a year to honor what is finishing and create space for what comes next.'
-              : currentEntry.cycleStage === 'Beginning' || currentEntry.cycleStage === 'Growth'
-              ? 'You are in the building phase of a longer arc. What you start or commit to now gains momentum over the next several years.'
-              : currentEntry.cycleStage === 'Culmination'
-              ? 'This is a peak year — the results of years of effort become visible. Relationships, career, and creative projects reach important turning points.'
-              : 'The momentum of previous years carries forward. Stay engaged with what you\'ve been building.'}
+            The Sun in the <strong>{sunHouse}{sunHouse === 1 ? 'st' : sunHouse === 2 ? 'nd' : sunHouse === 3 ? 'rd' : 'th'} house</strong> places your central focus on {SUN_HOUSE_THEMES[sunHouse] || `house ${sunHouse} themes`}. This is where your vitality, willpower, and conscious attention are directed all year — it's where the biggest developments happen and where you feel most engaged.
           </p>
         </div>
 
-        {/* 2. Sun house direction */}
-        <div>
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">Where Life Is Moving</p>
-          <p className="text-sm text-foreground leading-relaxed">
-            The Sun in the <strong>{sunHouse}{sunHouse === 1 ? 'st' : sunHouse === 2 ? 'nd' : sunHouse === 3 ? 'rd' : 'th'} house</strong> places your central focus on {SUN_HOUSE_THEMES[sunHouse] || `house ${sunHouse} themes`}. This is where your vitality, willpower, and conscious attention are directed all year. It's not just a topic — it's where you feel most alive and where the biggest developments happen.
-          </p>
-        </div>
-
-        {/* 3. Moon emotional field */}
+        {/* 2. Moon emotional field */}
         {moonHouse && (
           <div>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">Where You Feel It Most</p>
             <p className="text-sm text-foreground leading-relaxed">
-              The Moon in <strong>{analysis.moonSign}</strong> in the <strong>{moonHouse}{moonHouse === 1 ? 'st' : moonHouse === 2 ? 'nd' : moonHouse === 3 ? 'rd' : 'th'} house</strong> reveals where your emotional attention and daily experience will be most intense: {MOON_HOUSE_THEMES[moonHouse] || `house ${moonHouse} themes`}. Your emotional needs this year are filtered through {analysis.moonSign} — {blending?.releasing ? `meaning patterns like ${blending.releasing} are active in your inner world` : 'shaping how you process and react to everything'}.
+              The Moon in <strong>{analysis.moonSign}</strong> in the <strong>{moonHouse}{moonHouse === 1 ? 'st' : moonHouse === 2 ? 'nd' : moonHouse === 3 ? 'rd' : 'th'} house</strong> reveals where your emotional attention and daily experience will be most intense: {MOON_HOUSE_THEMES[moonHouse] || `house ${moonHouse} themes`}. Your emotional needs this year are filtered through {analysis.moonSign} — {blending?.releasing ? `meaning patterns around ${blending.releasing} are active in your inner world` : 'shaping how you process and react to everything'}.
             </p>
           </div>
         )}
 
-        {/* 4. Aspect catalyst */}
-        {aspectNarrative && topAspect && (
+        {/* 3. SR Moon Phase tone */}
+        {currentEntry && (
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">Emotional Tone of the Year</p>
+            <p className="text-sm text-foreground leading-relaxed">
+              The SR Moon Phase is <strong>{currentEntry.phase}</strong> ({currentEntry.phaseAngle}° separation), which sets the year's emotional undertone toward {cycleStageText}.
+            </p>
+          </div>
+        )}
+
+        {/* 4. Aspect catalyst — skip Sun-Sun */}
+        {aspectNarrative && topAspect && !(topAspect.planet1 === 'Sun' && topAspect.planet2 === 'Sun') && (
           <div>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">What Adds Momentum</p>
             <p className="text-sm text-foreground leading-relaxed">
@@ -170,7 +166,7 @@ export function StoryOfTheYear({ analysis, natalChart, srChart }: Props) {
         <div className="border-t border-border pt-4">
           <p className="text-[10px] uppercase tracking-widest text-primary mb-1.5">The Year in One Sentence</p>
           <p className="text-base font-serif text-foreground leading-relaxed">
-            A {currentEntry.cycleStage.toLowerCase()} year centered on {SUN_HOUSE_THEMES[sunHouse]?.split(',')[0] || 'growth'}{moonHouse ? `, felt most deeply through ${MOON_HOUSE_THEMES[moonHouse]?.split('—')[0]?.trim() || 'emotional processing'}` : ''}{aspectNarrative ? `, catalyzed by the ${topAspect!.type.toLowerCase()} between ${topAspect!.planet1} and ${topAspect!.planet2}` : ''}.
+            A {currentEntry?.phase ? `${currentEntry.phase} ` : ''}{currentEntry?.cycleStage ? `(${currentEntry.cycleStage.toLowerCase()}) ` : ''}year focused on {SUN_HOUSE_THEMES[sunHouse]?.split(',')[0]?.toLowerCase() || 'growth'}{moonHouse ? `, with emotional energy concentrated in ${MOON_HOUSE_THEMES[moonHouse]?.split('—')[0]?.trim()?.toLowerCase() || 'inner processing'}` : ''}{topAspect && !(topAspect.planet1 === 'Sun' && topAspect.planet2 === 'Sun') ? `, sharpened by the ${topAspect.type.toLowerCase()} between ${topAspect.planet1} and ${topAspect.planet2}` : ''}.
           </p>
           {topThemes.length >= 2 && (
             <p className="text-sm text-muted-foreground leading-relaxed mt-3">
