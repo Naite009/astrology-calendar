@@ -853,7 +853,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       generatePDFNatalOverlay(ctx, doc, analysis);
 
       // =============================================
-      // ANGLE ACTIVATIONS
+      // ANGLE ACTIVATIONS — clean card layout
       // =============================================
       doc.addPage(); ctx.y = margin;
       ctx.sectionPages.set('PLANETARY ACTIVATIONS', doc.getNumberOfPages());
@@ -867,13 +867,12 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       generatePDFYearPriority(ctx, doc, analysis, natalChart, srChart);
 
       // =============================================
-      // PROFECTION WHEEL
+      // PROFECTION WHEEL — on its own or after priority
       // =============================================
       if (analysis.profectionYear) {
         ctx.checkPage(280);
         ctx.sectionPages.set('PROFECTION WHEEL', doc.getNumberOfPages());
         drawProfectionWheel(ctx, doc, analysis.profectionYear.age, analysis.profectionYear.houseNumber, analysis.profectionYear.timeLord);
-
 
         // PERSONAL PROFECTION DEEP DIVE
         generateProfectionPersonalSection(ctx, doc,
