@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import { PDFContext } from './pdfContext';
 import { NatalChart } from '@/hooks/useNatalChart';
+import { getNatalPlanetHouse } from '@/lib/houseCalculations';
 import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 
