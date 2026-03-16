@@ -516,8 +516,8 @@ export function generatePDFAngleActivations(
   if (group2.length > 0) {
     ctx.checkPage(80);
     drawGroupHeader(doc, ctx, margin, contentW, INK, GOLD, MUTED,
-      'THIS YEAR\'S PLANETS → YOUR NATAL FRAME',
-      'When a Solar Return planet lands directly on one of your natal angles (ASC, MC, DSC, IC), it injects that planet\'s energy into a foundational area of your life — your identity, career, relationships, or home. This is not subtle.');
+      'THIS YEAR\'S PLANETS TO YOUR NATAL FRAME',
+      'When a Solar Return planet lands directly on one of your natal angles (ASC, MC, DSC, IC), it injects that planet\'s energy into a foundational area of your life -- your identity, career, relationships, or home. This is not subtle.');
     drawActivationCards(doc, ctx, group2.slice(0, 6), margin, contentW, ph, INK, MUTED, GOLD, RULE, CREAM);
   }
 }
