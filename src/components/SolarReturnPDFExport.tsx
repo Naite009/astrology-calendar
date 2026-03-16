@@ -1294,9 +1294,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       }
 
       // =============================================
-      // LORD OF THE YEAR — uses profection Time Lord (the correct Hellenistic concept)
-      // lordOfTheYear is actually the natal chart ruler — a fixed planet, NOT yearly
-      // The true "Lord of the Year" in Hellenistic astrology = profection Time Lord
+      // YOUR TIME LORD + PROFECTION WHEEL — same page
       // =============================================
       if (analysis.profectionYear?.timeLord) {
         doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
@@ -1314,12 +1312,11 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         const tlDignity = (analysis.lordOfTheYear && analysis.lordOfTheYear.planet === tlPlanet) 
           ? analysis.lordOfTheYear.dignity : '';
 
-        // Header — editorial style
+        // Header
         doc.setFont('times', 'bold'); doc.setFontSize(18);
         doc.setTextColor(...ctx.colors.ink);
         doc.text(`${P[tlPlanet] || tlPlanet}`, margin + 8, ctx.y);
         doc.setFont('times', 'normal'); doc.setFontSize(11);
-        doc.setTextColor(...ctx.colors.ink);
         doc.text(`${tlSRSign || '--'} — SR House ${tlSRHouse || '--'}`, margin + 8, ctx.y + 18);
         if (tlDignity) {
           doc.setFont('times', 'italic'); doc.setFontSize(9);
@@ -1334,7 +1331,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         doc.line(margin, ctx.y, margin + contentW, ctx.y);
         ctx.y += 14;
 
-        // Why this planet — link to profection
+        // Why this planet
         ctx.drawCard(doc, () => {
           ctx.writeBold(doc, `Why ${P[tlPlanet] || tlPlanet} Is Your Lord of the Year`, ctx.colors.gold, 11);
           ctx.y += 2;
@@ -1351,54 +1348,28 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           });
         }
 
-        const pm = planetLifeMeanings[tlPlanet];
-        if (pm) {
-          ctx.drawCard(doc, () => {
-            ctx.writeCardSection(doc, 'What It Rules', pm.inYourLife, ctx.colors.gold);
-            ctx.writeCardSection(doc, 'How You Feel It', pm.bodyFeeling, ctx.colors.accentRust);
-          });
-        }
+        // Profection Wheel — on the SAME page as Time Lord
+        ctx.checkPage(280);
+        ctx.sectionPages.set('PROFECTION WHEEL', doc.getNumberOfPages());
+        drawProfectionWheel(ctx, doc, analysis.profectionYear.age, analysis.profectionYear.houseNumber, analysis.profectionYear.timeLord);
 
-        // Where the Lord sits in the SR chart
-        if (tlSRHouse) {
-          ctx.drawCard(doc, () => {
-            ctx.writeBold(doc, `${P[tlPlanet] || tlPlanet} in SR House ${tlSRHouse} — Where the Year Plays Out`, ctx.colors.gold, 11);
-            ctx.y += 2;
-            const lordHouseInterp: Record<number, string> = {
-              1: 'The Lord of the Year in your 1st house means YOUR identity, body, and personal direction are the main arena. Every decision this year is filtered through "who am I becoming?" You are visibly the main character.',
-              2: 'The Lord of the Year in your 2nd house directs the year\'s energy toward money, possessions, and self-worth. Financial decisions carry unusual weight. The question: what do you actually value enough to work for?',
-              3: 'The Lord of the Year in your 3rd house channels the year through communication, learning, and your immediate environment. Your words carry more power. Sibling or neighbor dynamics may be unusually significant.',
-              4: 'The Lord of the Year in your 4th house roots this year\'s story in home, family, and emotional foundations. You may move, renovate, or face family dynamics that demand resolution. Build from the inside out.',
-              5: 'The Lord of the Year in your 5th house directs the year toward creativity, romance, children, and self-expression. Joy is not optional — it is the curriculum. Create something. Take an emotional risk.',
-              6: 'The Lord of the Year in your 6th house channels the year through daily routines, health, and work. The mundane IS the meaningful. Your body sends messages. Sustainable systems produce the biggest results.',
-              7: 'The Lord of the Year in your 7th house means partnerships define the year. Relationships — romantic, business, or legal — are where growth happens. The mirror of another person shows you what you cannot see alone.',
-              8: 'The Lord of the Year in your 8th house directs the year toward transformation, shared resources, and psychological depth. Something needs to end so something real can begin. Therapy and deep honesty are productive.',
-              9: 'The Lord of the Year in your 9th house expands the year through travel, education, and philosophical exploration. Your current worldview is too small. Something out there will crack it open.',
-              10: 'The Lord of the Year in your 10th house puts career and public reputation at the center. You are more visible than usual. Professional decisions have outsized impact. Build something the world can see.',
-              11: 'The Lord of the Year in your 11th house channels the year through friendships, community, and collective purpose. Your social circle is being restructured. The quality of your connections determines the quality of your year.',
-              12: 'The Lord of the Year in your 12th house turns the year inward. Solitude, spiritual practice, and unconscious patterns are the focus. Rest, dreams, and inner work are not extras — they are the assignment.',
-            };
-            const hInterp = lordHouseInterp[tlSRHouse!];
-            if (hInterp) ctx.writeBody(doc, hInterp, ctx.colors.bodyText, 10, 14);
-          });
-        }
-
+        // Dignity/retrograde badges — compact
         if (tlDignity === 'Detriment' || tlDignity === 'Fall') {
           ctx.drawCard(doc, () => {
             ctx.writeBold(doc, 'Dignity Warning', ctx.colors.accentRust, 10);
-            ctx.writeBody(doc, `Your Lord of the Year is in ${tlDignity}. This means ${P[tlPlanet] || tlPlanet} is working outside its comfort zone — plans may require more effort, communication needs extra clarity. The growth is deeper and the lessons stick.`, ctx.colors.bodyText, 10);
+            ctx.writeBody(doc, `Your Lord of the Year is in ${tlDignity}. ${P[tlPlanet] || tlPlanet} is working outside its comfort zone — plans may require more effort.`, ctx.colors.bodyText, 10);
           }, ctx.colors.accentRust);
         }
         if (tlDignity === 'Domicile' || tlDignity === 'Exaltation') {
           ctx.drawCard(doc, () => {
             ctx.writeBold(doc, 'Dignity Advantage', ctx.colors.accentGreen, 10);
-            ctx.writeBody(doc, `Your Lord of the Year is in ${tlDignity} — this is ${P[tlPlanet] || tlPlanet} at ${tlDignity === 'Domicile' ? 'full strength, operating in its own sign' : 'peak performance, elevated and supported by sign'}. The year's agenda flows more naturally. ${P[tlPlanet] || tlPlanet}'s themes are expressed with clarity and authority. Results come with less friction.`, ctx.colors.bodyText, 10);
+            ctx.writeBody(doc, `Your Lord of the Year is in ${tlDignity} — ${P[tlPlanet] || tlPlanet} at ${tlDignity === 'Domicile' ? 'full strength' : 'peak performance'}. Results come with less friction.`, ctx.colors.bodyText, 10);
           }, ctx.colors.accentGreen);
         }
         if (tlIsRetro) {
           ctx.drawCard(doc, () => {
             ctx.writeBold(doc, 'Retrograde Effect', ctx.colors.accentRust, 10);
-            ctx.writeBody(doc, `${P[tlPlanet] || tlPlanet} retrograde as Lord of the Year means this year has a built-in "review and revise" quality. Things from the past resurface — old projects, unfinished conversations, former connections. What comes back around deserves a second look. New initiatives may stall until you address what was left incomplete. The retrograde does not block progress — it redirects it through revision.`, ctx.colors.bodyText, 10);
+            ctx.writeBody(doc, `${P[tlPlanet] || tlPlanet} retrograde as Lord of the Year means a built-in "review and revise" quality. Things from the past resurface — old projects, unfinished conversations. New initiatives may stall until you address what was left incomplete.`, ctx.colors.bodyText, 10);
           }, ctx.colors.accentRust);
         }
       }
