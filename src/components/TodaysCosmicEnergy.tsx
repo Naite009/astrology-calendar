@@ -13,6 +13,7 @@ import { buildAspectNarrative, getMoonDispositorChain } from "@/lib/aspectMeanin
 import { getMercuryRetrogrades, getRetrogradeStatus, getAllRetrogradePeriods } from "@/lib/retrogradePatterns";
 import ReactMarkdown from "react-markdown";
 import html2canvas from "html2canvas";
+import { generateCosmicWeatherPDF } from "@/lib/cosmicWeatherPDF";
 import { toast } from "@/hooks/use-toast";
 import { LunarCycleView } from "./LunarCycleView";
 import { useNatalChart, NatalChart } from "@/hooks/useNatalChart";
