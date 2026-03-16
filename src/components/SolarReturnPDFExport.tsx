@@ -681,7 +681,7 @@ export async function generateBirthdayGiftPDF(
     if (majorAspects.length > 0) {
     doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
     ctx.sectionPages.set('KEY ASPECTS', doc.getNumberOfPages());
-    ctx.sectionTitle(doc, 'KEY ASPECTS', 'How Solar Return planets activate your natal chart (within 2 degrees)');
+    ctx.sectionTitle(doc, 'KEY ASPECTS', 'Planet-to-planet contacts between your Solar Return and natal charts (within 2°)');
     for (let i = 0; i < Math.min(majorAspects.length, 10); i++) {
       const asp = majorAspects[i];
       const interp = generateSRtoNatalInterpretation(asp.planet1, asp.planet2, asp.type, asp.orb);
@@ -1398,7 +1398,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         if (majorAspects.length > 0) {
         doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
         ctx.sectionPages.set('KEY ASPECTS', doc.getNumberOfPages());
-        ctx.sectionTitle(doc, 'KEY ASPECTS', 'How Solar Return planets activate your natal chart (within 2 degrees)');
+        ctx.sectionTitle(doc, 'KEY ASPECTS', 'Planet-to-planet contacts between your Solar Return and natal charts (within 2°)');
 
         for (let i = 0; i < Math.min(majorAspects.length, 10); i++) {
           const asp = majorAspects[i];

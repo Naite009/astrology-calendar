@@ -47,7 +47,7 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   sections.push({ title: 'Your Big Three', desc: 'Sun, Moon, and Rising — strengths, shadow, and activation' });
   
   sections.push({ title: 'Lunar Phase Timeline', desc: '29-year developmental cycle with recurring patterns' });
-  sections.push({ title: 'Natal Overlay & Angle Activations', desc: 'How Solar Return placements land in natal houses' });
+  sections.push({ title: 'Natal Overlay & Angle Activations', desc: 'How SR angles (ASC/MC) contact natal planets and vice versa' });
   sections.push({ title: 'Year Priority Engine', desc: 'Life areas ranked by planetary emphasis' });
   if (a.moonSign) sections.push({ title: 'Moon Sign Shift', desc: 'How your emotional processing changes this year' });
   sections.push({ title: 'Natal vs Solar Return', desc: 'Side-by-side comparison of all planet positions' });
@@ -58,7 +58,7 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   sections.push({ title: 'Profection Wheel & Your Profection Year', desc: 'Visual diagram and activated house' });
   if (a.profectionYear) sections.push({ title: 'Key Dates', desc: 'Exact dates when your Time Lord activates natal planets' });
   if (a.saturnFocus || a.nodesFocus) sections.push({ title: 'Saturn & North Node', desc: 'Where you are being tested and growing' });
-  if (a.srToNatalAspects.length > 0) sections.push({ title: 'Key Aspects', desc: 'How Solar Return planets activate your natal chart' });
+  if (a.srToNatalAspects.length > 0) sections.push({ title: 'Key Aspects', desc: 'Planet-to-planet contacts between SR and natal charts' });
   
   if (a.vertex) sections.push({ title: 'Vertex', desc: 'Fated encounters and destined meetings' });
   sections.push({ title: 'Planet Spotlight', desc: 'Deep dive into key planets by house placement' });
