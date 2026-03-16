@@ -416,62 +416,113 @@ export async function generateBirthdayGiftPDF(
       doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
       ctx.sectionPages.set('MOON SHIFT', doc.getNumberOfPages());
       ctx.sectionPages.set('MOON SIGN SHIFT', doc.getNumberOfPages());
-      ctx.sectionTitle(doc, 'MOON SIGN SHIFT', `Emotional recalibration: ${natalMoonSign} --> ${srMoonSignFull}`);
+
+      // Compact single-page header
+      ctx.y += 10;
+      ctx.trackedLabel(doc, 'MOON SIGN SHIFT', margin, ctx.y, { size: 7, charSpace: 3.5 });
+      ctx.y += 8;
+      doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
+      doc.line(margin, ctx.y, margin + contentW, ctx.y);
+      ctx.y += 14;
+
+      doc.setFont('times', 'normal'); doc.setFontSize(22);
+      doc.setTextColor(...ctx.colors.ink);
+      doc.text('Emotional recalibration', margin, ctx.y);
+      ctx.y += 14;
+
+      doc.setFont('times', 'italic'); doc.setFontSize(10);
+      doc.setTextColor(...ctx.colors.muted);
+      doc.text(`${natalMoonSign} --> ${srMoonSignFull}`, margin, ctx.y);
+      ctx.y += 16;
 
       const natalDeep = moonSignDeep[natalMoonSign];
       const srDeep = moonSignDeep[srMoonSignFull];
       const halfW = (contentW - 16) / 2;
+      const colTop = ctx.y;
 
-      ctx.trackedLabel(doc, 'NATAL MOON', margin + 8, ctx.y, { size: 7, charSpace: 3 });
-      ctx.trackedLabel(doc, 'SR MOON', margin + halfW + 24, ctx.y, { size: 7, charSpace: 3 });
-      ctx.y += 14;
+      // Left column
+      ctx.trackedLabel(doc, 'NATAL MOON', margin + 8, ctx.y, { size: 6.5, charSpace: 3 });
+      ctx.trackedLabel(doc, 'SOLAR RETURN MOON', margin + halfW + 24, ctx.y, { size: 6.5, charSpace: 3 });
+      ctx.y += 12;
 
       doc.setFont('times', 'bold'); doc.setFontSize(14);
       doc.setTextColor(...ctx.colors.ink);
       doc.text(natalMoonSign.toUpperCase(), margin + 8, ctx.y);
       doc.text(srMoonSignFull.toUpperCase(), margin + halfW + 24, ctx.y);
-      ctx.y += 14;
+      ctx.y += 12;
 
       doc.setFont('times', 'normal'); doc.setFontSize(8.5); doc.setTextColor(...ctx.colors.ink);
       const natalMoonLines = doc.splitTextToSize(natalDeep?.emotional || '', halfW - 16);
       const srMoonLines = doc.splitTextToSize(srDeep?.emotional || '', halfW - 16);
-      const maxLines = Math.max(natalMoonLines.length, srMoonLines.length);
-      for (let li = 0; li < Math.min(maxLines, 6); li++) {
+      const maxLines = Math.max(Math.min(natalMoonLines.length, 4), Math.min(srMoonLines.length, 4));
+      for (let li = 0; li < maxLines; li++) {
         if (natalMoonLines[li]) doc.text(natalMoonLines[li], margin + 8, ctx.y);
         if (srMoonLines[li]) doc.text(srMoonLines[li], margin + halfW + 24, ctx.y);
-        ctx.y += 11;
+        ctx.y += 10;
       }
       doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
-      doc.line(margin + halfW + 8, ctx.y - maxLines * 11 - 14, margin + halfW + 8, ctx.y);
-      ctx.y += 8;
+      doc.line(margin + halfW + 8, colTop, margin + halfW + 8, ctx.y - 2);
+      ctx.y += 10;
 
       if (natalMoonSign !== srMoonSignFull) {
-        ctx.drawCard(doc, () => {
-          ctx.writeBold(doc, `The Shift: ${natalMoonSign} --> ${srMoonSignFull}`);
-          ctx.y += 2;
-          const specificNarrative = moonShiftNarrative[natalMoonSign]?.[srMoonSignFull];
-          if (specificNarrative) ctx.writeBody(doc, specificNarrative);
-          ctx.y += 4;
-          if (srDeep) {
-            ctx.writeCardSection(doc, 'Body', srDeep.body);
-            ctx.writeCardSection(doc, 'Apply', srDeep.apply);
-          }
-        });
+        const shiftY = ctx.y;
+        const shiftH = 64;
+        doc.setFillColor(...ctx.colors.cardBg);
+        doc.roundedRect(margin, shiftY, contentW, shiftH, 3, 3, 'F');
+        doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.25);
+        doc.roundedRect(margin, shiftY, contentW, shiftH, 3, 3, 'S');
+        doc.setFillColor(...ctx.colors.gold);
+        doc.rect(margin, shiftY, 3, shiftH, 'F');
+
+        let sy = shiftY + 12;
+        doc.setFont('times', 'bold'); doc.setFontSize(10.5); doc.setTextColor(...ctx.colors.ink);
+        doc.text(`The Shift: ${natalMoonSign} --> ${srMoonSignFull}`, margin + 10, sy);
+        sy += 11;
+
+        doc.setFont('times', 'normal'); doc.setFontSize(8.5); doc.setTextColor(...ctx.colors.ink);
+        const specificNarrative = moonShiftNarrative[natalMoonSign]?.[srMoonSignFull] || '';
+        const shiftLines = doc.splitTextToSize(specificNarrative, contentW - 22);
+        for (const line of shiftLines.slice(0, 3)) {
+          doc.text(line, margin + 10, sy);
+          sy += 9;
+        }
+
+        if (srDeep?.body || srDeep?.apply) {
+          sy += 2;
+          doc.setFont('times', 'italic'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.gold);
+          if (srDeep?.body) doc.text(`Body: ${srDeep.body}`, margin + 10, sy);
+          if (srDeep?.apply) doc.text(`Apply: ${srDeep.apply}`, margin + contentW / 2, sy);
+        }
+
+        ctx.y = shiftY + shiftH + 10;
       }
 
-      // Moon aspects — folded into this section
+      // Moon aspects - compact rows so everything stays on one page
       if (analysis.srMoonAspects && analysis.srMoonAspects.length > 0) {
-        ctx.y += 6;
-        ctx.writeBold(doc, 'Moon Aspects This Year');
-        ctx.y += 6;
+        doc.setFont('times', 'bold'); doc.setFontSize(10.5); doc.setTextColor(...ctx.colors.ink);
+        doc.text('Moon Aspects This Year', margin, ctx.y);
+        ctx.y += 10;
+
         for (const asp of analysis.srMoonAspects.slice(0, 4)) {
-          ctx.checkPage(80);
-          ctx.drawCard(doc, () => {
-            doc.setFont('times', 'bold'); doc.setFontSize(9.5); doc.setTextColor(...ctx.colors.ink);
-            doc.text(`Moon ${asp.aspectType} ${P[asp.targetPlanet] || asp.targetPlanet}`, margin + 8, ctx.y);
-            ctx.y += 12;
-            ctx.writeBody(doc, asp.interpretation);
-          });
+          const rowY = ctx.y;
+          const rowH = 24;
+          doc.setFillColor(...ctx.colors.cream);
+          doc.roundedRect(margin, rowY, contentW, rowH, 2.5, 2.5, 'F');
+          doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.2);
+          doc.roundedRect(margin, rowY, contentW, rowH, 2.5, 2.5, 'S');
+          doc.setFillColor(...ctx.colors.gold);
+          doc.rect(margin, rowY, 2.5, rowH, 'F');
+
+          doc.setFont('times', 'bold'); doc.setFontSize(9.5); doc.setTextColor(...ctx.colors.ink);
+          doc.text(`Moon ${asp.aspectType} ${P[asp.targetPlanet] || asp.targetPlanet}`, margin + 9, rowY + 9);
+
+          doc.setFont('times', 'normal'); doc.setFontSize(8); doc.setTextColor(...ctx.colors.muted);
+          const aspectLines = doc.splitTextToSize(asp.interpretation, contentW - 18);
+          for (const line of aspectLines.slice(0, 1)) {
+            doc.text(line, margin + 9, rowY + 18);
+          }
+
+          ctx.y = rowY + rowH + 6;
         }
       }
     }
