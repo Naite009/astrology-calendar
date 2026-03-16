@@ -354,26 +354,26 @@ const ORB = 3;
 
 // ─── Felt-sense narratives for angle activations ────────────────
 const ANGLE_FELT: Record<string, string> = {
-  Ascendant: 'your physical presence, first impressions, and how you instinctively approach new situations. You feel this in your body — posture shifts, energy levels change, and people respond to you differently without knowing why.',
-  Descendant: 'your closest partnerships and how you relate one-on-one. Relationship dynamics feel electric — you attract new connections or existing partnerships undergo visible restructuring.',
-  Midheaven: 'your career, public reputation, and life direction. Professional visibility increases — you feel more exposed, more scrutinized, and more driven toward what you want the world to see.',
-  IC: 'your home, family roots, and emotional foundations. Something shifts at the base of your life — living situations change, family dynamics surface, or your private inner world demands attention.',
+  Ascendant: 'your physical presence, first impressions, and how you instinctively approach new situations. You feel this in your body -- posture shifts, energy levels change, and people respond to you differently without knowing why.',
+  Descendant: 'your closest partnerships and how you relate one-on-one. Relationship dynamics feel electric -- you attract new connections or existing partnerships undergo visible restructuring.',
+  Midheaven: 'your career, public reputation, and life direction. Professional visibility increases -- you feel more exposed, more scrutinized, and more driven toward what you want the world to see.',
+  IC: 'your home, family roots, and emotional foundations. Something shifts at the base of your life -- living situations change, family dynamics surface, or your private inner world demands attention.',
 };
 
 const PLANET_FELT: Record<string, string> = {
   Sun: 'your core identity and sense of purpose. You feel more visible, more yourself, and more aware of whether your daily life matches who you actually are.',
-  Moon: 'your emotional needs and instinctive reactions. Feelings run stronger, intuition sharpens, and your body tells you what your mind hasn\'t caught up to yet.',
+  Moon: 'your emotional needs and instinctive reactions. Feelings run stronger, intuition sharpens, and your body tells you what your mind has not caught up to yet.',
   Mercury: 'your thinking patterns, communication style, and daily information processing. Conversations carry more weight and what you say has consequences.',
   Venus: 'your values, relationships, and what you find beautiful. You feel more attuned to pleasure and more aware of where your relationships need honesty.',
-  Mars: 'your drive, ambition, and how you handle conflict. Energy surges — you feel restless, competitive, or motivated to push through obstacles.',
+  Mars: 'your drive, ambition, and how you handle conflict. Energy surges -- you feel restless, competitive, or motivated to push through obstacles.',
   Jupiter: 'your growth, optimism, and where life feels expansive. Opportunities appear. The danger is overcommitting. The gift is genuine expansion.',
-  Saturn: 'your responsibilities, limits, and long-term structures. You feel the weight of what matters — boundaries and commitments that demand follow-through.',
-  Uranus: 'your need for freedom, originality, and sudden change. Expect the unexpected — disruptions that feel destabilizing but liberating afterward.',
+  Saturn: 'your responsibilities, limits, and long-term structures. You feel the weight of what matters -- boundaries and commitments that demand follow-through.',
+  Uranus: 'your need for freedom, originality, and sudden change. Expect the unexpected -- disruptions that feel destabilizing but liberating afterward.',
   Neptune: 'your intuition, imagination, and where boundaries dissolve. Reality feels softer, dreams are vivid, and clarity takes patience.',
-  Pluto: 'deep transformation and power dynamics. Something hidden surfaces — control patterns, buried emotions, or situations that force you to let go.',
+  Pluto: 'deep transformation and power dynamics. Something hidden surfaces -- control patterns, buried emotions, or situations that force you to let go.',
   'N.Node': 'your soul\'s growth direction. Life events push you toward unfamiliar territory that feels uncomfortable but necessary.',
   NorthNode: 'your soul\'s growth direction. Life events push you toward unfamiliar territory that feels uncomfortable but necessary.',
-  Chiron: 'your deepest wound and greatest healing gift. Old pain resurfaces — not to retraumatize, but to show you how far you\'ve come.',
+  Chiron: 'your deepest wound and greatest healing gift. Old pain resurfaces -- not to retraumatize, but to show you how far you have come.',
 };
 
 const ANGLE_ICON: Record<string, string> = {
