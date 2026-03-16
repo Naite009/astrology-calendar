@@ -13,6 +13,7 @@ import { buildAspectNarrative, getMoonDispositorChain } from "@/lib/aspectMeanin
 import { getMercuryRetrogrades, getRetrogradeStatus, getAllRetrogradePeriods } from "@/lib/retrogradePatterns";
 import ReactMarkdown from "react-markdown";
 import html2canvas from "html2canvas";
+import { generateCosmicWeatherPDF } from "@/lib/cosmicWeatherPDF";
 import { toast } from "@/hooks/use-toast";
 import { LunarCycleView } from "./LunarCycleView";
 import { useNatalChart, NatalChart } from "@/hooks/useNatalChart";
@@ -1083,26 +1084,39 @@ Keep the tone professional, insightful, and practically applicable.`,
   };
 
   const handleDownloadPDF = async () => {
-    if (!contentRef.current) return;
-    
+    const insight = selectedWeekDay === 0 ? cosmicData?.insight : weekDayInsights[selectedWeekDay];
+    if (!insight) return;
+
     try {
-      toast({ title: "Generating image...", description: "Please wait a moment." });
-      
-      const canvas = await html2canvas(contentRef.current, {
-        backgroundColor: '#ffffff',
-        scale: 2,
-        logging: false,
-        useCORS: true,
+      toast({ title: "Generating PDF...", description: "Please wait a moment." });
+
+      const moonSignLabel = normalizeSignLabel(
+        (currentMoonSign || planets.moon?.sign || 'Unknown').toString()
+      );
+      const sunSignLabel = normalizeSignLabel(
+        (currentPlanets?.sun?.sign || planets.sun?.sign || 'Unknown').toString()
+      );
+
+      generateCosmicWeatherPDF({
+        date: selectedWeekDay === 0
+          ? todayStr
+          : (weekForecast[selectedWeekDay]?.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) || todayStr),
+        personName: selectedChart?.name || undefined,
+        sunSign: selectedChart?.planets?.Sun?.sign || undefined,
+        moonSign: selectedChart?.planets?.Moon?.sign || undefined,
+        risingSign: selectedChart?.houseCusps?.house1?.sign || selectedChart?.planets?.Ascendant?.sign || undefined,
+        moonPhase: cosmicData?.moonPhase || moonPhase.phaseName,
+        moonPosition: `${ZODIAC_SYMBOLS[moonSignLabel] || ''} ${moonSignLabel} ${formatDegreeMinutes(currentMoonDegree, currentMoonMinutes)}`,
+        sunPosition: `${ZODIAC_SYMBOLS[sunSignLabel] || ''} ${sunSignLabel}`,
+        illumination: Math.round(moonPhase.illumination * 100),
+        insight,
+        voiceStyle,
+        isPersonalized: !!selectedChart,
       });
-      
-      const link = document.createElement('a');
-      link.download = `cosmic-weather-${new Date().toISOString().split('T')[0]}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-      
-      toast({ title: "Downloaded!", description: "Your cosmic weather has been saved." });
+
+      toast({ title: "PDF downloaded!", description: selectedChart ? `Personalized for ${selectedChart.name}` : "Your cosmic weather has been saved." });
     } catch (err) {
-      console.error('Download error:', err);
+      console.error('PDF error:', err);
       toast({ title: "Download failed", description: "Please try again.", variant: "destructive" });
     }
   };
@@ -1670,14 +1684,16 @@ Keep the tone professional, insightful, and practically applicable.`,
                           Share
                         </Button>
                         <Button
-                          variant="outline"
+                          variant={selectedChart ? "default" : "outline"}
                           size="sm"
                           onClick={handleDownloadPDF}
-                          disabled={!cosmicData}
-                          className="text-muted-foreground hover:text-foreground"
+                          disabled={!cosmicData && !weekDayInsights[selectedWeekDay]}
+                          className={selectedChart 
+                            ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                            : "text-muted-foreground hover:text-foreground"}
                         >
                           <Download className="h-4 w-4 mr-2" />
-                          Export
+                          {selectedChart ? `Export PDF for ${selectedChart.name}` : 'Export PDF'}
                         </Button>
                         <Button
                           variant="ghost"
