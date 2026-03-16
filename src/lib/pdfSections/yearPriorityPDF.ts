@@ -507,8 +507,8 @@ export function generatePDFAngleActivations(
   // ─── GROUP 1: This Year's Frame → Your Natal Planets ──────────
   if (group1.length > 0) {
     drawGroupHeader(doc, ctx, margin, contentW, INK, GOLD, MUTED,
-      'THIS YEAR\'S FRAME → YOUR NATAL PLANETS',
-      'The Solar Return Ascendant and Midheaven act like a lens placed over your birth chart. When they land on one of your natal planets, that planet becomes a central character in your year — louder, more visible, impossible to ignore.');
+      'THIS YEAR\'S FRAME TO YOUR NATAL PLANETS',
+      'The Solar Return Ascendant and Midheaven act like a lens placed over your birth chart. When they land on one of your natal planets, that planet becomes a central character in your year -- louder, more visible, impossible to ignore.');
     drawActivationCards(doc, ctx, group1.slice(0, 6), margin, contentW, ph, INK, MUTED, GOLD, RULE, CREAM);
   }
 
