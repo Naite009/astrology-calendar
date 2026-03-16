@@ -417,12 +417,12 @@ export function generatePDFAngleActivations(
   ctx.y += 12;
 
   // ─── Explanatory intro ─────────────────────────────────────────
-  doc.setFont('times', 'italic'); doc.setFontSize(9);
+  doc.setFont('times', 'italic'); doc.setFontSize(10);
   doc.setTextColor(...MUTED);
   const intro = 'The previous section showed where Solar Return planets land in your natal houses -- like guests arriving in different rooms of your life. This section is different. Angles are not planets. They are the structural frame of the chart itself -- the four compass points (Ascendant, Midheaven, Descendant, IC) that define how you meet the world, who you attract, what you are building, and where you retreat. When an angle from one chart makes an exact aspect to a planet in the other, it creates a direct, visceral activation -- something you feel immediately, not abstractly.';
   const introLines: string[] = doc.splitTextToSize(intro, contentW);
-  for (const l of introLines) { doc.text(l, margin, ctx.y); ctx.y += 11; }
-  ctx.y += 6;
+  for (const l of introLines) { doc.text(l, margin, ctx.y); ctx.y += 12; }
+  ctx.y += 8;
 
   // ─── Compute activations ──────────────────────────────────────
   interface Act { label: string; srBody: string; natalBody: string; aspectName: string; aspectGlyph: string; aspectKeyword: string; orb: number; narrative: string; priority: number; group: 'angle-to-planet' | 'planet-to-angle'; }
