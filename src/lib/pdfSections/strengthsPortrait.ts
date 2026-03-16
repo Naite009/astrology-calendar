@@ -260,16 +260,16 @@ export function generateStrengthsPortrait(
     const srTagText = srParts.join(', ');
 
     if (srTagText) {
+      // Position "THIS YEAR" label and value left of center, not right-aligned
+      const srLabelX = margin + contentW * 0.5;
       doc.setFont('times', 'bold'); doc.setFontSize(6);
       doc.setTextColor(...GOLD);
       doc.setCharSpace(2);
-      const srLabelX = pw - margin - rightPad;
-      doc.text('THIS YEAR', srLabelX, stripY + 12, { align: 'right' });
+      doc.text('THIS YEAR', srLabelX, stripY + 12);
       doc.setCharSpace(0);
       doc.setFont('times', 'bold'); doc.setFontSize(11);
       doc.setTextColor(...GOLD);
-      const srLines = doc.splitTextToSize(srTagText, maxRightW);
-      doc.text(srLines[0], srLabelX, stripY + 28, { align: 'right' });
+      doc.text(srTagText, srLabelX, stripY + 28);
     }
 
     // Shift arrow line
