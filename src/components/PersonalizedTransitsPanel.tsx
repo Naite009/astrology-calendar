@@ -532,7 +532,7 @@ ${doubleSignedInfo}
 TODAY'S PERSONAL TRANSITS:
 **MOON HOUSE PLACEMENT (CALCULATED FROM THEIR EXACT HOUSE CUSPS - DO NOT OVERRIDE):**
 - Moon at ${moonDegree.toFixed(1)}° ${moonSign} is in their ${moonHouse}${moonHouse === 1 ? 'ST' : moonHouse === 2 ? 'ND' : moonHouse === 3 ? 'RD' : 'TH'} HOUSE
-- Their ${moonHouse}${moonHouse === 1 ? 'st' : moonHouse === 2 ? 'nd' : moonHouse === 3 ? 'rd' : 'th'} house cusp is at ${chart.houseCusps?.house1?.degree || 0}° ${chart.houseCusps?.house1?.sign || ''} (House 1), so ${moonDegree.toFixed(0)}° ${moonSign} falls in house ${moonHouse}
+- Their ${moonHouse}${moonHouse === 1 ? 'st' : moonHouse === 2 ? 'nd' : moonHouse === 3 ? 'rd' : 'th'} house cusp is at ${chart.houseCusps?.[`house${moonHouse}` as keyof typeof chart.houseCusps]?.degree || 0}° ${chart.houseCusps?.[`house${moonHouse}` as keyof typeof chart.houseCusps]?.sign || ''}, so ${moonDegree.toFixed(0)}° ${moonSign} falls in house ${moonHouse}
 ${moonInIntercepted ? '- THIS IS AN INTERCEPTED SIGN IN THEIR CHART - pay special attention!' : ''}
 
 - Moon aspects to natal planets: ${moonAspectsList || 'none major'}
