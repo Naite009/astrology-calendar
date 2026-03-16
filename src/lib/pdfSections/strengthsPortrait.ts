@@ -339,9 +339,10 @@ export function generateStrengthsPortrait(
   };
 
   // ═══ SUN ═══
+  const sunNatalHouse = getNatalPlanetHouse('Sun', natalChart);
   if (sunSign && sunStrength[sunSign]) {
     renderPlanet(
-      'Sun', sunSign, srSunSign, srSunHouse,
+      'Sun', sunSign, sunNatalHouse, srSunSign, srSunHouse,
       sunStrength[sunSign], sunShadow[sunSign] || '',
       srSunHouse ? (srSunHouseBody[srSunHouse] || '') : '',
       srSunHouse ? (srMoonHouseBody[srSunHouse] || '') : '',
@@ -349,9 +350,10 @@ export function generateStrengthsPortrait(
   }
 
   // ═══ MOON ═══
+  const moonNatalHouse = getNatalPlanetHouse('Moon', natalChart);
   if (moonSign && moonStrength[moonSign]) {
     renderPlanet(
-      'Moon', moonSign, srMoonSign, srMoonHouse,
+      'Moon', moonSign, moonNatalHouse, srMoonSign, srMoonHouse,
       moonStrength[moonSign], moonShadow[moonSign] || '',
       srMoonBody[srMoonSign] || '',
       srMoonHouse ? (srMoonHouseBody[srMoonHouse] || '') : '',
@@ -359,9 +361,10 @@ export function generateStrengthsPortrait(
   }
 
   // ═══ RISING ═══
+  // Rising/Ascendant is house 1 by definition
   if (risingSign && risingStrength[risingSign]) {
     renderPlanet(
-      'Rising', risingSign, srAscSign, undefined,
+      'Rising', risingSign, 1, srAscSign, undefined,
       risingStrength[risingSign], risingShadow[risingSign] || '',
       srRisingBody[srAscSign] || '', '',
     );
