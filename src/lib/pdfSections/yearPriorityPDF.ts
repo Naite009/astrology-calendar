@@ -344,11 +344,11 @@ const toAbsDeg = (pos: { sign: string; degree: number; minutes?: number } | unde
 };
 
 const ASPECT_DEFS = [
-  { name: 'conjunct', angle: 0, glyph: '☌', keyword: 'merges with' },
-  { name: 'opposite', angle: 180, glyph: '☍', keyword: 'confronts' },
-  { name: 'square', angle: 90, glyph: '□', keyword: 'challenges' },
-  { name: 'trine', angle: 120, glyph: '△', keyword: 'flows with' },
-  { name: 'sextile', angle: 60, glyph: '⚹', keyword: 'supports' },
+  { name: 'conjunct', angle: 0, glyph: 'conj', keyword: 'merges with' },
+  { name: 'opposite', angle: 180, glyph: 'opp', keyword: 'confronts' },
+  { name: 'square', angle: 90, glyph: 'sq', keyword: 'challenges' },
+  { name: 'trine', angle: 120, glyph: 'tri', keyword: 'flows with' },
+  { name: 'sextile', angle: 60, glyph: 'sxt', keyword: 'supports' },
 ];
 const ORB = 3;
 
