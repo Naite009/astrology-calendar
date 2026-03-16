@@ -1064,6 +1064,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         const hasHemisphere = !!analysis.hemisphericEmphasis;
         
         if (hasElements || hasHemisphere) {
+          doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
           ctx.sectionTitle(doc, 'ELEMENT, MODALITY & ENERGY');
           ctx.sectionPages.set('ELEMENT AND MODALITY', doc.getNumberOfPages());
           if (hasHemisphere) ctx.sectionPages.set('WHERE YOUR ENERGY LIVES', doc.getNumberOfPages());
