@@ -535,10 +535,10 @@ function drawGroupHeader(
   ctx.y += 8;
 
   // Group title
-  doc.setFont('times', 'bold'); doc.setFontSize(11);
+  doc.setFont('times', 'bold'); doc.setFontSize(13);
   doc.setTextColor(...INK);
   doc.text(title, margin, ctx.y);
-  ctx.y += 10;
+  ctx.y += 12;
 
   // Group description
   doc.setFont('times', 'normal'); doc.setFontSize(8.5);
