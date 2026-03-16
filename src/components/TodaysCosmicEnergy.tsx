@@ -1060,7 +1060,7 @@ Keep the tone professional, insightful, and practically applicable.`,
       setCurrentPlanets(planets);
       setCurrentMoonDegree(planets.moon?.rawDegree || planets.moon?.degree || 0);
       setCurrentMoonMinutes(planets.moon?.minutes || 0);
-      setCurrentMoonSign(planets.moon?.sign || 'Unknown');
+      setCurrentMoonSign(planets.moon?.signName || planets.moon?.sign || 'Unknown');
       const voc = getVOCMoonDetails(new Date());
       setVocInfo(voc);
       

@@ -6,9 +6,22 @@ const ZODIAC_SIGNS = [
   'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
 ];
 
+// Glyph-to-name map for normalizing sign inputs
+const GLYPH_TO_NAME: Record<string, string> = {
+  '♈': 'Aries', '♉': 'Taurus', '♊': 'Gemini', '♋': 'Cancer',
+  '♌': 'Leo', '♍': 'Virgo', '♎': 'Libra', '♏': 'Scorpio',
+  '♐': 'Sagittarius', '♑': 'Capricorn', '♒': 'Aquarius', '♓': 'Pisces'
+};
+
+const normalizeSign = (sign: string): string => {
+  const trimmed = (sign || '').trim();
+  return GLYPH_TO_NAME[trimmed] || trimmed;
+};
+
 // Convert sign + degree to absolute longitude (0-360)
 export const signDegreesToLongitude = (sign: string, degree: number, minutes: number = 0): number => {
-  const signIndex = ZODIAC_SIGNS.indexOf(sign);
+  const normalized = normalizeSign(sign);
+  const signIndex = ZODIAC_SIGNS.indexOf(normalized);
   if (signIndex === -1) return 0;
 
   // Defensive coercion: some persisted chart data may have degree/minutes as strings.
