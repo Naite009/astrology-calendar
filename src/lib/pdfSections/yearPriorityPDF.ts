@@ -288,8 +288,8 @@ export function generatePDFNatalOverlay(
   // Compact two-column layout — smaller cards, no glyphs, plain text
   const col2Gap = 10;
   const col2W = (ctx.contentW - col2Gap) / 2;
-  const cardH = 68;
-  const rowGap = 8;
+  const cardH = 52;
+  const rowGap = 5;
 
   for (let i = 0; i < points.length; i += 2) {
     const leftP = points[i];
