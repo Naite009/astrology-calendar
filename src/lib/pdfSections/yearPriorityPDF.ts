@@ -541,11 +541,11 @@ function drawGroupHeader(
   ctx.y += 12;
 
   // Group description
-  doc.setFont('times', 'normal'); doc.setFontSize(8.5);
+  doc.setFont('times', 'normal'); doc.setFontSize(9.5);
   doc.setTextColor(...MUTED);
   const descLines: string[] = doc.splitTextToSize(description, contentW);
-  for (const l of descLines) { doc.text(l, margin, ctx.y); ctx.y += 10; }
-  ctx.y += 6;
+  for (const l of descLines) { doc.text(l, margin, ctx.y); ctx.y += 11; }
+  ctx.y += 8;
 }
 
 function drawActivationCards(
