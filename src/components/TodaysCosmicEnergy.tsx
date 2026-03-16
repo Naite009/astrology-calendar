@@ -1684,14 +1684,16 @@ Keep the tone professional, insightful, and practically applicable.`,
                           Share
                         </Button>
                         <Button
-                          variant="outline"
+                          variant={selectedChart ? "default" : "outline"}
                           size="sm"
                           onClick={handleDownloadPDF}
-                          disabled={!cosmicData}
-                          className="text-muted-foreground hover:text-foreground"
+                          disabled={!cosmicData && !weekDayInsights[selectedWeekDay]}
+                          className={selectedChart 
+                            ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                            : "text-muted-foreground hover:text-foreground"}
                         >
                           <Download className="h-4 w-4 mr-2" />
-                          Export
+                          {selectedChart ? `Export PDF for ${selectedChart.name}` : 'Export PDF'}
                         </Button>
                         <Button
                           variant="ghost"
