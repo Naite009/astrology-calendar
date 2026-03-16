@@ -56,10 +56,10 @@ export function generatePlanetGallery(
 
   // 3 columns, calculate row height to fit all on available space
   const cols = 3;
-  const gapX = 8;
-  const gapY = 8;
+  const gapX = 6;
+  const gapY = 5;
   const cellW = (contentW - gapX * (cols - 1)) / cols;
-  const imgSize = 28;
+  const imgSize = 24;
   
   const totalRows = Math.ceil(Math.min(planets.length, 12) / cols);
   const availableH = ph - ctx.y - margin - 10;
