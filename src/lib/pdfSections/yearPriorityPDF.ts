@@ -344,36 +344,40 @@ const toAbsDeg = (pos: { sign: string; degree: number; minutes?: number } | unde
 };
 
 const ASPECT_DEFS = [
-  { name: 'conjunct', angle: 0, glyph: 'conj' },
-  { name: 'opposite', angle: 180, glyph: 'opp' },
-  { name: 'square', angle: 90, glyph: 'sq' },
-  { name: 'trine', angle: 120, glyph: 'tri' },
-  { name: 'sextile', angle: 60, glyph: 'sxt' },
+  { name: 'conjunct', angle: 0, glyph: '☌', keyword: 'merges with' },
+  { name: 'opposite', angle: 180, glyph: '☍', keyword: 'confronts' },
+  { name: 'square', angle: 90, glyph: '□', keyword: 'challenges' },
+  { name: 'trine', angle: 120, glyph: '△', keyword: 'flows with' },
+  { name: 'sextile', angle: 60, glyph: '⚹', keyword: 'supports' },
 ];
 const ORB = 3;
 
 // ─── Felt-sense narratives for angle activations ────────────────
 const ANGLE_FELT: Record<string, string> = {
   Ascendant: 'your physical presence, first impressions, and how you instinctively approach new situations. You feel this in your body — posture shifts, energy levels change, and people respond to you differently without knowing why.',
-  Descendant: 'your closest partnerships and how you relate one-on-one. Relationship dynamics feel electric — you attract new connections or existing partnerships undergo visible restructuring. Compromise and projection patterns surface.',
+  Descendant: 'your closest partnerships and how you relate one-on-one. Relationship dynamics feel electric — you attract new connections or existing partnerships undergo visible restructuring.',
   Midheaven: 'your career, public reputation, and life direction. Professional visibility increases — you feel more exposed, more scrutinized, and more driven toward what you want the world to see.',
-  IC: 'your home, family roots, and emotional foundations. Something shifts at the base of your life — living situations change, family dynamics surface, or your private inner world demands attention you cannot postpone.',
+  IC: 'your home, family roots, and emotional foundations. Something shifts at the base of your life — living situations change, family dynamics surface, or your private inner world demands attention.',
 };
 
 const PLANET_FELT: Record<string, string> = {
   Sun: 'your core identity and sense of purpose. You feel more visible, more yourself, and more aware of whether your daily life matches who you actually are.',
   Moon: 'your emotional needs and instinctive reactions. Feelings run stronger, intuition sharpens, and your body tells you what your mind hasn\'t caught up to yet.',
-  Mercury: 'your thinking patterns, communication style, and daily information processing. Conversations carry more weight, ideas come faster, and what you say (or don\'t say) has consequences.',
+  Mercury: 'your thinking patterns, communication style, and daily information processing. Conversations carry more weight and what you say has consequences.',
   Venus: 'your values, relationships, and what you find beautiful. You feel more attuned to pleasure and more aware of where your relationships need honesty.',
-  Mars: 'your drive, ambition, and how you handle conflict. Energy surges — you feel restless, competitive, or motivated to push through obstacles that previously stopped you.',
+  Mars: 'your drive, ambition, and how you handle conflict. Energy surges — you feel restless, competitive, or motivated to push through obstacles.',
   Jupiter: 'your growth, optimism, and where life feels expansive. Opportunities appear. The danger is overcommitting. The gift is genuine expansion.',
-  Saturn: 'your responsibilities, limits, and long-term structures. You feel the weight of what matters — bones, boundaries, and commitments that demand follow-through.',
-  Uranus: 'your need for freedom, originality, and sudden change. Expect the unexpected — disruptions that feel destabilizing in the moment but liberating afterward.',
-  Neptune: 'your intuition, imagination, and where boundaries dissolve. Reality feels softer, dreams are vivid, and the line between what you want and what is actually happening blurs.',
-  Pluto: 'deep transformation and power dynamics. Something hidden surfaces — control patterns, buried emotions, or situations that force you to let go of what you\'ve outgrown.',
-  'N.Node': 'your soul\'s growth direction. Life events push you toward unfamiliar territory that feels uncomfortable but necessary — the discomfort is the signal you\'re growing.',
+  Saturn: 'your responsibilities, limits, and long-term structures. You feel the weight of what matters — boundaries and commitments that demand follow-through.',
+  Uranus: 'your need for freedom, originality, and sudden change. Expect the unexpected — disruptions that feel destabilizing but liberating afterward.',
+  Neptune: 'your intuition, imagination, and where boundaries dissolve. Reality feels softer, dreams are vivid, and clarity takes patience.',
+  Pluto: 'deep transformation and power dynamics. Something hidden surfaces — control patterns, buried emotions, or situations that force you to let go.',
+  'N.Node': 'your soul\'s growth direction. Life events push you toward unfamiliar territory that feels uncomfortable but necessary.',
   NorthNode: 'your soul\'s growth direction. Life events push you toward unfamiliar territory that feels uncomfortable but necessary.',
-  Chiron: 'your deepest wound and greatest healing gift. Old pain resurfaces — not to retraumatize, but to show you how far you\'ve come and where compassion still needs to reach.',
+  Chiron: 'your deepest wound and greatest healing gift. Old pain resurfaces — not to retraumatize, but to show you how far you\'ve come.',
+};
+
+const ANGLE_ICON: Record<string, string> = {
+  Ascendant: 'ASC', Descendant: 'DSC', Midheaven: 'MC', IC: 'IC',
 };
 
 export function generatePDFAngleActivations(
@@ -381,18 +385,48 @@ export function generatePDFAngleActivations(
   natalChart: NatalChart, srChart: SolarReturnChart,
   maxOrb: number = ORB,
 ) {
-  ctx.sectionTitle(doc, 'ANGLE ACTIVATIONS', 'How Solar Return angles (ASC, MC, DSC, IC) connect to your natal planets — and vice versa');
+  const { pw, margin, contentW } = ctx;
+  const ph = doc.internal.pageSize.getHeight();
+  const INK: [number, number, number] = [58, 54, 50];
+  const MUTED: [number, number, number] = [130, 125, 118];
+  const GOLD: [number, number, number] = [184, 150, 62];
+  const RULE: [number, number, number] = [200, 195, 188];
+  const WHITE: [number, number, number] = [255, 255, 255];
+  const CREAM: [number, number, number] = [252, 250, 245];
 
-  interface Act { label: string; aspectName: string; orb: number; narrative: string; priority: number; }
+  // ─── New page with section title ───────────────────────────────
+  doc.addPage();
+  ctx.y = margin;
+  doc.setFillColor(...WHITE);
+  doc.rect(0, 0, pw, ph, 'F');
+
+  ctx.y += 12;
+  doc.setFont('times', 'bold'); doc.setFontSize(7);
+  doc.setTextColor(...GOLD);
+  doc.setCharSpace(4);
+  doc.text('ANGLE ACTIVATIONS', margin, ctx.y);
+  doc.setCharSpace(0);
+  ctx.y += 5;
+  doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+  doc.line(margin, ctx.y, pw - margin, ctx.y);
+  ctx.y += 14;
+
+  doc.setFont('times', 'normal'); doc.setFontSize(22);
+  doc.setTextColor(...INK);
+  doc.text('Where Your Year Hits Hardest', margin, ctx.y);
+  ctx.y += 10;
+
+  // ─── Explanatory intro ─────────────────────────────────────────
+  doc.setFont('times', 'italic'); doc.setFontSize(9);
+  doc.setTextColor(...MUTED);
+  const intro = 'The previous section showed where Solar Return planets land in your natal houses — like guests arriving in different rooms of your life. This section is different. Angles are not planets. They are the structural frame of the chart itself — the four compass points (Ascendant, Midheaven, Descendant, IC) that define how you meet the world, who you attract, what you\'re building, and where you retreat. When an angle from one chart makes an exact aspect to a planet in the other, it creates a direct, visceral activation — something you feel immediately, not abstractly.';
+  const introLines: string[] = doc.splitTextToSize(intro, contentW);
+  for (const l of introLines) { doc.text(l, margin, ctx.y); ctx.y += 11; }
+  ctx.y += 6;
+
+  // ─── Compute activations ──────────────────────────────────────
+  interface Act { label: string; srBody: string; natalBody: string; aspectName: string; aspectGlyph: string; aspectKeyword: string; orb: number; narrative: string; priority: number; group: 'angle-to-planet' | 'planet-to-angle'; }
   const allActivations: Act[] = [];
-
-  const buildNarrative = (srBody: string, aspectName: string, natalBody: string, natalKey: string, srKey: string): string => {
-    const feltTarget = PLANET_FELT[natalKey] || ANGLE_FELT[natalBody] || '';
-    const feltSource = PLANET_FELT[srKey] || ANGLE_FELT[srBody] || '';
-    if (feltTarget) return `Activates ${feltTarget}`;
-    if (feltSource) return `Channels ${feltSource}`;
-    return `SR ${srBody} ${aspectName}s natal ${natalBody}.`;
-  };
 
   // SR angles
   const srAngles: { name: string; deg: number | null }[] = [];
@@ -408,7 +442,7 @@ export function generatePDFAngleActivations(
 
   const planetNames = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','NorthNode','Chiron'];
 
-  // SR angles → natal planets
+  // Group 1: SR angles → natal planets
   for (const angle of srAngles) {
     if (angle.deg === null) continue;
     for (const pName of planetNames) {
@@ -420,13 +454,22 @@ export function generatePDFAngleActivations(
         const orb = Math.abs(diff - asp.angle);
         if (orb <= maxOrb) {
           const dp = pName === 'NorthNode' ? 'N.Node' : pName;
-          allActivations.push({ label: `SR ${angle.name} ${asp.name} Natal ${dp}`, aspectName: asp.name, orb: Math.round(orb * 10) / 10, narrative: buildNarrative(angle.name, asp.name, dp, pName, angle.name), priority: asp.angle === 0 ? 1 : 2 });
+          const felt = PLANET_FELT[pName] || '';
+          allActivations.push({
+            label: `SR ${angle.name} ${asp.glyph} Natal ${dp}`,
+            srBody: angle.name, natalBody: dp,
+            aspectName: asp.name, aspectGlyph: asp.glyph, aspectKeyword: asp.keyword,
+            orb: Math.round(orb * 10) / 10,
+            narrative: felt ? `The year's structural frame activates ${felt}` : `SR ${angle.name} ${asp.keyword} natal ${dp}.`,
+            priority: asp.angle === 0 ? 1 : 2,
+            group: 'angle-to-planet',
+          });
         }
       }
     }
   }
 
-  // SR planets → natal angles
+  // Group 2: SR planets → natal angles
   for (const pName of planetNames) {
     const srPos = srChart.planets[pName as keyof typeof srChart.planets];
     if (!srPos) continue;
@@ -438,38 +481,137 @@ export function generatePDFAngleActivations(
         const orb = Math.abs(diff - asp.angle);
         if (orb <= maxOrb) {
           const dp = pName === 'NorthNode' ? 'N.Node' : pName;
-          allActivations.push({ label: `SR ${dp} ${asp.name} Natal ${angle.name}`, aspectName: asp.name, orb: Math.round(orb * 10) / 10, narrative: buildNarrative(dp, asp.name, angle.name, angle.name, pName), priority: asp.angle === 0 ? 1 : 3 });
+          const felt = ANGLE_FELT[angle.name] || '';
+          allActivations.push({
+            label: `SR ${dp} ${asp.glyph} Natal ${angle.name}`,
+            srBody: dp, natalBody: angle.name,
+            aspectName: asp.name, aspectGlyph: asp.glyph, aspectKeyword: asp.keyword,
+            orb: Math.round(orb * 10) / 10,
+            narrative: felt ? `This year's ${dp} energy directly reshapes ${felt}` : `SR ${dp} ${asp.keyword} natal ${angle.name}.`,
+            priority: asp.angle === 0 ? 1 : 3,
+            group: 'planet-to-angle',
+          });
         }
       }
     }
   }
 
-  allActivations.sort((a, b) => a.priority - b.priority || a.orb - b.orb);
+  const group1 = allActivations.filter(a => a.group === 'angle-to-planet').sort((a, b) => a.priority - b.priority || a.orb - b.orb);
+  const group2 = allActivations.filter(a => a.group === 'planet-to-angle').sort((a, b) => a.priority - b.priority || a.orb - b.orb);
 
-  if (allActivations.length === 0) {
+  if (group1.length === 0 && group2.length === 0) {
     ctx.writeBody(doc, 'No significant angle contacts detected within the orb.');
     return;
   }
 
-  // Clean card-based layout — one card per activation, readable
-  const toShow = allActivations.slice(0, 12);
-  for (const act of toShow) {
-    ctx.checkPage(70);
-    ctx.drawCard(doc, () => {
-      doc.setFont('times', 'bold'); doc.setFontSize(10);
-      doc.setTextColor(...ctx.colors.ink);
-      doc.text(act.label, ctx.margin + 8, ctx.y);
+  // ─── GROUP 1: This Year's Frame → Your Natal Planets ──────────
+  if (group1.length > 0) {
+    drawGroupHeader(doc, ctx, margin, contentW, INK, GOLD, MUTED,
+      'THIS YEAR\'S FRAME → YOUR NATAL PLANETS',
+      'The Solar Return Ascendant and Midheaven act like a lens placed over your birth chart. When they land on one of your natal planets, that planet becomes a central character in your year — louder, more visible, impossible to ignore.');
+    drawActivationCards(doc, ctx, group1.slice(0, 6), margin, contentW, ph, INK, MUTED, GOLD, RULE, CREAM);
+  }
 
-      doc.setFont('times', 'normal'); doc.setFontSize(8);
-      doc.setTextColor(...ctx.colors.muted);
-      doc.text(`${act.orb}° orb`, ctx.margin + ctx.contentW, ctx.y, { align: 'right' });
-      ctx.y += 12;
+  // ─── GROUP 2: This Year's Planets → Your Natal Frame ──────────
+  if (group2.length > 0) {
+    ctx.checkPage(80);
+    drawGroupHeader(doc, ctx, margin, contentW, INK, GOLD, MUTED,
+      'THIS YEAR\'S PLANETS → YOUR NATAL FRAME',
+      'When a Solar Return planet lands directly on one of your natal angles (ASC, MC, DSC, IC), it injects that planet\'s energy into a foundational area of your life — your identity, career, relationships, or home. This is not subtle.');
+    drawActivationCards(doc, ctx, group2.slice(0, 6), margin, contentW, ph, INK, MUTED, GOLD, RULE, CREAM);
+  }
+}
 
-      doc.setFont('times', 'normal'); doc.setFontSize(9);
-      doc.setTextColor(...ctx.colors.ink);
-      const lines = doc.splitTextToSize(act.narrative, ctx.contentW - 20);
-      for (const l of lines.slice(0, 3)) { doc.text(l, ctx.margin + 8, ctx.y); ctx.y += 11; }
-    });
+function drawGroupHeader(
+  doc: jsPDF, ctx: PDFContext, margin: number, contentW: number,
+  INK: [number, number, number], GOLD: [number, number, number], MUTED: [number, number, number],
+  title: string, description: string,
+) {
+  ctx.checkPage(60);
+  
+  // Gold bar accent
+  doc.setFillColor(...GOLD);
+  doc.rect(margin, ctx.y, 30, 2, 'F');
+  ctx.y += 8;
+
+  // Group title
+  doc.setFont('times', 'bold'); doc.setFontSize(11);
+  doc.setTextColor(...INK);
+  doc.text(title, margin, ctx.y);
+  ctx.y += 10;
+
+  // Group description
+  doc.setFont('times', 'normal'); doc.setFontSize(8.5);
+  doc.setTextColor(...MUTED);
+  const descLines: string[] = doc.splitTextToSize(description, contentW);
+  for (const l of descLines) { doc.text(l, margin, ctx.y); ctx.y += 10; }
+  ctx.y += 6;
+}
+
+function drawActivationCards(
+  doc: jsPDF, ctx: PDFContext, acts: any[], margin: number, contentW: number, ph: number,
+  INK: [number, number, number], MUTED: [number, number, number], GOLD: [number, number, number],
+  RULE: [number, number, number], CREAM: [number, number, number],
+) {
+  for (const act of acts) {
+    const cardH = 52;
+    ctx.checkPage(cardH + 8);
+
+    const x = margin;
+    const y = ctx.y;
+
+    // Card background
+    doc.setFillColor(...CREAM);
+    doc.roundedRect(x, y, contentW, cardH, 3, 3, 'F');
+    doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
+    doc.roundedRect(x, y, contentW, cardH, 3, 3, 'S');
+
+    // Left: Gold circle with angle/planet abbreviation
+    const circleR = 12;
+    const circleX = x + 20;
+    const circleY = y + cardH / 2;
+    doc.setFillColor(...GOLD);
+    doc.circle(circleX, circleY, circleR, 'F');
+    doc.setFont('times', 'bold'); doc.setFontSize(9);
+    doc.setTextColor(255, 255, 255);
+    const abbr = ANGLE_ICON[act.srBody] || act.srBody.substring(0, 3).toUpperCase();
+    doc.text(abbr, circleX, circleY + 3, { align: 'center' });
+
+    // Arrow + aspect glyph
+    const arrowX = circleX + circleR + 6;
+    doc.setFont('times', 'normal'); doc.setFontSize(14);
+    doc.setTextColor(...GOLD);
+    doc.text(`→`, arrowX, circleY + 4);
+
+    // Right content area
+    const textX = arrowX + 14;
+    const textW = contentW - (textX - x) - 8;
+    let ty = y + 14;
+
+    // Activation header: "SR Ascendant ☌ Natal Venus"
+    doc.setFont('times', 'bold'); doc.setFontSize(10);
+    doc.setTextColor(...INK);
+    doc.text(act.label, textX, ty);
+    
+    // Orb badge
+    doc.setFont('times', 'normal'); doc.setFontSize(7);
+    doc.setTextColor(...MUTED);
+    doc.text(`${act.orb}° orb`, x + contentW - 8, ty, { align: 'right' });
+    ty += 10;
+
+    // Aspect keyword line: "merges with · conjunction"
+    doc.setFont('times', 'italic'); doc.setFontSize(8);
+    doc.setTextColor(...GOLD);
+    doc.text(`${act.aspectKeyword} · ${act.aspectName}`, textX, ty);
+    ty += 10;
+
+    // Narrative
+    doc.setFont('times', 'normal'); doc.setFontSize(8);
+    doc.setTextColor(...MUTED);
+    const narLines: string[] = doc.splitTextToSize(act.narrative, textW);
+    for (const l of narLines.slice(0, 2)) { doc.text(l, textX, ty); ty += 9; }
+
+    ctx.y = y + cardH + 6;
   }
 }
 
