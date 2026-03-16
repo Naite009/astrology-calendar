@@ -276,14 +276,15 @@ export function generateStrengthsPortrait(
     }
 
     // Shift arrow line
+    const natalShort = natalHouse ? `${natalSign} H${natalHouse}` : natalSign;
     if (srSign && srSign !== natalSign) {
       doc.setFont('times', 'normal'); doc.setFontSize(8);
       doc.setTextColor(...MUTED);
-      doc.text(`${natalSign}  -->  ${srSign}${srHouse ? ' H' + srHouse : ''}`, margin + innerPad, stripY + 40);
+      doc.text(`${natalShort}  -->  ${srSign}${srHouse ? ' H' + srHouse : ''}`, margin + innerPad, stripY + 40);
     } else if (srHouse) {
       doc.setFont('times', 'normal'); doc.setFontSize(8);
       doc.setTextColor(...MUTED);
-      doc.text(`${natalSign} --> ${ord(srHouse)} House`, margin + innerPad, stripY + 40);
+      doc.text(`${natalShort} --> ${ord(srHouse)} House`, margin + innerPad, stripY + 40);
     }
 
     ctx.y = stripY + stripH + 8;
