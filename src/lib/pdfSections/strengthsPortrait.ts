@@ -220,6 +220,7 @@ export function generateStrengthsPortrait(
   const renderPlanet = (
     planetName: string,
     natalSign: string,
+    natalHouse: number | null,
     srSign: string,
     srHouse: number | undefined,
     natalStrength: string,
@@ -249,10 +250,11 @@ export function generateStrengthsPortrait(
     doc.text(planetName.toUpperCase(), margin + innerPad, stripY + 12);
     doc.setCharSpace(0);
 
-    // Natal sign — large heading left
+    // Natal sign + house — large heading left
     doc.setFont('times', 'bold'); doc.setFontSize(16);
     doc.setTextColor(...INK);
-    doc.text(`${natalSign}`, margin + innerPad, stripY + 30);
+    const natalLabel = natalHouse ? `${natalSign}, ${ord(natalHouse)} House` : natalSign;
+    doc.text(natalLabel, margin + innerPad, stripY + 30);
 
     // SR placement — right side, use smaller font and constrain to box
     const srParts: string[] = [];
