@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import { PDFContext } from './pdfContext';
 import { NatalChart } from '@/hooks/useNatalChart';
+import { getNatalPlanetHouse } from '@/lib/houseCalculations';
 import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 
@@ -219,6 +220,7 @@ export function generateStrengthsPortrait(
   const renderPlanet = (
     planetName: string,
     natalSign: string,
+    natalHouse: number | null,
     srSign: string,
     srHouse: number | undefined,
     natalStrength: string,
@@ -248,10 +250,11 @@ export function generateStrengthsPortrait(
     doc.text(planetName.toUpperCase(), margin + innerPad, stripY + 12);
     doc.setCharSpace(0);
 
-    // Natal sign — large heading left
+    // Natal sign + house — large heading left
     doc.setFont('times', 'bold'); doc.setFontSize(16);
     doc.setTextColor(...INK);
-    doc.text(`${natalSign}`, margin + innerPad, stripY + 30);
+    const natalLabel = natalHouse ? `${natalSign}, ${ord(natalHouse)} House` : natalSign;
+    doc.text(natalLabel, margin + innerPad, stripY + 30);
 
     // SR placement — right side, use smaller font and constrain to box
     const srParts: string[] = [];
@@ -273,14 +276,15 @@ export function generateStrengthsPortrait(
     }
 
     // Shift arrow line
+    const natalShort = natalHouse ? `${natalSign} H${natalHouse}` : natalSign;
     if (srSign && srSign !== natalSign) {
       doc.setFont('times', 'normal'); doc.setFontSize(8);
       doc.setTextColor(...MUTED);
-      doc.text(`${natalSign}  -->  ${srSign}${srHouse ? ' H' + srHouse : ''}`, margin + innerPad, stripY + 40);
+      doc.text(`${natalShort}  -->  ${srSign}${srHouse ? ' H' + srHouse : ''}`, margin + innerPad, stripY + 40);
     } else if (srHouse) {
       doc.setFont('times', 'normal'); doc.setFontSize(8);
       doc.setTextColor(...MUTED);
-      doc.text(`${natalSign} --> ${ord(srHouse)} House`, margin + innerPad, stripY + 40);
+      doc.text(`${natalShort} --> ${ord(srHouse)} House`, margin + innerPad, stripY + 40);
     }
 
     ctx.y = stripY + stripH + 8;
@@ -335,9 +339,10 @@ export function generateStrengthsPortrait(
   };
 
   // ═══ SUN ═══
+  const sunNatalHouse = getNatalPlanetHouse('Sun', natalChart);
   if (sunSign && sunStrength[sunSign]) {
     renderPlanet(
-      'Sun', sunSign, srSunSign, srSunHouse,
+      'Sun', sunSign, sunNatalHouse, srSunSign, srSunHouse,
       sunStrength[sunSign], sunShadow[sunSign] || '',
       srSunHouse ? (srSunHouseBody[srSunHouse] || '') : '',
       srSunHouse ? (srMoonHouseBody[srSunHouse] || '') : '',
@@ -345,9 +350,10 @@ export function generateStrengthsPortrait(
   }
 
   // ═══ MOON ═══
+  const moonNatalHouse = getNatalPlanetHouse('Moon', natalChart);
   if (moonSign && moonStrength[moonSign]) {
     renderPlanet(
-      'Moon', moonSign, srMoonSign, srMoonHouse,
+      'Moon', moonSign, moonNatalHouse, srMoonSign, srMoonHouse,
       moonStrength[moonSign], moonShadow[moonSign] || '',
       srMoonBody[srMoonSign] || '',
       srMoonHouse ? (srMoonHouseBody[srMoonHouse] || '') : '',
@@ -355,9 +361,10 @@ export function generateStrengthsPortrait(
   }
 
   // ═══ RISING ═══
+  // Rising/Ascendant is house 1 by definition
   if (risingSign && risingStrength[risingSign]) {
     renderPlanet(
-      'Rising', risingSign, srAscSign, undefined,
+      'Rising', risingSign, 1, srAscSign, undefined,
       risingStrength[risingSign], risingShadow[risingSign] || '',
       srRisingBody[srAscSign] || '', '',
     );
