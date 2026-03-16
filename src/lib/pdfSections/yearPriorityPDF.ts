@@ -417,12 +417,12 @@ export function generatePDFAngleActivations(
   ctx.y += 12;
 
   // ─── Explanatory intro ─────────────────────────────────────────
-  doc.setFont('times', 'italic'); doc.setFontSize(9);
+  doc.setFont('times', 'italic'); doc.setFontSize(10);
   doc.setTextColor(...MUTED);
   const intro = 'The previous section showed where Solar Return planets land in your natal houses -- like guests arriving in different rooms of your life. This section is different. Angles are not planets. They are the structural frame of the chart itself -- the four compass points (Ascendant, Midheaven, Descendant, IC) that define how you meet the world, who you attract, what you are building, and where you retreat. When an angle from one chart makes an exact aspect to a planet in the other, it creates a direct, visceral activation -- something you feel immediately, not abstractly.';
   const introLines: string[] = doc.splitTextToSize(intro, contentW);
-  for (const l of introLines) { doc.text(l, margin, ctx.y); ctx.y += 11; }
-  ctx.y += 6;
+  for (const l of introLines) { doc.text(l, margin, ctx.y); ctx.y += 12; }
+  ctx.y += 8;
 
   // ─── Compute activations ──────────────────────────────────────
   interface Act { label: string; srBody: string; natalBody: string; aspectName: string; aspectGlyph: string; aspectKeyword: string; orb: number; narrative: string; priority: number; group: 'angle-to-planet' | 'planet-to-angle'; }
@@ -535,17 +535,17 @@ function drawGroupHeader(
   ctx.y += 8;
 
   // Group title
-  doc.setFont('times', 'bold'); doc.setFontSize(11);
+  doc.setFont('times', 'bold'); doc.setFontSize(13);
   doc.setTextColor(...INK);
   doc.text(title, margin, ctx.y);
-  ctx.y += 10;
+  ctx.y += 12;
 
   // Group description
-  doc.setFont('times', 'normal'); doc.setFontSize(8.5);
+  doc.setFont('times', 'normal'); doc.setFontSize(9.5);
   doc.setTextColor(...MUTED);
   const descLines: string[] = doc.splitTextToSize(description, contentW);
-  for (const l of descLines) { doc.text(l, margin, ctx.y); ctx.y += 10; }
-  ctx.y += 6;
+  for (const l of descLines) { doc.text(l, margin, ctx.y); ctx.y += 11; }
+  ctx.y += 8;
 }
 
 function drawActivationCards(
@@ -554,7 +554,7 @@ function drawActivationCards(
   RULE: [number, number, number], CREAM: [number, number, number],
 ) {
   for (const act of acts) {
-    const cardH = 52;
+    const cardH = 62;
     ctx.checkPage(cardH + 8);
 
     const x = margin;
@@ -567,51 +567,51 @@ function drawActivationCards(
     doc.roundedRect(x, y, contentW, cardH, 3, 3, 'S');
 
     // Left: Gold circle with angle/planet abbreviation
-    const circleR = 12;
-    const circleX = x + 20;
+    const circleR = 14;
+    const circleX = x + 22;
     const circleY = y + cardH / 2;
     doc.setFillColor(...GOLD);
     doc.circle(circleX, circleY, circleR, 'F');
-    doc.setFont('times', 'bold'); doc.setFontSize(9);
+    doc.setFont('times', 'bold'); doc.setFontSize(10);
     doc.setTextColor(255, 255, 255);
     const abbr = ANGLE_ICON[act.srBody] || act.srBody.substring(0, 3).toUpperCase();
     doc.text(abbr, circleX, circleY + 3, { align: 'center' });
 
-    // Arrow + aspect glyph
-    const arrowX = circleX + circleR + 6;
-    doc.setFont('times', 'normal'); doc.setFontSize(14);
+    // Arrow
+    const arrowX = circleX + circleR + 8;
+    doc.setFont('times', 'normal'); doc.setFontSize(16);
     doc.setTextColor(...GOLD);
-    doc.text('-->', arrowX, circleY + 4);
+    doc.text('-->', arrowX, circleY + 5);
 
     // Right content area
-    const textX = arrowX + 14;
-    const textW = contentW - (textX - x) - 8;
-    let ty = y + 14;
+    const textX = arrowX + 18;
+    const textW = contentW - (textX - x) - 10;
+    let ty = y + 16;
 
-    // Activation header: "SR Ascendant ☌ Natal Venus"
-    doc.setFont('times', 'bold'); doc.setFontSize(10);
+    // Activation header
+    doc.setFont('times', 'bold'); doc.setFontSize(11);
     doc.setTextColor(...INK);
     doc.text(act.label, textX, ty);
     
     // Orb badge
-    doc.setFont('times', 'normal'); doc.setFontSize(7);
-    doc.setTextColor(...MUTED);
-    doc.text(`${act.orb}° orb`, x + contentW - 8, ty, { align: 'right' });
-    ty += 10;
-
-    // Aspect keyword line: "merges with · conjunction"
-    doc.setFont('times', 'italic'); doc.setFontSize(8);
-    doc.setTextColor(...GOLD);
-    doc.text(`${act.aspectKeyword} - ${act.aspectName}`, textX, ty);
-    ty += 10;
-
-    // Narrative
     doc.setFont('times', 'normal'); doc.setFontSize(8);
     doc.setTextColor(...MUTED);
-    const narLines: string[] = doc.splitTextToSize(act.narrative, textW);
-    for (const l of narLines.slice(0, 2)) { doc.text(l, textX, ty); ty += 9; }
+    doc.text(`${act.orb} orb`, x + contentW - 10, ty, { align: 'right' });
+    ty += 12;
 
-    ctx.y = y + cardH + 6;
+    // Aspect keyword line
+    doc.setFont('times', 'italic'); doc.setFontSize(9);
+    doc.setTextColor(...GOLD);
+    doc.text(`${act.aspectKeyword} - ${act.aspectName}`, textX, ty);
+    ty += 11;
+
+    // Narrative
+    doc.setFont('times', 'normal'); doc.setFontSize(9);
+    doc.setTextColor(...MUTED);
+    const narLines: string[] = doc.splitTextToSize(act.narrative, textW);
+    for (const l of narLines.slice(0, 2)) { doc.text(l, textX, ty); ty += 10; }
+
+    ctx.y = y + cardH + 7;
   }
 }
 
