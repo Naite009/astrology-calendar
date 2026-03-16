@@ -381,7 +381,7 @@ export function generatePDFAngleActivations(
   natalChart: NatalChart, srChart: SolarReturnChart,
   maxOrb: number = ORB,
 ) {
-  ctx.sectionTitle(doc, 'ANGLE ACTIVATIONS', 'How Solar Return angles connect to your natal chart');
+  ctx.sectionTitle(doc, 'ANGLE ACTIVATIONS', 'How Solar Return angles (ASC, MC, DSC, IC) connect to your natal planets — and vice versa');
 
   interface Act { label: string; aspectName: string; orb: number; narrative: string; priority: number; }
   const allActivations: Act[] = [];
