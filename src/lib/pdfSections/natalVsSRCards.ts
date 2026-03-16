@@ -1,6 +1,6 @@
 /**
  * Natal vs Solar Return — compact 4x3 grid, all 12 planets on ONE page.
- * Readable narrative font (8.5pt), sign names at 9pt.
+ * Large, readable fonts and planet images.
  */
 import jsPDF from 'jspdf';
 import { PDFContext } from './pdfContext';
@@ -85,38 +85,38 @@ export function generateNatalVsSRCards(
   doc.setFillColor(...WHITE);
   doc.rect(0, 0, pw, ph, 'F');
 
-  // Compact header
-  ctx.y += 10;
+  // Header — compact
+  ctx.y += 6;
   doc.setFont('times', 'bold'); doc.setFontSize(7);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(4);
   doc.text('YOUR PLANETARY SHIFTS', margin, ctx.y);
   doc.setCharSpace(0);
-  ctx.y += 5;
+  ctx.y += 4;
 
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 12;
-
-  doc.setFont('times', 'normal'); doc.setFontSize(20);
-  doc.setTextColor(...INK);
-  doc.text('Natal vs Solar Return', margin, ctx.y);
-  ctx.y += 7;
-
-  doc.setFont('times', 'italic'); doc.setFontSize(9);
-  doc.setTextColor(...MUTED);
-  doc.text('Where each planet was — and where it is now', margin, ctx.y);
   ctx.y += 10;
 
-  // 3-column x 4-row grid — calculated to fit ALL 12 on one page
+  doc.setFont('times', 'normal'); doc.setFontSize(22);
+  doc.setTextColor(...INK);
+  doc.text('Natal vs Solar Return', margin, ctx.y);
+  ctx.y += 6;
+
+  doc.setFont('times', 'italic'); doc.setFontSize(10);
+  doc.setTextColor(...MUTED);
+  doc.text('Where each planet was — and where it is now', margin, ctx.y);
+  ctx.y += 8;
+
+  // 3-column x 4-row grid
   const cols = 3;
-  const gapX = 7;
-  const gapY = 5;
+  const gapX = 6;
+  const gapY = 4;
   const cardW = (contentW - gapX * (cols - 1)) / cols;
-  const imgSize = 16;
-  
-  // Calculate available height for 4 rows
-  const availableH = ph - ctx.y - margin - 10;
+  const imgSize = 20;
+
+  // Calculate card height to fill page
+  const availableH = ph - ctx.y - margin - 4;
   const cardH = Math.floor((availableH - gapY * 3) / 4);
 
   const gridStartY = ctx.y;
@@ -143,7 +143,7 @@ export function generateNatalVsSRCards(
 }
 
 function drawShiftCard(
-  doc: jsPDF, ctx: PDFContext,
+  doc: jsPDF, _ctx: PDFContext,
   planet: string,
   analysis: SolarReturnAnalysis,
   natalChart: NatalChart,
@@ -174,22 +174,22 @@ function drawShiftCard(
   doc.setFillColor(...GOLD);
   doc.rect(x, y, w, 1.5, 'F');
 
-  // Planet image — top left, compact
+  // Planet image — larger
   const imgKey = planet.toLowerCase().replace('northnode', 'northnode');
   const imgSrc = planetImages[imgKey];
   if (imgSrc) {
     try {
-      doc.addImage(imgSrc, 'PNG', x + 4, y + 5, imgSize, imgSize);
+      doc.addImage(imgSrc, 'PNG', x + 3, y + 4, imgSize, imgSize);
     } catch {
       doc.setFillColor(...GOLD);
-      doc.circle(x + 4 + imgSize / 2, y + 5 + imgSize / 2, imgSize / 3, 'F');
+      doc.circle(x + 3 + imgSize / 2, y + 4 + imgSize / 2, imgSize / 3, 'F');
     }
   }
 
-  // Planet name — right of image
-  let tx = x + imgSize + 8;
-  let ty = y + 12;
-  doc.setFont('times', 'bold'); doc.setFontSize(7);
+  // Planet name — right of image, larger
+  let tx = x + imgSize + 7;
+  let ty = y + 13;
+  doc.setFont('times', 'bold'); doc.setFontSize(8.5);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(1);
   doc.text((P[planet] || planet).toUpperCase(), tx, ty);
@@ -198,55 +198,56 @@ function drawShiftCard(
   // SAME/SHIFT badge
   if (isSameSign) {
     doc.setFillColor(225, 245, 225);
-    doc.roundedRect(x + w - 28, y + 4, 22, 9, 2, 2, 'F');
-    doc.setFont('times', 'bold'); doc.setFontSize(5.5);
+    doc.roundedRect(x + w - 30, y + 4, 24, 10, 2, 2, 'F');
+    doc.setFont('times', 'bold'); doc.setFontSize(6.5);
     doc.setTextColor(80, 140, 80);
-    doc.text('SAME', x + w - 17, y + 10, { align: 'center' });
+    doc.text('SAME', x + w - 18, y + 11, { align: 'center' });
   } else if (natSign !== '--' && srSign !== '--') {
     doc.setFillColor(255, 235, 220);
-    doc.roundedRect(x + w - 28, y + 4, 22, 9, 2, 2, 'F');
-    doc.setFont('times', 'bold'); doc.setFontSize(5.5);
+    doc.roundedRect(x + w - 30, y + 4, 24, 10, 2, 2, 'F');
+    doc.setFont('times', 'bold'); doc.setFontSize(6.5);
     doc.setTextColor(180, 120, 60);
-    doc.text('SHIFT', x + w - 17, y + 10, { align: 'center' });
+    doc.text('SHIFT', x + w - 18, y + 11, { align: 'center' });
   }
 
-  // Natal → SR signs with arrow
-  ty = y + imgSize + 10;
-  doc.setFont('times', 'bold'); doc.setFontSize(9);
+  // Natal → SR signs with arrow — larger font
+  ty = y + imgSize + 9;
+  doc.setFont('times', 'bold'); doc.setFontSize(11);
   doc.setTextColor(...INK);
   doc.text(natSign, x + 4, ty);
 
   const arrowX1 = x + 4 + doc.getTextWidth(natSign) + 3;
-  const arrowX2 = arrowX1 + 12;
-  const arrowMidY = ty - 2.5;
-  doc.setDrawColor(...ARROW_GOLD); doc.setLineWidth(0.4);
+  const arrowX2 = arrowX1 + 14;
+  const arrowMidY = ty - 3;
+  doc.setDrawColor(...ARROW_GOLD); doc.setLineWidth(0.5);
   doc.line(arrowX1, arrowMidY, arrowX2, arrowMidY);
-  doc.line(arrowX2 - 2.5, arrowMidY - 1.5, arrowX2, arrowMidY);
-  doc.line(arrowX2 - 2.5, arrowMidY + 1.5, arrowX2, arrowMidY);
+  doc.line(arrowX2 - 3, arrowMidY - 2, arrowX2, arrowMidY);
+  doc.line(arrowX2 - 3, arrowMidY + 2, arrowX2, arrowMidY);
 
-  doc.setFont('times', 'bold'); doc.setFontSize(9);
+  doc.setFont('times', 'bold'); doc.setFontSize(11);
   doc.setTextColor(...INK);
   doc.text(srSign, arrowX2 + 2, ty);
-  ty += 9;
+  ty += 8;
 
-  // Degrees + houses
-  doc.setFont('times', 'normal'); doc.setFontSize(6.5);
+  // Degrees + houses — readable
+  doc.setFont('times', 'normal'); doc.setFontSize(7.5);
   doc.setTextColor(...MUTED);
   const detailLine = `${natDeg}${natH ? ` H${natH}` : ''}  →  ${srDeg}${srH ? ` H${srH}` : ''}`;
   doc.text(detailLine, x + 4, ty);
-  ty += 8;
+  ty += 7;
 
-  // Shift narrative — READABLE size (8.5pt)
+  // Shift narrative — large readable
   const shiftFeel = SHIFT_FEEL[planet];
   if (shiftFeel) {
     const narrative = isSameSign ? shiftFeel.same : shiftFeel.different;
-    doc.setFont('times', 'italic'); doc.setFontSize(8.5);
+    doc.setFont('times', 'italic'); doc.setFontSize(9);
     doc.setTextColor(...MUTED);
     const lines = doc.splitTextToSize(narrative, w - 8);
-    const maxLines = Math.min(lines.length, Math.floor((h - (ty - y) - 4) / 10));
+    const lineH = 10;
+    const maxLines = Math.min(lines.length, Math.floor((h - (ty - y) - 3) / lineH));
     for (let li = 0; li < maxLines; li++) {
       doc.text(lines[li], x + 4, ty);
-      ty += 10;
+      ty += lineH;
     }
   }
 }
