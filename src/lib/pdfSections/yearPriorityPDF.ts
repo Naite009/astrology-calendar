@@ -602,7 +602,7 @@ function drawActivationCards(
     // Aspect keyword line: "merges with · conjunction"
     doc.setFont('times', 'italic'); doc.setFontSize(8);
     doc.setTextColor(...GOLD);
-    doc.text(`${act.aspectKeyword} · ${act.aspectName}`, textX, ty);
+    doc.text(`${act.aspectKeyword} - ${act.aspectName}`, textX, ty);
     ty += 10;
 
     // Narrative
