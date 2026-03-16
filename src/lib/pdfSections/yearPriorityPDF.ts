@@ -381,21 +381,16 @@ export function generatePDFAngleActivations(
   natalChart: NatalChart, srChart: SolarReturnChart,
   maxOrb: number = ORB,
 ) {
-  ctx.sectionTitle(doc, 'MAJOR PLANETARY ACTIVATIONS', 'How Solar Return angles and planets connect to your natal chart');
+  ctx.sectionTitle(doc, 'ANGLE ACTIVATIONS', 'How Solar Return angles connect to your natal chart');
 
-  interface Act { label: string; aspectName: string; orb: number; narrative: string; priority: number; category: 'angles-to-planets' | 'planets-to-angles'; }
-  const anglesToPlanets: Act[] = [];
-  const planetsToAngles: Act[] = [];
+  interface Act { label: string; aspectName: string; orb: number; narrative: string; priority: number; }
+  const allActivations: Act[] = [];
 
   const buildNarrative = (srBody: string, aspectName: string, natalBody: string, natalKey: string, srKey: string): string => {
     const feltTarget = PLANET_FELT[natalKey] || ANGLE_FELT[natalBody] || '';
     const feltSource = PLANET_FELT[srKey] || ANGLE_FELT[srBody] || '';
-    if (feltTarget) {
-      return `Touches ${feltTarget}`;
-    }
-    if (feltSource) {
-      return `Channels ${feltSource}`;
-    }
+    if (feltTarget) return `Activates ${feltTarget}`;
+    if (feltSource) return `Channels ${feltSource}`;
     return `SR ${srBody} ${aspectName}s natal ${natalBody}.`;
   };
 
@@ -413,7 +408,7 @@ export function generatePDFAngleActivations(
 
   const planetNames = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','NorthNode','Chiron'];
 
-  // SR angles --> natal planets
+  // SR angles → natal planets
   for (const angle of srAngles) {
     if (angle.deg === null) continue;
     for (const pName of planetNames) {
@@ -425,13 +420,13 @@ export function generatePDFAngleActivations(
         const orb = Math.abs(diff - asp.angle);
         if (orb <= maxOrb) {
           const dp = pName === 'NorthNode' ? 'N.Node' : pName;
-          anglesToPlanets.push({ label: `SR ${angle.name} ${asp.glyph} Natal ${dp}`, aspectName: asp.name, orb: Math.round(orb * 10) / 10, narrative: buildNarrative(angle.name, asp.name, dp, pName, angle.name), priority: asp.angle === 0 ? 1 : 2, category: 'angles-to-planets' });
+          allActivations.push({ label: `SR ${angle.name} ${asp.name} Natal ${dp}`, aspectName: asp.name, orb: Math.round(orb * 10) / 10, narrative: buildNarrative(angle.name, asp.name, dp, pName, angle.name), priority: asp.angle === 0 ? 1 : 2 });
         }
       }
     }
   }
 
-  // SR planets --> natal angles
+  // SR planets → natal angles
   for (const pName of planetNames) {
     const srPos = srChart.planets[pName as keyof typeof srChart.planets];
     if (!srPos) continue;
@@ -443,72 +438,38 @@ export function generatePDFAngleActivations(
         const orb = Math.abs(diff - asp.angle);
         if (orb <= maxOrb) {
           const dp = pName === 'NorthNode' ? 'N.Node' : pName;
-          planetsToAngles.push({ label: `SR ${dp} ${asp.glyph} Natal ${angle.name}`, aspectName: asp.name, orb: Math.round(orb * 10) / 10, narrative: buildNarrative(dp, asp.name, angle.name, angle.name, pName), priority: asp.angle === 0 ? 1 : 3, category: 'planets-to-angles' });
+          allActivations.push({ label: `SR ${dp} ${asp.name} Natal ${angle.name}`, aspectName: asp.name, orb: Math.round(orb * 10) / 10, narrative: buildNarrative(dp, asp.name, angle.name, angle.name, pName), priority: asp.angle === 0 ? 1 : 3 });
         }
       }
     }
   }
 
-  anglesToPlanets.sort((a, b) => a.priority - b.priority || a.orb - b.orb);
-  planetsToAngles.sort((a, b) => a.priority - b.priority || a.orb - b.orb);
+  allActivations.sort((a, b) => a.priority - b.priority || a.orb - b.orb);
 
-  if (anglesToPlanets.length === 0 && planetsToAngles.length === 0) {
-    ctx.writeBody(doc, 'No significant angle-to-planet contacts detected within the orb.');
+  if (allActivations.length === 0) {
+    ctx.writeBody(doc, 'No significant angle contacts detected within the orb.');
     return;
   }
 
-  // Two-column layout: left = angles to planets, right = planets to angles
-  const col2Gap = 12;
-  const col2W = (ctx.contentW - col2Gap) / 2;
-  const leftX = ctx.margin;
-  const rightX = ctx.margin + col2W + col2Gap;
+  // Clean card-based layout — one card per activation, readable
+  const toShow = allActivations.slice(0, 12);
+  for (const act of toShow) {
+    ctx.checkPage(70);
+    ctx.drawCard(doc, () => {
+      doc.setFont('times', 'bold'); doc.setFontSize(10);
+      doc.setTextColor(...ctx.colors.ink);
+      doc.text(act.label, ctx.margin + 8, ctx.y);
 
-  // Column headers
-  doc.setFont('times', 'bold'); doc.setFontSize(7);
-  doc.setTextColor(...ctx.colors.gold);
-  doc.setCharSpace(2);
-  doc.text('SR ANGLES TO NATAL PLANETS', leftX, ctx.y);
-  doc.text('SR PLANETS TO NATAL ANGLES', rightX, ctx.y);
-  doc.setCharSpace(0);
-  ctx.y += 12;
+      doc.setFont('times', 'normal'); doc.setFontSize(8);
+      doc.setTextColor(...ctx.colors.muted);
+      doc.text(`${act.orb}° orb`, ctx.margin + ctx.contentW, ctx.y, { align: 'right' });
+      ctx.y += 12;
 
-  doc.setDrawColor(...ctx.colors.rule); doc.setLineWidth(0.2);
-  doc.line(leftX, ctx.y, leftX + col2W, ctx.y);
-  doc.line(rightX, ctx.y, rightX + col2W, ctx.y);
-  ctx.y += 8;
-
-  // Render items side by side
-  const maxItems = Math.max(anglesToPlanets.length, planetsToAngles.length);
-  const itemsToShow = Math.min(maxItems, 10);
-
-  const renderColumnItem = (act: Act, x: number, y: number, w: number): number => {
-    doc.setFont('times', 'bold'); doc.setFontSize(7.5);
-    doc.setTextColor(...ctx.colors.ink);
-    const labelLines = doc.splitTextToSize(`${act.label} (${act.orb}°)`, w - 4);
-    let ly = y;
-    for (const l of labelLines.slice(0, 1)) { doc.text(l, x, ly); ly += 9; }
-
-    doc.setFont('times', 'normal'); doc.setFontSize(6.8);
-    doc.setTextColor(...ctx.colors.muted);
-    const narrativeLines = doc.splitTextToSize(act.narrative, w - 4);
-    for (const l of narrativeLines.slice(0, 2)) { doc.text(l, x, ly); ly += 8; }
-    return ly + 4;
-  };
-
-  for (let i = 0; i < itemsToShow; i++) {
-    ctx.checkPage(40);
-    const startY = ctx.y;
-    let leftEnd = startY;
-    let rightEnd = startY;
-
-    if (i < anglesToPlanets.length) {
-      leftEnd = renderColumnItem(anglesToPlanets[i], leftX, startY, col2W);
-    }
-    if (i < planetsToAngles.length) {
-      rightEnd = renderColumnItem(planetsToAngles[i], rightX, startY, col2W);
-    }
-
-    ctx.y = Math.max(leftEnd, rightEnd) + 2;
+      doc.setFont('times', 'normal'); doc.setFontSize(9);
+      doc.setTextColor(...ctx.colors.ink);
+      const lines = doc.splitTextToSize(act.narrative, ctx.contentW - 20);
+      for (const l of lines.slice(0, 3)) { doc.text(l, ctx.margin + 8, ctx.y); ctx.y += 11; }
+    });
   }
 }
 
