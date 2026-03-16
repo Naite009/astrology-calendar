@@ -27,27 +27,27 @@ export function generatePlanetGallery(
   doc.rect(0, 0, pw, ph, 'F');
 
   // Section header — compact
-  ctx.y += 12;
+  ctx.y += 8;
   doc.setFont('times', 'bold'); doc.setFontSize(7);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(4);
   doc.text('PLANET SPOTLIGHT', margin, ctx.y);
   doc.setCharSpace(0);
-  ctx.y += 6;
+  ctx.y += 5;
 
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 16;
+  ctx.y += 12;
 
   doc.setFont('times', 'normal'); doc.setFontSize(22);
   doc.setTextColor(...INK);
   doc.text('Your Planets This Year', margin, ctx.y);
-  ctx.y += 8;
+  ctx.y += 7;
 
   doc.setFont('times', 'italic'); doc.setFontSize(9);
   doc.setTextColor(...MUTED);
   doc.text('Each placement in your Solar Return', margin, ctx.y);
-  ctx.y += 16;
+  ctx.y += 10;
 
   const planets = GRID_ORDER.filter(p => {
     const srPos = srChart.planets[p as keyof typeof srChart.planets];
