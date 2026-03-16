@@ -1021,8 +1021,9 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           ctx.y += 4; // minimal gap between cards
         };
 
-        // --- SIGN STELLIUMS ---
+        // --- SIGN STELLIUMS --- (force new page with title)
         if (signStelliums.length > 0) {
+          doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
           ctx.sectionTitle(doc, 'STELLIUMS — YOUR POWER ZONES');
           ctx.sectionPages.set('STELLIUMS', doc.getNumberOfPages());
           
