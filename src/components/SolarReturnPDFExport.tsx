@@ -962,7 +962,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       generateNatalVsSRCards(ctx, doc, analysis, natalChart, srChart, PLANET_IMAGES);
 
       // =============================================
-      // STELLIUMS — personalized with house context
+      // STELLIUMS — personalized with house context (own title page)
       // =============================================
       if (analysis.stelliums.length > 0) {
         // Separate stelliums into sign vs house groups
