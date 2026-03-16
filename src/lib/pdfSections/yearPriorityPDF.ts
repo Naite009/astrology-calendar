@@ -400,7 +400,7 @@ export function generatePDFAngleActivations(
   doc.setFillColor(...WHITE);
   doc.rect(0, 0, pw, ph, 'F');
 
-  ctx.y += 12;
+  ctx.y += 16;
   doc.setFont('times', 'bold'); doc.setFontSize(7);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(4);
@@ -409,12 +409,12 @@ export function generatePDFAngleActivations(
   ctx.y += 5;
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 14;
+  ctx.y += 18;
 
   doc.setFont('times', 'normal'); doc.setFontSize(22);
   doc.setTextColor(...INK);
   doc.text('Where Your Year Hits Hardest', margin, ctx.y);
-  ctx.y += 10;
+  ctx.y += 12;
 
   // ─── Explanatory intro ─────────────────────────────────────────
   doc.setFont('times', 'italic'); doc.setFontSize(9);
