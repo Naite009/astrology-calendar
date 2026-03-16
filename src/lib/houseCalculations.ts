@@ -20,7 +20,8 @@ const normalizeSign = (sign: string): string => {
 
 // Convert sign + degree to absolute longitude (0-360)
 export const signDegreesToLongitude = (sign: string, degree: number, minutes: number = 0): number => {
-  const signIndex = ZODIAC_SIGNS.indexOf(sign);
+  const normalized = normalizeSign(sign);
+  const signIndex = ZODIAC_SIGNS.indexOf(normalized);
   if (signIndex === -1) return 0;
 
   // Defensive coercion: some persisted chart data may have degree/minutes as strings.
