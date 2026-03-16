@@ -1046,6 +1046,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             ctx.trackedLabel(doc, 'STELLIUMS BY HOUSE', margin, ctx.y);
             ctx.y += 16;
           } else {
+            doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
             ctx.sectionTitle(doc, 'STELLIUMS — YOUR POWER ZONES');
             ctx.sectionPages.set('STELLIUMS', doc.getNumberOfPages());
           }
