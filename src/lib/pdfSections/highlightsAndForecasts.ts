@@ -252,51 +252,44 @@ export function generateHighlightsPage(
     });
   }
 
-  // MONTH-BY-MONTH — fit all 12 on ONE page, full-width cards
+  // MONTH-BY-MONTH — fit all 12 on ONE page, all full-width 2-column cards
   doc.addPage();
   ctx.y = ctx.margin;
   ctx.pageBg(doc);
 
-  // Header
-  ctx.y += 16;
+  // Header — compact
+  ctx.y += 12;
   doc.setFont('times', 'bold'); doc.setFontSize(7);
   doc.setTextColor(...GOLD);
   doc.setCharSpace(4);
   doc.text('MONTHLY FORECAST', margin, ctx.y);
   doc.setCharSpace(0);
-  ctx.y += 8;
+  ctx.y += 5;
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 16;
-  doc.setFont('times', 'normal'); doc.setFontSize(22);
+  ctx.y += 12;
+  doc.setFont('times', 'normal'); doc.setFontSize(20);
   doc.setTextColor(...INK);
   doc.text('Month by Month', margin, ctx.y);
-  ctx.y += 8;
+  ctx.y += 6;
   doc.setDrawColor(...RULE); doc.setLineWidth(0.25);
   doc.line(margin, ctx.y, pw - margin, ctx.y);
-  ctx.y += 10;
+  ctx.y += 8;
 
   const forecasts = buildPersonalizedMonthlyForecasts(a, srChart, natalChart);
-  const columnGap = 10;
-  const rowGap = 5;
+  const columnGap = 8;
   const cardW = (contentW - columnGap) / 2;
-  const cardPadX = 10;
-  const cardPadTop = 8;
-  const bodyLineH = 8.5;
+  const cardPadX = 8;
+  const cardPadTop = 7;
+  const bodyLineH = 8;
 
-  // Calculate available height for cards
-  const availH = ph - ctx.y - margin - 10;
+  // Calculate row height to fill the page evenly with 6 rows
+  const availH = ph - ctx.y - margin - 6;
   const numRows = 6;
-  const maxRowH = Math.floor((availH - rowGap * (numRows - 1)) / numRows);
+  const rowGap = 4;
+  const rowH = Math.floor((availH - rowGap * (numRows - 1)) / numRows);
 
-  const measureCard = (f: MonthForecast | undefined) => {
-    if (!f) return { bodyLines: [] as string[], height: 0 };
-    const fullText = `${f.body}`;
-    const bodyLines = doc.splitTextToSize(fullText, cardW - cardPadX * 2) as string[];
-    return { bodyLines, height: cardPadTop + 16 + bodyLines.length * bodyLineH + 4 };
-  };
-
-  const drawMonthCard = (f: MonthForecast, bodyLines: string[], cardH: number, x: number, rowY: number) => {
+  const drawMonthCard = (f: MonthForecast, x: number, rowY: number, cardH: number) => {
     doc.setFillColor(...CARD_BG);
     doc.roundedRect(x, rowY, cardW, cardH, 2, 2, 'F');
     doc.setDrawColor(...RULE); doc.setLineWidth(0.2);
@@ -306,37 +299,37 @@ export function generateHighlightsPage(
 
     let cy = rowY + cardPadTop;
 
-    // Month name — bigger and bolder
-    doc.setFont('times', 'bold'); doc.setFontSize(14);
+    // Month name — BIGGER (16pt)
+    doc.setFont('times', 'bold'); doc.setFontSize(16);
     doc.setTextColor(...INK);
-    doc.text(f.month, x + cardPadX, cy);
+    doc.text(f.month, x + cardPadX, cy + 2);
 
     // Year right-flush
     doc.setFont('times', 'normal'); doc.setFontSize(8);
     doc.setTextColor(...MUTED);
     doc.text(String(f.year), x + cardW - cardPadX, cy, { align: 'right' });
-    cy += 14;
+    cy += 16;
 
-    // Body text — no truncation
+    // Body text — fill available space
     doc.setFont('times', 'normal'); doc.setFontSize(7.5);
     doc.setTextColor(...INK);
-    for (const line of bodyLines) { doc.text(line, x + cardPadX, cy); cy += bodyLineH; }
+    const bodyLines = doc.splitTextToSize(f.body, cardW - cardPadX * 2) as string[];
+    const maxBodyLines = Math.floor((cardH - (cy - rowY) - 4) / bodyLineH);
+    for (const line of bodyLines.slice(0, maxBodyLines)) { doc.text(line, x + cardPadX, cy); cy += bodyLineH; }
   };
 
-  let index = 0;
-  while (index < forecasts.length) {
-    const left = forecasts[index];
-    const right = forecasts[index + 1];
-    const leftMeasured = measureCard(left);
-    const rightMeasured = measureCard(right);
-    const rowH = Math.max(leftMeasured.height, rightMeasured?.height || 0, 50);
+  // Always render as 2-column x 6-row grid — every card is the same width
+  for (let row = 0; row < numRows; row++) {
+    const leftIdx = row * 2;
+    const rightIdx = row * 2 + 1;
+    const rowY = ctx.y + row * (rowH + rowGap);
 
-    const rowY = ctx.y;
-    drawMonthCard(left, leftMeasured.bodyLines, rowH, margin, rowY);
-    if (right) {
-      drawMonthCard(right, rightMeasured.bodyLines, rowH, margin + cardW + columnGap, rowY);
+    if (leftIdx < forecasts.length) {
+      drawMonthCard(forecasts[leftIdx], margin, rowY, rowH);
     }
-    ctx.y = rowY + rowH + rowGap;
-    index += 2;
+    if (rightIdx < forecasts.length) {
+      drawMonthCard(forecasts[rightIdx], margin + cardW + columnGap, rowY, rowH);
+    }
   }
+  ctx.y += numRows * (rowH + rowGap);
 }
