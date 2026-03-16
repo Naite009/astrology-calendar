@@ -288,8 +288,8 @@ export function generatePDFNatalOverlay(
   // Compact two-column layout — smaller cards, no glyphs, plain text
   const col2Gap = 10;
   const col2W = (ctx.contentW - col2Gap) / 2;
-  const cardH = 52;
-  const rowGap = 5;
+  const cardH = 56;
+  const rowGap = 4;
 
   for (let i = 0; i < points.length; i += 2) {
     const leftP = points[i];
@@ -319,19 +319,19 @@ function drawOverlayCard(
   doc.setFillColor(...ctx.colors.gold);
   doc.rect(x, y, 3, h, 'F');
 
-  // Plain text label — no arrow glyph
-  doc.setFont('times', 'bold'); doc.setFontSize(9);
+  // Plain text label
+  doc.setFont('times', 'bold'); doc.setFontSize(10);
   doc.setTextColor(...ctx.colors.ink);
   const label = `${p.label} in Natal ${p.house}${ord(p.house)} House`;
   const labelLines: string[] = doc.splitTextToSize(label, w - 18);
-  let ty = y + 12;
-  for (const l of labelLines.slice(0, 2)) { doc.text(l, x + 10, ty); ty += 10; }
+  let ty = y + 13;
+  for (const l of labelLines.slice(0, 2)) { doc.text(l, x + 10, ty); ty += 11; }
 
   // Felt-sense interpretation
-  doc.setFont('times', 'normal'); doc.setFontSize(7);
+  doc.setFont('times', 'normal'); doc.setFontSize(8.5);
   doc.setTextColor(...ctx.colors.muted);
   const feltLines: string[] = doc.splitTextToSize(p.felt, w - 18);
-  for (const l of feltLines.slice(0, 3)) { doc.text(l, x + 10, ty); ty += 8; }
+  for (const l of feltLines.slice(0, 3)) { doc.text(l, x + 10, ty); ty += 9; }
 }
 
 // ─── Angle Activations Section ──────────────────────────────────
