@@ -47,7 +47,7 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   sections.push({ title: 'Your Big Three', desc: 'Sun, Moon, and Rising — strengths, shadow, and activation' });
   
   sections.push({ title: 'Lunar Phase Timeline', desc: '29-year developmental cycle with recurring patterns' });
-  sections.push({ title: 'Natal Overlay & Angle Activations', desc: 'How SR angles (ASC/MC) contact natal planets and vice versa' });
+  sections.push({ title: 'Natal Overlay & Angle Activations', desc: 'Where SR planets land in your houses, plus where angles hit your natal planets' });
   sections.push({ title: 'Year Priority Engine', desc: 'Life areas ranked by planetary emphasis' });
   if (a.moonSign) sections.push({ title: 'Moon Sign Shift', desc: 'How your emotional processing changes this year' });
   sections.push({ title: 'Natal vs Solar Return', desc: 'Side-by-side comparison of all planet positions' });
