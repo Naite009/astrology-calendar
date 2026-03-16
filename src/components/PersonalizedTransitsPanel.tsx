@@ -681,15 +681,20 @@ Format with ## headers. Be chart-specific - no generic advice that could apply t
               <Badge variant="outline" className="bg-primary/10">
                 ☽ Moon in Your {moonHouse}
                 {moonHouse === 1 ? 'st' : moonHouse === 2 ? 'nd' : moonHouse === 3 ? 'rd' : 'th'} House
+                {moonHouse && chart.houseCusps?.[`house${moonHouse}` as keyof typeof chart.houseCusps]?.sign
+                  ? ` (${chart.houseCusps[`house${moonHouse}` as keyof typeof chart.houseCusps]?.sign} cusp)`
+                  : ''}
               </Badge>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               {moonHouseInterpretation}
             </p>
             <p className="text-xs text-muted-foreground italic">
-              {moonSign} is in your {moonHouse}
+              {moonSign} at {moonDegree.toFixed(0)}° is in your {moonHouse}
               {moonHouse === 1 ? 'st' : moonHouse === 2 ? 'nd' : moonHouse === 3 ? 'rd' : 'th'} house
-              {(chart.houseCusps?.house1?.sign || chart.planets.Ascendant?.sign) && ` (you have ${chart.houseCusps?.house1?.sign || chart.planets.Ascendant?.sign} rising)`}
+              {moonHouse && chart.houseCusps?.[`house${moonHouse}` as keyof typeof chart.houseCusps]?.sign
+                ? ` (cusp at ${chart.houseCusps[`house${moonHouse}` as keyof typeof chart.houseCusps]?.degree || 0}° ${chart.houseCusps[`house${moonHouse}` as keyof typeof chart.houseCusps]?.sign})`
+                : ''}
             </p>
           </div>
         )}
