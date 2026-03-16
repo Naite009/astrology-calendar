@@ -581,7 +581,7 @@ function drawActivationCards(
     const arrowX = circleX + circleR + 6;
     doc.setFont('times', 'normal'); doc.setFontSize(14);
     doc.setTextColor(...GOLD);
-    doc.text(`→`, arrowX, circleY + 4);
+    doc.text('-->', arrowX, circleY + 4);
 
     // Right content area
     const textX = arrowX + 14;
