@@ -10,7 +10,6 @@ import { moonSignDeep, moonShiftNarrative } from '@/lib/moonSignShiftData';
 import { generateActionGuidance } from '@/lib/solarReturnActionGuidance';
 import { generateExecutiveSummary } from '@/lib/solarReturnExecutiveSummary';
 import { calculateActivationWindows } from '@/lib/solarReturnActivationWindows';
-import { moonSignDeep, moonShiftNarrative } from '@/lib/moonSignShiftData';
 import { generatePDFCover } from '@/lib/pdfSections/cover';
 import { generatePDFTableOfContents, addTOCLinks } from '@/lib/pdfSections/tableOfContents';
 import { generatePDFYearAtAGlance } from '@/lib/pdfSections/yearAtAGlance';
