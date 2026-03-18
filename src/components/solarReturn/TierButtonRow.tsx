@@ -40,10 +40,6 @@ export const TierButtonRow = ({
   onGenerateAiReading,
 }: Props) => {
   const handleTierClick = (tier: TierId) => {
-    if (tier === 't4' || tier === 't5') {
-      toast.info('Coming soon');
-      return;
-    }
     onDownloadTier(tier);
   };
 

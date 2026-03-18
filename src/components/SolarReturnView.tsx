@@ -269,13 +269,8 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
               analysis={analysis}
               onClose={() => setActiveTier(null)}
               onDownload={(tier) => {
-                if (tier === 't4' || tier === 't5') {
-                  toast.info('Coming soon — this tier is under development');
-                } else {
-                  // Download JSON for the selected tier
-                  if (selectedSR && selectedNatal) {
-                    downloadBirthdayJSONStandalone(analysis, selectedSR, selectedNatal);
-                  }
+                if (selectedSR && selectedNatal) {
+                  downloadBirthdayJSONStandalone(analysis, selectedSR, selectedNatal);
                 }
               }}
             />

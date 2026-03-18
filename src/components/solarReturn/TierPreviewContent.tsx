@@ -133,7 +133,7 @@ export const TierPreviewContent = ({ tier, analysis }: Props) => {
             'Quarterly focus breakdown (not just monthly)',
           ]} />
           <FormatBlock lines={[
-            'Coming in next release',
+            '25–35 page PDF',
           ]} />
           <Badge label="AI + structured synthesis prompt" color="rose" />
         </div>
@@ -157,7 +157,7 @@ export const TierPreviewContent = ({ tier, analysis }: Props) => {
             'A "what a master sees" summary — patterns across all techniques',
           ]} />
           <FormatBlock lines={[
-            'Coming in next release',
+            '40–50 page PDF',
           ]} />
           <Badge label="AI master narrative" color="rose" />
         </div>

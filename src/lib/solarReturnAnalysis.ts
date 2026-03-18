@@ -2,6 +2,18 @@ import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChar
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { analyzeSRHemispheres, type SRHemisphericResult } from './solarReturnHemispheres';
 import { calculateVertex, parseLatitudeFromLocation } from './solarReturnVertex';
+import {
+  calculateMutualReceptions, calculateDignityReport, calculateHealthOverlay,
+  calculateEclipseSensitivity, calculateEnhancedRetrogrades, calculateQuarterlyFocus,
+  type SRMutualReception, type SRDignityReport, type SRHealthReport,
+  type SREclipseSensitivity, type SREnhancedRetrograde, type SRQuarterlyFocus,
+} from './solarReturnT4Analysis';
+import {
+  calculateFixedStars, calculateArabicParts, calculateFirdaria,
+  calculateAntiscia, calculateSolarArcs, calculateSynthesisSections,
+  type SRFixedStar, type SRArabicPart, type SRFirdariaReport,
+  type SRAntisciaContact, type SRSolarArc, type SRSynthesisSection,
+} from './solarReturnT5Analysis';
 
 // ─── helpers ────────────────────────────────────────────────────────
 const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
@@ -391,6 +403,20 @@ export interface SolarReturnAnalysis {
   vertex: SRVertexData | null;
   // Helper: map planet name → SR house for display
   planetSRHouses: Record<string, number | null>;
+  // ─── Tier 4 ───
+  mutualReceptions: SRMutualReception[];
+  dignityReport: SRDignityReport;
+  healthOverlay: SRHealthReport;
+  eclipseSensitivity: SREclipseSensitivity[];
+  enhancedRetrogrades: SREnhancedRetrograde[];
+  quarterlyFocus: SRQuarterlyFocus[];
+  // ─── Tier 5 ───
+  fixedStars: SRFixedStar[];
+  arabicParts: SRArabicPart[];
+  firdaria: SRFirdariaReport;
+  antisciaContacts: SRAntisciaContact[];
+  solarArcs: SRSolarArc[];
+  synthesisSections: SRSynthesisSection[];
 }
 
 // ─── House life-area map & sign felt-sense ──────────────────────────
@@ -1406,6 +1432,35 @@ export const analyzeSolarReturn = (
     }
   }
 
+  // ─── Tier 4 Calculations ──────────────────────────────────────────
+  const mutualReceptions = calculateMutualReceptions(srChart);
+  const dignityReport = calculateDignityReport(srChart, planetSRHouses);
+  const healthOverlay = calculateHealthOverlay(srChart, natalChart, planetSRHouses, srInternalAspects);
+  const eclipseSensitivity = calculateEclipseSensitivity(srChart, natalChart, srChart.solarReturnYear);
+  const enhancedRetrogrades = calculateEnhancedRetrogrades(srChart, srChart.solarReturnYear);
+  // Fill in house numbers for enhanced retrogrades
+  for (const r of enhancedRetrogrades) {
+    r.house = planetSRHouses[r.planet] ?? null;
+  }
+  const birthMonth = natalChart.birthDate ? parseInt(natalChart.birthDate.slice(5, 7), 10) - 1 : 0;
+  const quarterlyFocus = calculateQuarterlyFocus(srChart, natalChart, planetSRHouses, srChart.solarReturnYear, birthMonth);
+
+  // ─── Tier 5 Calculations ──────────────────────────────────────────
+  const fixedStars = calculateFixedStars(srChart, natalChart, srChart.solarReturnYear);
+  
+  // Arabic Parts need a house-finding function
+  const findSRHouseForParts = (deg: number): number | null => {
+    const cusps = extractCusps(srChart);
+    return cusps ? findHouseInCusps(deg, cusps) : null;
+  };
+  const arabicParts = calculateArabicParts(srChart, findSRHouseForParts);
+  
+  const t5Age = profectionYear?.age ?? 0;
+  const firdaria = calculateFirdaria(t5Age);
+  const antisciaContacts = calculateAntiscia(srChart, natalChart);
+  const solarArcs = calculateSolarArcs(srChart, natalChart, t5Age);
+  const synthesisSections = calculateSynthesisSections(srChart, natalChart, planetSRHouses, srToNatalAspects, houseOverlays);
+
   return {
     yearlyTheme,
     srAscRulerInNatal,
@@ -1440,5 +1495,19 @@ export const analyzeSolarReturn = (
     moonMetonicAges,
     vertex,
     planetSRHouses,
+    // Tier 4
+    mutualReceptions,
+    dignityReport,
+    healthOverlay,
+    eclipseSensitivity,
+    enhancedRetrogrades,
+    quarterlyFocus,
+    // Tier 5
+    fixedStars,
+    arabicParts,
+    firdaria,
+    antisciaContacts,
+    solarArcs,
+    synthesisSections,
   };
 };

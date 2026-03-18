@@ -32,10 +32,7 @@ export const TierPreviewPanel = ({ tier, analysis, onClose, onDownload }: Props)
   const colors = TIER_COLORS[tier];
 
   const handleDownload = () => {
-    if (tier === 't4' || tier === 't5') {
-      toast.info('Coming soon — this tier is under development');
-      return;
-    }
+    onDownload(tier);
     onDownload(tier);
   };
 
@@ -61,7 +58,7 @@ export const TierPreviewPanel = ({ tier, analysis, onClose, onDownload }: Props)
         >
           <span className="flex items-center gap-1.5">
             <Download size={12} />
-            {tier === 't4' || tier === 't5' ? 'Coming Soon' : 'Download JSON'}
+            Download JSON
           </span>
         </button>
         <button

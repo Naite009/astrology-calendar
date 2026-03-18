@@ -437,6 +437,20 @@ export function downloadBirthdayJSONStandalone(
       nodesFocus: analysis.nodesFocus,
       retrogrades: analysis.retrogrades,
       vertex: analysis.vertex,
+      // Tier 4
+      mutualReceptions: analysis.mutualReceptions,
+      dignityReport: analysis.dignityReport,
+      healthOverlay: analysis.healthOverlay,
+      eclipseSensitivity: analysis.eclipseSensitivity,
+      enhancedRetrogrades: analysis.enhancedRetrogrades,
+      quarterlyFocus: analysis.quarterlyFocus,
+      // Tier 5
+      fixedStars: analysis.fixedStars,
+      arabicParts: analysis.arabicParts,
+      firdaria: analysis.firdaria,
+      antisciaContacts: analysis.antisciaContacts,
+      solarArcs: analysis.solarArcs,
+      synthesisSections: analysis.synthesisSections,
     }
   };
 
