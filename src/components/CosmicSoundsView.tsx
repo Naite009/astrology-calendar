@@ -750,6 +750,7 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
     });
   }, [binauralRootFreqs, binauralTimer, getEngine, stopPlaying, toggleOrPlay]);
 
+  return (
     <div className="max-w-5xl mx-auto space-y-10">
       {/* Header */}
       <div className="text-center space-y-3">
