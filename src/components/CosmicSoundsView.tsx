@@ -451,8 +451,8 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
       setPlaying(id);
       playingRef.current = id;
       const freqs = SIGNS.map(s => signFreq(s));
-      getEngine().playChord(freqs, 5, "sine");
-      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, 5000);
+      getEngine().playChord(freqs, 10, "sine");
+      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, 10000);
     });
   }, [getEngine, stopPlaying, toggleOrPlay]);
 
