@@ -1456,9 +1456,9 @@ export const analyzeSolarReturn = (
   const arabicParts = calculateArabicParts(srChart, findSRHouseForParts);
   
   const t5Age = profectionYear?.age ?? 0;
-  const firdaria = calculateFirdaria(currentAge);
+  const firdaria = calculateFirdaria(t5Age);
   const antisciaContacts = calculateAntiscia(srChart, natalChart);
-  const solarArcs = calculateSolarArcs(srChart, natalChart, currentAge);
+  const solarArcs = calculateSolarArcs(srChart, natalChart, t5Age);
   const synthesisSections = calculateSynthesisSections(srChart, natalChart, planetSRHouses, srToNatalAspects, houseOverlays);
 
   return {
