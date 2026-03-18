@@ -1831,13 +1831,6 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       )}
 
       <div className="flex flex-wrap gap-2">
-        {narrative && narrative.trim().length > 0 && (
-          <button onClick={generatePDF} disabled={generating}
-            className="text-[11px] uppercase tracking-widest px-3 py-1.5 rounded-sm inline-flex items-center gap-1 disabled:opacity-50 bg-[hsl(var(--tier-3))] text-[hsl(var(--tier-3-accent))] border border-[hsl(var(--tier-3-accent)/0.3)] hover:border-[hsl(var(--tier-3-accent)/0.6)]">
-            {generating ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
-            {generating ? 'Generating...' : 'Birthday Gift PDF'}
-          </button>
-        )}
         <button onClick={downloadBirthdayJSON}
           className="text-[11px] uppercase tracking-widest px-3 py-1.5 rounded-sm inline-flex items-center gap-1 bg-[hsl(var(--tier-3))] text-[hsl(var(--tier-3-accent))] border border-[hsl(var(--tier-3-accent)/0.3)] hover:border-[hsl(var(--tier-3-accent)/0.6)]">
           <Download size={12} />
