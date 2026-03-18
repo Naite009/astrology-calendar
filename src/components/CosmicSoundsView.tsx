@@ -734,20 +734,30 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
 
           {natalFreqs ? (
             <>
+              <p className="text-[10px] text-muted-foreground mb-2 italic">Click any planet to hear its tone — play them like a piano.</p>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                 {natalFreqs.map(({ planet, sign, freq }) => {
                   const isHi = highlightedPlanet === planet || highlightedPlanet === "all" || playing === "natal-chord";
                   const label = PLANET_LABELS[planet] || planet;
                   return (
-                    <div key={planet} className={`flex items-center gap-2 p-2.5 rounded-sm border transition-all duration-200 ${
-                      isHi ? "border-primary bg-primary/10 scale-[1.04] shadow-md" : "border-border bg-card"
-                    }`}>
+                    <button
+                      key={planet}
+                      onClick={() => {
+                        getEngine().stopAll();
+                        setHighlightedPlanet(planet);
+                        getEngine().playTone(freq, 1.5, "sine");
+                        setTimeout(() => { setHighlightedPlanet(prev => prev === planet ? null : prev); }, 1500);
+                      }}
+                      className={`flex items-center gap-2 p-2.5 rounded-sm border transition-all duration-150 cursor-pointer select-none active:scale-95 ${
+                        isHi ? "border-primary bg-primary/10 scale-[1.04] shadow-md" : "border-border bg-card hover:border-primary/40 hover:bg-secondary/30"
+                      }`}
+                    >
                       <span className="text-lg" style={{ color: SIGN_COLORS[sign] }}>{PLANET_GLYPHS[planet] || "•"}</span>
-                      <div>
+                      <div className="text-left">
                         <p className="text-[11px] font-medium text-foreground">{label}</p>
                         <p className="text-[9px] text-muted-foreground font-mono">{sign} · {NOTE_NAMES[sign]} · {Math.round(freq)} Hz</p>
                       </div>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
