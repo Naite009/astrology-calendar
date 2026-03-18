@@ -188,6 +188,7 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
   const stopPlaying = useCallback(() => {
     getEngine().stopAll();
     setPlaying(null);
+    setHighlightedPlanet(null);
     playingRef.current = null;
   }, [getEngine]);
 
