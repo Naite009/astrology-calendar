@@ -307,10 +307,17 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
       const id = "natal-arp";
       setPlaying(id);
       playingRef.current = id;
-      await getEngine().playArpeggio(natalFreqs.map(f => f.freq), 0.8);
+      for (let i = 0; i < natalFreqs.length; i++) {
+        if (playingRef.current !== id) break;
+        setHighlightedPlanet(natalFreqs[i].planet);
+        getEngine().playTone(natalFreqs[i].freq, 0.8, "sine", -0.6 + (1.2 * i / Math.max(1, natalFreqs.length - 1)));
+        await new Promise(r => setTimeout(r, 480));
+      }
+      setHighlightedPlanet(null);
       if (playingRef.current === id) {
         getEngine().playChord(natalFreqs.map(f => f.freq), 4, "sine");
-        setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, 4000);
+        setHighlightedPlanet("all");
+        setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; setHighlightedPlanet(null); } }, 4000);
       }
     });
   }, [natalFreqs, getEngine, stopPlaying, toggleOrPlay]);
