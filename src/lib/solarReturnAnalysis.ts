@@ -2,6 +2,18 @@ import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChar
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { analyzeSRHemispheres, type SRHemisphericResult } from './solarReturnHemispheres';
 import { calculateVertex, parseLatitudeFromLocation } from './solarReturnVertex';
+import {
+  calculateMutualReceptions, calculateDignityReport, calculateHealthOverlay,
+  calculateEclipseSensitivity, calculateEnhancedRetrogrades, calculateQuarterlyFocus,
+  type SRMutualReception, type SRDignityReport, type SRHealthReport,
+  type SREclipseSensitivity, type SREnhancedRetrograde, type SRQuarterlyFocus,
+} from './solarReturnT4Analysis';
+import {
+  calculateFixedStars, calculateArabicParts, calculateFirdaria,
+  calculateAntiscia, calculateSolarArcs, calculateSynthesisSections,
+  type SRFixedStar, type SRArabicPart, type SRFirdariaReport,
+  type SRAntisciaContact, type SRSolarArc, type SRSynthesisSection,
+} from './solarReturnT5Analysis';
 
 // ─── helpers ────────────────────────────────────────────────────────
 const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
