@@ -427,8 +427,8 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
       playingRef.current = id;
       const f1 = BASE_FREQ;
       const f2 = BASE_FREQ * Math.pow(2, asp.semitones / 12);
-      getEngine().playChord([f1, f2], 3, asp.waveform);
-      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, 3000);
+      getEngine().playChord([f1, f2], 10, asp.waveform);
+      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, 10000);
     });
   }, [getEngine, stopPlaying, toggleOrPlay]);
 
