@@ -457,7 +457,7 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
   }, [getEngine, stopPlaying, toggleOrPlay]);
 
   // Grouped chord helpers — uses expressive trine/square voices
-  const playGroupChord = useCallback((id: string, signs: ZodiacSign[], duration = 5, waveform: OscillatorType = "sine") => {
+  const playGroupChord = useCallback((id: string, signs: ZodiacSign[], duration = 10, waveform: OscillatorType = "sine") => {
     toggleOrPlay(id, () => {
       stopPlaying();
       setPlaying(id);
