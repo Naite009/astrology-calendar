@@ -7,6 +7,9 @@ import { srJupiterInHouseDeep, srMercuryInHouseDeep, srVenusInHouseDeep, srMarsI
 import { generateSRtoNatalInterpretation, planetLifeMeanings } from '@/lib/solarReturnAspectInterp';
 import { useState } from 'react';
 import { moonSignDeep, moonShiftNarrative } from '@/lib/moonSignShiftData';
+import { generateActionGuidance } from '@/lib/solarReturnActionGuidance';
+import { generateExecutiveSummary } from '@/lib/solarReturnExecutiveSummary';
+import { calculateActivationWindows } from '@/lib/solarReturnActivationWindows';
 import { generatePDFCover } from '@/lib/pdfSections/cover';
 import { generatePDFTableOfContents, addTOCLinks } from '@/lib/pdfSections/tableOfContents';
 import { generatePDFYearAtAGlance } from '@/lib/pdfSections/yearAtAGlance';
@@ -451,6 +454,51 @@ export function downloadBirthdayJSONStandalone(
       antisciaContacts: analysis.antisciaContacts,
       solarArcs: analysis.solarArcs,
       synthesisSections: analysis.synthesisSections,
+      // New: Executive Summary, Action Guidance, Activation Windows
+      executiveSummary: generateExecutiveSummary(analysis, natalChart),
+      actionGuidance: (() => {
+        const srPlanets: Record<string, { sign?: string; isRetrograde?: boolean }> = {};
+        for (const [key, val] of Object.entries(srChart.planets || {})) {
+          if (val) srPlanets[key] = { sign: (val as any).sign, isRetrograde: (val as any).isRetrograde };
+        }
+        return generateActionGuidance(analysis.planetSRHouses, srPlanets);
+      })(),
+      activationWindows: (() => {
+        const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+        const toAbs = (pos: any): number | null => {
+          if (!pos?.sign) return null;
+          const idx = SIGNS.indexOf(pos.sign);
+          if (idx < 0) return null;
+          return idx * 30 + (pos.degree || 0) + ((pos as any).minutes || 0) / 60;
+        };
+        const srPositions: Record<string, number> = {};
+        const keyTargets = ['Sun', 'Moon', 'Ascendant', 'Mars', 'Jupiter', 'Saturn', 'Venus', 'Mercury'];
+        for (const p of keyTargets) {
+          const pos = srChart.planets?.[p as keyof typeof srChart.planets];
+          const deg = pos ? toAbs(pos) : null;
+          if (deg !== null) srPositions[p] = deg;
+        }
+        const bd = natalChart.birthDate || '';
+        const parts = bd.split('-');
+        const bMonth = parts.length >= 2 ? parseInt(parts[1], 10) - 1 : 0;
+        const bDay = parts.length >= 3 ? parseInt(parts[2], 10) : 1;
+        const data = calculateActivationWindows(srPositions, srChart.solarReturnYear, bMonth, bDay);
+        // Serialize dates to strings for JSON
+        return {
+          peakPeriods: data.peakPeriods,
+          monthlyThemes: data.monthlyThemes.map(m => ({
+            ...m,
+            transitHits: m.transitHits.map(h => ({
+              ...h,
+              exactDate: h.exactDate.toISOString(),
+              windowStart: h.windowStart.toISOString(),
+              windowEnd: h.windowEnd.toISOString(),
+            })),
+          })),
+          transitHitCount: data.transitHits.length,
+          windowCount: data.activationWindows.length,
+        };
+      })(),
     }
   };
 
@@ -1884,6 +1932,14 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       nodesFocus:  analysis.nodesFocus,
       retrogrades: analysis.retrogrades,
       vertex: analysis.vertex,
+      executiveSummary: generateExecutiveSummary(analysis, natalChart),
+      actionGuidance: (() => {
+        const srPlanets: Record<string, { sign?: string; isRetrograde?: boolean }> = {};
+        for (const [key, val] of Object.entries(srChart.planets || {})) {
+          if (val) srPlanets[key] = { sign: (val as any).sign, isRetrograde: (val as any).isRetrograde };
+        }
+        return generateActionGuidance(analysis.planetSRHouses, srPlanets);
+      })(),
     };
   };
 

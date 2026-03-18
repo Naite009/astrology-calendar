@@ -28,6 +28,12 @@ import { LandsVsPlaysOutCard } from '@/components/solarReturn/LandsVsPlaysOutCar
 import { AngleActivationCard } from '@/components/solarReturn/AngleActivationCard';
 import { PlanetToAngleCard } from '@/components/solarReturn/PlanetToAngleCard';
 import { YearPriorityEngine } from '@/components/solarReturn/YearPriorityEngine';
+import { ActivationTimeline } from '@/components/solarReturn/ActivationTimeline';
+import { ActionGuidanceCard } from '@/components/solarReturn/ActionGuidanceCard';
+import { ExecutiveSummaryCard } from '@/components/solarReturn/ExecutiveSummaryCard';
+import { calculateActivationWindows } from '@/lib/solarReturnActivationWindows';
+import { generateActionGuidance } from '@/lib/solarReturnActionGuidance';
+import { generateExecutiveSummary } from '@/lib/solarReturnExecutiveSummary';
 
 const ZODIAC_SIGNS = [
   'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
@@ -736,8 +742,55 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
   onEdit: () => void;
   onDelete: () => void;
 }) => {
+  // Compute executive summary
+  const executiveSummary = useMemo(() => generateExecutiveSummary(analysis, natalChart), [analysis, natalChart]);
+
+  // Compute action guidance
+  const actionGuidance = useMemo(() => {
+    const srPlanets: Record<string, { sign?: string; isRetrograde?: boolean }> = {};
+    for (const [key, val] of Object.entries(srChart.planets || {})) {
+      if (val) srPlanets[key] = { sign: (val as any).sign, isRetrograde: (val as any).isRetrograde };
+    }
+    return generateActionGuidance(analysis.planetSRHouses, srPlanets);
+  }, [analysis, srChart]);
+
+  // Compute activation windows
+  const activationData = useMemo(() => {
+    const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+    const toAbs = (pos: any): number | null => {
+      if (!pos?.sign) return null;
+      const idx = SIGNS.indexOf(pos.sign);
+      if (idx < 0) return null;
+      return idx * 30 + (pos.degree || 0) + ((pos as any).minutes || 0) / 60;
+    };
+
+    const srPositions: Record<string, number> = {};
+    const keyTargets = ['Sun', 'Moon', 'Ascendant', 'Mars', 'Jupiter', 'Saturn', 'Venus', 'Mercury'];
+    for (const p of keyTargets) {
+      const pos = srChart.planets?.[p as keyof typeof srChart.planets];
+      const deg = pos ? toAbs(pos) : null;
+      if (deg !== null) srPositions[p] = deg;
+    }
+    // Also add MC if available
+    const mc = srChart.houseCusps?.house10;
+    if (mc) {
+      const mcDeg = toAbs(mc);
+      if (mcDeg !== null) srPositions['MC'] = mcDeg;
+    }
+
+    const bd = natalChart.birthDate || '';
+    const parts = bd.split('-');
+    const bMonth = parts.length >= 2 ? parseInt(parts[1], 10) - 1 : 0;
+    const bDay = parts.length >= 3 ? parseInt(parts[2], 10) : 1;
+
+    return calculateActivationWindows(srPositions, srChart.solarReturnYear, bMonth, bDay);
+  }, [srChart, natalChart]);
+
   return (
     <div className="space-y-4 mt-4">
+      {/* Executive Summary — Top Opportunities, Challenges, Core Focus */}
+      <ExecutiveSummaryCard summary={executiveSummary} />
+
       {/* 1. Story of the Year — top-level narrative synthesis */}
       <StoryOfTheYear analysis={analysis} natalChart={natalChart} srChart={srChart} />
 
@@ -756,6 +809,14 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
 
       {/* 6. Year Priority Engine — weighted theme ranking */}
       <YearPriorityEngine analysis={analysis} natalChart={natalChart} srChart={srChart} />
+
+      {/* 7. Your Year's Playbook — Action Guidance */}
+      <ActionGuidanceCard guidance={actionGuidance} />
+
+      {/* 8. Activation Timeline — When themes peak */}
+      {activationData.transitHits.length > 0 && (
+        <ActivationTimeline data={activationData} />
+      )}
 
       {/* Dashboard Details */}
       <SROverviewDashboard analysis={analysis} natalChart={natalChart} srChart={srChart} />
