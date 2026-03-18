@@ -358,15 +358,14 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
         <div className="flex gap-3 justify-center pt-2">
           <button
             onClick={playZodiacScale}
-            disabled={playing === "zodiac-scale"}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-all border ${
               playing === "zodiac-scale"
                 ? "border-primary bg-primary text-primary-foreground"
                 : "border-border hover:border-primary hover:bg-secondary text-muted-foreground hover:text-foreground"
             }`}
           >
-            <Play size={14} />
-            Play Full Zodiac Scale
+            {playing === "zodiac-scale" ? <Square size={14} /> : <Play size={14} />}
+            {playing === "zodiac-scale" ? "Stop" : "Play Full Zodiac Scale"}
           </button>
         </div>
       </section>
