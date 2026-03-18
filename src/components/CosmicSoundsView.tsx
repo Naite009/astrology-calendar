@@ -20,6 +20,27 @@ const signFreq = (sign: ZodiacSign): number => {
   return BASE_FREQ * Math.pow(2, idx / 12);
 };
 
+// ─── Cousto Orbital Frequencies (Hans Cousto "The Cosmic Octave") ───
+const COUSTO_FREQS: Record<string, { freq: number; note: string; label: string }> = {
+  Sun: { freq: 126.22, note: "B", label: "Sun (central tone)" },
+  Moon: { freq: 210.42, note: "G♯", label: "Synodic Moon" },
+  Mercury: { freq: 141.27, note: "C♯", label: "Mercury orbit" },
+  Venus: { freq: 221.23, note: "A", label: "Venus orbit" },
+  Mars: { freq: 144.72, note: "D", label: "Mars orbit" },
+  Jupiter: { freq: 183.58, note: "F♯", label: "Jupiter orbit" },
+  Saturn: { freq: 147.85, note: "D", label: "Saturn orbit" },
+  Uranus: { freq: 207.36, note: "G♯", label: "Uranus orbit" },
+  Neptune: { freq: 211.44, note: "G♯", label: "Neptune orbit" },
+  Pluto: { freq: 140.25, note: "C♯", label: "Pluto orbit" },
+  Chiron: { freq: 172.06, note: "F", label: "Chiron orbit" },
+  NorthNode: { freq: 234.16, note: "A♯", label: "Lunar Node cycle" },
+  Earth: { freq: 136.10, note: "C♯", label: "Earth year — Om̐" },
+};
+
+const OM_FREQ = 136.10;
+
+type FreqMode = "sign" | "cousto";
+
 const SIGN_COLORS: Record<ZodiacSign, string> = {
   Aries: "hsl(0 80% 55%)", Taurus: "hsl(140 50% 40%)", Gemini: "hsl(50 80% 50%)",
   Cancer: "hsl(210 60% 60%)", Leo: "hsl(35 90% 55%)", Virgo: "hsl(100 40% 45%)",
@@ -443,6 +464,7 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
   const [volume, setVolume] = useState(0.3);
   const [muted, setMuted] = useState(false);
   const [reverb, setReverb] = useState(0.4);
+  const [freqMode, setFreqMode] = useState<FreqMode>("sign");
   const playingRef = useRef<string | null>(null);
   
   // Chart selector
@@ -660,7 +682,7 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
   // Natal chart chord — use houseCusps.house1 for Ascendant sign
   const natalFreqs = useMemo(() => {
     if (!selectedChart?.planets) return null;
-    const freqs: { planet: string; sign: ZodiacSign; freq: number }[] = [];
+    const freqs: { planet: string; sign: ZodiacSign; freq: number; note: string }[] = [];
     for (const p of PLANETS) {
       let sign: string | undefined;
       if (p === "Ascendant") {
@@ -672,11 +694,17 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
         sign = pos?.sign;
       }
       if (sign && SIGNS.includes(sign as ZodiacSign)) {
-        freqs.push({ planet: p, sign: sign as ZodiacSign, freq: signFreq(sign as ZodiacSign) });
+        const freq = freqMode === "cousto" && COUSTO_FREQS[p]
+          ? COUSTO_FREQS[p].freq
+          : signFreq(sign as ZodiacSign);
+        const note = freqMode === "cousto" && COUSTO_FREQS[p]
+          ? COUSTO_FREQS[p].note
+          : NOTE_NAMES[sign as ZodiacSign];
+        freqs.push({ planet: p, sign: sign as ZodiacSign, freq, note });
       }
     }
     return freqs.length > 0 ? freqs : null;
-  }, [selectedChart]);
+  }, [selectedChart, freqMode]);
 
   const playNatalChord = useCallback(() => {
     if (!natalFreqs) return;
@@ -950,9 +978,59 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
 
           {natalFreqs ? (
             <>
-              <p className="text-[10px] text-muted-foreground mb-2 italic">Click any planet to hear its tone — click again to stop.</p>
+              {/* Frequency mode toggle + Om */}
+              <div className="flex flex-wrap items-center gap-3 justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Mode:</span>
+                  <button
+                    onClick={() => setFreqMode("sign")}
+                    className={`px-3 py-1.5 rounded-sm text-[11px] border transition-all ${
+                      freqMode === "sign" ? "border-primary bg-primary/10 text-foreground" : "border-border text-muted-foreground hover:border-primary/40"
+                    }`}
+                  >
+                    Sign-Based
+                  </button>
+                  <button
+                    onClick={() => setFreqMode("cousto")}
+                    className={`px-3 py-1.5 rounded-sm text-[11px] border transition-all ${
+                      freqMode === "cousto" ? "border-primary bg-primary/10 text-foreground" : "border-border text-muted-foreground hover:border-primary/40"
+                    }`}
+                  >
+                    Orbital (Cousto)
+                  </button>
+                </div>
+                <button
+                  onClick={() => {
+                    const omId = "om-tone";
+                    if (playing === omId) {
+                      stopPlaying();
+                    } else {
+                      stopPlaying();
+                      setPlaying(omId);
+                      playingRef.current = omId;
+                      getEngine().playTone(OM_FREQ, 10, "sine");
+                      setTimeout(() => { if (playingRef.current === omId) { setPlaying(null); playingRef.current = null; } }, 10000);
+                    }
+                  }}
+                  className={`flex items-center gap-2 px-4 py-1.5 rounded-sm text-[11px] border transition-all ${
+                    playing === "om-tone"
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border text-muted-foreground hover:border-primary/40 hover:bg-secondary/30"
+                  }`}
+                >
+                  {playing === "om-tone" ? <Square size={12} /> : <Play size={12} />}
+                  Om̐ · 136.10 Hz
+                </button>
+              </div>
+              <p className="text-[10px] text-muted-foreground italic">
+                {freqMode === "sign"
+                  ? "Sign-based: each planet plays the chromatic note of the sign it occupies."
+                  : "Orbital (Cousto): each planet plays its own frequency derived from its actual orbital period, octaved into audible range."
+                }
+                {" "}Click any planet to hear — click again to stop.
+              </p>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                {natalFreqs.map(({ planet, sign, freq }) => {
+                {natalFreqs.map(({ planet, sign, freq, note }) => {
                   const natalId = `natal-${planet}`;
                   const isHi = playing === natalId || highlightedPlanet === planet || highlightedPlanet === "all" || playing === "natal-chord";
                   const label = PLANET_LABELS[planet] || planet;
@@ -979,7 +1057,7 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
                       <span className="text-lg" style={{ color: SIGN_COLORS[sign] }}>{PLANET_GLYPHS[planet] || "•"}</span>
                       <div className="text-left">
                         <p className="text-[11px] font-medium text-foreground">{label}</p>
-                        <p className="text-[9px] text-muted-foreground font-mono">{sign} · {NOTE_NAMES[sign]} · {Math.round(freq)} Hz</p>
+                        <p className="text-[9px] text-muted-foreground font-mono">{freqMode === "cousto" ? (COUSTO_FREQS[planet]?.label || sign) : sign} · {note} · {Math.round(freq)} Hz</p>
                       </div>
                     </button>
                   );
