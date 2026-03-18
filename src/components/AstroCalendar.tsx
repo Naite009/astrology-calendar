@@ -686,6 +686,17 @@ export const AstroCalendar = () => {
               >
                 🃏 Tarot
               </button>
+              <button
+                onClick={() => setViewMode("cosmic-sounds")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "cosmic-sounds"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Volume2 size={14} />
+                Sounds
+              </button>
             </div>
 
             {userData && (
