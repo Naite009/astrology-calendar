@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import { SolarReturnPDFExport, generateBirthdayGiftPDF, downloadBirthdayJSONStandalone } from '@/components/SolarReturnPDFExport';
 import { TierButtonRow } from '@/components/solarReturn/TierButtonRow';
+import { TierPreviewPanel } from '@/components/solarReturn/TierPreviewPanel';
 import { SROverviewDashboard } from '@/components/solarReturn/SROverviewDashboard';
 import { LunarPhaseTimeline } from '@/components/solarReturn/LunarPhaseTimeline';
 import { StoryOfTheYear } from '@/components/solarReturn/StoryOfTheYear';
