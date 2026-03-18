@@ -225,12 +225,30 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
       playingRef.current = id;
       const freqs = SIGNS.map(s => signFreq(s));
       await getEngine().playArpeggio(freqs, 0.6);
-      // Gentle final chord — only play the trine signs (fire triad) for a clean resolution
-      if (playingRef.current === id) {
-        const resolutionFreqs = [signFreq("Aries"), signFreq("Leo"), signFreq("Sagittarius")];
-        getEngine().playChord(resolutionFreqs, 3, "sine");
-        setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, 3000);
-      }
+      if (playingRef.current === id) { setPlaying(null); playingRef.current = null; }
+    });
+  }, [getEngine, stopPlaying, toggleOrPlay]);
+
+  const playAll12 = useCallback(() => {
+    toggleOrPlay("all-12", () => {
+      stopPlaying();
+      const id = "all-12";
+      setPlaying(id);
+      playingRef.current = id;
+      const freqs = SIGNS.map(s => signFreq(s));
+      getEngine().playChord(freqs, 5, "sine");
+      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, 5000);
+    });
+  }, [getEngine, stopPlaying, toggleOrPlay]);
+
+  // Grouped chord helpers
+  const playGroupChord = useCallback((id: string, signs: ZodiacSign[], duration = 4, waveform: OscillatorType = "sine") => {
+    toggleOrPlay(id, () => {
+      stopPlaying();
+      setPlaying(id);
+      playingRef.current = id;
+      getEngine().playChord(signs.map(s => signFreq(s)), duration, waveform);
+      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, duration * 1000);
     });
   }, [getEngine, stopPlaying, toggleOrPlay]);
 
