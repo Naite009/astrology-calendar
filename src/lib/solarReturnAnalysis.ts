@@ -1455,7 +1455,7 @@ export const analyzeSolarReturn = (
   };
   const arabicParts = calculateArabicParts(srChart, findSRHouseForParts);
   
-  const currentAge = profectionYear?.age ?? 0;
+  const t5Age = profectionYear?.age ?? 0;
   const firdaria = calculateFirdaria(currentAge);
   const antisciaContacts = calculateAntiscia(srChart, natalChart);
   const solarArcs = calculateSolarArcs(srChart, natalChart, currentAge);
