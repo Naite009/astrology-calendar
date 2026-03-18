@@ -32,10 +32,7 @@ export const TierPreviewPanel = ({ tier, analysis, onClose, onDownload }: Props)
   const colors = TIER_COLORS[tier];
 
   const handleDownload = () => {
-    if (tier === 't4' || tier === 't5') {
-      toast.info('Coming soon — this tier is under development');
-      return;
-    }
+    onDownload(tier);
     onDownload(tier);
   };
 
