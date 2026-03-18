@@ -1164,14 +1164,15 @@ function ZodiacChordChart({ playing, highlightedPlanet, onPlayGroup, onPlaySingl
 // SVG wheel showing all 12 signs with colored lines for trines and squares
 
 function ZodiacWheelDiagram({ playing, onPlayGroup, onPlaySingleSign }: ChordChartProps) {
-  const size = 380;
+  const size = 440;
   const cx = size / 2;
   const cy = size / 2;
-  const r = 150;
-  const glyphR = r + 28;
+  const r = 155;
+  const glyphR = r + 32;
+  const hitR = r + 32; // clickable glyph area radius
 
   const signPositions = SIGNS.map((sign, i) => {
-    const angle = (i * 30 - 90) * (Math.PI / 180); // Start at top
+    const angle = (i * 30 - 90) * (Math.PI / 180);
     return {
       sign,
       x: cx + r * Math.cos(angle),
@@ -1196,50 +1197,78 @@ function ZodiacWheelDiagram({ playing, onPlayGroup, onPlaySingleSign }: ChordCha
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="max-w-full">
       {/* Outer circle */}
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--border))" strokeWidth="1" opacity="0.4" />
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--border))" strokeWidth="1" opacity="0.3" />
 
-      {/* Trine triangles */}
+      {/* Trine triangles — solid lines, click to play all together */}
       {trineLines.map(t => {
         const pts = t.indices.map(i => signPositions[i]);
         const d = `M ${pts.map(p => `${p.x},${p.y}`).join(' L ')} Z`;
         const isActive = playing === t.id;
         return (
-          <g key={t.id} className="cursor-pointer" onClick={() => onPlayGroup(t.id, t.signs, 4, "sine")}>
-            <path d={d} fill={isActive ? t.color.replace(')', ' / 0.15)').replace('hsl', 'hsl') : "none"} 
-              stroke={t.color} strokeWidth={isActive ? 2.5 : 1.5} opacity={isActive ? 1 : 0.5}
-              strokeDasharray={isActive ? "none" : "none"} />
+          <g key={t.id}>
+            {/* Invisible wider hit area for easier clicking */}
+            <path d={d} fill="none" stroke="transparent" strokeWidth="14"
+              className="cursor-pointer" onClick={() => onPlayGroup(t.id, t.signs, 6, "sine")} />
+            <path d={d}
+              fill={isActive ? t.color.replace(')', ' / 0.12)').replace('hsl', 'hsl') : "none"}
+              stroke={t.color} strokeWidth={isActive ? 3 : 1.5} opacity={isActive ? 1 : 0.45}
+              className="cursor-pointer pointer-events-none" />
+            {isActive && (
+              <path d={d} fill="none" stroke={t.color} strokeWidth="5" opacity="0.2">
+                <animate attributeName="opacity" values="0.2;0.4;0.2" dur="1.5s" repeatCount="indefinite" />
+              </path>
+            )}
           </g>
         );
       })}
 
-      {/* Square lines (dashed) */}
+      {/* Square lines — dashed, click to play all together */}
       {squareLines.map(s => {
         const pts = s.indices.map(i => signPositions[i]);
         const d = `M ${pts.map(p => `${p.x},${p.y}`).join(' L ')} Z`;
         const isActive = playing === s.id;
         return (
-          <g key={s.id} className="cursor-pointer" onClick={() => onPlayGroup(s.id, s.signs, 4, "sawtooth")}>
-            <path d={d} fill={isActive ? s.color.replace(')', ' / 0.1)').replace('hsl', 'hsl') : "none"} 
-              stroke={s.color} strokeWidth={isActive ? 2.5 : 1} opacity={isActive ? 1 : 0.35}
-              strokeDasharray="6 4" />
+          <g key={s.id}>
+            <path d={d} fill="none" stroke="transparent" strokeWidth="14"
+              className="cursor-pointer" onClick={() => onPlayGroup(s.id, s.signs, 5, "sawtooth")} />
+            <path d={d}
+              fill={isActive ? s.color.replace(')', ' / 0.08)').replace('hsl', 'hsl') : "none"}
+              stroke={s.color} strokeWidth={isActive ? 2.5 : 1} opacity={isActive ? 1 : 0.3}
+              strokeDasharray="6 4" className="pointer-events-none" />
           </g>
         );
       })}
 
-      {/* Sign dots and glyphs */}
+      {/* Sign glyphs — clickable circles for individual tones */}
       {signPositions.map((pos, i) => {
         const sign = SIGNS[i];
-        const isHighlighted = 
+        const isPlaying = playing === sign;
+        const isHighlighted = isPlaying ||
           TRINE_GROUPS.some(g => playing === `trine-${g.label}` && g.signs.includes(sign)) ||
           SQUARE_GROUPS.some(g => playing === `square-${g.label}` && g.signs.includes(sign));
         return (
-          <g key={sign}>
-            <circle cx={pos.x} cy={pos.y} r={isHighlighted ? 6 : 4} fill={SIGN_COLORS[sign]} opacity={isHighlighted ? 1 : 0.7}>
-              {isHighlighted && <animate attributeName="r" values="6;8;6" dur="1s" repeatCount="indefinite" />}
+          <g key={sign} className="cursor-pointer" onClick={() => onPlaySingleSign(sign)}>
+            {/* Large invisible hit area */}
+            <circle cx={pos.gx} cy={pos.gy} r={18} fill="transparent" />
+            {/* Glow ring on hover/active */}
+            <circle cx={pos.gx} cy={pos.gy} r={15}
+              fill={isHighlighted ? SIGN_COLORS[sign].replace(')', ' / 0.15)').replace('hsl', 'hsl') : "transparent"}
+              stroke={isHighlighted ? SIGN_COLORS[sign] : "hsl(var(--border))"}
+              strokeWidth={isHighlighted ? 2 : 0.5}
+              opacity={isHighlighted ? 1 : 0.4}
+            >
+              {isPlaying && <animate attributeName="r" values="15;17;15" dur="0.8s" repeatCount="indefinite" />}
             </circle>
+            {/* Dot on the wheel */}
+            <circle cx={pos.x} cy={pos.y} r={isHighlighted ? 5 : 3} fill={SIGN_COLORS[sign]} opacity={isHighlighted ? 1 : 0.6}>
+              {isHighlighted && <animate attributeName="r" values="5;7;5" dur="1s" repeatCount="indefinite" />}
+            </circle>
+            {/* Glyph text */}
             <text x={pos.gx} y={pos.gy} textAnchor="middle" dominantBaseline="central"
-              fontSize={isHighlighted ? "16" : "14"} fill={isHighlighted ? SIGN_COLORS[sign] : "hsl(var(--muted-foreground))"}
-              className="select-none" style={{ transition: 'font-size 0.3s' }}>
+              fontSize={isHighlighted ? "18" : "15"}
+              fill={isHighlighted ? SIGN_COLORS[sign] : "hsl(var(--muted-foreground))"}
+              className="select-none" fontWeight={isPlaying ? "bold" : "normal"}
+              style={{ transition: 'font-size 0.2s, fill 0.2s' }}>
               {SIGN_GLYPHS[sign]}
             </text>
           </g>
@@ -1247,8 +1276,8 @@ function ZodiacWheelDiagram({ playing, onPlayGroup, onPlaySingleSign }: ChordCha
       })}
 
       {/* Legend */}
-      <text x={cx} y={size - 8} textAnchor="middle" fontSize="9" fill="hsl(var(--muted-foreground))" opacity="0.6">
-        solid △ = trines (harmony) · dashed □ = squares (tension) · click shapes to play
+      <text x={cx} y={size - 6} textAnchor="middle" fontSize="9" fill="hsl(var(--muted-foreground))" opacity="0.5">
+        click glyphs = solo · click lines = full chord
       </text>
     </svg>
   );
