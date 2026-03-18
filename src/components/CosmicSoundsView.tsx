@@ -162,6 +162,7 @@ interface Props {
 export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) => {
   const engineRef = useRef<CosmicAudioEngine | null>(null);
   const [playing, setPlaying] = useState<string | null>(null);
+  const [highlightedPlanet, setHighlightedPlanet] = useState<string | null>(null);
   const [volume, setVolume] = useState(0.3);
   const [muted, setMuted] = useState(false);
   const playingRef = useRef<string | null>(null);
