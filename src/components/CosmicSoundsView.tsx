@@ -896,6 +896,28 @@ function ZodiacChordChart({ playing, highlightedPlanet, onPlayGroup, onPlaySingl
           })}
         </div>
       </div>
+
+      {/* Guided Tour Button */}
+      {onPlayGuidedTour && (
+        <div className="flex justify-center pt-2">
+          <button
+            onClick={onPlayGuidedTour}
+            className={`flex items-center gap-2 px-6 py-3 rounded-sm text-xs uppercase tracking-widest transition-all border ${
+              playing === "guided-tour"
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border hover:border-primary hover:bg-secondary text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {playing === "guided-tour" ? <Square size={14} /> : <Sparkles size={14} />}
+            {playing === "guided-tour" ? "Stop Tour" : "🎵 Guided Sonic Tour — All Trines → All Squares"}
+          </button>
+          {playing === "guided-tour" && highlightedPlanet && (
+            <span className="ml-3 text-xs text-primary animate-pulse self-center">
+              {highlightedPlanet.replace('tour-trine-', '△ ').replace('tour-square-', '□ ')}
+            </span>
+          )}
+        </div>
+      )}
     </section>
   );
 }
