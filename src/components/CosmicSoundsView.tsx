@@ -978,7 +978,57 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
 
           {natalFreqs ? (
             <>
-              <p className="text-[10px] text-muted-foreground mb-2 italic">Click any planet to hear its tone — click again to stop.</p>
+              {/* Frequency mode toggle + Om */}
+              <div className="flex flex-wrap items-center gap-3 justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Mode:</span>
+                  <button
+                    onClick={() => setFreqMode("sign")}
+                    className={`px-3 py-1.5 rounded-sm text-[11px] border transition-all ${
+                      freqMode === "sign" ? "border-primary bg-primary/10 text-foreground" : "border-border text-muted-foreground hover:border-primary/40"
+                    }`}
+                  >
+                    Sign-Based
+                  </button>
+                  <button
+                    onClick={() => setFreqMode("cousto")}
+                    className={`px-3 py-1.5 rounded-sm text-[11px] border transition-all ${
+                      freqMode === "cousto" ? "border-primary bg-primary/10 text-foreground" : "border-border text-muted-foreground hover:border-primary/40"
+                    }`}
+                  >
+                    Orbital (Cousto)
+                  </button>
+                </div>
+                <button
+                  onClick={() => {
+                    const omId = "om-tone";
+                    if (playing === omId) {
+                      stopPlaying();
+                    } else {
+                      stopPlaying();
+                      setPlaying(omId);
+                      playingRef.current = omId;
+                      getEngine().playTone(OM_FREQ, 10, "sine");
+                      setTimeout(() => { if (playingRef.current === omId) { setPlaying(null); playingRef.current = null; } }, 10000);
+                    }
+                  }}
+                  className={`flex items-center gap-2 px-4 py-1.5 rounded-sm text-[11px] border transition-all ${
+                    playing === "om-tone"
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border text-muted-foreground hover:border-primary/40 hover:bg-secondary/30"
+                  }`}
+                >
+                  {playing === "om-tone" ? <Square size={12} /> : <Play size={12} />}
+                  Om̐ · 136.10 Hz
+                </button>
+              </div>
+              <p className="text-[10px] text-muted-foreground italic">
+                {freqMode === "sign"
+                  ? "Sign-based: each planet plays the chromatic note of the sign it occupies."
+                  : "Orbital (Cousto): each planet plays its own frequency derived from its actual orbital period, octaved into audible range."
+                }
+                {" "}Click any planet to hear — click again to stop.
+              </p>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                 {natalFreqs.map(({ planet, sign, freq, note }) => {
                   const natalId = `natal-${planet}`;
