@@ -708,17 +708,18 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
   const [binauralTimer, setBinauralTimer] = useState(60); // seconds
   const [showExplainer, setShowExplainer] = useState(false);
 
-  const binauralRootFreqs = useMemo(() => {
+  const binauralRootData = useMemo(() => {
     if (!natalFreqs) return [];
-    // Use the top 3 most prominent: Sun, Moon, Ascendant if present, else first 3
     const priority = ["Sun", "Moon", "Ascendant"];
     const sorted = [...natalFreqs].sort((a, b) => {
       const ai = priority.indexOf(a.planet);
       const bi = priority.indexOf(b.planet);
       return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
     });
-    return sorted.slice(0, 3).map(f => f.freq);
+    return sorted.slice(0, 3);
   }, [natalFreqs]);
+
+  const binauralRootFreqs = useMemo(() => binauralRootData.map(d => d.freq), [binauralRootData]);
 
   const playThetaMeditation = useCallback(() => {
     const id = "theta-meditation";
@@ -1110,7 +1111,40 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
           </p>
           <p className="text-[10px] text-muted-foreground italic">🎧 Headphones required for binaural effect — speakers won't work.</p>
 
-          {/* Timer selector */}
+          {/* Inline personal binaural math */}
+          {binauralRootData.length > 0 && (
+            <div className="p-4 rounded-sm border border-primary/20 bg-primary/5 space-y-2.5">
+              <p className="text-[11px] font-medium text-foreground">How your chart becomes brainwave entrainment:</p>
+              <div className="space-y-1.5">
+                {binauralRootData.map(({ planet, sign, freq }) => {
+                  const label = PLANET_LABELS[planet] || planet;
+                  const thetaFreq = Math.round(freq / 2);
+                  const deltaFreq = Math.round(freq / 4);
+                  return (
+                    <div key={planet} className="text-[10px] text-muted-foreground font-mono leading-relaxed">
+                      <span className="text-foreground font-sans font-medium">{label}</span>
+                      <span className="text-muted-foreground font-sans"> ({sign})</span>
+                      <span className="text-muted-foreground"> = </span>
+                      <span className="text-foreground">{Math.round(freq)} Hz</span>
+                      <span className="text-muted-foreground"> → Theta: </span>
+                      <span className="text-foreground">{thetaFreq}</span>
+                      <span className="text-muted-foreground"> L + </span>
+                      <span className="text-foreground">{thetaFreq + 6}</span>
+                      <span className="text-muted-foreground"> R = </span>
+                      <span className="text-primary font-semibold">6 Hz beat</span>
+                      <span className="text-muted-foreground"> · Delta: </span>
+                      <span className="text-foreground">{deltaFreq}</span>
+                      <span className="text-muted-foreground"> L + </span>
+                      <span className="text-foreground">{deltaFreq + 2}</span>
+                      <span className="text-muted-foreground"> R = </span>
+                      <span className="text-primary font-semibold">2 Hz beat</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-[9px] text-muted-foreground/70 italic">Your chart Hz is the carrier tone — the brainwave effect comes from the tiny gap between ears.</p>
+            </div>
+          )}
           <div className="flex items-center gap-3 justify-center">
             <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Duration:</span>
             {[60, 120, 300, 600].map(secs => (
