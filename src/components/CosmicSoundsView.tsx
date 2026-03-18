@@ -180,24 +180,28 @@ class CosmicAudioEngine {
     });
   }
 
-  // ─── Lush trine chord: warm, breathy, slow-attack pad with detuning + sub-octave ───
+  // ─── Lush trine chord: singing-bowl warmth with harmonics, detuning + sub-octave ───
   playTrineChord(freqs: number[], duration: number): void {
     const ctx = this.getCtx();
     const t = ctx.currentTime;
     const voices = freqs.length;
-    const perVoice = Math.min(0.12, 0.4 / voices);
+    const perVoice = Math.min(0.1, 0.35 / voices);
+
+    // Temporarily boost reverb for trines
+    const prevReverb = this.reverbMix;
+    this.setReverbMix(Math.max(prevReverb, 0.55));
 
     freqs.forEach((freq, i) => {
       const pan = voices > 1 ? -0.7 + (1.4 * i / (voices - 1)) : 0;
 
-      // Layer 1: main sine with slow attack
+      // Layer 1: fundamental sine — slow bloom like a singing bowl strike
       const osc1 = ctx.createOscillator();
       osc1.type = "sine";
       osc1.frequency.value = freq;
       const g1 = ctx.createGain();
       g1.gain.setValueAtTime(0, t);
-      g1.gain.linearRampToValueAtTime(perVoice, t + 0.8); // slow bloom
-      g1.gain.setValueAtTime(perVoice, t + duration - 1);
+      g1.gain.linearRampToValueAtTime(perVoice, t + 1.2);
+      g1.gain.exponentialRampToValueAtTime(perVoice * 0.6, t + duration - 1.5);
       g1.gain.linearRampToValueAtTime(0, t + duration);
       const p1 = ctx.createStereoPanner();
       p1.pan.value = pan;
@@ -205,36 +209,63 @@ class CosmicAudioEngine {
       osc1.start(t); osc1.stop(t + duration);
       this.trackOsc(osc1);
 
-      // Layer 2: slightly detuned triangle for shimmer
+      // Layer 2: detuned sine for gentle chorus/shimmer
       const osc2 = ctx.createOscillator();
-      osc2.type = "triangle";
-      osc2.frequency.value = freq * 1.003; // +5 cents
+      osc2.type = "sine";
+      osc2.frequency.value = freq * 1.002; // +3.5 cents
       const g2 = ctx.createGain();
       g2.gain.setValueAtTime(0, t);
-      g2.gain.linearRampToValueAtTime(perVoice * 0.4, t + 1.2);
-      g2.gain.setValueAtTime(perVoice * 0.4, t + duration - 1.2);
+      g2.gain.linearRampToValueAtTime(perVoice * 0.35, t + 1.5);
+      g2.gain.exponentialRampToValueAtTime(perVoice * 0.15, t + duration - 1.5);
       g2.gain.linearRampToValueAtTime(0, t + duration);
       const p2 = ctx.createStereoPanner();
-      p2.pan.value = pan * -0.5; // slightly opposite for width
+      p2.pan.value = -pan * 0.6;
       osc2.connect(g2); g2.connect(p2); p2.connect(this.masterGain!);
       osc2.start(t); osc2.stop(t + duration);
       this.trackOsc(osc2);
 
-      // Layer 3: sub-octave sine for warmth (only on root)
-      if (i === 0) {
-        const sub = ctx.createOscillator();
-        sub.type = "sine";
-        sub.frequency.value = freq / 2;
-        const gs = ctx.createGain();
-        gs.gain.setValueAtTime(0, t);
-        gs.gain.linearRampToValueAtTime(perVoice * 0.5, t + 1);
-        gs.gain.setValueAtTime(perVoice * 0.5, t + duration - 1.5);
-        gs.gain.linearRampToValueAtTime(0, t + duration);
-        sub.connect(gs); gs.connect(this.masterGain!);
-        sub.start(t); sub.stop(t + duration);
-        this.trackOsc(sub);
-      }
+      // Layer 3: octave harmonic (×2) — bell-like overtone
+      const osc3 = ctx.createOscillator();
+      osc3.type = "sine";
+      osc3.frequency.value = freq * 2;
+      const g3 = ctx.createGain();
+      g3.gain.setValueAtTime(0, t);
+      g3.gain.linearRampToValueAtTime(perVoice * 0.15, t + 0.5);
+      g3.gain.exponentialRampToValueAtTime(perVoice * 0.03, t + duration - 1);
+      g3.gain.linearRampToValueAtTime(0, t + duration);
+      osc3.connect(g3); g3.connect(p1); // same panner as fundamental
+      osc3.start(t); osc3.stop(t + duration);
+      this.trackOsc(osc3);
+
+      // Layer 4: 3rd harmonic (×3, octave+fifth) — singing bowl character
+      const osc4 = ctx.createOscillator();
+      osc4.type = "sine";
+      osc4.frequency.value = freq * 3;
+      const g4 = ctx.createGain();
+      g4.gain.setValueAtTime(0, t);
+      g4.gain.linearRampToValueAtTime(perVoice * 0.06, t + 0.3);
+      g4.gain.exponentialRampToValueAtTime(perVoice * 0.01, t + duration * 0.5);
+      g4.gain.linearRampToValueAtTime(0, t + duration);
+      osc4.connect(g4); g4.connect(p2);
+      osc4.start(t); osc4.stop(t + duration);
+      this.trackOsc(osc4);
     });
+
+    // Sub-octave warmth on root
+    const sub = ctx.createOscillator();
+    sub.type = "sine";
+    sub.frequency.value = freqs[0] / 2;
+    const gs = ctx.createGain();
+    gs.gain.setValueAtTime(0, t);
+    gs.gain.linearRampToValueAtTime(perVoice * 0.4, t + 1.5);
+    gs.gain.exponentialRampToValueAtTime(perVoice * 0.15, t + duration - 2);
+    gs.gain.linearRampToValueAtTime(0, t + duration);
+    sub.connect(gs); gs.connect(this.masterGain!);
+    sub.start(t); sub.stop(t + duration);
+    this.trackOsc(sub);
+
+    // Restore reverb after duration
+    setTimeout(() => this.setReverbMix(prevReverb), duration * 1000);
   }
 
   // ─── Ominous square chord: dark, grinding, with beating + low drone ───
