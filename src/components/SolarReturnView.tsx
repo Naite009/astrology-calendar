@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import { SolarReturnPDFExport, generateBirthdayGiftPDF, downloadBirthdayJSONStandalone } from '@/components/SolarReturnPDFExport';
 import { TierButtonRow } from '@/components/solarReturn/TierButtonRow';
+import { TierPreviewPanel } from '@/components/solarReturn/TierPreviewPanel';
 import { SROverviewDashboard } from '@/components/solarReturn/SROverviewDashboard';
 import { LunarPhaseTimeline } from '@/components/solarReturn/LunarPhaseTimeline';
 import { StoryOfTheYear } from '@/components/solarReturn/StoryOfTheYear';
@@ -96,6 +97,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
 
   const [showInputForm, setShowInputForm] = useState(false);
   const [editingSRId, setEditingSRId] = useState<string | null>(null);
+  const [activeTier, setActiveTier] = useState<'t1' | 't2' | 't3' | 't4' | 't5' | null>(null);
 
   const analysis = useMemo(() => {
     if (!selectedSR || !selectedNatal) return null;
@@ -253,18 +255,31 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             natalChart={selectedNatal}
             solarReturnChart={selectedSR}
             onDownloadTier={(tier) => {
-              if (tier === 't1') {
-                const btn = document.querySelector('[data-tier1-download]') as HTMLButtonElement;
-                if (btn) btn.click();
-              } else if (tier === 'gift') {
+              if (tier === 'gift') {
                 downloadBirthdayJSONStandalone(analysis, selectedSR, selectedNatal);
-              } else if (tier === 't4' || tier === 't5') {
-                toast.info('Coming soon — this tier is under development');
               } else {
-                toast.info(`Tier ${tier.replace('t', '')} PDF coming soon`);
+                setActiveTier(prev => prev === tier ? null : tier as any);
               }
             }}
           />
+
+          {activeTier && analysis && (
+            <TierPreviewPanel
+              tier={activeTier}
+              analysis={analysis}
+              onClose={() => setActiveTier(null)}
+              onDownload={(tier) => {
+                if (tier === 't4' || tier === 't5') {
+                  toast.info('Coming soon — this tier is under development');
+                } else {
+                  // Download JSON for the selected tier
+                  if (selectedSR && selectedNatal) {
+                    downloadBirthdayJSONStandalone(analysis, selectedSR, selectedNatal);
+                  }
+                }
+              }}
+            />
+          )}
 
           <TabsContent value="overview">
             <OverviewTab analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} onEdit={() => { setEditingSRId(selectedSR.id); setShowInputForm(true); }} onDelete={() => { deleteSolarReturn(selectedSR.id); setSelectedSRId(null); }} />
