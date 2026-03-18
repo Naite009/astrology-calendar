@@ -644,6 +644,61 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
         </section>
       )}
 
+      {/* ── Section 4: Current Sky as Sound ── */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Globe size={18} className="text-primary" />
+          <h3 className="text-xs uppercase tracking-[0.2em] font-medium text-foreground">Current Sky — What Today Sounds Like</h3>
+        </div>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          These are the live transiting positions right now. Every planet currently occupies a zodiac sign — 
+          play the <strong>Sky Chord</strong> to hear all of today's cosmic frequencies simultaneously, 
+          or the <strong>Sky Arpeggio</strong> to hear each planet's current voice one by one.
+        </p>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+          {currentSkyFreqs.map(({ planet, glyph, sign, freq }) => {
+            const isHi = skyHighlight === planet || skyHighlight === "all";
+            return (
+              <div key={planet} className={`flex items-center gap-2 p-2.5 rounded-sm border transition-all duration-200 ${
+                isHi ? "border-primary bg-primary/10 scale-[1.04] shadow-md" : "border-border bg-card"
+              }`}>
+                <span className="text-lg" style={{ color: SIGN_COLORS[sign] }}>{glyph}</span>
+                <div>
+                  <p className="text-[11px] font-medium text-foreground">{planet}</p>
+                  <p className="text-[9px] text-muted-foreground font-mono">{sign} · {NOTE_NAMES[sign]} · {Math.round(freq)} Hz</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="flex gap-3 justify-center pt-2">
+          <button
+            onClick={playSkyChord}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-all border ${
+              playing === "sky-chord"
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border hover:border-primary hover:bg-secondary text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {playing === "sky-chord" ? <Square size={14} /> : <Play size={14} />}
+            {playing === "sky-chord" ? "Stop" : "Play Sky Chord"}
+          </button>
+          <button
+            onClick={playSkyArpeggio}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-all border ${
+              playing === "sky-arp"
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border hover:border-primary hover:bg-secondary text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {playing === "sky-arp" ? <Square size={14} /> : <Music size={14} />}
+            {playing === "sky-arp" ? "Stop" : "Play Sky Arpeggio"}
+          </button>
+        </div>
+      </section>
+
       {/* Footer teaching */}
       <div className="text-center text-xs text-muted-foreground/70 pt-4 pb-8 border-t border-border space-y-2">
         <p>Frequencies based on the chromatic zodiac scale: Aries = C4 (261.63 Hz), ascending by semitone.</p>
