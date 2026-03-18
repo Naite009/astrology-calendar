@@ -1432,6 +1432,35 @@ export const analyzeSolarReturn = (
     }
   }
 
+  // ─── Tier 4 Calculations ──────────────────────────────────────────
+  const mutualReceptions = calculateMutualReceptions(srChart);
+  const dignityReport = calculateDignityReport(srChart, planetSRHouses);
+  const healthOverlay = calculateHealthOverlay(srChart, natalChart, planetSRHouses, srInternalAspects);
+  const eclipseSensitivity = calculateEclipseSensitivity(srChart, natalChart, srChart.solarReturnYear);
+  const enhancedRetrogrades = calculateEnhancedRetrogrades(srChart, srChart.solarReturnYear);
+  // Fill in house numbers for enhanced retrogrades
+  for (const r of enhancedRetrogrades) {
+    r.house = planetSRHouses[r.planet] ?? null;
+  }
+  const birthMonth = natalChart.birthDate ? parseInt(natalChart.birthDate.slice(5, 7), 10) - 1 : 0;
+  const quarterlyFocus = calculateQuarterlyFocus(srChart, natalChart, planetSRHouses, srChart.solarReturnYear, birthMonth);
+
+  // ─── Tier 5 Calculations ──────────────────────────────────────────
+  const fixedStars = calculateFixedStars(srChart, natalChart, srChart.solarReturnYear);
+  
+  // Arabic Parts need a house-finding function
+  const findSRHouseForParts = (deg: number): number | null => {
+    const cusps = extractCusps(srChart);
+    return cusps ? findHouseInCusps(deg, cusps) : null;
+  };
+  const arabicParts = calculateArabicParts(srChart, findSRHouseForParts);
+  
+  const currentAge = profectionYear?.age ?? 0;
+  const firdaria = calculateFirdaria(currentAge);
+  const antisciaContacts = calculateAntiscia(srChart, natalChart);
+  const solarArcs = calculateSolarArcs(srChart, natalChart, currentAge);
+  const synthesisSections = calculateSynthesisSections(srChart, natalChart, planetSRHouses, srToNatalAspects, houseOverlays);
+
   return {
     yearlyTheme,
     srAscRulerInNatal,
@@ -1466,5 +1495,19 @@ export const analyzeSolarReturn = (
     moonMetonicAges,
     vertex,
     planetSRHouses,
+    // Tier 4
+    mutualReceptions,
+    dignityReport,
+    healthOverlay,
+    eclipseSensitivity,
+    enhancedRetrogrades,
+    quarterlyFocus,
+    // Tier 5
+    fixedStars,
+    arabicParts,
+    firdaria,
+    antisciaContacts,
+    solarArcs,
+    synthesisSections,
   };
 };
