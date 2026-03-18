@@ -379,13 +379,22 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
     });
   }, [getEngine, stopPlaying, toggleOrPlay]);
 
-  // Grouped chord helpers
-  const playGroupChord = useCallback((id: string, signs: ZodiacSign[], duration = 4, waveform: OscillatorType = "sine") => {
+  // Grouped chord helpers — uses expressive trine/square voices
+  const playGroupChord = useCallback((id: string, signs: ZodiacSign[], duration = 5, waveform: OscillatorType = "sine") => {
     toggleOrPlay(id, () => {
       stopPlaying();
       setPlaying(id);
       playingRef.current = id;
-      getEngine().playChord(signs.map(s => signFreq(s)), duration, waveform);
+      const freqs = signs.map(s => signFreq(s));
+      const isTrine = id.includes("trine");
+      const isSquare = id.includes("square");
+      if (isTrine) {
+        getEngine().playTrineChord(freqs, duration);
+      } else if (isSquare) {
+        getEngine().playSquareChord(freqs, duration);
+      } else {
+        getEngine().playChord(freqs, duration, waveform);
+      }
       setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, duration * 1000);
     });
   }, [getEngine, stopPlaying, toggleOrPlay]);
