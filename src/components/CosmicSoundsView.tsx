@@ -86,11 +86,14 @@ class CosmicAudioEngine {
       this.convolver = this.ctx.createConvolver();
       this.convolver.buffer = this.createReverbIR(this.ctx, 3, 2.5); // 3s decay, warm
 
-      // Dry/wet routing
+      // Reverb as additive send (dry stays full, reverb adds spaciousness)
       this.dryGain = this.ctx.createGain();
-      this.dryGain.gain.value = 1 - this.reverbMix;
+      this.dryGain.gain.value = 1.0; // always full dry
       this.reverbGain = this.ctx.createGain();
       this.reverbGain.gain.value = this.reverbMix;
+
+      this.convolver = this.ctx.createConvolver();
+      this.convolver.buffer = this.createReverbIR(this.ctx, 4, 2);
 
       this.masterGain.connect(this.dryGain);
       this.dryGain.connect(this.ctx.destination);
@@ -103,16 +106,13 @@ class CosmicAudioEngine {
     return this.ctx;
   }
 
-  // Generate a synthetic reverb impulse response
   private createReverbIR(ctx: AudioContext, duration: number, decay: number): AudioBuffer {
     const sampleRate = ctx.sampleRate;
     const length = sampleRate * duration;
     const buffer = ctx.createBuffer(2, length, sampleRate);
-
     for (let channel = 0; channel < 2; channel++) {
       const data = buffer.getChannelData(channel);
       for (let i = 0; i < length; i++) {
-        // Exponential decay with random noise = reverb tail
         data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
       }
     }
@@ -121,7 +121,7 @@ class CosmicAudioEngine {
 
   setReverbMix(mix: number): void {
     this.reverbMix = Math.max(0, Math.min(1, mix));
-    if (this.dryGain) this.dryGain.gain.value = 1 - this.reverbMix;
+    // Only adjust the reverb send level; dry stays at 1.0
     if (this.reverbGain) this.reverbGain.gain.value = this.reverbMix;
   }
 
@@ -414,8 +414,8 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
       stopPlaying();
       setPlaying(sign);
       playingRef.current = sign;
-      getEngine().playTone(signFreq(sign), 2, "sine");
-      setTimeout(() => { if (playingRef.current === sign) { setPlaying(null); playingRef.current = null; } }, 2000);
+      getEngine().playTone(signFreq(sign), 10, "sine");
+      setTimeout(() => { if (playingRef.current === sign) { setPlaying(null); playingRef.current = null; } }, 10000);
     });
   }, [getEngine, stopPlaying, toggleOrPlay]);
 
@@ -427,8 +427,8 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
       playingRef.current = id;
       const f1 = BASE_FREQ;
       const f2 = BASE_FREQ * Math.pow(2, asp.semitones / 12);
-      getEngine().playChord([f1, f2], 3, asp.waveform);
-      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, 3000);
+      getEngine().playChord([f1, f2], 10, asp.waveform);
+      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, 10000);
     });
   }, [getEngine, stopPlaying, toggleOrPlay]);
 
@@ -451,13 +451,13 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
       setPlaying(id);
       playingRef.current = id;
       const freqs = SIGNS.map(s => signFreq(s));
-      getEngine().playChord(freqs, 5, "sine");
-      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, 5000);
+      getEngine().playChord(freqs, 10, "sine");
+      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, 10000);
     });
   }, [getEngine, stopPlaying, toggleOrPlay]);
 
   // Grouped chord helpers — uses expressive trine/square voices
-  const playGroupChord = useCallback((id: string, signs: ZodiacSign[], duration = 5, waveform: OscillatorType = "sine") => {
+  const playGroupChord = useCallback((id: string, signs: ZodiacSign[], duration = 10, waveform: OscillatorType = "sine") => {
     toggleOrPlay(id, () => {
       stopPlaying();
       setPlaying(id);
@@ -558,8 +558,8 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
       setPlaying(id);
       playingRef.current = id;
       setSkyHighlight("all");
-      getEngine().playChord(currentSkyFreqs.map(f => f.freq), 6, "sine");
-      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; setSkyHighlight(null); } }, 6000);
+      getEngine().playChord(currentSkyFreqs.map(f => f.freq), 10, "sine");
+      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; setSkyHighlight(null); } }, 10000);
     });
   }, [currentSkyFreqs, getEngine, stopPlaying, toggleOrPlay]);
 
@@ -578,8 +578,8 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
       setSkyHighlight(null);
       if (playingRef.current === id) {
         setSkyHighlight("all");
-        getEngine().playChord(currentSkyFreqs.map(f => f.freq), 4, "sine");
-        setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; setSkyHighlight(null); } }, 4000);
+        getEngine().playChord(currentSkyFreqs.map(f => f.freq), 10, "sine");
+        setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; setSkyHighlight(null); } }, 10000);
       }
     });
   }, [currentSkyFreqs, getEngine, stopPlaying, toggleOrPlay]);
@@ -605,8 +605,8 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
       setPlaying(id);
       playingRef.current = id;
       setHighlightedPlanet("all");
-      getEngine().playChord(natalFreqs.map(f => f.freq), 5, "sine");
-      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; setHighlightedPlanet(null); } }, 5000);
+      getEngine().playChord(natalFreqs.map(f => f.freq), 10, "sine");
+      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; setHighlightedPlanet(null); } }, 10000);
     });
   }, [natalFreqs, getEngine, stopPlaying, toggleOrPlay]);
 
@@ -625,9 +625,9 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
       }
       setHighlightedPlanet(null);
       if (playingRef.current === id) {
-        getEngine().playChord(natalFreqs.map(f => f.freq), 4, "sine");
+        getEngine().playChord(natalFreqs.map(f => f.freq), 10, "sine");
         setHighlightedPlanet("all");
-        setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; setHighlightedPlanet(null); } }, 4000);
+        setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; setHighlightedPlanet(null); } }, 10000);
       }
     });
   }, [natalFreqs, getEngine, stopPlaying, toggleOrPlay]);
@@ -834,8 +834,8 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
                       onClick={() => {
                         getEngine().stopAll();
                         setHighlightedPlanet(planet);
-                        getEngine().playTone(freq, 1.5, "sine");
-                        setTimeout(() => { setHighlightedPlanet(prev => prev === planet ? null : prev); }, 1500);
+                        getEngine().playTone(freq, 10, "sine");
+                        setTimeout(() => { setHighlightedPlanet(prev => prev === planet ? null : prev); }, 10000);
                       }}
                       className={`flex items-center gap-2 p-2.5 rounded-sm border transition-all duration-150 cursor-pointer select-none active:scale-95 ${
                         isHi ? "border-primary bg-primary/10 scale-[1.04] shadow-md" : "border-border bg-card hover:border-primary/40 hover:bg-secondary/30"
