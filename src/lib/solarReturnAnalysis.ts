@@ -403,6 +403,20 @@ export interface SolarReturnAnalysis {
   vertex: SRVertexData | null;
   // Helper: map planet name → SR house for display
   planetSRHouses: Record<string, number | null>;
+  // ─── Tier 4 ───
+  mutualReceptions: SRMutualReception[];
+  dignityReport: SRDignityReport;
+  healthOverlay: SRHealthReport;
+  eclipseSensitivity: SREclipseSensitivity[];
+  enhancedRetrogrades: SREnhancedRetrograde[];
+  quarterlyFocus: SRQuarterlyFocus[];
+  // ─── Tier 5 ───
+  fixedStars: SRFixedStar[];
+  arabicParts: SRArabicPart[];
+  firdaria: SRFirdariaReport;
+  antisciaContacts: SRAntisciaContact[];
+  solarArcs: SRSolarArc[];
+  synthesisSections: SRSynthesisSection[];
 }
 
 // ─── House life-area map & sign felt-sense ──────────────────────────
