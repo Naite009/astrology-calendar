@@ -823,19 +823,27 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
 
           {natalFreqs ? (
             <>
-              <p className="text-[10px] text-muted-foreground mb-2 italic">Click any planet to hear its tone — play them like a piano.</p>
+              <p className="text-[10px] text-muted-foreground mb-2 italic">Click any planet to hear its tone — click again to stop.</p>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                 {natalFreqs.map(({ planet, sign, freq }) => {
-                  const isHi = highlightedPlanet === planet || highlightedPlanet === "all" || playing === "natal-chord";
+                  const natalId = `natal-${planet}`;
+                  const isHi = playing === natalId || highlightedPlanet === planet || highlightedPlanet === "all" || playing === "natal-chord";
                   const label = PLANET_LABELS[planet] || planet;
                   return (
                     <button
                       key={planet}
                       onClick={() => {
-                        getEngine().stopAll();
-                        setHighlightedPlanet(planet);
-                        getEngine().playTone(freq, 10, "sine");
-                        setTimeout(() => { setHighlightedPlanet(prev => prev === planet ? null : prev); }, 10000);
+                        if (playing === natalId) {
+                          stopPlaying();
+                        } else {
+                          stopPlaying();
+                          const id = natalId;
+                          setPlaying(id);
+                          playingRef.current = id;
+                          setHighlightedPlanet(planet);
+                          getEngine().playTone(freq, 10, "sine");
+                          setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; setHighlightedPlanet(null); } }, 10000);
+                        }
                       }}
                       className={`flex items-center gap-2 p-2.5 rounded-sm border transition-all duration-150 cursor-pointer select-none active:scale-95 ${
                         isHi ? "border-primary bg-primary/10 scale-[1.04] shadow-md" : "border-border bg-card hover:border-primary/40 hover:bg-secondary/30"
@@ -852,6 +860,15 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
               </div>
 
               <div className="flex gap-3 justify-center pt-2">
+                {playing && (playing.startsWith("natal-") || playing === "natal-chord" || playing === "natal-arp") && (
+                  <button
+                    onClick={stopPlaying}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-all border border-destructive bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                  >
+                    <Square size={14} />
+                    Stop
+                  </button>
+                )}
                 <button
                   onClick={playNatalChord}
                   className={`flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-all border ${
@@ -894,24 +911,48 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
           or the <strong>Sky Arpeggio</strong> to hear each planet's current voice one by one.
         </p>
 
+        <p className="text-[10px] text-muted-foreground mb-2 italic">Click any planet to hear its tone — click again to stop.</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
           {currentSkyFreqs.map(({ planet, glyph, sign, freq }) => {
-            const isHi = skyHighlight === planet || skyHighlight === "all";
+            const skyId = `sky-${planet}`;
+            const isHi = playing === skyId || skyHighlight === planet || skyHighlight === "all";
             return (
-              <div key={planet} className={`flex items-center gap-2 p-2.5 rounded-sm border transition-all duration-200 ${
-                isHi ? "border-primary bg-primary/10 scale-[1.04] shadow-md" : "border-border bg-card"
+              <button key={planet} onClick={() => {
+                if (playing === skyId) {
+                  stopPlaying();
+                  setSkyHighlight(null);
+                } else {
+                  stopPlaying();
+                  const id = skyId;
+                  setPlaying(id);
+                  playingRef.current = id;
+                  setSkyHighlight(planet);
+                  getEngine().playTone(freq, 10, "sine");
+                  setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; setSkyHighlight(null); } }, 10000);
+                }
+              }} className={`flex items-center gap-2 p-2.5 rounded-sm border transition-all duration-200 cursor-pointer select-none active:scale-95 ${
+                isHi ? "border-primary bg-primary/10 scale-[1.04] shadow-md" : "border-border bg-card hover:border-primary/40 hover:bg-secondary/30"
               }`}>
                 <span className="text-lg" style={{ color: SIGN_COLORS[sign] }}>{glyph}</span>
-                <div>
+                <div className="text-left">
                   <p className="text-[11px] font-medium text-foreground">{planet}</p>
                   <p className="text-[9px] text-muted-foreground font-mono">{sign} · {NOTE_NAMES[sign]} · {Math.round(freq)} Hz</p>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
 
         <div className="flex gap-3 justify-center pt-2">
+          {playing && (playing.startsWith("sky-")) && (
+            <button
+              onClick={() => { stopPlaying(); setSkyHighlight(null); }}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-all border border-destructive bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+            >
+              <Square size={14} />
+              Stop
+            </button>
+          )}
           <button
             onClick={playSkyChord}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-all border ${
