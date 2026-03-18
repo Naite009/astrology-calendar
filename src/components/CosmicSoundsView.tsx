@@ -823,19 +823,27 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
 
           {natalFreqs ? (
             <>
-              <p className="text-[10px] text-muted-foreground mb-2 italic">Click any planet to hear its tone — play them like a piano.</p>
+              <p className="text-[10px] text-muted-foreground mb-2 italic">Click any planet to hear its tone — click again to stop.</p>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                 {natalFreqs.map(({ planet, sign, freq }) => {
-                  const isHi = highlightedPlanet === planet || highlightedPlanet === "all" || playing === "natal-chord";
+                  const natalId = `natal-${planet}`;
+                  const isHi = playing === natalId || highlightedPlanet === planet || highlightedPlanet === "all" || playing === "natal-chord";
                   const label = PLANET_LABELS[planet] || planet;
                   return (
                     <button
                       key={planet}
                       onClick={() => {
-                        getEngine().stopAll();
-                        setHighlightedPlanet(planet);
-                        getEngine().playTone(freq, 10, "sine");
-                        setTimeout(() => { setHighlightedPlanet(prev => prev === planet ? null : prev); }, 10000);
+                        if (playing === natalId) {
+                          stopPlaying();
+                        } else {
+                          stopPlaying();
+                          const id = natalId;
+                          setPlaying(id);
+                          playingRef.current = id;
+                          setHighlightedPlanet(planet);
+                          getEngine().playTone(freq, 10, "sine");
+                          setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; setHighlightedPlanet(null); } }, 10000);
+                        }
                       }}
                       className={`flex items-center gap-2 p-2.5 rounded-sm border transition-all duration-150 cursor-pointer select-none active:scale-95 ${
                         isHi ? "border-primary bg-primary/10 scale-[1.04] shadow-md" : "border-border bg-card hover:border-primary/40 hover:bg-secondary/30"
