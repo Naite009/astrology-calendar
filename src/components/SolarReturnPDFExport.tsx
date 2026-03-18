@@ -352,6 +352,95 @@ function getPersonalizedStelliumText(sign: string, house: number | null, planets
   return signPersonal[sign] || `${planetNames} are clustered in ${sign}${houseContext}, concentrating this year's energy into a focused area.`;
 }
 
+// ── Standalone Birthday Gift JSON export (no AI, no component state needed) ──
+export function downloadBirthdayJSONStandalone(
+  analysis: SolarReturnAnalysis,
+  srChart: SolarReturnChart,
+  natalChart: NatalChart
+) {
+  const mappedPlanetPositions = Object.entries(natalChart.planets || {}).map(([planet, data]) => ({
+    planet,
+    natalPosition: `${(data as any).sign} ${Math.floor((data as any).degree || 0)}°`,
+    natalHouse: String((data as any).house || '').replace(/^H/, ''),
+    srPosition: (() => {
+      const srPlanet = srChart.planets?.[planet];
+      return srPlanet ? `${srPlanet.sign} ${Math.floor(srPlanet.degree || 0)}°` : '';
+    })(),
+    srHouse: String(analysis.planetSRHouses?.[planet] || '').replace(/^H/, ''),
+    shift: (() => {
+      const natal = (data as any).sign;
+      const sr = srChart.planets?.[planet]?.sign;
+      return (!sr || natal === sr) ? 'Same sign' : `${natal} → ${sr}`;
+    })(),
+  }));
+
+  const mappedSrToNatalAspects = (analysis.srToNatalAspects || []).map((a: any) => ({
+    srPlanet: a.planet1 || a.srPlanet || '',
+    natalPlanet: a.planet2 || a.natalPlanet || '',
+    aspect: a.type || a.aspect || '',
+    aspectType: a.type || a.aspectType || '',
+    orb: a.orb ?? null,
+    interpretation: a.interpretation || '',
+    exactDate: a.exactDate || '',
+  }));
+
+  const profYear = analysis.profectionYear;
+  const mappedProfectionYear = profYear ? {
+    ...profYear,
+    house: (profYear as any).house || (profYear as any).houseNumber || null,
+  } : null;
+
+  const payload = {
+    report_type: "solar_return_birthday",
+    data: {
+      name: natalChart.name || '',
+      birthDate: natalChart.birthDate || '',
+      birthLocation: natalChart.birthLocation || '',
+      solarReturnYear: srChart.solarReturnYear,
+      natalSun: natalChart.planets?.Sun?.sign || '',
+      natalMoon: natalChart.planets?.Moon?.sign || '',
+      natalRising: natalChart.houseCusps?.house1?.sign || '',
+      srSun: natalChart.planets?.Sun?.sign || '',
+      srMoon: analysis.moonSign || '',
+      srRising: analysis.yearlyTheme?.ascendantSign || '',
+      yearlyTheme: analysis.yearlyTheme,
+      sunHouse: analysis.sunHouse,
+      sunNatalHouse: analysis.sunNatalHouse,
+      moonHouse: analysis.moonHouse,
+      moonNatalHouse: analysis.moonNatalHouse,
+      profectionYear: mappedProfectionYear,
+      lordOfTheYear: analysis.lordOfTheYear,
+      moonPhase: analysis.moonPhase,
+      moonAngularity: analysis.moonAngularity,
+      moonLateDegree: analysis.moonLateDegree,
+      moonVOC: analysis.moonVOC,
+      moonMetonicAges: analysis.moonMetonicAges,
+      srMoonAspects: analysis.srMoonAspects,
+      stelliums: analysis.stelliums,
+      srToNatalAspects: mappedSrToNatalAspects,
+      srInternalAspects: analysis.srInternalAspects,
+      angularPlanets: analysis.angularPlanets,
+      planetPositions: mappedPlanetPositions,
+      houseOverlays: analysis.houseOverlays,
+      elementBalance: analysis.elementBalance,
+      modalityBalance: analysis.modalityBalance,
+      hemisphericEmphasis: analysis.hemisphericEmphasis,
+      saturnFocus: analysis.saturnFocus,
+      nodesFocus: analysis.nodesFocus,
+      retrogrades: analysis.retrogrades,
+      vertex: analysis.vertex,
+    }
+  };
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `SolarReturn_Birthday_${(natalChart.name || 'chart').replace(/\s+/g, '_')}_${srChart.solarReturnYear}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 // ── Birthday Gift Print PDF (comprehensive, no AI narrative required) ──
 export async function generateBirthdayGiftPDF(
   analysis: SolarReturnAnalysis,
@@ -1831,11 +1920,6 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       )}
 
       <div className="flex flex-wrap gap-2">
-        <button onClick={downloadBirthdayJSON}
-          className="text-[11px] uppercase tracking-widest px-3 py-1.5 rounded-sm inline-flex items-center gap-1 bg-[hsl(var(--tier-3))] text-[hsl(var(--tier-3-accent))] border border-[hsl(var(--tier-3-accent)/0.3)] hover:border-[hsl(var(--tier-3-accent)/0.6)]">
-          <Download size={12} />
-          Birthday Gift Print
-        </button>
         {narrative && narrative.trim().length > 0 && (
           <button onClick={downloadFullJSON}
             className="text-[11px] uppercase tracking-widest px-3 py-1.5 rounded-sm inline-flex items-center gap-1 bg-amber-700 hover:bg-amber-800 text-white border border-amber-600">
