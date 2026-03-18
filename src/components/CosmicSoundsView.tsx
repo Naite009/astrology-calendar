@@ -834,8 +834,8 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
                       onClick={() => {
                         getEngine().stopAll();
                         setHighlightedPlanet(planet);
-                        getEngine().playTone(freq, 1.5, "sine");
-                        setTimeout(() => { setHighlightedPlanet(prev => prev === planet ? null : prev); }, 1500);
+                        getEngine().playTone(freq, 10, "sine");
+                        setTimeout(() => { setHighlightedPlanet(prev => prev === planet ? null : prev); }, 10000);
                       }}
                       className={`flex items-center gap-2 p-2.5 rounded-sm border transition-all duration-150 cursor-pointer select-none active:scale-95 ${
                         isHi ? "border-primary bg-primary/10 scale-[1.04] shadow-md" : "border-border bg-card hover:border-primary/40 hover:bg-secondary/30"
