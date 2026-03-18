@@ -356,8 +356,11 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
 
   useEffect(() => {
     const eng = engineRef.current;
-    if (eng) eng.setVolume(muted ? 0 : volume);
-  }, [volume, muted]);
+    if (eng) {
+      eng.setVolume(muted ? 0 : volume);
+      eng.setReverbMix(reverb);
+    }
+  }, [volume, muted, reverb]);
 
   const stopPlaying = useCallback(() => {
     getEngine().stopAll();
