@@ -1650,91 +1650,114 @@ function ZodiacWheelDiagram({ playing, onPlayGroup, onPlaySingleSign }: ChordCha
   }));
 
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="max-w-full">
-      {/* Outer circle */}
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--border))" strokeWidth="1" opacity="0.3" />
+    <div className="flex flex-col items-center gap-3">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="max-w-full">
+        {/* Outer circle */}
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--border))" strokeWidth="1" opacity="0.3" />
 
-      {/* Trine triangles — solid lines, click to play all together */}
-      {trineLines.map(t => {
-        const pts = t.indices.map(i => signPositions[i]);
-        const d = `M ${pts.map(p => `${p.x},${p.y}`).join(' L ')} Z`;
-        const isActive = playing === t.id;
-        return (
-          <g key={t.id}>
-            {/* Invisible wider hit area for easier clicking */}
-            <path d={d} fill="none" stroke="transparent" strokeWidth="14"
-              className="cursor-pointer" onClick={() => onPlayGroup(t.id, t.signs, 6, "sine")} />
-            <path d={d}
-              fill={isActive ? t.color.replace(')', ' / 0.12)').replace('hsl', 'hsl') : "none"}
-              stroke={t.color} strokeWidth={isActive ? 3 : 1.5} opacity={isActive ? 1 : 0.45}
-              className="cursor-pointer pointer-events-none" />
-            {isActive && (
-              <path d={d} fill="none" stroke={t.color} strokeWidth="5" opacity="0.2">
-                <animate attributeName="opacity" values="0.2;0.4;0.2" dur="1.5s" repeatCount="indefinite" />
-              </path>
-            )}
-          </g>
-        );
-      })}
+        {/* Trine triangles — solid lines, click to play all together */}
+        {trineLines.map(t => {
+          const pts = t.indices.map(i => signPositions[i]);
+          const d = `M ${pts.map(p => `${p.x},${p.y}`).join(' L ')} Z`;
+          const isActive = playing === t.id;
+          return (
+            <g key={t.id}>
+              {/* Invisible wider hit area for easier clicking */}
+              <path d={d} fill="none" stroke="transparent" strokeWidth="14"
+                className="cursor-pointer" onClick={() => onPlayGroup(t.id, t.signs, 6, "sine")} />
+              <path d={d}
+                fill={isActive ? t.color.replace(')', ' / 0.12)').replace('hsl', 'hsl') : "none"}
+                stroke={t.color} strokeWidth={isActive ? 3 : 1.5} opacity={isActive ? 1 : 0.45}
+                className="cursor-pointer pointer-events-none" />
+              {isActive && (
+                <path d={d} fill="none" stroke={t.color} strokeWidth="5" opacity="0.2">
+                  <animate attributeName="opacity" values="0.2;0.4;0.2" dur="1.5s" repeatCount="indefinite" />
+                </path>
+              )}
+            </g>
+          );
+        })}
 
-      {/* Square lines — dashed, click to play all together */}
-      {squareLines.map(s => {
-        const pts = s.indices.map(i => signPositions[i]);
-        const d = `M ${pts.map(p => `${p.x},${p.y}`).join(' L ')} Z`;
-        const isActive = playing === s.id;
-        return (
-          <g key={s.id}>
-            <path d={d} fill="none" stroke="transparent" strokeWidth="14"
-              className="cursor-pointer" onClick={() => onPlayGroup(s.id, s.signs, 5, "sawtooth")} />
-            <path d={d}
-              fill={isActive ? s.color.replace(')', ' / 0.08)').replace('hsl', 'hsl') : "none"}
-              stroke={s.color} strokeWidth={isActive ? 2.5 : 1} opacity={isActive ? 1 : 0.3}
-              strokeDasharray="6 4" className="pointer-events-none" />
-          </g>
-        );
-      })}
+        {/* Square lines — dashed, click to play all together */}
+        {squareLines.map(s => {
+          const pts = s.indices.map(i => signPositions[i]);
+          const d = `M ${pts.map(p => `${p.x},${p.y}`).join(' L ')} Z`;
+          const isActive = playing === s.id;
+          return (
+            <g key={s.id}>
+              <path d={d} fill="none" stroke="transparent" strokeWidth="14"
+                className="cursor-pointer" onClick={() => onPlayGroup(s.id, s.signs, 5, "sawtooth")} />
+              <path d={d}
+                fill={isActive ? s.color.replace(')', ' / 0.08)').replace('hsl', 'hsl') : "none"}
+                stroke={s.color} strokeWidth={isActive ? 2.5 : 1} opacity={isActive ? 1 : 0.3}
+                strokeDasharray="6 4" className="pointer-events-none" />
+            </g>
+          );
+        })}
 
-      {/* Sign glyphs — clickable circles for individual tones */}
-      {signPositions.map((pos, i) => {
-        const sign = SIGNS[i];
-        const isPlaying = playing === sign;
-        const isHighlighted = isPlaying ||
-          TRINE_GROUPS.some(g => playing === `trine-${g.label}` && g.signs.includes(sign)) ||
-          SQUARE_GROUPS.some(g => playing === `square-${g.label}` && g.signs.includes(sign));
-        return (
-          <g key={sign} className="cursor-pointer" onClick={() => onPlaySingleSign(sign)}>
-            {/* Large invisible hit area */}
-            <circle cx={pos.gx} cy={pos.gy} r={18} fill="transparent" />
-            {/* Glow ring on hover/active */}
-            <circle cx={pos.gx} cy={pos.gy} r={15}
-              fill={isHighlighted ? SIGN_COLORS[sign].replace(')', ' / 0.15)').replace('hsl', 'hsl') : "transparent"}
-              stroke={isHighlighted ? SIGN_COLORS[sign] : "hsl(var(--border))"}
-              strokeWidth={isHighlighted ? 2 : 0.5}
-              opacity={isHighlighted ? 1 : 0.4}
-            >
-              {isPlaying && <animate attributeName="r" values="15;17;15" dur="0.8s" repeatCount="indefinite" />}
-            </circle>
-            {/* Dot on the wheel */}
-            <circle cx={pos.x} cy={pos.y} r={isHighlighted ? 5 : 3} fill={SIGN_COLORS[sign]} opacity={isHighlighted ? 1 : 0.6}>
-              {isHighlighted && <animate attributeName="r" values="5;7;5" dur="1s" repeatCount="indefinite" />}
-            </circle>
-            {/* Glyph text */}
-            <text x={pos.gx} y={pos.gy} textAnchor="middle" dominantBaseline="central"
-              fontSize={isHighlighted ? "18" : "15"}
-              fill={isHighlighted ? SIGN_COLORS[sign] : "hsl(var(--muted-foreground))"}
-              className="select-none" fontWeight={isPlaying ? "bold" : "normal"}
-              style={{ transition: 'font-size 0.2s, fill 0.2s' }}>
-              {SIGN_GLYPHS[sign]}
-            </text>
-          </g>
-        );
-      })}
+        {/* Sign glyphs — clickable circles for individual tones */}
+        {signPositions.map((pos, i) => {
+          const sign = SIGNS[i];
+          const isPlaying = playing === sign;
+          const isHighlighted = isPlaying ||
+            TRINE_GROUPS.some(g => playing === `trine-${g.label}` && g.signs.includes(sign)) ||
+            SQUARE_GROUPS.some(g => playing === `square-${g.label}` && g.signs.includes(sign));
+          return (
+            <g key={sign} className="cursor-pointer" onClick={() => onPlaySingleSign(sign)}>
+              {/* Large invisible hit area */}
+              <circle cx={pos.gx} cy={pos.gy} r={18} fill="transparent" />
+              {/* Glow ring on hover/active */}
+              <circle cx={pos.gx} cy={pos.gy} r={15}
+                fill={isHighlighted ? SIGN_COLORS[sign].replace(')', ' / 0.15)').replace('hsl', 'hsl') : "transparent"}
+                stroke={isHighlighted ? SIGN_COLORS[sign] : "hsl(var(--border))"}
+                strokeWidth={isHighlighted ? 2 : 0.5}
+                opacity={isHighlighted ? 1 : 0.4}
+              >
+                {isPlaying && <animate attributeName="r" values="15;17;15" dur="0.8s" repeatCount="indefinite" />}
+              </circle>
+              {/* Dot on the wheel */}
+              <circle cx={pos.x} cy={pos.y} r={isHighlighted ? 5 : 3} fill={SIGN_COLORS[sign]} opacity={isHighlighted ? 1 : 0.6}>
+                {isHighlighted && <animate attributeName="r" values="5;7;5" dur="1s" repeatCount="indefinite" />}
+              </circle>
+              {/* Glyph text */}
+              <text x={pos.gx} y={pos.gy} textAnchor="middle" dominantBaseline="central"
+                fontSize={isHighlighted ? "18" : "15"}
+                fill={isHighlighted ? SIGN_COLORS[sign] : "hsl(var(--muted-foreground))"}
+                className="select-none" fontWeight={isPlaying ? "bold" : "normal"}
+                style={{ transition: 'font-size 0.2s, fill 0.2s' }}>
+                {SIGN_GLYPHS[sign]}
+              </text>
+            </g>
+          );
+        })}
 
-      {/* Legend */}
-      <text x={cx} y={size - 6} textAnchor="middle" fontSize="9" fill="hsl(var(--muted-foreground))" opacity="0.5">
-        click glyphs = solo · click lines = full chord
-      </text>
-    </svg>
+        {/* Legend */}
+        <text x={cx} y={size - 6} textAnchor="middle" fontSize="9" fill="hsl(var(--muted-foreground))" opacity="0.5">
+          click glyphs = solo · click lines = full chord
+        </text>
+      </svg>
+
+      {/* Stop button at wheel level — visible when any wheel sound is playing */}
+      {isWheelPlaying && (
+        <button
+          onClick={() => {
+            // Call onPlayGroup with the current playing id to toggle it off (the parent toggleOrPlay handles stop)
+            if (playing && SIGNS.includes(playing as ZodiacSign)) {
+              onPlaySingleSign(playing as ZodiacSign);
+            } else if (playing) {
+              const trineMatch = TRINE_GROUPS.find(g => playing === `trine-${g.label}`);
+              if (trineMatch) onPlayGroup(`trine-${trineMatch.label}`, trineMatch.signs, 6, "sine");
+              const squareMatch = SQUARE_GROUPS.find(g => playing === `square-${g.label}`);
+              if (squareMatch) onPlayGroup(`square-${squareMatch.label}`, squareMatch.signs, 5, "sawtooth");
+            }
+          }}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-all border border-destructive bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+        >
+          <Square size={14} />
+          Stop
+        </button>
+      )}
+    </div>
   );
 }
 
