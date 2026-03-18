@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useMemo, useEffect } from "react";
-import { Volume2, VolumeX, Play, Square, Music, Sparkles, Waves, Globe } from "lucide-react";
+import { Volume2, VolumeX, Play, Square, Music, Sparkles, Waves, Globe, Moon, Brain, Info, ChevronDown, ChevronUp } from "lucide-react";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { getPlanetaryPositions } from "@/lib/astrology";
 
