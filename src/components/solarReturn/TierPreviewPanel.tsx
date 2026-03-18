@@ -58,7 +58,7 @@ export const TierPreviewPanel = ({ tier, analysis, onClose, onDownload }: Props)
         >
           <span className="flex items-center gap-1.5">
             <Download size={12} />
-            {tier === 't4' || tier === 't5' ? 'Coming Soon' : 'Download JSON'}
+            Download JSON
           </span>
         </button>
         <button
