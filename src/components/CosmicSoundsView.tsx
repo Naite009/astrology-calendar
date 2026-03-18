@@ -682,7 +682,7 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
   // Natal chart chord — use houseCusps.house1 for Ascendant sign
   const natalFreqs = useMemo(() => {
     if (!selectedChart?.planets) return null;
-    const freqs: { planet: string; sign: ZodiacSign; freq: number }[] = [];
+    const freqs: { planet: string; sign: ZodiacSign; freq: number; note: string }[] = [];
     for (const p of PLANETS) {
       let sign: string | undefined;
       if (p === "Ascendant") {
