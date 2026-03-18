@@ -1096,6 +1096,174 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
         </div>
       </section>
 
+      {/* ── Section 5: Binaural Entrainment ── */}
+      {allCharts.length > 0 && natalFreqs && (
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Brain size={18} className="text-primary" />
+            <h3 className="text-xs uppercase tracking-[0.2em] font-medium text-foreground">Binaural Entrainment — Meditation & Sleep</h3>
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            <strong>Binaural beats</strong> work by playing a slightly different frequency in each ear. 
+            Your brain perceives the difference as a gentle pulsing rhythm that can guide your brainwaves 
+            into specific states. These use your <strong>birth chart frequencies</strong> (Sun, Moon, Ascendant) as the carrier tones.
+          </p>
+          <p className="text-[10px] text-muted-foreground italic">🎧 Headphones required for binaural effect — speakers won't work.</p>
+
+          {/* Timer selector */}
+          <div className="flex items-center gap-3 justify-center">
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Duration:</span>
+            {[60, 120, 300, 600].map(secs => (
+              <button
+                key={secs}
+                onClick={() => setBinauralTimer(secs)}
+                className={`px-3 py-1.5 rounded-sm text-[11px] border transition-all ${
+                  binauralTimer === secs
+                    ? "border-primary bg-primary/10 text-foreground"
+                    : "border-border text-muted-foreground hover:border-primary/40"
+                }`}
+              >
+                {secs < 60 ? `${secs}s` : `${secs / 60}m`}
+              </button>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Theta Meditation */}
+            <div className={`p-5 rounded-sm border space-y-3 transition-all ${
+              playing === "theta-meditation" ? "border-primary bg-primary/5 shadow-lg" : "border-border bg-card"
+            }`}>
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">🧘</span>
+                <div>
+                  <h4 className="text-sm font-medium text-foreground">Theta Meditation</h4>
+                  <p className="text-[10px] text-muted-foreground">4–8 Hz · Dreamy, meditative, deep relaxation</p>
+                </div>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Theta waves (6 Hz beat) are associated with deep meditation, creativity, and the hypnagogic state 
+                between waking and sleep. Your birth chart tones are shifted down one octave for a calmer resonance.
+              </p>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={playThetaMeditation}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-all border ${
+                    playing === "theta-meditation"
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border hover:border-primary hover:bg-secondary text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {playing === "theta-meditation" ? <><Square size={14} /> Stop</> : <><Moon size={14} /> Begin Meditation</>}
+                </button>
+                {playing === "theta-meditation" && (
+                  <span className="text-[10px] text-primary animate-pulse">● Theta entrainment active…</span>
+                )}
+              </div>
+            </div>
+
+            {/* Delta Sleep */}
+            <div className={`p-5 rounded-sm border space-y-3 transition-all ${
+              playing === "delta-sleep" ? "border-primary bg-primary/5 shadow-lg" : "border-border bg-card"
+            }`}>
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">😴</span>
+                <div>
+                  <h4 className="text-sm font-medium text-foreground">Delta Deep Sleep</h4>
+                  <p className="text-[10px] text-muted-foreground">0.5–4 Hz · Dreamless deep sleep, healing</p>
+                </div>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Delta waves (2 Hz beat) are associated with the deepest stage of sleep — where physical healing, 
+                immune restoration, and memory consolidation occur. Your chart tones are shifted down two octaves into sub-bass.
+              </p>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={playDeltaSleep}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-all border ${
+                    playing === "delta-sleep"
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border hover:border-primary hover:bg-secondary text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {playing === "delta-sleep" ? <><Square size={14} /> Stop</> : <><Moon size={14} /> Begin Sleep Mode</>}
+                </button>
+                {playing === "delta-sleep" && (
+                  <span className="text-[10px] text-primary animate-pulse">● Delta entrainment active…</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── Section 6: Understanding Frequencies — Educational Explainer ── */}
+      <section className="space-y-3">
+        <button
+          onClick={() => setShowExplainer(!showExplainer)}
+          className="flex items-center gap-2 text-left w-full group"
+        >
+          <Info size={18} className="text-primary" />
+          <h3 className="text-xs uppercase tracking-[0.2em] font-medium text-foreground">Understanding Frequencies & Vibration</h3>
+          <span className="ml-auto text-muted-foreground">
+            {showExplainer ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </span>
+        </button>
+
+        {showExplainer && (
+          <div className="space-y-4 p-5 rounded-sm border border-border bg-card">
+            {/* Musical Hz */}
+            <div className="space-y-1.5">
+              <h4 className="text-sm font-medium text-foreground flex items-center gap-2">🎵 Musical Frequencies (Hz)</h4>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                The frequencies in the Zodiac Wheel (262–494 Hz) are <strong>musical notes</strong> — the chromatic scale 
+                starting at middle C. These are audible pitches that create harmony and dissonance. Aries = C, Pisces = B. 
+                Pisces isn't "higher vibration" — it's simply a higher-pitched note, like a higher key on a piano.
+              </p>
+            </div>
+
+            {/* Brainwave Hz */}
+            <div className="space-y-1.5">
+              <h4 className="text-sm font-medium text-foreground flex items-center gap-2">🧠 Brainwave Frequencies (Hz)</h4>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Brainwaves operate at <em>much lower</em> frequencies — too low to hear directly:
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+                {[
+                  { name: "Delta", range: "0.5–4 Hz", state: "Deep sleep, healing", color: "hsl(var(--primary))" },
+                  { name: "Theta", range: "4–8 Hz", state: "Meditation, dreams", color: "hsl(250 60% 60%)" },
+                  { name: "Alpha", range: "8–13 Hz", state: "Relaxed, calm", color: "hsl(140 50% 50%)" },
+                  { name: "Beta", range: "13–30 Hz", state: "Alert, focused", color: "hsl(35 80% 55%)" },
+                ].map(w => (
+                  <div key={w.name} className="p-2.5 rounded-sm border border-border bg-secondary/30 text-center">
+                    <p className="text-[11px] font-medium text-foreground">{w.name}</p>
+                    <p className="text-[10px] font-mono text-muted-foreground">{w.range}</p>
+                    <p className="text-[9px] text-muted-foreground">{w.state}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed pt-1">
+                <strong>Binaural beats</strong> bridge these worlds: two audible tones (e.g., 200 Hz + 206 Hz) are played 
+                in separate ears, and your brain perceives the 6 Hz <em>difference</em> — gently guiding your brainwaves 
+                toward that frequency. The tones themselves are hundreds of Hz; the healing happens in the gap between them.
+              </p>
+            </div>
+
+            {/* Raising vibration */}
+            <div className="space-y-1.5">
+              <h4 className="text-sm font-medium text-foreground flex items-center gap-2">✨ "Raising Your Vibration"</h4>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                This phrase is <strong>metaphorical, not literal</strong>. It doesn't mean increasing Hz numbers. 
+                In spiritual and astrological contexts, "vibration" refers to your <em>energetic and emotional state</em> — 
+                moving from contraction (fear, stagnation, numbness) toward expansion (clarity, joy, presence, compassion). 
+                A Pisces placement isn't "higher vibration" than Aries because its Hz number is bigger — each sign 
+                carries its own frequency of <em>experience</em>, its own lesson, its own medicine. The goal isn't to 
+                vibrate faster; it's to vibrate more <em>authentically</em>.
+              </p>
+            </div>
+          </div>
+        )}
+      </section>
+
       {/* Footer teaching */}
       <div className="text-center text-xs text-muted-foreground/70 pt-4 pb-8 border-t border-border space-y-2">
         <p>Frequencies based on the chromatic zodiac scale: Aries = C4 (261.63 Hz), ascending by semitone.</p>
