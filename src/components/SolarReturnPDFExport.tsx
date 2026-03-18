@@ -390,11 +390,11 @@ export function downloadBirthdayJSONStandalone(
     house: (profYear as any).house || (profYear as any).houseNumber || null,
   } : null;
 
-  // Build absolute cake image URL from Vite asset import
+  // Permanent cake image URL from cloud storage
   const natalSun = natalChart.planets?.Sun?.sign || '';
-  const cakeAssetPath = CAKE_IMAGES[natalSun] || '';
-  const cakeImageUrl = cakeAssetPath
-    ? `${window.location.origin}${cakeAssetPath.startsWith('/') ? '' : '/'}${cakeAssetPath}`
+  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+  const cakeImageUrl = natalSun
+    ? `${SUPABASE_URL}/storage/v1/object/public/cakes/${natalSun.toLowerCase()}.png`
     : '';
 
   const payload = {
