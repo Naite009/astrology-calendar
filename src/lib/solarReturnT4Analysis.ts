@@ -1,0 +1,597 @@
+/**
+ * Tier 4 Solar Return Analysis
+ * - Mutual Receptions
+ * - Full Dignity Report
+ * - Health Astrology Overlay
+ * - Eclipse Sensitivity Check
+ * - Enhanced Retrograde Analysis (with shadow periods)
+ * - Quarterly Focus Breakdown
+ */
+
+import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
+import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
+
+const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+
+const traditionalRuler: Record<string, string> = {
+  Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon',
+  Leo: 'Sun', Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Mars',
+  Sagittarius: 'Jupiter', Capricorn: 'Saturn', Aquarius: 'Saturn', Pisces: 'Jupiter',
+};
+
+const domicileSigns: Record<string, string[]> = {
+  Sun: ['Leo'], Moon: ['Cancer'], Mercury: ['Gemini','Virgo'], Venus: ['Taurus','Libra'],
+  Mars: ['Aries','Scorpio'], Jupiter: ['Sagittarius','Pisces'], Saturn: ['Capricorn','Aquarius'],
+  Uranus: ['Aquarius'], Neptune: ['Pisces'], Pluto: ['Scorpio'],
+};
+const exaltationSigns: Record<string, string> = {
+  Sun: 'Aries', Moon: 'Taurus', Mercury: 'Virgo', Venus: 'Pisces',
+  Mars: 'Capricorn', Jupiter: 'Cancer', Saturn: 'Libra',
+};
+const detrimentSigns: Record<string, string[]> = {
+  Sun: ['Aquarius'], Moon: ['Capricorn'], Mercury: ['Sagittarius','Pisces'], Venus: ['Aries','Scorpio'],
+  Mars: ['Taurus','Libra'], Jupiter: ['Gemini','Virgo'], Saturn: ['Cancer','Leo'],
+};
+const fallSigns: Record<string, string> = {
+  Sun: 'Libra', Moon: 'Scorpio', Mercury: 'Pisces', Venus: 'Virgo',
+  Mars: 'Cancer', Jupiter: 'Capricorn', Saturn: 'Aries',
+};
+
+const getDignity = (planet: string, sign: string): string => {
+  if (domicileSigns[planet]?.includes(sign)) return 'Domicile';
+  if (exaltationSigns[planet] === sign) return 'Exaltation';
+  if (detrimentSigns[planet]?.includes(sign)) return 'Detriment';
+  if (fallSigns[planet] === sign) return 'Fall';
+  return 'Peregrine';
+};
+
+const PLANETS_CORE = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
+
+const toAbsDeg = (pos: any): number | null => {
+  if (!pos) return null;
+  const idx = SIGNS.indexOf(pos.sign);
+  if (idx < 0) return null;
+  return idx * 30 + (pos.degree || 0) + ((pos as any).minutes || 0) / 60;
+};
+
+// ─── Types ──────────────────────────────────────────────────────────
+
+export interface SRMutualReception {
+  planet1: string;
+  planet1Sign: string;
+  planet2: string;
+  planet2Sign: string;
+  type: 'domicile' | 'exaltation' | 'mixed';
+  interpretation: string;
+}
+
+export interface SRDignityEntry {
+  planet: string;
+  sign: string;
+  dignity: string;
+  score: number; // +5 domicile, +4 exaltation, -3 detriment, -4 fall, 0 peregrine
+  isRetrograde: boolean;
+  interpretation: string;
+}
+
+export interface SRDignityReport {
+  entries: SRDignityEntry[];
+  totalScore: number;
+  strongestPlanet: string;
+  weakestPlanet: string;
+  interpretation: string;
+}
+
+export interface SRHealthOverlay {
+  planet: string;
+  sign: string;
+  house: number | null;
+  bodyArea: string;
+  vulnerability: string;
+  isStressed: boolean; // detriment, fall, or hard aspects
+  interpretation: string;
+}
+
+export interface SRHealthReport {
+  overlays: SRHealthOverlay[];
+  primaryConcerns: string[];
+  supportiveFactors: string[];
+  interpretation: string;
+}
+
+export interface SREclipseSensitivity {
+  eclipseType: string; // 'Solar' or 'Lunar'
+  eclipseSign: string;
+  eclipseDegree: number;
+  eclipseDate: string;
+  sensitizedPlanet: string;
+  sensitizedPlanetSource: 'SR' | 'Natal';
+  orb: number;
+  interpretation: string;
+}
+
+export interface SREnhancedRetrograde {
+  planet: string;
+  sign: string;
+  house: number | null;
+  stationRetroDate: string;
+  stationDirectDate: string;
+  retroDegree: string;
+  directDegree: string;
+  shadowPreStart: string;
+  shadowPostEnd: string;
+  interpretation: string;
+}
+
+export interface SRQuarterlyFocus {
+  quarter: 1 | 2 | 3 | 4;
+  label: string;
+  months: string;
+  dominantThemes: string[];
+  activePlanets: string[];
+  interpretation: string;
+}
+
+// ─── Planet body associations ───────────────────────────────────────
+
+const PLANET_BODY: Record<string, { area: string; vulnerability: string }> = {
+  Sun: { area: 'Heart, spine, overall vitality', vulnerability: 'Burnout, heart strain, back issues, low energy' },
+  Moon: { area: 'Stomach, breasts, fluid balance, lymph', vulnerability: 'Digestive issues, water retention, emotional eating, sleep disruption' },
+  Mercury: { area: 'Nervous system, hands, lungs, speech', vulnerability: 'Anxiety, respiratory issues, nerve pain, communication strain' },
+  Venus: { area: 'Throat, kidneys, skin, hormonal balance', vulnerability: 'Throat infections, kidney issues, skin conditions, hormonal imbalance' },
+  Mars: { area: 'Muscles, blood, adrenals, inflammation', vulnerability: 'Injuries, inflammation, headaches, adrenal fatigue, fever' },
+  Jupiter: { area: 'Liver, hips, thighs, fat metabolism', vulnerability: 'Weight gain, liver strain, hip problems, overindulgence' },
+  Saturn: { area: 'Bones, teeth, knees, joints, skin', vulnerability: 'Joint pain, dental issues, bone density, chronic conditions, depression' },
+  Uranus: { area: 'Nervous system, circulation, ankles', vulnerability: 'Sudden spasms, circulatory issues, anxiety, erratic symptoms' },
+  Neptune: { area: 'Immune system, feet, pineal gland', vulnerability: 'Immune weakness, allergies, foot problems, misdiagnosis, substance sensitivity' },
+  Pluto: { area: 'Reproductive system, colon, detoxification', vulnerability: 'Reproductive issues, detox crises, obsessive health focus, hidden conditions' },
+};
+
+const SIGN_BODY: Record<string, string> = {
+  Aries: 'head, face, brain',
+  Taurus: 'throat, neck, thyroid',
+  Gemini: 'lungs, arms, hands, nervous system',
+  Cancer: 'chest, stomach, breasts',
+  Leo: 'heart, spine, upper back',
+  Virgo: 'intestines, digestive system',
+  Libra: 'kidneys, lower back, skin',
+  Scorpio: 'reproductive organs, colon',
+  Sagittarius: 'hips, thighs, liver',
+  Capricorn: 'knees, bones, joints, teeth',
+  Aquarius: 'ankles, circulation, nervous system',
+  Pisces: 'feet, immune system, lymphatic system',
+};
+
+// ─── Eclipse data for 2025-2027 (common SR years) ───────────────────
+
+interface EclipseData {
+  date: string;
+  type: string;
+  sign: string;
+  degree: number;
+}
+
+const ECLIPSES_2025_2027: EclipseData[] = [
+  { date: '2025-03-14', type: 'Lunar', sign: 'Virgo', degree: 23 },
+  { date: '2025-03-29', type: 'Solar', sign: 'Aries', degree: 9 },
+  { date: '2025-09-07', type: 'Lunar', sign: 'Pisces', degree: 15 },
+  { date: '2025-09-21', type: 'Solar', sign: 'Virgo', degree: 29 },
+  { date: '2026-02-17', type: 'Solar', sign: 'Aquarius', degree: 28 },
+  { date: '2026-03-03', type: 'Lunar', sign: 'Virgo', degree: 12 },
+  { date: '2026-08-12', type: 'Solar', sign: 'Leo', degree: 19 },
+  { date: '2026-08-28', type: 'Lunar', sign: 'Pisces', degree: 4 },
+  { date: '2027-02-06', type: 'Solar', sign: 'Aquarius', degree: 17 },
+  { date: '2027-02-20', type: 'Lunar', sign: 'Virgo', degree: 2 },
+  { date: '2027-07-18', type: 'Lunar', sign: 'Capricorn', degree: 25 },
+  { date: '2027-08-02', type: 'Solar', sign: 'Leo', degree: 9 },
+];
+
+// ─── Retrograde periods 2025-2027 ──────────────────────────────────
+
+interface RetroPeriod {
+  planet: string;
+  year: number;
+  stationRx: string;
+  stationDirect: string;
+  rxDegree: string;
+  directDegree: string;
+  sign: string;
+  shadowPre: string;
+  shadowPost: string;
+}
+
+const RETRO_PERIODS: RetroPeriod[] = [
+  // Mercury 2025
+  { planet: 'Mercury', year: 2025, stationRx: '2025-03-15', stationDirect: '2025-04-07', rxDegree: '9° Aries', directDegree: '26° Pisces', sign: 'Aries/Pisces', shadowPre: '2025-02-25', shadowPost: '2025-04-24' },
+  { planet: 'Mercury', year: 2025, stationRx: '2025-07-18', stationDirect: '2025-08-11', rxDegree: '15° Leo', directDegree: '4° Leo', sign: 'Leo', shadowPre: '2025-07-01', shadowPost: '2025-08-28' },
+  { planet: 'Mercury', year: 2025, stationRx: '2025-11-09', stationDirect: '2025-11-29', rxDegree: '6° Sagittarius', directDegree: '20° Scorpio', sign: 'Sagittarius/Scorpio', shadowPre: '2025-10-22', shadowPost: '2025-12-15' },
+  // Mercury 2026
+  { planet: 'Mercury', year: 2026, stationRx: '2026-02-26', stationDirect: '2026-03-20', rxDegree: '22° Pisces', directDegree: '10° Pisces', sign: 'Pisces', shadowPre: '2026-02-09', shadowPost: '2026-04-06' },
+  { planet: 'Mercury', year: 2026, stationRx: '2026-06-29', stationDirect: '2026-07-23', rxDegree: '26° Cancer', directDegree: '16° Cancer', sign: 'Cancer', shadowPre: '2026-06-12', shadowPost: '2026-08-09' },
+  { planet: 'Mercury', year: 2026, stationRx: '2026-10-24', stationDirect: '2026-11-13', rxDegree: '19° Scorpio', directDegree: '4° Scorpio', sign: 'Scorpio', shadowPre: '2026-10-06', shadowPost: '2026-11-30' },
+  // Venus 2026
+  { planet: 'Venus', year: 2026, stationRx: '2026-03-02', stationDirect: '2026-04-13', rxDegree: '11° Aries', directDegree: '25° Pisces', sign: 'Aries/Pisces', shadowPre: '2026-01-28', shadowPost: '2026-05-17' },
+  // Mars 2026
+  { planet: 'Mars', year: 2026, stationRx: '2026-01-06', stationDirect: '2026-02-24', rxDegree: '6° Leo', directDegree: '17° Cancer', sign: 'Leo/Cancer', shadowPre: '2025-11-04', shadowPost: '2026-05-02' },
+  // Jupiter
+  { planet: 'Jupiter', year: 2025, stationRx: '2025-11-11', stationDirect: '2026-03-11', rxDegree: '20° Cancer', directDegree: '11° Cancer', sign: 'Cancer', shadowPre: '2025-08-05', shadowPost: '2026-06-10' },
+  // Saturn
+  { planet: 'Saturn', year: 2025, stationRx: '2025-07-13', stationDirect: '2025-11-28', rxDegree: '2° Aries', directDegree: '25° Pisces', sign: 'Aries/Pisces', shadowPre: '2025-04-08', shadowPost: '2026-02-20' },
+  { planet: 'Saturn', year: 2026, stationRx: '2026-08-06', stationDirect: '2026-12-18', rxDegree: '12° Aries', directDegree: '3° Aries', sign: 'Aries', shadowPre: '2026-05-01', shadowPost: '2027-03-10' },
+  // Uranus
+  { planet: 'Uranus', year: 2025, stationRx: '2025-09-06', stationDirect: '2026-02-04', rxDegree: '1° Gemini', directDegree: '27° Taurus', sign: 'Gemini/Taurus', shadowPre: '2025-05-28', shadowPost: '2026-05-10' },
+  // Neptune
+  { planet: 'Neptune', year: 2025, stationRx: '2025-07-04', stationDirect: '2025-12-10', rxDegree: '2° Aries', directDegree: '27° Pisces', sign: 'Aries/Pisces', shadowPre: '2025-03-10', shadowPost: '2026-03-20' },
+  // Pluto
+  { planet: 'Pluto', year: 2025, stationRx: '2025-05-04', stationDirect: '2025-10-13', rxDegree: '4° Aquarius', directDegree: '1° Aquarius', sign: 'Aquarius', shadowPre: '2025-01-20', shadowPost: '2026-01-25' },
+];
+
+// ─── Calculations ───────────────────────────────────────────────────
+
+export function calculateMutualReceptions(srChart: SolarReturnChart): SRMutualReception[] {
+  const receptions: SRMutualReception[] = [];
+  const planets = PLANETS_CORE;
+  
+  for (let i = 0; i < planets.length; i++) {
+    for (let j = i + 1; j < planets.length; j++) {
+      const p1 = planets[i];
+      const p2 = planets[j];
+      const pos1 = srChart.planets[p1 as keyof typeof srChart.planets];
+      const pos2 = srChart.planets[p2 as keyof typeof srChart.planets];
+      if (!pos1 || !pos2) continue;
+
+      // Domicile mutual reception: P1 in P2's domicile sign AND P2 in P1's domicile sign
+      const p1InP2Domain = domicileSigns[p2]?.includes(pos1.sign);
+      const p2InP1Domain = domicileSigns[p1]?.includes(pos2.sign);
+      
+      if (p1InP2Domain && p2InP1Domain) {
+        receptions.push({
+          planet1: p1, planet1Sign: pos1.sign,
+          planet2: p2, planet2Sign: pos2.sign,
+          type: 'domicile',
+          interpretation: `${p1} in ${pos1.sign} and ${p2} in ${pos2.sign} form a domicile mutual reception — each planet is in the other's home sign. They support each other powerfully, creating a hidden channel of cooperation. ${p1}'s themes and ${p2}'s themes work as a team this year, even if they are in different houses.`,
+        });
+        continue;
+      }
+
+      // Exaltation mutual reception
+      const p1InP2Exalt = exaltationSigns[p2] === pos1.sign;
+      const p2InP1Exalt = exaltationSigns[p1] === pos2.sign;
+
+      if (p1InP2Exalt && p2InP1Exalt) {
+        receptions.push({
+          planet1: p1, planet1Sign: pos1.sign,
+          planet2: p2, planet2Sign: pos2.sign,
+          type: 'exaltation',
+          interpretation: `${p1} in ${pos1.sign} and ${p2} in ${pos2.sign} form an exaltation mutual reception — each planet is in the sign where the other is exalted. This creates a refined, elevated exchange of energy between ${p1} and ${p2} this year.`,
+        });
+        continue;
+      }
+
+      // Mixed reception (one domicile, one exaltation)
+      if ((p1InP2Domain && p2InP1Exalt) || (p1InP2Exalt && p2InP1Domain)) {
+        receptions.push({
+          planet1: p1, planet1Sign: pos1.sign,
+          planet2: p2, planet2Sign: pos2.sign,
+          type: 'mixed',
+          interpretation: `${p1} in ${pos1.sign} and ${p2} in ${pos2.sign} form a mixed mutual reception — one planet is in the other's domicile while the reverse is an exaltation. This creates a supportive but asymmetric exchange between ${p1} and ${p2}'s themes.`,
+        });
+      }
+    }
+  }
+  return receptions;
+}
+
+export function calculateDignityReport(
+  srChart: SolarReturnChart,
+  planetSRHouses: Record<string, number | null>
+): SRDignityReport {
+  const scoreMap: Record<string, number> = {
+    'Domicile': 5, 'Exaltation': 4, 'Peregrine': 0, 'Detriment': -3, 'Fall': -4,
+  };
+
+  const dignityInterps: Record<string, Record<string, string>> = {
+    Domicile: {
+      default: 'is in its home sign — operating at full strength, comfortable, and expressing its nature freely.',
+    },
+    Exaltation: {
+      default: 'is elevated and honored — performing at its best, with enhanced clarity and purpose.',
+    },
+    Detriment: {
+      default: 'is in the sign opposite its home — working against its natural grain. Extra effort is needed to express this energy constructively.',
+    },
+    Fall: {
+      default: 'is in the sign opposite its exaltation — at its most challenged position. The planet\'s gifts are muted or misapplied without conscious work.',
+    },
+    Peregrine: {
+      default: 'has no essential dignity here — it operates without special advantage or disadvantage, relying purely on aspects and house placement for expression.',
+    },
+  };
+
+  const entries: SRDignityEntry[] = [];
+  
+  for (const planet of PLANETS_CORE) {
+    const pos = srChart.planets[planet as keyof typeof srChart.planets];
+    if (!pos) continue;
+    const dignity = getDignity(planet, pos.sign);
+    const score = scoreMap[dignity] || 0;
+    const isRetrograde = !!(pos as any).isRetrograde;
+    const baseInterp = dignityInterps[dignity]?.default || '';
+    const rxNote = isRetrograde ? ` Being retrograde adds an inward, reflective quality — ${planet}'s expression turns internal before manifesting externally.` : '';
+    
+    entries.push({
+      planet,
+      sign: pos.sign,
+      dignity,
+      score: isRetrograde ? score - 1 : score,
+      isRetrograde,
+      interpretation: `${planet} in ${pos.sign} ${baseInterp}${rxNote}`,
+    });
+  }
+
+  const totalScore = entries.reduce((s, e) => s + e.score, 0);
+  const sorted = [...entries].sort((a, b) => b.score - a.score);
+  const strongest = sorted[0]?.planet || '';
+  const weakest = sorted[sorted.length - 1]?.planet || '';
+
+  const totalInterp = totalScore > 10
+    ? 'The chart has strong essential dignity — multiple planets are well-placed, giving the year a sense of competence and natural flow.'
+    : totalScore > 0
+    ? 'The chart has moderate essential dignity — some planets are well-placed while others require more effort. A balanced year of both ease and challenge.'
+    : totalScore > -5
+    ? 'The chart has mixed dignity — several planets are in uncomfortable signs. Growth comes through working harder with less natural support.'
+    : 'The chart has challenging essential dignity — many planets are in difficult positions. This is a year of building strength through adversity and conscious effort.';
+
+  return {
+    entries,
+    totalScore,
+    strongestPlanet: strongest,
+    weakestPlanet: weakest,
+    interpretation: totalInterp,
+  };
+}
+
+export function calculateHealthOverlay(
+  srChart: SolarReturnChart,
+  natalChart: NatalChart,
+  planetSRHouses: Record<string, number | null>,
+  srInternalAspects: any[]
+): SRHealthReport {
+  const overlays: SRHealthOverlay[] = [];
+  const primaryConcerns: string[] = [];
+  const supportiveFactors: string[] = [];
+
+  const HARD_ASPECTS = ['Conjunction', 'Square', 'Opposition'];
+
+  for (const planet of PLANETS_CORE) {
+    const pos = srChart.planets[planet as keyof typeof srChart.planets];
+    if (!pos) continue;
+    const body = PLANET_BODY[planet];
+    if (!body) continue;
+    const house = planetSRHouses[planet] ?? null;
+    const dignity = getDignity(planet, pos.sign);
+    const isStressed = dignity === 'Detriment' || dignity === 'Fall' ||
+      srInternalAspects.some((a: any) => 
+        (a.planet1 === planet || a.planet2 === planet) && HARD_ASPECTS.includes(a.type)
+      );
+
+    const signBody = SIGN_BODY[pos.sign] || '';
+    const houseNote = house === 6 ? ' Landing in the 6th house of health amplifies this planet\'s body-related themes.' :
+                      house === 12 ? ' In the 12th house, health matters may be hidden or manifest as psychosomatic patterns.' :
+                      house === 1 ? ' In the 1st house, physical vitality and appearance are directly affected.' : '';
+
+    overlays.push({
+      planet,
+      sign: pos.sign,
+      house,
+      bodyArea: body.area,
+      vulnerability: body.vulnerability,
+      isStressed,
+      interpretation: `${planet} in ${pos.sign} connects to ${body.area}. The sign rules ${signBody}.${houseNote}${isStressed ? ` This planet is under stress (${dignity}${srInternalAspects.some((a: any) => (a.planet1 === planet || a.planet2 === planet) && HARD_ASPECTS.includes(a.type)) ? ' + hard aspects' : ''}) — pay attention to ${body.vulnerability.toLowerCase()}.` : ` ${planet} is ${dignity === 'Domicile' || dignity === 'Exaltation' ? 'well-placed, supporting' : 'neutral regarding'} physical well-being in this area.`}`,
+    });
+
+    if (isStressed) {
+      primaryConcerns.push(`${planet} stressed in ${pos.sign}: watch for ${body.vulnerability.toLowerCase()}`);
+    }
+    if (dignity === 'Domicile' || dignity === 'Exaltation') {
+      supportiveFactors.push(`${planet} strong in ${pos.sign}: supports ${body.area.toLowerCase()}`);
+    }
+  }
+
+  // Check 6th house emphasis
+  const sixthHousePlanets = PLANETS_CORE.filter(p => planetSRHouses[p] === 6);
+  if (sixthHousePlanets.length >= 2) {
+    primaryConcerns.push(`Multiple planets in 6th house (${sixthHousePlanets.join(', ')}): health and daily routines need active management`);
+  }
+
+  return {
+    overlays,
+    primaryConcerns,
+    supportiveFactors,
+    interpretation: primaryConcerns.length === 0
+      ? 'No significant health stress patterns detected in this Solar Return. Maintain normal wellness routines and listen to your body\'s signals.'
+      : `${primaryConcerns.length} area${primaryConcerns.length > 1 ? 's' : ''} of potential health focus this year. These are not predictions — they are areas where the body may need extra attention or where stress could manifest physically.`,
+  };
+}
+
+export function calculateEclipseSensitivity(
+  srChart: SolarReturnChart,
+  natalChart: NatalChart,
+  srYear: number
+): SREclipseSensitivity[] {
+  const results: SREclipseSensitivity[] = [];
+  const ORB = 3; // degrees
+
+  // Filter eclipses relevant to the SR year (birthday to birthday)
+  const relevantEclipses = ECLIPSES_2025_2027.filter(e => {
+    const eYear = parseInt(e.date.slice(0, 4));
+    return eYear === srYear || eYear === srYear - 1;
+  });
+
+  for (const eclipse of relevantEclipses) {
+    const eclipseAbsDeg = SIGNS.indexOf(eclipse.sign) * 30 + eclipse.degree;
+
+    // Check SR planets
+    for (const planet of PLANETS_CORE) {
+      const pos = srChart.planets[planet as keyof typeof srChart.planets];
+      if (!pos) continue;
+      const pDeg = toAbsDeg(pos);
+      if (pDeg === null) continue;
+      let diff = Math.abs(pDeg - eclipseAbsDeg);
+      if (diff > 180) diff = 360 - diff;
+      if (diff <= ORB) {
+        results.push({
+          eclipseType: eclipse.type,
+          eclipseSign: eclipse.sign,
+          eclipseDegree: eclipse.degree,
+          eclipseDate: eclipse.date,
+          sensitizedPlanet: planet,
+          sensitizedPlanetSource: 'SR',
+          orb: Math.round(diff * 10) / 10,
+          interpretation: `The ${eclipse.type} eclipse at ${eclipse.degree}° ${eclipse.sign} (${eclipse.date}) falls within ${Math.round(diff)}° of SR ${planet}. Eclipse activation of ${planet} brings sudden, fated shifts to ${planet}'s themes — events feel larger than ordinary life and may have lasting consequences.`,
+        });
+      }
+    }
+
+    // Check natal planets
+    for (const planet of PLANETS_CORE) {
+      const pos = natalChart.planets[planet as keyof typeof natalChart.planets];
+      if (!pos) continue;
+      const pDeg = toAbsDeg(pos);
+      if (pDeg === null) continue;
+      let diff = Math.abs(pDeg - eclipseAbsDeg);
+      if (diff > 180) diff = 360 - diff;
+      if (diff <= ORB) {
+        results.push({
+          eclipseType: eclipse.type,
+          eclipseSign: eclipse.sign,
+          eclipseDegree: eclipse.degree,
+          eclipseDate: eclipse.date,
+          sensitizedPlanet: planet,
+          sensitizedPlanetSource: 'Natal',
+          orb: Math.round(diff * 10) / 10,
+          interpretation: `The ${eclipse.type} eclipse at ${eclipse.degree}° ${eclipse.sign} (${eclipse.date}) activates your natal ${planet}. This triggers a deeper, more personal response — natal planets activated by eclipses mark turning points that connect to your lifelong patterns around ${planet}'s themes.`,
+        });
+      }
+    }
+  }
+
+  results.sort((a, b) => a.orb - b.orb);
+  return results;
+}
+
+export function calculateEnhancedRetrogrades(
+  srChart: SolarReturnChart,
+  srYear: number
+): SREnhancedRetrograde[] {
+  const results: SREnhancedRetrograde[] = [];
+
+  for (const planet of PLANETS_CORE) {
+    if (planet === 'Sun' || planet === 'Moon') continue; // never retrograde
+    const pos = srChart.planets[planet as keyof typeof srChart.planets];
+    if (!pos || !(pos as any).isRetrograde) continue;
+
+    // Find matching retrograde period
+    const period = RETRO_PERIODS.find(r => 
+      r.planet === planet && (r.year === srYear || r.year === srYear - 1)
+    );
+
+    const house = null; // will be filled by caller from planetSRHouses
+
+    results.push({
+      planet,
+      sign: pos.sign,
+      house,
+      stationRetroDate: period?.stationRx || '',
+      stationDirectDate: period?.stationDirect || '',
+      retroDegree: period?.rxDegree || `${pos.degree}° ${pos.sign}`,
+      directDegree: period?.directDegree || '',
+      shadowPreStart: period?.shadowPre || '',
+      shadowPostEnd: period?.shadowPost || '',
+      interpretation: `${planet} retrograde in ${pos.sign} turns this planet's energy inward. ${
+        planet === 'Mercury' ? 'Communication, travel, and contracts require extra caution. Review and revise rather than initiate.' :
+        planet === 'Venus' ? 'Relationships and finances undergo reassessment. Old connections may resurface for completion.' :
+        planet === 'Mars' ? 'Assertive energy turns inward — frustration is common but productive when channeled into revision of goals.' :
+        planet === 'Jupiter' ? 'Expansion slows — inner growth replaces outer opportunities. Philosophical reassessment.' :
+        planet === 'Saturn' ? 'Responsibilities and structures need internal reorganization before external progress resumes.' :
+        planet === 'Uranus' ? 'Internal rebellion — questioning where you have been inauthentic before making visible changes.' :
+        planet === 'Neptune' ? 'Heightened inner spiritual life — dreams, intuition, and creative visions intensify.' :
+        planet === 'Pluto' ? 'Deep psychological transformation operates beneath the surface — power dynamics shift internally.' :
+        'Internal processing and revision of this planet\'s themes.'
+      }${period ? ` The pre-shadow begins ${period.shadowPre}, the station retrograde is ${period.stationRx}, station direct is ${period.stationDirect}, and post-shadow clears ${period.shadowPost}.` : ''}`,
+    });
+  }
+
+  return results;
+}
+
+export function calculateQuarterlyFocus(
+  srChart: SolarReturnChart,
+  natalChart: NatalChart,
+  planetSRHouses: Record<string, number | null>,
+  srYear: number,
+  birthMonth: number
+): SRQuarterlyFocus[] {
+  const quarters: SRQuarterlyFocus[] = [];
+  const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  const houseThemes: Record<number, string> = {
+    1: 'Identity & self-image', 2: 'Finances & values', 3: 'Communication & learning',
+    4: 'Home & family', 5: 'Creativity & romance', 6: 'Health & daily work',
+    7: 'Partnerships', 8: 'Transformation & shared resources', 9: 'Travel & philosophy',
+    10: 'Career & reputation', 11: 'Community & future goals', 12: 'Spirituality & inner work',
+  };
+
+  // Quarter definitions based on angular houses:
+  // Q1 (birthday + 0-3 months): Houses 10, 11, 12 (MC quadrant)
+  // Q2 (birthday + 3-6 months): Houses 7, 8, 9 (DSC quadrant)
+  // Q3 (birthday + 6-9 months): Houses 4, 5, 6 (IC quadrant)
+  // Q4 (birthday + 9-12 months): Houses 1, 2, 3 (ASC quadrant)
+  const quarterHouses: [number[], number[], number[], number[]] = [
+    [10, 11, 12],
+    [7, 8, 9],
+    [4, 5, 6],
+    [1, 2, 3],
+  ];
+
+  for (let q = 0; q < 4; q++) {
+    const startMonth = (birthMonth + q * 3) % 12;
+    const monthRange = [0, 1, 2].map(offset => MONTH_NAMES[(startMonth + offset) % 12]);
+    const houses = quarterHouses[q];
+    
+    const activePlanets = PLANETS_CORE.filter(p => {
+      const h = planetSRHouses[p];
+      return h !== null && h !== undefined && houses.includes(h);
+    });
+
+    const themes = houses
+      .filter(h => activePlanets.some(p => planetSRHouses[p] === h))
+      .map(h => houseThemes[h] || `House ${h}`);
+
+    if (themes.length === 0) {
+      // Add default themes from the houses even without planets
+      themes.push(...houses.map(h => houseThemes[h] || `House ${h}`));
+    }
+
+    const intensity = activePlanets.length >= 3 ? 'high' : activePlanets.length >= 1 ? 'moderate' : 'quiet';
+
+    quarters.push({
+      quarter: (q + 1) as 1 | 2 | 3 | 4,
+      label: `Q${q + 1}`,
+      months: monthRange.join(', '),
+      dominantThemes: themes,
+      activePlanets,
+      interpretation: `${monthRange[0]}–${monthRange[2]}: ${
+        intensity === 'high' ? `A highly active quarter with ${activePlanets.join(', ')} energizing` :
+        intensity === 'moderate' ? `${activePlanets.join(', ')} activate${activePlanets.length === 1 ? 's' : ''}` :
+        'A quieter quarter with focus on'
+      } ${themes.slice(0, 2).join(' and ').toLowerCase()}. ${
+        intensity === 'high' ? 'Multiple planetary energies converge — expect significant developments.' :
+        intensity === 'moderate' ? 'Steady progress in these life areas.' :
+        'Use this time for reflection and preparation.'
+      }`,
+    });
+  }
+
+  return quarters;
+}
