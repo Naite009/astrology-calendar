@@ -252,7 +252,7 @@ function buildPatternRecognition(analysis: SolarReturnAnalysis, natalChart: Nata
 
   // Eclipse sensitivity patterns
   if (analysis.eclipseSensitivity && analysis.eclipseSensitivity.length > 0) {
-    const eclipseHouses = [...new Set(analysis.eclipseSensitivity.map(e => e.srHouse || e.natalHouse).filter(Boolean))];
+    const eclipseCount = analysis.eclipseSensitivity.length;
     if (eclipseHouses.length > 0) {
       patterns.push({
         pattern: 'Eclipse activation in your chart',
