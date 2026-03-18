@@ -708,17 +708,18 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
   const [binauralTimer, setBinauralTimer] = useState(60); // seconds
   const [showExplainer, setShowExplainer] = useState(false);
 
-  const binauralRootFreqs = useMemo(() => {
+  const binauralRootData = useMemo(() => {
     if (!natalFreqs) return [];
-    // Use the top 3 most prominent: Sun, Moon, Ascendant if present, else first 3
     const priority = ["Sun", "Moon", "Ascendant"];
     const sorted = [...natalFreqs].sort((a, b) => {
       const ai = priority.indexOf(a.planet);
       const bi = priority.indexOf(b.planet);
       return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
     });
-    return sorted.slice(0, 3).map(f => f.freq);
+    return sorted.slice(0, 3);
   }, [natalFreqs]);
+
+  const binauralRootFreqs = useMemo(() => binauralRootData.map(d => d.freq), [binauralRootData]);
 
   const playThetaMeditation = useCallback(() => {
     const id = "theta-meditation";
