@@ -1701,6 +1701,89 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
     }
   };
 
+  const downloadJSON = () => {
+    const payload = {
+      report_type: "solar_return",
+      data: {
+        name: natalChart.name || '',
+        birthDate: natalChart.birthDate || '',
+        birthLocation: natalChart.birthLocation || '',
+        solarReturnYear: srChart.solarReturnYear,
+        natalSun:    natalChart.planets?.Sun?.sign   || '',
+        natalMoon:   natalChart.planets?.Moon?.sign  || '',
+        natalRising: natalChart.houseCusps?.house1?.sign || '',
+        srSun:       natalChart.planets?.Sun?.sign   || '',
+        srMoon:      analysis.moonSign               || '',
+        srRising:    analysis.yearlyTheme?.ascendantSign || '',
+        personalMessage: birthdayMode ? personalMessage : '',
+        yearlyTheme: analysis.yearlyTheme,
+        sunHouse:     analysis.sunHouse,
+        sunNatalHouse:analysis.sunNatalHouse,
+        moonHouse:    analysis.moonHouse,
+        moonNatalHouse:analysis.moonNatalHouse,
+        profectionYear: analysis.profectionYear,
+        lordOfTheYear: analysis.lordOfTheYear,
+        moonPhase:           analysis.moonPhase,
+        moonAngularity:      analysis.moonAngularity,
+        moonLateDegree:      analysis.moonLateDegree,
+        moonVOC:             analysis.moonVOC,
+        moonMetonicAges:     analysis.moonMetonicAges,
+        srMoonAspects:       analysis.srMoonAspects,
+        stelliums: analysis.stelliums,
+        srToNatalAspects:   analysis.srToNatalAspects,
+        srInternalAspects:  analysis.srInternalAspects,
+        angularPlanets:     analysis.angularPlanets,
+        planetPositions: Object.entries(natalChart.planets || {}).map(([planet, data]) => ({
+          planet,
+          natalPosition: `${(data as any).sign} ${Math.floor((data as any).degree || 0)}°`,
+          natalHouse:    `H${(data as any).house || ''}`,
+          srPosition:    (() => {
+            const srPlanet = srChart.planets?.[planet];
+            return srPlanet ? `${srPlanet.sign} ${Math.floor(srPlanet.degree || 0)}°` : '';
+          })(),
+          srHouse: `H${analysis.planetSRHouses?.[planet] || ''}`,
+          shift: (() => {
+            const natal = (data as any).sign;
+            const sr    = srChart.planets?.[planet]?.sign;
+            return (!sr || natal === sr) ? 'Same sign' : `${natal} → ${sr}`;
+          })(),
+        })),
+        houseOverlays: analysis.houseOverlays,
+        elementBalance:      analysis.elementBalance,
+        modalityBalance:     analysis.modalityBalance,
+        hemisphericEmphasis: analysis.hemisphericEmphasis,
+        saturnFocus: analysis.saturnFocus,
+        nodesFocus:  analysis.nodesFocus,
+        retrogrades: analysis.retrogrades,
+        vertex: analysis.vertex,
+        keyDates: analysis.srToNatalAspects
+          ?.filter((a: any) => a.srPlanet === 'Saturn')
+          ?.map((a: any) => ({
+            date:         a.exactDate || '',
+            srPlanet:     a.srPlanet,
+            aspect:       a.aspect,
+            natalPlanet:  a.natalPlanet,
+            orb:          a.orb,
+            interpretation: a.interpretation,
+          })) || [],
+        monthlyForecasts: analysis.monthlyForecasts || [],
+        fourSeasons: analysis.quarterlySeasons || analysis.fourSeasons || [],
+        yearAheadReading: analysis.narrativeReading || '',
+        affirmation:       analysis.affirmationText       || '',
+        affirmationQuote:  analysis.affirmationQuote      || '"You can\'t use up creativity. The more you use, the more you have."',
+        affirmationAuthor: analysis.affirmationAuthor     || '— Maya Angelou',
+      }
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `SolarReturn_${(natalChart.name || 'chart').replace(/\s+/g, '_')}_${srChart.solarReturnYear}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-start gap-4">
@@ -1725,13 +1808,20 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         </div>
       )}
 
-      {narrative && narrative.trim().length > 0 && (
-        <button onClick={generatePDF} disabled={generating}
-          className="text-[11px] uppercase tracking-widest px-3 py-1.5 rounded-sm inline-flex items-center gap-1 disabled:opacity-50 bg-[hsl(var(--tier-3))] text-[hsl(var(--tier-3-accent))] border border-[hsl(var(--tier-3-accent)/0.3)] hover:border-[hsl(var(--tier-3-accent)/0.6)]">
-          {generating ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
-          {generating ? 'Generating...' : 'Birthday Gift PDF'}
+      <div className="flex flex-wrap gap-2">
+        {narrative && narrative.trim().length > 0 && (
+          <button onClick={generatePDF} disabled={generating}
+            className="text-[11px] uppercase tracking-widest px-3 py-1.5 rounded-sm inline-flex items-center gap-1 disabled:opacity-50 bg-[hsl(var(--tier-3))] text-[hsl(var(--tier-3-accent))] border border-[hsl(var(--tier-3-accent)/0.3)] hover:border-[hsl(var(--tier-3-accent)/0.6)]">
+            {generating ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
+            {generating ? 'Generating...' : 'Birthday Gift PDF'}
+          </button>
+        )}
+        <button onClick={downloadJSON}
+          className="text-[11px] uppercase tracking-widest px-3 py-1.5 rounded-sm inline-flex items-center gap-1 bg-amber-700 hover:bg-amber-800 text-white border border-amber-600">
+          <Download size={12} />
+          Download JSON for PDF
         </button>
-      )}
+      </div>
     </div>
   );
 };
