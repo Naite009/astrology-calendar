@@ -1932,6 +1932,14 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       nodesFocus:  analysis.nodesFocus,
       retrogrades: analysis.retrogrades,
       vertex: analysis.vertex,
+      executiveSummary: generateExecutiveSummary(analysis, natalChart),
+      actionGuidance: (() => {
+        const srPlanets: Record<string, { sign?: string; isRetrograde?: boolean }> = {};
+        for (const [key, val] of Object.entries(srChart.planets || {})) {
+          if (val) srPlanets[key] = { sign: (val as any).sign, isRetrograde: (val as any).isRetrograde };
+        }
+        return generateActionGuidance(analysis.planetSRHouses, srPlanets);
+      })(),
     };
   };
 
