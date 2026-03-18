@@ -725,11 +725,13 @@ const SQUARE_GROUPS: { label: string; emoji: string; signs: ZodiacSign[]; color:
 
 interface ChordChartProps {
   playing: string | null;
+  highlightedPlanet?: string | null;
   onPlayGroup: (id: string, signs: ZodiacSign[], duration?: number, waveform?: OscillatorType) => void;
   onPlaySingleSign: (sign: ZodiacSign) => void;
+  onPlayGuidedTour?: () => void;
 }
 
-function ZodiacChordChart({ playing, onPlayGroup, onPlaySingleSign }: ChordChartProps) {
+function ZodiacChordChart({ playing, highlightedPlanet, onPlayGroup, onPlaySingleSign, onPlayGuidedTour }: ChordChartProps) {
   const [expandedTrine, setExpandedTrine] = useState<string | null>(null);
   const [expandedSquare, setExpandedSquare] = useState<string | null>(null);
 
