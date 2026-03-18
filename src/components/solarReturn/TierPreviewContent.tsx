@@ -157,7 +157,7 @@ export const TierPreviewContent = ({ tier, analysis }: Props) => {
             'A "what a master sees" summary — patterns across all techniques',
           ]} />
           <FormatBlock lines={[
-            'Coming in next release',
+            '40–50 page PDF',
           ]} />
           <Badge label="AI master narrative" color="rose" />
         </div>
