@@ -347,6 +347,79 @@ class CosmicAudioEngine {
     }
   }
 
+  // ─── Binaural beat: left ear = freq, right ear = freq + beatHz ───
+  playBinauralBeat(freq: number, beatHz: number, duration: number): void {
+    const ctx = this.getCtx();
+    const t = ctx.currentTime;
+
+    // Left ear
+    const oscL = ctx.createOscillator();
+    oscL.type = "sine";
+    oscL.frequency.value = freq;
+    const gL = ctx.createGain();
+    const panL = ctx.createStereoPanner();
+    panL.pan.value = -1;
+    gL.gain.setValueAtTime(0, t);
+    gL.gain.linearRampToValueAtTime(0.18, t + 2);
+    gL.gain.setValueAtTime(0.18, t + duration - 3);
+    gL.gain.linearRampToValueAtTime(0, t + duration);
+    oscL.connect(gL); gL.connect(panL); panL.connect(this.masterGain!);
+    oscL.start(t); oscL.stop(t + duration);
+    this.trackOsc(oscL);
+
+    // Right ear
+    const oscR = ctx.createOscillator();
+    oscR.type = "sine";
+    oscR.frequency.value = freq + beatHz;
+    const gR = ctx.createGain();
+    const panR = ctx.createStereoPanner();
+    panR.pan.value = 1;
+    gR.gain.setValueAtTime(0, t);
+    gR.gain.linearRampToValueAtTime(0.18, t + 2);
+    gR.gain.setValueAtTime(0.18, t + duration - 3);
+    gR.gain.linearRampToValueAtTime(0, t + duration);
+    oscR.connect(gR); gR.connect(panR); panR.connect(this.masterGain!);
+    oscR.start(t); oscR.stop(t + duration);
+    this.trackOsc(oscR);
+  }
+
+  // ─── Binaural chord: multiple binaural pairs at once ───
+  playBinauralChord(freqs: number[], beatHz: number, duration: number): void {
+    const perVoice = Math.min(0.12, 0.4 / freqs.length);
+    const ctx = this.getCtx();
+    const t = ctx.currentTime;
+
+    freqs.forEach((freq) => {
+      const oscL = ctx.createOscillator();
+      oscL.type = "sine";
+      oscL.frequency.value = freq;
+      const gL = ctx.createGain();
+      const panL = ctx.createStereoPanner();
+      panL.pan.value = -1;
+      gL.gain.setValueAtTime(0, t);
+      gL.gain.linearRampToValueAtTime(perVoice, t + 3);
+      gL.gain.setValueAtTime(perVoice, t + duration - 4);
+      gL.gain.linearRampToValueAtTime(0, t + duration);
+      oscL.connect(gL); gL.connect(panL); panL.connect(this.masterGain!);
+      oscL.start(t); oscL.stop(t + duration);
+      this.trackOsc(oscL);
+
+      const oscR = ctx.createOscillator();
+      oscR.type = "sine";
+      oscR.frequency.value = freq + beatHz;
+      const gR = ctx.createGain();
+      const panR = ctx.createStereoPanner();
+      panR.pan.value = 1;
+      gR.gain.setValueAtTime(0, t);
+      gR.gain.linearRampToValueAtTime(perVoice, t + 3);
+      gR.gain.setValueAtTime(perVoice, t + duration - 4);
+      gR.gain.linearRampToValueAtTime(0, t + duration);
+      oscR.connect(gR); gR.connect(panR); panR.connect(this.masterGain!);
+      oscR.start(t); oscR.stop(t + duration);
+      this.trackOsc(oscR);
+    });
+  }
+
   stopAll(): void {
     this.activeOscs.forEach(o => { try { o.stop(); } catch {} });
     this.activeOscs = [];
