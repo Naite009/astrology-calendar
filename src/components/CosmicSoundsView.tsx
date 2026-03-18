@@ -413,15 +413,14 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
         <div className="flex gap-3 justify-center pt-2">
           <button
             onClick={playAspectJourney}
-            disabled={playing === "aspect-journey"}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs uppercase tracking-widest transition-all border ${
               playing === "aspect-journey"
                 ? "border-primary bg-primary text-primary-foreground"
                 : "border-border hover:border-primary hover:bg-secondary text-muted-foreground hover:text-foreground"
             }`}
           >
-            <Music size={14} />
-            Play All Aspects (Journey from Unison to Tritone)
+            {playing === "aspect-journey" ? <Square size={14} /> : <Music size={14} />}
+            {playing === "aspect-journey" ? "Stop" : "Play All Aspects (Journey from Unison to Tritone)"}
           </button>
         </div>
       </section>
