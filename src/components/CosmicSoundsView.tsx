@@ -731,7 +731,7 @@ function ZodiacChordChart({ playing, onPlayGroup, onPlaySingleSign }: ChordChart
 // ─── Interactive Zodiac Wheel Diagram ───
 // SVG wheel showing all 12 signs with colored lines for trines and squares
 
-function ZodiacWheelDiagram({ playing, onPlayGroup }: ChordChartProps) {
+function ZodiacWheelDiagram({ playing, onPlayGroup, onPlaySingleSign }: ChordChartProps) {
   const size = 380;
   const cx = size / 2;
   const cy = size / 2;
