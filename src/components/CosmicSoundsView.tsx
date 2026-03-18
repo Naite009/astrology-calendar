@@ -578,8 +578,8 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
       setSkyHighlight(null);
       if (playingRef.current === id) {
         setSkyHighlight("all");
-        getEngine().playChord(currentSkyFreqs.map(f => f.freq), 4, "sine");
-        setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; setSkyHighlight(null); } }, 4000);
+        getEngine().playChord(currentSkyFreqs.map(f => f.freq), 10, "sine");
+        setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; setSkyHighlight(null); } }, 10000);
       }
     });
   }, [currentSkyFreqs, getEngine, stopPlaying, toggleOrPlay]);
