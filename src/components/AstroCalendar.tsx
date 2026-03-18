@@ -1,5 +1,5 @@
 import { useState, lazy, Suspense } from "react";
-import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, ScanSearch, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers, Combine, Diamond, FileText, CalendarClock, Utensils, Sun, Home } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Circle, Mic, ScanSearch, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers, Combine, Diamond, FileText, CalendarClock, Utensils, Sun, Home, Volume2 } from "lucide-react";
 import { TodaysCosmicEnergy, CosmicEnergyButton } from "./TodaysCosmicEnergy";
 import { useState as useCosmicState } from "react";
 const ChartDecoderView = lazy(() => import("./ChartDecoderView").then(m => ({ default: m.ChartDecoderView })));
@@ -45,10 +45,11 @@ import { RetroGradesHub } from "./RetroGradesHub";
 import { MoonPhaseEncyclopedia } from "./MoonPhaseEncyclopedia";
 const FoundationsView = lazy(() => import("./FoundationsView").then(m => ({ default: m.FoundationsView })));
 const TarotFunctionsView = lazy(() => import("./TarotFunctionsView").then(m => ({ default: m.TarotFunctionsView })));
+const CosmicSoundsView = lazy(() => import("./CosmicSoundsView").then(m => ({ default: m.CosmicSoundsView })));
 
 
 
-type ViewMode = "month" | "week" | "year" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "retrogrades" | "moon-encyclopedia" | "foundations" | "tarot-functions";
+type ViewMode = "month" | "week" | "year" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "retrogrades" | "moon-encyclopedia" | "foundations" | "tarot-functions" | "cosmic-sounds";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -203,6 +204,9 @@ export const AstroCalendar = () => {
     }
     if (viewMode === "tarot-functions") {
       return "Tarot Functions";
+    }
+    if (viewMode === "cosmic-sounds") {
+      return "Cosmic Sounds";
     }
     if (viewMode === "annual-tables") {
       return `${currentDate.getFullYear()} Annual Tables`;
@@ -685,6 +689,17 @@ export const AstroCalendar = () => {
               >
                 🃏 Tarot
               </button>
+              <button
+                onClick={() => setViewMode("cosmic-sounds")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "cosmic-sounds"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Volume2 size={14} />
+                Sounds
+              </button>
             </div>
 
             {userData && (
@@ -1001,6 +1016,15 @@ export const AstroCalendar = () => {
         {viewMode === "tarot-functions" && (
           <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
             <TarotFunctionsView
+              userNatalChart={userNatalChart}
+              savedCharts={savedCharts}
+            />
+          </Suspense>
+        )}
+
+        {viewMode === "cosmic-sounds" && (
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+            <CosmicSoundsView
               userNatalChart={userNatalChart}
               savedCharts={savedCharts}
             />
