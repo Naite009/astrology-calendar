@@ -160,6 +160,14 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
   const [volume, setVolume] = useState(0.3);
   const [muted, setMuted] = useState(false);
   const playingRef = useRef<string | null>(null);
+  
+  // Chart selector
+  const allCharts = useMemo(() => [
+    ...(userNatalChart ? [userNatalChart] : []),
+    ...savedCharts,
+  ], [userNatalChart, savedCharts]);
+  const [selectedChartIdx, setSelectedChartIdx] = useState(0);
+  const selectedChart = allCharts[selectedChartIdx] || allCharts[0] || null;
 
   const getEngine = useCallback(() => {
     if (!engineRef.current) engineRef.current = new CosmicAudioEngine();
@@ -177,92 +185,111 @@ export const CosmicSoundsView = ({ userNatalChart, savedCharts = [] }: Props) =>
     playingRef.current = null;
   }, [getEngine]);
 
+  // Toggle helper: if already playing this id, stop. Otherwise play.
+  const toggleOrPlay = useCallback((id: string, playFn: () => void) => {
+    if (playing === id) {
+      stopPlaying();
+    } else {
+      playFn();
+    }
+  }, [playing, stopPlaying]);
+
   const playSign = useCallback((sign: ZodiacSign) => {
-    stopPlaying();
-    setPlaying(sign);
-    playingRef.current = sign;
-    getEngine().playTone(signFreq(sign), 2, "sine");
-    setTimeout(() => { if (playingRef.current === sign) { setPlaying(null); playingRef.current = null; } }, 2000);
-  }, [getEngine, stopPlaying]);
+    toggleOrPlay(sign, () => {
+      stopPlaying();
+      setPlaying(sign);
+      playingRef.current = sign;
+      getEngine().playTone(signFreq(sign), 2, "sine");
+      setTimeout(() => { if (playingRef.current === sign) { setPlaying(null); playingRef.current = null; } }, 2000);
+    });
+  }, [getEngine, stopPlaying, toggleOrPlay]);
 
   const playAspect = useCallback((asp: AspectDef) => {
-    stopPlaying();
     const id = `aspect-${asp.name}`;
-    setPlaying(id);
-    playingRef.current = id;
-    const f1 = BASE_FREQ; // C4
-    const f2 = BASE_FREQ * Math.pow(2, asp.semitones / 12);
-    getEngine().playChord([f1, f2], 3, asp.waveform);
-    setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, 3000);
-  }, [getEngine, stopPlaying]);
-
-  const playZodiacScale = useCallback(async () => {
-    stopPlaying();
-    const id = "zodiac-scale";
-    setPlaying(id);
-    playingRef.current = id;
-    const freqs = SIGNS.map(s => signFreq(s));
-    await getEngine().playArpeggio(freqs, 0.6);
-    // Final chord of all 12
-    if (playingRef.current === id) {
-      getEngine().playChord(freqs, 4, "sine");
-      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, 4000);
-    }
-  }, [getEngine, stopPlaying]);
-
-  const playAspectJourney = useCallback(async () => {
-    stopPlaying();
-    const id = "aspect-journey";
-    setPlaying(id);
-    playingRef.current = id;
-    for (const asp of ASPECTS) {
-      if (playingRef.current !== id) break;
+    toggleOrPlay(id, () => {
+      stopPlaying();
+      setPlaying(id);
+      playingRef.current = id;
       const f1 = BASE_FREQ;
       const f2 = BASE_FREQ * Math.pow(2, asp.semitones / 12);
-      getEngine().playChord([f1, f2], 2.2, asp.waveform);
-      await new Promise(r => setTimeout(r, 2500));
-    }
-    if (playingRef.current === id) { setPlaying(null); playingRef.current = null; }
-  }, [getEngine, stopPlaying]);
+      getEngine().playChord([f1, f2], 3, asp.waveform);
+      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, 3000);
+    });
+  }, [getEngine, stopPlaying, toggleOrPlay]);
+
+  const playZodiacScale = useCallback(async () => {
+    toggleOrPlay("zodiac-scale", async () => {
+      stopPlaying();
+      const id = "zodiac-scale";
+      setPlaying(id);
+      playingRef.current = id;
+      const freqs = SIGNS.map(s => signFreq(s));
+      await getEngine().playArpeggio(freqs, 0.6);
+      // Gentle final chord — only play the trine signs (fire triad) for a clean resolution
+      if (playingRef.current === id) {
+        const resolutionFreqs = [signFreq("Aries"), signFreq("Leo"), signFreq("Sagittarius")];
+        getEngine().playChord(resolutionFreqs, 3, "sine");
+        setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, 3000);
+      }
+    });
+  }, [getEngine, stopPlaying, toggleOrPlay]);
+
+  const playAspectJourney = useCallback(async () => {
+    toggleOrPlay("aspect-journey", async () => {
+      stopPlaying();
+      const id = "aspect-journey";
+      setPlaying(id);
+      playingRef.current = id;
+      for (const asp of ASPECTS) {
+        if (playingRef.current !== id) break;
+        const f1 = BASE_FREQ;
+        const f2 = BASE_FREQ * Math.pow(2, asp.semitones / 12);
+        getEngine().playChord([f1, f2], 2.2, asp.waveform);
+        await new Promise(r => setTimeout(r, 2500));
+      }
+      if (playingRef.current === id) { setPlaying(null); playingRef.current = null; }
+    });
+  }, [getEngine, stopPlaying, toggleOrPlay]);
 
   // Natal chart chord
   const natalFreqs = useMemo(() => {
-    const chart = userNatalChart || savedCharts[0];
-    if (!chart?.planets) return null;
+    if (!selectedChart?.planets) return null;
     const freqs: { planet: string; sign: ZodiacSign; freq: number }[] = [];
     for (const p of PLANETS) {
-      const pos = chart.planets[p as keyof typeof chart.planets];
+      const pos = selectedChart.planets[p as keyof typeof selectedChart.planets];
       if (pos?.sign && SIGNS.includes(pos.sign as ZodiacSign)) {
         freqs.push({ planet: p, sign: pos.sign as ZodiacSign, freq: signFreq(pos.sign as ZodiacSign) });
       }
     }
     return freqs.length > 0 ? freqs : null;
-  }, [userNatalChart, savedCharts]);
+  }, [selectedChart]);
 
   const playNatalChord = useCallback(() => {
     if (!natalFreqs) return;
-    stopPlaying();
-    const id = "natal-chord";
-    setPlaying(id);
-    playingRef.current = id;
-    getEngine().playChord(natalFreqs.map(f => f.freq), 5, "sine");
-    setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, 5000);
-  }, [natalFreqs, getEngine, stopPlaying]);
+    toggleOrPlay("natal-chord", () => {
+      stopPlaying();
+      const id = "natal-chord";
+      setPlaying(id);
+      playingRef.current = id;
+      getEngine().playChord(natalFreqs.map(f => f.freq), 5, "sine");
+      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, 5000);
+    });
+  }, [natalFreqs, getEngine, stopPlaying, toggleOrPlay]);
 
   const playNatalArpeggio = useCallback(async () => {
     if (!natalFreqs) return;
-    stopPlaying();
-    const id = "natal-arp";
-    setPlaying(id);
-    playingRef.current = id;
-    await getEngine().playArpeggio(natalFreqs.map(f => f.freq), 0.8);
-    if (playingRef.current === id) {
-      getEngine().playChord(natalFreqs.map(f => f.freq), 4, "sine");
-      setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, 4000);
-    }
-  }, [natalFreqs, getEngine, stopPlaying]);
-
-  const chartName = userNatalChart?.name || savedCharts[0]?.name;
+    toggleOrPlay("natal-arp", async () => {
+      stopPlaying();
+      const id = "natal-arp";
+      setPlaying(id);
+      playingRef.current = id;
+      await getEngine().playArpeggio(natalFreqs.map(f => f.freq), 0.8);
+      if (playingRef.current === id) {
+        getEngine().playChord(natalFreqs.map(f => f.freq), 4, "sine");
+        setTimeout(() => { if (playingRef.current === id) { setPlaying(null); playingRef.current = null; } }, 4000);
+      }
+    });
+  }, [natalFreqs, getEngine, stopPlaying, toggleOrPlay]);
 
   return (
     <div className="max-w-5xl mx-auto space-y-10">
